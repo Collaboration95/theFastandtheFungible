@@ -1,0 +1,408 @@
+SINGHACKS 2026 — RIPPLE TRACK PROTOTYPE IDEAS
+Updated: 5 September 2026
+
+These are the three active alternatives to the parked DueProof concept.
+Each must pass two tests:
+
+1. Remove the agent: does the experience collapse into an ordinary app?
+2. Replace XRPL/x402 with a card or API key: does the autonomous workflow or
+   business model materially weaken?
+
+
+==========================================================================
+IDEA 1 — FAIRCUT
+==========================================================================
+
+Pitch
+-----
+An AI editor licenses the exact seconds it uses—and the creator gets paid
+immediately.
+
+Person
+------
+Leah is a Singapore-based independent filmmaker finishing a 20-second travel
+campaign at midnight. She needs a 12-second music cue that can be used
+commercially in Singapore and Japan. She cannot spend an hour interpreting
+catalogue licences, and she does not want her editor to use an unlicensed or
+provenance-unknown track.
+
+Problem
+-------
+AI can assemble media faster than people can clear the underlying rights.
+Existing licensing is usually organized around large catalogues,
+subscriptions, and human checkout flows. Independent creators also face
+transaction costs that make tiny, narrowly scoped licences uneconomic.
+
+Agent mandate
+-------------
+"Find a tense but hopeful 12-second cue for this cut. Commercial social use in
+Singapore and Japan for six months. Budget S$1. No voice replicas and no asset
+without verifiable provenance."
+
+What the agent does
+-------------------
+1. Understands the edit's timing, mood, and sonic gaps.
+2. Discovers independent licensed stems from multiple providers.
+3. Auditions watermarked previews against the actual cut.
+4. Parses permissions, prohibitions, attribution duties, territory, term,
+   provenance, and price.
+5. Rejects creatively strong tracks that do not satisfy the rights mandate.
+6. Purchases the best eligible 12-second licence.
+7. Inserts the clean stem and returns the finished cut plus a rights receipt.
+
+What is purchased
+-----------------
+One x402-protected package containing:
+
+- the clean 12-second audio stem;
+- an ISCC content identifier or cryptographic asset hash;
+- a machine-readable ODRL licence;
+- a C2PA Content Credentials provenance manifest, where available;
+- creator/payee identity and required attribution text;
+- licence and delivery hashes.
+
+Why Ripple, t54, and ClawCredit belong
+--------------------------------------
+- XRPL enables a genuinely small, cross-border, machine-native purchase and
+  immediate creator settlement. The payment binds the licence order; private
+  media and full licence details remain off-ledger.
+- t54/Trustline checks the mandate, asset identifier, rights-holder payee,
+  price, territory, term, and delivered licence. Changed rights invalidate the
+  original approval.
+- t54's Agentic Risk Standard supplies the fee lifecycle: authorize payment,
+  deliver the asset and licence, evaluate their hashes and rights, then mark
+  the job fulfilled or exceptional.
+- ClawCredit is an optional path for an eligible editor agent without a
+  pre-funded wallet. Do not make it critical unless live onboarding, payment,
+  and repayment are proven.
+
+Industry standards
+------------------
+- W3C ODRL: permissions, prohibitions, constraints, payment and attribution
+  duties — https://www.w3.org/TR/odrl-model/
+- ISO 24138:2024 ISCC: identification of digital media assets —
+  https://committee.iso.org/standard/77899.html
+- C2PA Content Credentials: signed media provenance and edit history —
+  https://spec.c2pa.org/specifications/
+
+Blocked path
+------------
+The most attractive S$0.20 track permits personal use only and its C2PA signer
+does not match the claimed rights-holder:
+
+BLOCKED
+Creative match: strong
+Commercial rights: absent
+Rights-holder/payee binding: failed
+No payment was signed or submitted.
+
+The agent selects a S$0.60 eligible cue, pays on XRP Testnet, unlocks it, and
+the audience hears the finished cut.
+
+Three-minute demo
+-----------------
+1. Play the silent or rough 20-second edit.
+2. Show three watermarked cues evaluated inside the cut.
+3. Block the most attractive cue for a rights mismatch.
+4. Show the eligible licence and Leah's bounded mandate.
+5. Pay on XRP Testnet through one pinned x402 flow.
+6. Replace the watermark with the clean stem and play the final cut.
+7. Open the receipt: user intent -> ODRL rights -> XRPL hash -> asset hash ->
+   creator paid.
+
+Irreducibility test
+-------------------
+- Without the agent, FairCut becomes manual stock-music search and checkout.
+  The creative decision inside the actual edit disappears.
+- A centralized catalogue could use cards. The MVP must therefore show
+  independent providers and a truly small per-use purchase with immediate
+  creator settlement, not one fake marketplace balance.
+
+Primary risks
+-------------
+- C2PA proves signed provenance assertions, not copyright ownership.
+- Use original media owned by a consenting creator and a deliberately narrow
+  demo licence; do not make unsupported legal claims.
+- A single self-hosted catalogue weakens the XRPL argument.
+
+Strategic score: 43/45
+Best quality: most elegant and strongest software-only stage transformation.
+
+
+==========================================================================
+IDEA 2 — FINISHLINE
+==========================================================================
+
+Pitch
+-----
+Agents get paid for verified outcomes, not promises.
+
+Person
+------
+Maya runs a two-person SaaS company. Her Japanese launch is tomorrow morning,
+but the checkout page is still English. Her own agent can coordinate the work
+but is not qualified to localize Japanese commerce copy. She needs to hire a
+specialist agent tonight without trusting a marketplace rating or paying for
+an unusable result.
+
+Problem
+-------
+Agent-to-agent service markets can move quickly, but ordinary payment proves
+only that money moved. It does not prove that work met the brief. Providers
+also need confidence that successful work will be paid. This is the problem
+t54's Agentic Risk Standard directly studies.
+
+Agent mandate
+-------------
+"Deliver a Japanese XLIFF package for checkout by 8 a.m. Preserve variables
+and HTML, use the approved terminology list, pass all structural checks, and
+spend at most S$8."
+
+What the orchestrator does
+--------------------------
+1. Converts Maya's goal into objective acceptance tests.
+2. Discovers localization agents and compares expertise, price, SLA, prior
+   verified outcomes, and requested collateral.
+3. Negotiates a bounded job agreement.
+4. Selects a provider on risk-adjusted value, not cheapest price.
+5. Monitors delivery and invokes an independent evaluator.
+6. Releases or refunds the fee according to the verified result.
+7. Returns the translated checkout and an outcome receipt.
+
+What is purchased
+-----------------
+A single, objectively testable localization job:
+
+- source and target in XLIFF 2.1;
+- fixed glossary and prohibited translations;
+- variable and HTML preservation;
+- 100% segment coverage;
+- screenshot render with no overflow;
+- delivery deadline and artifact hashes.
+
+Research implementation
+-----------------------
+FinishLine adapts the t54 Agentic Risk Standard fee track to XRPL:
+
+REQUEST
+  -> signed agreement
+  -> fee locked
+  -> deliverable submitted
+  -> independent evaluator verdict
+  -> release to provider | refund to Maya
+  -> outcome receipt
+
+It also applies Ripple's lending-design principle: judgment remains off-chain
+while standardized execution happens on-chain. Translation and structural
+quality are evaluated off-chain; XRPL executes the already-decided release or
+refund.
+
+Why Ripple, t54, and ClawCredit belong
+--------------------------------------
+- XRPL provides non-custodial conditional fee settlement. XRP Testnet
+  EscrowCreate and EscrowFinish show substantially more technical depth than a
+  decorative Payment.
+- t54 ARS supplies the roles, signed events, fee lifecycle, evaluator, and
+  outcome/accountability model.
+- Trustline underwrites Maya's agent, the provider, job scope, fee, evidence,
+  and behavioral deviations before value is locked.
+- A provider agent may optionally use ClawCredit to buy x402 translation or QA
+  compute before it gets paid. This is a second-order service-purchase loop,
+  not a general P2P loan.
+- AP2 checkout and payment mandates can bind Maya's open constraints to the
+  provider's final closed agreement.
+
+Industry standards
+------------------
+- OASIS XLIFF 2.1: localization interchange and objectively inspectable
+  delivery structure —
+  https://docs.oasis-open.org/xliff/xliff-core/v2.1/xliff-core-v2.1.pdf
+- Agent Payments Protocol (AP2): agent authorization, checkout mandates,
+  payment mandates, and receipts —
+  https://github.com/google-agentic-commerce/AP2/blob/main/docs/ap2/specification.md
+- XRPL conditional Escrow: PREIMAGE-SHA-256 release conditions —
+  https://xrpl.org/docs/concepts/payment-types/escrow
+- t54 Agentic Risk Standard —
+  https://docs.t54.ai/docs/research/agentic-risk-standard
+
+Failure path
+------------
+The cheapest provider returns an XLIFF file with a broken checkout variable:
+
+DELIVERY FAILED
+Payment was locked, not released.
+Reason: required variable {{total}} was changed.
+Outcome: fee refundable; provider does not receive payment.
+
+A second provider passes the deterministic tests, the localized checkout is
+rendered, and its escrow is finished.
+
+Three-minute demo
+-----------------
+1. Show Maya's English checkout and 8 a.m. mandate.
+2. Compare three specialist agents; reject the cheapest on verified outcomes.
+3. Display the signed job and exact acceptance tests.
+4. Create an XRP Testnet escrow.
+5. Receive the XLIFF file and run visible deterministic checks.
+6. Reveal the localized checkout.
+7. Finish the escrow and show the ARS-style job receipt.
+
+Irreducibility test
+-------------------
+- Without the agent, FinishLine becomes a freelancer marketplace. The MVP must
+  demonstrate adaptive brief construction, provider negotiation, and recovery
+  from a failed provider.
+- A centralized platform can escrow card funds. The MVP must show open
+  providers, no platform custody, native conditional settlement, and an
+  independently inspectable release.
+
+Primary risks
+-------------
+- It has the most moving parts of the three ideas.
+- An evaluator can verify structure and terminology, not all linguistic
+  quality.
+- XRPL's preimage condition is not a native quality oracle. The evaluator is a
+  separate trusted role that releases the fulfillment secret.
+- Do not mix a direct x402 Payment and escrow without coherent accounting.
+
+Strategic score: 42/45
+Best quality: strongest implementation of t54 research and deepest sponsor fit.
+
+
+==========================================================================
+IDEA 3 — LASTPERCENT
+==========================================================================
+
+Pitch
+-----
+At 3% battery, your car agent buys one charge anywhere—without making you join
+another network.
+
+Person
+------
+Aisha is a home-care nurse driving to an urgent evening visit in an unfamiliar
+part of Singapore. Her rental EV is at 3%. She cannot safely compare charger
+apps while driving, has no account with the nearest operator, and needs enough
+energy—not the cheapest headline tariff—to arrive on time.
+
+Problem
+-------
+Charging infrastructure is expanding rapidly, but discovery, availability,
+tariffs, booking, authorization, and payment span different operators. The
+challenge is not finding the geographically nearest charger; it is choosing a
+compatible, available and trustworthy charging session that meets the
+driver's route, time, reserve, and price constraints.
+
+Agent mandate
+-------------
+"Keep at least 20 km of reserve. When I cannot reach my next destination,
+purchase the safest compatible charge that keeps me on schedule. Maximum
+S$12, approved licensed operators only, never accept an occupancy fee above
+S$0.20 per minute."
+
+What the vehicle agent does
+---------------------------
+The agent combines:
+
+- location and route;
+- battery state, expected consumption, and connector compatibility;
+- charger availability and predicted queue;
+- per-kWh, per-minute, booking, and roaming fees;
+- detour time and Aisha's arrival constraint;
+- operator/payee risk and final payment terms.
+
+It chooses and buys a specific reservation and energy package, then delivers
+a start authorization to the charger.
+
+What is purchased
+-----------------
+Use a fixed MVP package rather than open-ended metering:
+
+10 kWh charging authorization
+charger: SG-DEMO-014
+connector: CCS2
+reservation window: 18:40-19:00
+maximum session duration: 25 minutes
+fixed Testnet price and exact payee
+
+The visible outcome is not just a receipt. A simulated OCPP charger changes
+from Reserved to Charging, its energy meter advances, and Aisha's projected
+arrival changes from impossible to on time.
+
+Industry-standard bridge
+------------------------
+OCPI discovery, tariff and reservation
+  -> Trustline decision
+  -> x402/XRPL payment
+  -> OCPP charging authorization and metering
+  -> combined payment and energy-delivery receipt
+
+- OCPI: locations, live status, tariffs, authorization, reservation, sessions,
+  charging records and roaming — https://evroaming.org/ocpi/
+- OCPP: charger-to-management-system communication, transaction handling,
+  smart charging, security and reservation —
+  https://openchargealliance.org/protocols/open-charge-point-protocol/
+- ISO 15118: EV-to-charger charging and control communication —
+  https://www.iso.org/standard/77845.html
+
+Why Ripple, t54, and ClawCredit belong
+--------------------------------------
+- XRPL provides fast direct settlement between a vehicle agent and an
+  unfamiliar operator without requiring a bilateral roaming account. Its
+  low-energy profile also aligns with the mobility story.
+- Trustline checks Aisha's mandate, operator identity, price anomaly, location,
+  payee, energy package, timing, and the vehicle agent's permitted role.
+- ARS supplies the crucial separation between payment settlement and energy
+  delivery. An XRPL hash does not prove that 10 kWh was supplied; the OCPP
+  meter receipt closes fulfilment.
+- ClawCredit has its most natural role here: an eligible vehicle agent without
+  a pre-funded wallet can request credit for the x402 charging service. Limits
+  can reflect prior successful sessions and repayments. Current onboarding and
+  manual repayment limitations must be stated honestly.
+- The idea appeals to Ripple's values of interoperability, low-energy
+  settlement, and improving existing infrastructure rather than replacing it.
+
+Blocked path
+------------
+The closest charger advertises a low tariff, but its final x402 challenge
+changes the payee and adds an uncapped occupancy fee:
+
+BLOCKED
+Price terms exceed the standing mandate.
+Payment destination does not match the licensed operator.
+No charging authorization or payment was issued.
+
+The agent chooses the second charger, pays for the fixed package, and starts
+the simulated OCPP session.
+
+Three-minute demo
+-----------------
+1. Show Aisha at 3%, with her route turning red.
+2. Evaluate three OCPI charger offers.
+3. Block the closest offer after its final terms mutate.
+4. Select the charger maximizing on-time arrival within S$12.
+5. Pay on XRP Testnet; show ClawCredit only if the real path is proven.
+6. Start the simulated OCPP charger and energy meter.
+7. Turn the route green and display the combined delivery receipt.
+
+Irreducibility test
+-------------------
+- Without the agent, this can collapse into a charger app. The demo must make
+  the decision dynamic and multi-constraint while Aisha is driving: battery,
+  queue, arrival time, connector, and final tariff must all matter.
+- Cards already support ad hoc charging. The business model must be direct
+  vehicle-to-operator commerce without a prior account or roaming contract,
+  with a machine-verifiable exact quote and immediate settlement.
+
+Primary risks
+-------------
+- Use an OCPP simulator or small hardware light/meter; do not imply a physical
+  charger integration that does not exist.
+- Card and QR payments are serious substitutes.
+- Payment regulation, refunds, energy resale, and pricing rules vary by market.
+- The AI role must include interpreting Aisha's changing schedule and
+  negotiating heterogeneous offers, not merely sorting chargers by distance.
+
+Strategic score: 41/45
+Best quality: strongest stage theatre and most intuitive ClawCredit story.
+
