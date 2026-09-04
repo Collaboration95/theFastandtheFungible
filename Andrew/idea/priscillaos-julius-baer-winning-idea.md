@@ -35,6 +35,46 @@ This directly supports the challenge's three building blocks:
 2. Proactive Risk and Opportunity Detection: surface liquidity, mandate, concentration, collateral, tax, and life-event risks before the client asks.
 3. RM Intelligence Workbench: convert insights into talking points, follow-up questions, rebalancing options, stress tests, and client-ready notes.
 
+## Data sources used in this idea
+
+The examples below come from the Julius Baer synthetic dataset in:
+
+```text
+juliusbaer-singhacks/singhacks-jb-wealth-intelligence/data/
+```
+
+The most important files for this idea are:
+
+| File | Why it matters for PriscillaOS |
+| --- | --- |
+| `clients.csv` | Client identity, age, country, tax domicile, life stage, source of wealth, risk profile, liquidity needs, stated objectives, KYC date. |
+| `portfolios.csv` | Which portfolios belong to each client, mandate code, service model, base currency, and AUM across the five snapshots. |
+| `holdings.csv` | Position-level data at five dates. This is where portfolio movement, asset exposure, liquidity tier, lending value, and unrealised PnL come from. |
+| `instruments.csv` | Instrument metadata: asset class, sector, region, currency, liquidity tier, structured product underlying reference, sustainability exclusion flag, concentration flag. |
+| `mandates.csv` | Target/min/max allocation bands, concentration limits, and mandate notes. Used to detect mandate drift or unsuitable exposure. |
+| `transactions.csv` | Trades, income, fees, capital calls, credit drawdowns. Useful for explaining whether a change came from market movement or client action. |
+| `credit_facilities.csv` | Lombard and term loan data, drawn amounts, lending value, LTV, headroom, and margin-call thresholds. Used for collateral risk cases. |
+| `commitments.csv` | Outstanding private market commitments and expected call windows. Used for future liquidity pressure. |
+| `planned_cash_needs.csv` | Known future liquidity needs: tax, tuition, property purchase, annual drawdowns, capital calls, family office funding. |
+| `market_context.csv` | Market series at the same five dates: FX, yields, equity indices, gold, Brent, volatility, and rates. |
+| `event_log.csv` | The authoritative 2026 event timeline. Use this instead of LLM memory when explaining why markets moved. |
+| `rm_notes.json` | Priscilla's relationship notes. This often contains the human context that turns a portfolio fact into a client conversation. |
+
+Dataset joins used by the idea:
+
+```text
+clients.client_id -> portfolios.client_id -> holdings.portfolio_id
+holdings.instrument_id -> instruments.instrument_id
+portfolios.mandate_code -> mandates.mandate_code
+rm_notes[].client_id -> clients.client_id
+planned_cash_needs.client_id -> clients.client_id
+commitments.client_id -> clients.client_id
+credit_facilities.client_id -> clients.client_id
+event_log.primary_transmission -> interpreted against instrument sector / region / asset class
+```
+
+Important implementation note: `event_log.csv` should be treated as the source of truth for 2026 market/geopolitical events. The product should not let the LLM invent market causes from memory.
+
 ## What makes this different from ordinary ideas
 
 A common hackathon solution will be an "AI portfolio assistant" that summarizes a client portfolio or answers questions in a chat window. That is too generic and easy to copy.
@@ -182,13 +222,39 @@ The demo should not attempt to cover all 20 clients. The README explicitly says 
 
 Why this case is strong:
 
-- recently inherited wealth;
-- client is grieving and says she does not understand the portfolio;
-- risk profile is Conservative;
-- current portfolio appears equity-heavy;
-- EUR 3.4m German inheritance tax instalment is due before year-end;
-- client asked for something safe and boring;
+- recently inherited wealth, from `clients.csv` fields `life_stage` and `source_of_wealth`;
+- client is grieving and says she does not understand the portfolio, from `rm_notes.json` note `N-005`;
+- risk profile is Conservative, from `clients.csv` field `risk_profile`;
+- current portfolio appears equity-heavy, from `holdings.csv` joined to `instruments.csv` at snapshot `2026-08-26`;
+- EUR 3.4m German inheritance tax instalment is due before year-end, from `planned_cash_needs.csv` row `CN-004`;
+- client asked for something safe and boring, from `rm_notes.json` note `N-006`;
 - the RM must preserve trust and handle suitability carefully.
+
+Source trail to show in the evidence drawer:
+
+```text
+clients.csv:
+- client_id = CL-0003
+- client_name = Margarethe Voss-Brenner
+- life_stage = Recently inherited - transition
+- risk_profile = Conservative
+- risk_tolerance_score = 2
+- objectives = Understand and de-risk the inherited portfolio; secure a stable income; German inheritance tax planning
+
+rm_notes.json:
+- N-005 says the client is grieving, does not understand the portfolio, and describes herself as someone who has never taken risk with money.
+- N-006 says she asked whether Middle East news affects her portfolio and prefers "something safe and boring".
+
+planned_cash_needs.csv:
+- CN-004: German inheritance tax instalment, EUR 3.4m, due 2026-10-01 to 2026-12-31, Confirmed.
+
+holdings.csv + instruments.csv:
+- Use snapshot_date = 2026-08-26 to compute current exposure by asset_class.
+- The analysis found this client is heavily exposed to Equity despite a Conservative profile.
+
+event_log.csv:
+- Use Middle East and rate/yield events as authoritative context when explaining portfolio stress.
+```
 
 Demo message:
 
@@ -209,11 +275,39 @@ Suggested RM action:
 
 Why this case is strong:
 
-- confirmed USD university fees for two children;
-- likely USD private equity capital calls;
-- many assets are SGD-denominated;
-- private credit redemption is gated;
-- the client thought a conservative fund could be redeemed easily.
+- confirmed USD university fees for two children, from `planned_cash_needs.csv` row `CN-007`;
+- likely USD private equity capital calls, from `planned_cash_needs.csv` row `CN-008` and `commitments.csv` row `COM-003`;
+- many assets are SGD-denominated, from `clients.csv` base currency and `holdings.csv` / `instruments.csv` currency exposure;
+- private credit redemption is gated, from `rm_notes.json` note `N-009` and private-credit context in `event_log.csv`;
+- the client thought a conservative fund could be redeemed easily, from `rm_notes.json` note `N-009`.
+
+Source trail to show in the evidence drawer:
+
+```text
+clients.csv:
+- client_id = CL-0006
+- client_name = Nguyen Thi Bao Tran
+- base_currency = SGD
+- liquidity_needs = Medium
+- objectives = Meet USD-denominated private equity capital calls and US university fees for two children; grow capital at a moderate pace
+
+planned_cash_needs.csv:
+- CN-007: US university fees, USD 5.0m, from 2026-09-01 to 2030-09-01, Confirmed.
+- CN-008: Private equity capital calls, USD 3.0m, from 2026-10-01 to 2028-03-31, Likely.
+
+commitments.csv:
+- COM-003: Meridian Private Equity Fund VII, USD 4.5m committed, USD 3.0m uncalled, expected call window 2026 Q4 to 2028 Q1.
+
+rm_notes.json:
+- N-009 says the client needs USD liquidity, submitted a redemption on a private credit fund, was warned about the gate, and has SGD assets against USD obligations.
+
+holdings.csv + instruments.csv:
+- Use snapshot_date = 2026-08-26 to compute liquidity by `liquidity_tier` and exposure by `instrument_ccy`.
+- This supports the liquidity and currency mismatch story.
+
+event_log.csv:
+- 2026-06-30 mentions non-traded private credit redemption stress.
+```
 
 Demo message:
 
@@ -233,11 +327,40 @@ Suggested RM action:
 
 Why this case is strong:
 
-- pre-liquidity event entrepreneur;
-- wants to avoid selling tech holdings;
-- drew additional Lombard credit after tech drawdown;
-- collateral value is volatile;
-- LTV stress creates urgency.
+- pre-liquidity event entrepreneur, from `clients.csv` fields `life_stage`, `source_of_wealth`, and `objectives`;
+- wants to avoid selling tech holdings, from `rm_notes.json` note `N-003`;
+- drew additional Lombard credit after tech drawdown, from `rm_notes.json` note `N-004` and `credit_facilities.csv` row `CF-0001`;
+- collateral value is volatile, from `credit_facilities.csv` LTV/headroom changes and `holdings.csv` technology exposure;
+- LTV stress creates urgency, from `credit_facilities.csv` row `CF-0001`.
+
+Source trail to show in the evidence drawer:
+
+```text
+clients.csv:
+- client_id = CL-0002
+- client_name = Ravi Chandrasekaran
+- life_stage = Pre-liquidity event
+- risk_profile = Growth
+- liquidity_needs = High
+- objectives = Bridge liquidity until the secondary sale of founder shares expected Q4 2026; build diversified portfolio post-event; establish a family trust
+
+rm_notes.json:
+- N-003 says the client wants to avoid selling listed positions and is comfortable increasing the Lombard line.
+- N-004 says the client was agitated about the technology drop, drew a further USD 1.7m, and needs monitoring.
+
+credit_facilities.csv:
+- CF-0001: Lombard Credit Facility for CL-0002.
+- drawn amount increases from USD 4.8m to USD 6.5m by 2026-06-30.
+- LTV reaches 75.64% at 2026-06-30 against a 75.0% margin-call threshold.
+- LTV is still high at 73.71% on 2026-08-26.
+
+event_log.csv:
+- 2026-06-05: US megacap technology complex briefly sheds around USD 2tn on AI capex concerns.
+- 2026-06-17 and 2026-06-19: rates/yields move, affecting collateral and growth valuations.
+
+holdings.csv + instruments.csv:
+- Use current and prior snapshots to identify technology/growth exposure supporting the collateral-volatility story.
+```
 
 Demo message:
 
