@@ -1,0 +1,7 @@
+// Deliberately server-only. This module is never imported by Vite client code.
+export const premiumBodies: Record<string, { spans: { id: string; label: string; text: string }[] }> = {
+  'northstar-wire': { spans:[{id:'northstar-s1',label:'Supplier lead times',text:'Two switchgear suppliers said booked orders now extend beyond twelve months, even as accelerator demand remains firm.'},{id:'northstar-s2',label:'Near-term demand',text:'The suppliers described the order book as durable through the next two planning cycles, while cautioning that delivery dates move before revenue does.'}] },
+  'circuit-note': { spans:[{id:'circuit-s1',label:'Repeated framing',text:'Equipment vendors are busy and delivery windows are longer. The note cites the same public supplier comments circulated in the wire market.'}] },
+  'meridian-ledger': { spans:[{id:'meridian-s1',label:'Grid bottleneck',text:'A regional grid operator told the Ledger that a signed connection agreement is not the same as energisation; studies, substation work, and queue position can add years.'},{id:'meridian-s2',label:'Changed conclusion',text:'Developers in constrained markets are shifting phases or procuring behind-the-meter power, which makes announced capital spend a poor proxy for operating capacity by 2028.'}] },
+  'gridscope-asia': { spans:[{id:'gridscope-s1',label:'Queue benchmark',text:'The specialist dataset estimates 18–36 months from a complete interconnection application to a firm energisation window in the most constrained Asian hubs.'}] },
+}
