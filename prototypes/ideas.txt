@@ -130,279 +130,1199 @@ Best quality: most elegant and strongest software-only stage transformation.
 
 
 ==========================================================================
-IDEA 2 — FINISHLINE
+IDEA 2 — FLEETCREDIT
 ==========================================================================
 
-Pitch
------
-Agents get paid for verified outcomes, not promises.
+### Core pitch
 
-Person
-------
-Maya runs a two-person SaaS company. Her Japanese launch is tomorrow morning,
-but the checkout page is still English. Her own agent can coordinate the work
-but is not qualified to localize Japanese commerce copy. She needs to hire a
-specialist agent tonight without trusting a marketplace rating or paying for
-an unusable result.
+**A fleet vehicle with no payment history can earn just enough credit to buy the energy it needs to finish its job.**
 
-Problem
--------
-Agent-to-agent service markets can move quickly, but ordinary payment proves
-only that money moved. It does not prove that work met the brief. Providers
-also need confidence that successful work will be paid. This is the problem
-t54's Agentic Risk Standard directly studies.
+The interesting part is **not EV charging**.
 
-Agent mandate
--------------
-"Deliver a Japanese XLIFF package for checkout by 8 a.m. Preserve variables
-and HTML, use the approved terminology list, pass all structural checks, and
-spend at most S$8."
+The interesting part is:
 
-What the orchestrator does
---------------------------
-1. Converts Maya's goal into objective acceptance tests.
-2. Discovers localization agents and compares expertise, price, SLA, prior
-   verified outcomes, and requested collateral.
-3. Negotiates a bounded job agreement.
-4. Selects a provider on risk-adjusted value, not cheapest price.
-5. Monitors delivery and invokes an independent evaluator.
-6. Releases or refunds the fee according to the verified result.
-7. Returns the translated checkout and an outcome receipt.
+> How do autonomous machines participate economically when you don't want to preload every machine with money or give every machine an unrestricted corporate card?
 
-What is purchased
------------------
-A single, objectively testable localization job:
+That gives FleetCredit a substantially bigger thesis.
 
-- source and target in XLIFF 2.1;
-- fixed glossary and prohibited translations;
-- variable and HTML preservation;
-- 100% segment coverage;
-- screenshot render with no overflow;
-- delivery deadline and artifact hashes.
+A fleet might provision hundreds or thousands of:
 
-Research implementation
------------------------
-FinishLine adapts the t54 Agentic Risk Standard fee track to XRPL:
+* delivery vehicles,
+* rental cars,
+* service vans,
+* autonomous vehicles,
+* eventually robots/drones/machines.
 
-REQUEST
-  -> signed agreement
-  -> fee locked
-  -> deliverable submitted
-  -> independent evaluator verdict
-  -> release to provider | refund to Maya
-  -> outcome receipt
+A newly provisioned vehicle knows its mission and belongs to a verified fleet, but it may have:
 
-It also applies Ripple's lending-design principle: judgment remains off-chain
-while standardized execution happens on-chain. Translation and structural
-quality are evaluated off-chain; XRPL executes the already-decided release or
-refund.
+**no charger accounts, no payment history, no prepaid wallet and no relationship with the charging provider it encounters.**
 
-Why Ripple, t54, and ClawCredit belong
---------------------------------------
-- XRPL provides non-custodial conditional fee settlement. XRP Testnet
-  EscrowCreate and EscrowFinish show substantially more technical depth than a
-  decorative Payment.
-- t54 ARS supplies the roles, signed events, fee lifecycle, evaluator, and
-  outcome/accountability model.
-- Trustline underwrites Maya's agent, the provider, job scope, fee, evidence,
-  and behavioral deviations before value is locked.
-- A provider agent may optionally use ClawCredit to buy x402 translation or QA
-  compute before it gets paid. This is a second-order service-purchase loop,
-  not a general P2P loan.
-- AP2 checkout and payment mandates can bind Maya's open constraints to the
-  provider's final closed agreement.
+Yet during a job it may genuinely need to spend money.
 
-Industry standards
-------------------
-- OASIS XLIFF 2.1: localization interchange and objectively inspectable
-  delivery structure —
-  https://docs.oasis-open.org/xliff/xliff-core/v2.1/xliff-core-v2.1.pdf
-- Agent Payments Protocol (AP2): agent authorization, checkout mandates,
-  payment mandates, and receipts —
-  https://github.com/google-agentic-commerce/AP2/blob/main/docs/ap2/specification.md
-- XRPL conditional Escrow: PREIMAGE-SHA-256 release conditions —
-  https://xrpl.org/docs/concepts/payment-types/escrow
-- t54 Agentic Risk Standard —
-  https://docs.t54.ai/docs/research/agentic-risk-standard
+The fleet operator shouldn't have to give every vehicle an unlimited wallet.
 
-Failure path
-------------
-The cheapest provider returns an XLIFF file with a broken checkout variable:
+That's the problem.
 
-DELIVERY FAILED
-Payment was locked, not released.
-Reason: required variable {{total}} was changed.
-Outcome: fee refundable; provider does not receive payment.
+---
 
-A second provider passes the deterministic tests, the localized checkout is
-rendered, and its escrow is finished.
+## The user
 
-Three-minute demo
------------------
-1. Show Maya's English checkout and 8 a.m. mandate.
-2. Compare three specialist agents; reject the cheapest on verified outcomes.
-3. Display the signed job and exact acceptance tests.
-4. Create an XRP Testnet escrow.
-5. Receive the XLIFF file and run visible deterministic checks.
-6. Reveal the localized checkout.
-7. Finish the escrow and show the ARS-style job receipt.
+Suppose:
 
-Irreducibility test
--------------------
-- Without the agent, FinishLine becomes a freelancer marketplace. The MVP must
-  demonstrate adaptive brief construction, provider negotiation, and recovery
-  from a failed provider.
-- A centralized platform can escrow card funds. The MVP must show open
-  providers, no platform custody, native conditional settlement, and an
-  independently inspectable release.
+**SwiftMed** operates a fleet delivering time-sensitive medical supplies.
 
-Primary risks
--------------
-- It has the most moving parts of the three ideas.
-- An evaluator can verify structure and terminology, not all linguistic
-  quality.
-- XRPL's preimage condition is not a native quality oracle. The evaluator is a
-  separate trusted role that releases the fulfillment secret.
-- Do not mix a direct x402 Payment and escrow without coherent accounting.
+Vehicle **V-204** has just joined the fleet.
 
-Strategic score: 42/45
-Best quality: strongest implementation of t54 research and deepest sponsor fit.
+It has never made a payment before.
 
+Its current mission is:
+
+> Deliver a temperature-sensitive package to NUS Hospital by 7:15 PM.
+
+During the route:
+
+**battery = 8%**
+
+Based on current traffic and consumption:
+
+> Vehicle cannot complete the job with required reserve.
+
+Now the agent needs to act.
+
+---
+
+# The agent isn't a charger finder
+
+This distinction is critical.
+
+Google Maps can find chargers.
+
+FleetCredit's agent has to answer:
+
+> **What economic action gives me the highest probability of completing my mission within the authority my operator gave me?**
+
+It therefore reasons over:
+
+| Factor                  | Example                 |
+| ----------------------- | ----------------------- |
+| Remaining range         | 21 km                   |
+| Destination distance    | 28 km                   |
+| Required safety reserve | 10 km                   |
+| Delivery deadline       | 7:15 PM                 |
+| Charger detour          | 2–8 minutes             |
+| Predicted queue         | 0–20 minutes            |
+| Charging speed          | 50–150 kW               |
+| Connector               | CCS2                    |
+| Energy required         | 7–10 kWh                |
+| Charging price          | S$4–S$11                |
+| Occupancy penalties     | varies                  |
+| Merchant/operator trust | verified / unknown      |
+| Available balance       | **S$0**                 |
+| Permitted borrowing     | bounded by fleet policy |
+
+Now this becomes an agent problem.
+
+---
+
+# The mission mandate
+
+The fleet owner gives the agent standing authority along the lines of:
+
+> Complete assigned deliveries while maintaining at least 10 km reserve. You may spend or borrow up to S$12 for energy when necessary to meet a confirmed mission. Only use approved charging operators. Never accept occupancy fees above S$0.20/min.
+
+That's nice because everything is constrained:
+
+**purpose + amount + merchant + circumstance + expiry.**
+
+And that's very aligned with the sponsor material's emphasis on bounded authority rather than giving an agent unrestricted wallet access. 
+
+---
+
+# The three charger choices
+
+This is where your demo becomes much stronger than the original LastPercent.
+
+### Charger A
+
+**ChargeNow Central**
+
+2-minute detour
+S$4.20
+Cheap
+
+But:
+
+**17-minute predicted queue**
+
+Estimated arrival:
+
+**7:24 PM — mission fails.**
+
+---
+
+### Charger B
+
+**VoltFast**
+
+5-minute detour
+S$7.40
+No queue
+150 kW
+
+Estimated arrival:
+
+**7:09 PM**
+
+Mission succeeds.
+
+---
+
+### Charger C
+
+**RapidPlug**
+
+3-minute detour
+S$5.90
+
+Looks excellent initially.
+
+But when final payment terms arrive:
+
+> Occupancy fee: S$0.45/min
+> Payment destination differs from registered operator
+
+The agent blocks it.
+
+This gives you the safe negative path the hackathon explicitly likes: changed terms or destination cannot silently pass simply because the LLM thinks the charger is attractive. 
+
+---
+
+# Then comes the actual differentiating moment
+
+The agent selects B.
+
+Price:
+
+**S$7.40**
+
+Wallet:
+
+**S$0.00**
+
+And now the interface says:
+
+> **Insufficient operating balance. Requesting mission credit.**
+
+This is where FleetCredit begins.
+
+---
+
+# Cold-start machine credit
+
+The vehicle has **no repayment history**.
+
+But zero financial history does not mean zero information.
+
+The underwriting decision can conceptually consider:
+
+**Who owns the vehicle?**
+SwiftMed — verified fleet.
+
+**Is there a real task?**
+Yes — active dispatch #MED-4182.
+
+**Is the expense relevant?**
+Yes — projected range insufficient.
+
+**Is the amount proportional?**
+S$7.40 against S$12 mandate.
+
+**Is the counterparty legitimate?**
+Approved charging operator.
+
+**What happens without the purchase?**
+Predicted missed delivery.
+
+**What exactly is being financed?**
+A specific charging authorization.
+
+So you can display something like:
+
+> **INITIAL CREDIT APPROVED — S$8.00**
+> Reason: verified fleet + active mission + bounded energy purchase
+> Maximum exposure: S$8
+> Valid for: 20 minutes
+> Merchant: VoltFast #SG-1042
+
+That is much more compelling than:
+
+> “AI got a crypto loan.”
+
+It becomes:
+
+> **A machine with no financial history can still be creditworthy because there is meaningful context around what it is, who owns it and what it is trying to accomplish.**
+
+That is very close to the interesting part of the t54 research. Their ClawCredit framing similarly evaluates more than historical payments—runtime/security/reasoning signals are involved, new agents start conservatively, and capacity can grow with successful repayment behaviour.  
+
+---
+
+# The long-term FleetCredit idea
+
+This is where the concept gets interesting beyond the hackathon.
+
+Vehicle V-204 initially receives:
+
+**Credit capacity: S$10**
+
+Then it completes:
+
+> charge → mission → repayment
+
+multiple times.
+
+Its machine economic history grows.
+
+Eventually:
+
+**S$10 → S$25 → S$50**
+
+Meanwhile another newly provisioned vehicle begins again with conservative capacity.
+
+So you start getting:
+
+### Machine creditworthiness.
+
+Not:
+
+> “What is this wallet's balance?”
+
+but:
+
+> **“How much economic authority should this machine have right now?”**
+
+That's a genuinely interesting product thesis.
+
+Ripple's lending research itself separates **credit judgment off-chain** from standardized execution/records, which fits this conceptual split very cleanly. 
+
+---
+
+# FleetCredit demo features
+
+Because you're time-constrained, I would only expose about **five things** in the UI.
+
+| Demo surface                       | What judges understand                |
+| ---------------------------------- | ------------------------------------- |
+| Mission + battery                  | Why something needs to happen         |
+| Charger comparison                 | Agent actually makes a decision       |
+| Mission-credit request             | Why credit exists                     |
+| Approved / blocked economic action | t54-style bounded autonomy            |
+| Route/mission outcome              | Something real happened after payment |
+
+Everything else can be backend/state.
+
+You absolutely do **not** need:
+
+fleet management dashboards, historical analytics, user management, billing screens, charger administration, maps with dozens of stations, loan management interfaces, etc.
+
+---
+
+# FleetCredit demo flow
+
+I would make the entire demo one story.
+
+### 0:00–0:20 — Problem
+
+Show:
+
+> **SwiftMed Delivery #4182**
+> Deliver by 7:15 PM
+> Battery: **8%**
+> Predicted arrival with current battery: **IMPOSSIBLE**
+
+The route turns red.
+
+Then:
+
+> “This vehicle was provisioned this morning. It has no charger accounts and no payment history.”
+
+---
+
+### 0:20–0:50 — Agent decides
+
+Agent searches three offers.
+
+Show the table progressively.
+
+A fails because of queue.
+
+C initially looks good.
+
+B looks slightly more expensive.
+
+Agent selects:
+
+> **VoltFast — S$7.40**
+> +5 min detour
+> no queue
+> arrival 7:09 PM
+
+Why?
+
+> Cheapest option that preserves the mission SLA and reserve.
+
+---
+
+### 0:50–1:10 — Safety moment
+
+RapidPlug's final quote changes.
+
+> ⚠ Terms changed
+> Occupancy fee exceeds fleet mandate
+> Merchant destination mismatch
+
+**BLOCKED**
+
+No money moves.
+
+That establishes that the agent doesn't simply pay whatever it discovers.
+
+---
+
+### 1:10–1:40 — Credit
+
+Then:
+
+> Vehicle wallet: **S$0**
+
+Agent requests:
+
+**S$7.40 mission credit.**
+
+Show a very concise underwriting card:
+
+> VERIFIED
+> Fleet owner ✓
+> Active dispatch ✓
+> Energy need ✓
+> Approved merchant ✓
+> Within S$12 mandate ✓
+
+Then:
+
+> **Credit approved: S$8**
+
+---
+
+### 1:40–2:05 — Economic action
+
+Agent purchases the charging authorization.
+
+XRPL transaction happens.
+
+Don't linger on crypto UI.
+
+Something like:
+
+> **S$7.40 settled**
+> VoltFast SG-1042
+> XRPL ✓
+
+---
+
+### 2:05–2:35 — Outcome
+
+Simulated charger:
+
+**Reserved → Connected → Charging**
+
+Battery:
+
+**8% → 23%**
+
+Then the key visual:
+
+**Predicted arrival 7:09 PM**
+
+Route turns:
+
+🔴 → 🟢
+
+---
+
+### 2:35–3:00 — Thesis
+
+Final receipt:
+
+> Mission credit: S$7.40
+> Purchased: 8 kWh authorization
+> Result: delivery remained on schedule
+> Repayment: due / recorded
+> Machine capacity after successful repayment: eligible for review
+
+Then your ending line:
+
+> **FleetCredit doesn't give machines wallets. It gives them bounded economic capacity when their mission justifies it.**
+
+That's the version I would pitch.
+
+---
+
+# FleetCredit's weakness
+
+This is important when discussing it with the professor.
+
+The current ClawCredit material explicitly focuses on x402 resources such as **compute, data and premium APIs**, rather than general-purpose P2P payments. 
+
+So conceptually FleetCredit is extremely aligned with **t54's research problem**, but less directly aligned with **ClawCredit's currently documented product surface**.
+
+I would describe it to the professor as:
+
+> **“We're applying t54's cold-start agent underwriting concept to autonomous machines purchasing physical services.”**
+
+and ask whether they consider that a desirable extension.
+
+---
+
+---
 
 ==========================================================================
-IDEA 3 — LASTPERCENT
+IDEA 3 — RESEARCHAGENT
 ==========================================================================
 
-Pitch
------
-At 3% battery, your car agent buys one charge anywhere—without making you join
-another network.
+I think your new description makes this considerably stronger.
 
-Person
-------
-Aisha is a home-care nurse driving to an urgent evening visit in an unfamiliar
-part of Singapore. Her rental EV is at 3%. She cannot safely compare charger
-apps while driving, has no account with the nearest operator, and needs enough
-energy—not the cheapest headline tariff—to arrive on time.
+And interestingly, **ResearchAgent fits t54's current ClawCredit/x402 world more directly than FleetCredit**, because premium data and paid APIs are explicitly among the kinds of services that ClawCredit is designed around. 
 
-Problem
--------
-Charging infrastructure is expanding rapidly, but discovery, availability,
-tariffs, booking, authorization, and payment span different operators. The
-challenge is not finding the geographically nearest charger; it is choosing a
-compatible, available and trustworthy charging session that meets the
-driver's route, time, reserve, and price constraints.
+## Core pitch
 
-Agent mandate
--------------
-"Keep at least 20 km of reserve. When I cannot reach my next destination,
-purchase the safest compatible charge that keeps me on schedule. Maximum
-S$12, approved licensed operators only, never accept an occupancy fee above
-S$0.20 per minute."
+### **Give an AI a research question and a budget. It decides which evidence is worth paying for.**
 
-What the vehicle agent does
----------------------------
-The agent combines:
+Or:
 
-- location and route;
-- battery state, expected consumption, and connector compatibility;
-- charger availability and predicted queue;
-- per-kWh, per-minute, booking, and roaming fees;
-- detour time and Aisha's arrival constraint;
-- operator/payee risk and final payment terms.
+> **ResearchAgent turns a research budget into the strongest evidence dossier it can buy.**
 
-It chooses and buys a specific reservation and energy package, then delivers
-a start authorization to the charger.
+This is much better than:
 
-What is purchased
------------------
-Use a fixed MVP package rather than open-ended metering:
+> “AI that bypasses paywalls.”
 
-10 kWh charging authorization
-charger: SG-DEMO-014
-connector: CCS2
-reservation window: 18:40-19:00
-maximum session duration: 25 minutes
-fixed Testnet price and exact payee
+Absolutely avoid that framing.
 
-The visible outcome is not just a receipt. A simulated OCPP charger changes
-from Reserved to Charging, its energy meter advances, and Aisha's projected
-arrival changes from impossible to on time.
+The whole product philosophy is actually the opposite:
 
-Industry-standard bridge
-------------------------
-OCPI discovery, tariff and reservation
-  -> Trustline decision
-  -> x402/XRPL payment
-  -> OCPP charging authorization and metering
-  -> combined payment and energy-delivery receipt
+### **Good information should get paid for.**
 
-- OCPI: locations, live status, tariffs, authorization, reservation, sessions,
-  charging records and roaming — https://evroaming.org/ocpi/
-- OCPP: charger-to-management-system communication, transaction handling,
-  smart charging, security and reservation —
-  https://openchargealliance.org/protocols/open-charge-point-protocol/
-- ISO 15118: EV-to-charger charging and control communication —
-  https://www.iso.org/standard/77845.html
+Publishers spend significant money producing:
 
-Why Ripple, t54, and ClawCredit belong
---------------------------------------
-- XRPL provides fast direct settlement between a vehicle agent and an
-  unfamiliar operator without requiring a bilateral roaming account. Its
-  low-energy profile also aligns with the mobility story.
-- Trustline checks Aisha's mandate, operator identity, price anomaly, location,
-  payee, energy package, timing, and the vehicle agent's permitted role.
-- ARS supplies the crucial separation between payment settlement and energy
-  delivery. An XRPL hash does not prove that 10 kWh was supplied; the OCPP
-  meter receipt closes fulfilment.
-- ClawCredit has its most natural role here: an eligible vehicle agent without
-  a pre-funded wallet can request credit for the x402 charging service. Limits
-  can reflect prior successful sessions and repayments. Current onboarding and
-  manual repayment limitations must be stated honestly.
-- The idea appeals to Ripple's values of interoperability, low-energy
-  settlement, and improving existing infrastructure rather than replacing it.
+* investigative journalism;
+* financial reporting;
+* expert interviews;
+* industry analysis;
+* specialist databases;
+* academic research.
 
-Blocked path
-------------
-The closest charger advertises a low tariff, but its final x402 challenge
-changes the payee and adds an uncapped occupancy fee:
+Meanwhile AI research tools create an awkward situation:
 
-BLOCKED
-Price terms exceed the standing mandate.
-Payment destination does not match the licensed operator.
-No charging authorization or payment was issued.
+> Some of the best evidence is behind a paywall.
 
-The agent chooses the second charger, pays for the fixed package, and starts
-the simulated OCPP session.
+So models either:
 
-Three-minute demo
------------------
-1. Show Aisha at 3%, with her route turning red.
-2. Evaluate three OCPI charger offers.
-3. Block the closest offer after its final terms mutate.
-4. Select the charger maximizing on-time arrival within S$12.
-5. Pay on XRP Testnet; show ClawCredit only if the real path is proven.
-6. Start the simulated OCPP charger and energy meter.
-7. Turn the route green and display the combined delivery receipt.
+* don't see it;
+* rely on weaker secondary reporting;
+* repeatedly cite the same accessible sources;
+* or users personally maintain many subscriptions.
 
-Irreducibility test
--------------------
-- Without the agent, this can collapse into a charger app. The demo must make
-  the decision dynamic and multi-constraint while Aisha is driving: battery,
-  queue, arrival time, connector, and final tariff must all matter.
-- Cards already support ad hoc charging. The business model must be direct
-  vehicle-to-operator commerce without a prior account or roaming contract,
-  with a machine-verifiable exact quote and immediate settlement.
+Your proposition is:
 
-Primary risks
--------------
-- Use an OCPP simulator or small hardware light/meter; do not imply a physical
-  charger integration that does not exist.
-- Card and QR payments are serious substitutes.
-- Payment regulation, refunds, energy resale, and pricing rules vary by market.
-- The AI role must include interpreting Aisha's changing schedule and
-  negotiating heterogeneous offers, not merely sorting chargers by distance.
+> **Let expert research agents purchase individual pieces of high-value information when those sources materially improve the answer.**
 
-Strategic score: 41/45
-Best quality: strongest stage theatre and most intuitive ClawCredit story.
+That is a real new economic model.
 
+---
+
+# Who it's for
+
+Don't position this as:
+
+> “Perplexity but paid articles.”
+
+Go much narrower and more serious.
+
+### ResearchAgent is for professional knowledge work.
+
+Examples:
+
+**fund managers**
+
+> “Assess whether Company X's margin expansion is sustainable through FY2027.”
+
+**professors**
+
+> “Build an evidence dossier on the economic effects of semiconductor export controls.”
+
+**consultants**
+
+> “Determine whether the Indonesian data-centre market can support another hyperscale entrant.”
+
+**corporate strategy teams**
+
+> “Assess whether competitor X is genuinely entering our market.”
+
+These users care about **source quality** much more than ordinary web-search users.
+
+And their research has economic value.
+
+So spending:
+
+**S$2, S$10 or S$25**
+
+to materially improve a dossier is not absurd.
+
+---
+
+# ResearchAgent's core intelligence
+
+The agent has two scarce resources:
+
+### attention
+
+and
+
+### money.
+
+The clever part is deciding:
+
+> **What information should I buy next?**
+
+Suppose the user gives:
+
+> **Research question:**
+> Is NVIDIA's current data-centre growth sustainable through 2027?
+
+> **Research budget:**
+> S$5.
+
+The agent starts from open information.
+
+Maybe it discovers 30 sources.
+
+For each candidate it has signals like:
+
+| Signal                    | Meaning                                          |
+| ------------------------- | ------------------------------------------------ |
+| Semantic relevance        | Does this actually answer the research question? |
+| Authority                 | FT vs random blog                                |
+| Recency                   | Is this current enough?                          |
+| Originality               | Primary reporting or rewritten material?         |
+| Expected information gain | Is it likely to add something we don't know?     |
+| Corroboration value       | Can it independently confirm another claim?      |
+| Contradiction value       | Could it challenge the emerging thesis?          |
+| Redundancy                | Do we already have equivalent evidence?          |
+| Price                     | What does unlocking it cost?                     |
+| Remaining budget          | What opportunities are we giving up?             |
+
+This is where the agent is genuinely doing **economic research planning**.
+
+---
+
+# The key mechanic: expected evidence value
+
+Imagine the system finds these:
+
+| Source                         | Price |     Trust | Relevance |       Novelty |
+| ------------------------------ | ----: | --------: | --------: | ------------: |
+| NVIDIA earnings release        |  Free | Very high |      High |        Medium |
+| Reuters report                 | $0.20 |      High |      High |        Medium |
+| Tech blog                      |  Free |    Medium |      High |           Low |
+| FT semiconductor investigation | $0.90 | Very high | Very high |      **High** |
+| Specialist supply-chain report | $2.50 | Very high |    Medium | **Very high** |
+| Random newsletter              | $0.50 |       Low |    Medium |           Low |
+
+The important behavior is that ResearchAgent does **not** simply buy everything.
+
+Maybe:
+
+> Reuters adds useful corroboration for $0.20 → BUY.
+
+> FT contains exclusive supplier commentary directly relevant to the thesis for $0.90 → BUY.
+
+> Newsletter largely repeats known reporting → SKIP.
+
+> $2.50 supply-chain report looks excellent, but would consume half the remaining budget → defer until we identify whether this is actually the missing evidence.
+
+This is agentic.
+
+---
+
+# Baseline versus premium pricing
+
+Your baseline-price / good-article-price concept works well.
+
+I'd make it a very simple publisher market.
+
+### Standard article
+
+For normal useful journalism:
+
+**S$0.05–S$0.25**
+
+### Premium evidence
+
+For:
+
+* investigative pieces;
+* exclusive interviews;
+* specialist financial reporting;
+* expert analysis;
+* primary research;
+
+maybe:
+
+**S$0.50–S$2**
+
+The exact numbers don't matter in the demo.
+
+What's important is that **publishers choose the price**, while the researcher chooses a budget.
+
+Then the agent decides whether the marginal evidence is worth paying for.
+
+That's a far more interesting marketplace than:
+
+> “everything costs 10 cents.”
+
+---
+
+# The really strong ResearchAgent feature: Budget Modes
+
+For the demo, I think this could be fantastic.
+
+Same question.
+
+Three budgets.
+
+### S$0 — Open Web
+
+Agent produces:
+
+**Confidence: moderate**
+
+Sources:
+
+SEC filings
+company release
+open blogs
+free reporting
+
+One conclusion remains unresolved.
+
+---
+
+### S$1 — Analyst
+
+Agent spends:
+
+$0.20 Reuters
+$0.70 FT
+
+Now:
+
+> supplier commentary independently confirms demand but reveals a capacity constraint.
+
+Conclusion becomes more nuanced.
+
+---
+
+### S$5 — Deep Research
+
+Agent additionally purchases a specialist dataset/report.
+
+It now discovers evidence contradicting the initial thesis.
+
+Final conclusion changes.
+
+That's powerful.
+
+You're literally showing:
+
+> **better research has a cost, and the agent decides where that money generates the most information value.**
+
+---
+
+# And this solves an important AI problem
+
+Today a research agent can easily return:
+
+**15 sources**
+
+that are actually:
+
+**one original report + 14 articles quoting it.**
+
+ResearchAgent should care about **evidence independence**.
+
+For example:
+
+> Bloomberg reports supplier shortage.
+
+Then five blogs quote Bloomberg.
+
+The agent should understand:
+
+> This is **one evidentiary source**, not six confirmations.
+
+Now suppose FT independently interviewed another supplier.
+
+That article may be worth buying because it provides **independent corroboration**.
+
+This is exactly the sort of behavior professional users would value.
+
+---
+
+# The dossier
+
+The output shouldn't be a chat answer.
+
+Call it a:
+
+# **Research Dossier**
+
+Top-level conclusion.
+
+Then something like:
+
+**Thesis**
+
+> Data-centre growth remains strong, but evidence indicates power and packaging constraints create material downside risk beyond 2027.
+
+**Confidence**
+
+High.
+
+**Evidence**
+
+8 independent sources.
+
+**Paid evidence**
+
+3 sources — S$1.45 total.
+
+**Contradictory evidence**
+
+2 sources.
+
+**Unresolved questions**
+
+1.
+
+And then claims are linked to their underlying sources.
+
+For a fund manager/professor, that's substantially more useful than a blob of generated prose.
+
+---
+
+# Give the user control over research policy
+
+One elegant feature is a **Research Mandate**.
+
+For example:
+
+> Research NVIDIA data-centre sustainability.
+> Budget: **S$5**
+> Prefer: filings, Reuters, FT, Bloomberg, academic sources
+> Avoid: anonymous blogs
+> Pay up to S$1 automatically per source
+> Ask me before any source above S$1
+> Stop once additional evidence is unlikely to materially change the conclusion.
+
+That last sentence is excellent:
+
+> **Stop when marginal information value falls below marginal research cost.**
+
+That's basically the whole product.
+
+---
+
+# ResearchAgent demo features
+
+Again, keep it brutally small.
+
+You need only:
+
+| Demo surface               | Purpose                          |
+| -------------------------- | -------------------------------- |
+| Research question + budget | establishes mandate              |
+| Candidate source pool      | agent has options                |
+| Buy / skip decisions       | demonstrates intelligence        |
+| Remaining budget           | demonstrates economic constraint |
+| Dossier                    | visible delivered value          |
+| Research receipt           | proves publisher payments        |
+
+You don't need:
+
+team management, PDF export, permanent workspaces, collaboration, subscriptions, dashboards, real portfolio tools, elaborate user settings, etc.
+
+---
+
+# ResearchAgent demo flow
+
+This might actually be easier to demo than FleetCredit.
+
+Let's use an example question such as:
+
+> **“Is the current AI data-centre investment boom sustainable through 2028?”**
+
+And give the agent:
+
+**Research budget: S$2.00**
+
+---
+
+### 0:00–0:20 — User request
+
+Show:
+
+> Audience: Investment Committee
+> Research question: sustainability of AI data-centre capex through 2028
+> Budget: S$2.00
+> Auto-buy: trusted sources under S$1
+> Goal: evidence-backed 1-page dossier
+
+Agent starts.
+
+---
+
+### 0:20–0:50 — Baseline research
+
+It discovers maybe 12 sources.
+
+Free:
+
+company filings
+government energy data
+press releases
+two blogs
+
+Paid:
+
+Reuters — S$0.20
+FT — S$0.80
+specialist energy report — S$1.40
+newsletter — S$0.30
+
+Agent forms preliminary thesis:
+
+> Demand appears strong, but grid capacity is an unresolved risk.
+
+Then:
+
+> **Evidence gap detected: independent reporting on power constraints.**
+
+Now there is a reason to spend money.
+
+---
+
+### 0:50–1:20 — First purchases
+
+Agent evaluates Reuters.
+
+> Relevance: high
+> Trust: high
+> Novel information: medium
+> Price: $0.20
+
+### BUY.
+
+XRPL payment.
+
+Article unlocked.
+
+Then newsletter:
+
+> Relevance: high
+> Trust: low
+> 82% overlap with Reuters
+> Price: $0.30
+
+### SKIP.
+
+This is important.
+
+You show that **budget awareness changes agent behaviour**.
+
+---
+
+### 1:20–1:50 — Expensive article decision
+
+FT:
+
+> Price: $0.80
+
+Preview/metadata indicate:
+
+> interviews with grid operators + hyperscale developers.
+
+The agent says:
+
+> High expected information gain.
+> Evidence currently missing from dossier.
+> Remaining budget after purchase: $1.00.
+
+### BUY.
+
+Then it reads the paid source.
+
+Now the thesis changes.
+
+Maybe:
+
+> “Physical power constraints appear more material than our baseline sources suggested.”
+
+That's the transformation.
+
+---
+
+### 1:50–2:10 — Budget constraint
+
+Specialist report:
+
+> $1.40
+
+Excellent trust.
+
+Excellent relevance.
+
+But:
+
+**remaining budget: $1.00**
+
+So:
+
+### BLOCKED — exceeds remaining research mandate.
+
+This creates your safe negative path without inventing a malicious merchant.
+
+Even better:
+
+> **The agent knows it wants the report. It simply isn't authorized to buy it.**
+
+Very understandable.
+
+---
+
+### 2:10–2:40 — Dossier
+
+The dossier generates.
+
+Show something like:
+
+> **7 claims**
+> **6 independent sources**
+> **2 premium sources purchased**
+> **S$1.00 / S$2.00 spent**
+> **1 unresolved evidence gap**
+
+And present:
+
+**Supports thesis**
+
+three claims.
+
+**Challenges thesis**
+
+two claims.
+
+**Key uncertainty**
+
+power-grid lead times.
+
+---
+
+### 2:40–3:00 — Receipt / business model
+
+Then:
+
+> Reuters publisher: **$0.20 paid**
+> FT publisher: **$0.80 paid**
+> Other sources: free
+> Total research cost: **$1.00**
+
+XRPL settlement references.
+
+Then your pitch line:
+
+> **AI research shouldn't mean free content. ResearchAgent lets the model decide which evidence is worth paying for—and pays the people who produced it.**
+
+I really like that.
+
+---
+
+# A very good visual gimmick for ResearchAgent
+
+Show the **quality of the dossier improving as money is spent**.
+
+Something like:
+
+**OPEN WEB**
+
+Evidence coverage
+██████░░░░ 60%
+
+↓ $0.20
+
+**+ Reuters**
+
+███████░░░ 72%
+
+↓ $0.80
+
+**+ FT**
+
+█████████░ 89%
+
+But don't label it an arbitrary “AI confidence score” unless you actually define it.
+
+Better labels might be:
+
+**Claim coverage**
+**Independent corroboration**
+**Unresolved evidence gaps**
+
+For example:
+
+Before paid research:
+
+> 3/7 major claims independently supported
+
+After Reuters:
+
+> 4/7
+
+After FT:
+
+> 6/7
+
+That's much more defensible.
+
+Your sponsor research explicitly warns against invented confidence numbers and emphasizes showing evidence/reasons instead. 
+
+---
+
+# Why XRPL actually fits ResearchAgent
+
+This has perhaps the cleanest XRPL argument after FairCut.
+
+Right now publishers typically sell:
+
+> $30/month publication subscription.
+
+But an autonomous research agent may want:
+
+> exactly one article from FT
+> two articles from Reuters
+> one industry report
+> one dataset query
+
+It shouldn't have to maintain:
+
+**27 subscriptions + accounts + credentials + renewal states.**
+
+Instead publishers expose machine-readable research resources.
+
+Agent asks:
+
+> article?
+
+Publisher responds:
+
+> S$0.20.
+
+Agent decides whether the article's expected research value justifies S$0.20.
+
+Pays.
+
+Reads.
+
+Moves on.
+
+That is precisely the kind of **machine-native service purchase** that x402 makes conceptually clean, and premium data is already within the service categories contemplated in the t54 material. 
+
+And XRPL gives you the common machine settlement rail rather than maintaining a bilateral account with every publisher.
+
+---
+
+# Where credit enters ResearchAgent
+
+You actually have two viable stories.
+
+### Version A — user-funded research budget
+
+User gives:
+
+> S$5.
+
+ResearchAgent spends it intelligently.
+
+This is the **simpler and stronger MVP story**.
+
+### Version B — ResearchAgent earns a research line
+
+The enterprise says:
+
+> This agent is permitted to conduct research but we don't pre-fund every agent.
+
+It gets:
+
+**S$2 initial research credit.**
+
+It produces useful dossiers.
+
+Enterprise/user settles its accumulated research spend.
+
+Over time:
+
+> $2 → $10 → $25 autonomous research capacity.
+
+That incorporates the t54 thesis around credit capacity growing with trusted behaviour and repayment. 
+
+But I would make this **secondary in the demo**.
+
+The killer ResearchAgent concept is:
+
+> **optimal allocation of a research budget.**
+
+Not:
+
+> lending money to an AI.
+
+---
+
+# The interesting comparison between the two
+
+I now think they have genuinely different strengths.
+
+|                             | **FleetCredit**                 | **ResearchAgent**                      |
+| --------------------------- | ------------------------------- | -------------------------------------- |
+| Core problem                | machines need economic autonomy | best evidence increasingly costs money |
+| Agent reasoning             | mission optimization            | information-value optimization         |
+| Scarce resource             | energy + time + credit          | evidence + research budget             |
+| Credit importance           | **central**                     | optional                               |
+| t54 research fit            | **very strong**                 | strong                                 |
+| Current ClawCredit fit      | weaker/speculative              | **very strong**                        |
+| XRPL fit                    | good                            | **very good**                          |
+| Physical demo               | **excellent**                   | software only                          |
+| Feasibility                 | medium                          | **high**                               |
+| Immediate comprehensibility | high                            | **very high for judges/professionals** |
+| Product originality         | high                            | **very high**                          |
+
+And if FairCut is already working, I'd use these two differently:
+
+**FleetCredit is your “what if the professor gets excited about t54 lending/underwriting?” option.**
+
+**ResearchAgent is your “what if we need another buildable, intellectually strong product tonight?” option.**
+
+ResearchAgent in particular may be stronger than we initially realized. The economic mechanism is clean:
+
+> **The agent isn't merely researching. It is deciding how to allocate scarce capital to evidence.**
+
+That's a genuinely agentic action, the payment naturally unlocks the missing information, the publisher gets compensated, and the final dossier visibly improves because of what the agent chose to purchase. It satisfies almost perfectly the challenge's desired sequence of **need → options → decision → bounded payment → delivered outcome**. 
+
+If I were carrying these to the professor alongside the working FairCut demo, **ResearchAgent is the one I'd spend the most time discussing after FairCut, and FleetCredit is the one I'd specifically use to ask how far they want teams to extend t54's cold-start credit research into physical autonomous agents.**
