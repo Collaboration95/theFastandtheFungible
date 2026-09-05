@@ -1,0 +1,22 @@
+{
+  "@context": "http://www.w3.org/ns/odrl.jsonld",
+  "uid": "urn:faircut:policy:dawn-current-v1",
+  "type": "Set",
+  "permission": [{
+    "target": "sha256:bb17a03c1190de7b5fbdf941c1c99e4edf541579673c67000d73db31e44b19b3",
+    "assigner": "did:faircut:creator:mika-reyes",
+    "assignee": "urn:faircut:principal:leah-tan",
+    "action": "play",
+    "constraint": [
+      { "leftOperand": "purpose", "operator": "eq", "rightOperand": "commercial-social" },
+      { "leftOperand": "spatial", "operator": "isAnyOf", "rightOperand": ["SG", "JP"] },
+      { "leftOperand": "dateTime", "operator": "ltOrEqual", "rightOperand": "2027-03-05T00:00:00Z" },
+      { "leftOperand": "faircut:durationMs", "operator": "eq", "rightOperand": 12000 }
+    ],
+    "duty": [
+      { "action": "compensate", "constraint": [{ "leftOperand": "payAmount", "rightOperand": "8000", "unit": "drops" }] },
+      { "action": "attribute", "refinement": "Music by Mika Reyes" }
+    ]
+  }],
+  "prohibition": [{ "target": "sha256:bb17a03c1190de7b5fbdf941c1c99e4edf541579673c67000d73db31e44b19b3", "action": "voice-replica" }]
+}
