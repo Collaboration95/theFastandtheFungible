@@ -20,7 +20,7 @@ export type Run = {
   runId: string; version: number; phase: Phase; paused: boolean; cancelled: boolean; budgetCents: number; spentCents: number;
   sources: Source[]; events: { id: string; type: string; label: string; at: string }[]; gap: { question: string; importance: 'HIGH'; state: 'OPEN' | 'PARTIAL' | 'RESOLVED' };
   thesis: { open: string; afterNorthstar?: string; afterMeridian?: string; current: string }; claims: Claim[]; dossierReady: boolean; llm: { provider: string; status: string; model: string }; semanticStatus: 'precomputed' | 'unavailable';
-  config: ResearchConfig;
+  config: ResearchConfig; purchaseKeys?: Record<string, string>;
 }
 
 export const QUESTION = 'Is the AI data-centre investment boom sustainable through 2028?'

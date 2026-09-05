@@ -25,14 +25,14 @@ const sourceTypeLabels: Record<SourceType, string> = {
 }
 const sourceTypes: SourceType[] = ['primary', 'public', 'independent', 'specialist']
 const publisherOptions = [
-  { id:'financial-press', label:'Financial press', example:'FT / markets desks' },
-  { id:'wire-services', label:'Wire services', example:'Reuters / global macro' },
-  { id:'central-banks', label:'Central banks', example:'BIS / policy releases' },
-  { id:'public-data', label:'Public data', example:'FRED / national statistics' },
-  { id:'specialist-research', label:'Specialist research', example:'rates & infrastructure' },
-  { id:'company-filings', label:'Company filings', example:'primary disclosures' },
-  { id:'macro-research', label:'Macro research', example:'independent desks' },
-  { id:'infrastructure-press', label:'Infrastructure press', example:'project-level detail' },
+  { id:'financial-press', label:'Financial Times', example:'ft.com · markets' },
+  { id:'wire-services', label:'Reuters', example:'reuters.com · global macro' },
+  { id:'central-banks', label:'BIS', example:'bis.org · policy releases' },
+  { id:'public-data', label:'FRED', example:'fred.stlouisfed.org · data' },
+  { id:'specialist-research', label:'IMF research', example:'imf.org · analysis' },
+  { id:'company-filings', label:'SEC EDGAR', example:'sec.gov/edgar · filings' },
+  { id:'macro-research', label:'The Economist', example:'economist.com · analysis' },
+  { id:'infrastructure-press', label:'IEA', example:'iea.org · infrastructure' },
 ] as const
 type PublisherKey = typeof publisherOptions[number]['id']
 const classifySource = (source:Source):SourceType => {
@@ -72,7 +72,7 @@ function PublisherPicker({ selected, onToggle }:{ selected:PublisherKey[]; onTog
   return <section className="publisher-picker" aria-labelledby="publisher-picker-title"><div className="publisher-picker-head"><div><span className="kicker">Search boundary</span><h2 id="publisher-picker-title">Choose the websites I can read.</h2></div><span className="picker-count mono">{selected.length} / {publisherOptions.length} selected</span></div><p className="publisher-picker-note">These are fixture adapters for the demo. Article bodies are synthetic, but the allowlist, ranking, quote, and payment steps are real product state.</p><div className="publisher-grid">{publisherOptions.map((option) => <button key={option.id} type="button" className={`publisher-option ${selected.includes(option.id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(option.id)} onClick={() => onToggle(option.id)}><span className="publisher-check">{selected.includes(option.id) ? '✓' : ''}</span><span><strong>{option.label}</strong><small>{option.example}</small></span></button>)}</div></section>
 }
 
-function ScopeCard({ question, decision, horizon, tokenLimit, selectedTypes, onQuestionChange, onDecisionChange, onHorizonChange, onTokenLimitChange, onToggleType, onStart, busy }:{ question:string; decision:string; horizon:string; tokenLimit:number; selectedTypes:SourceType[]; onQuestionChange:(value:string)=>void; onDecisionChange:(value:string)=>void; onHorizonChange:(value:string)=>void; onTokenLimitChange:(value:number)=>void; onToggleType:(type:SourceType)=>void; onStart:()=>void; busy:boolean }) {
+function ScopeCard({ question, decision, horizon, tokenLimit, selectedTypes, publisherCount, onQuestionChange, onDecisionChange, onHorizonChange, onTokenLimitChange, onToggleType, onStart, busy }:{ question:string; decision:string; horizon:string; tokenLimit:number; selectedTypes:SourceType[]; publisherCount:number; onQuestionChange:(value:string)=>void; onDecisionChange:(value:string)=>void; onHorizonChange:(value:string)=>void; onTokenLimitChange:(value:number)=>void; onToggleType:(type:SourceType)=>void; onStart:()=>void; busy:boolean }) {
   return <section className="scope-card" aria-labelledby="scope-title">
     <div className="scope-card-top"><div><span className="kicker">Before I search</span><h2 id="scope-title">Make the question answerable.</h2></div><span className="scope-step">Scope <b>1</b> of <b>2</b></span></div>
     <p className="scope-intro">A narrow question produces evidence you can use. Confirm the decision, time horizon, and source universe before I spend your research budget.</p>
@@ -85,7 +85,7 @@ function ScopeCard({ question, decision, horizon, tokenLimit, selectedTypes, onQ
       <div className="option-group"><div className="option-heading"><span>Allowed source universe</span><small>Choose what can enter the evidence set.</small></div><div className="toggle-grid">{sourceTypes.map((type) => <ScopeToggle key={type} type={type} selected={selectedTypes.includes(type)} onToggle={() => onToggleType(type)} />)}</div></div>
       <label className="token-control"><span>Analysis token cap <small>Manual limit</small></span><div className="token-input"><input type="number" min={8000} max={256000} step={1000} value={tokenLimit} onChange={(event) => onTokenLimitChange(Math.max(8000, Math.min(256000, Number(event.target.value) || 8000)))} /><span>tokens</span></div><div className="token-presets">{[32000, 64000, 128000].map((value) => <button type="button" key={value} className={tokenLimit === value ? 'is-active' : ''} onClick={() => onTokenLimitChange(value)}>{formatTokens(value)}</button>)}</div></label>
     </div>
-    <div className="scope-footer"><span><span className="status-dot" /> Fixture corpus · S$2.00 mandate · premium access is explicit</span><button type="button" className="primary-button" onClick={onStart} disabled={busy || !question.trim() || selectedTypes.length === 0}>{busy ? 'Building evidence map…' : 'Start research'} <Icon name="arrow" /></button></div>
+    <div className="scope-footer"><span><span className="status-dot" /> {publisherCount > 0 ? `Fixture corpus · ${publisherCount} websites · S$2.00 mandate` : 'Choose at least one website to continue'}</span><button type="button" className="primary-button" onClick={onStart} disabled={busy || !question.trim() || selectedTypes.length === 0 || publisherCount === 0}>{busy ? 'Building evidence map…' : 'Start research'} <Icon name="arrow" /></button></div>
   </section>
 }
 
@@ -138,19 +138,28 @@ function Citations({ ids, onOpen }:{ ids:string[]; onOpen:(id:string)=>void }) {
   return <span className="inline-citations" aria-label="Citations">{ids.map((id) => <button type="button" key={id} onClick={() => onOpen(id)}>[{citationLabel(id)}]</button>)}</span>
 }
 
-function ClaimBlock({ claim, onOpen }:{ claim:Claim; onOpen:(id:string)=>void }) {
-  return <article className={`claim-block ${claim.stance.toLowerCase()}`}><p>{claim.text} <Citations ids={claim.sourceIds} onOpen={onOpen} /></p><div className="claim-meta"><Badge tone={claim.stance === 'SUPPORTS' ? 'success' : claim.stance === 'CHALLENGES' ? 'danger' : 'warning'}>{claim.stance.toLowerCase()}</Badge><span>{claim.familyCount} independent {claim.familyCount === 1 ? 'family' : 'families'}</span><span>Open the citation to inspect the exact excerpt.</span></div></article>
+function sourceQuote(sources:Source[], id:string) {
+  const source = sources.find((item) => item.id === id)
+  return source?.evidenceSpans?.[0]?.text ?? source?.preview ?? 'Excerpt available after the exact resource is unlocked.'
+}
+
+function QuoteStrip({ ids, sources, onOpen }:{ ids:string[]; sources:Source[]; onOpen:(id:string)=>void }) {
+  return <div className="quote-strip">{ids.map((id) => <button type="button" key={id} onClick={() => onOpen(id)}><span>“{sourceQuote(sources, id)}”</span><small>{citationLabel(id)} · inspect excerpt ↗</small></button>)}</div>
+}
+
+function ClaimBlock({ claim, sources, onOpen }:{ claim:Claim; sources:Source[]; onOpen:(id:string)=>void }) {
+  return <article className={`claim-block ${claim.stance.toLowerCase()}`}><p>{claim.text} <Citations ids={claim.sourceIds} onOpen={onOpen} /></p><QuoteStrip ids={claim.sourceIds} sources={sources} onOpen={onOpen} /><div className="claim-meta"><Badge tone={claim.stance === 'SUPPORTS' ? 'success' : claim.stance === 'CHALLENGES' ? 'danger' : 'warning'}>{claim.stance.toLowerCase()}</Badge><span>{claim.familyCount} independent {claim.familyCount === 1 ? 'family' : 'families'}</span></div></article>
 }
 
 function WorkingAnswer({ run, onOpenSource }:{ run:ServerState; onOpenSource:(id:string)=>void }) {
   const bondQuestion = /bond|yield|duration|treasury|rates|term premium|fiscal/i.test(run.config.question)
   const sentences = run.claims.length ? run.claims : [{ id:'working-thesis', text:run.thesis.current, stance:'UNCERTAIN' as const, materiality:'MATERIAL' as const, sourceIds:bondQuestion ? ['fiscal-monitor','central-bank-minutes'] : ['company-capex','energy-dataset'], familyCount:2, spanIds:bondQuestion ? ['fiscal-monitor','central-bank-minutes'] : ['company-capex','energy-dataset'] }]
-  return <section className="answer-panel" aria-labelledby="answer-title"><div className="answer-head"><div><span className="kicker">Working answer</span><h2 id="answer-title">What the evidence says so far</h2></div><span className="answer-status mono">{run.dossierReady ? 'CITED MEMO READY' : 'OPEN-SOURCE BASELINE'}</span></div><div className="answer-copy">{sentences.map((claim) => <p key={claim.id}>{claim.text} <Citations ids={claim.sourceIds} onOpen={onOpenSource} /></p>)}</div><p className="answer-note">Each citation opens the source record. Paid excerpts are only available after the exact fixture quote is accepted.</p></section>
+  return <section className="answer-panel" aria-labelledby="answer-title"><div className="answer-head"><div><span className="kicker">Working answer</span><h2 id="answer-title">What the evidence says so far</h2></div><span className="answer-status mono">{run.dossierReady ? 'CITED MEMO READY' : 'OPEN-SOURCE BASELINE'}</span></div><div className="answer-copy">{sentences.map((claim) => <div className="answer-sentence" key={claim.id}><p>{claim.text} <Citations ids={claim.sourceIds} onOpen={onOpenSource} /></p><QuoteStrip ids={claim.sourceIds} sources={run.sources} onOpen={onOpenSource} /></div>)}</div><p className="answer-note">Each citation opens the source record. Paid excerpts are only available after the exact fixture quote is accepted.</p></section>
 }
 
 function DossierPanel({ dossier, run, onOpenSource, onSynthesize, busy }:{ dossier:Dossier|null; run:ServerState; onOpenSource:(id:string)=>void; onSynthesize:()=>void; busy:boolean }) {
   if (!dossier) return null
-  return <section className="dossier-panel" id="dossier"><div className="dossier-heading"><div><span className="kicker">Verified dossier</span><h2>{dossier.title}</h2></div><button type="button" className="small-button light" onClick={() => window.print()}>Print</button></div><div className="dossier-paper"><div className="dossier-kicker">FIXTURE RESEARCH · NOT INVESTMENT ADVICE</div><h3>{dossier.conclusion}</h3><div className="changed-callout"><span className="kicker">What changed after paid evidence</span><span className="change-line"><b>Open web</b>{dossier.changedAfterPaidResearch.before}</span>{dossier.changedAfterPaidResearch.afterNorthstar && <span className="change-line"><b>+ Northstar</b>{dossier.changedAfterPaidResearch.afterNorthstar}</span>}<span className="change-line final"><b>{dossier.afterLabel ?? '+ Meridian'}</b>{dossier.changedAfterPaidResearch.after}</span></div><div className="dossier-columns"><div><span className="kicker">Supports the thesis</span>{dossier.claims.filter((claim) => claim.stance === 'SUPPORTS').map((claim) => <ClaimBlock key={claim.id} claim={claim} onOpen={onOpenSource} />)}</div><div><span className="kicker">Challenges the thesis</span>{dossier.claims.filter((claim) => claim.stance !== 'SUPPORTS').map((claim) => <ClaimBlock key={claim.id} claim={claim} onOpen={onOpenSource} />)}</div></div><div className="dossier-footer"><div><span className="kicker">Key uncertainty</span><p>{dossier.uncertainty}</p></div><div><span className="kicker">Method & limitations</span><p>{dossier.method}</p></div></div></div></section>
+  return <section className="dossier-panel" id="dossier"><div className="dossier-heading"><div><span className="kicker">Verified dossier</span><h2>{dossier.title}</h2></div><button type="button" className="small-button light" onClick={() => window.print()}>Print</button></div><div className="dossier-paper"><div className="dossier-kicker">FIXTURE RESEARCH · NOT INVESTMENT ADVICE</div><h3>{dossier.conclusion}</h3><div className="changed-callout"><span className="kicker">What changed after paid evidence</span><span className="change-line"><b>Open web</b>{dossier.changedAfterPaidResearch.before}</span>{dossier.changedAfterPaidResearch.afterNorthstar && <span className="change-line"><b>+ Northstar</b>{dossier.changedAfterPaidResearch.afterNorthstar}</span>}<span className="change-line final"><b>{dossier.afterLabel ?? '+ Meridian'}</b>{dossier.changedAfterPaidResearch.after}</span></div><div className="dossier-columns"><div><span className="kicker">Supports the thesis</span>{dossier.claims.filter((claim) => claim.stance === 'SUPPORTS').map((claim) => <ClaimBlock key={claim.id} claim={claim} sources={run.sources} onOpen={onOpenSource} />)}</div><div><span className="kicker">Challenges the thesis</span>{dossier.claims.filter((claim) => claim.stance !== 'SUPPORTS').map((claim) => <ClaimBlock key={claim.id} claim={claim} sources={run.sources} onOpen={onOpenSource} />)}</div></div><div className="dossier-footer"><div><span className="kicker">Key uncertainty</span><p>{dossier.uncertainty}</p></div><div><span className="kicker">Method & limitations</span><p>{dossier.method}</p></div></div></div></section>
 }
 
 export default function App() {
@@ -185,20 +194,24 @@ export default function App() {
     return () => stream.close()
   }, [run?.runId])
 
+  useEffect(() => {
+    if (run?.runId) window.scrollTo({ top:0, behavior:'auto' })
+  }, [run?.runId])
+
   const resetToStart = () => { setRun(null); setDossier(null); setQuestion(''); setQuestionDraft(''); setDecision(''); setHorizon('Through 2028'); setTokenLimit(64000); setSelectedTypes(sourceTypes); setSelectedPublishers(publisherOptions.map((option) => option.id)); setChatStarted(false); setSelectedId(null); setSelectedDetail(null); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' }) }
   const beginClarification = (value = questionDraft) => { const next = value.trim(); if (!next) return; setQuestion(next); setQuestionDraft(next); setChatStarted(true); setMessage('Question received. Confirm the scope before research starts.') }
   const toggleType = (type:SourceType) => setSelectedTypes((current) => current.includes(type) ? current.filter((item) => item !== type) : [...current, type])
   const togglePublisher = (key:PublisherKey) => setSelectedPublishers((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key])
 
   const startResearch = async () => {
-    if (busy || !question.trim() || selectedTypes.length === 0) return
+    if (busy || !question.trim() || selectedTypes.length === 0 || selectedPublishers.length === 0) return
     setBusy(true)
     try {
       const created = await api<ServerState>('/api/v1/research-runs', { method:'POST', body:JSON.stringify({ question, decision:decision || 'What decision will this research support?', horizon, tokenLimit, sourceTypes:selectedTypes, sourceAllowlist:selectedPublishers }) })
       setRun(created)
       let next = created
       for (let index = 0; index < 6; index += 1) next = await api<ServerState>(`/api/v1/research-runs/${created.runId}/step`, { method:'POST', body:JSON.stringify({ action:'next' }) })
-      setRun(next); setMessage('Evidence map ready. Review the sources that can change the answer.')
+      setRun(next); setMessage('Evidence map ready. Review the sources that can change the answer.'); window.scrollTo({ top:0, behavior:'auto' })
     } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
   }
 
@@ -244,12 +257,11 @@ export default function App() {
   return <div className="app-shell">
     <header className="topbar"><button type="button" className="brand-button" onClick={resetToStart} aria-label="Start a new research thread"><span className="brand-mark">RA</span><span><strong>ResearchAgent</strong><small>deep research, with a budget</small></span></button><div className="topbar-thread"><span className="topbar-label">{run ? 'Research thread' : 'New research'}</span>{run && <span className="topbar-query">{run.config.question}</span>}</div><div className="topbar-actions">{run && <><Badge tone="fixture">Fixture</Badge><span className="topbar-budget mono">{money(run.spentCents)} / {money(run.budgetCents)}</span><button type="button" className="icon-button" onClick={() => void act(run.paused ? 'resume' : 'pause')} disabled={run.dossierReady || busy} aria-label={run.paused ? 'Resume research' : 'Pause research'}>{run.paused ? '▶' : 'Ⅱ'}</button></>}<button type="button" className="small-button" onClick={resetToStart}>{run ? 'New research' : 'Reset'}</button></div></header>
     <div className="product-shell">
-      <aside className="sidebar" aria-label="Research navigation"><button type="button" className="new-thread" onClick={resetToStart}><Icon name="plus" /> New research</button><nav className="side-nav"><span className="side-label">Workspace</span><button type="button" className={!run ? 'is-active' : ''} onClick={() => { if (run) resetToStart() }}><span className="nav-icon">⌂</span> Ask a question</button>{run && <button type="button" className="is-active" onClick={() => document.getElementById('sources')?.scrollIntoView({ behavior:'smooth' })}><span className="nav-icon">↗</span> Research result <em>{visibleSources.length}</em></button>}</nav></aside>
       <main className={`main-column ${run ? 'has-run' : ''}`}>
         {!run && <section className={`start-view ${chatStarted ? 'is-clarifying' : ''}`}>
           <div className="start-copy"><span className="kicker">ResearchAgent / New thread</span><h1>{chatStarted ? 'Let’s make the question useful.' : 'What are you trying to find out?'}</h1><p>{chatStarted ? 'I’ll search only the source profiles you approved, buy only when the evidence can change the answer, and cite the result sentence by sentence.' : 'Write the question first. Then choose the websites I’m allowed to search before the agent starts reading.'}</p></div>
           <div className="start-layout"><div className="start-main"><div className="conversation"><ChatBubble role="assistant">{chatStarted ? <>Good starting point. I’ve captured the question and allowlist. Before I read, confirm <strong>the decision</strong> and <strong>time horizon</strong> below.</> : <>I’m useful when the question has a point of view. Try a thesis, a market you’re considering, or a risk you need to disprove.</>}</ChatBubble>{chatStarted && <ChatBubble role="user">{question}</ChatBubble>}</div>{!chatStarted && <div className="suggested-starts"><span className="suggested-label">Try a starting point</span><button type="button" onClick={() => beginClarification(suggestedQuestion)}>{suggestedQuestion}<Icon name="arrow" /></button><button type="button" onClick={() => beginClarification('What is causing the bond market implosion, and which risk matters next?')}>What is causing the bond market implosion? <Icon name="arrow" /></button><button type="button" onClick={() => beginClarification('Compare the evidence for demand growth versus delivery constraints in a new market.')}>Compare two sides of a market <Icon name="arrow" /></button></div>}<Composer value={questionDraft} onChange={setQuestionDraft} onSubmit={() => beginClarification()} placeholder={chatStarted ? 'Add a sharper version of the question…' : 'Ask a question worth investigating…'} /></div><PublisherPicker selected={selectedPublishers} onToggle={togglePublisher} /></div>
-          {chatStarted && <ScopeCard question={question} decision={decision} horizon={horizon} tokenLimit={tokenLimit} selectedTypes={selectedTypes} onQuestionChange={setQuestion} onDecisionChange={setDecision} onHorizonChange={setHorizon} onTokenLimitChange={setTokenLimit} onToggleType={toggleType} onStart={() => void startResearch()} busy={busy} />}
+          {chatStarted && <ScopeCard question={question} decision={decision} horizon={horizon} tokenLimit={tokenLimit} selectedTypes={selectedTypes} publisherCount={selectedPublishers.length} onQuestionChange={setQuestion} onDecisionChange={setDecision} onHorizonChange={setHorizon} onTokenLimitChange={setTokenLimit} onToggleType={toggleType} onStart={() => void startResearch()} busy={busy} />}
         </section>}
         {run && <section className="research-view">
           <div className="research-intro"><div><span className="kicker">Research thread · {run.config.horizon}</span><h1>{run.config.question}</h1><div className="intro-meta"><Badge tone="neutral">{formatTokens(run.config.tokenLimit)} token cap</Badge><span>Decision: {run.config.decision}</span><span>{run.rawSourceCount} sources · {run.familyCount} families</span></div></div><div className="intro-actions"><button type="button" className="small-button" onClick={() => setShowAllSources(!showAllSources)}>{showAllSources ? 'Show recommended' : 'Show all sources'}</button><button type="button" className="small-button" onClick={() => void act('cancel')} disabled={run.dossierReady || busy}>Stop</button></div></div>

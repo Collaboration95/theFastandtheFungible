@@ -39,9 +39,10 @@ through an empty shell.
 
 1. Show one dominant question composer.
 2. Show the website allowlist beside the composer before submission.
-3. Provide selectable source profiles such as Financial press, Wire services,
-   Central banks, Public data, Specialist research, Company filings, Macro
-   research, and Infrastructure press.
+3. Provide selectable concrete website adapters such as Financial Times
+   (`ft.com`), Reuters (`reuters.com`), BIS (`bis.org`), FRED
+   (`fred.stlouisfed.org`), IMF (`imf.org`), SEC EDGAR (`sec.gov/edgar`), The
+   Economist (`economist.com`), and IEA (`iea.org`).
 4. Make the fixture boundary explicit: the profile names are search adapters;
    the article bodies in this build are synthetic fixture content.
 5. Keep the working decision, time horizon, source types, and analysis-token
@@ -116,4 +117,3 @@ The prototype models the purchase contract with explicit protocol fields:
 - The final answer visibly places citations at the end of sentences.
 - Reset returns to a compact question + allowlist screen.
 - `npm run typecheck`, `npm test`, and `npm run build` pass.
-

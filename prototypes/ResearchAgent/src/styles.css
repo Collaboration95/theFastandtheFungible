@@ -41,7 +41,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px 
 .topbar-actions { display:flex; align-items:center; gap:10px; margin-left:auto; }
 .topbar-budget { color:var(--salmon); font-size:10px; }
 
-.product-shell { display:grid; grid-template-columns:232px minmax(0,1fr); max-width:1480px; min-height:calc(100vh - 62px); margin:0 auto; }
+.product-shell { display:block; max-width:1480px; min-height:calc(100vh - 62px); margin:0 auto; }
 .sidebar { display:flex; flex-direction:column; padding:28px 18px 22px; border-right:1px solid var(--rule); }
 .new-thread { display:flex; align-items:center; gap:9px; width:100%; min-height:39px; padding:8px 11px; border:1px solid var(--ink); color:var(--paper); background:var(--ink); font-weight:500; text-align:left; }
 .new-thread:hover, .primary-button:hover { background:#423b36; }
@@ -260,15 +260,21 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px 
 .answer-head h2 { margin:7px 0 0; font:600 30px/1 var(--serif); }
 .answer-status { color:var(--green); font-size:10px; }
 .answer-copy { max-width:930px; padding-top:13px; }
+.answer-sentence + .answer-sentence { margin-top:17px; padding-top:17px; border-top:1px solid var(--rule); }
 .answer-copy p { margin:0; font:22px/1.28 var(--serif); }
 .answer-note { margin:14px 0 0; color:var(--muted); font:10px/1.45 var(--mono); }
+.quote-strip { display:grid; gap:5px; margin-top:9px; }
+.quote-strip button { display:grid; gap:3px; width:100%; padding:7px 10px; border:0; border-left:2px solid var(--green); color:var(--muted); background:#edf4ef; text-align:left; }
+.quote-strip button:hover { color:var(--ink); background:#e3efe7; }
+.quote-strip span { font:13px/1.35 var(--serif); }
+.quote-strip small { color:var(--green); font:9px var(--mono); text-transform:uppercase; letter-spacing:.04em; }
 .inline-citations { white-space:normal; }
 .inline-citations button { padding:0; border:0; color:var(--salmon-deep); background:transparent; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px; font:inherit; cursor:pointer; }
 .inline-citations button:hover { color:var(--ink); }
-.metric-x402 { color:var(--muted); font:8px var(--mono); white-space:nowrap; }
+.metric-x402 { color:var(--muted); font:9px var(--mono); white-space:nowrap; }
 .source-title-line strong { font-size:15px; }
 .source-preview { font-size:13px; line-height:1.42; }
-.source-meta { font-size:10px; }
+.source-meta { font-size:10.5px; }
 .source-row { min-height:124px; padding:16px 13px 15px; }
 .panel-heading h2 { font-size:31px; }
 .research-thread .chat-copy, .chat-copy { font-size:16px; }

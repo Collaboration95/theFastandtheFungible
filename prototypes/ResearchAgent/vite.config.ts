@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173, proxy: { '/api': 'http://localhost:8788' } },
+  server: { port: 5173, fs: { deny: ['.env', '.env.*', 'data/mock-articles.json'] }, proxy: { '/api': 'http://localhost:8788' } },
 })
