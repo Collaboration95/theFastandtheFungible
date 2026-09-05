@@ -12,16 +12,19 @@ cp .env.example .env
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). The default is `APP_MODE=fixture`:
-no credentials, network, publisher account, or XRPL seed is required. The API
+Open [http://localhost:5173](http://localhost:5173). The default is `APP_MODE=fixture`
+and `XRPL_MODE=fixture`: no credentials, network, publisher account, or XRPL seed
+is required. For an explicitly authorized XRPL Testnet run, set `XRPL_MODE=live`
+and provide the payer seed/address plus receiver address in the ignored local
+`.env`; never place secrets in `.env.example`. The API
 listens on port 8788 and persists fixture runs in `data/runs.json`.
 
-Choose a question and a website allowlist first, then confirm the working
-decision, source universe, and manual token cap in the scope card. Start
-research to inspect twenty ranked fixture articles. The canonical decisions
-are Buy Northstar S$0.20, Skip Circuit Note, Buy Meridian S$0.80, and record
-GridScope as blocked. Assemble the cited answer to see the before/after thesis
-and exact evidence spans.
+Choose a question and a website allowlist first, then set the XRP research
+budget in the same websites panel. Start research to run the semantic fixture
+retrieval. Groq receives only the retrieved previews and metadata, chooses an
+eligible purchase action, and the server executes it against XRPL Testnet when
+live mode is enabled. The purchased fixture article is then unlocked. Assemble
+the cited answer to see the before/after thesis and exact evidence spans.
 
 ## Commands
 

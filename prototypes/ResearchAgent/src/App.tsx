@@ -1,15 +1,21 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { QUESTION, type Claim, type Phase, type ResearchConfig, type Source } from './domain'
+import { CURRENT_XRP_BALANCE, DEFAULT_BUDGET_CENTS, MAX_BUDGET_CENTS, MIN_BUDGET_CENTS, QUESTION, XRP_TO_SGD_CENTS, type Claim, type Phase, type ResearchConfig, type Source } from './domain'
 
 type Brief = { principal:string; audience:string; question:string; deliverable:string; budgetCents:number; autoBuyMaxPerSourceCents:number; sourceAboveThreshold:string; horizon:number; mode:string; sourceAllowlist?: string[] }
-type ServerState = { runId:string; phase:Phase; paused:boolean; cancelled:boolean; budgetCents:number; spentCents:number; remainingCents:number; rawSourceCount:number; familyCount:number; gap:{question:string; importance:string; state:string}; thesis:{open:string; afterNorthstar?:string; afterMeridian?:string; current:string}; claims:Claim[]; events:{id:string; type:string; label:string; at:string}[]; dossierReady:boolean; llm:{provider:string; status:string; model:string}; semanticStatus:string; config:ResearchConfig; sources:Source[] }
+type ServerState = { runId:string; phase:Phase; paused:boolean; cancelled:boolean; budgetCents:number; spentCents:number; remainingCents:number; rawSourceCount:number; familyCount:number; gap:{question:string; importance:string; state:string}; thesis:{open:string; afterNorthstar?:string; afterMeridian?:string; current:string}; claims:Claim[]; events:{id:string; type:string; label:string; at:string}[]; dossierReady:boolean; llm:{provider:string; status:string; model:string}; semanticStatus:string; purchasePlan?:{sourceId:string; reason:string; gap:string; provider:'groq'|'fixture'; model:string; status:'LIVE'|'FALLBACK'}; config:ResearchConfig; sources:Source[] }
+type PurchaseDecisionResponse = { action:NonNullable<ServerState['purchasePlan']>; state:ServerState }
 type Scenario = { brief:Brief; sources:Source[] }
 type Dossier = { title:string; conclusion:string; changedAfterPaidResearch:{before:string; afterNorthstar?:string; after:string}; afterLabel?:string; claims:Claim[]; uncertainty:string; sourceLedger:{publisher:string; priceCents:number; decision:string; family:string; authority:string; originality:string; access:string}[]; method:string }
 type SourceDetail = Source & { premium?:{status:string; contentHash?:string; quoteHash?:string; resourceId?:string} }
 type SourceType = 'primary' | 'public' | 'independent' | 'specialist'
 
 const money = (cents:number) => `S$${(cents / 100).toFixed(2)}`
-const formatTokens = (tokens:number) => `${Math.round(tokens / 1000).toLocaleString()}k`
+const formatXrp = (xrp:number) => `${xrp.toFixed(2)} XRP`
+const xrpToCents = (xrp:number) => Math.round(xrp * XRP_TO_SGD_CENTS)
+const centsToXrp = (cents:number) => cents / XRP_TO_SGD_CENTS
+const normalizeBudgetXrp = (value:number) => Math.min(MAX_BUDGET_CENTS / XRP_TO_SGD_CENTS, Math.max(MIN_BUDGET_CENTS / XRP_TO_SGD_CENTS, Math.round((Number.isFinite(value) ? value : MIN_BUDGET_CENTS / XRP_TO_SGD_CENTS) * 100) / 100))
+const DEFAULT_BUDGET_XRP = DEFAULT_BUDGET_CENTS / XRP_TO_SGD_CENTS
+const landingHeadline = 'What economic question deserves a closer look?'
 const api = async <T,>(path:string, options?:RequestInit):Promise<T> => {
   const response = await fetch(path, { headers:{ 'Content-Type':'application/json', ...(options?.headers ?? {}) }, ...options })
   const data = await response.json().catch(() => ({}))
@@ -64,29 +70,14 @@ function Composer({ value, onChange, onSubmit, placeholder, disabled = false }:{
   </form>
 }
 
-function ScopeToggle({ type, selected, onToggle }:{ type:SourceType; selected:boolean; onToggle:()=>void }) {
-  return <button type="button" className={`scope-toggle ${selected ? 'is-selected' : ''}`} aria-pressed={selected} onClick={onToggle}><span className="toggle-box">{selected && <Icon name="check" />}</span><span>{sourceTypeLabels[type]}</span></button>
+function PublisherPicker({ selected, onToggle, budgetXrp, onBudgetXrpChange, onStart, busy, showControls }:{ selected:PublisherKey[]; onToggle:(key:PublisherKey)=>void; budgetXrp:number; onBudgetXrpChange:(value:number)=>void; onStart:()=>void; busy:boolean; showControls:boolean }) {
+  return <section className="publisher-picker" aria-labelledby="publisher-picker-title"><div className="publisher-picker-head"><div><span className="kicker">Search boundary</span><h2 id="publisher-picker-title">Select sources to refer to</h2></div><span className="picker-count mono">{selected.length} / {publisherOptions.length} selected</span></div><p className="publisher-picker-note">Choose which publications and data sources may enter the evidence set.</p><div className="publisher-grid">{publisherOptions.map((option) => <button key={option.id} type="button" className={`publisher-option ${selected.includes(option.id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(option.id)} onClick={() => onToggle(option.id)}><span className="publisher-check">{selected.includes(option.id) ? '✓' : ''}</span><span><strong>{option.label}</strong><small>{option.example}</small></span></button>)}</div>{showControls && <><BudgetControl value={budgetXrp} onChange={onBudgetXrpChange} /><div className="publisher-picker-footer"><span><span className="status-dot" /> {selected.length > 0 ? `${selected.length} websites · ${formatXrp(budgetXrp)} mandate · ≈ ${money(xrpToCents(budgetXrp))}` : 'Choose at least one website to continue'}</span><button type="button" className="primary-button" onClick={onStart} disabled={busy || selected.length === 0}>{busy ? 'Building evidence map…' : 'Start research'} <Icon name="arrow" /></button></div></>}</section>
 }
 
-function PublisherPicker({ selected, onToggle }:{ selected:PublisherKey[]; onToggle:(key:PublisherKey)=>void }) {
-  return <section className="publisher-picker" aria-labelledby="publisher-picker-title"><div className="publisher-picker-head"><div><span className="kicker">Search boundary</span><h2 id="publisher-picker-title">Choose the websites I can read.</h2></div><span className="picker-count mono">{selected.length} / {publisherOptions.length} selected</span></div><p className="publisher-picker-note">These are fixture adapters for the demo. Article bodies are synthetic, but the allowlist, ranking, quote, and payment steps are real product state.</p><div className="publisher-grid">{publisherOptions.map((option) => <button key={option.id} type="button" className={`publisher-option ${selected.includes(option.id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(option.id)} onClick={() => onToggle(option.id)}><span className="publisher-check">{selected.includes(option.id) ? '✓' : ''}</span><span><strong>{option.label}</strong><small>{option.example}</small></span></button>)}</div></section>
-}
-
-function ScopeCard({ question, decision, horizon, tokenLimit, selectedTypes, publisherCount, onQuestionChange, onDecisionChange, onHorizonChange, onTokenLimitChange, onToggleType, onStart, busy }:{ question:string; decision:string; horizon:string; tokenLimit:number; selectedTypes:SourceType[]; publisherCount:number; onQuestionChange:(value:string)=>void; onDecisionChange:(value:string)=>void; onHorizonChange:(value:string)=>void; onTokenLimitChange:(value:number)=>void; onToggleType:(type:SourceType)=>void; onStart:()=>void; busy:boolean }) {
-  return <section className="scope-card" aria-labelledby="scope-title">
-    <div className="scope-card-top"><div><span className="kicker">Before I search</span><h2 id="scope-title">Make the question answerable.</h2></div><span className="scope-step">Scope <b>1</b> of <b>2</b></span></div>
-    <p className="scope-intro">A narrow question produces evidence you can use. Confirm the decision, time horizon, and source universe before I spend your research budget.</p>
-    <div className="scope-fields">
-      <label className="field field-wide"><span>Working question</span><textarea className="resize-none" value={question} onChange={(event) => onQuestionChange(event.target.value)} rows={2} style={{ resize:'none' }} /></label>
-      <label className="field"><span>Decision this supports</span><input value={decision} onChange={(event) => onDecisionChange(event.target.value)} placeholder="e.g. invest, wait, or avoid" /></label>
-      <label className="field"><span>Time horizon</span><input value={horizon} onChange={(event) => onHorizonChange(event.target.value)} placeholder="e.g. through 2028" /></label>
-    </div>
-    <div className="scope-options">
-      <div className="option-group"><div className="option-heading"><span>Allowed source universe</span><small>Choose what can enter the evidence set.</small></div><div className="toggle-grid">{sourceTypes.map((type) => <ScopeToggle key={type} type={type} selected={selectedTypes.includes(type)} onToggle={() => onToggleType(type)} />)}</div></div>
-      <label className="token-control"><span>Analysis token cap <small>Manual limit</small></span><div className="token-input"><input type="number" min={8000} max={256000} step={1000} value={tokenLimit} onChange={(event) => onTokenLimitChange(Math.max(8000, Math.min(256000, Number(event.target.value) || 8000)))} /><span>tokens</span></div><div className="token-presets">{[32000, 64000, 128000].map((value) => <button type="button" key={value} className={tokenLimit === value ? 'is-active' : ''} onClick={() => onTokenLimitChange(value)}>{formatTokens(value)}</button>)}</div></label>
-    </div>
-    <div className="scope-footer"><span><span className="status-dot" /> {publisherCount > 0 ? `Fixture corpus · ${publisherCount} websites · S$2.00 mandate` : 'Choose at least one website to continue'}</span><button type="button" className="primary-button" onClick={onStart} disabled={busy || !question.trim() || selectedTypes.length === 0 || publisherCount === 0}>{busy ? 'Building evidence map…' : 'Start research'} <Icon name="arrow" /></button></div>
-  </section>
+function BudgetControl({ value, onChange }:{ value:number; onChange:(value:number)=>void }) {
+  const cents = xrpToCents(value)
+  const setBudget = (next:number) => onChange(normalizeBudgetXrp(next))
+  return <label className="budget-control"><div className="budget-heading"><span>Research budget <small>Set before reading begins</small></span><span className="current-xrp"><small>Current XRP</small><strong>{formatXrp(CURRENT_XRP_BALANCE)}</strong></span></div><div className="budget-value-row"><input className="budget-range" type="range" min={MIN_BUDGET_CENTS / XRP_TO_SGD_CENTS} max={MAX_BUDGET_CENTS / XRP_TO_SGD_CENTS} step="0.01" value={value} onChange={(event) => setBudget(Number(event.target.value))} aria-label="Research budget in XRP" aria-valuetext={`${formatXrp(value)}, approximately ${money(cents)}`} /><div className="budget-number-input"><input type="number" min={MIN_BUDGET_CENTS / XRP_TO_SGD_CENTS} max={MAX_BUDGET_CENTS / XRP_TO_SGD_CENTS} step="0.01" value={value} onChange={(event) => setBudget(Number(event.target.value))} aria-label="Research budget in XRP" /><span>XRP</span></div><strong className="budget-sgd">≈ {money(cents)}</strong></div><small className="budget-rate">1 XRP ≈ S$10.00</small></label>
 }
 
 function SourceItem({ source, selected, onOpen, onAction }:{ source:Source; selected:boolean; onOpen:()=>void; onAction:(action:'BUY'|'SKIP'|'BLOCKED')=>void }) {
@@ -100,8 +91,8 @@ function SourceItem({ source, selected, onOpen, onAction }:{ source:Source; sele
       <span className="source-meta"><span>{sourceTypeLabels[classifySource(source)]}</span><span>{source.familyLabel}</span><span>{source.authority.toLowerCase()} authority</span><span>{source.originality.toLowerCase()}</span></span>
     </button>
       <div className="source-metrics"><span className="metric-score"><b>{source.relevance}</b><small>match</small></span><span className="metric-price">{source.priceCents ? money(source.priceCents) : 'Free'}</span>{source.priceCents > 0 && <small className="metric-x402">x402 · {source.xrpDrops?.toLocaleString() ?? '—'} drops</small>}</div>
-    <div className="source-actions">
-      {decision === 'BUY' && <Badge tone="success"><Icon name="check" /> Unlocked</Badge>}
+      <div className="source-actions">
+      {decision === 'BUY' && <><Badge tone="success"><Icon name="check" /> Unlocked</Badge>{source.payment?.explorerUrl && <a className="source-receipt-link" href={source.payment.explorerUrl} target="_blank" rel="noreferrer">XRPL receipt ↗</a>}</>}
       {decision === 'SKIP' && <Badge tone="warning">Skipped · duplicate</Badge>}
       {decision === 'BLOCKED' && <Badge tone="danger"><Icon name="lock" /> Blocked</Badge>}
       {!decision && source.accessTier === 'OPEN' && <span className="open-label">Open source</span>}
@@ -126,7 +117,7 @@ function EvidenceDrawer({ source, onClose }:{ source:SourceDetail; onClose:()=>v
 
 function BudgetCard({ run }:{ run:ServerState }) {
   const spentPercent = Math.min(100, (run.spentCents / run.budgetCents) * 100)
-  return <section className="side-card budget-card"><div className="side-card-heading"><span className="kicker">Research budget</span><span className="mono">{money(run.remainingCents)} left</span></div><div className="budget-number"><strong>{money(run.spentCents)}</strong><span>of {money(run.budgetCents)} used</span></div><div className="budget-bar"><i style={{ width:`${spentPercent}%` }} /></div><div className="budget-note">Paid evidence can change the thesis. The agent cannot exceed the mandate or buy a source above S$1.00.</div></section>
+  return <section className="side-card budget-card"><div className="side-card-heading"><span className="kicker">Research budget</span><span className="mono">{formatXrp(centsToXrp(run.remainingCents))} left</span></div><div className="budget-number"><strong>{formatXrp(centsToXrp(run.spentCents))}</strong><span>≈ {money(run.spentCents)} of {formatXrp(centsToXrp(run.budgetCents))}</span></div><div className="budget-bar"><i style={{ width:`${spentPercent}%` }} /></div><div className="budget-note">XRP is the working currency. Approximate SGD value uses 1 XRP ≈ S$10.00. The agent cannot exceed the mandate or buy a source above S$1.00.</div></section>
 }
 
 function citationLabel(id:string) {
@@ -167,10 +158,7 @@ export default function App() {
   const [run, setRun] = useState<ServerState|null>(null)
   const [question, setQuestion] = useState('')
   const [questionDraft, setQuestionDraft] = useState('')
-  const [decision, setDecision] = useState('')
-  const [horizon, setHorizon] = useState('Through 2028')
-  const [tokenLimit, setTokenLimit] = useState(64000)
-  const [selectedTypes, setSelectedTypes] = useState<SourceType[]>(sourceTypes)
+  const [budgetXrp, setBudgetXrp] = useState(DEFAULT_BUDGET_XRP)
   const [selectedPublishers, setSelectedPublishers] = useState<PublisherKey[]>(publisherOptions.map((option) => option.id))
   const [chatStarted, setChatStarted] = useState(false)
   const [selectedId, setSelectedId] = useState<string|null>(null)
@@ -179,11 +167,27 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('Ready when you are.')
   const [showAllSources, setShowAllSources] = useState(false)
+  const [typedHeadline, setTypedHeadline] = useState('')
 
   useEffect(() => {
     document.title = 'ResearchAgent — Deep research'
     api<Scenario>('/api/v1/scenarios/data-centre-2028').then(setScenario).catch(() => setMessage('Backend unavailable. Start the API to begin a fixture research run.'))
   }, [])
+
+  useEffect(() => {
+    if (chatStarted || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setTypedHeadline(landingHeadline)
+      return
+    }
+    setTypedHeadline('')
+    let index = 0
+    const timer = window.setInterval(() => {
+      index += 1
+      setTypedHeadline(landingHeadline.slice(0, index))
+      if (index >= landingHeadline.length) window.clearInterval(timer)
+    }, 28)
+    return () => window.clearInterval(timer)
+  }, [chatStarted])
 
   useEffect(() => {
     if (!run?.runId) return
@@ -198,20 +202,27 @@ export default function App() {
     if (run?.runId) window.scrollTo({ top:0, behavior:'auto' })
   }, [run?.runId])
 
-  const resetToStart = () => { setRun(null); setDossier(null); setQuestion(''); setQuestionDraft(''); setDecision(''); setHorizon('Through 2028'); setTokenLimit(64000); setSelectedTypes(sourceTypes); setSelectedPublishers(publisherOptions.map((option) => option.id)); setChatStarted(false); setSelectedId(null); setSelectedDetail(null); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' }) }
-  const beginClarification = (value = questionDraft) => { const next = value.trim(); if (!next) return; setQuestion(next); setQuestionDraft(next); setChatStarted(true); setMessage('Question received. Confirm the scope before research starts.') }
-  const toggleType = (type:SourceType) => setSelectedTypes((current) => current.includes(type) ? current.filter((item) => item !== type) : [...current, type])
+  const resetToStart = () => { setRun(null); setDossier(null); setQuestion(''); setQuestionDraft(''); setBudgetXrp(DEFAULT_BUDGET_XRP); setSelectedPublishers(publisherOptions.map((option) => option.id)); setChatStarted(false); setSelectedId(null); setSelectedDetail(null); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' }) }
+  const beginClarification = (value = questionDraft) => { const next = value.trim(); if (!next) return; setQuestion(next); setQuestionDraft(next); setChatStarted(true); setMessage('Question received. Choose your websites and budget before research starts.') }
   const togglePublisher = (key:PublisherKey) => setSelectedPublishers((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key])
 
   const startResearch = async () => {
-    if (busy || !question.trim() || selectedTypes.length === 0 || selectedPublishers.length === 0) return
+    if (busy || !question.trim() || selectedPublishers.length === 0) return
     setBusy(true)
     try {
-      const created = await api<ServerState>('/api/v1/research-runs', { method:'POST', body:JSON.stringify({ question, decision:decision || 'What decision will this research support?', horizon, tokenLimit, sourceTypes:selectedTypes, sourceAllowlist:selectedPublishers }) })
+      const created = await api<ServerState>('/api/v1/research-runs', { method:'POST', body:JSON.stringify({ question, decision:'Inform the next research decision', horizon:'Through 2028', tokenLimit:64000, budgetCents:xrpToCents(budgetXrp), sourceTypes, sourceAllowlist:selectedPublishers }) })
       setRun(created)
       let next = created
       for (let index = 0; index < 6; index += 1) next = await api<ServerState>(`/api/v1/research-runs/${created.runId}/step`, { method:'POST', body:JSON.stringify({ action:'next' }) })
-      setRun(next); setMessage('Evidence map ready. Review the sources that can change the answer.'); window.scrollTo({ top:0, behavior:'auto' })
+      const planned = await api<PurchaseDecisionResponse>(`/api/v1/research-runs/${created.runId}/purchase-decisions`, { method:'POST', body:'{}' })
+      setRun(planned.state)
+      const candidate = planned.state.sources.find((source) => source.id === planned.action.sourceId)
+      if (candidate && planned.action.sourceId) {
+        setMessage(`${planned.action.provider === 'groq' ? 'Groq' : 'Fixture agent'} is buying ${candidate.publisher} with the research budget…`)
+        const purchased = await api<ServerState>(`/api/v1/research-runs/${created.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId:planned.action.sourceId, action:'BUY', idempotencyKey:crypto.randomUUID() }) })
+        setRun(purchased); setMessage(`${candidate.publisher} paid and unlocked on XRPL Testnet.`)
+      } else setMessage('Evidence map ready. No affordable premium source was selected.')
+      window.scrollTo({ top:0, behavior:'auto' })
     } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
   }
 
@@ -255,19 +266,18 @@ export default function App() {
   const suggestedQuestion = scenario?.brief.question ?? QUESTION
 
   return <div className="app-shell">
-    <header className="topbar"><button type="button" className="brand-button" onClick={resetToStart} aria-label="Start a new research thread"><span className="brand-mark">RA</span><span><strong>ResearchAgent</strong><small>deep research, with a budget</small></span></button><div className="topbar-thread"><span className="topbar-label">{run ? 'Research thread' : 'New research'}</span>{run && <span className="topbar-query">{run.config.question}</span>}</div><div className="topbar-actions">{run && <><Badge tone="fixture">Fixture</Badge><span className="topbar-budget mono">{money(run.spentCents)} / {money(run.budgetCents)}</span><button type="button" className="icon-button" onClick={() => void act(run.paused ? 'resume' : 'pause')} disabled={run.dossierReady || busy} aria-label={run.paused ? 'Resume research' : 'Pause research'}>{run.paused ? '▶' : 'Ⅱ'}</button></>}<button type="button" className="small-button" onClick={resetToStart}>{run ? 'New research' : 'Reset'}</button></div></header>
     <div className="product-shell">
       <main className={`main-column ${run ? 'has-run' : ''}`}>
         {!run && <section className={`start-view ${chatStarted ? 'is-clarifying' : ''}`}>
-          <div className="start-copy"><span className="kicker">ResearchAgent / New thread</span><h1>{chatStarted ? 'Let’s make the question useful.' : 'What are you trying to find out?'}</h1><p>{chatStarted ? 'I’ll search only the source profiles you approved, buy only when the evidence can change the answer, and cite the result sentence by sentence.' : 'Write the question first. Then choose the websites I’m allowed to search before the agent starts reading.'}</p></div>
-          <div className="start-layout"><div className="start-main"><div className="conversation"><ChatBubble role="assistant">{chatStarted ? <>Good starting point. I’ve captured the question and allowlist. Before I read, confirm <strong>the decision</strong> and <strong>time horizon</strong> below.</> : <>I’m useful when the question has a point of view. Try a thesis, a market you’re considering, or a risk you need to disprove.</>}</ChatBubble>{chatStarted && <ChatBubble role="user">{question}</ChatBubble>}</div>{!chatStarted && <div className="suggested-starts"><span className="suggested-label">Try a starting point</span><button type="button" onClick={() => beginClarification(suggestedQuestion)}>{suggestedQuestion}<Icon name="arrow" /></button><button type="button" onClick={() => beginClarification('What is causing the bond market implosion, and which risk matters next?')}>What is causing the bond market implosion? <Icon name="arrow" /></button><button type="button" onClick={() => beginClarification('Compare the evidence for demand growth versus delivery constraints in a new market.')}>Compare two sides of a market <Icon name="arrow" /></button></div>}<Composer value={questionDraft} onChange={setQuestionDraft} onSubmit={() => beginClarification()} placeholder={chatStarted ? 'Add a sharper version of the question…' : 'Ask a question worth investigating…'} /></div><PublisherPicker selected={selectedPublishers} onToggle={togglePublisher} /></div>
-          {chatStarted && <ScopeCard question={question} decision={decision} horizon={horizon} tokenLimit={tokenLimit} selectedTypes={selectedTypes} publisherCount={selectedPublishers.length} onQuestionChange={setQuestion} onDecisionChange={setDecision} onHorizonChange={setHorizon} onTokenLimitChange={setTokenLimit} onToggleType={toggleType} onStart={() => void startResearch()} busy={busy} />}
+          <div className="start-copy"><span className="kicker">ResearchAgent / New thread</span><h1 aria-label={chatStarted ? 'Let’s make the question useful.' : landingHeadline}>{chatStarted ? 'Let’s make the question useful.' : <>{typedHeadline}<span className="typewriter-caret" aria-hidden="true" /></>}</h1>{chatStarted ? <p>I’ll search only the source profiles you approved, buy only when the evidence can change the answer, and cite the result sentence by sentence.</p> : <div className="start-steps" aria-label="Research workflow"><span>Question</span><span className="start-step-arrow" aria-hidden="true">→</span><span>Websites</span><span className="start-step-arrow" aria-hidden="true">→</span><span>Evidence</span></div>}</div>
+          <div className="start-layout"><div className="start-main"><div className="conversation"><ChatBubble role="assistant">{chatStarted ? <>Good starting point. I’ve captured the question. Choose the websites I can read and set the research budget before I start.</> : <>I’m useful when the question has a point of view. Try a thesis, a market you’re considering, or a risk you need to disprove.</>}</ChatBubble>{chatStarted && <ChatBubble role="user">{question}</ChatBubble>}</div>{!chatStarted && <div className="suggested-starts"><span className="suggested-label">Try a starting point</span><button type="button" onClick={() => beginClarification(suggestedQuestion)}>{suggestedQuestion}<Icon name="arrow" /></button><button type="button" onClick={() => beginClarification('What is causing the bond market implosion, and which risk matters next?')}>What is causing the bond market implosion? <Icon name="arrow" /></button><button type="button" onClick={() => beginClarification('Compare the evidence for demand growth versus delivery constraints in a new market.')}>Compare two sides of a market <Icon name="arrow" /></button></div>}<Composer value={questionDraft} onChange={setQuestionDraft} onSubmit={() => beginClarification()} placeholder={chatStarted ? 'Add a sharper version of the question…' : 'Ask a question worth investigating…'} /></div><PublisherPicker selected={selectedPublishers} onToggle={togglePublisher} budgetXrp={budgetXrp} onBudgetXrpChange={setBudgetXrp} onStart={() => void startResearch()} busy={busy} showControls={chatStarted} /></div>
         </section>}
         {run && <section className="research-view">
-          <div className="research-intro"><div><span className="kicker">Research thread · {run.config.horizon}</span><h1>{run.config.question}</h1><div className="intro-meta"><Badge tone="neutral">{formatTokens(run.config.tokenLimit)} token cap</Badge><span>Decision: {run.config.decision}</span><span>{run.rawSourceCount} sources · {run.familyCount} families</span></div></div><div className="intro-actions"><button type="button" className="small-button" onClick={() => setShowAllSources(!showAllSources)}>{showAllSources ? 'Show recommended' : 'Show all sources'}</button><button type="button" className="small-button" onClick={() => void act('cancel')} disabled={run.dossierReady || busy}>Stop</button></div></div>
+          <div className="research-intro"><div><span className="kicker">Research thread · {run.config.horizon}</span><h1>{run.config.question}</h1><div className="intro-meta"><span>Decision: {run.config.decision}</span><span>{run.rawSourceCount} sources · {run.familyCount} families</span></div></div><div className="intro-actions"><button type="button" className="small-button" onClick={() => setShowAllSources(!showAllSources)}>{showAllSources ? 'Show recommended' : 'Show all sources'}</button><button type="button" className="small-button" onClick={() => void act('cancel')} disabled={run.dossierReady || busy}>Stop</button></div></div>
           <div className="research-thread"><ChatBubble role="user">{run.config.question}</ChatBubble><ChatBubble role="assistant">I’ll run semantic queries across the websites you approved, collapse duplicate reporting, then buy only the article that can change a material claim. Every sentence in the final answer will carry a source citation.</ChatBubble></div>
           <WorkingAnswer run={run} onOpenSource={(id) => void openSource(id)} />
-          <div className="results-layout"><section className="sources-panel" id="sources"><div className="panel-heading"><div><span className="kicker">Sources in scope</span><h2>{visibleSources.length} mock articles ranked</h2></div><span className="panel-note mono">Semantic query · price separate from relevance</span></div><div className="source-filter"><span>Websites:</span>{(run.config.sourceAllowlist ?? []).map((key) => <span key={key} className="filter-chip"><i />{publisherOptions.find((option) => option.id === key)?.label ?? key}</span>)}</div><div className="source-list">{displayedSources.map((source) => <SourceItem key={source.id} source={source} selected={selectedId === source.id} onOpen={() => void openSource(source.id)} onAction={(action) => void purchase(source.id, action)} />)}</div>{visibleSources.length > displayedSources.length && <button type="button" className="load-more" onClick={() => setShowAllSources(true)}>Show {visibleSources.length - displayedSources.length} more articles <Icon name="arrow" /></button>}</section><aside className="research-side"><section className="side-card scope-summary"><div className="side-card-heading"><span className="kicker">Working scope</span><button type="button" className="text-action" onClick={resetToStart}>Edit</button></div><p>{run.config.question}</p><dl><div><dt>Decision</dt><dd>{run.config.decision}</dd></div><div><dt>Horizon</dt><dd>{run.config.horizon}</dd></div><div><dt>Token cap</dt><dd className="mono">{formatTokens(run.config.tokenLimit)}</dd></div></dl></section><BudgetCard run={run} /><section className="side-card gap-card"><div className="side-card-heading"><span className="kicker">Active gap</span><Badge tone={run.gap.state === 'RESOLVED' ? 'success' : 'warning'}>{run.gap.state}</Badge></div><h3>{run.gap.question}</h3><p>Open sources establish the baseline. Paid excerpts are only considered when they add an independent family, resolve a gap, or test a material claim.</p></section><section className="next-action"><span className="kicker">Next useful step</span><strong>{run.dossierReady ? 'Read the cited memo.' : run.sources.some((source) => source.decision === 'BUY') ? 'Assemble the cited answer.' : 'Inspect an article before buying it.'}</strong>{!run.dossierReady && <button type="button" className="outline-button" disabled={busy || !run.sources.some((source) => source.decision === 'BUY')} onClick={() => void synthesize()}>Assemble cited answer <Icon name="arrow" /></button>}{run.dossierReady && <button type="button" className="outline-button" onClick={() => document.getElementById('dossier')?.scrollIntoView({ behavior:'smooth' })}>Open cited memo <Icon name="arrow" /></button>}</section></aside></div>
+          {run.purchasePlan && <section className="agent-plan" aria-labelledby="agent-plan-title"><div><span className="kicker">Agent action · {run.purchasePlan.provider === 'groq' ? 'Groq' : 'fixture fallback'}</span><h2 id="agent-plan-title">{run.sources.find((source) => source.id === run.purchasePlan?.sourceId)?.publisher ?? 'No premium source'} {run.sources.some((source) => source.id === run.purchasePlan?.sourceId && source.decision === 'BUY') ? 'paid and unlocked.' : 'was not purchased.'}</h2><p>{run.purchasePlan.reason}</p><small>Groq saw the mock semantic-retrieval previews and metadata only. The server enforced the budget and executed the payment.</small></div>{run.sources.find((source) => source.id === run.purchasePlan?.sourceId)?.payment?.explorerUrl && <a className="primary-button" href={run.sources.find((source) => source.id === run.purchasePlan?.sourceId)?.payment?.explorerUrl} target="_blank" rel="noreferrer">Open XRPL receipt ↗</a>}</section>}
+          <div className="results-layout"><section className="sources-panel" id="sources"><div className="panel-heading"><div><span className="kicker">Sources in scope</span><h2>{visibleSources.length} mock search previews ranked</h2></div><span className="panel-note mono">Semantic retrieval · price separate from relevance</span></div><div className="source-filter"><span>Websites:</span>{(run.config.sourceAllowlist ?? []).map((key) => <span key={key} className="filter-chip"><i />{publisherOptions.find((option) => option.id === key)?.label ?? key}</span>)}</div><div className="source-list">{displayedSources.map((source) => <SourceItem key={source.id} source={source} selected={selectedId === source.id} onOpen={() => void openSource(source.id)} onAction={(action) => void purchase(source.id, action)} />)}</div>{visibleSources.length > displayedSources.length && <button type="button" className="load-more" onClick={() => setShowAllSources(true)}>Show {visibleSources.length - displayedSources.length} more articles <Icon name="arrow" /></button>}</section><aside className="research-side"><section className="side-card scope-summary"><div className="side-card-heading"><span className="kicker">Working scope</span><button type="button" className="text-action" onClick={resetToStart}>Edit</button></div><p>{run.config.question}</p><dl><div><dt>Decision</dt><dd>{run.config.decision}</dd></div><div><dt>Horizon</dt><dd>{run.config.horizon}</dd></div></dl></section><BudgetCard run={run} /><section className="side-card gap-card"><div className="side-card-heading"><span className="kicker">Active gap</span><Badge tone={run.gap.state === 'RESOLVED' ? 'success' : 'warning'}>{run.gap.state}</Badge></div><h3>{run.gap.question}</h3><p>Open sources establish the baseline. Paid excerpts are only considered when they add an independent family, resolve a gap, or test a material claim.</p></section><section className="next-action"><span className="kicker">Next useful step</span><strong>{run.dossierReady ? 'Read the cited memo.' : run.sources.some((source) => source.decision === 'BUY') ? 'Assemble the cited answer.' : run.purchasePlan ? 'No affordable source was purchased.' : 'Inspect an article before buying it.'}</strong>{!run.dossierReady && <button type="button" className="outline-button" disabled={busy || !run.sources.some((source) => source.decision === 'BUY')} onClick={() => void synthesize()}>Assemble cited answer <Icon name="arrow" /></button>}{run.dossierReady && <button type="button" className="outline-button" onClick={() => document.getElementById('dossier')?.scrollIntoView({ behavior:'smooth' })}>Open cited memo <Icon name="arrow" /></button>}</section></aside></div>
           <DossierPanel dossier={dossier} run={run} onOpenSource={(id) => void openSource(id)} onSynthesize={() => void synthesize()} busy={busy} />
         </section>}
       </main>

@@ -6,6 +6,7 @@ export type Source = {
   priceCents: number; preview: string; tags: string[]; entities: string[]; authority: 'HIGH' | 'MEDIUM' | 'LOW'; originality: 'ORIGINAL' | 'DERIVATIVE';
   familyId: string; familyLabel: string; relevance: number; gapMatch: number; novelty: number; trustNote: string; fixture: true; siteKey?: string; xrpDrops?: number;
   decision?: Decision; reason?: string; purchasedAt?: string; evidenceSpans?: { id: string; label: string; text: string }[];
+  payment?: { mode: 'fixture' | 'live'; network: string; amountDrops: number; transactionHash?: string; ledgerIndex?: number; explorerUrl?: string; settlement: string };
 }
 export type Claim = { id: string; text: string; stance: 'SUPPORTS' | 'CHALLENGES' | 'UNCERTAIN'; materiality: 'MATERIAL' | 'CONTEXT'; sourceIds: string[]; familyCount: number; spanIds: string[] }
 export type ResearchConfig = {
@@ -13,6 +14,7 @@ export type ResearchConfig = {
   decision: string;
   horizon: string;
   tokenLimit: number;
+  budgetCents: number;
   sourceTypes: string[];
   sourceAllowlist?: string[];
 }
@@ -20,10 +22,15 @@ export type Run = {
   runId: string; version: number; phase: Phase; paused: boolean; cancelled: boolean; budgetCents: number; spentCents: number;
   sources: Source[]; events: { id: string; type: string; label: string; at: string }[]; gap: { question: string; importance: 'HIGH'; state: 'OPEN' | 'PARTIAL' | 'RESOLVED' };
   thesis: { open: string; afterNorthstar?: string; afterMeridian?: string; current: string }; claims: Claim[]; dossierReady: boolean; llm: { provider: string; status: string; model: string }; semanticStatus: 'precomputed' | 'unavailable';
-  config: ResearchConfig; purchaseKeys?: Record<string, string>;
+  config: ResearchConfig; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK' };
 }
 
 export const QUESTION = 'Is the AI data-centre investment boom sustainable through 2028?'
+export const XRP_TO_SGD_CENTS = 1000
+export const CURRENT_XRP_BALANCE = 10
+export const DEFAULT_BUDGET_CENTS = 200
+export const MIN_BUDGET_CENTS = 50
+export const MAX_BUDGET_CENTS = 1000
 export const CANONICAL_THESIS = 'Announced demand and capital commitments support continued expansion, but the evidence is concentrated in company statements and does not resolve power-delivery constraints.'
 export const AFTER_NORTHSTAR = 'Independent supplier reporting corroborates near-term demand while adding equipment-delivery bottlenecks.'
 export const AFTER_MERIDIAN = 'The boom can continue, but operating capacity through 2028 is likely to lag announced spending in grid-constrained markets; interconnection and power availability are more material risks than the open-source baseline suggested.'

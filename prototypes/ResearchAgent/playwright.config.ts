@@ -5,5 +5,5 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   timeout: 20_000,
   use: { baseURL: 'http://localhost:5173', headless: true },
-  webServer: { command: 'npm run dev', url: 'http://localhost:5173', reuseExistingServer: true, timeout: 30_000 },
+  webServer: { command: 'XRPL_MODE=fixture LLM_PROVIDER=fixture npm run dev', url: 'http://localhost:5173', reuseExistingServer: true, timeout: 30_000 },
 })

@@ -5,15 +5,17 @@
 The primary operation is a two-step research conversation:
 
 1. **Ask** — the user enters a question or chooses a grounded starting point.
-   The assistant reflects the question and asks for a decision and time horizon.
-2. **Scope** — the user edits the working question, decision, horizon, allowed
-   source families, and manual analysis token cap.
+   The assistant reflects the question and points them to the website allowlist.
+2. **Websites** — the user chooses the websites the agent may read and sets the
+   XRP research budget in the same panel. There is no separate answerability
+   form or user-facing analysis token limit.
 3. **Research** — the server creates a persisted run, discovers open evidence,
    ranks candidates, reads open material, identifies a gap, and prepares a
    purchase plan.
-4. **Inspect and allocate** — source rows open the evidence drawer. Premium
-   actions are explicit and pessimistic: buy, skip, or record a deterministic
-   budget block.
+4. **Agent action** — Groq receives only the retrieved previews and metadata,
+   selects an eligible purchase action, and the server executes the explicit
+   buy/skip/block mutation with deterministic budget and payment guards.
+   Source rows remain available for inspection and additional manual actions.
 5. **Synthesize** — after a verified purchase, the user may create a short
    dossier with claims linked to accessible evidence spans.
 
@@ -26,9 +28,9 @@ GridScope Asia at S$1.40 because the remaining authority is S$1.00.
 | Capability | Owner | Contract |
 | --- | --- | --- |
 | Question entry | `Composer` | Enter submits; Shift+Enter inserts a line break; IME composition is never submitted early |
-| Scope configuration | `ScopeCard` | Native fields, source-family toggles, and manual token cap before run creation |
+| Website and budget configuration | `PublisherPicker` + `BudgetControl` | Website allowlist and XRP budget before run creation |
 | Source universe | `classifySource` + `SourceItem` | User-selected families remain visible in the run summary and filter labels |
-| Candidate action | `SourceItem` + purchases API | Pessimistic persisted mutation with explicit Buy, Skip, or Block |
+| Candidate action | Groq purchase planner + purchases API | LLM chooses from retrieved metadata; server enforces Buy, Skip, or Block |
 | Evidence inspection | `EvidenceDrawer` | Focus, Escape, backdrop, exact spans, and focus restoration |
 | Budget | Server `purchases` route | Integer cents, per-source ceiling, no overdraft |
 | Dossier | Server `synthesize` + `DossierPanel` | Claims cite accessible spans and preserve uncertainty |
@@ -38,9 +40,11 @@ GridScope Asia at S$1.40 because the remaining authority is S$1.00.
 ## State and recovery
 
 The start state does not create a server run. A run is created only after the
-scope is confirmed, using the question, decision, horizon, source families, and
-token cap. The client prevents duplicate start and purchase actions while a
-request is pending. Server-authoritative state wins after every mutation.
+website panel is confirmed, using the question, default research context,
+website allowlist, and XRP budget. Retrieval remains deterministic and mock;
+Groq sees only the resulting source previews and metadata. The client prevents
+duplicate start and purchase actions while a request is pending. Server-
+authoritative state wins after every mutation.
 
 “New research” resets only the current client thread and returns focus to the
 question surface. It does not claim to delete or rewrite persisted evidence.
