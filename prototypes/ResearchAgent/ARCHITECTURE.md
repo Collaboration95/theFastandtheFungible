@@ -6,6 +6,14 @@ premium access, fixture x402 quotes, and cited synthesis. The twenty mock
 articles live in `data/mock-articles.json`; the browser receives public
 metadata first and article excerpts only after the exact purchase decision.
 
+## Visual overview
+
+![ResearchAgent architecture overview](assets/researchagent-architecture-generated.png)
+
+This generated overview follows the Quiet Evidence Terminal visual system and
+keeps the architecture at the high-note level. The Mermaid diagram below
+remains the precise, maintainable source of truth.
+
 ```mermaid
 flowchart LR
   U[Researcher\nquestion + website allowlist] --> UI[React research desk]

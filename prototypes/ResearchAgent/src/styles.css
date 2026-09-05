@@ -72,9 +72,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px 
 .chat-copy { color:#3d3732; font-size:14px; }
 .chat-copy strong { color:var(--ink); font-weight:600; }
 .chat-label { display:block; margin:1px 0 5px; color:var(--muted); font:9px var(--mono); text-transform:uppercase; letter-spacing:.09em; }
-.suggested-starts { display:grid; gap:7px; margin:0 0 24px 37px; }
+.suggested-starts { display:grid; gap:9px; margin:0 0 24px 37px; }
 .suggested-label { color:var(--muted); font:9px var(--mono); text-transform:uppercase; letter-spacing:.09em; }
-.suggested-starts button { display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; padding:10px 0; border:0; border-bottom:1px solid var(--rule); color:var(--ink); background:transparent; text-align:left; font-size:12px; }
+.suggested-starts button { display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; padding:14px 0; border:0; border-bottom:1px solid var(--rule); color:var(--ink); background:transparent; text-align:left; font-size:15px; line-height:1.35; }
 .suggested-starts button:hover { color:var(--salmon-deep); }
 .suggested-starts button .icon { color:var(--salmon-deep); }
 .composer { margin-left:37px; border:1px solid var(--ink); background:var(--paper); }
@@ -148,8 +148,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px 
 .metric-score b { font:600 19px var(--serif); }
 .metric-score small { color:var(--muted); font:9px var(--mono); }
 .metric-price { color:var(--ink); font:10px var(--mono); }
-.source-actions { display:flex; justify-content:flex-end; align-items:center; min-height:28px; text-align:right; }
-.source-receipt-link { display:block; margin-top:5px; color:var(--green); font:9px var(--mono); text-decoration:underline; white-space:nowrap; }
+.source-actions { display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-end; gap:6px; min-width:0; min-height:28px; text-align:right; }
+.source-receipt-link { display:inline-block; max-width:100%; color:var(--green); font:9px var(--mono); text-decoration:underline; white-space:nowrap; }
 .open-label { color:var(--muted); font:9px var(--mono); text-transform:uppercase; }
 .badge { display:inline-flex; align-items:center; gap:4px; width:max-content; padding:4px 6px; border:1px solid var(--rule); color:var(--muted); font:9px var(--mono); text-transform:uppercase; letter-spacing:.03em; }
 .badge-fixture { color:var(--salmon); border-color:#876f61; }
@@ -222,7 +222,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px 
 .dossier-kicker { color:var(--muted); font:9px var(--mono); letter-spacing:.1em; }
 .dossier-paper > h3 { max-width:1180px; margin:12px 0 24px; font:600 clamp(26px,3vw,40px)/1.04 var(--serif); letter-spacing:-.02em; }
 .changed-callout { padding:15px 0; border-top:2px solid var(--ink); border-bottom:1px solid var(--rule); }
-.change-line { display:grid; grid-template-columns:90px minmax(0,1fr); gap:15px; padding:8px 0; color:var(--muted); font:14px/1.3 var(--serif); }
+.change-line { display:grid; grid-template-columns:90px minmax(0,1fr); gap:15px; padding:8px 0; color:var(--muted); font:18px/1.3 var(--serif); }
 .change-line b { color:var(--ink); font:9px var(--mono); text-transform:uppercase; }
 .change-line.final { margin-top:4px; padding:10px; color:var(--ink); background:#edf4ef; }
 .dossier-columns { display:grid; grid-template-columns:1fr 1fr; gap:31px; margin-top:28px; }
@@ -351,7 +351,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px 
   .intro-actions { width:100%; }
   .intro-actions .small-button { flex:1; }
   .source-row { grid-template-columns:27px minmax(0,1fr) 65px; }
-  .source-actions { grid-column:2 / -1; justify-content:flex-start; min-height:22px; text-align:left; }
+  .source-actions { grid-column:2 / -1; justify-content:flex-start; align-items:flex-start; min-height:22px; text-align:left; }
   .research-side { grid-template-columns:1fr; }
   .next-action { grid-column:auto; }
   .dossier-placeholder, .dossier-heading { align-items:flex-start; flex-direction:column; }
@@ -390,7 +390,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px 
   .source-meta { gap:4px 7px; }
   .metric-score b { font-size:17px; }
   .dossier-paper { padding:20px 14px; }
-  .change-line { grid-template-columns:70px minmax(0,1fr); gap:8px; font-size:13px; }
+  .change-line { grid-template-columns:70px minmax(0,1fr); gap:8px; font-size:17px; }
 }
 @media (prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; } }
 @media print {

@@ -226,13 +226,19 @@ function validateDossier(run: Run, draft: Awaited<ReturnType<typeof synthesizeDo
     const spans = source.evidenceSpans ?? (source.accessTier === 'OPEN' && mockArticles.get(source.id) ? [{ id: `${source.id}-open` }] : [])
     return spans.map((span) => span.id)
   }))
-  for (const claim of draft.claims) {
+  const claims = draft.claims.map((claim) => {
     if (claim.sourceIds.some((id) => !sourceIds.has(id))) throw new Error(`Groq cited an unknown source: ${claim.sourceIds.join(', ')}`)
-    if (claim.spanIds.some((id) => !spanIds.has(id))) throw new Error(`Groq cited an unknown evidence span: ${claim.spanIds.join(', ')}`)
-  }
+    const groundedSpanIds = claim.spanIds.length ? claim.spanIds : claim.sourceIds.flatMap((sourceId) => {
+      const source = run.sources.find((item) => item.id === sourceId)
+      const spans = source?.evidenceSpans ?? (source?.accessTier === 'OPEN' && mockArticles.get(sourceId) ? [{ id: `${sourceId}-open` }] : [])
+      return spans.map((span) => span.id).slice(0, 1)
+    })
+    if (!groundedSpanIds.length || groundedSpanIds.some((id) => !spanIds.has(id))) throw new Error(`Groq cited an unknown evidence span: ${claim.spanIds.join(', ')}`)
+    return { ...claim, spanIds: groundedSpanIds }
+  })
   return {
     ...draft,
-    claims: draft.claims.map((claim) => ({ ...claim, familyCount: new Set(claim.sourceIds.map((id) => run.sources.find((source) => source.id === id)?.familyId)).size })),
+    claims: claims.map((claim) => ({ ...claim, familyCount: new Set(claim.sourceIds.map((id) => run.sources.find((source) => source.id === id)?.familyId)).size })),
     mode: 'GROQ RESEARCH',
     afterLabel: isBondQuestion(run.config.question) ? '+ paid rates evidence' : '+ Grid report',
     changedAfterPaidResearch: { ...draft.changedAfterPaidResearch, before: run.thesis.open },

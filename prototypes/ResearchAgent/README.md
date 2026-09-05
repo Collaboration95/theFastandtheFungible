@@ -42,7 +42,9 @@ health, scenario, persisted runs, reset/step/cancel, sources, purchases,
 synthesis, dossier, receipt, and an SSE stream. `LLM_PROVIDER=fixture` is the
 deterministic fallback. The live provider currently targets Groq’s
 OpenAI-compatible Chat Completions API; keys are never prefixed with `VITE_` or
-sent to the browser.
+sent to the browser. Tune `LLM_SYNTHESIS_TEMPERATURE` in `.env` to vary the
+Groq dossier prose; purchase planning remains low-temperature for safer
+bounded decisions.
 
 ## Trust boundaries
 

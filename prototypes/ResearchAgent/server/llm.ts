@@ -12,7 +12,7 @@ const DossierSchema = z.object({
   conclusion: z.string().min(1),
   changedAfterPaidResearch: z.object({
     before: z.string().min(1),
-    afterNorthstar: z.string().optional(),
+    afterNorthstar: z.string().nullish().transform((value) => value ?? undefined),
     after: z.string().min(1),
   }),
   claims: z.array(z.object({
@@ -21,7 +21,7 @@ const DossierSchema = z.object({
     stance: z.enum(['SUPPORTS', 'CHALLENGES', 'UNCERTAIN']),
     materiality: z.enum(['MATERIAL', 'CONTEXT']),
     sourceIds: z.array(z.string()).min(1),
-    spanIds: z.array(z.string()).min(1),
+    spanIds: z.array(z.string()).default([]),
   })).min(1),
   uncertainty: z.string().min(1),
   method: z.string().min(1),
@@ -47,6 +47,29 @@ export type DossierEvidencePacket = {
 
 const model = () => process.env.LLM_MODEL || 'llama-3.3-70b-versatile'
 const isLive = () => process.env.LLM_PROVIDER === 'groq' && Boolean(process.env.GROQ_API_KEY)
+const synthesisTemperature = () => {
+  const configured = Number(process.env.LLM_SYNTHESIS_TEMPERATURE ?? process.env.LLM_TEMPERATURE ?? 0.85)
+  return Number.isFinite(configured) ? Math.min(2, Math.max(0, configured)) : 0.85
+}
+
+export const DOSSIER_SYNTHESIS_PROMPT = `You are the cited dossier synthesizer for an evidence research agent.
+
+Return JSON only, matching this exact shape:
+{"title":"string","conclusion":"string","changedAfterPaidResearch":{"before":"string","afterNorthstar":"string?","after":"string"},"claims":[{"id":"claim-1","text":"string","stance":"SUPPORTS|CHALLENGES|UNCERTAIN","materiality":"MATERIAL|CONTEXT","sourceIds":["exact source id"],"spanIds":["exact evidence span id"]}],"uncertainty":"string","method":"string"}
+
+Use only the supplied evidence packet. Do not invent sources, authors, dates, quotes, prices, facts, or span IDs. Every claim must cite one or more exact sourceIds and spanIds from the packet; never cite a source without an available evidence span. Do not reveal chain-of-thought.
+
+Build a balanced academic-style argument:
+- SUPPORTS means the cited evidence directly supports the conclusion.
+- CHALLENGES means the cited evidence weakens, qualifies, or exposes a material risk to the conclusion.
+- UNCERTAIN means the packet does not resolve the claim.
+- If the conclusion is positive or cautiously positive, do not make every claim SUPPORTS. Include meaningful challenge claims—especially delivery, capacity, timing, or methodological risks—when the packet contains them, and include support claims when the packet contains evidence for the positive side.
+- When the packet contains evidence on both sides, produce at least one SUPPORTS claim and at least two CHALLENGES or UNCERTAIN claims; target 4–8 total claims when the evidence supports that level of detail. Do not force a side when the packet lacks evidence.
+- Prefer multiple independent evidence families over repeating one source. Do not count derivative sources as independent.
+- Use concise academic prose and an academic citation style in the claim text where useful: attribute claims as (Publisher, YYYY) only when the publisher and year are present in the packet. Never fabricate an author or year. The interface will also render linked citations from sourceIds.
+- Separate what the evidence says from your interpretation. Preserve uncertainty and state what additional evidence would resolve it.
+
+The output is a concise investment-research dossier, not investment advice.`
 
 function fallback(question: string, candidates: Source[]): PurchasePlan {
   const selected = [...candidates].sort((a, b) => b.relevance - a.relevance)[0]
@@ -158,14 +181,14 @@ export async function synthesizeDossier(packet: DossierEvidencePacket, onDelta: 
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
       body: JSON.stringify({
         model: model(),
-        temperature: 0.2,
+        temperature: synthesisTemperature(),
         max_tokens: 2400,
         stream: true,
         response_format: { type: 'json_object' },
         messages: [
           {
             role: 'system',
-            content: `You are the cited dossier synthesizer for an evidence research agent. Return JSON only, matching this exact shape: {"title":"string","conclusion":"string","changedAfterPaidResearch":{"before":"string","afterNorthstar":"string?","after":"string"},"claims":[{"id":"claim-1","text":"string","stance":"SUPPORTS|CHALLENGES|UNCERTAIN","materiality":"MATERIAL|CONTEXT","sourceIds":["exact source id"],"spanIds":["exact evidence span id"]}],"uncertainty":"string","method":"string"}. Use only the supplied evidence packet. Do not invent sources, quotes, prices, facts, or span IDs. Every claim must cite one or more exact sourceIds and spanIds from the packet; never cite a source without an available evidence span. Explain uncertainty instead of filling gaps. Do not reveal chain-of-thought. The output is a concise investment-research dossier, not investment advice.`,
+            content: DOSSIER_SYNTHESIS_PROMPT,
           },
           { role: 'user', content: JSON.stringify(packet) },
         ],
