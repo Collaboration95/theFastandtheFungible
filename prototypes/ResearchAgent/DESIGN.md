@@ -1,43 +1,62 @@
 # ResearchAgent design context
 
-ResearchAgent is a calm financial newsroom for an evidence market. Its single
-job is to turn Elena Tan's research budget into the strongest defensible dossier
-available, while making cost, provenance, independence, and uncertainty visible.
+ResearchAgent is a quiet research terminal for an economics professor, fund
+manager, or investor who wants to turn a question into a defensible decision.
+The product surface is a tool, not a presentation: ask first, narrow the brief,
+choose the evidence universe, then inspect the sources that can change the
+answer.
 
 ## Visual system
 
-The Black Paper / Trace Desk direction uses a deep charcoal shell and warm
-newsprint reading surface. Display headlines use Newsreader; controls and body
-copy use IBM Plex Sans; prices, IDs, scores, and event codes use IBM Plex Mono.
-The palette is intentionally small: Newsprint `#F2E9DD`, Paper `#FBF8F2`, Ink
-`#24211E`, Charcoal `#171716`, Muted Ink `#6F6860`, Rule `#C9BFB2`, Editorial
-Salmon `#D9A28F`, Evidence Green `#2F6B4F`, Caution Ochre `#9A6B20`, and Block
-Red `#9B3E35`.
+The **Quiet Evidence Terminal** direction keeps the existing Black Paper / Trace
+Desk palette but removes the editorial showcase treatment. The warm newsprint
+canvas is a reading surface; the charcoal header is a stable application frame;
+the paper panels are reserved for decisions, source inspection, and the dossier.
+Newsreader is used for question and conclusion hierarchy. IBM Plex Sans carries
+the interface and body copy. IBM Plex Mono is reserved for token caps, prices,
+source scores, state labels, and event metadata.
 
-The memorable signature is the Evidence Trace Desk: a labelled lineage ribbon
-that connects the question to open evidence, a live gap, premium purchases,
-and claim families. It remains legible without animation or colour.
+The signature element is the **scope bar**: a compact, editable checkpoint
+between the first chat message and research execution. It makes the decision,
+horizon, allowed source families, and analysis token cap explicit. No decorative
+workflow ribbon, hero statistics, or presentation-only explainer blocks are
+part of the product shell.
 
-## Layout and tokens
+## Palette and token ownership
 
-`src/styles.css` is the one runtime token owner. The documented path is:
+`src/styles.css` is the runtime token owner. The mapping is:
 
-`DESIGN.md → :root semantic CSS variables → shared React components`
+`DESIGN.md semantic palette → :root CSS variables → shared React primitives`
 
-Desktop is a narrow guided-phase rail plus a reading surface. The source desk
-and inspector split at desktop and stack at 1000px. At 390px the trace becomes
-a vertical lineage, source rows become cards, and the dossier is a single
-column. The document owns the scrollbar; drawers own their internal scroll.
+Newsprint `#F2E9DD`, Paper `#FBF8F2`, Paper Deep `#E9DFD1`, Ink `#24211E`,
+Charcoal `#171716`, Muted `#655D55`, Rule `#C9BFB2`, Editorial Salmon `#D9A28F`,
+Salmon Deep `#91503F`, Evidence Green `#2F6B4F`, Caution Ochre `#9A6B20`, and
+Block Red `#9B3E35` are the shared semantic values. Accent colours communicate
+state with text and labels; they are never the only signal.
 
-Static surfaces are flat. Rules, type scale, and spacing carry hierarchy. Near-
-square rectangles are used for controls and evidence; rounded pills are limited
-to compact status badges. Print removes shell controls and preserves dossier,
-citations, and limitations.
+## Layout and density
 
-## Content rules
+Desktop uses a narrow workspace rail, a centered research column, and a compact
+evidence side rail after a run starts. The start state is intentionally sparse:
+one question, a few grounded suggestions, and one composer. Results use dense
+source rows because comparison is the task. There is no forced full-height
+nested scroller; the document owns vertical scrolling and the evidence drawer
+owns its own overflow.
 
-Use specific editorial language: “Skipped because it repeats Northstar Wire”
-and “Blocked: S$1.40 exceeds the remaining S$1.00.” Never use a truth score,
-guaranteed confidence, or imply a fixture paid a real publisher. Fixture,
-premium preview, unlocked text, settlement, and evidence access are distinct
-states.
+At 780px the rail collapses and the evidence side rail stacks below the source
+set. At 520px source rows preserve title, preview, match, price, and action as a
+stacked record. Controls stay touchable and the same source decisions remain
+available.
+
+## Shape, motion, and content
+
+Surfaces are flat with hairline rules and near-square controls. Rounded pills
+are limited to semantic badges and compact filter chips. Motion is minimal:
+state changes may transition the budget bar, but research results do not depend
+on animation. Reduced motion removes transitions and smooth scrolling.
+
+Write in plain, specific language: “Buy S$0.20”, “Skipped · duplicate”, and
+“GridScope blocked: S$1.40 exceeds the remaining S$1.00.” Never expose a truth
+score or imply that fixture payment reached a real publisher. Open evidence,
+premium preview, unlocked text, fixture settlement, and dossier citations stay
+distinct.

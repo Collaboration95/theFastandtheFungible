@@ -1,35 +1,59 @@
 # ResearchAgent architecture
 
-The browser is a view and command surface. The Express server is authoritative
-for discovery, retrieval, family lineage, gap analysis, purchase utility,
-integer budget arithmetic, access grants, persistence, and dossier citations.
+The browser is a view and command surface. The Express server owns retrieval,
+allowlist filtering, ranking, evidence-family lineage, budget arithmetic,
+premium access, fixture x402 quotes, and cited synthesis. The twenty mock
+articles live in `data/mock-articles.json`; the browser receives public
+metadata first and article excerpts only after the exact purchase decision.
 
-```text
-React Trace Desk
-  │ REST + SSE
-  ▼
-Express ResearchAgent API
-  ├─ scenario + brief registry (fixture corpus)
-  ├─ deterministic retrieval (BM25-shaped lexical score + tags)
-  ├─ explicit evidence-family lineage
-  ├─ gap / purchase planner + BudgetGuard
-  ├─ server-only premium store + exact resource access
-  ├─ fixture settlement ledger (settlement ≠ delivery)
-  ├─ fixture LLM adapter contract + fallback status
-  └─ JSON-file event/run persistence
+```mermaid
+flowchart LR
+  U[Researcher\nquestion + website allowlist] --> UI[React research desk]
+  UI -->|REST + SSE| API[Express ResearchAgent API]
+
+  API --> PLAN[Query planner\nsemantic / lexical terms]
+  PLAN --> REG[Mock source registry\n20 JSON articles]
+  REG --> FILTER[Allowlist + source-type filter]
+  FILTER --> RANK[Ranking + family clustering\nrelevance · novelty · authority]
+  RANK --> GAP[Gap analyzer]
+  GAP --> GUARD[Budget + preference guard]
+
+  GUARD -->|open| OPEN[Public metadata + preview]
+  GUARD -->|premium candidate| QUOTE[x402 quote\nresource · price · payee · drops]
+  QUOTE --> LEDGER[XRPL adapter\nfixture by default; Testnet seam]
+  LEDGER --> ACCESS[Exact access grant]
+  ACCESS --> READ[Server-only article body\nexcerpt + span hash]
+
+  OPEN --> SYNTH[Claim extractor + cited synthesizer]
+  READ --> SYNTH
+  SYNTH --> ANSWER[Sentence-level citations\nanswer + uncertainty]
+  ANSWER --> UI
+
+  API --> STORE[JSON run/event store]
 ```
 
-`src/domain.ts` contains public-safe records and pure retrieval helpers. Premium
-bodies live only in `server/premium-store.ts`, which is never imported by the
-client entrypoint. `server/index.ts` strips bodies before every public response
-and only attaches evidence spans after the exact source is bought.
+## State and trust boundaries
 
-The canonical fixture uses 200 integer cents. The server rejects an offer above
-the S$1.00 per-source ceiling or above remaining budget, and the model has no
-payment authority. Circuit Note shares Northstar's family and is skipped as a
-derivative. Meridian's purchase changes the thesis. GridScope remains blocked
-with S$1.00 remaining.
+1. `question + sourceAllowlist` is captured in the run config before retrieval.
+2. `Query planner` creates bounded terms; it does not choose a wallet or edit
+   the budget.
+3. `Source registry` loads the synthetic records and strips the `article` body
+   before a public response.
+4. `Budget guard` is deterministic. It can mark a record BUY, SKIP, DEFER, or
+   BLOCKED; browser text and future model output cannot bypass it.
+5. `x402/XRPL adapter` models the payment challenge and settlement boundary.
+   Fixture settlement is not a real ledger result.
+6. `Access grant` is separate from payment and unlocks exactly one resource.
+7. `Cited synthesizer` sees only open evidence and purchased excerpts. It emits
+   claim text, stance, source ids, evidence spans, and uncertainty—not private
+   chain-of-thought.
 
-Live OpenAI/Groq adapter wiring is intentionally represented by the documented
-provider boundary and fixture fallback in this prototype; no credential is
-needed to run the canonical path.
+## Current fixture contract
+
+- Budget: S$2.00 total, with an S$1.00 per-source ceiling.
+- Default website allowlist: all eight source profiles shown in the UI.
+- Article corpus: 20 synthetic fixture records with prices and XRPL drop
+  quotes; 12 preserve the original data-centre demo and 8 add bond-market
+  coverage for the final sprint story.
+- Server mode: `APP_MODE=fixture`, `XRPL_MODE=fixture`.
+- Future live mode: server-only environment variables, never `VITE_` secrets.

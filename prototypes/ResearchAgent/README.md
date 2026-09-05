@@ -16,10 +16,12 @@ Open [http://localhost:5173](http://localhost:5173). The default is `APP_MODE=fi
 no credentials, network, publisher account, or XRPL seed is required. The API
 listens on port 8788 and persists fixture runs in `data/runs.json`.
 
-Use `Run research`, then inspect the candidate desk. The canonical decisions
+Choose a question and a website allowlist first, then confirm the working
+decision, source universe, and manual token cap in the scope card. Start
+research to inspect twenty ranked fixture articles. The canonical decisions
 are Buy Northstar S$0.20, Skip Circuit Note, Buy Meridian S$0.80, and record
-GridScope as blocked. Synthesize the dossier to see the before/after thesis and
-exact evidence spans.
+GridScope as blocked. Assemble the cited answer to see the before/after thesis
+and exact evidence spans.
 
 ## Commands
 
@@ -39,7 +41,8 @@ provider adapters; keys are never prefixed with `VITE_` or sent to the browser.
 
 ## Trust boundaries
 
-Premium fixture bodies are stored in `server/premium-store.ts` and are absent
+Premium fixture bodies are stored in `server/premium-store.ts` and
+`data/mock-articles.json`; they are absent
 from the client bundle and public responses before purchase. Fixture payment is
 explicitly a simulation and never claims to have paid a real publisher.
 `SECURITY.md`, `ARCHITECTURE.md`, `DESIGN.md`, `UX-CONTRACT.md`, and

@@ -4,14 +4,23 @@ export type Phase = 'DRAFT' | 'PLANNING' | 'DISCOVERING' | 'RANKING' | 'READING_
 export type Source = {
   id: string; publisher: string; title: string; date: string; kind: 'ARTICLE' | 'REPORT' | 'DATASET_QUERY'; accessTier: AccessTier;
   priceCents: number; preview: string; tags: string[]; entities: string[]; authority: 'HIGH' | 'MEDIUM' | 'LOW'; originality: 'ORIGINAL' | 'DERIVATIVE';
-  familyId: string; familyLabel: string; relevance: number; gapMatch: number; novelty: number; trustNote: string; fixture: true;
+  familyId: string; familyLabel: string; relevance: number; gapMatch: number; novelty: number; trustNote: string; fixture: true; siteKey?: string; xrpDrops?: number;
   decision?: Decision; reason?: string; purchasedAt?: string; evidenceSpans?: { id: string; label: string; text: string }[];
 }
 export type Claim = { id: string; text: string; stance: 'SUPPORTS' | 'CHALLENGES' | 'UNCERTAIN'; materiality: 'MATERIAL' | 'CONTEXT'; sourceIds: string[]; familyCount: number; spanIds: string[] }
+export type ResearchConfig = {
+  question: string;
+  decision: string;
+  horizon: string;
+  tokenLimit: number;
+  sourceTypes: string[];
+  sourceAllowlist?: string[];
+}
 export type Run = {
   runId: string; version: number; phase: Phase; paused: boolean; cancelled: boolean; budgetCents: number; spentCents: number;
   sources: Source[]; events: { id: string; type: string; label: string; at: string }[]; gap: { question: string; importance: 'HIGH'; state: 'OPEN' | 'PARTIAL' | 'RESOLVED' };
   thesis: { open: string; afterNorthstar?: string; afterMeridian?: string; current: string }; claims: Claim[]; dossierReady: boolean; llm: { provider: string; status: string; model: string }; semanticStatus: 'precomputed' | 'unavailable';
+  config: ResearchConfig;
 }
 
 export const QUESTION = 'Is the AI data-centre investment boom sustainable through 2028?'
