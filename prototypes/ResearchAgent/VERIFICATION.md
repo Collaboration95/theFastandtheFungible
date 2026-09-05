@@ -14,7 +14,7 @@ Date: 2026-09-05  |  Working tree: local prototype under `tftf/prototypes/Resear
 The fixture corpus contains 12 sources and 8 evidence families. The server
 persists runs and event records in `data/runs.json`; premium bodies are kept in
 the server-only store. The canonical run shows S$2.00 → S$0.20 Northstar →
-S$0.80 Meridian → S$1.00 remaining, with Circuit skipped as redundant and
+S$0.80 Grid Operators Report → S$1.00 remaining, with Circuit skipped as redundant and
 GridScope blocked by the S$1.00 per-source ceiling. The dossier is marked
 `FIXTURE RESEARCH · NOT INVESTMENT ADVICE` and claims cite exact unlocked spans.
 
@@ -29,7 +29,10 @@ GridScope blocked by the S$1.00 per-source ceiling. The dossier is marked
 
 ## Limitations
 
-This handoff uses fixture retrieval, fixture synthesis, and simulated settlement.
-OpenAI/Groq calls, optional live metadata adapters, XRPL Testnet settlement,
-Playwright/axe screenshot capture, and a production transactional database are
-release follow-ups rather than prerequisites for the no-credential demo.
+The no-credential test flow uses fixture retrieval, fixture synthesis, and
+simulated settlement. The live Groq synthesis path was exercised on 2026-09-05:
+the API emitted synthesis-start, token, and completion SSE events, then returned
+a `GROQ RESEARCH` dossier with validated source and evidence-span citations.
+Optional live metadata adapters, XRPL Testnet settlement, Playwright/axe
+screenshot capture, and a production transactional database remain release
+follow-ups.

@@ -16,11 +16,12 @@ Newsreader is used for question and conclusion hierarchy. IBM Plex Sans carries
 the interface and body copy. IBM Plex Mono is reserved for token caps, prices,
 source scores, state labels, and event metadata.
 
-The signature element is the **scope bar**: a compact, editable checkpoint
-between the first chat message and research execution. It makes the decision,
-horizon, allowed source families, and analysis token cap explicit. No decorative
-workflow ribbon, hero statistics, or presentation-only explainer blocks are
-part of the product shell.
+The signature elements are the **scope bar** and the **research path**. The
+scope bar is a compact, editable checkpoint before research begins. The path is
+a numbered vertical sequence—Search, Purchase, Answer—that keeps the evidence,
+XRPL settlement, and conclusion in one reading order. It is a status-bearing
+workflow, not a decorative ribbon; hero statistics and presentation-only
+explainer blocks are not part of the product shell.
 
 ## Palette and token ownership
 

@@ -7,6 +7,6 @@ grid-capacity gap, and buys only the premium sources with defensible marginal
 value.
 
 The canonical flow buys Northstar Wire for S$0.20, skips the redundant Circuit
-Note, buys The Meridian Ledger for S$0.80, and blocks GridScope Asia at S$1.40
+Note, buys the Grid Operators Report for S$0.80, and blocks GridScope Asia at S$1.40
 because the remaining S$1.00 cannot satisfy the mandate. The final artifact is
 a one-page, claim-linked dossier—not a chat transcript or investment advice.

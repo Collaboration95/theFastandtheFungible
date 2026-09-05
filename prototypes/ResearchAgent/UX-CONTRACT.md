@@ -17,10 +17,18 @@ The primary operation is a two-step research conversation:
    buy/skip/block mutation with deterministic budget and payment guards.
    Source rows remain available for inspection and additional manual actions.
 5. **Synthesize** — after a verified purchase, the user may create a short
-   dossier with claims linked to accessible evidence spans.
+   dossier. Groq streams a structured, grounded draft from the question,
+   budget, purchase decisions, and accessible evidence spans; the server
+   validates citations before the dossier becomes ready.
+
+During an active run, those stages render as one numbered vertical path:
+**1. Search**, **2. Purchase**, **3. Answer**. The source set belongs to Search,
+the settlement and receipt belong to Purchase, and the working answer or cited
+dossier belongs to Answer. The run view does not repeat those facts in a
+separate sidebar or duplicate answer panel.
 
 The canonical fixture decisions remain: buy Northstar Wire for S$0.20, skip
-Circuit Note as redundant, buy The Meridian Ledger for S$0.80, and block
+Circuit Note as redundant, buy the Grid Operators Report for S$0.80, and block
 GridScope Asia at S$1.40 because the remaining authority is S$1.00.
 
 ## Canonical owners
@@ -33,7 +41,7 @@ GridScope Asia at S$1.40 because the remaining authority is S$1.00.
 | Candidate action | Groq purchase planner + purchases API | LLM chooses from retrieved metadata; server enforces Buy, Skip, or Block |
 | Evidence inspection | `EvidenceDrawer` | Focus, Escape, backdrop, exact spans, and focus restoration |
 | Budget | Server `purchases` route | Integer cents, per-source ceiling, no overdraft |
-| Dossier | Server `synthesize` + `DossierPanel` | Claims cite accessible spans and preserve uncertainty |
+| Dossier | Server `synthesize` + `DossierPanel` | Groq streams grounded JSON; claims cite accessible spans and preserve uncertainty |
 | Status feedback | `statusbar` + app live region | Material changes only; raw backend errors are not surfaced |
 | Visual tokens | `src/styles.css` | Semantic CSS variables documented in `DESIGN.md` |
 
@@ -50,6 +58,10 @@ authoritative state wins after every mutation.
 question surface. It does not claim to delete or rewrite persisted evidence.
 Pause/resume and stop remain available in the research header while a run is
 active. Premium previews never expose protected text before a verified purchase.
+During synthesis, the UI shows the streamed Groq response as an intermediate
+draft. If Groq times out, returns invalid JSON, or cites an unavailable
+source/span, the server uses the deterministic fixture dossier and labels it as
+a fallback.
 
 ## Accessibility and resilience
 

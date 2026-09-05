@@ -24,7 +24,8 @@ budget in the same websites panel. Start research to run the semantic fixture
 retrieval. Groq receives only the retrieved previews and metadata, chooses an
 eligible purchase action, and the server executes it against XRPL Testnet when
 live mode is enabled. The purchased fixture article is then unlocked. Assemble
-the cited answer to see the before/after thesis and exact evidence spans.
+the cited answer to stream a grounded dossier from Groq; the final JSON is
+validated against the accessible source and evidence-span IDs before display.
 
 ## Commands
 
@@ -39,8 +40,9 @@ npm run seed
 The implementation exposes versioned REST routes under `/api/v1`, including
 health, scenario, persisted runs, reset/step/cancel, sources, purchases,
 synthesis, dossier, receipt, and an SSE stream. `LLM_PROVIDER=fixture` is the
-deterministic fallback. OpenAI and Groq are the intended compatible server-side
-provider adapters; keys are never prefixed with `VITE_` or sent to the browser.
+deterministic fallback. The live provider currently targets Groq’s
+OpenAI-compatible Chat Completions API; keys are never prefixed with `VITE_` or
+sent to the browser.
 
 ## Trust boundaries
 
