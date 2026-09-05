@@ -1,9 +1,6 @@
 # ResearchAgent
 
-ResearchAgent is a SingHacks 2026 Ripple/XRPL-track prototype for budget-aware
-research. Give it a question, a list of approved websites, and a research
-budget. It retrieves evidence, identifies what is missing, decides which
-premium source is worth buying, and produces a cited dossier.
+ 
 
 The product is designed around a simple rule: an agent should spend money only
 when the next piece of evidence can materially change or strengthen the answer.
@@ -242,9 +239,6 @@ are stored server-side and are not returned before purchase.
 Detailed implementation notes are in:
 
 - [`ARCHITECTURE.md`](prototypes/ResearchAgent/ARCHITECTURE.md)
-- [`SECURITY.md`](prototypes/ResearchAgent/SECURITY.md)
-- [`VERIFICATION.md`](prototypes/ResearchAgent/VERIFICATION.md)
-- [`PRODUCT.md`](prototypes/ResearchAgent/PRODUCT.md)
 
 ## Troubleshooting
 
