@@ -1,5 +1,9 @@
 # ResearchAgent — Autonomous Build Goal and Verification Contract
 
+> Archived historical hackathon build contract. It documents the September
+> 2026 prototype sprint and is retained for context; the active contracts live
+> under `../../contracts/`.
+
 **Hackathon context:** SingHacks 2026, Ripple/XRPL track
 
 **Product:** ResearchAgent
@@ -10,9 +14,9 @@
 
 **Canonical question:** *Is the AI data-centre investment boom sustainable through 2028?*
 
-**Document role:** This is the authoritative implementation goal for a coding agent working in repeated autonomous loops. It is the product contract, retrieval specification, backend/LLM contract, UI brief, test plan, demo script, and definition of done.
+**Document role:** This was the authoritative implementation goal for a coding agent working in repeated autonomous loops. It served as the product contract, retrieval specification, backend/LLM contract, UI brief, test plan, demo script, and definition of done for the hackathon sprint.
 
-**Selected design direction:** **Prompt 1 — Black Paper / Trace Desk**, from `archive/website-template/observability-design-prompts.md`, adapted into a clean financial-news research desk. Do not merge other supplied template directions into this prototype. Evoke the discipline and hierarchy of a high-quality financial newspaper without copying Financial Times branding, proprietary assets, article text, or exact layouts.
+**Selected design direction:** **Prompt 1 — Black Paper / Trace Desk**, from an earlier website-template design prompt, adapted into a clean financial-news research desk. Do not merge other supplied template directions into this prototype. Evoke the discipline and hierarchy of a high-quality financial newspaper without copying Financial Times branding, proprietary assets, article text, or exact layouts.
 
 **Required outcome:** a polished, locally runnable, resettable full-stack prototype with a real backend, deterministic retrieval/ranking, simulated free and premium source markets, budget-aware purchase decisions, an evidence-linked dossier, OpenAI/Groq-compatible LLM support, and a no-credential fixture mode that always completes.
 
@@ -796,19 +800,17 @@ A beautiful newspaper shell without a backend is not done. Streaming prose with 
 ### Expected deliverables
 
 ```text
-GOAL.md  README.md  PRODUCT.md  ARCHITECTURE.md  DESIGN.md
-UX-CONTRACT.md  SECURITY.md  VERIFICATION.md  .env.example
-premium-ui.json  src/  server/  fixtures/  scripts/  tests/
-evidence/  verification/
+README.md  docs/contracts/  docs/archive/  docs/qa/  .env.example
+assets/  data/  src/  server/  scripts/  tests/
 ```
 
 README must get a judge into fixture mode within five minutes and explain fixture/OpenAI/Groq switching. `VERIFICATION.md` records date, working-tree identity, commands/results, modes, corpus/ranker versions, screenshots, accessibility, Testnet evidence, and limitations—never secrets or proprietary bodies.
 
 ### Current reference map
 
-- Local visual source: `archive/website-template/observability-design-prompts.md`, Prompt 1
-- Product source: `tftf/prototypes/ideas.txt`, Idea 3
-- Contract example: `tftf/prototypes/Faircut/GOAL.md`
+- Local visual source: the earlier website-template design prompt, Prompt 1
+- Product source: the earlier repository idea notes
+- Contract example: the earlier Faircut prototype contract
 - Groq compatibility/API: <https://console.groq.com/docs/overview> and <https://console.groq.com/docs/api-reference>
 - OpenAI API/structured output: <https://developers.openai.com/api/docs/> and <https://developers.openai.com/api/docs/guides/structured-outputs>
 - Transformers.js: <https://huggingface.co/docs/transformers.js/> and <https://huggingface.co/docs/transformers.js/api/pipelines>

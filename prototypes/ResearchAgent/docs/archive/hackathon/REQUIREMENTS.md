@@ -1,5 +1,8 @@
 # ResearchAgent final sprint requirements
 
+> Archived historical requirements from the final hackathon sprint. The active
+> product contracts are maintained under `../../contracts/`.
+
 Status: implementation contract for the final hackathon pass
 
 This document translates the attached UI feedback and current product evidence

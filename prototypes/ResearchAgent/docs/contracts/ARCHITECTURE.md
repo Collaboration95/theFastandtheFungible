@@ -8,7 +8,7 @@ metadata first and article excerpts only after the exact purchase decision.
 
 ## Visual overview
 
-![ResearchAgent architecture overview](assets/researchagent-architecture-generated.png)
+![ResearchAgent architecture overview](../../assets/research-agent-architecture.png)
 
 This generated overview follows the Quiet Evidence Terminal visual system and
 keeps the architecture at the high-note level. The Mermaid diagram below
