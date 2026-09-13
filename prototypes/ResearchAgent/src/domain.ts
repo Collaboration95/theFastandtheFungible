@@ -8,6 +8,12 @@ export type Source = {
   decision?: Decision; reason?: string; purchasedAt?: string; evidenceSpans?: { id: string; label: string; text: string }[];
   payment?: { mode: 'fixture' | 'live'; network: string; amountDrops: number; transactionHash?: string; ledgerIndex?: number; explorerUrl?: string; settlement: string };
 }
+export type RuntimeStatus = {
+  mode: 'fixture' | 'live';
+  label: 'FIXTURE RESEARCH' | 'XRPL TESTNET RESEARCH';
+  settlement: 'SIMULATION_NOT_SETTLED' | 'VALIDATED';
+  network: 'fixture' | 'testnet';
+}
 export type Claim = { id: string; text: string; stance: 'SUPPORTS' | 'CHALLENGES' | 'UNCERTAIN'; materiality: 'MATERIAL' | 'CONTEXT'; sourceIds: string[]; familyCount: number; spanIds: string[] }
 export type DossierDraft = {
   mode: 'GROQ RESEARCH' | 'FIXTURE RESEARCH'; title: string; conclusion: string;
@@ -28,7 +34,7 @@ export type Run = {
   runId: string; version: number; phase: Phase; paused: boolean; cancelled: boolean; budgetCents: number; spentCents: number;
   sources: Source[]; events: { id: string; type: string; label: string; at: string }[]; gap: { question: string; importance: 'HIGH'; state: 'OPEN' | 'PARTIAL' | 'RESOLVED' };
   thesis: { open: string; afterNorthstar?: string; afterMeridian?: string; current: string }; claims: Claim[]; dossierReady: boolean; dossier?: DossierDraft; llm: { provider: string; status: string; model: string }; semanticStatus: 'precomputed' | 'unavailable';
-  config: ResearchConfig; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK' };
+  config: ResearchConfig; runtime: RuntimeStatus; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK' };
 }
 
 export const QUESTION = 'Is the AI data-centre investment boom sustainable through 2028?'
@@ -44,7 +50,7 @@ export const GAP_QUESTION = 'Independent reporting on grid-connection lead times
 
 export const sources: Source[] = [
   { id:'company-capex', publisher:'Vertex Compute', title:'FY25 capital plan: capacity follows demand', date:'2026-01-28', kind:'ARTICLE', accessTier:'OPEN', priceCents:0, preview:'Vertex Compute says hyperscaler demand supports a multi-year buildout and outlines a larger capital plan.', tags:['capex','demand','capacity'], entities:['Vertex Compute','hyperscalers'], authority:'HIGH', originality:'ORIGINAL', familyId:'family-company', familyLabel:'Company plans', relevance:94, gapMatch:22, novelty:28, trustNote:'Primary issuer statement; not independent validation.', fixture:true },
-  { id:'energy-dataset', publisher:'Singapore Energy Market Authority', title:'Data-centre connection queue and reserve margin', date:'2025-11-04', kind:'DATASET_QUERY', accessTier:'OPEN', priceCents:0, preview:'Public series shows connection requests rising while queue timing and local reserve data remain incomplete.', tags:['grid','interconnection','power','data'], entities:['EMA','Singapore'], authority:'HIGH', originality:'ORIGINAL', familyId:'family-energy', familyLabel:'Public energy data', relevance:89, gapMatch:91, novelty:62, trustNote:'Open primary dataset; lagged and incomplete for 2028.', fixture:true },
+  { id:'energy-dataset', publisher:'Singapore Grid Data Lab', title:'Data-centre connection queue and reserve margin', date:'2025-11-04', kind:'DATASET_QUERY', accessTier:'OPEN', priceCents:0, preview:'Public series shows connection requests rising while queue timing and local reserve data remain incomplete.', tags:['grid','interconnection','power','data'], entities:['EMA','Singapore'], authority:'HIGH', originality:'ORIGINAL', familyId:'family-energy', familyLabel:'Public energy data', relevance:89, gapMatch:91, novelty:62, trustNote:'Synthetic open-data fixture; lagged and incomplete for 2028.', fixture:true },
   { id:'industry-blog', publisher:'Buildout Weekly', title:'Why the next campus is already spoken for', date:'2026-02-10', kind:'ARTICLE', accessTier:'OPEN', priceCents:0, preview:'An industry blog repeats the company-capex narrative and frames demand as the binding constraint.', tags:['capex','demand','buildout'], entities:['Vertex Compute'], authority:'MEDIUM', originality:'DERIVATIVE', familyId:'family-company', familyLabel:'Company plans', relevance:78, gapMatch:17, novelty:8, trustNote:'Derivative commentary; overlaps Vertex Compute.', fixture:true },
   { id:'northstar-wire', publisher:'Northstar Wire', title:'Suppliers feel the pull of the AI buildout', date:'2026-03-02', kind:'ARTICLE', accessTier:'PREMIUM', priceCents:20, preview:'Supplier interviews point to strong near-term demand, but transformer and switchgear lead times are stretching.', tags:['suppliers','equipment','lead-times','demand'], entities:['Northstar Wire','switchgear'], authority:'HIGH', originality:'ORIGINAL', familyId:'family-northstar', familyLabel:'Supplier reporting', relevance:96, gapMatch:72, novelty:80, trustNote:'Independent wire reporting with supplier comments.', fixture:true },
   { id:'circuit-note', publisher:'Circuit Note', title:'AI campuses: the equipment squeeze', date:'2026-03-04', kind:'ARTICLE', accessTier:'PREMIUM', priceCents:30, preview:'A short newsletter echoes Northstar’s supplier bottleneck framing with little additional sourcing.', tags:['suppliers','equipment','lead-times','demand'], entities:['switchgear'], authority:'LOW', originality:'DERIVATIVE', familyId:'family-northstar', familyLabel:'Supplier reporting', relevance:83, gapMatch:68, novelty:11, trustNote:'Heavily overlaps Northstar Wire; no independent family added.', fixture:true },
