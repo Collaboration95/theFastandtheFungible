@@ -148,7 +148,7 @@ async function advance(req: Request, res: Response, action: string) {
   if (action === 'resume') { run.paused = false; emit(run, 'RESEARCH_RESUMED', 'Research resumed from the last verified stage'); await save(run); return response(res, run) }
   if (action === 'run' || action === 'next') {
     if (run.phase === 'DRAFT') { run.phase = 'PLANNING'; emit(run, 'PLAN_CREATED', 'Query plan: demand, delivery constraints, and independent corroboration'); }
-    else if (run.phase === 'PLANNING') { run.phase = 'DISCOVERING'; run.sources = scopedSources(run.config).map((source) => ({ ...source })); emit(run, 'SOURCES_DISCOVERED', `${run.sources.length} mock search previews found within the selected website allowlist`); }
+    else if (run.phase === 'PLANNING') { run.phase = 'DISCOVERING'; run.sources = scopedSources(run.config).map((source) => ({ ...source })); emit(run, 'SOURCES_DISCOVERED', `${run.sources.length} fixture sources discovered within the approved source profiles`); }
     else if (run.phase === 'DISCOVERING') { run.phase = 'RANKING'; emit(run, 'SOURCES_RANKED', 'Deterministic relevance + TF-IDF lexical overlap + tags applied'); }
     else if (run.phase === 'RANKING') { run.phase = 'READING_OPEN'; emit(run, 'OPEN_EVIDENCE_READ', 'Open evidence read; premium bodies remain protected'); }
     else if (run.phase === 'READING_OPEN') { run.phase = 'GAP_ANALYSIS'; run.gap.state = 'OPEN'; emit(run, 'GAP_FOUND', 'Open gap: grid connection lead times and operating capacity by 2028'); }
