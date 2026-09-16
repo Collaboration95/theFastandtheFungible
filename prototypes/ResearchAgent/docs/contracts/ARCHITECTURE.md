@@ -2,8 +2,8 @@
 
 The browser is a view and command surface. The Express server owns retrieval,
 allowlist filtering, ranking, evidence-family lineage, budget arithmetic,
-premium access, fixture x402 quotes, and cited synthesis. The twenty mock
-articles live in `data/mock-articles.json`; the browser receives public
+premium access, fixture x402 quotes, and cited synthesis. The twelve mock
+data-centre articles live in `data/mock-articles.json`; the browser receives public
 metadata first and article excerpts only after the exact purchase decision.
 
 ## Visual overview
@@ -59,9 +59,8 @@ flowchart LR
 ## Current fixture contract
 
 - Budget: S$2.00 total, with an S$1.00 per-source ceiling.
-- Default website allowlist: all eight source profiles shown in the UI.
-- Article corpus: 20 synthetic fixture records with prices and XRPL drop
-  quotes; 12 preserve the original data-centre demo and 8 add bond-market
-  coverage for the final sprint story.
+- Default source-profile allowlist: all seven fixture profiles shown in the UI.
+- Article corpus: 12 synthetic data-centre fixture records with prices and XRP
+  drop quotes. Bond-market records are outside the active scenario.
 - Server mode: `APP_MODE=fixture`, `XRPL_MODE=fixture`.
 - Future live mode: server-only environment variables, never `VITE_` secrets.

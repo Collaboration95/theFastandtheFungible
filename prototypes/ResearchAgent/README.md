@@ -1,7 +1,7 @@
 # ResearchAgent
 
 ResearchAgent is a SingHacks 2026 Ripple/XRPL-track prototype for budget-aware
-research. Give it a question, a list of approved websites, and a research
+research. Give it a question, a list of approved fixture source profiles, and a research
 budget. It retrieves evidence, identifies what is missing, decides which
 premium source is worth buying, and produces a cited dossier.
 
@@ -18,7 +18,7 @@ when the next piece of evidence can materially change or strengthen the answer.
 - React/Vite research desk with an Express API.
 - Editable research question, decision context, horizon, website allowlist,
   and XRP budget.
-- Deterministic retrieval and ranking across 20 synthetic source records.
+- Deterministic retrieval and ranking across 12 synthetic data-centre source records.
 - Evidence-family clustering so duplicate reporting is not counted as
   independent corroboration.
 - Server-side budget enforcement, purchase eligibility, and premium access
@@ -159,7 +159,7 @@ not supported.
 ## Run the demo
 
 1. Enter a research question, or use the data-centre-through-2028 example.
-2. Select the website profiles the agent may use.
+2. Select the synthetic source profiles the agent may use.
 3. Set the XRP research budget. The UI displays the fixture conversion of
    `1 XRP ≈ S$10.00`.
 4. Start research and follow the phases: plan, discover, rank, read open
@@ -226,7 +226,7 @@ The Express API is versioned under `/api/v1`:
 Question + website allowlist
   → React research desk
   → Express API
-  → fixture source registry + deterministic ranking
+  → synthetic fixture source registry + deterministic ranking
   → gap analysis + server-side budget guard
   → x402 quote
   → fixture settlement or validated XRPL Testnet payment
