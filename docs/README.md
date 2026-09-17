@@ -1,7 +1,10 @@
 # ResearchAgent documentation
 
-The application itself remains unchanged. This directory contains the active
-product contracts for the next stage of ResearchAgent development.
+This directory contains the active product contracts for the next stage of
+ResearchAgent development.
+
+The application now lives at the repository root. Broader planning context is
+indexed from the root [README](../README.md).
 
 ## Active contracts
 
