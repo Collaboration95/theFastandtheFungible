@@ -8,6 +8,7 @@ import { rankSources, QUESTION, CANONICAL_THESIS, AFTER_NORTHSTAR, AFTER_MERIDIA
 import { loadFixtureCatalog, toPurchasedSpans, toPublicSpans, type FixtureArticle } from './catalog.js'
 import { planPurchase, synthesizeDossier, type DossierEvidencePacket } from './llm.js'
 import { loadRunStore, persistRunStore, type PersistenceMode } from './persistence.js'
+import { createResearchPlan } from '../src/research-plan.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', 'data')
@@ -131,7 +132,8 @@ function state(run: Run) {
 function getRun(req: Request, res: Response) { const run = runs.get(String(req.params.runId)); if (!run) { res.status(404).json({ error: 'Research run not found' }); return null }; return run }
 function initRun(input: Partial<ResearchConfig> = {}): ManagedRun {
   const config = makeConfig(input)
-  const run: ManagedRun = { runId: `run_${randomUUID().slice(0, 8)}`, stateMode: 'fresh', version: 1, phase: 'DRAFT', paused: false, cancelled: false, budgetCents: config.budgetCents, spentCents: 0, sources: [], events: [], gap: { question: GAP_QUESTION, importance: 'HIGH', state: 'OPEN' }, thesis: { open: CANONICAL_THESIS, current: CANONICAL_THESIS }, claims: [], dossierReady: false, llm: { provider: process.env.LLM_PROVIDER ?? 'fixture', status: 'fixture fallback ready', model: process.env.LLM_MODEL ?? 'fixture-research-v1' }, semanticStatus: 'precomputed', config, runtime: activeRuntime, purchaseKeys: {} };
+  const plan = createResearchPlan('BALANCED_DILIGENCE', config)
+  const run: ManagedRun = { runId: `run_${randomUUID().slice(0, 8)}`, stateMode: 'fresh', version: 1, phase: 'DRAFT', paused: false, cancelled: false, budgetCents: config.budgetCents, spentCents: 0, sources: [], events: [], gap: { question: GAP_QUESTION, importance: 'HIGH', state: 'OPEN' }, thesis: { open: CANONICAL_THESIS, current: CANONICAL_THESIS }, claims: [], dossierReady: false, llm: { provider: process.env.LLM_PROVIDER ?? 'fixture', status: 'fixture fallback ready', model: process.env.LLM_MODEL ?? 'fixture-research-v1' }, semanticStatus: 'precomputed', config, plan, runtime: activeRuntime, purchaseKeys: {} };
   emit(run, 'BRIEF_READY', `Brief ready · ${config.tokenLimit.toLocaleString()} token cap · ${run.runtime.label}`); return run
 }
 function save(run: Run) {
