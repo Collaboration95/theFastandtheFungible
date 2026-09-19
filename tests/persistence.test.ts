@@ -170,6 +170,69 @@ describe('local run persistence', () => {
     }
   })
 
+  it('keeps a purchased receipt addressable after reset while starting a clean replacement run', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'research-agent-reset-'))
+    temporaryDirectories.push(directory)
+    const port = await freePort()
+    const child = await startServer(join(directory, 'runs.json'), port)
+    const baseUrl = `http://127.0.0.1:${port}`
+    const request = (path: string, body?: unknown) => fetch(`${baseUrl}${path}`, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+
+    try {
+      const created = await (await request('/api/v1/research-runs', {})).json() as { runId: string }
+      for (let step = 0; step < 2; step += 1) await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
+      const sourcePath = `/api/v1/research-runs/${created.runId}/sources/meridian-ledger`
+      const quoted = await (await request(sourcePath)).json() as { premium: { quoteHash: string } }
+      const purchased = await request(`/api/v1/research-runs/${created.runId}/purchases`, {
+        sourceId: 'meridian-ledger',
+        action: 'BUY',
+        approval: 'APPROVED',
+        quoteHash: quoted.premium.quoteHash,
+        idempotencyKey: 'reset-receipt-purchase',
+      })
+      expect(purchased.status).toBe(200)
+
+      const beforeReset = await (await request(`/api/v1/research-runs/${created.runId}/receipt`)).json() as {
+        runId: string
+        purchases: { sourceId: string; decision: string; amountCents: number; settlement: string }[]
+      }
+      expect(beforeReset).toMatchObject({
+        runId: created.runId,
+        purchases: [{ sourceId: 'meridian-ledger', decision: 'BUY', amountCents: 80, settlement: 'SIMULATION_NOT_SETTLED' }],
+      })
+
+      const resetResponse = await request(`/api/v1/research-runs/${created.runId}/reset`, {})
+      expect(resetResponse.status).toBe(200)
+      const reset = await resetResponse.json() as {
+        runId: string
+        spentCents: number
+        sources: unknown[]
+        persistence: { persistedRunCount: number }
+      }
+      expect(reset.runId).not.toBe(created.runId)
+      expect(reset.spentCents).toBe(0)
+      expect(reset.sources).toEqual([])
+      expect(reset.persistence.persistedRunCount).toBe(2)
+
+      const prior = await (await request(`/api/v1/research-runs/${created.runId}`)).json() as {
+        spentCents: number
+        sources: { id: string; decision?: string }[]
+      }
+      expect(prior.spentCents).toBe(80)
+      expect(prior.sources.find((source) => source.id === 'meridian-ledger')?.decision).toBe('BUY')
+      await expect(request(`/api/v1/research-runs/${created.runId}/receipt`).then((response) => response.json())).resolves.toMatchObject({
+        runId: created.runId,
+        purchases: [{ sourceId: 'meridian-ledger', decision: 'BUY', amountCents: 80 }],
+      })
+    } finally {
+      await stopServer(child)
+    }
+  })
+
   it('rejects missing or stale quote approval without spending or unlocking premium evidence', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'research-agent-quote-'))
     temporaryDirectories.push(directory)
