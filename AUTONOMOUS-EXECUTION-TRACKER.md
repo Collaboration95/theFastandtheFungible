@@ -48,7 +48,7 @@ has unrelated, ready work, dispatch it in parallel instead.
 | Clean install and baseline | `npm ci`, `npm run verify` | Passed | `7a53ac9` scopes Vitest to product unit tests; clean install passed and `npm run verify` passes. |
 | Fast local gate | `check:fast` runs typecheck + deterministic Vitest tests | Passed | `c280f32`; `npm run check:fast` passes. |
 | Commit hook | Tracked Husky hook invokes `npm run check:fast` | Passed | `c280f32`; clean-install Husky pre-commit hook invocation passes. |
-| Browser proof baseline | Existing Playwright and accessibility suites assessed and documented | Not started | |
+| Browser proof baseline | Existing Playwright and accessibility suites assessed and documented | Passed | `b32dca4`; cross-platform fixture server; e2e 5/5 and a11y 1/1 pass. |
 
 Keep the existing npm/TypeScript/Vitest/Playwright stack. Full `verify` is an
 integration gate; e2e and accessibility checks run at workflow milestones and
