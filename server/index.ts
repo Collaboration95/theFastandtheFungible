@@ -5,8 +5,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Client, Wallet, type TxResponse } from 'xrpl'
-import { sources, rankSources, QUESTION, CANONICAL_THESIS, AFTER_NORTHSTAR, AFTER_MERIDIAN, GAP_QUESTION, DEFAULT_BUDGET_CENTS, MIN_BUDGET_CENTS, MAX_BUDGET_CENTS, type Run, type Source, type Decision, type Phase, type ResearchConfig, type DossierDraft, type RuntimeStatus } from '../src/domain.js'
-import { premiumBodies } from './premium-store.js'
+import { rankSources, QUESTION, CANONICAL_THESIS, AFTER_NORTHSTAR, AFTER_MERIDIAN, GAP_QUESTION, DEFAULT_BUDGET_CENTS, MIN_BUDGET_CENTS, MAX_BUDGET_CENTS, type Run, type Source, type Decision, type Phase, type ResearchConfig, type DossierDraft, type RuntimeStatus } from '../src/domain.js'
+import { loadFixtureCatalog, toPurchasedSpans, toPublicSpans, type FixtureArticle } from './catalog.js'
 import { planPurchase, synthesizeDossier, type DossierEvidencePacket } from './llm.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -26,13 +26,12 @@ app.use(express.json({ limit: '64kb' }))
 app.use((_req, res, next) => { res.setHeader('X-ResearchAgent-Mode', mode); res.setHeader('X-Content-Type-Options', 'nosniff'); next() })
 
 let runs = new Map<string, Run>()
-let sourceCatalog: Source[] = sources
-type MockArticle = { id: string; publisher: string; siteKey: string; title: string; date: string; kind: Source['kind']; accessTier: Source['accessTier']; priceCents: number; xrpDrops: number; preview: string; article: string; quote: string; tags: string[]; entities: string[]; authority: Source['authority']; originality: Source['originality']; familyId: string; familyLabel: string; relevance: number; gapMatch: number; novelty: number; trustNote: string }
-let mockArticles = new Map<string, MockArticle>()
+let sourceCatalog: Source[] = []
+let mockArticles = new Map<string, FixtureArticle>()
 const clients = new Map<string, Set<Response>>()
 const now = () => new Date().toISOString()
 const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16)
-const fixtureSiteKeys = ['financial-press', 'wire-services', 'public-data', 'specialist-research', 'company-filings', 'macro-research', 'infrastructure-press']
+let fixtureSiteKeys: string[] = []
 
 function makeConfig(input: Partial<ResearchConfig> = {}): ResearchConfig {
   return {
@@ -47,14 +46,10 @@ function makeConfig(input: Partial<ResearchConfig> = {}): ResearchConfig {
 }
 
 async function loadSourceCatalog() {
-  try {
-    const raw = await readFile(join(dataDir, 'mock-articles.json'), 'utf8')
-    const articles = JSON.parse(raw) as MockArticle[]
-    mockArticles = new Map(articles.map((article) => [article.id, article]))
-    sourceCatalog = articles.map(({ article: _article, quote: _quote, ...source }) => ({ ...source, fixture: true as const }))
-  } catch {
-    sourceCatalog = sources
-  }
+  const catalog = await loadFixtureCatalog()
+  mockArticles = catalog.byId
+  sourceCatalog = catalog.sources
+  fixtureSiteKeys = catalog.siteKeys
 }
 
 function sourceIsAllowed(source: Source, config: ResearchConfig) {
@@ -114,7 +109,7 @@ async function load() { try { const raw = await readFile(dataFile, 'utf8'); cons
 async function persist() { await mkdir(dataDir, { recursive: true }); await writeFile(dataFile, JSON.stringify([...runs.values()], null, 2)) }
 function emit(run: Run, type: string, label: string) { const event = { id: `${run.events.length + 1}`, type, label, at: now() }; run.events.push(event); clients.get(run.runId)?.forEach((res) => res.write(`id: ${event.id}\nevent: ${type}\ndata: ${JSON.stringify(event)}\n\n`)) }
 function emitStream(run: Run, type: string, data: Record<string, unknown>) { const event = { id: `stream-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, runId: run.runId, type, ...data }; clients.get(run.runId)?.forEach((res) => res.write(`id: ${event.id}\nevent: ${type}\ndata: ${JSON.stringify(event)}\n\n`)) }
-function publicSource(source: Source, run: Run): Source { const purchased = run.sources.find((item) => item.id === source.id); const openSpan = source.accessTier === 'OPEN' && mockArticles.get(source.id) ? [{ id: `${source.id}-open`, label: 'Open article excerpt', text: mockArticles.get(source.id)!.quote }] : undefined; return { ...source, decision: purchased?.decision, reason: purchased?.reason, purchasedAt: purchased?.purchasedAt, evidenceSpans: purchased?.evidenceSpans ?? openSpan } }
+function publicSource(source: Source, run: Run): Source { const purchased = run.sources.find((item) => item.id === source.id); const article = mockArticles.get(source.id); const openSpans = article ? toPublicSpans(article) : undefined; return { ...source, decision: purchased?.decision, reason: purchased?.reason, purchasedAt: purchased?.purchasedAt, evidenceSpans: purchased?.evidenceSpans ?? openSpans } }
 function sourceType(source: Source): string { if (source.familyId === 'family-company') return 'primary'; if (source.familyId === 'family-energy' || source.kind === 'DATASET_QUERY') return 'public'; if (source.familyId === 'family-northstar' || source.familyId === 'family-meridian') return 'independent'; return 'specialist' }
 function state(run: Run) { return { runId: run.runId, phase: run.phase, paused: run.paused, cancelled: run.cancelled, budgetCents: run.budgetCents, spentCents: run.spentCents, remainingCents: run.budgetCents - run.spentCents, rawSourceCount: run.sources.length, familyCount: new Set(run.sources.map((source) => source.familyId)).size, gap: run.gap, thesis: run.thesis, claims: run.claims, events: run.events, dossierReady: run.dossierReady, dossier: run.dossier, llm: run.llm, semanticStatus: run.semanticStatus, runtime: run.runtime, purchasePlan: run.purchasePlan, config: run.config, sources: run.sources.map((source) => publicSource(source, run)) } }
 function getRun(req: Request, res: Response) { const run = runs.get(String(req.params.runId)); if (!run) { res.status(404).json({ error: 'Research run not found' }); return null }; return run }
@@ -132,7 +127,7 @@ app.get('/api/v1/scenarios/data-centre-2028', (_req, res) => res.json({ scenario
 app.post('/api/v1/research-runs', async (req, res) => { const run = initRun(req.body ?? {}); await save(run); return response(res.status(201), run) })
 app.get('/api/v1/research-runs/:runId', (req, res) => { const run = getRun(req, res); return run ? response(res, run) : undefined })
 app.get('/api/v1/research-runs/:runId/sources', (req, res) => { const run = getRun(req, res); return run ? res.json(run.sources.map((source) => publicSource(source, run))) : undefined })
-app.get('/api/v1/research-runs/:runId/sources/:sourceId', (req, res) => { const run = getRun(req, res); if (!run) return; const source = run.sources.find((item) => item.id === req.params.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const visible = publicSource(source, run); if (source.accessTier === 'PREMIUM' && visible.decision !== 'BUY') return res.json({ ...visible, premium: { status: 'PAYMENT_REQUIRED', ...quoteFor(run, source) } }); return res.json({ ...visible, premium: source.accessTier === 'PREMIUM' ? { status: 'UNLOCKED', contentHash: hash(premiumBodies[source.id] ?? mockArticles.get(source.id)?.article), ...quoteFor(run, source) } : { status: 'OPEN' } }) })
+app.get('/api/v1/research-runs/:runId/sources/:sourceId', (req, res) => { const run = getRun(req, res); if (!run) return; const source = run.sources.find((item) => item.id === req.params.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const visible = publicSource(source, run); if (source.accessTier === 'PREMIUM' && visible.decision !== 'BUY') return res.json({ ...visible, premium: { status: 'PAYMENT_REQUIRED', ...quoteFor(run, source) } }); return res.json({ ...visible, premium: source.accessTier === 'PREMIUM' ? { status: 'UNLOCKED', contentHash: hash(mockArticles.get(source.id)?.article), ...quoteFor(run, source) } : { status: 'OPEN' } }) })
 app.post('/api/v1/research-runs/:runId/reset', async (req, res) => { const run = getRun(req, res); if (!run) return; const fresh = initRun(); fresh.runId = run.runId; fresh.runtime = run.runtime; fresh.events = [...run.events]; emit(fresh, 'RESEARCH_RESET', `${fresh.runtime.label} reset; external evidence is preserved`); await save(fresh); return response(res, fresh) })
 app.post('/api/v1/research-runs/:runId/cancel', async (req, res) => { const run = getRun(req, res); if (!run) return; run.cancelled = true; run.phase = 'CANCELLED'; emit(run, 'RESEARCH_CANCELLED', 'Research paused with completed purchases preserved'); await save(run); return response(res, run) })
 app.post('/api/v1/research-runs/:runId/plan', async (req, res) => advance(req, res, 'plan'))
@@ -191,7 +186,7 @@ function evidencePacket(run: Run): DossierEvidencePacket {
       originality: source.originality,
       decision: source.decision,
       reason: source.reason,
-      evidenceSpans: source.evidenceSpans ?? (source.accessTier === 'OPEN' && mockArticles.get(source.id) ? [{ id: `${source.id}-open`, label: 'Open article excerpt', text: mockArticles.get(source.id)!.quote }] : undefined),
+       evidenceSpans: source.evidenceSpans ?? (source.accessTier === 'OPEN' && mockArticles.get(source.id) ? toPublicSpans(mockArticles.get(source.id)!) : undefined),
     })),
   }
 }
@@ -215,14 +210,14 @@ function fixtureDossier(run: Run): DossierDraft {
 function validateDossier(run: Run, draft: Awaited<ReturnType<typeof synthesizeDossier>>): DossierDraft {
   const sourceIds = new Set(run.sources.map((source) => source.id))
   const spanIds = new Set(run.sources.flatMap((source) => {
-    const spans = source.evidenceSpans ?? (source.accessTier === 'OPEN' && mockArticles.get(source.id) ? [{ id: `${source.id}-open` }] : [])
+    const spans = source.evidenceSpans ?? (source.accessTier === 'OPEN' && mockArticles.get(source.id) ? toPublicSpans(mockArticles.get(source.id)!) ?? [] : [])
     return spans.map((span) => span.id)
   }))
   const claims = draft.claims.map((claim) => {
     if (claim.sourceIds.some((id) => !sourceIds.has(id))) throw new Error(`Groq cited an unknown source: ${claim.sourceIds.join(', ')}`)
     const groundedSpanIds = claim.spanIds.length ? claim.spanIds : claim.sourceIds.flatMap((sourceId) => {
       const source = run.sources.find((item) => item.id === sourceId)
-      const spans = source?.evidenceSpans ?? (source?.accessTier === 'OPEN' && mockArticles.get(sourceId) ? [{ id: `${sourceId}-open` }] : [])
+      const spans = source?.evidenceSpans ?? (source?.accessTier === 'OPEN' && mockArticles.get(sourceId) ? toPublicSpans(mockArticles.get(sourceId)!) ?? [] : [])
       return spans.map((span) => span.id).slice(0, 1)
     })
     if (!groundedSpanIds.length || groundedSpanIds.some((id) => !spanIds.has(id))) throw new Error(`Groq cited an unknown evidence span: ${claim.spanIds.join(', ')}`)
@@ -279,7 +274,7 @@ app.post('/api/v1/research-runs/:runId/purchases', async (req, res) => { const r
       return res.status(502).json({ error: `XRPL Testnet payment failed: ${(error as Error).message}` })
     }
   }
-  const current = run.sources.find((item) => item.id === source.id); if (current) { current.decision = 'BUY'; current.reason = source.id === 'northstar-wire' ? 'Bought for independent supplier reporting and marginal delivery evidence.' : 'Bought because the article adds material evidence to the active gap.'; current.purchasedAt = now(); current.evidenceSpans = premiumBodies[source.id]?.spans ?? (mockArticles.get(source.id) ? [{ id: `${source.id}-quote`, label: 'Mock article excerpt', text: mockArticles.get(source.id)!.quote }] : undefined); current.payment = payment }
+  const current = run.sources.find((item) => item.id === source.id); if (current) { const article = mockArticles.get(source.id); current.decision = 'BUY'; current.reason = source.id === 'northstar-wire' ? 'Bought for independent supplier reporting and marginal delivery evidence.' : 'Bought because the article adds material evidence to the active gap.'; current.purchasedAt = now(); current.evidenceSpans = article ? toPurchasedSpans(article) : undefined; current.payment = payment }
   run.spentCents += source.priceCents; run.phase = 'PURCHASED'; if (idempotencyKey) run.purchaseKeys = { ...(run.purchaseKeys ?? {}), [idempotencyKey]: source.id }; if (source.id === 'northstar-wire') run.thesis.afterNorthstar = `${run.thesis.open} ${AFTER_NORTHSTAR}`; if (source.id === 'meridian-ledger') { run.thesis.afterMeridian = AFTER_MERIDIAN; run.thesis.current = AFTER_MERIDIAN; run.gap.state = 'RESOLVED' }
   emit(run, 'PREMIUM_PURCHASE_SETTLED', `${source.publisher} unlocked via ${payment.mode === 'live' ? 'validated XRPL Testnet payment' : 'fixture payment simulation'} · ${source.xrpDrops?.toLocaleString() ?? '—'} drops`); await save(run); return response(res, run)
 })

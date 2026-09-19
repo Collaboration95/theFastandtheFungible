@@ -45,10 +45,10 @@ has unrelated, ready work, dispatch it in parallel instead.
 
 | Check | Required evidence | Status | Commit / note |
 | --- | --- | --- | --- |
-| Clean install and baseline | `npm ci`, `npm run verify` | Not started | |
-| Fast local gate | `check:fast` runs typecheck + deterministic Vitest tests | Not started | |
-| Commit hook | Tracked Husky hook invokes `npm run check:fast` | Not started | |
-| Browser proof baseline | Existing Playwright and accessibility suites assessed and documented | Not started | |
+| Clean install and baseline | `npm ci`, `npm run verify` | Passed | `7a53ac9` scopes Vitest to product unit tests; clean install passed and `npm run verify` passes. |
+| Fast local gate | `check:fast` runs typecheck + deterministic Vitest tests | Passed | `c280f32`; `npm run check:fast` passes. |
+| Commit hook | Tracked Husky hook invokes `npm run check:fast` | Passed | `c280f32`; clean-install Husky pre-commit hook invocation passes. |
+| Browser proof baseline | Existing Playwright and accessibility suites assessed and documented | Passed | `b32dca4`; cross-platform fixture server; e2e 5/5 and a11y 1/1 pass. |
 
 Keep the existing npm/TypeScript/Vitest/Playwright stack. Full `verify` is an
 integration gate; e2e and accessibility checks run at workflow milestones and
@@ -62,12 +62,12 @@ already complete and are intentionally not part of this 20-issue run.
 
 | Wave | Issue | Outcome | Depends on | Initial state | Integrated commit / tests / note |
 | --- | --- | --- | --- | --- | --- |
-| 1 | [#8 RA-01](https://github.com/Collaboration95/theFastandtheFungible/issues/8) | Canonical validated article fixture corpus | — | Ready | |
-| 1 | [#32 UX-01](https://github.com/Collaboration95/theFastandtheFungible/issues/32) | Editable official-view Excalidraw wireframes | — | Ready | |
+| 1 | [#8 RA-01](https://github.com/Collaboration95/theFastandtheFungible/issues/8) | Canonical validated article fixture corpus | — | Review | `33b4fe9`; canonical catalog validation, public-body stripping, `check:fast`, and `verify` pass. |
+| 1 | [#32 UX-01](https://github.com/Collaboration95/theFastandtheFungible/issues/32) | Editable official-view Excalidraw wireframes | — | Review | `1ef4420`; canvas JSON/SVG generation check, `check:fast`, and `verify` pass. |
 | 2 | [#33 UX-02](https://github.com/Collaboration95/theFastandtheFungible/issues/33) | Official landing and application shell | #32 | Backlog | |
-| 2 | [#34 PLAN-01](https://github.com/Collaboration95/theFastandtheFungible/issues/34) | Finance research approaches and plan artifacts | #8 | Backlog | |
-| 2 | [#22 LDF-02](https://github.com/Collaboration95/theFastandtheFungible/issues/22) | Clean, repeatable local research state | #8 | Backlog | |
-| 2 | [#9 RA-02](https://github.com/Collaboration95/theFastandtheFungible/issues/9) | Local wallet and manual research mandate | #8, #32 | Backlog | |
+| 2 | [#34 PLAN-01](https://github.com/Collaboration95/theFastandtheFungible/issues/34) | Finance research approaches and plan artifacts | #8 | Review | `e9d5237`; typed, versioned, deterministic plan artifacts with malformed-artifact rejection; `npm ci`, `verify`, e2e, and a11y pass. |
+| 2 | [#22 LDF-02](https://github.com/Collaboration95/theFastandtheFungible/issues/22) | Clean, repeatable local research state | #8 | Ready | |
+| 2 | [#9 RA-02](https://github.com/Collaboration95/theFastandtheFungible/issues/9) | Local wallet and manual research mandate | #8, #32 | Ready | |
 | 3 | [#35 PLAN-02](https://github.com/Collaboration95/theFastandtheFungible/issues/35) | Reviewable, editable research plan | #33, #34 | Backlog | |
 | 3 | [#20 LDF-04](https://github.com/Collaboration95/theFastandtheFungible/issues/20) | Evidence-family workspace and evidence gaps | #8, #33 | Backlog | |
 | 4 | [#23 LDF-05](https://github.com/Collaboration95/theFastandtheFungible/issues/23) | Rich paywalled article cards and inspection | #20 | Backlog | |
