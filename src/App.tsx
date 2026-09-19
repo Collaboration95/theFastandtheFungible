@@ -81,7 +81,7 @@ function BudgetControl({ value, onChange }:{ value:number; onChange:(value:numbe
 
 function SourceItem({ source, selected, onOpen, onAction }:{ source:Source; selected:boolean; onOpen:()=>void; onAction:(action:'BUY'|'SKIP'|'BLOCKED')=>void }) {
   const decision = source.decision
-  const actionLabel = source.id === 'circuit-note' ? 'Skip' : source.id === 'gridscope-asia' ? 'Block' : 'Buy'
+  const actionLabel = source.id === 'circuit-note' ? 'Skip' : source.id === 'gridscope-asia' ? 'Block' : 'Approve purchase'
   return <article className={`source-row ${selected ? 'is-selected' : ''}`}>
     <div className="source-rank">{String(Math.max(1, source.relevance)).padStart(2, '0')}</div>
     <button type="button" className="source-open" onClick={onOpen} aria-label={`Inspect ${source.publisher}: ${source.title}`}>
@@ -122,7 +122,7 @@ function BudgetCard({ run }:{ run:ServerState }) {
 
 function BriefCard({ run }:{ run:ServerState }) {
   const allowlist = run.config.sourceAllowlist ?? []
-  return <section className="workbench-card brief-card" aria-labelledby="brief-title"><div className="workbench-card-head"><div><span className="kicker">Research brief</span><h2 id="brief-title">The question in scope</h2></div><Badge tone="success">Confirmed</Badge></div><p className="brief-question">{run.config.question}</p><dl className="brief-details"><div><dt>Decision</dt><dd>{run.config.decision}</dd></div><div><dt>Horizon</dt><dd>{run.config.horizon}</dd></div><div><dt>Sources</dt><dd>{allowlist.length} fixture profiles</dd></div></dl><div className="brief-boundary"><span className="kicker">Search boundary</span><p>The agent can read only the approved source profiles. Fixture content is synthetic.</p><div className="brief-sites">{allowlist.map((key) => <span className="brief-site" key={key}>{publisherOptions.find((option) => option.id === key)?.label ?? key}</span>)}</div></div></section>
+  return <section className="workbench-card brief-card" aria-labelledby="brief-title"><div className="workbench-card-head"><div><span className="kicker">Research brief</span><h2 id="brief-title">The question in scope</h2></div><Badge tone="success">Confirmed</Badge></div><p className="brief-question">{run.config.question}</p><dl className="brief-details"><div><dt>Decision</dt><dd>{run.config.decision}</dd></div><div><dt>Horizon</dt><dd>{run.config.horizon}</dd></div><div><dt>Sources</dt><dd>{allowlist.length} fixture profiles</dd></div><div><dt>Wallet</dt><dd>{run.config.walletMode === 'PARTNER_DEMO' ? 'Partner Demo Wallet · no credentials' : 'XRPL Testnet'}</dd></div><div><dt>Approval</dt><dd>Manual approval required</dd></div></dl><div className="brief-boundary"><span className="kicker">Search boundary</span><p>The agent can read only the approved source profiles. Fixture content is synthetic.</p><div className="brief-sites">{allowlist.map((key) => <span className="brief-site" key={key}>{publisherOptions.find((option) => option.id === key)?.label ?? key}</span>)}</div></div></section>
 }
 
 function EvidenceGapCard({ run }:{ run:ServerState }) {
@@ -263,12 +263,7 @@ export default function App() {
       for (let index = 0; index < 6; index += 1) next = await api<ServerState>(`/api/v1/research-runs/${created.runId}/step`, { method:'POST', body:JSON.stringify({ action:'next' }) })
       const planned = await api<PurchaseDecisionResponse>(`/api/v1/research-runs/${created.runId}/purchase-decisions`, { method:'POST', body:'{}' })
       setRun(planned.state)
-      const candidate = planned.state.sources.find((source) => source.id === planned.action.sourceId)
-      if (candidate && planned.action.sourceId) {
-        setMessage(`${planned.action.provider === 'groq' ? 'Groq' : 'Fixture agent'} is buying ${candidate.publisher} with the research budget…`)
-        const purchased = await api<ServerState>(`/api/v1/research-runs/${created.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId:planned.action.sourceId, action:'BUY', idempotencyKey:crypto.randomUUID() }) })
-        setRun(purchased); setMessage(purchased.runtime?.mode === 'live' ? `${candidate.publisher} paid and unlocked on XRPL Testnet.` : `${candidate.publisher} recorded in fixture simulation; synthetic evidence unlocked.`)
-      } else setMessage('Evidence map ready. No affordable premium source was selected.')
+      setMessage(planned.action.sourceId ? `Evidence map ready. Review the recommendation, then explicitly approve or skip it.` : 'Evidence map ready. No affordable premium source was selected.')
       window.scrollTo({ top:0, behavior:'auto' })
     } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
   }
@@ -283,7 +278,7 @@ export default function App() {
     if (!run || busy) return
     setBusy(true)
     try {
-      const next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId, action, idempotencyKey:crypto.randomUUID() }) })
+      const next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId, action, approval: action === 'BUY' ? 'APPROVED' : undefined, idempotencyKey:crypto.randomUUID() }) })
       setRun(next)
       const source = next.sources.find((item) => item.id === sourceId)
       setMessage(action === 'BUY' ? `${source?.publisher} unlocked. The working thesis can now change.` : action === 'SKIP' ? 'Circuit Note skipped because it repeats Northstar Wire.' : 'GridScope blocked: S$1.40 exceeds the remaining S$1.00.')

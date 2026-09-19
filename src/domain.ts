@@ -35,6 +35,9 @@ export type ResearchConfig = {
   budgetCents: number;
   sourceTypes: string[];
   sourceAllowlist?: string[];
+  walletMode: 'PARTNER_DEMO' | 'XRPL_TESTNET';
+  approvalPolicy: 'MANUAL_APPROVAL_REQUIRED';
+  perSourceCeilingCents: number;
 }
 
 /**
