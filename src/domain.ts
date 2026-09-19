@@ -36,11 +36,80 @@ export type ResearchConfig = {
   sourceTypes: string[];
   sourceAllowlist?: string[];
 }
+
+/**
+ * A finance-specific method is a visible, deterministic input to a research
+ * run. It is deliberately not a model/persona identifier: the approach is
+ * represented by the serializable priorities and steps in the plan artifact.
+ */
+export type ResearchApproach = 'BALANCED_DILIGENCE' | 'THESIS_STRESS_TEST' | 'BUDGET_FIRST_SCAN'
+
+export type ResearchEvidencePriority = {
+  id: string;
+  label: string;
+  rationale: string;
+  signals: string[];
+  minimumIndependentFamilies: number;
+}
+
+export type ResearchPlanStepKind = 'FRAME_QUESTION' | 'READ_OPEN_EVIDENCE' | 'MAP_EVIDENCE_FAMILIES' | 'IDENTIFY_GAP' | 'COMPARE_PREMIUM_METADATA' | 'REQUEST_MANUAL_APPROVAL' | 'RECORD_EVIDENCE_IMPACT' | 'SYNTHESIZE_CITED_DOSSIER'
+
+export type ResearchPlanStep = {
+  id: string;
+  order: number;
+  kind: ResearchPlanStepKind;
+  title: string;
+  objective: string;
+  evidencePriorityIds: string[];
+  guard: {
+    access: 'NO_ACCESS_GRANT';
+    payment: 'NO_PAYMENT_AUTHORIZATION';
+  };
+}
+
+export type ResearchPlanStopCondition = {
+  id: string;
+  label: string;
+  condition: string;
+  outcome: 'STOP_AND_REPORT' | 'STOP_BEFORE_PREMIUM_REVIEW' | 'CONTINUE_WITH_UNCERTAINTY';
+}
+
+export type ResearchPlanConfig = Pick<ResearchConfig, 'question' | 'decision' | 'horizon' | 'tokenLimit' | 'budgetCents' | 'sourceTypes'> & {
+  sourceAllowlist?: string[];
+}
+
+export type ResearchPlanArtifact = {
+  artifact: 'RESEARCH_PLAN';
+  version: 1;
+  approach: ResearchApproach;
+  config: ResearchPlanConfig;
+  evidencePriorities: ResearchEvidencePriority[];
+  steps: ResearchPlanStep[];
+  stopConditions: ResearchPlanStopCondition[];
+  budgetIntent: {
+    totalBudgetCents: number;
+    perSourceCeilingCents: number;
+    strategy: 'BALANCE_EVIDENCE' | 'CHALLENGE_THESIS' | 'OPEN_BASELINE_FIRST';
+    premiumGate: 'MANUAL_APPROVAL_REQUIRED';
+    overBudget: 'BLOCK';
+  };
+  executionBoundary: {
+    sourcePolicy: 'CANONICAL_FIXTURE_CATALOG';
+    premiumBodies: 'SERVER_ONLY_UNTIL_PURCHASE';
+    access: 'MANUAL_APPROVAL_REQUIRED';
+    payment: 'MANUAL_APPROVAL_REQUIRED';
+    runtimeLabels: ['FIXTURE RESEARCH', 'XRPL TESTNET RESEARCH'];
+  };
+}
+
+/** Alias used by callers that refer to the artifact simply as a research plan. */
+export type ResearchPlan = ResearchPlanArtifact
+
 export type Run = {
   runId: string; version: number; phase: Phase; paused: boolean; cancelled: boolean; budgetCents: number; spentCents: number;
   sources: Source[]; events: { id: string; type: string; label: string; at: string }[]; gap: { question: string; importance: 'HIGH'; state: 'OPEN' | 'PARTIAL' | 'RESOLVED' };
   thesis: { open: string; afterNorthstar?: string; afterMeridian?: string; current: string }; claims: Claim[]; dossierReady: boolean; dossier?: DossierDraft; llm: { provider: string; status: string; model: string }; semanticStatus: 'precomputed' | 'unavailable';
-  config: ResearchConfig; runtime: RuntimeStatus; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK' };
+  config: ResearchConfig; runtime: RuntimeStatus; plan?: ResearchPlanArtifact; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK' };
 }
 
 export const QUESTION = 'Is the AI data-centre investment boom sustainable through 2028?'
