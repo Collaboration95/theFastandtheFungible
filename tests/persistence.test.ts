@@ -321,7 +321,7 @@ describe('local run persistence', () => {
       const blocked = await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
       expect(blocked.status).toBe(409)
       expect(await blocked.json()).toMatchObject({ error: 'Approve the research plan before execution begins' })
-      for (const endpoint of ['discover', 'rank', 'gaps', 'synthesize']) {
+      for (const endpoint of ['discover', 'rank', 'gaps', 'synthesize', 'purchase-decisions']) {
         const direct = await request(`/api/v1/research-runs/${created.runId}/${endpoint}`, {})
         expect(direct.status).toBe(409)
       }
