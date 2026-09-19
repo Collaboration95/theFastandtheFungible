@@ -85,6 +85,47 @@ describe('local run persistence', () => {
     expect(restarted.runs.get('run_old')).toEqual({ runId: 'run_old', spentCents: 80, unlockedArticle: 'northstar-wire' })
   })
 
+  it('round-trips receipt-critical purchase records without dropping nested evidence or settlement metadata', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'research-agent-receipt-'))
+    temporaryDirectories.push(directory)
+    const file = join(directory, 'runs.json')
+    const purchasedAt = '2026-09-19T05:27:53.220Z'
+    const purchasedRun = {
+      runId: 'run_receipt_fixture',
+      spentCents: 80,
+      budgetCents: 200,
+      sources: [{
+        id: 'meridian-ledger',
+        publisher: 'Grid Operators Report',
+        decision: 'BUY',
+        purchasedAt,
+        evidenceSpans: [{ id: 'meridian-s1', label: 'Grid bottleneck', text: 'A signed connection agreement is not the same as energisation.' }],
+        payment: {
+          mode: 'fixture',
+          network: 'fixture',
+          amountDrops: 80000,
+          settlement: 'SIMULATION_NOT_SETTLED',
+          transactionHash: undefined,
+          ledgerIndex: undefined,
+          explorerUrl: undefined,
+        },
+      }],
+      events: [{ id: '7', type: 'PREMIUM_PURCHASE_SETTLED', label: 'Grid Operators Report unlocked', at: purchasedAt }],
+    }
+
+    await persistRunStore(file, [purchasedRun])
+    const restarted = await loadRunStore<typeof purchasedRun>(file)
+
+    expect(restarted.runs.get(purchasedRun.runId)).toEqual(purchasedRun)
+    expect(restarted.runs.get(purchasedRun.runId)?.sources[0]).toMatchObject({
+      id: 'meridian-ledger',
+      decision: 'BUY',
+      purchasedAt,
+      evidenceSpans: [{ id: 'meridian-s1' }],
+      payment: { mode: 'fixture', amountDrops: 80000, settlement: 'SIMULATION_NOT_SETTLED' },
+    })
+  })
+
   it('fails closed for malformed state instead of silently starting over', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'research-agent-persistence-'))
     temporaryDirectories.push(directory)
