@@ -1,324 +1,370 @@
 # ResearchAgent product roadmap
 
-Deadlinne 1 : 1st October 
-Final Deadline : 1x November 2026
+**Planning date:** 19 September 2026<br>
+**Critique showcase:** 1 October 2026<br>
+**Secondary demo target:** 10 October 2026<br>
+**Singapore FinTech Festival final:** 16 November 2026
 
-## Product decision
+## Product thesis
 
-Keep **ResearchAgent** as the working product name and describe the product
-category as an **Evidence Procurement Guard**:
+ResearchAgent helps finance analysts decide which relevant paywalled research
+article is worth purchasing, buys it within an explicit budget and source
+policy, and proves how the newly accessible evidence changed the analysis.
 
-> An AI research agent that may buy useful evidence within a delegated spending
-> mandate, and must prove what the purchase changed in its conclusion.
+> ResearchAgent buys the right paywalled research—not more research.
 
-The research workflow is the first concrete use case. XRPL is the settlement
-rail and audit proof, not the product by itself.
+This is not a general-purpose agent that buys products or services. Every
+feature in this roadmap must strengthen at least one part of this loop:
 
-The product should not be presented as a general AI assistant, publisher
-marketplace, production payment platform, or generic wallet at either
-milestone.
+1. discover relevant open and paywalled financial research;
+2. identify an evidence gap in the analyst's question;
+3. estimate whether a paywalled article is worth its price;
+4. purchase or reject it under explicit wallet and mandate controls;
+5. use only accessible evidence in the answer; and
+6. show what changed, with citations and a purchase/evidence receipt.
 
-## Product directions considered
+XRPL is the settlement rail and audit proof. It is not the product by itself.
 
-| Direction | Strength | Main problem | Decision |
-| --- | --- | --- | --- |
-| Evidence Procurement Guard | Closest to the working product; clear before/after value | Payment may appear decorative unless access and evidence impact are explicit | **Choose now** |
-| Agent Spend Guard for digital services | Strong general agentic-commerce story | Too broad for October; needs a real merchant and fulfilment model | Use as the November positioning layer |
-| Research Procurement OS for financial institutions | Strong enterprise controls and commercial story | Requires accounts, roles, approvals, licensing, and durable persistence | Later productization |
-| Singapore Infrastructure Intelligence | Locally relevant and concrete | Requires current, legally usable data and can obscure the payment thesis | Use as a vertical, not a separate product |
+## Target user and core job
 
-## The official product flow
+**Primary user:** an investment, strategy, or due-diligence analyst preparing
+an evidence-backed decision memo.
 
-The visual theme should remain. The change is to the product hierarchy,
-navigation, language, and interaction flow.
+**Core job:** when the best evidence may be behind a paywall, help the analyst
+spend a small research budget on the source most likely to improve the
+decision—not on redundant, weak, or unaffordable articles.
 
-### 1. Product landing page
+## Product boundaries
 
-The public first page answers four questions without requiring a demo:
+### In scope
 
-1. **What is this?** Research that can justify why it spent money.
-2. **Who is it for?** An analyst preparing an investment-committee decision.
-3. **How does it work?** Set a mandate, find an evidence gap, approve or
-   pre-authorize a purchase, inspect the changed conclusion and receipt.
-4. **Why trust it?** Approved providers, hard spending limits, protected
-   evidence, claim-level citations, and an auditable receipt.
+- Financial-research questions and analyst workflows.
+- Open and paywalled article discovery within approved sources.
+- Explainable article-value assessment based on relevance, novelty,
+  independence, authority, evidence-gap fit, price, and expected conclusion
+  impact.
+- Editable finance-research plans.
+- Local wallet and spending-mandate setup.
+- Human approval for article purchases in the October experiences.
+- Premium-access state, license metadata, citations, reports, and receipts.
+- Local deterministic demo mode plus clearly labelled optional Testnet mode.
 
-Recommended sections:
+### Explicitly out of scope before 31 October
 
-- Hero with a single `Launch demo` action.
-- Three-step explanation: **Mandate → Evidence decision → Verified result**.
-- One canonical before/after example.
-- Trust and controls section.
-- Honest demo notice: synthetic content and fixture settlement unless Testnet
-  mode is explicitly active.
-- Short product status and limitations section.
+- Hosting, domains, public deployment, production monitoring, or cloud
+  infrastructure.
+- OAuth, login screens, team accounts, subscriptions, or production billing.
+- Mainnet funds.
+- Generic shopping, APIs, compute, travel, or other non-research purchases.
+- A full publisher marketplace, ratings/community systems, or decentralized
+  dispute resolution.
 
-Avoid feature grids, fake customer logos, broad marketplace claims, and visual
-re-theming during the October sprint.
+Hosting may begin after 31 October only after the local product and payment
+loop are stable. Authentication is not required for the November demo unless
+a real integration makes it unavoidable.
 
-### 2. New mandate page
+## Formal product workflow and data chain
 
-Replace the ambiguous "new thread" framing with a clear research mandate:
+The UI and implementation should expose a professional workflow without
+showing hidden chain-of-thought.
 
-- Decision question.
-- Audience and decision context.
-- Time horizon and output type.
-- Approved source profiles.
-- Total research budget and per-source ceiling.
-- Purchase authority: manual approval for the October showcase. Add bounded
-  auto-buy as a later policy option, not as the default.
-- Runtime mode: Partner Demo Sandbox, or XRPL Testnet when explicitly enabled.
+### Inputs
 
-The default critique path should be pre-filled and runnable without
-credentials.
+- Research question and decision context.
+- Audience, horizon, and desired report type.
+- Finance-research approach or editable plan.
+- Approved source profiles and source exclusions.
+- Wallet mode, available balance, total research budget, per-article ceiling,
+  and approval policy.
 
-### 3. Research workspace
+### Workflow artifacts
 
-Do not make the user interpret one very long page. Give the run a compact,
-visible structure:
+1. **Research mandate** — objective, constraints, approved sources, budget.
+2. **Research plan** — ordered questions, evidence requirements, and stop
+   conditions selected from a finance methodology and editable by the user.
+3. **Evidence map** — open evidence, premium previews, evidence families,
+   conflicts, and unresolved gaps.
+4. **Article value assessment** — why each premium candidate may or may not be
+   worth buying.
+5. **Purchase proposal** — selected article, alternatives, price, expected
+   impact, policy checks, and quote.
+6. **Purchase record** — approval, settlement state, access grant, article and
+   license identifiers.
+7. **Evidence-impact diff** — baseline conclusion, new evidence, changed
+   claims, unchanged claims, and remaining uncertainty.
+8. **Dossier and Evidence Receipt** — cited answer, provenance, spend, access,
+   license, and limitations.
 
-- **Mandate:** objective, source boundary, budget, authority, and runtime mode.
-- **Evidence:** progress timeline, evidence families, open/premium status, and
-  the unresolved gap.
-- **Decision:** recommendation, reason, price, policy checks, and explicit
-  approve/skip/block actions.
-- **Result:** before/after conclusion with exact evidence links.
-- **Receipt:** authorization, quote, settlement, access, cited spans, and
-  limitations.
+### Outputs
 
-These can be sections within the existing application for October, provided
-they behave like a guided sequence. They do not need to become a complex
-routing system before the critique.
+- A cited analyst-ready report.
+- A visible before/after conclusion comparison.
+- A purchased-article asset record.
+- A reconstructable article decision and transaction history.
+- A machine-readable Evidence Receipt that excludes protected article bodies.
 
-### 4. Purchase checkpoint
+## Official user journey
 
-This is the most important interaction to fix. The current product buys the
-planned source automatically even though the UX contract implies approval.
-For October, require manual approval and display it in the mandate:
+### 1. Product landing
 
-- **Manual approval:** `Approve purchase`, `Skip`, or `Block`.
+Explain the product, analyst audience, article-purchase thesis, trust controls,
+and canonical example. The primary action is **Launch local demo**.
 
-For November, pre-authorized purchase may be added as a second policy. It must
-state the threshold and show that the purchase passed every rule before
-execution.
+### 2. Wallet and mandate setup
 
-The card must show the source, evidence gap, novelty/family independence,
-price, remaining budget, per-source ceiling, quote/resource identifiers,
-runtime mode, and access state.
+The user chooses Partner Demo Wallet or XRPL Testnet, sees balance and network,
+sets a total budget and per-article ceiling, and chooses approved source
+profiles. October uses manual purchase approval.
 
-### 5. Result and Evidence Receipt
+### 3. Research approach and editable plan
 
-The climax is not the transaction hash. It is the changed decision:
+The user chooses one of three finance-specific approaches:
 
-- Open-source baseline.
-- New evidence acquired.
-- Claim that changed or became more certain.
-- Remaining uncertainty.
-- Exact claim-to-evidence links.
+- **Balanced diligence** — collect support, challenges, and independent
+  corroboration.
+- **Thesis stress test** — prioritize contradictory evidence and key risks.
+- **Budget-first scan** — establish an open-source baseline and buy only when
+  a material gap remains.
 
-End with a first-class Evidence Receipt. It should be viewable, printable, and
-exportable as JSON without exporting protected article bodies.
+ResearchAgent produces a short plan showing questions, required evidence,
+budget intent, and stop conditions. The user may edit and approve it before
+research begins.
+
+### 4. Research workspace
+
+Show the current thesis, unresolved gaps, evidence families, research progress,
+and source access state. Rich article cards expose provenance, preview,
+publication date, topic, price, license, authority signals, and family
+independence without revealing locked content.
+
+### 5. Premium article comparison
+
+Compare the recommended article with at least one redundant and one
+policy-blocked alternative. Explain evidence-gap fit, novelty, authority,
+independence, price, and expected decision impact. Avoid unexplained composite
+scores or false numeric precision.
+
+### 6. Purchase checkpoint
+
+The user sees the quote, exact amount, remaining budget, wallet/network,
+article/resource identifier, license summary, and all mandate checks. The user
+can **Approve purchase**, **Skip**, or **Reject**.
+
+### 7. Evidence unlock and impact
+
+After settlement, the exact purchased excerpt becomes accessible. Show the
+baseline conclusion next to the revised conclusion, link each changed claim to
+an accessible evidence span, and distinguish new evidence from model prose.
+
+### 8. Report, receipt, and library
+
+The user receives a cited dossier, printable/JSON Evidence Receipt, and a local
+record of purchased articles showing access and license state. By 10 October,
+reports and purchased articles can be revisited from local history.
 
 ## Canonical showcase story
 
 **Question:** Can the announced AI data-centre buildout become operating
 capacity by 2028, or are grid constraints being underestimated?
 
-**Mandate:** Investment Committee audience, S$2 fixture budget, S$1 per-source
-ceiling, approved synthetic source profiles, one-page cited brief.
+**Mandate:** Investment Committee audience, S$2 Partner Demo Wallet budget,
+S$1 per-article ceiling, approved synthetic finance sources, manual approval,
+and a one-page cited brief.
 
-The product must visibly make three different decisions:
+The product must visibly:
 
-1. **Buy** the Grid Operators Report for S$0.80 because it closes the grid
-   evidence gap.
-2. **Skip** Circuit Note because it duplicates an existing evidence family.
-3. **Block** GridScope Asia because S$1.40 exceeds the per-source ceiling.
+1. establish an open-evidence baseline;
+2. identify grid delivery as the material evidence gap;
+3. recommend the S$0.80 Grid Operators Report;
+4. skip Circuit Note because it duplicates an existing evidence family;
+5. block the S$1.40 GridScope Asia article because it exceeds the ceiling;
+6. request approval before purchasing;
+7. unlock only the purchased evidence; and
+8. show that the conclusion became more cautious because of that evidence.
 
-The final conclusion should become more cautious: announced spending can
-continue while operating capacity lags in grid-constrained markets.
+Target presentation length: five to seven minutes.
 
-Target presentation length: four to six minutes.
+## Milestone 1 — critique showcase by 1 October
 
-## Milestone 1 — critique-ready product by 1 October
+The October 1 goal is a complete, feature-rich local product demonstration.
+The existing visual theme remains; information architecture and interaction
+depth improve.
 
-The October goal is a polished, coherent, truthful product demonstration. It
-is not a production backend or a general marketplace.
+### Feature set
 
-### Must have
+| Capability | User story | Observable outcome |
+| --- | --- | --- |
+| Excalidraw UX wireframes | As a product team, we want the official views and transitions agreed before parallel implementation | Editable wireframes cover landing, wallet/mandate, plan editor, workspace, article comparison, purchase, impact, receipt, and library/history shells |
+| Official product shell | As a first-time analyst, I want to understand the product and enter one obvious flow | Landing and persistent application navigation clearly frame paywalled research acquisition |
+| Local wallet setup | As an analyst, I want to know what wallet, balance, network, and budget the agent may use | Partner Demo Wallet is credential-free; Testnet is clearly separate; no login is required |
+| Research mandate | As an analyst, I want to constrain sources and spending before research starts | Question, audience, horizon, allowlist, budget, ceiling, wallet, and manual approval policy are visible and server-enforced |
+| Finance research approaches | As an analyst, I want a professional starting method suited to my task | Balanced diligence, thesis stress test, and budget-first scan generate distinct plan emphasis |
+| Editable research plan | As an analyst, I want to review and modify the questions and evidence requirements before the agent acts | Plan steps and stop conditions can be edited and approved; the final plan is preserved in the run record |
+| Visible agent workflow | As a reviewer, I want to understand inputs, stages, artifacts, and controls without seeing private chain-of-thought | A stage timeline shows planning, discovery, gap analysis, article evaluation, purchase, unlock, and synthesis |
+| Evidence-family workspace | As an analyst, I want to distinguish independent evidence from repeated reporting | Sources are grouped by evidence family and open, preview, locked, and unlocked states are unambiguous |
+| Rich premium article cards | As an analyst, I want enough metadata to judge an article before purchase | Cards show provenance, preview, date, topic, price, license, authority signals, and evidence-family relationship |
+| Explainable article valuation | As an analyst, I want to know why an article is worth buying | Candidate view explains relevance, novelty, authority, independence, gap fit, price, and expected impact |
+| Candidate comparison | As an analyst, I want to compare the recommended article with alternatives | Recommended, redundant, and over-ceiling candidates are shown side by side with distinct reasons |
+| Manual purchase checkpoint | As an analyst, I want final control over spending | No purchase occurs before Approve; Skip and Reject preserve the budget and access remains locked |
+| Purchase lifecycle | As a reviewer, I want to see quote, settlement, and access as separate states | UI visibly advances through proposed, approved, settled/simulated, and unlocked states |
+| Evidence-impact diff | As an analyst, I want to know whether the paid article actually mattered | Baseline and revised claims are compared, with exact evidence-span links and remaining uncertainty |
+| Analyst dossier | As an analyst, I want a concise deliverable rather than an activity feed | A structured one-page report separates thesis, support, challenges, uncertainties, and methodology |
+| Evidence Receipt | As a reviewer, I want to reconstruct what was bought and used | Printable and JSON receipt includes mandate, article, quote, decision, settlement mode, access, license, spans, and claim links without premium bodies |
+| Deterministic local reset and failures | As a presenter, I want the demonstration to work repeatedly | Reset restores the canonical state; LLM/Testnet failures have deliberate UI states and fixture fallback |
+| Accessibility and demo regression | As a presenter, I want confidence that the primary flow is usable and stable | Keyboard, responsive, accessibility, unit, build, and end-to-end checks cover the canonical flow |
 
-- Product landing page and clear `Launch demo` entry.
-- New Mandate setup instead of an unexplained chat/thread screen.
-- Visible mandate card with budget, ceiling, approved sources, purchase
-  authority, and runtime mode.
-- Compact, observable research phases rather than hidden sequential work.
-- Explicit purchase authority and a clear decision checkpoint.
-- Bought, skipped-duplicate, and blocked-by-policy states in the main flow.
-- Before/after conclusion as the central result.
-- Evidence Receipt view plus print and JSON export.
-- In-app reset that restores the canonical run in under one minute.
-- Deterministic, credential-free Partner Demo Sandbox mode.
-- Clear synthetic-content and simulated-settlement labels.
-- One canonical 12-source dataset across runtime, copy, tests, docs, diagrams,
-  and screenshots.
-- Friendly failure states for unavailable LLM and Testnet services.
-- Responsive, keyboard-accessible, presentation-ready UI.
+### Sprint plan
 
-### Should have
+| Sprint | Dates | Outcome |
+| --- | --- | --- |
+| Sprint 1 — product and contracts | 19–21 Sep | Wireframes, product shell, wallet/mandate contract, research-plan contract, canonical data alignment |
+| Sprint 2 — analyst workflow | 22–25 Sep | Plan selector/editor, visible workflow, evidence families, article metadata, article valuation and comparison |
+| Sprint 3 — purchase and proof | 26–28 Sep | Manual approval, purchase lifecycle, evidence unlock, impact diff, dossier, and receipt |
+| Sprint 4 — hardening | 29–30 Sep | Reset, failure states, accessibility, regression coverage, screenshot/docs alignment, and rehearsal |
+| Showcase | 1 Oct | Five-to-seven-minute local critique flow |
 
-- Compact explanation of why a source was recommended: gap match, novelty,
-  authority, and family independence.
-- Lightweight previous-report navigation if it does not distract from the
-  canonical flow.
-- One optional pre-verified XRPL Testnet transaction as technical proof.
-- Presenter mode or guided focus that reduces scrolling.
-- A stable printable dossier and receipt for reviewers.
+### Exit criteria
 
-### Schedule
+- A first-time reviewer can complete the full flow locally without credentials.
+- No article is purchased before explicit user approval.
+- The user can inspect and edit the research plan before execution.
+- The user can explain why one article was bought, one was redundant, and one
+  violated the mandate.
+- Locked premium text is never read, cited, or exported.
+- The purchased article causes a visible, cited change in the conclusion.
+- The same clean reset produces the same canonical result repeatedly.
+- Every view clearly labels synthetic content and fixture settlement.
+
+## Milestone 2 — expanded local product by 10 October
+
+This milestone deepens repeat use and financial-research professionalism. It
+remains local; hosting and authentication are still out of scope.
+
+### Feature set
+
+| Capability | User story | Observable outcome |
+| --- | --- | --- |
+| Local report history | As an analyst, I want to reopen prior research without rerunning it | Saved runs list question, date, approach, spend, purchased articles, and result status |
+| Purchased article library | As an analyst, I want to see what research access I acquired and where it was used | Library shows article, publisher, access/license state, version/hash, purchase, expiry/retention, and linked reports |
+| Plan templates as finance skills | As an analyst, I want reusable professional methods | Versioned local templates define evidence requirements for thesis validation, risk review, and market/infrastructure diligence |
+| Plan comparison | As an analyst, I want to compare two research approaches before spending | User can preview how balanced and stress-test plans change evidence needs and budget intent |
+| Multi-purchase budget allocation | As an analyst, I want the agent to recommend a small portfolio of articles when one source is insufficient | An editable purchase plan ranks up to three non-duplicate articles within the total budget |
+| Conflict and uncertainty view | As an analyst, I want disagreements and weak support surfaced | Report and workspace distinguish corroboration, contradiction, single-source claims, and unresolved gaps |
+| Article-to-report traceability | As a reviewer, I want to see every report claim that depends on a purchased article | Simple table/graph links reports, claims, article versions, and evidence spans |
+| Local wallet ledger | As an analyst, I want to understand research spend across runs | Ledger shows quotes, approvals, spend, rejected/blocked attempts, balances, and receipt links |
+| Evaluation scorecard | As the product team, we want evidence that the agent is making sensible purchase decisions | Golden scenarios report ranking, duplicate avoidance, policy enforcement, access control, citation, and conclusion-impact checks |
+| Presenter mode | As a presenter, I want a focused walkthrough without losing full product depth | Guided mode highlights the canonical sequence while normal mode preserves exploration |
+
+### Sprint plan
+
+| Sprint | Dates | Outcome |
+| --- | --- | --- |
+| Sprint 5 — reusable research | 2–5 Oct | History, purchased-article library, finance-skill templates, and traceability |
+| Sprint 6 — deeper decisions | 6–9 Oct | Plan comparison, multi-purchase allocation, conflicts/uncertainty, wallet ledger, scorecard, and presenter mode |
+| Demo | 10 Oct | Expanded local product demonstration |
+
+### Exit criteria
+
+- Previous reports and purchases can be revisited locally.
+- Purchased-article access and license state are visible and traceable to the
+  reports that used them.
+- The user can compare research approaches and edit a multi-article purchase
+  plan without exceeding the mandate.
+- Golden scenarios catch regressions in article choice, access, and citations.
+
+## Milestone 3 — SFF final by 16 November
+
+The November goal is the same paywalled-article product with a genuine
+machine-payment, delivery, and publisher-content boundary.
+
+### Core features
+
+- One real protected research-article endpoint using an HTTP 402 challenge
+  and retry flow.
+- Quote binding to article/resource, invoice, amount, payee, asset/network,
+  expiry, license, and approval policy.
+- Local wallet setup plus validated XRPL Testnet settlement and explorer link.
+- Replay protection, idempotency, and tamper checks.
+- Settlement and article fulfilment represented as separate states.
+- Delivered article/excerpt verified by resource identifier, version, and
+  content hash before access is granted.
+- One authorized public-data adapter and one partner/simulated premium article
+  service in the same research flow.
+- License-aware purchased-article library with retention and redistribution
+  limits.
+- Publisher-side listing demonstrator for article metadata, preview, price,
+  license, resource version, and protected delivery. This remains a bounded
+  demonstrator, not a full marketplace.
+- At least one adversarial path blocked before signing: changed amount, wrong
+  payee, expired quote, replayed invoice, or mismatched delivered artifact.
+- Evaluation harness and two to three finance-researcher usability sessions.
+- Public deployment work may begin after 31 October, with deterministic local
+  fallback retained for the final.
+
+### Suggested sequence
 
 | Dates | Outcome |
 | --- | --- |
-| 17–18 Sep | Freeze product promise, canonical dataset, terminology, mandate rules, and critique script |
-| 19–22 Sep | Build landing, New Mandate flow, application hierarchy, and mode/sandbox language |
-| 23–25 Sep | Build decision checkpoint, before/after result, and Evidence Receipt |
-| 26–27 Sep | Add deterministic reset, failure states, responsive behavior, and accessibility polish |
-| 28 Sep | Align docs, diagrams, screenshots, counts, and fixture labels |
-| 29 Sep | Full regression, clean-machine run, and presentation artifact capture |
-| 30 Sep | Feature freeze and repeated four-to-six-minute rehearsals |
-| 1 Oct | Critique showcase |
+| 11–18 Oct | Consolidate feedback, harden data contracts, and specify the protected article protocol |
+| 19–30 Oct | Implement HTTP 402, quote validation, Testnet wallet/payment, idempotency, and delivery verification locally |
+| 31 Oct–6 Nov | Add authorized source/service integration, license-aware library, publisher listing demonstrator, and optional hosting |
+| 7–11 Nov | Adversarial tests, evaluation, usability sessions, and product refinement |
+| 12–15 Nov | Live/fallback rehearsals, backup artifacts, documentation, and feature freeze |
+| 16 Nov | Singapore FinTech Festival final |
 
-### October acceptance criteria
+### Exit criteria
 
-- A first-time reviewer can complete the canonical run without credentials or
-  presenter explanation.
-- A clean reset produces the same decision path repeatedly.
-- The UI never implies that synthetic publishers, content, or fixture payments
-  are real.
-- One useful source is bought, one duplicate is skipped, and one over-ceiling
-  source is blocked.
-- Every conclusion claim opens an exact accessible evidence span.
-- The before/after change is understandable without reading an activity log.
-- The receipt shows what was authorized, spent, unlocked, and cited.
-- No current screenshot or document contradicts the 12-source scenario.
-
-## Milestone 2 — SFF-ready fintech proof by 16 November
-
-The November goal is to preserve the October story while replacing the most
-important simulated boundary with a genuine machine-payment and fulfilment
-loop.
-
-### Must have
-
-- One real protected research-service endpoint with an HTTP 402 challenge and
-  retry flow.
-- Quote binding to resource, invoice, amount, payee, asset/network, expiry,
-  and approval policy.
-- Replay protection and idempotent payment handling.
-- One validated XRPL Testnet transaction with an explorer link.
-- Settlement and fulfilment shown as separate states.
-- Returned evidence artifact verified by identifier and content hash.
-- Receipt covering policy decision, quote, payment, delivery, evidence access,
-  and conclusion impact.
-- One adversarial path that is blocked before signing: changed amount, wrong
-  payee, expired quote, replayed invoice, or artifact mismatch.
-- One authorized public-data adapter or partner-provided research service.
-- Repeatable deployment plus the deterministic no-network fallback.
-- Evaluation harness covering ranking, duplicate detection, budget decisions,
-  access control, receipt integrity, and citation validity.
-
-### Should have
-
-- Singapore-relevant infrastructure or grid data as an authorized vertical.
-- Human approval for new or insufficiently trusted merchants.
-- A second merchant/service only if the primary loop is already reliable.
-- A small impact scorecard: spend prevented, evidence purchased, delivery
-  success, citation validity, and time saved.
-- Two to three researcher usability sessions and one partner/pilot
-  proposition with a measurable 30-day success criterion.
-- Baseline license state displayed on every acquired asset: permitted use,
-  retention, and redistribution status.
-- Simple report-to-evidence traceability view; not a full knowledge graph.
-
-### Schedule
-
-| Dates | Outcome |
-| --- | --- |
-| 2–9 Oct | Incorporate critique, freeze evaluation cases, and resolve source-of-truth/data issues |
-| 10–23 Oct | Implement the real protected endpoint, challenge validation, Testnet settlement, replay protection, and fulfilment verification |
-| 24 Oct–2 Nov | Integrate one authorized data/service source, receipt proof, adversarial path, and deployment |
-| 3–8 Nov | Run evaluation, reliability work, accessibility checks, and researcher sessions |
-| 9–11 Nov | Apply only validated product improvements and finalize the partner/pilot story |
-| 12–13 Nov | Full live and fallback rehearsals; capture verified backup artifacts |
-| 14–15 Nov | Feature freeze and presentation polish |
-| 16 Nov | SFF final |
-
-### November acceptance criteria
-
-- A protected service returns a real payment challenge.
-- The agent validates every material field against the user mandate.
+- A protected article service returns a real payment challenge.
+- ResearchAgent validates the challenge against the analyst's mandate and
+  requires the configured approval.
 - One XRP payment settles successfully on XRPL Testnet.
-- A verifiable evidence artifact is delivered after settlement.
+- A verifiable article artifact is delivered only after valid settlement.
 - Settlement and fulfilment can independently succeed or fail in the UI.
 - At least one tampered, expired, replayed, or over-budget request is blocked.
 - The dossier cites only delivered and accessible evidence.
-- The complete story works live and in deterministic fallback mode.
+- The complete article-purchase story works live and in deterministic local
+  fallback mode.
 
-## Idea disposition
+## Feature disposition after the final review
 
-### Include now or by November
+### Build in this roadmap
 
-- Professional, steady UI and better product organization.
-- Rich source metadata, provenance, price, and license status.
-- Agent purchase recommendation based on budget, scope, novelty, and expected
-  evidence value.
-- User approval or explicit pre-authorization.
-- Better report organization and report-to-evidence traceability.
-- Evidence Receipt and claim-to-span citations.
-- Evaluation, reliability, reset, runtime modes, and honest failure states.
+- Local wallet setup and ledger.
+- Finance-specific research approaches and editable plans.
+- Professional workflow artifacts and explicit data chain.
+- Rich article metadata and explainable worth-to-buy assessment.
+- Multi-article budget planning within a research mandate.
+- Purchased-article library, license state, report organization, and
+  article-to-claim traceability.
+- Evidence Receipts, impact comparisons, evaluation, and failure handling.
+- A bounded publisher listing/protected-delivery demonstrator by November.
 
-### Keep visible as future direction, but do not build for these milestones
+### Defer
 
-- Asset library and reusable purchased research.
-- Multiple license/copyright tiers and version-aware entitlements.
-- Flexible charging models and publisher pricing tools.
-- Publisher, author, and asset ratings/comments.
-- General content index or cross-platform discovery protocol.
-- Decentralized community or dispute arbiter.
-- Full publisher marketplace or facilitator network.
-- Multi-user accounts, subscriptions, and production billing.
-- Mainnet funds, generic crawling, multiple verticals, and broad AP2/MCP/A2A
-  claims.
+- OAuth, login, teams, subscriptions, and production billing.
+- Hosting until after 31 October.
+- Ratings/comments, social reputation, and community moderation.
+- General content marketplace or cross-platform discovery protocols.
+- Decentralized arbitration.
+- Flexible publisher pricing engines beyond explicit per-article quotes.
+- DRM claims beyond enforceable access, license, and non-export controls.
+- Generic purchases or non-financial research verticals.
 
-These ideas are reasonable extensions, but they depend on identity,
-moderation, licensing agreements, durable entitlements, production payments,
-or a multi-sided market. Building them now would weaken the core proof.
+## Definition of ready for an implementation issue
 
-## Immediate work order
+- The user story identifies the analyst or reviewer value.
+- Scope and out-of-scope boundaries are explicit.
+- Dependencies and data contracts are known.
+- Acceptance criteria are observable in the local application or tests.
+- Verification includes the relevant automated command and/or manual flow.
+- No unresolved product decision is hidden inside implementation work.
 
-Start in this order:
+## Definition of done
 
-1. Implement manual purchase approval for October and remove the current
-   implicit auto-buy behavior.
-2. Make the 12-source scenario the sole source of truth and remove stale
-   20-source/real-publisher artifacts.
-3. Write the final landing-page promise, canonical mandate, and four-to-six
-   minute critique script.
-4. Restructure the current UI around Mandate, Evidence, Decision, Result, and
-   Receipt while preserving the existing theme.
-5. Implement the decision checkpoint and before/after conclusion.
-6. Implement the Evidence Receipt and deterministic reset.
-7. Polish and rehearse only after the whole official flow works end to end.
-
-## Known risks to resolve early
-
-- The current automatic purchase conflicts with the approval language.
-- The runtime dataset, fallback catalog, docs, and screenshots are not fully
-  aligned.
-- The existing x402 object is quote-shaped metadata, not yet a wire-compatible
-  HTTP 402 protocol flow.
-- Testnet and live-LLM modes add avoidable showcase failure modes.
-- A transaction proves settlement, not delivery; fulfilment needs its own
-  verification.
-- A fixed SGD/XRP display is valid only as an explicitly labelled fixture
-  conversion.
-- Local JSON run persistence is demo infrastructure, not multi-user product
-  storage.
+- Acceptance criteria pass in the local fixture flow.
+- Premium content and wallet secrets remain server-only.
+- Fixture, Testnet, locked, unlocked, settlement, and fulfilment states are
+  labelled truthfully.
+- Unit/type/build checks pass, with Playwright coverage for user-facing flows.
+- Accessibility and keyboard behavior are checked for changed views.
+- Documentation and screenshots match the current product.
