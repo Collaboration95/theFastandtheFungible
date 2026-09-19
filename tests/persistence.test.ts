@@ -128,4 +128,38 @@ describe('local run persistence', () => {
       await stopServer(child)
     }
   })
+
+  it('rejects missing or stale quote approval without spending or unlocking premium evidence', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'research-agent-quote-'))
+    temporaryDirectories.push(directory)
+    const port = await freePort()
+    const child = await startServer(join(directory, 'runs.json'), port)
+    const baseUrl = `http://127.0.0.1:${port}`
+    const request = (path: string, body?: unknown) => fetch(`${baseUrl}${path}`, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+
+    try {
+      const created = await (await request('/api/v1/research-runs', {})).json() as { runId: string }
+      await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
+      await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
+      const sourcePath = `/api/v1/research-runs/${created.runId}/sources/northstar-wire`
+      const quoted = await (await request(sourcePath)).json() as { premium: { status: string; quoteHash: string } }
+      expect(quoted.premium).toMatchObject({ status: 'PAYMENT_REQUIRED' })
+
+      const missingQuote = await request(`/api/v1/research-runs/${created.runId}/purchases`, { sourceId: 'northstar-wire', action: 'BUY', approval: 'APPROVED', idempotencyKey: 'missing-quote' })
+      expect(missingQuote.status).toBe(409)
+      const wrongQuote = await request(`/api/v1/research-runs/${created.runId}/purchases`, { sourceId: 'northstar-wire', action: 'BUY', approval: 'APPROVED', quoteHash: `${quoted.premium.quoteHash}-stale`, idempotencyKey: 'wrong-quote' })
+      expect(wrongQuote.status).toBe(409)
+
+      const run = await (await request(`/api/v1/research-runs/${created.runId}`)).json() as { spentCents: number; sources: { id: string; decision?: string }[] }
+      expect(run.spentCents).toBe(0)
+      expect(run.sources.find((source) => source.id === 'northstar-wire')?.decision).toBeUndefined()
+      expect(await (await request(sourcePath)).json()).toMatchObject({ premium: { status: 'PAYMENT_REQUIRED' } })
+    } finally {
+      await stopServer(child)
+    }
+  })
 })
