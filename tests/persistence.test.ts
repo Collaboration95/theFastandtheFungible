@@ -232,6 +232,10 @@ describe('local run persistence', () => {
       expect(await staleStep.json()).toMatchObject({ error: 'This run is read-only after reset or cancellation' })
       const stalePlan = await request(`/api/v1/research-runs/${created.runId}/plan`, {})
       expect(stalePlan.status).toBe(409)
+      const stalePurchasePlan = await request(`/api/v1/research-runs/${created.runId}/purchase-decisions`, {})
+      expect(stalePurchasePlan.status).toBe(409)
+      const repeatedReset = await request(`/api/v1/research-runs/${created.runId}/reset`, {})
+      expect(repeatedReset.status).toBe(409)
       expect(await (await request(`/api/v1/research-runs/${created.runId}`)).json()).toEqual(priorSnapshot)
       await expect(request(`/api/v1/research-runs/${created.runId}/receipt`).then((response) => response.json())).resolves.toMatchObject({
         runId: created.runId,
@@ -317,6 +321,10 @@ describe('local run persistence', () => {
       const blocked = await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
       expect(blocked.status).toBe(409)
       expect(await blocked.json()).toMatchObject({ error: 'Approve the research plan before execution begins' })
+      for (const endpoint of ['discover', 'rank', 'gaps', 'synthesize']) {
+        const direct = await request(`/api/v1/research-runs/${created.runId}/${endpoint}`, {})
+        expect(direct.status).toBe(409)
+      }
       expect(await (await request(`/api/v1/research-runs/${created.runId}`)).json()).toMatchObject({ phase: 'DRAFT', rawSourceCount: 0 })
 
       const approved = await request(`/api/v1/research-runs/${created.runId}/plan`, {})
