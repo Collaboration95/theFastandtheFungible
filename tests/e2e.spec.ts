@@ -14,9 +14,10 @@ test('canonical fixture run makes the budget decisions visible', async ({ page }
   await page.getByRole('button', { name: /Show .* more sources/ }).click()
   const row = (name: string) => page.locator('.source-row').filter({ hasText: name })
   await row('Northstar Wire').getByRole('button', { name: 'Approve purchase S$0.20', exact: true }).click()
+  await page.getByRole('button', { name: 'Confirm purchase S$0.20', exact: true }).click()
   await row('Circuit Note').getByRole('button', { name: 'Skip S$0.30', exact: true }).click()
   const meridianBuy = row('Grid Operators Report').getByRole('button', { name: 'Approve purchase S$0.80', exact: true })
-  if (await meridianBuy.count()) await meridianBuy.click()
+  if (await meridianBuy.count()) { await meridianBuy.click(); await page.getByRole('button', { name: 'Confirm purchase S$0.80', exact: true }).click() }
   await row('GridScope Asia').getByRole('button', { name: 'Block', exact: true }).click()
   await expect(page.getByText('GridScope blocked: S$1.40 exceeds the remaining S$1.00.').last()).toBeVisible()
   await page.getByRole('button', { name: 'Assemble cited answer' }).click()
