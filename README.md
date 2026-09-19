@@ -147,7 +147,7 @@ Add the following to the local `.env`:
 XRPL_MODE=live
 XRPL_NETWORK=testnet
 XRPL_RPC_URL=wss://s.altnet.rippletest.net:51233
-XRPL_PAYER_SEED=s_your_testnet_seed
+# Set XRPL_PAYER_SEED separately in your ignored local .env (do not paste it here).
 XRPL_PAYER_ADDRESS=rYourPayerAddress
 XRPL_RECEIVER_ADDRESS=rYourReceiverAddress
 XRPL_EXPLORER_URL=https://testnet.xrpl.org/transactions
