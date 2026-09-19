@@ -162,4 +162,22 @@ describe('local run persistence', () => {
       await stopServer(child)
     }
   })
+
+  it('rejects missing or mismatched quote approval without spending or unlocking', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'research-agent-quote-'))
+    temporaryDirectories.push(directory)
+    const port = await freePort()
+    const child = await startServer(join(directory, 'runs.json'), port)
+    const baseUrl = `http://127.0.0.1:${port}`
+    try {
+      const created = await fetch(`${baseUrl}/api/v1/research-runs`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sourceAllowlist: ['wire-services'] }) }).then((response) => response.json()) as { runId: string }
+      for (let step = 0; step < 2; step += 1) await fetch(`${baseUrl}/api/v1/research-runs/${created.runId}/step`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'next' }) })
+      const purchase = (quoteHash?: string) => fetch(`${baseUrl}/api/v1/research-runs/${created.runId}/purchases`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sourceId: 'northstar-wire', action: 'BUY', approval: 'APPROVED', quoteHash }) })
+      expect((await purchase()).status).toBe(409)
+      expect((await purchase('stale-quote')).status).toBe(409)
+      const state = await fetch(`${baseUrl}/api/v1/research-runs/${created.runId}`).then((response) => response.json()) as { spentCents: number; sources: { id: string; decision?: string }[] }
+      expect(state.spentCents).toBe(0)
+      expect(state.sources.find((source) => source.id === 'northstar-wire')?.decision).toBeUndefined()
+    } finally { await stopServer(child) }
+  })
 })
