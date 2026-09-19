@@ -63,7 +63,7 @@ already complete and are intentionally not part of this 20-issue run.
 | Wave | Issue | Outcome | Depends on | Initial state | Integrated commit / tests / note |
 | --- | --- | --- | --- | --- | --- |
 | 1 | [#8 RA-01](https://github.com/Collaboration95/theFastandtheFungible/issues/8) | Canonical validated article fixture corpus | — | Ready | |
-| 1 | [#32 UX-01](https://github.com/Collaboration95/theFastandtheFungible/issues/32) | Editable official-view Excalidraw wireframes | — | Ready | |
+| 1 | [#32 UX-01](https://github.com/Collaboration95/theFastandtheFungible/issues/32) | Editable official-view Excalidraw wireframes | — | Review | `1ef4420`; canvas JSON/SVG generation check, `check:fast`, and `verify` pass. |
 | 2 | [#33 UX-02](https://github.com/Collaboration95/theFastandtheFungible/issues/33) | Official landing and application shell | #32 | Backlog | |
 | 2 | [#34 PLAN-01](https://github.com/Collaboration95/theFastandtheFungible/issues/34) | Finance research approaches and plan artifacts | #8 | Backlog | |
 | 2 | [#22 LDF-02](https://github.com/Collaboration95/theFastandtheFungible/issues/22) | Clean, repeatable local research state | #8 | Backlog | |
