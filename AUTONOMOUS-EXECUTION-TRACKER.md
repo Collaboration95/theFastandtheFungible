@@ -27,6 +27,7 @@ Do not mark the October 1 milestone complete from documentation alone.
 | Issue | Status | Commit | Evidence / limitation |
 | --- | --- | --- | --- |
 | [#9 RA-02](https://github.com/Collaboration95/theFastandtheFungible/issues/9) | Review | `e8f9b05` | `npm run check:fast`, `npm run verify`, and `npm run test:e2e` pass. The server rejects a BUY unless the exact request carries manual approval; the setup displays the credential-free Partner Demo Wallet and manual approval rule. Independent review remains required before this can be treated as integrated gate evidence. |
+| [#22 LDF-02](https://github.com/Collaboration95/theFastandtheFungible/issues/22) | Review | `2b66ab7` | Restart and malformed-store tests pass in `tests/persistence.test.ts`; `npm run check:fast` and `npm run verify` pass. Independent review remains required. |
 
 ## Automation-first decisions
 
