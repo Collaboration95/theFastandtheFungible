@@ -8,7 +8,7 @@ import { rankSources, QUESTION, CANONICAL_THESIS, AFTER_NORTHSTAR, AFTER_MERIDIA
 import { loadFixtureCatalog, toPurchasedSpans, toPublicSpans, type FixtureArticle } from './catalog.js'
 import { planPurchase, synthesizeDossier, type DossierEvidencePacket } from './llm.js'
 import { loadRunStore, persistRunStore, type PersistenceMode } from './persistence.js'
-import { createResearchPlan } from '../src/research-plan.js'
+import { createResearchPlan, isResearchPlanArtifact } from '../src/research-plan.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', 'data')
@@ -152,7 +152,13 @@ app.get('/api/v1/research-runs/:runId/sources', (req, res) => { const run = getR
 app.get('/api/v1/research-runs/:runId/sources/:sourceId', (req, res) => { const run = getRun(req, res); if (!run) return; const source = run.sources.find((item) => item.id === req.params.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const visible = publicSource(source, run); if (source.accessTier === 'PREMIUM' && visible.decision !== 'BUY') return res.json({ ...visible, premium: { status: 'PAYMENT_REQUIRED', ...quoteFor(run, source) } }); return res.json({ ...visible, premium: source.accessTier === 'PREMIUM' ? { status: 'UNLOCKED', contentHash: hash(mockArticles.get(source.id)?.article), ...quoteFor(run, source) } : { status: 'OPEN' } }) })
 app.post('/api/v1/research-runs/:runId/reset', async (req, res) => { const run = getRun(req, res); if (!run) return; const fresh = initRun(); fresh.runId = run.runId; fresh.stateMode = run.stateMode; fresh.runtime = run.runtime; fresh.events = [...run.events]; emit(fresh, 'RESEARCH_RESET', `${fresh.runtime.label} reset; external evidence is preserved`); await save(fresh); return response(res, fresh) })
 app.post('/api/v1/research-runs/:runId/cancel', async (req, res) => { const run = getRun(req, res); if (!run) return; run.cancelled = true; run.phase = 'CANCELLED'; emit(run, 'RESEARCH_CANCELLED', 'Research paused with completed purchases preserved'); await save(run); return response(res, run) })
-app.post('/api/v1/research-runs/:runId/plan', async (req, res) => advance(req, res, 'plan'))
+app.post('/api/v1/research-runs/:runId/plan', async (req, res) => {
+  const run = getRun(req, res); if (!run) return
+  if (run.phase !== 'DRAFT' && run.phase !== 'PLANNING') return res.status(409).json({ error: 'Approved plans cannot change after research execution begins' })
+  const plan = req.body?.plan ?? createResearchPlan(req.body?.approach ?? 'BALANCED_DILIGENCE', run.config)
+  if (!isResearchPlanArtifact(plan) || plan.config.budgetCents !== run.budgetCents || plan.config.sourceAllowlist?.some((key) => !(run.config.sourceAllowlist ?? []).includes(key))) return res.status(400).json({ error: 'Plan is invalid or exceeds the server-owned mandate' })
+  run.plan = plan; run.phase = 'PLANNING'; emit(run, 'PLAN_APPROVED', 'Research plan validated and approved; premium purchases still require separate manual approval'); await save(run); return response(res, run)
+})
 app.post('/api/v1/research-runs/:runId/discover', async (req, res) => advance(req, res, 'discover'))
 app.post('/api/v1/research-runs/:runId/rank', async (req, res) => advance(req, res, 'rank'))
 app.post('/api/v1/research-runs/:runId/gaps', async (req, res) => advance(req, res, 'gaps'))
