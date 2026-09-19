@@ -80,4 +80,18 @@ describe('PLAN-01 finance research plan contract', () => {
     expect(fresh.config.sourceTypes).toEqual([...CANONICAL_RESEARCH_PLAN_DEFAULTS.sourceTypes])
     expect(fresh.steps[0].evidencePriorityIds).not.toContain('mutated')
   })
+
+  it('rejects malformed plan artifacts instead of serializing values that cannot round-trip', () => {
+    expect(() => createResearchPlan('BALANCED_DILIGENCE', { tokenLimit: Number.POSITIVE_INFINITY })).toThrow(/token limit must be finite/)
+
+    const malformed = JSON.parse(serializeResearchPlan(createResearchPlan())) as ResearchPlan
+    malformed.config.sourceAllowlist = ['public-data', 42 as unknown as string]
+    expect(isResearchPlanArtifact(malformed)).toBe(false)
+    expect(() => serializeResearchPlan(malformed)).toThrow(/invalid/)
+
+    const inconsistentBudget = JSON.parse(serializeResearchPlan(createResearchPlan())) as ResearchPlan
+    inconsistentBudget.budgetIntent.totalBudgetCents += 1
+    expect(isResearchPlanArtifact(inconsistentBudget)).toBe(false)
+    expect(() => parseResearchPlan(JSON.stringify(inconsistentBudget))).toThrow(/invalid or unsupported/)
+  })
 })

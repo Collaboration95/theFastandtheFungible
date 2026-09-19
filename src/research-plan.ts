@@ -36,6 +36,13 @@ export const CANONICAL_RESEARCH_PLAN_DEFAULTS = {
 
 export const RESEARCH_PLAN_VERSION = 1 as const
 
+const MIN_TOKEN_LIMIT = 8_000
+const MAX_TOKEN_LIMIT = 256_000
+const APPROACHES: readonly ResearchApproach[] = ['BALANCED_DILIGENCE', 'THESIS_STRESS_TEST', 'BUDGET_FIRST_SCAN']
+const STEP_KINDS: readonly ResearchPlanStepKind[] = ['FRAME_QUESTION', 'READ_OPEN_EVIDENCE', 'MAP_EVIDENCE_FAMILIES', 'IDENTIFY_GAP', 'COMPARE_PREMIUM_METADATA', 'REQUEST_MANUAL_APPROVAL', 'RECORD_EVIDENCE_IMPACT', 'SYNTHESIZE_CITED_DOSSIER']
+const STOP_OUTCOMES: readonly ResearchPlanStopCondition['outcome'][] = ['STOP_AND_REPORT', 'STOP_BEFORE_PREMIUM_REVIEW', 'CONTINUE_WITH_UNCERTAINTY']
+const BUDGET_STRATEGIES: readonly ResearchPlanArtifact['budgetIntent']['strategy'][] = ['BALANCE_EVIDENCE', 'CHALLENGE_THESIS', 'OPEN_BASELINE_FIRST']
+
 type ApproachBlueprint = {
   evidencePriorities: ResearchEvidencePriority[];
   stepKinds: ResearchPlanStepKind[];
@@ -244,6 +251,12 @@ function normalizeBudget(value: number | undefined): number {
   return Math.max(MIN_BUDGET_CENTS, Math.min(MAX_BUDGET_CENTS, Math.round(budget)))
 }
 
+function normalizeTokenLimit(value: number | undefined): number {
+  const tokenLimit = value ?? CANONICAL_RESEARCH_PLAN_DEFAULTS.tokenLimit
+  if (!Number.isFinite(tokenLimit)) throw new RangeError('Research plan token limit must be finite')
+  return Math.max(MIN_TOKEN_LIMIT, Math.min(MAX_TOKEN_LIMIT, Math.round(tokenLimit)))
+}
+
 function clonePriority(priority: ResearchEvidencePriority): ResearchEvidencePriority {
   return { ...priority, signals: [...priority.signals] }
 }
@@ -259,7 +272,7 @@ function defaultConfig(input: ResearchPlanInput): ResearchPlanConfig {
     question: input.question?.trim() || CANONICAL_RESEARCH_PLAN_DEFAULTS.question,
     decision: input.decision?.trim() || CANONICAL_RESEARCH_PLAN_DEFAULTS.decision,
     horizon: input.horizon?.trim() || CANONICAL_RESEARCH_PLAN_DEFAULTS.horizon,
-    tokenLimit: input.tokenLimit ?? CANONICAL_RESEARCH_PLAN_DEFAULTS.tokenLimit,
+    tokenLimit: normalizeTokenLimit(input.tokenLimit),
     budgetCents: normalizeBudget(input.budgetCents),
     sourceTypes,
     ...(sourceAllowlist ? { sourceAllowlist } : {}),
@@ -316,17 +329,46 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function isStringList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string')
+}
+
+function isUniqueStrings(values: string[]): boolean {
+  return new Set(values).size === values.length
+}
+
+function isValidConfig(value: unknown): value is ResearchPlanConfig {
+  return isRecord(value)
+    && typeof value.question === 'string'
+    && typeof value.decision === 'string'
+    && typeof value.horizon === 'string'
+    && typeof value.tokenLimit === 'number'
+    && Number.isFinite(value.tokenLimit)
+    && Number.isInteger(value.tokenLimit)
+    && value.tokenLimit >= MIN_TOKEN_LIMIT
+    && value.tokenLimit <= MAX_TOKEN_LIMIT
+    && typeof value.budgetCents === 'number'
+    && Number.isFinite(value.budgetCents)
+    && Number.isInteger(value.budgetCents)
+    && value.budgetCents >= MIN_BUDGET_CENTS
+    && value.budgetCents <= MAX_BUDGET_CENTS
+    && isStringList(value.sourceTypes)
+    && value.sourceTypes.length > 0
+    && (value.sourceAllowlist === undefined || isStringList(value.sourceAllowlist))
+}
+
 /** A narrow runtime check for persisted or transportable plan artifacts. */
 export function isResearchPlanArtifact(value: unknown): value is ResearchPlanArtifact {
   if (!isRecord(value)) return false
   if (value.artifact !== 'RESEARCH_PLAN' || value.version !== RESEARCH_PLAN_VERSION) return false
-  if (!['BALANCED_DILIGENCE', 'THESIS_STRESS_TEST', 'BUDGET_FIRST_SCAN'].includes(String(value.approach))) return false
-  if (!isRecord(value.config) || typeof value.config.question !== 'string' || typeof value.config.decision !== 'string' || typeof value.config.horizon !== 'string' || typeof value.config.tokenLimit !== 'number' || typeof value.config.budgetCents !== 'number' || !Array.isArray(value.config.sourceTypes) || value.config.sourceTypes.some((item) => typeof item !== 'string')) return false
-  if (!Array.isArray(value.evidencePriorities) || !value.evidencePriorities.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.label === 'string' && typeof item.rationale === 'string' && Array.isArray(item.signals) && item.signals.every((signal) => typeof signal === 'string') && typeof item.minimumIndependentFamilies === 'number')) return false
-  if (!Array.isArray(value.steps) || !value.steps.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.order === 'number' && typeof item.kind === 'string' && typeof item.title === 'string' && typeof item.objective === 'string' && Array.isArray(item.evidencePriorityIds) && item.evidencePriorityIds.every((id) => typeof id === 'string') && isRecord(item.guard) && item.guard.access === 'NO_ACCESS_GRANT' && item.guard.payment === 'NO_PAYMENT_AUTHORIZATION')) return false
-  if (!Array.isArray(value.stopConditions) || !value.stopConditions.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.label === 'string' && typeof item.condition === 'string' && typeof item.outcome === 'string')) return false
-  if (!isRecord(value.budgetIntent) || typeof value.budgetIntent.totalBudgetCents !== 'number' || value.budgetIntent.premiumGate !== 'MANUAL_APPROVAL_REQUIRED' || value.budgetIntent.overBudget !== 'BLOCK') return false
-  if (!isRecord(value.executionBoundary) || value.executionBoundary.sourcePolicy !== 'CANONICAL_FIXTURE_CATALOG' || value.executionBoundary.premiumBodies !== 'SERVER_ONLY_UNTIL_PURCHASE' || value.executionBoundary.access !== 'MANUAL_APPROVAL_REQUIRED' || value.executionBoundary.payment !== 'MANUAL_APPROVAL_REQUIRED' || !Array.isArray(value.executionBoundary.runtimeLabels)) return false
+  if (!APPROACHES.includes(value.approach as ResearchApproach) || !isValidConfig(value.config)) return false
+  if (!Array.isArray(value.evidencePriorities) || !value.evidencePriorities.length || !value.evidencePriorities.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.label === 'string' && typeof item.rationale === 'string' && isStringList(item.signals) && typeof item.minimumIndependentFamilies === 'number' && Number.isInteger(item.minimumIndependentFamilies) && item.minimumIndependentFamilies > 0)) return false
+  const priorityIds = value.evidencePriorities.map((item) => item.id)
+  if (!isUniqueStrings(priorityIds)) return false
+  if (!Array.isArray(value.steps) || !value.steps.length || !value.steps.every((item, index) => isRecord(item) && typeof item.id === 'string' && item.order === index + 1 && STEP_KINDS.includes(item.kind as ResearchPlanStepKind) && typeof item.title === 'string' && typeof item.objective === 'string' && isStringList(item.evidencePriorityIds) && item.evidencePriorityIds.length > 0 && item.evidencePriorityIds.every((id) => priorityIds.includes(id)) && isRecord(item.guard) && item.guard.access === 'NO_ACCESS_GRANT' && item.guard.payment === 'NO_PAYMENT_AUTHORIZATION')) return false
+  if (!Array.isArray(value.stopConditions) || !value.stopConditions.length || !value.stopConditions.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.label === 'string' && typeof item.condition === 'string' && STOP_OUTCOMES.includes(item.outcome as ResearchPlanStopCondition['outcome']))) return false
+  if (!isRecord(value.budgetIntent) || value.budgetIntent.totalBudgetCents !== value.config.budgetCents || typeof value.budgetIntent.perSourceCeilingCents !== 'number' || !Number.isFinite(value.budgetIntent.perSourceCeilingCents) || !Number.isInteger(value.budgetIntent.perSourceCeilingCents) || value.budgetIntent.perSourceCeilingCents < 0 || !BUDGET_STRATEGIES.includes(value.budgetIntent.strategy as ResearchPlanArtifact['budgetIntent']['strategy']) || value.budgetIntent.premiumGate !== 'MANUAL_APPROVAL_REQUIRED' || value.budgetIntent.overBudget !== 'BLOCK') return false
+  if (!isRecord(value.executionBoundary) || value.executionBoundary.sourcePolicy !== 'CANONICAL_FIXTURE_CATALOG' || value.executionBoundary.premiumBodies !== 'SERVER_ONLY_UNTIL_PURCHASE' || value.executionBoundary.access !== 'MANUAL_APPROVAL_REQUIRED' || value.executionBoundary.payment !== 'MANUAL_APPROVAL_REQUIRED' || !Array.isArray(value.executionBoundary.runtimeLabels) || value.executionBoundary.runtimeLabels.length !== 2 || value.executionBoundary.runtimeLabels[0] !== 'FIXTURE RESEARCH' || value.executionBoundary.runtimeLabels[1] !== 'XRPL TESTNET RESEARCH') return false
   return true
 }
 
@@ -345,4 +387,3 @@ export function parseResearchPlan(serialized: string): ResearchPlan {
   if (!isResearchPlanArtifact(parsed)) throw new TypeError('Research plan artifact is invalid or unsupported')
   return parsed
 }
-
