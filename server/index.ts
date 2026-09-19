@@ -1,17 +1,17 @@
 import 'dotenv/config'
 import express, { type Request, type Response } from 'express'
 import { randomUUID, createHash } from 'node:crypto'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Client, Wallet, type TxResponse } from 'xrpl'
 import { rankSources, QUESTION, CANONICAL_THESIS, AFTER_NORTHSTAR, AFTER_MERIDIAN, GAP_QUESTION, DEFAULT_BUDGET_CENTS, MIN_BUDGET_CENTS, MAX_BUDGET_CENTS, type Run, type Source, type Decision, type Phase, type ResearchConfig, type DossierDraft, type RuntimeStatus } from '../src/domain.js'
 import { loadFixtureCatalog, toPurchasedSpans, toPublicSpans, type FixtureArticle } from './catalog.js'
 import { planPurchase, synthesizeDossier, type DossierEvidencePacket } from './llm.js'
+import { loadRunStore, persistRunStore, type PersistenceMode } from './persistence.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', 'data')
-const dataFile = join(dataDir, 'runs.json')
+const dataFile = process.env.RESEARCH_RUNS_FILE ?? join(dataDir, 'runs.json')
 const port = Number(process.env.PORT ?? 8788)
 const xrplMode = process.env.XRPL_MODE === 'live' ? 'live' : 'fixture'
 const xrplNetwork = xrplMode === 'live' ? (process.env.XRPL_NETWORK ?? 'testnet') : 'fixture'
@@ -21,11 +21,14 @@ const xrplExplorerUrl = process.env.XRPL_EXPLORER_URL ?? 'https://testnet.xrpl.o
 const activeRuntime: RuntimeStatus = xrplMode === 'live' && xrplNetwork === 'testnet'
   ? { mode: 'live', label: 'XRPL TESTNET RESEARCH', settlement: 'VALIDATED', network: 'testnet' }
   : { mode: 'fixture', label: 'FIXTURE RESEARCH', settlement: 'SIMULATION_NOT_SETTLED', network: 'fixture' }
+type RunStateMode = 'fresh' | 'prior'
+type ManagedRun = Run & { stateMode: RunStateMode }
 const app = express()
 app.use(express.json({ limit: '64kb' }))
 app.use((_req, res, next) => { res.setHeader('X-ResearchAgent-Mode', mode); res.setHeader('X-Content-Type-Options', 'nosniff'); next() })
 
-let runs = new Map<string, Run>()
+let runs = new Map<string, ManagedRun>()
+let persistenceMode: PersistenceMode = 'fresh'
 let sourceCatalog: Source[] = []
 let mockArticles = new Map<string, FixtureArticle>()
 const clients = new Map<string, Set<Response>>()
@@ -108,30 +111,44 @@ function runtimeForPersistedRun(run: Run): RuntimeStatus {
     ? { mode: 'live', label: 'XRPL TESTNET RESEARCH', settlement: 'VALIDATED', network: 'testnet' }
     : { mode: 'fixture', label: 'FIXTURE RESEARCH', settlement: 'SIMULATION_NOT_SETTLED', network: 'fixture' }
 }
-async function load() { try { const raw = await readFile(dataFile, 'utf8'); const parsed = JSON.parse(raw) as Run[]; runs = new Map(parsed.map((run) => [run.runId, { ...run, runtime: runtimeForPersistedRun(run), config: makeConfig(run.config ?? {}), purchaseKeys: run.purchaseKeys ?? {} }])) } catch { runs = new Map() } }
-async function persist() { await mkdir(dataDir, { recursive: true }); await writeFile(dataFile, JSON.stringify([...runs.values()], null, 2)) }
+async function load() {
+  const loaded = await loadRunStore<Run>(dataFile)
+  persistenceMode = loaded.mode
+  runs = new Map([...loaded.runs.entries()].map(([runId, run]) => [runId, { ...run, runtime: runtimeForPersistedRun(run), config: makeConfig(run.config ?? {}), purchaseKeys: run.purchaseKeys ?? {}, stateMode: 'prior' as const }]))
+}
+async function persist() {
+  await persistRunStore(dataFile, runs.values())
+  persistenceMode = runs.size ? 'seeded' : 'fresh'
+}
 function emit(run: Run, type: string, label: string) { const event = { id: `${run.events.length + 1}`, type, label, at: now() }; run.events.push(event); clients.get(run.runId)?.forEach((res) => res.write(`id: ${event.id}\nevent: ${type}\ndata: ${JSON.stringify(event)}\n\n`)) }
 function emitStream(run: Run, type: string, data: Record<string, unknown>) { const event = { id: `stream-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, runId: run.runId, type, ...data }; clients.get(run.runId)?.forEach((res) => res.write(`id: ${event.id}\nevent: ${type}\ndata: ${JSON.stringify(event)}\n\n`)) }
 function publicSource(source: Source, run: Run): Source { const purchased = run.sources.find((item) => item.id === source.id); const article = mockArticles.get(source.id); const openSpans = article ? toPublicSpans(article) : undefined; return { ...source, decision: purchased?.decision, reason: purchased?.reason, purchasedAt: purchased?.purchasedAt, evidenceSpans: purchased?.evidenceSpans ?? openSpans } }
 function sourceType(source: Source): string { if (source.familyId === 'family-company') return 'primary'; if (source.familyId === 'family-energy' || source.kind === 'DATASET_QUERY') return 'public'; if (source.familyId === 'family-northstar' || source.familyId === 'family-meridian') return 'independent'; return 'specialist' }
-function state(run: Run) { return { runId: run.runId, phase: run.phase, paused: run.paused, cancelled: run.cancelled, budgetCents: run.budgetCents, spentCents: run.spentCents, remainingCents: run.budgetCents - run.spentCents, rawSourceCount: run.sources.length, familyCount: new Set(run.sources.map((source) => source.familyId)).size, gap: run.gap, thesis: run.thesis, claims: run.claims, events: run.events, dossierReady: run.dossierReady, dossier: run.dossier, llm: run.llm, semanticStatus: run.semanticStatus, runtime: run.runtime, purchasePlan: run.purchasePlan, config: run.config, sources: run.sources.map((source) => publicSource(source, run)) } }
+function state(run: Run) {
+  const stateMode = (run as Partial<ManagedRun>).stateMode ?? 'fresh'
+  return { runId: run.runId, stateMode, persistence: { mode: persistenceMode, persistedRunCount: runs.size }, phase: run.phase, paused: run.paused, cancelled: run.cancelled, budgetCents: run.budgetCents, spentCents: run.spentCents, remainingCents: run.budgetCents - run.spentCents, rawSourceCount: run.sources.length, familyCount: new Set(run.sources.map((source) => source.familyId)).size, gap: run.gap, thesis: run.thesis, claims: run.claims, events: run.events, dossierReady: run.dossierReady, dossier: run.dossier, llm: run.llm, semanticStatus: run.semanticStatus, runtime: run.runtime, purchasePlan: run.purchasePlan, config: run.config, sources: run.sources.map((source) => publicSource(source, run)) }
+}
 function getRun(req: Request, res: Response) { const run = runs.get(String(req.params.runId)); if (!run) { res.status(404).json({ error: 'Research run not found' }); return null }; return run }
-function initRun(input: Partial<ResearchConfig> = {}): Run {
+function initRun(input: Partial<ResearchConfig> = {}): ManagedRun {
   const config = makeConfig(input)
-  const run: Run = { runId: `run_${randomUUID().slice(0, 8)}`, version: 1, phase: 'DRAFT', paused: false, cancelled: false, budgetCents: config.budgetCents, spentCents: 0, sources: [], events: [], gap: { question: GAP_QUESTION, importance: 'HIGH', state: 'OPEN' }, thesis: { open: CANONICAL_THESIS, current: CANONICAL_THESIS }, claims: [], dossierReady: false, llm: { provider: process.env.LLM_PROVIDER ?? 'fixture', status: 'fixture fallback ready', model: process.env.LLM_MODEL ?? 'fixture-research-v1' }, semanticStatus: 'precomputed', config, runtime: activeRuntime, purchaseKeys: {} };
+  const run: ManagedRun = { runId: `run_${randomUUID().slice(0, 8)}`, stateMode: 'fresh', version: 1, phase: 'DRAFT', paused: false, cancelled: false, budgetCents: config.budgetCents, spentCents: 0, sources: [], events: [], gap: { question: GAP_QUESTION, importance: 'HIGH', state: 'OPEN' }, thesis: { open: CANONICAL_THESIS, current: CANONICAL_THESIS }, claims: [], dossierReady: false, llm: { provider: process.env.LLM_PROVIDER ?? 'fixture', status: 'fixture fallback ready', model: process.env.LLM_MODEL ?? 'fixture-research-v1' }, semanticStatus: 'precomputed', config, runtime: activeRuntime, purchaseKeys: {} };
   emit(run, 'BRIEF_READY', `Brief ready · ${config.tokenLimit.toLocaleString()} token cap · ${run.runtime.label}`); return run
 }
-function save(run: Run) { runs.set(run.runId, run); return persist() }
+function save(run: Run) {
+  const managed = (run as Partial<ManagedRun>).stateMode ? run as ManagedRun : { ...run, stateMode: 'fresh' as const }
+  runs.set(managed.runId, managed)
+  return persist()
+}
 function response(res: Response, run: Run) { return res.json(state(run)) }
 
-app.get('/api/health', (_req, res) => res.json({ ok: true, mode, runtime: activeRuntime, persistence: 'json-file', llm: process.env.LLM_PROVIDER ?? 'fixture' }))
-app.get('/api/v1/config/public', (_req, res) => res.json({ mode, runtime: activeRuntime, llmProvider: process.env.LLM_PROVIDER ?? 'fixture', semanticRanker: 'precomputed', network: activeRuntime.network === 'testnet' ? 'xrpl-testnet' : 'fixture', sourcePolicy: 'SYNTHETIC_FIXTURE_CORPUS', scenarioId: 'data-centre-2028', publicAppUrl: process.env.PUBLIC_APP_URL ?? 'http://localhost:5173' }))
-app.get('/api/v1/scenarios/data-centre-2028', (_req, res) => res.json({ scenarioId: 'data-centre-2028', runtime: activeRuntime, brief: { principal: 'Elena Tan', audience: 'Investment Committee', question: QUESTION, deliverable: 'Evidence-backed one-page dossier', budgetCents: 200, autoBuyMaxPerSourceCents: 100, sourceAboveThreshold: 'BLOCK', horizon: 2028, mode: activeRuntime.label, sourcePolicy: 'Synthetic local fixture corpus; no live websites are searched.' }, sources: sourceCatalog.map((source) => publicSource(source, { sources: [], spentCents: 0, runtime: activeRuntime } as unknown as Run)) }))
+app.get('/api/health', (_req, res) => res.json({ ok: true, mode, runtime: activeRuntime, persistence: 'json-file', persistenceMode, persistedRunCount: runs.size, stateMode: persistenceMode, llm: process.env.LLM_PROVIDER ?? 'fixture' }))
+app.get('/api/v1/config/public', (_req, res) => res.json({ mode, runtime: activeRuntime, llmProvider: process.env.LLM_PROVIDER ?? 'fixture', semanticRanker: 'precomputed', network: activeRuntime.network === 'testnet' ? 'xrpl-testnet' : 'fixture', sourcePolicy: 'SYNTHETIC_FIXTURE_CORPUS', scenarioId: 'data-centre-2028', publicAppUrl: process.env.PUBLIC_APP_URL ?? 'http://localhost:5173', persistenceMode, persistedRunCount: runs.size, stateMode: persistenceMode }))
+app.get('/api/v1/scenarios/data-centre-2028', (_req, res) => res.json({ scenarioId: 'data-centre-2028', runtime: activeRuntime, stateMode: 'fresh', persistenceMode, brief: { principal: 'Elena Tan', audience: 'Investment Committee', question: QUESTION, deliverable: 'Evidence-backed one-page dossier', budgetCents: 200, autoBuyMaxPerSourceCents: 100, sourceAboveThreshold: 'BLOCK', horizon: 2028, mode: activeRuntime.label, sourcePolicy: 'Synthetic local fixture corpus; no live websites are searched.' }, sources: sourceCatalog.map((source) => publicSource(source, { sources: [], spentCents: 0, runtime: activeRuntime } as unknown as Run)) }))
 app.post('/api/v1/research-runs', async (req, res) => { const run = initRun(req.body ?? {}); await save(run); return response(res.status(201), run) })
 app.get('/api/v1/research-runs/:runId', (req, res) => { const run = getRun(req, res); return run ? response(res, run) : undefined })
 app.get('/api/v1/research-runs/:runId/sources', (req, res) => { const run = getRun(req, res); return run ? res.json(run.sources.map((source) => publicSource(source, run))) : undefined })
 app.get('/api/v1/research-runs/:runId/sources/:sourceId', (req, res) => { const run = getRun(req, res); if (!run) return; const source = run.sources.find((item) => item.id === req.params.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const visible = publicSource(source, run); if (source.accessTier === 'PREMIUM' && visible.decision !== 'BUY') return res.json({ ...visible, premium: { status: 'PAYMENT_REQUIRED', ...quoteFor(run, source) } }); return res.json({ ...visible, premium: source.accessTier === 'PREMIUM' ? { status: 'UNLOCKED', contentHash: hash(mockArticles.get(source.id)?.article), ...quoteFor(run, source) } : { status: 'OPEN' } }) })
-app.post('/api/v1/research-runs/:runId/reset', async (req, res) => { const run = getRun(req, res); if (!run) return; const fresh = initRun(); fresh.runId = run.runId; fresh.runtime = run.runtime; fresh.events = [...run.events]; emit(fresh, 'RESEARCH_RESET', `${fresh.runtime.label} reset; external evidence is preserved`); await save(fresh); return response(res, fresh) })
+app.post('/api/v1/research-runs/:runId/reset', async (req, res) => { const run = getRun(req, res); if (!run) return; const fresh = initRun(); fresh.runId = run.runId; fresh.stateMode = run.stateMode; fresh.runtime = run.runtime; fresh.events = [...run.events]; emit(fresh, 'RESEARCH_RESET', `${fresh.runtime.label} reset; external evidence is preserved`); await save(fresh); return response(res, fresh) })
 app.post('/api/v1/research-runs/:runId/cancel', async (req, res) => { const run = getRun(req, res); if (!run) return; run.cancelled = true; run.phase = 'CANCELLED'; emit(run, 'RESEARCH_CANCELLED', 'Research paused with completed purchases preserved'); await save(run); return response(res, run) })
 app.post('/api/v1/research-runs/:runId/plan', async (req, res) => advance(req, res, 'plan'))
 app.post('/api/v1/research-runs/:runId/discover', async (req, res) => advance(req, res, 'discover'))
