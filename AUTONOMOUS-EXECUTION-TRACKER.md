@@ -22,6 +22,12 @@ access, impact, dossier, receipt, failure states, reset, and accessibility.
 
 Do not mark the October 1 milestone complete from documentation alone.
 
+### Current October gate progress
+
+| Issue | Status | Commit | Evidence / limitation |
+| --- | --- | --- | --- |
+| [#9 RA-02](https://github.com/Collaboration95/theFastandtheFungible/issues/9) | Review | `e8f9b05` | `npm run check:fast`, `npm run verify`, and `npm run test:e2e` pass. The server rejects a BUY unless the exact request carries manual approval; the setup displays the credential-free Partner Demo Wallet and manual approval rule. Independent review remains required before this can be treated as integrated gate evidence. |
+
 ## Automation-first decisions
 
 | Existing work | Automation treatment |
