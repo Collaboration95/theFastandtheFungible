@@ -112,7 +112,7 @@ export type Run = {
   runId: string; version: number; phase: Phase; paused: boolean; cancelled: boolean; budgetCents: number; spentCents: number;
   sources: Source[]; events: { id: string; type: string; label: string; at: string }[]; gap: { question: string; importance: 'HIGH'; state: 'OPEN' | 'PARTIAL' | 'RESOLVED' };
   thesis: { open: string; afterNorthstar?: string; afterMeridian?: string; current: string }; claims: Claim[]; dossierReady: boolean; dossier?: DossierDraft; llm: { provider: string; status: string; model: string }; semanticStatus: 'precomputed' | 'unavailable';
-  config: ResearchConfig; runtime: RuntimeStatus; quoteGeneration?: number; planApproved?: boolean; plan?: ResearchPlanArtifact; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK' };
+  config: ResearchConfig; runtime: RuntimeStatus; quoteGeneration?: number; quoteExpiresAt?: string; planApproved?: boolean; plan?: ResearchPlanArtifact; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK' };
 }
 
 export const QUESTION = 'Is the AI data-centre investment boom sustainable through 2028?'
