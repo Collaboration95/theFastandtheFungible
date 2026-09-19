@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { CURRENT_XRP_BALANCE, DEFAULT_BUDGET_CENTS, MAX_BUDGET_CENTS, MIN_BUDGET_CENTS, QUESTION, XRP_TO_SGD_CENTS, type Claim, type Phase, type ResearchConfig, type RuntimeStatus, type Source } from './domain'
+import { CURRENT_XRP_BALANCE, DEFAULT_BUDGET_CENTS, MAX_BUDGET_CENTS, MIN_BUDGET_CENTS, QUESTION, XRP_TO_SGD_CENTS, type Claim, type Phase, type ResearchApproach, type ResearchConfig, type ResearchPlanArtifact, type RuntimeStatus, type Source } from './domain'
+import { createResearchPlan } from './research-plan'
 
 type Brief = { principal:string; audience:string; question:string; deliverable:string; budgetCents:number; autoBuyMaxPerSourceCents:number; sourceAboveThreshold:string; horizon:number; mode:string; sourcePolicy?:string; sourceAllowlist?: string[] }
-type ServerState = { runId:string; phase:Phase; paused:boolean; cancelled:boolean; budgetCents:number; spentCents:number; remainingCents:number; rawSourceCount:number; familyCount:number; gap:{question:string; importance:string; state:string}; thesis:{open:string; afterNorthstar?:string; afterMeridian?:string; current:string}; claims:Claim[]; events:{id:string; type:string; label:string; at:string}[]; dossierReady:boolean; llm:{provider:string; status:string; model:string}; semanticStatus:string; runtime:RuntimeStatus; plan?:{approach:string}; purchasePlan?:{sourceId:string; reason:string; gap:string; provider:'groq'|'fixture'; model:string; status:'LIVE'|'FALLBACK'}; config:ResearchConfig; sources:Source[] }
+type ServerState = { runId:string; phase:Phase; paused:boolean; cancelled:boolean; budgetCents:number; spentCents:number; remainingCents:number; rawSourceCount:number; familyCount:number; gap:{question:string; importance:string; state:string}; thesis:{open:string; afterNorthstar?:string; afterMeridian?:string; current:string}; claims:Claim[]; events:{id:string; type:string; label:string; at:string}[]; dossierReady:boolean; llm:{provider:string; status:string; model:string}; semanticStatus:string; runtime:RuntimeStatus; plan?:ResearchPlanArtifact; purchasePlan?:{sourceId:string; reason:string; gap:string; provider:'groq'|'fixture'; model:string; status:'LIVE'|'FALLBACK'}; config:ResearchConfig; sources:Source[] }
 type PurchaseDecisionResponse = { action:NonNullable<ServerState['purchasePlan']>; state:ServerState }
 type Scenario = { scenarioId:string; runtime:RuntimeStatus; brief:Brief; sources:Source[] }
 type Dossier = { mode?:string; title:string; conclusion:string; changedAfterPaidResearch:{before:string; afterNorthstar?:string; after:string}; afterLabel?:string; claims:Claim[]; uncertainty:string; sourceLedger:{publisher:string; priceCents:number; decision:string; family:string; authority:string; originality:string; access:string}[]; method:string; provider?:string; model?:string; status?:string }
@@ -71,6 +72,45 @@ function Composer({ value, onChange, onSubmit, placeholder, disabled = false }:{
 
 function PublisherPicker({ selected, onToggle, budgetXrp, onBudgetXrpChange, onStart, busy, showControls }:{ selected:PublisherKey[]; onToggle:(key:PublisherKey)=>void; budgetXrp:number; onBudgetXrpChange:(value:number)=>void; onStart:()=>void; busy:boolean; showControls:boolean }) {
   return <section className="publisher-picker" aria-labelledby="publisher-picker-title"><div className="publisher-picker-head"><div><span className="kicker">Search boundary</span><h2 id="publisher-picker-title">Select fixture source profiles</h2></div><span className="picker-count mono">{selected.length} / {publisherOptions.length} selected</span></div><p className="publisher-picker-note">All profiles are synthetic local fixtures. No live websites or real publisher content are searched.</p><div className="publisher-grid">{publisherOptions.map((option) => <button key={option.id} type="button" className={`publisher-option ${selected.includes(option.id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(option.id)} onClick={() => onToggle(option.id)}><span className="publisher-check">{selected.includes(option.id) ? '✓' : ''}</span><span><strong>{option.label}</strong><small>{option.example}</small></span></button>)}</div>{showControls && <><BudgetControl value={budgetXrp} onChange={onBudgetXrpChange} /><div className="publisher-picker-footer"><span><span className="status-dot" /> {selected.length > 0 ? `${selected.length} fixture profiles · ${formatXrp(budgetXrp)} mandate · ≈ ${money(xrpToCents(budgetXrp))}` : 'Choose at least one fixture profile to continue'}</span><button type="button" className="primary-button" aria-busy={busy} onClick={onStart} disabled={busy || selected.length === 0}>{busy ? 'Building evidence map…' : 'Start research'} <Icon name="arrow" /></button></div></>}</section>
+}
+
+const approachOptions: { value:ResearchApproach; label:string; description:string }[] = [
+  { value:'BALANCED_DILIGENCE', label:'Balanced diligence', description:'Collect support, challenges, and independent corroboration.' },
+  { value:'THESIS_STRESS_TEST', label:'Thesis stress test', description:'Prioritize contradictory evidence and the risks that could break the thesis.' },
+  { value:'BUDGET_FIRST_SCAN', label:'Budget-first scan', description:'Build an open baseline first and spend only when a material gap remains.' },
+]
+
+function PlanReview({ plan, onChange, onApprove, busy }:{ plan:ResearchPlanArtifact; onChange:(plan:ResearchPlanArtifact)=>void; onApprove:()=>void; busy:boolean }) {
+  const updateConfig = (field:'question'|'decision'|'horizon'|'tokenLimit', value:string) => {
+    onChange({ ...plan, config:{ ...plan.config, [field]:field === 'tokenLimit' ? Number(value) : value } })
+  }
+  const selectApproach = (approach:ResearchApproach) => {
+    onChange(createResearchPlan(approach, plan.config))
+  }
+  const updateStep = (index:number, field:'title'|'objective', value:string) => {
+    const steps = plan.steps.map((step, stepIndex) => stepIndex === index ? { ...step, [field]:value } : step)
+    onChange({ ...plan, steps })
+  }
+  const updateStopCondition = (index:number, field:'label'|'condition'|'outcome', value:string) => {
+    const stopConditions = plan.stopConditions.map((condition, conditionIndex) => conditionIndex === index ? { ...condition, [field]:value } as typeof condition : condition)
+    onChange({ ...plan, stopConditions })
+  }
+  const valid = Boolean(plan.config.question.trim() && plan.config.decision.trim() && plan.config.horizon.trim() && Number.isInteger(plan.config.tokenLimit) && plan.config.tokenLimit >= 8_000 && plan.config.tokenLimit <= 256_000 && plan.steps.every((step) => step.title.trim() && step.objective.trim()) && plan.stopConditions.every((condition) => condition.label.trim() && condition.condition.trim()))
+  return <section className="plan-review workbench-card" aria-labelledby="plan-review-title">
+    <div className="step-copy"><span className="kicker">Plan checkpoint · research has not started</span><h1 id="plan-review-title">Review the research plan</h1><p>The agent will not search, read, spend, or unlock evidence until you approve this plan. Choose the method, then edit the permitted research fields.</p></div>
+    <fieldset className="plan-approaches"><legend>Research approach</legend><div className="publisher-grid">{approachOptions.map((option) => <label className={`publisher-option ${plan.approach === option.value ? 'is-selected' : ''}`} key={option.value}><input type="radio" name="research-approach" value={option.value} checked={plan.approach === option.value} onChange={() => selectApproach(option.value)} /><span><strong>{option.label}</strong><small>{option.description}</small></span></label>)}</div></fieldset>
+    <div className="plan-fields">
+      <label><span>Research question</span><textarea aria-label="Plan research question" value={plan.config.question} onChange={(event) => updateConfig('question', event.target.value)} rows={2} /></label>
+      <label><span>Decision this supports</span><textarea aria-label="Plan decision" value={plan.config.decision} onChange={(event) => updateConfig('decision', event.target.value)} rows={2} /></label>
+      <label><span>Research horizon</span><input aria-label="Plan research horizon" value={plan.config.horizon} onChange={(event) => updateConfig('horizon', event.target.value)} /></label>
+      <label><span>Analysis token cap</span><input aria-label="Plan analysis token cap" type="number" min={8_000} max={256_000} step={1_000} value={plan.config.tokenLimit} onChange={(event) => updateConfig('tokenLimit', event.target.value)} /></label>
+    </div>
+    <div className="plan-boundary" aria-label="Research mandate guardrails"><div><span className="kicker">Server-owned guardrails</span><p>These mandate fields stay fixed for this run: {money(plan.config.budgetCents)} total budget, S$1.00 per-source ceiling, approved fixture profiles, and manual approval before every premium purchase.</p></div><div className="plan-strategy"><span className="kicker">Budget intent</span><strong>{plan.budgetIntent.strategy.replaceAll('_', ' ')}</strong><small>Over budget: {plan.budgetIntent.overBudget.toLowerCase()} · {plan.budgetIntent.premiumGate.replaceAll('_', ' ').toLowerCase()}</small></div></div>
+    <section className="plan-section" aria-labelledby="plan-priorities-title"><div className="workbench-card-head"><div><span className="kicker">Evidence requirements</span><h2 id="plan-priorities-title">What this approach will look for</h2></div><span className="mono">{plan.evidencePriorities.length} priorities</span></div><ol>{plan.evidencePriorities.map((priority) => <li key={priority.id}><strong>{priority.label}</strong><p>{priority.rationale}</p><small>Signals: {priority.signals.join(' · ')} · minimum {priority.minimumIndependentFamilies} independent {priority.minimumIndependentFamilies === 1 ? 'family' : 'families'}</small></li>)}</ol></section>
+    <section className="plan-section" aria-labelledby="plan-steps-title"><div className="workbench-card-head"><div><span className="kicker">Editable workflow</span><h2 id="plan-steps-title">Plan steps</h2></div><span className="mono">{plan.steps.length} steps</span></div><ol>{plan.steps.map((step, index) => <li key={step.id}><div><span className="mono">{String(step.order).padStart(2, '0')} · {step.kind.replaceAll('_', ' ')}</span><label><span>Step title</span><input aria-label={`Plan step ${step.order} title`} value={step.title} onChange={(event) => updateStep(index, 'title', event.target.value)} /></label><label><span>Objective</span><textarea aria-label={`Plan step ${step.order} objective`} value={step.objective} onChange={(event) => updateStep(index, 'objective', event.target.value)} rows={2} /></label></div><small>Guard: no access grant · no payment authorization</small></li>)}</ol></section>
+    <section className="plan-section" aria-labelledby="plan-stops-title"><div className="workbench-card-head"><div><span className="kicker">Editable controls</span><h2 id="plan-stops-title">Stop conditions</h2></div><span className="mono">{plan.stopConditions.length} conditions</span></div><ol>{plan.stopConditions.map((condition, index) => <li key={condition.id}><label><span>Condition label</span><input aria-label={`Stop condition ${index + 1} label`} value={condition.label} onChange={(event) => updateStopCondition(index, 'label', event.target.value)} /></label><label><span>When this applies</span><textarea aria-label={`Stop condition ${index + 1} rule`} value={condition.condition} onChange={(event) => updateStopCondition(index, 'condition', event.target.value)} rows={2} /></label><label><span>Outcome</span><select aria-label={`Stop condition ${index + 1} outcome`} value={condition.outcome} onChange={(event) => updateStopCondition(index, 'outcome', event.target.value)}><option value="STOP_AND_REPORT">Stop and report</option><option value="STOP_BEFORE_PREMIUM_REVIEW">Stop before premium review</option><option value="CONTINUE_WITH_UNCERTAINTY">Continue with uncertainty</option></select></label></li>)}</ol></section>
+    <div className="plan-review-footer"><p><strong>Approval is explicit.</strong> Approving validates this exact plan on the server and starts the evidence workflow. Premium article purchases remain a separate approval.</p><button type="button" className="primary-button" aria-busy={busy} onClick={onApprove} disabled={busy || !valid}>{busy ? 'Approving plan…' : 'Approve plan & start research'} <Icon name="arrow" /></button></div>
+  </section>
 }
 
 function BudgetControl({ value, onChange }:{ value:number; onChange:(value:number)=>void }) {
@@ -196,6 +236,7 @@ function ResearchPath({ run, dossier, sources, showAll, onShowAll, selectedId, o
 export default function App() {
   const [scenario, setScenario] = useState<Scenario|null>(null)
   const [run, setRun] = useState<ServerState|null>(null)
+  const [planDraft, setPlanDraft] = useState<ResearchPlanArtifact|null>(null)
   const [question, setQuestion] = useState('')
   const [questionDraft, setQuestionDraft] = useState('')
   const [budgetXrp, setBudgetXrp] = useState(DEFAULT_BUDGET_XRP)
@@ -249,7 +290,7 @@ export default function App() {
     if (run?.runId) window.scrollTo({ top:0, behavior:'auto' })
   }, [run?.runId])
 
-  const resetToStart = () => { setRun(null); setDossier(null); setSynthesisText(''); setSynthesisStreaming(false); setQuestion(''); setQuestionDraft(''); setBudgetXrp(DEFAULT_BUDGET_XRP); setSelectedPublishers(publisherOptions.map((option) => option.id)); setChatStarted(false); setSelectedId(null); setSelectedDetail(null); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' }) }
+  const resetToStart = () => { setRun(null); setPlanDraft(null); setDossier(null); setSynthesisText(''); setSynthesisStreaming(false); setQuestion(''); setQuestionDraft(''); setBudgetXrp(DEFAULT_BUDGET_XRP); setSelectedPublishers(publisherOptions.map((option) => option.id)); setChatStarted(false); setSelectedId(null); setSelectedDetail(null); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' }) }
   const beginClarification = (value = questionDraft) => { const next = value.trim(); if (!next) return; setQuestion(next); setQuestionDraft(next); setChatStarted(true); setMessage('Question received. Choose your websites and budget before research starts.') }
   const togglePublisher = (key:PublisherKey) => setSelectedPublishers((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key])
 
@@ -259,10 +300,27 @@ export default function App() {
     try {
       const created = await api<ServerState>('/api/v1/research-runs', { method:'POST', body:JSON.stringify({ question, decision:'Inform the next research decision', horizon:'Through 2028', tokenLimit:64000, budgetCents:xrpToCents(budgetXrp), sourceTypes, sourceAllowlist:selectedPublishers }) })
       setRun(created)
-      let next = created
-      for (let index = 0; index < 6; index += 1) next = await api<ServerState>(`/api/v1/research-runs/${created.runId}/step`, { method:'POST', body:JSON.stringify({ action:'next' }) })
-      const planned = await api<PurchaseDecisionResponse>(`/api/v1/research-runs/${created.runId}/purchase-decisions`, { method:'POST', body:'{}' })
+      const initialPlan = created.plan ?? createResearchPlan('BALANCED_DILIGENCE', { ...created.config, sourceAllowlist:selectedPublishers })
+      setPlanDraft(initialPlan)
+      setMessage('Research plan ready. Review and approve it before the agent starts.')
+      window.scrollTo({ top:0, behavior:'auto' })
+    } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
+  }
+
+  const approvePlan = async () => {
+    if (!run || !planDraft || busy) return
+    setBusy(true)
+    try {
+      let next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/plan`, { method:'POST', body:JSON.stringify({ plan:planDraft }) })
+      setRun(next)
+      setMessage('Plan approved. Building the evidence map…')
+      // The approval endpoint leaves the run in PLANNING. Five transitions
+      // take it through discovery, ranking, open reading, gap analysis, and
+      // purchase planning; no transition is possible before approval.
+      for (let index = 0; index < 5; index += 1) next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/step`, { method:'POST', body:JSON.stringify({ action:'next' }) })
+      const planned = await api<PurchaseDecisionResponse>(`/api/v1/research-runs/${run.runId}/purchase-decisions`, { method:'POST', body:'{}' })
       setRun(planned.state)
+      setPlanDraft(null)
       setMessage(planned.action.sourceId ? `Evidence map ready. Review the recommendation, then explicitly approve or skip it.` : 'Evidence map ready. No affordable premium source was selected.')
       window.scrollTo({ top:0, behavior:'auto' })
     } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
@@ -320,7 +378,7 @@ export default function App() {
         </section>}
         {run && <section className="research-view">
           <div className="research-intro"><div><span className="kicker">Research thread · {run.config.horizon}</span><h1>{run.config.question}</h1><div className="intro-meta"><span>{run.rawSourceCount} retrieved previews · {run.familyCount} evidence families</span><span>{formatXrp(centsToXrp(run.budgetCents))} research budget</span></div></div><div className="intro-actions"><button type="button" className="small-button" onClick={resetToStart}>New research</button><button type="button" className="small-button" onClick={() => void act('cancel')} disabled={run.dossierReady || busy}>Stop</button></div></div>
-          <ResearchPath run={run} dossier={dossier} sources={visibleSources} showAll={showAllSources} onShowAll={() => setShowAllSources(true)} selectedId={selectedId} onOpenSource={(id) => void openSource(id)} onAction={(sourceId, action) => void purchase(sourceId, action)} onSynthesize={() => void synthesize()} busy={busy} synthesisText={synthesisText} synthesisStreaming={synthesisStreaming} />
+          {planDraft ? <PlanReview plan={planDraft} onChange={setPlanDraft} onApprove={() => void approvePlan()} busy={busy} /> : <ResearchPath run={run} dossier={dossier} sources={visibleSources} showAll={showAllSources} onShowAll={() => setShowAllSources(true)} selectedId={selectedId} onOpenSource={(id) => void openSource(id)} onAction={(sourceId, action) => void purchase(sourceId, action)} onSynthesize={() => void synthesize()} busy={busy} synthesisText={synthesisText} synthesisStreaming={synthesisStreaming} />}
         </section>}
       </main>
     </div>
