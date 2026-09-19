@@ -294,7 +294,8 @@ app.post('/api/v1/research-runs/:runId/purchases', async (req, res) => { const r
   if (action === 'SKIP' || source.id === 'circuit-note') { const current = run.sources.find((item) => item.id === source.id); if (current) { current.decision = 'SKIP'; current.reason = 'Skipped because it repeats Northstar Wire; no new independent family.' } emit(run, 'SOURCE_SKIPPED', 'Circuit Note skipped · redundant with Northstar Wire'); await save(run); return response(res, run) }
   if (source.priceCents > run.config.perSourceCeilingCents || source.priceCents > remaining) { const current = run.sources.find((item) => item.id === source.id); if (current) { current.decision = 'BLOCKED'; current.reason = `Blocked: S$${(source.priceCents/100).toFixed(2)} exceeds the remaining S$${(remaining/100).toFixed(2)}.` } emit(run, 'PURCHASE_BLOCKED', `${source.publisher} blocked by deterministic budget guard`); await save(run); return response(res, run) }
   if (action !== 'BUY') return res.status(400).json({ error: 'Unsupported purchase action' })
-  if (req.body?.approval !== 'APPROVED') return res.status(409).json({ error: 'Purchase requires explicit manual approval for this exact article and quote' })
+  const quote = quoteFor(run, source)
+  if (req.body?.approval !== 'APPROVED' || req.body?.quoteHash !== quote.quoteHash) return res.status(409).json({ error: 'Purchase requires explicit manual approval for the current exact article and quote' })
   let payment: Source['payment'] = { mode: 'fixture', network: 'fixture', amountDrops: source.xrpDrops ?? 0, settlement: 'SIMULATION_NOT_SETTLED' }
   if (run.runtime.mode === 'live') {
     try {

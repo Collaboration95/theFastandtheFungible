@@ -278,7 +278,8 @@ export default function App() {
     if (!run || busy) return
     setBusy(true)
     try {
-      const next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId, action, approval: action === 'BUY' ? 'APPROVED' : undefined, idempotencyKey:crypto.randomUUID() }) })
+      const quoteHash = action === 'BUY' ? (await api<SourceDetail>(`/api/v1/research-runs/${run.runId}/sources/${sourceId}`)).premium?.quoteHash : undefined
+      const next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId, action, approval: action === 'BUY' ? 'APPROVED' : undefined, quoteHash, idempotencyKey:crypto.randomUUID() }) })
       setRun(next)
       const source = next.sources.find((item) => item.id === sourceId)
       setMessage(action === 'BUY' ? `${source?.publisher} unlocked. The working thesis can now change.` : action === 'SKIP' ? 'Circuit Note skipped because it repeats Northstar Wire.' : 'GridScope blocked: S$1.40 exceeds the remaining S$1.00.')
