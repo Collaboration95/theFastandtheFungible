@@ -69,7 +69,9 @@ function scopedSources(config: ResearchConfig) {
 
 function quoteFor(run: Run, source: Source) {
   const live = run.runtime.mode === 'live'
-  return { protocol: 'x402', x402Version: 2, network: live ? 'xrpl-testnet' : 'fixture', settlement: run.runtime.settlement, runtimeLabel: run.runtime.label, invoiceId: `invoice_${run.runId}_${source.id}`, resourceId: `resource_${source.id}`, amountDrops: source.xrpDrops ?? 0, payTo: live ? process.env.XRPL_RECEIVER_ADDRESS : null, quoteHash: hash({ runId: run.runId, id: source.id, priceCents: source.priceCents, xrpDrops: source.xrpDrops }) }
+  const resourceVersionHash = hash(mockArticles.get(source.id)?.article)
+  const quote = { protocol: 'x402' as const, x402Version: 2, network: live ? 'xrpl-testnet' : 'fixture', settlement: run.runtime.settlement, runtimeLabel: run.runtime.label, invoiceId: `invoice_${run.runId}_${run.quoteGeneration ?? 1}_${source.id}`, resourceId: `resource_${source.id}`, resourceVersionHash, amountCents: source.priceCents, amountDrops: source.xrpDrops ?? 0, payTo: live ? process.env.XRPL_RECEIVER_ADDRESS : null }
+  return { ...quote, quoteHash: hash(quote) }
 }
 
 async function settleLivePayment(source: Source) {
@@ -123,7 +125,7 @@ async function persist() {
 }
 function emit(run: Run, type: string, label: string) { const event = { id: `${run.events.length + 1}`, type, label, at: now() }; run.events.push(event); clients.get(run.runId)?.forEach((res) => res.write(`id: ${event.id}\nevent: ${type}\ndata: ${JSON.stringify(event)}\n\n`)) }
 function emitStream(run: Run, type: string, data: Record<string, unknown>) { const event = { id: `stream-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, runId: run.runId, type, ...data }; clients.get(run.runId)?.forEach((res) => res.write(`id: ${event.id}\nevent: ${type}\ndata: ${JSON.stringify(event)}\n\n`)) }
-function publicSource(source: Source, run: Run): Source { const purchased = run.sources.find((item) => item.id === source.id); const article = mockArticles.get(source.id); const openSpans = article ? toPublicSpans(article) : undefined; return { ...source, decision: purchased?.decision, reason: purchased?.reason, purchasedAt: purchased?.purchasedAt, evidenceSpans: purchased?.evidenceSpans ?? openSpans } }
+function publicSource(source: Source, run: Run): Source { const purchased = run.sources.find((item) => item.id === source.id); const article = mockArticles.get(source.id); const openSpans = article ? toPublicSpans(article) : undefined; const evidenceSpans = source.accessTier === 'PREMIUM' ? (purchased?.decision === 'BUY' ? purchased.evidenceSpans : undefined) : (purchased?.evidenceSpans ?? openSpans); return { ...source, decision: purchased?.decision, reason: purchased?.reason, purchasedAt: purchased?.purchasedAt, evidenceSpans } }
 function sourceType(source: Source): string { if (source.familyId === 'family-company') return 'primary'; if (source.familyId === 'family-energy' || source.kind === 'DATASET_QUERY') return 'public'; if (source.familyId === 'family-northstar' || source.familyId === 'family-meridian') return 'independent'; return 'specialist' }
 function state(run: Run) {
   const stateMode = (run as Partial<ManagedRun>).stateMode ?? 'fresh'
@@ -133,7 +135,7 @@ function getRun(req: Request, res: Response) { const run = runs.get(String(req.p
 function initRun(input: Partial<ResearchConfig> = {}): ManagedRun {
   const config = makeConfig(input)
   const plan = createResearchPlan('BALANCED_DILIGENCE', config)
-  const run: ManagedRun = { runId: `run_${randomUUID().slice(0, 8)}`, stateMode: 'fresh', version: 1, phase: 'DRAFT', paused: false, cancelled: false, budgetCents: config.budgetCents, spentCents: 0, sources: [], events: [], gap: { question: GAP_QUESTION, importance: 'HIGH', state: 'OPEN' }, thesis: { open: CANONICAL_THESIS, current: CANONICAL_THESIS }, claims: [], dossierReady: false, llm: { provider: process.env.LLM_PROVIDER ?? 'fixture', status: 'fixture fallback ready', model: process.env.LLM_MODEL ?? 'fixture-research-v1' }, semanticStatus: 'precomputed', config, plan, runtime: activeRuntime, purchaseKeys: {} };
+  const run: ManagedRun = { runId: `run_${randomUUID().slice(0, 8)}`, stateMode: 'fresh', version: 1, phase: 'DRAFT', paused: false, cancelled: false, budgetCents: config.budgetCents, spentCents: 0, sources: [], events: [], gap: { question: GAP_QUESTION, importance: 'HIGH', state: 'OPEN' }, thesis: { open: CANONICAL_THESIS, current: CANONICAL_THESIS }, claims: [], dossierReady: false, llm: { provider: process.env.LLM_PROVIDER ?? 'fixture', status: 'fixture fallback ready', model: process.env.LLM_MODEL ?? 'fixture-research-v1' }, semanticStatus: 'precomputed', config, plan, runtime: activeRuntime, quoteGeneration: 1, purchaseKeys: {} };
   emit(run, 'BRIEF_READY', `Brief ready · ${config.tokenLimit.toLocaleString()} token cap · ${run.runtime.label}`); return run
 }
 function save(run: Run) {
@@ -150,7 +152,7 @@ app.post('/api/v1/research-runs', async (req, res) => { const run = initRun(req.
 app.get('/api/v1/research-runs/:runId', (req, res) => { const run = getRun(req, res); return run ? response(res, run) : undefined })
 app.get('/api/v1/research-runs/:runId/sources', (req, res) => { const run = getRun(req, res); return run ? res.json(run.sources.map((source) => publicSource(source, run))) : undefined })
 app.get('/api/v1/research-runs/:runId/sources/:sourceId', (req, res) => { const run = getRun(req, res); if (!run) return; const source = run.sources.find((item) => item.id === req.params.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const visible = publicSource(source, run); if (source.accessTier === 'PREMIUM' && visible.decision !== 'BUY') return res.json({ ...visible, premium: { status: 'PAYMENT_REQUIRED', ...quoteFor(run, source) } }); return res.json({ ...visible, premium: source.accessTier === 'PREMIUM' ? { status: 'UNLOCKED', contentHash: hash(mockArticles.get(source.id)?.article), ...quoteFor(run, source) } : { status: 'OPEN' } }) })
-app.post('/api/v1/research-runs/:runId/reset', async (req, res) => { const run = getRun(req, res); if (!run) return; const fresh = initRun(); fresh.runId = run.runId; fresh.stateMode = run.stateMode; fresh.runtime = run.runtime; fresh.events = [...run.events]; emit(fresh, 'RESEARCH_RESET', `${fresh.runtime.label} reset; external evidence is preserved`); await save(fresh); return response(res, fresh) })
+app.post('/api/v1/research-runs/:runId/reset', async (req, res) => { const run = getRun(req, res); if (!run) return; const fresh = initRun(); fresh.runId = run.runId; fresh.stateMode = run.stateMode; fresh.runtime = run.runtime; fresh.quoteGeneration = (run.quoteGeneration ?? 1) + 1; fresh.events = [...run.events]; emit(fresh, 'RESEARCH_RESET', `${fresh.runtime.label} reset; prior purchases remain in local history`); await save(fresh); return response(res, fresh) })
 app.post('/api/v1/research-runs/:runId/cancel', async (req, res) => { const run = getRun(req, res); if (!run) return; run.cancelled = true; run.phase = 'CANCELLED'; emit(run, 'RESEARCH_CANCELLED', 'Research paused with completed purchases preserved'); await save(run); return response(res, run) })
 app.post('/api/v1/research-runs/:runId/plan', async (req, res) => {
   const run = getRun(req, res); if (!run) return
