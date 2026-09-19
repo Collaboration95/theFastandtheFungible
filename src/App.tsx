@@ -7,8 +7,9 @@ type ServerState = { runId:string; phase:Phase; paused:boolean; cancelled:boolea
 type PurchaseDecisionResponse = { action:NonNullable<ServerState['purchasePlan']>; state:ServerState }
 type Scenario = { scenarioId:string; runtime:RuntimeStatus; brief:Brief; sources:Source[] }
 type Dossier = { mode?:string; title:string; conclusion:string; changedAfterPaidResearch:{before:string; afterNorthstar?:string; after:string}; afterLabel?:string; claims:Claim[]; uncertainty:string; sourceLedger:{publisher:string; priceCents:number; decision:string; family:string; authority:string; originality:string; access:string}[]; method:string; provider?:string; model?:string; status?:string }
-type SourceDetail = Source & { premium?:{status:string; contentHash?:string; quoteHash?:string; resourceId?:string; network?:string; settlement?:string; runtimeLabel?:string} }
+type SourceDetail = Source & { premium?:{status:string; protocol?:string; x402Version?:number; contentHash?:string; quoteHash?:string; invoiceId?:string; resourceId?:string; resourceVersionHash?:string; network?:string; payTo?:string|null; amountCents?:number; amountDrops?:number; settlement?:string; runtimeLabel?:string} }
 type SourceType = 'primary' | 'public' | 'independent' | 'specialist'
+type PendingPurchase = { sourceId:string; source:Source; detail:SourceDetail }
 
 const money = (cents:number) => `S$${(cents / 100).toFixed(2)}`
 const formatXrp = (xrp:number) => `${xrp.toFixed(2)} XRP`
@@ -155,6 +156,21 @@ function EvidenceDrawer({ source, onClose }:{ source:SourceDetail; onClose:()=>v
   return <><button className="drawer-backdrop" type="button" aria-label="Close evidence drawer" onClick={onClose} /><aside className="evidence-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div className="drawer-head"><div><span className="kicker">Evidence inspection</span><h2 id="drawer-title">{source.publisher}</h2></div><button ref={closeRef} type="button" className="icon-button light" onClick={onClose} aria-label="Close evidence drawer"><Icon name="close" /></button></div><div className="drawer-content"><Badge tone={locked ? 'warning' : source.accessTier === 'OPEN' ? 'neutral' : 'success'}>{source.accessTier === 'OPEN' ? 'Open evidence' : locked ? 'Premium preview' : 'Premium · unlocked'}</Badge><h3>{source.title}</h3><p className="drawer-preview">{source.preview}</p><dl className="detail-list"><div><dt>Evidence family</dt><dd>{source.familyLabel}<small>{source.originality} · {source.trustNote}</small></dd></div><div><dt>Retrieval score</dt><dd className="mono">{source.relevance} / 100<small>Price never affects relevance.</small></dd></div><div><dt>Gap match</dt><dd className="mono">{source.gapMatch} / 100<small>How directly this source answers the active gap.</small></dd></div><div><dt>Terms</dt><dd>{source.priceCents ? `${money(source.priceCents)} exact resource quote` : 'Open / no payment required'}<small>Fixture content is synthetic and clearly labelled.</small></dd></div></dl>{locked && <div className="locked-evidence"><Icon name="lock" /><div><strong>Full text is protected</strong><p>Only metadata, preview, price, and terms are visible before purchase. This preview cannot be cited as read.</p><p className="mono">{fixtureQuote ? 'Fixture quote · simulation only' : 'x402 quote · XRPL Testnet'} · {source.xrpDrops?.toLocaleString() ?? '—'} drops · {fixtureQuote ? 'not settled' : 'validated after purchase'}</p></div></div>}{source.evidenceSpans && <section className="span-section"><h3>Accessible evidence spans</h3>{source.evidenceSpans.map((span) => <blockquote key={span.id} id={span.id}><span className="kicker">{span.label} · {span.id}</span><p>“{span.text}”</p></blockquote>)}</section>}</div></aside></>
 }
 
+function PurchaseConfirmation({ pending, busy, onConfirm, onCancel }:{ pending:PendingPurchase; busy:boolean; onConfirm:()=>void; onCancel:()=>void }) {
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const previousRef = useRef<HTMLElement|null>(null)
+  const quote = pending.detail.premium
+  useEffect(() => {
+    previousRef.current = document.activeElement as HTMLElement
+    closeRef.current?.focus()
+    const onKeyDown = (event:KeyboardEvent) => { if (event.key === 'Escape' && !busy) onCancel() }
+    document.addEventListener('keydown', onKeyDown)
+    return () => { document.removeEventListener('keydown', onKeyDown); previousRef.current?.focus() }
+  }, [busy, onCancel])
+  const exact = (value:unknown) => value === null || value === undefined || value === '' ? '—' : String(value)
+  return <><button className="drawer-backdrop" type="button" aria-label="Cancel purchase confirmation" onClick={() => { if (!busy) onCancel() }} /><aside className="evidence-drawer" role="dialog" aria-modal="true" aria-labelledby="purchase-confirmation-title"><div className="drawer-head"><div><span className="kicker">Manual approval required</span><h2 id="purchase-confirmation-title">Confirm this purchase</h2></div><button ref={closeRef} type="button" className="icon-button light" onClick={onCancel} disabled={busy} aria-label="Cancel purchase confirmation"><Icon name="close" /></button></div><div className="drawer-content"><Badge tone="warning">Nothing has been purchased</Badge><h3>{pending.source.title}</h3><p className="drawer-preview">Review the exact quote binding below. Access is granted only after you explicitly confirm this purchase.</p><dl className="detail-list"><div><dt>Amount</dt><dd>{money(pending.source.priceCents)} · {exact(quote?.amountDrops ?? pending.source.xrpDrops)} drops</dd></div><div><dt>Invoice</dt><dd className="mono">{exact(quote?.invoiceId)}</dd></div><div><dt>Resource</dt><dd className="mono">{exact(quote?.resourceId)}</dd></div><div><dt>Payee</dt><dd className="mono">{exact(quote?.payTo)}<small>{quote?.payTo ? 'Exact destination in this quote.' : 'No live payee in fixture simulation.'}</small></dd></div><div><dt>Network</dt><dd className="mono">{exact(quote?.network)}</dd></div><div><dt>Resource version hash</dt><dd className="mono">{exact(quote?.resourceVersionHash)}</dd></div><div><dt>Quote hash</dt><dd className="mono">{exact(quote?.quoteHash)}</dd></div><div><dt>Protocol</dt><dd className="mono">{exact(quote?.protocol)} · version {exact(quote?.x402Version)}</dd></div></dl><div className="locked-evidence"><Icon name="lock" /><div><strong>Explicit confirmation is required</strong><p>This approval is bound to the invoice, resource, payee, network, resource version hash, and quote hash shown above.</p></div></div><div className="drawer-actions"><button type="button" className="small-button" onClick={onCancel} disabled={busy}>Cancel</button><button type="button" className="primary-button" onClick={onConfirm} disabled={busy || !quote?.quoteHash}>{busy ? 'Confirming…' : `Confirm purchase ${money(pending.source.priceCents)}`} <Icon name="arrow" /></button></div></div></aside></>
+}
+
 function BudgetCard({ run }:{ run:ServerState }) {
   const spentPercent = Math.min(100, (run.spentCents / run.budgetCents) * 100)
   return <section className="side-card budget-card"><div className="side-card-heading"><span className="kicker">Research budget</span><span className="mono">{formatXrp(centsToXrp(run.remainingCents))} left</span></div><div className="budget-number"><strong>{formatXrp(centsToXrp(run.spentCents))}</strong><span>≈ {money(run.spentCents)} of {formatXrp(centsToXrp(run.budgetCents))}</span></div><div className="budget-bar"><i style={{ width:`${spentPercent}%` }} /></div><div className="budget-note">XRP is the working currency. Approximate SGD value uses 1 XRP ≈ S$10.00. The agent cannot exceed the mandate or buy a source above S$1.00.</div></section>
@@ -244,6 +260,7 @@ export default function App() {
   const [chatStarted, setChatStarted] = useState(false)
   const [selectedId, setSelectedId] = useState<string|null>(null)
   const [selectedDetail, setSelectedDetail] = useState<SourceDetail|null>(null)
+  const [pendingPurchase, setPendingPurchase] = useState<PendingPurchase|null>(null)
   const [dossier, setDossier] = useState<Dossier|null>(null)
   const [synthesisText, setSynthesisText] = useState('')
   const [synthesisStreaming, setSynthesisStreaming] = useState(false)
@@ -290,7 +307,15 @@ export default function App() {
     if (run?.runId) window.scrollTo({ top:0, behavior:'auto' })
   }, [run?.runId])
 
-  const resetToStart = () => { setRun(null); setPlanDraft(null); setDossier(null); setSynthesisText(''); setSynthesisStreaming(false); setQuestion(''); setQuestionDraft(''); setBudgetXrp(DEFAULT_BUDGET_XRP); setSelectedPublishers(publisherOptions.map((option) => option.id)); setChatStarted(false); setSelectedId(null); setSelectedDetail(null); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' }) }
+  const resetToStart = async () => {
+    if (busy) return
+    const activeRun = run
+    setBusy(Boolean(activeRun))
+    try {
+      if (activeRun) await api<ServerState>(`/api/v1/research-runs/${activeRun.runId}/reset`, { method:'POST', body:'{}' })
+      setRun(null); setPlanDraft(null); setDossier(null); setSynthesisText(''); setSynthesisStreaming(false); setQuestion(''); setQuestionDraft(''); setBudgetXrp(DEFAULT_BUDGET_XRP); setSelectedPublishers(publisherOptions.map((option) => option.id)); setChatStarted(false); setSelectedId(null); setSelectedDetail(null); setPendingPurchase(null); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' })
+    } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
+  }
   const beginClarification = (value = questionDraft) => { const next = value.trim(); if (!next) return; setQuestion(next); setQuestionDraft(next); setChatStarted(true); setMessage('Question received. Choose your websites and budget before research starts.') }
   const togglePublisher = (key:PublisherKey) => setSelectedPublishers((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key])
 
@@ -334,14 +359,41 @@ export default function App() {
 
   const purchase = async (sourceId:string, action:'BUY'|'SKIP'|'BLOCKED') => {
     if (!run || busy) return
+    if (action === 'BUY') {
+      setBusy(true)
+      try {
+        const source = run.sources.find((item) => item.id === sourceId)
+        if (!source) throw new Error('Source is outside this run scope')
+        const detail = await api<SourceDetail>(`/api/v1/research-runs/${run.runId}/sources/${sourceId}`)
+        if (detail.premium?.status !== 'PAYMENT_REQUIRED' || !detail.premium.quoteHash) throw new Error('The exact quote is no longer available. Inspect the source again before approving it.')
+        setPendingPurchase({ sourceId, source, detail })
+        setSelectedId(sourceId)
+        setMessage('Exact quote loaded. Review every bound field before confirming the purchase.')
+      } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
+      return
+    }
     setBusy(true)
     try {
-      const quoteHash = action === 'BUY' ? (await api<SourceDetail>(`/api/v1/research-runs/${run.runId}/sources/${sourceId}`)).premium?.quoteHash : undefined
-      const next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId, action, approval: action === 'BUY' ? 'APPROVED' : undefined, quoteHash, idempotencyKey:crypto.randomUUID() }) })
+      const next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId, action, idempotencyKey:crypto.randomUUID() }) })
       setRun(next)
       const source = next.sources.find((item) => item.id === sourceId)
-      setMessage(action === 'BUY' ? `${source?.publisher} unlocked. The working thesis can now change.` : action === 'SKIP' ? 'Circuit Note skipped because it repeats Northstar Wire.' : 'GridScope blocked: S$1.40 exceeds the remaining S$1.00.')
+      setMessage(action === 'SKIP' ? 'Circuit Note skipped because it repeats Northstar Wire.' : 'GridScope blocked: S$1.40 exceeds the remaining S$1.00.')
       if (selectedId === sourceId && source) setSelectedDetail(source)
+    } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
+  }
+
+  const confirmPurchase = async () => {
+    if (!run || !pendingPurchase || busy) return
+    const quoteHash = pendingPurchase.detail.premium?.quoteHash
+    if (!quoteHash) { setMessage('The exact quote is no longer available. Inspect the source again before approving it.'); setPendingPurchase(null); return }
+    setBusy(true)
+    try {
+      const next = await api<ServerState>(`/api/v1/research-runs/${run.runId}/purchases`, { method:'POST', body:JSON.stringify({ sourceId:pendingPurchase.sourceId, action:'BUY', approval:'APPROVED', quoteHash, idempotencyKey:crypto.randomUUID() }) })
+      setRun(next)
+      setPendingPurchase(null)
+      const source = next.sources.find((item) => item.id === pendingPurchase.sourceId)
+      setMessage(`${source?.publisher} unlocked. The working thesis can now change.`)
+      if (selectedId === pendingPurchase.sourceId && source) setSelectedDetail(source)
     } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
   }
 
@@ -368,22 +420,23 @@ export default function App() {
   const suggestedQuestion = scenario?.brief.question ?? QUESTION
 
   return <div className="app-shell">
-    <header className="topbar"><button type="button" className="brand-button" onClick={resetToStart} aria-label="Start a new ResearchAgent thread"><span className="brand-mark" aria-hidden="true">RA</span><span><strong>ResearchAgent</strong><small>Quiet evidence terminal</small></span></button><div className="topbar-thread"><span className="topbar-label">{run ? 'Active thread' : 'Local demo'}</span><span className="topbar-query">{run?.config.question ?? 'A calm workbench for defensible research'}</span></div><div className="topbar-actions">{run && <span className="topbar-budget mono">{formatXrp(centsToXrp(run.remainingCents))} left</span>}<Badge tone="fixture">{(run?.runtime ?? scenario?.runtime)?.label ?? 'FIXTURE RESEARCH'}</Badge></div></header>
+    <header className="topbar"><button type="button" className="brand-button" onClick={() => void resetToStart()} aria-label="Start a new ResearchAgent thread"><span className="brand-mark" aria-hidden="true">RA</span><span><strong>ResearchAgent</strong><small>Quiet evidence terminal</small></span></button><div className="topbar-thread"><span className="topbar-label">{run ? 'Active thread' : 'Local demo'}</span><span className="topbar-query">{run?.config.question ?? 'A calm workbench for defensible research'}</span></div><div className="topbar-actions">{run && <span className="topbar-budget mono">{formatXrp(centsToXrp(run.remainingCents))} left</span>}<Badge tone="fixture">{(run?.runtime ?? scenario?.runtime)?.label ?? 'FIXTURE RESEARCH'}</Badge></div></header>
     <div className={`product-shell ${run ? 'has-sidebar' : ''}`}>
-      {run && <aside className="sidebar" aria-label="Research workspace navigation"><button type="button" className="new-thread" onClick={resetToStart}><Icon name="plus" /> New research</button><nav className="side-nav" aria-label="Workspace sections"><span className="side-label">Workspace</span><button type="button" className="is-active" onClick={() => window.scrollTo({ top:0, behavior:'smooth' })}><span className="nav-icon" aria-hidden="true">⌁</span>Research desk<span aria-hidden="true">•</span></button><button type="button" onClick={() => document.getElementById('evidence-panel-title')?.scrollIntoView({ behavior:'smooth', block:'start' })}><span className="nav-icon" aria-hidden="true">≡</span>Evidence map<span className="mono">{run.rawSourceCount}</span></button><button type="button" disabled={!dossier} onClick={() => document.getElementById('dossier')?.scrollIntoView({ behavior:'smooth', block:'start' })}><span className="nav-icon" aria-hidden="true">◎</span>Cited dossier<span className="mono">{dossier ? 'ready' : '—'}</span></button></nav><div className="sidebar-bottom"><span className="kicker">Local demo boundary</span><p>Sources are synthetic fixtures. Payment is simulated unless the server is explicitly configured for XRPL Testnet.</p><span className="sidebar-meta mono">{run.llm.provider} · {run.semanticStatus}</span></div></aside>}
+      {run && <aside className="sidebar" aria-label="Research workspace navigation"><button type="button" className="new-thread" onClick={() => void resetToStart()}><Icon name="plus" /> New research</button><nav className="side-nav" aria-label="Workspace sections"><span className="side-label">Workspace</span><button type="button" className="is-active" onClick={() => window.scrollTo({ top:0, behavior:'smooth' })}><span className="nav-icon" aria-hidden="true">⌁</span>Research desk<span aria-hidden="true">•</span></button><button type="button" onClick={() => document.getElementById('evidence-panel-title')?.scrollIntoView({ behavior:'smooth', block:'start' })}><span className="nav-icon" aria-hidden="true">≡</span>Evidence map<span className="mono">{run.rawSourceCount}</span></button><button type="button" disabled={!dossier} onClick={() => document.getElementById('dossier')?.scrollIntoView({ behavior:'smooth', block:'start' })}><span className="nav-icon" aria-hidden="true">◎</span>Cited dossier<span className="mono">{dossier ? 'ready' : '—'}</span></button></nav><div className="sidebar-bottom"><span className="kicker">Local demo boundary</span><p>Sources are synthetic fixtures. Payment is simulated unless the server is explicitly configured for XRPL Testnet.</p><span className="sidebar-meta mono">{run.llm.provider} · {run.semanticStatus}</span></div></aside>}
       <main className={`main-column ${run ? 'has-run' : ''}`}>
         {!run && <section className={`start-view ${chatStarted ? 'is-clarifying' : ''}`}>
           <div className="start-copy"><span className="kicker">ResearchAgent / Local demo</span><h1 aria-label={chatStarted ? 'Let’s make the question useful.' : landingHeadline}>{chatStarted ? 'Let’s make the question useful.' : <>{typedHeadline}<span className="typewriter-caret" aria-hidden="true" /></>}</h1>{chatStarted ? <p>I’ll search only the source profiles you approved, buy only when the evidence can change the answer, and cite the result sentence by sentence.</p> : <><p>For finance analysts deciding which paywalled research is worth buying. You control approved sources, budget, and every purchase; fixtures are synthetic and payment is simulated.</p><div className="start-steps" aria-label="Research workflow"><span>Question</span><span className="start-step-arrow" aria-hidden="true">→</span><span>Websites</span><span className="start-step-arrow" aria-hidden="true">→</span><span>Evidence</span></div></>}</div>
           <div className="start-layout"><div className="start-main"><div className="conversation"><ChatBubble role="assistant">{chatStarted ? <>Good starting point. I’ve captured the question. Choose the fixture source profiles I can read and set the research budget before I start.</> : <>I’m useful when the question has a point of view. Try the data-centre sustainability brief, or a risk you need to disprove.</>}</ChatBubble>{chatStarted && <ChatBubble role="user">{question}</ChatBubble>}</div>{!chatStarted && <div className="suggested-starts"><span className="suggested-label">Try a starting point</span><button type="button" onClick={() => beginClarification(suggestedQuestion)}>{suggestedQuestion}<Icon name="arrow" /></button></div>}<Composer value={questionDraft} onChange={setQuestionDraft} onSubmit={() => beginClarification()} placeholder={chatStarted ? 'Add a sharper version of the question…' : 'Ask a question worth investigating…'} /></div><PublisherPicker selected={selectedPublishers} onToggle={togglePublisher} budgetXrp={budgetXrp} onBudgetXrpChange={setBudgetXrp} onStart={() => void startResearch()} busy={busy} showControls={chatStarted} /></div>
         </section>}
         {run && <section className="research-view">
-          <div className="research-intro"><div><span className="kicker">Research thread · {run.config.horizon}</span><h1>{run.config.question}</h1><div className="intro-meta"><span>{run.rawSourceCount} retrieved previews · {run.familyCount} evidence families</span><span>{formatXrp(centsToXrp(run.budgetCents))} research budget</span></div></div><div className="intro-actions"><button type="button" className="small-button" onClick={resetToStart}>New research</button><button type="button" className="small-button" onClick={() => void act('cancel')} disabled={run.dossierReady || busy}>Stop</button></div></div>
+          <div className="research-intro"><div><span className="kicker">Research thread · {run.config.horizon}</span><h1>{run.config.question}</h1><div className="intro-meta"><span>{run.rawSourceCount} retrieved previews · {run.familyCount} evidence families</span><span>{formatXrp(centsToXrp(run.budgetCents))} research budget</span></div></div><div className="intro-actions"><button type="button" className="small-button" onClick={() => void resetToStart()}>New research</button><button type="button" className="small-button" onClick={() => void act('cancel')} disabled={run.dossierReady || busy}>Stop</button></div></div>
           {planDraft ? <PlanReview plan={planDraft} onChange={setPlanDraft} onApprove={() => void approvePlan()} busy={busy} /> : <ResearchPath run={run} dossier={dossier} sources={visibleSources} showAll={showAllSources} onShowAll={() => setShowAllSources(true)} selectedId={selectedId} onOpenSource={(id) => void openSource(id)} onAction={(sourceId, action) => void purchase(sourceId, action)} onSynthesize={() => void synthesize()} busy={busy} synthesisText={synthesisText} synthesisStreaming={synthesisStreaming} />}
         </section>}
       </main>
     </div>
     <footer className={`statusbar ${/unavailable|failed|error/i.test(message) ? 'status-error' : /blocked|waiting|exceeds/i.test(message) ? 'status-warning' : /unlocked|ready|complete|paid/i.test(message) ? 'status-success' : ''}`}><span><span className="status-dot" /> {message}</span><span className="mono">{run ? `${run.events.length} events · ${run.llm.provider} · ${run.semanticStatus}` : 'Evidence first · citations stay traceable'}</span></footer>
     {selectedDetail && <EvidenceDrawer source={selectedDetail} onClose={() => { setSelectedDetail(null); setSelectedId(null) }} />}
+    {pendingPurchase && <PurchaseConfirmation pending={pendingPurchase} busy={busy} onConfirm={() => void confirmPurchase()} onCancel={() => { if (!busy) { setPendingPurchase(null); setMessage('Purchase review cancelled. No payment or access grant occurred.') } }} />}
     <div className="sr-live" aria-live="polite">{message}</div>
   </div>
 }
