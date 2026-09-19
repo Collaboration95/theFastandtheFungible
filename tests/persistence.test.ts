@@ -184,6 +184,7 @@ describe('local run persistence', () => {
 
     try {
       const created = await (await request('/api/v1/research-runs', {})).json() as { runId: string }
+      expect((await request(`/api/v1/research-runs/${created.runId}/plan`, {})).status).toBe(200)
       for (let step = 0; step < 2; step += 1) await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
       const sourcePath = `/api/v1/research-runs/${created.runId}/sources/meridian-ledger`
       const quoted = await (await request(sourcePath)).json() as { premium: { quoteHash: string } }
@@ -224,6 +225,14 @@ describe('local run persistence', () => {
       }
       expect(prior.spentCents).toBe(80)
       expect(prior.sources.find((source) => source.id === 'meridian-ledger')?.decision).toBe('BUY')
+
+      const priorSnapshot = await (await request(`/api/v1/research-runs/${created.runId}`)).json()
+      const staleStep = await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
+      expect(staleStep.status).toBe(409)
+      expect(await staleStep.json()).toMatchObject({ error: 'This run is read-only after reset or cancellation' })
+      const stalePlan = await request(`/api/v1/research-runs/${created.runId}/plan`, {})
+      expect(stalePlan.status).toBe(409)
+      expect(await (await request(`/api/v1/research-runs/${created.runId}`)).json()).toEqual(priorSnapshot)
       await expect(request(`/api/v1/research-runs/${created.runId}/receipt`).then((response) => response.json())).resolves.toMatchObject({
         runId: created.runId,
         purchases: [{ sourceId: 'meridian-ledger', decision: 'BUY', amountCents: 80 }],
@@ -247,6 +256,7 @@ describe('local run persistence', () => {
 
     try {
       const created = await (await request('/api/v1/research-runs', {})).json() as { runId: string }
+      expect((await request(`/api/v1/research-runs/${created.runId}/plan`, {})).status).toBe(200)
       await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
       await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
       const sourcePath = `/api/v1/research-runs/${created.runId}/sources/northstar-wire`
@@ -275,6 +285,7 @@ describe('local run persistence', () => {
     const baseUrl = `http://127.0.0.1:${port}`
     try {
       const created = await fetch(`${baseUrl}/api/v1/research-runs`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sourceAllowlist: ['wire-services'] }) }).then((response) => response.json()) as { runId: string }
+      expect((await fetch(`${baseUrl}/api/v1/research-runs/${created.runId}/plan`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).status).toBe(200)
       for (let step = 0; step < 2; step += 1) await fetch(`${baseUrl}/api/v1/research-runs/${created.runId}/step`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'next' }) })
       const purchase = (quoteHash?: string) => fetch(`${baseUrl}/api/v1/research-runs/${created.runId}/purchases`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sourceId: 'northstar-wire', action: 'BUY', approval: 'APPROVED', quoteHash }) })
       expect((await purchase()).status).toBe(409)
@@ -283,5 +294,40 @@ describe('local run persistence', () => {
       expect(state.spentCents).toBe(0)
       expect(state.sources.find((source) => source.id === 'northstar-wire')?.decision).toBeUndefined()
     } finally { await stopServer(child) }
+  })
+
+  it('requires explicit plan approval before direct step discovery', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'research-agent-plan-approval-'))
+    temporaryDirectories.push(directory)
+    const port = await freePort()
+    const child = await startServer(join(directory, 'runs.json'), port)
+    const baseUrl = `http://127.0.0.1:${port}`
+    const request = (path: string, body?: unknown) => fetch(`${baseUrl}${path}`, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+
+    try {
+      const createdResponse = await request('/api/v1/research-runs', {})
+      expect(createdResponse.status).toBe(201)
+      const created = await createdResponse.json() as { runId: string; phase: string; rawSourceCount: number }
+      expect(created).toMatchObject({ phase: 'DRAFT', rawSourceCount: 0 })
+
+      const blocked = await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
+      expect(blocked.status).toBe(409)
+      expect(await blocked.json()).toMatchObject({ error: 'Approve the research plan before execution begins' })
+      expect(await (await request(`/api/v1/research-runs/${created.runId}`)).json()).toMatchObject({ phase: 'DRAFT', rawSourceCount: 0 })
+
+      const approved = await request(`/api/v1/research-runs/${created.runId}/plan`, {})
+      expect(approved.status).toBe(200)
+      expect(await approved.json()).toMatchObject({ phase: 'PLANNING', plan: { artifact: 'RESEARCH_PLAN' } })
+
+      const planned = await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
+      expect(planned.status).toBe(200)
+      expect(await planned.json()).toMatchObject({ phase: 'DISCOVERING', rawSourceCount: expect.any(Number) })
+    } finally {
+      await stopServer(child)
+    }
   })
 })
