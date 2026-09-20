@@ -6,6 +6,13 @@ ResearchAgent development.
 The application now lives at the repository root. Broader planning context is
 indexed from the root [README](../README.md).
 
+## UI overhaul handoff
+
+The [portable UI overhaul package](../ui-overhaul/README.md) contains the new
+design brief, all supplied screenshots, ordered work packages, orchestrator and
+worker prompts, and test/visual/demo gates. It supersedes older presentation
+restrictions where identified; server trust contracts remain in force.
+
 ## Active contracts
 
 - [Product brief](contracts/PRODUCT.md)

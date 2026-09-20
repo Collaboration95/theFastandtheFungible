@@ -15,6 +15,8 @@ when the next piece of evidence can materially change or strengthen the answer.
 
 ## Repository context
 
+- [Self-contained UI overhaul plan, screenshots, and orchestrator prompt](ui-overhaul/README.md)
+
 - [Company and protocol research context](company-research-context.md)
 - [Singapore FinTech Festival notes](tenity-sff.txt)
 - [Implementation next steps](nextsteps.txt)
