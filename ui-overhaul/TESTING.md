@@ -4,11 +4,11 @@ Portable runbook for verifying the ResearchAgent UI overhaul on any machine.
 It records what the current repository actually does, what is verified, what is
 broken, and what must be checked by a human.
 
-This is the future implementation runbook. See [README.md](README.md) for the
-package map and [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) for work order.
-Baseline observations below refer to app commit `fc177016430811158d913be12f130f68a49bcc10`;
-rerun and update the status after changes. UO-PF-01 and UO-PF-02 below are preflight
-finding labels within **UO-00**, not separate backlog items.
+This is the implementation and verification runbook. See [README.md](README.md)
+for the package map and [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) for
+work order. Historical baseline observations are labelled as historical; the
+current results are recorded in [STATUS.md](STATUS.md). UO-PF-01 and UO-PF-02
+below are preflight finding labels within **UO-00**, not separate backlog items.
 
 **Time box.** The bounded smoke lane in section 4 is designed to finish in about
 5 minutes. The full lane (E2E + accessibility + visual + demo rehearsal) is
@@ -20,19 +20,17 @@ not evidence of correctness.
 
 ---
 
-## 0. Preflight blocker - read before trusting any E2E claim
+## 0. Preflight finding and UO-00 resolution
 
-**UO-PF-01 (blocking): Playwright is configured for the wrong browser port.**
+**UO-PF-01 (resolved by UO-00): Playwright had been configured for the wrong browser port.**
 
-- `playwright.config.ts` sets `use.baseURL = 'http://localhost:5173'` and
-  `webServer.url = 'http://localhost:5173'`.
-- The dev client actually listens on **5100** (`package.json` -> `dev:client`
-  -> `vite --host 0.0.0.0 --port 5100 --strictPort`, matching `vite.config.ts`
-  `server.port = 5100`).
-- Nothing in the repository serves the app on 5173. The legacy value survives
-  from an earlier port move and was never updated.
+The historical defect was that `playwright.config.ts` used 5173 while the dev
+client listens on **5100** (`package.json` -> `dev:client` -> `vite --host
+0.0.0.0 --port 5100 --strictPort`, matching `vite.config.ts`). The repaired
+config now centralizes `clientUrl = 'http://localhost:5100'` and uses it for
+both `use.baseURL` and `webServer.url`; the API remains on 8788.
 
-**Observed result (this audit, 2026-09-20, macOS, Node v26.3.1, npm 11.16.0):**
+**Historical result before UO-00 (2026-09-20, macOS, Node v26.3.1, npm 11.16.0):**
 
 ```bash
 npx playwright test tests/a11y.spec.ts --reporter=line
@@ -40,48 +38,55 @@ npx playwright test tests/a11y.spec.ts --reporter=line
 # exit code 1
 ```
 
-Playwright starts the `webServer` command, then polls `http://localhost:5173`
+Playwright started the `webServer` command, then polled `http://localhost:5173`
 until the 30 s timeout. The app is up on 5100 the entire time, so the failure
-happens during harness startup. **No test body executes.**
+happened during harness startup. **No test body executed.**
 
-**Consequences - state these plainly in any status report:**
+Those consequences applied only before UO-00:
 
-1. `npm run test:e2e` and `npm run test:a11y` cannot pass on this revision.
-2. There is **no passing E2E or accessibility evidence** for the current
-   repository, and none may be claimed from this configuration.
+1. `npm run test:e2e` and `npm run test:a11y` could not pass on that revision.
+2. There was **no passing E2E or accessibility evidence** for that repository
+   state, and none could be claimed from that configuration.
 3. The five Playwright specs in `tests/e2e.spec.ts` and the single spec in
    `tests/a11y.spec.ts` are unexecuted code, not evidence.
 4. Any local workaround that edits `tests/` or relaxes assertions to make the
-   command exit zero is out of scope and forbidden. The defect is the URL in the
-   harness config.
+   command exit zero remains out of scope and forbidden.
 
-**Exact proposed repair (future slice, not applied here).** Update
-`playwright.config.ts` to the real client port, and optionally add a base-URL override only if the actual Vite server port and
-readiness URL are configured together. A URL override alone does not change
-`dev:client`'s hard-coded port:
+**UO-00 repair evidence (2026-09-20, Windows, Node v24.19.0, npm 11.17.0):**
+
+- `playwright.config.ts` targets 5100 for both the browser base URL and server
+  readiness URL.
+- `scripts/stop-dev.mjs` inspects `[5100, 8788]`, keeps project-root command-line
+  matching and SIGTERM shutdown, and uses Windows `netstat.exe`/PowerShell
+  process inspection in addition to Unix `lsof`/`ps`. Missing inspection tools
+  produce an explicit warning and never claim an occupied port is clear.
+- `npm run test:e2e` reached the app and executed all six discovered specs: 3
+  passed and 3 failed on existing product assertions (see the current status
+  table below). This is no longer a harness-timeout result.
+- `npm run test:a11y` reached the app and passed its axe scan (1 test).
+
+The repaired shape is:
 
 ```ts
-// playwright.config.ts - proposed, NOT implemented
-const baseURL = 'http://localhost:5100' // centralize with the actual dev port
+const clientUrl = 'http://localhost:5100'
 
 export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.spec.ts',
   timeout: 20_000,
-  use: { baseURL, headless: true },
+  use: { baseURL: clientUrl, headless: true },
   webServer: {
     command: fixtureWebServerCommand,
-    url: baseURL,
+    url: clientUrl,
     reuseExistingServer: false,
     timeout: 30_000,
   },
 })
 ```
 
-Acceptance for that slice: `npm run test:a11y` reaches the app and runs the axe
-scan; `npm run test:e2e` executes all five canonical-flow tests. Until that
-lands, treat every E2E row in this runbook as **blocked**, not as a product
-failure.
+Acceptance for UO-00 is met for harness reachability. The current full browser
+lane is recorded separately below; historical assertion failures are retained
+as baseline context and are not presented as current failures.
 
 ### UO-PF-02: how the auto-started servers actually behave
 
@@ -94,7 +99,7 @@ failure.
 | What `npm run dev` does | runs `dev:stop`, then concurrently `dev:client` + `dev:server` |
 | Client port | 5100 (`--strictPort`) |
 | API port | 8788 |
-| Ready URL polled by Playwright | 5173, which never becomes ready (UO-PF-01) |
+| Ready URL polled by Playwright | 5100, the Vite client URL (UO-PF-01 resolved) |
 | `reuseExistingServer` | `false` |
 
 Because `reuseExistingServer` is `false`, a dev server you already started by
@@ -105,25 +110,29 @@ first - see UO-00 in section 8.
 
 ---
 
-## 1. Verified status at the time of writing
+## 1. Historical baseline and current status
 
-Everything below was observed on 2026-09-20 in this checkout. Re-run before
-reusing these results; do not carry them forward as current.
+The original UO-00 baseline below is retained for context. It is not current
+release evidence; use the results log and STATUS.md for the latest run.
 
 | Lane | Command | Status | Evidence |
 | --- | --- | --- | --- |
-| Typecheck | `npm run typecheck` | **pass** | `tsc --noEmit`, exit 0 |
-| Unit / API | `npm test` | **pass** | 19 tests, 3 files, 2.27 s |
-| E2E | `npm run test:e2e` | **not run / blocked** | UO-PF-01 |
-| Accessibility | `npm run test:a11y` | **fail (harness)** | `Timed out waiting 30000ms from config.webServer.` |
-| Build | `npm run build` | **not run** | not executed in this docs-only pass |
+| Install | `npm ci` | **pass** | lockfile install completed; npm reported 2 moderate audit findings |
+| Fast checks | `npm run check:fast` | **pass** | typecheck + 21 Vitest tests, 4 files |
+| Verify | `npm run verify` | **pass** | typecheck + 21 Vitest tests + Vite production build |
+| E2E | `npm run test:e2e` | **pass** | 17 tests passed; isolated `.playwright/runs.json` store and one worker |
+| Accessibility | `npm run test:a11y` | **pass** | 1 test; no serious or critical axe violations |
+| Build | `npm run build` | **pass (via verify)** | Vite production build completed |
 | Visual / screenshot review | section 7 | **not run** | requires manual capture |
 | Five-person pilot | section 10 | **not run** | no participants |
 | Demo rehearsal | section 11 | **not run** | scheduled activity |
 
-The typecheck and unit suite are the passing automated baseline evidence from this audit. It covers the
-domain ranking/clustering contract, the research-plan artifact contract, and
-local persistence including restart, reset, and stale or missing quote approval.
+The fast and verify lanes cover the domain ranking/clustering contract, the
+research-plan artifact contract, and local persistence including restart, reset,
+and stale or missing quote approval. The current E2E lane passes its 17-test
+fixture suite, including restricted-scope answers, review-draft reload/resume,
+and keyboard tab focus. Automated results do not represent the human pilot or
+demo rehearsal.
 
 ---
 
@@ -158,7 +167,6 @@ A fresh machine needs the browser version matching the lockfile-installed Playwr
 | --- | --- | --- |
 | 5100 | Vite dev client, strict | `package.json` `dev:client`, `vite.config.ts` |
 | 8788 | Express API | `package.json` `dev:server`, `.env.example` `PORT` |
-| 5173 / 5174 | Legacy, polled by `dev:stop` and by Playwright | `scripts/stop-dev.mjs`, `playwright.config.ts` |
 | 4173 | Vite preview default | Vite default; API proxy parity not verified in this audit |
 
 `vite.config.ts` proxies `/api` to `http://localhost:8788`, so the API must
@@ -166,10 +174,10 @@ be running for any client call to succeed. `npm run preview` is **not** verified
 as a fixture-parity environment in this audit; do not present preview output as
 equivalent evidence to a dev-server run.
 
-**Portability notes.** Primary target is macOS/Linux. Windows is only partially
-supported: `playwright.config.ts` carries a `set "VAR=value"` branch, but
-`scripts/stop-dev.mjs` shells out to `lsof` and `ps` (section 8). Do not
-promise Windows equivalence without new evidence.
+**Portability notes.** The runner and cleanup script now have explicit Windows
+branches. Unix uses `lsof`/`ps`; Windows uses `netstat.exe` and PowerShell
+process inspection, with warnings and no termination when required inspection
+tools are unavailable (section 8).
 
 ---
 
@@ -255,8 +263,7 @@ initialize a valid empty store. Keep this shell for the test/dev commands.
 Persistence tests already create their own isolated stores. E2E inherits the
 exported path through its launched server. Stop only owned server processes and
 remove the temporary data when finished. On Windows, apply equivalent process
-environment settings and a unique temp directory; cleanup support remains a
-preflight limitation until repaired.
+environment settings and a unique temp directory.
 
 ```bash
 # --- Fast lane (target: under 5 minutes, safe on any machine) -------------
@@ -268,10 +275,10 @@ npm test                                           # vitest run, unit/API contra
 npm run check:fast                                 # typecheck + unit
 npm run verify                                     # typecheck + unit + build
 
-# --- Browser lanes (currently blocked by UO-PF-01) ------------------------
+# --- Browser lanes (fixture mode, client 5100 / API 8788) ------------------
 npx playwright install chromium                    # first run on a machine
-npm run test:e2e                                   # BLOCKED - see section 0
-npm run test:a11y                                  # BLOCKED - see section 0
+npm run test:e2e                                   # product assertions recorded in section 1
+npm run test:a11y                                  # axe result recorded in section 1
 
 # --- Run the app for manual / visual work ---------------------------------
 npm run dev                                        # client 5100 + API 8788
@@ -288,7 +295,7 @@ layout; the root `package.json` is the only manifest.
 
 ## 5. What each lane does and does not prove
 
-**Unit / API (`npm test`, Vitest, 19 tests).** `vitest.config.ts` collects
+**Unit / API (`npm test`, Vitest, 21 tests).** `vitest.config.ts` collects
 `tests/**/*.test.ts` and the matching `.tsx`, `.js`, and `.jsx` globs, and
 explicitly excludes the two Playwright specs. Coverage today:
 
@@ -304,18 +311,17 @@ explicitly excludes the two Playwright specs. Coverage today:
   isolated `RESEARCH_RUNS_FILE`, waits for `/api/health`, and exercises restart
   persistence, receipt retention across reset, stale and mismatched quote
   approval rejection, and plan-approval gating before discovery.
+- `tests/dossier-validation.test.ts` (2 tests): relational source/span binding;
+  a span owned by another source is rejected.
 
 These tests prove server-side contracts. They do **not** render React, do not
 exercise the browser, do not test layout, and do not prove the app is usable.
 
-**E2E (`npm run test:e2e`).** Five tests in `tests/e2e.spec.ts` describe the
-canonical fixture journey: question entry, source selection, plan review and
-approval, buy/skip/block decisions, protected-body gating, budget arithmetic in
-XRP with the SGD approximation, and dossier readiness. All five are blocked by
-UO-PF-01. Note also that these specs assert **current pre-overhaul UI copy** (for
-example `Approve purchase S$0.20` and `Assemble cited answer`). The overhaul
-will legitimately change that copy, so the specs need updating as part of the
-overhaul. That is expected maintenance, not a reason to weaken assertions.
+**E2E (`npm run test:e2e`).** The Playwright suite covers the guided setup,
+unsupported scope, open-only answer, exact purchase review, protected content,
+mutually exclusive tabs, responsive workbench, citation span inspection, and
+pause/resume/stop/reload behavior. It runs serially against an isolated
+`.playwright/runs.json` store in fixture mode; it must not mutate `data/runs.json`.
 
 **Accessibility (`npm run test:a11y`).** One test in `tests/a11y.spec.ts`
 runs `@axe-core/playwright` against `/` and fails on `serious` or
@@ -329,33 +335,30 @@ sections 6 and 7.
 
 ## 6. Regression matrix
 
-Status legend: **pass** = executed here with evidence; **blocked** = harness
-defect prevents execution; **not implemented** = no test exists yet;
+Status legend: **pass** = executed here with evidence; **blocked** = a harness
+defect prevents execution; **not run** = intentionally unexecuted;
 **manual** = human verification required.
 
 | # | Area | Expected behavior | Current automated coverage | Status now |
 | --- | --- | --- | --- | --- |
-| R1 | Source truthfulness | An unsupported or arbitrary question must not be answered with unrelated data-centre fixture evidence; it must produce a truthful unsupported-scope state | none | **not implemented** - known defect: free-question entry with data-centre gap and claims |
-| R2 | Open-only answer | An approved run with usable open evidence can produce a cited answer with **no purchase** | none | **not implemented** - known client defect: the answer control is gated on a prior BUY |
-| R3 | Exact quote approval | Purchase binds to the exact quote; stale, missing, or mismatched approval is rejected without spending or unlocking | `tests/persistence.test.ts` | **pass** server-side; UI-level **not implemented** |
-| R4 | No duplicate charge | A retry or repeat submit cannot double-settle or unlock twice; outcome reconciliation precedes retry | partial (quote gating) | **manual**, and **not implemented** for the duplicate-submit UI path |
-| R5 | Citations | Claims resolve only to accessible source and evidence-span IDs; protected spans never render before purchase | `tests/e2e.spec.ts` (blocked) | **blocked** |
-| R6 | Reload / back / draft | Reload restores last server state or explains an unavailable draft; Back preserves setup values; no silent data loss; new research does not mutate completed runs | `tests/persistence.test.ts` covers restart persistence | **pass** for server restart; **not implemented** for browser reload, Back, and draft UX |
-| R7 | Accessibility | Keyboard-only completion of the full path; dialogs trap focus, close on Escape, restore focus to the invoking control; live regions announce material changes only | `tests/a11y.spec.ts` (automated scan only) | **blocked** for the scan; **manual** for all focus and keyboard behavior |
-| R8 | Long strings and zoom | Long source names, prices, and identifiers wrap without clipping; 200% text zoom and 320 px reflow produce no horizontal overflow and hide no critical action | none | **not implemented** |
-| R9 | Protected content | Premium body text is absent before the matching verified purchase and present after | `tests/e2e.spec.ts` (blocked) | **blocked** |
-| R10 | Budget authority | Cap, spent, and remaining stay visible and correct in XRP with a labelled SGD approximation; a cap is never presented as a charge | `tests/e2e.spec.ts` (blocked); no unit coverage | **blocked** |
-| R11 | Fixture honesty | Fixture settlement is labelled as simulation; XRP Testnet and synthetic corpus remain separate, truthful facts | none | **not implemented** |
+| R1 | Source truthfulness | An unsupported or arbitrary question must not be answered with unrelated data-centre fixture evidence; it must produce a truthful unsupported-scope state | `tests/e2e.spec.ts` | **pass** |
+| R2 | Open-only answer | An approved run with usable open evidence can produce a cited answer with **no purchase** | `tests/e2e.spec.ts` | **pass** |
+| R3 | Exact quote approval | Purchase binds to the exact quote; stale, missing, or mismatched approval is rejected without spending or unlocking | `tests/persistence.test.ts`, `tests/uo-07-10.spec.ts` | **pass** server + browser review |
+| R4 | No duplicate charge | A retry or repeat submit cannot double-settle or unlock twice; outcome reconciliation precedes retry | `tests/persistence.test.ts`; UI recovery path | **partial** — duplicate live-outcome rehearsal remains not run |
+| R5 | Citations | Claims resolve only to accessible source and evidence-span IDs; protected spans never render before purchase | `tests/dossier-validation.test.ts`, `tests/e2e.spec.ts` | **pass** |
+| R6 | Reload / back / draft | Reload restores last server state or explains an unavailable draft; Back preserves setup values; no silent data loss; new research does not mutate completed runs | `tests/persistence.test.ts`, `tests/guided-setup.spec.ts`, `tests/uo-07-10.spec.ts` | **pass** for covered paths |
+| R7 | Accessibility | Keyboard-only completion of the full path; dialogs trap focus, close on Escape, restore focus to the invoking control; live regions announce material changes only | `tests/a11y.spec.ts`, `tests/uo-07-10.spec.ts` | **pass automated; manual screen-reader review not run** |
+| R8 | Long strings and zoom | Long source names, prices, and identifiers wrap without clipping; 200% text zoom and 320 px reflow produce no horizontal overflow and hide no critical action | `tests/guided-setup.spec.ts`, `tests/uo-07-10.spec.ts` | **pass automated focused lane** |
+| R9 | Protected content | Premium body text is absent before the matching verified purchase and present after | `tests/e2e.spec.ts` | **pass** |
+| R10 | Budget authority | Cap, spent, and remaining stay visible and correct in XRP with a labelled SGD approximation; a cap is never presented as a charge | `tests/e2e.spec.ts`, `tests/uo-07-10.spec.ts` | **pass** |
+| R11 | Fixture honesty | Fixture settlement is labelled as simulation; XRP Testnet and synthetic corpus remain separate, truthful facts | `tests/e2e.spec.ts`, server runtime contract | **pass fixture path; live Testnet validation not run** |
 
-Rows R1 and R2 are pre-existing product defects recorded in the redesign brief,
-not regressions introduced by the overhaul. The overhaul is expected to fix both.
-Write the regression tests as part of that work and mark them clearly as newly
-implemented when they land.
+Rows R1 and R2 were pre-existing product defects recorded in the redesign brief;
+the current focused browser lane now covers their repaired behavior.
 
-### Proposed tests (NOT implemented)
+### Remaining tests and human gates
 
-The following are proposals. None exists in the repository today; do not report
-them as coverage.
+The following are remaining activities. Do not report them as automated coverage.
 
 1. **Truthful unsupported scope.** Submit an out-of-scope question; assert a
    visible unsupported-scope message and assert that no data-centre claim text
@@ -466,21 +469,19 @@ conflated: `screenshots/01-landing.png` through
 ## 8. UO-00: cleanup portability and the stale Vite problem
 
 `scripts/stop-dev.mjs` stops stale dev processes before `npm run dev` starts.
-As written it has two portability problems.
+UO-00 repairs both the stale-port list and the Windows process-discovery gap.
 
-**Problem 1 - the port list omits 5100.** The script uses
-`const ports = [5173, 5174, 8788]`. The Vite client now listens on **5100**, so
-a stale Vite process on 5100 is never detected or stopped. Because `dev:client`
-runs with `--strictPort`, a second `npm run dev` then fails to bind 5100
-instead of quietly picking another port. Symptom: the app looks like it "failed
-to start" while an older Vite instance is still serving a stale build. The
-5173 and 5174 entries are leftovers from the same port move.
+**Repair 1 - inspect the ports that are actually used.** The script now uses
+`const ports = [5100, 8788]`. Because `dev:client` runs with `--strictPort`, a
+second `npm run dev` still fails safely if an unrelated listener owns 5100, but
+a project-owned stale Vite process is now eligible for safe cleanup.
 
-**Problem 2 - Unix-only process discovery.** The script shells out to `lsof`
-and `ps` and matches the process command line against the project root. Neither
-tool exists on a stock Windows host. On a machine without `lsof`, the
-`try/catch` swallows the error and the script reports "No ResearchAgent dev
-processes found." while the ports are in fact occupied.
+**Repair 2 - platform-aware inspection.** Unix hosts use `lsof` plus `ps`;
+Windows hosts use `netstat.exe` plus PowerShell `Get-CimInstance`. Every
+candidate is still checked against the normalized project-root command line
+before SIGTERM. If inspection itself is unavailable or a process command line
+cannot be read, the script emits an explicit warning, leaves that process
+untouched, and does not claim the port is clear.
 
 **Manual recovery (macOS/Linux).** Inspect before acting:
 
@@ -495,21 +496,10 @@ this repository. **Do not blanket-kill ports.** Piping every PID from
 `lsof` into `kill -9` destroys unrelated work if another project
 owns the port, and this runbook does not authorize it.
 
-**Proposed repair (future slice, not applied here).**
-
-1. Change the port list to the ports actually used, `[5100, 8788]`, keeping the
-   project-root command-line check so only this project's processes are killed.
-2. Keep the graceful `SIGTERM` path and the existing skip behavior for
-   commands that do not match.
-3. On platforms without `lsof`, either implement an equivalent check or emit an
-   explicit unsupported-platform message instead of a false all-clear.
-4. Report which port is occupied when `--strictPort` fails, so the failure is
-   self-explaining.
-
-Until then, document the limitation rather than asserting cross-platform cleanup.
-The recorded runs were on macOS; Linux is an intended target that still needs its own verification. The
-`playwright.config.ts` Windows branch shows intent, but Windows was not
-exercised and `stop-dev.mjs` remains Unix-dependent.
+On the UO-00 Windows verification run, `npm run dev:stop` completed with
+`No ResearchAgent dev processes found.` No disposable project-owned listener
+was created, so graceful termination itself was not exercised; unrelated
+listeners were not touched.
 
 ---
 
@@ -654,8 +644,28 @@ Blockers:        none / <describe>
 Follow-ups:      <owner, if any>
 ```
 
-The E2E lane is blocked by UO-PF-01, so a rehearsal today demonstrates the app,
-not a green test suite. Say so if asked.
+The E2E lane is now reachable after UO-00. The deterministic browser lane and
+the focused UO-07–UO-10 workspace lane are current evidence; the demo rehearsal
+and qualitative pilot remain separate activities and are not implied by these
+automated results.
+
+### UO-07–UO-10 implementation evidence (2026-09-20, Windows)
+
+The centered workspace was reviewed at 360, 390, 768, 1024, and 1440 CSS px.
+The focused lane also applied reduced-motion emulation and 200% body zoom.
+Screenshots are stored under `evidence/UO-10/`:
+
+- `workspace-360.png`, `workspace-390.png`, `workspace-768.png`,
+  `workspace-1024.png`, and `workspace-1440.png` — answer, source rows, tabs,
+  and persistent budget strip.
+- `workspace-200-percent.png` — readable answer and fixture truth labels with
+  reduced-motion emulation.
+
+The focused browser checks in `tests/uo-07-10.spec.ts` cover centered layout and
+absence of the old sidebar, no document horizontal overflow at each width,
+source-action visibility, cancel side-effect safety, dialog focus containment,
+Escape close and focus restoration, reduced motion, and 200% zoom. The five
+person pilot is **NOT RUN**; no participant findings are claimed.
 
 ---
 
@@ -665,22 +675,26 @@ Record each verification pass under `ui-overhaul/evidence/<work-id>/` and link i
 blank and never restate an unrun check as passing.
 
 ```text
-Date       Machine + node    Lane                    Result              Evidence
-2026-09-20 macOS, node 26.3.1  npm run typecheck    pass                tsc --noEmit, exit 0
-2026-09-20 macOS, node 26.3.1  npm test             pass                19 tests / 3 files / 2.27 s
-2026-09-20 macOS, node 26.3.1  npm run test:a11y    fail (harness)      webServer 30000 ms timeout, exit 1
-2026-09-20 macOS, node 26.3.1  npm run test:e2e     not run             blocked by UO-PF-01
-2026-09-20 macOS, node 26.3.1  visual review        not run             section 7
-2026-09-20 macOS, node 26.3.1  five-person pilot    not run             section 10
-2026-09-20 macOS, node 26.3.1  demo rehearsal       not run             section 11
+Date       Machine + node       Lane                    Result              Evidence
+2026-09-20 Windows, node 24.19.0  npm ci               pass                lockfile install; 2 moderate audit findings
+2026-09-20 Windows, node 24.19.0  npm run check:fast   pass                typecheck + 21 tests / 4 files (current repair)
+2026-09-20 Windows, node 24.19.0  npm run verify       pass                 typecheck + 21 tests + production build
+2026-09-20 Windows, node 24.19.0  npm run test:e2e     pass                 17 tests; isolated `.playwright/runs.json`, one worker
+2026-09-20 Windows, node 24.19.0  npm run test:a11y   pass                1 axe scan passed
+2026-09-20 Windows, node 24.19.0  dev:stop             pass                no project-owned listeners found; no kill path exercised
+2026-09-20 Windows, node 24.19.0  visual review        not run             section 7
+2026-09-20 Windows, node 24.19.0  five-person pilot    not run             section 10
+2026-09-20 Windows, node 24.19.0  demo rehearsal       not run             section 11
+2026-09-20 Windows, node 24.19.0  UO-07–UO-10 focused E2E  pass             `tests/uo-07-10.spec.ts`; 4 tests; 6 responsive screenshots + 200% zoom
+2026-09-20 Windows, node 24.19.0  five-person pilot    not run             no participants; proposal only
 ```
 
 ---
 
 ## 13. Docs validation available now (no app required)
 
-Because the browser lanes are blocked, the checks that can be automated today are
-the fast static lane and the integrity of this runbook. The following verifies
+The checks that can be automated today include the fast static lane, browser
+reachability, and the integrity of this runbook. The following verifies
 that every path and script this document references still exists, so the runbook
 cannot silently rot:
 
@@ -695,8 +709,10 @@ for p in package.json playwright.config.ts vite.config.ts vitest.config.ts \
   test -e "$p" || echo "MISSING: $p"
 done
 
-rg -n 'ports = \[5173, 5174, 8788\]' scripts/stop-dev.mjs   # UO-00 still open
-rg -n '5173' playwright.config.ts                            # UO-PF-01 still open
+rg -n "ports = \[5100, 8788\]" scripts/stop-dev.mjs
+rg -n "clientUrl = 'http://localhost:5100'" playwright.config.ts
+npm run test:e2e                                            # app reaches 5100; product failures remain explicit
+npm run test:a11y                                           # app reaches 5100; axe result is recorded above
 ```
 
 If a search no longer matches, inspect the change and rerun the lane; absence

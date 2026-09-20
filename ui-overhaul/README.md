@@ -6,10 +6,11 @@ All eleven user-supplied screenshots, both defects and references, are bundled.
 A fresh checkout needs no previous conversation, Desktop files, temporary
 reports, GitHub login, or private design-tool session to understand the work.
 
-**This commit packages the design and execution plan. It does not implement the
-overhaul.** Existing app and harness defects are recorded, not hidden. The
-baseline is `fc177016430811158d913be12f130f68a49bcc10`; re-check code before
-implementing because the repository may evolve.
+**This package contains the design contract, implementation slices, and their
+current verification ledger.** Work remains in progress; existing limitations
+and unrun human gates stay recorded rather than being hidden. Read
+[STATUS.md](STATUS.md) for the current checkout and rerun the documented lanes
+before treating any result as current.
 
 ## Use on another computer
 

@@ -2,24 +2,38 @@
 
 ## Workflow
 
-The primary operation is a two-step research conversation:
+The primary user-facing operation is a guided, resumable research sequence:
 
-1. **Ask** — the user enters a question or chooses a grounded starting point.
-   The assistant reflects the question and points them to the website allowlist.
-2. **Websites** — the user chooses the websites the agent may read and sets the
-   XRP research budget in the same panel. There is no separate answerability
-   form or user-facing analysis token limit.
-3. **Research** — the server creates a persisted run, discovers open evidence,
+1. **Question** — the user enters or edits a question, or chooses a grounded
+   starting point. Unsupported scope is reported truthfully; unrelated fixture
+   evidence is never used as an answer.
+2. **Sources** — the user chooses named source profiles/families the system is
+   allowed to read. These are authorization boundaries, not guarantees that
+   their claims are accurate.
+3. **Budget** — the user sets a maximum research spend, distinct from wallet
+   balance and actual source price. The fixture conversion is labelled an
+   approximation, not live FX; setting a cap is not a charge or purchase.
+4. **Review** — the user sees a readable plan summary and may reveal advanced
+   settings progressively. Approval here is plan approval, not purchase consent.
+5. **Research** — the server creates a persisted run, discovers open evidence,
    ranks candidates, reads open material, identifies a gap, and prepares a
    purchase plan.
-4. **Agent action** — Groq receives only the retrieved previews and metadata,
+6. **Answer** — usable accessible evidence may produce a cited answer without a
+   purchase. If a premium candidate may help, the user can inspect an exact
+   quote and explicitly approve it; purchase remains optional.
+
+The backend's internal actions remain:
+
+1. **Agent action** — Groq receives only the retrieved previews and metadata,
    selects an eligible purchase action, and the server executes the explicit
    buy/skip/block mutation with deterministic budget and payment guards.
    Source rows remain available for inspection and additional manual actions.
-5. **Synthesize** — after a verified purchase, the user may create a short
-   dossier. Groq streams a structured, grounded draft from the question,
+2. **Synthesize** — when the approved run has usable accessible evidence, the
+   user may create a short dossier, whether that evidence is open or premium /
+   unlocked. Groq streams a structured, grounded draft from the question,
    budget, purchase decisions, and accessible evidence spans; the server
-   validates citations before the dossier becomes ready.
+   validates citations before the dossier becomes ready. Empty or unsupported
+   evidence cannot masquerade as a completed answer.
 
 During an active run, those stages render as one numbered vertical path:
 **1. Search**, **2. Purchase**, **3. Answer**. The source set belongs to Search,
@@ -27,16 +41,18 @@ the settlement and receipt belong to Purchase, and the working answer or cited
 dossier belongs to Answer. The run view does not repeat those facts in a
 separate sidebar or duplicate answer panel.
 
-The canonical fixture decisions remain: buy Northstar Wire for S$0.20, skip
-Circuit Note as redundant, buy the Grid Operators Report for S$0.80, and block
-GridScope Asia at S$1.40 because the remaining authority is S$1.00.
+The canonical fixture decisions remain available for paid-path verification:
+buy Northstar Wire for S$0.20, skip Circuit Note as redundant, buy the Grid
+Operators Report for S$0.80, and block GridScope Asia at S$1.40 because the
+remaining authority is S$1.00. They are fixture decisions, not a requirement
+that every answer purchase a source.
 
 ## Canonical owners
 
 | Capability | Owner | Contract |
 | --- | --- | --- |
 | Question entry | `Composer` | Enter submits; Shift+Enter inserts a line break; IME composition is never submitted early |
-| Website and budget configuration | `PublisherPicker` + `BudgetControl` | Website allowlist and XRP budget before run creation |
+| Source and budget configuration | `SourceProfileList` + `BudgetControl` | Named allowed-to-read profiles and maximum XRP spend before run creation; cap is not a charge or purchase consent |
 | Source universe | `classifySource` + `SourceItem` | User-selected families remain visible in the run summary and filter labels |
 | Candidate action | Groq purchase planner + purchases API | LLM chooses from retrieved metadata; server enforces Buy, Skip, or Block |
 | Evidence inspection | `EvidenceDrawer` | Focus, Escape, backdrop, exact spans, and focus restoration |
@@ -48,20 +64,23 @@ GridScope Asia at S$1.40 because the remaining authority is S$1.00.
 ## State and recovery
 
 The start state does not create a server run. A run is created only after the
-website panel is confirmed, using the question, default research context,
-website allowlist, and XRP budget. Retrieval remains deterministic and mock;
-Groq sees only the resulting source previews and metadata. The client prevents
-duplicate start and purchase actions while a request is pending. Server-
-authoritative state wins after every mutation.
+guided question, named source-profile, budget, and readable plan decisions are
+confirmed, using the question, default research context, allowed profiles, and
+XRP cap. Retrieval remains deterministic and mock; Groq sees only the resulting
+source previews and metadata. The client prevents duplicate start and purchase
+actions while a request is pending. Server-authoritative state wins after every
+mutation.
 
 “New research” resets only the current client thread and returns focus to the
 question surface. It does not claim to delete or rewrite persisted evidence.
 Pause/resume and stop remain available in the research header while a run is
 active. Premium previews never expose protected text before a verified purchase.
-During synthesis, the UI shows the streamed Groq response as an intermediate
-draft. If Groq times out, returns invalid JSON, or cites an unavailable
-source/span, the server uses the deterministic fixture dossier and labels it as
-a fallback.
+Usable open evidence may be synthesized without a purchase; an empty or
+unsupported evidence set remains a limitation. During synthesis, the UI shows
+the streamed Groq response as an intermediate draft. If Groq times out, returns
+invalid JSON, or cites an unavailable source/span, the server uses the
+deterministic fixture dossier only when it validates and labels it as a
+fallback.
 
 ## Accessibility and resilience
 

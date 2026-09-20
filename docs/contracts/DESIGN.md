@@ -1,20 +1,21 @@
 # ResearchAgent design context
 
-ResearchAgent is a quiet research terminal for an economics professor, fund
-manager, or investor who wants to turn a question into a defensible decision.
-The product surface is a tool, not a presentation: ask first, narrow the brief,
-choose the evidence universe, then inspect the sources that can change the
-answer.
+ResearchAgent is a calm deep-research workspace for someone who wants to turn a
+broad question into a defensible, evidence-backed answer. The product surface
+is a tool, not a presentation: ask first, choose the allowed evidence universe,
+set a spending mandate, review the plan, then inspect the sources that can
+change the answer. The first-run home/demo may use a more expressive treatment;
+the working workspace stays focused and neutral.
 
 ## Visual system
 
-The **Quiet Evidence Terminal** direction keeps the existing Black Paper / Trace
-Desk palette but removes the editorial showcase treatment. The warm newsprint
-canvas is a reading surface; the charcoal header is a stable application frame;
-the paper panels are reserved for decisions, source inspection, and the dossier.
-Newsreader is used for question and conclusion hierarchy. IBM Plex Sans carries
-the interface and body copy. IBM Plex Mono is reserved for token caps, prices,
-source scores, state labels, and event metadata.
+The **Quiet Evidence Terminal** direction keeps the existing calm, neutral
+surfaces and restrained semantic accent. The working canvas is a reading
+surface; the application frame is stable; panels are reserved for decisions,
+source inspection, and the dossier. A neutral sans-serif carries interface and
+answer text. A compact mono treatment may be used for token caps, prices, state
+labels, and event metadata. Any expressive/editorial face or illustration is
+limited to the first-run home/demo, not the research workspace.
 
 The signature elements are the **scope bar** and the **research path**. The
 scope bar is a compact, editable checkpoint before research begins. The path is
@@ -37,17 +38,18 @@ state with text and labels; they are never the only signal.
 
 ## Layout and density
 
-Desktop uses a narrow workspace rail, a centered research column, and a compact
-evidence side rail after a run starts. The start state is intentionally sparse:
-one question, a few grounded suggestions, and one composer. Results use dense
-source rows because comparison is the task. There is no forced full-height
-nested scroller; the document owns vertical scrolling and the evidence drawer
-owns its own overflow.
+Desktop uses a centered answer/progress workspace after a run starts. Sources
+and Activity are secondary tabs or disclosures; an evidence drawer may own its
+own overflow, but there is no default three-column layout. The start state is
+intentionally sparse: one question, a few grounded suggestions, and one
+composer. Results use readable source rows because comparison is the task. The
+document owns vertical scrolling.
 
-At 780px the rail collapses and the evidence side rail stacks below the source
-set. At 520px source rows preserve title, preview, match, price, and action as a
-stacked record. Controls stay touchable and the same source decisions remain
-available.
+At 780px the workspace and its secondary inspection regions stack. At 520px
+source rows preserve title, access state, relevance, family, price, and action
+as a stacked record. Controls stay touchable and the same source decisions
+remain available. Verify the redesign at 360/390/768/1024/1440px, 200% text
+zoom, and 320px reflow without body overflow.
 
 ## Shape, motion, and content
 

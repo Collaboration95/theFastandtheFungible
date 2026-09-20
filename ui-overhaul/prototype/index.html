@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Local clickable ResearchAgent UI overhaul prototype" />
+    <title>ResearchAgent · guided research prototype</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <button class="brand" data-action="home" aria-label="ResearchAgent home">
+          <span class="brand-mark" aria-hidden="true">R</span>
+          <span>ResearchAgent</span>
+        </button>
+        <div class="header-meta">
+          <span class="mode-chip"><span class="dot" aria-hidden="true"></span> Fixture demo</span>
+          <button class="text-button" data-action="reset" title="Clear local prototype state">Reset demo</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+      <div id="app" class="app-shell"></div>
+    </main>
+
+    <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -9,6 +9,7 @@ import { loadFixtureCatalog, toPurchasedSpans, toPublicSpans, type FixtureArticl
 import { planPurchase, synthesizeDossier, type DossierEvidencePacket } from './llm.js'
 import { loadRunStore, persistRunStore, type PersistenceMode } from './persistence.js'
 import { createResearchPlan, isResearchPlanArtifact } from '../src/research-plan.js'
+import { validateClaimBindings } from './dossier-validation.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '..', 'data')
@@ -20,10 +21,19 @@ const mode = xrplMode === 'live' && xrplNetwork === 'testnet' ? 'live' : 'fixtur
 const xrplRpcUrl = process.env.XRPL_RPC_URL ?? 'wss://s.altnet.rippletest.net:51233'
 const xrplExplorerUrl = process.env.XRPL_EXPLORER_URL ?? 'https://testnet.xrpl.org/transactions'
 const activeRuntime: RuntimeStatus = xrplMode === 'live' && xrplNetwork === 'testnet'
-  ? { mode: 'live', label: 'XRPL TESTNET RESEARCH', settlement: 'VALIDATED', network: 'testnet' }
+  ? { mode: 'live', label: 'XRPL TESTNET RESEARCH', settlement: 'NOT_VALIDATED', network: 'testnet' }
   : { mode: 'fixture', label: 'FIXTURE RESEARCH', settlement: 'SIMULATION_NOT_SETTLED', network: 'fixture' }
 type RunStateMode = 'fresh' | 'prior'
-type ManagedRun = Run & { stateMode: RunStateMode }
+type ScopeStatus = 'SUPPORTED' | 'UNSUPPORTED'
+type ScopeDecision = {
+  status: ScopeStatus
+  label: string
+  question: string
+  supportedScope: string
+  message: string
+  safeNextAction: string
+}
+type ManagedRun = Run & { stateMode: RunStateMode; scope?: ScopeDecision }
 const app = express()
 app.use(express.json({ limit: '64kb' }))
 app.use((_req, res, next) => { res.setHeader('X-ResearchAgent-Mode', mode); res.setHeader('X-Content-Type-Options', 'nosniff'); next() })
@@ -46,7 +56,7 @@ function makeConfig(input: Partial<ResearchConfig> = {}): ResearchConfig {
     budgetCents: Number.isFinite(Number(input.budgetCents)) ? Math.max(MIN_BUDGET_CENTS, Math.min(MAX_BUDGET_CENTS, Math.round(Number(input.budgetCents)))) : DEFAULT_BUDGET_CENTS,
     sourceTypes: Array.isArray(input.sourceTypes) && input.sourceTypes.length ? input.sourceTypes.map(String) : ['primary', 'public', 'independent', 'specialist'],
     sourceAllowlist: Array.isArray(input.sourceAllowlist) ? input.sourceAllowlist.map(String).filter((key) => fixtureSiteKeys.includes(key)) : fixtureSiteKeys,
-    walletMode: input.walletMode === 'XRPL_TESTNET' && xrplMode === 'live' ? 'XRPL_TESTNET' : 'PARTNER_DEMO',
+    walletMode: input.walletMode === 'XRPL_TESTNET' && mode === 'live' ? 'XRPL_TESTNET' : 'PARTNER_DEMO',
     approvalPolicy: 'MANUAL_APPROVAL_REQUIRED',
     perSourceCeilingCents: 100,
   }
@@ -61,6 +71,37 @@ async function loadSourceCatalog() {
 
 function sourceIsAllowed(source: Source, config: ResearchConfig) {
   return Boolean(config.sourceAllowlist?.length) && Boolean(source.siteKey) && config.sourceAllowlist!.includes(source.siteKey!)
+}
+
+const supportedFixtureScope = 'AI data-centre investment sustainability through 2028, using demand, equipment-delivery, power, and grid/interconnection evidence from the approved synthetic fixture corpus.'
+const scopeMessage = 'This question is outside the supported fixture scope. No fixture evidence was searched or used as an answer.'
+const normalizeScopeQuestion = (question: string) => question.normalize('NFKC').toLowerCase().replace(/[\u2010-\u2015]/g, '-').replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
+function scopeForQuestion(question: string): ScopeDecision {
+  const normalized = normalizeScopeQuestion(question)
+  const canonical = normalizeScopeQuestion(QUESTION)
+  const tokens = new Set(normalized.split(/\s+/).filter(Boolean))
+  const hasHorizon = tokens.has('2028')
+  const hasDataCentre = /data cent(re|er)|datacentre|datacenter/.test(normalized)
+  const hasInvestment = /investment|capital|boom|sustainab/.test(normalized)
+  const hasCapacityOrConstraint = /capacity|grid|power|interconnection|equipment|supplier|lead time|operat/.test(normalized)
+  const canonicalVariant = hasHorizon && tokens.has('capacity') && tokens.has('thesis')
+  const supported = normalized === canonical || canonicalVariant || (hasDataCentre && (hasHorizon || hasInvestment || hasCapacityOrConstraint))
+  return supported
+    ? { status: 'SUPPORTED', label: 'Supported fixture scope', question, supportedScope: supportedFixtureScope, message: 'This question is within the supported fixture scope.', safeNextAction: 'Review the approved source profiles and plan before research starts.' }
+    : { status: 'UNSUPPORTED', label: 'Unsupported fixture scope', question, supportedScope: supportedFixtureScope, message: scopeMessage, safeNextAction: 'Edit the question or use the canonical fixture prompt before starting research.' }
+}
+
+function scopeForRun(run: Run): ScopeDecision {
+  return (run as Partial<ManagedRun>).scope ?? scopeForQuestion(run.config.question)
+}
+
+function rejectUnsupported(run: Run, res: Response) {
+  const scope = scopeForRun(run)
+  if (scope.status === 'UNSUPPORTED') {
+    res.status(409).json({ error: scope.message, scope: { ...scope }, state: state(run) })
+    return true
+  }
+  return false
 }
 
 function scopedSources(config: ResearchConfig) {
@@ -129,14 +170,17 @@ function publicSource(source: Source, run: Run): Source { const purchased = run.
 function sourceType(source: Source): string { if (source.familyId === 'family-company') return 'primary'; if (source.familyId === 'family-energy' || source.kind === 'DATASET_QUERY') return 'public'; if (source.familyId === 'family-northstar' || source.familyId === 'family-meridian') return 'independent'; return 'specialist' }
 function state(run: Run) {
   const stateMode = (run as Partial<ManagedRun>).stateMode ?? 'fresh'
-  return { runId: run.runId, stateMode, persistence: { mode: persistenceMode, persistedRunCount: runs.size }, phase: run.phase, paused: run.paused, cancelled: run.cancelled, budgetCents: run.budgetCents, spentCents: run.spentCents, remainingCents: run.budgetCents - run.spentCents, rawSourceCount: run.sources.length, familyCount: new Set(run.sources.map((source) => source.familyId)).size, gap: run.gap, thesis: run.thesis, claims: run.claims, events: run.events, dossierReady: run.dossierReady, dossier: run.dossier, llm: run.llm, semanticStatus: run.semanticStatus, runtime: run.runtime, plan: run.plan, purchasePlan: run.purchasePlan, config: run.config, sources: run.sources.map((source) => publicSource(source, run)) }
+  const scope = scopeForRun(run)
+  const supported = scope.status === 'SUPPORTED'
+  return { runId: run.runId, stateMode, persistence: { mode: persistenceMode, persistedRunCount: runs.size }, phase: run.phase, paused: run.paused, cancelled: run.cancelled, planApproved: Boolean(run.planApproved), budgetCents: run.budgetCents, spentCents: supported ? run.spentCents : 0, remainingCents: supported ? run.budgetCents - run.spentCents : run.budgetCents, rawSourceCount: supported ? run.sources.length : 0, familyCount: supported ? new Set(run.sources.map((source) => source.familyId)).size : 0, gap: supported ? run.gap : { ...run.gap, question: '' }, thesis: supported ? run.thesis : { open: '', current: '' }, claims: supported ? run.claims : [], events: run.events, dossierReady: supported ? run.dossierReady : false, dossier: supported ? run.dossier : undefined, llm: run.llm, semanticStatus: run.semanticStatus, runtime: run.runtime, scope, plan: run.plan, purchasePlan: supported ? run.purchasePlan : undefined, config: run.config, sources: supported ? run.sources.map((source) => publicSource(source, run)) : [] }
 }
 function getRun(req: Request, res: Response) { const run = runs.get(String(req.params.runId)); if (!run) { res.status(404).json({ error: 'Research run not found' }); return null }; return run }
 function initRun(input: Partial<ResearchConfig> = {}): ManagedRun {
   const config = makeConfig(input)
   const plan = createResearchPlan('BALANCED_DILIGENCE', config)
-  const run: ManagedRun = { runId: `run_${randomUUID().slice(0, 8)}`, stateMode: 'fresh', version: 1, phase: 'DRAFT', paused: false, cancelled: false, budgetCents: config.budgetCents, spentCents: 0, sources: [], events: [], gap: { question: GAP_QUESTION, importance: 'HIGH', state: 'OPEN' }, thesis: { open: CANONICAL_THESIS, current: CANONICAL_THESIS }, claims: [], dossierReady: false, llm: { provider: process.env.LLM_PROVIDER ?? 'fixture', status: 'fixture fallback ready', model: process.env.LLM_MODEL ?? 'fixture-research-v1' }, semanticStatus: 'precomputed', config, plan, planApproved: false, runtime: activeRuntime, quoteGeneration: 1, quoteExpiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), purchaseKeys: {} };
-  emit(run, 'BRIEF_READY', `Brief ready · ${config.tokenLimit.toLocaleString()} token cap · ${run.runtime.label}`); return run
+  const scope = scopeForQuestion(config.question)
+  const run: ManagedRun = { runId: `run_${randomUUID().slice(0, 8)}`, stateMode: 'fresh', scope, version: 1, phase: 'DRAFT', paused: false, cancelled: false, budgetCents: config.budgetCents, spentCents: 0, sources: [], events: [], gap: { question: scope.status === 'SUPPORTED' ? GAP_QUESTION : '', importance: 'HIGH', state: 'OPEN' }, thesis: { open: scope.status === 'SUPPORTED' ? CANONICAL_THESIS : '', current: scope.status === 'SUPPORTED' ? CANONICAL_THESIS : '' }, claims: [], dossierReady: false, llm: { provider: process.env.LLM_PROVIDER ?? 'fixture', status: 'fixture fallback ready', model: process.env.LLM_MODEL ?? 'fixture-research-v1' }, semanticStatus: 'precomputed', config, plan, planApproved: false, runtime: activeRuntime, quoteGeneration: 1, quoteExpiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), purchaseKeys: {} };
+  emit(run, 'BRIEF_READY', scope.status === 'SUPPORTED' ? `Brief ready · ${config.tokenLimit.toLocaleString()} token cap · ${run.runtime.label}` : `${scope.label} · no fixture evidence searched`); return run
 }
 function save(run: Run) {
   const managed = (run as Partial<ManagedRun>).stateMode ? run as ManagedRun : { ...run, stateMode: 'fresh' as const }
@@ -150,16 +194,18 @@ app.get('/api/v1/config/public', (_req, res) => res.json({ mode, runtime: active
 app.get('/api/v1/scenarios/data-centre-2028', (_req, res) => res.json({ scenarioId: 'data-centre-2028', runtime: activeRuntime, stateMode: 'fresh', persistenceMode, brief: { principal: 'Elena Tan', audience: 'Investment Committee', question: QUESTION, deliverable: 'Evidence-backed one-page dossier', budgetCents: 200, autoBuyMaxPerSourceCents: 100, sourceAboveThreshold: 'BLOCK', horizon: 2028, mode: activeRuntime.label, sourcePolicy: 'Synthetic local fixture corpus; no live websites are searched.' }, sources: sourceCatalog.map((source) => publicSource(source, { sources: [], spentCents: 0, runtime: activeRuntime } as unknown as Run)) }))
 app.post('/api/v1/research-runs', async (req, res) => { const run = initRun(req.body ?? {}); await save(run); return response(res.status(201), run) })
 app.get('/api/v1/research-runs/:runId', (req, res) => { const run = getRun(req, res); return run ? response(res, run) : undefined })
-app.get('/api/v1/research-runs/:runId/sources', (req, res) => { const run = getRun(req, res); return run ? res.json(run.sources.map((source) => publicSource(source, run))) : undefined })
-app.get('/api/v1/research-runs/:runId/sources/:sourceId', (req, res) => { const run = getRun(req, res); if (!run) return; const source = run.sources.find((item) => item.id === req.params.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const visible = publicSource(source, run); if (source.accessTier === 'PREMIUM' && visible.decision !== 'BUY') return res.json({ ...visible, premium: { status: 'PAYMENT_REQUIRED', ...quoteFor(run, source) } }); return res.json({ ...visible, premium: source.accessTier === 'PREMIUM' ? { status: 'UNLOCKED', contentHash: hash(mockArticles.get(source.id)?.article), ...quoteFor(run, source) } : { status: 'OPEN' } }) })
+app.get('/api/v1/research-runs/:runId/sources', (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; return res.json(run.sources.map((source) => publicSource(source, run))) })
+app.get('/api/v1/research-runs/:runId/sources/:sourceId', (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; const source = run.sources.find((item) => item.id === req.params.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const visible = publicSource(source, run); if (source.accessTier === 'PREMIUM' && visible.decision !== 'BUY') return res.json({ ...visible, premium: { status: 'PAYMENT_REQUIRED', ...quoteFor(run, source) } }); return res.json({ ...visible, premium: source.accessTier === 'PREMIUM' ? { status: 'UNLOCKED', contentHash: hash(mockArticles.get(source.id)?.article), ...quoteFor(run, source) } : { status: 'OPEN' } }) })
 app.post('/api/v1/research-runs/:runId/reset', async (req, res) => { const run = getRun(req, res); if (!run) return; if (run.cancelled) return res.status(409).json({ error: 'This run is read-only after reset or cancellation' }); run.cancelled = true; run.phase = 'CANCELLED'; emit(run, 'RESEARCH_SUPERSEDED', 'Run superseded by a fresh local reset; prior receipt remains read-only'); await save(run); const fresh = initRun({ ...run.config }); fresh.runtime = run.runtime; emit(fresh, 'RESEARCH_RESET', `${fresh.runtime.label} fresh run started; prior purchases remain in local history`); await save(fresh); return response(res, fresh) })
 app.post('/api/v1/research-runs/:runId/cancel', async (req, res) => { const run = getRun(req, res); if (!run) return; if (run.cancelled) return res.status(409).json({ error: 'This run is read-only after reset or cancellation' }); run.cancelled = true; run.phase = 'CANCELLED'; emit(run, 'RESEARCH_CANCELLED', 'Research paused with completed purchases preserved'); await save(run); return response(res, run) })
 app.post('/api/v1/research-runs/:runId/plan', async (req, res) => {
   const run = getRun(req, res); if (!run) return
   if (run.phase !== 'DRAFT' && run.phase !== 'PLANNING') return res.status(409).json({ error: 'Approved plans cannot change after research execution begins' })
   const plan = req.body?.plan ?? createResearchPlan(req.body?.approach ?? 'BALANCED_DILIGENCE', run.config)
+  const plannedScope = scopeForQuestion(String(plan?.config?.question ?? run.config.question))
   if (!isResearchPlanArtifact(plan) || plan.config.budgetCents !== run.budgetCents || plan.config.sourceAllowlist?.some((key) => !(run.config.sourceAllowlist ?? []).includes(key))) return res.status(400).json({ error: 'Plan is invalid or exceeds the server-owned mandate' })
-  run.plan = plan; run.config = { ...run.config, ...plan.config }; run.planApproved = true; run.phase = 'PLANNING'; emit(run, 'PLAN_APPROVED', 'Research plan validated and approved; premium purchases still require separate manual approval'); await save(run); return response(res, run)
+  if (plannedScope.status === 'UNSUPPORTED') return res.status(409).json({ error: plannedScope.message, scope: plannedScope })
+  run.scope = plannedScope; run.plan = plan; run.config = { ...run.config, ...plan.config }; run.planApproved = true; run.phase = 'PLANNING'; emit(run, 'PLAN_APPROVED', 'Research plan validated and approved; premium purchases still require separate manual approval'); await save(run); return response(res, run)
 })
 app.post('/api/v1/research-runs/:runId/discover', async (req, res) => advance(req, res, 'discover'))
 app.post('/api/v1/research-runs/:runId/rank', async (req, res) => advance(req, res, 'rank'))
@@ -168,6 +214,7 @@ app.post('/api/v1/research-runs/:runId/step', async (req, res) => { const action
 
 async function advance(req: Request, res: Response, action: string) {
   const run = getRun(req, res); if (!run) return
+  if (rejectUnsupported(run, res)) return
   if (run.cancelled) return res.status(409).json({ error: 'This run is read-only after reset or cancellation' })
   if (run.paused && action !== 'resume') return res.status(409).json({ error: 'Research is paused', state: 'PAUSED' })
   if (action === 'pause') { run.paused = true; emit(run, 'RESEARCH_PAUSED', 'Research paused; no decisions changed'); await save(run); return response(res, run) }
@@ -186,13 +233,47 @@ async function advance(req: Request, res: Response, action: string) {
   await save(run); return response(res, run)
 }
 
+function dossierSources(run: Run): Source[] {
+  return run.sources
+    .filter((source) => sourceIsAllowed(source, run.config) && run.config.sourceTypes.includes(sourceType(source)))
+    .map((source) => ({
+      ...source,
+      evidenceSpans: source.evidenceSpans ?? (source.accessTier === 'OPEN' && mockArticles.get(source.id) ? toPublicSpans(mockArticles.get(source.id)!) : undefined),
+    }))
+}
+
 function buildClaims(run: Run): Source[] extends never[] ? never : Run['claims'] {
-  const hasN = run.sources.some((source) => source.id === 'northstar-wire' && source.decision === 'BUY'); const hasM = run.sources.some((source) => source.id === 'meridian-ledger' && source.decision === 'BUY')
-  return [
-    { id:'claim-demand', text:'Announced demand and capital commitments support continued expansion.', stance:'SUPPORTS', materiality:'MATERIAL', sourceIds:['company-capex','energy-dataset'], familyCount:2, spanIds:['company-capex-open','energy-dataset-open'] },
-    { id:'claim-bottleneck', text: hasN ? 'Supplier lead times add a near-term delivery bottleneck.' : 'Equipment delivery remains a relevant but incompletely evidenced constraint.', stance:'CHALLENGES', materiality:'MATERIAL', sourceIds: hasN ? ['northstar-wire'] : ['energy-dataset'], familyCount:1, spanIds: hasN ? ['northstar-s1'] : ['energy-dataset-open'] },
-    { id:'claim-grid', text: hasM ? 'Interconnection and power availability can make operating capacity lag announced spending in grid-constrained markets.' : 'Power delivery is the key unresolved gap in the open-source baseline.', stance: hasM ? 'CHALLENGES' : 'UNCERTAIN', materiality:'MATERIAL', sourceIds: hasM ? ['meridian-ledger'] : ['energy-dataset'], familyCount:1, spanIds: hasM ? ['meridian-s1','meridian-s2'] : ['energy-dataset-open'] },
-  ]
+  // Fixture claims are built from the run's approved, readable sources. The
+  // old fixed list could cite a source/span that a restricted allowlist never
+  // admitted, making the answer look broader than the evidence boundary.
+  const available = dossierSources(run).filter((source) => (source.evidenceSpans?.length ?? 0) > 0)
+  const byId = new Map(available.map((source) => [source.id, source]))
+  const firstSpan = (source: Source) => source.evidenceSpans?.[0]?.id
+  const makeClaim = (id: string, text: string, stance: 'SUPPORTS' | 'CHALLENGES' | 'UNCERTAIN', sourceIds: string[]): Run['claims'][number] | null => {
+    const boundSources = sourceIds.map((sourceId) => byId.get(sourceId)).filter((source): source is Source => Boolean(source))
+    const spanIds = boundSources.map(firstSpan).filter((spanId): spanId is string => Boolean(spanId))
+    if (!boundSources.length || !spanIds.length) return null
+    return { id, text, stance, materiality: 'MATERIAL', sourceIds: boundSources.map((source) => source.id), familyCount: new Set(boundSources.map((source) => source.familyId)).size, spanIds }
+  }
+
+  const hasN = byId.has('northstar-wire') && byId.get('northstar-wire')?.decision === 'BUY'
+  const hasM = byId.has('meridian-ledger') && byId.get('meridian-ledger')?.decision === 'BUY'
+  const claims = [
+    makeClaim('claim-demand', byId.has('company-capex') && byId.has('energy-dataset')
+      ? 'Announced demand and capital commitments support continued expansion.'
+      : 'The approved open evidence indicates announced demand, while independent corroboration remains limited.', 'SUPPORTS', ['company-capex', 'energy-dataset']),
+    makeClaim('claim-bottleneck', hasN
+      ? 'Supplier lead times add a near-term delivery bottleneck.'
+      : 'Power and equipment delivery remain relevant but incompletely evidenced constraints.', 'CHALLENGES', hasN ? ['northstar-wire'] : ['energy-dataset']),
+    makeClaim('claim-grid', hasM
+      ? 'Interconnection and power availability can make operating capacity lag announced spending in grid-constrained markets.'
+      : 'Power delivery is the key unresolved gap in the approved open-source baseline.', hasM ? 'CHALLENGES' : 'UNCERTAIN', hasM ? ['meridian-ledger'] : ['energy-dataset']),
+  ].filter((claim): claim is Run['claims'][number] => Boolean(claim))
+  if (!claims.length && available[0]) {
+    const bounded = makeClaim('claim-approved-boundary', 'The approved source boundary provides only a limited baseline; broader conclusions remain uncertain.', 'UNCERTAIN', [available[0].id])
+    if (bounded) claims.push(bounded)
+  }
+  return claims
 }
 
 function evidencePacket(run: Run): DossierEvidencePacket {
@@ -206,7 +287,9 @@ function evidencePacket(run: Run): DossierEvidencePacket {
     activeGap: run.gap.question,
     thesis: run.thesis,
     purchasePlan: run.purchasePlan,
-    sources: run.sources.map((source) => ({
+    // Provider input is bounded by the same allowlist/type filter as fallback
+    // validation; restricted runs must not leak unapproved fixture metadata.
+    sources: dossierSources(run).map((source) => ({
       id: source.id,
       publisher: source.publisher,
       title: source.title,
@@ -224,9 +307,10 @@ function evidencePacket(run: Run): DossierEvidencePacket {
 }
 
 function fixtureDossier(run: Run): DossierDraft {
+  const hasGridEvidence = dossierSources(run).some((source) => source.id === 'energy-dataset' || (source.id === 'meridian-ledger' && source.decision === 'BUY'))
   return {
     mode: 'FIXTURE RESEARCH',
-    title: 'The boom can continue. The grid sets the pace.',
+    title: hasGridEvidence ? 'The boom can continue. The grid sets the pace.' : 'The approved source boundary leaves grid constraints unresolved.',
     conclusion: run.thesis.current,
     afterLabel: '+ Grid report',
     changedAfterPaidResearch: run.thesis.afterMeridian ? { before: run.thesis.open, afterNorthstar: run.thesis.afterNorthstar, after: run.thesis.afterMeridian } : { before: run.thesis.open, after: run.thesis.current },
@@ -239,31 +323,18 @@ function fixtureDossier(run: Run): DossierDraft {
   }
 }
 
-function validateDossier(run: Run, draft: Awaited<ReturnType<typeof synthesizeDossier>>): DossierDraft {
-  const sourceIds = new Set(run.sources.map((source) => source.id))
-  const spanIds = new Set(run.sources.flatMap((source) => {
-    const spans = source.evidenceSpans ?? (source.accessTier === 'OPEN' && mockArticles.get(source.id) ? toPublicSpans(mockArticles.get(source.id)!) ?? [] : [])
-    return spans.map((span) => span.id)
-  }))
-  const claims = draft.claims.map((claim) => {
-    if (claim.sourceIds.some((id) => !sourceIds.has(id))) throw new Error(`Groq cited an unknown source: ${claim.sourceIds.join(', ')}`)
-    const groundedSpanIds = claim.spanIds.length ? claim.spanIds : claim.sourceIds.flatMap((sourceId) => {
-      const source = run.sources.find((item) => item.id === sourceId)
-      const spans = source?.evidenceSpans ?? (source?.accessTier === 'OPEN' && mockArticles.get(sourceId) ? toPublicSpans(mockArticles.get(sourceId)!) ?? [] : [])
-      return spans.map((span) => span.id).slice(0, 1)
-    })
-    if (!groundedSpanIds.length || groundedSpanIds.some((id) => !spanIds.has(id))) throw new Error(`Groq cited an unknown evidence span: ${claim.spanIds.join(', ')}`)
-    return { ...claim, spanIds: groundedSpanIds }
-  })
+function validateDossier(run: Run, draft: Awaited<ReturnType<typeof synthesizeDossier>> | DossierDraft, kind: 'live' | 'fixture' = 'live'): DossierDraft {
+  const accessibleSources = dossierSources(run)
+  const claims = validateClaimBindings(draft.claims, accessibleSources, true)
   return {
     ...draft,
     claims: claims.map((claim) => ({ ...claim, familyCount: new Set(claim.sourceIds.map((id) => run.sources.find((source) => source.id === id)?.familyId)).size })),
-    mode: 'GROQ RESEARCH',
+    mode: kind === 'fixture' ? 'FIXTURE RESEARCH' : 'GROQ RESEARCH',
     afterLabel: '+ Grid report',
     changedAfterPaidResearch: { ...draft.changedAfterPaidResearch, before: run.thesis.open },
-    provider: 'groq',
-    model: process.env.LLM_MODEL ?? 'llama-3.3-70b-versatile',
-    status: 'LIVE',
+    provider: kind === 'fixture' ? 'fixture' : 'groq',
+    model: kind === 'fixture' ? 'fixture-research-v1' : process.env.LLM_MODEL ?? 'llama-3.3-70b-versatile',
+    status: kind === 'fixture' ? 'FALLBACK' : 'LIVE',
   }
 }
 
@@ -282,7 +353,10 @@ async function synthesizeRun(run: Run) {
     emit(run, 'DOSSIER_SYNTHESIS_COMPLETED', 'Groq dossier stream complete; citations and evidence spans validated')
   } catch (error) {
     console.error(`Groq dossier synthesis fallback: ${(error as Error).message}`)
-    run.dossier = fixtureDossier(run)
+    // Keep the deterministic fallback under the same relational validator as
+    // provider output. This guarantees every fallback claim/span belongs to
+    // an approved source in this run's allowlist.
+    run.dossier = validateDossier(run, fixtureDossier(run), 'fixture')
     run.claims = run.dossier.claims
     run.llm = { provider: 'fixture', status: 'Groq synthesis fallback used', model: 'fixture-research-v1' }
     emit(run, 'DOSSIER_SYNTHESIS_FALLBACK', 'Groq synthesis was unavailable; deterministic cited fallback used')
@@ -290,8 +364,8 @@ async function synthesizeRun(run: Run) {
   await save(run)
 }
 
-app.post('/api/v1/research-runs/:runId/purchase-decisions', async (req, res) => { const run = getRun(req, res); if (!run) return; if (run.cancelled) return res.status(409).json({ error: 'This run is read-only after reset or cancellation' }); if (!run.planApproved) return res.status(409).json({ error: 'Approve the research plan before execution begins' }); const ranked = run.sources.length ? run.sources : scopedSources(run.config); const remainingCents = run.budgetCents - run.spentCents; const action = await planPurchase(run.config.question, ranked, remainingCents); run.purchasePlan = action; run.llm = { provider: action.provider, status: action.status === 'LIVE' ? 'Groq evaluated retrieved metadata' : 'Fixture fallback used', model: action.model }; emit(run, 'AGENT_ACTION_READY', `${action.provider === 'groq' ? 'Groq' : 'Fixture'} chose a purchase action from mock retrieval metadata`); await save(run); return res.json({ formula: 'utility-v1', remainingCents, action, state: state(run), decisions: ranked.filter((source) => source.accessTier === 'PREMIUM').map((source) => ({ sourceId: source.id, expectedEvidenceValue: source.relevance / 100, utilityPerCent: source.priceCents ? (source.relevance / source.priceCents).toFixed(3) : '0', suggestedAction: source.id === 'circuit-note' ? 'SKIP' : source.priceCents > remainingCents || source.priceCents > 100 ? 'BLOCKED' : 'BUY', reason: source.id === 'circuit-note' ? 'Redundant evidence family.' : source.priceCents > 100 ? 'Blocked: exceeds the S$1.00 per-source mandate ceiling.' : 'Expected to resolve or materially narrow the active research gap.' })) }) })
-app.post('/api/v1/research-runs/:runId/purchases', async (req, res) => { const run = getRun(req, res); if (!run) return; const source = run.sources.find((item) => item.id === req.body?.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const action = String(req.body?.action ?? 'BUY') as Decision; const idempotencyKey = String(req.body?.idempotencyKey ?? ''); const remaining = run.budgetCents - run.spentCents
+app.post('/api/v1/research-runs/:runId/purchase-decisions', async (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; if (run.cancelled) return res.status(409).json({ error: 'This run is read-only after reset or cancellation' }); if (!run.planApproved) return res.status(409).json({ error: 'Approve the research plan before execution begins' }); const ranked = run.sources.length ? run.sources : scopedSources(run.config); const remainingCents = run.budgetCents - run.spentCents; const action = await planPurchase(run.config.question, ranked, remainingCents); run.purchasePlan = action; run.llm = { provider: action.provider, status: action.status === 'LIVE' ? 'Groq evaluated retrieved metadata' : 'Fixture fallback used', model: action.model }; emit(run, 'AGENT_ACTION_READY', `${action.provider === 'groq' ? 'Groq' : 'Fixture'} chose a purchase action from mock retrieval metadata`); await save(run); return res.json({ formula: 'utility-v1', remainingCents, action, state: state(run), decisions: ranked.filter((source) => source.accessTier === 'PREMIUM').map((source) => ({ sourceId: source.id, expectedEvidenceValue: source.relevance / 100, utilityPerCent: source.priceCents ? (source.relevance / source.priceCents).toFixed(3) : '0', suggestedAction: source.id === 'circuit-note' ? 'SKIP' : source.priceCents > remainingCents || source.priceCents > 100 ? 'BLOCKED' : 'BUY', reason: source.id === 'circuit-note' ? 'Redundant evidence family.' : source.priceCents > 100 ? 'Blocked: exceeds the S$1.00 per-source mandate ceiling.' : 'Expected to resolve or materially narrow the active research gap.' })) }) })
+app.post('/api/v1/research-runs/:runId/purchases', async (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; const source = run.sources.find((item) => item.id === req.body?.sourceId); if (!source) return res.status(404).json({ error: 'Source is outside this run scope' }); const action = String(req.body?.action ?? 'BUY') as Decision; const idempotencyKey = String(req.body?.idempotencyKey ?? ''); const remaining = run.budgetCents - run.spentCents
   if (run.cancelled) return res.status(409).json({ error: 'This run is read-only after reset or cancellation' })
   if (source.accessTier !== 'PREMIUM') return res.status(400).json({ error: 'Open evidence does not require a purchase' })
   if (idempotencyKey && run.purchaseKeys?.[idempotencyKey]) return response(res, run)
@@ -315,10 +389,10 @@ app.post('/api/v1/research-runs/:runId/purchases', async (req, res) => { const r
   run.spentCents += source.priceCents; run.phase = 'PURCHASED'; if (idempotencyKey) run.purchaseKeys = { ...(run.purchaseKeys ?? {}), [idempotencyKey]: source.id }; if (source.id === 'northstar-wire') run.thesis.afterNorthstar = `${run.thesis.open} ${AFTER_NORTHSTAR}`; if (source.id === 'meridian-ledger') { run.thesis.afterMeridian = AFTER_MERIDIAN; run.thesis.current = AFTER_MERIDIAN; run.gap.state = 'RESOLVED' }
   emit(run, 'PREMIUM_PURCHASE_SETTLED', `${source.publisher} unlocked via ${payment.mode === 'live' ? 'validated XRPL Testnet payment' : 'fixture payment simulation'} · ${source.xrpDrops?.toLocaleString() ?? '—'} drops`); await save(run); return response(res, run)
 })
-app.get('/api/v1/research-runs/:runId/purchases/:purchaseId', (req, res) => { const run = getRun(req, res); if (!run) return; const source = run.sources.find((item) => item.id === req.params.purchaseId); if (!source) return res.status(404).json({ error: 'Purchase not found' }); const live = source.payment?.mode === 'live'; const quote = quoteFor(run, source); res.json({ purchaseId: req.params.purchaseId, settlement: source.payment?.settlement ?? 'NONE', label: live ? 'XRPL TESTNET PAYMENT' : 'FIXTURE PAYMENT · SIMULATION ONLY', runtimeLabel: run.runtime.label, invoiceId: quote.invoiceId, exactResource: source.decision === 'BUY' ? source.id : null, delivery: source.decision === 'BUY' ? 'SEPARATE_ACCESS_GRANT' : 'NOT_DELIVERED', transactionHash: source.payment?.transactionHash, ledgerIndex: source.payment?.ledgerIndex, explorerUrl: source.payment?.explorerUrl }) })
+app.get('/api/v1/research-runs/:runId/purchases/:purchaseId', (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; const source = run.sources.find((item) => item.id === req.params.purchaseId); if (!source) return res.status(404).json({ error: 'Purchase not found' }); const live = source.payment?.mode === 'live'; const quote = quoteFor(run, source); res.json({ purchaseId: req.params.purchaseId, settlement: source.payment?.settlement ?? 'NONE', label: live ? 'XRPL TESTNET PAYMENT' : 'FIXTURE PAYMENT · SIMULATION ONLY', runtimeLabel: run.runtime.label, invoiceId: quote.invoiceId, exactResource: source.decision === 'BUY' ? source.id : null, delivery: source.decision === 'BUY' ? 'SEPARATE_ACCESS_GRANT' : 'NOT_DELIVERED', transactionHash: source.payment?.transactionHash, ledgerIndex: source.payment?.ledgerIndex, explorerUrl: source.payment?.explorerUrl }) })
 app.post('/api/v1/research-runs/:runId/synthesize', async (req, res) => advance(req, res, 'synthesize'))
-app.get('/api/v1/research-runs/:runId/dossier', (req, res) => { const run = getRun(req, res); if (!run) return; if (!run.dossierReady) return res.status(409).json({ error: 'Dossier is not ready' }); const dossier = run.dossier ?? fixtureDossier(run); res.json({ ...dossier, sourceLedger: run.sources.filter((source) => source.accessTier === 'PREMIUM').map((source) => ({ publisher: source.publisher, priceCents: source.priceCents, decision: source.decision ?? 'PENDING', family: source.familyLabel, authority: source.authority, originality: source.originality, access: source.decision === 'BUY' ? 'UNLOCKED' : 'PREVIEW_ONLY' })) }) })
-app.get('/api/v1/research-runs/:runId/receipt', (req, res) => { const run = getRun(req, res); if (!run) return; const live = run.runtime.mode === 'live'; res.json({ runId: run.runId, mode: run.runtime.label, runtime: run.runtime, spend: { spentCents: run.spentCents, remainingCents: run.budgetCents - run.spentCents }, paymentProtocol: { name: 'x402', network: live ? 'xrpl-testnet' : 'fixture', payTo: live ? process.env.XRPL_RECEIVER_ADDRESS : null, settlement: run.runtime.settlement, note: live ? 'Testnet XRP payment submitted and validated on the XRPL Testnet.' : 'Fixture quotes model the payment boundary; no wallet seed or real publisher payment is used.' }, purchases: run.sources.filter((source) => source.decision).map((source) => { const quote = quoteFor(run, source); return { sourceId: source.id, publisher: source.publisher, decision: source.decision, amountCents: source.decision === 'BUY' ? source.priceCents : 0, amountDrops: source.decision === 'BUY' ? source.xrpDrops ?? 0 : 0, invoiceId: quote.invoiceId, resourceId: quote.resourceId, resourceVersionHash: quote.resourceVersionHash, quoteHash: quote.quoteHash, expiresAt: quote.expiresAt, settlement: source.payment?.settlement ?? (source.decision === 'BUY' ? run.runtime.settlement : 'NONE'), transactionHash: source.payment?.transactionHash, ledgerIndex: source.payment?.ledgerIndex, explorerUrl: source.payment?.explorerUrl } }), limitations: live ? ['Testnet XRP has no S$ equivalence.', 'This dossier is not investment advice.'] : ['Fixture payment did not pay a real publisher.', 'Premium text is synthetic and fictional.', 'This dossier is not investment advice.'] }) })
+app.get('/api/v1/research-runs/:runId/dossier', (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; if (!run.dossierReady) return res.status(409).json({ error: 'Dossier is not ready' }); const dossier = run.dossier ?? validateDossier(run, fixtureDossier(run), 'fixture'); res.json({ ...dossier, sourceLedger: dossierSources(run).filter((source) => source.accessTier === 'PREMIUM').map((source) => ({ publisher: source.publisher, priceCents: source.priceCents, decision: source.decision ?? 'PENDING', family: source.familyLabel, authority: source.authority, originality: source.originality, access: source.decision === 'BUY' ? 'UNLOCKED' : 'PREVIEW_ONLY' })) }) })
+app.get('/api/v1/research-runs/:runId/receipt', (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; const live = run.runtime.mode === 'live'; res.json({ runId: run.runId, mode: run.runtime.label, runtime: run.runtime, spend: { spentCents: run.spentCents, remainingCents: run.budgetCents - run.spentCents }, paymentProtocol: { name: 'x402', network: live ? 'xrpl-testnet' : 'fixture', payTo: live ? process.env.XRPL_RECEIVER_ADDRESS : null, settlement: run.runtime.settlement, note: live ? 'Testnet XRP payment submitted and validated on the XRPL Testnet.' : 'Fixture quotes model the payment boundary; no wallet seed or real publisher payment is used.' }, purchases: run.sources.filter((source) => source.decision).map((source) => { const quote = quoteFor(run, source); return { sourceId: source.id, publisher: source.publisher, decision: source.decision, amountCents: source.decision === 'BUY' ? source.priceCents : 0, amountDrops: source.decision === 'BUY' ? source.xrpDrops ?? 0 : 0, invoiceId: quote.invoiceId, resourceId: quote.resourceId, resourceVersionHash: quote.resourceVersionHash, quoteHash: quote.quoteHash, expiresAt: quote.expiresAt, settlement: source.payment?.settlement ?? (source.decision === 'BUY' ? run.runtime.settlement : 'NONE'), transactionHash: source.payment?.transactionHash, ledgerIndex: source.payment?.ledgerIndex, explorerUrl: source.payment?.explorerUrl } }), limitations: live ? ['Testnet XRP has no S$ equivalence.', 'This dossier is not investment advice.'] : ['Fixture payment did not pay a real publisher.', 'Premium text is synthetic and fictional.', 'This dossier is not investment advice.'] }) })
 app.get('/api/v1/research-runs/:runId/stream', (req, res) => { const run = getRun(req, res); if (!run) return; res.setHeader('Content-Type','text/event-stream'); res.setHeader('Cache-Control','no-cache'); res.setHeader('Connection','keep-alive'); res.flushHeaders?.(); clients.set(run.runId, clients.get(run.runId) ?? new Set()); clients.get(run.runId)!.add(res); res.write(`event: connected\ndata: ${JSON.stringify({ runId: run.runId })}\n\n`); req.on('close', () => clients.get(run.runId)?.delete(res)) })
 
 await loadSourceCatalog()

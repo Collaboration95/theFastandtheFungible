@@ -17,7 +17,10 @@ export type Source = {
 export type RuntimeStatus = {
   mode: 'fixture' | 'live';
   label: 'FIXTURE RESEARCH' | 'XRPL TESTNET RESEARCH';
-  settlement: 'SIMULATION_NOT_SETTLED' | 'VALIDATED';
+  /** Runtime configuration is not proof that a payment settled. A live
+   * Testnet runtime stays NOT_VALIDATED until the transaction envelope has
+   * been checked by settleLivePayment. */
+  settlement: 'SIMULATION_NOT_SETTLED' | 'NOT_VALIDATED' | 'VALIDATED';
   network: 'fixture' | 'testnet';
 }
 export type Claim = { id: string; text: string; stance: 'SUPPORTS' | 'CHALLENGES' | 'UNCERTAIN'; materiality: 'MATERIAL' | 'CONTEXT'; sourceIds: string[]; familyCount: number; spanIds: string[] }
