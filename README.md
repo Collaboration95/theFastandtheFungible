@@ -73,7 +73,7 @@ Edit `.env` and add the required Groq configuration:
 ```dotenv
 APP_MODE=fixture
 PORT=8788
-PUBLIC_APP_URL=http://localhost:5173
+PUBLIC_APP_URL=http://localhost:5100
 
 LLM_PROVIDER=groq
 GROQ_API_KEY=gsk_your_groq_key_here
@@ -95,7 +95,7 @@ Start the client and API together:
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). The Vite client proxies
+Open [http://localhost:5100](http://localhost:5100). The Vite client proxies
 `/api` requests to the Express API on port `8788`.
 
 ## Groq setup
@@ -265,7 +265,7 @@ editing `.env`.
 
 ### The page loads but API calls fail
 
-Confirm that both the Vite client (`5173`) and Express API (`8788`) are
+Confirm that both the Vite client (`5100`) and Express API (`8788`) are
 running. `npm run dev` starts both and stops stale ResearchAgent processes on
 those ports.
 
