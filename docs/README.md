@@ -13,6 +13,7 @@ indexed from the root [README](../README.md).
 - [Design context](contracts/DESIGN.md)
 - [Security posture](contracts/SECURITY.md)
 - [UX contract](contracts/UX-CONTRACT.md)
+- [Diagram and flow audit — 20 September 2026](DIAGRAM-AND-FLOW-AUDIT-2026-09-20.md)
 
 The runtime fixture corpus and persisted run data remain in `data/`; they are
 intentionally outside this documentation organization.
