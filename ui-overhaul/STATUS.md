@@ -21,7 +21,7 @@ hardening pass are implemented in this working tree.**
 | Check | Status | Evidence / limitation |
 | --- | --- | --- |
 | Typecheck | PASS | Current checkout; `npm run typecheck` |
-| Unit/persistence | PASS | 21 tests across 4 files; `npm test` |
+| Unit/persistence | PASS | 22 tests across 4 files; `npm test` |
 | Browser a11y invocation | PASS | `npm run test:a11y`; 1 test passed with no serious or critical axe violations |
 | Full E2E | PASS | `npm run test:e2e`; 17 tests passed in the isolated one-worker fixture lane |
 | New design visual review | PASS (focused automated captures) | UO-10 responsive/reduced-motion/200% captures; broader human review remains separate |
@@ -43,14 +43,14 @@ PASS, FAIL, and BLOCKED distinct; never mark a slice PASS without evidence.
 | Work ID | Status | Owner / write scope | Commit | Evidence | Next action / blocker |
 | --- | --- | --- | --- | --- | --- |
 | UO-00 | PASS | Preflight: `playwright.config.ts`, `scripts/stop-dev.mjs`, isolated Playwright store | working tree | `TESTING.md` UO-00 results | Harness reaches 5100; browser runs are serialized and do not touch `data/runs.json` |
-| UO-01 | PASS | Scope truthfulness: `src/App.tsx`, `server/index.ts`, `tests/e2e.spec.ts` | 8da071d (uncommitted) | Current aggregate: 21 unit, 17 E2E, 1 axe, typecheck | Unsupported scope server guard and recovery accepted |
-| UO-02 | PASS | Open-evidence answer: `src/App.tsx`, `tests/e2e.spec.ts` | 8da071d (uncommitted) | Current aggregate: 21 unit, 17 E2E, 1 axe, typecheck | Unpaid cited-answer path and premium-only limit accepted |
+| UO-01 | PASS | Scope truthfulness: `src/App.tsx`, `server/index.ts`, `tests/e2e.spec.ts` | 8da071d (uncommitted) | Current aggregate: 22 unit, 17 E2E, 1 axe, typecheck | Unsupported scope server guard and recovery accepted |
+| UO-02 | PASS | Open-evidence answer: `src/App.tsx`, `tests/e2e.spec.ts` | 8da071d (uncommitted) | Current aggregate: 22 unit, 17 E2E, 1 axe, typecheck | Unpaid cited-answer path and premium-only limit accepted |
 | UO-03 | PASS | `ui-overhaul/STATE-MAP.md`, `docs/contracts/DESIGN.md`, `docs/contracts/UX-CONTRACT.md` | 8da071d (uncommitted) | Package verification and diff review | State/recovery map and contract reconciliation accepted |
 | UO-04 | PASS | `ui-overhaul/prototype/` | 8da071d (uncommitted) | Local browser visual/interaction review, syntax and package checks | Prototype and dialog accessibility correction accepted |
 | UO-05 | PASS | `src/App.tsx`, `src/styles.css`, `src/ui/index.tsx` | 8da071d (uncommitted) | Verify, 9 serial E2E, 1 axe, 320px check | Token/seam extraction and source-action race fix accepted |
 | UO-06 | PASS | Serialized guided setup/draft/review in `src/App.tsx`, `src/styles.css`, `src/ui/`, focused tests | working tree | `tests/guided-setup.spec.ts`, focused captures | Question → Sources → Budget → Review and draft safety verified |
 | UO-07–UO-10 | PASS | Workspace, evidence, purchase, tab, responsive, and accessibility hardening | working tree | `tests/uo-07-10.spec.ts`, `ui-overhaul/evidence/UO-10/` | Exact span inspection and mutually exclusive tabs included |
-| Runtime/citation repair | PASS | `server/index.ts`, `server/dossier-validation.ts`, `src/App.tsx`, Playwright isolation | working tree | 21 unit, 17 E2E, 1 axe, typecheck, build | Restricted fallback citations, resumable plan drafts, and keyboard tab focus verified |
+| Runtime/citation repair | PASS | `server/index.ts`, `server/dossier-validation.ts`, `src/App.tsx`, Playwright isolation | working tree | 22 unit, 17 E2E, 1 axe, typecheck, build | Restricted fallback citations, resumable plan drafts, and keyboard tab focus verified |
 | Remaining plan | WAITING | Human pilot and demo rehearsal | — | NOT RUN | Run only when participants/demo machine are available |
 
 ## Design decisions

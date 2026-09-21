@@ -227,9 +227,27 @@ async function advance(req: Request, res: Response, action: string) {
     else if (run.phase === 'RANKING') { run.phase = 'READING_OPEN'; emit(run, 'OPEN_EVIDENCE_READ', 'Open evidence read; premium bodies remain protected'); }
     else if (run.phase === 'READING_OPEN') { run.phase = 'GAP_ANALYSIS'; run.gap.state = 'OPEN'; emit(run, 'GAP_FOUND', 'Open gap: grid connection lead times and operating capacity by 2028'); }
     else if (run.phase === 'GAP_ANALYSIS') { run.phase = 'PURCHASE_PLANNING'; emit(run, 'PURCHASE_PLAN_READY', 'Marginal-value plan prepared; price is separate from relevance'); }
-    else if (run.phase === 'SYNTHESIZING') { run.phase = 'DOSSIER_READY'; run.dossierReady = true; emit(run, 'DOSSIER_READY', 'Source-linked dossier verified and ready to read'); }
+    else if (run.phase === 'SYNTHESIZING') {
+      try {
+        // A synthesis request is only final when its validated dossier still
+        // has readable evidence and at least one bound claim. Do not let a
+        // malformed or empty persisted/provider result advance to READY.
+        run.dossier = validateDossier(run, run.dossier ?? fixtureDossier(run), run.dossier?.provider === 'fixture' ? 'fixture' : 'live')
+      } catch (error) {
+        run.dossierReady = false
+        return res.status(409).json({ error: (error as Error).message, state: state(run) })
+      }
+      run.phase = 'DOSSIER_READY'; run.dossierReady = true; emit(run, 'DOSSIER_READY', 'Source-linked dossier verified and ready to read');
+    }
   }
-  if (action === 'synthesize') { await synthesizeRun(run); return response(res, run) }
+  if (action === 'synthesize') {
+    try {
+      await synthesizeRun(run)
+      return response(res, run)
+    } catch (error) {
+      return res.status(409).json({ error: (error as Error).message, state: state(run) })
+    }
+  }
   await save(run); return response(res, run)
 }
 
@@ -240,6 +258,10 @@ function dossierSources(run: Run): Source[] {
       ...source,
       evidenceSpans: source.evidenceSpans ?? (source.accessTier === 'OPEN' && mockArticles.get(source.id) ? toPublicSpans(mockArticles.get(source.id)!) : undefined),
     }))
+}
+
+function sourceHasAccessibleEvidence(source: Source) {
+  return (source.evidenceSpans ?? []).some((span) => Boolean(span.id.trim()) && Boolean(span.text.trim()))
 }
 
 function buildClaims(run: Run): Source[] extends never[] ? never : Run['claims'] {
@@ -325,7 +347,9 @@ function fixtureDossier(run: Run): DossierDraft {
 
 function validateDossier(run: Run, draft: Awaited<ReturnType<typeof synthesizeDossier>> | DossierDraft, kind: 'live' | 'fixture' = 'live'): DossierDraft {
   const accessibleSources = dossierSources(run)
+  if (!accessibleSources.some(sourceHasAccessibleEvidence)) throw new Error('Cannot finalize dossier without accessible evidence spans')
   const claims = validateClaimBindings(draft.claims, accessibleSources, true)
+  if (!claims.length) throw new Error('Cannot finalize dossier without at least one cited claim')
   return {
     ...draft,
     claims: claims.map((claim) => ({ ...claim, familyCount: new Set(claim.sourceIds.map((id) => run.sources.find((source) => source.id === id)?.familyId)).size })),
@@ -339,29 +363,49 @@ function validateDossier(run: Run, draft: Awaited<ReturnType<typeof synthesizeDo
 }
 
 async function synthesizeRun(run: Run) {
+  if (!dossierSources(run).some(sourceHasAccessibleEvidence)) throw new Error('Cannot synthesize a dossier without accessible evidence spans')
+  const previousPhase = run.phase
+  const previousDossier = run.dossier
+  const previousClaims = run.claims
+  const previousThesis = run.thesis.current
+  const previousGapState = run.gap.state
   run.phase = 'SYNTHESIZING'
   run.dossierReady = false
   run.gap.state = run.sources.some((source) => source.id === 'meridian-ledger' && source.decision === 'BUY') ? 'RESOLVED' : 'PARTIAL'
   emit(run, 'DOSSIER_SYNTHESIS_STARTED', 'Groq is drafting a cited dossier from the accessible evidence packet')
   await save(run)
   try {
-    const draft = await synthesizeDossier(evidencePacket(run), (delta) => emitStream(run, 'DOSSIER_TOKEN', { delta }))
-    run.dossier = validateDossier(run, draft)
-    run.claims = run.dossier.claims
-    run.thesis.current = run.dossier.conclusion
-    run.llm = { provider: 'groq', status: 'Groq streamed and validated dossier', model: run.dossier.model }
-    emit(run, 'DOSSIER_SYNTHESIS_COMPLETED', 'Groq dossier stream complete; citations and evidence spans validated')
+    try {
+      const draft = await synthesizeDossier(evidencePacket(run), (delta) => emitStream(run, 'DOSSIER_TOKEN', { delta }))
+      run.dossier = validateDossier(run, draft)
+      run.claims = run.dossier.claims
+      run.thesis.current = run.dossier.conclusion
+      run.llm = { provider: 'groq', status: 'Groq streamed and validated dossier', model: run.dossier.model }
+      emit(run, 'DOSSIER_SYNTHESIS_COMPLETED', 'Groq dossier stream complete; citations and evidence spans validated')
+    } catch (error) {
+      console.error(`Groq dossier synthesis fallback: ${(error as Error).message}`)
+      // Keep the deterministic fallback under the same relational validator as
+      // provider output. This guarantees every fallback claim/span belongs to
+      // an approved source in this run's allowlist.
+      run.dossier = validateDossier(run, fixtureDossier(run), 'fixture')
+      run.claims = run.dossier.claims
+      run.llm = { provider: 'fixture', status: 'Groq synthesis fallback used', model: 'fixture-research-v1' }
+      emit(run, 'DOSSIER_SYNTHESIS_FALLBACK', 'Groq synthesis was unavailable; deterministic cited fallback used')
+    }
+    await save(run)
   } catch (error) {
-    console.error(`Groq dossier synthesis fallback: ${(error as Error).message}`)
-    // Keep the deterministic fallback under the same relational validator as
-    // provider output. This guarantees every fallback claim/span belongs to
-    // an approved source in this run's allowlist.
-    run.dossier = validateDossier(run, fixtureDossier(run), 'fixture')
-    run.claims = run.dossier.claims
-    run.llm = { provider: 'fixture', status: 'Groq synthesis fallback used', model: 'fixture-research-v1' }
-    emit(run, 'DOSSIER_SYNTHESIS_FALLBACK', 'Groq synthesis was unavailable; deterministic cited fallback used')
+    // A failed/empty synthesis must not leave the state machine poised to
+    // promote an uncited result on the next step.
+    run.phase = previousPhase
+    run.dossierReady = false
+    run.dossier = previousDossier
+    run.claims = previousClaims
+    run.thesis.current = previousThesis
+    run.gap.state = previousGapState
+    emit(run, 'DOSSIER_SYNTHESIS_BLOCKED', `Dossier synthesis blocked: ${(error as Error).message}`)
+    await save(run)
+    throw error
   }
-  await save(run)
 }
 
 app.post('/api/v1/research-runs/:runId/purchase-decisions', async (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; if (run.cancelled) return res.status(409).json({ error: 'This run is read-only after reset or cancellation' }); if (!run.planApproved) return res.status(409).json({ error: 'Approve the research plan before execution begins' }); const ranked = run.sources.length ? run.sources : scopedSources(run.config); const remainingCents = run.budgetCents - run.spentCents; const action = await planPurchase(run.config.question, ranked, remainingCents); run.purchasePlan = action; run.llm = { provider: action.provider, status: action.status === 'LIVE' ? 'Groq evaluated retrieved metadata' : 'Fixture fallback used', model: action.model }; emit(run, 'AGENT_ACTION_READY', `${action.provider === 'groq' ? 'Groq' : 'Fixture'} chose a purchase action from mock retrieval metadata`); await save(run); return res.json({ formula: 'utility-v1', remainingCents, action, state: state(run), decisions: ranked.filter((source) => source.accessTier === 'PREMIUM').map((source) => ({ sourceId: source.id, expectedEvidenceValue: source.relevance / 100, utilityPerCent: source.priceCents ? (source.relevance / source.priceCents).toFixed(3) : '0', suggestedAction: source.id === 'circuit-note' ? 'SKIP' : source.priceCents > remainingCents || source.priceCents > 100 ? 'BLOCKED' : 'BUY', reason: source.id === 'circuit-note' ? 'Redundant evidence family.' : source.priceCents > 100 ? 'Blocked: exceeds the S$1.00 per-source mandate ceiling.' : 'Expected to resolve or materially narrow the active research gap.' })) }) })
@@ -391,7 +435,7 @@ app.post('/api/v1/research-runs/:runId/purchases', async (req, res) => { const r
 })
 app.get('/api/v1/research-runs/:runId/purchases/:purchaseId', (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; const source = run.sources.find((item) => item.id === req.params.purchaseId); if (!source) return res.status(404).json({ error: 'Purchase not found' }); const live = source.payment?.mode === 'live'; const quote = quoteFor(run, source); res.json({ purchaseId: req.params.purchaseId, settlement: source.payment?.settlement ?? 'NONE', label: live ? 'XRPL TESTNET PAYMENT' : 'FIXTURE PAYMENT · SIMULATION ONLY', runtimeLabel: run.runtime.label, invoiceId: quote.invoiceId, exactResource: source.decision === 'BUY' ? source.id : null, delivery: source.decision === 'BUY' ? 'SEPARATE_ACCESS_GRANT' : 'NOT_DELIVERED', transactionHash: source.payment?.transactionHash, ledgerIndex: source.payment?.ledgerIndex, explorerUrl: source.payment?.explorerUrl }) })
 app.post('/api/v1/research-runs/:runId/synthesize', async (req, res) => advance(req, res, 'synthesize'))
-app.get('/api/v1/research-runs/:runId/dossier', (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; if (!run.dossierReady) return res.status(409).json({ error: 'Dossier is not ready' }); const dossier = run.dossier ?? validateDossier(run, fixtureDossier(run), 'fixture'); res.json({ ...dossier, sourceLedger: dossierSources(run).filter((source) => source.accessTier === 'PREMIUM').map((source) => ({ publisher: source.publisher, priceCents: source.priceCents, decision: source.decision ?? 'PENDING', family: source.familyLabel, authority: source.authority, originality: source.originality, access: source.decision === 'BUY' ? 'UNLOCKED' : 'PREVIEW_ONLY' })) }) })
+app.get('/api/v1/research-runs/:runId/dossier', async (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; if (!run.dossierReady) return res.status(409).json({ error: 'Dossier is not ready' }); let dossier: DossierDraft; try { dossier = validateDossier(run, run.dossier ?? fixtureDossier(run), run.dossier?.provider === 'fixture' ? 'fixture' : 'live') } catch (error) { run.phase = run.phase === 'DOSSIER_READY' ? 'SYNTHESIZING' : run.phase; run.dossierReady = false; run.dossier = undefined; run.claims = []; emit(run, 'DOSSIER_SYNTHESIS_BLOCKED', `Dossier retrieval blocked: ${(error as Error).message}`); await save(run); return res.status(409).json({ error: (error as Error).message, state: state(run) }) } res.json({ ...dossier, sourceLedger: dossierSources(run).filter((source) => source.accessTier === 'PREMIUM').map((source) => ({ publisher: source.publisher, priceCents: source.priceCents, decision: source.decision ?? 'PENDING', family: source.familyLabel, authority: source.authority, originality: source.originality, access: source.decision === 'BUY' ? 'UNLOCKED' : 'PREVIEW_ONLY' })) }) })
 app.get('/api/v1/research-runs/:runId/receipt', (req, res) => { const run = getRun(req, res); if (!run) return; if (rejectUnsupported(run, res)) return; const live = run.runtime.mode === 'live'; res.json({ runId: run.runId, mode: run.runtime.label, runtime: run.runtime, spend: { spentCents: run.spentCents, remainingCents: run.budgetCents - run.spentCents }, paymentProtocol: { name: 'x402', network: live ? 'xrpl-testnet' : 'fixture', payTo: live ? process.env.XRPL_RECEIVER_ADDRESS : null, settlement: run.runtime.settlement, note: live ? 'Testnet XRP payment submitted and validated on the XRPL Testnet.' : 'Fixture quotes model the payment boundary; no wallet seed or real publisher payment is used.' }, purchases: run.sources.filter((source) => source.decision).map((source) => { const quote = quoteFor(run, source); return { sourceId: source.id, publisher: source.publisher, decision: source.decision, amountCents: source.decision === 'BUY' ? source.priceCents : 0, amountDrops: source.decision === 'BUY' ? source.xrpDrops ?? 0 : 0, invoiceId: quote.invoiceId, resourceId: quote.resourceId, resourceVersionHash: quote.resourceVersionHash, quoteHash: quote.quoteHash, expiresAt: quote.expiresAt, settlement: source.payment?.settlement ?? (source.decision === 'BUY' ? run.runtime.settlement : 'NONE'), transactionHash: source.payment?.transactionHash, ledgerIndex: source.payment?.ledgerIndex, explorerUrl: source.payment?.explorerUrl } }), limitations: live ? ['Testnet XRP has no S$ equivalence.', 'This dossier is not investment advice.'] : ['Fixture payment did not pay a real publisher.', 'Premium text is synthetic and fictional.', 'This dossier is not investment advice.'] }) })
 app.get('/api/v1/research-runs/:runId/stream', (req, res) => { const run = getRun(req, res); if (!run) return; res.setHeader('Content-Type','text/event-stream'); res.setHeader('Cache-Control','no-cache'); res.setHeader('Connection','keep-alive'); res.flushHeaders?.(); clients.set(run.runId, clients.get(run.runId) ?? new Set()); clients.get(run.runId)!.add(res); res.write(`event: connected\ndata: ${JSON.stringify({ runId: run.runId })}\n\n`); req.on('close', () => clients.get(run.runId)?.delete(res)) })
 

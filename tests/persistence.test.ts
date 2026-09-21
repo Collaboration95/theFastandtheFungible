@@ -338,4 +338,45 @@ describe('local run persistence', () => {
       await stopServer(child)
     }
   })
+
+  it('rejects direct synthesis when a restricted approved run has no accessible evidence', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'research-agent-empty-dossier-'))
+    temporaryDirectories.push(directory)
+    const port = await freePort()
+    const child = await startServer(join(directory, 'runs.json'), port)
+    const baseUrl = `http://127.0.0.1:${port}`
+    const request = (path: string, body?: unknown) => fetch(`${baseUrl}${path}`, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+
+    try {
+      const created = await (await request('/api/v1/research-runs', { sourceAllowlist: ['wire-services'] })).json() as { runId: string }
+      const approved = await request(`/api/v1/research-runs/${created.runId}/plan`, {})
+      expect(approved.status).toBe(200)
+      expect(await approved.json()).toMatchObject({ phase: 'PLANNING', planApproved: true, sources: [] })
+
+      const rejected = await request(`/api/v1/research-runs/${created.runId}/synthesize`, {})
+      expect(rejected.status).toBe(409)
+      const rejectedBody = await rejected.json() as { error: string; state: { phase: string; dossierReady: boolean; claims: unknown[]; events: { type: string }[] } }
+      expect(rejectedBody).toMatchObject({
+        error: 'Cannot synthesize a dossier without accessible evidence spans',
+        state: { phase: 'PLANNING', dossierReady: false, claims: [] },
+      })
+      expect(rejectedBody.state.events.some((event) => event.type === 'DOSSIER_READY')).toBe(false)
+
+      const advanced = await request(`/api/v1/research-runs/${created.runId}/step`, { action: 'next' })
+      expect(advanced.status).toBe(200)
+      const advancedBody = await advanced.json() as { phase: string; dossierReady: boolean; claims: unknown[]; events: { type: string }[] }
+      expect(advancedBody).toMatchObject({ phase: 'DISCOVERING', dossierReady: false, claims: [] })
+      expect(advancedBody.events.some((event) => event.type === 'DOSSIER_READY')).toBe(false)
+
+      const dossier = await request(`/api/v1/research-runs/${created.runId}/dossier`)
+      expect(dossier.status).toBe(409)
+      expect(await dossier.json()).toMatchObject({ error: 'Dossier is not ready' })
+    } finally {
+      await stopServer(child)
+    }
+  })
 })

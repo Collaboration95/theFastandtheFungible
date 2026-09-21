@@ -16,7 +16,7 @@ Environment: Windows, Node/npm from the shared checkout, fixture LLM and fixture
 
 ```text
 npm run typecheck                         PASS
-npm test                                  PASS (21 tests)
+npm test                                  PASS (22 tests)
 npx playwright test tests/uo-07-10.spec.ts --reporter=line
                                            PASS (4 tests)
 npm run test:e2e                           PASS (17 tests)

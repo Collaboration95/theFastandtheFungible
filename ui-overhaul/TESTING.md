@@ -118,8 +118,8 @@ release evidence; use the results log and STATUS.md for the latest run.
 | Lane | Command | Status | Evidence |
 | --- | --- | --- | --- |
 | Install | `npm ci` | **pass** | lockfile install completed; npm reported 2 moderate audit findings |
-| Fast checks | `npm run check:fast` | **pass** | typecheck + 21 Vitest tests, 4 files |
-| Verify | `npm run verify` | **pass** | typecheck + 21 Vitest tests + Vite production build |
+| Fast checks | `npm run check:fast` | **pass** | typecheck + 22 Vitest tests, 4 files |
+| Verify | `npm run verify` | **pass** | typecheck + 22 Vitest tests + Vite production build |
 | E2E | `npm run test:e2e` | **pass** | 17 tests passed; isolated `.playwright/runs.json` store and one worker |
 | Accessibility | `npm run test:a11y` | **pass** | 1 test; no serious or critical axe violations |
 | Build | `npm run build` | **pass (via verify)** | Vite production build completed |
@@ -295,7 +295,7 @@ layout; the root `package.json` is the only manifest.
 
 ## 5. What each lane does and does not prove
 
-**Unit / API (`npm test`, Vitest, 21 tests).** `vitest.config.ts` collects
+**Unit / API (`npm test`, Vitest, 22 tests).** `vitest.config.ts` collects
 `tests/**/*.test.ts` and the matching `.tsx`, `.js`, and `.jsx` globs, and
 explicitly excludes the two Playwright specs. Coverage today:
 
@@ -677,8 +677,8 @@ blank and never restate an unrun check as passing.
 ```text
 Date       Machine + node       Lane                    Result              Evidence
 2026-09-20 Windows, node 24.19.0  npm ci               pass                lockfile install; 2 moderate audit findings
-2026-09-20 Windows, node 24.19.0  npm run check:fast   pass                typecheck + 21 tests / 4 files (current repair)
-2026-09-20 Windows, node 24.19.0  npm run verify       pass                 typecheck + 21 tests + production build
+2026-09-20 Windows, node 24.19.0  npm run check:fast   pass                typecheck + 22 tests / 4 files (current repair)
+2026-09-20 Windows, node 24.19.0  npm run verify       pass                 typecheck + 22 tests + production build
 2026-09-20 Windows, node 24.19.0  npm run test:e2e     pass                 17 tests; isolated `.playwright/runs.json`, one worker
 2026-09-20 Windows, node 24.19.0  npm run test:a11y   pass                1 axe scan passed
 2026-09-20 Windows, node 24.19.0  dev:stop             pass                no project-owned listeners found; no kill path exercised
