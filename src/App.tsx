@@ -6,7 +6,7 @@ import { clearSetupDraft, GuidedSetup, GuidedStepProgress, loadSetupDraft, persi
 
 type Brief = { principal:string; audience:string; question:string; deliverable:string; budgetCents:number; autoBuyMaxPerSourceCents:number; sourceAboveThreshold:string; horizon:number; mode:string; sourcePolicy?:string; sourceAllowlist?: string[] }
 type ScopeDecision = { status:'SUPPORTED'|'UNSUPPORTED'; label:string; question:string; supportedScope:string; message:string; safeNextAction:string }
-type ServerState = { runId:string; phase:Phase; paused:boolean; cancelled:boolean; planApproved?:boolean; budgetCents:number; spentCents:number; remainingCents:number; rawSourceCount:number; familyCount:number; gap:{question:string; importance:string; state:string}; thesis:{open:string; afterNorthstar?:string; afterMeridian?:string; current:string}; claims:Claim[]; events:{id:string; type:string; label:string; at:string}[]; dossierReady:boolean; dossier?:Dossier; llm:{provider:string; status:string; model:string}; semanticStatus:string; runtime:RuntimeStatus; scope?:ScopeDecision; plan?:ResearchPlanArtifact; purchasePlan?:{sourceId:string; reason:string; gap:string; provider:'groq'|'fixture'; model:string; status:'LIVE'|'FALLBACK'}; config:ResearchConfig; sources:Source[] }
+type ServerState = { runId:string; phase:Phase; paused:boolean; cancelled:boolean; planApproved?:boolean; budgetCents:number; spentCents:number; remainingCents:number; rawSourceCount:number; familyCount:number; gap:{question:string; importance:string; state:string}; thesis:{open:string; afterNorthstar?:string; afterMeridian?:string; current:string}; claims:Claim[]; events:{id:string; type:string; label:string; at:string}[]; dossierReady:boolean; dossier?:Dossier; llm:{provider:string; status:string; model:string}; semanticStatus:string; runtime:RuntimeStatus; scope?:ScopeDecision; plan?:ResearchPlanArtifact; purchasePlan?:{sourceId:string; reason:string; gap:string; provider:'groq'|'fixture'; model:string; status:'LIVE'|'FIXTURE'|'FALLBACK'}; config:ResearchConfig; sources:Source[] }
 type PurchaseDecisionResponse = { action:NonNullable<ServerState['purchasePlan']>; state:ServerState }
 type Scenario = { scenarioId:string; runtime:RuntimeStatus; brief:Brief; sources:Source[] }
 type Dossier = { mode?:string; title:string; conclusion:string; changedAfterPaidResearch:{before:string; afterNorthstar?:string; after:string}; afterLabel?:string; claims:Claim[]; uncertainty:string; sourceLedger:{publisher:string; priceCents:number; decision:string; family:string; authority:string; originality:string; access:string}[]; method:string; provider?:string; model?:string; status?:string }
@@ -22,16 +22,18 @@ const formatXrp = (xrp:number) => `${xrp.toFixed(2)} XRP`
 const dropsToXrp = (drops:number) => drops / 1_000_000
 const xrpToCents = (xrp:number) => Math.round(xrp * XRP_TO_SGD_CENTS)
 const centsToXrp = (cents:number) => cents / XRP_TO_SGD_CENTS
-const normalizeBudgetXrp = (value:number) => Math.min(MAX_BUDGET_CENTS / XRP_TO_SGD_CENTS, Math.max(MIN_BUDGET_CENTS / XRP_TO_SGD_CENTS, Math.round((Number.isFinite(value) ? value : MIN_BUDGET_CENTS / XRP_TO_SGD_CENTS) * 100) / 100))
 const DEFAULT_BUDGET_XRP = DEFAULT_BUDGET_CENTS / XRP_TO_SGD_CENTS
 const presentationRuntimeLabel = (runtime?: RuntimeStatus) => runtime?.mode === 'live' ? runtime.label : 'FIXTURE RESEARCH · SYNTHETIC CORPUS'
 const presentationSettlementLabel = (runtime?: RuntimeStatus) => runtime?.mode === 'live' ? (runtime.settlement === 'VALIDATED' ? 'XRPL Testnet · validated transaction' : 'XRPL Testnet configured · not yet validated') : 'Fixture payment simulation · no real publisher payment'
-const presentationProviderLabel = (provider?: string) => provider === 'groq' ? 'Groq' : 'Research engine'
-const presentationSemanticLabel = (status?: string) => status === 'precomputed' ? 'ranked evidence' : status ?? 'ranked evidence'
+const presentationProviderLabel = (provider?: string) => provider === 'groq' ? 'Groq synthesis' : 'Deterministic fixture synthesis'
+const presentationSemanticLabel = (status?: string) => status === 'precomputed' ? 'precomputed deterministic ranking' : status ?? 'ranking unavailable'
+class ApiRequestError extends Error {
+  constructor(message:string, readonly data:Record<string, unknown>) { super(message) }
+}
 const api = async <T,>(path:string, options?:RequestInit):Promise<T> => {
   const response = await fetch(path, { headers:{ 'Content-Type':'application/json', ...(options?.headers ?? {}) }, ...options })
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.error ?? 'Request failed')
+  const data = await response.json().catch(() => ({})) as Record<string, unknown>
+  if (!response.ok) throw new ApiRequestError(typeof data.error === 'string' ? data.error : 'Request failed', data)
   return data as T
 }
 
@@ -91,7 +93,6 @@ function Icon({ name }:{ name:'arrow'|'check'|'lock'|'send'|'plus'|'close' }) {
 
 function ScopeNotice({ scope, onEdit, onUseCanonical }:{ scope:ScopeDecision; onEdit:(question:string)=>void; onUseCanonical:()=>void }) {
   const [value, setValue] = useState(scope.question)
-  useEffect(() => setValue(scope.question), [scope.question])
   return <section className="workbench-card evidence-empty" role="alert" aria-labelledby="scope-notice-title"><span className="kicker">Question boundary</span><h1 id="scope-notice-title">{scope.label}</h1><p><strong>{scope.message}</strong></p><p className="brief-question">“{scope.question}”</p><dl className="detail-list"><div><dt>Supported fixture scope</dt><dd>{scope.supportedScope}</dd></div><div><dt>Safe next action</dt><dd>{scope.safeNextAction}</dd></div><div><dt>Corpus</dt><dd>Synthetic fixture corpus only; no live websites were searched.</dd></div></dl><label><span>Edit this question</span><textarea aria-label="Edit unsupported research question" value={value} onChange={(event) => setValue(event.target.value)} rows={3} /></label><div className="drawer-actions"><button type="button" className="small-button" onClick={() => onEdit(value)} disabled={!value.trim()}>Edit question</button><button type="button" className="primary-button" onClick={onUseCanonical}>Use supported fixture question <Icon name="arrow" /></button></div></section>
 }
 
@@ -274,15 +275,16 @@ function WorkingAnswer({ run, onOpenSource }:{ run:ServerState; onOpenSource:(so
   return <section className="answer-panel" aria-labelledby="answer-title"><div className="answer-head"><div><span className="kicker">Working answer</span><h2 id="answer-title">What the evidence says so far</h2></div><span className="answer-status mono">{run.dossierReady ? 'CITED MEMO READY' : 'OPEN-SOURCE BASELINE'}</span></div><div className="answer-copy">{sentences.map((claim) => { const targets = citationTargets(claim); return <div className="answer-sentence" key={claim.id}><p>{claim.text} <Citations targets={targets} onOpen={onOpenSource} /></p><QuoteStrip targets={targets} sources={run.sources} onOpen={onOpenSource} /></div> })}</div><p className="answer-note">Each citation opens the exact bound evidence span. Premium excerpts are only available after the exact quote is accepted.</p></section>
 }
 
-function SynthesisStream({ text, streaming }:{ text:string; streaming:boolean }) {
-  return <section className="synthesis-stream" aria-labelledby="synthesis-stream-title"><div className="answer-head"><div><span className="kicker">Groq live synthesis</span><h2 id="synthesis-stream-title">Drafting the cited dossier</h2></div><span className="answer-status mono">{streaming ? 'STREAMING' : 'COMPLETE'}</span></div><pre aria-live="polite">{text || 'Waiting for the first Groq token…'}</pre><small>Groq is streaming structured output from the question, budget, purchase decision, and accessible evidence spans. The final dossier is validated before it is published.</small></section>
+function SynthesisStream({ text, streaming, provider }:{ text:string; streaming:boolean; provider:string }) {
+  const live = provider === 'groq'
+  return <section className="synthesis-stream" aria-labelledby="synthesis-stream-title"><div className="answer-head"><div><span className="kicker">{live ? 'Groq live synthesis' : 'Deterministic fixture synthesis'}</span><h2 id="synthesis-stream-title">Drafting the cited dossier</h2></div><span className="answer-status mono">{streaming ? (live ? 'STREAMING' : 'ASSEMBLING') : 'COMPLETE'}</span></div><pre aria-live="polite">{text || (live ? 'Waiting for the first Groq token…' : 'Assembling a deterministic answer from accessible synthetic evidence…')}</pre><small>{live ? 'Groq is streaming structured output from the accessible evidence packet.' : 'No external model or live web search is used in fixture synthesis.'} The final dossier is validated before it is published.</small></section>
 }
 
-function DossierPanel({ dossier, run, onOpenSource, onSynthesize, busy }:{ dossier:Dossier|null; run:ServerState; onOpenSource:(sourceId:string, spanId?:string)=>void; onSynthesize:()=>void; busy:boolean }) {
+function DossierPanel({ dossier, run, onOpenSource }:{ dossier:Dossier|null; run:ServerState; onOpenSource:(sourceId:string, spanId?:string)=>void }) {
   if (!dossier) return null
   const dossierRuntime = run.runtime.mode === 'live' ? 'XRPL TESTNET RESEARCH' : 'FIXTURE RESEARCH'
   const hasPaidEvidence = run.sources.some((source) => source.accessTier === 'PREMIUM' && source.decision === 'BUY')
-  const synthesisLabel = dossier.status === 'FALLBACK' ? 'Fixture fallback · validated locally' : dossier.status === 'LIVE' ? 'Provider synthesis · server validated' : 'Validated cited answer'
+  const synthesisLabel = dossier.status === 'FALLBACK' ? 'Provider unavailable · fixture fallback validated locally' : dossier.status === 'FIXTURE' ? 'Deterministic fixture synthesis · validated locally' : dossier.status === 'LIVE' ? 'Provider synthesis · server validated' : 'Validated cited answer'
   return <section className="dossier-panel" id="dossier"><div className="dossier-heading"><div><span className="kicker">Verified dossier · {presentationProviderLabel(dossier.provider)}</span><h2>{dossier.title}</h2><p className="dossier-status" role="status">{synthesisLabel} · citations resolve to accessible evidence spans.</p></div><button type="button" className="small-button light" onClick={() => window.print()}>Print</button></div><div className="dossier-paper"><div className="dossier-kicker">{dossierRuntime} · NOT INVESTMENT ADVICE</div><small>{presentationRuntimeLabel(run.runtime)} · {presentationSettlementLabel(run.runtime)}</small><h3>{dossier.conclusion}</h3><div className="changed-callout"><span className="kicker">{hasPaidEvidence ? 'What changed after paid evidence' : 'Open-source conclusion'}</span><span className="change-line"><b>Open web</b>{dossier.changedAfterPaidResearch.before}</span>{hasPaidEvidence && dossier.changedAfterPaidResearch.afterNorthstar && <span className="change-line"><b>+ Northstar</b>{dossier.changedAfterPaidResearch.afterNorthstar}</span>}<span className="change-line final"><b>{hasPaidEvidence ? (dossier.afterLabel ?? '+ Grid report') : 'Available evidence'}</b>{dossier.changedAfterPaidResearch.after}</span></div><div className="dossier-columns"><div><span className="kicker">Supports the thesis</span>{dossier.claims.filter((claim) => claim.stance === 'SUPPORTS').map((claim) => <ClaimBlock key={claim.id} claim={claim} sources={run.sources} onOpen={onOpenSource} />)}</div><div><span className="kicker">Challenges the thesis</span>{dossier.claims.filter((claim) => claim.stance !== 'SUPPORTS').map((claim) => <ClaimBlock key={claim.id} claim={claim} sources={run.sources} onOpen={onOpenSource} />)}</div></div><div className="dossier-footer"><div><span className="kicker">Key uncertainty</span><p>{dossier.uncertainty}</p></div><div><span className="kicker">Method & limitations</span><p>{dossier.method}</p></div></div></div></section>
 }
 
@@ -315,7 +317,7 @@ function ResearchPath({ run, dossier, sources, showAll, onShowAll, selectedId, o
     <nav className="workspace-tabs" aria-label="Research workspace tabs" role="tablist" aria-orientation="horizontal">
       {tabOrder.map((tab) => <button key={tab} ref={(element) => { if (element) tabRefs.current[tab] = element }} id={`tab-${tab}`} type="button" role="tab" tabIndex={activeTab === tab ? 0 : -1} aria-controls={`${tab}-panel`} aria-selected={activeTab === tab} className={activeTab === tab ? 'is-active' : ''} onClick={() => jumpTo(tab)} onKeyDown={(event) => { if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); moveTab(tab, 1) } if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); moveTab(tab, -1) } }}>{tab === 'overview' ? 'Overview' : tab === 'sources' ? `Sources (${sources.length})` : `Activity (${run.events.length})`}</button>)}
     </nav>
-    <section id="overview-panel" role="tabpanel" aria-labelledby="tab-overview" tabIndex={0} hidden={activeTab !== 'overview'}>{activeTab === 'overview' && <><PersistentBudgetStrip run={run} /><div className="workspace-summary"><BriefCard run={run} /><EvidenceGapCard run={run} /></div><div className="workbench-main"><WorkingAnswer run={run} onOpenSource={onOpenSource} />{!dossier && <section className="overview-answer-cta" aria-label="Answer action">{answerCta}</section>}{synthesisStreaming && <SynthesisStream text={synthesisText} streaming={synthesisStreaming} />}{dossier && <DossierPanel dossier={dossier} run={run} onOpenSource={onOpenSource} onSynthesize={onSynthesize} busy={busy} />}</div></>}</section>
+    <section id="overview-panel" role="tabpanel" aria-labelledby="tab-overview" tabIndex={0} hidden={activeTab !== 'overview'}>{activeTab === 'overview' && <><PersistentBudgetStrip run={run} /><div className="workspace-summary"><BriefCard run={run} /><EvidenceGapCard run={run} /></div><div className="workbench-main"><WorkingAnswer run={run} onOpenSource={onOpenSource} />{!dossier && <section className="overview-answer-cta" aria-label="Answer action">{answerCta}</section>}{synthesisStreaming && <SynthesisStream text={synthesisText} streaming={synthesisStreaming} provider={run.llm.provider} />}{dossier && <DossierPanel dossier={dossier} run={run} onOpenSource={onOpenSource} />}</div></>}</section>
     <section id="sources-panel" role="tabpanel" aria-labelledby="tab-sources" tabIndex={0} hidden={activeTab !== 'sources'}>{activeTab === 'sources' && <><PersistentBudgetStrip run={run} /><div className="workspace-summary"><BriefCard run={run} /><EvidenceGapCard run={run} /></div><div className="workbench-main"><section className="evidence-panel" id="evidence-panel" aria-labelledby="evidence-panel-title"><div className="evidence-panel-label"><span className="kicker">Search / evidence map</span><span className="mono">{run.phase === 'CANCELLED' ? 'STOPPED' : 'LIVE WORKSPACE'}</span></div><div id="evidence-panel-title"><EvidenceStep run={run} sources={sources} showAll={showAll} onShowAll={onShowAll} selectedId={selectedId} onOpen={onOpenSource} onAction={onAction} busy={busy} /></div></section><section className="sources-answer-cta" aria-label="Answer action">{answerCta}</section></div></>}</section>
     <section id="activity-panel" role="tabpanel" aria-labelledby="tab-activity" tabIndex={0} hidden={activeTab !== 'activity'}>{activeTab === 'activity' && <><PersistentBudgetStrip run={run} /><ActivityRail run={run} dossier={dossier} busy={busy} onSynthesize={onSynthesize} /></>}</section>
   </section>
@@ -323,10 +325,12 @@ function ResearchPath({ run, dossier, sources, showAll, onShowAll, selectedId, o
 
 export default function App() {
   const [savedDraft, setSavedDraft] = useState<SetupDraft|null>(() => loadSetupDraft())
-  const [draftActive, setDraftActive] = useState(() => !Boolean(savedDraft))
+  const initialSavedPlanDraft = useRef(savedDraft?.planDraft)
+  const [draftActive, setDraftActive] = useState(() => savedDraft === null)
   const [setupStep, setSetupStep] = useState<SetupStep>(() => savedDraft?.step ?? 'question')
   const [scenario, setScenario] = useState<Scenario|null>(null)
   const [run, setRun] = useState<ServerState|null>(null)
+  const [scopeRejection, setScopeRejection] = useState<ScopeDecision|null>(null)
   const [planDraft, setPlanDraft] = useState<ResearchPlanArtifact|null>(null)
   const [question, setQuestion] = useState(() => savedDraft?.question ?? '')
   const [questionDraft, setQuestionDraft] = useState(() => savedDraft?.question ?? '')
@@ -367,7 +371,7 @@ export default function App() {
       // An unapproved plan may contain local edits that the server has not
       // received yet. Resume the complete saved draft when present, while
       // retaining the server plan as the safe fallback for older drafts.
-      setPlanDraft(restored.planApproved ? null : savedDraft?.planDraft ?? restored.plan ?? null)
+      setPlanDraft(restored.planApproved ? null : initialSavedPlanDraft.current ?? restored.plan ?? null)
       setDossier(restored.dossier ?? null)
       setWorkspaceTab('overview')
       setMessage(restored.cancelled ? 'This research run is stopped and read-only.' : 'Research run restored from the server.')
@@ -381,9 +385,9 @@ export default function App() {
     const readPayload = (event:Event) => { try { return JSON.parse((event as MessageEvent<string>).data) as Record<string, unknown> } catch { return {} } }
     stream.addEventListener('PLAN_CREATED', () => setMessage('Scope accepted. I’m building the evidence map.'))
     stream.addEventListener('PURCHASE_BLOCKED', () => setMessage('GridScope blocked: S$1.40 exceeds the remaining S$1.00.'))
-    stream.addEventListener('DOSSIER_SYNTHESIS_STARTED', () => { setSynthesisText(''); setSynthesisStreaming(true); setMessage('Groq is streaming the cited dossier…') })
+    stream.addEventListener('DOSSIER_SYNTHESIS_STARTED', (event) => { const label = readPayload(event).label; setSynthesisText(''); setSynthesisStreaming(true); setMessage(typeof label === 'string' ? label : 'Cited dossier synthesis started…') })
     stream.addEventListener('DOSSIER_TOKEN', (event) => { const delta = readPayload(event).delta; if (typeof delta === 'string') { setSynthesisStreaming(true); setSynthesisText((current) => current + delta) } })
-    stream.addEventListener('DOSSIER_SYNTHESIS_COMPLETED', () => { setSynthesisStreaming(false); setMessage('Groq dossier complete. Claims and evidence spans were validated.') })
+    stream.addEventListener('DOSSIER_SYNTHESIS_COMPLETED', (event) => { const label = readPayload(event).label; setSynthesisStreaming(false); setMessage(typeof label === 'string' ? label : 'Dossier complete. Claims and evidence spans were validated.') })
     stream.addEventListener('DOSSIER_SYNTHESIS_FALLBACK', () => { setSynthesisStreaming(false); setMessage('Groq synthesis was unavailable; a cited fallback was used.') })
     stream.addEventListener('DOSSIER_READY', () => setMessage('Dossier ready. Claims point to accessible evidence spans.'))
     return () => stream.close()
@@ -400,7 +404,7 @@ export default function App() {
     try {
       if (activeRun) await api<ServerState>(`/api/v1/research-runs/${activeRun.runId}/reset`, { method:'POST', body:'{}' })
       clearSetupDraft()
-       window.localStorage.removeItem('researchagent.active-run.v1'); setSavedDraft(null); setDraftActive(true); setSetupStep('question'); setRun(null); setPlanDraft(null); setDossier(null); setSynthesisText(''); setSynthesisStreaming(false); setQuestion(''); setQuestionDraft(''); setBudgetXrp(DEFAULT_BUDGET_XRP); setSelectedPublishers(publisherOptions.map((option) => option.id)); setSelectedId(null); setSelectedSpanId(null); setSelectedDetail(null); setPendingPurchase(null); setPurchaseOutcome('REVIEW'); setWorkspaceTab('overview'); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' })
+       window.localStorage.removeItem('researchagent.active-run.v1'); setSavedDraft(null); setDraftActive(true); setSetupStep('question'); setRun(null); setScopeRejection(null); setPlanDraft(null); setDossier(null); setSynthesisText(''); setSynthesisStreaming(false); setQuestion(''); setQuestionDraft(''); setBudgetXrp(DEFAULT_BUDGET_XRP); setSelectedPublishers(publisherOptions.map((option) => option.id)); setSelectedId(null); setSelectedSpanId(null); setSelectedDetail(null); setPendingPurchase(null); setPurchaseOutcome('REVIEW'); setWorkspaceTab('overview'); setMessage('Ready when you are.'); window.scrollTo({ top:0, behavior:'smooth' })
     } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
   }
   const saveDraft = () => {
@@ -410,7 +414,7 @@ export default function App() {
   const resumeDraft = () => { setDraftActive(true); setMessage('Draft restored. Continue from the saved setup step.') }
   const discardDraft = () => { clearSetupDraft(); setSavedDraft(null); setDraftActive(true); setSetupStep('question'); setQuestion(''); setQuestionDraft(''); setBudgetXrp(DEFAULT_BUDGET_XRP); setSelectedPublishers(publisherOptions.map((option) => option.id)); setMessage('Saved draft discarded. Start a fresh setup when ready.') }
   const beginQuestion = (value = questionDraft) => { const next = value.trim(); if (!next) return; setQuestion(next); setQuestionDraft(next); setSetupStep('sources'); setDraftActive(true); setMessage('Question captured. Choose the source profiles the agent may read.') }
-  const editUnsupportedQuestion = (value:string) => { const next = value.trim(); if (!next) return; window.localStorage.removeItem('researchagent.active-run.v1'); setRun(null); setPlanDraft(null); setDossier(null); setSelectedDetail(null); setSelectedId(null); setSelectedSpanId(null); setPendingPurchase(null); setQuestion(next); setQuestionDraft(next); setSetupStep('sources'); setDraftActive(true); setMessage('Question updated. Confirm the source boundary and budget before research starts.') }
+  const editUnsupportedQuestion = (value:string) => { const next = value.trim(); if (!next) return; window.localStorage.removeItem('researchagent.active-run.v1'); setRun(null); setScopeRejection(null); setPlanDraft(null); setDossier(null); setSelectedDetail(null); setSelectedId(null); setSelectedSpanId(null); setPendingPurchase(null); setQuestion(next); setQuestionDraft(next); setSetupStep('sources'); setDraftActive(true); setMessage('Question updated. Confirm the source boundary and budget before research starts.') }
   const togglePublisher = (key:PublisherKey) => setSelectedPublishers((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key])
 
   const startResearch = async () => {
@@ -419,13 +423,18 @@ export default function App() {
     try {
       const isCanonicalDemo = question.trim() === QUESTION
       const created = await api<ServerState>('/api/v1/research-runs', { method:'POST', body:JSON.stringify({ question, decision:isCanonicalDemo ? 'Inform the next research decision' : '', horizon:isCanonicalDemo ? 'Through 2028' : '', tokenLimit:64000, budgetCents:xrpToCents(budgetXrp), sourceTypes, sourceAllowlist:selectedPublishers }) })
+      setScopeRejection(null)
       setRun(created)
       const initialPlan = created.plan ?? createResearchPlan('BALANCED_DILIGENCE', { ...created.config, sourceAllowlist:selectedPublishers })
       setPlanDraft(created.scope?.status === 'UNSUPPORTED' ? null : initialPlan)
       clearSetupDraft(); setSavedDraft(null); window.localStorage.setItem('researchagent.active-run.v1', created.runId)
       setMessage(created.scope?.status === 'UNSUPPORTED' ? created.scope.message : 'Research plan ready. Review and approve it before the agent starts.')
       window.scrollTo({ top:0, behavior:'auto' })
-    } catch (error) { setMessage((error as Error).message) } finally { setBusy(false) }
+    } catch (error) {
+      const scope = error instanceof ApiRequestError ? error.data.scope : undefined
+      if (scope && typeof scope === 'object' && (scope as ScopeDecision).status === 'UNSUPPORTED') setScopeRejection(scope as ScopeDecision)
+      setMessage((error as Error).message)
+    } finally { setBusy(false) }
   }
 
   const continueSetup = () => {
@@ -557,7 +566,7 @@ export default function App() {
     <header className="topbar"><button type="button" className="brand-button" onClick={() => void resetToStart()} aria-label="Start a new ResearchAgent thread"><span className="brand-mark" aria-hidden="true">RA</span><span><strong>ResearchAgent</strong></span></button><div className="topbar-thread"><span className="topbar-label">{run ? 'Active thread' : 'Research desk'}</span><span className="topbar-query">{run?.config.question ?? 'A calm workbench for defensible research'}</span></div><div className="topbar-actions">{run && <span className="topbar-budget mono">{formatXrp(centsToXrp(run.remainingCents))} left</span>}<Badge tone={(run?.runtime ?? scenario?.runtime)?.mode === 'live' ? 'warning' : 'fixture'}>{presentationRuntimeLabel(run?.runtime ?? scenario?.runtime)}</Badge></div></header>
     <div className="product-shell">
       <main className={`main-column ${run ? 'has-run' : ''}`}>
-        {!run && <section className="start-view"><GuidedSetup step={setupStep} firstRun={!savedDraft && !question} resumeAvailable={!draftActive && Boolean(savedDraft)} question={questionDraft} selectedPublishers={selectedPublishers} budgetXrp={budgetXrp} publisherOptions={publisherOptions} canonicalQuestion={suggestedQuestion} currentBalanceXrp={CURRENT_XRP_BALANCE} minBudgetXrp={MIN_BUDGET_CENTS / XRP_TO_SGD_CENTS} maxBudgetXrp={MAX_BUDGET_CENTS / XRP_TO_SGD_CENTS} budgetToCents={xrpToCents} money={money} formatXrp={formatXrp} onQuestionChange={(value) => { setQuestion(value); setQuestionDraft(value) }} onTogglePublisher={(key) => togglePublisher(key as PublisherKey)} onBudgetChange={setBudgetXrp} onUseExample={() => beginQuestion(suggestedQuestion)} onResumeDraft={resumeDraft} onDiscardDraft={discardDraft} onContinue={continueSetup} onBack={() => { if (setupStep === 'sources') setSetupStep('question'); else if (setupStep === 'budget') setSetupStep('sources'); setMessage('Previous setup values are preserved.') }} onSaveDraft={saveDraft} /></section>}
+        {!run && <section className="start-view">{scopeRejection ? <ScopeNotice scope={scopeRejection} onEdit={editUnsupportedQuestion} onUseCanonical={() => editUnsupportedQuestion(QUESTION)} /> : <GuidedSetup step={setupStep} firstRun={!savedDraft && !question} resumeAvailable={!draftActive && Boolean(savedDraft)} question={questionDraft} selectedPublishers={selectedPublishers} budgetXrp={budgetXrp} publisherOptions={publisherOptions} canonicalQuestion={suggestedQuestion} currentBalanceXrp={CURRENT_XRP_BALANCE} minBudgetXrp={MIN_BUDGET_CENTS / XRP_TO_SGD_CENTS} maxBudgetXrp={MAX_BUDGET_CENTS / XRP_TO_SGD_CENTS} budgetToCents={xrpToCents} money={money} formatXrp={formatXrp} onQuestionChange={(value) => { setQuestion(value); setQuestionDraft(value) }} onTogglePublisher={(key) => togglePublisher(key as PublisherKey)} onBudgetChange={setBudgetXrp} onUseExample={() => beginQuestion(suggestedQuestion)} onResumeDraft={resumeDraft} onDiscardDraft={discardDraft} onContinue={continueSetup} onBack={() => { if (setupStep === 'sources') setSetupStep('question'); else if (setupStep === 'budget') setSetupStep('sources'); setMessage('Previous setup values are preserved.') }} onSaveDraft={saveDraft} />}</section>}
     {run && <section className="research-view">
           <div className="research-intro"><div><span className="kicker">Research thread · {run.config.horizon}</span><h1>{run.config.question}</h1><div className="intro-meta"><span>{run.rawSourceCount} retrieved previews · {run.familyCount} evidence families</span><span>{formatXrp(centsToXrp(run.budgetCents))} research budget</span><span>{run.cancelled ? 'STOPPED · read-only' : run.paused ? 'PAUSED' : 'RUNNING'}</span></div></div><div className="intro-actions"><button type="button" className="small-button" onClick={() => void resetToStart()}>New research</button>{!run.cancelled && !run.paused && <button type="button" className="small-button" onClick={() => void act('pause')} disabled={run.dossierReady || busy}>Pause</button>}{!run.cancelled && run.paused && <button type="button" className="small-button" onClick={() => void act('resume')} disabled={busy}>Resume</button>}<button type="button" className="small-button" onClick={() => void stopResearch()} disabled={run.cancelled || busy}>Stop</button></div></div>
            {run.scope?.status === 'UNSUPPORTED' ? <ScopeNotice scope={run.scope} onEdit={editUnsupportedQuestion} onUseCanonical={() => editUnsupportedQuestion(QUESTION)} /> : planDraft ? <PlanReview plan={planDraft} onChange={setPlanDraft} onApprove={() => void approvePlan()} onBack={() => { window.localStorage.removeItem('researchagent.active-run.v1'); setRun(null); setPlanDraft(null); setSetupStep('budget'); setDraftActive(true); setMessage('Back to budget. Your setup values are preserved.') }} onSaveDraft={saveDraft} busy={busy} /> : <ResearchPath run={run} dossier={dossier} sources={visibleSources} showAll={showAllSources} onShowAll={() => setShowAllSources(true)} selectedId={selectedId} onOpenSource={(id, spanId) => void openSource(id, spanId)} onAction={(sourceId, action) => { if (action === 'BUY') purchaseTriggerRef.current = document.activeElement as HTMLElement; void purchase(sourceId, action) }} onSynthesize={() => void synthesize()} busy={busy} synthesisText={synthesisText} synthesisStreaming={synthesisStreaming} activeTab={workspaceTab} onTabChange={setWorkspaceTab} />}

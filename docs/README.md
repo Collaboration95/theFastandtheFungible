@@ -1,26 +1,45 @@
 # ResearchAgent documentation
 
-This directory contains the active product contracts for the next stage of
-ResearchAgent development.
+This is the single index for active product documentation. Historical audits,
+event notes, orchestration prompts, and duplicate backlogs are intentionally
+not part of the maintained documentation set; Git history preserves them.
 
-The application now lives at the repository root. Broader planning context is
-indexed from the root [README](../README.md).
+## Start here
 
-## UI overhaul handoff
-
-The [portable UI overhaul package](../ui-overhaul/README.md) contains the new
-design brief, all supplied screenshots, ordered work packages, orchestrator and
-worker prompts, and test/visual/demo gates. It supersedes older presentation
-restrictions where identified; server trust contracts remain in force.
+- [Repository overview and setup](../README.md)
+- [October 1 presentation readiness](PRESENTATION-READINESS.md)
+- [Post-hackathon product roadmap](PRODUCT-ROADMAP-2026.md)
+- [Next-stage UX brief](UX-NEXT-STAGE.md)
+- [Company and protocol context](../company-research-context.md)
 
 ## Active contracts
 
-- [Product brief](contracts/PRODUCT.md)
-- [Architecture](contracts/ARCHITECTURE.md)
-- [Design context](contracts/DESIGN.md)
-- [Security posture](contracts/SECURITY.md)
-- [UX contract](contracts/UX-CONTRACT.md)
-- [Diagram and flow audit — 20 September 2026](DIAGRAM-AND-FLOW-AUDIT-2026-09-20.md)
+- [Product](contracts/PRODUCT.md) — user, problem, canonical proof, and limits.
+- [Architecture](contracts/ARCHITECTURE.md) — components, data flow, and trust
+  boundaries.
+- [Design](contracts/DESIGN.md) — visual system, layout, and content rules.
+- [Security](contracts/SECURITY.md) — secrets, access, settlement, and evidence
+  controls.
+- [UX](contracts/UX-CONTRACT.md) — workflow, ownership, recovery, and
+  accessibility.
 
-The runtime fixture corpus and persisted run data remain in `data/`; they are
-intentionally outside this documentation organization.
+Contracts describe durable behavior. The readiness plan owns presentation
+work, the roadmap owns sequencing, and the UX brief owns proposed next-stage
+interaction work. A plan or brief must not be read as proof of implementation.
+
+## Visual source material
+
+- [Standalone architecture diagrams](../diagrams/README.md)
+- [Editable official UX wireframes](../canvas/excalidraw/README.md)
+- [Composite codebase map](../canvas/excalidraw/exports/codebase-map-split.svg)
+- [Official product views](../canvas/excalidraw/exports/official-researchagent-views.svg)
+
+Editable Excalidraw scenes are the source of truth. PNG and SVG files are review
+exports; they are retained to support GitHub review and presentation prep.
+
+## Maintenance rule
+
+Update an existing active document instead of adding a dated audit, handoff,
+prompt, or status ledger. Keep transient verification output in the pull
+request or task record. Add a new document only when it has a distinct durable
+owner and audience.

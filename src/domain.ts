@@ -28,7 +28,7 @@ export type DossierDraft = {
   mode: 'GROQ RESEARCH' | 'FIXTURE RESEARCH'; title: string; conclusion: string;
   changedAfterPaidResearch: { before: string; afterNorthstar?: string; after: string }; afterLabel?: string;
   claims: Claim[]; uncertainty: string; method: string;
-  provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK';
+  provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FIXTURE' | 'FALLBACK';
 }
 export type ResearchConfig = {
   question: string;
@@ -115,7 +115,7 @@ export type Run = {
   runId: string; version: number; phase: Phase; paused: boolean; cancelled: boolean; budgetCents: number; spentCents: number;
   sources: Source[]; events: { id: string; type: string; label: string; at: string }[]; gap: { question: string; importance: 'HIGH'; state: 'OPEN' | 'PARTIAL' | 'RESOLVED' };
   thesis: { open: string; afterNorthstar?: string; afterMeridian?: string; current: string }; claims: Claim[]; dossierReady: boolean; dossier?: DossierDraft; llm: { provider: string; status: string; model: string }; semanticStatus: 'precomputed' | 'unavailable';
-  config: ResearchConfig; runtime: RuntimeStatus; quoteGeneration?: number; quoteExpiresAt?: string; planApproved?: boolean; plan?: ResearchPlanArtifact; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FALLBACK' };
+  config: ResearchConfig; runtime: RuntimeStatus; quoteGeneration?: number; quoteExpiresAt?: string; planApproved?: boolean; plan?: ResearchPlanArtifact; purchaseKeys?: Record<string, string>; purchasePlan?: { sourceId: string; reason: string; gap: string; provider: 'groq' | 'fixture'; model: string; status: 'LIVE' | 'FIXTURE' | 'FALLBACK' };
 }
 
 export const QUESTION = 'Is the AI data-centre investment boom sustainable through 2028?'
@@ -132,4 +132,4 @@ export const GAP_QUESTION = 'Independent reporting on grid-connection lead times
 export function normalize(text: string): string[] { return text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(/\s+/).filter(Boolean) }
 export function tfidfScore(query: string, source: Source): number { const q = new Set(normalize(query)); const d = new Set(normalize(`${source.title} ${source.preview} ${source.tags.join(' ')} ${source.entities.join(' ')}`)); return q.size ? [...q].filter((token) => d.has(token)).length / q.size : 0 }
 export function rankSources(query = QUESTION, input: readonly Source[] = []): Source[] { return [...input].sort((a,b) => (b.relevance + b.gapMatch * 0.2 + tfidfScore(query,b)*20 - (b.originality === 'DERIVATIVE' ? 18 : 0)) - (a.relevance + a.gapMatch * 0.2 + tfidfScore(query,a)*20 - (a.originality === 'DERIVATIVE' ? 18 : 0))) }
-export function utility(source: Source, remainingCents: number): number { const value = .24*(source.gapMatch/100)+.18*(source.relevance/100)+.16*(source.authority==='HIGH'?1:source.authority==='MEDIUM'?.65:.35)+.16*(source.novelty/100)+.12*(source.originality==='ORIGINAL'?1:.2)+.10*(source.gapMatch/100)+.04*.8-.20*(source.originality==='DERIVATIVE'?.9:.05); return Math.round(value*1000)/1000 }
+export function utility(source: Source, _remainingCents: number): number { const value = .24*(source.gapMatch/100)+.18*(source.relevance/100)+.16*(source.authority==='HIGH'?1:source.authority==='MEDIUM'?.65:.35)+.16*(source.novelty/100)+.12*(source.originality==='ORIGINAL'?1:.2)+.10*(source.gapMatch/100)+.04*.8-.20*(source.originality==='DERIVATIVE'?.9:.05); return Math.round(value*1000)/1000 }

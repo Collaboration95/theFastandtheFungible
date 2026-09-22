@@ -30,7 +30,7 @@ const DossierSchema = z.object({
 export type PurchasePlan = z.infer<typeof PlanSchema> & {
   provider: 'groq' | 'fixture'
   model: string
-  status: 'LIVE' | 'FALLBACK'
+  status: 'LIVE' | 'FIXTURE' | 'FALLBACK'
 }
 
 export type DossierSynthesis = z.infer<typeof DossierSchema>
@@ -46,7 +46,7 @@ export type DossierEvidencePacket = {
 }
 
 const model = () => process.env.LLM_MODEL || 'llama-3.3-70b-versatile'
-const isLive = () => process.env.LLM_PROVIDER === 'groq' && Boolean(process.env.GROQ_API_KEY)
+export const isGroqConfigured = () => process.env.LLM_PROVIDER === 'groq' && Boolean(process.env.GROQ_API_KEY)
 const synthesisTemperature = () => {
   const configured = Number(process.env.LLM_SYNTHESIS_TEMPERATURE ?? process.env.LLM_TEMPERATURE ?? 0.85)
   return Number.isFinite(configured) ? Math.min(2, Math.max(0, configured)) : 0.85
@@ -71,7 +71,7 @@ Build a balanced academic-style argument:
 
 The output is a concise investment-research dossier, not investment advice.`
 
-function fallback(question: string, candidates: Source[]): PurchasePlan {
+function deterministicPlan(question: string, candidates: Source[], status: 'FIXTURE' | 'FALLBACK'): PurchasePlan {
   const selected = [...candidates].sort((a, b) => b.relevance - a.relevance)[0]
   return {
     sourceId: selected?.id ?? '',
@@ -79,14 +79,13 @@ function fallback(question: string, candidates: Source[]): PurchasePlan {
     gap: `What evidence would most change the answer to: ${question}`,
     provider: 'fixture',
     model: 'fixture-research-v1',
-    status: 'FALLBACK',
+    status,
   }
 }
 
 export async function planPurchase(question: string, sources: Source[], budgetCents: number): Promise<PurchasePlan> {
   const candidates = sources.filter((source) => source.accessTier === 'PREMIUM' && source.id !== 'circuit-note' && source.priceCents <= budgetCents && source.priceCents <= 100)
-  const safeFallback = fallback(question, candidates)
-  if (!isLive() || candidates.length === 0) return safeFallback
+  if (!isGroqConfigured() || candidates.length === 0) return deterministicPlan(question, candidates, 'FIXTURE')
 
   const evidence = candidates.map((source) => ({
     id: source.id,
@@ -127,7 +126,7 @@ export async function planPurchase(question: string, sources: Source[], budgetCe
     return { ...parsed, provider: 'groq', model: model(), status: 'LIVE' }
   } catch (error) {
     console.error(`Groq purchase planning fallback: ${(error as Error).message}`)
-    return safeFallback
+    return deterministicPlan(question, candidates, 'FALLBACK')
   } finally {
     clearTimeout(timeout)
   }
@@ -169,7 +168,7 @@ async function readGroqStream(response: Response, onDelta: (delta: string) => vo
 }
 
 export async function synthesizeDossier(packet: DossierEvidencePacket, onDelta: (delta: string) => void): Promise<DossierSynthesis> {
-  if (!isLive()) throw new Error('Groq synthesis is not configured')
+  if (!isGroqConfigured()) throw new Error('Groq synthesis is not configured')
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), Number(process.env.LLM_SYNTHESIS_TIMEOUT_MS ?? process.env.LLM_TIMEOUT_MS ?? 45000))
   try {

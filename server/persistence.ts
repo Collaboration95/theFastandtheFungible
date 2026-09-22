@@ -37,7 +37,7 @@ export async function loadRunStore<T extends { runId: string }>(file: string): P
   try {
     parsed = JSON.parse(raw)
   } catch (error) {
-    throw new Error(`Unable to parse persisted research runs at ${file}: ${(error as Error).message}`)
+    throw new Error(`Unable to parse persisted research runs at ${file}: ${(error as Error).message}`, { cause: error })
   }
   if (!Array.isArray(parsed) || parsed.some((value) => !isRunRecord(value))) {
     throw new Error(`Persisted research runs at ${file} must be a JSON array of records with runId values.`)

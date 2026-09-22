@@ -1,66 +1,63 @@
-# ResearchAgent architecture
+# Architecture contract
 
-The browser is a view and command surface. The Express server owns retrieval,
-allowlist filtering, ranking, evidence-family lineage, budget arithmetic,
-premium access, fixture x402 quotes, and cited synthesis. The twelve mock
-data-centre articles live in `data/mock-articles.json`; the browser receives public
-metadata first and article excerpts only after the exact purchase decision.
+The browser is a view and command surface. The Express server owns supported
+scope, retrieval, allowlist filtering, ranking, evidence-family lineage,
+budget arithmetic, premium access, fixture x402 quotes, settlement validation,
+and cited synthesis. The 12 synthetic data-centre records live in
+`data/mock-articles.json`; public metadata is available before purchase, while
+protected excerpts remain server-side until access is granted.
 
 ## Visual overview
 
 ![ResearchAgent architecture overview](../../assets/research-agent-architecture.png)
 
-This generated overview follows the Quiet Evidence Terminal visual system and
-keeps the architecture at the high-note level. The Mermaid diagram below
-remains the precise, maintainable source of truth.
-
 ```mermaid
 flowchart LR
-  U[Researcher\nquestion + website allowlist] --> UI[React research desk]
-  UI -->|REST + SSE| API[Express ResearchAgent API]
-
-  API --> PLAN[Query planner\nsemantic / lexical terms]
-  PLAN --> REG[Mock source registry\n20 JSON articles]
-  REG --> FILTER[Allowlist + source-type filter]
-  FILTER --> RANK[Ranking + family clustering\nrelevance · novelty · authority]
-  RANK --> GAP[Gap analyzer]
+  U[Question + source allowlist] --> UI[React workspace]
+  UI -->|REST + SSE| API[Express API]
+  API --> SCOPE[Scope + plan gate]
+  SCOPE --> REG[Synthetic source registry]
+  REG --> FILTER[Allowlist + type filter]
+  FILTER --> RANK[Rank + family cluster]
+  RANK --> GAP[Gap analysis]
+  GAP --> OPEN[Accessible evidence]
   GAP --> GUARD[Budget + preference guard]
-
-  GUARD -->|open| OPEN[Public metadata + preview]
-  GUARD -->|premium candidate| QUOTE[x402 quote\nresource · price · payee · drops]
-  QUOTE --> LEDGER[XRPL adapter\nfixture by default; Testnet seam]
+  GUARD --> QUOTE[x402-style exact quote]
+  QUOTE --> LEDGER[Fixture or XRPL Testnet adapter]
   LEDGER --> ACCESS[Exact access grant]
-  ACCESS --> READ[Server-only article body\nexcerpt + span hash]
-
-  OPEN --> SYNTH[Claim extractor + cited synthesizer]
-  READ --> SYNTH
-  SYNTH --> ANSWER[Sentence-level citations\nanswer + uncertainty]
-  ANSWER --> UI
-
-  API --> STORE[JSON run/event store]
+  ACCESS --> EVIDENCE[Protected evidence span]
+  OPEN --> SYNTH[Cited synthesis]
+  EVIDENCE --> SYNTH
+  SYNTH --> UI
+  API --> STORE[JSON run and event store]
 ```
 
-## State and trust boundaries
+## Trust boundaries
 
-1. `question + sourceAllowlist` is captured in the run config before retrieval.
-2. `Query planner` creates bounded terms; it does not choose a wallet or edit
-   the budget.
-3. `Source registry` loads the synthetic records and strips the `article` body
-   before a public response.
-4. `Budget guard` is deterministic. It can mark a record BUY, SKIP, DEFER, or
-   BLOCKED; browser text and future model output cannot bypass it.
-5. `x402/XRPL adapter` models the payment challenge and settlement boundary.
-   Fixture settlement is not a real ledger result.
-6. `Access grant` is separate from payment and unlocks exactly one resource.
-7. `Cited synthesizer` sees only open evidence and purchased excerpts. It emits
-   claim text, stance, source ids, evidence spans, and uncertainty—not private
-   chain-of-thought.
+1. The run records the question, approved source profiles, maximum spend, and
+   per-source ceiling before retrieval.
+2. The fixture scope gate rejects unsupported questions rather than silently
+   mapping them to unrelated evidence.
+3. The source registry strips protected article bodies from public responses.
+4. The server-owned budget guard can approve, block, skip, or defer a proposal;
+   browser text and model output cannot bypass it.
+5. Plan approval and exact purchase approval are separate mutations.
+6. Fixture settlement is a simulation. Optional XRPL Testnet mode must validate
+   payer, receiver, amount, finality, and quote binding before access.
+7. Payment and fulfilment are separate states. Access grants unlock exactly one
+   resource version after fulfilment succeeds.
+8. Final synthesis may cite only accessible, server-validated evidence spans.
+   Model reasoning is not a policy or audit artifact.
 
-## Current fixture contract
+## Runtime modes
 
-- Budget: S$2.00 total, with an S$1.00 per-source ceiling.
-- Default source-profile allowlist: all seven fixture profiles shown in the UI.
-- Article corpus: 12 synthetic data-centre fixture records with prices and XRP
-  drop quotes. Bond-market records are outside the active scenario.
-- Server mode: `APP_MODE=fixture`, `XRPL_MODE=fixture`.
-- Future live mode: server-only environment variables, never `VITE_` secrets.
+| Layer | Default | Optional seam |
+| --- | --- | --- |
+| Evidence | 12 local synthetic records | Authorized live adapters are future work |
+| Planning and synthesis | Deterministic fixture behavior | Groq, explicitly configured server-side |
+| Settlement | x402-style quote and fixture result | XRPL Testnet transaction validation |
+| Persistence | Local JSON run/event store | Production storage is future work |
+| Fulfilment | Synthetic exact access grant | Real publisher delivery is future work |
+
+No browser bundle may contain provider credentials or wallet seeds. Fixture,
+Testnet, and production claims must remain visibly distinct.

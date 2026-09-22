@@ -95,7 +95,7 @@ export function validateFixtureCatalog(input: unknown, sourceLabel = 'fixture ca
     return articles
   } catch (error) {
     const detail = error instanceof ZodError ? formatValidationError(error) : (error as Error).message
-    throw new Error(`Fixture catalog validation failed (${sourceLabel}): ${detail}`)
+    throw new Error(`Fixture catalog validation failed (${sourceLabel}): ${detail}`, { cause: error })
   }
 }
 
@@ -134,13 +134,13 @@ export async function loadFixtureCatalog(filePath = DEFAULT_FIXTURE_CATALOG_PATH
   try {
     raw = await readFile(filePath, 'utf8')
   } catch (error) {
-    throw new Error(`Fixture catalog could not be read (${filePath}): ${(error as Error).message}`)
+    throw new Error(`Fixture catalog could not be read (${filePath}): ${(error as Error).message}`, { cause: error })
   }
   let parsed: unknown
   try {
     parsed = JSON.parse(raw)
   } catch (error) {
-    throw new Error(`Fixture catalog JSON is invalid (${filePath}): ${(error as Error).message}`)
+    throw new Error(`Fixture catalog JSON is invalid (${filePath}): ${(error as Error).message}`, { cause: error })
   }
   return buildFixtureCatalog(parsed, filePath)
 }

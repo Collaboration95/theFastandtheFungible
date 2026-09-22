@@ -1,12 +1,33 @@
-# Product brief
+# Product contract
 
-ResearchAgent helps an investment-research analyst decide which evidence is
-worth paying for. Given a question, audience, source policy, and S$2 mandate it
-finds open evidence, collapses rewrites into evidence families, identifies a
-grid-capacity gap, and buys only the premium sources with defensible marginal
-value.
+ResearchAgent helps a researcher decide whether available evidence is
+sufficient and whether a premium source is worth buying. It combines a guided
+research plan, evidence-family comparison, an explicit spending mandate, and
+claim-level citations.
 
-The canonical flow buys Northstar Wire for S$0.20, skips the redundant Circuit
-Note, buys the Grid Operators Report for S$0.80, and blocks GridScope Asia at S$1.40
-because the remaining S$1.00 cannot satisfy the mandate. The final artifact is
-a one-page, claim-linked dossier—not a chat transcript or investment advice.
+## Core promise
+
+- Answer from accessible evidence when it is sufficient.
+- Identify a material gap before proposing paid evidence.
+- Explain source value through relevance, novelty, independence, authority,
+  gap fit, and price.
+- Require exact manual approval before any premium purchase.
+- Show what changed and link every final claim to accessible evidence spans.
+
+## Canonical scenario
+
+The supported fixture asks whether announced AI data-centre buildout can become
+operating capacity by 2028. It uses 12 synthetic records and a S$2.00 fixture
+mandate with a S$1.00 per-source ceiling. The paid path can buy Northstar Wire,
+skip Circuit Note as duplicate evidence, buy the Grid Operators Report, and
+block GridScope Asia above the ceiling.
+
+This is a deterministic demonstration scenario, not investment advice, live
+web research, or a requirement that every answer purchase a source.
+
+## Boundaries
+
+The current product is local and single-user. Fixture mode is the default;
+Groq and XRPL Testnet are optional server-side seams. Real source licensing,
+production payment, mainnet funds, multi-user access, and generalized shopping
+are outside the current contract.

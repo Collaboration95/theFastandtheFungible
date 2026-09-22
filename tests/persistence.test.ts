@@ -5,6 +5,7 @@ import { spawn, type ChildProcess } from 'node:child_process'
 import { createServer } from 'node:net'
 import { afterEach, describe, expect, it } from 'vitest'
 import { loadRunStore, persistRunStore } from '../server/persistence'
+import { QUESTION } from '../src/domain'
 
 const temporaryDirectories: string[] = []
 
@@ -148,7 +149,7 @@ describe('local run persistence', () => {
       const health = await fetch(`${baseUrl}/api/health`).then((response) => response.json()) as { persistenceMode: string; persistedRunCount: number; stateMode: string }
       expect(health).toMatchObject({ persistenceMode: 'seeded', persistedRunCount: 1, stateMode: 'seeded' })
 
-      const createdResponse = await fetch(`${baseUrl}/api/v1/research-runs`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question: 'A clean fixture run', sourceAllowlist: ['company-filings'] }) })
+      const createdResponse = await fetch(`${baseUrl}/api/v1/research-runs`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question: QUESTION, sourceAllowlist: ['company-filings'] }) })
       expect(createdResponse.status).toBe(201)
       const created = await createdResponse.json() as { runId: string; stateMode: string; spentCents: number; rawSourceCount: number; sources: unknown[]; persistence: { mode: string; persistedRunCount: number } }
       expect(created.stateMode).toBe('fresh')

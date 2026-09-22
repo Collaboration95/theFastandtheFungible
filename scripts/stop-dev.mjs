@@ -46,7 +46,7 @@ const readWindowsListeningPids = (port) => {
 let inspectionAvailable = true
 
 for (const port of ports) {
-  let pids = []
+  let pids
   try {
     pids = process.platform === 'win32'
       ? readWindowsListeningPids(port)
@@ -58,7 +58,7 @@ for (const port of ports) {
   }
 
   for (const pid of pids) {
-    let command = ''
+    let command
     try {
       command = process.platform === 'win32' ? readWindowsProcessCommand(pid) : readUnixProcessCommand(pid)
     } catch (error) {

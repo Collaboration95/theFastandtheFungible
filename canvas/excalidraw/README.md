@@ -1,6 +1,10 @@
-# ResearchAgent official UX-01 wireframes
+# ResearchAgent product wireframes
 
-This folder is the editable visual contract for issue [#32 UX-01](https://github.com/Collaboration95/theFastandtheFungible/issues/32). It uses the repository's native Excalidraw scene format and keeps the existing ResearchAgent visual language: newsprint background, charcoal navigation, Newsreader-style display type, IBM Plex-style utility labels, salmon accents, green verified states, and red policy/error states.
+This folder is the editable visual contract for the canonical ResearchAgent
+journey. It uses the repository's native Excalidraw scene format and existing
+visual language: newsprint background, charcoal navigation, editorial display
+type, utility labels, salmon accents, green verified states, and red policy or
+error states.
 
 ## Review the canvas
 
@@ -38,4 +42,6 @@ The scene remains editable: every panel is a native Excalidraw rectangle, text e
 
 ## Export provenance
 
-The SVG is an export for product-owner walkthroughs and code review. The source of truth is [`scene.excalidraw`](./scene.excalidraw), not the SVG. No production UI implementation, hosted prototype, rebrand, or application code is included in this issue.
+The SVG is a review export. The source of truth is
+[`scene.excalidraw`](./scene.excalidraw), not the SVG. The canvas is a product
+contract, not proof that every depicted future surface is implemented.

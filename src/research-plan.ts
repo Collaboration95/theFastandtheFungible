@@ -382,7 +382,7 @@ export function parseResearchPlan(serialized: string): ResearchPlan {
   try {
     parsed = JSON.parse(serialized)
   } catch (error) {
-    throw new TypeError(`Research plan JSON is invalid: ${(error as Error).message}`)
+    throw new TypeError(`Research plan JSON is invalid: ${(error as Error).message}`, { cause: error })
   }
   if (!isResearchPlanArtifact(parsed)) throw new TypeError('Research plan artifact is invalid or unsupported')
   return parsed

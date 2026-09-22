@@ -21,12 +21,13 @@ async function continueCanonicalSetup(page: import('@playwright/test').Page, des
 
 test('unsupported fixture questions stay scoped and editable', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('textbox', { name: 'Research question' }).fill('Will clean-energy investment be sustainable in 2028?')
+  await page.getByRole('textbox', { name: 'Research question' }).fill('What are the best hiking trails near Singapore?')
   await page.getByRole('button', { name: 'Send research question' }).click()
   await page.getByRole('button', { name: 'Continue to budget' }).click()
   await page.getByRole('button', { name: 'Continue to review' }).click()
   await expect(page.getByRole('heading', { name: 'Unsupported fixture scope' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Will clean-energy investment be sustainable in 2028?' })).toBeVisible()
+  await expect(page.getByRole('alert').getByText('“What are the best hiking trails near Singapore?”', { exact: true })).toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'Edit unsupported research question' })).toHaveValue('What are the best hiking trails near Singapore?')
   await expect(page.getByRole('alert').getByText(/No fixture evidence was searched or used as an answer/)).toBeVisible()
   await expect(page.getByRole('heading', { name: /previews from approved source profiles/i })).toHaveCount(0)
   await expect(page.getByText('Announced demand and capital commitments support continued expansion.', { exact: true })).toHaveCount(0)
