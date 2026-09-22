@@ -30,7 +30,7 @@ test.describe('UO-07 through UO-10 workspace hardening', () => {
       await page.setViewportSize({ width, height: 900 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
       await expect(page.locator('.source-row').filter({ hasText: 'Circuit Note' }).getByRole('button', { name: 'Skip S$0.30', exact: true })).toBeVisible()
-      await page.screenshot({ path: `ui-overhaul/evidence/UO-10/workspace-${width}.png`, fullPage: true })
+      await page.screenshot({ path: `test-results/workspace-${width}.png`, fullPage: true })
     }
   })
 
@@ -65,7 +65,7 @@ test.describe('UO-07 through UO-10 workspace hardening', () => {
     await page.evaluate(() => { document.body.style.zoom = '2' })
     await expect(page.getByRole('heading', { name: 'What the evidence says so far' })).toBeVisible()
     await expect(page.getByText('FIXTURE RESEARCH · SYNTHETIC CORPUS', { exact: true }).first()).toBeVisible()
-    await page.screenshot({ path: 'ui-overhaul/evidence/UO-10/workspace-200-percent.png', fullPage: true })
+    await page.screenshot({ path: 'test-results/workspace-200-percent.png', fullPage: true })
   })
 
   test('pause, resume, stop, and reload preserve server-owned run state', async ({ page }) => {

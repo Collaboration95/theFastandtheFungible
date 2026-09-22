@@ -56,5 +56,5 @@ test('guided setup reflows at 320 CSS pixels without horizontal overflow', async
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Start with a question worth investigating.' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
-  await page.screenshot({ path: 'ui-overhaul/evidence/UO-06/setup-320.png', fullPage: true })
+  await page.screenshot({ path: 'test-results/setup-320.png', fullPage: true })
 })
