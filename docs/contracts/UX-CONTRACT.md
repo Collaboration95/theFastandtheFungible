@@ -1,5 +1,16 @@
 # ResearchAgent UX contract
 
+## October 10 planned changes
+
+The [shared implementation interfaces](../plans/october-10/INTERFACES.md) and
+[UI task plan](../plans/october-10/UI-AND-DEMO.md) govern the next implementation.
+They replace legacy assumptions below about XRP conversion, named purchase
+sequences, profile/family equivalence and reset behavior. Review may create an
+unexecuted DRAFT; plan approval starts research; exact purchase approval remains
+separate. Reset adopts the returned fresh DRAFT and is blocked while settlement
+is unresolved. Model, publisher and settlement labels are independent. These
+changes are planned, not claims about the current application.
+
 ## Workflow
 
 The primary user-facing operation is a guided, resumable research sequence:

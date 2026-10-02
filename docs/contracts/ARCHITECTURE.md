@@ -51,6 +51,17 @@ flowchart LR
 
 ## Runtime modes
 
+### Current implementation limits
+
+The boundaries above are architectural requirements. The current fixture
+purchase path copies local evidence after settlement; independent HTTP
+delivery verification, durable in-flight purchase reservations, and remote
+runtime execution are not implemented. Citation validation checks source/span
+relationships, not whether the text semantically supports every claim.
+The proposed changes and verification gates are in the
+[October 10 development plan](../PRODUCT-ROADMAP-2026.md) and
+[shared implementation interfaces](../plans/october-10/INTERFACES.md).
+
 | Layer | Default | Optional seam |
 | --- | --- | --- |
 | Evidence | 12 local synthetic records | Authorized live adapters are future work |

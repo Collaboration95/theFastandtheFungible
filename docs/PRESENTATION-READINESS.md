@@ -1,281 +1,211 @@
-# October 1 presentation readiness
+# October 10 presentation readiness
+
+Target: Saturday, 10 October 2026, AI Tinkerers Singapore. This is the planned
+execution and rehearsal plan, updated 2 October. The old October 1 milestone
+is superseded. The broader implementation sequence is in
+[the roadmap](PRODUCT-ROADMAP-2026.md); technical tasks and acceptance are in
+[the implementation plan](plans/october-10/README.md), with worker rules in
+[the agent guide](AGENT-DEVELOPMENT.md). Planned features remain unimplemented
+until their evidence gates pass.
+
+Success means the audience sees a working research system acquire evidence
+through a real HTTP boundary, enforce its mandate, and explain a supported
+change in the answer. Use a five-minute core demo; keep deeper internals and
+extra scenarios for questions.
+
+## Event logistics still to confirm
+
+The [event page](https://singapore.aitinkerers.org/p/ai-tinkerers-singapore-saturday-demo-meetup-with-joe-heitzeberg-oct-10)
+was not directly retrievable during the initial research. The
+[chapter listing](https://singapore.aitinkerers.org/?tab=home)
+identified October 10, 2026 but indexed times conflicted. Confirm venue,
+arrival time, presenter acceptance, demo slot, display connection, and
+whether questions are inside the allotted time.
+
+The official [global events page](https://aitinkerers.org/all_cities)
+summarizes the organizers' [demo guide](https://aitinkerers.org/p/how-to-run-demos)
+as a five-minute technical, working-code format. Do not carry the
+previous five-to-seven-minute assumption into a confirmed five-minute slot.
+
+## Select and freeze the demonstrated mode
+
+Preferred mode: live model, local HTTP publisher simulation, durable local
+application state. One publisher service exposes three logical profiles. Use
+AgentCore hosting or existing Testnet settlement only after the required local
+route passes and their separate gates pass before the October 8 candidate.
+Optional qualification cannot delay rehearsal or reduce required checks.
+
+| Mode | What is real | What is simulated |
+| --- | --- | --- |
+| Primary target | Model inference, HTTP discovery/402/delivery, budget enforcement, citations, persisted recovery | Publisher businesses, authored premium scenarios; settlement if using simulation |
+| Optional Testnet | Above plus validated test-network transaction | Publisher partnership and economic value of test assets |
+| Offline fallback | Actual local services, deterministic decisions, HTTP boundary, ledger, citations | Model behavior and settlement |
+| Recorded fallback | A clearly labelled capture of a previously verified run | It is not a live execution |
+
+Opening disclosure:
+
+“I'm demonstrating a research agent that decides whether more evidence is
+worth paying for. These publisher profiles are ours, with a small frozen synthetic corpus
+and simulated premium reports. The research, HTTP requests, budget checks,
+and evidence trail are running here. Settlement is [simulation / XRPL
+Testnet / the specifically qualified alternative].”
+
+If model execution falls back, make that change visible. Never switch a
+pending transaction to another settlement adapter to keep the presentation
+moving.
+
+## Five minute script
+
+Keep setup prefilled in a fresh run; one concise review still demonstrates
+the mandate. Avoid spending the first two minutes completing forms.
+
+| Time | Screen and action | Point to make |
+| --- | --- | --- |
+| 0:00–0:25 | Question, mode, maximum spend | Can announced AI data-centre investment translate into operating capacity by 2028? |
+| 0:25–1:10 | Approve plan, show open-evidence answer and missing grid evidence | The system can answer without buying; this particular uncertainty remains |
+| 1:10–1:55 | Compare useful, derivative, and over-ceiling previews | Explain why one additional evidence family may matter and why the others do not |
+| 1:55–2:50 | Inspect exact quote, approve, show publisher challenge/delivery progress | The purchase crosses an actual HTTP boundary and spends only the approved amount |
+| 2:50–3:45 | Before/after claims and exact source span | Show the concrete fact that changed, weakened, or qualified the conclusion |
+| 3:45–4:35 | Show stop reason and one concise trace or qualified budget variation | The agent can finish without another purchase; decisions follow evidence and constraints |
+| 4:35–5:00 | Receipt and one engineering lesson | What worked, what remains simulated, and the next question for the room |
+
+Use one premium purchase in the timed story. Keep the two-purchase canonical
+fixture as regression coverage and a question-time path. The default fixture
+S$2.00 mandate/S$1.00 ceiling is useful for simulation; Testnet displays exact
+drops separately without pretending the fixture conversion is a live rate.
+
+Keep live recovery and longer counterfactuals for questions. A concise verified
+trace can explain retry integrity without interrupting the main evidence story.
+Label a recorded trace accurately.
+Prepare a 90-second compressed version and a deeper seven-minute version
+only for an explicitly longer slot.
+
+## Technical questions to prepare
+
+Have concise, inspectable answers for:
+
+- What decisions are model-driven versus deterministic?
+- How does a preview justify buying text the agent has not yet read?
+- Why are two articles sometimes only one evidence family?
+- What if the paid article is unhelpful or contradicts the hypothesis?
+- What prevents a retry from spending twice?
+- Can the citation be structurally valid yet fail to support the claim?
+- What did AgentCore improve, and which responsibilities remain in the app?
+- How was the coding agent's work evaluated independently?
+- Which missing pieces are commercial integration versus engineering?
+
+Use a real trace, a small state machine, and a failing/passing evaluation
+example. The engineering lesson should be concrete, such as discovering
+that recording idempotency only after settlement leaves a crash window.
+
+## Release gates
+
+### Functional and evidence gate
 
-Status: **planned and in progress**. This document is an execution and rehearsal
-plan, not a claim that the presentation is ready.
-
-Target: a reliable five-to-seven-minute local ResearchAgent demonstration on
-1 October 2026. The primary path uses deterministic fixture research and
-fixture settlement. Optional provider or XRPL Testnet modes must never be a
-single point of failure.
-
-## Success criteria
-
-The audience should leave with four clear ideas:
-
-1. ResearchAgent can answer from accessible evidence without forcing a payment.
-2. It can identify a material evidence gap and explain why a premium source may
-   help.
-3. A user-approved mandate, exact quote, and server guard constrain every
-   purchase.
-4. Final claims are linked to accessible evidence, while fixture and live modes
-   remain honestly labelled.
-
-## Authority and baseline
-
-The current implementation includes unsupported-scope handling, an open-only
-answer path, guided setup, exact purchase review, server-side citation
-validation, mutually exclusive workspace tabs, and isolated Playwright storage.
-The UO-10 owner run recorded 22 unit tests, 17 E2E tests, one focused axe test,
-responsive captures, reduced-motion coverage, 200% zoom coverage, and keyboard
-tab checks on 20 September.
-
-Those results are useful baseline evidence only. The presentation gate requires
-fresh runs on the final checkout and the presentation machine. The qualitative
-pilot and full demo rehearsal were not run as part of UO-10 and remain planned.
-
-## Execution order
-
-Work in this order so later evidence is not invalidated by subsequent changes:
-
-1. Freeze product claims and the canonical environment.
-2. Finish repository cleanup and resolve all verification failures.
-3. Run automated gates on the final checkout.
-4. Inspect responsive, keyboard, and content truthfulness manually.
-5. Capture only the final evidence and fallback artifacts.
-6. Rehearse the scripted path and recovery paths.
-7. Freeze presentation code and repeat the final-machine check.
-
-Do not add optional features after step 3 unless they fix a presentation
-blocker. Any late code change restarts the affected verification and rehearsal
-gates.
-
-## Workstream A — product truth and narrative
-
-Owner outcome: every spoken and visible claim matches the runtime.
-
-Planned checks:
-
-- Use the canonical data-centre question for the primary demonstration.
-- Show the unsupported-scope state briefly or keep it ready for questions.
-- Describe source profiles as “allowed to read,” not as verified truth.
-- Call the corpus synthetic and the default LLM behavior deterministic fixture
-  behavior.
-- Call fixture payment a simulation; never imply a publisher received funds.
-- Present Groq and XRPL Testnet as optional server-side modes only if they were
-  exercised on the final machine.
-- Explain that maximum spend is a cap, not wallet balance, source price, or
-  purchase consent.
-- Separate plan approval from exact purchase approval.
-- State that an open-only answer is valid when accessible evidence is usable.
-- Avoid claims of live web search, production security, mainnet readiness,
-  history/library completeness, or real publisher licensing.
-
-Gate A passes when the README, slides, app labels, and spoken script make the
-same claims and one reviewer finds no fixture/live ambiguity.
-
-## Workstream B — repository and environment
-
-Owner outcome: the demo starts predictably from a clean local state.
-
-Planned checks:
-
-- Use Node 20.19+ or 22.12+ and record the exact version.
-- Run `npm install` from the final lockfile.
-- Copy `.env.example` to a local ignored `.env`.
-- Pin `LLM_PROVIDER=fixture` and `XRPL_MODE=fixture` for the primary path.
-- Confirm the client uses port 5100 and the API uses 8788.
-- Confirm the stop script clears every port it starts.
-- Confirm Playwright uses `.playwright/runs.json`, not `data/runs.json`.
-- Run `npm run seed`, then start `npm run dev` and open the app once.
-- Confirm no local secret, wallet seed, provider key, or temporary artifact is
-  tracked.
-
-Gate B passes when a new shell can install, reset, start, and reach a healthy
-app using only the documented fixture instructions.
-
-## Workstream C — automated verification
-
-Owner outcome: code, API, browser, accessibility, and build checks are green.
-
-Run from the repository root on the final checkout:
-
-```bash
-npm run lint
-npm run typecheck
-npm test
-npm run test:e2e
-npm run test:a11y
-npm run build
-npm run verify
-```
-
-Required coverage:
-
-- Supported and unsupported fixture questions.
-- Plan approval before execution.
-- Open-evidence synthesis without a purchase.
-- Premium preview locked before access.
-- Exact quote and side-effect-free cancel.
-- Duplicate skip and over-ceiling block.
-- Idempotent purchase and unknown-outcome reconciliation.
-- Dossier rejection when citations reference inaccessible sources or spans.
-- Fixture fallback passing the same citation validator as provider output.
-- Pause, resume, stop, reload, and reset-safe receipts.
-- Browser tests on the actual client port using isolated persistence.
-
-Record the command, date, commit, test count, duration, and failure output in
-the presentation task or pull request. Do not create a new repository status
-document for each run.
-
-Gate C passes only when every command exits zero on the final checkout. A prior
-green run does not waive a new failure.
-
-## Workstream D — interaction, responsive, and accessibility review
-
-Owner outcome: the primary path remains understandable without presenter
-workarounds.
-
-Planned manual matrix:
-
-| Check | Required view/state |
-| --- | --- |
-| 360 and 390 CSS px | Setup, source row, exact purchase modal, answer |
-| 768 and 1024 CSS px | Guided setup, workspace tabs, citation drawer |
-| 1440 CSS px | Presentation layout and readable centered workspace |
-| 320px reflow | No body overflow or hidden critical action |
-| 200% text zoom | Consent, price, cap, errors, and recovery remain visible |
-| Reduced motion | No information depends on animation |
-| Keyboard only | Setup, tabs, modal, purchase cancel, citation open/close |
-| Screen-reader spot check | Labels, errors, live regions, modal name, focus restore |
-
-Specific acceptance points retained from UO-10:
-
-- Overview, Sources, and Activity are mutually exclusive accessible tabs.
-- The purchase modal traps focus, closes safely, and restores the trigger.
-- Cancel has no spending side effect.
-- Unknown purchase outcome disables blind retry.
-- Citation inspection shows an exact accessible span and evidence mode.
-- History and Library remain absent or explicitly unavailable, not dead links.
-
-Gate D passes when no critical action is clipped, no horizontal body overflow
-appears, focus is never lost, and all evidence/payment states have text labels.
-
-## Workstream E — demo data and artifacts
-
-Owner outcome: the presenter has a stable live path and a credible static
-fallback.
-
-Planned artifacts:
-
-- Architecture image: `assets/research-agent-architecture.png`.
-- Desktop workspace:
-  `ui-overhaul/evidence/UO-10/workspace-1440.png`.
-- Mobile workspace:
-  `ui-overhaul/evidence/UO-10/workspace-390.png`.
-- Editable architecture diagrams indexed from `diagrams/README.md`.
-- Official UX views in
-  `canvas/excalidraw/exports/official-researchagent-views.svg`.
-- A printed or saved canonical dossier produced on the final machine.
-- A short plain-text copy of the key fixture decisions and limitations.
-
-Retain one or two current screenshots per narrative need. Do not preserve a
-numbered screenshot sequence merely because it was once used as work evidence.
-
-Gate E passes when every artifact opens offline, is legible at presentation
-resolution, and reflects the final fixture labels and user flow.
-
-## Demo script
-
-### 0:00–0:45 — problem and trust boundary
-
-- State the research question.
-- Explain the synthetic fixture corpus and S$2 maximum-spend mandate.
-- Say that the default run uses no live website or real publisher payment.
-
-### 0:45–1:45 — guided setup
-
-- Select approved source profiles and show the maximum research spend.
-- Review the readable plan.
-- Say explicitly: “Approving this plan starts research; it does not approve a
-  purchase.”
-
-### 1:45–3:00 — evidence and open answer
-
-- Start research and show evidence families.
-- Point out the material grid/interconnection gap and duplicate reporting.
-- Generate the cited open-evidence answer before buying anything.
-
-### 3:00–4:30 — optional premium decision
-
-- Compare the useful, duplicate, and over-ceiling candidates.
-- Open the exact purchase review and show source, amount, mode, and remaining
-  authority.
-- Cancel once if time allows to prove no side effect; reopen and confirm.
-- Call the resulting settlement a fixture simulation.
-
-### 4:30–5:45 — answer impact and evidence
-
-- Show the updated cited conclusion.
-- Open one citation and its exact accessible span.
-- Distinguish model prose, source evidence, and receipt metadata.
-
-### 5:45–6:30 — close
-
-- Summarize: accessible evidence first, optional spend, deterministic guard,
-  explicit consent, validated citations.
-- Name the next milestone: user validation, then one bounded live source and
-  one protected-resource Testnet proof.
-
-## Recovery and rollback
-
-### Before the session
-
-- Keep a known-good Git commit and lockfile recorded.
-- Keep the fixture `.env` and presentation artifacts local and offline-ready.
-- Stop unrelated processes using 5100 or 8788.
-- Disable sleep, notifications, automatic updates, and unstable VPN/proxy
-  behavior for the presentation window.
-- Start the app at least 15 minutes early and complete one reset run.
-
-### During the session
-
-| Failure | Recovery |
-| --- | --- |
-| App page unavailable | Run `npm run dev:stop`, restart `npm run dev`, reload |
-| Stale or confusing run | Use the in-app fresh reset; if needed run `npm run seed` and restart |
-| Groq/provider unavailable | Return to fixture mode and use validated fixture synthesis |
-| Testnet unavailable | Do not retry blindly; show fixture purchase and explain the live seam |
-| Unknown payment outcome | Reconcile receipt/status; never submit a second payment blindly |
-| Browser layout problem | Use the verified presentation browser and 100% zoom |
-| Local process cannot recover | Switch to the saved evidence workspace, dossier, and architecture artifacts |
-
-Rollback means returning to the recorded known-good commit and fixture
-environment—not editing code live. Never use a destructive Git operation on a
-workspace that contains uncommitted work.
-
-## Rehearsal schedule
-
-- **T-7 to T-5 days:** freeze claims, finish verification fixes, run the first
-  complete technical rehearsal.
-- **T-4 to T-3 days:** run one reviewer rehearsal and one keyboard/responsive
-  pass; capture final artifacts.
-- **T-2 days:** run three consecutive clean-reset demonstrations and time the
-  script.
-- **T-1 day:** freeze code, copy artifacts, verify adapters are fixture by
-  default, and run once on the actual presentation setup.
-- **Presentation day:** start early, run health/reset checks, then avoid
-  unnecessary dependency or environment changes.
-
-## Definition of ready
-
-The presentation is ready only when all of the following are true:
-
-- Gates A through E pass on the final checkout.
-- The canonical fixture path succeeds three consecutive times after reset.
-- The presenter completes the script in seven minutes without hidden setup.
-- One reviewer can explain the product, spend boundary, fixture boundary, and
-  evidence proof after watching it once.
-- Open-only, paid, blocked, unsupported, and fallback states are truthful.
-- All citations shown in the final answer resolve to accessible exact spans.
-- A static offline fallback is available and recently opened.
-- No material work remains scheduled for the morning of the presentation.
+Require an open-only answer, appropriate no-purchase outcome, useful purchase,
+derivative skip, over-cap rejection, exact approval cancellation, and an
+evidence-bound result. The citation drawer must show the approved source
+version and exact span. The answer diff may say unchanged; it must not
+manufacture purchase value.
+
+The same canonical corpus supports live and deterministic modes, with modes
+labelled separately. Generality claims require held-out scenarios.
+
+### Backend and recovery gate
+
+Run independent tests for quote mutation, duplicate/concurrent attempts,
+unknown settlement, process interruption, corrupted/wrong-version delivery,
+and delivery retry. Verify database rows and settlement attempt counts, not
+only success messages. Inspect a receipt after reload and after catalog
+updates to prove historical fields remain stable.
+
+Prebuild a recovery scenario that can fail delivery on demand. After payment,
+stop the publisher, observe delivery pending/failed, restart it, retry
+delivery, and verify unchanged spend and purchase identity. For the timed
+demo, a deterministic fault hook is acceptable when described as fault
+injection and confined to the simulator.
+
+### Automated gate
+
+Current aggregate, executed in an environment that permits local listeners:
+
+~~~sh
+LLM_PROVIDER=fixture XRPL_MODE=fixture APP_MODE=fixture npm run verify
+~~~
+
+This is the existing command. Additional transaction checks, the eight-case
+scenario scorecard, rehearsal runner and doctor in the verification module are
+planned work. Once implemented, the release gate must include them. A new
+property-testing framework or general coding controller is not required.
+
+Record the exact commit, runtime/lockfile/corpus versions, exit status, counts,
+and artifact paths in the implementation task or PR. Do not copy historical
+test counts as proof of current readiness. Live/cloud/Testnet qualification
+is separate from fixture test success.
+
+### UI and presentation gate
+
+Prioritize a large readable answer, clear evidence change, explicit price/cap,
+and the safe next action. Keep detailed protocol/trace fields in secondary
+inspection. Use the existing neutral workspace rather than redesigning the
+whole product.
+
+Inspect the actual projector/laptop viewport plus 390px mobile and 200% zoom.
+Check keyboard navigation, approval focus/cancel/return, citation focus,
+error messages, and reduced motion. Axe scans must cover later interaction
+states as well as the first screen.
+
+### Operational gate
+
+The proposed launcher/doctor must identify its own processes, check ports,
+verify the corpus hash and database schema, check the selected model/runtime,
+and provide a safe fresh-run command. Test startup from the documented
+lockfile installation on the presentation machine.
+
+Keep immutable completed receipts. A fresh demo resets only the designated
+demo run/database namespace; it must not erase unrelated user history.
+
+No new independent feature after October 7. Cut the release candidate on
+October 8 and freeze the rehearsed code on October 9. A necessary late fix
+reruns affected tests and the timed story.
+
+## Rehearsal matrix
+
+| Scenario | Expected result | Stage fallback |
+| --- | --- | --- |
+| Clean start | New run, correct corpus, no inherited access/spend | Launch isolated known-good mode |
+| No external network | Local publishers and deterministic research work | Announce offline mode |
+| Provider/AgentCore timeout | Bounded wait and visible recovery without invalid final answer | Local qualified model/fixture path |
+| Browser reload | Same persisted run, spend, grants, and receipt | Reopen run by ID |
+| Process restart after submission | Unknown state reconciles; no new payment | Show persisted outcome/trace |
+| Publisher unavailable after settlement | Paid receipt retained, delivery can retry | Resume delivery when service returns |
+| Quote expires or changes | No transaction; require current review | Refresh the quote |
+| Presentation process fails | Restart from frozen scripts within 60 seconds | Labelled recording/screenshots |
+
+Require three clean timed rehearsals on the final machine and one recovery
+rehearsal. Record durations and interruptions; three successes are a release
+check, not a statistically established reliability rate.
+
+## Offline artifacts
+
+Prepare one current screenshot of the final impact view, saved answer/receipt
+artifacts from the verifier, a short labelled recording of the five-minute flow, and the
+architecture/state diagram used in questions. Keep them accessible without
+the network and open each once before travel. A polished user-facing export or
+research library is outside the required scope.
+
+The old UO-10 images document the September UI. Replace presentation exports
+only after the new flow passes. Do not imply those images show new publisher
+or AgentCore capabilities.
+
+## Event day and follow-up
+
+Run preflight before departure and after connecting the display. Open the
+app, publisher page, and one useful trace; hide unrelated terminals/accounts.
+Use the frozen corpus and qualified runtime. Confirm the fresh run has no
+inherited purchases.
+
+Capture technical feedback on whether the purchase rationale, evidence
+independence, changed conclusion, and receipt are understandable. Useful
+next validation is a small set of researcher sessions comparing the agent
+with an open-only baseline. Payment completion alone is not product value.

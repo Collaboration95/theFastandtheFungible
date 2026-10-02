@@ -75,7 +75,8 @@ become operating capacity by 2028. The fixture classifier intentionally
 rejects unrelated questions instead of returning polished but irrelevant
 evidence.
 
-Recommended five-to-seven-minute path:
+Current fixture walkthrough (the planned October 10 stage story uses one purchase
+within five minutes; see the readiness plan):
 
 1. Start with the canonical question and choose the approved source profiles.
 2. Set the maximum research spend and review the generated plan. Emphasize that
@@ -178,8 +179,11 @@ the normal `data/runs.json` demo history.
 
 Start with the [documentation index](docs/README.md):
 
+- [Team manifesto and planned features](docs/DEMO-MANIFESTO.md)
+- [October 10 implementation tasks and acceptance](docs/plans/october-10/README.md)
 - [Product roadmap](docs/PRODUCT-ROADMAP-2026.md)
-- [October 1 presentation readiness plan](docs/PRESENTATION-READINESS.md)
+- [October 10 presentation readiness plan](docs/PRESENTATION-READINESS.md)
+- [Agent development and verification harness plan](docs/AGENT-DEVELOPMENT.md)
 - [Next-stage UX brief](docs/UX-NEXT-STAGE.md)
 - [Company and protocol context](company-research-context.md)
 - [Product, architecture, design, security, and UX contracts](docs/contracts/)

@@ -7,8 +7,11 @@ not part of the maintained documentation set; Git history preserves them.
 ## Start here
 
 - [Repository overview and setup](../README.md)
-- [October 1 presentation readiness](PRESENTATION-READINESS.md)
-- [Post-hackathon product roadmap](PRODUCT-ROADMAP-2026.md)
+- [Team manifesto and planned features](DEMO-MANIFESTO.md)
+- [October 10 implementation tasks and acceptance](plans/october-10/README.md)
+- [October 10 presentation readiness](PRESENTATION-READINESS.md)
+- [October 10 product development plan](PRODUCT-ROADMAP-2026.md)
+- [Agent development and verification harness](AGENT-DEVELOPMENT.md)
 - [Next-stage UX brief](UX-NEXT-STAGE.md)
 - [Company and protocol context](../company-research-context.md)
 
@@ -23,9 +26,13 @@ not part of the maintained documentation set; Git history preserves them.
 - [UX](contracts/UX-CONTRACT.md) — workflow, ownership, recovery, and
   accessibility.
 
-Contracts describe durable behavior. The readiness plan owns presentation
-work, the roadmap owns sequencing, and the UX brief owns proposed next-stage
-interaction work. A plan or brief must not be read as proof of implementation.
+Contracts describe durable behavior and identify current implementation limits.
+The manifesto states team direction; the roadmap owns sprint scope and research;
+the implementation index and module plans own issue contracts, dependencies and
+acceptance. Their shared interfaces resolve October 10 changes to legacy behavior.
+The readiness plan owns presentation work, the agent guide owns coding and repair
+loops, and the UX brief supplies broader interaction context. A plan or brief is
+not proof of implementation.
 
 ## Visual source material
 
