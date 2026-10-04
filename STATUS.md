@@ -25,10 +25,12 @@
 - W3-POLISH: [PR #93](https://github.com/Collaboration95/theFastandtheFungible/pull/93), merged; single review NO BLOCKERS; check:fast/build pass; final projector/browser verification follows.
 - W3-STAGE-CHECK-FIX: [PR #94](https://github.com/Collaboration95/theFastandtheFungible/pull/94), merged; single review NO BLOCKERS; 111 tests and real browser story/S$0 pass.
 ## In progress
-- W3-LIVE: actual Groq calls succeed but also rate-limit; Clef decisions return 422. Qualifying request schema and explicit fixture substitutions.
-- W3-STAGE-CHECK-FIX: update browser navigation for merged Decisions/Wire views; unit tests pass, previous all-visible browser assertion is stale.
+- W3-LIVE: Groq and corrected Clef now both succeed; qualifying five runs per variant. Old Clef schema caused 422; repair pending merge. Groq rate limits use bounded retries and labelled fallback.
 - Final main fixture/open-sufficient/fault/live smoke and projector/citation checks.
 ## Next up
 - Single reviews/merges; final main verify, fixture/live smoke and human handoff.
 ## Demo check
-- PASS: npm run demo on main S$2 → S$0.80/v2 QUALIFIES/round-2 stop/PDF; S$0 → zero spend/would buy. Main verify passes 97 tests/two browsers/build; scenario pass follows.
+- PASS: polished main fixture S$2 → S$0.80/v2 QUALIFIES/round-2 stop/real PDF; S$0 → zero spend/would buy; open-sufficient → zero purchases.
+- PASS: fault UI → delivery failed → retry → same receipt, one settlement, one S$0.80 charge and one verified grant.
+- PASS: 1280×720 Ask in viewport; all 16 v1/v2 UI citations and all 32 named PDF passages exact. Projector screenshots and first two PDF pages visually checked.
+- Stage browser passed with updated tab navigation; final full main verify follows live merge.
