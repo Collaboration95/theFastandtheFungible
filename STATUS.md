@@ -1,4 +1,4 @@
-# Build status (4 Oct 2026, 22:55 SGT)
+# Build status (4 Oct 2026, 23:16 SGT)
 ## Needs you
 - Cloud Run: qualify persistent SQLite WAL settlement storage before deployment; current deploy/startup guards refuse unsafe storage. Local publisher remains the fallback. Docker/cloud runtime unverified.
 - Thu 8 Oct after 20:00 freeze: record a labelled fixture fallback video. Fri 9 Oct: rehearse 3× on the presenting laptop and tag `demo-oct10`.
@@ -25,8 +25,8 @@
 - W3-POLISH: [PR #93](https://github.com/Collaboration95/theFastandtheFungible/pull/93), merged; single review NO BLOCKERS; check:fast/build pass; final projector/browser verification follows.
 - W3-STAGE-CHECK-FIX: [PR #94](https://github.com/Collaboration95/theFastandtheFungible/pull/94), merged; single review NO BLOCKERS; 111 tests and real browser story/S$0 pass.
 ## In progress
-- W3-LIVE: Groq and corrected Clef now both succeed; qualifying five runs per variant. Old Clef schema caused 422; repair pending merge. Groq rate limits use bounded retries and labelled fallback.
-- Final main fixture/open-sufficient/fault/live smoke and projector/citation checks.
+- W3-LIVE: final checks/PR. Five canonical, open-sufficient and contradiction attempts recorded; five unchanged runs used explicit fixtures after rate limits halted live testing. Both Clef model probability tables measured; flash threshold 0.15 supported by observed grid/supplier separation.
+- Final main verify and npm run demo:live smoke after provider merge.
 ## Next up
 - Single reviews/merges; final main verify, fixture/live smoke and human handoff.
 ## Demo check
