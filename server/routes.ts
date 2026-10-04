@@ -62,7 +62,18 @@ export async function createApiApp(options: ApiOptions = {}) {
       store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Latest validated answer and ledger saved.' })
     })
   }
-  app.get('/health', (_req, res) => res.json({ status: 'ok', labels, faults: process.env.PUBLISHER_FAULTS === '1' }))
+  const faultsAvailable = process.env.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
+  app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', labels, faults: faultsAvailable }))
+  if (faultsAvailable) app.post('/api/demo/faults', async (req, res) => {
+    z.object({ failNextDelivery: z.literal(true) }).parse(req.body)
+    const response = await fetch(new URL('/__faults', publisherUrl), {
+      method: 'POST', signal: AbortSignal.timeout(3000),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${options.secret ?? process.env.PUBLISHER_SECRET}` },
+      body: JSON.stringify({ failNextDelivery: true }),
+    })
+    if (!response.ok) return res.status(502).json({ error: 'Local publisher fault control is unavailable.' })
+    res.json({ failNextDelivery: true, label: 'SIMULATED fault · no real funds' })
+  })
   app.post('/runs', (req, res) => {
     const input = AskSchema.parse(req.body)
     const run = store.createRun(input.question, input.budgetMinor, labels)

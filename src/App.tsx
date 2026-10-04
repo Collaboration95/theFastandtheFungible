@@ -13,6 +13,7 @@ import DecisionTable from './components/DecisionTable'
 import Budget from './components/Budget'
 import Wire from './components/Wire'
 import Modes from './components/Modes'
+import FaultDemo from './components/FaultDemo'
 
 const activeKey = 'researchagent.october.active-run'
 export default function App() {
@@ -64,11 +65,11 @@ export default function App() {
     setError('')
     try { setRun(await retryDelivery(run.runId, intentId)) } catch { setError('Delivery could not be retried. The charge remains recorded; no new purchase was made.') }
   }
-  return <Layout header={<Modes labels={run?.labels} />} aside={run ? <><Budget run={run} /><DecisionTable run={run} /><Activity run={run} /><Wire run={run} /></> : <section className="ra-panel"><h2>Evidence procurement</h2><p>LLMs write. A decision model chooses. Code pays within your budget.</p><p>One retrieval pass, a cited answer, and a visible policy for deciding whether more evidence is worth buying.</p><p className="ra-muted">x402-shaped publisher protocol · synthetic corpus · local publishers</p><p>SIMULATED SGD · no real funds</p></section>}>
+  return <Layout header={<><Modes labels={run?.labels} /><FaultDemo run={run} /></>} aside={run ? <><Budget run={run} /><DecisionTable run={run} /><Activity run={run} /><Wire run={run} /></> : <section className="ra-panel"><h2>Evidence procurement</h2><p>LLMs write. A decision model chooses. Code pays within your budget.</p><p>One retrieval pass, a cited answer, and a visible policy for deciding whether more evidence is worth buying.</p><p className="ra-muted">x402-shaped publisher protocol · synthetic corpus · local publishers</p><p>SIMULATED SGD · no real funds</p></section>}>
     <Ask onAsk={sendAsk} busy={sending || active} />
     {error && <p className="ra-error" role="status">{error}</p>}
     {run && <><Answer key={run.runId} run={run} onCitation={openCitation} /><Impact run={run} />
-      {run.intents.filter(i => i.status === 'DELIVERY_FAILED').map(intent => <section className="ra-panel" key={intent.intentId}><h2>Delivery failed after payment</h2><p>The receipt is preserved. Retry downloads the same paid source without another settlement.</p><button type="button" className="ra-primary-button" onClick={() => void retry(intent.intentId)}>Retry delivery</button></section>)}
+      {run.intents.filter(i => i.status === 'DELIVERY_FAILED').map(intent => <section className="ra-panel" key={intent.intentId}><h2>Delivery failed after payment</h2><p>The receipt is preserved. Retry downloads the same paid source without another settlement.</p><button type="button" className="ra-button" onClick={() => void retry(intent.intentId)}>Retry delivery</button></section>)}
       <ReportButton run={run} onReport={downloadReport} busy={reporting || active} />
       {reportUrl && <a className="ra-text-button" href={reportUrl} target="_blank" rel="noreferrer">Open report</a>}
       <Sources run={run} onOpen={candidate => setPassage({ candidate })} />
