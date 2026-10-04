@@ -1,4 +1,4 @@
-# Build status (4 Oct 2026, 22:30 SGT)
+# Build status (4 Oct 2026, 22:34 SGT)
 ## Needs you
 - After freeze: Cloud Run deploy, labelled fallback recording, three rehearsals, and tag `demo-oct10`.
 ## Decisions I made
@@ -19,10 +19,12 @@
 - W2-INTEGRATE: [PR #88](https://github.com/Collaboration95/theFastandtheFungible/pull/88), merged; single review NO BLOCKERS; verify passes 97 tests, two browsers and build.
 - W2-SCENARIOS: [PR #89](https://github.com/Collaboration95/theFastandtheFungible/pull/89), merged; single review NO BLOCKERS; 108 tests pass, one optional impact regression being fixed.
 ## In progress
-- W2-INTEGRATE: server/UI wiring, dead-code removal and browser/PDF verification.
-- W2-SCENARIOS: ephemeral-process scenario and leak tests.
+- W3-LIVE: real Groq/Clef qualification and probability comparison.
+- W3-FAULT: local dev fault control and one-charge retry smoke.
+- W3-POLISH: 1280×720 projector layout.
+- W3-CLOUDRUN: deployment files only; durable journal preparation, no cloud actions.
+- W3-IMPACT-FIX: optional unchanged-variant classification.
 ## Next up
-- Merge W2, then live qualification, fault toggle, projector polish and Cloud Run preparation.
+- Single reviews/merges; final main verify, fixture/live smoke and human handoff.
 ## Demo check
-- PASS: first W2 ephemeral HTTP smoke: S$2 spends S$0.80, v2 QUALIFIES, round 2 stop, PDF; S$0 spends zero and shows would buy.
-- Wave-1 main verify passes; October npm demo smoke on main follows W2 merge.
+- PASS: npm run demo on main S$2 → S$0.80/v2 QUALIFIES/round-2 stop/PDF; S$0 → zero spend/would buy. Main verify passes 97 tests/two browsers/build; scenario pass follows.
