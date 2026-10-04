@@ -4,6 +4,7 @@ import type { Answer, ContentEnvelope, Facet, PublicCandidate } from '../shared/
 import type { PublisherClient } from '../server/publisher-client.js'
 import { compareAnswers, retrieve, writeAnswer } from '../server/agents/research.js'
 import { validateAnswer } from '../server/agents/citations.js'
+import { loadCorpus } from '../publisher/corpus.js'
 import { streamJson } from '../server/agents/llm.js'
 
 const candidate = (id: string, facets: Facet[], tier: 'FREE' | 'PAID' = 'FREE'): PublicCandidate => ({ ...exampleCandidate, resourceId: id, facets, tier })
@@ -40,10 +41,11 @@ describe('W1 research', () => {
       ['Only 240 of the 600 MW has a confirmed energisation slot before 2028; substation works have slipped 14 months.', 'QUALIFIES'],
       ['Grid energisation is ahead of schedule and all 600 MW is confirmed.', 'CONTRADICTS'],
       ['Demand contracts support a 600 MW expansion.', 'UNCHANGED'],
+      ['The grid operator has confirmed energisation slots for 2028.', 'STRENGTHENS'],
     ] as const
     for (const [text, classification] of cases) {
       const next = await writeAnswer({ question: 'Does this work?', candidates: [...free, paid], contents: [...bodies, content(paid.resourceId, text)], version: 8, previous: answer })
-      expect(next.answer.openGaps).toEqual([])
+      expect(next.answer.openGaps.map(g => g.facet)).toEqual(classification === 'UNCHANGED' ? ['grid-energisation'] : [])
       expect(next.impact?.classification).toBe(classification)
       expect(answer.version).toBe(7)
     }
@@ -75,6 +77,45 @@ describe('W1 research', () => {
     expect(allContents.flatMap(c => c.spans)).toHaveLength(56)
     expect(v2.answer.claims.some(c => c.text.includes('demand'))).toBe(true)
     expect(v2.answer.claims.some(c => c.text.includes('equipment-delivery'))).toBe(true)
+  })
+  it('compares cited evidence despite renamed bindings, paraphrased claims and summary churn', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'fixture')
+    const initial = (await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })).answer
+    const copy = content('renamed-paid-copy', bodies[0].body)
+    const repeated: Answer = { ...initial, version: 2, openGaps: [], claims: [{
+      id: 'rewritten', text: 'An independently worded summary of the same capacity.', stance: 'CHALLENGES',
+      citations: [{ resourceId: copy.resourceId, version: copy.version, spanId: copy.spans[0].id }],
+    }] }
+    expect(compareAnswers(initial, repeated, [...bodies, copy]).classification).toBe('UNCHANGED')
+    expect(repeated.claims[0].citations[0].resourceId).toBe('renamed-paid-copy')
+    const redundant = content('another-opaque-id', 'The report repeats public equipment lead times and supplies no new material evidence.')
+    const next = await writeAnswer({ question: 'q', candidates: [...free, candidate(redundant.resourceId, ['grid-energisation'], 'PAID')], contents: [...bodies, redundant], version: 2, previous: initial })
+    expect(next.impact?.classification).toBe('UNCHANGED')
+    expect(next.answer.openGaps.map(g => g.facet)).toContain('grid-energisation')
+    // A no-update passage must not suppress another passage with an actual finding.
+    const actual = content('new-independent-finding', 'Only 240 of the 600 MW has confirmed grid slots.')
+    const mixed = await writeAnswer({ question: 'q', candidates: [...free, candidate(redundant.resourceId, ['grid-energisation'], 'PAID'), candidate(actual.resourceId, ['grid-energisation'], 'PAID')], contents: [...bodies, redundant, actual], version: 2, previous: initial })
+    expect(mixed.impact?.classification).toBe('QUALIFIES')
+    const omitted = content('previously-accessible', 'Substation works have slipped 14 months.')
+    expect(compareAnswers(initial, { ...repeated, claims: [{ ...repeated.claims[0], citations: [{ resourceId: omitted.resourceId, version: omitted.version, spanId: omitted.spans[0].id }] }] }, [...bodies, omitted], [...bodies, omitted]).classification).toBe('UNCHANGED')
+  })
+  it('keeps the actual unchanged corpus gap unresolved and preserves canonical/contradiction impacts', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'fixture')
+    for (const [variant, classification] of [['unchanged', 'UNCHANGED'], [undefined, 'QUALIFIES'], ['contradiction', 'CONTRADICTS']] as const) {
+      const corpus = await loadCorpus(variant)
+      const accessible = corpus.filter(c => c.tier === 'FREE')
+      const initial = (await writeAnswer({ question: 'q', candidates: corpus, contents: accessible, version: 1 })).answer
+      const paid = corpus.find(c => c.resourceId === 'grid-operators-report')!
+      const next = await writeAnswer({ question: 'q', candidates: corpus, contents: [...accessible, paid], version: 2, previous: initial })
+      expect(next.impact?.classification).toBe(classification)
+      expect(next.answer.openGaps.map(g => g.facet)).toEqual(variant === 'unchanged' ? ['grid-energisation'] : [])
+      expect(next.answer.claims.length).toBeLessThanOrEqual(8)
+      expect(next.answer.claims.some(c => c.citations.some(ref => ref.resourceId === paid.resourceId && ref.version === paid.version))).toBe(true)
+      for (const claim of next.answer.claims) for (const ref of claim.citations) {
+        const delivered = [...accessible, paid].find(c => c.resourceId === ref.resourceId && c.version === ref.version)!
+        expect(delivered.body).toContain(delivered.spans.find(s => s.id === ref.spanId)!.text)
+      }
+    }
   })
   it('drops the whole invalid claim, never substitutes another span or displays an unbound conclusion', async () => {
     const { answer } = await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })

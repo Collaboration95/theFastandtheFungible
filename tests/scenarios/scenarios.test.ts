@@ -130,13 +130,12 @@ describe('October demo scenarios: separate API and publisher processes', () => {
     assertNoLeaks(h.observations, h.resources)
   }, 30_000)
 
-  // TODO(W2-SCENARIOS): research compareAnswers reports STRENGTHENS for the unchanged corpus.
-  // Optional scenario is retained as a regression target; fix belongs to the research package.
-  it.skip('unchanged: paying for repetitive evidence cannot imply material impact', async () => {
+  it('unchanged: paying for repetitive evidence cannot imply material impact', async () => {
     const h = await scenario('unchanged')
     const run = await h.until(await h.ask())
     gridBought(run)
     expect(run.impact?.classification).toBe('UNCHANGED')
+    expect(run.answers[1].openGaps.map(g => g.facet)).toContain('grid-energisation')
     assertNoLeaks(h.observations, h.resources)
   }, 30_000)
 
