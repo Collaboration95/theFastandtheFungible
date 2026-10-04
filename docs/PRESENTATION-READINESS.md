@@ -13,85 +13,83 @@ through a real HTTP boundary, enforce its mandate, and explain a supported
 change in the answer. Use a five-minute core demo; keep deeper internals and
 extra scenarios for questions.
 
-## Event logistics still to confirm
+## Event logistics
 
-The [event page](https://singapore.aitinkerers.org/p/ai-tinkerers-singapore-saturday-demo-meetup-with-joe-heitzeberg-oct-10)
-was not directly retrievable during the initial research. The
-[chapter listing](https://singapore.aitinkerers.org/?tab=home)
-identified October 10, 2026 but indexed times conflicted. Confirm venue,
-arrival time, presenter acceptance, demo slot, display connection, and
-whether questions are inside the allotted time.
+The following was confirmed from the
+[event page](https://singapore.aitinkerers.org/p/ai-tinkerers-singapore-saturday-demo-meetup-with-joe-heitzeberg-oct-10)
+on 4 October:
 
-The official [global events page](https://aitinkerers.org/all_cities)
-summarizes the organizers' [demo guide](https://aitinkerers.org/p/how-to-run-demos)
-as a five-minute technical, working-code format. Do not carry the
-previous five-to-seven-minute assumption into a confirmed five-minute slot.
+- **When and where:** Saturday 10 October 2026, 09:30–12:30, at Singtel
+  8George, 8 George St, Singapore 049144. Capacity is 70.
+- **Running order:** doors open at 09:30. Lightning demos run from 10:40,
+  five minutes each plus Q&A.
+- **Listing:** the demo is accepted and listed as "ResearchAgent: Evidence
+  Procurement Guard".
+- **Science Fair table:** organizers may assign some projects to a table
+  during networking for deeper walkthroughs. Bring the recovery demo, the
+  scenario tests and the build log for that.
+- **Sponsor prize:** Google Cloud Run sponsors the event. Google will select
+  three demos deployed on Cloud Run, and each receives US$100 in credits.
+
+Still to confirm with the organizers: slot order, the display connection and
+venue Wi-Fi. Carry a phone hotspot.
+
+The organizers' [demo guide](https://aitinkerers.org/p/what-makes-a-great-demo-at-ai-tinkerers)
+asks for running code, visible internals, and how it was built: the stack,
+workflow, and agentic process. It explicitly rules out decks, pitches and
+videos of the thing running.
 
 ## Select and freeze the demonstrated mode
 
-Preferred mode: live model, local HTTP publisher simulation, durable local
-application state. One publisher service exposes three logical profiles. Use
-AgentCore hosting or existing Testnet settlement only after the required local
-route passes and their separate gates pass before the October 8 candidate.
-Optional qualification cannot delay rehearsal or reduce required checks.
+Preferred mode: live Groq LLM, live Cloudflare Clef decisions, local HTTP publisher,
+simulated settlement, durable local state. Cloud Run publisher hosting is
+optional and only used if it is ready before the freeze. AgentCore and XRPL
+Testnet are removed.
 
 | Mode | What is real | What is simulated |
 | --- | --- | --- |
-| Primary target | Model inference, HTTP discovery/402/delivery, budget enforcement, citations, persisted recovery | Publisher businesses, authored premium scenarios; settlement if using simulation |
-| Optional Testnet | Above plus validated test-network transaction | Publisher partnership and economic value of test assets |
-| Offline fallback | Actual local services, deterministic decisions, HTTP boundary, ledger, citations | Model behavior and settlement |
+| Primary (`npm run demo:live`) | Groq answers and report, Clef decisions, HTTP search/402/delivery, budget enforcement, citations, persisted recovery | Publishers, corpus, settlement |
+| Offline fallback (`npm run demo`) | Local services, HTTP boundary, ledger, citations, policy code | LLM output (extractive), decision probabilities (fixture heuristics), settlement |
 | Recorded fallback | A clearly labelled capture of a previously verified run | It is not a live execution |
 
-Opening disclosure:
+Opening line: “Publishers are starting to answer AI agents with HTTP 402. This
+is the buyer side. The publishers and articles are fictional and settlement is
+simulated; the agents, HTTP calls, budget enforcement and evidence trail are
+running here.”
 
-“I'm demonstrating a research agent that decides whether more evidence is
-worth paying for. These publisher profiles are ours, with a small frozen synthetic corpus
-and simulated premium reports. The research, HTTP requests, budget checks,
-and evidence trail are running here. Settlement is [simulation / XRPL
-Testnet / the specifically qualified alternative].”
-
-If model execution falls back, make that change visible. Never switch a
-pending transaction to another settlement adapter to keep the presentation
-moving.
+When a provider falls back, the mode badge shows it. Never hide a fallback.
 
 ## Five minute script
 
-Keep setup prefilled in a fresh run; one concise review still demonstrates
-the mandate. Avoid spending the first two minutes completing forms.
+The timed story is in [prompt.md §1](../prompt.md#stage-story-5-minutes):
 
-| Time | Screen and action | Point to make |
-| --- | --- | --- |
-| 0:00–0:25 | Question, mode, maximum spend | Can announced AI data-centre investment translate into operating capacity by 2028? |
-| 0:25–1:10 | Approve plan, show open-evidence answer and missing grid evidence | The system can answer without buying; this particular uncertainty remains |
-| 1:10–1:55 | Compare useful, derivative, and over-ceiling previews | Explain why one additional evidence family may matter and why the others do not |
-| 1:55–2:50 | Inspect exact quote, approve, show publisher challenge/delivery progress | The purchase crosses an actual HTTP boundary and spends only the approved amount |
-| 2:50–3:45 | Before/after claims and exact source span | Show the concrete fact that changed, weakened, or qualified the conclusion |
-| 3:45–4:35 | Show stop reason and one concise trace or qualified budget variation | The agent can finish without another purchase; decisions follow evidence and constraints |
-| 4:35–5:00 | Receipt and one engineering lesson | What worked, what remains simulated, and the next question for the room |
+1. ask with a S$2 budget;
+2. the free cited answer, ending with its open gap;
+3. the decision table with Clef's probabilities and the policy;
+4. 402 → settle → verified delivery → answer v2 with the change highlighted;
+5. the agent stops on its own;
+6. the PDF report;
+7. pop the hood.
 
-Use one premium purchase in the timed story. Keep the two-purchase canonical
-fixture as regression coverage and a question-time path. The default fixture
-S$2.00 mandate/S$1.00 ceiling is useful for simulation; Testnet displays exact
-drops separately without pretending the fixture conversion is a live rate.
-
-Keep live recovery and longer counterfactuals for questions. A concise verified
-trace can explain retry integrity without interrupting the main evidence story.
-Label a recorded trace accurately.
-Prepare a 90-second compressed version and a deeper seven-minute version
-only for an explicitly longer slot.
+Keep the S$0 "would buy" run, the open-sufficient variant, the fault demo and
+the injection trap for questions or the Science Fair table.
 
 ## Technical questions to prepare
 
 Have concise, inspectable answers for:
 
-- What decisions are model-driven versus deterministic?
+- Why does a decision model choose purchases instead of an LLM, and what are
+  the limits of decision models (no counting or date arithmetic, sensitivity
+  to adversarial text)? How did clef-flash and clef compare on our own
+  decisions?
 - How does a preview justify buying text the agent has not yet read?
+- How were the policy threshold and the question wording calibrated?
 - Why are two articles sometimes only one evidence family?
-- What if the paid article is unhelpful or contradicts the hypothesis?
+- What if the paid article is unhelpful or contradicts the answer?
+- What stops prompt injection inside an article from spending money?
 - What prevents a retry from spending twice?
 - Can the citation be structurally valid yet fail to support the claim?
-- What did AgentCore improve, and which responsibilities remain in the app?
-- How was the coding agent's work evaluated independently?
+- How did coding agents build this, and what broke along the way?
 - Which missing pieces are commercial integration versus engineering?
 
 Use a real trace, a small state machine, and a failing/passing evaluation
@@ -165,8 +163,8 @@ lockfile installation on the presentation machine.
 Keep immutable completed receipts. A fresh demo resets only the designated
 demo run/database namespace; it must not erase unrelated user history.
 
-No new independent feature after October 7. Cut the release candidate on
-October 8 and freeze the rehearsed code on October 9. A necessary late fix
+Feature freeze is Thursday 8 October at 20:00 SGT. Rehearse and tag the
+frozen build on 9 October. A necessary late fix
 reruns affected tests and the timed story.
 
 ## Rehearsal matrix

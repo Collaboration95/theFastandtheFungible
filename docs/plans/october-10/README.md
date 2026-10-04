@@ -1,5 +1,23 @@
 # October 10 implementation plan
 
+> **Lean execution override (4 October).** By its own 4 October milestone,
+> none of this plan had been implemented. Execution now follows
+> [prompt.md](../../../prompt.md). The product is reframed as "Perplexity with
+> a wallet":
+>
+> - a free cited answer;
+> - a per-prompt budget that replaces per-purchase approval;
+> - a Cloudflare Clef decision agent that chooses what to buy, while the LLM
+>   stays on Groq;
+> - a deep-research PDF.
+>
+> The plan now has a much smaller verification surface, five hard gates, a
+> single review pass per PR, and parallel agent waves. Feature freeze is
+> Thursday 8 October at 20:00 SGT. AWS AgentCore (VER-04) is removed. Where
+> this index, the module plans, or the bodies of issues #59–#78 disagree with
+> prompt.md, prompt.md wins. The RES/COM/UI/VER IDs and issue numbers remain
+> the tracking identifiers.
+
 Planning date: October 2, 2026, Singapore time. Status: planned work; no feature
 or passing implementation check is implied. This package turns the
 [team manifesto](../../DEMO-MANIFESTO.md) and [sprint roadmap](../../PRODUCT-ROADMAP-2026.md)

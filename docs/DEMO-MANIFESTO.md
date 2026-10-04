@@ -1,35 +1,54 @@
-# ResearchAgent: buy evidence with a purpose
+# ResearchAgent: Perplexity with a wallet
 
 ## What we are building
 
-ResearchAgent helps people reach better-supported conclusions while spending
-only when additional evidence is likely to matter. It researches from open
-material, identifies an unresolved question, evaluates premium sources,
-requests approval for an exact purchase, and shows what the acquired evidence
-changed.
+You ask a question and set a budget for that prompt. A research agent answers
+from free sources first, with citations, and names what it still doesn't know.
+A decision agent then judges whether any paywalled source is worth its price.
+It buys what clears the bar within your budget, and the answer updates to show
+what the purchase changed. One click turns the result into a deep-research PDF.
 
-The October 10 demonstration will make that entire journey visible.
+**LLMs write. A decision model chooses. Code pays.**
+
+Choosing whether to buy a source is not a writing task, so no LLM makes that
+call. A decision model (Cloudflare's Clef, on Workers AI) returns calibrated
+probabilities:
+does this source address the gap, is it original reporting or a rewrite, and
+is the gap material? A short, visible policy in code turns those probabilities
+into a purchase decision. The LLM cannot trigger a purchase, so instructions
+hidden in an article cannot spend money.
+
+The October 10 demonstration makes that entire journey visible.
 
 ## Planned features
 
-- **A useful answer before spending.** Start with accessible evidence and make
-  the remaining uncertainty explicit. Finish without a purchase when the
-  evidence is sufficient.
-- **Deliberate source selection.** Recommend sources that address a real gap;
-  skip repeated reporting and reject purchases outside the mandate. Decisions
-  respond to changes in evidence, price, and budget.
-- **A working publisher boundary.** One local publisher service will expose
-  previews, exact quotes, locked content, and verified delivery across three
-  publisher profiles. The commercial relationships and settlement are simulated
-  and labelled; the application and HTTP interactions run for real.
-- **Controlled, recoverable purchases.** Require exact approval, enforce spend
-  on the server, preserve receipts, and retry interrupted delivery without a
-  second charge.
-- **Visible evidence impact.** Compare the answer before and after acquisition,
-  with each material change linked to its supporting passage. New evidence can
-  strengthen, qualify, contradict, or leave a conclusion unchanged.
-- **A repeatable demonstration.** Use a small, frozen research corpus, a clear
-  fresh-run flow, visible execution modes, and an offline rehearsal path.
+- **A free answer that always works.** Perplexity-style search, reading and
+  streaming of a cited answer from free sources. A S$0 budget means this layer
+  alone. It is deliberately boring and must never fail on stage.
+- **A budget per prompt.** The budget is the only spending authorization. The
+  agent buys on its own inside it, never above a per-source cap. A Stop button
+  halts it immediately.
+- **Decisions you can audit.** A decision table shows every paywalled
+  candidate: its price, the decision model's probabilities, the computed value and a verdict
+  (buy, rewrite, over cap, low value). With a S$0 budget it still shows what
+  the agent would have bought.
+- **A working publisher boundary.** One local publisher service exposes search,
+  previews, x402-shaped 402 challenges, quotes and verified delivery across
+  three publisher profiles. Commercial relationships and settlement are
+  simulated and labelled; the application and its HTTP traffic run for real.
+- **Recoverable purchases.** The server enforces the budget, keeps receipts,
+  and retries an interrupted delivery without a second charge.
+- **Visible evidence impact.** Answer v1 and answer v2 are compared side by
+  side, with each change linked to its supporting passage. New evidence can
+  strengthen, qualify, contradict or leave a conclusion unchanged.
+- **Visible internals.** A live activity trace, the decision table, and a wire
+  panel showing the raw 402 → settle → verified-delivery exchange.
+- **A deep-research report.** One click produces a PDF with the cited
+  findings, what the purchases changed, open questions, and an appendix with
+  the decision table and receipts.
+- **A repeatable demonstration.** A small, frozen corpus: a fictional company
+  with realistic articles about one concrete, local question. Fresh runs,
+  visible execution modes, and an offline fixture path.
 
 ## How we build
 
@@ -38,23 +57,33 @@ improve a research decision, make its value visible, or protect a critical
 guarantee. We build one complete flow early, then strengthen it with cases that
 can expose incorrect behavior.
 
-Coding agents work on bounded tasks with explicit acceptance criteria. A small
-automated verification loop checks decisions, spending, access, citations, and
-recovery. Independent checks determine completion. More generated code is not
-our measure of progress; more verified product behavior is.
+Coding agents work in parallel on bounded packages. A package merges after a
+fast check and one review pass. We would rather the next agent fix a small bug
+than stall in a review loop. Five hard gates are never traded for speed:
 
-The interface prioritizes a readable answer, understandable purchase rationale,
-visible spending, and an obvious evidence change. We retain the current stack
-and focus on one research domain. AWS AgentCore is a bounded operational
-experiment, admitted only when it improves the working system. General crawling,
-additional domains, a marketplace, and production payments remain outside this
-demo's scope.
+- protected content stays locked until it is bought;
+- spending stays inside the budget, initiated only by policy code;
+- each purchase is charged once;
+- citations are real;
+- everything simulated is labelled.
+
+More generated code is not our measure of progress; more working product
+behavior is.
+
+We retain the current stack and focus on one research domain. Hosting the
+publisher on Google Cloud Run (the event sponsor's platform) is an optional
+experiment, admitted only once the local route works. AWS AgentCore, general
+crawling, additional domains, a marketplace and production payments are
+outside this demo's scope.
 
 ## What success looks like
 
-The audience sees the agent recognize what it does not know, acquire useful
-evidence within an approved budget, and explain what it learned. The same system
-can decline an unnecessary purchase. Every demonstrated outcome can be traced
-and repeated.
+The audience sees a free answer arrive instantly. They watch a decision model
+work out what that answer is missing and buy one source within budget, then
+see exactly how the answer changed. The same system declines purchases that
+aren't worth it. Every outcome can be traced and repeated. The room also
+leaves knowing how it was built: LLMs write, a decision model chooses, code
+pays; and a team of coding agents produced the system in a week, as recorded
+in the build log.
 
-Implementation details: [October 10 task plan](plans/october-10/README.md).
+Build instructions: [prompt.md](../prompt.md).
