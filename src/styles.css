@@ -841,3 +841,100 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 @media (prefers-reduced-motion:reduce) {
   .ra-layout *, .ra-passage * { scroll-behavior:auto; animation:none; transition:none; }
 }
+
+/* W3 projector stage: retain readable text while giving evidence room. */
+.ra-layout { padding:16px 28px 32px; }
+.ra-layout [hidden] { display:none !important; }
+.ra-header { margin-bottom:14px; padding-bottom:12px; align-items:flex-start; gap:12px; }
+.ra-header h1 { font-size:28px; }
+.ra-header p { margin:4px 0 0; font-size:18px; }
+.ra-modes { max-width:660px; }
+.ra-modes ul { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:3px 14px; list-style:none; padding:0; margin:0; font-size:18px; line-height:1.3; }
+.ra-panel { padding:18px 22px; }
+.ra-main { gap:14px; max-width:1440px; margin:auto; }
+.ra-aside { max-width:1440px; margin:14px auto 0; }
+.ra-aside > .ra-panel p { margin:6px 0; }
+.ra-ask h2 { margin-bottom:16px; }
+.ra-ask textarea { min-height:80px; padding:10px 12px; }
+.ra-ask fieldset { margin:12px 0 4px; }
+.ra-ask label, .ra-ask legend { margin-bottom:5px; }
+.ra-budget-chip span { padding:8px 18px; }
+.ra-ask .ra-muted { margin:8px 0; }
+.ra-ask-compact { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:10px 18px; }
+.ra-ask-compact p { margin:0; }
+.ra-ask-compact button { flex-shrink:0; }
+.ra-wallet-strip { max-width:1440px; margin:auto; }
+.ra-wallet-strip .ra-budget { display:flex; align-items:center; gap:18px; padding:8px 16px; }
+.ra-wallet-strip h2 { font-family:inherit; font-size:18px; margin:0; white-space:nowrap; }
+.ra-wallet-strip dl { display:flex; flex-wrap:wrap; gap:4px 10px; margin:0; flex:1; line-height:1.3; }
+.ra-wallet-strip dt { align-self:center; }
+.ra-wallet-strip dd { font-size:18px; margin:0 8px 0 0; }
+.ra-wallet-strip meter { width:90px; margin:0; }
+.ra-wallet-strip p { display:none; }
+.ra-wallet-strip p[role=alert] { display:block; }
+.ra-stage-nav { position:sticky; top:0; z-index:5; background:var(--ra-paper); display:flex; gap:8px; max-width:1440px; margin:10px auto 12px; border-bottom:1px solid var(--ra-rule); }
+.ra-stage-nav button { color:var(--ra-muted); padding:8px 18px; border:0; border-bottom:3px solid transparent; background:transparent; }
+.ra-stage-nav button[aria-pressed=true] { color:var(--ra-teal); border-bottom-color:var(--ra-teal); font-weight:600; }
+.ra-stage-internals { max-width:1440px; margin:auto; }
+.ra-answer .ra-eyebrow { margin:8px 0; }
+.ra-conclusion { font-family:inherit; font-size:22px; padding:4px 0 12px; }
+.ra-findings { margin:8px 0; color:var(--ra-muted); }
+.ra-findings summary, .ra-impact summary, .ra-decision-table summary { cursor:pointer; color:var(--ra-teal); font-weight:600; }
+.ra-answer-impact { display:flex; align-items:flex-start; gap:12px; margin:12px 0; padding:12px 14px; background:var(--ra-soft); border-left:3px solid var(--ra-teal); }
+.ra-answer-impact p { margin:0; }
+.ra-answer-impact .ra-badge { flex-shrink:0; }
+.ra-claims { margin:14px 0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.ra-claims li { margin:0; padding:12px 14px; border:1px solid var(--ra-rule); border-radius:6px; }
+.ra-claims p { margin:6px 0 0; }
+.ra-claims .ra-stance { display:block; }
+.ra-claim-changed { grid-column:1/-1; background:var(--ra-soft); border-left:3px solid var(--ra-teal) !important; }
+.ra-claim-changed .ra-stance { display:inline; margin-left:12px; }
+.ra-open-gap { margin:12px 0; padding:10px 14px; }
+.ra-report { display:flex; flex-wrap:wrap; align-items:center; gap:12px 20px; }
+.ra-report p { margin:0; }
+.ra-policy { padding:8px 12px; background:var(--ra-soft); border-radius:6px; margin:8px 0; }
+.ra-policy p { margin:2px 0; }
+.ra-policy pre { white-space:pre-wrap; overflow-wrap:anywhere; font:18px/1.4 'IBM Plex Mono',monospace; }
+.ra-decision-table > p { margin:6px 0; }
+.ra-decision-table > details { margin-top:12px; }
+.ra-decision-table > details > p { margin:6px 0; }
+.ra-decision-table > details > .ra-probability { max-width:260px; }
+.ra-table-scroll { overflow:auto; }
+.ra-decision-table table { min-width:1000px; }
+.ra-decision-table caption { margin:6px 0; }
+.ra-decision-table th, .ra-decision-table td { padding:10px 12px; line-height:1.3; }
+.ra-decision-table th[scope=row] { width:22%; color:var(--ra-ink); background:transparent; }
+.ra-decision-table td:nth-child(2) { width:30%; }
+.ra-decision-table td:nth-child(3) { width:18%; }
+.ra-decision-table td:last-child { width:30%; }
+.ra-decision-table td p { margin:6px 0 0; }
+.ra-probability-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 14px; }
+.ra-probability { min-width:0; gap:3px; font-size:18px; line-height:1.25; }
+.ra-verdict-buy { background:var(--ra-soft); }
+.ra-verdict-buy strong { color:var(--ra-teal); }
+.ra-wire ol { list-style:none; padding:0; margin:14px 0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.ra-wire li { border:1px solid var(--ra-rule); padding:12px 16px; border-radius:6px; }
+.ra-wire dl { margin:8px 0 0; }
+.ra-wire dl > div { display:flex; flex-wrap:wrap; gap:8px; }
+.ra-wire dt { color:var(--ra-muted); }
+.ra-wire dd { margin:0; }
+.ra-wire-story { font-weight:600; color:var(--ra-teal); }
+.ra-source-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.ra-error { padding:12px 16px; border-left:3px solid var(--ra-alert); background:#fae9de; }
+.ra-primary-button { font:inherit; min-height:44px; padding:10px 18px; color:#fffef9; background:var(--ra-teal); border:1px solid var(--ra-teal); border-radius:6px; }
+@media (max-width:1000px) {
+  .ra-modes { max-width:none; }
+  .ra-modes ul { justify-content:flex-start; }
+  .ra-wallet-strip .ra-budget { flex-wrap:wrap; }
+  .ra-claims, .ra-source-list, .ra-wire ol { grid-template-columns:1fr; }
+}
+@media (max-width:600px) {
+  .ra-layout { padding:16px; }
+  .ra-panel { padding:16px; }
+  .ra-ask-compact, .ra-answer-impact { flex-direction:column; gap:8px; }
+  .ra-stage-nav { gap:0; }
+  .ra-stage-nav button { padding:8px 10px; }
+}
+
+.ra-probability > div > span { display:block; height:100%; background:var(--ra-teal); }
+.ra-wire code { overflow-wrap:anywhere; word-break:break-all; }

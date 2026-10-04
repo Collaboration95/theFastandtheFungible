@@ -21,13 +21,20 @@ export default function Answer({ run, onCitation }: AnswerProps) {
   const [view, setView] = useState<'latest' | 'baseline'>('latest')
   const answers = [...run.answers].sort((a, b) => a.version - b.version).map(item => getValidatedAnswer(run, item)).filter((item): item is AnswerData => !!item)
   const answer = getValidatedAnswer(run, view === 'baseline' ? answers[0] : answers.at(-1))
+  const baseline = answers[0]
+  const impact = view === 'latest' && baseline && answer && baseline.version !== answer.version && run.impact && baseline.claims.length === run.answers.find(item => item.version === baseline.version)?.claims.length && answer.claims.length === run.answers.find(item => item.version === answer.version)?.claims.length ? run.impact : undefined
+  const changedIds = new Set(impact?.claimChanges.filter(change => change.change === 'ADDED' || change.change === 'REVISED').map(change => change.toClaimId))
+  const orderedClaims = [...(answer?.claims ?? [])].sort((a, b) => Number(changedIds.has(b.id)) - Number(changedIds.has(a.id)))
+  const lead = answer?.conclusion.match(/^.*?[.!?](?=\s+[A-Z]|$)/s)?.[0]
   const citations = answer?.claims.flatMap(claim => claim.citations).filter((citation, index, all) => all.findIndex(item => item.resourceId === citation.resourceId && item.version === citation.version && item.spanId === citation.spanId) === index) ?? []
   return <section className="ra-panel ra-answer" aria-label="Research answer" aria-busy={run.phase === 'ANSWER'}>
     <div className="ra-section-heading"><h2>Your answer{answer ? ` · v${answer.version}` : ''}</h2>{answers.length > 1 && <div className="ra-toggle" aria-label="Answer version"><button type="button" aria-pressed={view === 'baseline'} onClick={() => setView('baseline')}>Free answer · v{answers[0]?.version}</button><button type="button" aria-pressed={view === 'latest'} onClick={() => setView('latest')}>Latest answer</button></div>}</div>
     {!answer ? <p role="status">{run.phase === 'FAILED' || run.phase === 'STOPPED' ? 'No verified answer is available. Ask again to begin a new run.' : 'Gathering evidence. Verified claims will appear here as the run progresses.'}</p> : <>
       <p className="ra-eyebrow">{answer.provider === 'fixture' ? 'Fixture' : 'Groq'} · {answer.model}</p>
-      <p className="ra-conclusion">{answer.conclusion}</p>
-      <ol className="ra-claims">{answer.claims.map(claim => <li key={claim.id}><span className="ra-stance">{claim.stance.toLowerCase()}</span><p>{claim.text} {claim.citations.map(citation => {
+      {impact && <div className="ra-answer-impact"><span className={`ra-badge ra-impact-${impact.classification.toLowerCase()}`}>{impact.classification}</span><p>{impact.explanation}</p></div>}
+      <details className="ra-findings"><summary>Full conclusion</summary><p>{answer.conclusion}</p></details>
+      {lead && !answer.claims.some(claim => claim.text.includes(lead)) && <p className="ra-conclusion">{lead}</p>}
+      <ol className="ra-claims">{orderedClaims.map(claim => <li key={claim.id} className={changedIds.has(claim.id) ? 'ra-claim-changed' : undefined}>{changedIds.has(claim.id) && <span className="ra-badge ra-badge-teal">New evidence</span>}<span className="ra-stance">{claim.stance.toLowerCase()}</span><p>{claim.text} {claim.citations.map(citation => {
         const number = citations.findIndex(item => item.resourceId === citation.resourceId && item.version === citation.version && item.spanId === citation.spanId) + 1
         const candidate = run.candidates.find(item => item.resourceId === citation.resourceId && item.version === citation.version)
         return <button className="ra-citation" type="button" key={JSON.stringify(citation)} disabled={!onCitation} aria-label={`Citation ${number}: ${candidate?.title ?? citation.resourceId}, exact passage`} onClick={() => onCitation?.(citation)}>{number}</button>

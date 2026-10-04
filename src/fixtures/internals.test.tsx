@@ -21,6 +21,8 @@ describe('visible internals', () => {
     expect(html).toContain('Round 2')
     for (const row of first.rows) expect(html).toContain(row.candidate.title)
     for (const label of ['Original:', 'Rewrite:', 'Overlap:', 'Addresses gap:', 'Gap material:', 'BUY_THRESHOLD', 'Would buy', 'SKIP_OVER_BUDGET', 'synthetic-table-example', 'argmax', 'reserved']) expect(html).toContain(label)
+    expect(html).toContain('ra-probability-bar')
+    expect(html).toContain('style="width:')
     expect(html).not.toContain('<strong>BUY</strong>')
     expect(run.intents).toHaveLength(0)
     expect(run.spentMinor).toBe(0)
@@ -45,11 +47,18 @@ describe('visible internals', () => {
         request: { method: 'GET', url: `https://user:${secret}@publisher.test/resources/${secret}?token=${secret}#${secret}` },
         unknown: { status: secret }, contentDigest: secret },
     }] }
+    run.events.push({ id: 6, runId: run.runId, type: 'GRANT', label: secret, at: '2026-10-04T14:00:05Z', data: { intentId: secret, resourceId: secret, version: secret, body: secret, deliveryToken: secret } })
+    run.grants = [{ runId: run.runId, intentId: secret, resourceId: secret, version: secret, contentDigest: 'a'.repeat(64), grantedAt: '2026-10-04T14:00:05Z' }]
+    run.intents = [{ runId: run.runId, intentId: secret, profileId: secret, resourceId: secret, version: secret, amountMinor: 80, status: 'VERIFIED', quote: { runId: run.runId, intentId: secret, profileId: secret, resourceId: secret, version: secret, quoteId: secret, amountMinor: 80, currency: 'SGD', quoteHash: 'b'.repeat(64), contentDigest: 'a'.repeat(64), expiresAt: '2026-10-04T14:30:00Z' } }]
     const html = renderToStaticMarkup(<Wire run={run} />)
     expect(html).toContain('402')
     expect(html).toContain('/quote')
     expect(html).toContain('/settle')
     expect(html).toContain('sha-256 ✓')
+    expect(html).toContain('Verified delivery')
+    expect(html).toContain('a'.repeat(64))
+    expect(html).toContain('b'.repeat(64))
+    expect(html).toContain('/v1/quotes')
     expect(html).toContain('/resources/[id]')
     expect(html).not.toContain(secret)
     expect(html).not.toContain('Authorization')
