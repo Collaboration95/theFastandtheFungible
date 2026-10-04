@@ -6,3 +6,6 @@ export const GrantSchema = z.object({ runId: z.string(), resourceId: z.string(),
 export type PurchaseIntent = z.infer<typeof PurchaseIntentSchema>
 export type IntentStatus = z.infer<typeof IntentStatusSchema>
 export type Grant = z.infer<typeof GrantSchema>
+
+/** Server-private verification input; never included in a run snapshot or wire event. */
+export type DeliveryProof = { bytes: string | Uint8Array; digest: string }
