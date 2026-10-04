@@ -31,9 +31,20 @@ export async function retrieve(client: PublisherClient, question: string): Promi
 // Source instructions are data, never agent commands or evidence for an answer.
 const instruction = /(?:AI agents?|assistant|ignore (?:all |previous )?instructions|system prompt|you (?:must|should))|(?:buy|purchase).*(?:immediately|now)/i
 const usableContents = (contents: ContentEnvelope[]) => contents.map(c => ({ ...c, spans: c.spans.filter(s => !instruction.test(s.text) && c.body.includes(s.text)) }))
+// These passages describe an evidence boundary, not a new schedule finding.
+const noNewEvidence = /adds nothing|no new (?:material )?(?:evidence|information)|unchanged|\brepeats?\b|\bredundant\b|\bno confirmed\b|\bno independent (?:evidence|update)\b|\bno\b[^.]*\bor independent update\b|\bgap (?:unresolved|remains|is still)|\bgap\b[^.]*\bunresolved\b/i
+function priorContents(contents: ContentEnvelope[], candidates: PublicCandidate[], previous: Answer) {
+  return contents.filter(c => candidates.some(m => m.resourceId === c.resourceId && m.version === c.version && m.tier === 'FREE')
+    || previous.claims.some(p => p.citations.some(ref => ref.resourceId === c.resourceId && ref.version === c.version)))
+}
 function gaps(contents: ContentEnvelope[], candidates: PublicCandidate[]) {
   const covered = new Set<Facet>()
-  for (const c of candidates) if (contents.some(content => content.resourceId === c.resourceId && content.version === c.version && content.spans.length > 0)) c.facets.forEach(f => covered.add(f))
+  const freeEvidence = new Set(contents.filter(content => candidates.some(c => c.resourceId === content.resourceId && c.version === content.version && c.tier === 'FREE'))
+    .flatMap(content => content.spans.map(s => s.text)))
+  for (const c of candidates) {
+    const content = contents.find(content => content.resourceId === c.resourceId && content.version === c.version)
+    if (content?.spans.some(s => !noNewEvidence.test(s.text) && !(c.tier === 'PAID' && freeEvidence.has(s.text)))) c.facets.forEach(f => covered.add(f))
+  }
   return FacetSchema.options.filter(f => !covered.has(f)).map(facet => ({ facet, text: `No accessible evidence on ${facet.replace(/-/g, ' ')}.` }))
 }
 function stance(text: string): Claim['stance'] {
@@ -42,11 +53,12 @@ function stance(text: string): Claim['stance'] {
   return 'UNCERTAIN'
 }
 function fixture(contents: ContentEnvelope[], candidates: PublicCandidate[], version: number, previous?: Answer): Answer {
+  const priorEvidence = new Set((previous ? priorContents(contents, candidates, previous) : []).flatMap(c => c.spans.map(s => s.text)))
   const evidence = contents.flatMap(c => c.spans.map(s => {
     const metadata = candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
     const facets = metadata?.facets ?? []
     const newlySupplied = previous && !previous.claims.some(claim => claim.citations.some(ref => ref.resourceId === c.resourceId && ref.version === c.version))
-    const addressesGap = newlySupplied && facets.some(f => previous.openGaps.some(g => g.facet === f))
+    const addressesGap = newlySupplied && !noNewEvidence.test(s.text) && !priorEvidence.has(s.text) && facets.some(f => previous.openGaps.some(g => g.facet === f))
     const score = (addressesGap ? 100 : 0) + (facets.includes('grid-energisation') ? 30 : 0) + (metadata?.authority ?? 0) * 5
       + (/only\b|\d+.*\bof\b.*\d+|slip|delay|ahead of schedule/i.test(s.text) ? 3 : 0)
     return { facets, score, claim: {
@@ -91,10 +103,10 @@ export async function writeAnswer(input: { question: string; contents: ContentEn
       if (validated.claims.length) answer = { ...validated, openGaps: gaps(contents, input.candidates) }
     } catch { /* Clearly labelled extractive fixture remains available on provider/validation failure. */ }
   }
-  return { answer: AnswerSchema.parse(answer), ...(input.previous ? { impact: compareAnswers(input.previous, answer, contents) } : {}) }
+  return { answer: AnswerSchema.parse(answer), ...(input.previous ? { impact: compareAnswers(input.previous, answer, contents, priorContents(contents, input.candidates, input.previous)) } : {}) }
 }
 
-export function compareAnswers(previous: Answer, answer: Answer, contents: ContentEnvelope[]): Impact {
+export function compareAnswers(previous: Answer, answer: Answer, contents: ContentEnvelope[], previousContents?: ContentEnvelope[]): Impact {
   const signature = (c: Claim) => JSON.stringify([c.text, c.stance, c.citations])
   const changes: Impact['claimChanges'] = []
   const added = answer.claims.filter(c => !previous.claims.some(p => signature(p) === signature(c)))
@@ -103,14 +115,20 @@ export function compareAnswers(previous: Answer, answer: Answer, contents: Conte
     changes.push(old ? { fromClaimId: old.id, toClaimId: c.id, change: 'UNCHANGED' } : { toClaimId: c.id, change: 'ADDED' })
   }
   for (const p of previous.claims) if (!answer.claims.some(c => signature(c) === signature(p))) changes.push({ fromClaimId: p.id, change: 'REMOVED' })
-  // Repeated evidence with a new binding is not a material finding.
-  const novel = added.filter(c => !previous.claims.some(p => p.text === c.text))
-  const evidence = novel.flatMap(c => c.citations.map(ref => resolveCitation(ref, contents)?.text ?? '')).join(' ')
+  // Compare exact resolved passages, not claim wording, IDs, or citation identity.
+  // The caller can include previously accessible passages omitted from the summary.
+  const priorEvidence = new Set([
+    ...previous.claims.flatMap(c => c.citations.map(ref => resolveCitation(ref, contents)?.text).filter((text): text is string => Boolean(text))),
+    ...(previousContents ?? []).flatMap(c => c.spans.filter(s => c.body.includes(s.text)).map(s => s.text)),
+  ])
+  const novelEvidence = added.filter(c => c.citations.every(ref => resolveCitation(ref, contents)))
+    .flatMap(c => c.citations.map(ref => resolveCitation(ref, contents)!.text))
+    .filter(text => !priorEvidence.has(text) && !noNewEvidence.test(text))
   const closesGap = previous.openGaps.some(g => !answer.openGaps.some(a => a.facet === g.facet))
   let classification: Impact['classification'] = 'UNCHANGED'
-  if (novel.length && !/adds nothing|no new (?:material )?(?:evidence|information)|unchanged/i.test(evidence)) {
-    if (/ahead of schedule|earlier than (?:planned|expected|scheduled)/i.test(evidence)) classification = 'CONTRADICTS'
-    else if (novel.some(c => c.stance === 'CHALLENGES') || /only\b.*\b\d+\s*(?:of|out of)|slip|delay|shortfall/i.test(evidence)) classification = 'QUALIFIES'
+  if (novelEvidence.length) {
+    if (novelEvidence.some(text => /ahead of schedule|earlier than (?:planned|expected|scheduled)/i.test(text))) classification = 'CONTRADICTS'
+    else if (novelEvidence.some(text => stance(text) === 'CHALLENGES')) classification = 'QUALIFIES'
     else if (closesGap) classification = 'STRENGTHENS'
   }
   return { classification, explanation: classification === 'UNCHANGED' ? 'No new material evidence changes the answer.' : `New cited evidence ${classification.toLowerCase()} the previous answer.`, claimChanges: changes }
