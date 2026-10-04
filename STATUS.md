@@ -21,6 +21,7 @@
 - W3-IMPACT-FIX: [PR #90](https://github.com/Collaboration95/theFastandtheFungible/pull/90), merged; single review NO BLOCKERS; 111 tests, zero skips.
 - W3-FAULT: [PR #91](https://github.com/Collaboration95/theFastandtheFungible/pull/91), merged; single review NO BLOCKERS; one-charge failed-delivery/retry smoke passes.
 - W3-CLOUDRUN: [PR #92](https://github.com/Collaboration95/theFastandtheFungible/pull/92), guarded preparation merged; single review NO BLOCKERS; 22 offline guards pass; Docker/cloud runtime unverified.
+- W3-POLISH: [PR #93](https://github.com/Collaboration95/theFastandtheFungible/pull/93), merged; single review NO BLOCKERS; check:fast/build pass; final projector/browser verification follows.
 ## In progress
 - W3-LIVE: real Groq/Clef qualification and probability comparison.
 - W3-FAULT: local dev fault control and one-charge retry smoke.
