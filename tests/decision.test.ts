@@ -37,7 +37,7 @@ describe('decision policy', () => {
     expect((await decide(input({ candidates: [paid('a', 80), paid('b', 40)] }))).selectedResourceId).toBe('b')
   })
   it('calibrates thresholds by model and permits explicit configuration', () => {
-    expect(buyThreshold('@cf/cloudflare/clef-flash')).toBe(0.20)
+    expect(buyThreshold('@cf/cloudflare/clef-flash')).toBe(0.15)
     expect(buyThreshold('@cf/cloudflare/clef')).toBe(0.35)
     vi.stubEnv('BUY_THRESHOLD', '0.42')
     expect(buyThreshold('@cf/cloudflare/clef')).toBe(0.42)

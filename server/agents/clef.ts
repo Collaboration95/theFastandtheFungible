@@ -4,6 +4,13 @@ import type { CandidateJudgment } from '../../shared/contracts/index.js'
 import { decisionModel, publicCandidate, publicSources } from './decision.js'
 import type { DecisionProvider } from './decision.js'
 
+const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+export class ClefUnavailableError extends Error {
+  constructor(readonly status: string) { super(`Clef unavailable (${status})`) }
+}
+class ClefHttpError extends Error {
+  constructor(readonly status: number, readonly retryMs: number) { super(`Clef HTTP ${status}`) }
+}
 const probability = z.number().min(0).max(1)
 const NoulSchema = z.object({ type: z.literal('noul'), noul: probability })
 const EnvelopeSchema = z.object({ success: z.literal(true), result: z.object({ answers: z.record(z.string(), z.unknown()) }) })
@@ -21,8 +28,8 @@ export const clefQuestions = {
   round: { gap_material: { type: 'noul', instructions: 'Resolving the open gap could change the conclusion of the answer.' } },
   candidate: {
     addresses_gap: { type: 'noul', instructions: "The candidate's preview indicates it contains new evidence that directly addresses the open gap." },
-    originality: { type: 'choice', instructions: 'Classify the candidate evidence relative to the listed already-read sources.', choices: { original: 'Original reporting or primary data.', rewrite: 'A rewrite, syndication or summary of another listed source.', overlap: 'Mostly repeats what the already-read sources say.' } },
-    credibility: { type: 'score', instructions: 'Assess the credibility of the candidate evidence.', legend: { '0': 'Opinion or marketing', '1': 'Secondary reporting', '2': 'Named primary sources or data' } },
+    originality: { type: 'choice', instructions: 'Classify the candidate evidence relative to the listed already-read sources.', criteria: { original: 'Original reporting or primary data.', rewrite: 'A rewrite, syndication or summary of another listed source.', overlap: 'Mostly repeats what the already-read sources say.' } },
+    credibility: { type: 'score', instructions: 'Assess the credibility of the candidate evidence.', criteria: ['Opinion or marketing', 'Secondary reporting', 'Named primary sources or data'] },
   },
 }
 export type ClefOptions = { accountId?: string; token?: string; model?: string; fetch?: typeof fetch; allowLive?: boolean; timeoutMs?: number }
@@ -46,7 +53,12 @@ export class ClefDecisionProvider implements DecisionProvider {
         return await Promise.race([
           (async () => {
             const response = await this.transport(`https://api.cloudflare.com/client/v4${path}`, { method: body === undefined ? 'GET' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, signal: controller.signal, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
-            if (!response.ok) throw new Error('Clef HTTP failure')
+            if (!response.ok) {
+              const retryAfter = response.headers.get('retry-after')
+              const seconds = Number(retryAfter)
+              const delay = retryAfter && !Number.isFinite(seconds) ? Date.parse(retryAfter) - Date.now() : seconds * 1000
+              throw new ClefHttpError(response.status, Math.min(60000, Math.max(1000, delay || 1000)))
+            }
             const payload: unknown = await response.json()
             z.object({ success: z.literal(true) }).parse(payload)
             validate?.(payload)
@@ -54,8 +66,11 @@ export class ClefDecisionProvider implements DecisionProvider {
           })(),
           new Promise<never>((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Clef timeout')) }, this.options.timeoutMs ?? 3000) }),
         ])
-      } catch {
-        if (attempt === 1) throw new Error('Clef unavailable after one retry')
+      } catch (error) {
+        clearTimeout(timer)
+        const status = error instanceof ClefHttpError ? `HTTP ${error.status}` : controller.signal.aborted ? 'timeout' : error instanceof z.ZodError ? 'invalid response' : 'transport failure'
+        if (attempt === 1 || (error instanceof ClefHttpError && error.status >= 400 && error.status < 500 && error.status !== 429)) throw new ClefUnavailableError(status)
+        if (error instanceof ClefHttpError && error.status === 429) await pause(error.retryMs)
       } finally { clearTimeout(timer) }
     }
     throw new Error('Clef unavailable')
@@ -72,7 +87,7 @@ export class ClefDecisionProvider implements DecisionProvider {
   }
   private async judge(state: unknown, questions: unknown, validate: (payload: unknown) => unknown): Promise<unknown> {
     const account = await this.resolveAccount()
-    return this.request(`/accounts/${encodeURIComponent(account)}/ai/run/${this.model.split('/').map(encodeURIComponent).join('/')}`, { state, questions }, validate)
+    return this.request(`/accounts/${encodeURIComponent(account)}/ai/run/${this.model.split('/').map(encodeURIComponent).join('/')}`, { model: this.model.endsWith('/clef') ? 'clef' : 'clef-flash', state, questions }, validate)
   }
   async judgeRound(input: Parameters<DecisionProvider['judgeRound']>[0]) {
     return parseClefRound(await this.judge({ question: input.question, conclusion: input.conclusion, gap: input.gap }, clefQuestions.round, parseClefRound))
