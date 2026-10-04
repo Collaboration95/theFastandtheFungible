@@ -1,4 +1,4 @@
-# Build status (4 Oct 2026, 21:59 SGT)
+# Build status (4 Oct 2026, 22:01 SGT)
 ## Needs you
 - After freeze: Cloud Run deploy, labelled fallback recording, three rehearsals, and tag `demo-oct10`.
 ## Decisions I made
@@ -13,6 +13,7 @@
 - W1-PUB: [PR #82](https://github.com/Collaboration95/theFastandtheFungible/pull/82), merged; single review NO BLOCKERS; 32 tests pass.
 - W1-RESEARCH: [PR #81](https://github.com/Collaboration95/theFastandtheFungible/pull/81), merged; single review NO BLOCKERS; 32 tests pass.
 - W1-DECIDE: [PR #84](https://github.com/Collaboration95/theFastandtheFungible/pull/84), merged; single review NO BLOCKERS; 47 tests pass.
+- W1-LEDGER: [PR #85](https://github.com/Collaboration95/theFastandtheFungible/pull/85), merged; single review NO BLOCKERS; 43 tests and real fault/retry smoke pass.
 ## In progress
 - Wave 1: CORPUS, LEDGER, RESEARCH, DECIDE and UI-ASK implementing; PUB #82 in single review.
 ## Next up
