@@ -1,4 +1,4 @@
-# Build status (4 Oct 2026, 22:10 SGT)
+# Build status (4 Oct 2026, 22:14 SGT)
 ## Needs you
 - After freeze: Cloud Run deploy, labelled fallback recording, three rehearsals, and tag `demo-oct10`.
 ## Decisions I made
@@ -17,8 +17,10 @@
 - W1-UI-ASK: [PR #86](https://github.com/Collaboration95/theFastandtheFungible/pull/86), merged; single review NO BLOCKERS; check:fast passes.
 - W1-UI-AGENT: [PR #87](https://github.com/Collaboration95/theFastandtheFungible/pull/87), merged; single review NO BLOCKERS; check:fast and seven package tests pass.
 ## In progress
-- Wave 1: CORPUS, LEDGER, RESEARCH, DECIDE and UI-ASK implementing; PUB #82 in single review.
+- W2-INTEGRATE: server/UI wiring, dead-code removal and browser/PDF verification.
+- W2-SCENARIOS: ephemeral-process scenario and leak tests.
 ## Next up
-- UI-ASK and UI-AGENT when slots free; merge each reviewed green package; W2-INTEGRATE.
+- Merge W2, then live qualification, fault toggle, projector polish and Cloud Run preparation.
 ## Demo check
-- PASS: existing fixture UI regression suite. October ask/buy/PDF smoke pending W2.
+- PASS: first W2 ephemeral HTTP smoke: S$2 spends S$0.80, v2 QUALIFIES, round 2 stop, PDF; S$0 spends zero and shows would buy.
+- Wave-1 main verify passes; October npm demo smoke on main follows W2 merge.
