@@ -1,4 +1,4 @@
-# Build status (4 Oct 2026, 22:22 SGT)
+# Build status (4 Oct 2026, 22:30 SGT)
 ## Needs you
 - After freeze: Cloud Run deploy, labelled fallback recording, three rehearsals, and tag `demo-oct10`.
 ## Decisions I made
@@ -17,6 +17,7 @@
 - W1-UI-ASK: [PR #86](https://github.com/Collaboration95/theFastandtheFungible/pull/86), merged; single review NO BLOCKERS; check:fast passes.
 - W1-UI-AGENT: [PR #87](https://github.com/Collaboration95/theFastandtheFungible/pull/87), merged; single review NO BLOCKERS; check:fast and seven package tests pass.
 - W2-INTEGRATE: [PR #88](https://github.com/Collaboration95/theFastandtheFungible/pull/88), merged; single review NO BLOCKERS; verify passes 97 tests, two browsers and build.
+- W2-SCENARIOS: [PR #89](https://github.com/Collaboration95/theFastandtheFungible/pull/89), merged; single review NO BLOCKERS; 108 tests pass, one optional impact regression being fixed.
 ## In progress
 - W2-INTEGRATE: server/UI wiring, dead-code removal and browser/PDF verification.
 - W2-SCENARIOS: ephemeral-process scenario and leak tests.
