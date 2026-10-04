@@ -1,4 +1,4 @@
-# Build status (4 Oct 2026, 22:50 SGT)
+# Build status (4 Oct 2026, 22:55 SGT)
 ## Needs you
 - Cloud Run: qualify persistent SQLite WAL settlement storage before deployment; current deploy/startup guards refuse unsafe storage. Local publisher remains the fallback. Docker/cloud runtime unverified.
 - Thu 8 Oct after 20:00 freeze: record a labelled fixture fallback video. Fri 9 Oct: rehearse 3× on the presenting laptop and tag `demo-oct10`.
@@ -23,6 +23,7 @@
 - W3-FAULT: [PR #91](https://github.com/Collaboration95/theFastandtheFungible/pull/91), merged; single review NO BLOCKERS; one-charge failed-delivery/retry smoke passes.
 - W3-CLOUDRUN: [PR #92](https://github.com/Collaboration95/theFastandtheFungible/pull/92), guarded preparation merged; single review NO BLOCKERS; 22 offline guards pass; Docker/cloud runtime unverified.
 - W3-POLISH: [PR #93](https://github.com/Collaboration95/theFastandtheFungible/pull/93), merged; single review NO BLOCKERS; check:fast/build pass; final projector/browser verification follows.
+- W3-STAGE-CHECK-FIX: [PR #94](https://github.com/Collaboration95/theFastandtheFungible/pull/94), merged; single review NO BLOCKERS; 111 tests and real browser story/S$0 pass.
 ## In progress
 - W3-LIVE: actual Groq calls succeed but also rate-limit; Clef decisions return 422. Qualifying request schema and explicit fixture substitutions.
 - W3-STAGE-CHECK-FIX: update browser navigation for merged Decisions/Wire views; unit tests pass, previous all-visible browser assertion is stale.
