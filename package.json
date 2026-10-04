@@ -4,8 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run dev:stop && concurrently -k \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:stop": "node scripts/stop-dev.mjs",
+    "dev": "npm run demo",
     "dev:client": "vite --host 0.0.0.0 --port 5100 --strictPort",
     "dev:server": "tsx server/index.ts",
     "build": "tsc -b && vite build",
@@ -16,11 +15,14 @@
     "test:e2e": "playwright test tests/e2e.spec.ts",
     "test:a11y": "playwright test tests/a11y.spec.ts",
     "testing": "npm run test:unit && playwright test",
-    "seed": "tsx server/seed.ts",
     "check:fast": "npm run lint && npm run typecheck && npm run test:unit",
     "verify": "npm run lint && npm run typecheck && npm run testing && npm run build",
     "preview": "vite preview --host 0.0.0.0",
-    "prepare": "husky"
+    "prepare": "husky",
+    "demo": "node scripts/demo.mjs",
+    "demo:live": "node scripts/demo.mjs --live",
+    "demo:reset": "node scripts/demo-reset.mjs",
+    "dev:publisher": "tsx publisher/server.ts"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.2.5",
