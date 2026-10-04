@@ -686,13 +686,15 @@ nits into one `followup`-labelled issue per wave, or drop them.
   Spawn fix-forward tasks for anything broken, then start the next wave.
 - **Issues:** keep the open/closed state of #59–#78 in sync. Do not rewrite
   issue bodies; link them to this file.
-- **Build log:** after each wave, append a summary to `talk/build-log.md`. Only
-  the orchestrator writes this file, which avoids merge conflicts. Record:
+- **Build log:** after each wave, append a summary to `talk/build-log.md` and
+  commit it directly to `main`. Only the orchestrator writes this file, which
+  avoids merge conflicts. Record:
   packages, PR links, wall-clock time, the number of review blockers, what
   broke, and one lesson learned. This is raw material for the talk, so keep it
   honest and specific; it cannot be reconstructed later.
 - **Never:**
-  - push to `main` without a PR, except to fix a red `main`;
+  - push to `main` without a PR, except to fix a red `main` or to update
+    `STATUS.md` and `talk/build-log.md` (§12);
   - use real money or real credentials beyond the provided API keys;
   - create cloud resources;
   - weaken a §2 gate.
@@ -710,13 +712,69 @@ nits into one `followup`-labelled issue per wave, or drop them.
 | Fri 9 Oct | The human rehearses 3× on the presenting laptop; tag `demo-oct10` |
 | Sat 10 Oct | `npm run demo:live` at the venue, with a phone hotspot as backup and `npm run demo` (fixture) as the offline fallback |
 
-## 11. Done for the whole effort
+## 11. The goal: when the orchestrator is done
 
-On the presenting laptop, from a fresh clone at tag `demo-oct10`:
+The orchestrator's goal is complete when every item below is true on
+`origin/main`:
 
-- `npm ci && npm run demo` (fixture) and `npm run demo:live` both run the §1
-  story end to end, including the PDF.
+- W0, all of wave 1, W2-INTEGRATE, W2-SCENARIOS, W3-LIVE, W3-FAULT and
+  W3-POLISH are merged. W3-CLOUDRUN's files are merged too; the human runs the
+  deploy.
 - `npm run verify` passes.
-- A S$0 budget buys nothing and shows "would buy". `CORPUS_VARIANT=open-sufficient`
-  buys nothing, and the fault demo charges once.
+- `npm run demo` (fixture) runs the §1 story end to end, including the PDF.
+  `npm run demo:live` does too when the keys in `.env` work.
+- A S$0 budget buys nothing and shows "would buy";
+  `CORPUS_VARIANT=open-sufficient` buys nothing; the fault demo charges once.
 - Every citation in the UI and the PDF opens or names the exact passage.
+- `STATUS.md` lists the remaining human-only steps: Cloud Run deploy, fallback
+  recording, rehearsals, and tagging `demo-oct10`.
+
+Then **stop**. Don't invent features. Before the freeze, spare time goes only
+to `followup` items that change what the audience sees on stage.
+
+## 12. Unattended mode (overnight `/goal` runs)
+
+The human starts this once and checks in each morning. Nobody answers
+questions overnight.
+
+- **Never wait for a human.** When something is ambiguous, choose the option
+  that keeps the §1 story and the §2 gates intact, record the decision in
+  `STATUS.md`, and continue.
+- **Never stall on one thing.** Give a stuck package the `blocked` label and a
+  line in `STATUS.md`, then move to other ready work. Anything only a human can
+  do (a missing key, a deploy, a recording, a rehearsal) goes under "Needs you"
+  and is skipped.
+- **State lives in git and GitHub, not in your memory.** On every start or
+  resume, after a crash, restart or context reset, read these before doing
+  anything:
+  - `STATUS.md`;
+  - `git log --oneline -30 origin/main`;
+  - `gh pr list --state all --limit 50`;
+  - `gh issue list --label blocked`;
+  - `git worktree list`.
+
+  Continue from there. Never redo a merged package. Remove worktrees once
+  their PRs merge.
+- **Concurrency:** run at most 6 workers at once. On rate limits (HTTP 429),
+  back off and retry later instead of spinning.
+- **Live API calls** happen only in W3-LIVE and the post-wave live smoke test.
+  Stay under about 300 Groq calls and 1,000 Clef calls per night.
+- **Clock:** check the time in SGT. Before Thu 8 Oct 20:00, build. After that,
+  only fixes that stay inside one package. Don't start wave 3 while the
+  Monday-night milestone in §10 is broken.
+- **`STATUS.md`** lives at the repo root, and you commit it directly to `main`.
+  Update it after every merge, and at least every 2 hours. Keep it short:
+
+  ```markdown
+  # Build status (<SGT timestamp>)
+  ## Needs you
+  Blockers and decisions waiting on the human; always at the top, empty if none.
+  ## Decisions I made
+  One line each, with the reason.
+  ## Done since last check-in
+  Package, PR link.
+  ## In progress
+  ## Next up
+  ## Demo check
+  The last `npm run demo` smoke result: PASS or FAIL, plus one line.
+  ```

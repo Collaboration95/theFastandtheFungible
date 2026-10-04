@@ -21,3 +21,6 @@
 - Do not bind ports 5100, 8788, or 8790 and do not run Playwright unless you
   are the orchestrator; use ephemeral ports in tests.
 - Never use real money, create cloud resources, or log API keys.
+- Runs are unattended (prompt.md §12). Never wait for a human: decide, record
+  the decision, and continue. A blocked package gets the `blocked` label and a
+  note in `STATUS.md`.
