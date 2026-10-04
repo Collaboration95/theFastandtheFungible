@@ -1,6 +1,7 @@
-# Build status (4 Oct 2026, 22:46 SGT)
+# Build status (4 Oct 2026, 22:50 SGT)
 ## Needs you
-- After freeze: Cloud Run deploy, labelled fallback recording, three rehearsals, and tag `demo-oct10`.
+- Cloud Run: qualify persistent SQLite WAL settlement storage before deployment; current deploy/startup guards refuse unsafe storage. Local publisher remains the fallback. Docker/cloud runtime unverified.
+- Thu 8 Oct after 20:00 freeze: record a labelled fixture fallback video. Fri 9 Oct: rehearse 3× on the presenting laptop and tag `demo-oct10`.
 ## Decisions I made
 - At most six Sol 6.1 Medium workers; isolated worktrees under `/private/tmp`.
 - API failures use visible fixtures; no real funds or cloud resources.
@@ -23,11 +24,9 @@
 - W3-CLOUDRUN: [PR #92](https://github.com/Collaboration95/theFastandtheFungible/pull/92), guarded preparation merged; single review NO BLOCKERS; 22 offline guards pass; Docker/cloud runtime unverified.
 - W3-POLISH: [PR #93](https://github.com/Collaboration95/theFastandtheFungible/pull/93), merged; single review NO BLOCKERS; check:fast/build pass; final projector/browser verification follows.
 ## In progress
-- W3-LIVE: real Groq/Clef qualification and probability comparison.
-- W3-FAULT: local dev fault control and one-charge retry smoke.
-- W3-POLISH: 1280×720 projector layout.
-- W3-CLOUDRUN: deployment files only; durable journal preparation, no cloud actions.
-- W3-IMPACT-FIX: optional unchanged-variant classification.
+- W3-LIVE: actual Groq calls succeed but also rate-limit; Clef decisions return 422. Qualifying request schema and explicit fixture substitutions.
+- W3-STAGE-CHECK-FIX: update browser navigation for merged Decisions/Wire views; unit tests pass, previous all-visible browser assertion is stale.
+- Final main fixture/open-sufficient/fault/live smoke and projector/citation checks.
 ## Next up
 - Single reviews/merges; final main verify, fixture/live smoke and human handoff.
 ## Demo check
