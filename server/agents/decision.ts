@@ -9,6 +9,9 @@ export interface DecisionProvider {
   judgeCandidate(input: { question: string; gap: string; readSources: PublicSourceRef[]; candidate: PublicCandidate }): Promise<CandidateJudgment>
 }
 const SourceRefSchema = PublicCandidateSchema.pick({ resourceId: true, version: true, title: true, publisher: true, family: true, facets: true })
+// W3-LIVE: both matched tables selected the grid report; retain flash for latency.
+// Flash grid value reached 0.1743 while the live supplier maximum was 0.0508.
+// Use 0.15 for flash; fixture stays 0.20 and larger Clef stays 0.35.
 export const decisionModel = () => process.env.DECISION_MODEL || '@cf/cloudflare/clef-flash'
 export const publicCandidate = (input: unknown): PublicCandidate => PublicCandidateSchema.parse(input)
 export const publicSources = (input: unknown): PublicSourceRef[] => z.array(SourceRefSchema).parse(input)
@@ -45,7 +48,7 @@ export type DecideInput = {
   round: number; provider?: DecisionProvider; threshold?: number; boughtResourceIds?: string[]
 }
 export function buyThreshold(model: string, configured: unknown = process.env.BUY_THRESHOLD): number {
-  const value = configured === undefined || configured === '' ? (model.endsWith('/clef') ? 0.35 : 0.20) : Number(configured)
+  const value = configured === undefined || configured === '' ? (model.endsWith('/clef') ? 0.35 : model.endsWith('/clef-flash') ? 0.15 : 0.20) : Number(configured)
   return z.number().min(0).max(1).parse(value)
 }
 export async function decide(input: DecideInput): Promise<DecisionRound> {

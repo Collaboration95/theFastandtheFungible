@@ -1,0 +1,49 @@
+{
+  "status": "20 completed default-model scenario slots: 15 live-attempted mixed-provider runs plus five explicitly labelled unchanged fixture completions after five live timeouts. Not twenty fully-live successes.",
+  "schemaVerdict": "FIXABLE REQUEST SHAPE, not unsupported Cloudflare provider; corrected model/criteria request succeeds for both models",
+  "actualResearchModel": "Groq openai/gpt-oss-20b",
+  "defaultDecisionModel": "@cf/cloudflare/clef-flash",
+  "thresholds": {
+    "@cf/cloudflare/clef-flash": 0.15,
+    "@cf/cloudflare/clef": 0.35,
+    "metadata-fixture": 0.2
+  },
+  "recordedRequests": {
+    "groq": 183,
+    "clef": 257
+  },
+  "uncheckpointedInterruptedGroqRequestsUpperBound": 9,
+  "coverage": {
+    "canonical": {
+      "completed": 5,
+      "qualifies": 5,
+      "spentMinorEach": 80
+    },
+    "open-sufficient": {
+      "completed": 5,
+      "spentMinorEach": 0
+    },
+    "contradiction": {
+      "completed": 5,
+      "contradicts": 4,
+      "spentZeroLowValue": 1,
+      "originalThreshold": 0.2
+    },
+    "unchanged": {
+      "failedLiveAttempts": 5,
+      "labelledFixtureCompletions": 5,
+      "unchanged": 5,
+      "spentMinorEach": 80
+    }
+  },
+  "labels": "Each answer, report and table records its actual provider. No substituted probabilities are described as live.",
+  "groqRateLimitPolicy": "Retry once after exactly 60 seconds for absent/short Retry-After; Retry-After >60 seconds returns immediate labelled fallback with no early retry. HTTP-date supported.",
+  "scopeAdditions": [
+    "scripts/live-qualification.mjs",
+    "tests/fixtures/live-client.test.ts",
+    "tests/fixtures/live-qualification*.json",
+    "tests/decision.test.ts: existing flash-threshold expectation updated from 0.20 to calibrated 0.15"
+  ],
+  "baselineNote": "Diagnostic canonical/open-sufficient predate #90; corrected live work uses #90; final branch rebased onto stage #94. Unchanged completed deterministically after live deadline failures.",
+  "qualificationLimit": "Recorded 183 Groq + conservative nine interrupted attempts <=192; 257 Cloudflare including all artifacts. Both below aggregate night caps."
+}
