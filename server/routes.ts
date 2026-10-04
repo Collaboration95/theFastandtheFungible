@@ -114,7 +114,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     store.getRun(runId)
     const path = resolve(reportDir, `${runId}.${extension}`)
     if (!existsSync(path)) return res.status(404).json({ error: 'Create the report first.' })
-    res.type(extension === 'pdf' ? 'application/pdf' : 'text/html').sendFile(path)
+    res.type(extension === 'pdf' ? 'application/pdf' : 'text/html').sendFile(path, { dotfiles: 'allow' })
   })
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const notFound = error instanceof Error && error.message === 'Run not found'

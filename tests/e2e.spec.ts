@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises'
 
 test('S$2 autonomous story, exact passage and PDF', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('textbox', { name: 'Research question' })).toHaveValue(/600 MW/)
-  await page.getByRole('button', { name: 'Ask', exact: true }).click()
+  await expect(page.getByRole('textbox', { name: 'Your question' })).toHaveValue(/600 MW/)
+  await page.getByRole('button', { name: /^Ask/ }).click()
   await expect(page.getByRole('heading', { name: 'Your answer · v2' })).toBeVisible()
   await expect(page.getByText('QUALIFIES', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('bought S$0.80', { exact: true })).toBeVisible()
