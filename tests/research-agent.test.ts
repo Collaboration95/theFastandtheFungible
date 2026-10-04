@@ -48,6 +48,34 @@ describe('W1 research', () => {
       expect(answer.version).toBe(7)
     }
   })
+  it('summarises a large renamed corpus in 4–8 claims while retaining exact new grid evidence and all accessible spans', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'fixture')
+    const candidates = Array.from({ length: 18 }, (_, i) => ({ ...candidate(`renamed-${i}`, [i % 2 ? 'demand' : 'equipment-delivery']), authority: i % 3 }))
+    const contents = candidates.map((c, i) => {
+      const spans = Array.from({ length: 3 }, (_, j) => ({ id: `passage-${j}`, text: `Accessible ${c.facets[0]} evidence item ${i}, detail ${j}.` }))
+      return { ...content(c.resourceId, spans.map(s => s.text).join(' ')), spans }
+    })
+    const before = JSON.stringify(contents)
+    const v1 = await writeAnswer({ question: 'q', candidates, contents, version: 1 })
+    expect(v1.answer.claims.length).toBeGreaterThanOrEqual(4)
+    expect(v1.answer.claims.length).toBeLessThanOrEqual(8)
+    expect(v1.answer.openGaps.map(g => g.facet)).toEqual(['grid-energisation'])
+    const grid = { ...candidate('opaque-new-resource', ['grid-energisation'], 'PAID'), authority: 2 }
+    const spans = [{ id: 'opaque-capacity', text: 'Only 240 of the 600 MW has confirmed energisation slots before 2028.' }, { id: 'opaque-delay', text: 'Substation works have slipped 14 months.' }]
+    const delivered = { ...content(grid.resourceId, spans.map(s => s.text).join(' ')), spans }
+    const allContents = [...contents, delivered]
+    const allBefore = JSON.stringify(allContents)
+    const v2 = await writeAnswer({ question: 'q', candidates: [...candidates, grid], contents: allContents, version: 2, previous: v1.answer })
+    expect(v2.answer.claims.length).toBeGreaterThanOrEqual(4)
+    expect(v2.answer.claims.length).toBeLessThanOrEqual(8)
+    expect(v2.answer.claims.slice(0, 2).map(c => c.text)).toEqual(spans.map(s => s.text))
+    expect(v2.answer.claims.slice(0, 2).map(c => c.citations)).toEqual(spans.map(s => [{ resourceId: grid.resourceId, version: grid.version, spanId: s.id }]))
+    expect(v2.answer.openGaps).toEqual([]); expect(v2.impact?.classification).toBe('QUALIFIES')
+    expect(JSON.stringify(contents)).toBe(before); expect(JSON.stringify(allContents)).toBe(allBefore)
+    expect(allContents.flatMap(c => c.spans)).toHaveLength(56)
+    expect(v2.answer.claims.some(c => c.text.includes('demand'))).toBe(true)
+    expect(v2.answer.claims.some(c => c.text.includes('equipment-delivery'))).toBe(true)
+  })
   it('drops the whole invalid claim, never substitutes another span or displays an unbound conclusion', async () => {
     const { answer } = await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })
     const invalid: Answer = { ...answer, conclusion: 'UNBOUND INVENTION', claims: [
