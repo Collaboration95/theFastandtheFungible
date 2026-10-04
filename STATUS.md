@@ -1,4 +1,4 @@
-# Build status (4 Oct 2026, 22:45 SGT)
+# Build status (4 Oct 2026, 22:46 SGT)
 ## Needs you
 - After freeze: Cloud Run deploy, labelled fallback recording, three rehearsals, and tag `demo-oct10`.
 ## Decisions I made
@@ -20,6 +20,7 @@
 - W2-SCENARIOS: [PR #89](https://github.com/Collaboration95/theFastandtheFungible/pull/89), merged; single review NO BLOCKERS; 108 tests pass, one optional impact regression being fixed.
 - W3-IMPACT-FIX: [PR #90](https://github.com/Collaboration95/theFastandtheFungible/pull/90), merged; single review NO BLOCKERS; 111 tests, zero skips.
 - W3-FAULT: [PR #91](https://github.com/Collaboration95/theFastandtheFungible/pull/91), merged; single review NO BLOCKERS; one-charge failed-delivery/retry smoke passes.
+- W3-CLOUDRUN: [PR #92](https://github.com/Collaboration95/theFastandtheFungible/pull/92), guarded preparation merged; single review NO BLOCKERS; 22 offline guards pass; Docker/cloud runtime unverified.
 ## In progress
 - W3-LIVE: real Groq/Clef qualification and probability comparison.
 - W3-FAULT: local dev fault control and one-charge retry smoke.
