@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+# Node 24 includes node:sqlite; tsx is installed from the existing lockfile.
+FROM node:24.0.0-bookworm-slim
+WORKDIR /app
+ENV NODE_ENV=production PORT=8080 PUBLISHER_FAULTS=0
+COPY package.json package-lock.json ./
+# tsx is an existing devDependency. Skip only the repository's husky hook;
+# npm ci still runs esbuild's required dependency installation scripts.
+RUN npm ci --include=dev --ignore-scripts && node node_modules/esbuild/install.js \
+    && node --input-type=module -e "import { DatabaseSync } from 'node:sqlite'; new DatabaseSync(':memory:').close()"
+COPY publisher/ ./publisher/
+COPY shared/contracts/ ./shared/contracts/
+COPY data/corpus/ ./data/corpus/
+# Keep boot wiring in this package's Dockerfile; routes do not yet read a journal env var.
+RUN <<'SHELL'
+cat > /app/start-publisher.mjs <<'JS'
+import { isAbsolute, normalize } from 'node:path';
+import { createPublisherApp } from './publisher/routes.ts';
+try {
+  // There is no qualified Cloud Run volume for this WAL journal yet. A path or
+  // an operator assertion alone cannot establish persistence/locking semantics.
+  if (process.env.K_SERVICE) throw new Error('Needs you: Cloud Run persistent SQLite WAL storage is not qualified; use the local publisher.');
+  const journal = process.env.PUBLISHER_JOURNAL_PATH;
+  if (!journal || !isAbsolute(journal) || normalize(journal) !== journal || !journal.endsWith('.db'))
+    throw new Error('PUBLISHER_JOURNAL_PATH must name an absolute .db file on persistent storage.');
+  if (!process.env.PUBLISHER_SECRET) throw new Error('PUBLISHER_SECRET is required.');
+  const port = Number(process.env.PORT ?? 8080);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT.');
+  const app = createPublisherApp({ journal, faults: false });
+  try { await app.locals.ready; } catch { app.locals.journal.close(); throw new Error('Corpus validation failed.'); }
+  const server = app.listen(port, '0.0.0.0');
+  server.once('error', () => { app.locals.journal.close(); console.error('Publisher listener failed.'); process.exitCode = 1; });
+  server.once('close', () => app.locals.journal.close());
+  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => server.close());
+} catch {
+  console.error('Publisher startup refused: verify persistent journal storage, secret reference and corpus. Cloud Run WAL storage needs qualification.');
+  process.exitCode = 1;
+}
+JS
+SHELL
+USER node
+EXPOSE 8080
+# /health responds only after the corpus has loaded and validated.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||8080)+'/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+CMD ["node", "--import", "tsx", "start-publisher.mjs"]
