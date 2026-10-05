@@ -50,7 +50,8 @@ export class XrplPayer {
     const lastLedgerSequence = Number(current.result.ledger_current_index) + 20
     const signed = this.wallet.sign({
       TransactionType: 'Payment', Account: account, Destination: terms.payTo, Amount: terms.amountDrops, InvoiceID: terms.invoiceId,
-      Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(2000, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), // capped: fee spikes never drain the wallet LastLedgerSequence: lastLedgerSequence,
+      // Fee capped so a fee spike never drains the wallet; LastLedgerSequence makes expiry provable.
+      Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(2000, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), LastLedgerSequence: lastLedgerSequence,
     })
     return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
   }

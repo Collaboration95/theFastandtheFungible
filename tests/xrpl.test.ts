@@ -81,6 +81,7 @@ describe('XRPL Testnet settlement rail', () => {
     expect(intent.status).toBe('VERIFIED')
     expect(s.chain.txs.size).toBe(1)
     const [[hash, onLedger]] = [...s.chain.txs]
+    expect(onLedger.tx_json.LastLedgerSequence).toBe(s.store.getSubmission(intent.intentId)!.lastLedgerSequence)
     expect(onLedger.tx_json).toMatchObject({ TransactionType: 'Payment', Account: s.wallet.classicAddress, Destination: TESTNET_RECEIVER, Amount: '80000', InvoiceID: intent.quote!.quoteHash.toUpperCase() })
     const run = s.store.getRun(s.run.runId)
     expect(run.spentMinor).toBe(80)
