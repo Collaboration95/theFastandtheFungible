@@ -46,9 +46,12 @@ export class PurchaseManager {
       this.store.appendEvent(runId, { type: 'PURCHASE', label: intent.status, data: { intentId, status: intent.status } })
     }
     const terms = intent.quote?.payment
-    if (intent.status === 'RESERVED' && terms) {
-      // Policy-approved price must equal the ledger amount before anything is signed.
-      const refusal = !this.payer?.address ? 'XRPL payer is not configured; nothing was charged' : XrplPayer.checkTerms(terms, intent.amountMinor, DROPS_PER_MINOR, intent.quote!.quoteHash)
+    if (intent.status === 'RESERVED') {
+      // Before anything is signed: the ledger amount must equal the policy-approved price, and a run
+      // labelled XRPL TESTNET must never settle silently simulated with a publisher off that rail.
+      const refusal = terms
+        ? !this.payer?.address ? 'XRPL payer is not configured; nothing was charged' : XrplPayer.checkTerms(terms, intent.amountMinor, DROPS_PER_MINOR, intent.quote!.quoteHash)
+        : this.payer ? 'Publisher is not on the XRPL Testnet rail; nothing was charged' : undefined
       if (refusal) {
         intent = this.store.updateIntent(intentId, { status: 'FAILED_NOT_SETTLED', error: refusal })
         this.store.appendEvent(runId, { type: 'PURCHASE', label: `FAILED_NOT_SETTLED · ${refusal}`, data: { intentId } })

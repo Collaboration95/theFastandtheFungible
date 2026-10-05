@@ -15,12 +15,12 @@ import { PublicCandidateSchema, type PublicCandidate } from '../shared/contracts
 
 /** In-memory Testnet: applies submitted blobs, validates them (or not), and answers tx lookups. */
 function fakeLedger() {
-  const state = { ledger: 100, submits: 0, validate: true, record: true, result: 'tesSUCCESS', delivered: undefined as string | undefined }
+  const state = { ledger: 100, submits: 0, validate: true, record: true, sequenceUsedElsewhere: 0, result: 'tesSUCCESS', delivered: undefined as string | undefined }
   const txs = new Map<string, { tx_json: Record<string, unknown>; meta: Record<string, unknown>; validated: boolean; ledger_index: number }>()
   const ledger: Ledger = {
     async request(r) {
       switch (r.command) {
-        case 'account_info': return { result: { account_data: { Sequence: 7 + txs.size, Balance: '100000000', OwnerCount: 0 } } }
+        case 'account_info': return { result: { account_data: { Sequence: 7 + txs.size + state.sequenceUsedElsewhere, Balance: '100000000', OwnerCount: 0 } } }
         case 'ledger_current': return { result: { ledger_current_index: state.ledger } }
         case 'fee': return { result: { drops: { open_ledger_fee: '10' } } }
         case 'ledger': return { result: { ledger_index: state.ledger } }
@@ -152,6 +152,27 @@ describe('XRPL Testnet settlement rail', () => {
     const run = s.store.getRun(s.run.runId)
     expect(run.intents[0]).toMatchObject({ status: 'FAILED_NOT_SETTLED' })
     expect(run.reservedMinor).toBe(0); expect(run.spentMinor).toBe(0)
+  })
+
+  it('keeps the reservation when the payer Sequence moved (the payment may have applied)', async () => {
+    const s = await setup()
+    s.chain.state.record = false
+    await buy(s, new PurchaseManager(s.store, s.client, s.payer))
+    s.chain.state.ledger += 50; s.chain.state.sequenceUsedElsewhere = 1
+    await new PurchaseManager(s.store, s.client, s.payer).reconcile()
+    expect(s.store.getRun(s.run.runId)).toMatchObject({ reservedMinor: 80, intents: [{ status: 'SUBMITTING' }] })
+  })
+
+  it('refuses to settle simulated while the run is labelled XRPL', async () => {
+    const s = await setup()
+    const simulated = createPublisherApp({ secret: 'xrpl-secret', journal: join(s.dir, 'simulated.db'), rail: 'simulated', corpus: loadCorpus('') })
+    await simulated.locals.ready
+    const server = simulated.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
+    cleanup.push(() => new Promise(resolve => server.close(resolve)))
+    const client = new PublisherClient({ baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}`, secret: 'xrpl-secret' })
+    const intent = await new PurchaseManager(s.store, client, s.payer).purchase({ runId: s.run.runId, candidate: s.candidate, intentId: 'off-rail' })
+    expect(intent).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('not on the XRPL') })
+    expect(s.store.getRun(s.run.runId).receipts).toHaveLength(0)
   })
 
   it('without a payer seed, nothing is signed and the purchase fails visibly', async () => {

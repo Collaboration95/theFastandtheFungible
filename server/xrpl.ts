@@ -1,4 +1,4 @@
-import { Wallet } from 'xrpl'
+import { Wallet, decode } from 'xrpl'
 import type { PaymentRequirement } from '../shared/contracts/index.js'
 import { lookupTx, testnetLedger, validatedLedgerIndex, type Ledger } from '../shared/xrpl.js'
 
@@ -50,7 +50,7 @@ export class XrplPayer {
     const lastLedgerSequence = Number(current.result.ledger_current_index) + 20
     const signed = this.wallet.sign({
       TransactionType: 'Payment', Account: account, Destination: terms.payTo, Amount: terms.amountDrops, InvoiceID: terms.invoiceId,
-      Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12))), LastLedgerSequence: lastLedgerSequence,
+      Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(2000, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), // capped: fee spikes never drain the wallet LastLedgerSequence: lastLedgerSequence,
     })
     return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
   }
@@ -60,13 +60,20 @@ export class XrplPayer {
     catch { return 'submit-unconfirmed' } // The hash lookup decides the outcome.
   }
   async status(submission: Submission): Promise<PaymentOutcome> {
+    const validatedBefore = await validatedLedgerIndex(this.ledger)
     const found = await lookupTx(this.ledger, submission.txHash)
     if (found.state === 'validated') {
       const result = String(found.meta.TransactionResult)
       return result === 'tesSUCCESS' ? { state: 'success', ledgerIndex: found.ledgerIndex } : { state: 'failed', result }
     }
-    // A transaction absent after its LastLedgerSequence validated can never be applied.
-    if (found.state === 'missing' && await validatedLedgerIndex(this.ledger) > submission.lastLedgerSequence) return { state: 'expired' }
+    // Proof of absence that does not trust the node's tx history: past LastLedgerSequence the payment
+    // can never apply, and if the account Sequence in that validated ledger has not moved past ours,
+    // it never did. Otherwise keep the reservation and look again.
+    if (found.state === 'missing' && validatedBefore > submission.lastLedgerSequence) {
+      const signed = decode(submission.txBlob) as { Account: string; Sequence: number }
+      const { result } = await this.ledger.request({ command: 'account_info', account: signed.Account, ledger_index: validatedBefore })
+      if (Number(result.account_data.Sequence) <= Number(signed.Sequence)) return { state: 'expired' }
+    }
     return { state: 'pending' }
   }
   async waitFor(submission: Submission): Promise<PaymentOutcome> {

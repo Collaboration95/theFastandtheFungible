@@ -32,12 +32,12 @@ export type TxLookup =
   | { state: 'missing' | 'pending' }
   | { state: 'validated'; tx: Record<string, unknown>; meta: Record<string, unknown>; ledgerIndex: number }
 
+/** 'missing' is only "this node did not find it"; callers needing proof of absence check the account Sequence. */
 export async function lookupTx(ledger: Ledger, txHash: string): Promise<TxLookup> {
   let response: { result: any } // eslint-disable-line @typescript-eslint/no-explicit-any
   try { response = await ledger.request({ command: 'tx', transaction: txHash }) }
   catch (error) {
-    const code = (error as { data?: { error?: string } }).data?.error
-    if (code === 'txnNotFound') return { state: 'missing' }
+    if ((error as { data?: { error?: string } }).data?.error === 'txnNotFound') return { state: 'missing' }
     throw error
   }
   const result = response.result
