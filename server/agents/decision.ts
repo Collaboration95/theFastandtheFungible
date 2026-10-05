@@ -1,3 +1,4 @@
+import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema, FacetSchema } from '../../shared/contracts/index.js'
 import type { CandidateJudgment, DecisionRound, PublicCandidate, PublicSourceRef } from '../../shared/contracts/index.js'
@@ -51,7 +52,16 @@ export function buyThreshold(model: string, configured: unknown = process.env.BU
   const value = configured === undefined || configured === '' ? (model.endsWith('/clef') ? 0.35 : model.endsWith('/clef-flash') ? 0.15 : 0.20) : Number(configured)
   return z.number().min(0).max(1).parse(value)
 }
-export async function decide(input: DecideInput): Promise<DecisionRound> {
+/** Traced as a chain: Clef generations nest inside; the output is the full verdict table. */
+export function decide(input: DecideInput): Promise<DecisionRound> {
+  return startActiveObservation('decide-purchase', async observation => {
+    observation.update({ input: { round: input.round, gap: input.gap, remainingMinor: input.budgetMinor - input.spentMinor - input.reservedMinor, capMinor: input.perSourceCapMinor } })
+    const round = await decideRound(input)
+    observation.update({ output: { provider: round.provider, model: round.model, gapMaterial: round.gapMaterial, threshold: round.threshold, selected: round.selectedResourceId ?? null, rows: round.rows.map(r => ({ resourceId: r.candidate.resourceId, priceMinor: r.candidate.price.amountMinor, addressesGap: r.judgment.addressesGap, original: r.judgment.originality.original, credibility: r.judgment.credibility, value: r.value, verdict: r.verdict })) }, ...(round.fallbackReason ? { level: 'WARNING' as const, statusMessage: round.fallbackReason } : {}) })
+    return round
+  }, { asType: 'chain' })
+}
+async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // Zod strips every unknown property, including body, spans, and injected commands.
   const candidates = z.array(PublicCandidateSchema).parse(input.candidates).filter(candidate => candidate.tier === 'PAID')
   const readSources = publicSources(input.readSources)

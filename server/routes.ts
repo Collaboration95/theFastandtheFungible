@@ -4,6 +4,8 @@ import { existsSync } from 'node:fs'
 import { z } from 'zod'
 import { AskSchema, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
 import { XrplPayer } from './xrpl.js'
+import { traceEvent, traceRun } from './telemetry.js'
+import { startActiveObservation } from '@langfuse/tracing'
 import { Store } from './store.js'
 import { PublisherClient } from './publisher-client.js'
 import { PurchaseManager } from './purchases.js'
@@ -26,7 +28,8 @@ export async function createApiApp(options: ApiOptions = {}) {
       res.write(`event: snapshot\ndata: ${JSON.stringify(store.getRun(event.runId))}\n\n`)
     }
   }
-  const store = new Store(options.dbPath ?? process.env.APP_DB ?? 'data/app.db', publish)
+  // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
+  const store = new Store(options.dbPath ?? process.env.APP_DB ?? 'data/app.db', event => { try { traceEvent(event) } catch { /* telemetry never blocks the run */ } publish(event) })
   const client = new PublisherClient({ baseUrl: options.publisherUrl ?? process.env.PUBLISHER_URL, secret: options.secret ?? process.env.PUBLISHER_SECRET })
   // XRPL Testnet settlement needs both the rail flag and a payer seed; otherwise simulated, labelled.
   const payer = options.payer ?? (process.env.SETTLEMENT_RAIL === 'xrpl-testnet' && process.env.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
@@ -135,7 +138,9 @@ export async function createApiApp(options: ApiOptions = {}) {
       store.updateRun(runId, { reportStatus: 'GENERATING' })
       store.appendEvent(runId, { type: 'REPORT', label: 'Rendering a cited report with persisted decisions and receipts.' })
       const done = progress(runId, 'Report generation is in progress; validated passages and receipts are preserved.')
-      job = buildReport(run).then(report => renderReport(report, resolve(reportDir, `${runId}.pdf`))).then(result => {
+      // A separate trace in the run's session: the draft-report generation plus PDF rendering.
+      let rendered: { format: string; findings: number; provider: string } | undefined
+      job = traceRun('research-report', run, () => buildReport(run).then(report => startActiveObservation('render-report', async observation => { const result = await renderReport(report, resolve(reportDir, `${runId}.pdf`)); rendered = { format: result.format, findings: report.findings.length, provider: report.provider }; observation.update({ output: rendered }); return result })), () => rendered ?? { format: 'FAILED' }).then(result => {
         store.updateRun(runId, { reportStatus: result.format })
         store.appendEvent(runId, { type: 'REPORT', label: result.format === 'PDF' ? 'PDF report ready.' : 'Chromium unavailable; HTML print fallback ready.' })
         return result

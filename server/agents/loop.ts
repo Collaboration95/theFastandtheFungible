@@ -1,3 +1,4 @@
+import { traceRun } from '../telemetry.js'
 import type { Store } from '../store.js'
 import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
@@ -68,7 +69,15 @@ export class RunLoop {
     this.store.updateRun(runId, { labels: { ...latest.labels, research: `${providerLabels[answer.provider]} · ${answer.model}` }, checkpoint: { ...latest.checkpoint, answerVersion: answer.version, ...(latest.checkpoint.intentId ? { answeredIntentId: latest.checkpoint.intentId } : {}) } })
     if (this.stopped(runId)) this.trace(runId, 'STOPPED', 'Stopped; last good answer preserved.')
   }
+  /** What a reviewer needs at a glance in the trace table. */
+  private summary(runId: string) {
+    const run = this.store.getRun(runId)
+    return { phase: run.phase, conclusion: run.answers.at(-1)?.conclusion, answerVersions: run.answers.length, impact: run.impact?.classification, spent: `S$${(run.spentMinor / 100).toFixed(2)}`, bought: run.intents.filter(i => i.status === 'VERIFIED').map(i => ({ resourceId: i.resourceId, txHash: i.txHash })), error: run.error }
+  }
   start(runId: string): Promise<void> {
+    return traceRun('research-run', this.store.getRun(runId), () => this.run(runId), () => this.summary(runId))
+  }
+  private run(runId: string): Promise<void> {
     return this.exclusive(runId, async () => {
       let run = this.store.getRun(runId)
       if (run.stopped || run.phase === 'DONE') return
@@ -126,6 +135,9 @@ export class RunLoop {
     })
   }
   retryDelivery(runId: string, intentId: string): Promise<void> {
+    return traceRun('retry-delivery', this.store.getRun(runId), () => this.retry(runId, intentId), () => this.summary(runId))
+  }
+  private retry(runId: string, intentId: string): Promise<void> {
     return this.exclusive(runId, async () => {
       const intent = this.store.getIntent(intentId)
       if (!intent || intent.runId !== runId || !['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED'].includes(intent.status)) throw new Error('Invalid delivery retry')
