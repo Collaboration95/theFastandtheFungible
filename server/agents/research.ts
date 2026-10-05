@@ -104,7 +104,8 @@ export function writeAnswer(input: { question: string; contents: ContentEnvelope
   return startActiveObservation('write-answer', async observation => {
     observation.update({ input: { question: input.question, version: input.version, evidence: input.contents.map(c => c.resourceId) } })
     const result = await composeAnswer(input)
-    if (isLlmConfigured()) scoreStep('answer-fallback', result.answer.provider === 'fixture', result.answer.provider === 'fixture' ? 'LLM output failed or no valid claims; labelled extractive fixture shown' : undefined)
+    // Only when the LLM was actually asked (it needs citable passages); otherwise the fixture is expected.
+    if (isLlmConfigured() && usableContents(input.contents).some(c => c.spans.length)) scoreStep('answer-fallback', result.answer.provider === 'fixture', result.answer.provider === 'fixture' ? 'LLM output failed or no valid claims; labelled extractive fixture shown' : undefined)
     observation.update({ output: { provider: result.answer.provider, model: result.answer.model, conclusion: result.answer.conclusion, validClaims: result.answer.claims.length, openGaps: result.answer.openGaps.map(g => g.facet), impact: result.impact?.classification } })
     return result
   }, { asType: 'chain' })

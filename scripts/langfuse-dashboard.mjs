@@ -1,8 +1,10 @@
 // Creates (or recreates) the "ResearchAgent · live health" dashboard in Langfuse from code.
 // Run: make langfuse-dashboard. Uses the unstable dashboards API; widgets read live-environment data.
 import 'dotenv/config'
+if (!process.env.LANGFUSE_PUBLIC_KEY || !process.env.LANGFUSE_SECRET_KEY) { console.error('Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env'); process.exit(1) }
 
 const NAME = 'ResearchAgent · live health'
+const PREFIX = 'RA · ' // widgets are matched by this prefix so reruns never touch anyone else's widgets
 const base = (process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com').replace(/\/$/, '')
 const auth = 'Basic ' + Buffer.from(`${process.env.LANGFUSE_PUBLIC_KEY}:${process.env.LANGFUSE_SECRET_KEY}`).toString('base64')
 async function api(method, path, body) {
@@ -10,7 +12,8 @@ async function api(method, path, body) {
     const res = await fetch(`${base}/api/public/unstable${path}`, { method, headers: { Authorization: auth, 'Content-Type': 'application/json' }, body: body && JSON.stringify(body) })
     const text = await res.text()
     if (res.status === 429) { // The unstable API allows 30 calls a minute.
-      const wait = JSON.parse(text).details?.retryAfterSeconds ?? 30
+      let wait = 30
+      try { wait = JSON.parse(text).details?.retryAfterSeconds ?? 30 } catch { /* non-JSON 429 */ }
       console.log(`rate limited; waiting ${wait}s`)
       await new Promise(resolve => setTimeout(resolve, (wait + 1) * 1000)); continue
     }
@@ -42,15 +45,14 @@ const widgets = [
 const existing = (await api('GET', '/dashboards?limit=100')).data?.filter(d => d.name === NAME) ?? []
 for (const dashboard of existing) await api('DELETE', `/dashboards/${dashboard.id}`)
 // Widgets are standalone; drop the ones this script created before so reruns don't pile up copies.
-const ours = new Set(widgets.map(w => w[0]))
-for (const widget of (await api('GET', '/dashboard-widgets?limit=100')).data ?? []) if (ours.has(widget.name)) await api('DELETE', `/dashboard-widgets/${widget.id}`)
+for (const widget of (await api('GET', '/dashboard-widgets?limit=100')).data ?? []) if (widget.name.startsWith(PREFIX)) await api('DELETE', `/dashboard-widgets/${widget.id}`)
 const dashboard = await api('POST', '/dashboards', {
   name: NAME, description: 'Latency, failure (fallback) rates, quality and cost of live runs. Created by scripts/langfuse-dashboard.mjs.',
   filters: [names('environment', ['live'])],
 })
 let x = 0, y = 0
 for (const [name, description, view, chartType, metrics, dimensions, filters, width] of widgets) {
-  const widget = await api('POST', '/dashboard-widgets', { name, description, view, chartType, metrics, dimensions, filters })
+  const widget = await api('POST', '/dashboard-widgets', { name: PREFIX + name, description, view, chartType, metrics, dimensions, filters })
   if (x + width > 12) { x = 0; y += 5 }
   await api('POST', `/dashboards/${dashboard.id}/placements`, { type: 'widget', widgetId: widget.id, x, y, width, height: 5 })
   x += width
