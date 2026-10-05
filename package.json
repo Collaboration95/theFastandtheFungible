@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "dev": "npm run demo",
     "dev:client": "vite --host 0.0.0.0 --port 5100 --strictPort",
@@ -22,7 +25,8 @@
     "demo": "node scripts/demo.mjs",
     "demo:live": "node scripts/demo.mjs --live",
     "demo:reset": "node scripts/demo-reset.mjs",
-    "dev:publisher": "tsx publisher/server.ts"
+    "dev:publisher": "tsx publisher/server.ts",
+    "doctor": "node --import tsx scripts/doctor.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.2.5",
