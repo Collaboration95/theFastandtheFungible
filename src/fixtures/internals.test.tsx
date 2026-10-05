@@ -5,6 +5,7 @@ import { exampleRun, offlineWireExampleRun, offlineZeroBudgetRun } from './run.j
 import DecisionTable from '../components/DecisionTable.js'
 import Budget from '../components/Budget.js'
 import Wire from '../components/Wire.js'
+import Ledger from '../components/Ledger.js'
 import Modes from '../components/Modes.js'
 import Activity from '../components/Activity.js'
 import Layout from '../components/Layout.js'
@@ -28,6 +29,16 @@ describe('visible internals', () => {
     expect(run.spentMinor).toBe(0)
     expect(run.contents.every(content => run.candidates.some(candidate => candidate.resourceId === content.resourceId && candidate.tier === 'FREE'))).toBe(true)
     expect(RunSnapshotSchema.safeParse(run).success).toBe(true)
+  })
+
+  it('shows the XRPL ledger panel only on the Testnet rail, with payee and explorer link', () => {
+    expect(renderToStaticMarkup(<Ledger run={exampleRun} />)).toBe('')
+    const hash = 'A'.repeat(64)
+    const run = { ...exampleRun, phase: 'DONE' as const, labels: { ...exampleRun.labels, settlement: 'XRPL TESTNET · no real value' as const },
+      receipts: [{ receiptId: 'r1', intentId: 'i1', runId: exampleRun.runId, resourceId: 'grid-operators-report', version: 'v1', amountMinor: 80, currency: 'SGD' as const, settledAt: '2026-10-05T10:00:00.000Z', label: 'XRPL TESTNET · no real value' as const,
+        xrpl: { txHash: hash, ledgerIndex: 21296154, payer: 'rwi1i3TJfZKmLWoAiNkXUBZmdWVGFxBNRQ', payTo: 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp', amountDrops: '80000', explorerUrl: `https://testnet.xrpl.org/transactions/${hash}` } }] }
+    const html = renderToStaticMarkup(<Ledger run={run} />)
+    for (const text of ['Ledger · XRPL Testnet', 'S$0.80 = 0.08 XRP', 'ledger 21296154', `https://testnet.xrpl.org/transactions/${hash}`, 'rGhpLN…UVkp']) expect(html).toContain(text)
   })
 
   it('shows exact minor-unit budget and permanent simulation labels', () => {

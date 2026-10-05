@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { CandidateJudgmentSchema } from '../../shared/contracts/index.js'
-import type { CandidateJudgment } from '../../shared/contracts/index.js'
+import type { CandidateJudgment, PublicCandidate } from '../../shared/contracts/index.js'
 import { decisionModel, publicCandidate, publicSources } from './decision.js'
 import type { DecisionProvider } from './decision.js'
 
@@ -32,6 +32,8 @@ export const clefQuestions = {
     credibility: { type: 'score', instructions: 'Assess the credibility of the candidate evidence.', criteria: ['Opinion or marketing', 'Secondary reporting', 'Named primary sources or data'] },
   },
 }
+/** Payment addresses say nothing about evidence; keep them out of the decision model's state. */
+const withoutWallet = ({ wallet: _wallet, ...candidate }: PublicCandidate) => candidate
 export type ClefOptions = { accountId?: string; token?: string; model?: string; fetch?: typeof fetch; allowLive?: boolean; timeoutMs?: number }
 export class ClefDecisionProvider implements DecisionProvider {
   readonly name = 'cloudflare' as const
@@ -93,6 +95,6 @@ export class ClefDecisionProvider implements DecisionProvider {
     return parseClefRound(await this.judge({ question: input.question, conclusion: input.conclusion, gap: input.gap }, clefQuestions.round, parseClefRound))
   }
   async judgeCandidate(input: Parameters<DecisionProvider['judgeCandidate']>[0]) {
-    return parseClefCandidate(await this.judge({ question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: publicCandidate(input.candidate) }, clefQuestions.candidate, parseClefCandidate))
+    return parseClefCandidate(await this.judge({ question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: withoutWallet(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate))
   }
 }

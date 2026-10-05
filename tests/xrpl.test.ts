@@ -10,7 +10,10 @@ import { Store } from '../server/store.js'
 import { PurchaseManager } from '../server/purchases.js'
 import { PublisherClient } from '../server/publisher-client.js'
 import { XrplPayer } from '../server/xrpl.js'
-import { TESTNET_RECEIVER, testnetUrl, type Ledger } from '../shared/xrpl.js'
+import { createApiApp } from '../server/routes.js'
+import { testnetUrl, type Ledger } from '../shared/xrpl.js'
+
+const GRID_WALLET = 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp' // Grid Operators Report's own Testnet wallet
 import { PublicCandidateSchema, type PublicCandidate } from '../shared/contracts/index.js'
 
 /** In-memory Testnet: applies submitted blobs, validates them (or not), and answers tx lookups. */
@@ -74,7 +77,7 @@ describe('XRPL Testnet settlement rail', () => {
     expect(challenge.status).toBe(402)
     const body = await challenge.json()
     expect(body.label).toContain('XRPL TESTNET · no real value')
-    expect(body.accepts[0]).toMatchObject({ network: 'xrpl:1', asset: 'XRP', amount: '80000', payTo: TESTNET_RECEIVER })
+    expect(body.accepts[0]).toMatchObject({ network: 'xrpl:1', asset: 'XRP', amount: '80000', payTo: GRID_WALLET })
     expect(JSON.stringify(body)).not.toContain('Grid Operators Report body')
 
     const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer))
@@ -82,13 +85,23 @@ describe('XRPL Testnet settlement rail', () => {
     expect(s.chain.txs.size).toBe(1)
     const [[hash, onLedger]] = [...s.chain.txs]
     expect(onLedger.tx_json.LastLedgerSequence).toBe(s.store.getSubmission(intent.intentId)!.lastLedgerSequence)
-    expect(onLedger.tx_json).toMatchObject({ TransactionType: 'Payment', Account: s.wallet.classicAddress, Destination: TESTNET_RECEIVER, Amount: '80000', InvoiceID: intent.quote!.quoteHash.toUpperCase() })
+    expect(onLedger.tx_json).toMatchObject({ TransactionType: 'Payment', Account: s.wallet.classicAddress, Destination: GRID_WALLET, Amount: '80000', InvoiceID: intent.quote!.quoteHash.toUpperCase() })
     const run = s.store.getRun(s.run.runId)
     expect(run.spentMinor).toBe(80)
-    expect(run.receipts[0]).toMatchObject({ label: 'XRPL TESTNET · no real value', xrpl: { txHash: hash, payTo: TESTNET_RECEIVER, amountDrops: '80000', payer: s.wallet.classicAddress, explorerUrl: `https://testnet.xrpl.org/transactions/${hash}` } })
+    expect(run.receipts[0]).toMatchObject({ label: 'XRPL TESTNET · no real value', xrpl: { txHash: hash, payTo: GRID_WALLET, amountDrops: '80000', payer: s.wallet.classicAddress, explorerUrl: `https://testnet.xrpl.org/transactions/${hash}` } })
     expect(run.intents[0].txHash).toBe(hash)
     expect(run.events.filter(e => e.type === 'XRPL').map(e => e.label).join(' ')).toMatch(/Signed 0\.08 XRP.*Validated in ledger.*Publisher verified/)
     expect(JSON.stringify(run)).not.toContain(s.wallet.seed!)
+  })
+
+  it('pays each publisher at its own wallet and refuses a payee the policy did not evaluate', async () => {
+    const s = await setup()
+    const quotes = await Promise.all(['northstar-wire', 'grid-operators-report'].map((resourceId, i) =>
+      s.client.quote({ runId: s.run.runId, intentId: `payee-${i}`, profileId: resourceId === 'northstar-wire' ? 'supplier-wire' : 'grid-research', resourceId, version: 'v1' })))
+    expect(quotes.map(q => q.payment!.payTo)).toEqual(['r4uhMW4Fph3YAdjrxsGZmk2mivTBhb8HVd', GRID_WALLET])
+    const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer), 'redirected', { ...s.candidate, wallet: 'r4uhMW4Fph3YAdjrxsGZmk2mivTBhb8HVd' })
+    expect(intent).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('payee differs') })
+    expect(s.chain.state.submits).toBe(0)
   })
 
   it('signs and submits once when the same intent is bought concurrently', async () => {
@@ -181,6 +194,20 @@ describe('XRPL Testnet settlement rail', () => {
     const intent = await buy(s, new PurchaseManager(s.store, s.client, new XrplPayer(s.chain.ledger)))
     expect(intent).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('not configured') })
     expect(s.chain.state.submits).toBe(0)
+  })
+
+  it('serves a read-only ledger view: buyer plus five publisher wallets, never a seed', async () => {
+    const s = await setup()
+    const api = await createApiApp({ dbPath: join(s.dir, 'api.db'), publisherUrl: s.baseUrl, secret: 'xrpl-secret', reportDir: join(s.dir, 'reports'), payer: s.payer })
+    const server = api.app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
+    cleanup.push(() => new Promise(resolve => { server.close(resolve); api.close() }))
+    const response = await fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/api/ledger`)
+    const view = await response.json()
+    expect(view.rail).toBe('xrpl-testnet')
+    expect(view.wallets.map((w: { name: string }) => w.name).sort()).toEqual(['Circuit Note', 'Grid Operators Report', 'GridScope Asia', 'Monsoon Thermal Analytics', 'Northstar Wire', 'ResearchAgent (buyer)'])
+    expect(new Set(view.wallets.map((w: { address: string }) => w.address)).size).toBe(6)
+    expect(view.wallets[0]).toMatchObject({ address: s.wallet.classicAddress, balanceDrops: '100000000' })
+    expect(JSON.stringify(view)).not.toContain(s.wallet.seed!)
   })
 
   it('only accepts Testnet endpoints', () => {

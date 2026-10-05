@@ -2,7 +2,7 @@ import express, { type ErrorRequestHandler, type Response } from 'express'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { z } from 'zod'
-import { AskSchema, SIMULATED_LABEL, XRPL_LABEL, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
+import { AskSchema, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
 import { XrplPayer } from './xrpl.js'
 import { Store } from './store.js'
 import { PublisherClient } from './publisher-client.js'
@@ -66,6 +66,28 @@ export async function createApiApp(options: ApiOptions = {}) {
     })
   }
   const faultsAvailable = process.env.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
+  // Read-only Testnet view for the ledger panel: public addresses, live balances, receipts per payee.
+  let ledgerCache: { at: number; view: Promise<LedgerView> } | undefined
+  const ledgerView = async (): Promise<LedgerView> => {
+    if (!payer?.address) return { rail: 'simulated' }
+    const paid = (await Promise.all((await client.profiles()).map(profile => client.search(profile.id, '')))).flat().filter(c => c.tier === 'PAID' && c.wallet)
+    const publishers = [...new Map(paid.map(c => [c.wallet!, c.publisher])).entries()]
+    const receipts = store.listRuns().flatMap(run => run.receipts).filter(r => r.xrpl)
+    const balance = async (address: string) => {
+      try { return String((await payer.ledger.request({ command: 'account_info', account: address, ledger_index: 'validated' })).result.account_data.Balance) }
+      catch { return null }
+    }
+    const wallet = async (role: 'buyer' | 'publisher', name: string, address: string) => {
+      const mine = receipts.filter(r => (role === 'buyer' ? r.xrpl!.payer : r.xrpl!.payTo) === address)
+      return { role, name, address, balanceDrops: await balance(address), receivedDrops: String(role === 'buyer' ? 0 : mine.reduce((sum, r) => sum + Number(r.xrpl!.amountDrops), 0)), payments: mine.length }
+    }
+    return LedgerViewSchema.parse({ rail: 'xrpl-testnet', network: 'xrpl:1', accountExplorer: 'https://testnet.xrpl.org/accounts', updatedAt: new Date().toISOString(),
+      wallets: await Promise.all([wallet('buyer', 'ResearchAgent (buyer)', payer.address), ...publishers.map(([address, name]) => wallet('publisher', name, address))]) })
+  }
+  app.get('/api/ledger', async (_req, res) => {
+    if (!ledgerCache || Date.now() - ledgerCache.at > 5000) ledgerCache = { at: Date.now(), view: ledgerView() }
+    try { res.json(await ledgerCache.view) } catch { ledgerCache = undefined; res.status(503).json({ error: 'Ledger view unavailable.' }) }
+  })
   app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', labels, faults: faultsAvailable }))
   if (faultsAvailable) app.post('/api/demo/faults', async (req, res) => {
     z.object({ failNextDelivery: z.literal(true) }).parse(req.body)

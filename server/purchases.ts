@@ -50,7 +50,10 @@ export class PurchaseManager {
       // Before anything is signed: the ledger amount must equal the policy-approved price, and a run
       // labelled XRPL TESTNET must never settle silently simulated with a publisher off that rail.
       const refusal = terms
-        ? !this.payer?.address ? 'XRPL payer is not configured; nothing was charged' : XrplPayer.checkTerms(terms, intent.amountMinor, DROPS_PER_MINOR, intent.quote!.quoteHash)
+        ? !this.payer?.address ? 'XRPL payer is not configured; nothing was charged'
+          // The payee must be the publisher wallet in the public metadata the policy evaluated.
+          : candidate.wallet && terms.payTo !== candidate.wallet ? 'XRPL payee differs from the publisher wallet; nothing was charged'
+            : XrplPayer.checkTerms(terms, intent.amountMinor, DROPS_PER_MINOR, intent.quote!.quoteHash)
         : this.payer ? 'Publisher is not on the XRPL Testnet rail; nothing was charged' : undefined
       if (refusal) {
         intent = this.store.updateIntent(intentId, { status: 'FAILED_NOT_SETTLED', error: refusal })

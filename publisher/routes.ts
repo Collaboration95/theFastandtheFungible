@@ -14,9 +14,8 @@ export type PublisherConfig = {
   rail?: Rail
   ledger?: Ledger
 }
-/** Phase 1 (#98): one receiver for every profile. Phase 2 fills this with one wallet per publisher. */
-const PAY_TO: Record<string, string> = {}
-export const payToFor = (profileId: string) => PAY_TO[profileId] ?? process.env.XRPL_RECEIVER_ADDRESS ?? TESTNET_RECEIVER
+/** Each paid publisher is paid at its own public wallet; the phase 1 receiver remains the fallback. */
+export const payToFor = (resource: Pick<CorpusResource, 'wallet'>) => resource.wallet ?? process.env.XRPL_RECEIVER_ADDRESS ?? TESTNET_RECEIVER
 export function serializeEnvelope(resource: CorpusResource): string {
   return JSON.stringify(ContentEnvelopeSchema.parse(resource))
 }
@@ -31,8 +30,8 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   const rail: Rail = config.rail ?? (process.env.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'xrpl-testnet' : 'simulated')
   const ledger = rail === 'xrpl-testnet' ? config.ledger ?? testnetLedger() : undefined
   const label = rail === 'xrpl-testnet' ? XRPL_LABEL : SIMULATED_LABEL
-  const terms = (profileId: string, amountMinor: number) => rail === 'xrpl-testnet'
-    ? { rail, network: 'xrpl:1' as const, asset: 'XRP' as const, payTo: payToFor(profileId), amountDrops: String(amountMinor * DROPS_PER_MINOR) }
+  const terms = (resource: CorpusResource) => rail === 'xrpl-testnet'
+    ? { rail, network: 'xrpl:1' as const, asset: 'XRP' as const, payTo: payToFor(resource), amountDrops: String(resource.price.amountMinor * DROPS_PER_MINOR) }
     : undefined
   let failNextDelivery = false
   let corpus: CorpusResource[] = []
@@ -83,7 +82,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     const resource = corpus.find(item => item.profileId === p && item.resourceId === id && item.version === v)
     if (!resource && !delivery) throw new PublisherError(404, 'Resource version not found')
     if (!delivery && resource?.tier !== 'FREE') {
-      const xrpl = terms(p, resource!.price.amountMinor)
+      const xrpl = terms(resource!)
       res.status(402).json({
         x402Version: 1, label: `x402-shaped · ${label}`,
         accepts: [xrpl
@@ -108,7 +107,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     const resource = corpus.find(item => item.profileId === request.profileId && item.resourceId === request.resourceId && item.version === request.version)
     if (!resource) throw new PublisherError(404, 'Resource version not found')
     if (resource.tier !== 'PAID') throw new PublisherError(400, 'Free resources do not require settlement')
-    res.json(journal.quote(request, resource.price.amountMinor, serializeEnvelope(resource), terms(resource.profileId, resource.price.amountMinor)))
+    res.json(journal.quote(request, resource.price.amountMinor, serializeEnvelope(resource), terms(resource)))
   })
   app.post('/v1/settlements', authenticate, async (req, res) => {
     const parsed = SettlementRequestSchema.safeParse(req.body)

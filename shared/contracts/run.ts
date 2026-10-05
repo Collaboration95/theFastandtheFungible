@@ -21,3 +21,11 @@ export type ModeLabels = z.infer<typeof ModeLabelsSchema>
 export type Ask = z.infer<typeof AskSchema>
 
 export type RunCheckpoint = z.infer<typeof RunCheckpointSchema>
+
+/** Public Testnet wallet view: addresses and balances only, never seeds. */
+export const LedgerWalletSchema = z.object({ role: z.enum(['buyer', 'publisher']), name: z.string(), address: z.string(), balanceDrops: z.string().nullable(), receivedDrops: z.string(), payments: z.number().int().nonnegative() })
+export const LedgerViewSchema = z.union([
+  z.object({ rail: z.literal('simulated') }),
+  z.object({ rail: z.literal('xrpl-testnet'), network: z.literal('xrpl:1'), accountExplorer: z.string(), updatedAt: z.string(), wallets: z.array(LedgerWalletSchema) }),
+])
+export type LedgerView = z.infer<typeof LedgerViewSchema>

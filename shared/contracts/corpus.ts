@@ -5,7 +5,8 @@ export const SpanSchema = z.object({ id: z.string().min(1), text: z.string().min
 export const PublicCandidateSchema = z.object({
   profileId: z.string().min(1), resourceId: z.string().min(1), version: z.string().min(1),
   title: z.string().min(1), publisher: z.string().min(1), preview: z.string().min(1),
-  price: PriceSchema, family: z.string().min(1), derivedFrom: z.string().optional(),
+  // A paid publisher's public XRPL Testnet address: where its readers pay (#98 phase 2).
+  price: PriceSchema, wallet: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/).optional(), family: z.string().min(1), derivedFrom: z.string().optional(),
   facets: z.array(FacetSchema), authority: z.number().min(0).max(2), tier: z.enum(['FREE', 'PAID']),
   license: z.object({ kind: z.string(), attribution: z.string() }),
 })
