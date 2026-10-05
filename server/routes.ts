@@ -43,7 +43,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const reportJobs = new Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>()
   const timers = new Set<ReturnType<typeof setInterval>>()
   const publisherUrl = options.publisherUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'
-  const labels: ModeLabels = { research: isLlmConfigured() ? `${llmLabel()} · ${researchModel()} (pending)` : 'fixture · extractive-fixture', decision: provider?.name === 'cloudflare' ? `Cloudflare · ${provider.model} (pending)` : 'fixture · metadata-fixture', publisher: /\.run\.app(?:\/|$)/.test(publisherUrl) ? 'Cloud Run' : 'local', settlement: payer ? XRPL_LABEL : SIMULATED_LABEL }
+  const labels: ModeLabels = { research: isLlmConfigured() ? `${llmLabel()} · ${researchModel()} (pending)` : 'fixture · extractive-fixture', decision: provider?.name === 'cloudflare' ? `Cloudflare · ${provider.model} (pending)` : 'fixture · metadata-fixture', publisher: /\.run\.app(?:\/|$)/.test(publisherUrl) ? 'Cloud Run' : process.env.K_SERVICE ? 'Cloud Run · same container' : 'local', settlement: payer ? XRPL_LABEL : SIMULATED_LABEL }
   const progress = (runId: string, label: string) => {
     const timer = setInterval(() => {
       try { store.appendEvent(runId, { type: 'PROGRESS', label }) } catch { /* Shutdown or missing run. */ }
