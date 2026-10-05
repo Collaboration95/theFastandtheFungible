@@ -1,0 +1,56 @@
+# Run with the Make targets: make docker-run (fixture) / make docker-live / make docker-down.
+# Images come from scripts/docker-build.sh; TAG=<short-sha> picks a specific commit's build.
+# Secrets are read from ../.env at runtime only; `environment` below overrides the host-only
+# values in that file (HOST, ports, DB paths, publisher URL).
+name: researchagent
+
+x-service: &service
+  restart: unless-stopped
+  env_file:
+    - path: ../.env
+      required: false
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: [no-new-privileges:true]
+
+services:
+  publisher:
+    <<: *service
+    image: researchagent-publisher:${TAG:-local}
+    environment:
+      PUBLISHER_PORT: "8790"
+      PUBLISHER_SECRET: ${PUBLISHER_SECRET:-local-simulated-demo-secret}
+      PUBLISHER_FAULTS: "0"
+      # The publisher only quotes on the XRPL Testnet rail when the buyer uses it too.
+      SETTLEMENT_RAIL: ${RA_RAIL:-simulated}
+    volumes: [publisher-data:/var/lib/publisher/data]
+
+  api:
+    <<: *service
+    image: researchagent-api:${TAG:-local}
+    depends_on: { publisher: { condition: service_healthy } }
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8788"
+      PUBLISHER_URL: http://publisher:8790
+      PUBLISHER_SECRET: ${PUBLISHER_SECRET:-local-simulated-demo-secret}
+      APP_DB: /var/lib/researchagent/app.db
+      REPORT_DIR: /var/lib/researchagent/reports
+      # Set by the Make targets, mirroring scripts/demo.mjs; defaults are the offline fixture demo.
+      LLM_PROVIDER: ${RA_LLM:-fixture}
+      DECISION_PROVIDER: ${RA_DECISION:-fixture}
+      SETTLEMENT_RAIL: ${RA_RAIL:-simulated}
+      LANGFUSE_ENABLED: ${RA_LANGFUSE:-0}
+      LANGFUSE_TRACING_ENVIRONMENT: ${RA_LANGFUSE_ENV:-fixture}
+    volumes: [api-data:/var/lib/researchagent]
+    shm_size: 256m
+
+  web:
+    <<: *service
+    image: researchagent-web:${TAG:-local}
+    depends_on: { api: { condition: service_healthy } }
+    ports: ["127.0.0.1:${WEB_PORT:-5100}:8080"]
+
+volumes:
+  api-data:
+  publisher-data:

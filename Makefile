@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets
+.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets docker-build docker-run docker-live docker-down docker-logs
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -54,3 +54,31 @@ kill: ## free the demo ports
 
 langfuse-dashboard: ## (re)create the "ResearchAgent · live health" dashboard in Langfuse
 	node scripts/langfuse-dashboard.mjs
+
+# --- Docker (docker/compose.yaml): same demo in Alpine containers, web on 127.0.0.1:$(WEB_PORT) ---
+# Images are built from a commit (no registry); TAG=<short-sha> runs a specific build, default :local.
+DC := docker compose -f docker/compose.yaml
+export WEB_PORT ?= $(shell echo $$((5100+$(OFFSET))))
+env_or = $(or $(shell sed -n 's/^$(1)=//p' .env 2>/dev/null),$(2))
+# Mirrors scripts/demo.mjs --live: xrpl-testnet when a payer seed exists, Langfuse on.
+LIVE_ENV := RA_LLM=deepseek RA_DECISION=cloudflare RA_LANGFUSE=$(call env_or,LANGFUSE_ENABLED,1) RA_LANGFUSE_ENV=$(call env_or,LANGFUSE_TRACING_ENVIRONMENT,live) \
+  RA_RAIL=$(call env_or,SETTLEMENT_RAIL,$(shell grep -q '^XRPL_PAYER_SEED=.' .env 2>/dev/null && echo xrpl-testnet || echo simulated))
+
+docker-build: ## build web/api/publisher images from a commit: make docker-build REF=<commit> (default HEAD)
+	scripts/docker-build.sh $(or $(REF),HEAD)
+
+docker-run: ## fixture demo in Docker (offline, no keys); TAG=<sha> picks the images
+	@docker image inspect researchagent-api:$(or $(TAG),local) >/dev/null 2>&1 || scripts/docker-build.sh $(or $(TAG),HEAD)
+	RA_RAIL=$(call env_or,SETTLEMENT_RAIL,simulated) RA_LANGFUSE=$(call env_or,LANGFUSE_ENABLED,0) $(DC) up -d --wait
+	@echo "ResearchAgent (Docker, fixture): http://127.0.0.1:$(WEB_PORT)"
+
+docker-live: ## live demo in Docker: DeepSeek, Clef, XRPL Testnet, Langfuse (keys from .env)
+	@docker image inspect researchagent-api:$(or $(TAG),local) >/dev/null 2>&1 || scripts/docker-build.sh $(or $(TAG),HEAD)
+	$(LIVE_ENV) $(DC) up -d --wait
+	@echo "ResearchAgent (Docker, live): http://127.0.0.1:$(WEB_PORT)"
+
+docker-down: ## stop the Docker demo (ledgers and reports stay in volumes; add V=1 to wipe them)
+	$(DC) down $(if $(V),-v)
+
+docker-logs: ## follow the Docker demo logs
+	$(DC) logs -f --tail=100
