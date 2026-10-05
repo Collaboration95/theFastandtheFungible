@@ -40,7 +40,7 @@ describe('bounded live client recovery', () => {
     const transport = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('', { status: 429, headers: { 'Retry-After': String(retrySeconds) } })).mockResolvedValueOnce(sse())
     const result = streamJson('JSON report', { sources: [{ resourceId: 'accessible', version: 'v1', body: 'LONG_BODY_DUPLICATE', spans: [{ id: 'fact', text: 'Exact accessible evidence.' }] }] })
     if (retrySeconds > 60) {
-      await expect(result).rejects.toThrow('Groq returned 429')
+      await expect(result).rejects.toThrow('LLM returned 429')
       expect(transport).toHaveBeenCalledTimes(1)
     } else {
       await vi.advanceTimersByTimeAsync(59999)

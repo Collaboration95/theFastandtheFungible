@@ -1,6 +1,6 @@
 // Preflight for the demo. Run: node --import tsx scripts/doctor.mjs [--keys] [--deep]
 //   --keys  only the provider checks (used by demo:live before it starts)
-//   --deep  also spend one tiny Groq completion and one Clef call to prove the models answer
+//   --deep  also spend one tiny DeepSeek completion and one Clef call to prove the models answer
 // Never prints keys or provider response bodies. Exits 1 if any check fails.
 import 'dotenv/config'
 import { existsSync, readFileSync } from 'node:fs'
@@ -13,7 +13,8 @@ let failed = false
 const ok = msg => console.log(`  ✓ ${msg}`)
 const warn = msg => console.log(`  ⚠ ${msg}`)
 const fail = msg => { failed = true; console.log(`  ✗ ${msg}`) }
-const keyNames = text => new Set([...text.matchAll(/^\s*([A-Z][A-Z0-9_]*)\s*=/gm)].map(m => m[1]))
+// Commented-out names in .env.example (e.g. # GROQ_API_KEY=) still count as known.
+const keyNames = text => new Set([...text.matchAll(/^\s*#?\s*([A-Z][A-Z0-9_]*)\s*=/gm)].map(m => m[1]))
 
 if (!keysOnly) {
   console.log('Environment')
@@ -40,14 +41,14 @@ if (!keysOnly) {
   }
 }
 
-console.log('Groq (answer + report)')
-const groqKey = process.env.GROQ_API_KEY
-const model = process.env.LLM_MODEL || 'llama-3.3-70b-versatile'
-if (!groqKey) fail('GROQ_API_KEY not set; demo:live answers will be labelled fixtures')
+console.log('DeepSeek (answer + report, used by make live)')
+const llmKey = process.env.DEEPSEEK_API_KEY
+const model = process.env.DEEPSEEK_MODEL || 'deepseek-flash'
+if (!llmKey) fail('DEEPSEEK_API_KEY not set; demo:live answers will be labelled fixtures')
 else {
-  const base = (process.env.LLM_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/chat\/completions\/?$/, '').replace(/\/$/, '')
-  let groqOk = false
-  const headers = { Authorization: `Bearer ${groqKey}`, 'Content-Type': 'application/json' }
+  const base = (process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com').replace(/\/$/, '')
+  let llmOk = false
+  const headers = { Authorization: `Bearer ${llmKey}`, 'Content-Type': 'application/json' }
   try {
     const res = await fetch(`${base}/models`, { headers, signal: AbortSignal.timeout(5000) })
     if (res.status === 401 || res.status === 403) fail(`key rejected (HTTP ${res.status})`)
@@ -55,19 +56,19 @@ else {
     else {
       ok('key accepted')
       const ids = (await res.json()).data?.map(m => m.id) ?? []
-      if (ids.includes(model)) { groqOk = true; ok(`model ${model} available`) }
-      else fail(`model ${model} not offered to this key`)
+      if (ids.includes(model)) { llmOk = true; ok(`model ${model} available`) }
+      else fail(`model ${model} not offered to this key (available: ${ids.join(', ')})`)
     }
-  } catch { fail('Groq unreachable (network or timeout)') }
-  if (deep && groqOk) {
+  } catch { fail('DeepSeek unreachable (network or timeout)') }
+  if (deep && llmOk) {
     try {
       const started = Date.now()
-      const res = await fetch(`${base}/chat/completions`, { method: 'POST', headers, signal: AbortSignal.timeout(15000), body: JSON.stringify({ model, max_tokens: 8, messages: [{ role: 'user', content: 'Reply OK.' }] }) })
-      const h = name => res.headers.get(name) ?? '?'
-      const limits = `requests left ${h('x-ratelimit-remaining-requests')}/${h('x-ratelimit-limit-requests')}, tokens left ${h('x-ratelimit-remaining-tokens')}/${h('x-ratelimit-limit-tokens')}`
-      if (res.status === 429) fail(`rate limited now (retry-after ${h('retry-after')}s); ${limits}`)
+      const res = await fetch(`${base}/chat/completions`, { method: 'POST', headers, signal: AbortSignal.timeout(20000), body: JSON.stringify({ model, max_tokens: 8, thinking: { type: 'disabled' }, messages: [{ role: 'user', content: 'Reply OK.' }] }) })
+      const limit = res.headers.get('x-ratelimit-remaining-tokens')
+      if (res.status === 429) fail(`rate limited now (retry-after ${res.headers.get('retry-after') ?? '?'}s)`)
+      else if (res.status === 402) fail('account balance exhausted (HTTP 402); top up at platform.deepseek.com')
       else if (!res.ok) fail(`completion HTTP ${res.status}`)
-      else ok(`completion in ${Date.now() - started} ms; ${limits}`)
+      else ok(`completion in ${Date.now() - started} ms${limit ? `; tokens left ${limit}` : ''}`)
     } catch { fail('completion timed out') }
   }
 }
@@ -90,6 +91,6 @@ else {
   }
 }
 
-if (!deep) console.log('\n(add --deep to spend one Groq + one Clef call and check live rate limits)')
+if (!deep) console.log('\n(add --deep to spend one DeepSeek + one Clef call and check latency)')
 console.log(failed ? '\nDoctor: problems found.' : '\nDoctor: all good.')
 process.exit(failed ? 1 : 0)

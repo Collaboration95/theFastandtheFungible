@@ -1,7 +1,7 @@
 import type { Store } from '../store.js'
 import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
-import { AnswerSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
+import { AnswerSchema, PublicCandidateSchema, providerLabels } from '../../shared/contracts/index.js'
 import type { ContentEnvelope, RunSnapshot, TraceEvent } from '../../shared/contracts/index.js'
 import { decide, publicSources } from './decision.js'
 import type { DecisionProvider } from './decision.js'
@@ -65,7 +65,7 @@ export class RunLoop {
     if (answer.version !== (previous?.version ?? 0) + 1) throw new Error('Answer version mismatch')
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
     const latest = this.store.getRun(runId)
-    this.store.updateRun(runId, { labels: { ...latest.labels, research: `${answer.provider === 'groq' ? 'Groq' : 'fixture'} · ${answer.model}` }, checkpoint: { ...latest.checkpoint, answerVersion: answer.version, ...(latest.checkpoint.intentId ? { answeredIntentId: latest.checkpoint.intentId } : {}) } })
+    this.store.updateRun(runId, { labels: { ...latest.labels, research: `${providerLabels[answer.provider]} · ${answer.model}` }, checkpoint: { ...latest.checkpoint, answerVersion: answer.version, ...(latest.checkpoint.intentId ? { answeredIntentId: latest.checkpoint.intentId } : {}) } })
     if (this.stopped(runId)) this.trace(runId, 'STOPPED', 'Stopped; last good answer preserved.')
   }
   start(runId: string): Promise<void> {

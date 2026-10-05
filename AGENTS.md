@@ -4,7 +4,7 @@
   packages, and workflow. It overrides `docs/plans/october-10/*`,
   `docs/AGENT-DEVELOPMENT.md`, `docs/PRODUCT-ROADMAP-2026.md`,
   `docs/PRESENTATION-READINESS.md`, and the bodies of issues #59–#78.
-- The product is Perplexity with a wallet. LLMs on Groq write (answer,
+- The product is Perplexity with a wallet. LLMs on DeepSeek write (answer,
   report), a Cloudflare Clef decision model chooses what to buy, and code pays
   within the per-prompt budget. There is no per-purchase approval modal.
 - Never break the five hard gates in prompt.md §2:

@@ -12,7 +12,7 @@ const content = (id: string, text: string): ContentEnvelope => ({ ...exampleCont
 const free = [candidate('random-A', ['demand']), candidate('random-B', ['equipment-delivery'])]
 const bodies = [content('random-A', 'Demand contracts support a 600 MW expansion.'), content('random-B', 'Equipment deliveries are scheduled for 2027.')]
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals() })
-const configure = () => { vi.stubEnv('LLM_PROVIDER', 'groq'); vi.stubEnv('GROQ_API_KEY', 'test-only') }
+const configure = () => { vi.stubEnv('LLM_PROVIDER', 'groq'); vi.stubEnv('GROQ_API_KEY', 'test-only'); vi.stubEnv('LLM_MODEL', '') }
 const stream = (value: unknown) => {
   const text = JSON.stringify(value)
   const frames = [text.slice(0, 13), text.slice(13)].map(delta => `data: ${JSON.stringify({ choices: [{ delta: { content: delta } }] })}\r\n\r\n`).join('') + 'data: [DONE]\n\n'
@@ -151,6 +151,23 @@ describe('W1 research', () => {
     expect(progress.length).toBeGreaterThan(0); expect(progress.join('')).not.toMatch(/INVALID|INVENTION|premium/)
     const request = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string)
     expect(request.stream).toBe(true); expect(request.response_format).toEqual({ type: 'json_object' })
+  })
+  it('defaults DeepSeek to deepseek-flash at api.deepseek.com with its own key and label', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('DEEPSEEK_API_KEY', 'test-only'); vi.stubEnv('LLM_BASE_URL', 'https://api.groq.com/openai/v1'); vi.stubEnv('DEEPSEEK_BASE_URL', ''); vi.stubEnv('DEEPSEEK_MODEL', ''); vi.stubEnv('LLM_MODEL', 'openai/gpt-oss-20b')
+    const modelAnswer = { conclusion: 'c', claims: [{ id: 'valid', text: bodies[0].body, stance: 'SUPPORTS', citations: [{ resourceId: 'random-A', version: 'v1', spanId: 'generic-span' }] }], openGaps: [] }
+    const fetchMock = vi.fn(async () => stream(modelAnswer)); vi.stubGlobal('fetch', fetchMock)
+    const { answer } = await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })
+    expect(answer.provider).toBe('deepseek'); expect(answer.model).toBe('deepseek-flash')
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe('https://api.deepseek.com/chat/completions')
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer test-only')
+    expect(JSON.parse(init.body as string).thinking).toEqual({ type: 'disabled' })
+  })
+  it('stays on the fixture when the selected provider has no key', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('DEEPSEEK_API_KEY', ''); vi.stubEnv('GROQ_API_KEY', 'other-key')
+    const fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock)
+    expect((await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })).answer.provider).toBe('fixture')
+    expect(fetchMock).not.toHaveBeenCalled()
   })
   it('labels malformed/invalid Groq output as fixture fallback', async () => {
     configure(); vi.stubGlobal('fetch', vi.fn(async () => stream({ claims: [], conclusion: 'bad', openGaps: [] })))

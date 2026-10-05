@@ -1,7 +1,7 @@
 import { AnswerSchema, FacetSchema, type Answer, type Claim, type ContentEnvelope, type Facet, type Impact, type PublicCandidate } from '../../shared/contracts/index.js'
 import type { PublisherClient } from '../publisher-client.js'
 import { resolveCitation, validateAnswer } from './citations.js'
-import { isGroqConfigured, researchModel, streamJson } from './llm.js'
+import { isLlmConfigured, llmProvider, researchModel, streamJson } from './llm.js'
 
 const words = (text: string) => new Set(text.toLowerCase().match(/[a-z0-9]+/g) ?? [])
 const facetWords: Record<Facet, RegExp> = {
@@ -92,13 +92,13 @@ export async function writeAnswer(input: { question: string; contents: ContentEn
   if (!Number.isInteger(input.version) || input.version < 1) throw new Error('Answer version must be positive')
   const contents = usableContents(input.contents)
   let answer = fixture(contents, input.candidates, input.version, input.previous)
-  if (isGroqConfigured() && contents.some(c => c.spans.length)) {
+  if (isLlmConfigured() && contents.some(c => c.spans.length)) {
     try {
       const result = await streamJson(ANSWER_PROMPT, { question: input.question, evidence: contents.map(c => {
         const metadata = input.candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
         return { resourceId: c.resourceId, version: c.version, spans: c.spans, facets: metadata?.facets ?? [], authority: metadata?.authority ?? 0 }
       }), previousOpenGaps: input.previous?.openGaps ?? [], openGaps: answer.openGaps }, () => input.onToken?.('Generating cited answer…'))
-      const parsed = AnswerSchema.parse({ ...(result as object), version: input.version, provider: 'groq', model: researchModel() })
+      const parsed = AnswerSchema.parse({ ...(result as object), version: input.version, provider: llmProvider(), model: researchModel() })
       const validated = validateAnswer(parsed, contents)
       if (validated.claims.length) answer = { ...validated, openGaps: gaps(contents, input.candidates) }
     } catch { /* Clearly labelled extractive fixture remains available on provider/validation failure. */ }

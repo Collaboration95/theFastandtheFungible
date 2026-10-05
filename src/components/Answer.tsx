@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- Shared validation for impact/report components. */
 import { useState } from 'react'
-import { AnswerSchema, type Answer as AnswerData, type Citation, type RunSnapshot } from '../../shared/contracts/index.js'
+import { AnswerSchema, providerLabels, type Answer as AnswerData, type Citation, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
 
 export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): AnswerData | undefined {
@@ -30,7 +30,7 @@ export default function Answer({ run, onCitation }: AnswerProps) {
   return <section className="ra-panel ra-answer" aria-label="Research answer" aria-busy={run.phase === 'ANSWER'}>
     <div className="ra-section-heading"><h2>Your answer{answer ? ` · v${answer.version}` : ''}</h2>{answers.length > 1 && <div className="ra-toggle" aria-label="Answer version"><button type="button" aria-pressed={view === 'baseline'} onClick={() => setView('baseline')}>Free answer · v{answers[0]?.version}</button><button type="button" aria-pressed={view === 'latest'} onClick={() => setView('latest')}>Latest answer</button></div>}</div>
     {!answer ? <p role="status">{run.phase === 'FAILED' || run.phase === 'STOPPED' ? 'No verified answer is available. Ask again to begin a new run.' : 'Gathering evidence. Verified claims will appear here as the run progresses.'}</p> : <>
-      <p className="ra-eyebrow">{answer.provider === 'fixture' ? 'Fixture' : 'Groq'} · {answer.model}</p>
+      <p className="ra-eyebrow">{providerLabels[answer.provider]} · {answer.model}</p>
       {impact && <div className="ra-answer-impact"><span className={`ra-badge ra-impact-${impact.classification.toLowerCase()}`}>{impact.classification}</span><p>{impact.explanation}</p></div>}
       <details className="ra-findings"><summary>Full conclusion</summary><p>{answer.conclusion}</p></details>
       {lead && !answer.claims.some(claim => claim.text.includes(lead)) && <p className="ra-conclusion">{lead}</p>}

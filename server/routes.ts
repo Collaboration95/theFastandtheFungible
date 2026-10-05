@@ -10,7 +10,7 @@ import { RunLoop } from './agents/loop.js'
 import { ClefDecisionProvider } from './agents/clef.js'
 import { type DecisionProvider } from './agents/decision.js'
 import { buildReport, renderReport } from './agents/report.js'
-import { isGroqConfigured, researchModel } from './agents/llm.js'
+import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 
 export type ApiOptions = { dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider }
 export async function createApiApp(options: ApiOptions = {}) {
@@ -40,7 +40,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const reportJobs = new Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>()
   const timers = new Set<ReturnType<typeof setInterval>>()
   const publisherUrl = options.publisherUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'
-  const labels: ModeLabels = { research: isGroqConfigured() ? `Groq · ${researchModel()} (pending)` : 'fixture · extractive-fixture', decision: provider?.name === 'cloudflare' ? `Cloudflare · ${provider.model} (pending)` : 'fixture · metadata-fixture', publisher: /\.run\.app(?:\/|$)/.test(publisherUrl) ? 'Cloud Run' : 'local', settlement: 'SIMULATED SGD · no real funds' }
+  const labels: ModeLabels = { research: isLlmConfigured() ? `${llmLabel()} · ${researchModel()} (pending)` : 'fixture · extractive-fixture', decision: provider?.name === 'cloudflare' ? `Cloudflare · ${provider.model} (pending)` : 'fixture · metadata-fixture', publisher: /\.run\.app(?:\/|$)/.test(publisherUrl) ? 'Cloud Run' : 'local', settlement: 'SIMULATED SGD · no real funds' }
   const progress = (runId: string, label: string) => {
     const timer = setInterval(() => {
       try { store.appendEvent(runId, { type: 'PROGRESS', label }) } catch { /* Shutdown or missing run. */ }
