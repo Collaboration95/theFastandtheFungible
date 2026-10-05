@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
+import type { Submission } from './xrpl.js'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { AnswerSchema, ContentEnvelopeSchema, DecisionRoundSchema, GrantSchema, ImpactSchema, PurchaseIntentSchema, ReceiptSchema, RunSnapshotSchema, TraceEventSchema, type Answer, type ContentEnvelope, type DecisionRound, type DeliveryProof, type Grant, type Impact, type ModeLabels, type PurchaseIntent, type Receipt, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
@@ -31,6 +32,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS intents (id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES runs(id), json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS receipts (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, token TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grants (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, content TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS submissions (intent_id TEXT PRIMARY KEY REFERENCES intents(id), tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL, last_ledger INTEGER NOT NULL);
     `)
   }
   private atomic<T>(fn: () => T): T {
@@ -204,6 +206,31 @@ export class Store {
       if (intent.status !== 'SUBMITTING') throw new Error('Settlement requires submitting reservation')
       this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), deliveryToken)
       this.saveIntent({ ...intent, status: 'SETTLED', receiptId: receipt.receiptId, error: undefined })
+    })
+  }
+  /** Write-once: the first signed payment for an intent is the only one that may ever be submitted. */
+  recordSubmission(intentId: string, signed: Submission): Submission {
+    return this.atomic(() => {
+      const existing = this.getSubmission(intentId)
+      if (existing) return existing
+      const intent = this.getIntent(intentId)
+      if (intent?.status !== 'SUBMITTING') throw new Error('Payment submission requires a submitting reservation')
+      this.db.prepare('INSERT INTO submissions VALUES (?,?,?,?)').run(intentId, signed.txHash, signed.txBlob, signed.lastLedgerSequence)
+      this.saveIntent({ ...intent, txHash: signed.txHash })
+      return signed
+    })
+  }
+  getSubmission(intentId: string): Submission | undefined {
+    const row = this.db.prepare('SELECT tx_hash, tx_blob, last_ledger FROM submissions WHERE intent_id=?').get(intentId)
+    return row ? { txHash: row.tx_hash as string, txBlob: row.tx_blob as string, lastLedgerSequence: Number(row.last_ledger) } : undefined
+  }
+  /** Releases a reservation only when the ledger proves no payment can ever settle (caller supplies that proof). */
+  failSubmission(intentId: string, reason: string): PurchaseIntent {
+    return this.atomic(() => {
+      const intent = this.getIntent(intentId)
+      if (!intent || intent.status !== 'SUBMITTING' || this.db.prepare('SELECT 1 FROM receipts WHERE intent_id=?').get(intentId)) throw new Error('Only an unsettled submission can fail')
+      const next: PurchaseIntent = { ...intent, status: 'FAILED_NOT_SETTLED', error: reason }
+      this.saveIntent(next); return next
     })
   }
   getDeliveryToken(intentId: string): string | undefined { return this.db.prepare('SELECT token FROM receipts WHERE intent_id=?').get(intentId)?.token as string | undefined }

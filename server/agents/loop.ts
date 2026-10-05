@@ -115,7 +115,8 @@ export class RunLoop {
         // No await between the Stop gate and handing off to the transactional ledger.
         if (this.stopped(runId)) return
         const intent = await this.purchases.purchase({ runId, candidate, intentId })
-        if (intent.status === 'SKIPPED') continue
+        // SKIPPED and FAILED_NOT_SETTLED delivered no payment (a failed ledger tx burns only its fee); the next round may decide again.
+        if (intent.status === 'SKIPPED' || intent.status === 'FAILED_NOT_SETTLED') continue
         if (intent.status !== 'VERIFIED') throw new Error('Purchase did not verify delivery')
         if (this.stopped(runId)) return
         this.trace(runId, 'READ_PAID', 'Verified grant permits paid evidence.', { intentId })

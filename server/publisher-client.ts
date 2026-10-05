@@ -45,8 +45,8 @@ export class PublisherClient {
     if (Object.entries(request).some(([key, value]) => quote[key as keyof Quote] !== value)) throw new Error('Publisher quote identity mismatch')
     return quote
   }
-  async settle(quote: Quote, observer?: WireObserver): Promise<Settlement> {
-    const result = await this.request('POST', '/v1/settlements', { quoteId: quote.quoteId, quoteHash: quote.quoteHash, intentId: quote.intentId }, undefined, true, observer)
+  async settle(quote: Quote, observer?: WireObserver, txHash?: string): Promise<Settlement> {
+    const result = await this.request('POST', '/v1/settlements', { quoteId: quote.quoteId, quoteHash: quote.quoteHash, intentId: quote.intentId, ...(txHash ? { txHash } : {}) }, undefined, true, observer)
     // POST may omit status; the wire protocol's success is a settled receipt/token.
     const value = JSON.parse(result.bytes.toString('utf8'))
     return SettlementSchema.parse({ status: 'SETTLED', ...value })

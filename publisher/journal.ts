@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { QuoteSchema, SettlementSchema, type Quote, type QuoteRequest, type Settlement } from '../shared/contracts/publisher.js'
+import { QuoteSchema, SettlementSchema, type LedgerProof, type PaymentRequirement, type Quote, type QuoteRequest, type Settlement } from '../shared/contracts/publisher.js'
 
 export class PublisherError extends Error {
   constructor(readonly status: number, message: string) { super(message) }
@@ -25,8 +25,11 @@ export class PublisherJournal {
       );
       CREATE TABLE IF NOT EXISTS settlements (
         intent_id TEXT PRIMARY KEY REFERENCES quotes(intent_id),
-        token TEXT UNIQUE NOT NULL, settlement_json TEXT NOT NULL
+        token TEXT UNIQUE NOT NULL, settlement_json TEXT NOT NULL, tx_hash TEXT
       );`)
+    // Journals created before the XRPL rail lack tx_hash; one ledger payment may settle one quote only.
+    try { this.db.exec('ALTER TABLE settlements ADD COLUMN tx_hash TEXT') } catch { /* column exists */ }
+    this.db.exec('CREATE UNIQUE INDEX IF NOT EXISTS settlements_tx_hash ON settlements(tx_hash)')
   }
   close(): void { this.db.close() }
   private transaction<T>(operation: () => T): T {
@@ -54,20 +57,28 @@ export class PublisherJournal {
     }
     return quote
   }
-  quote(request: QuoteRequest, amountMinor: number, bytes: string): Quote {
+  storedQuote(intentId: string): Quote | undefined {
+    const row = this.row(intentId)
+    return row ? QuoteSchema.parse(JSON.parse(row.quote_json)) : undefined
+  }
+  /** Payment terms are hashed into the quote; the hash itself becomes the XRPL InvoiceID. */
+  quote(request: QuoteRequest, amountMinor: number, bytes: string, terms?: Omit<PaymentRequirement, 'invoiceId'>): Quote {
     return this.transaction(() => {
       const existing = this.existingQuote(request)
       if (existing) return existing
       const fields = {
         ...request, quoteId: randomUUID(), amountMinor, currency: 'SGD' as const,
         expiresAt: new Date(Date.now() + 15 * 60_000).toISOString(), contentDigest: digestBytes(bytes),
+        ...(terms ? { payment: terms } : {}),
       }
-      const quote = QuoteSchema.parse({ ...fields, quoteHash: digestBytes(JSON.stringify(fields)) })
+      const quoteHash = digestBytes(JSON.stringify(fields))
+      const quote = QuoteSchema.parse({ ...fields, quoteHash, ...(terms ? { payment: { ...terms, invoiceId: quoteHash.toUpperCase() } } : {}) })
       this.db.prepare('INSERT INTO quotes VALUES (?, ?, ?, ?)').run(request.intentId, quote.quoteId, JSON.stringify(quote), bytes)
       return quote
     })
   }
-  settle(request: { quoteId: string; quoteHash: string; intentId: string }): Settlement {
+  /** XRPL quotes settle only with the publisher's own ledger proof for that exact payment. */
+  settle(request: { quoteId: string; quoteHash: string; intentId: string; txHash?: string }, proof?: LedgerProof): Settlement {
     return this.transaction(() => {
       const row = this.row(request.intentId)
       if (!row) throw new PublisherError(404, 'Quote not found')
@@ -77,9 +88,17 @@ export class PublisherJournal {
       }
       const existing = this.settlement(request.intentId)
       if (existing.status === 'SETTLED') return existing
-      if (Date.parse(quote.expiresAt) <= Date.now()) throw new PublisherError(410, 'Quote expired')
-      const settlement = SettlementSchema.parse({ status: 'SETTLED', receiptId: randomUUID(), deliveryToken: randomBytes(32).toString('base64url') })
-      this.db.prepare('INSERT INTO settlements VALUES (?, ?, ?)').run(request.intentId, settlement.deliveryToken!, JSON.stringify(settlement))
+      if (quote.payment) {
+        if (!proof || proof.txHash !== request.txHash) throw new PublisherError(402, 'XRPL payment proof required')
+        // A validated payment is honoured even if the quote expired while the ledger closed.
+      } else if (Date.parse(quote.expiresAt) <= Date.now()) throw new PublisherError(410, 'Quote expired')
+      const settlement = SettlementSchema.parse({ status: 'SETTLED', receiptId: randomUUID(), deliveryToken: randomBytes(32).toString('base64url'), ...(proof ? { ledger: proof } : {}) })
+      try {
+        this.db.prepare('INSERT INTO settlements (intent_id, token, settlement_json, tx_hash) VALUES (?, ?, ?, ?)').run(request.intentId, settlement.deliveryToken!, JSON.stringify(settlement), proof?.txHash ?? null)
+      } catch (error) {
+        if (proof && /UNIQUE/.test(String(error))) throw new PublisherError(409, 'This ledger payment already settled another quote')
+        throw error
+      }
       return settlement
     })
   }

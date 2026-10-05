@@ -8,7 +8,7 @@ import { isLlmConfigured, llmLabel, llmProvider, researchModel, streamJson } fro
 import { reportHtml } from '../report-template.js'
 
 const DraftSchema = z.object({ findings: z.array(ClaimSchema).min(1) })
-const disclaimer = 'Synthetic demonstration: companies, publishers, numbers and exact passages are fictional. SIMULATED SGD · no real funds.'
+const disclaimer = (settlement: string) => `Synthetic demonstration: companies, publishers, numbers and exact passages are fictional. ${settlement}.`
 
 /** Store.getRun supplies the persisted snapshot; no corpus import or purchase call. */
 function assertAccess(run: Pick<RunSnapshot, 'runId' | 'candidates' | 'contents' | 'grants'>): void {
@@ -75,7 +75,7 @@ export async function buildReport(input: RunSnapshot): Promise<Report> {
     purchasesChanged: firstAnswer === finalAnswer ? 'The validated first and final findings are unchanged.' : 'The validated first and final findings differ; compare the cited answer versions below.',
     impact: run.impact, openQuestions: final?.openGaps.map(g => g.text) ?? [],
     method: 'Report findings validated with the shared citation resolver against accessible exact passages. Decisions, receipts and sources copied from the persisted run snapshot. Conclusions shown as validated claim extracts.',
-    disclaimer, decisions: run.decisions, receipts: run.receipts.filter(r => r.runId === run.runId),
+    disclaimer: disclaimer(run.labels.settlement), decisions: run.decisions, receipts: run.receipts.filter(r => r.runId === run.runId),
     sources: run.contents, provider, model, fallbackReason: fallbackReason || undefined,
     firstAnswer, finalAnswer, firstFindings, finalFindings,
     firstVersion: first?.version, finalVersion: final?.version,

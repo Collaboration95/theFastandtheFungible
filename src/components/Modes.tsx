@@ -7,7 +7,7 @@ export default function Modes({ labels }: { labels?: ModeLabels }) {
       <li>Decision: {labels?.decision ?? 'fixture · metadata-fixture'}</li>
       <li>Publisher: {labels?.publisher ?? 'local'}</li>
       <li>Synthetic corpus · fictional demo evidence</li>
-      <li>SIMULATED SGD · no real funds</li>
+      <li>{labels?.settlement ?? 'Settlement rail shown once a run starts · no real funds'}</li>
     </ul>
   </section>
 }

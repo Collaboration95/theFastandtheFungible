@@ -91,6 +91,38 @@ else {
   }
 }
 
+if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet') {
+  console.log('XRPL Testnet (settlement, used by make live)')
+  const { testnetLedger, testnetUrl, TESTNET_RECEIVER } = await import('../shared/xrpl.ts')
+  const { Wallet } = await import('xrpl')
+  let ledger
+  try {
+    ledger = testnetLedger(testnetUrl())
+    const seed = process.env.XRPL_PAYER_SEED
+    if (!seed) fail('XRPL_PAYER_SEED not set; XRPL settlement cannot pay')
+    else {
+      const payer = Wallet.fromSeed(seed).classicAddress
+      if (process.env.XRPL_PAYER_ADDRESS && process.env.XRPL_PAYER_ADDRESS !== payer) fail('XRPL_PAYER_SEED does not match XRPL_PAYER_ADDRESS')
+      const [{ result: info }, { result: server }] = await Promise.all([
+        ledger.request({ command: 'account_info', account: payer, ledger_index: 'validated' }),
+        ledger.request({ command: 'server_info' }),
+      ])
+      const reserve = server.info.validated_ledger.reserve_base_xrp + info.account_data.OwnerCount * server.info.validated_ledger.reserve_inc_xrp
+      const spendable = Number(info.account_data.Balance) / 1e6 - reserve
+      const purchases = Math.floor(spendable / 0.1) // S$1.00 cap = 0.1 XRP at the fixed demo rate
+      const line = `payer ${payer}: ${spendable.toFixed(2)} XRP spendable ≈ ${purchases} purchases at the S$1 cap`
+      if (purchases < 1) fail(`${line}; fund it at https://xrpl.org/resources/dev-tools/xrp-faucets`)
+      else if (purchases < 10) warn(`${line}; top up at https://xrpl.org/resources/dev-tools/xrp-faucets`)
+      else ok(line)
+    }
+    const receiver = process.env.XRPL_RECEIVER_ADDRESS || TESTNET_RECEIVER
+    const { result } = await ledger.request({ command: 'account_info', account: receiver, ledger_index: 'validated' })
+    ok(`receiver ${receiver} exists (${(Number(result.account_data.Balance) / 1e6).toFixed(2)} XRP)`)
+  } catch (error) {
+    fail(`Testnet check failed (${error?.data?.error ?? error?.message ?? 'error'})`)
+  } finally { await ledger?.close() }
+}
+
 if (!deep) console.log('\n(add --deep to spend one DeepSeek + one Clef call and check latency)')
 console.log(failed ? '\nDoctor: problems found.' : '\nDoctor: all good.')
 process.exit(failed ? 1 : 0)

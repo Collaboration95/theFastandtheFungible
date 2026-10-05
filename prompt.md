@@ -123,7 +123,8 @@ Never merge a PR that breaks one of these:
 5. **Everything simulated or substituted is labelled.** The UI always shows the
    research model (`DeepSeek <model>`, `Groq <model>` or fixture), the decision provider
    (`Cloudflare <model>` or fixture), the publisher location (local or Cloud Run), and the
-   settlement label `SIMULATED SGD · no real funds`. A fallback is allowed, but
+   settlement label (`SIMULATED SGD · no real funds` or `XRPL TESTNET · no real value`;
+   XRPL Testnet settlement returned on 5 Oct, #98). A fallback is allowed, but
    it is always visible.
 
 Everything else is best effort.
@@ -147,7 +148,6 @@ Do not build these, even though the old docs specify them:
 - The eight-scenario independent-oracle framework, holdout files, evidence
   bundles, the nine-run live qualification, and `demo:doctor` with PID
   identity.
-- XRPL/Testnet settlement. Delete it, including the `xrpl` dependency.
 - 200% zoom, 390px, and axe checks on every state. Keep the existing a11y test
   passing, but do not extend it.
 - Any new framework, ORM, job queue, vector database, or crawler.

@@ -65,7 +65,7 @@ export default function App() {
     setError('')
     try { setRun(await retryDelivery(run.runId, intentId)) } catch { setError('Delivery could not be retried. The charge remains recorded; no new purchase was made.') }
   }
-  return <Layout header={<><Modes labels={run?.labels} /><FaultDemo run={run} /></>} aside={run ? <><Budget run={run} /><DecisionTable run={run} /><Activity run={run} /><Wire run={run} /></> : <section className="ra-panel"><h2>Evidence procurement</h2><p>LLMs write. A decision model chooses. Code pays within your budget.</p><p>One retrieval pass, a cited answer, and a visible policy for deciding whether more evidence is worth buying.</p><p className="ra-muted">x402-shaped publisher protocol · synthetic corpus · local publishers</p><p>SIMULATED SGD · no real funds</p></section>}>
+  return <Layout header={<><Modes labels={run?.labels} /><FaultDemo run={run} /></>} aside={run ? <><Budget run={run} /><DecisionTable run={run} /><Activity run={run} /><Wire run={run} /></> : <section className="ra-panel"><h2>Evidence procurement</h2><p>LLMs write. A decision model chooses. Code pays within your budget.</p><p>One retrieval pass, a cited answer, and a visible policy for deciding whether more evidence is worth buying.</p><p className="ra-muted">x402-shaped publisher protocol · synthetic corpus · local publishers</p><p>No real funds · simulated SGD or XRPL Testnet</p></section>}>
     <Ask onAsk={sendAsk} busy={sending || active} />
     {error && <p className="ra-error" role="status">{error}</p>}
     {run && <><Answer key={run.runId} run={run} onCitation={openCitation} /><Impact run={run} />
