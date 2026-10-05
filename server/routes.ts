@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs'
 import { z } from 'zod'
 import { AskSchema, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
 import { XrplPayer } from './xrpl.js'
-import { traceEvent, traceRun } from './telemetry.js'
+import { scoreTrace, traceEvent, traceRun } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { Store } from './store.js'
 import { PublisherClient } from './publisher-client.js'
@@ -138,9 +138,20 @@ export async function createApiApp(options: ApiOptions = {}) {
       store.updateRun(runId, { reportStatus: 'GENERATING' })
       store.appendEvent(runId, { type: 'REPORT', label: 'Rendering a cited report with persisted decisions and receipts.' })
       const done = progress(runId, 'Report generation is in progress; validated passages and receipts are preserved.')
-      // A separate trace in the run's session: the draft-report generation plus PDF rendering.
       let rendered: { format: string; findings: number; provider: string } | undefined
-      job = traceRun('research-report', run, () => buildReport(run).then(report => startActiveObservation('render-report', async observation => { const result = await renderReport(report, resolve(reportDir, `${runId}.pdf`)); rendered = { format: result.format, findings: report.findings.length, provider: report.provider }; observation.update({ output: rendered }); return result })), () => rendered ?? { format: 'FAILED' }).then(result => {
+      const render = () => buildReport(run).then(report => startActiveObservation('render-report', async observation => {
+        const result = await renderReport(report, resolve(reportDir, `${runId}.pdf`))
+        rendered = { format: result.format, findings: report.findings.length, provider: report.provider }
+        observation.update({ output: rendered })
+        return result
+      }))
+      const scoreReport = () => {
+        if (!rendered) return
+        scoreTrace('report-format', rendered.format)
+        if (isLlmConfigured()) scoreTrace('report-fallback', rendered.provider === 'fixture')
+      }
+      // A separate trace in the run's session: the draft-report generation plus PDF rendering.
+      job = traceRun('research-report', run, render, () => rendered ?? { format: 'FAILED' }, scoreReport).then(result => {
         store.updateRun(runId, { reportStatus: result.format })
         store.appendEvent(runId, { type: 'REPORT', label: result.format === 'PDF' ? 'PDF report ready.' : 'Chromium unavailable; HTML print fallback ready.' })
         return result

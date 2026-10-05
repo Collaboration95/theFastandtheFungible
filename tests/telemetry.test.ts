@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest'
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
 import { InMemorySpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { setLangfuseTracerProvider } from '@langfuse/tracing'
-import { maskSecrets, telemetryEnabled, traceEvent, traceRun } from '../server/telemetry.js'
+import { deepseekPricingWindow, maskSecrets, scoreStep, scoreTrace, telemetryEnabled, traceEvent, traceRun } from '../server/telemetry.js'
 import { writeAnswer } from '../server/agents/research.js'
 import { exampleCandidate, exampleContent, exampleRun } from '../shared/contracts/examples.js'
 import type { ContentEnvelope, PublicCandidate } from '../shared/contracts/index.js'
@@ -15,7 +15,7 @@ setLangfuseTracerProvider(provider)
 afterAll(() => provider.shutdown())
 
 const stream = (value: unknown) => {
-  const frames = [`data: ${JSON.stringify({ choices: [{ delta: { content: JSON.stringify(value) } }] })}\n\n`, `data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 120, completion_tokens: 30 } })}\n\n`, 'data: [DONE]\n\n']
+  const frames = [`data: ${JSON.stringify({ choices: [{ delta: { content: JSON.stringify(value) } }] })}\n\n`, `data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 120, completion_tokens: 30, prompt_cache_hit_tokens: 100, prompt_cache_miss_tokens: 20 } })}\n\n`, 'data: [DONE]\n\n']
   return new Response(new TextEncoder().encode(frames.join('')))
 }
 
@@ -24,6 +24,20 @@ describe('Langfuse telemetry', () => {
     expect(telemetryEnabled({ LANGFUSE_PUBLIC_KEY: 'pk', LANGFUSE_SECRET_KEY: 'sk' })).toBe(false)
     expect(telemetryEnabled({ LANGFUSE_ENABLED: '1', LANGFUSE_PUBLIC_KEY: 'pk' })).toBe(false)
     expect(telemetryEnabled({ LANGFUSE_ENABLED: '1', LANGFUSE_PUBLIC_KEY: 'pk', LANGFUSE_SECRET_KEY: 'sk' })).toBe(true)
+  })
+
+  it('maps DeepSeek peak hours (UTC weekdays 01–04 and 06–10) and everything else to off-peak', () => {
+    expect(deepseekPricingWindow(new Date('2026-10-05T02:30:00Z'))).toBe('peak')      // Monday
+    expect(deepseekPricingWindow(new Date('2026-10-05T09:59:00Z'))).toBe('peak')
+    expect(deepseekPricingWindow(new Date('2026-10-05T04:30:00Z'))).toBe('off-peak')  // gap between windows
+    expect(deepseekPricingWindow(new Date('2026-10-05T10:00:00Z'))).toBe('off-peak')
+    expect(deepseekPricingWindow(new Date('2026-10-10T02:30:00Z'))).toBe('off-peak')  // Saturday (demo day)
+  })
+
+  it('scores are a silent no-op when tracing is off', () => {
+    vi.stubEnv('LANGFUSE_ENABLED', '0')
+    expect(() => { scoreStep('citation-validity', 1); scoreTrace('fully-live', true); scoreTrace('impact', 'QUALIFIES') }).not.toThrow()
+    vi.unstubAllEnvs()
   })
 
   it('masks every configured secret and delivery-token-like field', () => {
@@ -57,7 +71,9 @@ describe('Langfuse telemetry', () => {
     expect(spans.some(s => s.name === 'phase-progress')).toBe(false)
     const generation = byName('generate-answer')
     expect(generation.attributes['langfuse.observation.model.name']).toBe('deepseek-flash')
-    expect(JSON.parse(String(generation.attributes['langfuse.observation.usage_details']))).toEqual({ input: 120, output: 30 })
+    // Cache hits are split out so the custom deepseek-flash price bills them at the cache rate.
+    expect(JSON.parse(String(generation.attributes['langfuse.observation.usage_details']))).toEqual({ input: 20, input_cache_read: 100, output: 30 })
+    expect(generation.attributes['langfuse.observation.metadata.pricing_window']).toMatch(/^(peak|off-peak)$/)
     expect(generation.attributes['langfuse.observation.completion_start_time']).toBeTruthy()
     // Nesting: generation under write-answer under the run; one trace for the whole run.
     expect(generation.parentSpanContext?.spanId).toBe(byName('write-answer').spanContext().spanId)

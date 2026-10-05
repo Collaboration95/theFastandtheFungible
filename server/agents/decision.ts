@@ -1,3 +1,4 @@
+import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema, FacetSchema } from '../../shared/contracts/index.js'
@@ -57,6 +58,8 @@ export function decide(input: DecideInput): Promise<DecisionRound> {
   return startActiveObservation('decide-purchase', async observation => {
     observation.update({ input: { round: input.round, gap: input.gap, remainingMinor: input.budgetMinor - input.spentMinor - input.reservedMinor, capMinor: input.perSourceCapMinor } })
     const round = await decideRound(input)
+    if (input.provider) scoreStep('decision-fallback', Boolean(round.fallbackReason), round.fallbackReason)
+    scoreStep('gap-material', round.gapMaterial, round.gap)
     observation.update({ output: { provider: round.provider, model: round.model, gapMaterial: round.gapMaterial, threshold: round.threshold, selected: round.selectedResourceId ?? null, rows: round.rows.map(r => ({ resourceId: r.candidate.resourceId, priceMinor: r.candidate.price.amountMinor, addressesGap: r.judgment.addressesGap, original: r.judgment.originality.original, credibility: r.judgment.credibility, value: r.value, verdict: r.verdict })) }, ...(round.fallbackReason ? { level: 'WARNING' as const, statusMessage: round.fallbackReason } : {}) })
     return round
   }, { asType: 'chain' })
