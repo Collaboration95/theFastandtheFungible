@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live variant fault reset check verify doctor keys ports kill
+.PHONY: help setup run live variant fault reset check verify doctor keys ports kill wallets
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -42,6 +42,9 @@ doctor: ## node, deps, .env drift, ports, provider keys
 
 keys: ## provider keys only, plus one real DeepSeek + Clef call (latency, limits)
 	$(DOCTOR) --keys --deep
+
+wallets: ## re-fund XRPL Testnet wallets from the faucet after a Testnet reset (same addresses)
+	node --import tsx scripts/wallets.mjs
 
 ports: ## who is listening on the demo ports
 	@lsof -nP -iTCP:$(PORTS) -sTCP:LISTEN || echo "ports $(PORTS) free"

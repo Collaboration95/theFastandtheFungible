@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { AskSchema, RunSnapshotSchema, TraceEventSchema } from '../shared/contracts/index.js'
-import type { Ask, RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
+import { AskSchema, LedgerViewSchema, RunSnapshotSchema, TraceEventSchema } from '../shared/contracts/index.js'
+import type { Ask, LedgerView, RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
 
 const runPath = (runId: string) => `/runs/${encodeURIComponent(runId)}`
 
@@ -13,6 +13,9 @@ async function request(path: string, body?: unknown): Promise<unknown> {
   return response.json()
 }
 
+export async function getLedger(): Promise<LedgerView> {
+  return LedgerViewSchema.parse(await request('/api/ledger'))
+}
 export async function ask(input: Ask): Promise<RunSnapshot> {
   return RunSnapshotSchema.parse(await request('/runs', AskSchema.parse(input)))
 }

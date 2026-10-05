@@ -115,9 +115,18 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
       else if (purchases < 10) warn(`${line}; top up at https://xrpl.org/resources/dev-tools/xrp-faucets`)
       else ok(line)
     }
-    const receiver = process.env.XRPL_RECEIVER_ADDRESS || TESTNET_RECEIVER
-    const { result } = await ledger.request({ command: 'account_info', account: receiver, ledger_index: 'validated' })
-    ok(`receiver ${receiver} exists (${(Number(result.account_data.Balance) / 1e6).toFixed(2)} XRP)`)
+    // A payment to a missing account fails on ledger, so every publisher wallet must exist.
+    const { loadCorpus } = await import('../publisher/corpus.ts')
+    const publishers = new Map((await loadCorpus('')).filter(r => r.wallet).map(r => [r.wallet, r.publisher]))
+    publishers.set(process.env.XRPL_RECEIVER_ADDRESS || TESTNET_RECEIVER, 'fallback receiver')
+    for (const [address, name] of publishers) {
+      try {
+        const { result } = await ledger.request({ command: 'account_info', account: address, ledger_index: 'validated' })
+        ok(`${name}: ${address} (${(Number(result.account_data.Balance) / 1e6).toFixed(2)} XRP)`)
+      } catch (error) {
+        fail(`${name}: ${address} ${error?.data?.error === 'actNotFound' ? 'does not exist (Testnet reset?); run make wallets' : 'check failed'}`)
+      }
+    }
   } catch (error) {
     fail(`Testnet check failed (${error?.data?.error ?? error?.message ?? 'error'})`)
   } finally { await ledger?.close() }

@@ -19,6 +19,7 @@ export function validateCorpus(input: unknown): CorpusResource[] {
     byId.set(resource.resourceId, resource)
     if (profiles.get(resource.profileId) !== resource.tier) fail('unknown profile or inconsistent tier')
     if ((resource.tier === 'FREE') !== (resource.price.amountMinor === 0)) fail('price must match tier')
+    if ((resource.tier === 'PAID') !== (resource.wallet !== undefined)) fail('paid resources need a publisher wallet; free ones have none')
     const wordCount = resource.body.trim().split(/\s+/u).length
     if (wordCount < 250 || wordCount > 700) fail('body must contain 250–700 words')
     if (resource.spans.length < 2 || resource.spans.length > 4) fail('expected 2–4 spans')

@@ -6,9 +6,9 @@ const canary = 'PAID_CANARY_GRID_OPERATORS_240MW_14MONTHS_7F2C'
 const find = (resources: CorpusResource[], id: string) => resources.find(resource => resource.resourceId === id)!
 
 describe('fictional demo corpus', () => {
-  it('has 18 labelled resources, correct profiles, exact spans and one free facet gap', async () => {
+  it('has 19 labelled resources, correct profiles, exact spans and one free facet gap', async () => {
     const resources = await loadCorpus('')
-    expect(resources).toHaveLength(18)
+    expect(resources).toHaveLength(19)
     expect(new Set(resources.map(resource => resource.profileId))).toEqual(new Set(['public-records', 'supplier-wire', 'grid-research']))
     for (const resource of resources) {
       expect(resource.body.split(/\s+/u).length).toBeGreaterThanOrEqual(250)
@@ -28,8 +28,12 @@ describe('fictional demo corpus', () => {
   it('supplies paid prices, public relevance metadata and a body-only leak canary', async () => {
     const resources = await loadCorpus('')
     expect(resources.filter(resource => resource.tier === 'PAID').map(resource => [resource.resourceId, resource.price.amountMinor])).toEqual([
-      ['northstar-wire', 20], ['circuit-note', 30], ['grid-operators-report', 80], ['gridscope-asia', 140],
+      ['northstar-wire', 20], ['circuit-note', 30], ['grid-operators-report', 80], ['gridscope-asia', 140], ['monsoon-thermal', 40],
     ])
+    const paid = resources.filter(resource => resource.tier === 'PAID')
+    // Five publishers, five distinct Testnet wallets; free sources carry none.
+    expect(new Set(paid.map(resource => resource.wallet)).size).toBe(5)
+    expect(resources.filter(resource => resource.tier === 'FREE').every(resource => resource.wallet === undefined)).toBe(true)
     const report = find(resources, 'grid-operators-report')
     expect(report.body).toContain('Only 240 of the announced 600 MW has a confirmed energisation slot before 2028.')
     expect(report.body).toContain('slipped 14 months')

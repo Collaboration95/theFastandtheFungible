@@ -1,4 +1,4 @@
-import type { RunSnapshot } from '../../shared/contracts/index.js'
+import { XRPL_LABEL, type RunSnapshot } from '../../shared/contracts/index.js'
 
 // Never dump event.data: it can contain a delivery token, headers, or paid body.
 function safeFields(data: Record<string, unknown>, prefix = '', depth = 0): [string, string][] {
@@ -46,7 +46,7 @@ export default function Wire({ run }: { run: RunSnapshot }) {
   }))
   return <section className="ra-panel ra-wire" aria-label="HTTP exchange">
     <h2>Wire · HTTP exchange</h2>
-    <p className="ra-wire-story">Protocol: 402 → quote → settle (simulated) → delivery → digest check</p>
+    <p className="ra-wire-story">Protocol: 402 → quote → settle ({run.labels.settlement === XRPL_LABEL ? 'XRPL Testnet payment' : 'simulated'}) → delivery → digest check</p>
     <p>Settlement: {run.labels.settlement}</p>
     {exchanges.length === 0 ? <p>No HTTP exchange recorded yet.</p> : <ol>
       {exchanges.map(({ event, fields }) => <li key={`${event.runId}:${event.id}`}>

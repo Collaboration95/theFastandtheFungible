@@ -938,3 +938,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 .ra-probability > div > span { display:block; height:100%; background:var(--ra-teal); }
 .ra-wire code { overflow-wrap:anywhere; word-break:break-all; }
+
+/* Ledger panel (XRPL Testnet, #98 phase 2) */
+.ra-ledger { font-variant-numeric:tabular-nums; }
+.ra-ledger-payments, .ra-ledger-steps { list-style:none; padding:0; margin:12px 0; display:grid; gap:10px; }
+.ra-ledger-payments li { display:grid; gap:4px; padding:12px 14px; border:1px solid var(--ra-rule); border-left:4px solid var(--ra-teal); border-radius:8px; background:var(--ra-soft); animation:ra-ledger-in .45s ease-out; }
+.ra-ledger-flow strong { color:var(--ra-teal); }
+.ra-ledger-steps li { color:var(--ra-muted); }
+.ra-ledger-steps time { font-family:var(--ra-mono, monospace); margin-right:6px; }
+.ra-ledger-wallets { width:100%; border-collapse:collapse; }
+.ra-ledger-wallets th, .ra-ledger-wallets td { text-align:left; padding:8px 6px; border-top:1px solid var(--ra-rule); vertical-align:top; }
+.ra-ledger-wallets tr { transition:background-color .6s ease; }
+.ra-ledger-moved { background:var(--ra-soft); animation:ra-ledger-pulse 1.2s ease-out; }
+@keyframes ra-ledger-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+@keyframes ra-ledger-pulse { 0% { background:#cfe7dc; } 100% { background:var(--ra-soft); } }
