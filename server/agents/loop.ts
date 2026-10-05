@@ -1,4 +1,4 @@
-import { traceRun } from '../telemetry.js'
+import { activeTraceUrl, scoreTrace, traceRun } from '../telemetry.js'
 import type { Store } from '../store.js'
 import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
@@ -65,9 +65,28 @@ export class RunLoop {
     const answer = AnswerSchema.parse(result.answer)
     if (answer.version !== (previous?.version ?? 0) + 1) throw new Error('Answer version mismatch')
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
+    const started = this.started.get(runId)
+    if (!previous && started) scoreTrace('time-to-first-answer-s', (Date.now() - started) / 1000, 'ask → validated cited answer v1')
     const latest = this.store.getRun(runId)
     this.store.updateRun(runId, { labels: { ...latest.labels, research: `${providerLabels[answer.provider]} · ${answer.model}` }, checkpoint: { ...latest.checkpoint, answerVersion: answer.version, ...(latest.checkpoint.intentId ? { answeredIntentId: latest.checkpoint.intentId } : {}) } })
     if (this.stopped(runId)) this.trace(runId, 'STOPPED', 'Stopped; last good answer preserved.')
+  }
+  private readonly started = new Map<string, number>()
+  /** Run-level scores: outcome, impact, spend and whether every layer ran live (the fallback rate). */
+  private scoreRun(runId: string) {
+    const run = this.store.getRun(runId)
+    this.started.delete(runId)
+    scoreTrace('run-outcome', run.phase)
+    if (run.impact) scoreTrace('impact', run.impact.classification, run.impact.explanation)
+    scoreTrace('spent-sgd', run.spentMinor / 100)
+    const fallbacks = [...run.answers.filter(a => a.provider === 'fixture').map(a => `answer v${a.version}`), ...run.decisions.filter(d => d.provider === 'fixture').map(d => `decision round ${d.round}`)]
+    scoreTrace('fully-live', fallbacks.length === 0, fallbacks.length ? `fixture: ${fallbacks.join(', ')}` : undefined)
+    // The trace link lands in the run's own activity feed and the API log, ready to click on stage.
+    void activeTraceUrl().then(url => {
+      if (!url) return
+      console.log(`Langfuse trace: ${url}`)
+      try { this.store.appendEvent(runId, { type: 'TRACE', label: `Langfuse trace: ${url}`, data: { url } }) } catch { /* run may be gone */ }
+    })
   }
   /** What a reviewer needs at a glance in the trace table. */
   private summary(runId: string) {
@@ -75,7 +94,8 @@ export class RunLoop {
     return { phase: run.phase, conclusion: run.answers.at(-1)?.conclusion, answerVersions: run.answers.length, impact: run.impact?.classification, spent: `S$${(run.spentMinor / 100).toFixed(2)}`, bought: run.intents.filter(i => i.status === 'VERIFIED').map(i => ({ resourceId: i.resourceId, txHash: i.txHash })), error: run.error }
   }
   start(runId: string): Promise<void> {
-    return traceRun('research-run', this.store.getRun(runId), () => this.run(runId), () => this.summary(runId))
+    this.started.set(runId, Date.now())
+    return traceRun('research-run', this.store.getRun(runId), () => this.run(runId), () => this.summary(runId), () => this.scoreRun(runId))
   }
   private run(runId: string): Promise<void> {
     return this.exclusive(runId, async () => {

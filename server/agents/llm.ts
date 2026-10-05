@@ -1,4 +1,5 @@
 import { startActiveObservation, type LangfuseGeneration } from '@langfuse/tracing'
+import { deepseekPricingWindow } from '../telemetry.js'
 /**
  * OpenAI-compatible chat providers. LLM_PROVIDER picks one. Each reads its own key, base URL and
  * model override, so a key is never sent to another provider's endpoint.
@@ -39,8 +40,9 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
     }) },
   ]
   const modelParameters = { temperature: 0.2, max_tokens: 3000 }
-  generation.update({ model: researchModel(), modelParameters, input: messages, metadata: { provider: provider.label } })
-  let usage: { prompt_tokens?: number; completion_tokens?: number } | undefined
+  // pricing_window selects the Langfuse price tier for the custom deepseek-flash model.
+  generation.update({ model: researchModel(), modelParameters, input: messages, metadata: { provider: provider.label, ...(provider.label === 'DeepSeek' ? { pricing_window: deepseekPricingWindow() } : {}) } })
+  let usage: { prompt_tokens?: number; completion_tokens?: number; prompt_cache_hit_tokens?: number; prompt_cache_miss_tokens?: number } | undefined
   try {
     const response = await fetch(endpoint, {
       method: 'POST', signal: controller.signal,
@@ -80,7 +82,9 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
       if (done) { if (pending && !finished) consume(pending); break }
     }
     const parsed: unknown = JSON.parse(text)
-    generation.update({ output: parsed, ...(usage ? { usageDetails: { input: usage.prompt_tokens ?? 0, output: usage.completion_tokens ?? 0 } } : {}) })
+    // DeepSeek reports cache hits separately; they are billed at a fraction of normal input.
+    const cached = usage?.prompt_cache_hit_tokens
+    generation.update({ output: parsed, ...(usage ? { usageDetails: cached === undefined ? { input: usage.prompt_tokens ?? 0, output: usage.completion_tokens ?? 0 } : { input: usage.prompt_cache_miss_tokens ?? (usage.prompt_tokens ?? 0) - cached, input_cache_read: cached, output: usage.completion_tokens ?? 0 } } : {}) })
     return parsed
   } catch (error) {
     generation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'LLM call failed' })

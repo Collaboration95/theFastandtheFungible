@@ -1,3 +1,4 @@
+import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { AnswerSchema, FacetSchema, type Answer, type Claim, type ContentEnvelope, type Facet, type Impact, type PublicCandidate } from '../../shared/contracts/index.js'
 import type { PublisherClient } from '../publisher-client.js'
@@ -103,6 +104,8 @@ export function writeAnswer(input: { question: string; contents: ContentEnvelope
   return startActiveObservation('write-answer', async observation => {
     observation.update({ input: { question: input.question, version: input.version, evidence: input.contents.map(c => c.resourceId) } })
     const result = await composeAnswer(input)
+    // Only when the LLM was actually asked (it needs citable passages); otherwise the fixture is expected.
+    if (isLlmConfigured() && usableContents(input.contents).some(c => c.spans.length)) scoreStep('answer-fallback', result.answer.provider === 'fixture', result.answer.provider === 'fixture' ? 'LLM output failed or no valid claims; labelled extractive fixture shown' : undefined)
     observation.update({ output: { provider: result.answer.provider, model: result.answer.model, conclusion: result.answer.conclusion, validClaims: result.answer.claims.length, openGaps: result.answer.openGaps.map(g => g.facet), impact: result.impact?.classification } })
     return result
   }, { asType: 'chain' })
@@ -119,6 +122,7 @@ async function composeAnswer(input: { question: string; contents: ContentEnvelop
       }), previousOpenGaps: input.previous?.openGaps ?? [], openGaps: answer.openGaps }, () => input.onToken?.('Generating cited answer…'), 'generate-answer')
       const parsed = AnswerSchema.parse({ ...(result as object), version: input.version, provider: llmProvider(), model: researchModel() })
       const validated = validateAnswer(parsed, contents)
+      scoreStep('citation-validity', parsed.claims.length ? validated.claims.length / parsed.claims.length : 0, `${validated.claims.length} of ${parsed.claims.length} model claims kept by the exact-passage check`)
       if (validated.claims.length) answer = { ...validated, openGaps: gaps(contents, input.candidates) }
     } catch { /* Clearly labelled extractive fixture remains available on provider/validation failure. */ }
   }

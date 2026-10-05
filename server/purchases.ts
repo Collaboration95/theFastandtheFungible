@@ -1,3 +1,4 @@
+import { scoreStep } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { DROPS_PER_MINOR, SIMULATED_LABEL, XRPL_EXPLORER, XRPL_LABEL, type PublicCandidate, type PurchaseIntent, type Settlement } from '../shared/contracts/index.js'
 import type { Store } from './store.js'
@@ -37,6 +38,7 @@ export class PurchaseManager {
       return await startActiveObservation('buy-source', async observation => {
         observation.update({ input: { resourceId: input.candidate.resourceId, publisher: input.candidate.profileId, priceMinor: input.candidate.price.amountMinor, intentId: input.intentId } })
         const intent = await this.once(input.intentId, () => this.buy(input))
+        scoreStep('purchase-outcome', intent.status, intent.error)
         observation.update({ output: { status: intent.status, txHash: intent.txHash, receiptId: intent.receiptId, error: intent.error }, ...(intent.status === 'VERIFIED' ? {} : { level: 'WARNING' as const, statusMessage: intent.error ?? intent.status }) })
         return intent
       }, { asType: 'tool' })
@@ -88,13 +90,17 @@ export class PurchaseManager {
   /** Sign once per intent (hash persisted before submit), wait for ledger close, then ask the publisher to verify. */
   private async payOnLedger(intent: PurchaseIntent): Promise<Settlement | undefined> {
     const terms = intent.quote!.payment!
+    const started = Date.now()
     let submission = this.store.getSubmission(intent.intentId)
     if (!submission) {
       const paid = await this.payer!.pay(terms, signed => this.store.recordSubmission(intent.intentId, signed))
       submission = paid.submission
       this.ledgerEvent(intent.runId, `Signed ${xrp(terms.amountDrops)} XRP → ${terms.payTo} · InvoiceID = quote hash · submitted (${paid.engineResult}), waiting for ledger close`, { intentId: intent.intentId, txHash: submission.txHash, amountDrops: terms.amountDrops, payTo: terms.payTo, explorerUrl: explorer(submission.txHash) })
     }
-    return this.confirm(intent, submission, true)
+    const settlement = await this.confirm(intent, submission, true)
+    // Sign → ledger validation → publisher receipt: the user-visible cost of a real rail.
+    if (settlement) scoreStep('ledger-confirm-seconds', (Date.now() - started) / 1000, submission.txHash)
+    return settlement
   }
   private async confirm(intent: PurchaseIntent, submission: Submission, wait: boolean): Promise<Settlement | undefined> {
     const outcome = wait ? await this.payer!.waitFor(submission) : await this.payer!.status(submission)

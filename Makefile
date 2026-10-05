@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live variant fault reset check verify doctor keys ports kill wallets
+.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -51,3 +51,6 @@ ports: ## who is listening on the demo ports
 
 kill: ## free the demo ports
 	@pids=$$(lsof -ti tcp:$(PORTS) -sTCP:LISTEN); if [ -n "$$pids" ]; then kill $$pids && echo "stopped $$pids"; else echo "nothing on $(PORTS)"; fi
+
+langfuse-dashboard: ## (re)create the "ResearchAgent · live health" dashboard in Langfuse
+	node scripts/langfuse-dashboard.mjs
