@@ -1,0 +1,414 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ResearchAgent UX Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap">
+<link rel="stylesheet" href="doc.css">
+<link rel="stylesheet" href="mock.css">
+
+<div class="doc">
+  <aside class="side">
+    <div class="side-brand">
+      <svg class="ra-mark" viewBox="0 0 32 32" aria-hidden="true"><path class="br l" d="M11.5 6.5H7.5v19h4"/><path class="br r" d="M20.5 6.5h4v19h-4"/><circle class="coin" cx="16" cy="19" r="4.4"/></svg>
+      <div><b>ResearchAgent</b><span>UX direction · v1.1</span></div>
+    </div>
+    <nav class="side-nav" aria-label="Sections on this tab" id="sideNav"></nav>
+    <div class="side-box">
+      <label class="side-toggle" for="rmToggle"><input type="checkbox" id="rmToggle"> Reduce motion</label>
+      <p>Mockups switch to cuts. Numbers still update.</p>
+    </div>
+    <div class="side-box">
+      <label class="side-toggle" for="twToggle"><input type="checkbox" id="twToggle"> Recommended tweaks</label>
+      <p>Redraws the Overview, Flow and Play mockups with the v1.1 tweaks.</p>
+    </div>
+    <div class="side-box">
+      <h4>Screen tags</h4>
+      <ul class="legend">
+        <li><span class="tag t-today">Today</span>exists, restyled</li>
+        <li><span class="tag t-changed">Changed</span>exists, behaves differently</li>
+        <li><span class="tag t-new">New</span>not in the build</li>
+        <li><span class="tag t-later">Later</span>after Oct 10</li>
+      </ul>
+    </div>
+    <p class="side-foot">Design proposal for the 10 Oct demo and after. Fictional corpus. All money is SIMULATED SGD. Every mockup on these pages is live HTML, drawn by one renderer.</p>
+  </aside>
+
+  <main class="main">
+    <div class="tabs-wrap">
+      <nav class="tabs" role="tablist" aria-label="Walkthrough">
+        <a role="tab" href="#overview" id="t-overview">Overview</a>
+        <a role="tab" href="#tweaks" id="t-tweaks">Tweaks <span class="newtag">v1.1</span></a>
+        <a role="tab" href="#flow" id="t-flow">Flow</a>
+        <a role="tab" href="#play" id="t-play">Play</a>
+        <a role="tab" href="#motion" id="t-motion">Motion</a>
+        <a role="tab" href="#brand" id="t-brand">Brand</a>
+        <a role="tab" href="#notify" id="t-notify">Notify</a>
+      </nav>
+      <span class="ver">v1.1 · 5 Oct 2026</span>
+    </div>
+
+    <!-- ============ OVERVIEW ============ -->
+    <section class="tab" id="tab-overview" role="tabpanel" aria-labelledby="t-overview">
+      <header class="hero">
+        <p class="eyebrow">Overview · audit and direction</p>
+        <h1>Let the room watch it decide.</h1>
+        <p class="lede">ResearchAgent’s best moment lasts 40 milliseconds and happens behind a tab. A decision model prices evidence, code pays for it, and the answer changes. Today the audience lands on the finished answer and never sees the decision. This proposal puts the whole run on one screen, paces it for people, and gives the product a look and a motion language of its own. Light theme only.</p>
+        <div class="hero-acts"><a class="btn btn-pen" href="#play">Play the full run · 30 s</a><a class="btn" href="#flow">See all 39 screens</a><a class="btn" href="#tweaks">v1.1: feedback tweaks →</a></div>
+      </header>
+      <figure class="hero-mock">
+        <div class="m-fit" data-mock='{"scn":"story","step":"impact"}'></div>
+        <figcaption><b>F2 · Impact.</b> Run tape on the left, the answer in the middle, the wallet on the right. The purchase and the answer it changed are on screen together.</figcaption>
+      </figure>
+
+      <h2 id="ov-audit">What the current build does</h2>
+      <p class="sub">I ran <code>npm run demo</code> (fixture providers) on 5 Oct and captured every state at 1440 × 900. The five gates hold up well: labels are present, citations resolve, retries charge once. The problems are about flow and legibility. Click a screenshot to see it full size.</p>
+      <div class="audit" id="audit"></div>
+
+      <h2 id="ov-moves">Six moves</h2>
+      <ol class="moves">
+        <li><b>Pace the run for people.</b> Replay the persisted trace through a queue with a minimum time per step. A 40 ms fixture run then reads as a 30-second story; real pace is one toggle away in the presenter menu. <a href="#flow-P">P1</a></li>
+        <li><b>One screen, three zones.</b> The run tape on the left says what it’s doing. The answer in the middle says what it knows. The wallet on the right says what it’s spending and why. No tabs. <a href="#flow-B">B3</a></li>
+        <li><b>Answer first.</b> A one-sentence short answer with citations, then the open gap, then claims grouped by stance. <a href="#flow-C">C3</a></li>
+        <li><b>Plain words on top, raw data one key away.</b> Verdict stamps with plain reasons on the surface. Press W for the trace, wire, policy and receipts. <a href="#flow-H">H5</a></li>
+        <li><b>Say when it’s done.</b> The tape, a toast, the tab title, the favicon, and a desktop notification if the tab is hidden. <a href="#notify">Notify</a></li>
+        <li><b>A brand that moves.</b> A blue pen for the agent’s marks, a highlighter for evidence, a coin between citation brackets. Motion only where something real happens. <a href="#brand">Brand</a></li>
+      </ol>
+
+      <h2 id="ov-gates">The five gates stay visible</h2>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Gate (prompt.md §2)</th><th>Where you see it in this design</th></tr></thead>
+        <tbody>
+          <tr><td>1 · No premium bytes before a grant</td><td>Paywalled cards show only a price and a lock. An unbought source opens with placeholder bars, never text (<a href="#scr-H3">H3</a>). Bought text opens only after <span class="mono">sha-256 ✓</span> (<a href="#scr-E3">E3</a>).</td></tr>
+          <tr><td>2 · The budget is the only authorisation</td><td>Budget coins with a sentence that says what they allow (<a href="#scr-A2">A2</a>, <a href="#scr-B1">B1</a>). The wallet shows held and spent. Stop buying is always on the tape (<a href="#scr-G2">G2</a>). Injected instructions are flagged and ignored (<a href="#scr-C5">C5</a>).</td></tr>
+          <tr><td>3 · One charge per intent</td><td>One receipt per purchase card. Retry reuses it and says so (<a href="#scr-E5">E5</a>). The receipt lists “Charges: 1” (<a href="#scr-H4">H4</a>).</td></tr>
+          <tr><td>4 · Real citations</td><td>Stable citation numbers. Hover shows the exact sentence (<a href="#scr-H1">H1</a>); the drawer highlights it (<a href="#scr-H2">H2</a>). The PDF uses the same numbers (<a href="#scr-R2">R2</a>).</td></tr>
+          <tr><td>5 · Everything simulated is labelled</td><td>Provider chips are always in the top bar and turn amber on a fallback (<a href="#scr-G4">G4</a>). The striped SIMULATED SGD chip repeats on toasts and receipts.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2 id="ov-build">How to build it</h2>
+      <p class="sub">No new dependencies. Fonts come from <code>@fontsource</code> packages, like the current IBM Plex. Sizes: XS under an hour, S half a day, M a day.</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Change</th><th>Touches</th><th>Size</th></tr></thead>
+        <tbody>
+          <tr><td>Stage pacing: replay trace events with a minimum dwell per step</td><td><code>src/App.tsx</code>, <code>src/api.ts</code></td><td>S</td></tr>
+          <tr><td>Three-zone workspace, drop the four tabs</td><td><code>Layout.tsx</code>, <code>App.tsx</code></td><td>M</td></tr>
+          <tr><td>Short answer first, claims grouped by stance</td><td><code>Answer.tsx</code>; research prompt asks for a one-sentence answer first (<code>server/agents/research.ts</code>)</td><td>S</td></tr>
+          <tr><td>Run tape (event type → step)</td><td><code>Activity.tsx</code> → <code>RunTape.tsx</code></td><td>M</td></tr>
+          <tr><td>Decision rows with bars, threshold and stamps</td><td><code>DecisionTable.tsx</code></td><td>M</td></tr>
+          <tr><td>Purchase card (wire + receipt) and wallet</td><td><code>Wire.tsx</code>, <code>Budget.tsx</code></td><td>M</td></tr>
+          <tr><td>Sources strip with counts and states</td><td><code>Sources.tsx</code></td><td>S</td></tr>
+          <tr><td>Inline v1 → v2 diff</td><td><code>Answer.tsx</code>, <code>Impact.tsx</code></td><td>S</td></tr>
+          <tr><td>Provenance chips; presenter menu replaces the header fault link</td><td><code>Modes.tsx</code>, <code>FaultDemo.tsx</code></td><td>S</td></tr>
+          <tr><td>Toasts, tab title, favicon, desktop notification</td><td>new <code>Toasts.tsx</code> and a <code>useRunNotifications</code> hook</td><td>M</td></tr>
+          <tr><td>Sticky passage-drawer header</td><td><code>Passage.tsx</code>, <code>styles.css</code></td><td>XS</td></tr>
+          <tr><td>One citation numbering for screen and PDF</td><td><code>server/agents/report.ts</code></td><td>S</td></tr>
+          <tr><td>Tokens, fonts, logo, favicon</td><td><code>styles.css</code>, <code>index.html</code></td><td>M</td></tr>
+          <tr><td>Motion, with reduced-motion cuts</td><td><code>styles.css</code> keyframes</td><td>M</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2 id="ov-refs">What I looked at</h2>
+      <ul class="refs">
+        <li><a href="https://www.perplexity.ai/help-center/en/articles/13600190-what-s-new-in-advanced-deep-research" target="_blank" rel="noreferrer">Perplexity Advanced Deep Research</a>: a progress display that shows which sources are read and lets findings appear before the report is done. Source for the run tape and strip.</li>
+        <li><a href="https://dev.to/franciscomoretti/deep-research-uis-perplexity-vs-manus-vs-chatgpt-vs-gemini-5cc2" target="_blank" rel="noreferrer">Deep research UIs compared</a>: Manus shows every step but buries the result; Gemini keeps the result central. The three-zone layout takes Gemini’s focus with Manus’s visibility.</li>
+        <li><a href="https://www.smashingmagazine.com/2026/05/practical-interface-patterns-ai-transparency/" target="_blank" rel="noreferrer">Smashing: interface patterns for AI transparency</a>: dynamic checklist (the tape), thinking toggle (Show work), partial success (failed delivery), audit trail (receipts).</li>
+        <li><a href="https://benji.org/family-values" target="_blank" rel="noreferrer">Family: “Family Values”</a>: fluid interfaces where elements turn into each other. Source for the composer lifting into the heading and the Ask button turning into a status.</li>
+        <li><a href="https://emilkowal.ski/ui/building-a-toast-component" target="_blank" rel="noreferrer">Emil Kowalski: building a toast component</a>: stacked toasts that tuck behind each other and use interruptible transitions.</li>
+        <li><a href="https://www.x402.org/x402-whitepaper.pdf" target="_blank" rel="noreferrer">x402 whitepaper</a>: the 402 → payment → resource shape the wire track draws.</li>
+      </ul>
+    </section>
+
+    <!-- ============ TWEAKS ============ -->
+    <section class="tab" id="tab-tweaks" role="tabpanel" aria-labelledby="t-tweaks" hidden>
+      <header class="hero">
+        <p class="eyebrow">Tweaks · v1.1 · feedback round 1</p>
+        <h1>Less on screen, same story</h1>
+        <p class="lede">First feedback on v1: a new user sees too much at once, the top bar is full of engine names, and the layout should be the one people already know, with a sidebar on the left, a bar along the bottom and a panel on the right. Below are five small moves on top of v1, not a redesign. The motion stays; panels tidy up after their moment instead of skipping it.</p>
+      </header>
+      <div class="ba">
+        <figure><div class="m-fit" data-mock='{"scn":"story","step":"impact","tw":{}}'></div><figcaption><b>v1</b> · F2 Impact as first proposed · <span class="mono" data-words='{"scn":"story","step":"impact","tw":{}}'></span></figcaption></figure>
+        <figure><div class="m-fit" data-mock='{"scn":"story","step":"impact","tw":{"quiet":1,"nav":"open","bar":1,"fold":1,"pills":1}}'></div><figcaption><b>v1.1</b> · the same moment with the recommended tweaks · <span class="mono" data-words='{"scn":"story","step":"impact","tw":{"quiet":1,"nav":"open","bar":1,"fold":1,"pills":1}}'></span></figcaption></figure>
+      </div>
+
+      <h2 id="tw-heard">What we heard</h2>
+      <div class="heard">
+        <div><span class="hn">1</span><b>Too much information for a new user.</b><p>F2 alone shows <span data-words='{"scn":"story","step":"impact","tw":{}}'></span>, eleven timed steps, four value bars on an axis, a five-node wire track and a 64-character hash. The story is in there, along with everything else.</p></div>
+        <div><span class="hn">2</span><b>No need for Research, Decide, Publisher or Simulated SGD up top.</b><p>Model names and the publisher host are engine facts. They matter to the team and to the talk, not to someone asking a question.</p></div>
+        <div><span class="hn">3</span><b>Use the layout every SaaS and LLM product uses.</b><p>A sidebar on the left that expands, a bar along the bottom for the work, a panel on the right. People already know where to look.</p></div>
+      </div>
+
+      <h2 id="tw-take">Where I agree, and one limit</h2>
+      <ul class="take">
+        <li><b>Agree: the chips go.</b> A model name only matters when that model fails, so a chip appears only then, amber, with the reason. The full list moves to Show work → Models.</li>
+        <li class="limit"><b>One limit: “simulated” can’t go.</b> Labelling simulated money is hard gate 5. T1 moves the label onto the money instead: the budget card, the coins on Home, receipts and money toasts. The label sits on the thing that’s simulated. AB3 checks that nobody misses it.</li>
+        <li><b>Agree: the familiar shell.</b> New question and past runs on the left, the run along the bottom, budget and purchases on the right. Sign-in slots into the sidebar’s foot later.</li>
+        <li class="limit"><b>Watch: bars along the bottom are easy to miss.</b> Fine for progress, risky for the purchase, which is the point of the demo. The purchase still announces itself in the right panel and with a toast, and AB1 tests whether people notice it.</li>
+        <li><b>The motion stays.</b> Bars grow and stamps land exactly as in v1. Once the purchase is verified, the panel folds to results. Show the moment, then tidy up.</li>
+      </ul>
+
+      <h2 id="tw-try">Try the tweaks</h2>
+      <p class="sub">Switch each move on or off. Pick a moment, or play the whole run with your settings. The word count covers everything inside the app, below the browser bar.</p>
+      <div class="twlab">
+        <div class="twlab-main">
+          <div class="player-bar">
+            <div class="seg" id="twPreset" role="radiogroup" aria-label="Preset"></div>
+            <div class="seg" id="twMoment" role="radiogroup" aria-label="Moment"></div>
+            <button class="btn btn-pen" id="twPlay" type="button">Play the run</button>
+          </div>
+          <div class="m-fit" id="twFrame"></div>
+        </div>
+        <aside class="twlab-ctl">
+          <div class="words" id="twWords" aria-live="polite"></div>
+          <div id="twList"></div>
+        </aside>
+      </div>
+
+      <h2 id="tw-decide">What we’re changing</h2>
+      <div class="tbl-wrap"><table class="tbl decide">
+        <thead><tr><th>Move</th><th>Decision</th><th>Why</th><th>Gate check</th></tr></thead>
+        <tbody>
+          <tr><td>T1 · Quiet top bar</td><td><span class="dec ship">Ship</span></td><td>Engine names aren’t for the person asking. Normal is silent; a substitution is loud.</td><td>5 · SIMULATED SGD on the budget card, Home, receipts and money toasts. A fallback raises an amber chip.</td></tr>
+          <tr><td>T2 · App sidebar</td><td><span class="dec ship">Ship, open</span><br><a href="#ab-AB4">AB4</a> decides the first-visit default</td><td>Gives New question and past runs a home people recognise, and a place for sign-in later.</td><td>None affected.</td></tr>
+          <tr><td>T3 · Run bar along the bottom</td><td><span class="dec test">Ship if AB1 holds</span></td><td>Frees the left side for navigation. The run reads as one line, with Stop and Show work beside it.</td><td>2 · Stop buying stays one click away, on the bar.</td></tr>
+          <tr><td>T4 · Fold after the moment</td><td><span class="dec test">Ship if AB2 holds</span></td><td>After the purchase, the right panel shows what was bought and skipped, not how the scores were computed. The full animation plays first.</td><td>3 · “Charged once” and the receipt stay on the folded card.</td></tr>
+          <tr><td>T5 · Sources in one line</td><td><span class="dec ship">Ship</span></td><td>Replaces a row of near-identical cards with one line. The source that matters is named.</td><td>1 · Paywalled sources still show a lock and price under View all.</td></tr>
+          <tr><td>Drop the simulated label</td><td><span class="dec no">Not doing</span></td><td>Hard gate 5. It moves instead (T1), and <a href="#ab-AB3">AB3</a> checks the new place.</td><td>5</td></tr>
+          <tr><td>Rework the answer column</td><td><span class="dec no">Not doing</span></td><td>Small moves only, and it wasn’t part of the critique.</td><td>–</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2 id="tw-ab">A/B flows</h2>
+      <p class="sub">Four small tests for the open questions. Both variants start from the recommended tweaks and differ in one thing. Each is a three-screen flow: click a screen to open it large, then “Play into this screen” to see its motion.</p>
+      <div id="abTests"></div>
+
+      <h2 id="tw-run">Running the tests</h2>
+      <div class="split">
+        <ol class="protocol">
+          <li><b>Five people who haven’t seen ResearchAgent.</b> Teammates who know v1 can’t unsee it, so they give feedback rather than test.</li>
+          <li><b>Ten minutes each,</b> on a laptop at 100% zoom, in person or over screen share.</li>
+          <li><b>Alternate the order.</b> Odd-numbered testers see A first, even-numbered testers see B first.</li>
+          <li><b>Play each flow</b> rather than showing stills. The motion is part of what’s tested.</li>
+          <li><b>Read the task, then stay quiet.</b> Note the answer, the seconds, and where they looked first.</li>
+          <li><b>Decide with the rule written on the test,</b> not by counting votes.</li>
+        </ol>
+        <div class="picks">
+          <h3>Teammates: leave your picks</h3>
+          <p>Pick A or B on each test above and add a line on why. Picks stay in this browser until you copy them into the PR or the team thread.</p>
+          <button class="btn btn-pen" id="abCopy" type="button">Copy my picks</button>
+          <textarea id="abOut" readonly rows="7" aria-label="Your picks as text" hidden></textarea>
+        </div>
+      </div>
+
+      <h2 id="tw-build">Build cost</h2>
+      <p class="sub">On top of the v1 plan in Overview. XS is under an hour, S half a day, M a day.</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Move</th><th>Touches</th><th>Size</th></tr></thead>
+        <tbody>
+          <tr><td>T1 · Quiet top bar</td><td><code>Modes.tsx</code> renders a chip only on a fallback; <code>Budget.tsx</code> and <code>Ask.tsx</code> get the SIMULATED SGD tag; Show work gets a Models view</td><td>XS</td></tr>
+          <tr><td>T2 · App sidebar</td><td>New <code>Sidebar.tsx</code> in <code>Layout.tsx</code>. Past runs need a list endpoint: <code>server/routes.ts</code> has <code>GET /runs/:id</code> but no <code>GET /runs</code></td><td>M</td></tr>
+          <tr><td>T3 · Run bar</td><td><code>RunBar.tsx</code>: the run tape’s steps laid out in a row, same event → step mapping</td><td>S</td></tr>
+          <tr><td>T4 · Fold after the moment</td><td><code>DecisionTable.tsx</code>, <code>Wire.tsx</code>: a folded state once the purchase verifies; “Why these?” unfolds it</td><td>S</td></tr>
+          <tr><td>T5 · Sources in one line</td><td><code>Sources.tsx</code>: initials row and one named pill; View all opens the current list</td><td>S</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ============ FLOW ============ -->
+    <section class="tab" id="tab-flow" role="tabpanel" aria-labelledby="t-flow" hidden>
+      <header class="hero">
+        <p class="eyebrow">Flow · build spec</p>
+        <h1>Every screen, and how you get there</h1>
+        <p class="lede">39 screens in 11 groups. Each has a code, what leads to it, what you can do there and where that goes. Click a screen to open it large. In the large view, “Play into this screen” animates the step that leads to it.</p>
+      </header>
+      <h2 id="fl-map">Route map</h2>
+      <p class="sub">The thick line is the 10 Oct demo story. Branches drop off it; the bottom row can happen at any step. Click a station to jump to its screen.</p>
+      <div class="map-wrap" id="metro"></div>
+
+      <h2 id="fl-moves">Moving between screens</h2>
+      <div class="trans">
+        <div><b>Takeoff</b><span>Home → workspace</span><p>The composer lifts and shrinks into the question heading, 420 ms, <code>cubic-bezier(.6,0,.3,1)</code>. Columns slide in 60 ms apart.</p></div>
+        <div><b>Step reveal</b><span>within a run</span><p>New things rise 10 px and fade in, 450 ms ease-out. The tape node pops. Nothing already on screen moves.</p></div>
+        <div><b>Stamp</b><span>verdicts, impact</span><p>Scale 2.1 → 1 with a slight overshoot and −3° tilt, 450 ms. Stamps in a set land 480 ms apart.</p></div>
+        <div><b>Drawer</b><span>passages, previews</span><p>Slides in from the right 26 px with a fade, 420 ms. The page behind dims to 20% and blurs 2 px. Esc closes it.</p></div>
+        <div><b>Sheet</b><span>Show work</span><p>Rises from the bottom, 420 ms. It covers the lower half, so the short answer stays visible above it.</p></div>
+        <div><b>Toast</b><span>results</span><p>Rises 40 px and scales 0.94 → 1, 500 ms. Older toasts tuck 14 px behind and shrink 5% each, at most 3.</p></div>
+        <div><b>Money</b><span>wallet, receipts</span><p>Amounts count down over 900 ms on an ease-out curve. Digests scramble, then lock left to right.</p></div>
+        <div><b>Reduce Motion</b><span>everything</span><p>All of the above become cuts. Counters jump to their final value; pulsing and flipping stop.</p></div>
+      </div>
+      <div id="flowSections"></div>
+    </section>
+
+    <!-- ============ PLAY ============ -->
+    <section class="tab" id="tab-play" role="tabpanel" aria-labelledby="t-play" hidden>
+      <header class="hero hero-tight">
+        <p class="eyebrow">Play · the run at stage pace</p>
+        <h1>Play the run</h1>
+        <p class="lede">The Flow screens, played in order with their motion, at roughly the pace the room would see. Switch scenarios for the branches; click the timeline to jump.</p>
+      </header>
+      <div class="player">
+        <div class="player-bar">
+          <button class="btn btn-pen" id="pPlay" type="button">Pause</button>
+          <button class="btn" id="pRestart" type="button">Restart</button>
+          <div class="seg" id="pScn" role="radiogroup" aria-label="Scenario"></div>
+          <div class="seg" id="pSpeed" role="radiogroup" aria-label="Speed"></div>
+        </div>
+        <ol class="timeline" id="pTimeline"></ol>
+        <div class="player-cap"><span class="mono" id="pCode">A2</span><p id="pCaption"></p></div>
+        <div class="m-fit player-frame" id="pFrame"></div>
+      </div>
+    </section>
+
+    <!-- ============ MOTION ============ -->
+    <section class="tab" id="tab-motion" role="tabpanel" aria-labelledby="t-motion" hidden>
+      <header class="hero">
+        <p class="eyebrow">Motion · when and how things move</p>
+        <h1>Motion only where something real happens</h1>
+        <p class="lede">Most SaaS motion is decoration: things fade in because they can. Here every animation stands for an event in the run: a source arrives, a model scores, a verdict lands, money moves, a digest checks out. If nothing happened, nothing moves.</p>
+      </header>
+      <h2 id="mo-rules">Four rules</h2>
+      <ol class="moves moves-4">
+        <li><b>Show the step, then the result.</b> The tape lights before the answer changes, so cause comes before effect.</li>
+        <li><b>The pen is the agent; the highlighter is evidence.</b> Blue strokes mark what the agent did. Yellow sweeps mark what a source says.</li>
+        <li><b>Calm by default, one big moment.</b> The purchase (402, hold, settle, digest, stamp) gets the orchestrated sequence. Everything else is a 450 ms rise.</li>
+        <li><b>Money never jumps.</b> Amounts count, holds hatch then fill, receipts print. People should be able to follow every cent.</li>
+      </ol>
+      <h2 id="mo-tokens">Tokens</h2>
+      <div class="tokens" id="motionTokens"></div>
+      <h2 id="mo-moments">Ten moments</h2>
+      <p class="sub">Each card loops while it’s on screen. These are the real components from the mockups, not separate drawings.</p>
+      <div class="moments" id="moments"></div>
+    </section>
+
+    <!-- ============ BRAND ============ -->
+    <section class="tab" id="tab-brand" role="tabpanel" aria-labelledby="t-brand" hidden>
+      <header class="hero">
+        <p class="eyebrow">Brand · logo, colour, type, widgets</p>
+        <h1>Blue pen, highlighter, a coin between brackets</h1>
+        <p class="lede">The product is a researcher with a budget. So the identity borrows from a researcher’s desk: the blue pen they mark up a printout with, the highlighter they run over the line that matters, and the square brackets of a citation. The coin inside the brackets is the part nobody else has: evidence you paid for.</p>
+      </header>
+
+      <h2 id="br-logo">Logo</h2>
+      <div class="logos">
+        <figure class="logo-card is-pick">
+          <div class="logo-art"><svg class="ra-mark big" viewBox="0 0 32 32" aria-hidden="true"><path class="br l" d="M11.5 6.5H7.5v19h4"/><path class="br r" d="M20.5 6.5h4v19h-4"/><circle class="coin" cx="16" cy="19" r="4.4"/></svg></div>
+          <figcaption><span class="tag t-new">Recommended</span><b>A · Bracket coin</b><p>Citation brackets holding a coin: cited evidence, paid for. The coin sits low, as if it just dropped in. Two strokes and a dot, so it survives 16 px.</p></figcaption>
+        </figure>
+        <figure class="logo-card">
+          <div class="logo-art"><svg viewBox="0 0 64 64" width="96" height="96" aria-hidden="true"><path d="M16 8h22l10 10v38H16z" fill="#fff" stroke="#0F1222" stroke-width="3" stroke-linejoin="round"/><path d="M38 8v10h10" fill="none" stroke="#0F1222" stroke-width="3" stroke-linejoin="round"/><rect x="21" y="30" width="22" height="7" rx="2" fill="#FFE45C"/><path d="M22 44l5 5 10-12" fill="none" stroke="#2F45FF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <figcaption><b>B · Marked page</b><p>A page with one highlighted line and a pen tick. Clearly research, but says nothing about the wallet, and looks like many note apps.</p></figcaption>
+        </figure>
+        <figure class="logo-card">
+          <div class="logo-art"><svg viewBox="0 0 64 64" width="96" height="96" aria-hidden="true"><path d="M10 22l14-12h30v44H24L10 42z" fill="#2F45FF"/><circle cx="21" cy="32" r="3.5" fill="#fff"/><text x="40" y="37" text-anchor="middle" font-family="Geist Mono, monospace" font-weight="700" font-size="14" fill="#fff">402</text></svg></div>
+          <figcaption><b>C · 402 tag</b><p>A price tag reading 402. The room at AI Tinkerers would get it; a buyer later would not. Good as a sticker, not as the mark.</p></figcaption>
+        </figure>
+      </div>
+      <div class="logo-row">
+        <div class="logo-live" id="logoLive"></div>
+        <div class="logo-spec">
+          <h3>Wordmark and lockup</h3>
+          <div class="lockup"><svg class="ra-mark" viewBox="0 0 32 32" aria-hidden="true"><path class="br l" d="M11.5 6.5H7.5v19h4"/><path class="br r" d="M20.5 6.5h4v19h-4"/><circle class="coin" cx="16" cy="19" r="4.4"/></svg><span>ResearchAgent</span></div>
+          <p>Bricolage Grotesque 650, tracking −1.5%. Clear space on every side equals the coin’s diameter. The coin is Agent Blue on light grounds and Highlighter on the blue app icon.</p>
+          <h3>States of the mark</h3>
+          <div class="favs" id="favs"></div>
+        </div>
+      </div>
+
+      <h2 id="br-colour">Colour</h2>
+      <p class="sub">A cool paper white, not cream. One brand colour (the pen) and one functional colour (the highlighter). Green, orange and amber are reserved for meaning.</p>
+      <div class="swatches" id="swatches"></div>
+
+      <h2 id="br-type">Type says who is talking</h2>
+      <p class="sub">The product has three authors. The type tells you which one wrote what you’re reading.</p>
+      <div class="typerows">
+        <div class="typerow"><span class="tr-k">The LLM wrote this</span><p class="tr-s read">Only partly. 240 of the 600 MW has a confirmed grid slot before 2028.</p><span class="tr-n">Newsreader · answers, claims, passages</span></div>
+        <div class="typerow"><span class="tr-k">A model or code computed this</span><p class="tr-s monoface">value 0.729 · 0.91 per S$ · sha-256 b11dd6…a980c3 ✓</p><span class="tr-n">Geist Mono · scores, money, hashes, receipts</span></div>
+        <div class="typerow"><span class="tr-k">The interface is talking</span><p class="tr-s ui">Choose what to buy · 1 of 4 clears the bar</p><span class="tr-n">Geist · labels, buttons, steps</span></div>
+        <div class="typerow"><span class="tr-k">The brand is talking</span><p class="tr-s brandface">Ask a question. Give it a budget.</p><span class="tr-n">Bricolage Grotesque · home, logo, big moments only</span></div>
+      </div>
+
+      <h2 id="br-widgets">Widgets</h2>
+      <p class="sub">The parts the screens are built from, at real size.</p>
+      <div class="widgets" id="widgets"></div>
+
+      <h2 id="br-voice">Voice</h2>
+      <p class="sub">Say what happened, in the words someone in the room would use. Keep the engine’s words for Show work.</p>
+      <div class="tbl-wrap"><table class="tbl voice">
+        <thead><tr><th>Today</th><th>Proposed</th></tr></thead>
+        <tbody>
+          <tr><td><code>SKIP_OVER_CAP</code> · Price exceeds the per-source cap.</td><td><span class="mono">OVER CAP</span> · S$1.40 is over the S$1.00 per-source cap</td></tr>
+          <tr><td><code>SKIP_REWRITE</code> · Already acquired or a rewrite of existing evidence.</td><td><span class="mono">REWRITE</span> · A rewrite of Northstar Wire (96%)</td></tr>
+          <tr><td><code>READ_FREE</code> · Reading free sources only.</td><td>Read free sources · 14 read · 4 paywalled</td></tr>
+          <tr><td><code>2026-10-05T09:24:51.712Z</code></td><td><span class="mono">+0.4 s</span> in Show work; nothing on the surface</td></tr>
+          <tr><td><code>amountMinor 80</code></td><td>S$0.80</td></tr>
+          <tr><td>Fixture · extractive-fixture</td><td>Research · fixture fallback (amber chip, with the reason)</td></tr>
+          <tr><td>Research paused after an error. The last verified answer is preserved; you can ask again.</td><td>Paid, but the delivery failed. Your receipt is kept. Retrying fetches the same paid copy and can’t charge you again.</td></tr>
+          <tr><td>Would buy · with sufficient budget / Would buy with a sufficient budget; S$0 authorizes no purchase.</td><td><span class="mono">WOULD BUY</span> · Would buy with any budget of S$1 or more</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ============ NOTIFY ============ -->
+    <section class="tab" id="tab-notify" role="tabpanel" aria-labelledby="t-notify" hidden>
+      <header class="hero">
+        <p class="eyebrow">Notify · how it tells you</p>
+        <h1>Knowing when it’s done</h1>
+        <p class="lede">Today a run ends silently. Here, progress lives on the tape, results arrive as toasts, and the browser tab carries the state when you’re looking elsewhere. A desktop notification fires once per run, only if you asked for it.</p>
+      </header>
+      <h2 id="no-matrix">Which channel says what</h2>
+      <div class="tbl-wrap"><table class="tbl matrix">
+        <thead><tr><th>Event</th><th>Run tape</th><th>Toast</th><th>Tab title</th><th>Favicon</th><th>Desktop</th></tr></thead>
+        <tbody>
+          <tr><td>Run starts</td><td>step pulses</td><td>–</td><td>Reading sources</td><td>coin flips</td><td>–</td></tr>
+          <tr><td>Source bought</td><td>Buy ✓, Verify ✓</td><td>receipt, 6 s</td><td>Buying S$0.80</td><td>coin flips</td><td>–</td></tr>
+          <tr><td>Injected text ignored</td><td>read step notes it</td><td>warning, 8 s</td><td>–</td><td>–</td><td>–</td></tr>
+          <tr><td>Fallback used</td><td>–</td><td>warning, 8 s; chip turns amber</td><td>–</td><td>–</td><td>–</td></tr>
+          <tr><td>Delivery failed</td><td>Buy turns orange</td><td>error, stays</td><td>! Delivery failed</td><td>orange dot</td><td>if hidden</td></tr>
+          <tr><td>Answer ready</td><td>Done ✓ + total time</td><td>with next actions, stays</td><td>✓ Answer ready</td><td>green dot</td><td>if hidden and opted in</td></tr>
+          <tr><td>Stopped by you</td><td>“Stopped by you”</td><td>info, 6 s</td><td>Stopped</td><td>–</td><td>–</td></tr>
+          <tr><td>Report ready</td><td>–</td><td>with Open and Download, stays</td><td>✓ Report ready</td><td>green dot</td><td>–</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2 id="no-toasts">Toasts</h2>
+      <p class="sub">Fire a few. New ones land in front; older ones tuck behind. Hover the stack to fan it out.</p>
+      <div class="toastlab">
+        <div class="toastlab-btns" id="toastBtns"></div>
+        <div class="toastlab-stage m-scope" id="toastStage"><div class="toastlab-stack" id="toastStack"></div></div>
+      </div>
+
+      <h2 id="no-tab">The browser tab</h2>
+      <div class="m-fit" data-mock='{"view":"tabstates"}'></div>
+
+      <h2 id="no-desktop">Desktop notification</h2>
+      <div class="split">
+        <div class="m-fit" data-mock='{"view":"osnote"}'></div>
+        <div class="prose">
+          <p><b>Ask in context, never on load.</b> The checkbox under the composer (“Tell me when it’s done”) requests permission the first time it’s ticked. If the browser blocks it, the checkbox greys out and says so.</p>
+          <p><b>One per run.</b> Only the final result, only when the tab is hidden. The body is the short answer and the spend, so it’s useful without opening the tab.</p>
+          <p><b>Clicking it</b> focuses the tab on the finished run and clears the favicon dot.</p>
+        </div>
+      </div>
+      <h2 id="no-rules">Rules</h2>
+      <ul class="rules">
+        <li>Toast results, not progress. Progress belongs on the tape.</li>
+        <li>Anything about money shows the amount and the SIMULATED label.</li>
+        <li>Errors stay until they’re resolved. Successes leave after 6 s unless they carry the next action.</li>
+        <li>At most 3 toasts are visible. Older ones tuck behind; hover fans them out.</li>
+        <li>The title and favicon dot reset when the tab gets focus again.</li>
+        <li>Sound is off by default. If turned on, one soft tick when the answer is ready, nothing else.</li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<dialog class="lightbox" id="lightbox" aria-label="Screen preview">
+  <div class="lb-head"><div><span class="mono" id="lbCode"></span> <b id="lbTitle"></b></div><div class="lb-acts"><button class="btn btn-pen" id="lbPlay" type="button">Play into this screen</button><button class="btn" id="lbClose" type="button">Close</button></div></div>
+  <div class="lb-body" id="lbBody"></div>
+</dialog>
+
+<script src="data.js"></script>
+<script src="mock.js"></script>
+<script src="doc.js"></script>
