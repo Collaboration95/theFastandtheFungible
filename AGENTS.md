@@ -1,9 +1,8 @@
 # Agent rules for the October 10 demo sprint
 
 - [prompt.md](prompt.md) is the source of truth for the product, scope,
-  packages, and workflow. It overrides `docs/plans/october-10/*`,
-  `docs/AGENT-DEVELOPMENT.md`, `docs/PRODUCT-ROADMAP-2026.md`,
-  `docs/PRESENTATION-READINESS.md`, and the bodies of issues #59–#78.
+  packages, and workflow. It overrides the bodies of issues #59–#78. The
+  older planning docs it mentions were removed; git history keeps them.
 - The product is Perplexity with a wallet. LLMs on Groq write (answer,
   report), a Cloudflare Clef decision model chooses what to buy, and code pays
   within the per-prompt budget. There is no per-purchase approval modal.
