@@ -30,7 +30,7 @@ export default function Ask({ onAsk, busy = false }: AskProps) {
       <textarea id={`${id}-question`} value={question} onChange={event => setQuestion(event.target.value)} maxLength={2000} rows={2} required disabled={disabled} aria-describedby={`${id}-budget-note`} />
       <fieldset disabled={disabled}><legend>Budget for this question</legend><div className="ra-budget-chips">{([0, 100, 200, 500] as const).map(value => <label className="ra-budget-chip" key={value}><input type="radio" name={`${id}-budget`} value={value} checked={budgetMinor === value} onChange={() => setBudget(value)} /><span>S${value / 100}</span></label>)}</div></fieldset>
       <p id={`${id}-budget-note`} className="ra-muted">Your budget authorizes automatic purchases · S$1.00 cap per source · S$0 reads free sources only.</p>
-      <div className="ra-section-heading"><span className="ra-muted">SIMULATED SGD · no real funds</span><button className="ra-button" type="submit" disabled={disabled || !question.trim()}>{disabled ? 'Researching…' : 'Ask →'}</button></div>
+      <div className="ra-section-heading"><span className="ra-muted">No real funds · simulated SGD or XRPL Testnet</span><button className="ra-button" type="submit" disabled={disabled || !question.trim()}>{disabled ? 'Researching…' : 'Ask →'}</button></div>
       {error && <p className="ra-error" role="alert">{error}</p>}
     </form>
   </section>

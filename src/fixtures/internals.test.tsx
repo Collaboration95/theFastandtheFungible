@@ -34,7 +34,8 @@ describe('visible internals', () => {
     const html = renderToStaticMarkup(<Budget run={{ ...exampleRun, budgetMinor: 200, spentMinor: 80, reservedMinor: 35 }} />)
     for (const amount of ['S$2.00', 'S$0.80', 'S$0.35', 'S$0.85']) expect(html).toContain(amount)
     expect(html).toContain('SIMULATED SGD · no real funds')
-    const modes = renderToStaticMarkup(<Modes />)
+    const modes = renderToStaticMarkup(<Modes labels={exampleRun.labels} />)
+    expect(renderToStaticMarkup(<Modes labels={{ ...exampleRun.labels, settlement: 'XRPL TESTNET · no real value' }} />)).toContain('XRPL TESTNET · no real value')
     for (const label of ['fixture', 'Research:', 'Decision:', 'Publisher:', 'local', 'Synthetic corpus', 'SIMULATED SGD']) expect(modes).toContain(label)
   })
 

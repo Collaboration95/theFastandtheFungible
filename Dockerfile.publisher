@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --include=dev --ignore-scripts && node node_modules/esbuild/install.js \
     && node --input-type=module -e "import { DatabaseSync } from 'node:sqlite'; new DatabaseSync(':memory:').close()"
 COPY publisher/ ./publisher/
-COPY shared/contracts/ ./shared/contracts/
+COPY shared/ ./shared/
 COPY data/corpus/ ./data/corpus/
 # Keep boot wiring in this package's Dockerfile; routes do not yet read a journal env var.
 RUN <<'SHELL'

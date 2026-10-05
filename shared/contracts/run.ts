@@ -3,10 +3,10 @@ import { AnswerSchema, ImpactSchema } from './answer.js'
 import { ContentEnvelopeSchema, PublicCandidateSchema } from './corpus.js'
 import { DecisionRoundSchema } from './decision.js'
 import { PurchaseIntentSchema, GrantSchema } from './ledger.js'
-import { ReceiptSchema } from './publisher.js'
+import { ReceiptSchema, SettlementLabelSchema } from './publisher.js'
 export const AskSchema = z.object({ question: z.string().trim().min(1).max(2000), budgetMinor: z.union([z.literal(0), z.literal(100), z.literal(200), z.literal(500)]) })
 export const TraceEventSchema = z.object({ id: z.number().int(), runId: z.string(), type: z.string(), label: z.string(), at: z.string(), data: z.record(z.string(), z.unknown()).optional() })
-export const ModeLabelsSchema = z.object({ research: z.string(), decision: z.string(), publisher: z.string(), settlement: z.literal('SIMULATED SGD · no real funds') })
+export const ModeLabelsSchema = z.object({ research: z.string(), decision: z.string(), publisher: z.string(), settlement: SettlementLabelSchema })
 export const RunPhaseSchema = z.enum(['SEARCH', 'READ_FREE', 'ANSWER', 'DECIDE', 'BUY', 'READ_PAID', 'DONE', 'FAILED', 'STOPPED'])
 export const RunCheckpointSchema = z.object({ phase: RunPhaseSchema.optional(), round: z.number().int().nonnegative().optional(), answerVersion: z.number().int().positive().optional(), intentId: z.string().optional(), answeredIntentId: z.string().optional(), nextAction: z.enum(['retry-delivery', 'ask']).optional() }).catchall(z.unknown())
 export const RunSnapshotSchema = z.object({

@@ -47,7 +47,7 @@ export default function Wire({ run }: { run: RunSnapshot }) {
   return <section className="ra-panel ra-wire" aria-label="HTTP exchange">
     <h2>Wire · HTTP exchange</h2>
     <p className="ra-wire-story">Protocol: 402 → quote → settle (simulated) → delivery → digest check</p>
-    <p>Settlement: SIMULATED SGD · no real funds</p>
+    <p>Settlement: {run.labels.settlement}</p>
     {exchanges.length === 0 ? <p>No HTTP exchange recorded yet.</p> : <ol>
       {exchanges.map(({ event, fields }) => <li key={`${event.runId}:${event.id}`}>
         <strong>{event.type === 'GRANT' ? 'Verified delivery' : 'HTTP'}</strong> <time dateTime={event.at}>{event.at.slice(11, 19)}</time>

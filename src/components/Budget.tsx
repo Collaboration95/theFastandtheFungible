@@ -15,6 +15,6 @@ export default function Budget({ run }: { run: RunSnapshot }) {
     {run.budgetMinor > 0 && <meter min={0} max={run.budgetMinor} value={run.spentMinor + run.reservedMinor} aria-label="Spent plus reserved budget" />}
     {run.budgetMinor === 0 && <p>Free-only run · no purchases authorized.</p>}
     {remaining < 0 && <p role="alert">Budget invariant violated: spent plus reserved exceeds authorization.</p>}
-    <p>SIMULATED SGD · no real funds</p>
+    <p>{run.labels.settlement}</p>
   </section>
 }

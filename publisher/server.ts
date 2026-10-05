@@ -14,7 +14,7 @@ export async function startPublisher() {
   try { await once(server, 'listening') } catch (error) { app.locals.journal.close(); throw error }
   const address = server.address()
   console.log(`Publisher listening on port ${typeof address === 'object' ? address?.port : port} · SIMULATED SGD · no real funds`)
-  server.once('close', () => app.locals.journal.close())
+  server.once('close', () => { app.locals.journal.close(); void (app.locals.ledger as { close?: () => Promise<void> } | undefined)?.close?.() })
   const shutdown = () => server.close()
   process.once('SIGTERM', shutdown)
   process.once('SIGINT', shutdown)

@@ -2,7 +2,8 @@ import express, { type ErrorRequestHandler, type Response } from 'express'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { z } from 'zod'
-import { AskSchema, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
+import { AskSchema, SIMULATED_LABEL, XRPL_LABEL, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
+import { XrplPayer } from './xrpl.js'
 import { Store } from './store.js'
 import { PublisherClient } from './publisher-client.js'
 import { PurchaseManager } from './purchases.js'
@@ -12,7 +13,7 @@ import { type DecisionProvider } from './agents/decision.js'
 import { buildReport, renderReport } from './agents/report.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 
-export type ApiOptions = { dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider }
+export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider }
 export async function createApiApp(options: ApiOptions = {}) {
   const app = express()
   app.disable('x-powered-by')
@@ -27,7 +28,9 @@ export async function createApiApp(options: ApiOptions = {}) {
   }
   const store = new Store(options.dbPath ?? process.env.APP_DB ?? 'data/app.db', publish)
   const client = new PublisherClient({ baseUrl: options.publisherUrl ?? process.env.PUBLISHER_URL, secret: options.secret ?? process.env.PUBLISHER_SECRET })
-  const purchases = new PurchaseManager(store, client)
+  // XRPL Testnet settlement needs both the rail flag and a payer seed; otherwise simulated, labelled.
+  const payer = options.payer ?? (process.env.SETTLEMENT_RAIL === 'xrpl-testnet' && process.env.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
+  const purchases = new PurchaseManager(store, client, payer)
   let provider = options.provider
   if (!provider && process.env.DECISION_PROVIDER === 'cloudflare') {
     const clef = new ClefDecisionProvider({ allowLive: true })
@@ -40,7 +43,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const reportJobs = new Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>()
   const timers = new Set<ReturnType<typeof setInterval>>()
   const publisherUrl = options.publisherUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'
-  const labels: ModeLabels = { research: isLlmConfigured() ? `${llmLabel()} · ${researchModel()} (pending)` : 'fixture · extractive-fixture', decision: provider?.name === 'cloudflare' ? `Cloudflare · ${provider.model} (pending)` : 'fixture · metadata-fixture', publisher: /\.run\.app(?:\/|$)/.test(publisherUrl) ? 'Cloud Run' : 'local', settlement: 'SIMULATED SGD · no real funds' }
+  const labels: ModeLabels = { research: isLlmConfigured() ? `${llmLabel()} · ${researchModel()} (pending)` : 'fixture · extractive-fixture', decision: provider?.name === 'cloudflare' ? `Cloudflare · ${provider.model} (pending)` : 'fixture · metadata-fixture', publisher: /\.run\.app(?:\/|$)/.test(publisherUrl) ? 'Cloud Run' : 'local', settlement: payer ? XRPL_LABEL : SIMULATED_LABEL }
   const progress = (runId: string, label: string) => {
     const timer = setInterval(() => {
       try { store.appendEvent(runId, { type: 'PROGRESS', label }) } catch { /* Shutdown or missing run. */ }
@@ -135,5 +138,5 @@ export async function createApiApp(options: ApiOptions = {}) {
   await purchases.reconcile()
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
   for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => loop.start(run.runId))
-  return { app, store, loop, close: () => { timers.forEach(clearInterval); for (const set of streams.values()) for (const res of set) res.end(); store.close() } }
+  return { app, store, loop, close: () => { timers.forEach(clearInterval); for (const set of streams.values()) for (const res of set) res.end(); store.close(); void (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.() } }
 }
