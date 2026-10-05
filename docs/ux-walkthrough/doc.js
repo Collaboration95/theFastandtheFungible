@@ -574,6 +574,17 @@
     requestAnimationFrame(() => el.scrollIntoView({ block: 'start' }))
   }
 
+  // In-page links go through location.hash. Hosts like htmlpreview add a <base> pointing at
+  // raw GitHub, which would otherwise turn "#x" into a link to the page's source.
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]')
+    const h = a && a.getAttribute('href')
+    if (!h || h === '#') return
+    e.preventDefault()
+    if (e.metaKey || e.ctrlKey) return void window.open(location.href.split('#')[0] + h, '_blank', 'noopener')
+    if (location.hash === h) route(); else location.hash = h
+  })
+
   buildFlow()
   buildMoments()
   buildBrand()
