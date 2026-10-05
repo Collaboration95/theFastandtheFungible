@@ -11,7 +11,9 @@ const localPublisher = `http://127.0.0.1:${ports.pub}`
 const publisherUrl = !process.env.PUBLISHER_URL || /^https?:\/\/(?:localhost|127\.0\.0\.1):8790\/?$/.test(process.env.PUBLISHER_URL) ? localPublisher : process.env.PUBLISHER_URL
 const env = { ...process.env, HOST: '127.0.0.1', PORT: String(ports.api), PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: publisherUrl, PUBLISHER_SECRET: process.env.PUBLISHER_SECRET || 'local-simulated-demo-secret', LLM_PROVIDER: live ? 'deepseek' : 'fixture', DECISION_PROVIDER: live ? 'cloudflare' : 'fixture',
   // Live pays on the XRPL Testnet when a payer seed exists; SETTLEMENT_RAIL overrides (e.g. XRPL with fixture LLMs).
-  SETTLEMENT_RAIL: process.env.SETTLEMENT_RAIL || (live && process.env.XRPL_PAYER_SEED ? 'xrpl-testnet' : 'simulated') }
+  SETTLEMENT_RAIL: process.env.SETTLEMENT_RAIL || (live && process.env.XRPL_PAYER_SEED ? 'xrpl-testnet' : 'simulated'),
+  // Langfuse Cloud traces for live runs only (fixture demos and browser tests stay local).
+  LANGFUSE_ENABLED: process.env.LANGFUSE_ENABLED || (live ? '1' : '0'), LANGFUSE_TRACING_ENVIRONMENT: process.env.LANGFUSE_TRACING_ENVIRONMENT || (live ? 'live' : 'fixture') }
 const children = []
 let stopping = false
 function shutdown(code = 0) { if (stopping) return; stopping = true; children.forEach(c => c.kill('SIGTERM')); setTimeout(() => { children.forEach(c => c.kill('SIGKILL')); process.exit(code) }, 1500).unref() }

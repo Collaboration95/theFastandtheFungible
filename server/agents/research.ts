@@ -1,3 +1,4 @@
+import { startActiveObservation } from '@langfuse/tracing'
 import { AnswerSchema, FacetSchema, type Answer, type Claim, type ContentEnvelope, type Facet, type Impact, type PublicCandidate } from '../../shared/contracts/index.js'
 import type { PublisherClient } from '../publisher-client.js'
 import { resolveCitation, validateAnswer } from './citations.js'
@@ -14,7 +15,16 @@ export function rankCandidates(candidates: PublicCandidate[], question: string):
   const score = (c: PublicCandidate) => [...words(`${c.title} ${c.preview}`)].filter(w => query.has(w)).length + c.facets.filter(f => facetWords[f].test(question)).length * 2
   return [...candidates].sort((a, b) => score(b) - score(a))
 }
-export async function retrieve(client: PublisherClient, question: string): Promise<{ candidates: PublicCandidate[]; contents: ContentEnvelope[] }> {
+/** Traced as a retriever: which candidates were found and which free sources were read. */
+export function retrieve(client: PublisherClient, question: string): Promise<{ candidates: PublicCandidate[]; contents: ContentEnvelope[] }> {
+  return startActiveObservation('retrieve-sources', async observation => {
+    observation.update({ input: { question } })
+    const result = await retrieveSources(client, question)
+    observation.update({ output: { candidates: result.candidates.map(c => ({ resourceId: c.resourceId, profile: c.profileId, tier: c.tier, priceMinor: c.price.amountMinor })), readFree: result.contents.map(c => c.resourceId) } })
+    return result
+  }, { asType: 'retriever' })
+}
+async function retrieveSources(client: PublisherClient, question: string): Promise<{ candidates: PublicCandidate[]; contents: ContentEnvelope[] }> {
   const profiles = await client.profiles()
   const results = await Promise.all(profiles.map(profile => client.search(profile.id, question)))
   const unique = new Map<string, PublicCandidate>()
@@ -88,7 +98,16 @@ Write a concise 4–8 claims when evidence permits; prioritise new material evid
 
 /** Caller supplies only FREE/verified-grant contents and stores returned versions immutably.
  * onToken emits a fixed progress marker, never unvalidated model text. */
-export async function writeAnswer(input: { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; onToken?: (delta: string) => void }): Promise<{ answer: Answer; impact?: Impact }> {
+/** Traced as a chain: the generation (if any), citation validation and the impact class. */
+export function writeAnswer(input: { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; onToken?: (delta: string) => void }): Promise<{ answer: Answer; impact?: Impact }> {
+  return startActiveObservation('write-answer', async observation => {
+    observation.update({ input: { question: input.question, version: input.version, evidence: input.contents.map(c => c.resourceId) } })
+    const result = await composeAnswer(input)
+    observation.update({ output: { provider: result.answer.provider, model: result.answer.model, conclusion: result.answer.conclusion, validClaims: result.answer.claims.length, openGaps: result.answer.openGaps.map(g => g.facet), impact: result.impact?.classification } })
+    return result
+  }, { asType: 'chain' })
+}
+async function composeAnswer(input: { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; onToken?: (delta: string) => void }): Promise<{ answer: Answer; impact?: Impact }> {
   if (!Number.isInteger(input.version) || input.version < 1) throw new Error('Answer version must be positive')
   const contents = usableContents(input.contents)
   let answer = fixture(contents, input.candidates, input.version, input.previous)
@@ -97,7 +116,7 @@ export async function writeAnswer(input: { question: string; contents: ContentEn
       const result = await streamJson(ANSWER_PROMPT, { question: input.question, evidence: contents.map(c => {
         const metadata = input.candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
         return { resourceId: c.resourceId, version: c.version, spans: c.spans, facets: metadata?.facets ?? [], authority: metadata?.authority ?? 0 }
-      }), previousOpenGaps: input.previous?.openGaps ?? [], openGaps: answer.openGaps }, () => input.onToken?.('Generating cited answer…'))
+      }), previousOpenGaps: input.previous?.openGaps ?? [], openGaps: answer.openGaps }, () => input.onToken?.('Generating cited answer…'), 'generate-answer')
       const parsed = AnswerSchema.parse({ ...(result as object), version: input.version, provider: llmProvider(), model: researchModel() })
       const validated = validateAnswer(parsed, contents)
       if (validated.claims.length) answer = { ...validated, openGaps: gaps(contents, input.candidates) }

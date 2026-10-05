@@ -132,6 +132,17 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
   } finally { await ledger?.close() }
 }
 
+if (process.env.LANGFUSE_PUBLIC_KEY || process.env.LANGFUSE_SECRET_KEY) {
+  console.log('Langfuse Cloud (traces, used by make live)')
+  const base = (process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com').replace(/\/$/, '')
+  try {
+    const auth = Buffer.from(`${process.env.LANGFUSE_PUBLIC_KEY}:${process.env.LANGFUSE_SECRET_KEY}`).toString('base64')
+    const res = await fetch(`${base}/api/public/projects`, { headers: { Authorization: `Basic ${auth}` }, signal: AbortSignal.timeout(5000) })
+    if (!res.ok) fail(`keys rejected by ${base} (HTTP ${res.status}); check the region in LANGFUSE_BASE_URL`)
+    else ok(`keys accepted · project ${(await res.json()).data?.[0]?.name ?? '?'} · ${base}`)
+  } catch { fail(`${base} unreachable`) }
+}
+
 if (!deep) console.log('\n(add --deep to spend one DeepSeek + one Clef call and check latency)')
 console.log(failed ? '\nDoctor: problems found.' : '\nDoctor: all good.')
 process.exit(failed ? 1 : 0)

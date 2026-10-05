@@ -1,3 +1,4 @@
+import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema } from '../../shared/contracts/index.js'
 import type { CandidateJudgment, PublicCandidate } from '../../shared/contracts/index.js'
@@ -87,14 +88,25 @@ export class ClefDecisionProvider implements DecisionProvider {
     })
     return this.account
   }
-  private async judge(state: unknown, questions: unknown, validate: (payload: unknown) => unknown): Promise<unknown> {
+  /** Each Clef call is a Langfuse generation: public state in, calibrated answers out. */
+  private judge(name: string, state: unknown, questions: unknown, validate: (payload: unknown) => unknown, metadata?: Record<string, unknown>): Promise<unknown> {
+    return startActiveObservation(name, async generation => {
+      generation.update({ model: this.model, input: { state, questions }, metadata })
+      try {
+        const payload = await this.callModel(state, questions, validate) as { result?: { answers?: unknown; usage?: { input_tokens?: number; output_tokens?: number } } }
+        generation.update({ output: payload.result?.answers, usageDetails: { input: payload.result?.usage?.input_tokens ?? 0, output: payload.result?.usage?.output_tokens ?? 0 } })
+        return payload
+      } catch (error) { generation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'Clef failed' }); throw error }
+    }, { asType: 'generation' })
+  }
+  private async callModel(state: unknown, questions: unknown, validate: (payload: unknown) => unknown): Promise<unknown> {
     const account = await this.resolveAccount()
     return this.request(`/accounts/${encodeURIComponent(account)}/ai/run/${this.model.split('/').map(encodeURIComponent).join('/')}`, { model: this.model.endsWith('/clef') ? 'clef' : 'clef-flash', state, questions }, validate)
   }
   async judgeRound(input: Parameters<DecisionProvider['judgeRound']>[0]) {
-    return parseClefRound(await this.judge({ question: input.question, conclusion: input.conclusion, gap: input.gap }, clefQuestions.round, parseClefRound))
+    return parseClefRound(await this.judge('judge-gap', { question: input.question, conclusion: input.conclusion, gap: input.gap }, clefQuestions.round, parseClefRound))
   }
   async judgeCandidate(input: Parameters<DecisionProvider['judgeCandidate']>[0]) {
-    return parseClefCandidate(await this.judge({ question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: withoutWallet(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate))
+    return parseClefCandidate(await this.judge('judge-candidate', { question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: withoutWallet(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate, { resourceId: input.candidate.resourceId, priceMinor: input.candidate.price.amountMinor }))
   }
 }

@@ -1,3 +1,4 @@
+import { startActiveObservation } from '@langfuse/tracing'
 import { DROPS_PER_MINOR, SIMULATED_LABEL, XRPL_EXPLORER, XRPL_LABEL, type PublicCandidate, type PurchaseIntent, type Settlement } from '../shared/contracts/index.js'
 import type { Store } from './store.js'
 import { PublisherHttpError, type PublisherClient, type WireObserver } from './publisher-client.js'
@@ -31,8 +32,15 @@ export class PurchaseManager {
     const existing = this.store.getIntent(input.intentId)
     if (existing && (existing.runId !== input.runId || existing.profileId !== input.candidate.profileId || existing.resourceId !== input.candidate.resourceId || existing.version !== input.candidate.version || existing.amountMinor !== input.candidate.price.amountMinor)) throw new Error('Intent identity mismatch')
     this.identities.set(input.intentId, identity)
-    try { return await this.once(input.intentId, () => this.buy(input)) }
-    finally { this.identities.delete(input.intentId) }
+    // Traced as a tool: the 402 / quote / XRPL / verify / grant events nest under it.
+    try {
+      return await startActiveObservation('buy-source', async observation => {
+        observation.update({ input: { resourceId: input.candidate.resourceId, publisher: input.candidate.profileId, priceMinor: input.candidate.price.amountMinor, intentId: input.intentId } })
+        const intent = await this.once(input.intentId, () => this.buy(input))
+        observation.update({ output: { status: intent.status, txHash: intent.txHash, receiptId: intent.receiptId, error: intent.error }, ...(intent.status === 'VERIFIED' ? {} : { level: 'WARNING' as const, statusMessage: intent.error ?? intent.status }) })
+        return intent
+      }, { asType: 'tool' })
+    } finally { this.identities.delete(input.intentId) }
   }
   private async buy({ runId, candidate, intentId }: { runId: string; candidate: PublicCandidate; intentId: string }): Promise<PurchaseIntent> {
     let intent = this.store.getIntent(intentId)

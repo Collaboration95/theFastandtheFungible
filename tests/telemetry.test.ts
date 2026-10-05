@@ -1,0 +1,68 @@
+import { afterAll, describe, expect, it, vi } from 'vitest'
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
+import { InMemorySpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
+import { setLangfuseTracerProvider } from '@langfuse/tracing'
+import { maskSecrets, telemetryEnabled, traceEvent, traceRun } from '../server/telemetry.js'
+import { writeAnswer } from '../server/agents/research.js'
+import { exampleCandidate, exampleContent, exampleRun } from '../shared/contracts/examples.js'
+import type { ContentEnvelope, PublicCandidate } from '../shared/contracts/index.js'
+
+// A local tracer stands in for Langfuse Cloud: same spans and attributes, nothing leaves the test.
+const exporter = new InMemorySpanExporter()
+const provider = new NodeTracerProvider({ spanProcessors: [new SimpleSpanProcessor(exporter)] })
+provider.register()
+setLangfuseTracerProvider(provider)
+afterAll(() => provider.shutdown())
+
+const stream = (value: unknown) => {
+  const frames = [`data: ${JSON.stringify({ choices: [{ delta: { content: JSON.stringify(value) } }] })}\n\n`, `data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 120, completion_tokens: 30 } })}\n\n`, 'data: [DONE]\n\n']
+  return new Response(new TextEncoder().encode(frames.join('')))
+}
+
+describe('Langfuse telemetry', () => {
+  it('is off unless explicitly enabled with both keys', () => {
+    expect(telemetryEnabled({ LANGFUSE_PUBLIC_KEY: 'pk', LANGFUSE_SECRET_KEY: 'sk' })).toBe(false)
+    expect(telemetryEnabled({ LANGFUSE_ENABLED: '1', LANGFUSE_PUBLIC_KEY: 'pk' })).toBe(false)
+    expect(telemetryEnabled({ LANGFUSE_ENABLED: '1', LANGFUSE_PUBLIC_KEY: 'pk', LANGFUSE_SECRET_KEY: 'sk' })).toBe(true)
+  })
+
+  it('masks every configured secret and delivery-token-like field', () => {
+    const env = { DEEPSEEK_API_KEY: 'sk-deepseek-secret-123', XRPL_PAYER_SEED: 'sEdTestSeedValue000', LANGFUSE_SECRET_KEY: 'sk-lf-secret-xyz' }
+    const masked = maskSecrets(JSON.stringify({ a: 'Bearer sk-deepseek-secret-123', seed: 'sEdTestSeedValue000', deliveryToken: 'tok-abc', note: 'sk-lf-secret-xyz' }), env)
+    for (const secret of Object.values(env)) expect(masked).not.toContain(secret)
+    expect(masked).not.toContain('tok-abc')
+    expect(masked).toContain('[DEEPSEEK_API_KEY]')
+  })
+
+  it('traces a run as agent → chain → generation with model, tokens and events, and no key', async () => {
+    exporter.reset()
+    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('DEEPSEEK_API_KEY', 'sk-never-in-a-span-42'); vi.stubEnv('DEEPSEEK_BASE_URL', ''); vi.stubEnv('DEEPSEEK_MODEL', '')
+    const candidate: PublicCandidate = { ...exampleCandidate, resourceId: 'free-a', tier: 'FREE' }
+    const content: ContentEnvelope = { ...exampleContent, resourceId: 'free-a', body: 'Grid slots are confirmed for 240 MW.', spans: [{ id: 's1', text: 'Grid slots are confirmed for 240 MW.' }] }
+    vi.stubGlobal('fetch', vi.fn(async () => stream({ conclusion: 'c', claims: [{ id: 'k', text: content.body, stance: 'SUPPORTS', citations: [{ resourceId: 'free-a', version: content.version, spanId: 's1' }] }], openGaps: [] })))
+    await traceRun('research-run', exampleRun, async () => {
+      traceEvent({ id: 1, runId: exampleRun.runId, type: 'SEARCH', label: 'Searching', at: new Date().toISOString() })
+      traceEvent({ id: 2, runId: exampleRun.runId, type: 'PROGRESS', label: 'noise', at: new Date().toISOString() })
+      await writeAnswer({ question: 'q', candidates: [candidate], contents: [content], version: 1 })
+    }, () => ({ done: true }))
+    vi.unstubAllEnvs(); vi.unstubAllGlobals()
+
+    const spans = exporter.getFinishedSpans()
+    const byName = (name: string) => spans.find(s => s.name === name)!
+    const type = (name: string) => byName(name).attributes['langfuse.observation.type']
+    expect(type('research-run')).toBe('agent')
+    expect(type('write-answer')).toBe('chain')
+    expect(type('generate-answer')).toBe('generation')
+    expect(type('phase-search')).toBe('event')
+    expect(spans.some(s => s.name === 'phase-progress')).toBe(false)
+    const generation = byName('generate-answer')
+    expect(generation.attributes['langfuse.observation.model.name']).toBe('deepseek-flash')
+    expect(JSON.parse(String(generation.attributes['langfuse.observation.usage_details']))).toEqual({ input: 120, output: 30 })
+    expect(generation.attributes['langfuse.observation.completion_start_time']).toBeTruthy()
+    // Nesting: generation under write-answer under the run; one trace for the whole run.
+    expect(generation.parentSpanContext?.spanId).toBe(byName('write-answer').spanContext().spanId)
+    expect(byName('write-answer').parentSpanContext?.spanId).toBe(byName('research-run').spanContext().spanId)
+    expect(new Set(spans.map(s => s.spanContext().traceId)).size).toBe(1)
+    expect(JSON.stringify(spans.map(s => s.attributes))).not.toContain('sk-never-in-a-span-42')
+  })
+})
