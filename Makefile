@@ -13,12 +13,12 @@ help: ## list targets
 
 setup: ## install deps and create .env if missing
 	npm ci
-	@test -f .env || (cp .env.example .env && echo "Created .env; add GROQ_API_KEY and CLOUDFLARE_API_TOKEN for live mode")
+	@test -f .env || (cp .env.example .env && echo "Created .env; add DEEPSEEK_API_KEY and CLOUDFLARE_API_TOKEN for live mode")
 
 run: ## fixture demo (offline, no keys)
 	npm run demo
 
-live: ## live demo: Groq writes, Clef decides (runs key preflight first)
+live: ## live demo: DeepSeek writes, Clef decides (runs key preflight first)
 	npm run demo:live
 
 variant: ## fixture demo on a corpus variant: make variant V=open-sufficient|contradiction|unchanged|injection
@@ -40,7 +40,7 @@ verify: ## check + browser tests + build
 doctor: ## node, deps, .env drift, ports, provider keys
 	$(DOCTOR)
 
-keys: ## provider keys only, plus one real Groq + Clef call to show rate limits
+keys: ## provider keys only, plus one real DeepSeek + Clef call (latency, limits)
 	$(DOCTOR) --keys --deep
 
 ports: ## who is listening on the demo ports

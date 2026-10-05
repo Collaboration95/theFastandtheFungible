@@ -49,9 +49,11 @@ probabilities feed a small, explicit policy in code, so every purchase can be
 audited down to a formula. The LLM **cannot** trigger a purchase, which means
 prompt-injected text inside an article cannot spend money.
 
-**Provider split for now:** the LLM work (layers 1 and 3) stays on **Groq**,
-using the existing `server/llm.ts` config. Decisions (layer 2) go to
-**Cloudflare Workers AI**. We will revisit the LLM provider after the demo.
+**Provider split:** the LLM work (layers 1 and 3) runs on **DeepSeek**
+(`deepseek-flash`, platform.deepseek.com) through the OpenAI-compatible
+gateway in `server/agents/llm.ts`; Groq remains selectable with
+`LLM_PROVIDER=groq`. (Decided 5 Oct, #99: the Groq key's 8k tokens/minute cap
+forced fixture fallbacks.) Decisions (layer 2) go to **Cloudflare Workers AI**.
 Clef uses the same request format as TypeSafe's Jev, and OpenAI's Decisions
 API is in limited preview, so keep both behind the same `DecisionProvider`
 interface; neither is built now.
@@ -119,7 +121,7 @@ Never merge a PR that breaks one of these:
    substring of that resource's delivered body. Drop invalid claims; never
    repair them by attaching a different span.
 5. **Everything simulated or substituted is labelled.** The UI always shows the
-   research model (Groq `<model>` or fixture), the decision provider
+   research model (`DeepSeek <model>`, `Groq <model>` or fixture), the decision provider
    (`Cloudflare <model>` or fixture), the publisher location (local or Cloud Run), and the
    settlement label `SIMULATED SGD · no real funds`. A fallback is allowed, but
    it is always visible.
@@ -135,7 +137,6 @@ Do not build these, even though the old docs specify them:
 - AWS AgentCore (VER-04). Removed.
 - Jev (TypeSafe) and OpenAI Decisions API integrations. Build only the
   provider interface (see §1).
-- Moving the LLM off Groq. That gets revisited after the demo.
 - Follow-up questions, chat threads, accounts, and a library of past runs.
 - `claimToken`/`commandId`/`expectedRevision` on every command. Keep
   idempotency on purchase intents only.

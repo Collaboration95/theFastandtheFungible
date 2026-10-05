@@ -9,7 +9,7 @@ const offset = Number(process.env.DEMO_PORT_OFFSET || 0)
 const ports = { web: 5100 + offset, api: 8788 + offset, pub: 8790 + offset }
 const localPublisher = `http://127.0.0.1:${ports.pub}`
 const publisherUrl = !process.env.PUBLISHER_URL || /^https?:\/\/(?:localhost|127\.0\.0\.1):8790\/?$/.test(process.env.PUBLISHER_URL) ? localPublisher : process.env.PUBLISHER_URL
-const env = { ...process.env, HOST: '127.0.0.1', PORT: String(ports.api), PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: publisherUrl, PUBLISHER_SECRET: process.env.PUBLISHER_SECRET || 'local-simulated-demo-secret', LLM_PROVIDER: live ? 'groq' : 'fixture', DECISION_PROVIDER: live ? 'cloudflare' : 'fixture' }
+const env = { ...process.env, HOST: '127.0.0.1', PORT: String(ports.api), PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: publisherUrl, PUBLISHER_SECRET: process.env.PUBLISHER_SECRET || 'local-simulated-demo-secret', LLM_PROVIDER: live ? 'deepseek' : 'fixture', DECISION_PROVIDER: live ? 'cloudflare' : 'fixture' }
 const children = []
 let stopping = false
 function shutdown(code = 0) { if (stopping) return; stopping = true; children.forEach(c => c.kill('SIGTERM')); setTimeout(() => { children.forEach(c => c.kill('SIGKILL')); process.exit(code) }, 1500).unref() }

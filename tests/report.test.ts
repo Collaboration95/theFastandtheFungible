@@ -6,10 +6,10 @@ import { exampleRun } from '../shared/contracts/examples.js'
 import { ReportSchema } from '../shared/contracts/report.js'
 import type { RunSnapshot } from '../shared/contracts/index.js'
 
-vi.mock('../server/agents/llm.js', () => ({ isGroqConfigured: vi.fn(() => false), researchModel: () => 'test-groq', streamJson: vi.fn() }))
+vi.mock('../server/agents/llm.js', () => ({ isLlmConfigured: vi.fn(() => false), llmProvider: () => 'groq', llmLabel: () => 'Groq', researchModel: () => 'test-groq', streamJson: vi.fn() }))
 vi.mock('@playwright/test', () => ({ chromium: { launch: vi.fn() } }))
 import { chromium } from '@playwright/test'
-import { isGroqConfigured, streamJson } from '../server/agents/llm.js'
+import { isLlmConfigured, streamJson } from '../server/agents/llm.js'
 import { buildReport, renderReport } from '../server/agents/report.js'
 import { reportHtml } from '../server/report-template.js'
 
@@ -21,7 +21,7 @@ const paidRun = (): RunSnapshot => {
   snapshot.grants.push({ runId: snapshot.runId, resourceId: snapshot.contents[0].resourceId, version: 'v1', intentId: 'paid-intent', contentDigest: 'verified-digest', grantedAt: '2026-10-04' })
   return snapshot
 }
-beforeEach(async () => { vi.clearAllMocks(); vi.mocked(isGroqConfigured).mockReturnValue(false); directory = await mkdtemp(join(tmpdir(), 'report-test-')) })
+beforeEach(async () => { vi.clearAllMocks(); vi.mocked(isLlmConfigured).mockReturnValue(false); directory = await mkdtemp(join(tmpdir(), 'report-test-')) })
 afterEach(async () => { await rm(directory, { recursive: true, force: true }) })
 
 describe('report evidence and drafting', () => {
@@ -39,7 +39,7 @@ describe('report evidence and drafting', () => {
     if (mismatch === 'run') snapshot.grants[0].runId = 'other-run'
     if (mismatch === 'version') snapshot.grants[0].version = 'v2'
     if (mismatch === 'resource') snapshot.grants[0].resourceId = 'other-source'
-    vi.mocked(isGroqConfigured).mockReturnValue(true)
+    vi.mocked(isLlmConfigured).mockReturnValue(true)
     await expect(buildReport(snapshot)).rejects.toThrow('matching delivery grant')
     expect(streamJson).not.toHaveBeenCalled()
   })
@@ -52,7 +52,7 @@ describe('report evidence and drafting', () => {
     await expect(buildReport(bad)).rejects.toThrow('exact passages')
   })
   it('drops invalid claims without repairing citations and ignores LLM ledger additions', async () => {
-    vi.mocked(isGroqConfigured).mockReturnValue(true)
+    vi.mocked(isLlmConfigured).mockReturnValue(true)
     const good = structuredClone(exampleRun.answers[0].claims[0])
     const bad = { ...good, id: 'bad', citations: [{ ...good.citations[0], spanId: 'invented' }] }
     vi.mocked(streamJson).mockResolvedValue({ findings: [good, bad], decisions: ['fake'], receipts: ['fake'], sources: ['fake'] })
@@ -78,7 +78,7 @@ describe('report evidence and drafting', () => {
     expect(html).toContain('S$0.80')
   })
   it('labels stub/provider failure and all-invalid drafts as fixture', async () => {
-    vi.mocked(isGroqConfigured).mockReturnValue(true)
+    vi.mocked(isLlmConfigured).mockReturnValue(true)
     vi.mocked(streamJson).mockRejectedValueOnce(new Error('TODO(W1-RESEARCH)'))
     expect((await buildReport(run())).fallbackReason).toContain('failed')
     vi.mocked(streamJson).mockResolvedValue({ findings: [{ ...exampleRun.answers[0].claims[0], citations: [{ resourceId: 'missing', version: 'v1', spanId: 'x' }] }] })

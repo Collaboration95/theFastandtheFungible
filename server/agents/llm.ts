@@ -1,10 +1,24 @@
-export const researchModel = () => process.env.LLM_MODEL || 'llama-3.3-70b-versatile'
-export const isGroqConfigured = () => process.env.LLM_PROVIDER === 'groq' && Boolean(process.env.GROQ_API_KEY)
+/**
+ * OpenAI-compatible chat providers. LLM_PROVIDER picks one. Each reads its own key, base URL and
+ * model override, so a key is never sent to another provider's endpoint.
+ * DeepSeek runs with thinking disabled: reasoning tokens roughly double latency for this JSON task.
+ */
+const providers = {
+  deepseek: { label: 'DeepSeek', base: 'https://api.deepseek.com', baseEnv: 'DEEPSEEK_BASE_URL', key: 'DEEPSEEK_API_KEY', modelEnv: 'DEEPSEEK_MODEL', model: 'deepseek-flash', extra: { thinking: { type: 'disabled' } } },
+  groq: { label: 'Groq', base: 'https://api.groq.com/openai/v1', baseEnv: 'LLM_BASE_URL', key: 'GROQ_API_KEY', modelEnv: 'LLM_MODEL', model: 'llama-3.3-70b-versatile', extra: {} },
+} as const
+export type LlmProvider = keyof typeof providers
+const current = () => providers[process.env.LLM_PROVIDER as LlmProvider] as (typeof providers)[LlmProvider] | undefined
+export const llmProvider = (): LlmProvider | undefined => current() ? process.env.LLM_PROVIDER as LlmProvider : undefined
+export const llmLabel = () => current()?.label ?? 'fixture'
+export const researchModel = () => { const p = current() ?? providers.deepseek; return process.env[p.modelEnv] || p.model }
+export const isLlmConfigured = () => Boolean(current() && process.env[current()!.key])
 
 /** Raw JSON deltas are progress only. Consumers must validate before displaying facts. */
 async function streamJsonAttempt(system: string, input: unknown, onToken?: (delta: string) => void): Promise<unknown> {
-  if (!isGroqConfigured()) throw new Error('Groq is not configured')
-  const base = process.env.LLM_BASE_URL || 'https://api.groq.com/openai/v1/chat/completions'
+  const provider = current()
+  if (!provider || !isLlmConfigured()) throw new Error('LLM is not configured')
+  const base = process.env[provider.baseEnv] || provider.base
   const endpoint = base.endsWith('/chat/completions') ? base : `${base.replace(/\/$/, '')}/chat/completions`
   const controller = new AbortController()
   const configuredTimeout = Number(process.env.LLM_SYNTHESIS_TIMEOUT_MS ?? process.env.LLM_TIMEOUT_MS ?? 45000)
@@ -13,8 +27,8 @@ async function streamJsonAttempt(system: string, input: unknown, onToken?: (delt
   try {
     const response = await fetch(endpoint, {
       method: 'POST', signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
-      body: JSON.stringify({ model: researchModel(), temperature: 0.2, max_tokens: 3000, stream: true,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env[provider.key]}` },
+      body: JSON.stringify({ model: researchModel(), temperature: 0.2, max_tokens: 3000, stream: true, ...provider.extra,
         response_format: { type: 'json_object' }, messages: [
           { role: 'system', content: system }, { role: 'user', content: JSON.stringify(input, (key, value) => {
             // Report envelopes duplicate long bodies already represented by exact spans.
@@ -27,10 +41,10 @@ async function streamJsonAttempt(system: string, input: unknown, onToken?: (delt
       const retryAfter = response.headers.get('retry-after')
       const seconds = Number(retryAfter)
       const retryMs = retryAfter && !Number.isFinite(seconds) ? Date.parse(retryAfter) - Date.now() : seconds * 1000
-      throw new GroqHttpError(response.status, Math.max(60000, Number.isFinite(retryMs) ? retryMs : 60000))
+      throw new LlmHttpError(response.status, Math.max(60000, Number.isFinite(retryMs) ? retryMs : 60000))
     }
     reader = response.body?.getReader()
-    if (!reader) throw new Error('Groq returned no stream')
+    if (!reader) throw new Error('LLM returned no stream')
     const decoder = new TextDecoder()
     let pending = '', text = '', finished = false
     const consume = (line: string) => {
@@ -39,11 +53,11 @@ async function streamJsonAttempt(system: string, input: unknown, onToken?: (delt
       if (!data) return
       if (data === '[DONE]') { finished = true; return }
       const frame = JSON.parse(data) as { error?: unknown; choices?: { delta?: { content?: string }; finish_reason?: string }[] }
-      if (frame.error) throw new Error('Groq stream failed')
-      if (frame.choices?.[0]?.finish_reason === 'length') throw new Error('Groq JSON truncated')
+      if (frame.error) throw new Error('LLM stream failed')
+      if (frame.choices?.[0]?.finish_reason === 'length') throw new Error('LLM JSON truncated')
       const delta = frame.choices?.[0]?.delta?.content
       if (typeof delta === 'string') { text += delta; onToken?.(delta) }
-      if (text.length > 1_000_000) throw new Error('Groq JSON exceeds limit')
+      if (text.length > 1_000_000) throw new Error('LLM JSON exceeds limit')
     }
     while (!finished) {
       const { value, done } = await reader.read()
@@ -60,21 +74,21 @@ async function streamJsonAttempt(system: string, input: unknown, onToken?: (delt
   }
 }
 
-class GroqHttpError extends Error {
-  constructor(readonly status: number, readonly retryMs: number) { super(`Groq returned ${status}`) }
+class LlmHttpError extends Error {
+  constructor(readonly status: number, readonly retryMs: number) { super(`LLM returned ${status}`) }
 }
 
 /** Retry once; rate limits wait before retrying. Never expose response bodies. */
 export async function streamJson(system: string, input: unknown, onToken?: (delta: string) => void): Promise<unknown> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try { return await streamJsonAttempt(system, input, onToken) } catch (error) {
-      if (attempt === 1 || !isGroqConfigured()) throw error
-      if (error instanceof GroqHttpError && error.status === 429) {
+      if (attempt === 1 || !isLlmConfigured()) throw error
+      if (error instanceof LlmHttpError && error.status === 429) {
         // A long account cooldown is a labelled fallback, never an early retry.
         if (error.retryMs > 60000) throw error
         await new Promise(resolve => setTimeout(resolve, error.retryMs))
       }
     }
   }
-  throw new Error('Groq unavailable')
+  throw new Error('LLM unavailable')
 }

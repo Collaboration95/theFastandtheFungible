@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ClaimSchema, ImpactSchema } from './answer.js'
+import { ClaimSchema, ImpactSchema, LlmProviderSchema } from './answer.js'
 import { DecisionRoundSchema } from './decision.js'
 import { ReceiptSchema } from './publisher.js'
 import { PublicCandidateSchema, ContentEnvelopeSchema } from './corpus.js'
@@ -13,7 +13,7 @@ export const ReportSchema = z.object({
   purchasesChanged: z.string(), impact: ImpactSchema.optional(),
   openQuestions: z.array(z.string()), method: z.string(), disclaimer: z.string(),
   decisions: z.array(DecisionRoundSchema), receipts: z.array(ReceiptSchema),
-  sources: z.array(ContentEnvelopeSchema), provider: z.enum(['groq', 'fixture']), model: z.string(),
+  sources: z.array(ContentEnvelopeSchema), provider: LlmProviderSchema, model: z.string(),
   // Additive fields preserve the W0 report shape. Rendering requires access provenance.
   fallbackReason: z.string().optional(),
   firstAnswer: z.string().optional(), finalAnswer: z.string().optional(),

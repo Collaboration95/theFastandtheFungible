@@ -1,4 +1,4 @@
-import type { Claim, Report } from '../shared/contracts/index.js'
+import { providerLabels, type Claim, type Report } from '../shared/contracts/index.js'
 import { resolveCitation } from './agents/citations.js'
 
 const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
@@ -23,7 +23,7 @@ h1,h2,h3,th,.label { font-family: Arial, sans-serif; } h1 { font-size: 30px; lin
 </style></head><body><main>
 <p class="print-note">Print this HTML page or save it as PDF with your browser. The appendix starts on a new printed page.</p>
 <h1>${escape(report.title)}</h1><p>${escape(report.question)}</p>
-<p class="label">${escape(report.disclaimer)}<br>Report: ${escape(report.provider)} · ${escape(report.model)}${report.fallbackReason ? `<br>Fixture fallback: ${escape(report.fallbackReason)}` : ''}<br>Research: ${escape(report.labels?.research ?? 'unspecified')} · Decision: ${escape(report.labels?.decision ?? 'unspecified')} · Publisher: ${escape(report.labels?.publisher ?? 'unspecified')}<br>SIMULATED SGD · no real funds</p>
+<p class="label">${escape(report.disclaimer)}<br>Report: ${escape(providerLabels[report.provider])} · ${escape(report.model)}${report.fallbackReason ? `<br>Fixture fallback: ${escape(report.fallbackReason)}` : ''}<br>Research: ${escape(report.labels?.research ?? 'unspecified')} · Decision: ${escape(report.labels?.decision ?? 'unspecified')} · Publisher: ${escape(report.labels?.publisher ?? 'unspecified')}<br>SIMULATED SGD · no real funds</p>
 <p>Budget ${money(report.budgetMinor)} · spent ${money(report.spentMinor)}</p>
 <h2>Executive answer</h2><p>${escape(report.executiveAnswer)}</p>
 <h2>Findings</h2><ol>${claims(report.findings)}</ol>
