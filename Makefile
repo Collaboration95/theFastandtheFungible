@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs
+.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -85,3 +85,6 @@ docker-down: ## stop the Docker demo (ledgers and reports stay in volumes; add V
 
 docker-logs: ## follow the Docker demo logs
 	$(DC) logs -f --tail=100
+
+corpus: ## generate the writer corpus with DeepSeek (resumable; ARGS="--only alphaleak" or "--dry-run")
+	node --import tsx scripts/generate-corpus.mjs $(ARGS)
