@@ -15,6 +15,9 @@
 - Embeddings (live, 3 Workers AI calls) → [#180](https://github.com/Collaboration95/theFastandtheFungible/pull/180) → closes #123; golden ranking passes keyword + hybrid.
 - WP-P2 proofs + challenge/refund + wallets + gate suite → [#178](https://github.com/Collaboration95/theFastandtheFungible/pull/178) → closes #131–#134 (primary NO BLOCKERS; second pass P2 fixed: refund must come from the payee wallet).
 - `make wallets CREATE=1`: 7 new Testnet publisher wallets funded (7 faucet calls); `make doctor` all good.
+- WP-A3 loop integration + Langfuse spans → [#181](https://github.com/Collaboration95/theFastandtheFungible/pull/181) → closes #142, #143 (primary NO BLOCKERS; second pass 3×P2 fixed: paid citations open the blog page, an unchallengeable failed proof still costs trust, trust updates survive a crash once). It found and fixed the top-normalised relevance bug: UC3 bought The Fab Floor first because every writer's best hit claimed 1.0.
+- WP-UI clarify chips, action modal, writer/trust chips, proof badges, refund timeline, Writers tab → [#182](https://github.com/Collaboration95/theFastandtheFungible/pull/182) → closes #150–#153 (NO BLOCKERS).
+- Search tuning study (orchestrator) → [#183](https://github.com/Collaboration95/theFastandtheFungible/pull/183): MRR 0.978 → 0.997, cross-writer relevance AUC 0.478 → 0.984; UC1 golden post retitled (#4–#7 → #1); embeddings cache now keys on the embedded text. Details: `eval/README.md`.
 
 ## Pivot (6 Oct)
 - Direction changed: see [FINAL-PUSH.md](FINAL-PUSH.md). The v1 live demo was real (DeepSeek, Clef, XRPL Testnet) but looked static because every answer came from the 19-doc Vertex corpus and publisher search ignored the query.
