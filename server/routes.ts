@@ -9,6 +9,7 @@ import { startActiveObservation } from '@langfuse/tracing'
 import { Store } from './store.js'
 import { PublisherClient } from './publisher-client.js'
 import { PurchaseManager } from './purchases.js'
+import { Reputation } from './reputation.js'
 import { RunLoop } from './agents/loop.js'
 import { ClefDecisionProvider } from './agents/clef.js'
 import { type DecisionProvider } from './agents/decision.js'
@@ -42,7 +43,8 @@ export async function createApiApp(options: ApiOptions = {}) {
     try { await clef.resolveAccount() } catch { /* A fixture decision remains available. */ }
     provider = clef
   }
-  const loop = new RunLoop(store, client, purchases, undefined, { provider })
+  const reputation = new Reputation(store)
+  const loop = new RunLoop(store, client, purchases, undefined, { provider, reputation })
   const reportDir = resolve(options.reportDir ?? process.env.REPORT_DIR ?? 'data/reports')
   const reportJobs = new Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>()
   const timers = new Set<ReturnType<typeof setInterval>>()
@@ -94,6 +96,9 @@ export async function createApiApp(options: ApiOptions = {}) {
     if (!ledgerCache || Date.now() - ledgerCache.at > 5000) ledgerCache = { at: Date.now(), view: ledgerView() }
     try { res.json(await ledgerCache.view) } catch { ledgerCache = undefined; res.status(503).json({ error: 'Ledger view unavailable.' }) }
   })
+  // Trust matrix (D6): public, engine-side, persisted across runs.
+  app.get('/api/reputation', (_req, res) => res.json({ publishers: reputation.list() }))
+  app.post('/api/reputation/reset', (_req, res) => { reputation.reset(); res.json({ publishers: [] }) })
   app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', labels, faults: faultsAvailable }))
   if (faultsAvailable) app.post('/api/demo/faults', async (req, res) => {
     z.object({ failNextDelivery: z.literal(true) }).parse(req.body)
@@ -194,5 +199,5 @@ export async function createApiApp(options: ApiOptions = {}) {
   await purchases.reconcile()
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
   for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => loop.start(run.runId))
-  return { app, store, loop, close: () => { timers.forEach(clearInterval); for (const set of streams.values()) for (const res of set) res.end(); store.close(); void (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.() } }
+  return { app, store, loop, reputation, close: () => { timers.forEach(clearInterval); for (const set of streams.values()) for (const res of set) res.end(); store.close(); void (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.() } }
 }

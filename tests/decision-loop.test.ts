@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { RunLoop } from '../server/agents/loop.js'
+import { RunLoop, type RunLoopOptions } from '../server/agents/loop.js'
 import { FixtureDecisionProvider } from '../server/agents/decision.js'
 import type { Store } from '../server/store.js'
 import type { PublisherClient } from '../server/publisher-client.js'
@@ -185,5 +185,39 @@ describe('RunLoop with W0 ledger/research doubles', () => {
     expect(h.purchases.purchase).toHaveBeenCalledTimes(3)
     expect(new Set(h.run.intents.map(intent => intent.resourceId)).size).toBe(3)
     expect(h.run.answers.map(answer => answer.version)).toEqual([1, 2, 3, 4])
+  })
+})
+
+describe('RunLoop × reputation (#140, #141)', () => {
+  const WALLET = 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp'
+  const withReputation = (reputation: RunLoopOptions['reputation']) => {
+    const h = harness()
+    const candidate = { ...h.candidate, wallet: WALLET }
+    const retrieve = vi.fn(async () => ({ candidates: [exampleCandidate, candidate], contents: [exampleContent] }))
+    const loop = new RunLoop(h.store as unknown as Store, {} as PublisherClient, h.purchases as unknown as PurchaseManager, undefined, { retrieve, writeAnswer: h.writeAnswer, reputation })
+    return { ...h, loop }
+  }
+  it('passes reputation summaries into decide: a quarantined seller is SKIP_LOW_TRUST and never bought', async () => {
+    const calibrate = vi.fn(async () => ({ status: 'SKIPPED' as const, reason: 'none' }))
+    const h = withReputation({ summaries: () => ({ [WALLET]: { H: 0.4, C: 1, T: 0.4, status: 'quarantined' as const } }), calibrate })
+    await h.loop.start(h.run.runId)
+    expect(h.run.decisions[0].rows[0]).toMatchObject({ verdict: 'SKIP_LOW_TRUST', reputation: { status: 'quarantined' } })
+    expect(h.purchases.purchase).not.toHaveBeenCalled()
+    expect(calibrate).not.toHaveBeenCalled()
+  })
+  it('calibrates once after each verified, granted purchase with the active provider, and a failure never blocks the run', async () => {
+    let grantsAtCall = -1
+    const calibrate = vi.fn(async (input: { run: RunSnapshot; intentId: string; provider: unknown }) => {
+      grantsAtCall = input.run.grants.filter(g => g.intentId === input.intentId).length
+      throw new Error('Clef down')
+    })
+    const h = withReputation({ summaries: () => ({}), calibrate: calibrate as never })
+    await h.loop.start(h.run.runId)
+    expect(h.purchases.purchase).toHaveBeenCalledTimes(1)
+    expect(calibrate).toHaveBeenCalledTimes(1)
+    expect(grantsAtCall).toBe(1)
+    expect(calibrate.mock.calls[0][0].provider).toBeInstanceOf(FixtureDecisionProvider)
+    expect(h.run.phase).toBe('DONE')
+    expect(h.run.answers).toHaveLength(2)
   })
 })

@@ -2,13 +2,16 @@ import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
-import type { CandidateJudgment, DecisionRound, PublicCandidate, PublicSourceRef } from '../../shared/contracts/index.js'
+import type { CandidateJudgment, ContentEnvelope, DecisionRound, PublicCandidate, PublicSourceRef, ReputationSummary } from '../../shared/contracts/index.js'
+import { NEWCOMER } from '../reputation.js'
 
 export interface DecisionProvider {
   name: 'cloudflare' | 'fixture'
   model: string
   judgeRound(input: { question: string; conclusion: string; gap: string }): Promise<{ gapMaterial: number }>
   judgeCandidate(input: { question: string; gap: string; readSources: PublicSourceRef[]; candidate: PublicCandidate }): Promise<CandidateJudgment>
+  /** Calibration (#141): does a granted paid body address the gap? Called only after a verified grant (gate 1). */
+  judgePaidRelevance?(input: { question: string; gap: string; content: ContentEnvelope }): Promise<{ observed: number }>
 }
 const SourceRefSchema = PublicCandidateSchema.pick({ resourceId: true, version: true, title: true, publisher: true, family: true, facets: true })
 // W3-LIVE: both matched tables selected the grid report; retain flash for latency.
@@ -21,10 +24,11 @@ export const publicSources = (input: unknown): PublicSourceRef[] => z.array(Sour
 const STOP = new Set(['accessible', 'evidence', 'source', 'sources', 'about', 'their', 'there', 'which', 'what', 'with', 'from', 'that', 'this', 'whether', 'still', 'missing', 'figures', 'dated', 'data'])
 const words = (text: string) => new Set(text.toLowerCase().match(/[a-z0-9]+/g)?.filter(word => word.length > 3 && !STOP.has(word)) ?? [])
 /** Share of the gap a candidate's public fields address: two matching content words count as fully addressed. */
-export const gapOverlap = (gap: string, candidate: PublicCandidate) => {
-  const own = words(`${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`)
+export const textOverlap = (gap: string, text: string) => {
+  const own = words(text)
   return Math.min(1, [...words(gap)].filter(word => own.has(word)).length / 2)
 }
+export const gapOverlap = (gap: string, candidate: PublicCandidate) => textOverlap(gap, `${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`)
 
 /**
  * Generic metadata heuristics, with no named-source or hidden corpus knowledge.
@@ -35,6 +39,10 @@ export const gapOverlap = (gap: string, candidate: PublicCandidate) => {
 export class FixtureDecisionProvider implements DecisionProvider {
   readonly name = 'fixture' as const
   readonly model = 'metadata-fixture'
+  /** Calibration fixture: word overlap between the gap and the granted body. */
+  async judgePaidRelevance({ gap, content }: { question: string; gap: string; content: ContentEnvelope }) {
+    return { observed: gap.trim() ? textOverlap(gap, content.spans.map(s => s.text).join(' ')) : 0 }
+  }
   async judgeRound({ gap }: { question: string; conclusion: string; gap: string }) {
     return { gapMaterial: gap.trim() ? 0.9 : 0 }
   }
@@ -55,6 +63,8 @@ export type DecideInput = {
   candidates: PublicCandidate[]; readSources: PublicSourceRef[]
   budgetMinor: number; spentMinor: number; reservedMinor: number; perSourceCapMinor: number
   round: number; provider?: DecisionProvider; threshold?: number; boughtResourceIds?: string[]
+  /** Trust by publisher wallet (D6, D21). When given, value × T and quarantined/delisted sellers get SKIP_LOW_TRUST; a wallet with no entry is a newcomer. */
+  reputation?: Record<string, ReputationSummary>
 }
 export function buyThreshold(model: string, configured: unknown = process.env.BUY_THRESHOLD): number {
   const value = configured === undefined || configured === '' ? (model.endsWith('/clef') ? 0.35 : model.endsWith('/clef-flash') ? 0.15 : 0.20) : Number(configured)
@@ -94,19 +104,23 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const acquired = new Set([...readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
   const rows = candidates.map((candidate, index) => {
     const judgment = judgments[index]
-    const value = gapMaterial * judgment.addressesGap * judgment.originality.original * (0.5 + 0.25 * judgment.credibility)
+    // Trust can only lower value (T ∈ [0, 1]); it never touches the budget or the cap.
+    const reputation = input.reputation && candidate.wallet ? input.reputation[candidate.wallet] ?? NEWCOMER : undefined
+    const trust = reputation ? Math.min(1, Math.max(0, reputation.T)) : 1
+    const value = gapMaterial * judgment.addressesGap * judgment.originality.original * (0.5 + 0.25 * judgment.credibility) * trust
     const price = candidate.price.amountMinor
     // A zero-price PAID resource ranks by value, avoiding Infinity in JSON.
     const valuePerDollar = value / (Math.max(price, 1) / 100)
     let verdict: DecisionRound['rows'][number]['verdict'] = 'BUY'
     let reason = 'Clears the value threshold and spending policy.'
     // A rewrite is labelled as one even when no gap is open (story bible UC1).
-    if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || judgment.originality.rewrite >= judgment.originality.original) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
+    if (reputation && reputation.status !== 'active') { verdict = 'SKIP_LOW_TRUST'; reason = `Publisher ${reputation.status}: never bought or cited.` }
+    else if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || judgment.originality.rewrite >= judgment.originality.original) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
     else if (!input.gap.trim() || gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }
-    return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET') }
+    return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}) }
   })
   const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || a.candidate.resourceId.localeCompare(b.candidate.resourceId))[0]
   return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, provider: provider.name, model: provider.model, threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}), ...(fallbackReason ? { fallbackReason } : {}) })
