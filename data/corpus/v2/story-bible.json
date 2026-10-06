@@ -1,0 +1,757 @@
+{
+  "version": 1,
+  "synthetic": true,
+  "company": {
+    "name": "Kestrel Semiconductor",
+    "kind": "fictional fabless AI-accelerator designer, Singapore HQ, advanced packaging in Penang, Malaysia",
+    "keyFacts": [
+      "FY2026 revenue US$3.9 billion; cash US$2.4 billion",
+      "Previous TSMC contract: 16,000 wafers a month at about US$19,800 per N3P wafer",
+      "Latest deal announced 29 September 2026: five years, 24,000 wafers a month from Q3 2027, US$1.1 billion prepayment, about US$22,500 per wafer",
+      "Penang Phase 2 packaging plant commissioned 15 August 2026"
+    ]
+  },
+  "realNamesAllowed": [
+    "TSMC",
+    "BoJ",
+    "JGB"
+  ],
+  "notes": [
+    "All articles are SYNTHETIC; figures are invented (D20).",
+    "Sources: shared/contracts/writers.ts (articles), data/writers/*.json (roster).",
+    "Prices are SGD minor units; each PAID priceMinor equals the publisher's price in data/writers/<slug>.json.",
+    "expectedRelevance is a target for the search stub/manifest relevance promise; AlphaLeak's is deliberately inflated."
+  ],
+  "alphaLeakPlant": {
+    "articleId": "alphaleak-kestrel-penang-lead-times",
+    "priceMinor": 30,
+    "relevance": 0.96,
+    "manifestClaim": {
+      "id": "lead-times-dated",
+      "kind": "dated-figure",
+      "passageId": "lead-times"
+    },
+    "passageText": "Our sources say lead times out of Penang are collapsing and customers are already noticing the difference. Allocation is loosening, queues are shrinking, and insiders describe the mood on the floor as relieved. Expect the confirmation soon, and expect it to be big.",
+    "rules": [
+      "The passage lead-times must contain no digits and no month name, so the dated-figure checker fails on it.",
+      "Other passages may be vague but must not contain a date-plus-number sentence about lead times.",
+      "The article is not evidence of any real lead time."
+    ],
+    "contrast": "fab-floor-kestrel-penang-lead-times carries the true dated series in its lead-times passage."
+  },
+  "generatorRules": {
+    "winnerMustContainAllNeedles": true,
+    "freeAndWinnerFactsVerbatimNeedles": true,
+    "decoyMinPerUc": 2,
+    "wordRange": [
+      600,
+      1400
+    ]
+  },
+  "useCases": [
+    {
+      "id": "UC1",
+      "lane": "rates",
+      "title": "Free sources suffice",
+      "question": "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?",
+      "freeAnswer": "BoJ raised the policy rate 25 bp to 1.00% on 18 Sep 2026 and left the JGB taper plan unchanged; the 10-year yield rose 9 bp that day to 2.14% and reached 2.19% on 22 Sep.",
+      "openGap": "None worth paying for: the question asks what changed and how yields reacted; both are answered with dated figures by free sources.",
+      "clarify": null,
+      "articles": [
+        {
+          "articleId": "or-boj-statement-2026-09-18",
+          "publisherSlug": "open-records",
+          "writerSlug": "open-records",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "free-source",
+          "family": "boj-sep-2026",
+          "title": "BoJ monetary policy statement, 17–18 September 2026 meeting",
+          "publishedAt": "2026-09-18",
+          "tags": [
+            "BoJ",
+            "policy rate"
+          ],
+          "facts": [
+            {
+              "text": "At the 17–18 September 2026 meeting the BoJ raised the short-term policy rate by 25 basis points, from 0.75% to 1.00%, on 18 September 2026.",
+              "needles": [
+                "18 September 2026",
+                "0.75%",
+                "1.00%"
+              ]
+            },
+            {
+              "text": "The JGB purchase taper plan was left unchanged.",
+              "needles": [
+                "taper"
+              ]
+            }
+          ],
+          "why": "Primary record of what changed."
+        },
+        {
+          "articleId": "or-jgb-yield-table-2026-09",
+          "publisherSlug": "open-records",
+          "writerSlug": "open-records",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "free-source",
+          "family": "jgb-yields-sep-2026",
+          "title": "JGB benchmark yields, September 2026",
+          "publishedAt": "2026-09-23",
+          "tags": [
+            "JGB",
+            "10-year yield"
+          ],
+          "facts": [
+            {
+              "text": "The 10-year JGB yield closed at 2.05% on 17 September 2026, 2.14% on 18 September 2026 (+9 bp) and 2.19% on 22 September 2026.",
+              "needles": [
+                "2.05%",
+                "2.14%",
+                "2.19%",
+                "+9 bp"
+              ]
+            },
+            {
+              "text": "The 2-year yield rose 12 bp to 1.31% on 18 September 2026.",
+              "needles": [
+                "1.31%"
+              ]
+            }
+          ],
+          "why": "Primary record of the reaction."
+        },
+        {
+          "articleId": "bp-boj-september-recap",
+          "publisherSlug": "basis-points",
+          "writerSlug": "basis-points",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "free-source",
+          "family": "boj-recap-sep-2026",
+          "title": "The September BoJ meeting: what was priced, what was new",
+          "publishedAt": "2026-09-19",
+          "tags": [
+            "BoJ",
+            "JGB",
+            "recap"
+          ],
+          "facts": [
+            {
+              "text": "The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself.",
+              "needles": [
+                "85%",
+                "9 bp"
+              ]
+            }
+          ],
+          "why": "Free analysis that explains the reaction."
+        },
+        {
+          "articleId": "bp-jgb-curve-10s30s-analysis",
+          "publisherSlug": "basis-points",
+          "writerSlug": "basis-points",
+          "tier": "PAID",
+          "priceMinor": 40,
+          "role": "decoy",
+          "family": "jgb-curve-sep-2026",
+          "title": "The 10s30s steepener after the hike",
+          "publishedAt": "2026-09-25",
+          "tags": [
+            "JGB",
+            "yield curve",
+            "10s30s"
+          ],
+          "facts": [
+            {
+              "text": "The 10s30s spread widened to 86 bp on 24 September 2026.",
+              "needles": [
+                "86 bp"
+              ]
+            }
+          ],
+          "why": "Relevant but beyond the question; Clef should see no gap worth S$0.40."
+        },
+        {
+          "articleId": "notft-inside-boj-september-hike",
+          "publisherSlug": "notfinancialtimes",
+          "writerSlug": "daniel-koh",
+          "tier": "PAID",
+          "priceMinor": 90,
+          "role": "decoy",
+          "family": "notft-boj-sep-2026",
+          "title": "Inside the BoJ's September hike",
+          "publishedAt": "2026-09-21",
+          "tags": [
+            "BoJ",
+            "rates"
+          ],
+          "facts": [
+            {
+              "text": "The board vote was 8–1, with one member favouring a pause.",
+              "needles": [
+                "8–1"
+              ]
+            }
+          ],
+          "why": "Credible and expensive; adds board-vote colour only."
+        },
+        {
+          "articleId": "kopi-boj-always-late",
+          "publisherSlug": "kopi-contrarian",
+          "writerSlug": "kopi-contrarian",
+          "tier": "PAID",
+          "priceMinor": 10,
+          "role": "decoy",
+          "family": "kopi-boj-sep-2026",
+          "title": "The BoJ is late again",
+          "publishedAt": "2026-09-20",
+          "tags": [
+            "BoJ",
+            "opinion"
+          ],
+          "facts": [],
+          "why": "Cheap opinion, no figures."
+        },
+        {
+          "articleId": "mp-boj-hike-digest",
+          "publisherSlug": "marketpulse-digest",
+          "writerSlug": "marketpulse-digest",
+          "tier": "PAID",
+          "priceMinor": 20,
+          "role": "rewrite",
+          "family": "notft-boj-sep-2026",
+          "title": "BoJ hikes: what you need to know",
+          "publishedAt": "2026-09-22",
+          "tags": [
+            "BoJ",
+            "digest"
+          ],
+          "facts": [],
+          "why": "Rewrite of the NotFT story.",
+          "derivedFrom": "notft-inside-boj-september-hike"
+        }
+      ],
+      "expectedPicks": {
+        "round1": null,
+        "round2": null,
+        "skippedRewrite": "mp-boj-hike-digest",
+        "note": "no purchase"
+      },
+      "expectedImpact": null,
+      "expectedSpendMinor": 0,
+      "winnerReason": "No paid article wins: free sources answer the question, so Clef returns no BUY and S$0 is spent."
+    },
+    {
+      "id": "UC2",
+      "lane": "semis",
+      "title": "Paid evidence changes the answer (main demo)",
+      "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
+      "freeAnswer": "Kestrel announced a five-year TSMC agreement on 29 Sep 2026: 24,000 N3P wafers a month from Q3 2027 plus advanced-packaging slots, with a US$1.1 billion prepayment. The filing gives no margin guidance and no analyst view.",
+      "openGap": "What analysts expect for pricing and margins (the angle the user picks): no free source states any analyst estimate.",
+      "clarify": {
+        "question": "Which angle matters most to you?",
+        "options": [
+          "capacity allocation",
+          "pricing & margins",
+          "delivery timeline"
+        ],
+        "expectedUserPick": "pricing & margins",
+        "fewShot": [
+          {
+            "user": "What's the outlook on Orion Micro's new foundry contract?",
+            "assistant": {
+              "questions": [
+                {
+                  "text": "Which angle matters most to you?",
+                  "options": [
+                    "capacity allocation",
+                    "pricing & margins",
+                    "delivery timeline"
+                  ]
+                }
+              ],
+              "plan": "Search for analyst estimates and reporting on the contract's capacity, pricing and timing."
+            }
+          },
+          {
+            "user": "How are analysts reading Helix Silicon's supply agreement with its packaging partner?",
+            "assistant": {
+              "questions": [
+                {
+                  "text": "Which angle matters most to you?",
+                  "options": [
+                    "capacity allocation",
+                    "pricing & margins",
+                    "delivery timeline"
+                  ]
+                }
+              ],
+              "plan": "Search for analyst commentary on the agreement's volumes, cost impact and schedule."
+            }
+          },
+          {
+            "user": "What did the BoJ change at its last meeting?",
+            "assistant": {
+              "questions": [],
+              "plan": "Search for the BoJ statement and the market reaction."
+            }
+          }
+        ],
+        "rule": "For any 'outlook / analyst view on a company's deal' question, ask exactly one question with the three options above, in this order. Do not ask for a timeframe."
+      },
+      "articles": [
+        {
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "publisherSlug": "open-records",
+          "writerSlug": "open-records",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "free-source",
+          "family": "kestrel-tsmc-deal",
+          "title": "Kestrel Semiconductor exchange filing: TSMC capacity agreement",
+          "publishedAt": "2026-09-29",
+          "tags": [
+            "Kestrel Semiconductor",
+            "TSMC",
+            "filing"
+          ],
+          "facts": [
+            {
+              "text": "On 29 September 2026 Kestrel Semiconductor announced a five-year agreement with TSMC for N3P wafer capacity, 24,000 wafers a month from Q3 2027, plus advanced-packaging slots.",
+              "needles": [
+                "29 September 2026",
+                "24,000",
+                "five-year"
+              ]
+            },
+            {
+              "text": "Kestrel will pay a US$1.1 billion prepayment and gave no margin guidance.",
+              "needles": [
+                "US$1.1 billion",
+                "no margin guidance"
+              ]
+            },
+            {
+              "text": "The previous contract covered 16,000 wafers a month.",
+              "needles": [
+                "16,000"
+              ]
+            }
+          ],
+          "why": "Primary record of the deal; no analyst view."
+        },
+        {
+          "articleId": "or-wafer-capacity-prepayment-explainer",
+          "publisherSlug": "open-records",
+          "writerSlug": "open-records",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "decoy",
+          "family": "prepayment-explainer",
+          "title": "What a wafer-capacity prepayment is",
+          "publishedAt": "2026-08-14",
+          "tags": [
+            "TSMC",
+            "explainer",
+            "prepayment"
+          ],
+          "facts": [
+            {
+              "text": "A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered.",
+              "needles": [
+                "deposit"
+              ]
+            }
+          ],
+          "why": "Generic explainer; no Kestrel figures."
+        },
+        {
+          "articleId": "lf-ai-accelerator-rack-power",
+          "publisherSlug": "load-factor",
+          "writerSlug": "load-factor",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "decoy",
+          "family": "ai-rack-power",
+          "title": "How much power does an AI accelerator rack really draw?",
+          "publishedAt": "2026-09-10",
+          "tags": [
+            "power",
+            "AI chips",
+            "data centres"
+          ],
+          "facts": [
+            {
+              "text": "A dense accelerator rack draws 120 kW at full load.",
+              "needles": [
+                "120 kW"
+              ]
+            }
+          ],
+          "why": "Semiconductor-adjacent decoy; irrelevant to the deal."
+        },
+        {
+          "articleId": "notft-kestrel-tsmc-deal-margins",
+          "publisherSlug": "notfinancialtimes",
+          "writerSlug": "priya-nair",
+          "tier": "PAID",
+          "priceMinor": 90,
+          "role": "winner",
+          "family": "kestrel-tsmc-analysts",
+          "title": "Analysts cut Kestrel margin estimates as the TSMC deal lands",
+          "publishedAt": "2026-10-01",
+          "tags": [
+            "Kestrel Semiconductor",
+            "TSMC",
+            "analyst estimates",
+            "gross margin"
+          ],
+          "facts": [
+            {
+              "text": "On 1 October 2026 consensus fiscal 2027 gross margin for Kestrel was cut to 55.2% from 58.5% after three of the five covering analysts revised estimates.",
+              "needles": [
+                "1 October 2026",
+                "55.2%",
+                "58.5%",
+                "three of the five"
+              ]
+            },
+            {
+              "text": "The new contract prices an N3P wafer at about US$22,500, against US$19,800 under the previous contract, a rise of 13.6%.",
+              "needles": [
+                "US$22,500",
+                "US$19,800",
+                "13.6%"
+              ]
+            },
+            {
+              "text": "Analysts raised fiscal 2028 revenue estimates to US$6.4 billion from US$5.5 billion on 1 October 2026.",
+              "needles": [
+                "US$6.4 billion",
+                "US$5.5 billion"
+              ]
+            },
+            {
+              "text": "The US$1.1 billion prepayment is about 46% of Kestrel's US$2.4 billion cash.",
+              "needles": [
+                "46%",
+                "US$2.4 billion"
+              ]
+            }
+          ],
+          "why": "Original reporting with named-count analyst estimates; fills the pricing & margins gap.",
+          "expectedRelevance": 0.88,
+          "namedSourceClaim": true
+        },
+        {
+          "articleId": "mp-kestrel-deal-digest",
+          "publisherSlug": "marketpulse-digest",
+          "writerSlug": "marketpulse-digest",
+          "tier": "PAID",
+          "priceMinor": 20,
+          "role": "rewrite",
+          "family": "kestrel-tsmc-analysts",
+          "title": "Kestrel's TSMC deal: analysts trim margins",
+          "publishedAt": "2026-10-02",
+          "tags": [
+            "Kestrel Semiconductor",
+            "TSMC",
+            "digest"
+          ],
+          "facts": [
+            {
+              "text": "Restates the NotFT figures (55.2% from 58.5%) with no new information.",
+              "needles": [
+                "55.2%"
+              ]
+            }
+          ],
+          "why": "Same family as the NotFT article: a rewrite, so Clef skips it as redundant.",
+          "derivedFrom": "notft-kestrel-tsmc-deal-margins",
+          "expectedRelevance": 0.84
+        },
+        {
+          "articleId": "kopi-kestrel-tsmc-hype",
+          "publisherSlug": "kopi-contrarian",
+          "writerSlug": "kopi-contrarian",
+          "tier": "PAID",
+          "priceMinor": 10,
+          "role": "decoy",
+          "family": "kopi-kestrel",
+          "title": "Another 'deal of the decade'",
+          "publishedAt": "2026-10-01",
+          "tags": [
+            "Kestrel Semiconductor",
+            "TSMC",
+            "opinion"
+          ],
+          "facts": [],
+          "why": "Cheap, confident opinion with no figures; low credibility.",
+          "expectedRelevance": 0.7
+        },
+        {
+          "articleId": "fab-floor-kestrel-allocation",
+          "publisherSlug": "the-fab-floor",
+          "writerSlug": "the-fab-floor",
+          "tier": "PAID",
+          "priceMinor": 25,
+          "role": "alternative",
+          "family": "kestrel-allocation",
+          "title": "Where Kestrel's 24,000 wafers come from",
+          "publishedAt": "2026-10-03",
+          "tags": [
+            "Kestrel Semiconductor",
+            "TSMC",
+            "allocation"
+          ],
+          "facts": [
+            {
+              "text": "Slots for the 24,000 wafers a month were confirmed on 3 October 2026 and are carved out of capacity previously held by a hyperscaler's custom-silicon programme.",
+              "needles": [
+                "3 October 2026",
+                "24,000"
+              ]
+            }
+          ],
+          "why": "Right pick only if the user chooses capacity allocation; off-gap for pricing & margins.",
+          "expectedRelevance": 0.74
+        }
+      ],
+      "expectedPicks": {
+        "round1": "notft-kestrel-tsmc-deal-margins",
+        "round2": null,
+        "skippedRewrite": "mp-kestrel-deal-digest",
+        "note": "Alternative if the user picks capacity allocation: fab-floor-kestrel-allocation"
+      },
+      "expectedImpact": "QUALIFIES",
+      "expectedSpendMinor": 90,
+      "winnerReason": "NotFT is dearer but original and credible; its dated analyst figures are the only source for the gap. The Fab Floor answers a different angle; MarketPulse rewrites NotFT; Kopi has no figures."
+    },
+    {
+      "id": "UC3",
+      "lane": "semis",
+      "title": "AlphaLeak is caught and refunded",
+      "question": "Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?",
+      "freeAnswer": "Kestrel's Penang Phase 2 packaging plant was commissioned on 15 Aug 2026, lifting capacity from 11,000 to 16,000 units a month, but no free source states a lead time.",
+      "openGap": "Actual lead times in weeks, and their trend.",
+      "clarify": null,
+      "articles": [
+        {
+          "articleId": "or-penang-packaging-output-2026-q3",
+          "publisherSlug": "open-records",
+          "writerSlug": "open-records",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "free-source",
+          "family": "penang-packaging",
+          "title": "Malaysia advanced-packaging output and capacity, Q3 2026",
+          "publishedAt": "2026-09-30",
+          "tags": [
+            "Malaysia",
+            "packaging",
+            "Kestrel Semiconductor",
+            "capacity"
+          ],
+          "facts": [
+            {
+              "text": "Kestrel's Penang Phase 2 plant was commissioned on 15 August 2026, raising capacity from 11,000 to 16,000 advanced-packaging units a month.",
+              "needles": [
+                "15 August 2026",
+                "11,000",
+                "16,000"
+              ]
+            },
+            {
+              "text": "The record states no customer lead times.",
+              "needles": [
+                "no customer lead times"
+              ]
+            }
+          ],
+          "why": "Primary capacity record; leaves the lead-time gap open."
+        },
+        {
+          "articleId": "lf-penang-grid-connection",
+          "publisherSlug": "load-factor",
+          "writerSlug": "load-factor",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "decoy",
+          "family": "penang-power",
+          "title": "Powering a packaging plant in Penang",
+          "publishedAt": "2026-09-02",
+          "tags": [
+            "power",
+            "Penang",
+            "grid"
+          ],
+          "facts": [
+            {
+              "text": "The Phase 2 plant needs a 45 MW grid connection.",
+              "needles": [
+                "45 MW"
+              ]
+            }
+          ],
+          "why": "Power decoy."
+        },
+        {
+          "articleId": "notft-malaysia-packaging-capex-2026",
+          "publisherSlug": "notfinancialtimes",
+          "writerSlug": "priya-nair",
+          "tier": "PAID",
+          "priceMinor": 90,
+          "role": "decoy",
+          "family": "notft-packaging-capex",
+          "title": "Malaysia's packaging boom costs US$420 million",
+          "publishedAt": "2026-09-09",
+          "tags": [
+            "Malaysia",
+            "packaging",
+            "capex"
+          ],
+          "facts": [
+            {
+              "text": "Kestrel and two peers committed US$420 million of packaging capex in Malaysia as of 9 September 2026.",
+              "needles": [
+                "US$420 million",
+                "9 September 2026"
+              ]
+            }
+          ],
+          "why": "Credible but about capex, not lead times.",
+          "expectedRelevance": 0.55
+        },
+        {
+          "articleId": "mp-malaysia-packaging-digest",
+          "publisherSlug": "marketpulse-digest",
+          "writerSlug": "marketpulse-digest",
+          "tier": "PAID",
+          "priceMinor": 20,
+          "role": "rewrite",
+          "family": "notft-packaging-capex",
+          "title": "Malaysia packaging: US$420 million and counting",
+          "publishedAt": "2026-09-10",
+          "tags": [
+            "Malaysia",
+            "packaging",
+            "digest"
+          ],
+          "facts": [],
+          "why": "Rewrite of the NotFT capex story.",
+          "derivedFrom": "notft-malaysia-packaging-capex-2026",
+          "expectedRelevance": 0.5
+        },
+        {
+          "articleId": "alphaleak-kestrel-penang-lead-times",
+          "publisherSlug": "alphaleak",
+          "writerSlug": "alphaleak",
+          "tier": "PAID",
+          "priceMinor": 30,
+          "role": "plant",
+          "family": "alphaleak-penang",
+          "title": "LEAKED: Kestrel's Penang lead times are collapsing",
+          "publishedAt": "2026-10-02",
+          "tags": [
+            "Kestrel Semiconductor",
+            "Penang",
+            "lead times",
+            "packaging"
+          ],
+          "facts": [
+            {
+              "text": "Asserts, without any figure, that Penang lead times are collapsing.",
+              "needles": [
+                "collapsing"
+              ]
+            }
+          ],
+          "why": "Cheap and loudly relevant, so it wins round 1; the proof then fails.",
+          "expectedRelevance": 0.96,
+          "manifestClaims": [
+            {
+              "id": "lead-times-dated",
+              "kind": "dated-figure",
+              "passageId": "lead-times"
+            }
+          ]
+        },
+        {
+          "articleId": "fab-floor-kestrel-penang-lead-times",
+          "publisherSlug": "the-fab-floor",
+          "writerSlug": "the-fab-floor",
+          "tier": "PAID",
+          "priceMinor": 25,
+          "role": "winner",
+          "family": "fab-floor-penang",
+          "title": "Kestrel's Penang lead times: 26 weeks to 18 in three and a half months",
+          "publishedAt": "2026-09-17",
+          "tags": [
+            "Kestrel Semiconductor",
+            "Penang",
+            "lead times",
+            "packaging"
+          ],
+          "facts": [
+            {
+              "text": "Kestrel's Penang advanced-packaging lead time was 26 weeks on 1 June 2026, 22 weeks on 1 August 2026 and 18 weeks on 15 September 2026.",
+              "needles": [
+                "26 weeks",
+                "1 June 2026",
+                "22 weeks",
+                "1 August 2026",
+                "18 weeks",
+                "15 September 2026"
+              ]
+            },
+            {
+              "text": "The Johor alternative remained at 24 weeks on 15 September 2026.",
+              "needles": [
+                "24 weeks"
+              ]
+            },
+            {
+              "text": "Phase 2 was commissioned on 15 August 2026.",
+              "needles": [
+                "15 August 2026"
+              ]
+            }
+          ],
+          "why": "True dated lead-time series; closes the gap and refutes AlphaLeak's missing figures.",
+          "expectedRelevance": 0.78,
+          "manifestClaims": [
+            {
+              "id": "lead-times-series",
+              "kind": "numeric-series",
+              "passageId": "lead-times"
+            },
+            {
+              "id": "lead-times-dated",
+              "kind": "dated-figure",
+              "passageId": "lead-times"
+            }
+          ]
+        }
+      ],
+      "expectedPicks": {
+        "round1": "alphaleak-kestrel-penang-lead-times",
+        "round2": "fab-floor-kestrel-penang-lead-times",
+        "skippedRewrite": "mp-malaysia-packaging-digest",
+        "afterChallenge": {
+          "refund": "alphaleak-kestrel-penang-lead-times",
+          "honestyBefore": 0.8,
+          "honestyAfter": 0.4,
+          "status": "quarantined"
+        },
+        "repeatRun": "alphaleak: SKIP_LOW_TRUST"
+      },
+      "expectedImpact": "STRENGTHENS",
+      "expectedSpendMinor": 55,
+      "expectedNetSpendMinor": 25,
+      "winnerReason": "Round 1: AlphaLeak (S$0.30, relevance inflated to 0.96) beats The Fab Floor (S$0.25, honest 0.78) on Clef value. Its dated-figure proof fails, it is refunded and quarantined; round 2 buys The Fab Floor, whose dated series STRENGTHENS the 'getting shorter' answer."
+    }
+  ]
+}
