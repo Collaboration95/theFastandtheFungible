@@ -23,6 +23,7 @@ services:
       PUBLISHER_FAULTS: "0"
       # The publisher only quotes on the XRPL Testnet rail when the buyer uses it too.
       SETTLEMENT_RAIL: ${RA_RAIL:-simulated}
+      SEARCH_EMBEDDINGS: ${RA_EMBEDDINGS:-off}
     volumes: [publisher-data:/var/lib/publisher/data]
 
   api:
