@@ -30,6 +30,17 @@ export class PublisherJournal {
     // Journals created before the XRPL rail lack tx_hash; one ledger payment may settle one quote only.
     try { this.db.exec('ALTER TABLE settlements ADD COLUMN tx_hash TEXT') } catch { /* column exists */ }
     this.db.exec('CREATE UNIQUE INDEX IF NOT EXISTS settlements_tx_hash ON settlements(tx_hash)')
+    // Per-passage manifest salts (#125), generated once per article version and released only with the paid body (#129).
+    this.db.exec('CREATE TABLE IF NOT EXISTS salts (article_key TEXT NOT NULL, idx INTEGER NOT NULL, salt TEXT NOT NULL, PRIMARY KEY (article_key, idx))')
+  }
+  /** The salts for passages 0..count-1 of `articleKey` (articleId@version), created on first use and stable after. */
+  salts(articleKey: string, count: number): string[] {
+    return this.transaction(() => {
+      const insert = this.db.prepare('INSERT OR IGNORE INTO salts (article_key, idx, salt) VALUES (?, ?, ?)')
+      for (let i = 0; i < count; i++) insert.run(articleKey, i, randomBytes(16).toString('hex'))
+      const rows = this.db.prepare('SELECT salt FROM salts WHERE article_key = ? AND idx < ? ORDER BY idx').all(articleKey, count) as { salt: string }[]
+      return rows.map(row => row.salt)
+    })
   }
   close(): void { this.db.close() }
   private transaction<T>(operation: () => T): T {

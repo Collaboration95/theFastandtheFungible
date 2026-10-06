@@ -4,8 +4,9 @@ import { ContentEnvelopeSchema, CorpusResourceSchema, PublicCandidateSchema, typ
 import { DROPS_PER_MINOR, ProfileSchema, QuoteRequestSchema, SettlementRequestSchema, SIMULATED_LABEL, XRPL_LABEL, type Rail } from '../shared/contracts/publisher.js'
 import { TESTNET_RECEIVER, testnetLedger, verifyPayment, type Ledger } from '../shared/xrpl.js'
 import { SearchHitSchema, type Manifest, type SearchHit } from '../shared/contracts/manifest.js'
-import { countWords, type Article, type WriterCorpus } from '../shared/contracts/writers.js'
-import { CLAIM_KINDS, leafHash, manifestRoot, sha256, signManifest } from '../shared/manifest.js'
+import type { Article, WriterCorpus } from '../shared/contracts/writers.js'
+import { reportedRelevance } from './bad-actors.js'
+import { createManifests } from './manifest.js'
 import { loadCorpus, loadWriterCorpus } from './corpus.js'
 import { digestBytes, PublisherError, PublisherJournal } from './journal.js'
 import { buildRegistry, SIMULATED_KEY_LABEL, type PublisherEntry } from './registry.js'
@@ -30,32 +31,13 @@ const ArticleParam = /^[A-Za-z0-9._-]+$/
 const endpointsFor = (slug: string) => ({
   discovery: `/w/${slug}/.well-known/agent-publisher.json`, search: `/w/${slug}/search`, articles: `/w/${slug}/articles/{articleId}`,
 })
-const articleSalt = (entry: PublisherEntry, article: Article, index: number) => sha256(`${entry.keys!.privateKey}\u001fsalt\u001f${article.articleId}@${article.version}\u001f${index}`).slice(0, 32)
-
-/**
- * The one hook #125 fills with the real manifest builder. TODO(#125): this minimal
- * version already signs D4 proofs (salted leaves, root, claim kinds, word count) with
- * the publisher key, because the strict SearchHitSchema needs a manifest on every PAID hit.
- */
-export function attachManifest(entry: PublisherEntry, article: Article, relevance: number): Manifest | undefined {
-  if (article.tier !== 'PAID' || !entry.keys || !entry.publisher.wallet || !entry.publisher.pubKey) return undefined
-  const leaves = article.passages.map((p, i) => leafHash(articleSalt(entry, article, i), i, p.id, p.text))
-  const claims = article.passages.flatMap((p, i) => (Object.keys(CLAIM_KINDS) as (keyof typeof CLAIM_KINDS)[])
-    .filter(kind => CLAIM_KINDS[kind](p.text)).map(kind => ({ id: `${p.id}:${kind}`, kind, leaf: leaves[i] })))
-  return signManifest({
-    publisherSlug: entry.publisher.slug, articleId: article.articleId, version: article.version,
-    wallet: entry.publisher.wallet, pubKey: entry.publisher.pubKey, priceMinor: article.priceMinor,
-    leaves, root: manifestRoot(leaves), claims, wordCount: countWords(article.body), publishedAt: article.publishedAt, relevance,
-  }, entry.keys.privateKey)
-}
-
 /** A search result never carries a body or passages (gate 1): only the writer's abstract, signals and a manifest. */
-export function toSearchHit(entry: PublisherEntry, article: Article, relevance: number, searchMode: SearchHit['searchMode']): SearchHit {
+export function toSearchHit(article: Article, relevance: number, searchMode: SearchHit['searchMode'], manifest: Manifest | undefined): SearchHit {
   return SearchHitSchema.parse({
     publisherSlug: article.publisherSlug, writerSlug: article.writerSlug, articleId: article.articleId, version: article.version,
     url: `/w/${article.publisherSlug}/articles/${article.articleId}`, title: article.title, abstract: article.abstract, tags: article.tags,
     tier: article.tier, priceMinor: article.priceMinor, relevance, publishedAt: article.publishedAt, family: article.family,
-    derivedFrom: article.derivedFrom, manifest: attachManifest(entry, article, relevance), searchMode,
+    derivedFrom: article.derivedFrom, manifest, searchMode,
   })
 }
 /** Each paid publisher is paid at its own public wallet; the phase 1 receiver remains the fallback. */
@@ -94,6 +76,8 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     .then(built => { registry = built })
   void writersReady.catch(() => {})
   app.locals.writersReady = writersReady
+  const manifests = createManifests(journal)
+  app.locals.manifests = manifests
   app.locals.journal = journal
   app.locals.ledger = ledger
   app.disable('x-powered-by')
@@ -212,7 +196,11 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     const vector = entry.index.vectors && embedder ? await embedder(q) : undefined
     const { mode, ranked } = await searchIndex(entry.index, q, k, vector)
     const byId = new Map(entry.articles.map(a => [a.articleId, a]))
-    res.json(ranked.map(r => toSearchHit(entry, byId.get(r.articleId)!, r.relevance, mode)))
+    res.json(ranked.map(r => {
+      const article = byId.get(r.articleId)!
+      const relevance = reportedRelevance(entry.publisher.slug, r.relevance)
+      return toSearchHit(article, relevance, mode, manifests.manifestFor(entry, article, relevance))
+    }))
   })
   app.get('/w/:slug/articles/:id', (req, res) => {
     const entry = entryFor(req.params.slug)
