@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus
+.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus smoke
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -64,7 +64,7 @@ DC := docker compose -f docker/compose.yaml
 export WEB_PORT ?= $(shell echo $$((5100+$(OFFSET))))
 env_or = $(or $(shell sed -n 's/^$(1)=//p' .env 2>/dev/null),$(2))
 # Mirrors scripts/demo.mjs --live: xrpl-testnet when a payer seed exists, Langfuse on.
-LIVE_ENV := RA_LLM=deepseek RA_DECISION=cloudflare RA_LANGFUSE=$(call env_or,LANGFUSE_ENABLED,1) RA_LANGFUSE_ENV=$(call env_or,LANGFUSE_TRACING_ENVIRONMENT,live) \
+LIVE_ENV := RA_LLM=deepseek RA_DECISION=cloudflare RA_EMBEDDINGS=live RA_LANGFUSE=$(call env_or,LANGFUSE_ENABLED,1) RA_LANGFUSE_ENV=$(call env_or,LANGFUSE_TRACING_ENVIRONMENT,live) \
   RA_RAIL=$(call env_or,SETTLEMENT_RAIL,$(shell grep -q '^XRPL_PAYER_SEED=.' .env 2>/dev/null && echo xrpl-testnet || echo simulated))
 
 docker-build: ## build web/api/publisher images from a commit: make docker-build REF=<commit> (default HEAD)
@@ -88,3 +88,6 @@ docker-logs: ## follow the Docker demo logs
 
 corpus: ## generate the writer corpus with DeepSeek (resumable; ARGS="--only alphaleak" or "--dry-run")
 	node --import tsx scripts/generate-corpus.mjs $(ARGS)
+
+smoke: ## live smoke UC1-UC3 on DeepSeek + Clef + Testnet (SPENDS live calls); ARGS="--only UC2" or "--probe"; port offset 300 unless OFFSET= given
+	DEMO_PORT_OFFSET=$(if $(filter command line,$(origin OFFSET)),$(OFFSET),300) node --import tsx scripts/live-smoke.mjs $(ARGS)
