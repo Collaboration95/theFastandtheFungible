@@ -16,6 +16,8 @@ make run       # offline fixture demo (no keys)
 make doctor    # Node, deps, .env drift, ports, provider keys
 make keys      # one real DeepSeek + Clef call; shows latency
 make live      # DeepSeek + Cloudflare Clef, key preflight first, labelled fixtures on failure
+make corpus    # (live) generate the v2 writer corpus; make embeddings embeds it
+make smoke     # (live, spends calls) UC1-UC3 end to end on port offset 300; ARGS="--only UC2" or "--probe"
 make reset     # stop the demo, wipe data/*.db and generated reports
 make check     # lint + typecheck + unit tests (pre-commit and CI run this)
 make verify    # check + serial browser tests + build

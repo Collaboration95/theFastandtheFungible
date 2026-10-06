@@ -1,6 +1,6 @@
 // Preflight for the demo. Run: node --import tsx scripts/doctor.mjs [--keys] [--deep]
 //   --keys  only the provider checks (used by demo:live before it starts)
-//   --deep  also spend one tiny DeepSeek completion and one Clef call to prove the models answer
+//   --deep  also spend one tiny DeepSeek completion, one Workers AI embedding and one Clef call to prove the models answer
 // Never prints keys or provider response bodies. Exits 1 if any check fails.
 import 'dotenv/config'
 import { existsSync, readFileSync } from 'node:fs'
@@ -30,6 +30,22 @@ if (!keysOnly) {
     if (stale.length) warn(`.env has vars nothing reads (safe to delete): ${stale.join(', ')}`)
     if (!stale.length) ok('.env only uses known vars (unset ones take .env.example defaults)')
   }
+
+  console.log('Corpus (v2) and embeddings')
+  try {
+    const { checkCorpus } = await import('./check-corpus.mjs')
+    const problems = checkCorpus(process.cwd())
+    if (problems.length) fail(`corpus self-check: ${problems.slice(0, 3).join('; ')}${problems.length > 3 ? ` (+${problems.length - 3} more)` : ''}; run make corpus`)
+    else ok('corpus self-check passes')
+    // Fresh = every article has a cached vector whose embedded-text hash still matches (same test as make embeddings).
+    const { loadWriterCorpus } = await import('../publisher/corpus.ts')
+    const { cachedVector, loadEmbeddingCache } = await import('../publisher/search.ts')
+    const cache = loadEmbeddingCache(new URL('../data/corpus/v2/embeddings.json', import.meta.url))
+    const { articles } = await loadWriterCorpus(undefined, { allowMini: false })
+    const stale = articles.filter(a => !cachedVector(cache, a))
+    if (stale.length) fail(`${stale.length}/${articles.length} articles have no fresh embedding; run make embeddings`)
+    else ok(`${articles.length} article embeddings fresh`)
+  } catch (error) { fail(`corpus/embeddings check failed (${error?.message ?? 'error'})`) }
 
   console.log('Ports')
   const offset = Number(process.env.DEMO_PORT_OFFSET || 0)
@@ -70,6 +86,19 @@ else {
       else if (!res.ok) fail(`completion HTTP ${res.status}`)
       else ok(`completion in ${Date.now() - started} ms${limit ? `; tokens left ${limit}` : ''}`)
     } catch { fail('completion timed out') }
+  }
+}
+
+if (deep) {
+  console.log('Cloudflare Workers AI embeddings (query vectors for hybrid search)')
+  if (!process.env.CLOUDFLARE_API_TOKEN) fail('CLOUDFLARE_API_TOKEN not set; live search would be keyword only (labelled)')
+  else {
+    try {
+      const { embedTexts, EMBEDDING_MODEL } = await import('../publisher/search.ts')
+      const started = Date.now()
+      const [vector] = await embedTexts(['Kestrel TSMC pricing and margins'])
+      ok(`${EMBEDDING_MODEL} answered in ${Date.now() - started} ms (${vector.length} dims)`)
+    } catch (error) { fail(`embedding call failed (${error?.status ?? error?.message ?? 'error'})`) }
   }
 }
 
