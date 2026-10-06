@@ -1,4 +1,4 @@
-# Build status (8 Oct 2026, SGT — overnight run in progress)
+# Build status (8 Oct 2026, 03:30 SGT — overnight run complete)
 ## Overnight run (7→8 Oct)
 - Orchestrator follows OVERNIGHT-OCT7.md. Subagents: Opus 5.5 for code-heavy packages, Sonnet 5.5 for content/small ones (medium thinking). Review: one Codex `gpt-6-luna` pass per PR, posted as a PR comment.
 - Preflight 01:00: `make doctor` + `make keys` green (DeepSeek, Clef 1.3 s, payer 104 XRP, Langfuse).
@@ -23,6 +23,9 @@
 - WP-UI presenter controls, UC presets, generated fixtures → [#186](https://github.com/Collaboration95/theFastandtheFungible/pull/186) → closes #154 (NO BLOCKERS).
 - Live determinism (orchestrator) → [#187](https://github.com/Collaboration95/theFastandtheFungible/pull/187): Clef gap-materiality wording, planner keeps named entities, clarify angle = first gap, 5 paid titles that leaked figures retitled (+ `check-corpus` now checks titles), AlphaLeak/NotFT abstracts, account-id cache + warm-up for query embeddings. Policy code untouched.
 - Playwright UC2/UC3 + a11y (orchestrator) → [#188](https://github.com/Collaboration95/theFastandtheFungible/pull/188) → closes #159; fixed an invalid `<ol>` in the purchase wire.
+- WP-T6 docs as-built + build log → [#189](https://github.com/Collaboration95/theFastandtheFungible/pull/189) → closes #161 (1 blocker: readiness doc still called the checks "planned"; fixed).
+- Overnight report → [#190](https://github.com/Collaboration95/theFastandtheFungible/pull/190): [docs/OVERNIGHT-REPORT-OCT8.md](docs/OVERNIGHT-REPORT-OCT8.md), covering design choices, the tuning journey, live fixes, a newcomer UI review and the feature-showing script.
+- **Milestone complete:** every non-deferred issue (#111–#161) is closed; #162–#166 were not touched.
 
 ## Pivot (6 Oct)
 - Direction changed: see [FINAL-PUSH.md](FINAL-PUSH.md). The v1 live demo was real (DeepSeek, Clef, XRPL Testnet) but looked static because every answer came from the 19-doc Vertex corpus and publisher search ignored the query.
@@ -34,6 +37,9 @@
 - Testnet probe after wave 4 folded into the #158 live smoke (no probe script exists before #158).
 - Payments: the buyer now *requires* the verified search manifest before signing (Codex blocker on #173); the invoice root is never trusted from the 402 alone.
 ## Needs you
+- **Rehearse:** run `make doctor`, then `make smoke` on the presenting laptop and hotspot. UC3 twice: DeepSeek variance moves its round-1 gap materiality between 0.33 and 0.53 against the 0.15 bar, so a retry is sometimes needed.
+- **X4 UX polish (#166):** `docs/OVERNIGHT-REPORT-OCT8.md` §6 lists 9 newcomer findings. Top three: the live run says "replaying the recorded run"; the gap is not shown under the v1 headline; the Writers tab is squeezed into a 300 px column.
+- `.env` still has `LLM_PROVIDER=groq`. `make live` and `make smoke` force DeepSeek; other ad-hoc scripts do not.
 - O1: writer websites and article content (FINAL-PUSH §15) before W2 corpus can start.
 - O3: keep real institution names (BoJ, JGBs) with synthetic content, or fictionalise them.
 - O4: agree the order of W2 UI with the live UX session.
