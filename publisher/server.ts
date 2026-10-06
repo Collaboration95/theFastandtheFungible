@@ -10,6 +10,8 @@ export async function startPublisher() {
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid publisher port')
   const app = createPublisherApp()
   try { await app.locals.ready } catch (error) { app.locals.journal.close(); throw error }
+  // The legacy /v1 flow still serves when the writer registry cannot load (for example, keys missing on the Testnet rail).
+  await (app.locals.writersReady as Promise<void>).catch((error: unknown) => console.error(`Writer registry unavailable: ${error instanceof Error ? error.message : 'error'}`))
   const server = app.listen(port, '0.0.0.0')
   try { await once(server, 'listening') } catch (error) { app.locals.journal.close(); throw error }
   const address = server.address()

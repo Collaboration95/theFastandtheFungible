@@ -1,0 +1,114 @@
+// Per-publisher full-text + vector search (D2, #123). Node only; never import from src/.
+import { existsSync, readFileSync } from 'node:fs'
+import { create, insertMultiple, search, type AnyOrama } from '@orama/orama'
+import type { Article } from '../shared/contracts/writers.js'
+import { sha256 } from '../shared/manifest.js'
+
+export type SearchMode = 'hybrid' | 'keyword'
+export type Ranked = { articleId: string; relevance: number }
+export type Embedder = (query: string) => Promise<number[] | undefined>
+export type EmbeddingCache = { model: string; dims: number; vectors: Record<string, { hash: string; vector: number[] }> }
+
+/** Every ranking knob in one place, so it can be tuned on the story-bible questions. */
+export const SEARCH_TUNING = {
+  boost: { title: 3, abstract: 2, tags: 2, body: 1 },
+  /** Orama full-text threshold: 1 keeps any article matching at least one term. */
+  threshold: 1,
+  /** Minimum cosine similarity for the vector half. */
+  similarity: 0.3,
+  hybridWeights: { text: 0.5, vector: 0.5 },
+  queryTimeoutMs: 1500,
+  queryCacheTtlMs: 10 * 60_000,
+  /** Characters of body sent to the embedder (bge-base reads at most 512 tokens). */
+  embedBodyChars: 1500,
+}
+export const EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5'
+export const EMBEDDING_DIMS = 768
+const EMBEDDINGS_FILE = new URL('../data/corpus/v2/embeddings.json', import.meta.url)
+
+export const embeddingKey = (article: Pick<Article, 'articleId' | 'version'>) => `${article.articleId}@${article.version}`
+export const embeddingText = (article: Article) => `${article.title}\n${article.abstract}\n${article.tags.join(', ')}\n${article.body.slice(0, SEARCH_TUNING.embedBodyChars)}`
+/** Cached vector for an article, only while its body hash still matches. */
+export const cachedVector = (cache: EmbeddingCache | undefined, article: Article) => {
+  const entry = cache?.vectors[embeddingKey(article)]
+  return entry && entry.hash === sha256(article.body) ? entry.vector : undefined
+}
+export function loadEmbeddingCache(file: URL | string = EMBEDDINGS_FILE): EmbeddingCache | undefined {
+  return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) as EmbeddingCache : undefined
+}
+
+export type PublisherIndex = { db: AnyOrama; vectors: boolean }
+
+/** One in-memory index per publisher. Vectors are used only when every article has one. */
+export async function buildIndex(articles: Article[], cache?: EmbeddingCache): Promise<PublisherIndex> {
+  const vectors = articles.map(article => cachedVector(cache, article))
+  const withVectors = articles.length > 0 && vectors.every(Boolean)
+  const dims = withVectors ? vectors[0]!.length : 0
+  const db = create({
+    schema: { articleId: 'string', title: 'string', abstract: 'string', tags: 'string[]', body: 'string', ...(withVectors ? { embedding: `vector[${dims}]` as const } : {}) },
+  })
+  await insertMultiple(db, articles.map((article, i) => ({
+    articleId: article.articleId, title: article.title, abstract: article.abstract, tags: article.tags, body: article.body,
+    ...(withVectors ? { embedding: vectors[i] } : {}),
+  })))
+  return { db, vectors: withVectors }
+}
+
+/** Ranks one publisher's articles; relevance is normalised to 0–1 within the response (top hit = 1). */
+export async function searchIndex(index: PublisherIndex, term: string, k: number, queryVector?: number[]): Promise<{ mode: SearchMode; ranked: Ranked[] }> {
+  const mode: SearchMode = index.vectors && queryVector ? 'hybrid' : 'keyword'
+  const common = { term, limit: k, properties: ['title', 'abstract', 'tags', 'body'], boost: SEARCH_TUNING.boost, threshold: SEARCH_TUNING.threshold }
+  const result = mode === 'hybrid'
+    ? await search(index.db, { ...common, mode: 'hybrid', vector: { value: queryVector!, property: 'embedding' }, similarity: SEARCH_TUNING.similarity, hybridWeights: SEARCH_TUNING.hybridWeights })
+    : await search(index.db, { ...common, mode: 'fulltext' })
+  const top = Math.max(0, ...result.hits.map(hit => hit.score))
+  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: top > 0 ? Math.min(1, Math.max(0, hit.score / top)) : 0 }))
+  return { mode, ranked }
+}
+
+/** `SEARCH_EMBEDDINGS=live|off`, default off: tests and the fixture demo never call Workers AI. */
+export const embeddingsLive = (env: NodeJS.ProcessEnv = process.env) => env.SEARCH_EMBEDDINGS === 'live'
+
+type Fetch = typeof fetch
+/** Calls Workers AI with a batch of texts and returns one vector per text. */
+export async function embedTexts(texts: string[], options: { token?: string; accountId?: string; fetch?: Fetch; signal?: AbortSignal } = {}): Promise<number[][]> {
+  const token = options.token ?? process.env.CLOUDFLARE_API_TOKEN
+  if (!token) throw new Error('CLOUDFLARE_API_TOKEN is not set')
+  const call = options.fetch ?? fetch
+  const api = 'https://api.cloudflare.com/client/v4'
+  const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+  let accountId = options.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
+  if (!accountId) {
+    const accounts = await (await call(`${api}/accounts`, { headers, signal: options.signal })).json() as { result?: { id: string }[] }
+    if (accounts.result?.length !== 1) throw new Error('Set CLOUDFLARE_ACCOUNT_ID: the token sees zero or several accounts')
+    accountId = accounts.result[0].id
+  }
+  const response = await call(`${api}/accounts/${encodeURIComponent(accountId)}/ai/run/${EMBEDDING_MODEL}`, { method: 'POST', headers, body: JSON.stringify({ text: texts }), signal: options.signal })
+  if (!response.ok) throw new Error(`Workers AI embedding failed (${response.status})`)
+  const data = (await response.json() as { result?: { data?: number[][] } }).result?.data
+  if (!data || data.length !== texts.length || data.some(v => v.length !== EMBEDDING_DIMS)) throw new Error('Workers AI returned an unexpected embedding shape')
+  return data
+}
+
+export const normaliseQuery = (query: string) => query.toLowerCase().replace(/\s+/g, ' ').trim()
+
+/**
+ * Query embedder shared by every publisher in the process: cached by normalised
+ * query (short TTL) so a fan-out to N publishers costs one call. Any failure or
+ * a timeout returns undefined, and the caller falls back to keyword search.
+ */
+export function createQueryEmbedder(embed: (texts: string[], signal: AbortSignal) => Promise<number[][]> = (texts, signal) => embedTexts(texts, { signal }), now = Date.now): Embedder {
+  const cache = new Map<string, { at: number; vector: Promise<number[] | undefined> }>()
+  return query => {
+    const key = normaliseQuery(query)
+    const hit = cache.get(key)
+    if (hit && now() - hit.at < SEARCH_TUNING.queryCacheTtlMs) return hit.vector
+    const signal = AbortSignal.timeout(SEARCH_TUNING.queryTimeoutMs)
+    const vector = Promise.race([
+      embed([key], signal).then(vectors => vectors[0]),
+      new Promise<never>((_, reject) => signal.addEventListener('abort', () => reject(new Error('embedding timeout')), { once: true })),
+    ]).catch(() => { cache.delete(key); return undefined })
+    cache.set(key, { at: now(), vector })
+    return vector
+  }
+}
