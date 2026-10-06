@@ -213,6 +213,32 @@ describe('RunLoop × reputation (#140, #141)', () => {
     expect(h.purchases.purchase).not.toHaveBeenCalled()
     expect(calibrate).not.toHaveBeenCalled()
   })
+  it('D5: a failed proof that cannot be challenged (no re-checkable claim) still costs trust, once', async () => {
+    const recordProof = vi.fn()
+    const h = withReputation({ summaries: () => ({}), calibrate: vi.fn(), recordProof } as never)
+    Object.assign(h.purchases, { store: { ...h.store, getManifest: () => undefined, getDelivery: () => undefined }, client: {}, payer: {} })
+    h.purchases.purchase.mockImplementationOnce(async input => {
+      const intent: PurchaseIntent = { intentId: input.intentId, runId: h.run.runId, resourceId: input.candidate.resourceId, profileId: input.candidate.profileId, version: input.candidate.version, amountMinor: 80, status: 'CLAIM_FAILED', txHash: 'AB'.repeat(32) }
+      h.run.intents.push(intent); h.run.spentMinor += 80; return intent
+    })
+    await h.loop.start(h.run.runId)
+    expect(h.run.intents[0].status).toBe('CLAIM_FAILED') // nothing the writer could re-check
+    expect(recordProof.mock.calls.filter(([c]) => c.outcome === 'REJECTED')).toHaveLength(1)
+    expect(recordProof.mock.calls[0][0]).toMatchObject({ wallet: WALLET, outcome: 'REJECTED' })
+  })
+  it('restart: a terminal challenge outcome whose trust update a crash lost is recorded once, never twice', async () => {
+    const recordProof = vi.fn()
+    const h = withReputation({ summaries: () => ({}), calibrate: vi.fn(), recordProof } as never)
+    h.run.answers.push({ ...structuredClone(exampleAnswer), openGaps: [] })
+    h.run.candidates.push({ ...h.candidate, wallet: WALLET })
+    h.run.intents.push({ intentId: 'leak', runId: h.run.runId, resourceId: h.candidate.resourceId, profileId: h.candidate.profileId, version: h.candidate.version, amountMinor: 80, status: 'REFUNDED', refund: { txHash: 'CD'.repeat(32), amountMinor: 80 } })
+    await h.loop.start(h.run.runId)
+    h.run.phase = 'SEARCH'
+    await h.loop.start(h.run.runId)
+    expect(recordProof).toHaveBeenCalledTimes(1)
+    expect(recordProof.mock.calls[0][0]).toMatchObject({ wallet: WALLET, outcome: 'REFUNDED' })
+    expect(h.run.checkpoint.trustRecorded).toEqual(['leak'])
+  })
   it('calibrates once after each verified, granted purchase with the active provider, and a failure never blocks the run', async () => {
     let grantsAtCall = -1
     const calibrate = vi.fn(async (input: { run: RunSnapshot; intentId: string; provider: unknown }) => {

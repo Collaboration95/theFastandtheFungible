@@ -12,8 +12,12 @@ import { hitsByPublisher, retrieve, writeAnswer, type Retrieved } from './resear
 import type { Plan } from '../../shared/contracts/index.js'
 
 export type RunLoopOptions = { provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number; reputation?: Pick<Reputation, 'summaries' | 'calibrate'> & Partial<Pick<Reputation, 'recordProof'>> }
-/** A challenge's end state as reputation evidence (D5); anything else is not a proof outcome yet. */
-const OUTCOME: Partial<Record<PurchaseIntent['status'], ProofOutcome>> = { VERIFIED: 'PASS', REFUNDED: 'REFUNDED', CHALLENGE_REJECTED: 'REJECTED', CHALLENGE_REFUSED: 'REFUSED' }
+/**
+ * A proof's end state as reputation evidence (D5); anything else is not an outcome yet. Read only after a
+ * challenge was attempted, so CLAIM_FAILED means it could not be challenged (root mismatch, no re-checkable
+ * claim): still a failed proof, weighted like a rejection, since the penalty applies whether or not the writer refunds.
+ */
+const OUTCOME: Partial<Record<PurchaseIntent['status'], ProofOutcome>> = { VERIFIED: 'PASS', REFUNDED: 'REFUNDED', CHALLENGE_REJECTED: 'REJECTED', CHALLENGE_REFUSED: 'REFUSED', CLAIM_FAILED: 'REJECTED' }
 export class RunLoop {
   private readonly active = new Map<string, Promise<void>>()
   constructor(readonly store: Store, readonly client: PublisherClient, readonly purchases: PurchaseManager, readonly onEvent?: (event: TraceEvent) => void, readonly options: RunLoopOptions = {}) {}
@@ -30,12 +34,22 @@ export class RunLoop {
     const event = this.store.appendEvent(runId, { type: 'ANSWER_PROGRESS', label: 'Writing and validating cited evidence.' })
     try { this.onEvent?.(event) } catch { /* The event is already durable. */ }
   }
-  /** Proof outcome → trust (FINAL-PUSH §5), keyed by the seller of record's wallet (D21). Never blocks the run. */
+  /**
+   * Proof outcome → trust (FINAL-PUSH §5), keyed by the seller of record's wallet (D21). Once per intent:
+   * the checkpoint lists intents already recorded, so a restart sweep records only what a crash lost.
+   * Never blocks the run.
+   */
   private recordProof(runId: string, intent: PurchaseIntent) {
+    const run = this.store.getRun(runId)
+    const recorded = Array.isArray(run.checkpoint.trustRecorded) ? run.checkpoint.trustRecorded as string[] : []
     const outcome = OUTCOME[intent.status]
-    const candidate = this.store.getRun(runId).candidates.find(c => c.resourceId === intent.resourceId && c.version === intent.version && c.tier === 'PAID')
-    if (!outcome || !candidate?.wallet || !this.options.reputation?.recordProof) return
-    try { this.options.reputation.recordProof({ publisherSlug: candidate.publisherSlug ?? candidate.profileId, wallet: candidate.wallet, outcome, runId }) } catch { /* reputation never blocks the run */ }
+    const candidate = run.candidates.find(c => c.resourceId === intent.resourceId && c.version === intent.version && c.tier === 'PAID')
+    if (!outcome || recorded.includes(intent.intentId) || !candidate?.wallet || !this.options.reputation?.recordProof) return
+    try {
+      this.options.reputation.recordProof({ publisherSlug: candidate.publisherSlug ?? candidate.profileId, wallet: candidate.wallet, outcome, runId })
+      // Synchronous with the record above: no await between them, so it is recorded at most once.
+      this.store.updateRun(runId, { checkpoint: { ...this.store.getRun(runId).checkpoint, trustRecorded: [...recorded, intent.intentId] } })
+    } catch { /* reputation never blocks the run */ }
   }
   /** A failed proof: challenge the writer (#132), then the outcome lowers trust whether or not it refunds (D5). */
   private async challengeAndRecord(runId: string, intentId: string) {
@@ -161,8 +175,9 @@ export class RunLoop {
         await this.answer(runId)
       }
       // A failed proof interrupted before its challenge finished: challenge again (the writer refunds at most once).
-      // ponytail: a crash between the challenge outcome and recordProof loses that one trust update (at most once, never twice).
       for (const intent of this.store.getRun(runId).intents.filter(i => i.status === 'CLAIM_FAILED' || i.status === 'CHALLENGED')) await this.challengeAndRecord(runId, intent.intentId)
+      // A crash between a terminal outcome and its trust update: record what is missing (idempotent per intent).
+      for (const intent of this.store.getRun(runId).intents) this.recordProof(runId, intent)
       while (!this.stopped(runId)) {
         run = this.store.getRun(runId)
         if (run.round >= 3 || (run.budgetMinor > 0 && run.spentMinor + run.reservedMinor >= run.budgetMinor)) break

@@ -60,6 +60,13 @@ describe('report evidence and drafting', () => {
     // The refunded (quarantined) source is never a cited source.
     expect(report.sources.map(s => s.resourceId)).not.toContain(leak.resourceId)
   })
+  it('#142: a PAID citation opens the writer blog page, never the x402 agent endpoint', async () => {
+    const snapshot = paidRun()
+    snapshot.candidates[0] = { ...snapshot.candidates[0], publisherSlug: 'notfinancialtimes', url: '/w/notfinancialtimes/articles/x402-endpoint' }
+    const html = reportHtml(await buildReport(snapshot))
+    expect(html).toContain(`href="/w/notfinancialtimes/blog/${snapshot.contents[0].resourceId}"`)
+    expect(html).not.toContain('x402-endpoint')
+  })
   it('gate-4: a quarantined (failed-proof) grant is no source access for the report', async () => {
     const snapshot = paidRun(); snapshot.intents[0].status = 'CLAIM_FAILED'
     await expect(buildReport(snapshot)).rejects.toThrow('Report source requires a matching delivery grant')

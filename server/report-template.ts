@@ -14,7 +14,8 @@ export function reportHtml(report: Report): string {
   const writerUrl = (resourceId: string, version: string, spanId?: string) => {
     const candidate = report.access?.candidates.find(c => c.resourceId === resourceId && c.version === version)
     if (!candidate?.publisherSlug) return undefined
-    return candidate.tier === 'FREE' ? articleUrl(candidate.publisherSlug, resourceId, spanId) : candidate.url ?? articleUrl(candidate.publisherSlug, resourceId)
+    // candidate.url is the x402 agent endpoint for a PAID hit; readers get the blog page.
+    return articleUrl(candidate.publisherSlug, resourceId, candidate.tier === 'FREE' ? spanId : undefined)
   }
   const claims = (items: Claim[]) => items.map(claim => `<li><p>${escape(claim.text)} <strong>${escape(claim.stance)}</strong> ${claim.citations.map(ref => {
     if (!resolveCitation(ref, report.sources)) throw new Error('Unresolved report citation')
