@@ -1,3 +1,6 @@
+import { z } from 'zod'
+import { SearchHitSchema, type SearchHit } from '../shared/contracts/manifest.js'
+import { PassageSchema } from '../shared/contracts/writers.js'
 import { ContentEnvelopeSchema, ProfileSchema, PublicCandidateSchema, QuoteSchema, SettlementSchema, type ContentEnvelope, type Profile, type PublicCandidate, type Quote, type QuoteRequest, type Settlement } from '../shared/contracts/index.js'
 export type WireExchange = { method: string; path: string; status: number; body?: unknown }
 export type WireObserver = (wire: WireExchange) => void
@@ -55,4 +58,31 @@ export class PublisherClient {
     const result = await this.request('GET', `/v1/settlements/${encodeURIComponent(intentId)}`, undefined, undefined, true, observer)
     return SettlementSchema.parse(JSON.parse(result.bytes.toString('utf8')))
   }
+  // Federated search (D1, #138): registry, per-publisher search and FREE article reads.
+  private async getJson(path: string, timeoutMs?: number): Promise<unknown> {
+    const response = await fetch(new URL(path, this.options.baseUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(timeoutMs ?? this.options.timeoutMs ?? 5000), redirect: 'error' })
+    const wire = { method: 'GET', path, status: response.status }
+    try { this.options.onWire?.(wire) } catch { /* telemetry cannot alter retrieval */ }
+    if (!response.ok) throw new PublisherHttpError(response.status)
+    return response.json()
+  }
+  async registry(): Promise<RegistryPublisher[]> {
+    return RegistrySchema.parse(await this.getJson('/registry')).publishers
+  }
+  /** Invalid hits (schema or a PAID hit without a manifest) are dropped, never repaired. */
+  async searchPublisher(slug: string, q: string, k: number, timeoutMs?: number): Promise<SearchHit[]> {
+    const raw = z.array(z.unknown()).parse(await this.getJson(`/w/${encodeURIComponent(slug)}/search?${new URLSearchParams({ q, k: String(k) })}`, timeoutMs))
+    return raw.flatMap(item => { const hit = SearchHitSchema.safeParse(item); return hit.success && hit.data.publisherSlug === slug ? [hit.data] : [] })
+  }
+  /** FREE articles only (gate 1): a PAID url answers 402 and is never read here. */
+  async readFree(hit: SearchHit, publisherName: string): Promise<ContentEnvelope> {
+    if (hit.tier !== 'FREE') throw new Error('Only FREE articles are read without a grant')
+    const article = FreeArticleSchema.parse(await this.getJson(hit.url))
+    if (article.articleId !== hit.articleId || article.version !== hit.version || article.publisherSlug !== hit.publisherSlug || article.passages.some(p => !article.body.includes(p.text))) throw new Error('Publisher article identity or passages invalid')
+    return ContentEnvelopeSchema.parse({ profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.heading ? { label: p.heading } : {}) })) })
+  }
 }
+const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional() })
+const RegistrySchema = z.object({ publishers: z.array(RegistryPublisherSchema) })
+const FreeArticleSchema = z.object({ publisherSlug: z.string(), articleId: z.string(), version: z.string(), title: z.string().min(1), tier: z.literal('FREE'), body: z.string().min(1), passages: z.array(PassageSchema).min(1) })
+export type RegistryPublisher = z.infer<typeof RegistryPublisherSchema>

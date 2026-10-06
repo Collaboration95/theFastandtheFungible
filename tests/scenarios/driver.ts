@@ -10,7 +10,9 @@ import type { Store } from '../../server/store.js'
 
 const mode = process.argv[2]
 if (mode === 'publisher') {
-  const app = createPublisherApp({ corpus: JSON.parse(readFileSync(process.env.SCENARIO_CORPUS!, 'utf8')), journal: process.env.SCENARIO_JOURNAL!, secret: process.env.PUBLISHER_SECRET!, faults: false })
+  const app = createPublisherApp({ corpus: JSON.parse(readFileSync(process.env.SCENARIO_CORPUS!, 'utf8')), journal: process.env.SCENARIO_JOURNAL!, secret: process.env.PUBLISHER_SECRET!, faults: false,
+    // TODO(#157): these are the legacy Vertex scenarios; an empty writer registry keeps them on the /v1 path until UC1–UC3 replace them.
+    writers: { publishers: [], writers: [], articles: [] } })
   await app.locals.ready
   const server = app.listen(0, '127.0.0.1')
   await once(server, 'listening')
@@ -31,7 +33,9 @@ if (mode === 'publisher') {
     if (!/^http:\/\/127\.0\.0\.1:\d+\//.test(String(url))) throw new Error('Scenario external network forbidden')
     return transport(url, options)
   }
-  const fixture = new FixtureDecisionProvider('grid-energisation')
+  const fixture = new FixtureDecisionProvider()
+  // Clef sees a price-blind public view (abstract, tags); rebuild the candidate shape the fixture scores.
+  const fromClefState = (c: { abstract: string; tags: string[] }) => ({ profileId: 'clef-state', version: 'v1', price: { amountMinor: 0, currency: 'SGD' }, license: { kind: 'SYNTHETIC', attribution: 'clef-state' }, ...c, preview: c.abstract, facets: c.tags })
   const provider = new ClefDecisionProvider({ accountId: 'fixture-account', token: 'fixture-token', fetch: async (_url, options) => {
     const payload = JSON.parse(String(options?.body))
     audit('clef', payload)
@@ -39,7 +43,7 @@ if (mode === 'publisher') {
     await new Promise(done => setTimeout(done, 40))
     const answers = payload.questions.gap_material
       ? { gap_material: { type: 'noul', noul: (await fixture.judgeRound(payload.state)).gapMaterial } }
-      : await fixture.judgeCandidate(payload.state).then(j => ({ addresses_gap: { type: 'noul', noul: j.addressesGap }, originality: { type: 'choice', choice: 'original', probabilities: j.originality }, credibility: { type: 'score', score: j.credibility } }))
+      : await fixture.judgeCandidate({ ...payload.state, candidate: fromClefState(payload.state.candidate) }).then(j => ({ addresses_gap: { type: 'noul', noul: j.addressesGap }, originality: { type: 'choice', choice: 'original', probabilities: j.originality }, credibility: { type: 'score', score: j.credibility } }))
     return Response.json({ success: true, result: { answers } })
   } })
   const api = await createApiApp({ provider })

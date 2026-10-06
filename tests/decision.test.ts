@@ -14,11 +14,11 @@ const response = (body: unknown) => new Response(JSON.stringify(body), { status:
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.restoreAllMocks() })
 
 describe('decision policy', () => {
-  it('uses generic facets, derivedFrom, authority and exact arithmetic for the stage traps', async () => {
+  it('uses word/tag overlap, derivedFrom, authority and exact arithmetic for the stage traps', async () => {
     const result = await decide(input({ candidates: [paid('grid-report'), paid('rewrite', 30, { derivedFrom: 'supplier-report', preview: 'Summarises supplier reporting.' }), paid('expensive', 140), paid('supplier-report', 20, { facets: ['equipment-delivery'], preview: 'Supplier equipment lead times.' })] }))
     expect(result.selectedResourceId).toBe('grid-report')
     expect(result.rows.map(row => row.verdict)).toEqual(['BUY', 'SKIP_REWRITE', 'SKIP_OVER_CAP', 'SKIP_LOW_VALUE'])
-    expect(result.rows[0].value).toBeCloseTo(0.9 * 0.9 * 0.9 * (0.5 + 0.25 * 2))
+    expect(result.rows[0].value).toBeCloseTo(0.9 * 1 * 0.9 * (0.5 + 0.25 * 2))
     expect(result.rows[0].valuePerDollar).toBeCloseTo(result.rows[0].value / 0.8)
     expect(result.provider).toBe('fixture')
   })

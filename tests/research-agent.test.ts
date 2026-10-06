@@ -21,18 +21,19 @@ const stream = (value: unknown) => {
 }
 
 describe('W1 research', () => {
-  it('searches all profiles, ranks lexical/facet matches and reads every FREE candidate, never paid', async () => {
+  it('falls back to the legacy /v1 search only when the registry has no hits, and never reads paid', async () => {
     const candidates = [...free, candidate('random-paid', ['grid-energisation'], 'PAID')]
-    const client = { profiles: vi.fn(async () => [{ id: 'one' }, { id: 'two' }, { id: 'three' }]), search: vi.fn(async (id: string) => id === 'one' ? candidates : []), read: vi.fn(async (c: PublicCandidate) => ({ content: bodies.find(b => b.resourceId === c.resourceId)! })) }
+    const client = { registry: vi.fn(async () => []), profiles: vi.fn(async () => [{ id: 'one' }, { id: 'two' }, { id: 'three' }]), search: vi.fn(async (id: string) => id === 'one' ? candidates : []), read: vi.fn(async (c: PublicCandidate) => ({ content: bodies.find(b => b.resourceId === c.resourceId)! })) }
     const result = await retrieve(client as unknown as PublisherClient, 'Demand expansion')
     expect(client.search.mock.calls.map(c => c[0])).toEqual(['one', 'two', 'three'])
     expect(client.read.mock.calls.map(c => c[0].resourceId).sort()).toEqual(['random-A', 'random-B'])
     expect(result.candidates[0].resourceId).toBe('random-A')
     expect(result.contents).toHaveLength(2)
   })
-  it('uses metadata facets for gaps and preserves exact renamed citations and caller versions', async () => {
+  it('derives fixture gaps from uncovered tags and preserves exact renamed citations and caller versions', async () => {
     vi.stubEnv('LLM_PROVIDER', 'fixture')
-    const { answer } = await writeAnswer({ question: 'Does this work?', candidates: free, contents: bodies, version: 7 })
+    const { answer } = await writeAnswer({ question: 'Does this work?', candidates: [...free, candidate('random-C', ['grid-energisation'], 'PAID')], contents: bodies, version: 7 })
+    expect(answer.openGaps[0].text).toBe('No accessible evidence on grid energisation.')
     expect(answer.openGaps.map(g => g.tags?.[0])).toEqual(['grid-energisation'])
     expect(answer.provider).toBe('fixture'); expect(answer.version).toBe(7)
     expect(answer.claims[0].citations[0]).toEqual({ resourceId: 'random-A', version: 'v1', spanId: 'generic-span' })
@@ -50,7 +51,7 @@ describe('W1 research', () => {
       expect(answer.version).toBe(7)
     }
   })
-  it('summarises a large renamed corpus in 4–8 claims while retaining exact new grid evidence and all accessible spans', async () => {
+  it('summarises a large renamed corpus in 4–8 claims while retaining exact new paid evidence and all accessible spans', async () => {
     vi.stubEnv('LLM_PROVIDER', 'fixture')
     const candidates = Array.from({ length: 18 }, (_, i) => ({ ...candidate(`renamed-${i}`, [i % 2 ? 'demand' : 'equipment-delivery']), authority: i % 3 }))
     const contents = candidates.map((c, i) => {
@@ -58,11 +59,11 @@ describe('W1 research', () => {
       return { ...content(c.resourceId, spans.map(s => s.text).join(' ')), spans }
     })
     const before = JSON.stringify(contents)
-    const v1 = await writeAnswer({ question: 'q', candidates, contents, version: 1 })
+    const grid = { ...candidate('opaque-new-resource', ['grid-energisation'], 'PAID'), authority: 2 }
+    const v1 = await writeAnswer({ question: 'q', candidates: [...candidates, grid], contents, version: 1 })
     expect(v1.answer.claims.length).toBeGreaterThanOrEqual(4)
     expect(v1.answer.claims.length).toBeLessThanOrEqual(8)
     expect(v1.answer.openGaps.map(g => g.tags?.[0])).toEqual(['grid-energisation'])
-    const grid = { ...candidate('opaque-new-resource', ['grid-energisation'], 'PAID'), authority: 2 }
     const spans = [{ id: 'opaque-capacity', text: 'Only 240 of the 600 MW has confirmed energisation slots before 2028.' }, { id: 'opaque-delay', text: 'Substation works have slipped 14 months.' }]
     const delivered = { ...content(grid.resourceId, spans.map(s => s.text).join(' ')), spans }
     const allContents = [...contents, delivered]
@@ -186,7 +187,7 @@ describe('W1 research', () => {
     expect(request.messages[1].content).not.toMatch(/purchase|PUBLIC_PREVIEW_ONLY|unbought/)
   })
   it('rejects mismatched HTTP content identity rather than binding it to the requested source', async () => {
-    const client = { profiles: async () => [{ id: 'one' }], search: async () => free.slice(0, 1), read: async () => ({ content: bodies[1] }) }
+    const client = { registry: async () => [], profiles: async () => [{ id: 'one' }], search: async () => free.slice(0, 1), read: async () => ({ content: bodies[1] }) }
     await expect(retrieve(client as unknown as PublisherClient, 'q')).rejects.toThrow('binding mismatch')
   })
   it('streamJson is reusable by the report agent and parses chunked UTF-8 SSE JSON', async () => {

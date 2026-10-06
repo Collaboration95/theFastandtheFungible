@@ -2,13 +2,14 @@ import { activeTraceUrl, scoreTrace, traceRun } from '../telemetry.js'
 import type { Store } from '../store.js'
 import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
-import { AnswerSchema, PublicCandidateSchema, providerLabels } from '../../shared/contracts/index.js'
+import { AnswerSchema, PlanSchema, PublicCandidateSchema, providerLabels } from '../../shared/contracts/index.js'
 import type { ContentEnvelope, RunSnapshot, TraceEvent } from '../../shared/contracts/index.js'
 import { decide, publicSources } from './decision.js'
 import type { DecisionProvider } from './decision.js'
-import { retrieve, writeAnswer } from './research.js'
+import { retrieve, writeAnswer, type Retrieved } from './research.js'
+import type { Plan } from '../../shared/contracts/index.js'
 
-export type RunLoopOptions = { provider?: DecisionProvider; retrieve?: typeof retrieve; writeAnswer?: typeof writeAnswer; threshold?: number }
+export type RunLoopOptions = { provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number }
 export class RunLoop {
   private readonly active = new Map<string, Promise<void>>()
   constructor(readonly store: Store, readonly client: PublisherClient, readonly purchases: PurchaseManager, readonly onEvent?: (event: TraceEvent) => void, readonly options: RunLoopOptions = {}) {}
@@ -113,7 +114,11 @@ export class RunLoop {
       if (!run.answers.length) {
         this.trace(runId, 'SEARCH', 'Searching publisher public metadata.')
         this.trace(runId, 'READ_FREE', 'Reading free sources only.')
-        const retrieved = await (this.options.retrieve ?? retrieve)(this.client, run.question)
+        const plan = PlanSchema.safeParse(run.checkpoint.plan)
+        const retrieved = await (this.options.retrieve ?? retrieve)(this.client, run.question, plan.success ? plan.data : undefined)
+        // A PAID hit with a bad manifest never reaches Clef; the run records why (#138).
+        for (const drop of retrieved.dropped ?? []) this.store.appendEvent(runId, { type: 'MANIFEST_DROPPED', label: `Dropped ${drop.resourceId}: ${drop.reason}.`, data: { ...drop } })
+        if (retrieved.search) this.store.updateRun(runId, { labels: { ...this.store.getRun(runId).labels, search: retrieved.search } })
         const candidates = retrieved.candidates.map(candidate => PublicCandidateSchema.parse(candidate))
         if (retrieved.contents.some(content => !candidates.some(candidate => candidate.tier === 'FREE' && candidate.resourceId === content.resourceId && candidate.version === content.version && candidate.profileId === content.profileId))) throw new Error('Retrieval returned ungranted paid content')
         this.store.updateRun(runId, { candidates })
@@ -132,7 +137,7 @@ export class RunLoop {
         this.trace(runId, 'DECIDE', 'Scoring public previews and applying spending policy.')
         const contents = this.accessible(run)
         const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => content.resourceId === candidate.resourceId && content.version === candidate.version)))
-        const decision = await decide({ question: run.question, conclusion: answer.conclusion, gap: gap?.text ?? '', gapFacet: gap?.tags?.[0], candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold })
+        const decision = await decide({ question: run.question, conclusion: answer.conclusion, gap: gap?.text ?? '', candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold })
         this.store.addDecision(runId, decision)
         const latest = this.store.getRun(runId)
         this.store.updateRun(runId, { labels: { ...latest.labels, decision: `${decision.provider === 'cloudflare' ? 'Cloudflare' : 'fixture'} · ${decision.model}` } })

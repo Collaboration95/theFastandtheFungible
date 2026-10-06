@@ -28,13 +28,19 @@ export function parseClefCandidate(payload: unknown): CandidateJudgment {
 export const clefQuestions = {
   round: { gap_material: { type: 'noul', instructions: 'Resolving the open gap could change the conclusion of the answer.' } },
   candidate: {
-    addresses_gap: { type: 'noul', instructions: "The candidate's preview indicates it contains new evidence that directly addresses the open gap." },
+    addresses_gap: { type: 'noul', instructions: "The candidate's public abstract and tags indicate it contains new evidence that directly addresses the open gap." },
     originality: { type: 'choice', instructions: 'Classify the candidate evidence relative to the listed already-read sources.', criteria: { original: 'Original reporting or primary data.', rewrite: 'A rewrite, syndication or summary of another listed source.', overlap: 'Mostly repeats what the already-read sources say.' } },
     credibility: { type: 'score', instructions: 'Assess the credibility of the candidate evidence.', criteria: ['Opinion or marketing', 'Secondary reporting', 'Named primary sources or data'] },
   },
 }
-/** Payment addresses say nothing about evidence; keep them out of the decision model's state. */
-const withoutWallet = ({ wallet: _wallet, ...candidate }: PublicCandidate) => candidate
+/**
+ * The candidate as Clef sees it: public hit fields only. No wallet or price (judging is
+ * price-blind), no url; the claimed relevance stays in so calibration has a promise to check.
+ */
+export const clefCandidate = (c: PublicCandidate) => ({
+  resourceId: c.resourceId, title: c.title, publisher: c.publisher, abstract: c.preview, tags: c.facets, tier: c.tier, family: c.family,
+  ...(c.derivedFrom ? { derivedFrom: c.derivedFrom } : {}), ...(c.relevance === undefined ? {} : { relevance: c.relevance }), authority: c.authority,
+})
 export type ClefOptions = { accountId?: string; token?: string; model?: string; fetch?: typeof fetch; allowLive?: boolean; timeoutMs?: number }
 export class ClefDecisionProvider implements DecisionProvider {
   readonly name = 'cloudflare' as const
@@ -107,6 +113,6 @@ export class ClefDecisionProvider implements DecisionProvider {
     return parseClefRound(await this.judge('judge-gap', { question: input.question, conclusion: input.conclusion, gap: input.gap }, clefQuestions.round, parseClefRound))
   }
   async judgeCandidate(input: Parameters<DecisionProvider['judgeCandidate']>[0]) {
-    return parseClefCandidate(await this.judge('judge-candidate', { question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: withoutWallet(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate, { resourceId: input.candidate.resourceId, priceMinor: input.candidate.price.amountMinor }))
+    return parseClefCandidate(await this.judge('judge-candidate', { question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: clefCandidate(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate, { resourceId: input.candidate.resourceId, priceMinor: input.candidate.price.amountMinor }))
   }
 }
