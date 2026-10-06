@@ -4,14 +4,20 @@ import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
 import { challenge } from '../challenges.js'
 import { AnswerSchema, PlanSchema, PublicCandidateSchema, providerLabels } from '../../shared/contracts/index.js'
-import type { ContentEnvelope, RunSnapshot, TraceEvent } from '../../shared/contracts/index.js'
+import type { ContentEnvelope, PurchaseIntent, RunSnapshot, TraceEvent } from '../../shared/contracts/index.js'
 import { decide, FixtureDecisionProvider, publicSources } from './decision.js'
-import type { Reputation } from '../reputation.js'
+import type { ProofOutcome, Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
-import { retrieve, writeAnswer, type Retrieved } from './research.js'
+import { hitsByPublisher, retrieve, writeAnswer, type Retrieved } from './research.js'
 import type { Plan } from '../../shared/contracts/index.js'
 
-export type RunLoopOptions = { provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number; reputation?: Pick<Reputation, 'summaries' | 'calibrate'> }
+export type RunLoopOptions = { provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number; reputation?: Pick<Reputation, 'summaries' | 'calibrate'> & Partial<Pick<Reputation, 'recordProof'>> }
+/**
+ * A proof's end state as reputation evidence (D5); anything else is not an outcome yet. Read only after a
+ * challenge was attempted, so CLAIM_FAILED means it could not be challenged (root mismatch, no re-checkable
+ * claim): still a failed proof, weighted like a rejection, since the penalty applies whether or not the writer refunds.
+ */
+const OUTCOME: Partial<Record<PurchaseIntent['status'], ProofOutcome>> = { VERIFIED: 'PASS', REFUNDED: 'REFUNDED', CHALLENGE_REJECTED: 'REJECTED', CHALLENGE_REFUSED: 'REFUSED', CLAIM_FAILED: 'REJECTED' }
 export class RunLoop {
   private readonly active = new Map<string, Promise<void>>()
   constructor(readonly store: Store, readonly client: PublisherClient, readonly purchases: PurchaseManager, readonly onEvent?: (event: TraceEvent) => void, readonly options: RunLoopOptions = {}) {}
@@ -27,6 +33,33 @@ export class RunLoop {
     if (this.stopped(runId)) return
     const event = this.store.appendEvent(runId, { type: 'ANSWER_PROGRESS', label: 'Writing and validating cited evidence.' })
     try { this.onEvent?.(event) } catch { /* The event is already durable. */ }
+  }
+  /**
+   * Proof outcome → trust (FINAL-PUSH §5), keyed by the seller of record's wallet (D21). Once per intent:
+   * the checkpoint lists intents already recorded, so a restart sweep records only what a crash lost.
+   * Never blocks the run.
+   */
+  private recordProof(runId: string, intent: PurchaseIntent) {
+    const run = this.store.getRun(runId)
+    const recorded = Array.isArray(run.checkpoint.trustRecorded) ? run.checkpoint.trustRecorded as string[] : []
+    const outcome = OUTCOME[intent.status]
+    const candidate = run.candidates.find(c => c.resourceId === intent.resourceId && c.version === intent.version && c.tier === 'PAID')
+    if (!outcome || recorded.includes(intent.intentId) || !candidate?.wallet || !this.options.reputation?.recordProof) return
+    try {
+      this.options.reputation.recordProof({ publisherSlug: candidate.publisherSlug ?? candidate.profileId, wallet: candidate.wallet, outcome, runId })
+      // Synchronous with the record above: no await between them, so it is recorded at most once.
+      this.store.updateRun(runId, { checkpoint: { ...this.store.getRun(runId).checkpoint, trustRecorded: [...recorded, intent.intentId] } })
+    } catch { /* reputation never blocks the run */ }
+  }
+  /** A failed proof: challenge the writer (#132), then the outcome lowers trust whether or not it refunds (D5). */
+  private async challengeAndRecord(runId: string, intentId: string) {
+    this.recordProof(runId, await challenge(this.purchases, intentId))
+  }
+  /** The clarify answers (UC2's angle) narrow the gap the answer writer names. */
+  private focus(run: RunSnapshot) {
+    const answers = run.checkpoint.answers
+    const values = answers && typeof answers === 'object' ? Object.values(answers as Record<string, unknown>).filter((v): v is string => typeof v === 'string' && v.trim().length > 0) : []
+    return values.length ? values.join(', ') : undefined
   }
   private stopped(runId: string) { return this.store.getRun(runId).stopped }
   stop(runId: string): void {
@@ -64,7 +97,7 @@ export class RunLoop {
       lastProgressAt = now
       this.progress(runId)
     }
-    const result = await (this.options.writeAnswer ?? writeAnswer)({ question: run.question, contents: this.accessible(run), candidates: run.candidates.map(candidate => PublicCandidateSchema.parse(candidate)), version: (previous?.version ?? 0) + 1, onToken, ...(previous ? { previous: structuredClone(previous) } : {}) })
+    const result = await (this.options.writeAnswer ?? writeAnswer)({ question: run.question, contents: this.accessible(run), candidates: run.candidates.map(candidate => PublicCandidateSchema.parse(candidate)), version: (previous?.version ?? 0) + 1, onToken, ...(this.focus(run) ? { focus: this.focus(run) } : {}), ...(previous ? { previous: structuredClone(previous) } : {}) })
     const answer = AnswerSchema.parse(result.answer)
     if (answer.version !== (previous?.version ?? 0) + 1) throw new Error('Answer version mismatch')
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
@@ -82,6 +115,8 @@ export class RunLoop {
     scoreTrace('run-outcome', run.phase)
     if (run.impact) scoreTrace('impact', run.impact.classification, run.impact.explanation)
     scoreTrace('spent-sgd', run.spentMinor / 100)
+    if (run.refundedMinor) scoreTrace('refunded-sgd', run.refundedMinor / 100)
+    if (this.options.reputation) scoreTrace('quarantined-publishers', Object.values(this.options.reputation.summaries()).filter(r => r.status !== 'active').length)
     const fallbacks = [...run.answers.filter(a => a.provider === 'fixture').map(a => `answer v${a.version}`), ...run.decisions.filter(d => d.provider === 'fixture').map(d => `decision round ${d.round}`)]
     scoreTrace('fully-live', fallbacks.length === 0, fallbacks.length ? `fixture: ${fallbacks.join(', ')}` : undefined)
     // The trace link lands in the run's own activity feed and the API log, ready to click on stage.
@@ -106,7 +141,13 @@ export class RunLoop {
       if (run.stopped || run.phase === 'DONE') return
       // Restart of an interrupted purchase only reconciles/verifies; it cannot buy again.
       if (run.intents.some(intent => ['SUBMITTING', 'SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED'].includes(intent.status))) {
+        const pending = run.intents.filter(intent => intent.status !== 'VERIFIED').map(intent => intent.intentId)
         await this.purchases.reconcile()
+        run = this.store.getRun(runId)
+        for (const intent of run.intents.filter(i => pending.includes(i.intentId))) {
+          if (intent.status === 'VERIFIED') this.recordProof(runId, intent)
+          else if (intent.status === 'CLAIM_FAILED') await this.challengeAndRecord(runId, intent.intentId)
+        }
         run = this.store.getRun(runId)
         if (run.intents.some(intent => ['SUBMITTING', 'SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED'].includes(intent.status))) throw new Error('Delivery retry required')
         await this.answer(runId)
@@ -121,6 +162,10 @@ export class RunLoop {
         // A PAID hit with a bad manifest never reaches Clef; the run records why (#138).
         for (const drop of retrieved.dropped ?? []) this.store.appendEvent(runId, { type: 'MANIFEST_DROPPED', label: `Dropped ${drop.resourceId}: ${drop.reason}.`, data: { ...drop } })
         if (retrieved.search) this.store.updateRun(runId, { labels: { ...this.store.getRun(runId).labels, search: retrieved.search } })
+        if (retrieved.hits) {
+          const perPublisher = hitsByPublisher(retrieved.hits)
+          this.store.appendEvent(runId, { type: 'SEARCH', label: `${retrieved.hits.length} hits from ${Object.keys(perPublisher).length} writers · ${retrieved.search ?? 'no results'}${retrieved.unavailable?.length ? ` · unavailable: ${retrieved.unavailable.join(', ')}` : ''}`, data: { perPublisher, searchMode: retrieved.search ?? null, unavailable: retrieved.unavailable ?? [], dropped: retrieved.dropped?.length ?? 0 } })
+        }
         const candidates = retrieved.candidates.map(candidate => PublicCandidateSchema.parse(candidate))
         if (retrieved.contents.some(content => !candidates.some(candidate => candidate.tier === 'FREE' && candidate.resourceId === content.resourceId && candidate.version === content.version && candidate.profileId === content.profileId))) throw new Error('Retrieval returned ungranted paid content')
         this.store.updateRun(runId, { candidates })
@@ -130,7 +175,9 @@ export class RunLoop {
         await this.answer(runId)
       }
       // A failed proof interrupted before its challenge finished: challenge again (the writer refunds at most once).
-      for (const intent of this.store.getRun(runId).intents.filter(i => i.status === 'CLAIM_FAILED' || i.status === 'CHALLENGED')) await challenge(this.purchases, intent.intentId)
+      for (const intent of this.store.getRun(runId).intents.filter(i => i.status === 'CLAIM_FAILED' || i.status === 'CHALLENGED')) await this.challengeAndRecord(runId, intent.intentId)
+      // A crash between a terminal outcome and its trust update: record what is missing (idempotent per intent).
+      for (const intent of this.store.getRun(runId).intents) this.recordProof(runId, intent)
       while (!this.stopped(runId)) {
         run = this.store.getRun(runId)
         if (run.round >= 3 || (run.budgetMinor > 0 && run.spentMinor + run.reservedMinor >= run.budgetMinor)) break
@@ -157,8 +204,9 @@ export class RunLoop {
         // SKIPPED and FAILED_NOT_SETTLED delivered no payment (a failed ledger tx burns only its fee); the next round may decide again.
         if (intent.status === 'SKIPPED' || intent.status === 'FAILED_NOT_SETTLED') continue
         // A failed proof (#131): the source is quarantined and never cited; challenge the writer (#132), then decide again.
-        if (intent.status === 'CLAIM_FAILED') { await challenge(this.purchases, intent.intentId); continue }
+        if (intent.status === 'CLAIM_FAILED') { await this.challengeAndRecord(runId, intent.intentId); continue }
         if (intent.status !== 'VERIFIED') throw new Error('Purchase did not verify delivery')
+        this.recordProof(runId, intent)
         if (this.stopped(runId)) return
         this.trace(runId, 'READ_PAID', 'Verified grant permits paid evidence.', { intentId })
         // Calibration (#141): re-score the granted body; a failure is labelled inside calibrate() and never blocks the run.
@@ -179,7 +227,9 @@ export class RunLoop {
       if (!intent || intent.runId !== runId || !['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED'].includes(intent.status)) throw new Error('Invalid delivery retry')
       if (intent.status !== 'VERIFIED') {
         const verified = await this.purchases.retryDelivery(intentId)
+        if (verified.status === 'CLAIM_FAILED') await this.challengeAndRecord(runId, intentId)
         if (verified.status !== 'VERIFIED') throw new Error('Delivery still unverified')
+        this.recordProof(runId, verified)
       }
       this.store.updateRun(runId, { error: undefined })
       this.trace(runId, 'READ_PAID', 'Resuming delivery verification only; no new purchase.', { intentId })

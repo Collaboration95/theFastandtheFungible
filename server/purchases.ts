@@ -7,6 +7,7 @@ import { verifyManifestSignature } from '../shared/manifest.js'
 import { encodeHeader, invoiceIdFor, ledgerInvoiceId } from '../shared/x402.js'
 import { PROVEN_STATUSES, type Store } from './store.js'
 import { checkProof } from './proofs.js'
+import { recordStep } from './telemetry.js'
 import { PublisherClient, PublisherHttpError, type WireObserver } from './publisher-client.js'
 import { SimulatedPayer, XrplPayer, type Payer, type Submission } from './xrpl.js'
 
@@ -206,7 +207,9 @@ export class PurchaseManager {
       const content: ContentEnvelope = { profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: paid.title, publisher: paid.publisher, body: paid.body, spans: paid.passages }
       this.store.addGrant({ runId: intent.runId, resourceId: intent.resourceId, version: intent.version, intentId: intent.intentId, contentDigest: intent.quote!.contentDigest, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: paid.salts })
       // Only the proof check makes the grant accessible; a failure quarantines it (never cited).
-      if (checkProof(this.store, intent.intentId).status === 'VERIFIED') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'manifest root verified', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
+      const proof = checkProof(this.store, intent.intentId)
+      recordStep('proof-check', { intentId: intent.intentId, resourceId: intent.resourceId }, { status: proof.status, failedClaimIds: proof.failedClaimIds ?? [] })
+      if (proof.status === 'VERIFIED') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'manifest root verified', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
     } catch {
       // Delivery errors preserve the charge and receipt; a retry resends the same blob.
       if (!PROVEN_STATUSES.has(this.store.getIntent(intent.intentId)!.status)) this.store.updateIntent(intent.intentId, { status: 'DELIVERY_FAILED', error: 'Delivery verification failed; retry delivery' })

@@ -38,8 +38,9 @@ describe('publisher search engine (#123)', () => {
     expect(mode).toBe('keyword')
     expect(ranked.map(r => r.articleId)).toContain(articleId)
     expect(ranked[0].articleId).toBe(articleId)
-    expect(ranked[0].relevance).toBe(1)
-    for (const r of ranked) expect(r.relevance).toBeGreaterThanOrEqual(0)
+    // Absolute, not normalised to the top hit (#142): bounded, ordered like the scores.
+    for (const r of ranked) { expect(r.relevance).toBeGreaterThan(0); expect(r.relevance).toBeLessThan(1) }
+    expect(ranked.map(r => r.relevance)).toEqual([...ranked.map(r => r.relevance)].sort((a, b) => b - a))
   })
 
   it.each(GOLDEN)('hybrid with cached + stubbed query vectors: $articleId ranks top 5', async ({ q, publisher, articleId }) => {
@@ -50,7 +51,7 @@ describe('publisher search engine (#123)', () => {
     expect(mode).toBe('hybrid')
     expect(ranked.map(r => r.articleId)).toContain(articleId)
     expect(ranked[0].articleId).toBe(articleId)
-    expect(Math.max(...ranked.map(r => r.relevance))).toBe(1)
+    for (const r of ranked) expect(r.relevance).toBeGreaterThan(0)
     for (const r of ranked) expect(r.relevance).toBeLessThanOrEqual(1)
   })
 

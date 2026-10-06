@@ -83,6 +83,7 @@ export async function buildReport(input: RunSnapshot): Promise<Report> {
     firstAnswer, finalAnswer, firstFindings, finalFindings,
     firstVersion: first?.version, finalVersion: final?.version,
     labels: run.labels,
+    refunds: run.intents.filter(i => i.runId === run.runId && i.refund).map(i => ({ intentId: i.intentId, resourceId: i.resourceId, version: i.version, ...i.refund! })),
     access: { runId: run.runId, candidates: run.candidates, grants: run.grants },
   })
 }

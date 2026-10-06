@@ -17,6 +17,8 @@ export const SEARCH_TUNING = {
   /** Minimum cosine similarity for the vector half. */
   similarity: 0.3,
   hybridWeights: { text: 0.5, vector: 0.5 },
+  /** Keyword relevance = bm25 / (bm25 + this): absolute, so a weak top hit is not promised as 1.0 (#142). */
+  keywordHalfScore: 5,
   queryTimeoutMs: 1500,
   queryCacheTtlMs: 10 * 60_000,
   /** Characters of body sent to the embedder (bge-base reads at most 512 tokens). */
@@ -54,15 +56,20 @@ export async function buildIndex(articles: Article[], cache?: EmbeddingCache): P
   return { db, vectors: withVectors }
 }
 
-/** Ranks one publisher's articles; relevance is normalised to 0–1 within the response (top hit = 1). */
+/**
+ * Ranks one publisher's articles. Relevance is an absolute 0–1 promise, never normalised to the top hit:
+ * per-response normalisation made every publisher promise 1.0 for its best hit, so an inflated
+ * claim (AlphaLeak's 0.96) looked modest and calibration had nothing to check (#142).
+ */
 export async function searchIndex(index: PublisherIndex, term: string, k: number, queryVector?: number[]): Promise<{ mode: SearchMode; ranked: Ranked[] }> {
   const mode: SearchMode = index.vectors && queryVector ? 'hybrid' : 'keyword'
   const common = { term, limit: k, properties: ['title', 'abstract', 'tags', 'body'], boost: SEARCH_TUNING.boost, threshold: SEARCH_TUNING.threshold }
   const result = mode === 'hybrid'
     ? await search(index.db, { ...common, mode: 'hybrid', vector: { value: queryVector!, property: 'embedding' }, similarity: SEARCH_TUNING.similarity, hybridWeights: SEARCH_TUNING.hybridWeights })
     : await search(index.db, { ...common, mode: 'fulltext' })
-  const top = Math.max(0, ...result.hits.map(hit => hit.score))
-  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: top > 0 ? Math.min(1, Math.max(0, hit.score / top)) : 0 }))
+  // Orama's hybrid score is already a 0–1 blend; BM25 is unbounded, so it saturates.
+  const absolute = (score: number) => Math.min(1, Math.max(0, mode === 'hybrid' ? score : score / (score + SEARCH_TUNING.keywordHalfScore)))
+  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(hit.score) }))
   return { mode, ranked }
 }
 
