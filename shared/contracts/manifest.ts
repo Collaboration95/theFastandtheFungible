@@ -37,3 +37,7 @@ export const SearchHitSchema = z.object({
 export type ClaimKind = z.infer<typeof ClaimKindSchema>
 export type Manifest = z.infer<typeof ManifestSchema>
 export type SearchHit = z.infer<typeof SearchHitSchema>
+
+/** Root-relative HUMAN page path of an article, optionally at a passage anchor (#147). Never for fetching: SearchHit.url is the machine route. */
+export const articleUrl = (publisherSlug: string, articleId: string, passageId?: string) =>
+  `/w/${publisherSlug}/blog/${articleId}${passageId ? `#p-${passageId}` : ''}`
