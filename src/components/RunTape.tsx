@@ -22,7 +22,7 @@ function tapeRows(run: RunSnapshot): Row[] {
       rows.push({ key, kind: 'read', event, title: 'Read free sources', state: 'now', meta: `${free} free · ${run.candidates.length - free} paywalled` })
     } else if (event.type === 'ANSWER') {
       const answer = answers[answerN++]
-      const gap = answer?.openGaps[0]?.facet.replace(/-/g, ' ')
+      const gap = answer?.openGaps[0]?.tags?.[0]?.replace(/-/g, ' ')
       rows.push(answerN === 1
         ? { key, kind: 'answer', event, title: 'Write answer v1', state: 'now', meta: answer ? `${answer.claims.length} cited claims${gap ? ` · gap: ${gap}` : ''}` : 'Writing…' }
         : { key, kind: 'rewrite', event, title: 'Rewrite answer', state: 'now', meta: answer ? `v${answer.version}${run.impact ? ` · ${run.impact.classification.toLowerCase()}` : ''}` : 'Writing…' })

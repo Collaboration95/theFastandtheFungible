@@ -2,7 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { XRPL_LABEL, type PurchaseIntent, type Receipt, type RunSnapshot } from '../../shared/contracts/index.js'
 import { candidateOf, money, shortHash } from '../format'
 
-const LEVEL: Record<PurchaseIntent['status'], number> = { DECIDED: 0, QUOTED: 1, RESERVED: 2, SUBMITTING: 2, SETTLED: 3, DELIVERY_PENDING: 4, VERIFIED: 5, DELIVERY_FAILED: 3, FAILED_NOT_SETTLED: 2, SKIPPED: 0 }
+const LEVEL: Record<PurchaseIntent['status'], number> = { DECIDED: 0, QUOTED: 1, RESERVED: 2, SUBMITTING: 2, SETTLED: 3, DELIVERY_PENDING: 4, VERIFIED: 5, DELIVERY_FAILED: 3, FAILED_NOT_SETTLED: 2, SKIPPED: 0, CLAIM_FAILED: 4, CHALLENGED: 4, REFUNDED: 4, CHALLENGE_REJECTED: 4, CHALLENGE_REFUSED: 4 }
 
 /** A digest scrambles, then locks left to right (once, when it first appears). */
 function Digest({ value }: { value: string }) {

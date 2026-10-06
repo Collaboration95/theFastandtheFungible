@@ -1,7 +1,8 @@
 import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
-import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema, FacetSchema } from '../../shared/contracts/index.js'
+import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
+import { LEGACY_FACETS } from './research.js'
 import type { CandidateJudgment, DecisionRound, PublicCandidate, PublicSourceRef } from '../../shared/contracts/index.js'
 
 export interface DecisionProvider {
@@ -19,7 +20,7 @@ export const publicCandidate = (input: unknown): PublicCandidate => PublicCandid
 export const publicSources = (input: unknown): PublicSourceRef[] => z.array(SourceRefSchema).parse(input)
 const words = (text: string) => new Set(text.toLowerCase().match(/[a-z0-9]+/g)?.filter(word => word.length > 3) ?? [])
 const overlap = (a: string, b: string) => [...words(a)].filter(word => words(b).has(word)).length
-const facetFor = (gap: string) => FacetSchema.options.find(facet => overlap(gap, facet.replaceAll('-', ' ')) > 0)
+const facetFor = (gap: string) => LEGACY_FACETS.find(facet => overlap(gap, facet.replaceAll('-', ' ')) > 0)
 
 /** Generic metadata heuristics, with no named-source or hidden corpus knowledge. */
 export class FixtureDecisionProvider implements DecisionProvider {
@@ -34,7 +35,7 @@ export class FixtureDecisionProvider implements DecisionProvider {
     const sources = publicSources(readSources)
     const rewrite = Boolean(candidate.derivedFrom) || /\b(rewrite|summari[sz]es?|syndicat\w*)\b/i.test(candidate.preview)
     const repeated = sources.some(source => source.family === candidate.family)
-    const facet = FacetSchema.safeParse(this.gapFacet).data ?? facetFor(gap)
+    const facet = LEGACY_FACETS.find(f => f === this.gapFacet) ?? facetFor(gap)
     const relevant = facet ? candidate.facets.includes(facet) : overlap(gap, candidate.preview) >= 2
     return {
       addressesGap: gap.trim() ? (relevant ? 0.9 : 0.08) : 0,

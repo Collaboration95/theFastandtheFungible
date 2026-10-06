@@ -132,7 +132,7 @@ export class RunLoop {
         this.trace(runId, 'DECIDE', 'Scoring public previews and applying spending policy.')
         const contents = this.accessible(run)
         const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => content.resourceId === candidate.resourceId && content.version === candidate.version)))
-        const decision = await decide({ question: run.question, conclusion: answer.conclusion, gap: gap?.text ?? '', gapFacet: gap?.facet, candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold })
+        const decision = await decide({ question: run.question, conclusion: answer.conclusion, gap: gap?.text ?? '', gapFacet: gap?.tags?.[0], candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold })
         this.store.addDecision(runId, decision)
         const latest = this.store.getRun(runId)
         this.store.updateRun(runId, { labels: { ...latest.labels, decision: `${decision.provider === 'cloudflare' ? 'Cloudflare' : 'fixture'} · ${decision.model}` } })
