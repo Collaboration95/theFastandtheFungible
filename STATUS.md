@@ -4,6 +4,9 @@
 - Preflight 01:00: `make doctor` + `make keys` green (DeepSeek, Clef 1.3 s, payer 104 XRP, Langfuse).
 - WP-W0 contracts → [#168](https://github.com/Collaboration95/theFastandtheFungible/pull/168) → closes #112–#115 (review: NO BLOCKERS).
 - WP-C1 roster + story bible → [#169](https://github.com/Collaboration95/theFastandtheFungible/pull/169) → closes #117, #118 (NO BLOCKERS). Story: Kestrel Semiconductor × TSMC.
+- WP-S1 publisher host + Orama + search → [#170](https://github.com/Collaboration95/theFastandtheFungible/pull/170) → closes #122–#124 (review: 3 blockers — roster fallback, story-bible questions in leak test, golden-ranking test; fixed in one commit). Search knobs live in `SEARCH_TUNING` (`publisher/search.ts`).
+- WP-C2 corpus generator → [#171](https://github.com/Collaboration95/theFastandtheFungible/pull/171) → closes #119 (review: 1 blocker — call cap must count provider requests; fixed).
+- WP-S2 manifests + AlphaLeak → [#172](https://github.com/Collaboration95/theFastandtheFungible/pull/172) → closes #125, #126 (NO BLOCKERS).
 
 ## Pivot (6 Oct)
 - Direction changed: see [FINAL-PUSH.md](FINAL-PUSH.md). The v1 live demo was real (DeepSeek, Clef, XRPL Testnet) but looked static because every answer came from the 19-doc Vertex corpus and publisher search ignored the query.
