@@ -19,6 +19,7 @@ const paidRun = (): RunSnapshot => {
   const snapshot = run()
   snapshot.candidates[0].tier = 'PAID'
   snapshot.grants.push({ runId: snapshot.runId, resourceId: snapshot.contents[0].resourceId, version: 'v1', intentId: 'paid-intent', contentDigest: 'verified-digest', grantedAt: '2026-10-04' })
+  snapshot.intents.push({ intentId: 'paid-intent', runId: snapshot.runId, profileId: snapshot.contents[0].profileId, resourceId: snapshot.contents[0].resourceId, version: 'v1', amountMinor: 80, status: 'VERIFIED' })
   return snapshot
 }
 beforeEach(async () => { vi.clearAllMocks(); vi.mocked(isLlmConfigured).mockReturnValue(false); directory = await mkdtemp(join(tmpdir(), 'report-test-')) })
@@ -42,6 +43,10 @@ describe('report evidence and drafting', () => {
     vi.mocked(isLlmConfigured).mockReturnValue(true)
     await expect(buildReport(snapshot)).rejects.toThrow('matching delivery grant')
     expect(streamJson).not.toHaveBeenCalled()
+  })
+  it('gate-4: a quarantined (failed-proof) grant is no source access for the report', async () => {
+    const snapshot = paidRun(); snapshot.intents[0].status = 'CLAIM_FAILED'
+    await expect(buildReport(snapshot)).rejects.toThrow('Report source requires a matching delivery grant')
   })
   it('rejects unknown, duplicate sources and non-substring passages', async () => {
     const unknown = run(); unknown.candidates = []

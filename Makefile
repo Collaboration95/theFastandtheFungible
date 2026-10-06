@@ -43,8 +43,8 @@ doctor: ## node, deps, .env drift, ports, provider keys
 keys: ## provider keys only, plus one real DeepSeek + Clef call (latency, limits)
 	$(DOCTOR) --keys --deep
 
-wallets: ## re-fund XRPL Testnet wallets from the faucet after a Testnet reset (same addresses)
-	node --import tsx scripts/wallets.mjs
+wallets: ## top up XRPL Testnet wallets from the faucet (same addresses); CREATE=1 first creates missing paid-publisher wallets in .env
+	node --import tsx scripts/wallets.mjs $(if $(CREATE),--create)
 
 embeddings: ## (live, Workers AI) embed new/changed v2 articles into data/corpus/v2/embeddings.json; Q=<queries.json> also records query vectors
 	node --import tsx scripts/build-embeddings.mjs $(if $(Q),--queries $(Q))

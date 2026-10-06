@@ -2,6 +2,7 @@ import { activeTraceUrl, scoreTrace, traceRun } from '../telemetry.js'
 import type { Store } from '../store.js'
 import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
+import { challenge } from '../challenges.js'
 import { AnswerSchema, PlanSchema, PublicCandidateSchema, providerLabels } from '../../shared/contracts/index.js'
 import type { ContentEnvelope, RunSnapshot, TraceEvent } from '../../shared/contracts/index.js'
 import { decide, FixtureDecisionProvider, publicSources } from './decision.js'
@@ -128,6 +129,8 @@ export class RunLoop {
       } else if (run.checkpoint.intentId && run.checkpoint.answeredIntentId !== run.checkpoint.intentId && run.intents.some(intent => intent.intentId === run.checkpoint.intentId && intent.status === 'VERIFIED')) {
         await this.answer(runId)
       }
+      // A failed proof interrupted before its challenge finished: challenge again (the writer refunds at most once).
+      for (const intent of this.store.getRun(runId).intents.filter(i => i.status === 'CLAIM_FAILED' || i.status === 'CHALLENGED')) await challenge(this.purchases, intent.intentId)
       while (!this.stopped(runId)) {
         run = this.store.getRun(runId)
         if (run.round >= 3 || (run.budgetMinor > 0 && run.spentMinor + run.reservedMinor >= run.budgetMinor)) break
@@ -153,6 +156,8 @@ export class RunLoop {
         const intent = await this.purchases.purchase({ runId, candidate, intentId, manifest: candidate.manifest })
         // SKIPPED and FAILED_NOT_SETTLED delivered no payment (a failed ledger tx burns only its fee); the next round may decide again.
         if (intent.status === 'SKIPPED' || intent.status === 'FAILED_NOT_SETTLED') continue
+        // A failed proof (#131): the source is quarantined and never cited; challenge the writer (#132), then decide again.
+        if (intent.status === 'CLAIM_FAILED') { await challenge(this.purchases, intent.intentId); continue }
         if (intent.status !== 'VERIFIED') throw new Error('Purchase did not verify delivery')
         if (this.stopped(runId)) return
         this.trace(runId, 'READ_PAID', 'Verified grant permits paid evidence.', { intentId })

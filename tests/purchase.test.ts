@@ -25,7 +25,7 @@ const content: ContentEnvelope = { ...exampleContent, profileId: candidate.profi
 const SALTS = ['5a17']
 const ROOT = manifestRoot(content.spans.map((s, i) => leafHash(SALTS[i], i, s.id, s.text)))
 /** The candidate's verified search manifest: purchase() signs nothing without one. */
-const manifestFor = (articleId = candidate.resourceId, root = ROOT): Manifest => signManifest({ publisherSlug: candidate.profileId, articleId, version: 'v1', wallet: WALLET, pubKey: KEYS.publicKey, priceMinor: 80, leaves: [leafHash(SALTS[0], 0, content.spans[0].id, content.spans[0].text)], root, claims: [], wordCount: 5, publishedAt: '2026-10-01', relevance: 1 }, KEYS.privateKey)
+const manifestFor = (articleId = candidate.resourceId, root = ROOT): Manifest => signManifest({ publisherSlug: candidate.profileId, articleId, version: 'v1', wallet: WALLET, pubKey: KEYS.publicKey, priceMinor: 80, leaves: [leafHash(SALTS[0], 0, content.spans[0].id, content.spans[0].text)], root, claims: [], wordCount: 6, publishedAt: '2026-10-01', relevance: 1 }, KEYS.privateKey)
 const MANIFEST = manifestFor()
 function quote(runId: string, intentId: string, resourceId = candidate.resourceId): Quote {
   return { runId, intentId, profileId: candidate.profileId, resourceId, version: 'v1', quoteId: `q-${intentId}`, quoteHash: 'quote-hash', amountMinor: 80, currency: 'SGD', expiresAt: new Date(Date.now() + 60000).toISOString(), contentDigest: ROOT }
@@ -75,7 +75,7 @@ async function publisher() {
 }
 
 describe('atomic ledger and verified purchase flow', () => {
-  it('parallel same-intent requests submit once, parse snapshots, and persist safe wires', async () => {
+  it('gate-3: parallel duplicate pays (same intent) submit once, parse snapshots, and persist safe wires', async () => {
     const s = store(); const run = s.createRun('question', 200); const p = await publisher()
     const manager = new PurchaseManager(s, p.client)
     const results = await Promise.all(Array.from({ length: 8 }, () => manager.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'same' })))
@@ -93,7 +93,7 @@ describe('atomic ledger and verified purchase flow', () => {
     expect(snapshot.events.filter(e => e.type === 'WIRE')).toHaveLength(2)
     await expect(manager.purchase({ runId: run.runId, candidate: { ...candidate, version: 'v2' }, manifest: MANIFEST, intentId: 'same' })).rejects.toThrow('identity')
   })
-  it('independent managers share the durable submission claim', async () => {
+  it('gate-3: independent managers share the durable submission claim', async () => {
     const path = dbPath(); const a = store(path); const b = store(path); const run = a.createRun('question', 200); const p = await publisher()
     await Promise.all([new PurchaseManager(a, p.client), new PurchaseManager(b, p.client)].map(m => m.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'same' })))
     expect(p.state.charges).toBe(1); expect(p.state.paidGets).toBe(1)
@@ -106,13 +106,13 @@ describe('atomic ledger and verified purchase flow', () => {
     expect(results.filter(i => ['VERIFIED', 'DELIVERY_FAILED'].includes(i.status))).toHaveLength(1)
     expect(p.state.charges).toBe(1); expect(a.getRun(run.runId).spentMinor).toBe(80)
   })
-  it.each([0, 200])('S$0 / stopped run (%i) produces no settlement', async budget => {
+  it.each([0, 200])('gate-2: S$0 budget / Stop (%i) produces no settlement', async budget => {
     const s = store(); const run = s.createRun('question', budget); if (budget) s.updateRun(run.runId, { stopped: true })
     const p = await publisher(); const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'zero' })
     expect(result.status).toBe('SKIPPED'); expect(p.state.paidGets).toBe(0); expect(s.getRun(run.runId).reservedMinor).toBe(0)
     expect(s.getRun(run.runId).contents).toEqual([])
   })
-  it('enforces cap, durable quote, immutable accounting and stopped reservation', () => {
+  it('gate-2: enforces the over-cap refusal, durable quote, immutable accounting and stopped reservation', () => {
     const s = store(); const run = s.createRun('question', 500)
     const over = intent(run.runId, 'over'); over.amountMinor = 140; over.quote!.amountMinor = 140
     expect(s.reserveIntent(over).status).toBe('SKIPPED')
@@ -155,7 +155,7 @@ describe('atomic ledger and verified purchase flow', () => {
     expect(result).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('LastLedgerSequence') })
     expect(s.getRun(run.runId)).toMatchObject({ reservedMinor: 0, spentMinor: 0 }); expect(p.state.charges).toBe(0)
   })
-  it('ambiguous settlement survives restart and reconciles by resending the same blob, one charge', async () => {
+  it('gate-3: a restart mid-submit (ambiguous settlement) survives and reconciles by resending the same blob, one charge', async () => {
     const path = dbPath(); const first = new Store(path); const run = first.createRun('question', 100); const p = await publisher(); p.state.loseSettlementResponse = true
     const result = await new PurchaseManager(first, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'restart' })
     expect(result.status).toBe('SUBMITTING'); expect(first.getRun(run.runId).reservedMinor).toBe(80); expect(first.getRun(run.runId).contents).toEqual([])
@@ -176,7 +176,7 @@ describe('atomic ledger and verified purchase flow', () => {
     s.reserveIntent(intent(run.runId, 'unsigned', 'other')); s.claimSubmitting('unsigned'); await manager.reconcile()
     expect(s.getIntent('unsigned')?.status).toBe('FAILED_NOT_SETTLED'); expect(p.state.charges).toBe(1)
   })
-  it('fault after payment retries GET delivery, never a new charge', async () => {
+  it('gate-3: fault after payment retries GET delivery, never a new charge', async () => {
     const s = store(); const run = s.createRun('question', 200); const p = await publisher(); p.state.failDelivery = true
     const manager = new PurchaseManager(s, p.client)
     expect((await manager.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'fault' })).status).toBe('DELIVERY_FAILED')
@@ -195,7 +195,10 @@ describe('atomic ledger and verified purchase flow', () => {
     if (fault === 'span') { d.passages = [{ id: 'paid-span', text: 'absent text' }] }
     if (fault === 'shape') delete d.body
     const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: fault })
-    expect(result.status).toBe('DELIVERY_FAILED'); expect(s.getRun(run.runId).contents).toEqual([]); expect(s.getRun(run.runId).grants).toEqual([])
+    // #131: wrong salts or passage bytes are a root mismatch = a failed proof (kept for audit, quarantined); the rest never form a grant.
+    const quarantined = fault === 'salt' || fault === 'passage'
+    expect(result.status).toBe(quarantined ? 'CLAIM_FAILED' : 'DELIVERY_FAILED'); expect(s.getRun(run.runId).contents).toEqual([]); expect(s.getRun(run.runId).grants).toHaveLength(quarantined ? 1 : 0)
+    expect(JSON.stringify(s.getRun(run.runId))).not.toContain('PAID_CANARY')
     expect(s.getRun(run.runId).spentMinor).toBe(80); expect(JSON.stringify(p.wires)).not.toContain('PAID_CANARY')
   })
   it('generic writes cannot grant content, and answer versions remain immutable', () => {

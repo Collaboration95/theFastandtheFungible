@@ -12,6 +12,8 @@ import type { Article, WriterCorpus } from '../shared/contracts/writers.js'
 import { reportedRelevance } from './bad-actors.js'
 import { siteRouter } from './site/router.js'
 import { createManifests } from './manifest.js'
+import { createChallenges } from './challenge.js'
+import { ChallengeSchema } from '../shared/contracts/publisher.js'
 import { loadCorpus, loadWriterCorpus } from './corpus.js'
 import { digestBytes, PublisherError, PublisherJournal } from './journal.js'
 import { buildRegistry, publisherKeys, SIMULATED_KEY_LABEL, type PublisherEntry, type PublisherKeys } from './registry.js'
@@ -32,6 +34,8 @@ export type PublisherConfig = {
   env?: NodeJS.ProcessEnv
   /** XRPL validation polling inside the facilitator (tests shorten it). */
   facilitatorTiming?: { pollMs: number; timeoutMs: number }
+  /** Test-only toggle (#132): every challenge is refused (503), to cover the buyer's REFUSED branch. */
+  refuseChallenges?: boolean
 }
 type PaidItem = { publisherSlug: string; articleId: string; version: string; title: string; publisher: string; priceMinor: number; payTo: string; body: string; passages: { id: string; text: string }[] }
 const signatureFromBody = (body: unknown): PaymentSignature => {
@@ -90,6 +94,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   const manifests = createManifests(journal)
   app.locals.manifests = manifests
   const facilitator = new Facilitator(journal, rail, ledger, config.facilitatorTiming)
+  const challenge = createChallenges(journal, manifests, rail, ledger, config.facilitatorTiming && { pollMs: config.facilitatorTiming.pollMs, timeoutMs: Math.min(config.facilitatorTiming.timeoutMs, 20_000) })
   app.locals.journal = journal
   app.locals.ledger = ledger
   app.disable('x-powered-by')
@@ -241,6 +246,13 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     }
     const { body, passages, ...meta } = article
     res.json({ ...meta, label: 'SYNTHETIC', body, passages })
+  })
+  app.post('/w/:slug/challenge', async (req, res) => {
+    const entry = entryFor(req.params.slug)
+    if (config.refuseChallenges) throw new PublisherError(503, 'Challenges refused (test toggle)')
+    const parsed = ChallengeSchema.safeParse({ ...req.body, txHash: typeof req.body?.txHash === 'string' ? req.body.txHash.toUpperCase() : req.body?.txHash })
+    if (!parsed.success) throw new PublisherError(400, 'Expected a challenge { intentId, txHash, claimId, leaf, salt, passageId, passageText }')
+    res.json({ ...(await challenge(entry, parsed.data)), label })
   })
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const malformed = error instanceof SyntaxError && 'body' in error

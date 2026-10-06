@@ -4,10 +4,15 @@ import type { Submission } from './xrpl.js'
 import { leafHash, manifestRoot } from '../shared/manifest.js'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
+import type { Manifest } from '../shared/contracts/manifest.js'
 import { AnswerSchema, ContentEnvelopeSchema, DecisionRoundSchema, GrantSchema, ImpactSchema, PurchaseIntentSchema, ReceiptSchema, ReputationRecordSchema, RunSnapshotSchema, TraceEventSchema, type Answer, type ContentEnvelope, type DecisionRound, type DeliveryProof, type Grant, type Impact, type ModeLabels, type PurchaseIntent, type Receipt, type ReputationRecord, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
 
 const reservedStatuses = new Set(['RESERVED', 'SUBMITTING'])
-const chargedStatuses = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED'])
+/** A refund never frees budget inside the run: every post-delivery status still counts as the gross charge. */
+const chargedStatuses = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
+/** Proof checked (D4/D5): delivery is over, whatever the verdict. */
+export const PROVEN_STATUSES = new Set(['VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
+const CHALLENGE_OUTCOMES = new Set(['REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
 type ResourceIdentity = Pick<ContentEnvelope, 'profileId' | 'resourceId' | 'version'>
 const sameResource = (a: ResourceIdentity, b: ResourceIdentity) => a.profileId === b.profileId && a.resourceId === b.resourceId && a.version === b.version
 function publicMetadata(value: unknown): void {
@@ -35,6 +40,8 @@ export class Store {
       CREATE TABLE IF NOT EXISTS grants (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, content TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS submissions (intent_id TEXT PRIMARY KEY REFERENCES intents(id), tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL, last_ledger INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS publisher_reputation (wallet TEXT PRIMARY KEY, json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS manifests (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS grant_salts (intent_id TEXT PRIMARY KEY REFERENCES grants(intent_id), json TEXT NOT NULL);
     `)
   }
   private atomic<T>(fn: () => T): T {
@@ -73,11 +80,14 @@ export class Store {
       run.answers = this.rows('SELECT json FROM answers WHERE run_id=? ORDER BY version', runId)
       run.decisions = this.rows('SELECT json FROM decisions WHERE run_id=? ORDER BY round', runId)
       run.events = this.rows('SELECT json FROM events WHERE run_id=? ORDER BY id', runId)
-      const paid = this.db.prepare('SELECT g.content FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId)
+      // Quarantine (#131): only a grant whose proof verified is accessible content; a failed one stays for audit only.
+      const paid = this.db.prepare('SELECT g.content, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId)
+        .filter(row => (JSON.parse(row.json as string) as PurchaseIntent).status === 'VERIFIED')
         .map(row => ContentEnvelopeSchema.parse(JSON.parse(row.content as string)))
       run.contents = [...run.contents.filter(content => run.candidates.some(c => c.tier === 'FREE' && sameResource(c, content))), ...paid]
       run.spentMinor = run.intents.filter(i => chargedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
       run.reservedMinor = run.intents.filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
+      run.refundedMinor = run.intents.reduce((sum, i) => sum + (i.refund?.amountMinor ?? 0), 0)
       return RunSnapshotSchema.parse(run)
     })
   }
@@ -137,7 +147,7 @@ export class Store {
     this.atomic(() => {
       const run = this.rawRun(runId)
       if (!run.candidates.some(c => c.tier === 'FREE' && sameResource(c, content))) {
-        const granted = this.db.prepare('SELECT g.content FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId).some(row => JSON.stringify(content) === row.content)
+        const granted = this.db.prepare('SELECT g.content, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId).some(row => JSON.stringify(content) === row.content && (JSON.parse(row.json as string) as PurchaseIntent).status === 'VERIFIED')
         if (!granted) throw new Error('Paid or unknown content requires verified grant')
         return
       }
@@ -236,21 +246,72 @@ export class Store {
     })
   }
   getDeliveryToken(intentId: string): string | undefined { return this.db.prepare('SELECT token FROM receipts WHERE intent_id=?').get(intentId)?.token as string | undefined }
+  /**
+   * Stores the delivered bytes as an UNVERIFIED grant (#131): the intent stays DELIVERY_PENDING and the
+   * content is not accessible until server/proofs.ts records the proof. The grant's digest is the root
+   * recomputed from the delivered passages; a mismatch with the quote is a proof failure, not an error.
+   */
   addGrant(input: Grant, inputContent: ContentEnvelope, proof?: DeliveryProof): void {
-    const grant = GrantSchema.parse(input)
     const content = ContentEnvelopeSchema.parse(inputContent)
     if (!proof) throw new Error('Exact response bytes and manifest salts required')
-    // The grant binds the manifest root that the paid invoiceId committed to: recompute it from the delivered passages.
     const root = manifestRoot(content.spans.map((s, i) => leafHash(proof.salts[i] ?? '', i, s.id, s.text)))
+    const grant = GrantSchema.parse({ ...input, contentDigest: root })
     const parsed = ContentEnvelopeSchema.parse(JSON.parse(typeof proof.bytes === 'string' ? proof.bytes : Buffer.from(proof.bytes).toString('utf8')))
-    if (JSON.stringify(parsed) !== JSON.stringify(content) || proof.salts.length !== content.spans.length || grant.contentDigest !== root || content.spans.some(s => !content.body.includes(s.text)) || new Set(content.spans.map(s => s.id)).size !== content.spans.length) throw new Error('Delivery verification failed')
+    if (JSON.stringify(parsed) !== JSON.stringify(content) || proof.salts.length !== content.spans.length || content.spans.some(s => !content.body.includes(s.text)) || new Set(content.spans.map(s => s.id)).size !== content.spans.length) throw new Error('Delivery verification failed')
     this.atomic(() => {
       const intent = this.getIntent(grant.intentId)
-      if (!intent || !chargedStatuses.has(intent.status) || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version || intent.quote?.contentDigest !== root) throw new Error('Grant does not match settled quote')
+      if (!intent || !chargedStatuses.has(intent.status) || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version) throw new Error('Grant does not match settled quote')
       const existing = this.rows<Grant>('SELECT json FROM grants WHERE intent_id=?', grant.intentId)[0]
       if (existing) { if (existing.contentDigest !== root) throw new Error('Grant is immutable'); return }
       this.db.prepare('INSERT INTO grants VALUES (?,?,?)').run(grant.intentId, JSON.stringify(grant), JSON.stringify(content))
-      this.saveIntent({ ...intent, status: 'VERIFIED', error: undefined })
+      this.db.prepare('INSERT INTO grant_salts VALUES (?,?)').run(grant.intentId, JSON.stringify(proof.salts))
+    })
+  }
+  /** Server-private: the delivered content and salts behind a grant (proof check and challenge only; never in a snapshot). */
+  getDelivery(intentId: string): { grant: Grant; content: ContentEnvelope; salts: string[] } | undefined {
+    const row = this.db.prepare('SELECT g.json, g.content, s.json AS salts FROM grants g JOIN grant_salts s ON s.intent_id=g.intent_id WHERE g.intent_id=?').get(intentId)
+    return row ? { grant: JSON.parse(row.json as string) as Grant, content: ContentEnvelopeSchema.parse(JSON.parse(row.content as string)), salts: JSON.parse(row.salts as string) as string[] } : undefined
+  }
+  /** Write-once: the verified search manifest the policy evaluated for this intent. */
+  recordManifest(intentId: string, manifest: Manifest): void {
+    this.db.prepare('INSERT OR IGNORE INTO manifests VALUES (?,?)').run(intentId, JSON.stringify(manifest))
+  }
+  getManifest(intentId: string): Manifest | undefined {
+    const row = this.db.prepare('SELECT json FROM manifests WHERE intent_id=?').get(intentId)
+    return row ? JSON.parse(row.json as string) as Manifest : undefined
+  }
+  /** Only server/proofs.ts calls this: DELIVERY_PENDING → VERIFIED (root bound to the quote) or CLAIM_FAILED (quarantined). */
+  recordProof(intentId: string, ok: boolean, failedClaimIds: string[]): PurchaseIntent {
+    return this.atomic(() => {
+      const intent = this.getIntent(intentId)
+      if (!intent) throw new Error('Intent not found')
+      if (PROVEN_STATUSES.has(intent.status)) return intent
+      const grant = this.rows<Grant>('SELECT json FROM grants WHERE intent_id=?', intentId)[0]
+      if (intent.status !== 'DELIVERY_PENDING' || !grant) throw new Error('Proof requires a stored delivery')
+      const verified = ok && grant.contentDigest === intent.quote?.contentDigest
+      const next: PurchaseIntent = verified ? { ...intent, status: 'VERIFIED', error: undefined } : { ...intent, status: 'CLAIM_FAILED', failedClaimIds, error: 'Proof failed; source quarantined' }
+      this.saveIntent(next); return next
+    })
+  }
+  /** CLAIM_FAILED → CHALLENGED once the challenge is sent; a resend keeps CHALLENGED. */
+  markChallenged(intentId: string): PurchaseIntent {
+    return this.atomic(() => {
+      const intent = this.getIntent(intentId)
+      if (!intent || !['CLAIM_FAILED', 'CHALLENGED'].includes(intent.status)) throw new Error('Only a failed proof can be challenged')
+      const next: PurchaseIntent = { ...intent, status: 'CHALLENGED' }
+      this.saveIntent(next); return next
+    })
+  }
+  /** Write-once per intent (gate 3): the first challenge outcome, and at most one refund, are final. */
+  recordChallengeOutcome(intentId: string, status: 'REFUNDED' | 'CHALLENGE_REJECTED' | 'CHALLENGE_REFUSED', refund?: { txHash: string; amountMinor: number }): PurchaseIntent {
+    return this.atomic(() => {
+      const intent = this.getIntent(intentId)
+      if (!intent) throw new Error('Intent not found')
+      if (CHALLENGE_OUTCOMES.has(intent.status)) return intent
+      if (intent.status !== 'CHALLENGED') throw new Error('Challenge outcome requires a sent challenge')
+      if ((status === 'REFUNDED') !== Boolean(refund) || (refund && refund.amountMinor !== intent.amountMinor)) throw new Error('A refund is exactly the full charge')
+      const next: PurchaseIntent = { ...intent, status, ...(refund ? { refund } : {}) }
+      this.saveIntent(next); return next
     })
   }
   // Engine-side trust per seller of record (D6, D21), across runs; server/reputation.ts owns the math.

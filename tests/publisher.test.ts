@@ -86,7 +86,7 @@ describe('publisher HTTP protocol', () => {
     await app.locals.ready
     expect(loadCorpus).toHaveBeenCalledOnce()
   })
-  it('strips premium bodies/spans and extra private properties from search and metadata', async () => {
+  it('gate-1: strips premium bodies/spans and extra private properties from search and metadata', async () => {
     const base = await serve({ resources: corpus.map(item => ({ ...item, privateToken: secret } as CorpusResource)) })
     for (const path of [`/v1/profiles/${paid.profileId}/search?q=${canary}`, `/v1/profiles/${paid.profileId}/resources/paid`, '/v1/profiles', '/health']) {
       const response = await fetch(base + path)
@@ -103,7 +103,7 @@ describe('publisher HTTP protocol', () => {
     const bytes = await response.text()
     expect(bytes).not.toContain(canary)
   })
-  it('sells paid bytes only for a settled signed payment, with salts, and resends the same delivery', async () => {
+  it('gate-3: sells paid bytes only for a settled signed payment, with salts; a duplicate blob resends the same delivery, never a new charge', async () => {
     const base = await serve({ faults: true })
     expect((await fetch(base + contentPath(free))).status).toBe(200)
     const { header, hash } = signFor(required(await fetch(base + contentPath())).accepts[0])
