@@ -1,7 +1,46 @@
 # x402 and XRPL integration contract
 
-_Extracted 6 Oct 2026 from the archived `company-research-context-v1.md`. Product direction lives in [FINAL-PUSH.md](../FINAL-PUSH.md); where they differ (e.g. x402 v2 headers, refunds via `/challenge`), FINAL-PUSH wins._
+## As built (8 Oct 2026)
 
+Every writer is a facilitator: the publisher host serves `/w/:slug/...`, and
+the buyer pays the writer's own wallet on XRPL Testnet (`xrpl:1`, scheme
+`exact`, asset XRP in integer drops). Code: `publisher/routes.ts`,
+`publisher/facilitator.ts`, `publisher/challenge.ts`, `shared/x402.ts`,
+`server/purchases.ts`.
+
+1. **Search.** `GET /w/:slug/search?q=&k=` returns abstracts, signals and a
+   signed manifest per hit. The buyer verifies the manifest signature and that
+   its key derives to the payee wallet before it will sign anything.
+2. **402.** `GET /w/:slug/articles/:id` without `PAYMENT-SIGNATURE` returns 402
+   with `PAYMENT-REQUIRED` (base64 JSON, `x402Version: 2`, one `accepts` entry)
+   and no body. `extra.invoiceId` is canonical JSON of `{quoteId, articleId,
+   version, manifestRoot, amount, payTo}`; the on-ledger XRPL `InvoiceID` is
+   `sha256(invoiceId)` in uppercase hex. The buyer takes the manifest root from
+   the verified search manifest, never from the 402 alone.
+3. **Pay.** The buyer (policy code only) signs a Payment with that `InvoiceID`
+   and retries with `PAYMENT-SIGNATURE` (base64 JSON carrying the signed blob).
+4. **Facilitate.** The writer's `facilitator/verify` and `/settle` check the
+   quote, payee, amount, `InvoiceID`, article and version, `LastLedgerSequence`,
+   then submit and wait for a validated `tesSUCCESS`. Settlement is recorded
+   once per tx hash. `facilitator/supported` lists `exact` on `xrpl:1`. Header
+   decoding is capped at 8 KiB.
+5. **Deliver.** The response carries `PAYMENT-RESPONSE` plus the body,
+   passages and salts. Resending the same signed blob returns the same
+   delivery and never charges twice. The buyer then runs the proof check
+   against the manifest.
+6. **Challenge and refund.** A failed proof sends `POST /w/:slug/challenge`.
+   The writer re-checks the bytes and salts it stored and, if the claim is
+   broken, sends a Payment of the full amount from its own wallet back to the
+   payer with `InvoiceID` = the original tx hash; write-once per payment.
+   The buyer lowers the writer's trust whether or not the refund arrives.
+
+The offline demo uses a labelled simulated rail with a SIMULATED payer, never
+a fake Testnet hash.
+
+## Reference notes
+
+_Extracted 6 Oct 2026 from the archived `company-research-context-v1.md`; kept
+for protocol background._
 
 The current t54 XRPL exact scheme documentation describes x402 v2 headers:
 

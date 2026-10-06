@@ -5,9 +5,7 @@ execution and rehearsal plan, rewritten 6 October for the final-push
 direction. Product, decisions and use cases are in
 [FINAL-PUSH.md](../FINAL-PUSH.md); gates and schedule are in
 [prompt.md](../prompt.md). The script below targets the final-push build
-(UC1–UC3). Until those features reach `main`, the v1 build can only show its
-single Vertex run. Planned features remain unimplemented until their evidence
-gates pass.
+(UC1–UC3), all built on `main` (live smoke passed 8 Oct, 03:00 SGT).
 
 Success means the audience sees a calibrated model decide what is worth
 buying, a writer paid directly over a real HTTP boundary on XRPL Testnet, and
@@ -55,7 +53,7 @@ Testnet wallets after a Testnet reset, and `make doctor` checks them.
 | Offline fallback (`npm run demo`) | Local services, HTTP boundary, ledger, citations, policy code, over the new writer corpus | LLM output (extractive), decision probabilities (fixture heuristics), settlement (SIMULATED SGD), the corpus |
 | Recorded fallback | A clearly labelled capture of a previously verified run | It is not a live execution |
 
-The Vertex corpus is removed (D18); the fixture demo runs the new corpus
+The fixture demo runs the new corpus
 offline with extractive answers and heuristic decisions, all labelled.
 
 Opening line: “Agents are the new readers. Experts should get paid when an
@@ -70,7 +68,7 @@ When a provider falls back, the mode badge shows it. Never hide a fallback.
 
 The use cases are in [FINAL-PUSH §11](../FINAL-PUSH.md#11-demo-use-cases-questions-are-drafts-until-the-corpus-exists)
 and the talk order is in §1. Lead with Clef and calibration, then the trust
-matrix. Questions stay drafts until the corpus exists (O1, O2).
+matrix.
 
 1. **Frame (about 30 s).** The one-line pitch and the positioning: Pay Per
    Crawl prices pages, Pay Per Use trusts the buyer's word, we price evidence.
@@ -91,9 +89,9 @@ matrix. Questions stay drafts until the corpus exists (O1, O2).
 “The LLM can't spend” is a single sentence for Q&A, not the opening: five
 other talks that night lead with “don't trust the LLM”.
 
-Keep the S$0 “would buy” run, the Vertex scenario, the fault demo and the
-injection trap for questions or the Science Fair table. The UC3 refund adds
-about two ledger closes (O5); time it at rehearsal pace.
+Keep the S$0 “would buy” run, the fault demo and the
+injection trap for questions or the Science Fair table. Measured live on 8 Oct: UC1 9.6 s, UC2 21.6 s, UC3 35.6 s (the refund took
+7.5 s); time it again at rehearsal pace.
 
 ## Technical questions to prepare
 
@@ -177,13 +175,13 @@ injection and confined to the simulator.
 Current aggregate, executed in an environment that permits local listeners:
 
 ~~~sh
-LLM_PROVIDER=fixture XRPL_MODE=fixture APP_MODE=fixture npm run verify
+npm run verify          # lint, typecheck, unit + UC1–UC3 process scenarios + gate-1..5 suite, Playwright UC2/UC3 + a11y, build
+make doctor             # keys, corpus + embeddings freshness, Testnet wallets and payer balance
+make smoke              # live UC1–UC3 + re-ask on DeepSeek + Clef + XRPL Testnet (orchestrator / rehearsal only)
 ~~~
 
-This is the existing command. Additional transaction checks, the eight-case
-scenario scorecard, rehearsal runner and doctor in the verification module are
-planned work. Once implemented, the release gate must include them. A new
-property-testing framework or general coding controller is not required.
+All three exist and passed on 8 Oct (STATUS.md → Demo check). The release gate is
+`npm run verify` green plus one `make smoke` PASS on the presenting laptop.
 
 Record the exact commit, runtime/lockfile/corpus versions, exit status, counts,
 and artifact paths in the implementation task or PR. Do not copy historical

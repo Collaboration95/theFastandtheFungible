@@ -26,8 +26,8 @@ trust D6, x402 v2 D7, clarify D8, free-text gaps D10. Hard gates:
 
 UC1 spends S$0 because free sources suffice. UC2 (the main case) buys a paid
 article that changes the answer. UC3 catches a bad actor, refunds it on Testnet
-and quarantines it. Questions are drafts until the corpus exists
-([§11](../../FINAL-PUSH.md#11-demo-use-cases-questions-are-drafts-until-the-corpus-exists), O1–O3).
+and quarantines it. The questions run end to end (`tests/scenarios`, `make smoke`); see
+[§11](../../FINAL-PUSH.md#11-demo-use-cases-questions-are-drafts-until-the-corpus-exists).
 
 ## Limits
 
@@ -35,6 +35,8 @@ and quarantines it. Questions are drafts until the corpus exists
   it. The ledger cannot enforce refunds.
 - Writers and articles are fictional and labelled SYNTHETIC. Testnet XRP has
   no value. Nothing here is investment advice.
-- `main` today is v1: one synthetic corpus and an x402-shaped flow. The
-  promises above are the target, not shipped behavior.
+- The promises above are built on `main` against a synthetic roster: search,
+  signed manifests, x402 v2, `/challenge` refunds and public trust. The
+  ledger still cannot force a writer to refund; the trust penalty applies
+  either way.
 - Local, single-user. Mainnet, licensing and a central index are out (D11).
