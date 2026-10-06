@@ -7,11 +7,15 @@
 - WP-S1 publisher host + Orama + search → [#170](https://github.com/Collaboration95/theFastandtheFungible/pull/170) → closes #122–#124 (review: 3 blockers — roster fallback, story-bible questions in leak test, golden-ranking test; fixed in one commit). Search knobs live in `SEARCH_TUNING` (`publisher/search.ts`).
 - WP-C2 corpus generator → [#171](https://github.com/Collaboration95/theFastandtheFungible/pull/171) → closes #119 (review: 1 blocker — call cap must count provider requests; fixed).
 - WP-S2 manifests + AlphaLeak → [#172](https://github.com/Collaboration95/theFastandtheFungible/pull/172) → closes #125, #126 (NO BLOCKERS).
+- WP-A1 scope/plan/retrieval/gaps → [#174](https://github.com/Collaboration95/theFastandtheFungible/pull/174) → closes #136–#139 (review: 1 blocker — fixture plan label lost; fixed, plus the verified manifest now rides on each PAID candidate). Knobs: `RETRIEVAL` (rrfK 60, perPublisherK 5) in `server/agents/research.ts`.
 
 ## Pivot (6 Oct)
 - Direction changed: see [FINAL-PUSH.md](FINAL-PUSH.md). The v1 live demo was real (DeepSeek, Clef, XRPL Testnet) but looked static because every answer came from the 19-doc Vertex corpus and publisher search ignored the query.
 - Next: W0 contracts, then W1 search / pay / agent in parallel (FINAL-PUSH §13). Wednesday-night milestone in prompt.md §10.
 - Old docs retired: `docs/archive/` holds the 4 Oct prompt, plans and company context; roadmap, agent guide, diagrams and canvas deleted (history in git).
+## Decisions I made (overnight)
+- `.env` has `LLM_PROVIDER=groq`; the first corpus run (120 calls) went to Groq and hit its 8k TPM limit (4 articles written). Corpus generation now forces `LLM_PROVIDER=deepseek` and `LLM_SYNTHESIS_TIMEOUT_MS=180000` (1,400-word articles exceed the 45 s default). Groq calls do not count against the DeepSeek budget.
+- Payments: the buyer now *requires* the verified search manifest before signing (Codex blocker on #173); the invoice root is never trusted from the 402 alone.
 ## Needs you
 - O1: writer websites and article content (FINAL-PUSH §15) before W2 corpus can start.
 - O3: keep real institution names (BoJ, JGBs) with synthetic content, or fictionalise them.
