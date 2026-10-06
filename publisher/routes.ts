@@ -3,8 +3,13 @@ import { timingSafeEqual } from 'node:crypto'
 import { ContentEnvelopeSchema, CorpusResourceSchema, PublicCandidateSchema, type CorpusResource } from '../shared/contracts/corpus.js'
 import { DROPS_PER_MINOR, ProfileSchema, QuoteRequestSchema, SettlementRequestSchema, SIMULATED_LABEL, XRPL_LABEL, type Rail } from '../shared/contracts/publisher.js'
 import { TESTNET_RECEIVER, testnetLedger, verifyPayment, type Ledger } from '../shared/xrpl.js'
-import { loadCorpus } from './corpus.js'
+import { SearchHitSchema, type Manifest, type SearchHit } from '../shared/contracts/manifest.js'
+import { countWords, type Article, type WriterCorpus } from '../shared/contracts/writers.js'
+import { CLAIM_KINDS, leafHash, manifestRoot, sha256, signManifest } from '../shared/manifest.js'
+import { loadCorpus, loadWriterCorpus } from './corpus.js'
 import { digestBytes, PublisherError, PublisherJournal } from './journal.js'
+import { buildRegistry, SIMULATED_KEY_LABEL, type PublisherEntry } from './registry.js'
+import { createQueryEmbedder, embeddingsLive, loadEmbeddingCache, searchIndex, type EmbeddingCache, type Embedder } from './search.js'
 
 export type PublisherConfig = {
   corpus?: CorpusResource[] | Promise<CorpusResource[]>
@@ -13,6 +18,45 @@ export type PublisherConfig = {
   faults?: boolean
   rail?: Rail
   ledger?: Ledger
+  /** The v2 writer corpus behind /registry and /w/:slug/* (defaults to loadWriterCorpus()). */
+  writers?: WriterCorpus | Promise<WriterCorpus>
+  /** Query embedder; defaults to Workers AI when SEARCH_EMBEDDINGS=live, otherwise none (keyword only). */
+  embedder?: Embedder
+  embeddings?: EmbeddingCache
+  env?: NodeJS.ProcessEnv
+}
+
+const ArticleParam = /^[A-Za-z0-9._-]+$/
+const endpointsFor = (slug: string) => ({
+  discovery: `/w/${slug}/.well-known/agent-publisher.json`, search: `/w/${slug}/search`, articles: `/w/${slug}/articles/{articleId}`,
+})
+const articleSalt = (entry: PublisherEntry, article: Article, index: number) => sha256(`${entry.keys!.privateKey}\u001fsalt\u001f${article.articleId}@${article.version}\u001f${index}`).slice(0, 32)
+
+/**
+ * The one hook #125 fills with the real manifest builder. TODO(#125): this minimal
+ * version already signs D4 proofs (salted leaves, root, claim kinds, word count) with
+ * the publisher key, because the strict SearchHitSchema needs a manifest on every PAID hit.
+ */
+export function attachManifest(entry: PublisherEntry, article: Article, relevance: number): Manifest | undefined {
+  if (article.tier !== 'PAID' || !entry.keys || !entry.publisher.wallet || !entry.publisher.pubKey) return undefined
+  const leaves = article.passages.map((p, i) => leafHash(articleSalt(entry, article, i), i, p.id, p.text))
+  const claims = article.passages.flatMap((p, i) => (Object.keys(CLAIM_KINDS) as (keyof typeof CLAIM_KINDS)[])
+    .filter(kind => CLAIM_KINDS[kind](p.text)).map(kind => ({ id: `${p.id}:${kind}`, kind, leaf: leaves[i] })))
+  return signManifest({
+    publisherSlug: entry.publisher.slug, articleId: article.articleId, version: article.version,
+    wallet: entry.publisher.wallet, pubKey: entry.publisher.pubKey, priceMinor: article.priceMinor,
+    leaves, root: manifestRoot(leaves), claims, wordCount: countWords(article.body), publishedAt: article.publishedAt, relevance,
+  }, entry.keys.privateKey)
+}
+
+/** A search result never carries a body or passages (gate 1): only the writer's abstract, signals and a manifest. */
+export function toSearchHit(entry: PublisherEntry, article: Article, relevance: number, searchMode: SearchHit['searchMode']): SearchHit {
+  return SearchHitSchema.parse({
+    publisherSlug: article.publisherSlug, writerSlug: article.writerSlug, articleId: article.articleId, version: article.version,
+    url: `/w/${article.publisherSlug}/articles/${article.articleId}`, title: article.title, abstract: article.abstract, tags: article.tags,
+    tier: article.tier, priceMinor: article.priceMinor, relevance, publishedAt: article.publishedAt, family: article.family,
+    derivedFrom: article.derivedFrom, manifest: attachManifest(entry, article, relevance), searchMode,
+  })
 }
 /** Each paid publisher is paid at its own public wallet; the phase 1 receiver remains the fallback. */
 export const payToFor = (resource: Pick<CorpusResource, 'wallet'>) => resource.wallet ?? process.env.XRPL_RECEIVER_ADDRESS ?? TESTNET_RECEIVER
@@ -41,6 +85,15 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   // Attach a rejection handler immediately; requests/startup still receive the original error.
   void ready.catch(() => {})
   app.locals.ready = ready
+  // The writer registry loads separately, so a missing v2 corpus never blocks the legacy /v1 flow.
+  let registry = new Map<string, PublisherEntry>()
+  const env = config.env ?? process.env
+  const embedder = config.embedder ?? (embeddingsLive(env) ? createQueryEmbedder() : undefined)
+  const writersReady = Promise.resolve(config.writers ?? loadWriterCorpus())
+    .then(corpus => buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? loadEmbeddingCache() }))
+    .then(built => { registry = built })
+  void writersReady.catch(() => {})
+  app.locals.writersReady = writersReady
   app.locals.journal = journal
   app.locals.ledger = ledger
   app.disable('x-powered-by')
@@ -130,6 +183,45 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     if (req.body?.failNextDelivery !== true) throw new PublisherError(400, 'Expected failNextDelivery: true')
     failNextDelivery = true
     res.json({ failNextDelivery: true, label: 'SIMULATED fault' })
+  })
+  const entryFor = (slug: string) => {
+    const entry = registry.get(slug)
+    if (!entry) throw new PublisherError(404, 'Publisher not found')
+    return entry
+  }
+  app.use(['/registry', '/w'], async (_req, _res, next) => { await writersReady; next() })
+  app.get('/registry', (_req, res) => {
+    res.json({ publishers: [...registry.values()].map(({ publisher }) => ({
+      slug: publisher.slug, name: publisher.name, kind: publisher.kind, domain: publisher.domain, wallet: publisher.wallet,
+      synthetic: publisher.synthetic, endpoints: endpointsFor(publisher.slug),
+    })) })
+  })
+  app.get('/w/:slug/.well-known/agent-publisher.json', (req, res) => {
+    const { publisher, writers, keys } = entryFor(req.params.slug)
+    res.json({
+      ...publisher, label: 'SYNTHETIC', keyLabel: keys?.simulated ? SIMULATED_KEY_LABEL : undefined,
+      writers: writers.map(w => ({ slug: w.slug, name: w.name, bio: w.bio })), endpoints: endpointsFor(publisher.slug),
+    })
+  })
+  app.get('/w/:slug/search', async (req, res) => {
+    const entry = entryFor(req.params.slug)
+    const q = typeof req.query.q === 'string' ? req.query.q.trim() : ''
+    const kRaw = req.query.k ?? '5'
+    const k = typeof kRaw === 'string' && /^\d+$/.test(kRaw) ? Number(kRaw) : NaN
+    if (!q || q.length > 300 || !Number.isInteger(k) || k < 1 || k > 10) throw new PublisherError(400, 'Expected q (1–300 characters) and k (1–10)')
+    const vector = entry.index.vectors && embedder ? await embedder(q) : undefined
+    const { mode, ranked } = await searchIndex(entry.index, q, k, vector)
+    const byId = new Map(entry.articles.map(a => [a.articleId, a]))
+    res.json(ranked.map(r => toSearchHit(entry, byId.get(r.articleId)!, r.relevance, mode)))
+  })
+  app.get('/w/:slug/articles/:id', (req, res) => {
+    const entry = entryFor(req.params.slug)
+    const article = ArticleParam.test(req.params.id) ? entry.articles.find(a => a.articleId === req.params.id) : undefined
+    if (!article) throw new PublisherError(404, 'Article not found')
+    // TODO(#128): x402 v2 PAYMENT-REQUIRED terms; until then a bare 402 with no body bytes.
+    if (article.tier === 'PAID') { res.status(402).json({ error: 'Payment required', priceMinor: article.priceMinor, label }); return }
+    const { body, passages, ...meta } = article
+    res.json({ ...meta, label: 'SYNTHETIC', body, passages })
   })
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const malformed = error instanceof SyntaxError && 'body' in error

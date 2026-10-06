@@ -3,6 +3,7 @@
 - Orchestrator follows OVERNIGHT-OCT7.md. Subagents: Opus 5.5 for code-heavy packages, Sonnet 5.5 for content/small ones (medium thinking). Review: one Codex `gpt-6-luna` pass per PR, posted as a PR comment.
 - Preflight 01:00: `make doctor` + `make keys` green (DeepSeek, Clef 1.3 s, payer 104 XRP, Langfuse).
 - WP-W0 contracts → [#168](https://github.com/Collaboration95/theFastandtheFungible/pull/168) → closes #112–#115 (review: NO BLOCKERS).
+- WP-C1 roster + story bible → [#169](https://github.com/Collaboration95/theFastandtheFungible/pull/169) → closes #117, #118 (NO BLOCKERS). Story: Kestrel Semiconductor × TSMC.
 
 ## Pivot (6 Oct)
 - Direction changed: see [FINAL-PUSH.md](FINAL-PUSH.md). The v1 live demo was real (DeepSeek, Clef, XRPL Testnet) but looked static because every answer came from the 19-doc Vertex corpus and publisher search ignored the query.
