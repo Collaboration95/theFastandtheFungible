@@ -7,20 +7,16 @@ import { once } from 'node:events'
 import { createPublisherApp } from '../publisher/routes.js'
 import { paymentResponse, required, signFor } from './fixtures/x402-payer.js'
 import { PublisherJournal } from '../publisher/journal.js'
-import { loadCorpus } from '../publisher/corpus.js'
-vi.mock('../publisher/corpus.js', () => ({ loadCorpus: vi.fn(), loadWriterCorpus: vi.fn(async () => (await import('./fixtures/corpus-mini/index.js')).miniCorpus) }))
-import { exampleCandidate, exampleContent } from '../shared/contracts/examples.js'
-import type { CorpusResource } from '../shared/contracts/corpus.js'
+import { loadWriterCorpus } from '../publisher/corpus.js'
+vi.mock('../publisher/corpus.js', () => ({ loadWriterCorpus: vi.fn(async () => (await import('./fixtures/corpus-mini/index.js')).miniCorpus) }))
+import { miniCorpus } from './fixtures/corpus-mini/index.js'
 
 const secret = 'test-private-secret'
-const canary = 'PAID_CANARY_do_not_discover_🧪'
-const free: CorpusResource = { ...exampleCandidate, ...exampleContent }
-const paid: CorpusResource = {
-  ...free, resourceId: 'paid', tier: 'PAID', price: { amountMinor: 80, currency: 'SGD' },
-  body: `${canary}\nExact quoted evidence.`, spans: [{ id: 's1', text: canary }],
-}
-const corpus = [free, paid, { ...paid, profileId: 'another', resourceId: 'other' }]
-const contentPath = (resource = paid) => `/v1/profiles/${resource.profileId}/resources/${resource.resourceId}/versions/${resource.version}/content`
+const paid = miniCorpus.articles.find(a => a.tier === 'PAID')!
+const free = miniCorpus.articles.find(a => a.tier === 'FREE' && a.publisherSlug === paid.publisherSlug)!
+/** A paid passage: present only in the paid body, so it marks a premium leak. */
+const canary = paid.passages[0].text
+const contentPath = (article = paid) => `/w/${article.publisherSlug}/articles/${article.articleId}`
 const cleanups: (() => Promise<void> | void)[] = []
 afterEach(async () => { for (const cleanup of cleanups.splice(0).reverse()) await cleanup() })
 function temporaryDirectory() {
@@ -28,9 +24,9 @@ function temporaryDirectory() {
   cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
   return dir
 }
-async function serve(options: { faults?: boolean; resources?: CorpusResource[]; journal?: string } = {}) {
+async function serve(options: { faults?: boolean; journal?: string } = {}) {
   const journal = new PublisherJournal(options.journal ?? ':memory:')
-  const app = createPublisherApp({ corpus: options.resources ?? corpus, journal, secret, faults: options.faults ?? false })
+  const app = createPublisherApp({ writers: miniCorpus, rail: 'simulated', env: {}, journal, secret, faults: options.faults ?? false })
   await app.locals.ready
   const server = app.listen(0, '127.0.0.1')
   await once(server, 'listening')
@@ -44,10 +40,9 @@ async function post(base: string, path: string, body: unknown, authenticated = f
 /** A separate node process exercises the actual HTTP boundary and SQLite locks. */
 async function processServer(dir: string) {
   const driver = join(dir, 'serve.mjs')
-  writeFileSync(join(dir, 'corpus.json'), JSON.stringify(corpus))
-  writeFileSync(driver, `import { readFileSync } from 'node:fs';
-import { createPublisherApp } from ${JSON.stringify(resolve('publisher/routes.ts'))};
-const app = createPublisherApp({corpus: JSON.parse(readFileSync(${JSON.stringify(join(dir, 'corpus.json'))}, 'utf8')), journal: ${JSON.stringify(join(dir, 'journal.db'))}, secret: ${JSON.stringify(secret)}});
+  writeFileSync(driver, `import { createPublisherApp } from ${JSON.stringify(resolve('publisher/routes.ts'))};
+import { miniCorpus } from ${JSON.stringify(resolve('tests/fixtures/corpus-mini/index.ts'))};
+const app = createPublisherApp({writers: miniCorpus, rail: 'simulated', env: {}, journal: ${JSON.stringify(join(dir, 'journal.db'))}, secret: ${JSON.stringify(secret)}});
 await app.locals.ready;
 const server = app.listen(0, '127.0.0.1');
 server.once('listening', () => console.log('PORT=' + server.address().port));
@@ -77,18 +72,18 @@ process.once('SIGTERM', () => server.close(() => { app.locals.journal.close(); p
 
 // Assert raw discovery bytes, rather than relying on the test's schema to strip leaks.
 describe('publisher HTTP protocol', () => {
-  it('loads the default CORPUS module while preserving the synchronous factory', async () => {
-    vi.mocked(loadCorpus).mockResolvedValue(corpus)
+  it('loads the default writer corpus while preserving the synchronous factory', async () => {
+    vi.mocked(loadWriterCorpus).mockClear()
     const journal = new PublisherJournal(':memory:')
     cleanups.push(() => journal.close())
-    const app = createPublisherApp({ journal, secret, faults: false })
+    const app = createPublisherApp({ journal, secret, faults: false, rail: 'simulated', env: {} })
     expect(app).toBeTypeOf('function')
     await app.locals.ready
-    expect(loadCorpus).toHaveBeenCalledOnce()
+    expect(loadWriterCorpus).toHaveBeenCalledOnce()
   })
   it('gate-1: strips premium bodies/spans and extra private properties from search and metadata', async () => {
-    const base = await serve({ resources: corpus.map(item => ({ ...item, privateToken: secret } as CorpusResource)) })
-    for (const path of [`/v1/profiles/${paid.profileId}/search?q=${canary}`, `/v1/profiles/${paid.profileId}/resources/paid`, '/v1/profiles', '/health']) {
+    const base = await serve()
+    for (const path of [`/w/${paid.publisherSlug}/search?q=${encodeURIComponent(paid.title)}`, `/w/${paid.publisherSlug}/.well-known/agent-publisher.json`, '/registry', '/health']) {
       const response = await fetch(base + path)
       expect(response.status).toBe(200)
       const bytes = await response.text()
@@ -99,7 +94,7 @@ describe('publisher HTTP protocol', () => {
     }
     const response = await fetch(base + contentPath())
     expect(response.status).toBe(402)
-    expect(required(response).accepts[0]).toMatchObject({ network: 'xrpl:1', amount: '80000' })
+    expect(required(response).accepts[0]).toMatchObject({ network: 'xrpl:1', amount: String(paid.priceMinor * 1000) })
     const bytes = await response.text()
     expect(bytes).not.toContain(canary)
   })
@@ -146,6 +141,7 @@ describe('publisher HTTP protocol', () => {
     expect(response.status).toBe(400)
     expect(await response.text()).not.toContain('not-base64')
     for (const path of ['/v1/quotes', '/v1/settlements']) expect((await post(base, path, {})).status).toBe(404)
-    expect((await fetch(base + '/v1/settlements/intent-a')).status).toBe(404)
+    // D18: the legacy /v1 profile routes are gone too.
+    for (const path of ['/v1/settlements/intent-a', '/v1/profiles', `/v1/profiles/${paid.publisherSlug}/search?q=x`]) expect((await fetch(base + path)).status).toBe(404)
   })
 })

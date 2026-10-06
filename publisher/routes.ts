@@ -4,9 +4,8 @@ import { PaymentSignatureSchema, X402_NETWORK, type PaymentSignature } from '../
 import { leafHash, manifestRoot } from '../shared/manifest.js'
 import { decodeHeader, encodeHeader, invoiceIdFor, ledgerInvoiceId } from '../shared/x402.js'
 import { Facilitator, MAX_TIMEOUT_SECONDS, paymentResponse, requirementsFor } from './facilitator.js'
-import { ContentEnvelopeSchema, CorpusResourceSchema, PublicCandidateSchema, type CorpusResource } from '../shared/contracts/corpus.js'
-import { DROPS_PER_MINOR, ProfileSchema, SIMULATED_LABEL, XRPL_LABEL, type Rail } from '../shared/contracts/publisher.js'
-import { TESTNET_RECEIVER, testnetLedger, type Ledger } from '../shared/xrpl.js'
+import { DROPS_PER_MINOR, SIMULATED_LABEL, XRPL_LABEL, type Rail } from '../shared/contracts/publisher.js'
+import { testnetLedger, type Ledger } from '../shared/xrpl.js'
 import { SearchHitSchema, type Manifest, type SearchHit } from '../shared/contracts/manifest.js'
 import type { Article, WriterCorpus } from '../shared/contracts/writers.js'
 import { reportedRelevance } from './bad-actors.js'
@@ -14,13 +13,12 @@ import { siteRouter } from './site/router.js'
 import { createManifests } from './manifest.js'
 import { createChallenges } from './challenge.js'
 import { ChallengeSchema } from '../shared/contracts/publisher.js'
-import { loadCorpus, loadWriterCorpus } from './corpus.js'
-import { digestBytes, PublisherError, PublisherJournal } from './journal.js'
-import { buildRegistry, publisherKeys, SIMULATED_KEY_LABEL, type PublisherEntry, type PublisherKeys } from './registry.js'
+import { loadWriterCorpus } from './corpus.js'
+import { PublisherError, PublisherJournal } from './journal.js'
+import { buildRegistry, SIMULATED_KEY_LABEL, type PublisherEntry } from './registry.js'
 import { createQueryEmbedder, embeddingsLive, loadEmbeddingCache, searchIndex, type EmbeddingCache, type Embedder } from './search.js'
 
 export type PublisherConfig = {
-  corpus?: CorpusResource[] | Promise<CorpusResource[]>
   journal?: PublisherJournal | string
   secret?: string
   faults?: boolean
@@ -57,12 +55,6 @@ export function toSearchHit(article: Article, relevance: number, searchMode: Sea
     derivedFrom: article.derivedFrom, manifest, searchMode,
   })
 }
-/** Each paid publisher is paid at its own public wallet; the phase 1 receiver remains the fallback. */
-export const payToFor = (resource: Pick<CorpusResource, 'wallet'>) => resource.wallet ?? process.env.XRPL_RECEIVER_ADDRESS ?? TESTNET_RECEIVER
-export function serializeEnvelope(resource: CorpusResource): string {
-  return JSON.stringify(ContentEnvelopeSchema.parse(resource))
-}
-
 /** The app stays synchronous; locals.ready exposes asynchronous corpus loading to startup/tests. */
 export function createPublisherApp(config: PublisherConfig = {}) {
   const app = express()
@@ -75,14 +67,6 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   const ledger = rail === 'xrpl-testnet' ? config.ledger ?? testnetLedger() : undefined
   const label = rail === 'xrpl-testnet' ? XRPL_LABEL : SIMULATED_LABEL
   let failNextDelivery = false
-  let corpus: CorpusResource[] = []
-  const ready = Promise.resolve(config.corpus ?? loadCorpus()).then(resources => {
-    corpus = resources.map(resource => CorpusResourceSchema.parse(resource))
-  })
-  // Attach a rejection handler immediately; requests/startup still receive the original error.
-  void ready.catch(() => {})
-  app.locals.ready = ready
-  // The writer registry loads separately, so a missing v2 corpus never blocks the legacy /v1 flow.
   let registry = new Map<string, PublisherEntry>()
   const env = config.env ?? process.env
   const embedder = config.embedder ?? (embeddingsLive(env) ? createQueryEmbedder() : undefined)
@@ -91,6 +75,8 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     .then(built => { registry = built })
   void writersReady.catch(() => {})
   app.locals.writersReady = writersReady
+  /** Startup readiness (kept for callers): the writer registry is the only corpus. */
+  app.locals.ready = writersReady
   const manifests = createManifests(journal)
   app.locals.manifests = manifests
   const facilitator = new Facilitator(journal, rail, ledger, config.facilitatorTiming)
@@ -139,52 +125,8 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     res.json({ publisherSlug: item.publisherSlug, articleId: item.articleId, version: item.version, title: item.title, publisher: item.publisher, body: item.body, passages: item.passages, salts, label })
   }
   app.get('/health', async (_req, res) => {
-    await ready
+    await writersReady
     res.json({ status: 'ok', publisher: 'local', settlement: label })
-  })
-  app.use('/v1', async (_req, _res, next) => { await ready; next() })
-  // TODO(#157): legacy profile resources. A PAID one is keyed like a writer publisher (simulated key, or
-  // XRPL_PUBLISHER_<PROFILE>_SEED on the Testnet) and carries a signed manifest, so the buyer's checks are the same.
-  const legacyKeys = new Map<string, PublisherKeys | undefined>()
-  const legacyEntry = (resource: CorpusResource): PublisherEntry | undefined => {
-    if (!legacyKeys.has(resource.profileId)) { try { legacyKeys.set(resource.profileId, publisherKeys(resource.profileId, rail, env)) } catch { legacyKeys.set(resource.profileId, undefined) } }
-    const keys = legacyKeys.get(resource.profileId)
-    return keys && { publisher: { slug: resource.profileId, wallet: keys.wallet, pubKey: keys.publicKey } as PublisherEntry['publisher'], keys, writers: [], articles: [], index: undefined as never }
-  }
-  const legacyCandidate = (resource: CorpusResource) => {
-    const candidate = PublicCandidateSchema.parse(resource)
-    const entry = resource.tier === 'PAID' ? legacyEntry(resource) : undefined
-    if (!entry) return candidate
-    const article = { articleId: resource.resourceId, version: resource.version, tier: resource.tier, priceMinor: resource.price.amountMinor, body: resource.body, publishedAt: 'legacy', passages: resource.spans.map(({ id, text }) => ({ id, text })) } as Article
-    return { ...candidate, wallet: entry.publisher.wallet, manifest: manifests.manifestFor(entry, article, 1) }
-  }
-  app.get('/v1/profiles', (_req, res) => {
-    const profiles = [...new Set(corpus.map(resource => resource.profileId))].map(id => {
-      const resource = corpus.find(item => item.profileId === id)!
-      return ProfileSchema.parse({ id, name: id, tier: resource.tier })
-    })
-    res.json(profiles)
-  })
-  app.get('/v1/profiles/:p/search', (req, res) => {
-    // Return all resources for the buyer's lexical/facet ranking. Always strip private fields.
-    res.json(corpus.filter(resource => resource.profileId === req.params.p).map(legacyCandidate))
-  })
-  app.get('/v1/profiles/:p/resources/:id', (req, res) => {
-    const resource = corpus.find(item => item.profileId === req.params.p && item.resourceId === req.params.id)
-    if (!resource) throw new PublisherError(404, 'Resource not found')
-    res.json(legacyCandidate(resource))
-  })
-  // Legacy profile corpus (TODO(#138): retired once retrieval moves to /w/*): FREE bytes as before;
-  // PAID resources sell over the same x402 v2 path as /w/:slug/articles/:id.
-  app.get('/v1/profiles/:p/resources/:id/versions/:v/content', async (req, res) => {
-    const { p, id, v } = req.params
-    const resource = corpus.find(item => item.profileId === p && item.resourceId === id && item.version === v)
-    if (!resource) throw new PublisherError(404, 'Resource version not found')
-    if (resource.tier === 'FREE') {
-      const bytes = serializeEnvelope(resource)
-      res.set('Digest', `sha-256=${digestBytes(bytes)}`).type('application/json').send(bytes); return
-    }
-    await sellPaid(req, res, { publisherSlug: p, articleId: id, version: v, title: resource.title, publisher: resource.publisher, priceMinor: resource.price.amountMinor, payTo: legacyEntry(resource)?.publisher.wallet ?? payToFor(resource), body: resource.body, passages: resource.spans.map(({ id, text }) => ({ id, text })) })
   })
   app.get('/w/:slug/facilitator/supported', (_req, res) => {
     res.json({ kinds: [{ x402Version: 2, scheme: 'exact', network: X402_NETWORK }], extensions: [], signers: {}, label })

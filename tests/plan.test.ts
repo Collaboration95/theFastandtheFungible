@@ -39,7 +39,7 @@ describe('plan and run start (#137)', () => {
   })
   it('POST /runs plans server-side when no plan is given, stores it, and searches the registry with it', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'plan-test-'))
-    const publisher = createPublisherApp({ secret: 'plan-test', journal: ':memory:', rail: 'simulated', corpus: [], writers: miniCorpus, env: {} })
+    const publisher = createPublisherApp({ secret: 'plan-test', journal: ':memory:', rail: 'simulated', writers: miniCorpus, env: {} })
     await publisher.locals.ready; await publisher.locals.writersReady
     const pubServer = publisher.listen(0, '127.0.0.1'); await once(pubServer, 'listening')
     const api = await createApiApp({ dbPath: join(dir, 'api.db'), publisherUrl: `http://127.0.0.1:${(pubServer.address() as { port: number }).port}`, reportDir: join(dir, 'reports') })

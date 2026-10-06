@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { SearchHitSchema, type SearchHit } from '../shared/contracts/manifest.js'
 import { PassageSchema } from '../shared/contracts/writers.js'
-import { ContentEnvelopeSchema, ProfileSchema, PublicCandidateSchema, type ContentEnvelope, type Profile, type PublicCandidate } from '../shared/contracts/index.js'
+import { ContentEnvelopeSchema, type ContentEnvelope, type PublicCandidate } from '../shared/contracts/index.js'
 import type { PaymentRequired, PaymentResponse } from '../shared/contracts/x402.js'
 import { decodeHeader } from '../shared/x402.js'
 import { ChallengeResultSchema, type Challenge, type ChallengeResult } from '../shared/contracts/publisher.js'
@@ -29,25 +29,9 @@ export class PublisherClient {
     if (!response.ok) throw new PublisherHttpError(response.status)
     return { bytes, digest: response.headers.get('digest') ?? '', status: response.status }
   }
-  async profiles(): Promise<Profile[]> {
-    const result = await this.request('GET', '/v1/profiles')
-    return ProfileSchema.array().parse(JSON.parse(result.bytes.toString('utf8')))
-  }
-  async search(profileId: string, question: string): Promise<PublicCandidate[]> {
-    const result = await this.request('GET', `/v1/profiles/${encodeURIComponent(profileId)}/search?q=${encodeURIComponent(question)}`)
-    return PublicCandidateSchema.array().parse(JSON.parse(result.bytes.toString('utf8')))
-  }
-  async read(candidate: PublicCandidate, token?: string, observer?: WireObserver): Promise<{ content: ContentEnvelope; digest: string; bytes: string; rawBytes?: Uint8Array }> {
-    const path = `/v1/profiles/${encodeURIComponent(candidate.profileId)}/resources/${encodeURIComponent(candidate.resourceId)}/versions/${encodeURIComponent(candidate.version)}/content`
-    const result = await this.request('GET', path, undefined, token, observer)
-    const bytes = result.bytes.toString('utf8')
-    const content = ContentEnvelopeSchema.parse(JSON.parse(bytes))
-    if (content.profileId !== candidate.profileId || content.resourceId !== candidate.resourceId || content.version !== candidate.version || content.spans.some(s => !content.body.includes(s.text))) throw new Error('Publisher content identity or spans invalid')
-    return { content, digest: result.digest, bytes, rawBytes: result.bytes }
-  }
-  /** Paid GET path: the hit's root-relative agent URL, else the legacy profile content path. */
-  static paidPath(candidate: Pick<PublicCandidate, 'url' | 'profileId' | 'resourceId' | 'version'>): string {
-    return candidate.url ?? `/v1/profiles/${encodeURIComponent(candidate.profileId)}/resources/${encodeURIComponent(candidate.resourceId)}/versions/${encodeURIComponent(candidate.version)}/content`
+  /** Paid GET path: the hit's root-relative agent URL, else the publisher's agent article route. */
+  static paidPath(candidate: Pick<PublicCandidate, 'url' | 'profileId' | 'resourceId'>): string {
+    return candidate.url ?? `/w/${encodeURIComponent(candidate.profileId)}/articles/${encodeURIComponent(candidate.resourceId)}`
   }
   /**
    * x402 v2 paid GET (#130). Without a signature it expects 402 + PAYMENT-REQUIRED; with one it returns the

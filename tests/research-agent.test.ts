@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { exampleCandidate, exampleContent } from '../shared/contracts/examples.js'
 import type { Answer, ContentEnvelope, PublicCandidate } from '../shared/contracts/index.js'
-import type { PublisherClient } from '../server/publisher-client.js'
+import { PublisherClient as RealPublisherClient, type PublisherClient } from '../server/publisher-client.js'
+import type { SearchHit } from '../shared/contracts/manifest.js'
 import { compareAnswers, retrieve, writeAnswer } from '../server/agents/research.js'
 import { validateAnswer } from '../server/agents/citations.js'
-import { loadCorpus } from '../publisher/corpus.js'
 import { streamJson } from '../server/agents/llm.js'
 
 const candidate = (id: string, facets: string[], tier: 'FREE' | 'PAID' = 'FREE'): PublicCandidate => ({ ...exampleCandidate, resourceId: id, facets, tier })
@@ -21,14 +21,11 @@ const stream = (value: unknown) => {
 }
 
 describe('W1 research', () => {
-  it('falls back to the legacy /v1 search only when the registry has no hits, and never reads paid', async () => {
-    const candidates = [...free, candidate('random-paid', ['grid-energisation'], 'PAID')]
-    const client = { registry: vi.fn(async () => []), profiles: vi.fn(async () => [{ id: 'one' }, { id: 'two' }, { id: 'three' }]), search: vi.fn(async (id: string) => id === 'one' ? candidates : []), read: vi.fn(async (c: PublicCandidate) => ({ content: bodies.find(b => b.resourceId === c.resourceId)! })) }
+  it('with no registry hits, retrieval returns nothing: there is no legacy /v1 fallback (D18)', async () => {
+    const client = { registry: vi.fn(async () => []), searchPublisher: vi.fn(), readFree: vi.fn() }
     const result = await retrieve(client as unknown as PublisherClient, 'Demand expansion')
-    expect(client.search.mock.calls.map(c => c[0])).toEqual(['one', 'two', 'three'])
-    expect(client.read.mock.calls.map(c => c[0].resourceId).sort()).toEqual(['random-A', 'random-B'])
-    expect(result.candidates[0].resourceId).toBe('random-A')
-    expect(result.contents).toHaveLength(2)
+    expect(result).toMatchObject({ candidates: [], contents: [], hits: [], dropped: [] })
+    expect(client.searchPublisher).not.toHaveBeenCalled()
   })
   it('derives fixture gaps from uncovered tags and preserves exact renamed citations and caller versions', async () => {
     vi.stubEnv('LLM_PROVIDER', 'fixture')
@@ -100,24 +97,6 @@ describe('W1 research', () => {
     const omitted = content('previously-accessible', 'Substation works have slipped 14 months.')
     expect(compareAnswers(initial, { ...repeated, claims: [{ ...repeated.claims[0], citations: [{ resourceId: omitted.resourceId, version: omitted.version, spanId: omitted.spans[0].id }] }] }, [...bodies, omitted], [...bodies, omitted]).classification).toBe('UNCHANGED')
   })
-  it('keeps the actual unchanged corpus gap unresolved and preserves canonical/contradiction impacts', async () => {
-    vi.stubEnv('LLM_PROVIDER', 'fixture')
-    for (const [variant, classification] of [['unchanged', 'UNCHANGED'], [undefined, 'QUALIFIES'], ['contradiction', 'CONTRADICTS']] as const) {
-      const corpus = await loadCorpus(variant)
-      const accessible = corpus.filter(c => c.tier === 'FREE')
-      const initial = (await writeAnswer({ question: 'q', candidates: corpus, contents: accessible, version: 1 })).answer
-      const paid = corpus.find(c => c.resourceId === 'grid-operators-report')!
-      const next = await writeAnswer({ question: 'q', candidates: corpus, contents: [...accessible, paid], version: 2, previous: initial })
-      expect(next.impact?.classification).toBe(classification)
-      expect(next.answer.openGaps.map(g => g.tags?.[0])).toEqual(variant === 'unchanged' ? ['grid-energisation'] : [])
-      expect(next.answer.claims.length).toBeLessThanOrEqual(8)
-      expect(next.answer.claims.some(c => c.citations.some(ref => ref.resourceId === paid.resourceId && ref.version === paid.version))).toBe(true)
-      for (const claim of next.answer.claims) for (const ref of claim.citations) {
-        const delivered = [...accessible, paid].find(c => c.resourceId === ref.resourceId && c.version === ref.version)!
-        expect(delivered.body).toContain(delivered.spans.find(s => s.id === ref.spanId)!.text)
-      }
-    }
-  })
   it('drops the whole invalid claim, never substitutes another span or displays an unbound conclusion', async () => {
     const { answer } = await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })
     const invalid: Answer = { ...answer, conclusion: 'UNBOUND INVENTION', claims: [
@@ -187,8 +166,9 @@ describe('W1 research', () => {
     expect(request.messages[1].content).not.toMatch(/purchase|PUBLIC_PREVIEW_ONLY|unbought/)
   })
   it('rejects mismatched HTTP content identity rather than binding it to the requested source', async () => {
-    const client = { registry: async () => [], profiles: async () => [{ id: 'one' }], search: async () => free.slice(0, 1), read: async () => ({ content: bodies[1] }) }
-    await expect(retrieve(client as unknown as PublisherClient, 'q')).rejects.toThrow('binding mismatch')
+    const hit = { publisherSlug: 'one', articleId: 'random-A', version: 'v1', url: '/w/one/articles/random-A', tier: 'FREE' } as SearchHit
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ publisherSlug: 'one', articleId: 'random-B', version: 'v1', title: 't', tier: 'FREE', body: 'b', passages: [{ id: 'p1', text: 'b' }] })))
+    await expect(new RealPublisherClient({ baseUrl: 'http://127.0.0.1:1' }).readFree(hit, 'One')).rejects.toThrow('identity or passages invalid')
   })
   it('streamJson is reusable by the report agent and parses chunked UTF-8 SSE JSON', async () => {
     configure(); vi.stubGlobal('fetch', vi.fn(async () => stream({ title: '报告 · evidence' })))

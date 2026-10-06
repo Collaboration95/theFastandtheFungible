@@ -36,7 +36,7 @@ Copy `.env.example` to `.env` and supply DeepSeek and Cloudflare keys for live m
 
 Each run has durable SQLite reservations, intents, receipts and verified grants. No premium bodies or spans enter the browser or models before a matching grant. Retrying a failed delivery never creates a new charge. Stop prevents new purchases. Citations resolve to exact delivered passages; the PDF includes decision tables and simulated receipts. When Chromium fails, the report endpoint returns labelled printable HTML.
 
-Variants: `make variant V=open-sufficient|contradiction|unchanged|injection` runs the Vertex corpus variants offline. `make fault` enables the local fault demo. A fresh run never erases historical receipts. Runtime files are ignored in `data/`. Per D18 the Vertex corpus and its variants are being removed; the offline backup becomes `npm run demo` (fixture providers) on the new writer corpus.
+`make fault` enables the local fault demo. A fresh run never erases historical receipts. Runtime files are ignored in `data/`. The offline backup is `npm run demo` (fixture providers) on the v2 writer corpus (D18); `tests/scenarios` runs UC1–UC3 end to end.
 
 ## Docker (venue laptop)
 
