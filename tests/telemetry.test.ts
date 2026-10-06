@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest'
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
 import { InMemorySpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { setLangfuseTracerProvider } from '@langfuse/tracing'
-import { deepseekPricingWindow, maskSecrets, scoreStep, scoreTrace, telemetryEnabled, traceEvent, traceRun } from '../server/telemetry.js'
+import { deepseekPricingWindow, maskSecrets, recordStep, traceStep, scoreStep, scoreTrace, telemetryEnabled, traceEvent, traceRun } from '../server/telemetry.js'
 import { writeAnswer } from '../server/agents/research.js'
 import { exampleCandidate, exampleContent, exampleRun } from '../shared/contracts/examples.js'
 import type { ContentEnvelope, PublicCandidate } from '../shared/contracts/index.js'
@@ -46,6 +46,23 @@ describe('Langfuse telemetry', () => {
     for (const secret of Object.values(env)) expect(masked).not.toContain(secret)
     expect(masked).not.toContain('tok-abc')
     expect(masked).toContain('[DEEPSEEK_API_KEY]')
+  })
+
+  it('records the #143 step spans (search-fanout retriever, challenge, proof-check, reputation-update) when a tracer is registered', async () => {
+    exporter.reset()
+    await traceStep('search-fanout', {}, async () => 1, () => ({ perPublisher: { alphaleak: 1 }, searchMode: 'hybrid' }), 'retriever')
+    await traceStep('challenge', {}, async () => 1, () => ({ status: 'REFUNDED' }))
+    recordStep('proof-check', {}, { status: 'CLAIM_FAILED' }); recordStep('reputation-update', {}, { before: { H: 0.8 }, after: { H: 0.4 } })
+    const spans = exporter.getFinishedSpans()
+    expect(spans.map(s => s.name)).toEqual(['search-fanout', 'challenge', 'proof-check', 'reputation-update'])
+    expect(spans[0].attributes['langfuse.observation.type']).toBe('retriever')
+  })
+
+  it('masks every XRPL_PUBLISHER_*_SEED (never trace a publisher seed, FINAL-PUSH §9)', () => {
+    const env = { XRPL_PUBLISHER_ALPHALEAK_SEED: 'sEdAlphaLeakSeed0001', XRPL_PUBLISHER_THE_FAB_FLOOR_SEED: 'sEdFabFloorSeed00002' }
+    const masked = maskSecrets(`seeds ${env.XRPL_PUBLISHER_ALPHALEAK_SEED} ${env.XRPL_PUBLISHER_THE_FAB_FLOOR_SEED}`, env)
+    for (const seed of Object.values(env)) expect(masked).not.toContain(seed)
+    expect(masked).toContain('[XRPL_PUBLISHER_ALPHALEAK_SEED]')
   })
 
   it('traces a run as agent → chain → generation with model, tokens and events, and no key', async () => {

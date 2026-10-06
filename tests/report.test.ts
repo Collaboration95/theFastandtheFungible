@@ -44,6 +44,22 @@ describe('report evidence and drafting', () => {
     await expect(buildReport(snapshot)).rejects.toThrow('matching delivery grant')
     expect(streamJson).not.toHaveBeenCalled()
   })
+  it('#142: citations open the writer article (FREE at its #p- anchor, PAID at its page); receipts list refunds', async () => {
+    const snapshot = run()
+    snapshot.candidates[0] = { ...snapshot.candidates[0], publisherSlug: 'open-records' }
+    const leak = { ...snapshot.candidates[0], resourceId: 'alphaleak-kestrel-penang-lead-times', tier: 'PAID' as const, publisherSlug: 'alphaleak', url: '/w/alphaleak/blog/alphaleak-kestrel-penang-lead-times' }
+    snapshot.candidates.push(leak)
+    snapshot.intents.push({ intentId: 'leak', runId: snapshot.runId, profileId: 'alphaleak', resourceId: leak.resourceId, version: leak.version, amountMinor: 30, status: 'REFUNDED', refund: { txHash: 'AB'.repeat(32), amountMinor: 30 } })
+    const report = await buildReport(snapshot)
+    expect(report.refunds).toEqual([{ intentId: 'leak', resourceId: leak.resourceId, version: leak.version, amountMinor: 30, txHash: 'AB'.repeat(32) }])
+    const html = reportHtml(report)
+    const ref = exampleRun.answers[0].claims[0].citations[0]
+    expect(html).toContain(`href="/w/open-records/blog/${ref.resourceId}#p-${ref.spanId}"`)
+    expect(html).toContain('REFUND · failed proof')
+    expect(html).toContain('refunded S$0.30')
+    // The refunded (quarantined) source is never a cited source.
+    expect(report.sources.map(s => s.resourceId)).not.toContain(leak.resourceId)
+  })
   it('gate-4: a quarantined (failed-proof) grant is no source access for the report', async () => {
     const snapshot = paidRun(); snapshot.intents[0].status = 'CLAIM_FAILED'
     await expect(buildReport(snapshot)).rejects.toThrow('Report source requires a matching delivery grant')

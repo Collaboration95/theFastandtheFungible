@@ -10,10 +10,16 @@ const refKey = (resourceId: string, version: string, spanId: string) => JSON.str
 export function reportHtml(report: Report): string {
   const references = report.sources.flatMap(source => source.spans.map(span => ({ source, span })))
   const referenceNumber = (resourceId: string, version: string, spanId: string) => references.findIndex(r => refKey(r.source.resourceId, r.source.version, r.span.id) === refKey(resourceId, version, spanId)) + 1
+  // Citations open the writer's article: a FREE passage at its #p-<passageId> anchor, a PAID one at its abstract page.
+  const writerUrl = (resourceId: string, version: string, spanId?: string) => {
+    const candidate = report.access?.candidates.find(c => c.resourceId === resourceId && c.version === version)
+    if (!candidate?.publisherSlug) return undefined
+    return candidate.tier === 'FREE' ? articleUrl(candidate.publisherSlug, resourceId, spanId) : candidate.url ?? articleUrl(candidate.publisherSlug, resourceId)
+  }
   const claims = (items: Claim[]) => items.map(claim => `<li><p>${escape(claim.text)} <strong>${escape(claim.stance)}</strong> ${claim.citations.map(ref => {
     if (!resolveCitation(ref, report.sources)) throw new Error('Unresolved report citation')
     const n = referenceNumber(ref.resourceId, ref.version, ref.spanId)
-    return `<a href="#excerpt-${n}">[${n}]</a>`
+    return `<a href="${escape(writerUrl(ref.resourceId, ref.version, ref.spanId) ?? `#excerpt-${n}`)}">[${n}]</a>`
   }).join(' ')}</p></li>`).join('')
   const decisions = report.decisions.map(round => `<h3>Round ${round.round} · ${escape(round.provider)} ${escape(round.model)}</h3><p>Gap: ${escape(round.gap)} · material probability ${round.gapMaterial.toFixed(3)} · threshold ${round.threshold.toFixed(3)}${round.fallbackReason ? ` · fallback: ${escape(round.fallbackReason)}` : ''}</p><table><thead><tr><th>Candidate / price</th><th>Gap / original / credibility</th><th>Value / per S$</th><th>Verdict</th></tr></thead><tbody>${round.rows.map(row => `<tr><td>${escape(row.candidate.title)}<br>${escape(row.candidate.resourceId)} · ${money(row.candidate.price.amountMinor)}</td><td>${row.judgment.addressesGap.toFixed(3)} / ${row.judgment.originality.original.toFixed(3)} / ${row.judgment.credibility.toFixed(3)}</td><td>${row.value.toFixed(3)} / ${row.valuePerDollar.toFixed(3)}</td><td>${escape(row.verdict)}${row.wouldBuy ? ' · would buy' : ''}<br>${escape(row.reason)}</td></tr>`).join('')}</tbody></table>`).join('')
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>${escape(report.title)}</title><style>
@@ -25,7 +31,7 @@ h1,h2,h3,th,.label { font-family: Arial, sans-serif; } h1 { font-size: 30px; lin
 <p class="print-note">Print this HTML page or save it as PDF with your browser. The appendix starts on a new printed page.</p>
 <h1>${escape(report.title)}</h1><p>${escape(report.question)}</p>
 <p class="label">${escape(report.disclaimer)}<br>Report: ${escape(providerLabels[report.provider])} · ${escape(report.model)}${report.fallbackReason ? `<br>Fixture fallback: ${escape(report.fallbackReason)}` : ''}<br>Research: ${escape(report.labels?.research ?? 'unspecified')} · Decision: ${escape(report.labels?.decision ?? 'unspecified')} · Publisher: ${escape(report.labels?.publisher ?? 'unspecified')}<br>SIMULATED SGD · no real funds</p>
-<p>Budget ${money(report.budgetMinor)} · spent ${money(report.spentMinor)}</p>
+<p>Budget ${money(report.budgetMinor)} · spent ${money(report.spentMinor)}${report.refunds?.length ? ` · refunded ${money(report.refunds.reduce((sum, r) => sum + r.amountMinor, 0))}` : ''}</p>
 <h2>Executive answer</h2><p>${escape(report.executiveAnswer)}</p>
 <h2>Findings</h2><ol>${claims(report.findings)}</ol>
 <h2>What purchases changed</h2><p>${escape(report.purchasesChanged)}</p>${report.impact ? `<p>Impact: <strong>${escape(report.impact.classification)}</strong></p>` : ''}
@@ -34,13 +40,13 @@ h1,h2,h3,th,.label { font-family: Arial, sans-serif; } h1 { font-size: 30px; lin
 <h2>Open questions</h2>${report.openQuestions.length ? `<ul>${report.openQuestions.map(q => `<li>${escape(q)}</li>`).join('')}</ul>` : '<p>No open questions recorded.</p>'}
 <h2>Method</h2><p>${escape(report.method)}</p>
 <section class="appendix"><h2>Appendix · decisions and receipts</h2><p>Ledger data from the persisted run; the writing model does not create these records.</p><p>value = gapMaterial × addressesGap × P(original) × (0.5 + 0.25 × credibility). Policy code enforces cap, budget and eligibility.</p>${decisions || '<p>No decision rounds recorded.</p>'}
-<h3>Settlement receipts · ${escape(report.labels?.settlement ?? 'SIMULATED SGD · no real funds')}</h3>${report.receipts.length ? `<table><thead><tr><th>Receipt / intent</th><th>Resource / version</th><th>Amount / settled at</th></tr></thead><tbody>${report.receipts.map(r => `<tr><td>${escape(r.receiptId)}<br>${escape(r.intentId)}</td><td>${escape(r.resourceId)} · ${escape(r.version)}</td><td>${money(r.amountMinor)}${r.xrpl ? ` = ${escape(Number(r.xrpl.amountDrops) / 1_000_000)} XRP` : ''}<br>${escape(r.settledAt)}${r.xrpl ? `<br>XRPL tx <a href="${escape(r.xrpl.explorerUrl)}">${escape(r.xrpl.txHash.slice(0, 16))}…</a> · ledger ${r.xrpl.ledgerIndex}<br>${escape(r.xrpl.payer)} → ${escape(r.xrpl.payTo)}` : ''}</td></tr>`).join('')}</tbody></table>` : '<p>No settlements recorded.</p>'}
+<h3>Settlement receipts · ${escape(report.labels?.settlement ?? 'SIMULATED SGD · no real funds')}</h3>${report.receipts.length || report.refunds?.length ? `<table><thead><tr><th>Receipt / intent</th><th>Resource / version</th><th>Amount / settled at</th></tr></thead><tbody>${report.receipts.map(r => `<tr><td>${escape(r.receiptId)}<br>${escape(r.intentId)}</td><td>${escape(r.resourceId)} · ${escape(r.version)}</td><td>${money(r.amountMinor)}${r.xrpl ? ` = ${escape(Number(r.xrpl.amountDrops) / 1_000_000)} XRP` : ''}<br>${escape(r.settledAt)}${r.xrpl ? `<br>XRPL tx <a href="${escape(r.xrpl.explorerUrl)}">${escape(r.xrpl.txHash.slice(0, 16))}…</a> · ledger ${r.xrpl.ledgerIndex}<br>${escape(r.xrpl.payer)} → ${escape(r.xrpl.payTo)}` : ''}</td></tr>`).join('')}${(report.refunds ?? []).map(r => `<tr><td>REFUND · failed proof<br>${escape(r.intentId)}</td><td>${escape(r.resourceId)} · ${escape(r.version)}</td><td>−${money(r.amountMinor)} refunded by the writer<br>tx ${escape(r.txHash.slice(0, 16))}…</td></tr>`).join('')}</tbody></table>` : '<p>No settlements recorded.</p>'}${report.refunds?.length ? `<p>Refunded ${money(report.refunds.reduce((sum, r) => sum + r.amountMinor, 0))} · the refunded source is quarantined and never cited.</p>` : ''}
 <h2>Source appendix · exact synthetic passages</h2>${report.sources.map(source => {
     const candidate = report.access?.candidates.find(c => c.resourceId === source.resourceId && c.version === source.version)
     const receipts = report.receipts.filter(r => r.resourceId === source.resourceId && r.version === source.version)
     return `<h3>${escape(source.title)}</h3><p>${escape(source.publisher)} · ${escape(source.resourceId)} · ${escape(source.version)} · ${candidate?.tier === 'PAID' ? 'bought / granted' : 'free'}<br>Receipt IDs: ${escape(receipts.map(r => r.receiptId).join(', ') || 'none')}<br>Attribution: ${escape(candidate?.license.attribution)}</p>${source.spans.map(span => {
       const n = referenceNumber(source.resourceId, source.version, span.id)
-      return `<div class="excerpt" id="excerpt-${n}"><p>[${n}] Exact synthetic passage · span ${escape(span.id)}${candidate?.tier === 'FREE' && candidate.publisherSlug ? ` · <a href="${escape(articleUrl(candidate.publisherSlug, source.resourceId, span.id))}">open on the writer's site</a>` : ''}</p><blockquote>${escape(span.text)}</blockquote></div>`
+      return `<div class="excerpt" id="excerpt-${n}"><p>[${n}] Exact synthetic passage · span ${escape(span.id)}${writerUrl(source.resourceId, source.version, span.id) ? ` · <a href="${escape(writerUrl(source.resourceId, source.version, span.id))}">open on the writer's site</a>` : ''}</p><blockquote>${escape(span.text)}</blockquote></div>`
     }).join('')}`
   }).join('') || '<p>No accessible sources recorded.</p>'}</section></main></body></html>`
 }

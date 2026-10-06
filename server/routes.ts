@@ -127,6 +127,7 @@ export async function createApiApp(options: ApiOptions = {}) {
       const { label: planLabel, ...plan } = input.plan ? { ...input.plan, label: 'client plan' } : await planSearch(input.question, input.answers)
       const current = store.getRun(run.runId)
       store.updateRun(run.runId, { labels: { ...current.labels, plan: planLabel }, checkpoint: { ...current.checkpoint, plan, ...(input.answers ? { answers: input.answers } : {}) } })
+      if (input.answers && Object.keys(input.answers).length) store.appendEvent(run.runId, { type: 'CLARIFY', label: `Clarified: ${Object.values(input.answers).join(' · ')}`, data: { answers: input.answers } })
       store.appendEvent(run.runId, { type: 'PLAN', label: `Search plan (${planLabel}): ${plan.subqueries.join(' · ')}`, data: { plan, planner: planLabel } })
       await loop.start(run.runId)
     })

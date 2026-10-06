@@ -20,6 +20,8 @@ export const ReportSchema = z.object({
   firstFindings: z.array(ClaimSchema).optional(), finalFindings: z.array(ClaimSchema).optional(),
   firstVersion: z.number().int().positive().optional(), finalVersion: z.number().int().positive().optional(),
   labels: ModeLabelsSchema.optional(),
+  /** Writer refunds after a failed proof (#132, #142), from the persisted intents. */
+  refunds: z.array(z.object({ intentId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), txHash: z.string() })).optional(),
   access: z.object({ runId: z.string(), candidates: z.array(PublicCandidateSchema), grants: z.array(GrantSchema) }).optional(),
 })
 export type Report = z.infer<typeof ReportSchema>

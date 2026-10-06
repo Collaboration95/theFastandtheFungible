@@ -1,4 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { once } from 'node:events'
+import { readFileSync } from 'node:fs'
+import { createPublisherApp } from '../publisher/routes.js'
+import { PublisherClient as RealPublisherClient } from '../server/publisher-client.js'
+import { PurchaseManager as RealPurchaseManager } from '../server/purchases.js'
+import { Store as RealStore } from '../server/store.js'
+import { Reputation } from '../server/reputation.js'
+import { fixturePlan } from '../server/agents/scope.js'
 import { RunLoop, type RunLoopOptions } from '../server/agents/loop.js'
 import { FixtureDecisionProvider } from '../server/agents/decision.js'
 import type { Store } from '../server/store.js'
@@ -220,4 +228,76 @@ describe('RunLoop × reputation (#140, #141)', () => {
     expect(h.run.phase).toBe('DONE')
     expect(h.run.answers).toHaveLength(2)
   })
+})
+
+// Story-bible UC1–UC3 end to end in fixture mode (#142): the real publisher app with the v2 corpus on an
+// ephemeral port, the real Store, PurchaseManager (SIMULATED rail), challenge and Reputation. No keys, no network.
+describe('fixture-mode use cases, end to end (#142)', () => {
+  type Bible = { useCases: { id: string; question: string; clarify: { expectedUserPick: string } | null; expectedPicks: { round1: string | null; round2: string | null } }[] }
+  const bible = JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as Bible
+  const uc = (id: string) => bible.useCases.find(u => u.id === id)!
+  let h: Awaited<ReturnType<typeof world>>
+  async function world() {
+    const app = createPublisherApp({ journal: ':memory:', rail: 'simulated', env: {} })
+    await app.locals.ready; await app.locals.writersReady
+    const server = app.listen(0, '127.0.0.1'); await once(server, 'listening')
+    const client = new RealPublisherClient({ baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}` })
+    const store = new RealStore(':memory:')
+    const purchases = new RealPurchaseManager(store, client)
+    const reputation = new Reputation(store)
+    const loop = new RunLoop(store, client, purchases, undefined, { provider: new FixtureDecisionProvider(), reputation })
+    async function ask(id: string, budgetMinor = 200) {
+      const u = uc(id)
+      const answers = u.clarify ? { angle: u.clarify.expectedUserPick } : undefined
+      const run = store.createRun(u.question, budgetMinor)
+      store.updateRun(run.runId, { checkpoint: { plan: fixturePlan(u.question, answers), ...(answers ? { answers } : {}) } })
+      await loop.start(run.runId)
+      return store.getRun(run.runId)
+    }
+    const close = async () => { store.close(); await new Promise<void>(r => { server.closeAllConnections(); server.close(() => r()) }); app.locals.journal.close() }
+    return { ask, reputation, close, store }
+  }
+  beforeAll(async () => { h = await world() }, 60_000)
+  afterAll(async () => { await h?.close() })
+  const bought = (run: RunSnapshot) => run.intents.map(i => `${i.resourceId}:${i.status}`)
+  const cited = (run: RunSnapshot) => run.answers.flatMap(a => a.claims.flatMap(c => c.citations.map(r => r.resourceId)))
+  const verdicts = (run: RunSnapshot, round: number) => Object.fromEntries(run.decisions.find(d => d.round === round)!.rows.map(r => [r.candidate.resourceId, r.verdict]))
+  it('UC1: free sources suffice: no gap, no purchase, S$0', async () => {
+    const run = await h.ask('UC1')
+    expect(run.answers[0].openGaps).toEqual([])
+    expect(run.intents).toEqual([])
+    expect(run.spentMinor).toBe(0)
+    expect(run.phase).toBe('DONE')
+    expect(run.events.find(e => e.type === 'SEARCH' && e.data)?.data).toMatchObject({ searchMode: 'keyword only (embeddings unavailable)', perPublisher: { 'open-records': expect.any(Number) } })
+  }, 30_000)
+  it('UC2: the chosen angle drives the gap; NotFT is bought once and changes the answer', async () => {
+    const run = await h.ask('UC2')
+    expect(run.answers[0].openGaps.map(g => g.text)).toEqual(['No accessible analyst estimates on pricing and margins.'])
+    expect(bought(run)).toEqual([`${uc('UC2').expectedPicks.round1}:VERIFIED`])
+    expect(verdicts(run, 1)['mp-kestrel-deal-digest']).toBe('SKIP_REWRITE')
+    expect(run.spentMinor).toBe(run.intents[0].amountMinor)
+    expect(run.answers).toHaveLength(2)
+    expect(run.impact?.classification).toMatch(/^(QUALIFIES|STRENGTHENS|CONTRADICTS)$/)
+    expect(cited(run)).toContain(uc('UC2').expectedPicks.round1)
+    expect(h.reputation.list().find(r => r.publisherSlug === 'notfinancialtimes')).toMatchObject({ passes: 1, status: 'active' })
+  }, 30_000)
+  it('UC3: AlphaLeak bought → CLAIM_FAILED → REFUNDED → round 2 buys The Fab Floor; a re-ask shows SKIP_LOW_TRUST', async () => {
+    const { round1, round2 } = uc('UC3').expectedPicks
+    const run = await h.ask('UC3')
+    // AlphaLeak's 0.96 is now truly inflated against absolute relevance, so it wins round 1 on value per S$.
+    expect(run.decisions[0].selectedResourceId).toBe(round1)
+    expect(bought(run)).toEqual([`${round1}:REFUNDED`, `${round2}:VERIFIED`])
+    const types = run.events.map(e => e.type)
+    for (const type of ['SEARCH', 'PROOF', 'CHALLENGE', 'REFUND', 'REPUTATION']) expect(types).toContain(type)
+    expect(types.indexOf('REFUND')).toBeLessThan(types.lastIndexOf('BUY'))
+    expect(run.refundedMinor).toBe(run.intents[0].amountMinor)
+    expect(verdicts(run, 2)[round1!]).toBe('SKIP_LOW_TRUST')
+    expect(cited(run)).not.toContain(round1) // gate 4: quarantined, never cited
+    expect(cited(run)).toContain(round2)
+    expect(new Set(run.intents.map(i => i.intentId)).size).toBe(run.intents.length) // gate 3
+    expect(h.reputation.list().find(r => r.publisherSlug === 'alphaleak')).toMatchObject({ H: 0.4, refunds: 1, status: 'quarantined' })
+    const again = await h.ask('UC3')
+    expect(verdicts(again, 1)[round1!]).toBe('SKIP_LOW_TRUST')
+    expect(bought(again)).toEqual([`${round2}:VERIFIED`])
+  }, 30_000)
 })

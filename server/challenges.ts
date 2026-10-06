@@ -6,13 +6,17 @@ import type { Challenge } from '../shared/contracts/publisher.js'
 import { verifyPayment } from '../shared/xrpl.js'
 import type { PurchaseManager } from './purchases.js'
 import { XrplPayer } from './xrpl.js'
+import { scoreTrace, traceStep } from './telemetry.js'
 
 const inflight = new Map<string, Promise<PurchaseIntent>>()
 
 export function challenge(purchases: PurchaseManager, intentId: string, options: { timeoutMs?: number; pollMs?: number } = {}): Promise<PurchaseIntent> {
   const running = inflight.get(intentId)
   if (running) return running
-  const pending = run(purchases, intentId, options).finally(() => inflight.delete(intentId))
+  const pending = traceStep('challenge', { intentId }, () => run(purchases, intentId, options), intent => {
+    if (intent.status === 'REFUNDED') scoreTrace('refund-issued', true, intent.refund?.txHash)
+    return { status: intent.status, refundTx: intent.refund?.txHash }
+  }).finally(() => inflight.delete(intentId))
   inflight.set(intentId, pending)
   return pending
 }

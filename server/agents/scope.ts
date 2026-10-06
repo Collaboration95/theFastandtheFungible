@@ -72,7 +72,7 @@ export async function scope(question: string, options: { clarify?: 'never' } = {
   let label = fixtureLabel
   if (isLlmConfigured()) {
     try {
-      const raw = ScopeSchema.parse(await streamJson(SCOPE_PROMPT, { question }, undefined, 'scope-question'))
+      const raw = ScopeSchema.parse(await streamJson(SCOPE_PROMPT, { question }, undefined, 'scope'))
       if (SPENDING.test(JSON.stringify(raw.questions))) throw new Error('Scope mentions spending')
       result = { questions: raw.questions, plan: safePlan(raw.plan) }
       label = liveLabel()
@@ -84,7 +84,7 @@ export async function scope(question: string, options: { clarify?: 'never' } = {
 /** Builds the plan from the question plus the clarify answers. */
 export async function plan(question: string, answers: Record<string, string> = {}): Promise<Plan & { label: string }> {
   if (isLlmConfigured()) {
-    try { return { ...safePlan(await streamJson(PLAN_PROMPT, { question, answers }, undefined, 'plan-search')), label: liveLabel() } } catch { /* fixture below */ }
+    try { return { ...safePlan(await streamJson(PLAN_PROMPT, { question, answers }, undefined, 'plan')), label: liveLabel() } } catch { /* fixture below */ }
   }
   return { ...fixturePlan(question, answers), label: fixtureLabel }
 }

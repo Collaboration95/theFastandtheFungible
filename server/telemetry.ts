@@ -7,11 +7,13 @@ import { LangfuseClient } from '@langfuse/client'
 import type { RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
 
 const SECRET_ENV = ['DEEPSEEK_API_KEY', 'GROQ_API_KEY', 'CLOUDFLARE_API_TOKEN', 'XRPL_PAYER_SEED', 'PUBLISHER_SECRET', 'LANGFUSE_SECRET_KEY']
+/** Every publisher wallet seed (FINAL-PUSH §9: never log or trace a publisher seed). */
+const PUBLISHER_SEED = /^XRPL_PUBLISHER_.+_SEED$/
 
 /** Replaces every configured secret value (and delivery-token-like headers) before export. */
 export function maskSecrets(data: string, env: NodeJS.ProcessEnv = process.env): string {
   let masked = data
-  for (const name of SECRET_ENV) {
+  for (const name of [...SECRET_ENV, ...Object.keys(env).filter(key => PUBLISHER_SEED.test(key))]) {
     const value = env[name]
     if (value && value.length >= 8) masked = masked.split(value).join(`[${name}]`)
   }
@@ -58,6 +60,21 @@ export function traceRun<T>(name: string, run: RunInfo, fn: () => Promise<T>, su
         try { scoreTrace?.() } catch { /* scores never fail a run */ }
       }
     }, { asType: 'agent' }))
+}
+
+/** A named step that wraps work (search-fanout, challenge). A no-op unless startTelemetry() registered an exporter. */
+export function traceStep<T>(name: string, input: unknown, fn: () => Promise<T>, output: (result: T) => unknown, asType: 'span' | 'retriever' = 'span'): Promise<T> {
+  const body = async (observation: { update: (attributes: { input?: unknown; output?: unknown }) => unknown }) => {
+    observation.update({ input })
+    const result = await fn()
+    try { observation.update({ output: output(result) }) } catch { /* telemetry never blocks */ }
+    return result
+  }
+  return asType === 'retriever' ? startActiveObservation(name, body, { asType }) : startActiveObservation(name, body)
+}
+/** A finished step recorded after the fact (manifest-verify, proof-check, reputation-update). Same no-op rule. */
+export function recordStep(name: string, input: unknown, output: unknown): void {
+  try { startObservation(name, { input, output }).end() } catch { /* telemetry never blocks */ }
 }
 
 /** Stable, low-cardinality names for the durable trace events (the label carries the detail). */

@@ -4,6 +4,7 @@
 import type { ReputationRecord, ReputationSummary, RunSnapshot } from '../shared/contracts/index.js'
 import type { DecisionProvider } from './agents/decision.js'
 import type { Store } from './store.js'
+import { recordStep } from './telemetry.js'
 
 /** Every knob in one place; tune in rehearsal. */
 export const REPUTATION = {
@@ -61,6 +62,7 @@ export class Reputation {
     const before = this.get(publisherSlug, wallet)
     const after = change(before)
     this.store.putReputation(after)
+    recordStep('reputation-update', { publisherSlug, wallet, change: label }, { before: summary(before), after: summary(after) })
     if (runId) this.store.appendEvent(runId, { type: 'REPUTATION', label: `${publisherSlug}: ${label} · H ${before.H.toFixed(2)}→${after.H.toFixed(2)} · C ${before.C.toFixed(2)}→${after.C.toFixed(2)} · ${after.status}`, data: { publisherSlug, wallet, before: summary(before), after: summary(after) } })
     return after
   }
