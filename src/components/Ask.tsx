@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { AskSchema, type Ask as AskInput } from '../../shared/contracts/index.js'
-import { DEMO_QUESTION } from '../../shared/contracts/examples.js'
+import { DEMO_QUESTIONS } from '../../shared/contracts/examples.js'
 import { Mark } from '../format'
 
 const BUDGETS = [0, 100, 200, 500] as const
@@ -21,7 +21,7 @@ export interface AskProps {
 /** Home: the question, the budget (the only spending authorisation) and Ask. */
 export default function Ask({ onAsk, busy = false, settlement, notify, onNotify }: AskProps) {
   const id = useId()
-  const [question, setQuestion] = useState(DEMO_QUESTION)
+  const [question, setQuestion] = useState<string>(DEMO_QUESTIONS[1].text)
   const [budgetMinor, setBudget] = useState<AskInput['budgetMinor']>(200)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')

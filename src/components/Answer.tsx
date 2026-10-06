@@ -98,9 +98,9 @@ function gapCard(run: RunSnapshot, answers: AnswerData[], numbers: Map<string, n
   const first = answers[0], latest = answers.at(-1)
   const gap = first?.openGaps[0]
   if (!first || !latest || !gap) return null
-  const facet = gap.facet.replace(/-/g, ' ')
+  const facet = (gap.tags?.[0] ?? gap.text).replace(/-/g, ' ')
   const bought = run.intents.filter(item => item.runId === run.runId && item.status === 'VERIFIED').map(item => candidateOf(run, item)?.publisher ?? item.resourceId)
-  if (answers.length > 1 && !latest.openGaps.some(item => item.facet === gap.facet)) {
+  if (answers.length > 1 && !latest.openGaps.some(item => item.text === gap.text)) {
     const before = new Set(first.claims.flatMap(claim => claim.citations.map(citationKey)))
     const fresh = [...new Set(latest.claims.flatMap(claim => claim.citations.map(citationKey)).filter(key => !before.has(key)).map(key => numbers.get(key)))].filter(Boolean)
     const spent = run.intents.filter(item => item.runId === run.runId && item.status === 'VERIFIED').reduce((sum, item) => sum + item.amountMinor, 0)

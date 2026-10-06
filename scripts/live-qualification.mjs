@@ -92,7 +92,7 @@ try {
     const { answer } = await writeAnswer({ question, ...free, version: 1 })
     evidence.comparison = []
     for (const model of models) {
-      const table = await decide({ question, conclusion: answer.conclusion, gap: answer.openGaps[0]?.text ?? '', gapFacet: answer.openGaps[0]?.facet, candidates: free.candidates, readSources: free.candidates.filter(c => c.tier === 'FREE'), budgetMinor: 200, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: 100, round: 1, provider: new ClefDecisionProvider({ allowLive: true, model }) })
+      const table = await decide({ question, conclusion: answer.conclusion, gap: answer.openGaps[0]?.text ?? '', gapFacet: answer.openGaps[0]?.tags?.[0], candidates: free.candidates, readSources: free.candidates.filter(c => c.tier === 'FREE'), budgetMinor: 200, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: 100, round: 1, provider: new ClefDecisionProvider({ allowLive: true, model }) })
       evidence.comparison.push({ requestedModel: model, inputResearchProvider: answer.provider, inputResearchModel: answer.model, table })
       await writeFile(output, JSON.stringify(evidence, null, 2) + '\n')
       console.log(JSON.stringify({ model, actualProvider: table.provider, actualModel: table.model, gapMaterial: table.gapMaterial, selectedResourceId: table.selectedResourceId, rows: table.rows.map(r => ({ resourceId: r.candidate.resourceId, ...r.judgment, value: r.value, verdict: r.verdict })), counts: evidence.counts }))

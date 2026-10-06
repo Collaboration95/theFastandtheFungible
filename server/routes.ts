@@ -62,7 +62,7 @@ export async function createApiApp(options: ApiOptions = {}) {
       done()
       const run = store.getRun(runId)
       if (!run.answers.length) {
-        store.addAnswer(runId, { conclusion: 'No accessible evidence was read. The publisher is unavailable; start a new ask when it is ready.', claims: [], openGaps: [{ text: 'No accessible evidence is available.', facet: 'grid-energisation' }], version: 1, provider: 'fixture', model: 'extractive-fixture' })
+        store.addAnswer(runId, { conclusion: 'No accessible evidence was read. The publisher is unavailable; start a new ask when it is ready.', claims: [], openGaps: [{ text: 'No accessible evidence is available.', tags: ['grid-energisation'] }], version: 1, provider: 'fixture', model: 'extractive-fixture' })
         store.updateRun(runId, { labels: { ...run.labels, research: 'fixture · extractive-fixture' } })
       }
       store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Latest validated answer and ledger saved.' })

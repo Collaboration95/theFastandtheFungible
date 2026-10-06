@@ -46,7 +46,7 @@ function gridBought(run: RunSnapshot) {
   expect(run.grants).toHaveLength(1)
   expect(run.receipts).toHaveLength(1)
   expect(run.answers.map(a => a.version)).toEqual([1, 2])
-  expect(run.answers[0].openGaps[0].facet).toBe('grid-energisation')
+  expect(run.answers[0].openGaps[0].tags?.[0]).toBe('grid-energisation')
   expect(run.answers[1].claims.some(c => c.citations.some(ref => ref.resourceId === 'grid-operators-report'))).toBe(true)
   expect(run.round).toBe(2)
   expect(run.decisions[1].selectedResourceId).toBeUndefined()
@@ -135,7 +135,7 @@ describe('October demo scenarios: separate API and publisher processes', () => {
     const run = await h.until(await h.ask())
     gridBought(run)
     expect(run.impact?.classification).toBe('UNCHANGED')
-    expect(run.answers[1].openGaps.map(g => g.facet)).toContain('grid-energisation')
+    expect(run.answers[1].openGaps.map(g => g.tags?.[0])).toContain('grid-energisation')
     assertNoLeaks(h.observations, h.resources)
   }, 30_000)
 

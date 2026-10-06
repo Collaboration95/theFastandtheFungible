@@ -13,6 +13,11 @@ export const PaymentRequirementSchema = z.object({ rail: z.literal('xrpl-testnet
 export const LedgerProofSchema = z.object({ txHash: hash256, ledgerIndex: z.number().int().positive(), payer: z.string(), payTo: z.string(), amountDrops: z.string() })
 export const ProfileSchema = z.object({ id: z.string(), name: z.string(), tier: z.enum(['FREE', 'PAID']) })
 export const QuoteRequestSchema = z.object({ profileId: z.string(), resourceId: z.string(), version: z.string(), runId: z.string(), intentId: z.string() })
+/**
+ * Kept for the x402 v2 flow, derived from PAYMENT-REQUIRED (#115): quoteId = the
+ * invoiceId (canonical JSON), quoteHash = sha256(invoiceId) (the on-ledger
+ * InvoiceID), contentDigest = the manifest root, expiresAt = now + maxTimeoutSeconds.
+ */
 export const QuoteSchema = QuoteRequestSchema.extend({ quoteId: z.string(), quoteHash: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), expiresAt: z.string(), contentDigest: z.string(), payment: PaymentRequirementSchema.optional() })
 export const SettlementRequestSchema = z.object({ quoteId: z.string(), quoteHash: z.string(), intentId: z.string(), txHash: hash256.optional() })
 export const SettlementSchema = z.object({ status: z.enum(['NOT_FOUND', 'PENDING', 'SETTLED']), receiptId: z.string().optional(), deliveryToken: z.string().optional(), ledger: LedgerProofSchema.optional() })
@@ -25,3 +30,9 @@ export type Receipt = z.infer<typeof ReceiptSchema>
 export type PaymentRequirement = z.infer<typeof PaymentRequirementSchema>
 export type LedgerProof = z.infer<typeof LedgerProofSchema>
 export type Rail = z.infer<typeof RailSchema>
+
+/** POST /challenge (D5): the buyer reveals the passage whose claim failed. */
+export const ChallengeSchema = z.object({ intentId: z.string().min(1), txHash: hash256, claimId: z.string().min(1), leaf: z.string().regex(/^[0-9a-f]{64}$/), salt: z.string().min(1), passageId: z.string().min(1), passageText: z.string().min(1) })
+export const ChallengeResultSchema = z.object({ status: z.enum(['REFUNDED', 'REJECTED', 'REFUSED']), refundTxHash: hash256.optional() })
+export type Challenge = z.infer<typeof ChallengeSchema>
+export type ChallengeResult = z.infer<typeof ChallengeResultSchema>
