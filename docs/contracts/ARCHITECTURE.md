@@ -4,23 +4,33 @@ The browser is a view and command surface. The API server owns retrieval,
 decisions, budget, payment and cited synthesis. Direction:
 [FINAL-PUSH.md](../../FINAL-PUSH.md).
 
-## v1 as built (on `main`)
+## As built (8 Oct, on `main`)
 
-- **Web** (`src/`): the run screen. It replays the finished trace at stage
-  pace (D13).
-- **API** (`server/`, Express): research, decisions, the policy that picks
-  purchases, the purchase core and the PDF. DeepSeek writes, Clef decides,
-  code pays.
-- **Publisher** (`publisher/`): one local service over the synthetic Vertex
-  corpus, with an x402-shaped 402, quote and delivery flow. Its search ignores
-  the query ([§2](../../FINAL-PUSH.md#2-why-the-6-oct-live-demo-looked-static-for-the-record)).
-- **Store**: SQLite via `node:sqlite`: `data/app.db` (runs, receipts, grants)
-  and `data/publisher.db` (journal).
-- **XRPL Testnet**: the server signs and submits Payments, one wallet per
-  publisher profile. No real value.
+- **Web** (`src/`): the run screen: clarify chips, the 5 s action modal,
+  writer and trust chips, proof badges, the refund timeline and a Writers tab.
+  It replays the finished trace at stage pace (D13).
+- **API** (`server/`, Express): `agents/` (scope, plan, retrieval, gaps, Clef
+  decisions, the loop, report), `reputation.ts` (trust), `purchases.ts`
+  (the policy-only purchase core and x402 v2 buyer), `proofs.ts`,
+  `challenges.ts`, and the PDF. DeepSeek writes, Clef decides, code pays.
+- **Publisher host** (`publisher/`): one local process serving every writer
+  under `/w/:slug/`: `search` (Orama hybrid over full text), `articles/:id`
+  (free, or x402 v2 paid), `facilitator/{supported,verify,settle}`,
+  `challenge`, and the signed manifest. `/registry` lists writers and wallets.
+  The roster and 81 articles are generated into `data/` (`make corpus`).
+- **Shared** (`shared/`): contracts, manifest and proof checker, x402 header
+  codec, XRPL helpers.
+- **Store**: SQLite via `node:sqlite`: `data/app.db` (runs, receipts, grants,
+  reputation) and the publisher journal (quotes, settlements, refunds).
+- **XRPL Testnet**: the buyer signs; each writer's facilitator submits and
+  confirms; the writer's own wallet signs refunds. No real value.
 - **Langfuse**: live runs are traced and scored.
 
-## Target (final push)
+Flow, headers and refund: [x402 and XRPL](../x402-xrpl.md).
+
+## Shape of one run
+
+The third writer column is the bad actor; the last is free open records.
 
 ```
                          CLIENT = the engine (server/ + src/)

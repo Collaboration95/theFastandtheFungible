@@ -22,21 +22,21 @@ company context). It is history only. Do not use it as guidance.
 
 ## Reference
 
-- [x402 and XRPL](x402-xrpl.md): protocol headers, validation before signing,
-  finality, wallet safety.
+- [x402 and XRPL](x402-xrpl.md): the as-built v2 flow (headers, invoiceId,
+  facilitator, refund), validation before signing, finality, wallet safety.
 - [Team manifesto and planned features](DEMO-MANIFESTO.md)
 - [Presentation readiness](PRESENTATION-READINESS.md): event logistics, the
   five-minute script, likely questions, rehearsal matrix.
 - [Publisher deployment](publisher-deploy.md)
 - [UX walkthrough](ux-walkthrough/index.html): owned by the UX session. It
-  still shows the v1 Vertex mock.
+  may lag the built UI.
 - [Build log](../talk/build-log.md): raw material for the talk.
 
 ## Active contracts
 
 - [Product](contracts/PRODUCT.md): what we promise, to whom, and the demo use
   cases.
-- [Architecture](contracts/ARCHITECTURE.md): v1 as built, and the target.
+- [Architecture](contracts/ARCHITECTURE.md): as built, and the shape of a run.
 - [Design](contracts/DESIGN.md): visual system, layout, and content rules.
 - [Security](contracts/SECURITY.md): secrets, access, settlement, manifests and
   refunds.
