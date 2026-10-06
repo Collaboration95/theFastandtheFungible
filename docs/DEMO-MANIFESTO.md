@@ -37,9 +37,9 @@ and the ledger cannot enforce refunds.
 
 The October 10 demonstration makes that entire journey visible.
 
-## Planned features
+## Features (as built, 8 Oct)
 
-Already in the v1 build, which the final push keeps:
+From the v1 build, kept in the final push:
 
 - **A free answer that always works.** A cited answer from free sources. A S$0
   budget means this layer alone.
@@ -56,7 +56,7 @@ Already in the v1 build, which the final push keeps:
 - **A deep-research PDF** with cited findings, what the purchases changed and
   the decision table.
 
-New in the final push (not built yet; see the decision IDs):
+Built in the final push (7–8 Oct overnight run; see the decision IDs and STATUS.md):
 
 - **Federated search** (D1–D3). Each writer searches its own full text. Search
   results carry an abstract, signals and a signed manifest, never paid bytes.
