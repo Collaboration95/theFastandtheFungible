@@ -1,5 +1,12 @@
-# Build status (5 Oct 2026, 20:55 SGT)
+# Build status (6 Oct 2026, SGT)
+## Pivot (6 Oct)
+- Direction changed: see [FINAL-PUSH.md](FINAL-PUSH.md). The v1 live demo was real (DeepSeek, Clef, XRPL Testnet) but looked static because every answer came from the 19-doc Vertex corpus and publisher search ignored the query.
+- Next: W0 contracts, then W1 search / pay / agent in parallel (FINAL-PUSH §13). Wednesday-night milestone in prompt.md §10.
+- Old docs retired: `docs/archive/` holds the 4 Oct prompt, plans and company context; roadmap, agent guide, diagrams and canvas deleted (history in git).
 ## Needs you
+- O1: writer websites and article content (FINAL-PUSH §15) before W2 corpus can start.
+- O3: keep real institution names (BoJ, JGBs) with synthetic content, or fictionalise them.
+- O4: agree the order of W2 UI with the live UX session.
 - Thu 8 Oct after the 20:00 freeze: record a labelled fallback video (fixture run, plus one live run with its Langfuse trace).
 - Fri 9 Oct: rehearse 3× with `make live` on the presenting laptop over a phone hotspot, then tag `demo-oct10`.
 - Before rehearsals: `make doctor` (keys, Testnet wallets, Langfuse); `make wallets` re-funds Testnet wallets after a Testnet reset.

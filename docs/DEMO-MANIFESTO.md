@@ -1,54 +1,80 @@
-# ResearchAgent: Perplexity with a wallet
+# ResearchAgent: a search engine for agent-readable expertise
+
+Direction and decisions: [FINAL-PUSH.md](../FINAL-PUSH.md). This manifesto
+summarises it for the team; where the two differ, FINAL-PUSH wins.
 
 ## What we are building
 
-You ask a question and set a budget for that prompt. A research agent answers
-from free sources first, with citations, and names what it still doesn't know.
-A decision agent then judges whether any paywalled source is worth its price.
-It buys what clears the bar within your budget, and the answer updates to show
-what the purchase changed. One click turns the result into a deep-research PDF.
+Agents are the new readers. Experts should get paid when an agent uses their
+thinking.
 
-**LLMs write. A decision model chooses. Code pays.**
+We are building a neutral search engine for agent-readable expertise, with a
+wallet. You ask a question and set a budget for that prompt. Independent
+writers run search over their own articles. The agent answers from free
+sources first, with citations, and names what it still doesn't know. A
+calibrated decision model (Cloudflare's Clef, on Workers AI) judges which
+paywalled article is worth buying for that gap. Code pays the writer directly
+over x402 on XRPL Testnet, within your budget. After delivery the agent checks
+every promise the writer made. A broken promise is challenged and costs the
+writer trust.
 
-Choosing whether to buy a source is not a writing task, so no LLM makes that
-call. A decision model (Cloudflare's Clef, on Workers AI) returns calibrated
-probabilities:
-does this source address the gap, is it original reporting or a rewrite, and
-is the gap material? A short, visible policy in code turns those probabilities
-into a purchase decision. The LLM cannot trigger a purchase, so instructions
-hidden in an article cannot spend money.
+**LLMs write. A decision model chooses. Code pays.** The LLM can name what is
+missing but cannot buy, pick a purchase or change the budget, so instructions
+hidden in an article cannot spend money. In the talk, that is one sentence in
+Q&A. We lead with Clef and calibration.
+
+How we position it:
+
+- Pay Per Crawl prices pages.
+- Pay Per Use trusts the buyer's word.
+- We price evidence: a calibrated model decides what is worth buying, the
+  writer sets the price, and every promise is checkable.
+
+The three promises (writers, readers, the engine) are in
+[FINAL-PUSH §1](../FINAL-PUSH.md#1-what-we-are-building). We say we reduce
+the buyer's information problem (Arrow's paradox). We do not say we solve it,
+and the ledger cannot enforce refunds.
 
 The October 10 demonstration makes that entire journey visible.
 
 ## Planned features
 
-- **A free answer that always works.** Perplexity-style search, reading and
-  streaming of a cited answer from free sources. A S$0 budget means this layer
-  alone. It is deliberately boring and must never fail on stage.
+Already in the v1 build, which the final push keeps:
+
+- **A free answer that always works.** A cited answer from free sources. A S$0
+  budget means this layer alone.
 - **A budget per prompt.** The budget is the only spending authorization. The
   agent buys on its own inside it, never above a per-source cap. A Stop button
   halts it immediately.
 - **Decisions you can audit.** A decision table shows every paywalled
-  candidate: its price, the decision model's probabilities, the computed value and a verdict
-  (buy, rewrite, over cap, low value). With a S$0 budget it still shows what
-  the agent would have bought.
-- **A working publisher boundary.** One local publisher service exposes search,
-  previews, x402-shaped 402 challenges, quotes and verified delivery across
-  three publisher profiles. Commercial relationships and settlement are
-  simulated and labelled; the application and its HTTP traffic run for real.
-- **Recoverable purchases.** The server enforces the budget, keeps receipts,
-  and retries an interrupted delivery without a second charge.
-- **Visible evidence impact.** Answer v1 and answer v2 are compared side by
-  side, with each change linked to its supporting passage. New evidence can
-  strengthen, qualify, contradict or leave a conclusion unchanged.
-- **Visible internals.** A live activity trace, the decision table, and a wire
-  panel showing the raw 402 → settle → verified-delivery exchange.
-- **A deep-research report.** One click produces a PDF with the cited
-  findings, what the purchases changed, open questions, and an appendix with
-  the decision table and receipts.
-- **A repeatable demonstration.** A small, frozen corpus: a fictional company
-  with realistic articles about one concrete, local question. Fresh runs,
-  visible execution modes, and an offline fixture path.
+  candidate with its price, the model's probabilities, the computed value and
+  a verdict. With S$0 it still shows what the agent would have bought.
+- **Recoverable purchases.** One charge per intent, durable receipts, and a
+  retried delivery never charges twice. Settlement is on XRPL Testnet.
+- **Visible evidence impact and internals.** Answer v1 against v2, a live
+  trace and the raw 402 exchange.
+- **A deep-research PDF** with cited findings, what the purchases changed and
+  the decision table.
+
+New in the final push (not built yet; see the decision IDs):
+
+- **Federated search** (D1–D3). Each writer searches its own full text. Search
+  results carry an abstract, signals and a signed manifest, never paid bytes.
+- **Signed manifests** (D4). The buyer can recompute the proofs after delivery.
+- **Real x402 v2 with a writer-run facilitator** (D7).
+- **Challenges and refunds** (D5). A failed proof triggers `/challenge`, the
+  writer refunds on Testnet, and trust drops either way.
+- **A public trust matrix** (D6). A trust score per writer, shown in the UI and
+  multiplied into Clef's value.
+- **Clarify, then a 5-second action modal** (D8). Up to two short questions,
+  then a plan the user can edit or cancel. It confirms the plan, not a
+  purchase.
+- **Free-text gaps** (D10). Questions are no longer limited to one fixed topic.
+- **A roster of fictional, labelled writers** (§10), one per decision it
+  exercises. The Vertex corpus stays as the offline backup scenario (D14).
+
+Every feature must reinforce one pillar: calibrated buying, a verifiable
+purchase, fairness to both sides, or the hard gates (D12).
 
 ## How we build
 
@@ -70,20 +96,35 @@ than stall in a review loop. Five hard gates are never traded for speed:
 More generated code is not our measure of progress; more working product
 behavior is.
 
-We retain the current stack and focus on one research domain. Hosting the
-publisher on Google Cloud Run (the event sponsor's platform) is an optional
+We retain the current stack and focus on three topic lanes: Asia rates and
+bonds, data centres and power, and semiconductors. Hosting the publisher on
+Google Cloud Run (the event sponsor's platform) is an optional
 experiment, admitted only once the local route works. AWS AgentCore, general
 crawling, additional domains, a marketplace and production payments are
 outside this demo's scope.
 
 ## What success looks like
 
-The audience sees a free answer arrive instantly. They watch a decision model
-work out what that answer is missing and buy one source within budget, then
-see exactly how the answer changed. The same system declines purchases that
-aren't worth it. Every outcome can be traced and repeated. The room also
-leaves knowing how it was built: LLMs write, a decision model chooses, code
-pays; and a team of coding agents produced the system in a week, as recorded
-in the build log.
+The audience sees Clef and its calibration first, then the trust matrix. Three
+runs show the product:
+
+- **UC1: free sources are enough.** A question about a Bank of Japan decision
+  is answered from free sources with citations. Clef finds no gap worth paying
+  for, and S$0 is spent.
+- **UC2: paid evidence changes the answer (main case).** Free sources cover
+  the headline; the gap is insurer-level flow data. A rewrite and a low-credibility
+  op-ed are skipped, a credible article is bought, and answer v2
+  qualifies v1, with a Testnet receipt.
+- **UC3: a bad actor is caught and pays back.** A writer with inflated
+  relevance and a low price wins round one. Its proof fails, `/challenge`
+  refunds on Testnet, trust drops from 0.8 to 0.4 and the writer is
+  quarantined. Asking again shows it skipped for low trust.
+
+Every outcome can be traced and repeated. The room also leaves knowing how it
+was built: LLMs write, a decision model chooses, code pays; and a team of
+coding agents produced the system in a week, as recorded in the build log.
+Questions are drafts until the corpus exists; see
+[FINAL-PUSH §11](../FINAL-PUSH.md#11-demo-use-cases-questions-are-drafts-until-the-corpus-exists)
+and open items O1–O3.
 
 Build instructions: [prompt.md](../prompt.md).
