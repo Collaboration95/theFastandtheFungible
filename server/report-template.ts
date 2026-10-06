@@ -1,4 +1,5 @@
 import { providerLabels, type Claim, type Report } from '../shared/contracts/index.js'
+import { articleUrl } from '../shared/contracts/manifest.js'
 import { resolveCitation } from './agents/citations.js'
 
 const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
@@ -39,7 +40,7 @@ h1,h2,h3,th,.label { font-family: Arial, sans-serif; } h1 { font-size: 30px; lin
     const receipts = report.receipts.filter(r => r.resourceId === source.resourceId && r.version === source.version)
     return `<h3>${escape(source.title)}</h3><p>${escape(source.publisher)} · ${escape(source.resourceId)} · ${escape(source.version)} · ${candidate?.tier === 'PAID' ? 'bought / granted' : 'free'}<br>Receipt IDs: ${escape(receipts.map(r => r.receiptId).join(', ') || 'none')}<br>Attribution: ${escape(candidate?.license.attribution)}</p>${source.spans.map(span => {
       const n = referenceNumber(source.resourceId, source.version, span.id)
-      return `<div class="excerpt" id="excerpt-${n}"><p>[${n}] Exact synthetic passage · span ${escape(span.id)}</p><blockquote>${escape(span.text)}</blockquote></div>`
+      return `<div class="excerpt" id="excerpt-${n}"><p>[${n}] Exact synthetic passage · span ${escape(span.id)}${candidate?.tier === 'FREE' && candidate.publisherSlug ? ` · <a href="${escape(articleUrl(candidate.publisherSlug, source.resourceId, span.id))}">open on the writer's site</a>` : ''}</p><blockquote>${escape(span.text)}</blockquote></div>`
     }).join('')}`
   }).join('') || '<p>No accessible sources recorded.</p>'}</section></main></body></html>`
 }
