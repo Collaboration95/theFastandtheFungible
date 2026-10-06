@@ -4,7 +4,7 @@
 > orchestrator, every implementation worker, and the single review pass.
 >
 > **Product, scope and decisions live in [FINAL-PUSH.md](FINAL-PUSH.md)**
-> (decisions D1–D14, open items O1–O5). This file holds the hard gates and
+> (decisions D1–D24, open items (§15)). This file holds the hard gates and
 > the workflow. The 4 Oct version is archived at
 > `docs/archive/prompt-v1-oct4.md` (history only, not acceptance criteria).
 
@@ -77,7 +77,7 @@ kept.
 ## 5. Corpus
 
 See FINAL-PUSH §10 (writers) and O1 (writer websites and content, deferred).
-The Vertex corpus stays as the offline backup scenario (D14).
+The Vertex corpus is removed (D18); the offline backup is the fixture demo on the new corpus.
 
 ## 6. Work packages
 
@@ -195,7 +195,7 @@ nits into one `followup`-labelled issue per wave, or drop them.
 | **Wed 7 Oct night** | **End-to-end on `main`: ask → clarify → plan → federated search → free answer → Clef + trust → x402 v2 purchase → proof check → answer v2**, the most important milestone |
 | Thu 8 Oct | W2 UI, W2 corpus, UC1–UC3 scenarios; **feature freeze at 20:00**; afterwards the human records a labelled fallback video |
 | Fri 9 Oct | The human rehearses 3× on the presenting laptop; tag `demo-oct10` |
-| Sat 10 Oct | `npm run demo:live` at the venue, phone hotspot as backup, `SOURCE_MODE=scenario` (Vertex) as the offline fallback |
+| Sat 10 Oct | `npm run demo:live` at the venue, phone hotspot as backup, `npm run demo` (fixture providers on the new corpus) as the offline fallback |
 
 ## 11. The goal: when the orchestrator is done
 

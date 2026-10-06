@@ -1,6 +1,8 @@
 # October 10 final push: new direction
 
-Decided 6 Oct 2026. Demo: AI Tinkerers SG, Sat 10 Oct. Code freeze: Thu 8 Oct, night.
+Decided 6 Oct 2026, amended 7 Oct (D15–D24). Demo: AI Tinkerers SG, Sat 10 Oct. Code freeze: Thu 8 Oct, night.
+
+**Execution:** the work is split into GitHub issues (epics with sub-issues, milestone "10 Oct 2026 — AI Tinkerers demo"). The overnight run follows [OVERNIGHT-OCT7.md](OVERNIGHT-OCT7.md).
 
 **Authority.** This file overrides `prompt.md` wherever the two conflict.
 The five hard gates in `prompt.md` §2 still apply, with the clarifications in §12 below.
@@ -90,7 +92,17 @@ A question about Japanese bonds produced a DeepSeek answer about Vertex Compute.
 | D11 | **Cut:** payment channels, escrow, NFT receipts, Web Bot Auth (signed agent identity), t54, a central index, embeddings computed at query time for the corpus, and audience questions on stage. | Doesn't reinforce a pillar within 2 days. | — |
 | D12 | **Every feature must reinforce one pillar**: (P1) calibrated buying, (P2) verifiable purchase, (P3) fairness to both sides, (P4) the hard gates. A hack job that reinforces none of them is out. | Scope control. | — |
 | D13 | **Keep the stage-paced motion**, and add a `?pace=real` toggle for the honesty question. | Motion is a differentiator. The data is real. | — |
-| D14 | **Keep the Vertex corpus as an offline backup scenario**, behind `SOURCE_MODE=scenario`, so the existing tests keep passing. | The venue's Wi-Fi may fail. | Deleting it. |
+| D14 | ~~Keep the Vertex corpus as an offline backup scenario.~~ **Reversed 7 Oct by D18.** | — | — |
+| D15 | **Done means every non-stretch issue is implemented.** There is no cut order and no priority labels. Stretch issues are labelled `deferred` and titled "DO NOT IMPLEMENT"; nobody builds them unless the user explicitly asks. | The user wants everything built tonight; the issues are the spec. | A cut order, P0/P1/P2. |
+| D16 | **Demo questions: two semiconductor questions and one bond question.**<br>UC1 (bond): free sources suffice.<br>UC2 (semis, main): analysts' outlook on a fictional company's latest deal with TSMC. A paid article changes the answer, and the LLM asks one clarifying question, steered by few-shot examples so its angle is predictable.<br>UC3 (semis): AlphaLeak is caught.<br>The corpus story bible locks the exact wording. | Semiconductors read more clearly to the audience than bonds. | Two bond questions. |
+| D17 | **Writer websites are minimal personal blogs**, server-rendered by the publisher process.<br>Reference look: the "Peaceful" template. Name top-left; Blogs and About centred; Contact right; a centred hero quote; a list of date + title rows; an article page with "Latest Post", the title, "By <writer>" and body text with subheadings.<br>Light theme, lots of whitespace. | Citations need real pages to open. Minimal is fast to build. | React sites, rich themes. |
+| D18 | **The Vertex corpus, its variants, `CORPUS_VARIANT` and `SOURCE_MODE` are removed.** The offline backup is the fixture demo (`npm run demo`) on the new corpus. | The new corpus is local too. Two corpus code paths cost more than they protect. | Keeping Vertex. |
+| D19 | **An LLM writes the corpus.**<br>The planning step picks topics within the three lanes. Articles are full-length (600–1,400 words) and written in personal-blog voice.<br>The agent plants AlphaLeak's false claim itself. There is no human review step: scripted checks verify the golden-path facts instead. | The user does not want to do content work. | Hand-written articles. |
+| D20 | **Real names are allowed** (TSMC, BoJ, JGBs) next to fictional companies. Everything stays labelled SYNTHETIC. | It is a local research demo; nothing is published or sold. | Fictionalising everything. |
+| D21 | **Reputation is keyed by the seller of record**: the publisher wallet that signs manifests and receives payment. Writers are shown as authors under their publisher. For an independent writer, writer = publisher. The code name is `reputation`; the user-facing name is decided later (X3). | Accountability follows the key that signs and gets paid. | Per-writer keys. |
+| D22 | **Langfuse spans** for search fan-out, manifest check, challenge and reputation update, plus the scope and plan generations. They are no-ops unless `LANGFUSE_ENABLED=1`. Tests and fixture runs never enable it, so nothing floods the project during testing. | It's a good Q&A visual, and it costs little. | Tracing in tests. |
+| D23 | **Untouched in this push:** Cloud Run (`feat/cloud-run`), the `feat/xrpl-publisher-wallets` worktree, and the uncommitted v1.x UX branch. UI issues are functional and additive (new components plus minimal wiring); visual and UX polish comes after the groundwork (X4). | Focus on the groundwork. | Touching the UX branch. |
+| D24 | **Code review uses the Codex CLI with `gpt-6-luna`, fast service tier and high reasoning**, one pass per PR. The commands are in `OVERNIGHT-OCT7.md`. | The user's choice: fast and independent. | Same-model self-review. |
 
 ## 5. Client flow (pseudocode)
 
@@ -264,17 +276,17 @@ All writers are fictional and labelled SYNTHETIC. Each one exists to exercise on
 
 **Topic lanes:** Asia rates and bonds; data centres and power; semiconductors.
 
-**Deferred (§15):** a server that renders each writer's website with real article pages and links, and the article content itself.
+**Writer websites:** minimal personal blogs (D17). **Content:** written by an LLM (D19). The planning step may add staff writers under NotFT and refine topics within the three lanes. The roster above stays fixed.
 
-## 11. Demo use cases (questions are drafts until the corpus exists)
+## 11. Demo use cases (D16; the corpus story bible locks the final wording)
 
-| # | Shows | Draft question | Expected run |
+| # | Shows | Question shape | Expected run |
 |---|---|---|---|
-| UC1 | Free sources are enough | "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?" | Open records + Basis Points free post → cited answer. Clef finds no gap worth paying for. **S$0 spent.** |
-| UC2 | Paid evidence changes the answer **(main use case)** | "Will Japanese life insurers keep selling foreign bonds next year?" | Free sources cover the headline. The gap is insurer-level flow data. MarketPulse is skipped as a rewrite and Kopi Contrarian as low credibility. **NotFT or Basis Points is bought.** v2 QUALIFIES the answer, with a Testnet receipt. |
-| UC3 | A bad actor is caught and pays back | "Are advanced-packaging lead times in Malaysia getting shorter?" | AlphaLeak's inflated relevance plus a low price wins round 1 → bought. Its proof fails (the "dated figure" in passage 2 isn't there) → `/challenge` → refunded on Testnet. Trust drops 0.8 → 0.4, so it's quarantined. Round 2 buys The Fab Floor. Asking again shows AlphaLeak as `SKIP_LOW_TRUST`. |
+| UC1 (bond) | Free sources are enough | "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?" | Open records + a Basis Points free post → cited answer. Clef finds no gap worth paying for. **S$0 spent.** |
+| UC2 (semis, **main**) | One clarifying question, then paid evidence changes the answer | "What's the analyst outlook on <FictionalCo>'s latest deal with TSMC?" | **Clarify:** one question with a predictable angle, e.g. "Which matters most? [capacity allocation · pricing & margins · delivery timeline]". Free posts cover the announcement. The gap is the angle the user picked. MarketPulse is skipped as a rewrite of NotFT; Kopi Contrarian is cheap but low-credibility opinion. **NotFT or The Fab Floor is bought.** v2 QUALIFIES or STRENGTHENS the answer, with a Testnet receipt. |
+| UC3 (semis) | A bad actor is caught and pays back | "Are <FictionalCo>'s advanced-packaging lead times in Malaysia getting shorter?" | AlphaLeak's inflated relevance plus a low price wins round 1 → bought. Its proof fails (a planted "dated-figure" claim that isn't there) → `/challenge` → refunded on Testnet. Reputation drops 0.8 → 0.4, so it's quarantined. Round 2 buys The Fab Floor. Asking again shows AlphaLeak as `SKIP_LOW_TRUST`. |
 
-There are no audience questions on stage. Draft questions name real institutions (BoJ, JGBs), and all article content is synthetic and labelled (§15, O3).
+There are no audience questions on stage. Real names are allowed (D20), and all article content is synthetic and labelled.
 
 ## 12. Hard gates (`prompt.md` §2): unchanged, with clarifications
 
@@ -286,17 +298,17 @@ There are no audience questions on stage. Draft questions name real institutions
 
 ## 13. Workstreams for the next narrow runs
 
-Run W0 first. The build log's lesson: agree typed boundaries before working in parallel. Each stream works in its own worktree under `../tftf-wt/` and must pass `npm run check:fast`.
+The work is split into GitHub issues: one epic per stream, each with sub-issues that carry the write scope and acceptance checks. [OVERNIGHT-OCT7.md](OVERNIGHT-OCT7.md) lists them in execution order.
 
-| Stream | Owns (write scope) | Delivers | Decisions |
-|---|---|---|---|
-| **W0 contracts** | `shared/contracts/**` | Schemas: `SearchHit`, `Manifest`, `PaymentRequiredV2`, `PaymentSignature`, `Challenge`, `TrustRecord`, `ScopeResult`/`Plan`; the `FacetSchema` removal plan; stubs | D3, D4, D7, D10 |
-| **W1 search** | `publisher/search*.ts`, `publisher/registry.ts`, `publisher/manifest.ts`, `shared/manifest.ts` (verifier), tests | Multi-writer registry in one process; Orama hybrid per writer; embedding cache; signed manifests | D1–D4 |
-| **W1 pay** | `publisher/routes.ts` (payment parts), `publisher/journal.ts`, `server/purchases.ts`, `server/xrpl.ts`, `shared/xrpl.ts`, `tests/purchase*` | x402 v2 headers, facilitator, buyer-signed blob, `/challenge` with refund | D5, D7 |
-| **W1 agent** | `server/agents/**`, trust tables in `server/store.ts`, `/plan` in `server/routes.ts` | Scope and plan, fan-out and fusion, free-text gaps, proof check, trust matrix, `SKIP_LOW_TRUST` | D5, D6, D8–D10 |
-| **W2 UI** | `src/**`; coordinate with the live UX session | Clarify chips, 5 s action modal, proof ✓/✗, refund receipt, trust matrix panel and chips | D8, D13 |
-| **W2 corpus** | `data/corpus/**` | Writer articles for UC1–UC3. Blocked on O1 | D14 |
-| **Docs** | `prompt.md`, `AGENTS.md`, retirement moves | Rewrite `prompt.md` §1/§3/§5; retire docs per §16 after the user approves | — |
+Order:
+1. **W0 contracts** first. The build log's lesson: agree typed boundaries before working in parallel.
+2. **Corpus, search, pay and agent** in parallel.
+3. **Writer sites and functional UI.**
+4. **Ship:** retire Vertex, UC1–UC3 tests, live smoke, docs.
+
+Stretch issues (`deferred`, titled "DO NOT IMPLEMENT") are never built unless the user asks.
+
+Each issue works in its own worktree under `../tftf-wt/` and must pass `npm run check:fast`.
 
 ## 14. Research references
 
@@ -320,10 +332,10 @@ Run W0 first. The build log's lesson: agree typed boundaries before working in p
 
 ## 15. Open items (the only things still open)
 
-- **O1 Writer websites and corpus.** A server that renders each writer's site with article pages, plus the actual article content in each writer's voice. Roster and tags are kept (§10); content and server design come next.
-- **O2 Final demo questions.** These depend on O1. The shape is fixed: one or two bond questions and one semiconductor question, covering UC1–UC3.
-- **O3 Real institutions with invented facts.** Draft questions name the BoJ and JGBs with synthetic content. Decide whether to keep real institution names (labelled SYNTHETIC) or fictionalise them.
-- **O4 UI ownership.** W2 UI overlaps with the live UX session's files. Agree an order before starting.
+- ~~O1 Writer websites and corpus~~: resolved by D17 and D19.
+- ~~O2 Final demo questions~~: resolved by D16. The story bible locks the exact wording.
+- ~~O3 Real names~~: resolved by D20.
+- ~~O4 UI ownership~~: resolved by D23.
 - **O5 Latency.** Clef re-scoring after each purchase, plus a refund, adds ~2 ledger closes (~8–12 s) in UC3. Check it at rehearsal pace.
 
 ## 16. Documents to retire

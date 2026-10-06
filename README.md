@@ -4,7 +4,7 @@ Agents are the new readers. Experts should get paid when an agent uses their thi
 
 ResearchAgent is a neutral search engine for agent-readable expertise, with a wallet. A reader's agent asks a question, writers search their own articles, a calibrated decision model (Cloudflare Clef) picks which paywalled article is worth buying, code pays the writer directly, and every promise the writer made is checked after delivery. LLMs on DeepSeek write the answer and report; they never choose or trigger a purchase.
 
-**Direction and decisions:** [FINAL-PUSH.md](FINAL-PUSH.md) (6 Oct pivot, decisions D1-D14, open items) is the source of truth for the product. Planned work below is marked as planned.
+**Direction and decisions:** [FINAL-PUSH.md](FINAL-PUSH.md) (6 Oct pivot, decisions D1-D24, open items) is the source of truth for the product. Planned work below is marked as planned.
 
 **Implemented today (v1):** one synthetic corpus (19 fictional Vertex Compute documents) behind one local publisher, an x402-shaped flow settled on XRPL Testnet, DeepSeek for writing, Clef for decisions, policy code for payment, and Langfuse traces for live runs. No real funds are used and everything simulated or substituted is labelled. The v1 flow is not full x402 v2.
 
@@ -34,7 +34,7 @@ Copy `.env.example` to `.env` and supply DeepSeek and Cloudflare keys for live m
 
 Each run has durable SQLite reservations, intents, receipts and verified grants. No premium bodies or spans enter the browser or models before a matching grant. Retrying a failed delivery never creates a new charge. Stop prevents new purchases. Citations resolve to exact delivered passages; the PDF includes decision tables and simulated receipts. When Chromium fails, the report endpoint returns labelled printable HTML.
 
-Variants: `make variant V=open-sufficient|contradiction|unchanged|injection` runs the Vertex corpus variants offline. `make fault` enables the local fault demo. A fresh run never erases historical receipts. Runtime files are ignored in `data/`. Per D14 the Vertex corpus stays as the offline backup scenario (planned flag `SOURCE_MODE=scenario`), for when the venue Wi-Fi fails; the writer corpus in FINAL-PUSH §10 replaces it as the main demo.
+Variants: `make variant V=open-sufficient|contradiction|unchanged|injection` runs the Vertex corpus variants offline. `make fault` enables the local fault demo. A fresh run never erases historical receipts. Runtime files are ignored in `data/`. Per D18 the Vertex corpus and its variants are being removed; the offline backup becomes `npm run demo` (fixture providers) on the new writer corpus.
 
 ## Docker (venue laptop)
 
