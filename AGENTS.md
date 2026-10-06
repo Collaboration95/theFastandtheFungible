@@ -1,10 +1,12 @@
 # Agent rules for the October 10 demo sprint
 
 - **Read [FINAL-PUSH.md](FINAL-PUSH.md) first (6 Oct direction).** It holds the
-  product, scope and decisions D1–D14. Do not reopen a decision; only the open
-  items O1–O5 are open. [prompt.md](prompt.md) holds the hard gates and the
+  product, scope and decisions D1–D24. Do not reopen a decision; only the open
+  items in §15 are open. [prompt.md](prompt.md) holds the hard gates and the
   workflow. `docs/archive/` is the replaced 4 Oct direction: never use it as
-  guidance.
+  guidance. The work is specified as GitHub issues (milestone "10 Oct 2026 —
+  AI Tinkerers demo"); [OVERNIGHT-OCT7.md](OVERNIGHT-OCT7.md) is the run plan.
+  Never implement an issue labelled `deferred` ("DO NOT IMPLEMENT").
 - The product is a neutral search engine for agent-readable expertise, with a
   wallet. Writers search their own articles; DeepSeek clarifies, plans and
   writes; a Cloudflare Clef decision model judges what is worth buying; trust

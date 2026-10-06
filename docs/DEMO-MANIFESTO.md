@@ -71,7 +71,7 @@ New in the final push (not built yet; see the decision IDs):
   purchase.
 - **Free-text gaps** (D10). Questions are no longer limited to one fixed topic.
 - **A roster of fictional, labelled writers** (§10), one per decision it
-  exercises. The Vertex corpus stays as the offline backup scenario (D14).
+  exercises. The Vertex corpus is removed (D18); the offline backup is the fixture demo on the new corpus.
 
 Every feature must reinforce one pillar: calibrated buying, a verifiable
 purchase, fairness to both sides, or the hard gates (D12).

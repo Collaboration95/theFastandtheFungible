@@ -52,11 +52,11 @@ Testnet wallets after a Testnet reset, and `make doctor` checks them.
 | Mode | What is real | What is simulated |
 | --- | --- | --- |
 | Primary (`npm run demo:live`) | DeepSeek answers and report, Clef decisions, HTTP search/402/delivery, budget enforcement, citations, XRPL Testnet payments and refunds, persisted recovery | Writers and corpus (SYNTHETIC), the value of Testnet XRP |
-| Offline fallback (`SOURCE_MODE=scenario`, with `npm run demo`) | Local services, HTTP boundary, ledger, citations, policy code, over the Vertex corpus | LLM output (extractive), decision probabilities (fixture heuristics), settlement (SIMULATED SGD), the corpus |
+| Offline fallback (`npm run demo`) | Local services, HTTP boundary, ledger, citations, policy code, over the new writer corpus | LLM output (extractive), decision probabilities (fixture heuristics), settlement (SIMULATED SGD), the corpus |
 | Recorded fallback | A clearly labelled capture of a previously verified run | It is not a live execution |
 
-The `SOURCE_MODE=scenario` flag is planned (D14). Today the Vertex corpus is
-the only corpus, and `npm run demo` already runs it offline.
+The Vertex corpus is removed (D18); the fixture demo runs the new corpus
+offline with extractive answers and heuristic decisions, all labelled.
 
 Opening line: “Agents are the new readers. Experts should get paid when an
 agent uses their thinking. This is the buyer side: a calibrated model decides
@@ -221,9 +221,9 @@ reruns affected tests and the timed story.
 | Scenario | Expected result | Stage fallback |
 | --- | --- | --- |
 | Clean start | New run, correct corpus, no inherited access/spend | Launch isolated known-good mode |
-| No external network | `SOURCE_MODE=scenario` with `npm run demo`: local Vertex corpus and fixtures | Announce offline mode; try the phone hotspot first |
+| No external network | `npm run demo`: new corpus with fixture providers | Announce offline mode; try the phone hotspot first |
 | DeepSeek, Clef or embeddings time out | Bounded wait and a visible label (fixture fallback, or `keyword only (embeddings unavailable)`), no invalid final answer | Existing labelled fallback |
-| XRPL Testnet slow or unavailable | Purchase stays pending with its persisted signed blob; no second charge | Show the persisted outcome; switch to the labelled scenario mode |
+| XRPL Testnet slow or unavailable | Purchase stays pending with its persisted signed blob; no second charge | Show the persisted outcome; switch to the labelled fixture demo |
 | Browser reload | Same persisted run, spend, grants, and receipt | Reopen run by ID |
 | Process restart after submission | Unknown state reconciles; no new payment | Show persisted outcome/trace |
 | Publisher unavailable after settlement | Paid receipt retained, delivery can retry | Resume delivery when service returns |
@@ -238,7 +238,7 @@ statistically established reliability rate.
 
 ## Offline artifacts
 
-The offline fallback is `SOURCE_MODE=scenario` (the Vertex corpus, D14).
+The offline fallback is `npm run demo` on the new corpus (D18).
 Prepare one current screenshot of the trust matrix after UC3, saved
 answer/receipt artifacts from the verifier, a short labelled recording of the
 five-minute flow recorded after the 8 Oct freeze, one Langfuse trace of a live

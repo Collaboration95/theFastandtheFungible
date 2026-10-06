@@ -7,11 +7,14 @@ not part of the maintained documentation set; Git history preserves them.
 ## Start here
 
 - [FINAL-PUSH.md](../FINAL-PUSH.md) is the product source of truth: the 6 Oct
-  pivot, decisions D1–D14, demo use cases UC1–UC3 and open items O1–O5. It
+  pivot, decisions D1–D24, demo use cases UC1–UC3 and open items (§15). It
   overrides `prompt.md` wherever the two conflict.
 - [prompt.md](../prompt.md) holds the five hard gates, the worker protocol and
   the schedule.
 - [AGENTS.md](../AGENTS.md) holds the standing agent rules.
+- [OVERNIGHT-OCT7.md](../OVERNIGHT-OCT7.md) is the orchestration plan for the
+  milestone's issues (work packages, review commands, live steps).
+- [Writer-site reference look](reference/) (D17).
 - [Repository overview and setup](../README.md)
 
 `docs/archive/` holds the replaced 4 Oct direction (old prompt, plans and
