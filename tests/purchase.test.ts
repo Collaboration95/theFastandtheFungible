@@ -1,21 +1,34 @@
-import { createHash } from 'node:crypto'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createServer, type Server } from 'node:http'
+import { once } from 'node:events'
 import { afterEach, describe, expect, it } from 'vitest'
+import { Wallet, decode, hashes } from 'xrpl'
 import { Store } from '../server/store.js'
 import { PurchaseManager } from '../server/purchases.js'
 import { PublisherClient } from '../server/publisher-client.js'
-import { RunSnapshotSchema, type ContentEnvelope, type PublicCandidate, type Quote, type PurchaseIntent } from '../shared/contracts/index.js'
+import { createPublisherApp } from '../publisher/routes.js'
+import { RunSnapshotSchema, SIMULATED_LABEL, type ContentEnvelope, type PublicCandidate, type Quote, type PurchaseIntent } from '../shared/contracts/index.js'
+import { SearchHitSchema, type Manifest } from '../shared/contracts/manifest.js'
 import { exampleAnswer, exampleCandidate, exampleContent } from '../shared/contracts/examples.js'
+import { leafHash, manifestRoot, signManifest } from '../shared/manifest.js'
+import { deriveAddress, deriveKeypair, generateSeed } from 'ripple-keypairs'
+import { encodeHeader, invoiceIdFor, ledgerInvoiceId } from '../shared/x402.js'
+import { simulatedLedgerIndex } from '../shared/xrpl.js'
+import { miniCorpus } from './fixtures/corpus-mini/index.js'
 
-const candidate: PublicCandidate = { ...exampleCandidate, profileId: 'grid-research', resourceId: 'paid-canary', tier: 'PAID', price: { amountMinor: 80, currency: 'SGD' } }
+const KEYS = deriveKeypair(generateSeed({ algorithm: 'ed25519' }))
+const WALLET = deriveAddress(KEYS.publicKey)
+const candidate: PublicCandidate = { ...exampleCandidate, profileId: 'grid-research', resourceId: 'paid-canary', tier: 'PAID', price: { amountMinor: 80, currency: 'SGD' }, wallet: WALLET }
 const content: ContentEnvelope = { ...exampleContent, profileId: candidate.profileId, resourceId: candidate.resourceId, body: 'PAID_CANARY: exact grid evidence é.', spans: [{ id: 'paid-span', text: 'exact grid evidence é.' }] }
-const bytes = JSON.stringify(content)
-const hash = createHash('sha256').update(bytes).digest('hex')
+const SALTS = ['5a17']
+const ROOT = manifestRoot(content.spans.map((s, i) => leafHash(SALTS[i], i, s.id, s.text)))
+/** The candidate's verified search manifest: purchase() signs nothing without one. */
+const manifestFor = (articleId = candidate.resourceId, root = ROOT): Manifest => signManifest({ publisherSlug: candidate.profileId, articleId, version: 'v1', wallet: WALLET, pubKey: KEYS.publicKey, priceMinor: 80, leaves: [leafHash(SALTS[0], 0, content.spans[0].id, content.spans[0].text)], root, claims: [], wordCount: 5, publishedAt: '2026-10-01', relevance: 1 }, KEYS.privateKey)
+const MANIFEST = manifestFor()
 function quote(runId: string, intentId: string, resourceId = candidate.resourceId): Quote {
-  return { runId, intentId, profileId: candidate.profileId, resourceId, version: 'v1', quoteId: `q-${intentId}`, quoteHash: 'quote-hash', amountMinor: 80, currency: 'SGD', expiresAt: new Date(Date.now() + 60000).toISOString(), contentDigest: hash }
+  return { runId, intentId, profileId: candidate.profileId, resourceId, version: 'v1', quoteId: `q-${intentId}`, quoteHash: 'quote-hash', amountMinor: 80, currency: 'SGD', expiresAt: new Date(Date.now() + 60000).toISOString(), contentDigest: ROOT }
 }
 function intent(runId: string, intentId: string, resourceId = candidate.resourceId): PurchaseIntent {
   return { runId, intentId, profileId: candidate.profileId, resourceId, version: 'v1', amountMinor: 80, status: 'QUOTED', quote: quote(runId, intentId, resourceId) }
@@ -25,50 +38,39 @@ afterEach(async () => { for (const fn of cleanup.splice(0).reverse()) await fn()
 function store(path = ':memory:') { const s = new Store(path); cleanup.push(() => s.close()); return s }
 function dbPath() { const dir = mkdtempSync(join(tmpdir(), 'ledger-test-')); cleanup.push(() => rmSync(dir, { recursive: true, force: true })); return join(dir, 'app.db') }
 
+/** A fixture x402 v2 publisher on the SIMULATED rail: charges once per tx hash, with switchable faults. */
 async function publisher() {
-  const state = { charges: 0, posts: 0, failDelivery: false, loseSettlementResponse: false, price: 80, deliveryBytes: bytes, digest: `sha-256=${hash}`, statusAvailable: true, statusAuth: false }
-  const quotes = new Map<string, Quote>()
-  const settled = new Map<string, { status: 'SETTLED'; receiptId: string; deliveryToken: string }>()
-  const server: Server = createServer(async (req, res) => {
+  const state = { charges: 0, paidGets: 0, failDelivery: false, loseSettlementResponse: false, unavailable: false, refuse: '', price: 80, payTo: WALLET, root: ROOT, articleId: '', delivery: { version: 'v1', title: content.title, publisher: content.publisher, body: content.body, passages: content.spans, salts: SALTS } as Record<string, unknown> }
+  const quotes = new Map<string, string>() // ledger InvoiceID → invoiceId
+  const settled = new Set<string>()
+  const server: Server = createServer((req, res) => {
     const url = new URL(req.url!, 'http://fixture')
-    const send = (status: number, value: unknown) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)) }
-    if (url.pathname === '/v1/profiles') return send(200, [{ id: 'grid-research', name: 'Fixture publisher', tier: 'PAID' }])
-    if (url.pathname.endsWith('/search')) return send(200, [candidate])
-    if (url.pathname.endsWith('/content')) {
-      if (!req.headers['x-delivery-token']) return send(402, { network: 'simulated-sgd', amount: state.price, preview: candidate.preview })
-      if (req.headers['x-delivery-token'] !== 'PRIVATE_DELIVERY_TOKEN') return send(403, {})
-      if (state.failDelivery) { state.failDelivery = false; return send(503, { body: 'PAID_CANARY error trap' }) }
-      res.writeHead(200, { 'Content-Type': 'application/json', Digest: state.digest }); return res.end(state.deliveryBytes)
+    const send = (status: number, value: unknown, headers: Record<string, string> = {}) => { res.writeHead(status, { 'Content-Type': 'application/json', ...headers }); res.end(JSON.stringify(value)) }
+    if (!url.pathname.endsWith('/content')) return send(404, {})
+    const signature = req.headers['payment-signature']
+    if (!signature) {
+      const amount = String(state.price * 1000)
+      const invoiceId = invoiceIdFor({ quoteId: `q${quotes.size}`, articleId: state.articleId || decodeURIComponent(url.pathname.split('/')[5]), version: 'v1', manifestRoot: state.root, amount, payTo: state.payTo })
+      quotes.set(ledgerInvoiceId(invoiceId), invoiceId)
+      return send(402, { error: 'Payment required' }, { 'PAYMENT-REQUIRED': encodeHeader('PAYMENT-REQUIRED', { x402Version: 2, resource: { url: url.pathname, description: SIMULATED_LABEL }, accepts: [{ scheme: 'exact', network: 'xrpl:1', amount, asset: 'XRP', payTo: state.payTo, maxTimeoutSeconds: 60, extra: { invoiceId, areFeesSponsored: false } }] }) })
     }
-    if (req.method === 'POST') {
-      let body = ''; for await (const chunk of req) body += chunk
-      const input = JSON.parse(body)
-      if (url.pathname === '/v1/quotes') {
-        const q = { ...quote(input.runId, input.intentId, input.resourceId), amountMinor: state.price }; quotes.set(q.quoteId, q); return send(200, q)
-      }
-      if (url.pathname === '/v1/settlements') {
-        if (req.headers.authorization !== 'Bearer fixture-secret') return send(401, {})
-        state.posts++
-        const q = quotes.get(input.quoteId)!
-        if (!settled.has(q.intentId)) { state.charges++; settled.set(q.intentId, { status: 'SETTLED', receiptId: `receipt-${q.intentId}`, deliveryToken: 'PRIVATE_DELIVERY_TOKEN' }) }
-        if (state.loseSettlementResponse) { state.loseSettlementResponse = false; req.socket.destroy(); return }
-        const { receiptId, deliveryToken } = settled.get(q.intentId)!
-        return send(200, { receiptId, deliveryToken })
-      }
-    }
-    if (url.pathname.startsWith('/v1/settlements/')) {
-      state.statusAuth = req.headers.authorization === 'Bearer fixture-secret'
-      if (!state.statusAuth) return send(401, {})
-      if (!state.statusAvailable) return send(503, {})
-      return send(200, settled.get(decodeURIComponent(url.pathname.split('/').at(-1)!)) ?? { status: 'NOT_FOUND' })
-    }
-    send(404, {})
+    state.paidGets++
+    if (state.unavailable) return send(503, {})
+    const blob = JSON.parse(Buffer.from(String(signature), 'base64').toString()).payload.signedTxBlob as string
+    const tx = decode(blob) as { InvoiceID: string; Account: string }
+    const hash = hashes.hashSignedTx(blob).toUpperCase()
+    const response = (success: boolean, errorReason?: string) => ({ 'PAYMENT-RESPONSE': encodeHeader('PAYMENT-RESPONSE', success ? { success, transaction: hash, payer: tx.Account, network: 'xrpl:1' } : { success, errorReason, transaction: '', network: 'xrpl:1' }) })
+    if (state.refuse || !quotes.has(tx.InvoiceID)) return send(402, { error: 'refused' }, response(false, state.refuse || 'InvoiceID matches no quote'))
+    if (!settled.has(hash)) { settled.add(hash); state.charges++ }
+    if (state.loseSettlementResponse) { state.loseSettlementResponse = false; req.socket.destroy(); return }
+    if (state.failDelivery) { state.failDelivery = false; return send(503, { body: 'PAID_CANARY error trap' }, response(true)) }
+    send(200, { ...state.delivery, articleId: state.delivery.articleId ?? decodeURIComponent(url.pathname.split('/')[5]) }, response(true))
   })
   await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve) })
   cleanup.push(() => new Promise<void>((resolve, reject) => { server.closeAllConnections(); server.close(error => error ? reject(error) : resolve()) }))
   const address = server.address(); if (!address || typeof address === 'string') throw new Error('Missing ephemeral address')
   const wires: unknown[] = []
-  const client = new PublisherClient({ baseUrl: `http://127.0.0.1:${address.port}`, secret: 'fixture-secret', onWire: wire => wires.push(wire) })
+  const client = new PublisherClient({ baseUrl: `http://127.0.0.1:${address.port}`, onWire: wire => wires.push(wire) })
   return { state, client, wires }
 }
 
@@ -76,36 +78,38 @@ describe('atomic ledger and verified purchase flow', () => {
   it('parallel same-intent requests submit once, parse snapshots, and persist safe wires', async () => {
     const s = store(); const run = s.createRun('question', 200); const p = await publisher()
     const manager = new PurchaseManager(s, p.client)
-    const results = await Promise.all(Array.from({ length: 8 }, () => manager.purchase({ runId: run.runId, candidate, intentId: 'same' })))
+    const results = await Promise.all(Array.from({ length: 8 }, () => manager.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'same' })))
     expect(results.every(i => i.status === 'VERIFIED')).toBe(true)
-    expect(p.state.charges).toBe(1); expect(p.state.posts).toBe(1)
+    expect(p.state.charges).toBe(1); expect(p.state.paidGets).toBe(1)
     const snapshot = s.getRun(run.runId)
     expect(RunSnapshotSchema.safeParse(snapshot).success).toBe(true)
     expect(snapshot.spentMinor).toBe(80); expect(snapshot.reservedMinor).toBe(0)
     expect(snapshot.contents).toEqual([content])
-    expect(JSON.stringify(snapshot)).not.toContain('PRIVATE_DELIVERY_TOKEN')
-    expect(p.wires).toMatchObject([{ status: 402 }, { status: 200 }, { status: 200 }, { status: 200 }])
+    expect(snapshot.receipts[0]).toMatchObject({ label: SIMULATED_LABEL })
+    expect(snapshot.receipts[0].xrpl).toBeUndefined()
+    expect(snapshot.events.some(e => e.type === 'XRPL' && e.label.includes('SIMULATED'))).toBe(true)
+    expect(p.wires).toMatchObject([{ status: 402 }, { status: 200 }])
     expect(JSON.stringify(p.wires)).not.toContain('PAID_CANARY')
-    expect(snapshot.events.filter(e => e.type === 'WIRE')).toHaveLength(4)
-    await expect(manager.purchase({ runId: run.runId, candidate: { ...candidate, version: 'v2' }, intentId: 'same' })).rejects.toThrow('identity')
+    expect(snapshot.events.filter(e => e.type === 'WIRE')).toHaveLength(2)
+    await expect(manager.purchase({ runId: run.runId, candidate: { ...candidate, version: 'v2' }, manifest: MANIFEST, intentId: 'same' })).rejects.toThrow('identity')
   })
   it('independent managers share the durable submission claim', async () => {
     const path = dbPath(); const a = store(path); const b = store(path); const run = a.createRun('question', 200); const p = await publisher()
-    await Promise.all([new PurchaseManager(a, p.client), new PurchaseManager(b, p.client)].map(m => m.purchase({ runId: run.runId, candidate, intentId: 'same' })))
-    expect(p.state.charges).toBe(1); expect(p.state.posts).toBe(1)
+    await Promise.all([new PurchaseManager(a, p.client), new PurchaseManager(b, p.client)].map(m => m.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'same' })))
+    expect(p.state.charges).toBe(1); expect(p.state.paidGets).toBe(1)
     expect(a.getIntent('same')?.status).toBe('VERIFIED')
   })
   it('two intents compete for one budget under separate SQLite connections', async () => {
     const path = dbPath(); const a = store(path); const b = store(path); const run = a.createRun('question', 100); const p = await publisher()
-    const results = await Promise.all([new PurchaseManager(a, p.client).purchase({ runId: run.runId, candidate, intentId: 'a' }), new PurchaseManager(b, p.client).purchase({ runId: run.runId, candidate: { ...candidate, resourceId: 'other' }, intentId: 'b' })])
+    const results = await Promise.all([new PurchaseManager(a, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'a' }), new PurchaseManager(b, p.client).purchase({ runId: run.runId, candidate: { ...candidate, resourceId: 'other' }, manifest: manifestFor('other'), intentId: 'b' })])
     expect(results.filter(i => i.status === 'SKIPPED')).toHaveLength(1)
     expect(results.filter(i => ['VERIFIED', 'DELIVERY_FAILED'].includes(i.status))).toHaveLength(1)
     expect(p.state.charges).toBe(1); expect(a.getRun(run.runId).spentMinor).toBe(80)
   })
   it.each([0, 200])('S$0 / stopped run (%i) produces no settlement', async budget => {
     const s = store(); const run = s.createRun('question', budget); if (budget) s.updateRun(run.runId, { stopped: true })
-    const p = await publisher(); const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, intentId: 'zero' })
-    expect(result.status).toBe('SKIPPED'); expect(p.state.posts).toBe(0); expect(s.getRun(run.runId).reservedMinor).toBe(0)
+    const p = await publisher(); const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'zero' })
+    expect(result.status).toBe('SKIPPED'); expect(p.state.paidGets).toBe(0); expect(s.getRun(run.runId).reservedMinor).toBe(0)
     expect(s.getRun(run.runId).contents).toEqual([])
   })
   it('enforces cap, durable quote, immutable accounting and stopped reservation', () => {
@@ -123,45 +127,74 @@ describe('atomic ledger and verified purchase flow', () => {
   })
   it('price mismatch skips without charging', async () => {
     const s = store(); const run = s.createRun('question', 200); const p = await publisher(); p.state.price = 81
-    const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, intentId: 'price' })
-    expect(result.status).toBe('SKIPPED'); expect(p.state.posts).toBe(0); expect(s.getRun(run.runId).spentMinor).toBe(0)
+    const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'price' })
+    expect(result.status).toBe('SKIPPED'); expect(p.state.paidGets).toBe(0); expect(s.getRun(run.runId).spentMinor).toBe(0)
   })
-  it('ambiguous settlement survives restart and reconciles with secret auth, one charge', async () => {
+  it.each([
+    ['payee', (p: Awaited<ReturnType<typeof publisher>>) => { p.state.payTo = Wallet.generate().classicAddress }, 'payee differs'],
+    ['invoice article', (p: Awaited<ReturnType<typeof publisher>>) => { p.state.articleId = 'another-article' }, 'does not bind this purchase'],
+  ])('%s mismatch fails before signing, nothing charged', async (_name, tamper, message) => {
+    const s = store(); const run = s.createRun('question', 200); const p = await publisher(); tamper(p)
+    const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'mismatch' })
+    expect(result).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining(message) })
+    expect(p.state.paidGets).toBe(0); expect(s.getRun(run.runId).reservedMinor).toBe(0); expect(s.getSubmission('mismatch')).toBeUndefined()
+  })
+  it.each([
+    ['missing', undefined, 'No verified manifest'],
+    ['root mismatch', manifestFor(candidate.resourceId, 'f'.repeat(64)), 'signed manifest'],
+    ['bad signature', { ...MANIFEST, relevance: 0.5 }, 'signed manifest'],
+  ])('refuses before signing when the search manifest is %s', async (_name, manifest, message) => {
+    const s = store(); const run = s.createRun('question', 200); const p = await publisher()
+    const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, intentId: 'manifest', manifest })
+    expect(result).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining(message) })
+    expect(p.state.paidGets).toBe(0); expect(s.getSubmission('manifest')).toBeUndefined(); expect(s.getRun(run.runId).reservedMinor).toBe(0)
+  })
+  it('a SIMULATED refusal of the signed blob is proof of no charge and releases the reservation', async () => {
+    const s = store(); const run = s.createRun('question', 200); const p = await publisher(); p.state.refuse = 'LastLedgerSequence has passed'
+    const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'refused' })
+    expect(result).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('LastLedgerSequence') })
+    expect(s.getRun(run.runId)).toMatchObject({ reservedMinor: 0, spentMinor: 0 }); expect(p.state.charges).toBe(0)
+  })
+  it('ambiguous settlement survives restart and reconciles by resending the same blob, one charge', async () => {
     const path = dbPath(); const first = new Store(path); const run = first.createRun('question', 100); const p = await publisher(); p.state.loseSettlementResponse = true
-    const result = await new PurchaseManager(first, p.client).purchase({ runId: run.runId, candidate, intentId: 'restart' })
+    const result = await new PurchaseManager(first, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'restart' })
     expect(result.status).toBe('SUBMITTING'); expect(first.getRun(run.runId).reservedMinor).toBe(80); expect(first.getRun(run.runId).contents).toEqual([])
     expect(() => first.updateIntent('restart', { status: 'FAILED_NOT_SETTLED' })).toThrow('Unsafe')
     first.close()
     const second = store(path); const manager = new PurchaseManager(second, p.client)
     await manager.reconcile()
-    expect(p.state.statusAuth).toBe(true); expect(second.getIntent('restart')?.status).toBe('VERIFIED')
-    expect(second.getRun(run.runId).spentMinor).toBe(80); expect(p.state.charges).toBe(1); expect(p.state.posts).toBe(1)
-    await manager.purchase({ runId: run.runId, candidate, intentId: 'restart' }); expect(p.state.posts).toBe(1)
+    expect(second.getIntent('restart')?.status).toBe('VERIFIED')
+    expect(second.getRun(run.runId).spentMinor).toBe(80); expect(p.state.charges).toBe(1); expect(p.state.paidGets).toBe(2)
+    await manager.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'restart' }); expect(p.state.paidGets).toBe(2)
   })
-  it('NOT_FOUND or unavailable status retains possible-charge reservation', async () => {
-    const s = store(); const run = s.createRun('question', 100); const p = await publisher()
-    s.reserveIntent(intent(run.runId, 'uncertain')); s.claimSubmitting('uncertain')
-    const manager = new PurchaseManager(s, p.client); await manager.reconcile()
-    p.state.statusAvailable = false; await manager.reconcile()
-    expect(s.getIntent('uncertain')?.status).toBe('SUBMITTING'); expect(s.getRun(run.runId).reservedMinor).toBe(80); expect(p.state.posts).toBe(0)
+  it('an unavailable publisher retains the possible-charge reservation; an unsigned one is released', async () => {
+    const s = store(); const run = s.createRun('question', 200); const p = await publisher(); p.state.loseSettlementResponse = true
+    const manager = new PurchaseManager(s, p.client)
+    expect((await manager.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'uncertain' })).status).toBe('SUBMITTING')
+    p.state.unavailable = true; await manager.reconcile()
+    expect(s.getIntent('uncertain')?.status).toBe('SUBMITTING'); expect(s.getRun(run.runId).reservedMinor).toBe(80)
+    s.reserveIntent(intent(run.runId, 'unsigned', 'other')); s.claimSubmitting('unsigned'); await manager.reconcile()
+    expect(s.getIntent('unsigned')?.status).toBe('FAILED_NOT_SETTLED'); expect(p.state.charges).toBe(1)
   })
   it('fault after payment retries GET delivery, never a new charge', async () => {
     const s = store(); const run = s.createRun('question', 200); const p = await publisher(); p.state.failDelivery = true
     const manager = new PurchaseManager(s, p.client)
-    expect((await manager.purchase({ runId: run.runId, candidate, intentId: 'fault' })).status).toBe('DELIVERY_FAILED')
+    expect((await manager.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'fault' })).status).toBe('DELIVERY_FAILED')
     expect(s.getRun(run.runId).spentMinor).toBe(80); expect(s.getRun(run.runId).contents).toEqual([])
     expect(JSON.stringify(s.getRun(run.runId))).not.toContain('PAID_CANARY')
     expect((await manager.retryDelivery('fault')).status).toBe('VERIFIED')
-    expect(p.state.charges).toBe(1); expect(p.state.posts).toBe(1)
+    expect(p.state.charges).toBe(1)
   })
-  it.each(['header', 'quoted-digest', 'profile', 'resource', 'version', 'span', 'bytes'])('rejects %s mismatch without exposing premium bytes', async fault => {
+  it.each(['salt', 'passage', 'article', 'version', 'span', 'shape'])('rejects %s mismatch without exposing premium bytes', async fault => {
     const s = store(); const run = s.createRun('question', 200); const p = await publisher()
-    if (fault === 'header') p.state.digest = 'sha-256=bad'
-    if (fault === 'quoted-digest') { p.state.deliveryBytes = JSON.stringify({ ...content, body: content.body + 'changed' }); p.state.digest = `sha-256=${createHash('sha256').update(p.state.deliveryBytes).digest('hex')}` }
-    if (['profile', 'resource', 'version'].includes(fault)) p.state.deliveryBytes = JSON.stringify({ ...content, [`${fault}${fault === 'version' ? '' : 'Id'}`]: 'wrong' })
-    if (fault === 'span') p.state.deliveryBytes = JSON.stringify({ ...content, spans: [{ id: 'bad', text: 'absent text' }] })
-    if (fault === 'bytes') p.state.deliveryBytes = bytes + ' '
-    const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, intentId: fault })
+    const d = p.state.delivery
+    if (fault === 'salt') d.salts = ['bad']
+    if (fault === 'passage') d.passages = [{ id: 'paid-span', text: 'exact grid' }]
+    if (fault === 'article') d.articleId = 'wrong'
+    if (fault === 'version') d.version = 'wrong'
+    if (fault === 'span') { d.passages = [{ id: 'paid-span', text: 'absent text' }] }
+    if (fault === 'shape') delete d.body
+    const result = await new PurchaseManager(s, p.client).purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: fault })
     expect(result.status).toBe('DELIVERY_FAILED'); expect(s.getRun(run.runId).contents).toEqual([]); expect(s.getRun(run.runId).grants).toEqual([])
     expect(s.getRun(run.runId).spentMinor).toBe(80); expect(JSON.stringify(p.wires)).not.toContain('PAID_CANARY')
   })
@@ -175,7 +208,7 @@ describe('atomic ledger and verified purchase flow', () => {
     expect(() => s.appendEvent(run.runId, { type: 'WIRE', label: 'unsafe', data: { deliveryToken: 'PRIVATE_DELIVERY_TOKEN' } })).toThrow('Private')
     expect(() => s.updateRun(run.runId, { candidates: [] })).toThrow('registered')
     expect(() => s.updateRun(run.runId, { candidates: [{ ...candidate, tier: 'FREE' }] })).toThrow('immutable')
-    expect(() => s.addGrant({ runId: run.runId, resourceId: candidate.resourceId, version: 'v1', intentId: 'missing', contentDigest: hash, grantedAt: new Date().toISOString() }, content)).toThrow('bytes')
+    expect(() => s.addGrant({ runId: run.runId, resourceId: candidate.resourceId, version: 'v1', intentId: 'missing', contentDigest: ROOT, grantedAt: new Date().toISOString() }, content)).toThrow('bytes')
     s.addContent(run.runId, exampleContent); s.addAnswer(run.runId, exampleAnswer)
     expect(() => s.addAnswer(run.runId, { ...exampleAnswer, conclusion: 'overwrite' })).toThrow()
     expect(s.getRun(run.runId).answers[0]).toEqual(exampleAnswer)
@@ -190,18 +223,39 @@ describe('atomic ledger and verified purchase flow', () => {
   it('does not coalesce conflicting identities before the quote is durable', async () => {
     const s = store(); const run = s.createRun('question', 200); const p = await publisher()
     const manager = new PurchaseManager(s, p.client)
-    const pending = manager.purchase({ runId: run.runId, candidate, intentId: 'identity' })
-    await expect(manager.purchase({ runId: run.runId, candidate: { ...candidate, resourceId: 'other' }, intentId: 'identity' })).rejects.toThrow('identity')
+    const pending = manager.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'identity' })
+    await expect(manager.purchase({ runId: run.runId, candidate: { ...candidate, resourceId: 'other' }, manifest: manifestFor('other'), intentId: 'identity' })).rejects.toThrow('identity')
     await pending
-    expect(p.state.posts).toBe(1)
+    expect(p.state.charges).toBe(1)
   })
   it('retains one charge across independent concurrent delivery retries', async () => {
     const path = dbPath(); const a = store(path); const b = store(path); const run = a.createRun('question', 200); const p = await publisher(); p.state.failDelivery = true
     const first = new PurchaseManager(a, p.client); const second = new PurchaseManager(b, p.client)
-    await first.purchase({ runId: run.runId, candidate, intentId: 'retry-race' })
+    await first.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'retry-race' })
     const results = await Promise.all([first.retryDelivery('retry-race'), second.retryDelivery('retry-race')])
     expect(results.every(i => i.status === 'VERIFIED')).toBe(true)
     expect(a.getRun(run.runId).grants).toHaveLength(1); expect(a.getRun(run.runId).receipts).toHaveLength(1)
-    expect(p.state.posts).toBe(1)
+    expect(p.state.charges).toBe(1)
   })
+  it('end to end on the SIMULATED rail: buyer pays the real publisher once and verifies the manifest root', async () => {
+    const app = createPublisherApp({ journal: ':memory:', rail: 'simulated', writers: miniCorpus, env: {} })
+    await app.locals.ready; await app.locals.writersReady
+    const server = app.listen(0, '127.0.0.1'); await once(server, 'listening')
+    cleanup.push(() => new Promise<void>(resolve => server.close(() => { app.locals.journal.close(); resolve() })))
+    const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+    const article = miniCorpus.articles.find(a => a.tier === 'PAID')!
+    const hit = SearchHitSchema.array().parse(await (await fetch(`${base}/w/${article.publisherSlug}/search?q=${encodeURIComponent(article.title)}`)).json()).find(h => h.articleId === article.articleId)!
+    const paid: PublicCandidate = { ...candidate, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, url: hit.url, wallet: hit.manifest!.wallet, price: { amountMinor: hit.priceMinor, currency: 'SGD' } }
+    const s = store(); const run = s.createRun('question', 200)
+    const manager = new PurchaseManager(s, new PublisherClient({ baseUrl: base }))
+    const results = await Promise.all([0, 1, 2].map(() => manager.purchase({ runId: run.runId, candidate: paid, intentId: 'e2e', manifest: hit.manifest })))
+    expect(results.map(r => r.status)).toEqual(['VERIFIED', 'VERIFIED', 'VERIFIED'])
+    const snapshot = s.getRun(run.runId)
+    expect(snapshot.contents[0]).toMatchObject({ resourceId: article.articleId, body: article.body })
+    expect(snapshot.grants[0].contentDigest).toBe(hit.manifest!.root)
+    expect(snapshot).toMatchObject({ spentMinor: hit.priceMinor, receipts: [{ label: SIMULATED_LABEL }] })
+    expect(app.locals.journal.settlementByTx(s.getIntent('e2e')!.txHash!)).toBeDefined()
+    expect(simulatedLedgerIndex()).toBeGreaterThan(0)
+  })
+
 })

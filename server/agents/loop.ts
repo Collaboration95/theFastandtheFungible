@@ -148,7 +148,8 @@ export class RunLoop {
         this.trace(runId, 'BUY', 'Policy selected one purchase within budget.', { intentId })
         // No await between the Stop gate and handing off to the transactional ledger.
         if (this.stopped(runId)) return
-        const intent = await this.purchases.purchase({ runId, candidate, intentId })
+        // The policy pick's verified search manifest: purchase() signs nothing without it.
+        const intent = await this.purchases.purchase({ runId, candidate, intentId, manifest: candidate.manifest })
         // SKIPPED and FAILED_NOT_SETTLED delivered no payment (a failed ledger tx burns only its fee); the next round may decide again.
         if (intent.status === 'SKIPPED' || intent.status === 'FAILED_NOT_SETTLED') continue
         if (intent.status !== 'VERIFIED') throw new Error('Purchase did not verify delivery')

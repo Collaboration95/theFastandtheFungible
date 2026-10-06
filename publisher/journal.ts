@@ -1,8 +1,7 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { QuoteSchema, SettlementSchema, type LedgerProof, type PaymentRequirement, type Quote, type QuoteRequest, type Settlement } from '../shared/contracts/publisher.js'
 
 export class PublisherError extends Error {
   constructor(readonly status: number, message: string) { super(message) }
@@ -10,7 +9,9 @@ export class PublisherError extends Error {
 export function digestBytes(bytes: string): string {
   return createHash('sha256').update(bytes, 'utf8').digest('hex')
 }
-type QuoteRow = { quote_json: string; bytes: string }
+/** What the publisher asked for in one 402 (#128). `invoiceId` is invoiceIdFor(...); the tx InvoiceID is its sha256. */
+export type X402Quote = { invoiceId: string; ledgerInvoiceId: string; quoteId: string; publisherSlug: string; articleId: string; version: string; amount: string; payTo: string; expiresAt: string }
+export type X402Settlement = { txHash: string; ledgerInvoiceId: string; payer: string; ledgerIndex?: number; settledAt: string }
 
 /** Synchronous IMMEDIATE transactions serialize intent creation across connections/processes. */
 export class PublisherJournal {
@@ -19,17 +20,10 @@ export class PublisherJournal {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
     this.db = new DatabaseSync(path)
     this.db.exec(`PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;
-      CREATE TABLE IF NOT EXISTS quotes (
-        intent_id TEXT PRIMARY KEY, quote_id TEXT UNIQUE NOT NULL,
-        quote_json TEXT NOT NULL, bytes TEXT NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS settlements (
-        intent_id TEXT PRIMARY KEY REFERENCES quotes(intent_id),
-        token TEXT UNIQUE NOT NULL, settlement_json TEXT NOT NULL, tx_hash TEXT
+      CREATE TABLE IF NOT EXISTS x402_quotes (ledger_invoice_id TEXT PRIMARY KEY, quote_json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS x402_settlements (
+        tx_hash TEXT PRIMARY KEY, ledger_invoice_id TEXT UNIQUE NOT NULL REFERENCES x402_quotes(ledger_invoice_id), settlement_json TEXT NOT NULL
       );`)
-    // Journals created before the XRPL rail lack tx_hash; one ledger payment may settle one quote only.
-    try { this.db.exec('ALTER TABLE settlements ADD COLUMN tx_hash TEXT') } catch { /* column exists */ }
-    this.db.exec('CREATE UNIQUE INDEX IF NOT EXISTS settlements_tx_hash ON settlements(tx_hash)')
     // Per-passage manifest salts (#125), generated once per article version and released only with the paid body (#129).
     this.db.exec('CREATE TABLE IF NOT EXISTS salts (article_key TEXT NOT NULL, idx INTEGER NOT NULL, salt TEXT NOT NULL, PRIMARY KEY (article_key, idx))')
   }
@@ -54,75 +48,26 @@ export class PublisherJournal {
       throw error
     }
   }
-  private row(intentId: string): QuoteRow | undefined {
-    return this.db.prepare('SELECT quote_json, bytes FROM quotes WHERE intent_id = ?').get(intentId) as QuoteRow | undefined
+  /** An open x402 quote (#128), keyed by the on-ledger InvoiceID = sha256(invoiceId). */
+  saveQuote(quote: X402Quote): void {
+    this.db.prepare('INSERT INTO x402_quotes (ledger_invoice_id, quote_json) VALUES (?, ?)').run(quote.ledgerInvoiceId, JSON.stringify(quote))
   }
-  /** A retry must recover its snapshot even if the corpus has changed or disappeared. */
-  existingQuote(request: QuoteRequest): Quote | undefined {
-    const row = this.row(request.intentId)
-    if (!row) return undefined
-    const quote = QuoteSchema.parse(JSON.parse(row.quote_json))
-    if (['profileId', 'resourceId', 'version', 'runId', 'intentId'].some(key =>
-      quote[key as keyof QuoteRequest] !== request[key as keyof QuoteRequest])) {
-      throw new PublisherError(409, 'Intent is bound to a different purchase')
-    }
-    return quote
+  quoteByInvoice(ledgerInvoiceId: string): X402Quote | undefined {
+    const row = this.db.prepare('SELECT quote_json FROM x402_quotes WHERE ledger_invoice_id = ?').get(ledgerInvoiceId.toUpperCase()) as { quote_json: string } | undefined
+    return row ? JSON.parse(row.quote_json) as X402Quote : undefined
   }
-  storedQuote(intentId: string): Quote | undefined {
-    const row = this.row(intentId)
-    return row ? QuoteSchema.parse(JSON.parse(row.quote_json)) : undefined
+  settlementByTx(txHash: string): X402Settlement | undefined {
+    const row = this.db.prepare('SELECT settlement_json FROM x402_settlements WHERE tx_hash = ?').get(txHash) as { settlement_json: string } | undefined
+    return row ? JSON.parse(row.settlement_json) as X402Settlement : undefined
   }
-  /** Payment terms are hashed into the quote; the hash itself becomes the XRPL InvoiceID. */
-  quote(request: QuoteRequest, amountMinor: number, bytes: string, terms?: Omit<PaymentRequirement, 'invoiceId'>): Quote {
+  /** One settlement per tx hash and per invoice (both UNIQUE): resending a blob returns the first settlement. */
+  settle(settlement: X402Settlement): X402Settlement {
     return this.transaction(() => {
-      const existing = this.existingQuote(request)
+      const existing = this.settlementByTx(settlement.txHash)
       if (existing) return existing
-      const fields = {
-        ...request, quoteId: randomUUID(), amountMinor, currency: 'SGD' as const,
-        expiresAt: new Date(Date.now() + 15 * 60_000).toISOString(), contentDigest: digestBytes(bytes),
-        ...(terms ? { payment: terms } : {}),
-      }
-      const quoteHash = digestBytes(JSON.stringify(fields))
-      const quote = QuoteSchema.parse({ ...fields, quoteHash, ...(terms ? { payment: { ...terms, invoiceId: quoteHash.toUpperCase() } } : {}) })
-      this.db.prepare('INSERT INTO quotes VALUES (?, ?, ?, ?)').run(request.intentId, quote.quoteId, JSON.stringify(quote), bytes)
-      return quote
-    })
-  }
-  /** XRPL quotes settle only with the publisher's own ledger proof for that exact payment. */
-  settle(request: { quoteId: string; quoteHash: string; intentId: string; txHash?: string }, proof?: LedgerProof): Settlement {
-    return this.transaction(() => {
-      const row = this.row(request.intentId)
-      if (!row) throw new PublisherError(404, 'Quote not found')
-      const quote = QuoteSchema.parse(JSON.parse(row.quote_json))
-      if (quote.quoteId !== request.quoteId || quote.quoteHash !== request.quoteHash) {
-        throw new PublisherError(409, 'Quote does not match intent')
-      }
-      const existing = this.settlement(request.intentId)
-      if (existing.status === 'SETTLED') return existing
-      if (quote.payment) {
-        if (!proof || proof.txHash !== request.txHash) throw new PublisherError(402, 'XRPL payment proof required')
-        // A validated payment is honoured even if the quote expired while the ledger closed.
-      } else if (Date.parse(quote.expiresAt) <= Date.now()) throw new PublisherError(410, 'Quote expired')
-      const settlement = SettlementSchema.parse({ status: 'SETTLED', receiptId: randomUUID(), deliveryToken: randomBytes(32).toString('base64url'), ...(proof ? { ledger: proof } : {}) })
-      try {
-        this.db.prepare('INSERT INTO settlements (intent_id, token, settlement_json, tx_hash) VALUES (?, ?, ?, ?)').run(request.intentId, settlement.deliveryToken!, JSON.stringify(settlement), proof?.txHash ?? null)
-      } catch (error) {
-        if (proof && /UNIQUE/.test(String(error))) throw new PublisherError(409, 'This ledger payment already settled another quote')
-        throw error
-      }
+      if (this.db.prepare('SELECT 1 FROM x402_settlements WHERE ledger_invoice_id = ?').get(settlement.ledgerInvoiceId)) throw new PublisherError(409, 'This quote is already settled by another payment')
+      this.db.prepare('INSERT INTO x402_settlements (tx_hash, ledger_invoice_id, settlement_json) VALUES (?, ?, ?)').run(settlement.txHash, settlement.ledgerInvoiceId, JSON.stringify(settlement))
       return settlement
     })
-  }
-  settlement(intentId: string): Settlement {
-    const row = this.db.prepare('SELECT settlement_json FROM settlements WHERE intent_id = ?').get(intentId) as { settlement_json: string } | undefined
-    return row ? SettlementSchema.parse(JSON.parse(row.settlement_json)) : { status: 'NOT_FOUND' }
-  }
-  delivery(token: string, profileId: string, resourceId: string, version: string): { bytes: string; quote: Quote } | undefined {
-    const row = this.db.prepare(`SELECT q.quote_json, q.bytes FROM quotes q
-      JOIN settlements s ON s.intent_id = q.intent_id WHERE s.token = ?`).get(token) as QuoteRow | undefined
-    if (!row) return undefined
-    const quote = QuoteSchema.parse(JSON.parse(row.quote_json))
-    if (quote.profileId !== profileId || quote.resourceId !== resourceId || quote.version !== version) return undefined
-    return { bytes: row.bytes, quote }
   }
 }

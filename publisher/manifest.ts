@@ -16,7 +16,7 @@ const kinds = Object.keys(CLAIM_KINDS) as ClaimKind[]
  */
 export function createManifests(journal: PublisherJournal) {
   const cache = new Map<string, Unsigned>()
-  const saltsFor = (article: Article) => journal.salts(`${article.articleId}@${article.version}`, article.passages.length)
+  const saltsFor = (article: Pick<Article, 'articleId' | 'version' | 'passages'>) => journal.salts(`${article.articleId}@${article.version}`, article.passages.length)
 
   function proofs(entry: PublisherEntry, article: Article): Unsigned {
     const key = `${article.articleId}@${article.version}`

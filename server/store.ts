@@ -1,6 +1,7 @@
-import { createHash, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import type { Submission } from './xrpl.js'
+import { leafHash, manifestRoot } from '../shared/manifest.js'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { AnswerSchema, ContentEnvelopeSchema, DecisionRoundSchema, GrantSchema, ImpactSchema, PurchaseIntentSchema, ReceiptSchema, RunSnapshotSchema, TraceEventSchema, type Answer, type ContentEnvelope, type DecisionRound, type DeliveryProof, type Grant, type Impact, type ModeLabels, type PurchaseIntent, type Receipt, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
@@ -237,15 +238,16 @@ export class Store {
   addGrant(input: Grant, inputContent: ContentEnvelope, proof?: DeliveryProof): void {
     const grant = GrantSchema.parse(input)
     const content = ContentEnvelopeSchema.parse(inputContent)
-    if (!proof) throw new Error('Exact response bytes and digest header required')
-    const hash = createHash('sha256').update(proof.bytes).digest('hex')
+    if (!proof) throw new Error('Exact response bytes and manifest salts required')
+    // The grant binds the manifest root that the paid invoiceId committed to: recompute it from the delivered passages.
+    const root = manifestRoot(content.spans.map((s, i) => leafHash(proof.salts[i] ?? '', i, s.id, s.text)))
     const parsed = ContentEnvelopeSchema.parse(JSON.parse(typeof proof.bytes === 'string' ? proof.bytes : Buffer.from(proof.bytes).toString('utf8')))
-    if (JSON.stringify(parsed) !== JSON.stringify(content) || proof.digest !== `sha-256=${hash}` || grant.contentDigest !== hash || content.spans.some(s => !content.body.includes(s.text)) || new Set(content.spans.map(s => s.id)).size !== content.spans.length) throw new Error('Delivery verification failed')
+    if (JSON.stringify(parsed) !== JSON.stringify(content) || proof.salts.length !== content.spans.length || grant.contentDigest !== root || content.spans.some(s => !content.body.includes(s.text)) || new Set(content.spans.map(s => s.id)).size !== content.spans.length) throw new Error('Delivery verification failed')
     this.atomic(() => {
       const intent = this.getIntent(grant.intentId)
-      if (!intent || !chargedStatuses.has(intent.status) || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version || intent.quote?.contentDigest !== hash) throw new Error('Grant does not match settled quote')
+      if (!intent || !chargedStatuses.has(intent.status) || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version || intent.quote?.contentDigest !== root) throw new Error('Grant does not match settled quote')
       const existing = this.rows<Grant>('SELECT json FROM grants WHERE intent_id=?', grant.intentId)[0]
-      if (existing) { if (existing.contentDigest !== hash) throw new Error('Grant is immutable'); return }
+      if (existing) { if (existing.contentDigest !== root) throw new Error('Grant is immutable'); return }
       this.db.prepare('INSERT INTO grants VALUES (?,?,?)').run(grant.intentId, JSON.stringify(grant), JSON.stringify(content))
       this.saveIntent({ ...intent, status: 'VERIFIED', error: undefined })
     })
