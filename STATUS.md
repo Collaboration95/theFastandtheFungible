@@ -1,4 +1,9 @@
-# Build status (6 Oct 2026, SGT)
+# Build status (8 Oct 2026, SGT — overnight run in progress)
+## Overnight run (7→8 Oct)
+- Orchestrator follows OVERNIGHT-OCT7.md. Subagents: Opus 5.5 for code-heavy packages, Sonnet 5.5 for content/small ones (medium thinking). Review: one Codex `gpt-6-luna` pass per PR, posted as a PR comment.
+- Preflight 01:00: `make doctor` + `make keys` green (DeepSeek, Clef 1.3 s, payer 104 XRP, Langfuse).
+- WP-W0 contracts → [#168](https://github.com/Collaboration95/theFastandtheFungible/pull/168) → closes #112–#115 (review: NO BLOCKERS).
+
 ## Pivot (6 Oct)
 - Direction changed: see [FINAL-PUSH.md](FINAL-PUSH.md). The v1 live demo was real (DeepSeek, Clef, XRPL Testnet) but looked static because every answer came from the 19-doc Vertex corpus and publisher search ignored the query.
 - Next: W0 contracts, then W1 search / pay / agent in parallel (FINAL-PUSH §13). Wednesday-night milestone in prompt.md §10.
