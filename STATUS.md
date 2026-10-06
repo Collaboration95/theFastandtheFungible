@@ -18,6 +18,11 @@
 - WP-A3 loop integration + Langfuse spans → [#181](https://github.com/Collaboration95/theFastandtheFungible/pull/181) → closes #142, #143 (primary NO BLOCKERS; second pass 3×P2 fixed: paid citations open the blog page, an unchallengeable failed proof still costs trust, trust updates survive a crash once). It found and fixed the top-normalised relevance bug: UC3 bought The Fab Floor first because every writer's best hit claimed 1.0.
 - WP-UI clarify chips, action modal, writer/trust chips, proof badges, refund timeline, Writers tab → [#182](https://github.com/Collaboration95/theFastandtheFungible/pull/182) → closes #150–#153 (NO BLOCKERS).
 - Search tuning study (orchestrator) → [#183](https://github.com/Collaboration95/theFastandtheFungible/pull/183): MRR 0.978 → 0.997, cross-writer relevance AUC 0.478 → 0.984; UC1 golden post retitled (#4–#7 → #1); embeddings cache now keys on the embedded text. Details: `eval/README.md`.
+- WP-T1 retire Vertex + UC1–UC3 process scenarios → [#184](https://github.com/Collaboration95/theFastandtheFungible/pull/184) → closes #156, #157 (1 blocker: the leak oracle skipped paid passages < 8 words; fixed without weakening).
+- WP-T5 doctor, make targets, live smoke script → [#185](https://github.com/Collaboration95/theFastandtheFungible/pull/185) → closes #160 (NO BLOCKERS).
+- WP-UI presenter controls, UC presets, generated fixtures → [#186](https://github.com/Collaboration95/theFastandtheFungible/pull/186) → closes #154 (NO BLOCKERS).
+- Live determinism (orchestrator) → [#187](https://github.com/Collaboration95/theFastandtheFungible/pull/187): Clef gap-materiality wording, planner keeps named entities, clarify angle = first gap, 5 paid titles that leaked figures retitled (+ `check-corpus` now checks titles), AlphaLeak/NotFT abstracts, account-id cache + warm-up for query embeddings. Policy code untouched.
+- Playwright UC2/UC3 + a11y (orchestrator) → [#188](https://github.com/Collaboration95/theFastandtheFungible/pull/188) → closes #159; fixed an invalid `<ol>` in the purchase wire.
 
 ## Pivot (6 Oct)
 - Direction changed: see [FINAL-PUSH.md](FINAL-PUSH.md). The v1 live demo was real (DeepSeek, Clef, XRPL Testnet) but looked static because every answer came from the 19-doc Vertex corpus and publisher search ignored the query.
@@ -50,4 +55,11 @@
 - UI/UX design walkthrough (separate session, `docs/ux-walkthrough/`).
 - Cloud Run publisher (separate session).
 ## Demo check
-- PASS (5 Oct): `make live` S$2 → DeepSeek v1 → Clef buys the Grid Operators Report → 0.08 XRP validated on the Testnet in ~5–7 s → v2 QUALIFIES → PDF; ~18–25 s end to end, fully live, traced to Langfuse with 15 scores. S$0 run: no spend. `make verify`: 137 unit + 2 browser tests + build.
+- `npm run verify` (8 Oct 03:10 SGT, orchestrator checkout, offset 310): lint, typecheck, **322 unit**, **6 Playwright**, build — all green.
+- **Live smoke `make smoke` PASSED** (8 Oct ~03:00 SGT; DeepSeek `deepseek-flash` + Cloudflare `clef-flash` + XRPL Testnet + hybrid search; 17 DeepSeek / 72 Clef calls):
+  - **UC1** BoJ/JGB: S$0 spent, no gap, 9.6 s. Trace: https://us.cloud.langfuse.com/project/cmuv4757g011tad0da5faupow/traces/3ab16f6d6f71ff891bb19bf16751a176 (needed one retry: cold-start query embedding fell back to keyword; fixed in #187 by caching the account id + warm-up).
+  - **UC2** Kestrel × TSMC (angle: pricing & margins): bought NotFT S$0.90, proof ✓, STRENGTHENS, 21.6 s. Tx [3E24E0D0…](https://testnet.xrpl.org/transactions/3E24E0D0F886F1F3CC9BED0DEE557373C3417BE0496038D855C45626AB0CB6A2). Trace: https://us.cloud.langfuse.com/project/cmuv4757g011tad0da5faupow/traces/5ca19e08af2922fb75397d3a9f2d018d
+  - **UC3** Penang lead times: bought AlphaLeak S$0.30 (tx [57331BE7…](https://testnet.xrpl.org/transactions/57331BE76827C7D19033341DD6D360DD4B646353283C8F8CDFAB4139CE604F1E)) → proof failed → challenge → **refund [31DA052D…](https://testnet.xrpl.org/transactions/31DA052DE6C184723AAF7CF6830FD3C9DA8329232835D842B7C77DEFB8D0F219) in 7.5 s** → AlphaLeak H 0.80 → 0.40, quarantined → round 2 bought The Fab Floor S$0.25 (tx [082E2108…](https://testnet.xrpl.org/transactions/082E2108DA55FA028BF2E0E2CD6ED2FF39B1FFE726AF576A78F605F62D653048)). Spent S$0.55, refunded S$0.30, 35.6 s end to end (O5 latency: OK at rehearsal pace). Trace: https://us.cloud.langfuse.com/project/cmuv4757g011tad0da5faupow/traces/7e80dd3747124f1adf0bfcb0dd308572
+  - **UC3 re-ask**: AlphaLeak `SKIP_LOW_TRUST`, S$0, 9.6 s. Reputation after: NotFT 0.83, The Fab Floor 0.83, AlphaLeak 0.40 quarantined.
+- Writer index: `http://localhost:5100/w/` (or `:5400/w/` with `DEMO_PORT_OFFSET=300`).
+- Live API use overnight (approx.): DeepSeek ≈ 115 corpus + 8 eval + ~60 smoke ≈ 185 / 300; Clef ≈ 260 / 1,000; Workers AI 13 / 200; faucet 7 / 20; Groq 120 (accidental, see Decisions).
