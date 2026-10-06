@@ -9,6 +9,12 @@ import Ledger from '../components/Ledger.js'
 import Modes from '../components/Modes.js'
 import Activity from '../components/Activity.js'
 import Layout from '../components/Layout.js'
+import RunTape from '../components/RunTape.js'
+import DecisionPanel from '../components/DecisionPanel.js'
+import Answer from '../components/Answer.js'
+import { getAccessibleContent } from '../components/Sources.js'
+import { isTerminal, staged } from '../stage.js'
+import { paidStoryRun } from './run.js'
 import { ask, getRun, stop, retryDelivery, createReport, streamRun } from '../api.js'
 
 afterEach(() => vi.unstubAllGlobals())
@@ -47,7 +53,12 @@ describe('visible internals', () => {
     expect(html).toContain('SIMULATED SGD · no real funds')
     const modes = renderToStaticMarkup(<Modes labels={exampleRun.labels} />)
     expect(renderToStaticMarkup(<Modes labels={{ ...exampleRun.labels, settlement: 'XRPL TESTNET · no real value' }} />)).toContain('XRPL TESTNET · no real value')
-    for (const label of ['fixture', 'Research:', 'Decision:', 'Publisher:', 'local', 'Synthetic corpus', 'SIMULATED SGD']) expect(modes).toContain(label)
+    for (const label of ['fixture', 'Research ·', 'Decide ·', 'Publisher ·', 'local', 'SIMULATED SGD']) expect(modes).toContain(label)
+    expect(modes).not.toContain('fallback')
+    // A live provider that fell back to a fixture is labelled, amber.
+    const fellBack = renderToStaticMarkup(<Modes labels={exampleRun.labels} configured={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-chat' }} />)
+    expect(fellBack).toContain('is-fallback')
+    expect(fellBack).toContain('(fallback)')
   })
 
   it('displays safe 402/quote/delivery fields without tokens, queries, headers or paid bodies', () => {
@@ -78,11 +89,27 @@ describe('visible internals', () => {
   })
 
   it('keeps layout slots and historical activity without dumping event data', () => {
-    const html = renderToStaticMarkup(<Layout header={<Modes />} aside={<Activity run={offlineZeroBudgetRun} />}><p>Answer slot</p></Layout>)
+    const html = renderToStaticMarkup(<Layout labels={<Modes />}><p>Answer slot</p><Activity run={offlineZeroBudgetRun} /></Layout>)
     expect(html).toContain('Answer slot')
     expect(html).toContain('ResearchAgent')
     expect(html).toContain('Offline synthetic example')
-    expect(html).toContain('disabled=""')
+    expect(html).toContain('SIMULATED SGD')
+  })
+
+  it('shows the run as steps with Stop buying, disabled once the run is over', () => {
+    const live = renderToStaticMarkup(<RunTape run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    expect(live).toContain('Stop buying')
+    expect(live).toContain('Choose what to buy')
+    expect(live).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop buying/)
+    const done = renderToStaticMarkup(<RunTape run={offlineZeroBudgetRun} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    expect(done).toMatch(/<button[^>]*disabled=""[^>]*>Run finished/)
+  })
+
+  it('puts plain verdicts on the surface: WOULD BUY at S$0, never a BUY', () => {
+    const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} />)
+    for (const text of ['WOULD BUY', 'OVER CAP', 'LOW VALUE', 'REWRITE', 'is over the S$1.00 per-source cap', 'Round 1']) expect(html).toContain(text)
+    expect(html).not.toContain('>BUY<')
+    expect(html).not.toContain('SKIP_')
   })
 })
 
@@ -141,5 +168,56 @@ describe('run command adapter', () => {
     expect(source.removeEventListener.mock.calls.map(call => call[0])).toEqual(['snapshot', 'trace', 'error'])
     source.dispatchEvent(new MessageEvent('snapshot', { data: JSON.stringify(exampleRun) }))
     expect(onSnapshot).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('stage pacing', () => {
+  const ids = paidStoryRun.events.map(event => event.id)
+  const at = (type: string) => paidStoryRun.events.find(event => event.type === type)!.id
+
+  it('returns the real run once every event has been revealed', () => {
+    expect(staged(paidStoryRun, Infinity)).toBe(paidStoryRun)
+    expect(staged(paidStoryRun, Math.max(...ids))).toBe(paidStoryRun)
+  })
+
+  it('hides what has not happened yet and follows the purchase step by step', () => {
+    const start = staged(paidStoryRun, 0)
+    expect(start.candidates).toHaveLength(0)
+    expect(start.answers).toHaveLength(0)
+    expect(isTerminal(start)).toBe(false)
+    const answered = staged(paidStoryRun, at('ANSWER'))
+    expect(answered.answers.map(answer => answer.version)).toEqual([1])
+    expect(answered.decisions).toHaveLength(0)
+    const held = staged(paidStoryRun, at('PURCHASE'))
+    expect(held.intents[0].status).toBe('RESERVED')
+    expect(held.reservedMinor).toBe(80)
+    expect(held.spentMinor).toBe(0)
+    expect(held.receipts).toHaveLength(0)
+    const settled = staged(paidStoryRun, at('GRANT') - 1)
+    expect(settled.spentMinor).toBe(80)
+    expect(settled.receipts).toHaveLength(1)
+    expect(settled.grants).toHaveLength(0)
+    const verified = staged(paidStoryRun, at('GRANT'))
+    expect(verified.intents[0].status).toBe('VERIFIED')
+    expect(verified.grants).toHaveLength(1)
+  })
+
+  it('never shows paid text before the replay reaches its verified grant (gate 1)', () => {
+    const paid = paidStoryRun.candidates.find(candidate => candidate.tier === 'PAID')!
+    expect(getAccessibleContent(paidStoryRun, paid)).toBeDefined()
+    expect(getAccessibleContent(staged(paidStoryRun, at('GRANT') - 1), paid)).toBeUndefined()
+    expect(getAccessibleContent(staged(paidStoryRun, at('GRANT')), paid)).toBeDefined()
+  })
+
+  it('leads with a short answer and keeps citation numbers across versions', () => {
+    const html = renderToStaticMarkup(<Answer run={paidStoryRun} view="latest" onView={() => {}} compare={false} onCompare={() => {}} onCitation={() => {}} />)
+    expect(html).toContain('Short answer')
+    expect(html).toContain('QUALIFIES')
+    expect(html).toContain('GAP CLOSED')
+    expect(html).toContain('NEW')
+    expect(html).toMatch(/aria-label="Citation 2: Synthetic grid record, exact passage"/)
+    const first = renderToStaticMarkup(<Answer run={paidStoryRun} view="baseline" onView={() => {}} compare={false} onCompare={() => {}} />)
+    expect(first).toMatch(/aria-label="Citation 1: Synthetic demand record, exact passage"/)
+    expect(first).not.toContain('QUALIFIES')
   })
 })
