@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { AskSchema, type Ask as AskInput } from '../../shared/contracts/index.js'
 import { DEMO_QUESTIONS } from '../../shared/contracts/examples.js'
 import { Mark } from '../format'
@@ -17,9 +17,11 @@ export interface AskProps {
   settlement: string
   notify: boolean
   onNotify: (on: boolean) => void
+  /** Clarify chips or the plan card, directly above the input bar. */
+  above?: ReactNode
 }
 /** Home: the question, the budget (the only spending authorisation) and Ask. */
-export default function Ask({ onAsk, busy = false, settlement, notify, onNotify }: AskProps) {
+export default function Ask({ onAsk, busy = false, settlement, notify, onNotify, above }: AskProps) {
   const id = useId()
   const [question, setQuestion] = useState<string>(DEMO_QUESTIONS[1].text)
   const [budgetMinor, setBudget] = useState<AskInput['budgetMinor']>(200)
@@ -30,6 +32,7 @@ export default function Ask({ onAsk, busy = false, settlement, notify, onNotify 
   return <section className="ra-home" aria-label="Ask a research question">
     <h1 className="ra-hero">Ask a question.<br /><em>Give it a budget.</em></h1>
     <p className="ra-hero-sub">It reads free sources first, then pays only for evidence worth the price.</p>
+    {above}
     <form className="ra-composer" onSubmit={async event => {
       event.preventDefault()
       if (disabled) return

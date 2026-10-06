@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type PublicCandidate, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
-import { ask, createReport, getRun, retryDelivery, stop, streamRun } from './api'
+import { ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
+import { ask, createReport, getReputation, getRun, resetReputation, retryDelivery, scope, stop, streamRun, type ScopeResult } from './api'
 import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from './stage'
 import { candidateOf, favicon, leadSentence, money } from './format'
 import Layout from './components/Layout'
@@ -19,6 +19,9 @@ import Receipt from './components/Receipt'
 import ShowWork from './components/ShowWork'
 import Presenter from './components/Presenter'
 import Toasts, { type Toast } from './components/Toasts'
+import ClarifyChips from './components/ClarifyChips'
+import ActionModal from './components/ActionModal'
+import ReputationPanel from './components/ReputationPanel'
 
 const activeKey = 'researchagent.october.active-run'
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify'
@@ -50,6 +53,9 @@ export default function App() {
   const [view, setView] = useState<'latest' | 'baseline'>('latest')
   const [compare, setCompare] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [pending, setPending] = useState<{ input: AskInput; scope: ScopeResult; answers: Record<string, string>; step: 'clarify' | 'plan' }>()
+  const [tab, setTab] = useState<'run' | 'writers'>('run')
+  const [reputation, setReputation] = useState<ReputationRecord[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -119,7 +125,7 @@ export default function App() {
     const queue: [Toast, number][] = []
     for (const id of verified) if (!state.verified.has(id)) {
       const intent = shown.intents.find(item => item.intentId === id)!
-      queue.push([{ id: `bought-${id}`, tone: 'pen', receipt: true, icon: '✓', title: `Bought ${candidateOf(shown, intent)?.publisher ?? intent.resourceId}`, body: `${money(intent.amountMinor)} · sha-256 verified · ${shown.labels.settlement}` }, 6000])
+      queue.push([{ id: `bought-${id}`, tone: 'pen', receipt: true, icon: '✓', title: `Bought ${candidateOf(shown, intent)?.publisher ?? intent.resourceId}`, body: `${money(intent.amountMinor)} · proof verified · ${shown.labels.settlement}` }, 6000])
       state.verified.add(id)
       setTimeout(() => dismiss(`failed-${id}`), 0)
     }
@@ -175,7 +181,28 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [screen, run])
 
+  // Clarify (D8): questions as chips, then the 5 s plan card; the run starts only from the card.
   const sendAsk = async (input: AskInput) => {
+    setSending(true); setError('')
+    try {
+      const never = new URLSearchParams(window.location.search).get('clarify') === 'never'
+      const result = await scope(input.question, never ? 'never' : undefined)
+      setPending({ input, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
+    } catch { setError('The API is unavailable. Start the demo processes, then ask again.'); throw new Error('scope failed') }
+    finally { setSending(false) }
+  }
+  const answer = (id: string, option: string) => setPending(state => {
+    if (!state) return state
+    const answers = { ...state.answers, [id]: option }
+    return { ...state, answers, step: state.scope.questions.every(question => answers[question.id]) ? 'plan' : 'clarify' }
+  })
+  const go = (plan: Plan) => {
+    if (!pending) return
+    const { input, answers } = pending
+    setPending(undefined)
+    void startRun({ ...input, plan, ...(Object.keys(answers).length ? { answers } : {}) }).catch(() => { /* error banner already set */ })
+  }
+  const startRun = async (input: AskInput) => {
     setSending(true); setError(''); setPassage(undefined); setCompare(false); setView('latest'); setToasts([])
     try {
       const created = await ask(input)
@@ -194,6 +221,14 @@ export default function App() {
     setStopping(true); setError('')
     try { setRun(await stop(run.runId)) } catch { setError('Stop request failed. Try Stop again.') } finally { setStopping(false) }
   }
+  const reputationEvents = shown?.events.filter(event => event.type === 'REPUTATION').length ?? 0
+  useEffect(() => {
+    if (tab !== 'writers') return
+    let cancelled = false
+    void getReputation().then(list => { if (!cancelled) setReputation(list) }).catch(() => { /* the panel shows what the run carries */ })
+    return () => { cancelled = true }
+  }, [tab, reputationEvents])
+  const resetWriters = () => void resetReputation().then(setReputation).catch(() => setError('Reputation reset failed.'))
   const choosePace = (value: Pace) => { setPace(value); prefs.set(paceKey, value) }
   const chooseNotify = (on: boolean) => {
     setNotify(on); prefs.set(notifyKey, on ? '1' : '0')
@@ -208,7 +243,9 @@ export default function App() {
   if (screen === 'home' || !shown) return <Layout labels={labels} action={run ? <button type="button" className="ra-btn" onClick={() => setScreen('run')}>Back to the last run</button> : undefined}>
     <main className="ra-home-wrap">
       {error && <p className="ra-banner" role="alert">{error}</p>}
-      <Ask onAsk={sendAsk} busy={sending || (!!shown && !finished)} settlement={shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'} notify={notify} onNotify={chooseNotify} />
+      <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pending && (pending.step === 'clarify'
+        ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
+        : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={() => setPending(undefined)} />)} settlement={shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'} notify={notify} onNotify={chooseNotify} />
     </main>
     {overlays}
   </Layout>
@@ -228,11 +265,17 @@ export default function App() {
           report={<ReportButton run={shown} onReport={downloadReport} busy={!finished} />} />
       </main>
       <aside className="ra-side" aria-label="Budget and purchases">
+        <div className="ra-tabs" role="tablist" aria-label="Right panel">
+          <button type="button" role="tab" aria-selected={tab === 'run'} onClick={() => setTab('run')}>Run</button>
+          <button type="button" role="tab" aria-selected={tab === 'writers'} onClick={() => setTab('writers')}>Writers</button>
+        </div>
+        {tab === 'writers' ? <ReputationPanel records={reputation} run={shown} full={run} presenter={presenter} onReset={resetWriters} /> : <>
         <Budget run={shown} />
         {[...intents].reverse().map(intent => <Purchase key={intent.intentId} run={shown} intent={intent} onRetry={id => void retry(id)} onReceipt={setReceipt} />)}
         <DecisionPanel run={shown} />
-        {!intents.length && shown.budgetMinor > 0 && !shown.decisions.length && <section className="ra-panel is-idle" aria-label="Purchases"><div className="ra-panel-h"><h2>Purchases</h2></div><p>Each purchase shows 402 → quote → settle → delivery → sha-256 here. One charge per source, even on retry.</p></section>}
+        {!intents.length && shown.budgetMinor > 0 && !shown.decisions.length && <section className="ra-panel is-idle" aria-label="Purchases"><div className="ra-panel-h"><h2>Purchases</h2></div><p>Each purchase shows 402 → pay → 200 → proof check here. One charge per source, even on retry.</p></section>}
         <Ledger run={shown} />
+        </>}
       </aside>
     </div>
     {passage && <Passage candidate={passage.candidate} content={getAccessibleContent(shown, passage.candidate)} citation={passage.citation} onClose={() => setPassage(undefined)} />}

@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { AskSchema, LedgerViewSchema, RunSnapshotSchema, TraceEventSchema } from '../shared/contracts/index.js'
-import type { Ask, LedgerView, RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
+import { AskSchema, LedgerViewSchema, ReputationRecordSchema, RunSnapshotSchema, ScopeSchema, TraceEventSchema } from '../shared/contracts/index.js'
+import type { Ask, LedgerView, ReputationRecord, RunSnapshot, Scope, TraceEvent } from '../shared/contracts/index.js'
 
 const runPath = (runId: string) => `/runs/${encodeURIComponent(runId)}`
 
@@ -15,6 +15,18 @@ async function request(path: string, body?: unknown): Promise<unknown> {
 
 export async function getLedger(): Promise<LedgerView> {
   return LedgerViewSchema.parse(await request('/api/ledger'))
+}
+/** Clarify step (D8): questions and a plan, never a purchase. `writers` is optional until the server sends a count. */
+export type ScopeResult = Scope & { label?: string; writers?: number }
+export async function scope(question: string, clarify?: 'never'): Promise<ScopeResult> {
+  return ScopeSchema.extend({ label: z.string().optional(), writers: z.number().int().nonnegative().optional() }).parse(await request('/api/scope', { question, ...(clarify ? { clarify } : {}) }))
+}
+const ReputationListSchema = z.object({ publishers: z.array(ReputationRecordSchema) })
+export async function getReputation(): Promise<ReputationRecord[]> {
+  return ReputationListSchema.parse(await request('/api/reputation')).publishers
+}
+export async function resetReputation(): Promise<ReputationRecord[]> {
+  return ReputationListSchema.parse(await request('/api/reputation/reset', {})).publishers
 }
 export async function ask(input: Ask): Promise<RunSnapshot> {
   return RunSnapshotSchema.parse(await request('/runs', AskSchema.parse(input)))
