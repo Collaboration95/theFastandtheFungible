@@ -22,10 +22,12 @@ export default function Passage({ candidate, content, citation, onClose }: Passa
   useEffect(() => { if (span) mark.current?.scrollIntoView({ block: 'center' }) }, [span])
   if (!candidate) return null
   return <dialog ref={dialog} className="ra-passage" aria-labelledby={`${id}-title`} aria-describedby={`${id}-access`} onCancel={event => { event.preventDefault(); onClose() }}>
-    <header className="ra-section-heading"><span className="ra-eyebrow">Exact source passage</span><button className="ra-text-button" ref={close} type="button" onClick={onClose} aria-label="Close source passage">Close ×</button></header>
-    <h2 id={`${id}-title`}>{candidate.title}</h2><p className="ra-muted">{candidate.publisher} · {candidate.version} · synthetic corpus</p>
-    <p id={`${id}-access`} className="ra-badge">{accessible ? candidate.tier === 'PAID' ? 'Verified delivery · full source' : 'Free source · full text' : 'Public preview only'}</p>
-    {accessible ? <>{citation && !span && <p className="ra-error" role="status">This citation could not be verified. No substitute passage is highlighted.</p>}<div className="ra-passage-body">{span && offset >= 0 ? <>{accessible.body.slice(0, offset)}<mark ref={mark}>{span.text}</mark>{accessible.body.slice(offset + span.text.length)}</> : accessible.body}</div></> : <><p>{candidate.preview}</p><div className="ra-open-gap">{candidate.tier === 'PAID' ? 'Premium text stays locked until this run has a verified delivery grant.' : 'Full text has not been retrieved yet.'}</div></>}
-    <footer className="ra-muted">{candidate.license.kind} · {candidate.license.attribution}</footer>
+    <header className="ra-dr-h">
+      <div className="ra-dr-top"><span>{span ? 'EXACT PASSAGE' : accessible ? 'SOURCE' : 'PUBLIC PREVIEW'}</span><button className="ra-btn" ref={close} type="button" onClick={onClose} aria-label="Close source passage">Esc ×</button></div>
+      <h2 id={`${id}-title`}>{candidate.title}</h2>
+      <p className="ra-dr-chips"><span className="ra-chip">{candidate.publisher} · {candidate.version}</span><span id={`${id}-access`} className={`ra-chip${accessible && candidate.tier === 'PAID' ? ' is-pen' : ''}`}>{accessible ? candidate.tier === 'PAID' ? 'Verified delivery · full source' : 'Free source · full text' : candidate.tier === 'PAID' ? `Not bought · S$${(candidate.price.amountMinor / 100).toFixed(2)}` : 'Public preview only'}</span></p>
+    </header>
+    <div className="ra-dr-b">{accessible ? <>{citation && !span && <p className="ra-err" role="status">This citation could not be verified. No substitute passage is highlighted.</p>}<div className="ra-passage-body">{span && offset >= 0 ? <>{accessible.body.slice(0, offset)}<mark ref={mark}>{span.text}</mark>{accessible.body.slice(offset + span.text.length)}</> : accessible.body}</div></> : <><p>{candidate.preview}</p><div className="ra-locked"><i /><i /><i /><i /><p><b>{candidate.tier === 'PAID' ? 'Locked.' : 'Not read yet.'}</b> {candidate.tier === 'PAID' ? 'Premium text stays with the publisher until this run has a verified delivery grant. These bars are placeholders, not the article.' : 'Full text has not been retrieved yet.'}</p></div></>}</div>
+    <footer className="ra-dr-f"><span>{candidate.license.kind} · {candidate.license.attribution}</span><span>synthetic corpus</span></footer>
   </dialog>
 }

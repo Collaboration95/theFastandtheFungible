@@ -45,3 +45,43 @@ export const offlineWireExampleRun = RunSnapshotSchema.parse({
     { id: 4, runId: 'offline-wire-example', type: 'HTTP', at: '2026-10-04T14:00:03.000Z', label: 'Synthetic delivery and digest illustration', data: { method: 'GET', path: '/delivery', status: 200, verified: true } },
   ],
 })
+
+// A complete offline S$2 story for stage-pacing tests: free answer, one purchase, verified grant, v2.
+const storyId = 'offline-paid-story'
+const gridCandidate: PublicCandidate = { ...preview('example-grid', 'Synthetic grid record', 80), profileId: 'synthetic-paid' }
+const gridBody = 'Only 240 of the announced 600 MW has a confirmed energisation slot before 2028.'
+const freeCitation = foundationRun.answers[0].claims[0].citations[0]
+const gridCitation = { resourceId: gridCandidate.resourceId, version: 'v1', spanId: 'grid-1' }
+const intentId = `${storyId}:1:example-grid:v1`
+const story = (id: number, type: string, label: string, data?: Record<string, unknown>) => ({ id, runId: storyId, type, label, at: `2026-10-04T14:00:00.${String(id * 5).padStart(3, '0')}Z`, ...(data ? { data } : {}) })
+const gridRow = row(gridCandidate, 0.85, 0.9, 0.05, 'BUY', 'Clears the value threshold and spending policy.')
+export const paidStoryRun = RunSnapshotSchema.parse({
+  ...foundationRun, runId: storyId, phase: 'DONE', round: 2,
+  candidates: [...foundationRun.candidates, gridCandidate],
+  contents: [...foundationRun.contents, { profileId: gridCandidate.profileId, resourceId: gridCandidate.resourceId, version: 'v1', title: gridCandidate.title, publisher: gridCandidate.publisher, body: gridBody, spans: [{ id: 'grid-1', text: gridBody }] }],
+  answers: [
+    { ...foundationRun.answers[0], version: 1 },
+    { conclusion: `${gridBody} Demand is real.`, claims: [{ id: 'grid-claim', text: gridBody, stance: 'CHALLENGES', citations: [gridCitation] }, { ...foundationRun.answers[0].claims[0], citations: [freeCitation] }], openGaps: [], version: 2, provider: 'fixture', model: 'extractive-fixture' },
+  ],
+  impact: { classification: 'QUALIFIES', explanation: 'New cited evidence qualifies the previous answer.', claimChanges: [{ toClaimId: 'grid-claim', change: 'ADDED' }, { fromClaimId: 'claim-1', toClaimId: 'claim-1', change: 'UNCHANGED' }] },
+  decisions: [
+    { round: 1, gap: 'No accessible evidence on grid energisation.', gapMaterial, provider: 'fixture', model: 'synthetic-table-example', threshold: 0.2, rows: [gridRow], selectedResourceId: 'example-grid' },
+    { round: 2, gap: '', gapMaterial: 0, provider: 'fixture', model: 'synthetic-table-example', threshold: 0.2, rows: [{ ...gridRow, value: 0, valuePerDollar: 0, verdict: 'SKIP_NO_GAP', reason: 'No material open gap.' }] },
+  ],
+  spentMinor: 80,
+  intents: [{ intentId, runId: storyId, profileId: gridCandidate.profileId, resourceId: 'example-grid', version: 'v1', amountMinor: 80, status: 'VERIFIED', receiptId: 'receipt-1' }],
+  receipts: [{ receiptId: 'receipt-1', intentId, runId: storyId, resourceId: 'example-grid', version: 'v1', amountMinor: 80, currency: 'SGD', settledAt: '2026-10-04T14:00:00.045Z', label: 'SIMULATED SGD · no real funds' }],
+  grants: [{ runId: storyId, resourceId: 'example-grid', version: 'v1', intentId, contentDigest: 'c'.repeat(64), grantedAt: '2026-10-04T14:00:00.055Z' }],
+  events: [
+    story(1, 'SEARCH', 'Searching publisher public metadata.'), story(2, 'READ_FREE', 'Reading free sources only.'), story(3, 'ANSWER', 'Writing the free answer.'),
+    story(4, 'DECIDE', 'Scoring public previews and applying spending policy.'), story(5, 'BUY', 'Policy selected one purchase within budget.'),
+    story(6, 'WIRE', 'GET content → 402', { method: 'GET', path: '/v1/profiles/synthetic-paid/resources/example-grid/versions/v1/content', status: 402 }),
+    story(7, 'WIRE', 'POST /v1/quotes → 200', { method: 'POST', path: '/v1/quotes', status: 200 }),
+    story(8, 'PURCHASE', 'RESERVED', { intentId, status: 'RESERVED' }),
+    story(9, 'WIRE', 'POST /v1/settlements → 200', { method: 'POST', path: '/v1/settlements', status: 200 }),
+    story(10, 'WIRE', 'GET content → 200', { method: 'GET', path: '/v1/profiles/synthetic-paid/resources/example-grid/versions/v1/content', status: 200 }),
+    story(11, 'GRANT', 'sha-256 verified', { intentId, resourceId: 'example-grid', version: 'v1' }),
+    story(12, 'READ_PAID', 'Verified grant permits paid evidence.'), story(13, 'ANSWER', 'Re-answering with verified evidence.'),
+    story(14, 'DECIDE', 'Scoring public previews and applying spending policy.'), story(15, 'DONE', 'Stopped: no eligible purchase.'),
+  ],
+})

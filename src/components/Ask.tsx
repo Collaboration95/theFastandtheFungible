@@ -1,37 +1,62 @@
-import { useContext, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { AskSchema, type Ask as AskInput } from '../../shared/contracts/index.js'
-import { StageContext } from './StageContext'
 import { DEMO_QUESTION } from '../../shared/contracts/examples.js'
-export interface AskProps { onAsk: (input: AskInput) => void | Promise<void>; busy?: boolean }
-export default function Ask({ onAsk, busy = false }: AskProps) {
+import { Mark } from '../format'
+
+const BUDGETS = [0, 100, 200, 500] as const
+const CONSEQUENCE: Record<AskInput['budgetMinor'], [string, string]> = {
+  0: ['Free sources only.', 'You’ll still see what it would have bought.'],
+  100: ['Up to S$1.00, at most S$1.00 per source.', 'Enough for one source under the cap.'],
+  200: ['Up to S$2.00, at most S$1.00 per source.', 'It buys only sources that clear the bar.'],
+  500: ['Up to S$5.00, at most S$1.00 per source.', 'Room for several rounds of buying.'],
+}
+
+export interface AskProps {
+  onAsk: (input: AskInput) => void | Promise<void>
+  busy?: boolean
+  settlement: string
+  notify: boolean
+  onNotify: (on: boolean) => void
+}
+/** Home: the question, the budget (the only spending authorisation) and Ask. */
+export default function Ask({ onAsk, busy = false, settlement, notify, onNotify }: AskProps) {
   const id = useId()
-  const currentRun = useContext(StageContext)
-  const runId = currentRun?.runId
-  const [expanded, setExpanded] = useState(false)
-  const [submittedFrom, setSubmittedFrom] = useState<string>()
-  const compact = !!runId && runId !== submittedFrom && !expanded
   const [question, setQuestion] = useState(DEMO_QUESTION)
   const [budgetMinor, setBudget] = useState<AskInput['budgetMinor']>(200)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const disabled = busy || submitting
-  if (compact) return <section className="ra-panel ra-ask ra-ask-compact" aria-label="Ask a research question"><p>{currentRun?.question ?? question}</p><button className="ra-text-button" type="button" disabled={disabled} onClick={() => { setExpanded(true); requestAnimationFrame(() => document.getElementById(`${id}-question`)?.focus()) }}>New question</button></section>
-  return <section className="ra-panel ra-ask" aria-label="Ask a research question">
-    <h2>Ask. Read. Acquire evidence.</h2>
-    <form onSubmit={async event => {
+  const [lead, rest] = CONSEQUENCE[budgetMinor]
+  return <section className="ra-home" aria-label="Ask a research question">
+    <h1 className="ra-hero">Ask a question.<br /><em>Give it a budget.</em></h1>
+    <p className="ra-hero-sub">It reads free sources first, then pays only for evidence worth the price.</p>
+    <form className="ra-composer" onSubmit={async event => {
       event.preventDefault()
       if (disabled) return
       const result = AskSchema.safeParse({ question, budgetMinor })
-      if (!result.success) { setError('Enter a question of 1–2,000 characters.'); return }
-      setError(''); setSubmitting(true); setSubmittedFrom(runId); setExpanded(false)
+      if (!result.success) { setError('Type a question first. Up to 2,000 characters.'); return }
+      setError(''); setSubmitting(true)
       try { await onAsk(result.data) } catch { setError('The question could not be sent. Please try again.') } finally { setSubmitting(false) }
     }}>
-      <label htmlFor={`${id}-question`}>Your question</label>
-      <textarea id={`${id}-question`} value={question} onChange={event => setQuestion(event.target.value)} maxLength={2000} rows={2} required disabled={disabled} aria-describedby={`${id}-budget-note`} />
-      <fieldset disabled={disabled}><legend>Budget for this question</legend><div className="ra-budget-chips">{([0, 100, 200, 500] as const).map(value => <label className="ra-budget-chip" key={value}><input type="radio" name={`${id}-budget`} value={value} checked={budgetMinor === value} onChange={() => setBudget(value)} /><span>S${value / 100}</span></label>)}</div></fieldset>
-      <p id={`${id}-budget-note`} className="ra-muted">Your budget authorizes automatic purchases · S$1.00 cap per source · S$0 reads free sources only.</p>
-      <div className="ra-section-heading"><span className="ra-muted">No real funds · simulated SGD or XRPL Testnet</span><button className="ra-button" type="submit" disabled={disabled || !question.trim()}>{disabled ? 'Researching…' : 'Ask →'}</button></div>
-      {error && <p className="ra-error" role="alert">{error}</p>}
+      <label className="ra-sr" htmlFor={`${id}-q`}>Your question</label>
+      <textarea id={`${id}-q`} className="ra-qbox" value={question} onChange={event => setQuestion(event.target.value)} maxLength={2000} rows={2} required disabled={disabled} placeholder="Ask about a company, a market or a claim…" aria-describedby={`${id}-consq`}
+        onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit() } }} />
+      <div className="ra-comp-row">
+        <fieldset className="ra-coins" disabled={disabled}><legend className="ra-sr">Budget for this question</legend>
+          {BUDGETS.map(value => <label className="ra-coin" key={value}><input type="radio" name={`${id}-budget`} value={value} checked={budgetMinor === value} onChange={() => setBudget(value)} /><span>S${value / 100}</span></label>)}
+        </fieldset>
+        <p className="ra-consq" id={`${id}-consq`} aria-live="polite"><b>{lead}</b>{rest}</p>
+        <button className="ra-ask" type="submit" disabled={disabled || !question.trim()}>{disabled ? 'Starting…' : budgetMinor === 0 ? 'Ask free' : 'Ask'} <kbd aria-hidden="true">↵</kbd></button>
+      </div>
+      <div className="ra-comp-foot">
+        {error ? <span className="ra-err" role="alert">{error}</span> : <span>Your budget is the only spending authorisation. <span className="ra-chip is-sim">{settlement}</span></span>}
+        <label className="ra-check"><input type="checkbox" checked={notify} onChange={event => onNotify(event.target.checked)} /> Tell me when it’s done</label>
+      </div>
     </form>
+    <div className="ra-how">
+      <div><span className="ic ic-read" aria-hidden="true">Aa</span><b>An LLM writes</b><p>Reads free sources and drafts a cited answer that names its gap.</p></div>
+      <div><span className="ic ic-bars" aria-hidden="true"><i style={{ height: '40%' }} /><i style={{ height: '90%' }} /><i style={{ height: '25%' }} /><i style={{ height: '60%' }} /></span><b>A decision model chooses</b><p>Scores each paywalled source: does it close the gap, is it original, is it credible.</p></div>
+      <div><span className="ic" aria-hidden="true"><Mark /></span><b>Code pays</b><p>Buys the best value per S$ inside your budget. Text in an article can’t spend.</p></div>
+    </div>
   </section>
 }
