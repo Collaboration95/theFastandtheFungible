@@ -33,7 +33,7 @@ export function loadInputs(root) {
   return { roster: files, bible: readJson(join(root, 'data/corpus/v2/story-bible.json')) }
 }
 
-export async function generate({ llm, root, out, only, dryRun = false, cap = CALL_CAP, concurrency = 3, today = '2026-10-07', wait = sleep, log = console.log }) {
+export async function generate({ llm, root, out, only, dryRun = false, cap = CALL_CAP, concurrency = 3, requests, today = '2026-10-07', wait = sleep, log = console.log }) {
   const { roster, bible } = loadInputs(root)
   const outDir = out ?? join(root, 'data/corpus/v2')
   const planPath = join(outDir, 'plan.json')
@@ -43,7 +43,8 @@ export async function generate({ llm, root, out, only, dryRun = false, cap = CAL
 
   async function call(name, system, input) {
     for (let delay = 5000, tries = 0; ; tries++) {
-      if (result.calls >= cap) throw new Error(`call cap ${cap} reached`)
+      // `requests` (live: counted at fetch) sees streamJson's internal retries; fakes fall back to one per call.
+      if ((requests ? requests() : result.calls) >= cap) throw new Error(`call cap ${cap} reached`)
       result.calls++
       try { return await llm(name, system, input) } catch (error) {
         if (!/429/.test(String(error?.message)) || tries >= 3) throw error
@@ -102,7 +103,7 @@ export async function generate({ llm, root, out, only, dryRun = false, cap = CAL
   for (const batch of [originals, rewrites]) await pool(batch, concurrency, async entry => {
     try { await writeOne(entry) } catch (error) { result.failed.push(`${entry.articleId}: ${error.message}`); log(`FAILED ${entry.articleId}: ${error.message}`) }
   })
-  log(`calls ${result.calls}/${cap}; written ${result.written}; skipped ${result.skipped}; failed ${result.failed.length}`)
+  log(`calls ${requests ? requests() : result.calls}/${cap}; written ${result.written}; skipped ${result.skipped}; failed ${result.failed.length}`)
   return result
 
   async function writeOne(entry) {
@@ -170,6 +171,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2)
   const flag = name => { const i = argv.indexOf(`--${name}`); return i < 0 ? undefined : argv[i + 1] }
   const dryRun = argv.includes('--dry-run')
+  const cap = Number(argv[argv.indexOf('--cap') + 1] || CALL_CAP) || CALL_CAP
+  let sent = 0
   await import('dotenv/config')
   process.env.LLM_PROVIDER ??= 'deepseek'
   let llm = async () => { throw new Error('no network in dry-run') }
@@ -177,8 +180,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const { streamJson, isLlmConfigured } = await import('../server/agents/llm.ts')
     if (!isLlmConfigured()) { console.error('DEEPSEEK_API_KEY is not set (LLM_PROVIDER=deepseek).'); process.exit(2) }
     llm = (name, system, input) => streamJson(system, input, undefined, name)
+    // Count real provider requests: streamJson may retry internally, and the cap is on requests.
+    const realFetch = globalThis.fetch
+    globalThis.fetch = (...args) => {
+      if (String(args[0]).includes('/chat/completions')) {
+        if (sent >= cap) return Promise.reject(new Error(`request cap ${cap} reached`))
+        sent++
+      }
+      return realFetch(...args)
+    }
   }
   const root = new URL('..', import.meta.url).pathname
-  const r = await generate({ llm, root, out: flag('out'), only: flag('only'), dryRun, cap: Number(flag('cap') ?? CALL_CAP), concurrency: Number(flag('concurrency') ?? 3), today: flag('today') })
+  const r = await generate({ llm, root, out: flag('out'), only: flag('only'), dryRun, cap, requests: dryRun ? undefined : () => sent, concurrency: Number(flag('concurrency') ?? 3), today: flag('today') })
   process.exit(r.failed.length ? 1 : 0)
 }

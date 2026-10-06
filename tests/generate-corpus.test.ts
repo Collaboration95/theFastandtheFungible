@@ -95,6 +95,14 @@ describe('corpus generator (#119)', () => {
     expect(capped.failed.length).toBeGreaterThan(0)
   })
 
+  it('caps real provider requests, not just llm calls (streamJson retries internally)', async () => {
+    let sent = 0
+    const { llm } = fakeLlm()
+    const r = await run(mkdtempSync(join(tmpdir(), 'corpus-')), (n, s, i) => { sent += 2; return llm(n, s, i) }, { only: 'kopi-contrarian', cap: 6, requests: () => sent })
+    expect(sent).toBeLessThanOrEqual(8)
+    expect(r.failed.length).toBeGreaterThan(0)
+  })
+
   it('dry-run uses no LLM and writes nothing', async () => {
     const out = mkdtempSync(join(tmpdir(), 'corpus-'))
     const r = await run(out, async () => { throw new Error('network') }, { dryRun: true })
