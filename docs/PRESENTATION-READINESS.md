@@ -175,13 +175,13 @@ injection and confined to the simulator.
 Current aggregate, executed in an environment that permits local listeners:
 
 ~~~sh
-LLM_PROVIDER=fixture XRPL_MODE=fixture APP_MODE=fixture npm run verify
+npm run verify          # lint, typecheck, unit + UC1–UC3 process scenarios + gate-1..5 suite, Playwright UC2/UC3 + a11y, build
+make doctor             # keys, corpus + embeddings freshness, Testnet wallets and payer balance
+make smoke              # live UC1–UC3 + re-ask on DeepSeek + Clef + XRPL Testnet (orchestrator / rehearsal only)
 ~~~
 
-This is the existing command. Additional transaction checks, the eight-case
-scenario scorecard, rehearsal runner and doctor in the verification module are
-planned work. Once implemented, the release gate must include them. A new
-property-testing framework or general coding controller is not required.
+All three exist and passed on 8 Oct (STATUS.md → Demo check). The release gate is
+`npm run verify` green plus one `make smoke` PASS on the presenting laptop.
 
 Record the exact commit, runtime/lockfile/corpus versions, exit status, counts,
 and artifact paths in the implementation task or PR. Do not copy historical
