@@ -58,7 +58,7 @@ export default function Purchase({ run, intent, onRetry, onReceipt }: { run: Run
   const title = ok ? 'Bought' : quarantined ? 'Proof failed' : failed ? 'Paid, not delivered' : notSettled ? 'Not bought' : 'Buying'
   return <section className={`ra-panel ra-buy${failed || quarantined ? ' is-failed' : ''}`} aria-label={`Purchase: ${source?.publisher ?? intent.resourceId}`}>
     <div className="ra-panel-h"><h2>{title} · {source?.publisher ?? intent.resourceId}</h2><ProofBadge run={run} intent={intent} /><span className="ra-price">{money(intent.amountMinor)}</span></div>
-    <ol className="ra-wire" aria-label="402, pay, delivery, proof"><span className="ra-wire-fill" style={{ '--p': `${fill}%` } as CSSProperties} />
+    <ol className="ra-wire" aria-label="402, pay, delivery, proof" style={{ '--p': `${fill}%` } as CSSProperties}>
       {nodes.map(([label, sub, cls, on], index) => <li key={index} className={`${cls}${on ? ' on' : ''}`}><i>{label}</i><span>{sub}</span></li>)}
     </ol>
     {ok && grant && <div className="ra-hash"><span>manifest root</span><Digest value={grant.contentDigest} /><b>✓ match</b></div>}
