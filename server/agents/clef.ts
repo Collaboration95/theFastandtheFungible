@@ -1,7 +1,7 @@
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema } from '../../shared/contracts/index.js'
-import type { CandidateJudgment, PublicCandidate } from '../../shared/contracts/index.js'
+import type { CandidateJudgment, ContentEnvelope, PublicCandidate } from '../../shared/contracts/index.js'
 import { decisionModel, publicCandidate, publicSources } from './decision.js'
 import type { DecisionProvider } from './decision.js'
 
@@ -25,7 +25,11 @@ export function parseClefCandidate(payload: unknown): CandidateJudgment {
   const credibility = z.object({ type: z.literal('score'), score: z.number().min(0).max(2) }).parse(answers.credibility)
   return CandidateJudgmentSchema.parse({ addressesGap: NoulSchema.parse(answers.addresses_gap).noul, originality: originality.probabilities, credibility: credibility.score })
 }
+export function parseClefPaidRelevance(payload: unknown): { observed: number } {
+  return { observed: NoulSchema.parse(EnvelopeSchema.parse(payload).result.answers.addresses_gap).noul }
+}
 export const clefQuestions = {
+  paid: { addresses_gap: { type: 'noul', instructions: 'The purchased passages contain evidence that directly addresses the open gap.' } },
   round: { gap_material: { type: 'noul', instructions: 'Resolving the open gap could change the conclusion of the answer.' } },
   candidate: {
     addresses_gap: { type: 'noul', instructions: "The candidate's public abstract and tags indicate it contains new evidence that directly addresses the open gap." },
@@ -111,6 +115,10 @@ export class ClefDecisionProvider implements DecisionProvider {
   }
   async judgeRound(input: Parameters<DecisionProvider['judgeRound']>[0]) {
     return parseClefRound(await this.judge('judge-gap', { question: input.question, conclusion: input.conclusion, gap: input.gap }, clefQuestions.round, parseClefRound))
+  }
+  /** Calibration (#141): one call per VERIFIED purchase, with the granted passages only (gate 1). */
+  async judgePaidRelevance(input: { question: string; gap: string; content: ContentEnvelope }) {
+    return parseClefPaidRelevance(await this.judge('judge-paid-relevance', { question: input.question, gap: input.gap, passages: input.content.spans.map(s => s.text) }, clefQuestions.paid, parseClefPaidRelevance, { resourceId: input.content.resourceId }))
   }
   async judgeCandidate(input: Parameters<DecisionProvider['judgeCandidate']>[0]) {
     return parseClefCandidate(await this.judge('judge-candidate', { question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: clefCandidate(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate, { resourceId: input.candidate.resourceId, priceMinor: input.candidate.price.amountMinor }))

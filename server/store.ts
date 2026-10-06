@@ -3,7 +3,7 @@ import { mkdirSync } from 'node:fs'
 import type { Submission } from './xrpl.js'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { AnswerSchema, ContentEnvelopeSchema, DecisionRoundSchema, GrantSchema, ImpactSchema, PurchaseIntentSchema, ReceiptSchema, RunSnapshotSchema, TraceEventSchema, type Answer, type ContentEnvelope, type DecisionRound, type DeliveryProof, type Grant, type Impact, type ModeLabels, type PurchaseIntent, type Receipt, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
+import { AnswerSchema, ContentEnvelopeSchema, DecisionRoundSchema, GrantSchema, ImpactSchema, PurchaseIntentSchema, ReceiptSchema, ReputationRecordSchema, RunSnapshotSchema, TraceEventSchema, type Answer, type ContentEnvelope, type DecisionRound, type DeliveryProof, type Grant, type Impact, type ModeLabels, type PurchaseIntent, type Receipt, type ReputationRecord, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
 
 const reservedStatuses = new Set(['RESERVED', 'SUBMITTING'])
 const chargedStatuses = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED'])
@@ -33,6 +33,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS receipts (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, token TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grants (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, content TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS submissions (intent_id TEXT PRIMARY KEY REFERENCES intents(id), tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL, last_ledger INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS publisher_reputation (wallet TEXT PRIMARY KEY, json TEXT NOT NULL);
     `)
   }
   private atomic<T>(fn: () => T): T {
@@ -250,5 +251,13 @@ export class Store {
       this.saveIntent({ ...intent, status: 'VERIFIED', error: undefined })
     })
   }
+  // Engine-side trust per seller of record (D6, D21), across runs; server/reputation.ts owns the math.
+  getReputation(wallet: string): ReputationRecord | undefined { return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation WHERE wallet=?', wallet)[0] }
+  listReputation(): ReputationRecord[] { return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation ORDER BY wallet') }
+  putReputation(record: ReputationRecord): void {
+    const parsed = ReputationRecordSchema.parse(record)
+    this.db.prepare('INSERT INTO publisher_reputation VALUES (?,?) ON CONFLICT(wallet) DO UPDATE SET json=excluded.json').run(parsed.wallet, JSON.stringify(parsed))
+  }
+  resetReputation(): void { this.db.exec('DELETE FROM publisher_reputation') }
   close(): void { this.db.close() }
 }
