@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { once } from 'node:events'
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -29,13 +29,19 @@ describe('multi-publisher host (#122)', () => {
   it('lists every publisher with root-relative endpoints', async () => {
     const base = await servePublishers()
     const { publishers } = await (await fetch(`${base}/registry`)).json() as { publishers: { slug: string; synthetic: boolean; endpoints: Record<string, string> }[] }
-    // TODO(#117/#120): 8 publishers once the roster and v2 corpus land; the mini corpus has 3.
     expect(publishers.map(p => p.slug)).toEqual(miniCorpus.publishers.map(p => p.slug))
     for (const p of publishers) {
       expect(p.synthetic).toBe(true)
       expect(p.endpoints.search).toBe(`/w/${p.slug}/search`)
       for (const url of Object.values(p.endpoints)) expect(url.startsWith('/w/')).toBe(true)
     }
+  })
+
+  it('lists all 8 roster publishers from data/writers/, even before the v2 articles land', async () => {
+    const base = await servePublishers({ writers: undefined })
+    const { publishers } = await (await fetch(`${base}/registry`)).json() as { publishers: { slug: string }[] }
+    expect(publishers.map(p => p.slug).sort()).toEqual(readdirSync('data/writers').map(f => f.replace(/\.json$/, '')).sort())
+    expect(publishers).toHaveLength(8)
   })
 
   it('serves a discovery doc whose pubKey derives to its wallet', async () => {

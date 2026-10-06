@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { existsSync, readFileSync } from 'node:fs'
+import { loadWriterCorpus } from '../publisher/corpus.js'
 import { miniCorpus } from './fixtures/corpus-mini/index.js'
-import { buildIndex, createQueryEmbedder, embeddingKey, embedTexts, EMBEDDING_DIMS, embeddingsLive, normaliseQuery, searchIndex, SEARCH_TUNING, type EmbeddingCache } from '../publisher/search.js'
+import { buildIndex, createQueryEmbedder, loadEmbeddingCache, embeddingKey, embedTexts, EMBEDDING_DIMS, embeddingsLive, normaliseQuery, searchIndex, SEARCH_TUNING, type EmbeddingCache } from '../publisher/search.js'
 import { sha256 } from '../shared/manifest.js'
 import type { Article } from '../shared/contracts/writers.js'
 
@@ -16,7 +18,7 @@ const stubCache = (articles: Article[]): EmbeddingCache => ({
   vectors: Object.fromEntries(articles.map(a => [embeddingKey(a), { hash: sha256(a.body), vector: stubVector(`${a.title} ${a.abstract} ${a.tags.join(' ')} ${a.body}`) }])),
 })
 
-/** Mini-corpus stand-ins for the story-bible questions: TODO(#123) golden test on the v2 corpus. */
+/** Mini-corpus stand-ins for the story-bible questions; the v2 golden test is at the bottom. */
 const GOLDEN = [
   { q: 'Kestrel TSMC wafer agreement N3 allocation', publisher: 'load-factor', articleId: 'lf-kestrel-tsmc-deal' },
   { q: 'why is advanced node capacity scarce', publisher: 'load-factor', articleId: 'lf-n3-capacity' },
@@ -110,5 +112,30 @@ describe('Workers AI embedding call (#123)', () => {
     expect(calls[0][0]).toBe('https://api.cloudflare.com/client/v4/accounts/acct/ai/run/@cf/baai/bge-base-en-v1.5')
     const bad = (async () => new Response(JSON.stringify({ result: { data: [[1, 2]] } }))) as unknown as typeof fetch
     await expect(embedTexts(['a'], { token: 't', accountId: 'acct', fetch: bad })).rejects.toThrow('unexpected embedding shape')
+  })
+})
+
+// Lights up once #120 commits data/corpus/v2/articles; hybrid once `make embeddings Q=...` records query vectors.
+const V2_ARTICLES = 'data/corpus/v2/articles'
+const QUERY_VECTORS = 'tests/fixtures/query-vectors.json'
+type BibleArticle = { articleId: string; publisherSlug: string; role: string }
+const goldenCases = () => (JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: { id: string; question: string; articles: BibleArticle[] }[] })
+  .useCases.flatMap(uc => uc.articles.filter(a => a.role === 'free-source' || a.role === 'winner').map(a => ({ uc: uc.id, q: uc.question, ...a })))
+
+describe.skipIf(!existsSync(V2_ARTICLES))('golden ranking on the v2 corpus (#123)', () => {
+  it('ranks each golden FREE and PAID article in the top 5 of its publisher', async () => {
+    const corpus = await loadWriterCorpus(undefined, { allowMini: false })
+    const embeddings = loadEmbeddingCache()
+    const queryVectors = existsSync(QUERY_VECTORS) ? (JSON.parse(readFileSync(QUERY_VECTORS, 'utf8')) as { vectors: Record<string, number[]> }).vectors : undefined
+    for (const golden of goldenCases()) {
+      const articles = corpus.articles.filter(a => a.publisherSlug === golden.publisherSlug)
+      const keyword = await searchIndex(await buildIndex(articles), golden.q, 5)
+      expect(keyword.ranked.map(r => r.articleId), `${golden.uc} keyword: ${golden.articleId}`).toContain(golden.articleId)
+      const vector = queryVectors?.[normaliseQuery(golden.q)]
+      if (!vector) continue
+      const hybrid = await searchIndex(await buildIndex(articles, embeddings), golden.q, 5, vector)
+      expect(hybrid.mode).toBe('hybrid')
+      expect(hybrid.ranked.map(r => r.articleId), `${golden.uc} hybrid: ${golden.articleId}`).toContain(golden.articleId)
+    }
   })
 })

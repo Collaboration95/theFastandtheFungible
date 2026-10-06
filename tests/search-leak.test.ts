@@ -1,6 +1,8 @@
 // Gate 1 (#124): /search never returns 8 consecutive words of any paid body.
 import { afterEach, describe, expect, it } from 'vitest'
 import { once } from 'node:events'
+import { readFileSync } from 'node:fs'
+import { miniCorpus } from './fixtures/corpus-mini/index.js'
 import { createPublisherApp } from '../publisher/routes.js'
 import { loadWriterCorpus } from '../publisher/corpus.js'
 import { ABSTRACT_LEAK_WORDS, sharesRun } from '../shared/contracts/writers.js'
@@ -13,18 +15,15 @@ function rng(seed: number) {
   return () => { seed = (seed * 1103515245 + 12345) % 2 ** 31; return seed / 2 ** 31 }
 }
 
-// TODO(#118): add the story-bible questions once they land.
-const QUESTIONS = [
-  'What did Kestrel agree with TSMC and how many wafers?',
-  'Is N3 capacity tight next year?',
-  'What happened when the Bank of Japan widened the yield band?',
-  'Will Japanese life insurers bring money home?',
-  'Who is the analyst behind the Kestrel allocation claim?',
-]
+type UseCase = { question: string; clarify: { options: string[] } | null }
+const bible = JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: UseCase[] }
+// Story-bible UC questions plus one clarify-angle sub-query per option.
+const QUESTIONS = bible.useCases.flatMap(uc => [uc.question, ...(uc.clarify?.options ?? []).map(angle => `${uc.question} ${angle}`)])
 
 describe('search leak gate (#124)', async () => {
-  // Iterates loadWriterCorpus(): the mini corpus now, the v2 corpus once #120 merges.
-  const corpus = await loadWriterCorpus()
+  // Iterates loadWriterCorpus(); until #120 lands the roster has no articles, so the mini corpus stands in.
+  const loaded = await loadWriterCorpus()
+  const corpus = loaded.articles.some(a => a.tier === 'PAID') ? loaded : miniCorpus
   const paid = corpus.articles.filter(a => a.tier === 'PAID')
   const random = rng(124)
   const words = corpus.articles.flatMap(a => a.body.split(/\s+/)).filter(Boolean)
