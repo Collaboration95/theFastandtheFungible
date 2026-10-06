@@ -41,6 +41,7 @@ export default function Ask({ onAsk, busy = false, settlement, notify, onNotify,
       setError(''); setSubmitting(true)
       try { await onAsk(result.data) } catch { setError('The question could not be sent. Please try again.') } finally { setSubmitting(false) }
     }}>
+      <div className="ra-presets" role="group" aria-label="Demo questions">{DEMO_QUESTIONS.map(preset => <button key={preset.id} type="button" className={`ra-chip-opt${question === preset.text ? ' is-on' : ''}`} aria-pressed={question === preset.text} title={preset.text} disabled={disabled} onClick={() => setQuestion(preset.text)}>{preset.id} · {preset.text.length > 44 ? `${preset.text.slice(0, 42).trimEnd()}…` : preset.text}</button>)}</div>
       <label className="ra-sr" htmlFor={`${id}-q`}>Your question</label>
       <textarea id={`${id}-q`} className="ra-qbox" value={question} onChange={event => setQuestion(event.target.value)} maxLength={2000} rows={2} required disabled={disabled} placeholder="Ask about a company, a market or a claim…" aria-describedby={`${id}-consq`}
         onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit() } }} />

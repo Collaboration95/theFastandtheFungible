@@ -2,7 +2,9 @@ import { useState } from 'react'
 import type { Pace } from '../stage'
 
 /** Press "." for stage controls. Dev-only switches live here, not in the product header. */
-export default function Presenter({ pace, onPace, faults, busy, onClose }: { pace: Pace; onPace: (pace: Pace) => void; faults: boolean; busy: boolean; onClose: () => void }) {
+export interface PresenterProps { pace: Pace; onPace: (pace: Pace) => void; faults: boolean; busy: boolean; onClose: () => void; clarifyNever?: boolean; onClarifyNever?: (on: boolean) => void; onResetReputation?: () => Promise<void> }
+export default function Presenter({ pace, onPace, faults, busy, onClose, clarifyNever = false, onClarifyNever, onResetReputation }: PresenterProps) {
+  const [reset, setReset] = useState<'idle' | 'busy' | 'done' | 'failed'>('idle')
   const [armed, setArmed] = useState(false)
   const [arming, setArming] = useState(false)
   const [error, setError] = useState('')
@@ -20,6 +22,12 @@ export default function Presenter({ pace, onPace, faults, busy, onClose }: { pac
     <div className="ra-pr-row"><span className="ra-pr-label" id="ra-pace">Pace</span>
       <div className="ra-seg" role="radiogroup" aria-labelledby="ra-pace">{([['real', 'Real'], ['stage', 'Stage 1×'], ['slow', 'Stage 0.5×']] as [Pace, string][]).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={pace === value} onClick={() => onPace(value)}>{label}</button>)}</div>
       <p className="ra-note">Stage pace replays the recorded trace with a minimum time per step. Applies to the next question.</p></div>
+    {onClarifyNever && <div className="ra-pr-row"><span className="ra-pr-label">Clarifying questions</span>
+      <label className="ra-check"><input type="checkbox" checked={clarifyNever} onChange={event => onClarifyNever(event.target.checked)} /> Skip them (clarify=never)</label>
+      <p className="ra-note">The 5 s plan card still shows. Applies to the next question.</p></div>}
+    {onResetReputation && <div className="ra-pr-row"><span className="ra-pr-label">Writer reputation</span>
+      <button type="button" className="ra-btn" disabled={busy || reset === 'busy'} onClick={() => { setReset('busy'); onResetReputation().then(() => setReset('done'), () => setReset('failed')) }}>{reset === 'busy' ? 'Resetting…' : reset === 'done' ? 'Reset · every writer starts at H 0.80' : 'Reset reputation'}</button>
+      {reset === 'failed' && <p className="ra-err" role="status">Reputation reset failed.</p>}</div>}
     <div className="ra-pr-row"><span className="ra-pr-label">Fail next paid delivery</span>
       {faults ? <button type="button" className="ra-btn" disabled={arming || armed || busy} onClick={() => void arm()}>{armed ? 'Armed · next paid delivery fails once' : arming ? 'Arming…' : 'Arm the fault'}</button>
         : <p className="ra-note">Start the demo with <code>PUBLISHER_FAULTS=1</code> to enable.</p>}
