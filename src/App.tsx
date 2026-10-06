@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type PublicCandidate, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
-import { ask, createReport, getRun, retryDelivery, stop, streamRun } from './api'
+import { ask, createReport, deleteRun, getRun, listPastRuns, pinRun, retryDelivery, stop, streamRun, type PastRun } from './api'
 import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from './stage'
 import { candidateOf, favicon, leadSentence, money } from './format'
 import Layout from './components/Layout'
+import Sidebar from './components/Sidebar'
 import Modes from './components/Modes'
 import Ask from './components/Ask'
 import RunTape from './components/RunTape'
@@ -21,7 +22,7 @@ import Presenter from './components/Presenter'
 import Toasts, { type Toast } from './components/Toasts'
 
 const activeKey = 'researchagent.october.active-run'
-const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify'
+const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', navKey = 'researchagent.nav'
 const prefs = {
   get(key: string) { try { return localStorage.getItem(key) } catch { return null } },
   set(key: string, value: string) { try { localStorage.setItem(key, value) } catch { /* private mode */ } },
@@ -50,6 +51,9 @@ export default function App() {
   const [view, setView] = useState<'latest' | 'baseline'>('latest')
   const [compare, setCompare] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [navOpen, setNavOpen] = useState(() => prefs.get(navKey) !== 'rail')
+  const [why, setWhy] = useState(false)
+  const [past, setPast] = useState<PastRun[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -78,6 +82,30 @@ export default function App() {
   }, [replaying, nextId, delay])
   const shown = run && replaying ? staged(run, cursor) : run
   const finished = !!shown && isTerminal(shown) && !replaying
+  const openRun = async (id: string) => {
+    if (id === run?.runId) { setScreen('run'); return }
+    try {
+      const value = await getRun(id)
+      prefs.set(activeKey, id)
+      const url = new URL(window.location.href); url.searchParams.set('run', id); window.history.replaceState(null, '', url)
+      setPassage(undefined); setReceipt(undefined); setWork(false); setCompare(false); setView('latest'); setWhy(false); setToasts([]); setError('')
+      setCursor(Infinity); setRun(value); setScreen('run')
+    } catch { setError('That run could not be opened.') }
+  }
+  const deletePast = async (id: string) => {
+    try {
+      setPast(await deleteRun(id))
+      if (id === run?.runId) { prefs.remove(activeKey); setRun(undefined); newQuestion() }
+    } catch { setError('Stop the run before deleting it.') }
+  }
+  const newQuestion = useCallback(() => {
+    const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
+    setScreen('home'); setPassage(undefined); setWork(false)
+  }, [])
+
+  const refreshPast = useCallback(() => { void listPastRuns().then(setPast).catch(() => { /* the sidebar keeps its last list */ }) }, [])
+  const phase = run?.phase
+  useEffect(refreshPast, [refreshPast, runId, phase, run?.stopped, run?.spentMinor])
 
   const dismiss = useCallback((id: string) => setToasts(list => list.filter(toast => toast.id !== id)), [])
   const push = useCallback((toast: Toast, ttl = 0) => {
@@ -169,14 +197,15 @@ export default function App() {
       if (event.metaKey || event.ctrlKey || event.altKey || (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, dialog'))) return
       if (event.key === '.') setPresenter(open => !open)
       else if (event.key.toLowerCase() === 'w' && screen === 'run' && run) setWork(open => !open)
+      else if (event.key.toLowerCase() === 'n' && screen === 'run' && finished) newQuestion()
       else if (event.key === 'Escape') setPresenter(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [screen, run])
+  }, [screen, run, finished, newQuestion])
 
   const sendAsk = async (input: AskInput) => {
-    setSending(true); setError(''); setPassage(undefined); setCompare(false); setView('latest'); setToasts([])
+    setSending(true); setError(''); setPassage(undefined); setCompare(false); setView('latest'); setWhy(false); setToasts([])
     try {
       const created = await ask(input)
       prefs.set(activeKey, created.runId)
@@ -199,13 +228,15 @@ export default function App() {
     setNotify(on); prefs.set(notifyKey, on ? '1' : '0')
     if (on && 'Notification' in window && Notification.permission === 'default') void Notification.requestPermission()
   }
-  const labels = <Modes labels={shown?.labels} configured={health.labels} />
+  const labels = <Modes quiet labels={shown?.labels} configured={health.labels} />
+  const nav = <Sidebar runs={past} activeId={screen === 'run' ? runId : undefined} busy={screen === 'run' && !!shown && !finished} open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} onNew={newQuestion}
+    onOpenRun={id => void openRun(id)} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
   const overlays = <>
     <Toasts toasts={toasts} onDismiss={dismiss} />
     {presenter && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onClose={() => setPresenter(false)} />}
   </>
 
-  if (screen === 'home' || !shown) return <Layout labels={labels} action={run ? <button type="button" className="ra-btn" onClick={() => setScreen('run')}>Back to the last run</button> : undefined}>
+  if (screen === 'home' || !shown) return <Layout labels={labels} nav={nav}>
     <main className="ra-home-wrap">
       {error && <p className="ra-banner" role="alert">{error}</p>}
       <Ask onAsk={sendAsk} busy={sending || (!!shown && !finished)} settlement={shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'} notify={notify} onNotify={chooseNotify} />
@@ -215,9 +246,8 @@ export default function App() {
 
   const intents = shown.intents.filter(item => item.runId === shown.runId)
   const asked = runEvents(shown)[0]?.at
-  return <Layout crumb={crumb(shown.question)} labels={labels} action={<button type="button" className="ra-btn" disabled={!finished} title={finished ? undefined : 'Available when the run ends, or after Stop buying'} onClick={() => { const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url); setScreen('home'); setPassage(undefined); setWork(false) }}>New question</button>}>
+  return <Layout crumb={crumb(shown.question)} labels={labels} nav={nav}>
     <div className="ra-ws">
-      <RunTape run={shown} replaying={replaying} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
       <main className="ra-brief">
         <p className="ra-eyebrow">Question · Budget {money(shown.budgetMinor)}{asked ? ` · asked ${new Date(asked).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' })}` : ''}</p>
         <h1 className="ra-q">{shown.question}</h1>
@@ -230,14 +260,15 @@ export default function App() {
       <aside className="ra-side" aria-label="Budget and purchases">
         <Budget run={shown} />
         {[...intents].reverse().map(intent => <Purchase key={intent.intentId} run={shown} intent={intent} onRetry={id => void retry(id)} onReceipt={setReceipt} />)}
-        <DecisionPanel run={shown} />
+        <DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} />
         {!intents.length && shown.budgetMinor > 0 && !shown.decisions.length && <section className="ra-panel is-idle" aria-label="Purchases"><div className="ra-panel-h"><h2>Purchases</h2></div><p>Each purchase shows 402 → quote → settle → delivery → sha-256 here. One charge per source, even on retry.</p></section>}
         <Ledger run={shown} />
       </aside>
+      <RunTape run={shown} replaying={replaying} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
     </div>
     {passage && <Passage candidate={passage.candidate} content={getAccessibleContent(shown, passage.candidate)} citation={passage.citation} onClose={() => setPassage(undefined)} />}
     {receipt && <Receipt run={shown} receipt={receipt} onClose={() => setReceipt(undefined)} />}
-    {work && <ShowWork run={shown} onClose={() => setWork(false)} />}
+    {work && <ShowWork run={shown} configured={health.labels} onClose={() => setWork(false)} />}
     {overlays}
   </Layout>
 }

@@ -105,6 +105,19 @@ describe('visible internals', () => {
     expect(done).toMatch(/<button[^>]*disabled=""[^>]*>Run finished/)
   })
 
+  it('keeps the header quiet unless a provider fell back', () => {
+    expect(renderToStaticMarkup(<Modes quiet labels={exampleRun.labels} />)).toBe('')
+    const down = renderToStaticMarkup(<Modes quiet labels={exampleRun.labels} configured={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-chat' }} />)
+    expect(down).toContain('is-fallback')
+    expect(down).not.toContain('Publisher')
+  })
+
+  it('folds the decision round to what was bought and skipped, with Why these? to reopen it', () => {
+    const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} fold onWhy={() => {}} />)
+    for (const text of ['Considered', 'Why these?', 'WOULD BUY', 'OVER CAP']) expect(html).toContain(text)
+    expect(html).not.toContain('value = gap')
+  })
+
   it('puts plain verdicts on the surface: WOULD BUY at S$0, never a BUY', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} />)
     for (const text of ['WOULD BUY', 'OVER CAP', 'LOW VALUE', 'REWRITE', 'is over the S$1.00 per-source cap', 'Round 1']) expect(html).toContain(text)

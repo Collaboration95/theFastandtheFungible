@@ -5,8 +5,9 @@ import { isTerminal, runEvents } from '../stage'
 type State = 'done' | 'now' | 'fail' | 'skip' | 'todo'
 interface Row { key: string; title: string; meta: string; state: State; event?: TraceEvent; kind: string }
 
-const secs = (ms: number) => `${(ms / 1000).toFixed(ms < 1000 ? 2 : 1)} s`
 const clock = (ms: number) => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${(ms % 60000 / 1000).toFixed(1).padStart(4, '0')}`
+
+const SHORT: Record<string, string> = { 'Read free sources': 'Read', 'Write answer v1': 'Answer', 'Rewrite answer': 'Rewrite', 'Choose what to buy': 'Choose', 'Check again': 'Check', 'Stopped by you': 'Stopped' }
 
 /** The run as steps. Built from the trace, so a second purchase round adds rows. */
 function tapeRows(run: RunSnapshot): Row[] {
@@ -59,23 +60,19 @@ function tapeRows(run: RunSnapshot): Row[] {
   return rows
 }
 
+/** The run as one line along the bottom: what it is doing now, the steps, the clock, Stop buying and Show work. */
 export default function RunTape({ run, replaying, realDone = false, onStop, stopping, onShowWork }: { run: RunSnapshot; replaying: boolean; realDone?: boolean; onStop: () => void; stopping: boolean; onShowWork: () => void }) {
   const rows = tapeRows(run)
   const events = runEvents(run)
   const at = (event?: TraceEvent) => event ? Date.parse(event.at) : NaN
   const elapsed = events.length ? at(events.at(-1)) - at(events[0]) : 0
   const terminal = isTerminal(run)
-  return <aside className="ra-rail" aria-label="Run steps">
-    <div className="ra-rail-h"><span>Run</span>{terminal && <span className="mono" title="Real time from the first to the last event">{clock(Math.max(0, elapsed))}</span>}</div>
-    {replaying && <p className="ra-pace" title="Replaying the recorded run with a minimum time per step. Change it in the presenter menu (.)">Stage pace · replaying the recorded run</p>}
-    <ol className="ra-tape" aria-live="polite">{rows.map((row, index) => {
-      const next = rows.slice(index + 1).find(item => item.event)?.event
-      const took = row.state === 'done' && row.event && next ? at(next) - at(row.event) : NaN
-      return <li key={row.key} className={`is-${row.state}`}><i className="ra-node" aria-hidden="true" /><div><b>{row.title}</b>{row.meta && <span>{row.meta}</span>}</div><time>{Number.isFinite(took) ? secs(took) : ''}</time></li>
-    })}</ol>
-    <div className="ra-rail-foot">
-      <button type="button" className="ra-stop" onClick={onStop} disabled={terminal || stopping}>{run.stopped || run.phase === 'STOPPED' ? 'Stopped · no new purchases' : terminal ? 'Run finished' : stopping ? 'Stopping…' : replaying && realDone ? 'Skip to the end' : 'Stop buying'}</button>
-      <button type="button" className="ra-showwork" onClick={onShowWork}><span>Show work</span><kbd>W</kbd></button>
-    </div>
-  </aside>
+  const now = rows.find(row => row.state === 'now' || row.state === 'fail') ?? [...rows].reverse().find(row => row.state !== 'todo') ?? rows[0]
+  return <section className="ra-runbar" aria-label="Run progress">
+    <div className={`ra-runbar-now is-${now?.state ?? 'now'}`} aria-live="polite"><i className="ra-node" aria-hidden="true" /><div><b>{now?.title ?? 'Starting'}</b><span>{replaying ? 'Replaying the recorded run · ' : ''}{now?.meta ?? 'Opening the run…'}</span></div></div>
+    <ol className="ra-runbar-steps" aria-label="Steps">{rows.map(row => <li key={row.key} className={`is-${row.state}`} title={`${row.title}${row.meta ? ` · ${row.meta}` : ''}`}><i aria-hidden="true" /><span>{SHORT[row.title] ?? row.title}</span></li>)}</ol>
+    <span className="ra-runbar-clock mono" title="Real time from the first to the last event">{clock(Math.max(0, elapsed))}</span>
+    <button type="button" className="ra-stop" onClick={onStop} disabled={terminal || stopping}>{run.stopped || run.phase === 'STOPPED' ? 'Stopped · no new purchases' : terminal ? 'Run finished' : stopping ? 'Stopping…' : replaying && realDone ? 'Skip to the end' : 'Stop buying'}</button>
+    <button type="button" className="ra-showwork" onClick={onShowWork}><span>Show work</span><kbd>W</kbd></button>
+  </section>
 }

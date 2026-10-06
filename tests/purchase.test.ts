@@ -204,4 +204,14 @@ describe('atomic ledger and verified purchase flow', () => {
     expect(a.getRun(run.runId).grants).toHaveLength(1); expect(a.getRun(run.runId).receipts).toHaveLength(1)
     expect(p.state.posts).toBe(1)
   })
+
+  it('lists past runs, pins them, and hides a deleted run without touching its ledger rows', () => {
+    const s = store(); const a = s.createRun('first', 100); const b = s.createRun('second', 200)
+    expect(s.listPastRuns().map(run => run.runId)).toEqual([b.runId, a.runId])
+    s.setRunMeta(a.runId, { pinned: true })
+    expect(s.listPastRuns().find(run => run.runId === a.runId)?.pinned).toBe(true)
+    s.setRunMeta(b.runId, { hidden: true })
+    expect(s.listPastRuns().map(run => run.runId)).toEqual([a.runId])
+    expect(s.getRun(b.runId).question).toBe('second')
+  })
 })

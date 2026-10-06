@@ -19,6 +19,12 @@ export async function getLedger(): Promise<LedgerView> {
 export async function ask(input: Ask): Promise<RunSnapshot> {
   return RunSnapshotSchema.parse(await request('/runs', AskSchema.parse(input)))
 }
+export const PastRunSchema = z.object({ runId: z.string(), question: z.string(), phase: z.string(), stopped: z.boolean(), budgetMinor: z.number(), spentMinor: z.number(), at: z.string(), pinned: z.boolean() })
+export type PastRun = z.infer<typeof PastRunSchema>
+const pastRuns = async (response: Response) => { if (!response.ok) throw new Error(`ResearchAgent request failed (HTTP ${response.status})`); return z.array(PastRunSchema).parse(await response.json()) }
+export const listPastRuns = async () => pastRuns(await fetch('/api/runs'))
+export const pinRun = async (runId: string, pinned: boolean) => pastRuns(await fetch(`/api${runPath(runId)}/pin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pinned }) }))
+export const deleteRun = async (runId: string) => pastRuns(await fetch(`/api${runPath(runId)}`, { method: 'DELETE' }))
 export async function getRun(runId: string): Promise<RunSnapshot> {
   return RunSnapshotSchema.parse(await request(runPath(runId)))
 }

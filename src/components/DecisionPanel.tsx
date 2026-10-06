@@ -6,10 +6,10 @@ const pct = (value: number) => `${Math.round(value * 100)}%`
 
 /** What a decision model scored and what policy code did with it, in plain words.
     The full table with every probability and the engine's codes lives in Show work. */
-export default function DecisionPanel({ run }: { run: RunSnapshot }) {
+export default function DecisionPanel({ run, fold = false, onWhy }: { run: RunSnapshot; fold?: boolean; onWhy?: () => void }) {
   if (!run.decisions.length) return <section className="ra-panel is-idle" aria-label="What's worth buying"><div className="ra-panel-h"><h2>What’s worth buying</h2></div>
     <p>A decision model will score the paywalled sources against the gap. Policy code buys only what clears the bar, inside your budget.</p></section>
-  return <>{run.decisions.map((round, index) => index === 0 ? <FullRound key={round.round} run={run} round={round} /> : <LaterRound key={round.round} run={run} round={round} />)}</>
+  return <>{run.decisions.map((round, index) => index === 0 ? (fold ? <FoldedRound key={round.round} run={run} round={round} onWhy={onWhy} /> : <FullRound key={round.round} run={run} round={round} />) : <LaterRound key={round.round} run={run} round={round} />)}</>
 }
 
 function FullRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) {
@@ -31,6 +31,17 @@ function FullRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) {
       </li>
     })}</ul>
     <p className="ra-formula">value = gap × covers gap × original × (0.5 + 0.25 × credibility) · buys the best value per S$ above the bar, at most {money(run.perSourceCapMinor)} per source</p>
+  </section>
+}
+
+/** T4: once the purchase starts (or the run ends) the round tidies up to what was bought and skipped. */
+function FoldedRound({ run, round, onWhy }: { run: RunSnapshot; round: DecisionRound; onWhy?: () => void }) {
+  return <section className="ra-panel ra-decide is-fold" aria-label={`Decision round ${round.round}`}>
+    <div className="ra-panel-h"><h2>Considered {round.rows.length} paywalled source{round.rows.length === 1 ? '' : 's'}</h2>{onWhy && <button type="button" className="ra-link" onClick={onWhy}>Why these?</button>}</div>
+    <ul className="ra-mini">{round.rows.map(row => {
+      const verdict = plainVerdict(row, run)
+      return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className={verdict.tone === 'buy' || verdict.tone === 'would' ? 'is-buy' : ''}><span className="ra-row-n" title={row.candidate.title}>{row.candidate.publisher}</span><span className={`ra-price${row.candidate.price.amountMinor > run.perSourceCapMinor ? ' is-over' : ''}`}>{money(row.candidate.price.amountMinor)}</span><span className={`ra-stamp s-${verdict.tone}`}>{verdict.stamp}</span></li>
+    })}</ul>
   </section>
 }
 

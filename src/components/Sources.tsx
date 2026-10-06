@@ -43,30 +43,33 @@ function cardState(run: RunSnapshot, candidate: PublicCandidate): CardState {
 const RANK: Record<string, number> = { bought: 0, buying: 0, fail: 0, would: 1, cap: 2, skip: 3, lock: 2, read: 4, found: 4 }
 
 export interface SourcesProps { run: RunSnapshot; onOpen?: (candidate: PublicCandidate) => void }
-/** The sources strip: six cards with a state each, the rest one click away. */
+/** T5: sources in one line (initials coloured by state, the sources that matter named); View all opens the cards. */
 export default function Sources({ run, onOpen }: SourcesProps) {
   const [all, setAll] = useState(false)
   const cards = run.candidates.map(candidate => ({ candidate, state: cardState(run, candidate) })).sort((a, b) => RANK[a.state.tone] - RANK[b.state.tone])
-  const shown = all ? cards : cards.slice(0, 6)
   const read = cards.filter(card => card.state.tone === 'read').length
-  const bought = cards.filter(card => card.state.bought).length
-  const skipped = cards.filter(card => ['cap', 'skip', 'would'].includes(card.state.tone)).length
+  const skipped = cards.filter(card => ['cap', 'skip'].includes(card.state.tone)).length
+  const named = cards.filter(card => ['bought', 'buying', 'fail', 'would'].includes(card.state.tone))
+  const heads = cards.slice(0, 6)
+  const open = (candidate: PublicCandidate) => onOpen?.(candidate)
   return <section className="ra-strip" aria-label="Sources">
-    <div className="ra-strip-h"><h2>Sources</h2>{run.candidates.length === 0
-      ? <span className="ra-count">Searching publisher profiles…</span>
-      : <span className="ra-count"><span><em>{cards.length}</em> found</span><span><em>{read}</em> read</span><span className="c-b"><em>{bought}</em> bought</span><span><em>{skipped}</em> skipped</span></span>}
-      <span className="ra-note-right">Synthetic corpus · fictional</span></div>
-    <ul className={`ra-cards${all ? ' is-all' : ''}`}>
-      {run.candidates.length === 0 && Array.from({ length: 6 }, (_, index) => <li key={index} className="ra-card is-ghost" aria-hidden="true"><i /><i /><i /></li>)}
-      {shown.map(({ candidate, state }, index) => <li key={identity(candidate)} style={{ '--i': index } as CSSProperties}>
-        <button type="button" className={`ra-card${state.bought ? ' is-bought' : ''}`} disabled={!onOpen} onClick={() => onOpen?.(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`}>
+    {run.candidates.length === 0
+      ? <div className="ra-pills"><b>Sources</b><span className="ra-stack">{Array.from({ length: 6 }, (_, index) => <span key={index} className="ra-av is-ghost" aria-hidden="true" />)}</span><span className="ra-count">Searching publisher profiles…</span></div>
+      : <div className="ra-pills"><b>{cards.length} sources</b>
+        <span className="ra-stack">{heads.map(({ candidate, state }, index) => <button key={identity(candidate)} type="button" className={`ra-av st-${state.tone}`} style={{ '--i': index } as CSSProperties} disabled={!onOpen} onClick={() => open(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`} title={`${candidate.publisher} · ${state.label}`}>{initials(candidate.publisher)}</button>)}{cards.length > heads.length && <span className="ra-av more">+{cards.length - heads.length}</span>}</span>
+        <span className="ra-count"><span><em>{read}</em> read</span>{skipped > 0 && <span><em>{skipped}</em> skipped</span>}</span>
+        {named.map(({ candidate, state }) => <button key={identity(candidate)} type="button" className={`ra-pill st-${state.tone}`} disabled={!onOpen} onClick={() => open(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`}><span className="ra-mono" aria-hidden="true">{initials(candidate.publisher)}</span>{candidate.publisher}<em>{state.bought ? '✓ ' : ''}{state.label}</em></button>)}
+        <button type="button" className="ra-link ra-viewall" onClick={() => setAll(!all)} aria-expanded={all}>{all ? 'Hide' : 'View all'}</button>
+        <span className="ra-note-right">Synthetic corpus · fictional</span></div>}
+    {all && <ul className="ra-cards is-all">
+      {cards.map(({ candidate, state }, index) => <li key={identity(candidate)} style={{ '--i': index } as CSSProperties}>
+        <button type="button" className={`ra-card${state.bought ? ' is-bought' : ''}`} disabled={!onOpen} onClick={() => open(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`}>
           <span className="ra-card-top"><span className="ra-mono" aria-hidden="true">{initials(candidate.publisher)}</span><span className="ra-card-p">{candidate.publisher}</span></span>
           <span className="ra-card-t">{candidate.title}</span>
           <span className={`ra-card-s st-${state.tone}`}>{state.tone === 'read' || state.bought ? '✓ ' : ''}{state.label}</span>
         </button>
       </li>)}
-      {cards.length > 6 && <li><button type="button" className="ra-more" onClick={() => setAll(!all)} aria-expanded={all}>{all ? 'Fewer' : `All ${cards.length}`}</button></li>}
-    </ul>
+    </ul>}
   </section>
 }
 const initials = (name: string) => name.split(/\s+/).filter(word => /^[A-Z]/.test(word)).slice(0, 2).map(word => word[0]).join('') || name.slice(0, 2).toUpperCase()
