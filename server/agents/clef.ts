@@ -30,7 +30,10 @@ export function parseClefPaidRelevance(payload: unknown): { observed: number } {
 }
 export const clefQuestions = {
   paid: { addresses_gap: { type: 'noul', instructions: 'The purchased passages contain evidence that directly addresses the open gap.' } },
-  round: { gap_material: { type: 'noul', instructions: 'Resolving the open gap could change the conclusion of the answer.' } },
+  // Question-centred (8 Oct live tuning). The displayed conclusion is the verified claim list (citations.ts), so asking whether
+  // the gap "could change the conclusion" scored on-question gaps 0.07 (UC3) and 0.11 (UC2); this wording scores them 0.53 and 0.78.
+  // A gap's value still needs a candidate that addresses it, is original and credible, times trust (decision.ts).
+  round: { gap_material: { type: 'noul', instructions: 'The open gap is part of what the question asks.' } },
   candidate: {
     addresses_gap: { type: 'noul', instructions: "The candidate's public abstract and tags indicate it contains new evidence that directly addresses the open gap." },
     originality: { type: 'choice', instructions: 'Classify the candidate evidence relative to the listed already-read sources.', criteria: { original: 'Original reporting or primary data.', rewrite: 'A rewrite, syndication or summary of another listed source.', overlap: 'Mostly repeats what the already-read sources say.' } },

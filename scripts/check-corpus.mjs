@@ -49,9 +49,13 @@ export function checkCorpus(root) {
   // Claims the publisher lists for other PAID articles are derived from CLAIM_KINDS itself (publisher/manifest.ts), so they hold by construction.
 
   // Gate 1: a PAID abstract states no dated figure, no numeric series and no golden fact.
+  const freeText = corpus.articles.filter(x => x.tier === 'FREE').map(x => x.body).join('\n')
   for (const a of corpus.articles.filter(x => x.tier === 'PAID')) {
     if (sharesRun(a.title, a.body)) problems.push(`${a.articleId}: title shares 8+ consecutive words with the body`)
     if (CLAIM_KINDS['dated-figure'](a.abstract) || CLAIM_KINDS['numeric-series'](a.abstract)) problems.push(`${a.articleId}: abstract states figures`)
+    if (CLAIM_KINDS['dated-figure'](a.title) || CLAIM_KINDS['numeric-series'](a.title)) problems.push(`${a.articleId}: title states figures`)
+    // A title is public in every search hit: it may quote a figure only if a FREE source already states it.
+    for (const n of needles) if (/\d/.test(n) && a.title.includes(n) && !freeText.includes(n)) problems.push(`${a.articleId}: title leaks "${n}"`)
     for (const n of needles) if (/\d/.test(n) && a.abstract.includes(n)) problems.push(`${a.articleId}: abstract leaks "${n}"`)
   }
   return problems

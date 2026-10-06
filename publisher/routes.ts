@@ -70,6 +70,8 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   let registry = new Map<string, PublisherEntry>()
   const env = config.env ?? process.env
   const embedder = config.embedder ?? (embeddingsLive(env) ? createQueryEmbedder() : undefined)
+  // Live only: one warm-up call at startup, so the first question doesn't lose hybrid search to a cold-start timeout.
+  if (!config.embedder && embedder) void embedder('warm-up').catch(() => undefined)
   const writersReady = Promise.resolve(config.writers ?? loadWriterCorpus())
     .then(corpus => buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? loadEmbeddingCache() }))
     .then(built => { registry = built })
