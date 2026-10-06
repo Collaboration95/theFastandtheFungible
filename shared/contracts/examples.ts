@@ -1,9 +1,9 @@
 import type { Answer, ContentEnvelope, PublicCandidate, RunSnapshot } from './index.js'
-/** Demo use cases (D16). Placeholders until the corpus story bible (#118) locks the wording. */
+/** Demo use cases (D16). Wording locked by the corpus story bible (data/corpus/v2/story-bible.json). */
 export const DEMO_QUESTIONS = [
-  { id: 'UC1', text: 'What happened to Japanese government bond yields after the BoJ widened its yield-curve band?' },
-  { id: 'UC2', text: "What do analysts expect from Kestrel Semiconductor's latest deal with TSMC?" },
-  { id: 'UC3', text: "Is AlphaLeak's claim about Kestrel Semiconductor's TSMC allocation backed by evidence?" },
+  { id: 'UC1', text: 'What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?' },
+  { id: 'UC2', text: "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?" },
+  { id: 'UC3', text: "Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?" },
 ] as const
 const LEGACY_QUESTION = "Can Vertex Compute's announced 600 MW Johor–Singapore expansion actually be operating by 2028?"
 export const exampleCandidate: PublicCandidate = { profileId: 'public-records', resourceId: 'example-free', version: 'v1', title: 'Synthetic demand record', publisher: 'Fictional Public Records', preview: 'A synthetic primary record of contracted demand.', price: { amountMinor: 0, currency: 'SGD' }, family: 'demand-record', facets: ['demand'], authority: 2, tier: 'FREE', license: { kind: 'SYNTHETIC', attribution: 'ResearchAgent fictional demo corpus' } }
