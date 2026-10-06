@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { loadWriterCorpus } from '../publisher/corpus.js'
 import { miniCorpus } from './fixtures/corpus-mini/index.js'
-import { buildIndex, createQueryEmbedder, loadEmbeddingCache, embeddingKey, embedTexts, EMBEDDING_DIMS, embeddingsLive, normaliseQuery, searchIndex, SEARCH_TUNING, type EmbeddingCache } from '../publisher/search.js'
+import { buildIndex, createQueryEmbedder, loadEmbeddingCache, embeddingKey, embeddingText, embedTexts, EMBEDDING_DIMS, embeddingsLive, normaliseQuery, searchIndex, SEARCH_TUNING, type EmbeddingCache } from '../publisher/search.js'
 import { sha256 } from '../shared/manifest.js'
 import type { Article } from '../shared/contracts/writers.js'
 
@@ -15,7 +15,7 @@ function stubVector(text: string, dims = 64): number[] {
 }
 const stubCache = (articles: Article[]): EmbeddingCache => ({
   model: 'stub', dims: 64,
-  vectors: Object.fromEntries(articles.map(a => [embeddingKey(a), { hash: sha256(a.body), vector: stubVector(`${a.title} ${a.abstract} ${a.tags.join(' ')} ${a.body}`) }])),
+  vectors: Object.fromEntries(articles.map(a => [embeddingKey(a), { hash: sha256(embeddingText(a)), vector: stubVector(`${a.title} ${a.abstract} ${a.tags.join(' ')} ${a.body}`) }])),
 })
 
 /** Mini-corpus stand-ins for the story-bible questions; the v2 golden test is at the bottom. */

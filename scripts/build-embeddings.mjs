@@ -1,6 +1,6 @@
 // Builds the article embedding cache (#123): `make embeddings`. Needs CLOUDFLARE_API_TOKEN
 // (and CLOUDFLARE_ACCOUNT_ID if the token sees several accounts). Only articles whose
-// articleId@version + body hash are not cached yet are embedded; stale entries are dropped.
+// articleId@version + embedded-text hash (title, abstract, tags, body head) are not cached yet are embedded; stale entries are dropped.
 // Optional: --queries <file.json> (array of strings, or { queries: [...] }) also records
 // query vectors to tests/fixtures/query-vectors.json for the golden-ranking test.
 import 'dotenv/config'
@@ -28,12 +28,12 @@ const vectors = {}
 const missing = []
 for (const article of corpus.articles) {
   const vector = cachedVector(previous, article)
-  if (vector) vectors[embeddingKey(article)] = { hash: sha256(article.body), vector }
+  if (vector) vectors[embeddingKey(article)] = { hash: sha256(embeddingText(article)), vector }
   else missing.push(article)
 }
 console.log(`${corpus.articles.length} articles · ${missing.length} to embed with ${EMBEDDING_MODEL}`)
 const fresh = await embedAll(missing.map(embeddingText))
-missing.forEach((article, i) => { vectors[embeddingKey(article)] = { hash: sha256(article.body), vector: fresh[i] } })
+missing.forEach((article, i) => { vectors[embeddingKey(article)] = { hash: sha256(embeddingText(article)), vector: fresh[i] } })
 const sorted = Object.fromEntries(Object.entries(vectors).sort(([a], [b]) => a.localeCompare(b)))
 writeFileSync(cacheFile, `${JSON.stringify({ model: EMBEDDING_MODEL, dims: EMBEDDING_DIMS, vectors: sorted })}\n`)
 console.log(`Wrote ${Object.keys(sorted).length} vectors to data/corpus/v2/embeddings.json`)
