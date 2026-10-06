@@ -46,11 +46,11 @@ async function publisher() {
   const server: Server = createServer((req, res) => {
     const url = new URL(req.url!, 'http://fixture')
     const send = (status: number, value: unknown, headers: Record<string, string> = {}) => { res.writeHead(status, { 'Content-Type': 'application/json', ...headers }); res.end(JSON.stringify(value)) }
-    if (!url.pathname.endsWith('/content')) return send(404, {})
+    if (!/^\/w\/[^/]+\/articles\/[^/]+$/.test(url.pathname)) return send(404, {})
     const signature = req.headers['payment-signature']
     if (!signature) {
       const amount = String(state.price * 1000)
-      const invoiceId = invoiceIdFor({ quoteId: `q${quotes.size}`, articleId: state.articleId || decodeURIComponent(url.pathname.split('/')[5]), version: 'v1', manifestRoot: state.root, amount, payTo: state.payTo })
+      const invoiceId = invoiceIdFor({ quoteId: `q${quotes.size}`, articleId: state.articleId || decodeURIComponent(url.pathname.split('/').at(-1)!), version: 'v1', manifestRoot: state.root, amount, payTo: state.payTo })
       quotes.set(ledgerInvoiceId(invoiceId), invoiceId)
       return send(402, { error: 'Payment required' }, { 'PAYMENT-REQUIRED': encodeHeader('PAYMENT-REQUIRED', { x402Version: 2, resource: { url: url.pathname, description: SIMULATED_LABEL }, accepts: [{ scheme: 'exact', network: 'xrpl:1', amount, asset: 'XRP', payTo: state.payTo, maxTimeoutSeconds: 60, extra: { invoiceId, areFeesSponsored: false } }] }) })
     }
@@ -64,7 +64,7 @@ async function publisher() {
     if (!settled.has(hash)) { settled.add(hash); state.charges++ }
     if (state.loseSettlementResponse) { state.loseSettlementResponse = false; req.socket.destroy(); return }
     if (state.failDelivery) { state.failDelivery = false; return send(503, { body: 'PAID_CANARY error trap' }, response(true)) }
-    send(200, { ...state.delivery, articleId: state.delivery.articleId ?? decodeURIComponent(url.pathname.split('/')[5]) }, response(true))
+    send(200, { ...state.delivery, articleId: state.delivery.articleId ?? decodeURIComponent(url.pathname.split('/').at(-1)!) }, response(true))
   })
   await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve) })
   cleanup.push(() => new Promise<void>((resolve, reject) => { server.closeAllConnections(); server.close(error => error ? reject(error) : resolve()) }))

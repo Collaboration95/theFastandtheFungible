@@ -5,7 +5,6 @@ import type { AddressInfo } from 'node:net'
 import { afterEach, describe, expect, it } from 'vitest'
 import { Wallet, decode, hashes } from 'xrpl'
 import { createPublisherApp } from '../publisher/routes.js'
-import { loadCorpus } from '../publisher/corpus.js'
 import { Store } from '../server/store.js'
 import { PurchaseManager } from '../server/purchases.js'
 import { PublisherClient } from '../server/publisher-client.js'
@@ -18,7 +17,7 @@ import { testnetUrl, type Ledger } from '../shared/xrpl.js'
 import { encodeHeader, ledgerInvoiceId } from '../shared/x402.js'
 import { required } from './fixtures/x402-payer.js'
 
-// Throwaway Testnet test seeds: legacy profiles are keyed like writer publishers and sign their manifests.
+// Throwaway Testnet test seeds for the two paid publishers (Load Factor and AlphaLeak); each signs its manifests.
 const GRID_SEED = Wallet.generate().seed!, SUPPLIER_SEED = Wallet.generate().seed!
 const GRID_WALLET = Wallet.fromSeed(GRID_SEED).classicAddress, SUPPLIER_WALLET = Wallet.fromSeed(SUPPLIER_SEED).classicAddress
 import { PublicCandidateSchema, type PublicCandidate } from '../shared/contracts/index.js'
@@ -61,9 +60,9 @@ afterEach(async () => { for (const fn of cleanup.splice(0).reverse()) await fn()
 async function setup() {
   const dir = mkdtempSync(join(tmpdir(), 'xrpl-test-')); cleanup.push(() => rmSync(dir, { recursive: true, force: true }))
   const chain = fakeLedger()
-  const app = createPublisherApp({ journal: join(dir, 'publisher.db'), rail: 'xrpl-testnet', ledger: chain.ledger, corpus: loadCorpus(''), facilitatorTiming: { pollMs: 5, timeoutMs: 100 },
-    // The ledger view lists paid publishers from the writer registry (#138); a throwaway test seed keys Load Factor.
-    writers: miniCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_GRID_RESEARCH_SEED: GRID_SEED, XRPL_PUBLISHER_SUPPLIER_WIRE_SEED: SUPPLIER_SEED } })
+  const app = createPublisherApp({ journal: join(dir, 'publisher.db'), rail: 'xrpl-testnet', ledger: chain.ledger, facilitatorTiming: { pollMs: 5, timeoutMs: 100 },
+    // The ledger view lists paid publishers from the writer registry (#138).
+    writers: alphaLeakCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: GRID_SEED, XRPL_PUBLISHER_ALPHALEAK_SEED: SUPPLIER_SEED } })
   await app.locals.ready
   await app.locals.writersReady
   const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
@@ -73,11 +72,13 @@ async function setup() {
   const store = new Store(join(dir, 'app.db')); cleanup.push(() => store.close())
   const wallet = Wallet.generate()
   const payer = new XrplPayer(chain.ledger, wallet, { pollMs: 5, timeoutMs: 200 })
-  const candidate = PublicCandidateSchema.parse((await client.search('grid-research', 'grid')).find(c => c.resourceId === 'grid-operators-report'))
+  const candidate = PublicCandidateSchema.parse(await candidateFrom(baseUrl, PAID))
   const run = store.createRun('Will it be operating by 2028?', 200)
   return { chain, client, store, payer, wallet, candidate, run, baseUrl, dir }
 }
-const CONTENT = '/v1/profiles/grid-research/resources/grid-operators-report/versions/v1/content'
+const PAID = miniCorpus.articles.find(a => a.tier === 'PAID')!
+const CONTENT = `/w/${PAID.publisherSlug}/articles/${PAID.articleId}`
+const DROPS = String(PAID.priceMinor * 1000)
 /** Resend the buyer's persisted blob, exactly as reconcile() would. */
 function resend(s: Awaited<ReturnType<typeof setup>>, intentId: string) {
   const intent = s.store.getIntent(intentId)!
@@ -94,26 +95,26 @@ describe('XRPL Testnet settlement rail', () => {
     expect(challenge.status).toBe(402)
     const header = required(challenge)
     expect(header.resource.description).toContain('XRPL TESTNET · no real value')
-    expect(header.accepts[0]).toMatchObject({ network: 'xrpl:1', asset: 'XRP', amount: '80000', payTo: GRID_WALLET })
-    expect(await challenge.text()).not.toContain('Grid Operators Report body')
+    expect(header.accepts[0]).toMatchObject({ network: 'xrpl:1', asset: 'XRP', amount: DROPS, payTo: GRID_WALLET })
+    expect(await challenge.text()).not.toContain(PAID.passages[0].text)
 
     const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer))
     expect(intent.status).toBe('VERIFIED')
     expect(s.chain.txs.size).toBe(1)
     const [[hash, onLedger]] = [...s.chain.txs]
     expect(onLedger.tx_json.LastLedgerSequence).toBe(s.store.getSubmission(intent.intentId)!.lastLedgerSequence)
-    expect(onLedger.tx_json).toMatchObject({ TransactionType: 'Payment', Account: s.wallet.classicAddress, Destination: GRID_WALLET, Amount: '80000', InvoiceID: intent.quote!.quoteHash.toUpperCase() })
+    expect(onLedger.tx_json).toMatchObject({ TransactionType: 'Payment', Account: s.wallet.classicAddress, Destination: GRID_WALLET, Amount: DROPS, InvoiceID: intent.quote!.quoteHash.toUpperCase() })
     const run = s.store.getRun(s.run.runId)
-    expect(run.spentMinor).toBe(80)
-    expect(run.receipts[0]).toMatchObject({ label: 'XRPL TESTNET · no real value', xrpl: { txHash: hash, payTo: GRID_WALLET, amountDrops: '80000', payer: s.wallet.classicAddress, explorerUrl: `https://testnet.xrpl.org/transactions/${hash}` } })
+    expect(run.spentMinor).toBe(PAID.priceMinor)
+    expect(run.receipts[0]).toMatchObject({ label: 'XRPL TESTNET · no real value', xrpl: { txHash: hash, payTo: GRID_WALLET, amountDrops: DROPS, payer: s.wallet.classicAddress, explorerUrl: `https://testnet.xrpl.org/transactions/${hash}` } })
     expect(run.intents[0].txHash).toBe(hash)
-    expect(run.events.filter(e => e.type === 'XRPL').map(e => e.label).join(' ')).toMatch(/Signed 0\.08 XRP.*Validated in ledger.*Publisher verified/)
+    expect(run.events.filter(e => e.type === 'XRPL').map(e => e.label).join(' ')).toMatch(/Signed 0\.06 XRP.*Validated in ledger.*Publisher verified/)
     expect(JSON.stringify(run)).not.toContain(s.wallet.seed!)
   })
 
   it('pays each publisher at its own wallet and refuses a payee the policy did not evaluate', async () => {
     const s = await setup()
-    const payees = await Promise.all(['/v1/profiles/supplier-wire/resources/northstar-wire/versions/v1/content', CONTENT].map(async path => required(await fetch(s.baseUrl + path)).accepts[0].payTo))
+    const payees = await Promise.all([`/w/alphaleak/articles/${alphaLeakArticle.articleId}`, CONTENT].map(async path => required(await fetch(s.baseUrl + path)).accepts[0].payTo))
     expect(payees).toEqual([SUPPLIER_WALLET, GRID_WALLET])
     const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer), 'redirected', { ...s.candidate, wallet: SUPPLIER_WALLET })
     expect(intent).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('payee differs') })
@@ -155,8 +156,8 @@ describe('XRPL Testnet settlement rail', () => {
     const s = await setup()
     const accepted = required(await fetch(s.baseUrl + CONTENT)).accepts[0]
     const quoteHash = ledgerInvoiceId(accepted.extra.invoiceId)
-    s.store.reserveIntent({ runId: s.run.runId, intentId: 'tampered', profileId: 'grid-research', resourceId: 'grid-operators-report', version: 'v1', amountMinor: 80, status: 'QUOTED', paidPath: CONTENT, quote: {
-      runId: s.run.runId, intentId: 'tampered', profileId: 'grid-research', resourceId: 'grid-operators-report', version: 'v1', quoteId: accepted.extra.invoiceId, quoteHash, amountMinor: 80, currency: 'SGD',
+    s.store.reserveIntent({ runId: s.run.runId, intentId: 'tampered', profileId: PAID.publisherSlug, resourceId: PAID.articleId, version: 'v1', amountMinor: PAID.priceMinor, status: 'QUOTED', paidPath: CONTENT, quote: {
+      runId: s.run.runId, intentId: 'tampered', profileId: PAID.publisherSlug, resourceId: PAID.articleId, version: 'v1', quoteId: accepted.extra.invoiceId, quoteHash, amountMinor: PAID.priceMinor, currency: 'SGD',
       expiresAt: new Date(Date.now() + 60_000).toISOString(), contentDigest: JSON.parse(accepted.extra.invoiceId).manifestRoot,
       payment: { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', payTo: accepted.payTo, amountDrops: '8000000', invoiceId: quoteHash },
     } })
@@ -183,7 +184,7 @@ describe('XRPL Testnet settlement rail', () => {
     const s = await setup()
     s.chain.state.record = false
     expect((await buy(s, new PurchaseManager(s.store, s.client, s.payer))).status).toBe('SUBMITTING')
-    expect(s.store.getRun(s.run.runId).reservedMinor).toBe(80)
+    expect(s.store.getRun(s.run.runId).reservedMinor).toBe(PAID.priceMinor)
     s.chain.state.ledger += 50 // past LastLedgerSequence (current + 20)
     await new PurchaseManager(s.store, s.client, s.payer).reconcile()
     const run = s.store.getRun(s.run.runId)
@@ -197,12 +198,12 @@ describe('XRPL Testnet settlement rail', () => {
     await buy(s, new PurchaseManager(s.store, s.client, s.payer))
     s.chain.state.ledger += 50; s.chain.state.sequenceUsedElsewhere = 1
     await new PurchaseManager(s.store, s.client, s.payer).reconcile()
-    expect(s.store.getRun(s.run.runId)).toMatchObject({ reservedMinor: 80, intents: [{ status: 'SUBMITTING' }] })
+    expect(s.store.getRun(s.run.runId)).toMatchObject({ reservedMinor: PAID.priceMinor, intents: [{ status: 'SUBMITTING' }] })
   })
 
   it('refuses to settle simulated while the run is labelled XRPL', async () => {
     const s = await setup()
-    const simulated = createPublisherApp({ journal: join(s.dir, 'simulated.db'), rail: 'simulated', corpus: loadCorpus('') })
+    const simulated = createPublisherApp({ journal: join(s.dir, 'simulated.db'), rail: 'simulated', writers: alphaLeakCorpus, env: {} })
     await simulated.locals.ready
     const server = simulated.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
     cleanup.push(() => new Promise(resolve => server.close(resolve)))
@@ -227,8 +228,8 @@ describe('XRPL Testnet settlement rail', () => {
     const response = await fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/api/ledger`)
     const view = await response.json()
     expect(view.rail).toBe('xrpl-testnet')
-    expect(view.wallets.map((w: { name: string }) => w.name).sort()).toEqual(['Load Factor', 'ResearchAgent (buyer)'])
-    expect(new Set(view.wallets.map((w: { address: string }) => w.address)).size).toBe(2)
+    expect(view.wallets.map((w: { name: string }) => w.name).sort()).toEqual(['AlphaLeak', 'Load Factor', 'ResearchAgent (buyer)'])
+    expect(new Set(view.wallets.map((w: { address: string }) => w.address)).size).toBe(3)
     expect(view.wallets[0]).toMatchObject({ address: s.wallet.classicAddress, balanceDrops: '100000000' })
     expect(JSON.stringify(view)).not.toContain(s.wallet.seed!)
   })
@@ -236,7 +237,7 @@ describe('XRPL Testnet settlement rail', () => {
   it('gate-5: a failed proof is challenged and refunded on the Testnet once, verified by the buyer on the ledger, labelled XRPL TESTNET', async () => {
     const chain = fakeLedger()
     const alphaSeed = Wallet.generate().seed!
-    const app = createPublisherApp({ journal: ':memory:', rail: 'xrpl-testnet', ledger: chain.ledger, corpus: [], facilitatorTiming: { pollMs: 5, timeoutMs: 100 }, writers: alphaLeakCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_ALPHALEAK_SEED: alphaSeed } })
+    const app = createPublisherApp({ journal: ':memory:', rail: 'xrpl-testnet', ledger: chain.ledger, facilitatorTiming: { pollMs: 5, timeoutMs: 100 }, writers: alphaLeakCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_ALPHALEAK_SEED: alphaSeed } })
     await app.locals.ready; await app.locals.writersReady
     const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
     cleanup.push(() => new Promise(resolve => server.close(() => { app.locals.journal.close(); resolve(undefined) })))
@@ -261,7 +262,7 @@ describe('XRPL Testnet settlement rail', () => {
 
   it('gate-3: a matching payment from a wallet other than the paid publisher is not a refund (CHALLENGE_REFUSED)', async () => {
     const chain = fakeLedger()
-    const app = createPublisherApp({ journal: ':memory:', rail: 'xrpl-testnet', ledger: chain.ledger, corpus: [], facilitatorTiming: { pollMs: 5, timeoutMs: 100 }, writers: alphaLeakCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_ALPHALEAK_SEED: Wallet.generate().seed! } })
+    const app = createPublisherApp({ journal: ':memory:', rail: 'xrpl-testnet', ledger: chain.ledger, facilitatorTiming: { pollMs: 5, timeoutMs: 100 }, writers: alphaLeakCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_ALPHALEAK_SEED: Wallet.generate().seed! } })
     await app.locals.ready; await app.locals.writersReady
     const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
     cleanup.push(() => new Promise(resolve => server.close(() => { app.locals.journal.close(); resolve(undefined) })))

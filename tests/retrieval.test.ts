@@ -10,7 +10,7 @@ const cleanups: (() => Promise<void>)[] = []
 afterEach(async () => { vi.restoreAllMocks(); for (const cleanup of cleanups.splice(0)) await cleanup() })
 
 async function serve() {
-  const app = createPublisherApp({ secret: 'retrieval-test', journal: ':memory:', rail: 'simulated', corpus: [], writers: alphaLeakCorpus, env: {} })
+  const app = createPublisherApp({ secret: 'retrieval-test', journal: ':memory:', rail: 'simulated', writers: alphaLeakCorpus, env: {} })
   await app.locals.ready
   await app.locals.writersReady
   const server = app.listen(0, '127.0.0.1')

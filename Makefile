@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus
+.PHONY: help setup run live fault reset check verify doctor keys ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -20,10 +20,6 @@ run: ## fixture demo (offline, no keys)
 
 live: ## live demo: DeepSeek writes, Clef decides (runs key preflight first)
 	npm run demo:live
-
-variant: ## fixture demo on a corpus variant: make variant V=open-sufficient|contradiction|unchanged|injection
-	@test -n "$(V)" || (echo "usage: make variant V=open-sufficient" && exit 1)
-	CORPUS_VARIANT=$(V) npm run demo
 
 fault: ## fixture demo with the "fail next delivery" toggle
 	PUBLISHER_FAULTS=1 npm run demo

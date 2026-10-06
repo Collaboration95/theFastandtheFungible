@@ -7,7 +7,6 @@ import type { PublisherClient, RegistryPublisher } from '../publisher-client.js'
 import { resolveCitation, validateAnswer } from './citations.js'
 import { isLlmConfigured, llmProvider, researchModel, streamJson } from './llm.js'
 
-const words = (text: string) => new Set(text.toLowerCase().match(/[a-z0-9]+/g) ?? [])
 
 /** Retrieval knobs (#138), tuned on the story-bible questions. */
 export const RETRIEVAL = {
@@ -100,8 +99,6 @@ async function retrieveSources(client: PublisherClient, question: string, plan?:
   })
   recordStep('manifest-verify', { paidHits: settled.reduce((n, r) => n + (r.status === 'fulfilled' ? r.value.filter(h => h.tier === 'PAID').length : 0), 0) }, { dropped })
   const hits = markRewrites(fuse(lists))
-  // TODO(#156): the legacy /v1 Vertex search is kept only while its scenarios exist; delete it with the Vertex corpus.
-  if (!hits.length && !dropped.length) return { ...(await retrieveLegacy(client, question)), hits: [], dropped, unavailable: [...unavailable] }
   const bySlug = new Map(publishers.map(p => [p.slug, p]))
   const chosen = [...hits.filter(h => h.tier === 'FREE').slice(0, RETRIEVAL.freeReads), ...hits.filter(h => h.tier === 'PAID').slice(0, RETRIEVAL.paidToDecide)]
   const kept = hits.filter(h => chosen.includes(h))
@@ -109,21 +106,6 @@ async function retrieveSources(client: PublisherClient, question: string, plan?:
   const contents = reads.flatMap(r => r.status === 'fulfilled' ? [r.value] : [])
   const search = !kept.length ? undefined : kept.some(h => h.searchMode === 'keyword') ? SEARCH_LABELS[1] : SEARCH_LABELS[0]
   return { candidates: kept.map(h => toCandidate(h, bySlug.get(h.publisherSlug)!)), contents, hits: kept, dropped, ...(search ? { search } : {}), unavailable: [...unavailable] }
-}
-async function retrieveLegacy(client: PublisherClient, question: string): Promise<{ candidates: PublicCandidate[]; contents: ContentEnvelope[] }> {
-  const profiles = await client.profiles()
-  const results = await Promise.all(profiles.map(profile => client.search(profile.id, question)))
-  const unique = new Map<string, PublicCandidate>()
-  for (const c of results.flat()) unique.set(JSON.stringify([c.profileId, c.resourceId, c.version]), c)
-  const query = words(question)
-  const score = (c: PublicCandidate) => [...words(`${c.title} ${c.preview} ${c.facets.join(' ')}`)].filter(w => query.has(w)).length
-  const candidates = [...unique.values()].sort((a, b) => score(b) - score(a))
-  const contents = await Promise.all(candidates.filter(c => c.tier === 'FREE').map(async c => {
-    const { content } = await client.read(c)
-    if (content.resourceId !== c.resourceId || content.version !== c.version || content.profileId !== c.profileId) throw new Error('Publisher content binding mismatch')
-    return content
-  }))
-  return { candidates, contents }
 }
 
 // Source instructions are data, never agent commands or evidence for an answer.

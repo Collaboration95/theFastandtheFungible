@@ -24,6 +24,5 @@ export default function Presenter({ pace, onPace, faults, busy, onClose }: { pac
       {faults ? <button type="button" className="ra-btn" disabled={arming || armed || busy} onClick={() => void arm()}>{armed ? 'Armed · next paid delivery fails once' : arming ? 'Arming…' : 'Arm the fault'}</button>
         : <p className="ra-note">Start the demo with <code>PUBLISHER_FAULTS=1</code> to enable.</p>}
       {error && <p className="ra-err" role="status">{error}</p>}</div>
-    <div className="ra-pr-row"><span className="ra-pr-label">Corpus variant (restart)</span><code>CORPUS_VARIANT=open-sufficient npm run demo</code><p className="ra-note">Also: contradiction, unchanged, injection.</p></div>
   </section>
 }

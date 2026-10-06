@@ -26,5 +26,5 @@ describe('site leak gate (#146)', async () => {
     expect(html).toContain(paid[0].abstract.replace(/&/g, '&amp;'))
     expect(html).toContain('402 · agents pay')
     expect(html).not.toContain('id="p-')
-  })
+  }, 30_000) // Every page of the full corpus: the 5 s default is too tight on a loaded machine.
 })

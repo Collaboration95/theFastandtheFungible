@@ -35,9 +35,10 @@ test('S$2 story at stage pace, Show work, exact passage, PDF, then S$0 at real p
   const file = await (await download).path()
   expect(file).not.toBeNull()
   expect((await readFile(file!)).subarray(0, 5).toString()).toBe('%PDF-')
-  const corpus = await page.request.get('/data/corpus/resources.json')
+  // The web server never serves corpus files, paid bodies included (D18: the v2 writer corpus).
+  const corpus = await page.request.get('/data/corpus/v2/articles/notfinancialtimes/notft-kestrel-tsmc-deal-margins.json')
   expect(corpus.status()).toBe(403)
-  expect(await corpus.text()).not.toContain('240 of the 600')
+  expect(await corpus.text()).not.toContain('55.2%')
 
   // Presenter menu: real pace for the next question.
   await page.getByRole('button', { name: 'New question', exact: true }).click()
