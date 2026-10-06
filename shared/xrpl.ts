@@ -75,3 +75,22 @@ export const SIMULATED_PAYER_LABEL = 'SIMULATED payer key · test only'
 export const simulatedPayerWallet = () => Wallet.fromEntropy(createHash('sha256').update(SIMULATED_PAYER_SALT).digest().subarray(0, 16), { algorithm: ECDSA.ed25519 })
 /** The simulated rail's ledger clock (one "ledger" per 4 s), so LastLedgerSequence expiry works the same offline. */
 export const simulatedLedgerIndex = (now = Date.now()) => Math.floor(now / 4000)
+
+/**
+ * Signs an XRP Payment from `wallet` (the publisher's refund, D5). With a ledger: live Sequence and a
+ * capped fee, LastLedgerSequence = current + 20. Without one (SIMULATED rail): no network, the simulated
+ * ledger clock. The caller persists the blob write-once before submitting it.
+ */
+export async function signPayment(wallet: Wallet, payment: { Destination: string; Amount: string; InvoiceID: string }, ledger?: Ledger): Promise<{ txHash: string; txBlob: string; lastLedgerSequence: number }> {
+  let fields = { Sequence: 1, Fee: '12', LastLedgerSequence: simulatedLedgerIndex() + 20 }
+  if (ledger) {
+    const [info, current, fee] = await Promise.all([
+      ledger.request({ command: 'account_info', account: wallet.classicAddress, ledger_index: 'current' }),
+      ledger.request({ command: 'ledger_current' }),
+      ledger.request({ command: 'fee' }),
+    ])
+    fields = { Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(2000, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), LastLedgerSequence: Number(current.result.ledger_current_index) + 20 }
+  }
+  const signed = wallet.sign({ TransactionType: 'Payment', Account: wallet.classicAddress, ...payment, ...fields })
+  return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence: fields.LastLedgerSequence }
+}

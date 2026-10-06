@@ -6,7 +6,7 @@ import type { Grant } from '../../shared/contracts/index.js'
 // Poisoned responses prove that the process oracle would reject actual leaks;
 // passing end-to-end runs alone cannot establish that the detector is effective.
 describe('premium leak oracle', () => {
-  it('rejects raw/JSON-escaped paid spans and per-resource body canaries without grants', async () => {
+  it('gate-1: rejects raw/JSON-escaped paid spans and per-resource body canaries without grants', async () => {
     const resources = await loadCorpus()
     for (const resource of resources.filter(c => c.tier === 'PAID')) {
       for (const marker of [canary(resource.resourceId), ...resource.spans.map(s => s.text)]) {

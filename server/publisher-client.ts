@@ -4,6 +4,7 @@ import { PassageSchema } from '../shared/contracts/writers.js'
 import { ContentEnvelopeSchema, ProfileSchema, PublicCandidateSchema, type ContentEnvelope, type Profile, type PublicCandidate } from '../shared/contracts/index.js'
 import type { PaymentRequired, PaymentResponse } from '../shared/contracts/x402.js'
 import { decodeHeader } from '../shared/x402.js'
+import { ChallengeResultSchema, type Challenge, type ChallengeResult } from '../shared/contracts/publisher.js'
 export type WireExchange = { method: string; path: string; status: number; body?: unknown }
 export type WireObserver = (wire: WireExchange) => void
 export class PublisherHttpError extends Error {
@@ -65,6 +66,18 @@ export class PublisherClient {
       status: response.status, required: response.status === 402 ? header('PAYMENT-REQUIRED') : undefined, response: header('PAYMENT-RESPONSE'),
       delivery: response.status === 200 ? JSON.parse(text) as unknown : undefined,
     }
+  }
+  /** POST /w/:slug/challenge (#132). Any non-200, timeout or malformed answer throws: the caller records REFUSED. */
+  async challenge(slug: string, challenge: Challenge, timeoutMs: number, observer?: WireObserver): Promise<ChallengeResult> {
+    const path = `/w/${encodeURIComponent(slug)}/challenge`
+    const response = await fetch(new URL(path, this.options.baseUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
+      method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(challenge), signal: AbortSignal.timeout(timeoutMs), redirect: 'error',
+    })
+    const wire = { method: 'POST', path, status: response.status }
+    observer?.(wire)
+    try { this.options.onWire?.(wire) } catch { /* telemetry cannot alter a challenge */ }
+    if (!response.ok) throw new PublisherHttpError(response.status)
+    return ChallengeResultSchema.parse(await response.json())
   }
   // Federated search (D1, #138): registry, per-publisher search and FREE article reads.
   private async getJson(path: string, timeoutMs?: number): Promise<unknown> {

@@ -38,6 +38,8 @@ function validClaims(claims: Claim[], contents: ContentEnvelope[]): Claim[] {
 
 export async function buildReport(input: RunSnapshot): Promise<Report> {
   const run = RunSnapshotSchema.parse(input)
+  // Quarantine (#131): a grant whose proof failed is audit only, never source access for the report.
+  run.grants = run.grants.filter(g => run.intents.some(i => i.intentId === g.intentId && i.status === 'VERIFIED'))
   assertAccess(run) // Before any content can enter a provider request.
   const answers = [...run.answers].sort((a, b) => a.version - b.version)
   const first = answers[0]

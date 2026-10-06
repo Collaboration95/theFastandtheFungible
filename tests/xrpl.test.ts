@@ -11,7 +11,9 @@ import { PurchaseManager } from '../server/purchases.js'
 import { PublisherClient } from '../server/publisher-client.js'
 import { XrplPayer } from '../server/xrpl.js'
 import { createApiApp } from '../server/routes.js'
-import { miniCorpus } from './fixtures/corpus-mini/index.js'
+import { alphaLeakCorpus, miniCorpus } from './fixtures/corpus-mini/index.js'
+import { alphaLeakArticle, candidateFrom } from './fixtures/pay-path.js'
+import { challenge } from '../server/challenges.js'
 import { testnetUrl, type Ledger } from '../shared/xrpl.js'
 import { encodeHeader, ledgerInvoiceId } from '../shared/x402.js'
 import { required } from './fixtures/x402-payer.js'
@@ -229,6 +231,56 @@ describe('XRPL Testnet settlement rail', () => {
     expect(new Set(view.wallets.map((w: { address: string }) => w.address)).size).toBe(2)
     expect(view.wallets[0]).toMatchObject({ address: s.wallet.classicAddress, balanceDrops: '100000000' })
     expect(JSON.stringify(view)).not.toContain(s.wallet.seed!)
+  })
+
+  it('gate-5: a failed proof is challenged and refunded on the Testnet once, verified by the buyer on the ledger, labelled XRPL TESTNET', async () => {
+    const chain = fakeLedger()
+    const alphaSeed = Wallet.generate().seed!
+    const app = createPublisherApp({ journal: ':memory:', rail: 'xrpl-testnet', ledger: chain.ledger, corpus: [], facilitatorTiming: { pollMs: 5, timeoutMs: 100 }, writers: alphaLeakCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_ALPHALEAK_SEED: alphaSeed } })
+    await app.locals.ready; await app.locals.writersReady
+    const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
+    cleanup.push(() => new Promise(resolve => server.close(() => { app.locals.journal.close(); resolve(undefined) })))
+    const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+    const store = new Store(':memory:'); cleanup.push(() => store.close())
+    const wallet = Wallet.generate()
+    const manager = new PurchaseManager(store, new PublisherClient({ baseUrl }), new XrplPayer(chain.ledger, wallet, { pollMs: 5, timeoutMs: 200 }))
+    const run = store.createRun('question', 200)
+    const intent = await manager.purchase({ runId: run.runId, candidate: await candidateFrom(baseUrl), intentId: 'leak' })
+    expect(intent.status).toBe('CLAIM_FAILED')
+    const [refunded, again] = await Promise.all([challenge(manager, 'leak', { pollMs: 5, timeoutMs: 500 }), challenge(manager, 'leak', { pollMs: 5 })])
+    expect(refunded.status).toBe('REFUNDED')
+    expect(again.refund).toEqual(refunded.refund)
+    const refunds = [...chain.txs.values()].filter(t => t.tx_json.InvoiceID === intent.txHash)
+    expect(refunds).toHaveLength(1)
+    expect(refunds[0].tx_json).toMatchObject({ TransactionType: 'Payment', Account: Wallet.fromSeed(alphaSeed).classicAddress, Destination: wallet.classicAddress, Amount: String(alphaLeakArticle.priceMinor * 1000) })
+    const snapshot = store.getRun(run.runId)
+    expect(snapshot.events.find(e => e.type === 'REFUND')).toMatchObject({ label: expect.stringContaining('XRPL TESTNET'), data: { explorerUrl: `https://testnet.xrpl.org/transactions/${refunded.refund!.txHash}` } })
+    expect(snapshot).toMatchObject({ spentMinor: alphaLeakArticle.priceMinor, refundedMinor: alphaLeakArticle.priceMinor })
+    expect(JSON.stringify(snapshot)).not.toContain(alphaSeed)
+  })
+
+  it('gate-3: a matching payment from a wallet other than the paid publisher is not a refund (CHALLENGE_REFUSED)', async () => {
+    const chain = fakeLedger()
+    const app = createPublisherApp({ journal: ':memory:', rail: 'xrpl-testnet', ledger: chain.ledger, corpus: [], facilitatorTiming: { pollMs: 5, timeoutMs: 100 }, writers: alphaLeakCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_ALPHALEAK_SEED: Wallet.generate().seed! } })
+    await app.locals.ready; await app.locals.writersReady
+    const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
+    cleanup.push(() => new Promise(resolve => server.close(() => { app.locals.journal.close(); resolve(undefined) })))
+    const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+    const store = new Store(':memory:'); cleanup.push(() => store.close())
+    const buyer = Wallet.generate()
+    const manager = new PurchaseManager(store, new PublisherClient({ baseUrl }), new XrplPayer(chain.ledger, buyer, { pollMs: 5, timeoutMs: 200 }))
+    const run = store.createRun('question', 200)
+    const intent = await manager.purchase({ runId: run.runId, candidate: await candidateFrom(baseUrl), intentId: 'leak' })
+    expect(intent.status).toBe('CLAIM_FAILED')
+    // A stranger sends exactly the refund the buyer expects (destination, amount, InvoiceID); the publisher claims it.
+    const stranger = Wallet.generate()
+    const forged = stranger.sign({ TransactionType: 'Payment', Account: stranger.classicAddress, Destination: buyer.classicAddress, Amount: String(alphaLeakArticle.priceMinor * 1000), InvoiceID: intent.txHash!, Sequence: 1, Fee: '12', LastLedgerSequence: 999 })
+    await chain.ledger.request({ command: 'submit', tx_blob: forged.tx_blob })
+    manager.client.challenge = async () => ({ status: 'REFUNDED', refundTxHash: forged.hash.toUpperCase() })
+    const result = await challenge(manager, 'leak', { pollMs: 5, timeoutMs: 200 })
+    expect(result.status).toBe('CHALLENGE_REFUSED')
+    expect(result.refund).toBeUndefined()
+    expect(store.getRun(run.runId).refundedMinor).toBe(0)
   })
 
   it('only accepts Testnet endpoints', () => {

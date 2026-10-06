@@ -109,20 +109,32 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
       ])
       const reserve = server.info.validated_ledger.reserve_base_xrp + info.account_data.OwnerCount * server.info.validated_ledger.reserve_inc_xrp
       const spendable = Number(info.account_data.Balance) / 1e6 - reserve
-      const purchases = Math.floor(spendable / 0.1) // S$1.00 cap = 0.1 XRP at the fixed demo rate
-      const line = `payer ${payer}: ${spendable.toFixed(2)} XRP spendable ≈ ${purchases} purchases at the S$1 cap`
-      if (purchases < 1) fail(`${line}; fund it at https://xrpl.org/resources/dev-tools/xrp-faucets`)
-      else if (purchases < 10) warn(`${line}; top up at https://xrpl.org/resources/dev-tools/xrp-faucets`)
+      const runs = Math.floor(spendable / 0.5) // the S$5 max budget = 0.5 XRP at the fixed demo rate
+      const line = `payer ${payer}: ${spendable.toFixed(2)} XRP spendable ≈ ${runs} runs at the S$5 max budget`
+      if (runs < 3) fail(`${line}; UC1–UC3 need 3; run make wallets`)
+      else if (runs < 10) warn(`${line}; top up with make wallets`)
       else ok(line)
     }
-    // A payment to a missing account fails on ledger, so every publisher wallet must exist.
-    const { loadCorpus } = await import('../publisher/corpus.ts')
-    const publishers = new Map((await loadCorpus('')).filter(r => r.wallet).map(r => [r.wallet, r.publisher]))
-    publishers.set(process.env.XRPL_RECEIVER_ADDRESS || TESTNET_RECEIVER, 'fallback receiver')
+    // Every paid roster publisher needs a funded wallet: payments to a missing account fail on ledger,
+    // and refunds (D5) come out of the writer's own balance. Addresses are derived from the seeds in .env.
+    const { paidSlugs, addressEnvName } = await import('./wallets.mjs')
+    const { seedEnvName } = await import('../publisher/registry.ts')
+    const publishers = new Map([[process.env.XRPL_RECEIVER_ADDRESS || TESTNET_RECEIVER, 'fallback receiver']])
+    for (const slug of paidSlugs()) {
+      const seed = process.env[seedEnvName(slug)]
+      if (!seed) { fail(`${slug}: ${seedEnvName(slug)} not set; run make wallets CREATE=1`); continue }
+      const address = Wallet.fromSeed(seed).classicAddress
+      if (process.env[addressEnvName(slug)] && process.env[addressEnvName(slug)] !== address) fail(`${slug}: ${seedEnvName(slug)} does not match ${addressEnvName(slug)}`)
+      publishers.set(address, slug)
+    }
+    const refundDrops = 900_000 // the highest article price, S$0.90, refunded in full
     for (const [address, name] of publishers) {
       try {
         const { result } = await ledger.request({ command: 'account_info', account: address, ledger_index: 'validated' })
-        ok(`${name}: ${address} (${(Number(result.account_data.Balance) / 1e6).toFixed(2)} XRP)`)
+        const drops = Number(result.account_data.Balance)
+        const line = `${name}: ${address} (${(drops / 1e6).toFixed(2)} XRP)`
+        if (name !== 'fallback receiver' && drops < 10_000_000 + refundDrops) fail(`${line}; too low to refund a purchase above the reserve; run make wallets`)
+        else ok(line)
       } catch (error) {
         fail(`${name}: ${address} ${error?.data?.error === 'actNotFound' ? 'does not exist (Testnet reset?); run make wallets' : 'check failed'}`)
       }

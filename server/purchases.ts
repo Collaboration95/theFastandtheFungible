@@ -5,7 +5,8 @@ import { DROPS_PER_MINOR, SIMULATED_LABEL, XRPL_EXPLORER, XRPL_LABEL, type Conte
 import type { Manifest } from '../shared/contracts/manifest.js'
 import { verifyManifestSignature } from '../shared/manifest.js'
 import { encodeHeader, invoiceIdFor, ledgerInvoiceId } from '../shared/x402.js'
-import type { Store } from './store.js'
+import { PROVEN_STATUSES, type Store } from './store.js'
+import { checkProof } from './proofs.js'
 import { PublisherClient, PublisherHttpError, type WireObserver } from './publisher-client.js'
 import { SimulatedPayer, XrplPayer, type Payer, type Submission } from './xrpl.js'
 
@@ -75,6 +76,8 @@ export class PurchaseManager {
       }
       intent = this.store.reserveIntent({ runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, quote, paidPath, status: 'QUOTED' })
       this.store.appendEvent(runId, { type: 'PURCHASE', label: intent.status, data: { intentId, status: intent.status } })
+      // The proof check after delivery runs against exactly this manifest (#131).
+      if (intent.status === 'RESERVED' && manifest) this.store.recordManifest(intentId, manifest)
     }
     if (intent.status === 'RESERVED') {
       // Before anything is signed: the rail, the payee, the amount and the invoice binding must all check out.
@@ -185,7 +188,7 @@ export class PurchaseManager {
   }
   private async deliver(intent: PurchaseIntent): Promise<PurchaseIntent> {
     try {
-      if (this.store.getIntent(intent.intentId)?.status === 'VERIFIED') return this.store.getIntent(intent.intentId)!
+      if (PROVEN_STATUSES.has(this.store.getIntent(intent.intentId)!.status)) return this.store.getIntent(intent.intentId)!
       this.store.updateIntent(intent.intentId, { status: 'DELIVERY_PENDING', error: undefined })
       let delivery = this.delivered.get(intent.intentId)
       this.delivered.delete(intent.intentId)
@@ -202,10 +205,11 @@ export class PurchaseManager {
       if (paid.articleId !== intent.resourceId || paid.version !== intent.version) throw new Error('Delivery identity mismatch')
       const content: ContentEnvelope = { profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: paid.title, publisher: paid.publisher, body: paid.body, spans: paid.passages }
       this.store.addGrant({ runId: intent.runId, resourceId: intent.resourceId, version: intent.version, intentId: intent.intentId, contentDigest: intent.quote!.contentDigest, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: paid.salts })
-      this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'manifest root verified', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
+      // Only the proof check makes the grant accessible; a failure quarantines it (never cited).
+      if (checkProof(this.store, intent.intentId).status === 'VERIFIED') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'manifest root verified', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
     } catch {
       // Delivery errors preserve the charge and receipt; a retry resends the same blob.
-      if (this.store.getIntent(intent.intentId)?.status !== 'VERIFIED') this.store.updateIntent(intent.intentId, { status: 'DELIVERY_FAILED', error: 'Delivery verification failed; retry delivery' })
+      if (!PROVEN_STATUSES.has(this.store.getIntent(intent.intentId)!.status)) this.store.updateIntent(intent.intentId, { status: 'DELIVERY_FAILED', error: 'Delivery verification failed; retry delivery' })
     }
     return this.store.getIntent(intent.intentId)!
   }
@@ -213,7 +217,7 @@ export class PurchaseManager {
     return this.once(intentId, async () => {
       const intent = this.store.getIntent(intentId)
       if (!intent) throw new Error('Intent not found')
-      if (intent.status === 'VERIFIED') return intent
+      if (PROVEN_STATUSES.has(intent.status)) return intent
       if (!['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED'].includes(intent.status)) throw new Error('Intent has no confirmed settlement')
       return this.deliver(intent)
     })
