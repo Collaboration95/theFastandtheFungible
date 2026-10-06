@@ -12,7 +12,7 @@ import { SimulatedPayer, XrplPayer, type Payer, type Submission } from './xrpl.j
 const xrp = (drops: string) => (Number(drops) / 1_000_000).toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
 const explorer = (txHash: string) => `${XRPL_EXPLORER}/${txHash}`
 
-/** `manifest` is the candidate's signed manifest from search, when it has one: the invoice must bind its root. */
+/** `manifest` is the candidate's verified signed manifest from search; without one nothing is signed. */
 type Purchase = { runId: string; candidate: PublicCandidate; intentId: string; manifest?: Manifest }
 
 /** Trusted policy-only service: never expose purchase as a browser/LLM command. */
@@ -55,7 +55,7 @@ export class PurchaseManager {
       }, { asType: 'tool' })
     } finally { this.identities.delete(input.intentId) }
   }
-  private async buy({ runId, candidate, intentId, manifest }: Purchase): Promise<PurchaseIntent> {
+  private async buy({ runId, candidate, intentId, manifest = candidate.manifest }: Purchase): Promise<PurchaseIntent> {
     let intent = this.store.getIntent(intentId)
     if (!intent) {
       if (candidate.tier !== 'PAID') throw new Error('Purchase requires paid public candidate')
@@ -109,7 +109,9 @@ export class PurchaseManager {
     if (terms_) return terms_
     // Recompute invoiceId instead of trusting the publisher: it must bind this article version, amount, payee and root.
     if (!bound || invoiceIdFor(bound) !== quote.quoteId || bound.articleId !== intent.resourceId || bound.version !== intent.version || bound.amount !== terms.amountDrops || bound.payTo !== terms.payTo) return 'x402 invoiceId does not bind this purchase; nothing was charged'
-    if (manifest && (!verifyManifestSignature(manifest) || manifest.root !== bound.manifestRoot || manifest.articleId !== intent.resourceId || manifest.version !== intent.version)) return 'x402 invoiceId does not bind the signed manifest; nothing was charged'
+    // The root comes from the candidate's verified search manifest, never from the publisher's own 402.
+    if (!manifest) return 'No verified manifest for this candidate; nothing was charged'
+    if (!verifyManifestSignature(manifest) || manifest.root !== bound.manifestRoot || manifest.articleId !== intent.resourceId || manifest.version !== intent.version || manifest.publisherSlug !== intent.profileId) return 'x402 invoiceId does not bind the signed manifest; nothing was charged'
     return undefined
   }
   private signatureHeader(intent: PurchaseIntent, submission: Submission): string {

@@ -13,7 +13,7 @@ import { reportedRelevance } from './bad-actors.js'
 import { createManifests } from './manifest.js'
 import { loadCorpus, loadWriterCorpus } from './corpus.js'
 import { digestBytes, PublisherError, PublisherJournal } from './journal.js'
-import { buildRegistry, SIMULATED_KEY_LABEL, type PublisherEntry } from './registry.js'
+import { buildRegistry, publisherKeys, SIMULATED_KEY_LABEL, type PublisherEntry, type PublisherKeys } from './registry.js'
 import { createQueryEmbedder, embeddingsLive, loadEmbeddingCache, searchIndex, type EmbeddingCache, type Embedder } from './search.js'
 
 export type PublisherConfig = {
@@ -137,6 +137,21 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     res.json({ status: 'ok', publisher: 'local', settlement: label })
   })
   app.use('/v1', async (_req, _res, next) => { await ready; next() })
+  // TODO(#157): legacy profile resources. A PAID one is keyed like a writer publisher (simulated key, or
+  // XRPL_PUBLISHER_<PROFILE>_SEED on the Testnet) and carries a signed manifest, so the buyer's checks are the same.
+  const legacyKeys = new Map<string, PublisherKeys | undefined>()
+  const legacyEntry = (resource: CorpusResource): PublisherEntry | undefined => {
+    if (!legacyKeys.has(resource.profileId)) { try { legacyKeys.set(resource.profileId, publisherKeys(resource.profileId, rail, env)) } catch { legacyKeys.set(resource.profileId, undefined) } }
+    const keys = legacyKeys.get(resource.profileId)
+    return keys && { publisher: { slug: resource.profileId, wallet: keys.wallet, pubKey: keys.publicKey } as PublisherEntry['publisher'], keys, writers: [], articles: [], index: undefined as never }
+  }
+  const legacyCandidate = (resource: CorpusResource) => {
+    const candidate = PublicCandidateSchema.parse(resource)
+    const entry = resource.tier === 'PAID' ? legacyEntry(resource) : undefined
+    if (!entry) return candidate
+    const article = { articleId: resource.resourceId, version: resource.version, tier: resource.tier, priceMinor: resource.price.amountMinor, body: resource.body, publishedAt: 'legacy', passages: resource.spans.map(({ id, text }) => ({ id, text })) } as Article
+    return { ...candidate, wallet: entry.publisher.wallet, manifest: manifests.manifestFor(entry, article, 1) }
+  }
   app.get('/v1/profiles', (_req, res) => {
     const profiles = [...new Set(corpus.map(resource => resource.profileId))].map(id => {
       const resource = corpus.find(item => item.profileId === id)!
@@ -146,12 +161,12 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   })
   app.get('/v1/profiles/:p/search', (req, res) => {
     // Return all resources for the buyer's lexical/facet ranking. Always strip private fields.
-    res.json(corpus.filter(resource => resource.profileId === req.params.p).map(resource => PublicCandidateSchema.parse(resource)))
+    res.json(corpus.filter(resource => resource.profileId === req.params.p).map(legacyCandidate))
   })
   app.get('/v1/profiles/:p/resources/:id', (req, res) => {
     const resource = corpus.find(item => item.profileId === req.params.p && item.resourceId === req.params.id)
     if (!resource) throw new PublisherError(404, 'Resource not found')
-    res.json(PublicCandidateSchema.parse(resource))
+    res.json(legacyCandidate(resource))
   })
   // Legacy profile corpus (TODO(#138): retired once retrieval moves to /w/*): FREE bytes as before;
   // PAID resources sell over the same x402 v2 path as /w/:slug/articles/:id.
@@ -163,7 +178,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
       const bytes = serializeEnvelope(resource)
       res.set('Digest', `sha-256=${digestBytes(bytes)}`).type('application/json').send(bytes); return
     }
-    await sellPaid(req, res, { publisherSlug: p, articleId: id, version: v, title: resource.title, publisher: resource.publisher, priceMinor: resource.price.amountMinor, payTo: payToFor(resource), body: resource.body, passages: resource.spans.map(({ id, text }) => ({ id, text })) })
+    await sellPaid(req, res, { publisherSlug: p, articleId: id, version: v, title: resource.title, publisher: resource.publisher, priceMinor: resource.price.amountMinor, payTo: legacyEntry(resource)?.publisher.wallet ?? payToFor(resource), body: resource.body, passages: resource.spans.map(({ id, text }) => ({ id, text })) })
   })
   app.get('/w/:slug/facilitator/supported', (_req, res) => {
     res.json({ kinds: [{ x402Version: 2, scheme: 'exact', network: X402_NETWORK }], extensions: [], signers: {}, label })

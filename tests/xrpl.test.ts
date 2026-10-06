@@ -16,7 +16,9 @@ import { testnetUrl, type Ledger } from '../shared/xrpl.js'
 import { encodeHeader, ledgerInvoiceId } from '../shared/x402.js'
 import { required } from './fixtures/x402-payer.js'
 
-const GRID_WALLET = 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp' // Grid Operators Report's own Testnet wallet
+// Throwaway Testnet test seeds: legacy profiles are keyed like writer publishers and sign their manifests.
+const GRID_SEED = Wallet.generate().seed!, SUPPLIER_SEED = Wallet.generate().seed!
+const GRID_WALLET = Wallet.fromSeed(GRID_SEED).classicAddress, SUPPLIER_WALLET = Wallet.fromSeed(SUPPLIER_SEED).classicAddress
 import { PublicCandidateSchema, type PublicCandidate } from '../shared/contracts/index.js'
 
 /** In-memory Testnet: applies submitted blobs, validates them (or not), and answers tx lookups. */
@@ -59,7 +61,7 @@ async function setup() {
   const chain = fakeLedger()
   const app = createPublisherApp({ journal: join(dir, 'publisher.db'), rail: 'xrpl-testnet', ledger: chain.ledger, corpus: loadCorpus(''), facilitatorTiming: { pollMs: 5, timeoutMs: 100 },
     // The ledger view lists paid publishers from the writer registry (#138); a throwaway test seed keys Load Factor.
-    writers: miniCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed! } })
+    writers: miniCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_GRID_RESEARCH_SEED: GRID_SEED, XRPL_PUBLISHER_SUPPLIER_WIRE_SEED: SUPPLIER_SEED } })
   await app.locals.ready
   await app.locals.writersReady
   const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
@@ -110,8 +112,8 @@ describe('XRPL Testnet settlement rail', () => {
   it('pays each publisher at its own wallet and refuses a payee the policy did not evaluate', async () => {
     const s = await setup()
     const payees = await Promise.all(['/v1/profiles/supplier-wire/resources/northstar-wire/versions/v1/content', CONTENT].map(async path => required(await fetch(s.baseUrl + path)).accepts[0].payTo))
-    expect(payees).toEqual(['r4uhMW4Fph3YAdjrxsGZmk2mivTBhb8HVd', GRID_WALLET])
-    const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer), 'redirected', { ...s.candidate, wallet: 'r4uhMW4Fph3YAdjrxsGZmk2mivTBhb8HVd' })
+    expect(payees).toEqual([SUPPLIER_WALLET, GRID_WALLET])
+    const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer), 'redirected', { ...s.candidate, wallet: SUPPLIER_WALLET })
     expect(intent).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('payee differs') })
     expect(s.chain.state.submits).toBe(0)
   })
