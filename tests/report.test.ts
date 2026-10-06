@@ -138,3 +138,22 @@ describe('offline rendering (Chromium mocked; actual PDF checked by W2)', () => 
     expect(chromium.launch).not.toHaveBeenCalled()
   })
 })
+
+describe('citation deep links (#147)', () => {
+  it('a FREE citation links to the writer page and the passage anchor exists there', async () => {
+    const { miniCorpus } = await import('./fixtures/corpus-mini/index.js')
+    const { serve } = await import('./site-serve.js')
+    const article = miniCorpus.articles.find(a => a.tier === 'FREE' && a.publisherSlug === 'load-factor')!
+    const passage = article.passages[1]
+    const text = JSON.stringify(run()).replaceAll('example-free', article.articleId).replaceAll('demand-1', passage.id)
+    const snapshot = JSON.parse(text) as RunSnapshot
+    snapshot.candidates[0].publisherSlug = article.publisherSlug
+    snapshot.contents[0].spans = [{ id: passage.id, text: passage.text }]
+    snapshot.contents[0].body = passage.text
+    const html = reportHtml(await buildReport(snapshot))
+    const href = `/w/load-factor/blog/${article.articleId}#p-${passage.id}`
+    expect(html).toContain(`href="${href}"`)
+    const page = await (await fetch(`${await serve(miniCorpus)}${href.split('#')[0]}`)).text()
+    expect(page).toContain(`id="${href.split('#')[1]}"`)
+  })
+})

@@ -10,6 +10,7 @@ import { TESTNET_RECEIVER, testnetLedger, type Ledger } from '../shared/xrpl.js'
 import { SearchHitSchema, type Manifest, type SearchHit } from '../shared/contracts/manifest.js'
 import type { Article, WriterCorpus } from '../shared/contracts/writers.js'
 import { reportedRelevance } from './bad-actors.js'
+import { siteRouter } from './site/router.js'
 import { createManifests } from './manifest.js'
 import { loadCorpus, loadWriterCorpus } from './corpus.js'
 import { digestBytes, PublisherError, PublisherJournal } from './journal.js'
@@ -201,6 +202,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     return entry
   }
   app.use(['/registry', '/w'], async (_req, _res, next) => { await writersReady; next() })
+  app.use(siteRouter(() => registry)) // HTML blog pages (#145-#148); /w/:slug/articles/:id stays the agent route
   app.get('/registry', (_req, res) => {
     res.json({ publishers: [...registry.values()].map(({ publisher }) => ({
       slug: publisher.slug, name: publisher.name, kind: publisher.kind, domain: publisher.domain, wallet: publisher.wallet,
