@@ -18,6 +18,10 @@ export function plainVerdict(row: DecisionRow, run: RunSnapshot): { stamp: strin
     const source = row.candidate.derivedFrom ? run.candidates.find(item => item.resourceId === row.candidate.derivedFrom) : undefined
     return { stamp: 'REWRITE', tone: 'skip', why: source ? `A rewrite of ${source.publisher}` : 'A rewrite of evidence it already has' }
   }
+  if (row.verdict === 'SKIP_LOW_TRUST') {
+    const H = row.reputation?.H ?? row.candidate.reputation?.H
+    return { stamp: 'LOW TRUST', tone: 'trust', why: `${row.candidate.publisher} failed a proof check${H === undefined ? '' : ` (honesty ${H.toFixed(2)}, under 0.50)`}: quarantined, never bought or cited` }
+  }
   if (row.verdict === 'SKIP_NO_GAP') return { stamp: 'NO GAP', tone: 'skip', why: 'No material gap left to close' }
   return { stamp: 'LOW VALUE', tone: 'skip', why: `Value ${row.value.toFixed(2)} is under the ${(run.decisions[0]?.threshold ?? 0.2).toFixed(2)} bar` }
 }

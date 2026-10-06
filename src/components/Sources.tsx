@@ -2,6 +2,7 @@
 import { useState, type CSSProperties } from 'react'
 import type { ContentEnvelope, PublicCandidate, RunSnapshot } from '../../shared/contracts/index.js'
 import { money, plainVerdict } from '../format'
+import WriterChip from './WriterChip'
 
 const drawerAccess = new WeakMap<ContentEnvelope, string>()
 const identity = (candidate: PublicCandidate) => JSON.stringify([candidate.profileId, candidate.resourceId, candidate.version])
@@ -9,6 +10,8 @@ const identity = (candidate: PublicCandidate) => JSON.stringify([candidate.profi
 /** Call with the CURRENT snapshot when opening a drawer; never pass raw run.contents. */
 export function getAccessibleContent(run: RunSnapshot, candidate: PublicCandidate): ContentEnvelope | undefined {
   if (!run.candidates.some(item => identity(item) === identity(candidate) && item.tier === candidate.tier)) return undefined
+  // Gate 1 and 4: paid text only after a grant whose proof passed; a quarantined source never opens.
+  if (candidate.tier === 'PAID' && !run.intents.some(intent => intent.runId === run.runId && intent.resourceId === candidate.resourceId && intent.version === candidate.version && intent.status === 'VERIFIED')) return undefined
   if (candidate.tier === 'PAID' && !run.grants.some(grant => grant.runId === run.runId && grant.resourceId === candidate.resourceId && grant.version === candidate.version && grant.contentDigest.length > 0)) return undefined
   const content = run.contents.find(item => item.profileId === candidate.profileId && item.resourceId === candidate.resourceId && item.version === candidate.version)
   if (!content || !content.spans.every(span => span.text.length > 0 && content.body.includes(span.text))) return undefined
@@ -24,6 +27,7 @@ export function canDisplayPassage(candidate: PublicCandidate, content: ContentEn
     (candidate.tier === 'FREE' || drawerAccess.get(content) === identity(candidate))
 }
 
+const QUARANTINED: Partial<Record<string, string>> = { CLAIM_FAILED: 'quarantined', CHALLENGED: 'challenged', REFUNDED: 'refunded', CHALLENGE_REJECTED: 'writer disputes', CHALLENGE_REFUSED: 'refused · delisted' }
 type CardState = { label: string; tone: string; bought?: boolean }
 function cardState(run: RunSnapshot, candidate: PublicCandidate): CardState {
   const price = money(candidate.price.amountMinor)
@@ -31,6 +35,7 @@ function cardState(run: RunSnapshot, candidate: PublicCandidate): CardState {
   const intent = run.intents.find(item => item.runId === run.runId && item.resourceId === candidate.resourceId && item.version === candidate.version)
   if (intent?.status === 'VERIFIED') return { label: `bought ${money(intent.amountMinor)}`, tone: 'bought', bought: true }
   if (intent?.status === 'DELIVERY_FAILED') return { label: 'paid · not delivered', tone: 'fail' }
+  if (intent && QUARANTINED[intent.status]) return { label: `proof failed · ${QUARANTINED[intent.status]}`, tone: 'fail' }
   if (intent && intent.status !== 'SKIPPED' && intent.status !== 'FAILED_NOT_SETTLED') return { label: 'buying…', tone: 'buying' }
   const row = run.decisions[0]?.rows.find(item => item.candidate.resourceId === candidate.resourceId && item.candidate.version === candidate.version)
   if (row) {
@@ -55,6 +60,7 @@ export default function Sources({ run, onOpen }: SourcesProps) {
     <div className="ra-strip-h"><h2>Sources</h2>{run.candidates.length === 0
       ? <span className="ra-count">Searching publisher profiles…</span>
       : <span className="ra-count"><span><em>{cards.length}</em> found</span><span><em>{read}</em> read</span><span className="c-b"><em>{bought}</em> bought</span><span><em>{skipped}</em> skipped</span></span>}
+      {run.labels.search && <span className={`ra-chip${run.labels.search === 'hybrid' ? '' : ' is-fallback'}`} title="Search mode for this run">search · {run.labels.search}</span>}
       <span className="ra-note-right">Synthetic corpus · fictional</span></div>
     <ul className={`ra-cards${all ? ' is-all' : ''}`}>
       {run.candidates.length === 0 && Array.from({ length: 6 }, (_, index) => <li key={index} className="ra-card is-ghost" aria-hidden="true"><i /><i /><i /></li>)}
@@ -64,6 +70,7 @@ export default function Sources({ run, onOpen }: SourcesProps) {
           <span className="ra-card-t">{candidate.title}</span>
           <span className={`ra-card-s st-${state.tone}`}>{state.tone === 'read' || state.bought ? '✓ ' : ''}{state.label}</span>
         </button>
+        <WriterChip candidate={candidate} />
       </li>)}
       {cards.length > 6 && <li><button type="button" className="ra-more" onClick={() => setAll(!all)} aria-expanded={all}>{all ? 'Fewer' : `All ${cards.length}`}</button></li>}
     </ul>

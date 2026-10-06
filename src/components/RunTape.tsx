@@ -5,6 +5,10 @@ import { isTerminal, runEvents } from '../stage'
 type State = 'done' | 'now' | 'fail' | 'skip' | 'todo'
 interface Row { key: string; title: string; meta: string; state: State; event?: TraceEvent; kind: string }
 
+// Final-push events (D8, D4, D5, D6): the server's label is the meta line; it never carries premium text.
+const NOTES: Record<string, string> = { CLARIFY: 'Clarify', PLAN: 'Plan', MANIFEST_DROPPED: 'Manifest dropped', PROOF: 'Proof check', CHALLENGE: 'Challenge', REFUND: 'Refund', REPUTATION: 'Reputation' }
+const noteState = (event: TraceEvent): State => event.type === 'MANIFEST_DROPPED' ? 'skip'
+  : (event.type === 'PROOF' && event.data?.ok === false) || (event.type === 'CHALLENGE' && /REJECTED|REFUSED/.test(String(event.data?.status ?? ''))) || (event.type === 'REPUTATION' && event.data?.after && (event.data.after as { status?: string }).status !== 'active') ? 'fail' : 'done'
 const secs = (ms: number) => `${(ms / 1000).toFixed(ms < 1000 ? 2 : 1)} s`
 const clock = (ms: number) => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${(ms % 60000 / 1000).toFixed(1).padStart(4, '0')}`
 
@@ -37,13 +41,16 @@ function tapeRows(run: RunSnapshot): Row[] {
       const source = intent && candidateOf(run, intent)
       const amount = intent ? money(intent.amountMinor) : ''
       const meta = !intent ? 'Starting a purchase…'
-        : intent.status === 'VERIFIED' ? `${source?.publisher ?? intent.resourceId} · ${amount} · sha-256 ✓`
+        : intent.status === 'VERIFIED' ? `${source?.publisher ?? intent.resourceId} · ${amount} · proof ✓`
+          : intent.status === 'REFUNDED' ? `${source?.publisher ?? intent.resourceId} · ${amount} · proof ✗ · refunded`
+            : ['CLAIM_FAILED', 'CHALLENGED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'].includes(intent.status) ? `${source?.publisher ?? intent.resourceId} · ${amount} · proof ✗ · quarantined`
           : intent.status === 'DELIVERY_FAILED' ? 'Paid · delivery failed'
             : intent.status === 'FAILED_NOT_SETTLED' ? 'Not settled · nothing charged'
               : intent.status === 'SETTLED' || intent.status === 'DELIVERY_PENDING' ? `Settled ${amount} · checking delivery…`
                 : intent.status === 'RESERVED' || intent.status === 'SUBMITTING' ? `Holding ${amount}` : `402 → quote ${amount}`
-      rows.push({ key, kind: 'buy', event, title: 'Buy', state: intent?.status === 'VERIFIED' ? 'done' : intent?.status === 'DELIVERY_FAILED' || intent?.status === 'FAILED_NOT_SETTLED' ? 'fail' : 'now', meta })
-    } else if (event.type === 'DONE') rows.push({ key, kind: 'done', event, title: 'Done', state: 'done', meta: `${money(run.spentMinor)} of ${money(run.budgetMinor)} spent` })
+      rows.push({ key, kind: 'buy', event, title: 'Buy', state: intent?.status === 'VERIFIED' ? 'done' : intent && ['DELIVERY_FAILED', 'FAILED_NOT_SETTLED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'].includes(intent.status) ? 'fail' : 'now', meta })
+    } else if (NOTES[event.type]) rows.push({ key, kind: event.type.toLowerCase(), event, title: NOTES[event.type], state: noteState(event), meta: event.label })
+    else if (event.type === 'DONE') rows.push({ key, kind: 'done', event, title: 'Done', state: 'done', meta: `${money(run.spentMinor)} of ${money(run.budgetMinor)} spent` })
     else if (event.type === 'STOPPED') rows.push({ key, kind: 'done', event, title: 'Stopped by you', state: 'skip', meta: 'No new purchases will start' })
     else if (event.type === 'FAILED') rows.push({ key, kind: 'done', event, title: 'Paused', state: 'fail', meta: run.intents.some(item => item.status === 'DELIVERY_FAILED') ? 'Retry the delivery to continue' : 'Last good answer kept' })
   }

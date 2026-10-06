@@ -1,4 +1,6 @@
 import type { RunSnapshot } from '../../shared/contracts/index.js'
+import { plainVerdict } from '../format'
+import WriterChip from './WriterChip'
 
 function Probability({ label, value }: { label: string; value: number }) {
   const percentage = Math.max(0, Math.min(100, value * 100))
@@ -32,7 +34,7 @@ buy = argmax over eligible of value(c) / price(c); none → STOP`}</pre>
         <caption>All candidates · round {round.round}</caption>
         <thead><tr><th scope="col">Candidate / price</th><th scope="col">Probabilities</th><th scope="col">Value / SGD</th><th scope="col">Verdict / reason</th></tr></thead>
         <tbody>{round.rows.map(row => <tr key={`${row.candidate.resourceId}:${row.candidate.version}`}>
-          <th scope="row">{row.candidate.title}<br />S${(row.candidate.price.amountMinor / 100).toFixed(2)}</th>
+          <th scope="row">{row.candidate.title}<br /><WriterChip candidate={row.candidate} reputation={row.reputation} /></th>
           <td><div className="ra-probability-grid"><Probability label="Addresses gap" value={row.judgment.addressesGap} />
             <Probability label="Original" value={row.judgment.originality.original} />
             <Probability label="Rewrite" value={row.judgment.originality.rewrite} />
@@ -40,7 +42,7 @@ buy = argmax over eligible of value(c) / price(c); none → STOP`}</pre>
           <td><strong>{row.value.toFixed(3)}</strong><br />{row.valuePerDollar.toFixed(3)} / S$<br />Credibility: {row.judgment.credibility.toFixed(2)} / 2</td>
           <td className={row.verdict === 'BUY' && run.budgetMinor > 0 ? 'ra-verdict-buy' : undefined}><strong>{run.budgetMinor === 0 && row.verdict === 'BUY' ? 'SKIP_OVER_BUDGET' : row.verdict}</strong>
             {row.wouldBuy && <p>Would buy{run.budgetMinor === 0 ? ' · with sufficient budget' : ''}</p>}
-            <p>{row.reason}</p></td>
+            <p>{row.reason}</p>{row.verdict === 'SKIP_LOW_TRUST' && <p>{plainVerdict(row, run).why}</p>}</td>
         </tr>)}</tbody>
       </table></div>
     </details>)}

@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { DecisionRound, RunSnapshot } from '../../shared/contracts/index.js'
 import { money, plainVerdict } from '../format'
+import WriterChip from './WriterChip'
 
 const pct = (value: number) => `${Math.round(value * 100)}%`
 
@@ -28,6 +29,7 @@ function FullRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) {
         <span className="ra-bar" role="meter" aria-label={`${row.candidate.publisher} value`} aria-valuemin={0} aria-valuemax={1} aria-valuenow={Number(row.value.toFixed(3))}><i /><b className="ra-thr" style={{ left: pct(round.threshold / scale) }} /></span>
         <span className="ra-probs">covers {pct(row.judgment.addressesGap)} · original {pct(row.judgment.originality.original)} · cred {row.judgment.credibility.toFixed(1)} · value {row.value.toFixed(2)}</span>
         <span className="ra-why">{verdict.why}</span><span className={`ra-stamp s-${verdict.tone}`}>{verdict.stamp}</span>
+        <WriterChip candidate={row.candidate} reputation={row.reputation} />
       </li>
     })}</ul>
     <p className="ra-formula">value = gap × covers gap × original × (0.5 + 0.25 × credibility) · buys the best value per S$ above the bar, at most {money(run.perSourceCapMinor)} per source</p>
@@ -42,7 +44,7 @@ function LaterRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) 
     <div className="ra-gapline"><span>Gap: {round.gap || 'none left open'}</span><em>{pct(round.gapMaterial)} material</em></div>
     <ul className="ra-rows is-r2">{round.rows.map((row, index) => {
       const verdict = plainVerdict(row, run)
-      return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className="ra-row" style={{ '--i': index, '--w': pct(row.value) } as CSSProperties}><span className="ra-row-n">{row.candidate.publisher}</span><span className="ra-bar"><i /></span><span className={`ra-stamp s-${verdict.tone}`}>{verdict.stamp}</span></li>
+      return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className="ra-row" style={{ '--i': index, '--w': pct(row.value) } as CSSProperties}><span className="ra-row-n">{row.candidate.publisher}</span><span className="ra-bar"><i /></span><span className={`ra-stamp s-${verdict.tone}`}>{verdict.stamp}</span>{row.verdict === 'SKIP_LOW_TRUST' && <span className="ra-why">{verdict.why}</span>}<WriterChip candidate={row.candidate} reputation={row.reputation} /></li>
     })}</ul>
     <p className="ra-r2-msg">{buys.length ? `Buying ${buys.map(row => row.candidate.publisher).join(', ')}.` : `Nothing clears the bar, so the run stops. ${money(Math.max(0, left))} stays unspent.`}</p>
   </section>

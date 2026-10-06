@@ -26,6 +26,7 @@ function useCount(target: number) {
 export default function Budget({ run }: { run: RunSnapshot }) {
   const remaining = run.budgetMinor - run.spentMinor - run.reservedMinor
   const shown = useCount(remaining)
+  const refunded = run.refundedMinor ?? run.intents.reduce((sum, item) => sum + (item.status === 'REFUNDED' ? item.refund?.amountMinor ?? 0 : 0), 0)
   const pct = (minor: number) => `${run.budgetMinor ? Math.min(100, minor / run.budgetMinor * 100) : 0}%`
   return <section className={`ra-panel ra-wallet${run.budgetMinor === 0 ? ' is-zero' : ''}`} aria-label="Prompt budget">
     <div className="ra-panel-h"><h2>Budget for this question</h2><span className="mono">cap {money(run.perSourceCapMinor)} / source</span></div>
@@ -36,7 +37,7 @@ export default function Budget({ run }: { run: RunSnapshot }) {
     </div>
     {run.budgetMinor === 0
       ? <p className="ra-wl">Free-only run · no purchases authorized. Decisions are still shown.</p>
-      : <dl className="ra-wl"><div><dt>spent</dt><dd>{money(run.spentMinor)}</dd></div><div><dt>held</dt><dd>{money(run.reservedMinor)}</dd></div><div><dt>left</dt><dd>{money(remaining)}</dd></div>{run.refundedMinor ? <div><dt>refunded</dt><dd title="Paid back by the writer after a failed proof; spent stays the gross charge">{money(run.refundedMinor)}</dd></div> : null}</dl>}
+      : <dl className="ra-wl"><div><dt>spent</dt><dd>{money(run.spentMinor)}</dd></div><div><dt>held</dt><dd>{money(run.reservedMinor)}</dd></div><div><dt>left</dt><dd>{money(remaining)}</dd></div>{refunded ? <><div><dt>refunded</dt><dd title="Paid back by the writer after a failed proof; spent stays the gross charge">{money(refunded)}</dd></div><div><dt>net</dt><dd>{money(run.spentMinor - refunded)}</dd></div></> : null}</dl>}
     <p className="ra-wallet-label"><span className="ra-chip is-sim">{run.labels.settlement}</span></p>
     {remaining < 0 && <p role="alert">Budget invariant violated: spent plus reserved exceeds authorization.</p>}
   </section>

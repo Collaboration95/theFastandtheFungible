@@ -15,13 +15,13 @@ function safeFields(data: Record<string, unknown>, prefix = '', depth = 0): [str
       try {
         const url = new URL(value, 'http://local.invalid')
         // Keep only known protocol route segments; redact arbitrary identifiers.
-        const path = url.pathname.split('/').map(segment => /^(api|runs|profiles|resources|search|read|quote|quotes|settle|settlement|settlements|versions|deliver|delivery|health|events|stop|retry-delivery|report|content|v1|v2)$/.test(segment) ? segment : segment ? '[id]' : '').join('/')
+        const path = url.pathname.split('/').map(segment => /^(api|runs|profiles|resources|search|read|quote|quotes|settle|settlement|settlements|versions|deliver|delivery|health|events|stop|retry-delivery|report|content|v1|v2|w|articles|challenge)$/.test(segment) ? segment : segment ? '[id]' : '').join('/')
         result.push([name, path])
       } catch { /* Malformed or opaque URL is omitted. */ }
     } else if (['contentDigest', 'sha256', 'digest', 'quoteHash'].includes(key) && typeof value === 'string' && /^(sha256:)?[a-f0-9]{64}$/i.test(value)) {
       result.push([name, value])
     } else if (['verified', 'digestMatches'].includes(key) && typeof value === 'boolean') {
-      result.push([name, value ? 'sha-256 ✓' : 'sha-256 not verified'])
+      result.push([name, value ? 'manifest root ✓' : 'manifest root not verified'])
     } else if (key === 'currency' && value === 'SGD') {
       result.push([name, 'SGD'])
     } else if (key === 'status' && typeof value === 'string' && /^(NOT_FOUND|SETTLED|DELIVERY_PENDING|DELIVERY_FAILED|VERIFIED)$/.test(value)) {
@@ -46,7 +46,7 @@ export default function Wire({ run }: { run: RunSnapshot }) {
   }))
   return <section className="ra-panel ra-wire" aria-label="HTTP exchange">
     <h2>Wire · HTTP exchange</h2>
-    <p className="ra-wire-story">Protocol: 402 → quote → settle ({run.labels.settlement === XRPL_LABEL ? 'XRPL Testnet payment' : 'simulated'}) → delivery → digest check</p>
+    <p className="ra-wire-story">x402 v2: GET → 402 + PAYMENT-REQUIRED → signed payment ({run.labels.settlement === XRPL_LABEL ? 'XRPL Testnet' : 'simulated'}) → same GET + PAYMENT-SIGNATURE → 200 + PAYMENT-RESPONSE → manifest root check</p>
     <p>Settlement: {run.labels.settlement}</p>
     {exchanges.length === 0 ? <p>No HTTP exchange recorded yet.</p> : <ol>
       {exchanges.map(({ event, fields }) => <li key={`${event.runId}:${event.id}`}>
@@ -54,6 +54,6 @@ export default function Wire({ run }: { run: RunSnapshot }) {
         <dl>{fields.map(([key, value]) => <div key={key}><dt>{key}</dt><dd><code>{value}</code></dd></div>)}</dl>
       </li>)}
     </ol>}
-    {quotes.length > 0 && <><h3>Recorded public quotes · POST /v1/quotes</h3><p className="ra-muted">Amounts in SGD minor units. Digests here describe the quote; delivery verification is recorded above.</p><ol>{quotes.map(quote => <li key={quote.intentId}><dl>{quote.fields.map(([key, value]) => <div key={key}><dt>{key}</dt><dd><code>{value}</code></dd></div>)}</dl></li>)}</ol></>}
+    {quotes.length > 0 && <><h3>x402 v2 payment terms · PAYMENT-REQUIRED</h3><p className="ra-muted">Amounts in SGD minor units. quoteHash is the hashed invoiceId sent as the XRPL InvoiceID; contentDigest is the signed manifest root it binds.</p><ol>{quotes.map(quote => <li key={quote.intentId}><dl>{quote.fields.map(([key, value]) => <div key={key}><dt>{key}</dt><dd><code>{value}</code></dd></div>)}</dl></li>)}</ol></>}
   </section>
 }
