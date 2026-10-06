@@ -4,12 +4,13 @@ import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
 import { AnswerSchema, PlanSchema, PublicCandidateSchema, providerLabels } from '../../shared/contracts/index.js'
 import type { ContentEnvelope, RunSnapshot, TraceEvent } from '../../shared/contracts/index.js'
-import { decide, publicSources } from './decision.js'
+import { decide, FixtureDecisionProvider, publicSources } from './decision.js'
+import type { Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
 import { retrieve, writeAnswer, type Retrieved } from './research.js'
 import type { Plan } from '../../shared/contracts/index.js'
 
-export type RunLoopOptions = { provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number }
+export type RunLoopOptions = { provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number; reputation?: Pick<Reputation, 'summaries' | 'calibrate'> }
 export class RunLoop {
   private readonly active = new Map<string, Promise<void>>()
   constructor(readonly store: Store, readonly client: PublisherClient, readonly purchases: PurchaseManager, readonly onEvent?: (event: TraceEvent) => void, readonly options: RunLoopOptions = {}) {}
@@ -137,7 +138,7 @@ export class RunLoop {
         this.trace(runId, 'DECIDE', 'Scoring public previews and applying spending policy.')
         const contents = this.accessible(run)
         const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => content.resourceId === candidate.resourceId && content.version === candidate.version)))
-        const decision = await decide({ question: run.question, conclusion: answer.conclusion, gap: gap?.text ?? '', candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold })
+        const decision = await decide({ question: run.question, conclusion: answer.conclusion, gap: gap?.text ?? '', candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
         this.store.addDecision(runId, decision)
         const latest = this.store.getRun(runId)
         this.store.updateRun(runId, { labels: { ...latest.labels, decision: `${decision.provider === 'cloudflare' ? 'Cloudflare' : 'fixture'} · ${decision.model}` } })
@@ -154,6 +155,10 @@ export class RunLoop {
         if (intent.status !== 'VERIFIED') throw new Error('Purchase did not verify delivery')
         if (this.stopped(runId)) return
         this.trace(runId, 'READ_PAID', 'Verified grant permits paid evidence.', { intentId })
+        // Calibration (#141): re-score the granted body; a failure is labelled inside calibrate() and never blocks the run.
+        if (this.options.reputation) {
+          try { await this.options.reputation.calibrate({ run: this.store.getRun(runId), intentId, question: run.question, gap: gap?.text ?? '', provider: this.options.provider ?? new FixtureDecisionProvider() }) } catch { /* reputation never blocks the run */ }
+        }
         await this.answer(runId)
       }
       if (!this.stopped(runId)) this.trace(runId, 'DONE', 'Stopped: no eligible purchase, exhausted budget, or three-round limit.')

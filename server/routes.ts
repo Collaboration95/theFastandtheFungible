@@ -43,7 +43,8 @@ export async function createApiApp(options: ApiOptions = {}) {
     try { await clef.resolveAccount() } catch { /* A fixture decision remains available. */ }
     provider = clef
   }
-  const loop = new RunLoop(store, client, purchases, undefined, { provider })
+  const reputation = new Reputation(store)
+  const loop = new RunLoop(store, client, purchases, undefined, { provider, reputation })
   const reportDir = resolve(options.reportDir ?? process.env.REPORT_DIR ?? 'data/reports')
   const reportJobs = new Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>()
   const timers = new Set<ReturnType<typeof setInterval>>()
@@ -96,7 +97,6 @@ export async function createApiApp(options: ApiOptions = {}) {
     try { res.json(await ledgerCache.view) } catch { ledgerCache = undefined; res.status(503).json({ error: 'Ledger view unavailable.' }) }
   })
   // Trust matrix (D6): public, engine-side, persisted across runs.
-  const reputation = new Reputation(store)
   app.get('/api/reputation', (_req, res) => res.json({ publishers: reputation.list() }))
   app.post('/api/reputation/reset', (_req, res) => { reputation.reset(); res.json({ publishers: [] }) })
   app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', labels, faults: faultsAvailable }))
