@@ -1,6 +1,6 @@
 import { Wallet, decode } from 'xrpl'
 import type { PaymentRequirement } from '../shared/contracts/index.js'
-import { lookupTx, testnetLedger, validatedLedgerIndex, type Ledger } from '../shared/xrpl.js'
+import { lookupTx, simulatedLedgerIndex, simulatedPayerWallet, testnetLedger, validatedLedgerIndex, type Ledger } from '../shared/xrpl.js'
 
 /** A signed payment, persisted before it is ever submitted so a restart can find it by hash. */
 export type Submission = { txHash: string; txBlob: string; lastLedgerSequence: number }
@@ -12,6 +12,7 @@ export type PaymentOutcome =
 
 /** Buyer wallet. The seed stays inside this object: never logged, traced or sent to a model. */
 export class XrplPayer {
+  readonly rail = 'xrpl-testnet' as const
   private queue: Promise<unknown> = Promise.resolve()
   readonly address?: string
   constructor(readonly ledger: Ledger, private readonly wallet?: Wallet, private readonly timing = { pollMs: 1000, timeoutMs: 120_000 }) {
@@ -28,19 +29,24 @@ export class XrplPayer {
     return undefined
   }
   /**
-   * Sign → persist → submit under one lock, so two payments never share an account Sequence.
+   * Sign → persist → send under one lock, so two payments never share an account Sequence. `send`
+   * hands the blob to the publisher's facilitator, which submits it (x402 v2, D7).
    * ponytail: one global lock per payer; per-account queues if several payers ever exist.
    */
-  pay(terms: PaymentRequirement, persist: (signed: Submission) => Submission): Promise<{ submission: Submission; engineResult: string }> {
+  pay<T>(terms: PaymentRequirement, persist: (signed: Submission) => Submission, send: (submission: Submission) => Promise<T>): Promise<{ submission: Submission; sent: Promise<T> }> {
     const run = this.queue.then(async () => {
       const submission = persist(await this.sign(terms))
-      return { submission, engineResult: await this.submit(submission.txBlob) }
+      const sent = send(submission)
+      // Hold the lock until the facilitator answered, so the next Sequence is read after this one applied.
+      await sent.catch(() => undefined)
+      return { submission, sent }
     })
     this.queue = run.catch(() => undefined)
     return run
   }
   private async sign(terms: PaymentRequirement): Promise<Submission> {
     if (!this.wallet) throw new Error('XRPL payer seed is not configured')
+    if (this.wallet.classicAddress === simulatedPayerWallet().classicAddress) throw new Error('The SIMULATED test payer is refused on the XRPL Testnet')
     const account = this.wallet.classicAddress
     const [info, current, fee] = await Promise.all([
       this.ledger.request({ command: 'account_info', account, ledger_index: 'current' }),
@@ -54,11 +60,6 @@ export class XrplPayer {
       Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(2000, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), LastLedgerSequence: lastLedgerSequence,
     })
     return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
-  }
-  /** Re-submitting the same signed blob is harmless: the ledger applies one transaction per Sequence. */
-  async submit(txBlob: string): Promise<string> {
-    try { return String((await this.ledger.request({ command: 'submit', tx_blob: txBlob })).result.engine_result) }
-    catch { return 'submit-unconfirmed' } // The hash lookup decides the outcome.
   }
   async status(submission: Submission): Promise<PaymentOutcome> {
     const validatedBefore = await validatedLedgerIndex(this.ledger)
@@ -86,3 +87,20 @@ export class XrplPayer {
     }
   }
 }
+
+/**
+ * SIMULATED rail (#130): signs a real XRPL Payment blob with a deterministic, public test-only key and no
+ * network. The publisher's simulated facilitator runs the same checks; the Testnet rail refuses this key.
+ */
+export class SimulatedPayer {
+  readonly rail = 'simulated' as const
+  private readonly wallet = simulatedPayerWallet()
+  readonly address = this.wallet.classicAddress
+  async pay<T>(terms: PaymentRequirement, persist: (signed: Submission) => Submission, send: (submission: Submission) => Promise<T>): Promise<{ submission: Submission; sent: Promise<T> }> {
+    const lastLedgerSequence = simulatedLedgerIndex() + 20
+    const signed = this.wallet.sign({ TransactionType: 'Payment', Account: this.address, Destination: terms.payTo, Amount: terms.amountDrops, InvoiceID: terms.invoiceId, Sequence: 1, Fee: '12', LastLedgerSequence: lastLedgerSequence })
+    const submission = persist({ txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence })
+    return { submission, sent: send(submission) }
+  }
+}
+export type Payer = XrplPayer | SimulatedPayer

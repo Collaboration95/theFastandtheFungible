@@ -13,6 +13,8 @@ import { XrplPayer } from '../server/xrpl.js'
 import { createApiApp } from '../server/routes.js'
 import { miniCorpus } from './fixtures/corpus-mini/index.js'
 import { testnetUrl, type Ledger } from '../shared/xrpl.js'
+import { encodeHeader, ledgerInvoiceId } from '../shared/x402.js'
+import { required } from './fixtures/x402-payer.js'
 
 const GRID_WALLET = 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp' // Grid Operators Report's own Testnet wallet
 import { PublicCandidateSchema, type PublicCandidate } from '../shared/contracts/index.js'
@@ -55,7 +57,7 @@ afterEach(async () => { for (const fn of cleanup.splice(0).reverse()) await fn()
 async function setup() {
   const dir = mkdtempSync(join(tmpdir(), 'xrpl-test-')); cleanup.push(() => rmSync(dir, { recursive: true, force: true }))
   const chain = fakeLedger()
-  const app = createPublisherApp({ secret: 'xrpl-secret', journal: join(dir, 'publisher.db'), rail: 'xrpl-testnet', ledger: chain.ledger, corpus: loadCorpus(''),
+  const app = createPublisherApp({ journal: join(dir, 'publisher.db'), rail: 'xrpl-testnet', ledger: chain.ledger, corpus: loadCorpus(''), facilitatorTiming: { pollMs: 5, timeoutMs: 100 },
     // The ledger view lists paid publishers from the writer registry (#138); a throwaway test seed keys Load Factor.
     writers: miniCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed! } })
   await app.locals.ready
@@ -63,7 +65,7 @@ async function setup() {
   const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
   cleanup.push(() => new Promise(resolve => server.close(resolve)))
   const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
-  const client = new PublisherClient({ baseUrl, secret: 'xrpl-secret' })
+  const client = new PublisherClient({ baseUrl })
   const store = new Store(join(dir, 'app.db')); cleanup.push(() => store.close())
   const wallet = Wallet.generate()
   const payer = new XrplPayer(chain.ledger, wallet, { pollMs: 5, timeoutMs: 200 })
@@ -71,18 +73,25 @@ async function setup() {
   const run = store.createRun('Will it be operating by 2028?', 200)
   return { chain, client, store, payer, wallet, candidate, run, baseUrl, dir }
 }
+const CONTENT = '/v1/profiles/grid-research/resources/grid-operators-report/versions/v1/content'
+/** Resend the buyer's persisted blob, exactly as reconcile() would. */
+function resend(s: Awaited<ReturnType<typeof setup>>, intentId: string) {
+  const intent = s.store.getIntent(intentId)!
+  const accepted = { scheme: 'exact' as const, network: 'xrpl:1' as const, amount: intent.quote!.payment!.amountDrops, asset: 'XRP' as const, payTo: intent.quote!.payment!.payTo, maxTimeoutSeconds: 60, extra: { invoiceId: intent.quote!.quoteId, areFeesSponsored: false as const } }
+  return fetch(s.baseUrl + CONTENT, { headers: { 'PAYMENT-SIGNATURE': encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted, payload: { signedTxBlob: s.store.getSubmission(intentId)!.txBlob } }) } })
+}
 const buy = (s: Awaited<ReturnType<typeof setup>>, manager: PurchaseManager, intentId = 'intent-1', candidate: PublicCandidate = s.candidate) =>
   manager.purchase({ runId: s.run.runId, candidate, intentId })
 
 describe('XRPL Testnet settlement rail', () => {
   it('advertises xrpl:1 in the 402 and pays exactly once, bound to the quote by InvoiceID', async () => {
     const s = await setup()
-    const challenge = await fetch(`${s.baseUrl}/v1/profiles/grid-research/resources/grid-operators-report/versions/v1/content`)
+    const challenge = await fetch(`${s.baseUrl}${CONTENT}`)
     expect(challenge.status).toBe(402)
-    const body = await challenge.json()
-    expect(body.label).toContain('XRPL TESTNET · no real value')
-    expect(body.accepts[0]).toMatchObject({ network: 'xrpl:1', asset: 'XRP', amount: '80000', payTo: GRID_WALLET })
-    expect(JSON.stringify(body)).not.toContain('Grid Operators Report body')
+    const header = required(challenge)
+    expect(header.resource.description).toContain('XRPL TESTNET · no real value')
+    expect(header.accepts[0]).toMatchObject({ network: 'xrpl:1', asset: 'XRP', amount: '80000', payTo: GRID_WALLET })
+    expect(await challenge.text()).not.toContain('Grid Operators Report body')
 
     const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer))
     expect(intent.status).toBe('VERIFIED')
@@ -100,9 +109,8 @@ describe('XRPL Testnet settlement rail', () => {
 
   it('pays each publisher at its own wallet and refuses a payee the policy did not evaluate', async () => {
     const s = await setup()
-    const quotes = await Promise.all(['northstar-wire', 'grid-operators-report'].map((resourceId, i) =>
-      s.client.quote({ runId: s.run.runId, intentId: `payee-${i}`, profileId: resourceId === 'northstar-wire' ? 'supplier-wire' : 'grid-research', resourceId, version: 'v1' })))
-    expect(quotes.map(q => q.payment!.payTo)).toEqual(['r4uhMW4Fph3YAdjrxsGZmk2mivTBhb8HVd', GRID_WALLET])
+    const payees = await Promise.all(['/v1/profiles/supplier-wire/resources/northstar-wire/versions/v1/content', CONTENT].map(async path => required(await fetch(s.baseUrl + path)).accepts[0].payTo))
+    expect(payees).toEqual(['r4uhMW4Fph3YAdjrxsGZmk2mivTBhb8HVd', GRID_WALLET])
     const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer), 'redirected', { ...s.candidate, wallet: 'r4uhMW4Fph3YAdjrxsGZmk2mivTBhb8HVd' })
     expect(intent).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('payee differs') })
     expect(s.chain.state.submits).toBe(0)
@@ -123,7 +131,7 @@ describe('XRPL Testnet settlement rail', () => {
     const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer))
     expect(intent.status).toBe('SUBMITTING')
     expect(s.store.getRun(s.run.runId).receipts).toHaveLength(0)
-    const response = await fetch(`${s.baseUrl}/v1/settlements`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer xrpl-secret' }, body: JSON.stringify({ quoteId: intent.quote!.quoteId, quoteHash: intent.quote!.quoteHash, intentId: intent.intentId, txHash: intent.txHash }) })
+    const response = await resend(s, intent.intentId)
     expect(response.status).toBe(402)
     expect((await response.json()).error).toContain('wrong delivered amount')
   })
@@ -131,16 +139,23 @@ describe('XRPL Testnet settlement rail', () => {
   it('never lets one ledger payment settle a different quote', async () => {
     const s = await setup()
     const first = await buy(s, new PurchaseManager(s.store, s.client, s.payer))
-    const other = await s.client.quote({ runId: s.run.runId, intentId: 'intent-2', profileId: 'grid-research', resourceId: 'grid-operators-report', version: 'v1' })
-    const response = await fetch(`${s.baseUrl}/v1/settlements`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer xrpl-secret' }, body: JSON.stringify({ quoteId: other.quoteId, quoteHash: other.quoteHash, intentId: 'intent-2', txHash: first.txHash }) })
+    expect(first.status).toBe('VERIFIED')
+    const other = required(await fetch(s.baseUrl + CONTENT)).accepts[0]
+    const blob = s.store.getSubmission(first.intentId)!.txBlob
+    const response = await fetch(s.baseUrl + CONTENT, { headers: { 'PAYMENT-SIGNATURE': encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: other, payload: { signedTxBlob: blob } }) } })
     expect(response.status).toBe(402)
-    expect((await response.json()).error).toContain('InvoiceID')
+    expect((await response.json()).error).toContain('another invoice')
   })
 
   it('refuses to sign when the quoted drops differ from the policy-approved price', async () => {
     const s = await setup()
-    const quote = await s.client.quote({ runId: s.run.runId, intentId: 'tampered', profileId: 'grid-research', resourceId: 'grid-operators-report', version: 'v1' })
-    s.store.reserveIntent({ runId: s.run.runId, intentId: 'tampered', profileId: 'grid-research', resourceId: 'grid-operators-report', version: 'v1', amountMinor: 80, status: 'QUOTED', quote: { ...quote, payment: { ...quote.payment!, amountDrops: '8000000' } } })
+    const accepted = required(await fetch(s.baseUrl + CONTENT)).accepts[0]
+    const quoteHash = ledgerInvoiceId(accepted.extra.invoiceId)
+    s.store.reserveIntent({ runId: s.run.runId, intentId: 'tampered', profileId: 'grid-research', resourceId: 'grid-operators-report', version: 'v1', amountMinor: 80, status: 'QUOTED', paidPath: CONTENT, quote: {
+      runId: s.run.runId, intentId: 'tampered', profileId: 'grid-research', resourceId: 'grid-operators-report', version: 'v1', quoteId: accepted.extra.invoiceId, quoteHash, amountMinor: 80, currency: 'SGD',
+      expiresAt: new Date(Date.now() + 60_000).toISOString(), contentDigest: JSON.parse(accepted.extra.invoiceId).manifestRoot,
+      payment: { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', payTo: accepted.payTo, amountDrops: '8000000', invoiceId: quoteHash },
+    } })
     const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer), 'tampered')
     expect(intent.status).toBe('FAILED_NOT_SETTLED')
     expect(s.chain.state.submits).toBe(0)
@@ -183,11 +198,11 @@ describe('XRPL Testnet settlement rail', () => {
 
   it('refuses to settle simulated while the run is labelled XRPL', async () => {
     const s = await setup()
-    const simulated = createPublisherApp({ secret: 'xrpl-secret', journal: join(s.dir, 'simulated.db'), rail: 'simulated', corpus: loadCorpus('') })
+    const simulated = createPublisherApp({ journal: join(s.dir, 'simulated.db'), rail: 'simulated', corpus: loadCorpus('') })
     await simulated.locals.ready
     const server = simulated.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
     cleanup.push(() => new Promise(resolve => server.close(resolve)))
-    const client = new PublisherClient({ baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}`, secret: 'xrpl-secret' })
+    const client = new PublisherClient({ baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}` })
     const intent = await new PurchaseManager(s.store, client, s.payer).purchase({ runId: s.run.runId, candidate: s.candidate, intentId: 'off-rail' })
     expect(intent).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('not on the XRPL') })
     expect(s.store.getRun(s.run.runId).receipts).toHaveLength(0)

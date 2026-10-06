@@ -1,19 +1,21 @@
 import { z } from 'zod'
 import { SearchHitSchema, type SearchHit } from '../shared/contracts/manifest.js'
 import { PassageSchema } from '../shared/contracts/writers.js'
-import { ContentEnvelopeSchema, ProfileSchema, PublicCandidateSchema, QuoteSchema, SettlementSchema, type ContentEnvelope, type Profile, type PublicCandidate, type Quote, type QuoteRequest, type Settlement } from '../shared/contracts/index.js'
+import { ContentEnvelopeSchema, ProfileSchema, PublicCandidateSchema, type ContentEnvelope, type Profile, type PublicCandidate } from '../shared/contracts/index.js'
+import type { PaymentRequired, PaymentResponse } from '../shared/contracts/x402.js'
+import { decodeHeader } from '../shared/x402.js'
 export type WireExchange = { method: string; path: string; status: number; body?: unknown }
 export type WireObserver = (wire: WireExchange) => void
 export class PublisherHttpError extends Error {
   constructor(readonly status: number) { super(`Publisher HTTP ${status}`) }
 }
 export class PublisherClient {
+  /** `secret` is unused since x402 v2 (no Bearer settlement); kept so existing callers compile. */
   constructor(readonly options: { baseUrl?: string; secret?: string; onWire?: WireObserver; timeoutMs?: number } = {}) {}
-  private async request(method: string, path: string, body?: unknown, token?: string, authenticated = false, observer?: WireObserver): Promise<{ bytes: Buffer; digest: string; status: number }> {
+  private async request(method: string, path: string, body?: unknown, token?: string, observer?: WireObserver): Promise<{ bytes: Buffer; digest: string; status: number }> {
     const headers: Record<string, string> = { Accept: 'application/json' }
     if (body !== undefined) headers['Content-Type'] = 'application/json'
     if (token) headers['X-Delivery-Token'] = token
-    if (authenticated) headers.Authorization = `Bearer ${this.options.secret ?? process.env.PUBLISHER_SECRET ?? ''}`
     const response = await fetch(new URL(path, this.options.baseUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
       method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(this.options.timeoutMs ?? 5000), redirect: 'error',
     })
@@ -36,27 +38,33 @@ export class PublisherClient {
   }
   async read(candidate: PublicCandidate, token?: string, observer?: WireObserver): Promise<{ content: ContentEnvelope; digest: string; bytes: string; rawBytes?: Uint8Array }> {
     const path = `/v1/profiles/${encodeURIComponent(candidate.profileId)}/resources/${encodeURIComponent(candidate.resourceId)}/versions/${encodeURIComponent(candidate.version)}/content`
-    const result = await this.request('GET', path, undefined, token, false, observer)
+    const result = await this.request('GET', path, undefined, token, observer)
     const bytes = result.bytes.toString('utf8')
     const content = ContentEnvelopeSchema.parse(JSON.parse(bytes))
     if (content.profileId !== candidate.profileId || content.resourceId !== candidate.resourceId || content.version !== candidate.version || content.spans.some(s => !content.body.includes(s.text))) throw new Error('Publisher content identity or spans invalid')
     return { content, digest: result.digest, bytes, rawBytes: result.bytes }
   }
-  async quote(request: QuoteRequest, observer?: WireObserver): Promise<Quote> {
-    const result = await this.request('POST', '/v1/quotes', request, undefined, false, observer)
-    const quote = QuoteSchema.parse(JSON.parse(result.bytes.toString('utf8')))
-    if (Object.entries(request).some(([key, value]) => quote[key as keyof Quote] !== value)) throw new Error('Publisher quote identity mismatch')
-    return quote
+  /** Paid GET path: the hit's root-relative agent URL, else the legacy profile content path. */
+  static paidPath(candidate: Pick<PublicCandidate, 'url' | 'profileId' | 'resourceId' | 'version'>): string {
+    return candidate.url ?? `/v1/profiles/${encodeURIComponent(candidate.profileId)}/resources/${encodeURIComponent(candidate.resourceId)}/versions/${encodeURIComponent(candidate.version)}/content`
   }
-  async settle(quote: Quote, observer?: WireObserver, txHash?: string): Promise<Settlement> {
-    const result = await this.request('POST', '/v1/settlements', { quoteId: quote.quoteId, quoteHash: quote.quoteHash, intentId: quote.intentId, ...(txHash ? { txHash } : {}) }, undefined, true, observer)
-    // POST may omit status; the wire protocol's success is a settled receipt/token.
-    const value = JSON.parse(result.bytes.toString('utf8'))
-    return SettlementSchema.parse({ status: 'SETTLED', ...value })
-  }
-  async settlement(intentId: string, observer?: WireObserver): Promise<Settlement> {
-    const result = await this.request('GET', `/v1/settlements/${encodeURIComponent(intentId)}`, undefined, undefined, true, observer)
-    return SettlementSchema.parse(JSON.parse(result.bytes.toString('utf8')))
+  /**
+   * x402 v2 paid GET (#130). Without a signature it expects 402 + PAYMENT-REQUIRED; with one it returns the
+   * status, the decoded PAYMENT-RESPONSE and, on 200, the delivered JSON. Only status/path reach the wire log.
+   */
+  async paidGet(path: string, signature: string | undefined, observer?: WireObserver): Promise<{ status: number; required?: PaymentRequired; response?: PaymentResponse; delivery?: unknown }> {
+    const response = await fetch(new URL(path, this.options.baseUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
+      headers: { Accept: 'application/json', ...(signature ? { 'PAYMENT-SIGNATURE': signature } : {}) }, signal: AbortSignal.timeout(this.options.timeoutMs ?? 60_000), redirect: 'error',
+    })
+    const text = await response.text()
+    const wire = { method: 'GET', path, status: response.status }
+    observer?.(wire)
+    try { this.options.onWire?.(wire) } catch { /* telemetry cannot alter settlement */ }
+    const header = <H extends 'PAYMENT-REQUIRED' | 'PAYMENT-RESPONSE'>(name: H) => response.headers.has(name) ? decodeHeader(name, response.headers.get(name)) : undefined
+    return {
+      status: response.status, required: response.status === 402 ? header('PAYMENT-REQUIRED') : undefined, response: header('PAYMENT-RESPONSE'),
+      delivery: response.status === 200 ? JSON.parse(text) as unknown : undefined,
+    }
   }
   // Federated search (D1, #138): registry, per-publisher search and FREE article reads.
   private async getJson(path: string, timeoutMs?: number): Promise<unknown> {
