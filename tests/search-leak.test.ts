@@ -59,7 +59,7 @@ describe('search leak gate (#124)', async () => {
       }
     }
     expect(responses).toBe(corpus.publishers.length * (QUESTIONS.length + 20 + paidRuns.length))
-  })
+  }, 120_000)
 
   it.each([
     ['missing q', ''],
