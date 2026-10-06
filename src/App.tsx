@@ -24,7 +24,7 @@ import ActionModal from './components/ActionModal'
 import ReputationPanel from './components/ReputationPanel'
 
 const activeKey = 'researchagent.october.active-run'
-const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify'
+const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never'
 const prefs = {
   get(key: string) { try { return localStorage.getItem(key) } catch { return null } },
   set(key: string, value: string) { try { localStorage.setItem(key, value) } catch { /* private mode */ } },
@@ -56,6 +56,7 @@ export default function App() {
   const [pending, setPending] = useState<{ input: AskInput; scope: ScopeResult; answers: Record<string, string>; step: 'clarify' | 'plan' }>()
   const [tab, setTab] = useState<'run' | 'writers'>('run')
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
+  const [clarifyNever, setClarifyNever] = useState(() => new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1')
 
   useEffect(() => {
     let cancelled = false
@@ -185,8 +186,7 @@ export default function App() {
   const sendAsk = async (input: AskInput) => {
     setSending(true); setError('')
     try {
-      const never = new URLSearchParams(window.location.search).get('clarify') === 'never'
-      const result = await scope(input.question, never ? 'never' : undefined)
+      const result = await scope(input.question, clarifyNever ? 'never' : undefined)
       setPending({ input, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
     } catch { setError('The API is unavailable. Start the demo processes, then ask again.'); throw new Error('scope failed') }
     finally { setSending(false) }
@@ -229,6 +229,7 @@ export default function App() {
     return () => { cancelled = true }
   }, [tab, reputationEvents])
   const resetWriters = () => void resetReputation().then(setReputation).catch(() => setError('Reputation reset failed.'))
+  const chooseClarifyNever = (on: boolean) => { setClarifyNever(on); prefs.set(clarifyKey, on ? '1' : '0') }
   const choosePace = (value: Pace) => { setPace(value); prefs.set(paceKey, value) }
   const chooseNotify = (on: boolean) => {
     setNotify(on); prefs.set(notifyKey, on ? '1' : '0')
@@ -237,7 +238,7 @@ export default function App() {
   const labels = <Modes labels={shown?.labels} configured={health.labels} />
   const overlays = <>
     <Toasts toasts={toasts} onDismiss={dismiss} />
-    {presenter && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onClose={() => setPresenter(false)} />}
+    {presenter && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
   </>
 
   if (screen === 'home' || !shown) return <Layout labels={labels} action={run ? <button type="button" className="ra-btn" onClick={() => setScreen('run')}>Back to the last run</button> : undefined}>

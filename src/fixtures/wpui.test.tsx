@@ -3,12 +3,16 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { DEMO_QUESTIONS } from '../../shared/contracts/examples.js'
-import { exampleRun, paidStoryRun, uc2Scope, uc3Reputation, uc3Run } from './run.js'
+import { exampleRun, paidStoryRun, uc2Scope, uc3Reputation, uc3Run, ucRuns } from './run.js'
+import bible from '../../data/corpus/v2/story-bible.json'
+import Presenter from '../components/Presenter.js'
+import Ask from '../components/Ask.js'
 import App from '../App.js'
 import ActionModal from '../components/ActionModal.js'
 import DecisionTable from '../components/DecisionTable.js'
 import DecisionPanel from '../components/DecisionPanel.js'
 import Sources, { getAccessibleContent } from '../components/Sources.js'
+import WriterChip from '../components/WriterChip.js'
 import Purchase from '../components/Purchase.js'
 import Budget from '../components/Budget.js'
 import RunTape from '../components/RunTape.js'
@@ -19,7 +23,7 @@ import { dwell, staged } from '../stage.js'
 // Wording that would make the plan card read as a purchase approval (gate 2).
 const MONEY = /S\$|\$|\bbuy|purchas|spend|\bpay|budget|approv|charg|price|cost/i
 
-afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); window.history.replaceState(null, '', '/') })
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); window.history.replaceState(null, '', '/'); try { localStorage.clear() } catch { /* no storage */ } })
 
 function stubBrowser(onRun: (body: Record<string, unknown>) => void) {
   const calls: { path: string; body?: Record<string, unknown> }[] = []
@@ -90,7 +94,7 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
     expect(onGo).toHaveBeenCalledTimes(1)
     fireEvent.change(screen.getByLabelText('Search 1'), { target: { value: 'Kestrel TSMC margin outlook' } })
     fireEvent.click(screen.getByRole('button', { name: 'Go now' }))
-    expect(onGo).toHaveBeenLastCalledWith({ ...uc2Scope.plan, subqueries: ['Kestrel TSMC margin outlook', uc2Scope.plan.subqueries[1]] })
+    expect(onGo).toHaveBeenLastCalledWith({ ...uc2Scope.plan, subqueries: ['Kestrel TSMC margin outlook', ...uc2Scope.plan.subqueries.slice(1)] })
     edit.unmount()
 
     render(<ActionModal plan={uc2Scope.plan} onGo={onGo} onCancel={onCancel} />)
@@ -126,14 +130,17 @@ describe('sources: writers, publishers, search mode, trust (#151)', () => {
 
   it('labels each source: writer link, publisher, SYNTHETIC, FREE/PAID price, trust, and the search mode', () => {
     const html = renderToStaticMarkup(<Sources run={uc3Run} />)
-    for (const text of ['search · hybrid', 'SYNTHETIC', 'PAID S$0.30', 'FREE', 'href="/w/alphaleak" target="_blank"', 'Priya Nair', 'NotFinancialTimes', 'proof failed · refunded']) expect(html).toContain(text)
-    expect(renderToStaticMarkup(<Sources run={{ ...uc3Run, labels: { ...uc3Run.labels, search: 'keyword only (embeddings unavailable)' } }} />)).toContain('keyword only (embeddings unavailable)')
+    for (const text of [`search · ${uc3Run.labels.search}`, 'SYNTHETIC', 'PAID S$0.30', 'href="/w/alphaleak" target="_blank"', 'Priya Nair', 'NotFinancialTimes', 'proof failed · refunded']) expect(html).toContain(text)
+    expect(renderToStaticMarkup(<WriterChip candidate={uc3Run.candidates.find(candidate => candidate.tier === 'FREE')!} />)).toContain('>FREE<')
+    expect(renderToStaticMarkup(<Sources run={{ ...uc3Run, labels: { ...uc3Run.labels, search: 'hybrid' } }} />)).toContain('search · hybrid')
   })
 })
 
 describe('proofs, challenge → refund, run tape (#152)', () => {
   const ids = uc3Run.events.map(event => event.id)
   const leak = uc3Run.intents[0]
+  const first = (type: string, status?: string) => uc3Run.events.find(event => event.type === type && (!status || event.data?.status === status))!.id
+  const failedClaim = leak.failedClaimIds![0]
 
   it('replays UC3 in timeline order: pay, proof fails, challenge, refund, reputation, then the honest buy', () => {
     const statuses: string[] = []
@@ -142,22 +149,22 @@ describe('proofs, challenge → refund, run tape (#152)', () => {
       if (status && statuses.at(-1) !== status) statuses.push(status)
     }
     expect(statuses).toEqual(['DECIDED', 'RESERVED', 'DELIVERY_PENDING', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED'])
-    const refunded = staged(uc3Run, 15)
+    const refunded = staged(uc3Run, first('REFUND'))
     expect([refunded.spentMinor, refunded.refundedMinor]).toEqual([30, 30])
-    expect(staged(uc3Run, 13).refundedMinor).toBe(0)
+    expect(staged(uc3Run, first('CHALLENGE', 'REFUNDED') - 1).refundedMinor).toBe(0)
     const tape = renderToStaticMarkup(<RunTape run={uc3Run} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
     const order = ['Plan', 'Search', 'Choose what to buy', 'Proof check', 'Challenge', 'Refund', 'Reputation', 'Check again', 'Done'].map(title => tape.indexOf(`<b>${title}</b>`))
     expect(order.every(index => index >= 0)).toBe(true)
     expect(order).toEqual([...order].sort((a, b) => a - b))
-    expect(tape).toContain('Proof failed · lead-times-dated')
+    expect(tape).toContain(`Proof failed · ${failedClaim}`)
     for (const type of ['PLAN', 'PROOF', 'CHALLENGE', 'REFUND', 'REPUTATION']) expect(dwell({ id: 0, runId: '', type, label: '', at: '' })).toBeGreaterThan(0)
   })
 
   it('shows proof badges, the refund with its rail label, and spent / refunded / net', () => {
     const failed = renderToStaticMarkup(<Purchase run={uc3Run} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
-    for (const text of ['✗ lead-times-dated', 'Proof failed', 'Challenged', 'Refunded S$0.30', 'SIMULATED', 'Quarantined: never cited']) expect(failed).toContain(text)
+    for (const text of [`✗ ${failedClaim}`, 'Proof failed', 'Challenged', 'Refunded S$0.30', 'SIMULATED', 'Quarantined: never cited']) expect(failed).toContain(text)
     const ok = renderToStaticMarkup(<Purchase run={uc3Run} intent={uc3Run.intents[1]} onRetry={() => {}} onReceipt={() => {}} />)
-    expect(ok).toContain('✓ 1 claim')
+    expect(ok).toMatch(/✓ \d+ claims?/)
     expect(ok).not.toContain('Refunded')
     const testnet = { ...uc3Run, events: uc3Run.events.map(event => event.type === 'REFUND' ? { ...event, data: { ...event.data, label: 'XRPL TESTNET · no real value', explorerUrl: `https://testnet.xrpl.org/transactions/${leak.refund!.txHash}` } } : event) }
     const onLedger = renderToStaticMarkup(<Purchase run={testnet} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
@@ -190,12 +197,64 @@ describe('Writers tab: the reputation panel (#153)', () => {
   })
 
   it('holds the pre-run score during the replay, then highlights the drop', () => {
-    const { container, rerender } = render(<ReputationPanel records={uc3Reputation} run={staged(uc3Run, 15)} full={uc3Run} />)
+    const drop = uc3Run.events.find(event => event.type === 'REPUTATION' && event.data?.publisherSlug === 'alphaleak')!.id
+    const { container, rerender } = render(<ReputationPanel records={uc3Reputation} run={staged(uc3Run, drop - 1)} full={uc3Run} />)
     const leakRow = () => [...container.querySelectorAll('tbody')].find(body => body.textContent?.includes('AlphaLeak'))!
     expect(leakRow().textContent).toContain('H 0.80')
     expect(leakRow().className).not.toContain('is-drop')
-    rerender(<ReputationPanel records={uc3Reputation} run={staged(uc3Run, 16)} full={uc3Run} />)
+    rerender(<ReputationPanel records={uc3Reputation} run={staged(uc3Run, drop)} full={uc3Run} />)
     expect(leakRow().textContent).toContain('H 0.40')
     expect(leakRow().className).toContain('is-drop')
+  })
+})
+
+describe('presenter controls, presets and the UC fixture runs (#154)', () => {
+  it('the presenter menu toggles clarify=never, resets reputation and keeps the pace selector', async () => {
+    const onClarifyNever = vi.fn(), onResetReputation = vi.fn().mockResolvedValue(undefined), onPace = vi.fn()
+    render(<Presenter pace="stage" onPace={onPace} faults={false} busy={false} onClose={() => {}} clarifyNever={false} onClarifyNever={onClarifyNever} onResetReputation={onResetReputation} />)
+    fireEvent.click(screen.getByLabelText(/Skip them \(clarify=never\)/))
+    expect(onClarifyNever).toHaveBeenCalledWith(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Reset reputation' }))
+    expect(onResetReputation).toHaveBeenCalledOnce()
+    expect(await screen.findByRole('button', { name: /every writer starts at H 0.80/ })).toBeTruthy()
+    fireEvent.click(screen.getByRole('radio', { name: 'Real' }))
+    expect(onPace).toHaveBeenCalledWith('real')
+  })
+
+  it('the clarify=never toggle reaches /api/scope', async () => {
+    const calls = stubBrowser(() => {})
+    render(<App />)
+    fireEvent.keyDown(window, { key: '.' })
+    fireEvent.click(screen.getByLabelText(/Skip them \(clarify=never\)/))
+    fireEvent.keyDown(window, { key: '.' })
+    fireEvent.click(screen.getByRole('button', { name: /^Ask/ }))
+    await screen.findByRole('dialog', { name: 'Search plan' })
+    expect(calls.find(call => call.path === '/api/scope')?.body).toEqual({ question: DEMO_QUESTIONS[1].text, clarify: 'never' })
+  })
+
+  it('three one-click presets fill the question (UC2 by default); free typing stays', () => {
+    render(<Ask onAsk={() => {}} settlement="SIMULATED SGD · no real funds" notify={false} onNotify={() => {}} />)
+    const box = screen.getByLabelText('Your question') as HTMLTextAreaElement
+    expect(box.value).toBe(DEMO_QUESTIONS[1].text)
+    expect(screen.getByRole('button', { name: /^UC2/ }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: /^UC3/ }))
+    expect(box.value).toBe(DEMO_QUESTIONS[2].text)
+    fireEvent.change(box, { target: { value: 'My own question?' } })
+    expect(box.value).toBe('My own question?')
+    expect(screen.queryAllByRole('button', { pressed: true })).toHaveLength(0)
+  })
+
+  it('the UC fixture runs are the scenario outputs for the story-bible questions', () => {
+    const uc = Object.fromEntries(bible.useCases.map(u => [u.id, u]))
+    for (const id of ['UC1', 'UC2', 'UC3'] as const) {
+      expect(ucRuns[id].question).toBe(uc[id].question)
+      expect(ucRuns[id].phase).toBe('DONE')
+      expect(ucRuns[id].labels.settlement).toBe('SIMULATED SGD · no real funds')
+    }
+    expect(ucRuns.UC1.spentMinor).toBe(0)
+    expect(ucRuns.UC2.intents.map(intent => `${intent.resourceId}:${intent.status}`)).toEqual([`${uc.UC2.expectedPicks.round1}:VERIFIED`])
+    expect(ucRuns.UC3.intents.map(intent => `${intent.resourceId}:${intent.status}`)).toEqual([`${uc.UC3.expectedPicks.round1}:REFUNDED`, `${uc.UC3.expectedPicks.round2}:VERIFIED`])
+    expect([ucRuns.UC3.spentMinor, ucRuns.UC3.refundedMinor]).toEqual([55, 30])
+    expect(JSON.stringify(ucRuns)).not.toMatch(/Vertex|CANARY/)
   })
 })

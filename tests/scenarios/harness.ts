@@ -34,10 +34,11 @@ export type Observation = { kind: string; raw: string; grants: Grant[]; runId?: 
 export type Audit = { kind: string; body: unknown; grants: Grant[]; runId: string }
 const pause = (ms: number) => new Promise(done => setTimeout(done, ms))
 
-export async function startScenario(options: { injection?: boolean; audited?: boolean } = {}) {
+/** `plain`: the unmodified v2 corpus (no canaries, no over-cap decoy), for the UI fixture generator (#154). */
+export async function startScenario(options: { injection?: boolean; audited?: boolean; plain?: boolean } = {}) {
   const audited = options.audited ?? false
   const dir = mkdtempSync(join(tmpdir(), 'tftf-scenarios-'))
-  const corpus = await scenarioCorpus(options)
+  const corpus = options.plain ? await loadWriterCorpus(undefined, { allowMini: false }) : await scenarioCorpus(options)
   writeFileSync(join(dir, 'corpus.json'), JSON.stringify(corpus))
   const children: ChildProcess[] = []
   const logs: string[] = []
