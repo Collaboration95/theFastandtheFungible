@@ -118,9 +118,11 @@ export async function createApiApp(options: ApiOptions = {}) {
     res.status(201).json(run)
     launch(run.runId, async () => {
       // No plan from the UI: the server plans itself, so tests and API users need no UI.
-      const { label: _label, ...plan } = input.plan ? { ...input.plan, label: 'client' } : await planSearch(input.question, input.answers)
-      store.updateRun(run.runId, { checkpoint: { ...store.getRun(run.runId).checkpoint, plan, ...(input.answers ? { answers: input.answers } : {}) } })
-      store.appendEvent(run.runId, { type: 'PLAN', label: `Search plan: ${plan.subqueries.join(' · ')}`, data: { plan } })
+      // The planner label stays visible (gate 5): client, live model, or the fixture fallback.
+      const { label: planLabel, ...plan } = input.plan ? { ...input.plan, label: 'client plan' } : await planSearch(input.question, input.answers)
+      const current = store.getRun(run.runId)
+      store.updateRun(run.runId, { labels: { ...current.labels, plan: planLabel }, checkpoint: { ...current.checkpoint, plan, ...(input.answers ? { answers: input.answers } : {}) } })
+      store.appendEvent(run.runId, { type: 'PLAN', label: `Search plan (${planLabel}): ${plan.subqueries.join(' · ')}`, data: { plan, planner: planLabel } })
       await loop.start(run.runId)
     })
   })

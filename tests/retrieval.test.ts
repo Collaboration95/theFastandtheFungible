@@ -41,6 +41,7 @@ describe('federated retrieval (#138)', () => {
     const deal = result.candidates.find(c => c.resourceId === 'lf-kestrel-tsmc-deal')!
     expect(deal).toMatchObject({ profileId: 'load-factor', publisherSlug: 'load-factor', authority: 1.5, tier: 'PAID', url: '/w/load-factor/articles/lf-kestrel-tsmc-deal' })
     expect(deal.wallet).toMatch(/^r/)
+    expect(deal.manifest).toEqual(result.hits.find(h => h.articleId === 'lf-kestrel-tsmc-deal')!.manifest)
     expect(JSON.stringify(result.candidates)).not.toMatch(/"body"|"passages"/)
     expect(result.search).toBe('keyword only (embeddings unavailable)')
     expect(result.dropped).toEqual([])

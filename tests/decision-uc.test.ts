@@ -63,7 +63,7 @@ describe('story-bible use cases in fixture mode (#139)', () => {
       const judge = (price: number) => provider.judgeCandidate({ question: useCase.question, gap: 'lead times in weeks', readSources, candidate: { ...c, price: { amountMinor: price, currency: 'SGD' } } })
       expect(await judge(1)).toEqual(await judge(99))
       const state = clefCandidate({ ...c, wallet: 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp' })
-      expect(state).not.toHaveProperty('price'); expect(state).not.toHaveProperty('wallet')
+      expect(state).not.toHaveProperty('price'); expect(state).not.toHaveProperty('wallet'); expect(state).not.toHaveProperty('manifest')
       expect(state).toMatchObject({ abstract: c.preview, tags: c.facets, relevance: c.relevance })
     }
   })

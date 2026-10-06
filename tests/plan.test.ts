@@ -58,12 +58,20 @@ describe('plan and run start (#137)', () => {
       const run = await settled((await ask({ question: uc('UC2'), answers: { angle: 'pricing & margins' }, budgetMinor: 0 })).runId)
       expect(run.checkpoint.plan).toEqual(fixturePlan(uc('UC2'), { angle: 'pricing & margins' }))
       expect(run.events.find(e => e.type === 'PLAN')?.label).toContain('analyst outlook Kestrel Semiconductor deal TSMC')
+      // The server-side fixture plan stays labelled (gate 5), on the run and in the PLAN event.
+      expect(run.labels.plan).toBe('fixture · scope-fixture')
+      expect(run.events.find(e => e.type === 'PLAN')).toMatchObject({ label: expect.stringContaining('fixture · scope-fixture'), data: { planner: 'fixture · scope-fixture' } })
+      // The verified manifest stays on the stored PAID candidate and on the decision row the policy hands to purchase.
+      const paid = run.candidates.find(c => c.resourceId === 'lf-kestrel-tsmc-deal')!
+      expect(paid.manifest).toMatchObject({ articleId: 'lf-kestrel-tsmc-deal', wallet: paid.wallet })
+      expect(run.decisions.flatMap(d => d.rows).find(r => r.candidate.resourceId === 'lf-kestrel-tsmc-deal')?.candidate.manifest).toEqual(paid.manifest)
       expect(run.labels.search).toBe('keyword only (embeddings unavailable)')
       expect(run.candidates.some(c => c.resourceId === 'lf-kestrel-tsmc-deal' && c.tier === 'PAID')).toBe(true)
       expect(run.spentMinor).toBe(0)
       const given = { restatement: 'BoJ band', subqueries: ['BoJ band widened'] }
       const second = await settled((await ask({ question: uc('UC1'), plan: given, budgetMinor: 0 })).runId)
       expect(second.checkpoint.plan).toEqual(given)
+      expect(second.labels.plan).toBe('client plan')
       expect(second.contents.some(c => c.resourceId === 'mt-boj-band')).toBe(true)
     } finally {
       server.close(); api.close(); pubServer.close(); publisher.locals.journal.close(); rmSync(dir, { recursive: true, force: true })

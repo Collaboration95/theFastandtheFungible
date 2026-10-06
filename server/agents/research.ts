@@ -68,7 +68,7 @@ export function manifestProblem(hit: SearchHit, wallet: string | undefined): str
 }
 const toCandidate = (hit: SearchHit, publisher: RegistryPublisher): PublicCandidate => PublicCandidateSchema.parse({
   profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: hit.title, publisher: publisher.name, preview: hit.abstract,
-  price: { amountMinor: hit.priceMinor, currency: 'SGD' }, ...(hit.manifest ? { wallet: hit.manifest.wallet } : {}), family: hit.family, ...(hit.derivedFrom ? { derivedFrom: hit.derivedFrom } : {}),
+  price: { amountMinor: hit.priceMinor, currency: 'SGD' }, ...(hit.manifest ? { wallet: hit.manifest.wallet, manifest: hit.manifest } : {}), family: hit.family, ...(hit.derivedFrom ? { derivedFrom: hit.derivedFrom } : {}),
   facets: hit.tags, authority: KIND_AUTHORITY[publisher.kind], tier: hit.tier, license: { kind: 'SYNTHETIC', attribution: publisher.name },
   publisherSlug: hit.publisherSlug, writerSlug: hit.writerSlug, url: hit.url, relevance: hit.relevance,
 })
