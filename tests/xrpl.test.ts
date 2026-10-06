@@ -11,6 +11,7 @@ import { PurchaseManager } from '../server/purchases.js'
 import { PublisherClient } from '../server/publisher-client.js'
 import { XrplPayer } from '../server/xrpl.js'
 import { createApiApp } from '../server/routes.js'
+import { miniCorpus } from './fixtures/corpus-mini/index.js'
 import { testnetUrl, type Ledger } from '../shared/xrpl.js'
 
 const GRID_WALLET = 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp' // Grid Operators Report's own Testnet wallet
@@ -54,8 +55,11 @@ afterEach(async () => { for (const fn of cleanup.splice(0).reverse()) await fn()
 async function setup() {
   const dir = mkdtempSync(join(tmpdir(), 'xrpl-test-')); cleanup.push(() => rmSync(dir, { recursive: true, force: true }))
   const chain = fakeLedger()
-  const app = createPublisherApp({ secret: 'xrpl-secret', journal: join(dir, 'publisher.db'), rail: 'xrpl-testnet', ledger: chain.ledger, corpus: loadCorpus('') })
+  const app = createPublisherApp({ secret: 'xrpl-secret', journal: join(dir, 'publisher.db'), rail: 'xrpl-testnet', ledger: chain.ledger, corpus: loadCorpus(''),
+    // The ledger view lists paid publishers from the writer registry (#138); a throwaway test seed keys Load Factor.
+    writers: miniCorpus, env: { XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed! } })
   await app.locals.ready
+  await app.locals.writersReady
   const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
   cleanup.push(() => new Promise(resolve => server.close(resolve)))
   const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
@@ -196,7 +200,7 @@ describe('XRPL Testnet settlement rail', () => {
     expect(s.chain.state.submits).toBe(0)
   })
 
-  it('serves a read-only ledger view: buyer plus five publisher wallets, never a seed', async () => {
+  it('serves a read-only ledger view: buyer plus the registry paid publisher wallets, never a seed', async () => {
     const s = await setup()
     const api = await createApiApp({ dbPath: join(s.dir, 'api.db'), publisherUrl: s.baseUrl, secret: 'xrpl-secret', reportDir: join(s.dir, 'reports'), payer: s.payer })
     const server = api.app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
@@ -204,8 +208,8 @@ describe('XRPL Testnet settlement rail', () => {
     const response = await fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/api/ledger`)
     const view = await response.json()
     expect(view.rail).toBe('xrpl-testnet')
-    expect(view.wallets.map((w: { name: string }) => w.name).sort()).toEqual(['Circuit Note', 'Grid Operators Report', 'GridScope Asia', 'Monsoon Thermal Analytics', 'Northstar Wire', 'ResearchAgent (buyer)'])
-    expect(new Set(view.wallets.map((w: { address: string }) => w.address)).size).toBe(6)
+    expect(view.wallets.map((w: { name: string }) => w.name).sort()).toEqual(['Load Factor', 'ResearchAgent (buyer)'])
+    expect(new Set(view.wallets.map((w: { address: string }) => w.address)).size).toBe(2)
     expect(view.wallets[0]).toMatchObject({ address: s.wallet.classicAddress, balanceDrops: '100000000' })
     expect(JSON.stringify(view)).not.toContain(s.wallet.seed!)
   })

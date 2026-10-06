@@ -74,7 +74,8 @@ describe('October demo scenarios: separate API and publisher processes', () => {
     expect(run.grants).toEqual([])
     expect(run.answers).toHaveLength(1)
     expect(run.answers[0].openGaps).toEqual([])
-    expect(run.decisions[0].rows.every(r => r.verdict === 'SKIP_NO_GAP')).toBe(true)
+    // A rewrite is labelled SKIP_REWRITE even when no gap is open (story bible UC1).
+    expect(run.decisions[0].rows.every(r => r.verdict === 'SKIP_NO_GAP' || r.verdict === 'SKIP_REWRITE')).toBe(true)
     assertNoLeaks(h.observations, h.resources)
   }, 30_000)
 
@@ -146,10 +147,14 @@ describe('October demo scenarios: separate API and publisher processes', () => {
     expect(run.decisions.every(d => d.provider === 'cloudflare' && !d.fallbackReason)).toBe(true)
     const audits = h.audits()
     const requests: Observation[] = audits.map(a => ({ kind: a.kind, raw: JSON.stringify(a.body), grants: a.grants, runId: a.runId }))
-    expect(audits.filter(a => a.kind === 'groq')).toHaveLength(2)
+    // One plan request (#137: no plan from the client, so the server plans) plus two answer generations.
+    const isAnswer = (a: { body: unknown }) => JSON.stringify(a.body).includes('Write a cited answer')
+    expect(audits.filter(a => a.kind === 'groq')).toHaveLength(3)
+    expect(audits.filter(a => a.kind === 'groq' && isAnswer(a))).toHaveLength(2)
     expect(audits.filter(a => a.kind === 'clef').length).toBeGreaterThanOrEqual(5)
     expect(audits.some(a => a.kind === 'clef' && a.grants.length === 0)).toBe(true)
     expect(audits.some(a => a.kind === 'groq' && a.grants.length === 1)).toBe(true)
+    expect(audits.filter(a => a.kind === 'groq' && !isAnswer(a)).every(a => JSON.stringify(a.body).includes('You plan a search'))).toBe(true)
     assertNoLeaks([...h.observations, ...requests], h.resources)
     // Clef may see a granted answer conclusion, but candidate metadata never has private fields.
     for (const a of audits.filter(a => a.kind === 'clef')) {
@@ -159,7 +164,7 @@ describe('October demo scenarios: separate API and publisher processes', () => {
         expect(value).not.toHaveProperty('spans')
       }
     }
-    const groq = requests.filter(a => a.kind === 'groq')
+    const groq = audits.filter(a => a.kind === 'groq' && isAnswer(a)).map(a => ({ raw: JSON.stringify(a.body) }))
     expect(groq[0].raw).not.toContain('240 of the announced 600 MW')
     expect(groq[1].raw).toContain('240 of the announced 600 MW')
     const content = run.contents.find(c => c.resourceId === 'grid-operators-report')!

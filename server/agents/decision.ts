@@ -2,7 +2,6 @@ import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
-import { LEGACY_FACETS } from './research.js'
 import type { CandidateJudgment, DecisionRound, PublicCandidate, PublicSourceRef } from '../../shared/contracts/index.js'
 
 export interface DecisionProvider {
@@ -18,34 +17,41 @@ const SourceRefSchema = PublicCandidateSchema.pick({ resourceId: true, version: 
 export const decisionModel = () => process.env.DECISION_MODEL || '@cf/cloudflare/clef-flash'
 export const publicCandidate = (input: unknown): PublicCandidate => PublicCandidateSchema.parse(input)
 export const publicSources = (input: unknown): PublicSourceRef[] => z.array(SourceRefSchema).parse(input)
-const words = (text: string) => new Set(text.toLowerCase().match(/[a-z0-9]+/g)?.filter(word => word.length > 3) ?? [])
-const overlap = (a: string, b: string) => [...words(a)].filter(word => words(b).has(word)).length
-const facetFor = (gap: string) => LEGACY_FACETS.find(facet => overlap(gap, facet.replaceAll('-', ' ')) > 0)
+// Words that say nothing about which evidence a gap needs.
+const STOP = new Set(['accessible', 'evidence', 'source', 'sources', 'about', 'their', 'there', 'which', 'what', 'with', 'from', 'that', 'this', 'whether', 'still', 'missing', 'figures', 'dated', 'data'])
+const words = (text: string) => new Set(text.toLowerCase().match(/[a-z0-9]+/g)?.filter(word => word.length > 3 && !STOP.has(word)) ?? [])
+/** Share of the gap a candidate's public fields address: two matching content words count as fully addressed. */
+export const gapOverlap = (gap: string, candidate: PublicCandidate) => {
+  const own = words(`${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`)
+  return Math.min(1, [...words(gap)].filter(word => own.has(word)).length / 2)
+}
 
-/** Generic metadata heuristics, with no named-source or hidden corpus knowledge. */
+/**
+ * Generic metadata heuristics, with no named-source or hidden corpus knowledge.
+ * addressesGap = word/tag overlap × the hit's claimed relevance (a promise that
+ * calibration later checks); originality from family/derivedFrom; credibility
+ * from the publisher kind (carried as `authority`). Price never enters.
+ */
 export class FixtureDecisionProvider implements DecisionProvider {
   readonly name = 'fixture' as const
   readonly model = 'metadata-fixture'
-  constructor(private readonly gapFacet?: string) {}
   async judgeRound({ gap }: { question: string; conclusion: string; gap: string }) {
     return { gapMaterial: gap.trim() ? 0.9 : 0 }
   }
   async judgeCandidate({ gap, readSources, candidate: raw }: { question: string; gap: string; readSources: PublicSourceRef[]; candidate: PublicCandidate }): Promise<CandidateJudgment> {
     const candidate = publicCandidate(raw)
     const sources = publicSources(readSources)
-    const rewrite = Boolean(candidate.derivedFrom) || /\b(rewrite|summari[sz]es?|syndicat\w*)\b/i.test(candidate.preview)
+    const rewrite = Boolean(candidate.derivedFrom)
     const repeated = sources.some(source => source.family === candidate.family)
-    const facet = LEGACY_FACETS.find(f => f === this.gapFacet) ?? facetFor(gap)
-    const relevant = facet ? candidate.facets.includes(facet) : overlap(gap, candidate.preview) >= 2
     return {
-      addressesGap: gap.trim() ? (relevant ? 0.9 : 0.08) : 0,
+      addressesGap: gap.trim() ? Math.max(0.05, gapOverlap(gap, candidate)) * (candidate.relevance ?? 1) : 0,
       originality: rewrite ? { original: 0.02, rewrite: 0.96, overlap: 0.02 } : repeated ? { original: 0.05, rewrite: 0.05, overlap: 0.9 } : { original: 0.9, rewrite: 0.03, overlap: 0.07 },
       credibility: candidate.authority,
     }
   }
 }
 export type DecideInput = {
-  question: string; conclusion: string; gap: string; gapFacet?: string
+  question: string; conclusion: string; gap: string
   candidates: PublicCandidate[]; readSources: PublicSourceRef[]
   budgetMinor: number; spentMinor: number; reservedMinor: number; perSourceCapMinor: number
   round: number; provider?: DecisionProvider; threshold?: number; boughtResourceIds?: string[]
@@ -71,7 +77,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const readSources = publicSources(input.readSources)
   const remaining = z.number().int().nonnegative().parse(input.budgetMinor) - z.number().int().nonnegative().parse(input.spentMinor) - z.number().int().nonnegative().parse(input.reservedMinor)
   const cap = z.number().int().nonnegative().parse(input.perSourceCapMinor)
-  let provider = input.provider ?? new FixtureDecisionProvider(input.gapFacet)
+  let provider = input.provider ?? new FixtureDecisionProvider()
   let fallbackReason: string | undefined
   const evaluate = (provider: DecisionProvider) => Promise.all([
     provider.judgeRound({ question: input.question, conclusion: input.conclusion, gap: input.gap }).then(result => z.object({ gapMaterial: z.number().min(0).max(1) }).parse(result)),
@@ -79,7 +85,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   ])
   let results: Awaited<ReturnType<typeof evaluate>>
   try { results = await evaluate(provider) } catch {
-    provider = new FixtureDecisionProvider(input.gapFacet)
+    provider = new FixtureDecisionProvider()
     fallbackReason = 'Decision provider unavailable or invalid; fixture metadata substituted.'
     results = await evaluate(provider)
   }
@@ -94,8 +100,9 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     const valuePerDollar = value / (Math.max(price, 1) / 100)
     let verdict: DecisionRound['rows'][number]['verdict'] = 'BUY'
     let reason = 'Clears the value threshold and spending policy.'
-    if (!input.gap.trim() || gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
-    else if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || judgment.originality.rewrite >= judgment.originality.original) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
+    // A rewrite is labelled as one even when no gap is open (story bible UC1).
+    if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || judgment.originality.rewrite >= judgment.originality.original) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
+    else if (!input.gap.trim() || gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }

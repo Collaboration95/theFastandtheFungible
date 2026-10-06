@@ -14,7 +14,7 @@ export const TRACE_EVENT_TYPES = ['CLARIFY', 'PLAN', 'PROOF', 'CHALLENGE', 'REFU
 export const TraceEventSchema = z.object({ id: z.number().int(), runId: z.string(), type: z.string(), label: z.string(), at: z.string(), data: z.record(z.string(), z.unknown()).optional() })
 export const SEARCH_LABELS = ['hybrid', 'keyword only (embeddings unavailable)'] as const
 /** `search` is optional until the search stream (#125+) sets it on every run (gate 5). */
-export const ModeLabelsSchema = z.object({ research: z.string(), decision: z.string(), publisher: z.string(), settlement: SettlementLabelSchema, search: z.enum(SEARCH_LABELS).optional() })
+export const ModeLabelsSchema = z.object({ research: z.string(), decision: z.string(), publisher: z.string(), settlement: SettlementLabelSchema, search: z.enum(SEARCH_LABELS).optional(), /** Who wrote the search plan: 'client plan', a live model, or 'fixture · scope-fixture' (gate 5). */ plan: z.string().optional() })
 export const RunPhaseSchema = z.enum(['SEARCH', 'READ_FREE', 'ANSWER', 'DECIDE', 'BUY', 'READ_PAID', 'DONE', 'FAILED', 'STOPPED'])
 export const RunCheckpointSchema = z.object({ phase: RunPhaseSchema.optional(), round: z.number().int().nonnegative().optional(), answerVersion: z.number().int().positive().optional(), intentId: z.string().optional(), answeredIntentId: z.string().optional(), nextAction: z.enum(['retry-delivery', 'ask']).optional() }).catchall(z.unknown())
 export const RunSnapshotSchema = z.object({

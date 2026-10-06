@@ -2,7 +2,7 @@ import express, { type ErrorRequestHandler, type Response } from 'express'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { z } from 'zod'
-import { AskSchema, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
+import { AskSchema, DROPS_PER_MINOR, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
 import { XrplPayer } from './xrpl.js'
 import { scoreTrace, traceEvent, traceRun } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
@@ -14,6 +14,7 @@ import { ClefDecisionProvider } from './agents/clef.js'
 import { type DecisionProvider } from './agents/decision.js'
 import { buildReport, renderReport } from './agents/report.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
+import { plan as planSearch, scope } from './agents/scope.js'
 
 export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider }
 export async function createApiApp(options: ApiOptions = {}) {
@@ -62,7 +63,7 @@ export async function createApiApp(options: ApiOptions = {}) {
       done()
       const run = store.getRun(runId)
       if (!run.answers.length) {
-        store.addAnswer(runId, { conclusion: 'No accessible evidence was read. The publisher is unavailable; start a new ask when it is ready.', claims: [], openGaps: [{ text: 'No accessible evidence is available.', tags: ['grid-energisation'] }], version: 1, provider: 'fixture', model: 'extractive-fixture' })
+        store.addAnswer(runId, { conclusion: 'No accessible evidence was read. The publisher is unavailable; start a new ask when it is ready.', claims: [], openGaps: [{ text: 'No accessible evidence is available.' }], version: 1, provider: 'fixture', model: 'extractive-fixture' })
         store.updateRun(runId, { labels: { ...run.labels, research: 'fixture · extractive-fixture' } })
       }
       store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Latest validated answer and ledger saved.' })
@@ -73,16 +74,18 @@ export async function createApiApp(options: ApiOptions = {}) {
   let ledgerCache: { at: number; view: Promise<LedgerView> } | undefined
   const ledgerView = async (): Promise<LedgerView> => {
     if (!payer?.address) return { rail: 'simulated' }
-    const paid = (await Promise.all((await client.profiles()).map(profile => client.search(profile.id, '')))).flat().filter(c => c.tier === 'PAID' && c.wallet)
-    const publishers = [...new Map(paid.map(c => [c.wallet!, c.publisher])).entries()]
-    const receipts = store.listRuns().flatMap(run => run.receipts).filter(r => r.xrpl)
+    // Paid publishers are the registry entries with a wallet (#138).
+    const publishers = (await client.registry()).filter(p => p.wallet).map(p => [p.wallet!, p.name] as const)
+    const runs = store.listRuns()
+    const receipts = runs.flatMap(run => run.receipts).filter(r => r.xrpl)
+    const refundedDrops = (intentId: string) => (runs.flatMap(run => run.intents).find(i => i.intentId === intentId)?.refund?.amountMinor ?? 0) * DROPS_PER_MINOR
     const balance = async (address: string) => {
       try { return String((await payer.ledger.request({ command: 'account_info', account: address, ledger_index: 'validated' })).result.account_data.Balance) }
       catch { return null }
     }
     const wallet = async (role: 'buyer' | 'publisher', name: string, address: string) => {
       const mine = receipts.filter(r => (role === 'buyer' ? r.xrpl!.payer : r.xrpl!.payTo) === address)
-      return { role, name, address, balanceDrops: await balance(address), receivedDrops: String(role === 'buyer' ? 0 : mine.reduce((sum, r) => sum + Number(r.xrpl!.amountDrops), 0)), payments: mine.length }
+      return { role, name, address, balanceDrops: await balance(address), receivedDrops: String(role === 'buyer' ? 0 : Math.max(0, mine.reduce((sum, r) => sum + Number(r.xrpl!.amountDrops) - refundedDrops(r.intentId), 0))), payments: mine.length }
     }
     return LedgerViewSchema.parse({ rail: 'xrpl-testnet', network: 'xrpl:1', accountExplorer: 'https://testnet.xrpl.org/accounts', updatedAt: new Date().toISOString(),
       wallets: await Promise.all([wallet('buyer', 'ResearchAgent (buyer)', payer.address), ...publishers.map(([address, name]) => wallet('publisher', name, address))]) })
@@ -102,11 +105,26 @@ export async function createApiApp(options: ApiOptions = {}) {
     if (!response.ok) return res.status(502).json({ error: 'Local publisher fault control is unavailable.' })
     res.json({ failNextDelivery: true, label: 'SIMULATED fault · no real funds' })
   })
+  // Clarify (D8/D9): questions and a plan only; this route cannot spend. clarify=never skips the questions.
+  app.post('/api/scope', async (req, res) => {
+    const input = z.object({ question: AskSchema.shape.question, clarify: z.enum(['never', 'auto']).optional() }).parse(req.body)
+    const never = input.clarify === 'never' || req.query.clarify === 'never'
+    res.json(await scope(input.question, never ? { clarify: 'never' } : {}))
+  })
+  // The 5 s modal is UI only: calling this starts the run. The budget, not the plan, is the spending authorization (gate 2).
   app.post('/runs', (req, res) => {
     const input = AskSchema.parse(req.body)
     const run = store.createRun(input.question, input.budgetMinor, labels)
     res.status(201).json(run)
-    launch(run.runId, () => loop.start(run.runId))
+    launch(run.runId, async () => {
+      // No plan from the UI: the server plans itself, so tests and API users need no UI.
+      // The planner label stays visible (gate 5): client, live model, or the fixture fallback.
+      const { label: planLabel, ...plan } = input.plan ? { ...input.plan, label: 'client plan' } : await planSearch(input.question, input.answers)
+      const current = store.getRun(run.runId)
+      store.updateRun(run.runId, { labels: { ...current.labels, plan: planLabel }, checkpoint: { ...current.checkpoint, plan, ...(input.answers ? { answers: input.answers } : {}) } })
+      store.appendEvent(run.runId, { type: 'PLAN', label: `Search plan (${planLabel}): ${plan.subqueries.join(' · ')}`, data: { plan, planner: planLabel } })
+      await loop.start(run.runId)
+    })
   })
   app.get('/runs/:id', (req, res) => res.json(store.getRun(String(req.params.id))))
   app.post('/runs/:id/stop', (req, res) => { loop.stop(String(req.params.id)); res.json(store.getRun(String(req.params.id))) })
