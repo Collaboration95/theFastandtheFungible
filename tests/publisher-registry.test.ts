@@ -11,6 +11,7 @@ import { loadWriterCorpus } from '../publisher/corpus.js'
 import { publisherKeys, seedEnvName, simulatedKeys, simulatedSeed } from '../publisher/registry.js'
 import { SearchHitSchema } from '../shared/contracts/manifest.js'
 import { sha256, verifyManifestSignature } from '../shared/manifest.js'
+import { embeddingText } from '../publisher/search.js'
 
 const cleanups: (() => Promise<void> | void)[] = []
 afterEach(async () => { for (const cleanup of cleanups.splice(0).reverse()) await cleanup() })
@@ -80,7 +81,7 @@ describe('multi-publisher host (#122)', () => {
 
   it('uses hybrid search when a query embedder answers, and keyword when it fails', async () => {
     const vector = (n: number) => Array.from({ length: 4 }, (_, i) => (i === n ? 1 : 0.1))
-    const embeddings = { model: 'stub', dims: 4, vectors: Object.fromEntries(miniCorpus.articles.map((a, i) => [`${a.articleId}@${a.version}`, { hash: sha256(a.body), vector: vector(i % 4) }])) }
+    const embeddings = { model: 'stub', dims: 4, vectors: Object.fromEntries(miniCorpus.articles.map((a, i) => [`${a.articleId}@${a.version}`, { hash: sha256(embeddingText(a)), vector: vector(i % 4) }])) }
     const hybrid = await servePublishers({ embeddings, embedder: async () => vector(0) })
     const hits = SearchHitSchema.array().parse(await (await fetch(`${hybrid}/w/load-factor/search?q=kestrel`)).json())
     expect(hits[0].searchMode).toBe('hybrid')

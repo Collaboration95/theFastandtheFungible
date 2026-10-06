@@ -11,14 +11,21 @@ export type EmbeddingCache = { model: string; dims: number; vectors: Record<stri
 
 /** Every ranking knob in one place, so it can be tuned on the story-bible questions. */
 export const SEARCH_TUNING = {
-  boost: { title: 3, abstract: 2, tags: 2, body: 1 },
+  // Tuned 8 Oct on 162 eval queries (eval/README.md): body 1 → 0.5 and vector weight 0.5 → 0.8 lift
+  // within-publisher MRR 0.978 → 0.997; BM25 k1/b changes moved MRR < 0.005, so Orama defaults stay.
+  boost: { title: 3, abstract: 2, tags: 2, body: 0.5 },
   /** Orama full-text threshold: 1 keeps any article matching at least one term. */
   threshold: 1,
   /** Minimum cosine similarity for the vector half. */
   similarity: 0.3,
-  hybridWeights: { text: 0.5, vector: 0.5 },
-  /** Keyword relevance = bm25 / (bm25 + this): absolute, so a weak top hit is not promised as 1.0 (#142). */
-  keywordHalfScore: 5,
+  hybridWeights: { text: 0.2, vector: 0.8 },
+  /** Hybrid relevance = cosine(query, article) mapped linearly from [lo, hi] to [0, 1]. Across writers it separates the
+   *  right article from other writers' best hits with AUC 0.984 (the blended hybrid score: 0.76; top-normalised: 0.48).
+   *  lo ≈ other writers' median best-hit cosine, hi ≈ the target's p90. */
+  cosineRange: { lo: 0.65, hi: 0.9 },
+  /** Keyword relevance = bm25 / (bm25 + this): absolute, so a weak top hit is not promised as 1.0 (#142).
+   *  12 puts the target's median BM25 (28) near 0.7 and other writers' median best hit (9.5) near 0.44. */
+  keywordHalfScore: 12,
   queryTimeoutMs: 1500,
   queryCacheTtlMs: 10 * 60_000,
   /** Characters of body sent to the embedder (bge-base reads at most 512 tokens). */
@@ -30,16 +37,16 @@ const EMBEDDINGS_FILE = new URL('../data/corpus/v2/embeddings.json', import.meta
 
 export const embeddingKey = (article: Pick<Article, 'articleId' | 'version'>) => `${article.articleId}@${article.version}`
 export const embeddingText = (article: Article) => `${article.title}\n${article.abstract}\n${article.tags.join(', ')}\n${article.body.slice(0, SEARCH_TUNING.embedBodyChars)}`
-/** Cached vector for an article, only while its body hash still matches. */
+/** Cached vector for an article, only while the hash of its embedded text (title, abstract, tags, body head) still matches. */
 export const cachedVector = (cache: EmbeddingCache | undefined, article: Article) => {
   const entry = cache?.vectors[embeddingKey(article)]
-  return entry && entry.hash === sha256(article.body) ? entry.vector : undefined
+  return entry && entry.hash === sha256(embeddingText(article)) ? entry.vector : undefined
 }
 export function loadEmbeddingCache(file: URL | string = EMBEDDINGS_FILE): EmbeddingCache | undefined {
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) as EmbeddingCache : undefined
 }
 
-export type PublisherIndex = { db: AnyOrama; vectors: boolean }
+export type PublisherIndex = { db: AnyOrama; vectors: boolean; vectorOf?: Map<string, number[]> }
 
 /** One in-memory index per publisher. Vectors are used only when every article has one. */
 export async function buildIndex(articles: Article[], cache?: EmbeddingCache): Promise<PublisherIndex> {
@@ -53,7 +60,13 @@ export async function buildIndex(articles: Article[], cache?: EmbeddingCache): P
     articleId: article.articleId, title: article.title, abstract: article.abstract, tags: article.tags, body: article.body,
     ...(withVectors ? { embedding: vectors[i] } : {}),
   })))
-  return { db, vectors: withVectors }
+  return { db, vectors: withVectors, ...(withVectors ? { vectorOf: new Map(articles.map((a, i) => [a.articleId, vectors[i]!])) } : {}) }
+}
+
+const cosine = (a: number[], b: number[]) => {
+  let dot = 0, na = 0, nb = 0
+  for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i] }
+  return na && nb ? dot / Math.sqrt(na * nb) : 0
 }
 
 /**
@@ -67,9 +80,14 @@ export async function searchIndex(index: PublisherIndex, term: string, k: number
   const result = mode === 'hybrid'
     ? await search(index.db, { ...common, mode: 'hybrid', vector: { value: queryVector!, property: 'embedding' }, similarity: SEARCH_TUNING.similarity, hybridWeights: SEARCH_TUNING.hybridWeights })
     : await search(index.db, { ...common, mode: 'fulltext' })
-  // Orama's hybrid score is already a 0–1 blend; BM25 is unbounded, so it saturates.
-  const absolute = (score: number) => Math.min(1, Math.max(0, mode === 'hybrid' ? score : score / (score + SEARCH_TUNING.keywordHalfScore)))
-  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(hit.score) }))
+  // Hybrid: query–article cosine on a fixed scale (comparable across writers). Keyword: BM25 is unbounded, so it saturates.
+  const { lo, hi } = SEARCH_TUNING.cosineRange
+  const absolute = (id: string, score: number) => {
+    const vector = mode === 'hybrid' ? index.vectorOf?.get(id) : undefined
+    const value = vector ? (cosine(queryVector!, vector) - lo) / (hi - lo) : score / (score + SEARCH_TUNING.keywordHalfScore)
+    return Math.min(1, Math.max(0.01, value)) // a returned hit matched something: never promise exactly 0
+  }
+  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) }))
   return { mode, ranked }
 }
 
