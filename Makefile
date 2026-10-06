@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets docker-build docker-run docker-live docker-down docker-logs
+.PHONY: help setup run live variant fault reset check verify doctor keys ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -45,6 +45,9 @@ keys: ## provider keys only, plus one real DeepSeek + Clef call (latency, limits
 
 wallets: ## re-fund XRPL Testnet wallets from the faucet after a Testnet reset (same addresses)
 	node --import tsx scripts/wallets.mjs
+
+embeddings: ## (live, Workers AI) embed new/changed v2 articles into data/corpus/v2/embeddings.json; Q=<queries.json> also records query vectors
+	node --import tsx scripts/build-embeddings.mjs $(if $(Q),--queries $(Q))
 
 ports: ## who is listening on the demo ports
 	@lsof -nP -iTCP:$(PORTS) -sTCP:LISTEN || echo "ports $(PORTS) free"

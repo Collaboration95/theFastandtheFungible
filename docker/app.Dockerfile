@@ -32,7 +32,8 @@ ENTRYPOINT ["/sbin/tini", "--"]
 
 FROM node-runtime AS publisher
 WORKDIR /app
-COPY data/corpus/ data/corpus/
+# data/ holds the corpus and the writer roster (data/writers/).
+COPY data/ data/
 COPY --from=build /src/out/publisher.mjs dist/
 # The journal path is cwd-relative (data/publisher.db), so run from the state directory.
 RUN mkdir -p /var/lib/publisher/data && chown -R node:node /var/lib/publisher

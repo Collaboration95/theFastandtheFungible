@@ -8,7 +8,7 @@ import { once } from 'node:events'
 import { createPublisherApp, serializeEnvelope } from '../publisher/routes.js'
 import { PublisherJournal } from '../publisher/journal.js'
 import { loadCorpus } from '../publisher/corpus.js'
-vi.mock('../publisher/corpus.js', () => ({ loadCorpus: vi.fn() }))
+vi.mock('../publisher/corpus.js', () => ({ loadCorpus: vi.fn(), loadWriterCorpus: vi.fn(async () => (await import('./fixtures/corpus-mini/index.js')).miniCorpus) }))
 import { exampleCandidate, exampleContent } from '../shared/contracts/examples.js'
 import { QuoteSchema, SettlementSchema, type Quote } from '../shared/contracts/publisher.js'
 import type { CorpusResource } from '../shared/contracts/corpus.js'
