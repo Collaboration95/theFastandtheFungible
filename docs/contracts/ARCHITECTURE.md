@@ -1,74 +1,59 @@
 # Architecture contract
 
-The browser is a view and command surface. The Express server owns supported
-scope, retrieval, allowlist filtering, ranking, evidence-family lineage,
-budget arithmetic, premium access, fixture x402 quotes, settlement validation,
-and cited synthesis. The 12 synthetic data-centre records live in
-`data/mock-articles.json`; public metadata is available before purchase, while
-protected excerpts remain server-side until access is granted.
+The browser is a view and command surface. The API server owns retrieval,
+decisions, budget, payment and cited synthesis. Direction:
+[FINAL-PUSH.md](../../FINAL-PUSH.md).
 
-## Visual overview
+## v1 as built (on `main`)
 
-![ResearchAgent architecture overview](../../assets/research-agent-architecture.png)
+- **Web** (`src/`): the run screen. It replays the finished trace at stage
+  pace (D13).
+- **API** (`server/`, Express): research, decisions, the policy that picks
+  purchases, the purchase core and the PDF. DeepSeek writes, Clef decides,
+  code pays.
+- **Publisher** (`publisher/`): one local service over the synthetic Vertex
+  corpus, with an x402-shaped 402, quote and delivery flow. Its search ignores
+  the query ([§2](../../FINAL-PUSH.md#2-why-the-6-oct-live-demo-looked-static-for-the-record)).
+- **Store**: SQLite via `node:sqlite`: `data/app.db` (runs, receipts, grants)
+  and `data/publisher.db` (journal).
+- **XRPL Testnet**: the server signs and submits Payments, one wallet per
+  publisher profile. No real value.
+- **Langfuse**: live runs are traced and scored.
 
-```mermaid
-flowchart LR
-  U[Question + source allowlist] --> UI[React workspace]
-  UI -->|REST + SSE| API[Express API]
-  API --> SCOPE[Scope + plan gate]
-  SCOPE --> REG[Synthetic source registry]
-  REG --> FILTER[Allowlist + type filter]
-  FILTER --> RANK[Rank + family cluster]
-  RANK --> GAP[Gap analysis]
-  GAP --> OPEN[Accessible evidence]
-  GAP --> GUARD[Budget + preference guard]
-  GUARD --> QUOTE[x402-style exact quote]
-  QUOTE --> LEDGER[Fixture or XRPL Testnet adapter]
-  LEDGER --> ACCESS[Exact access grant]
-  ACCESS --> EVIDENCE[Protected evidence span]
-  OPEN --> SYNTH[Cited synthesis]
-  EVIDENCE --> SYNTH
-  SYNTH --> UI
-  API --> STORE[JSON run and event store]
+## Target (final push)
+
 ```
+                         CLIENT = the engine (server/ + src/)
+ ┌──────────────────────────────────────────────────────────────────────┐
+ │ ask ─► clarify (LLM, ≤2 questions) ─► plan ─► 5 s action modal ─► run │
+ │ run: fan out sub-queries ─► fuse (price-blind) ─► free read ─► answer │
+ │      gap (LLM, free text) ─► Clef value × trust ─► policy picks ─► pay │
+ │      verify proof ─► challenge if broken ─► update trust ─► re-answer  │
+ └───────┬───────────────────────────┬───────────────────────────┬──────┘
+         │ GET /search?q=            │ GET article (x402 v2)     │ POST /challenge
+         ▼                           ▼                           ▼
+ ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+ │ NotFT        │  │ Load Factor  │  │ AlphaLeak    │  │ Open records │  … one per writer
+ │ Orama hybrid │  │ Orama hybrid │  │ (bad actor)  │  │ FREE         │
+ │ over FULL    │  │              │  │              │  │              │
+ │ text, returns│  │              │  │              │  │              │
+ │ abstract +   │  │              │  │              │  │              │
+ │ signals +    │  │              │  │              │  │              │
+ │ signed       │  │              │  │              │  │              │
+ │ manifest     │  │              │  │              │  │              │
+ │ own x402     │  │              │  │              │  │              │
+ │ facilitator  │  │              │  │              │  │              │
+ └──────┬───────┘  └──────────────┘  └──────────────┘  └──────────────┘
+        └──── buyer pays writer directly on XRPL Testnet (we never hold funds)
+```
+
+Detail: client flow [§5](../../FINAL-PUSH.md#5-client-flow-pseudocode), writer
+site and manifest [§8](../../FINAL-PUSH.md#8-what-every-publisher-writer-site-must-do),
+x402 v2 changes [§9](../../FINAL-PUSH.md#9-x402-v2-changes-to-todays-flow-d7).
 
 ## Trust boundaries
 
-1. The run records the question, approved source profiles, maximum spend, and
-   per-source ceiling before retrieval.
-2. The fixture scope gate rejects unsupported questions rather than silently
-   mapping them to unrelated evidence.
-3. The source registry strips protected article bodies from public responses.
-4. The server-owned budget guard can approve, block, skip, or defer a proposal;
-   browser text and model output cannot bypass it.
-5. Plan approval and exact purchase approval are separate mutations.
-6. Fixture settlement is a simulation. Optional XRPL Testnet mode must validate
-   payer, receiver, amount, finality, and quote binding before access.
-7. Payment and fulfilment are separate states. Access grants unlock exactly one
-   resource version after fulfilment succeeds.
-8. Final synthesis may cite only accessible, server-validated evidence spans.
-   Model reasoning is not a policy or audit artifact.
-
-## Runtime modes
-
-### Current implementation limits
-
-The boundaries above are architectural requirements. The current fixture
-purchase path copies local evidence after settlement; independent HTTP
-delivery verification, durable in-flight purchase reservations, and remote
-runtime execution are not implemented. Citation validation checks source/span
-relationships, not whether the text semantically supports every claim.
-The proposed changes and verification gates are in the
-[October 10 development plan](../PRODUCT-ROADMAP-2026.md) and
-[shared implementation interfaces](../plans/october-10/INTERFACES.md).
-
-| Layer | Default | Optional seam |
-| --- | --- | --- |
-| Evidence | 12 local synthetic records | Authorized live adapters are future work |
-| Planning and synthesis | Deterministic fixture behavior | Groq, explicitly configured server-side |
-| Settlement | x402-style quote and fixture result | XRPL Testnet transaction validation |
-| Persistence | Local JSON run/event store | Production storage is future work |
-| Fulfilment | Synthetic exact access grant | Real publisher delivery is future work |
-
-No browser bundle may contain provider credentials or wallet seeds. Fixture,
-Testnet, and production claims must remain visibly distinct.
+The browser holds no keys, seeds or premium bytes. Only policy code starts a
+purchase. A failed proof quarantines a source, and it is never cited. The five
+hard gates are in [prompt.md §2](../../prompt.md); controls are in
+[Security](SECURITY.md).
