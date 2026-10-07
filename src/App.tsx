@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
-import { ask, createReport, getReputation, getRun, resetReputation, retryDelivery, scope, stop, streamRun, type ScopeResult } from './api'
+import { ask, createReport, deleteRun, getReputation, getRun, listPastRuns, pinRun, resetReputation, retryDelivery, scope, stop, streamRun, type PastRun, type ScopeResult } from './api'
 import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from './stage'
 import { candidateOf, favicon, leadSentence, money } from './format'
 import Layout from './components/Layout'
+import Sidebar from './components/Sidebar'
 import Modes from './components/Modes'
 import Ask from './components/Ask'
 import RunTape from './components/RunTape'
@@ -23,12 +24,10 @@ import ClarifyChips from './components/ClarifyChips'
 import ActionModal from './components/ActionModal'
 import ReputationPanel from './components/ReputationPanel'
 
-const activeKey = 'researchagent.october.active-run'
-const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never'
+const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav'
 const prefs = {
   get(key: string) { try { return localStorage.getItem(key) } catch { return null } },
   set(key: string, value: string) { try { localStorage.setItem(key, value) } catch { /* private mode */ } },
-  remove(key: string) { try { localStorage.removeItem(key) } catch { /* private mode */ } },
 }
 function initialPace(): Pace {
   const value = new URLSearchParams(window.location.search).get('pace') ?? prefs.get(paceKey)
@@ -57,12 +56,16 @@ export default function App() {
   const [tab, setTab] = useState<'run' | 'writers'>('run')
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
   const [clarifyNever, setClarifyNever] = useState(() => new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1')
+  const [navOpen, setNavOpen] = useState(() => prefs.get(navKey) !== 'rail')
+  const [why, setWhy] = useState(false)
+  const [past, setPast] = useState<PastRun[]>([])
 
   useEffect(() => {
     let cancelled = false
     void fetch('/api/health').then(response => response.json()).then(data => { if (!cancelled) setHealth({ labels: ModeLabelsSchema.safeParse(data.labels).data, faults: data.faults === true }) }).catch(() => { /* labels fall back to the run's own */ })
-    const id = new URLSearchParams(window.location.search).get('run') ?? prefs.get(activeKey)
-    if (id) void getRun(id).then(value => { if (!cancelled) { setRun(value); setScreen('run') } }).catch(() => prefs.remove(activeKey))
+    // Home is the default; a run opens only when the URL names it (a refresh keeps it). Past runs live in the sidebar.
+    const id = new URLSearchParams(window.location.search).get('run')
+    if (id) void getRun(id).then(value => { if (!cancelled) { setRun(value); setScreen('run') } }).catch(() => { /* unknown run: stay on Home */ })
     return () => { cancelled = true }
   }, [])
   const runId = run?.runId
@@ -85,6 +88,30 @@ export default function App() {
   }, [replaying, nextId, delay])
   const shown = run && replaying ? staged(run, cursor) : run
   const finished = !!shown && isTerminal(shown) && !replaying
+  const openRun = async (id: string) => {
+    const show = () => { const url = new URL(window.location.href); url.searchParams.set('run', id); window.history.replaceState(null, '', url) }
+    if (id === run?.runId) { show(); setScreen('run'); return }
+    try {
+      const value = await getRun(id)
+      show()
+      setPassage(undefined); setReceipt(undefined); setWork(false); setCompare(false); setView('latest'); setWhy(false); setToasts([]); setError('')
+      setCursor(Infinity); setRun(value); setScreen('run')
+    } catch { setError('That run could not be opened.') }
+  }
+  const deletePast = async (id: string) => {
+    try {
+      setPast(await deleteRun(id))
+      if (id === run?.runId) { setRun(undefined); newQuestion() }
+    } catch { setError('Stop the run before deleting it.') }
+  }
+  const newQuestion = useCallback(() => {
+    const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
+    setScreen('home'); setPassage(undefined); setWork(false)
+  }, [])
+
+  const refreshPast = useCallback(() => { void listPastRuns().then(setPast).catch(() => { /* the sidebar keeps its last list */ }) }, [])
+  const phase = run?.phase
+  useEffect(refreshPast, [refreshPast, runId, phase, run?.stopped, run?.spentMinor])
 
   const dismiss = useCallback((id: string) => setToasts(list => list.filter(toast => toast.id !== id)), [])
   const push = useCallback((toast: Toast, ttl = 0) => {
@@ -176,11 +203,12 @@ export default function App() {
       if (event.metaKey || event.ctrlKey || event.altKey || (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, dialog'))) return
       if (event.key === '.') setPresenter(open => !open)
       else if (event.key.toLowerCase() === 'w' && screen === 'run' && run) setWork(open => !open)
+      else if (event.key.toLowerCase() === 'n' && screen === 'run' && finished) newQuestion()
       else if (event.key === 'Escape') setPresenter(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [screen, run])
+  }, [screen, run, finished, newQuestion])
 
   // Clarify (D8): questions as chips, then the 5 s plan card; the run starts only from the card.
   const sendAsk = async (input: AskInput) => {
@@ -203,10 +231,9 @@ export default function App() {
     void startRun({ ...input, plan, ...(Object.keys(answers).length ? { answers } : {}) }).catch(() => { /* error banner already set */ })
   }
   const startRun = async (input: AskInput) => {
-    setSending(true); setError(''); setPassage(undefined); setCompare(false); setView('latest'); setToasts([])
+    setSending(true); setError(''); setPassage(undefined); setCompare(false); setView('latest'); setWhy(false); setToasts([])
     try {
       const created = await ask(input)
-      prefs.set(activeKey, created.runId)
       const url = new URL(window.location.href); url.searchParams.set('run', created.runId); window.history.replaceState(null, '', url)
       setCursor(pace === 'real' ? Infinity : 0)
       setRun(created); setScreen('run')
@@ -235,13 +262,17 @@ export default function App() {
     setNotify(on); prefs.set(notifyKey, on ? '1' : '0')
     if (on && 'Notification' in window && Notification.permission === 'default') void Notification.requestPermission()
   }
-  const labels = <Modes labels={shown?.labels} configured={health.labels} />
+  const labels = <Modes quiet labels={shown?.labels} configured={health.labels} />
+  // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
+  const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
+  const nav = <Sidebar runs={listed} activeId={screen === 'run' ? runId : undefined} busy={screen === 'run' && !!shown && !finished} open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} onNew={newQuestion}
+    onOpenRun={id => void openRun(id)} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
   const overlays = <>
     <Toasts toasts={toasts} onDismiss={dismiss} />
     {presenter && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
   </>
 
-  if (screen === 'home' || !shown) return <Layout labels={labels} action={run ? <button type="button" className="ra-btn" onClick={() => setScreen('run')}>Back to the last run</button> : undefined}>
+  if (screen === 'home' || !shown) return <Layout labels={labels} nav={nav}>
     <main className="ra-home-wrap">
       {error && <p className="ra-banner" role="alert">{error}</p>}
       <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pending && (pending.step === 'clarify'
@@ -253,9 +284,8 @@ export default function App() {
 
   const intents = shown.intents.filter(item => item.runId === shown.runId)
   const asked = runEvents(shown)[0]?.at
-  return <Layout crumb={crumb(shown.question)} labels={labels} action={<button type="button" className="ra-btn" disabled={!finished} title={finished ? undefined : 'Available when the run ends, or after Stop buying'} onClick={() => { const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url); setScreen('home'); setPassage(undefined); setWork(false) }}>New question</button>}>
+  return <Layout crumb={crumb(shown.question)} labels={labels} nav={nav}>
     <div className="ra-ws">
-      <RunTape run={shown} replaying={replaying} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
       <main className="ra-brief">
         <p className="ra-eyebrow">Question · Budget {money(shown.budgetMinor)}{asked ? ` · asked ${new Date(asked).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' })}` : ''}</p>
         <h1 className="ra-q">{shown.question}</h1>
@@ -273,15 +303,16 @@ export default function App() {
         {tab === 'writers' ? <ReputationPanel records={reputation} run={shown} full={run} presenter={presenter} onReset={resetWriters} /> : <>
         <Budget run={shown} />
         {[...intents].reverse().map(intent => <Purchase key={intent.intentId} run={shown} intent={intent} onRetry={id => void retry(id)} onReceipt={setReceipt} />)}
-        <DecisionPanel run={shown} />
+        <DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} />
         {!intents.length && shown.budgetMinor > 0 && !shown.decisions.length && <section className="ra-panel is-idle" aria-label="Purchases"><div className="ra-panel-h"><h2>Purchases</h2></div><p>Each purchase shows 402 → pay → 200 → proof check here. One charge per source, even on retry.</p></section>}
         <Ledger run={shown} />
         </>}
       </aside>
+      <RunTape run={shown} replaying={replaying} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
     </div>
     {passage && <Passage candidate={passage.candidate} content={getAccessibleContent(shown, passage.candidate)} citation={passage.citation} onClose={() => setPassage(undefined)} />}
     {receipt && <Receipt run={shown} receipt={receipt} onClose={() => setReceipt(undefined)} />}
-    {work && <ShowWork run={shown} onClose={() => setWork(false)} />}
+    {work && <ShowWork run={shown} configured={health.labels} onClose={() => setWork(false)} />}
     {overlays}
   </Layout>
 }

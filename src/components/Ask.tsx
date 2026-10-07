@@ -23,7 +23,8 @@ export interface AskProps {
 /** Home: the question, the budget (the only spending authorisation) and Ask. */
 export default function Ask({ onAsk, busy = false, settlement, notify, onNotify, above }: AskProps) {
   const id = useId()
-  const [question, setQuestion] = useState<string>(DEMO_QUESTIONS[1].text)
+  // Starts empty: the presets below fill it in one click.
+  const [question, setQuestion] = useState('')
   const [budgetMinor, setBudget] = useState<AskInput['budgetMinor']>(200)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')

@@ -1,4 +1,10 @@
 # Build status (8 Oct 2026, 03:30 SGT — overnight run complete)
+## v1.2-tweaks (8 Oct): the v1.1 UI on today's main (#166, asked for by the user)
+- Ported `v1.x-UX-tweaks` (733ce3a) onto main: quiet header (an amber chip only on a fallback, including keyword-only search and a fixture plan), a left sidebar with past runs (pin, delete = hide; `GET /api/runs`, `POST /api/runs/:id/pin`, `DELETE /api/runs/:id`, `run_meta` table), the run bar along the bottom, the decision panel folding after the purchase ("Why these?"), sources in one line (View all opens the cards), and Show work → Models.
+- Fitted to the final push: the bar keeps the clarify/plan/proof/challenge/refund/reputation steps (slim segments), the writer chips and search mode stay on the sources, and the Run/Writers tabs stay in the right column. Home is the default (a run opens only from `?run=` or the sidebar) and the question box starts empty.
+- **Gate 5, loosened at the user's request:** the publisher location (local / Cloud Run) is no longer always on screen; it is in Show work → Models. The research model stays on the answer card, the decision provider on the decision panel (folded too), settlement on the money, and any fallback raises the amber header chip. Per-source SYNTHETIC chips moved behind View all; "Synthetic corpus · fictional" stays on the sources line. `wpui.test.tsx` now clicks View all before checking the per-source labels, and reads the bar's segment titles.
+- Not run here: Playwright e2e/a11y (orchestrator only). An in-browser axe pass found no serious or critical issues on Home or the run screen.
+
 ## Overnight run (7→8 Oct)
 - Orchestrator follows OVERNIGHT-OCT7.md. Subagents: Opus 5.5 for code-heavy packages, Sonnet 5.5 for content/small ones (medium thinking). Review: one Codex `gpt-6-luna` pass per PR, posted as a PR comment.
 - Preflight 01:00: `make doctor` + `make keys` green (DeepSeek, Clef 1.3 s, payer 104 XRP, Langfuse).
