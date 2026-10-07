@@ -6,7 +6,7 @@ import { getActiveTraceId, propagateAttributes, setActiveTraceAsPublic, startAct
 import { LangfuseClient } from '@langfuse/client'
 import type { RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
 
-const SECRET_ENV = ['DEEPSEEK_API_KEY', 'GROQ_API_KEY', 'CLOUDFLARE_API_TOKEN', 'XRPL_PAYER_SEED', 'PUBLISHER_SECRET', 'LANGFUSE_SECRET_KEY']
+const SECRET_ENV = ['LLM_API_KEY', 'DEEPSEEK_API_KEY', 'GROQ_API_KEY', 'CLOUDFLARE_API_TOKEN', 'XRPL_PAYER_SEED', 'PUBLISHER_SECRET', 'LANGFUSE_SECRET_KEY']
 /** Every publisher wallet seed (FINAL-PUSH §9: never log or trace a publisher seed). */
 const PUBLISHER_SEED = /^XRPL_PUBLISHER_.+_SEED$/
 

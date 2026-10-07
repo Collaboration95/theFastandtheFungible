@@ -6,6 +6,7 @@ import 'dotenv/config'
 import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { ClefDecisionProvider } from '../server/agents/clef.ts'
+import { llmConfig } from '../server/agents/llm.ts'
 
 const args = new Set(process.argv.slice(2))
 const keysOnly = args.has('--keys'), deep = args.has('--deep')
@@ -58,11 +59,11 @@ if (!keysOnly) {
 }
 
 console.log('DeepSeek (answer + report, used by make live)')
-const llmKey = process.env.DEEPSEEK_API_KEY
-const model = process.env.DEEPSEEK_MODEL || 'deepseek-flash'
-if (!llmKey) fail('DEEPSEEK_API_KEY not set; demo:live answers will be labelled fixtures')
+// make live forces LLM_PROVIDER=deepseek, so check that config whatever .env selects.
+const { baseUrl: base, model, apiKey: llmKey } = llmConfig('deepseek')
+if (!llmKey) fail('LLM_API_KEY not set; demo:live answers will be labelled fixtures')
 else {
-  const base = (process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com').replace(/\/$/, '')
+  console.log(`    ${base}, model ${model}`)
   let llmOk = false
   const headers = { Authorization: `Bearer ${llmKey}`, 'Content-Type': 'application/json' }
   try {

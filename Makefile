@@ -13,7 +13,7 @@ help: ## list targets
 
 setup: ## install deps and create .env if missing
 	npm ci
-	@test -f .env || (cp .env.example .env && echo "Created .env; add DEEPSEEK_API_KEY and CLOUDFLARE_API_TOKEN for live mode")
+	@test -f .env || (cp .env.example .env && echo "Created .env; add LLM_API_KEY and CLOUDFLARE_API_TOKEN for live mode")
 
 run: ## fixture demo (offline, no keys)
 	npm run demo

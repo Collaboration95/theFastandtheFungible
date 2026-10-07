@@ -132,8 +132,17 @@ describe('W1 research', () => {
     const request = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string)
     expect(request.stream).toBe(true); expect(request.response_format).toEqual({ type: 'json_object' })
   })
-  it('defaults DeepSeek to deepseek-flash at api.deepseek.com with its own key and label', async () => {
-    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('DEEPSEEK_API_KEY', 'test-only'); vi.stubEnv('LLM_BASE_URL', 'https://api.groq.com/openai/v1'); vi.stubEnv('DEEPSEEK_BASE_URL', ''); vi.stubEnv('DEEPSEEK_MODEL', ''); vi.stubEnv('LLM_MODEL', 'openai/gpt-oss-20b')
+  it('reads endpoint, model and key from LLM_BASE_URL, LLM_MODEL and LLM_API_KEY', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('LLM_API_KEY', 'generic-key'); vi.stubEnv('DEEPSEEK_API_KEY', 'legacy-key'); vi.stubEnv('LLM_BASE_URL', 'https://llm.example.test/v1/'); vi.stubEnv('LLM_MODEL', 'deepseek-v4-pro')
+    const fetchMock = vi.fn(async () => stream({ conclusion: 'c', claims: [], openGaps: [] })); vi.stubGlobal('fetch', fetchMock)
+    await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe('https://llm.example.test/v1/chat/completions')
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer generic-key')
+    expect(JSON.parse(init.body as string).model).toBe('deepseek-v4-pro')
+  })
+  it('defaults DeepSeek to deepseek-flash at api.deepseek.com with the legacy key and label', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('DEEPSEEK_API_KEY', 'test-only'); vi.stubEnv('LLM_API_KEY', ''); vi.stubEnv('LLM_BASE_URL', ''); vi.stubEnv('LLM_MODEL', '')
     const modelAnswer = { conclusion: 'c', claims: [{ id: 'valid', text: bodies[0].body, stance: 'SUPPORTS', citations: [{ resourceId: 'random-A', version: 'v1', spanId: 'generic-span' }] }], openGaps: [] }
     const fetchMock = vi.fn(async () => stream(modelAnswer)); vi.stubGlobal('fetch', fetchMock)
     const { answer } = await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })
@@ -144,7 +153,7 @@ describe('W1 research', () => {
     expect(JSON.parse(init.body as string).thinking).toEqual({ type: 'disabled' })
   })
   it('stays on the fixture when the selected provider has no key', async () => {
-    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('DEEPSEEK_API_KEY', ''); vi.stubEnv('GROQ_API_KEY', 'other-key')
+    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('LLM_API_KEY', ''); vi.stubEnv('DEEPSEEK_API_KEY', ''); vi.stubEnv('GROQ_API_KEY', 'other-key')
     const fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock)
     expect((await writeAnswer({ question: 'q', candidates: free, contents: bodies, version: 1 })).answer.provider).toBe('fixture')
     expect(fetchMock).not.toHaveBeenCalled()

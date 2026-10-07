@@ -178,7 +178,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   let llm = async () => { throw new Error('no network in dry-run') }
   if (!dryRun) {
     const { streamJson, isLlmConfigured } = await import('../server/agents/llm.ts')
-    if (!isLlmConfigured()) { console.error('DEEPSEEK_API_KEY is not set (LLM_PROVIDER=deepseek).'); process.exit(2) }
+    if (!isLlmConfigured()) { console.error('LLM_API_KEY is not set (LLM_PROVIDER=deepseek).'); process.exit(2) }
     llm = (name, system, input) => streamJson(system, input, undefined, name)
     // Count real provider requests: streamJson may retry internally, and the cap is on requests.
     const realFetch = globalThis.fetch
