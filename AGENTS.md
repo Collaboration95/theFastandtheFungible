@@ -20,9 +20,11 @@
   - one charge per intent;
   - real citations;
   - everything simulated or substituted is labelled.
-- Merge gate: `npm run check:fast` passes and one review pass reports no
-  blockers. There is no second review. A small bug gets fixed by the next
-  agent. Ship with the `ship-pr` skill (`scripts/orch/review.sh` is the review).
+- Merge gate: `npm run check:fast` passes and CI is green. A small bug gets
+  fixed by the next agent. Ship with the `ship-pr` skill.
+- Codex review (`scripts/orch/review.sh`) runs only in overnight/orchestrated
+  runs (prompt.md §8) or when the user types `/review`. Never on an ordinary
+  PR, and never mention it as a missing step.
 - You may loosen a gate check, leak threshold or test when the fix belongs
   elsewhere, but say so in your update to the user and in STATUS.md: what was
   loosened and why. Never loosen one silently.
