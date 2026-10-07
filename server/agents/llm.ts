@@ -1,20 +1,26 @@
 import { startActiveObservation, type LangfuseGeneration } from '@langfuse/tracing'
 import { deepseekPricingWindow } from '../telemetry.js'
 /**
- * OpenAI-compatible chat providers. LLM_PROVIDER picks one. Each reads its own key, base URL and
- * model override, so a key is never sent to another provider's endpoint.
+ * OpenAI-compatible chat providers. LLM_PROVIDER picks one; LLM_BASE_URL, LLM_MODEL and LLM_API_KEY
+ * configure it. The provider entry only supplies defaults and a legacy key name (DEEPSEEK_API_KEY,
+ * GROQ_API_KEY), so the endpoint and key always come from the same .env block.
  * DeepSeek runs with thinking disabled: reasoning tokens roughly double latency for this JSON task.
  */
 const providers = {
-  deepseek: { label: 'DeepSeek', base: 'https://api.deepseek.com', baseEnv: 'DEEPSEEK_BASE_URL', key: 'DEEPSEEK_API_KEY', modelEnv: 'DEEPSEEK_MODEL', model: 'deepseek-flash', extra: { thinking: { type: 'disabled' } } },
-  groq: { label: 'Groq', base: 'https://api.groq.com/openai/v1', baseEnv: 'LLM_BASE_URL', key: 'GROQ_API_KEY', modelEnv: 'LLM_MODEL', model: 'llama-3.3-70b-versatile', extra: {} },
+  deepseek: { label: 'DeepSeek', base: 'https://api.deepseek.com', key: 'DEEPSEEK_API_KEY', model: 'deepseek-flash', extra: { thinking: { type: 'disabled' } } },
+  groq: { label: 'Groq', base: 'https://api.groq.com/openai/v1', key: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', extra: {} },
 } as const
 export type LlmProvider = keyof typeof providers
 const current = () => providers[process.env.LLM_PROVIDER as LlmProvider] as (typeof providers)[LlmProvider] | undefined
 export const llmProvider = (): LlmProvider | undefined => current() ? process.env.LLM_PROVIDER as LlmProvider : undefined
 export const llmLabel = () => current()?.label ?? 'fixture'
-export const researchModel = () => { const p = current() ?? providers.deepseek; return process.env[p.modelEnv] || p.model }
-export const isLlmConfigured = () => Boolean(current() && process.env[current()!.key])
+/** Effective endpoint, model and key for a provider (default: the selected one, else DeepSeek). */
+export const llmConfig = (name = process.env.LLM_PROVIDER) => {
+  const p = providers[name as LlmProvider] ?? providers.deepseek
+  return { baseUrl: (process.env.LLM_BASE_URL || p.base).replace(/\/$/, ''), model: process.env.LLM_MODEL || p.model, apiKey: process.env.LLM_API_KEY || process.env[p.key] || '' }
+}
+export const researchModel = () => llmConfig().model
+export const isLlmConfigured = () => Boolean(current() && llmConfig().apiKey)
 
 /**
  * Raw JSON deltas are progress only. Consumers must validate before displaying facts.
@@ -26,8 +32,8 @@ function streamJsonAttempt(name: string, system: string, input: unknown, onToken
 async function attemptJson(generation: LangfuseGeneration, system: string, input: unknown, onToken?: (delta: string) => void): Promise<unknown> {
   const provider = current()
   if (!provider || !isLlmConfigured()) throw new Error('LLM is not configured')
-  const base = process.env[provider.baseEnv] || provider.base
-  const endpoint = base.endsWith('/chat/completions') ? base : `${base.replace(/\/$/, '')}/chat/completions`
+  const { baseUrl, apiKey } = llmConfig()
+  const endpoint = baseUrl.endsWith('/chat/completions') ? baseUrl : `${baseUrl}/chat/completions`
   const controller = new AbortController()
   const configuredTimeout = Number(process.env.LLM_SYNTHESIS_TIMEOUT_MS ?? process.env.LLM_TIMEOUT_MS ?? 45000)
   const timeout = setTimeout(() => controller.abort(), Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : 45000)
@@ -46,7 +52,7 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
   try {
     const response = await fetch(endpoint, {
       method: 'POST', signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env[provider.key]}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ model: researchModel(), ...modelParameters, stream: true, stream_options: { include_usage: true }, ...provider.extra,
         response_format: { type: 'json_object' }, messages }),
     })
