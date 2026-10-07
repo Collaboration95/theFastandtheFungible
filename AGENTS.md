@@ -22,7 +22,10 @@
   - everything simulated or substituted is labelled.
 - Merge gate: `npm run check:fast` passes and one review pass reports no
   blockers. There is no second review. A small bug gets fixed by the next
-  agent.
+  agent. Ship with the `ship-pr` skill (`scripts/orch/review.sh` is the review).
+- You may loosen a gate check, leak threshold or test when the fix belongs
+  elsewhere, but say so in your update to the user and in STATUS.md: what was
+  loosened and why. Never loosen one silently.
 - Stay inside your stream's write scope (FINAL-PUSH §13).
 - Do not bind ports 5100, 8788, or 8790 and do not run Playwright unless you
   are the orchestrator; use ephemeral ports in tests.
