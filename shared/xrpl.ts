@@ -1,7 +1,7 @@
 // XRPL Testnet access shared by the publisher (verifies payments) and the api (pays).
 // Runtime code: import by path, never from shared/contracts/index (the browser bundle).
 import { createHash } from 'node:crypto'
-import { Client, ECDSA, Wallet } from 'xrpl'
+import { Client, Wallet, type ECDSA } from 'xrpl'
 import type { LedgerProof, PaymentRequirement } from './contracts/publisher.js'
 
 /** The subset of xrpl.Client the rail uses; tests inject a fake ledger. */
@@ -72,7 +72,7 @@ export async function verifyPayment(ledger: Ledger, txHash: string, terms: Payme
 /** Public, test-only seed salt: the SIMULATED payer is accepted only on the simulated rail, never on the Testnet. */
 const SIMULATED_PAYER_SALT = 'researchagent-simulated-payer-v1'
 export const SIMULATED_PAYER_LABEL = 'SIMULATED payer key · test only'
-export const simulatedPayerWallet = () => Wallet.fromEntropy(createHash('sha256').update(SIMULATED_PAYER_SALT).digest().subarray(0, 16), { algorithm: ECDSA.ed25519 })
+export const simulatedPayerWallet = () => Wallet.fromEntropy(createHash('sha256').update(SIMULATED_PAYER_SALT).digest().subarray(0, 16), { algorithm: 'ed25519' as ECDSA }) // type-only: Node 22's ESM loader can't see xrpl's CJS re-export of the enum
 /** The simulated rail's ledger clock (one "ledger" per 4 s), so LastLedgerSequence expiry works the same offline. */
 export const simulatedLedgerIndex = (now = Date.now()) => Math.floor(now / 4000)
 
