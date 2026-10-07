@@ -46,7 +46,7 @@ export async function startScenario(options: { injection?: boolean; audited?: bo
   const controllers: AbortController[] = []
   const streams: Promise<void>[] = []
   let llm: ReturnType<typeof createHttpServer> | undefined
-  const env = { ...process.env, DOTENV_CONFIG_PATH: join(dir, 'no-env'), PORT: '0', HOST: '127.0.0.1', PUBLISHER_PORT: '0', APP_DB: join(dir, 'api.db'), REPORT_DIR: join(dir, 'reports'), PUBLISHER_SECRET: 'scenario-fixture-secret', SCENARIO_CORPUS: join(dir, 'corpus.json'), SCENARIO_JOURNAL: join(dir, 'publisher.db'), SCENARIO_AUDIT: join(dir, 'audit.jsonl'), LLM_PROVIDER: 'fixture', GROQ_API_KEY: '', LLM_BASE_URL: '', DECISION_PROVIDER: 'fixture', CLOUDFLARE_API_TOKEN: '', CLOUDFLARE_ACCOUNT_ID: '', BUY_THRESHOLD: '', PUBLISHER_FAULTS: '0', SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' }
+  const env = { ...process.env, DOTENV_CONFIG_PATH: join(dir, 'no-env'), PORT: '0', HOST: '127.0.0.1', PUBLISHER_PORT: '0', APP_DB: join(dir, 'api.db'), REPORT_DIR: join(dir, 'reports'), PUBLISHER_SECRET: 'scenario-fixture-secret', SCENARIO_CORPUS: join(dir, 'corpus.json'), SCENARIO_JOURNAL: join(dir, 'publisher.db'), SCENARIO_AUDIT: join(dir, 'audit.jsonl'), LLM_PROVIDER: 'fixture', GROQ_API_KEY: '', LLM_API_KEY: '', LLM_BASE_URL: '', LLM_MODEL: '', DECISION_PROVIDER: 'fixture', CLOUDFLARE_API_TOKEN: '', CLOUDFLARE_ACCOUNT_ID: '', BUY_THRESHOLD: '', PUBLISHER_FAULTS: '0', SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' }
   async function stop() {
     controllers.forEach(c => c.abort())
     await Promise.all(streams)

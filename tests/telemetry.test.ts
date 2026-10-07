@@ -67,7 +67,7 @@ describe('Langfuse telemetry', () => {
 
   it('traces a run as agent → chain → generation with model, tokens and events, and no key', async () => {
     exporter.reset()
-    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('DEEPSEEK_API_KEY', 'sk-never-in-a-span-42'); vi.stubEnv('DEEPSEEK_BASE_URL', ''); vi.stubEnv('DEEPSEEK_MODEL', '')
+    vi.stubEnv('LLM_PROVIDER', 'deepseek'); vi.stubEnv('DEEPSEEK_API_KEY', 'sk-never-in-a-span-42'); vi.stubEnv('LLM_API_KEY', ''); vi.stubEnv('LLM_BASE_URL', ''); vi.stubEnv('LLM_MODEL', '')
     const candidate: PublicCandidate = { ...exampleCandidate, resourceId: 'free-a', tier: 'FREE' }
     const content: ContentEnvelope = { ...exampleContent, resourceId: 'free-a', body: 'Grid slots are confirmed for 240 MW.', spans: [{ id: 's1', text: 'Grid slots are confirmed for 240 MW.' }] }
     vi.stubGlobal('fetch', vi.fn(async () => stream({ conclusion: 'c', claims: [{ id: 'k', text: content.body, stance: 'SUPPORTS', citations: [{ resourceId: 'free-a', version: content.version, spanId: 's1' }] }], openGaps: [] })))
