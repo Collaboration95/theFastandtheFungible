@@ -14,7 +14,7 @@ import DecisionPanel from '../components/DecisionPanel.js'
 import Answer from '../components/Answer.js'
 import { getAccessibleContent } from '../components/Sources.js'
 import { isTerminal, staged } from '../stage.js'
-import { paidStoryRun } from './run.js'
+import { paidStoryRun, ucRuns } from './run.js'
 import { ask, getRun, stop, retryDelivery, createReport, streamRun } from '../api.js'
 
 afterEach(() => vi.unstubAllGlobals())
@@ -240,6 +240,25 @@ describe('stage pacing', () => {
     expect(verified.grants).toHaveLength(1)
   })
 
+  it('#208/#211: the answer card shows the requested facts as one line, the list on demand, and a free closure as free', () => {
+    const latest = renderToStaticMarkup(<Answer run={ucRuns.UC4} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)
+    expect(latest).toContain('<summary>3 of 3 answered · found free on a focused search · nothing bought</summary>')
+    expect(latest).toContain('Found free on a focused search')
+    expect(latest).not.toContain('Bought for')
+    const first = renderToStaticMarkup(<Answer run={ucRuns.UC4} view="baseline" onView={() => {}} compare={false} onCompare={() => {}} />)
+    expect(first).toContain('<summary>2 of 3 answered</summary>')
+    expect(first).toContain('Not found</span>How much of its electricity comes from renewable sources')
+    // UC2: 1 of 2 free, 2 of 2 after the purchase; a legacy run without requested facts shows no line.
+    expect(renderToStaticMarkup(<Answer run={ucRuns.UC2} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)).toContain('<summary>2 of 2 answered</summary>')
+    expect(renderToStaticMarkup(<Answer run={paidStoryRun} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)).not.toContain('ra-facts')
+  })
+  it('#210: the focused search is its own run-tape step, after the first search', () => {
+    const html = renderToStaticMarkup(<RunTape run={ucRuns.UC4} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    expect(html).toContain('Search again')
+    expect(html).toContain('found free: How much of its electricity comes from renewable sources')
+    const before = staged(ucRuns.UC4, ucRuns.UC4.events.find(e => e.type === 'FOLLOW_UP')!.id)
+    expect(before.contents.some(c => c.resourceId === 'lf-corporate-green-power-round-2026')).toBe(false)
+  })
   it('#199: keeps decimals whole in the rest of the short answer', () => {
     const answer = paidStoryRun.answers.at(-1)!
     const conclusion = 'Margins held up. The spread widened to 55.2% in Q3. Watch the lead times.'

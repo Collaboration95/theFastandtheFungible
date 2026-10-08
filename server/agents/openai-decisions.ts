@@ -5,10 +5,11 @@
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema } from '../../shared/contracts/index.js'
-import type { CandidateJudgment, ContentEnvelope } from '../../shared/contracts/index.js'
+import type { CandidateJudgment, ContentEnvelope, CoverageStatus, Requirement } from '../../shared/contracts/index.js'
+import { COVERAGE_RUBRIC, coverageInstructions, coverageQuestionName, coverageState, isJudged, JUDGED_STATUSES } from './requirements.js'
 import { clefCandidate, clefQuestions, clefTimeoutMs } from './clef.js'
 import { decisionModel, publicCandidate, publicSources } from './decision.js'
-import type { DecisionProvider } from './decision.js'
+import type { CoverageInput, DecisionProvider } from './decision.js'
 
 export const DECISIONS_URL = 'https://api.openai.com/v1/decisions'
 /**
@@ -105,6 +106,16 @@ export function candidateQuestions(target?: { index: number; resourceId: string 
   ]
 }
 
+/** One choice question per requirement (#208), the #213 rubric with options pinned: supported, partial, missing, conflicting. */
+export const coverageQuestions = (requirements: Pick<Requirement, 'id' | 'text'>[]): DecisionsQuestion[] => requirements.map(r => ({ name: coverageQuestionName(r), type: 'choice', instructions: coverageInstructions(r), choices: JUDGED_STATUSES.map(value => ({ value, description: COVERAGE_RUBRIC[value] })) }))
+/** The most probable judged status per requirement; anything else is `unknown`. */
+export function coverageOf(answers: Map<string, Answer>, requirements: Pick<Requirement, 'id'>[]): Record<string, CoverageStatus> {
+  return Object.fromEntries(requirements.map(r => {
+    const answer = answers.get(coverageQuestionName(r))
+    const top = answer?.type === 'choice' ? [...answer.probabilities].sort((a, b) => b.probability - a.probability)[0]?.value : undefined
+    return [r.id, isJudged(String(top)) ? String(top) as CoverageStatus : 'unknown']
+  }))
+}
 /** A failed Decisions call; `status` is short and secret-free (it becomes the round's DECISION_UNAVAILABLE reason). */
 export class DecisionsUnavailableError extends Error {
   constructor(readonly status: string) { super(`OpenAI Decisions unavailable (${status})`) }
@@ -148,11 +159,11 @@ export function judgmentOf(answers: Map<string, Answer>, prefix = ''): Candidate
   })
 }
 /** Candidate indices per request: the first request also carries `gap_material`; none exceeds `max` questions. */
-export function chunkCandidates(count: number, max: number): number[][] {
+export function chunkCandidates(count: number, max: number, withGap = true): number[][] {
   const chunks: number[][] = []
   let next = 0
   do {
-    const room = Math.max(1, Math.floor((max - (chunks.length ? 0 : 1)) / 3))
+    const room = Math.max(1, Math.floor((max - (chunks.length || !withGap ? 0 : 1)) / 3))
     chunks.push(Array.from({ length: Math.min(room, count - next) }, (_, i) => next + i))
     next += room
   } while (next < count)
@@ -245,14 +256,16 @@ export class OpenAIDecisionsProvider implements DecisionProvider {
     if (input.signal?.aborted) abandon()
     input.signal?.addEventListener('abort', abandon, { once: true })
     try {
-      const requests = chunkCandidates(candidates.length, this.options.maxQuestions ?? decisionsMaxQuestions()).map((indices, chunk) => {
-        const questions = [...(chunk === 0 ? [gapQuestion(this.gapWording)] : []), ...indices.flatMap(index => candidateQuestions({ index, resourceId: candidates[index].resourceId }, this.wording))]
+      // A frozen requested fact (#208) is part of the question by construction: no gap_material question is sent.
+      const withGap = !input.skipGapMaterial
+      const requests = chunkCandidates(candidates.length, this.options.maxQuestions ?? decisionsMaxQuestions(), withGap).map((indices, chunk) => {
+        const questions = [...(chunk === 0 && withGap ? [gapQuestion(this.gapWording)] : []), ...indices.flatMap(index => candidateQuestions({ index, resourceId: candidates[index].resourceId }, this.wording))]
         return this.call('judge-batch', state, questions, controller.signal, { chunk, candidates: indices.map(index => candidates[index].resourceId) })
           .then(answers => ({ indices, answers }), error => { controller.abort(); throw error })
       })
       const results = await Promise.all(requests)
       return {
-        gapMaterial: predicateOf(results[0].answers, 'gap_material'),
+        ...(withGap ? { gapMaterial: predicateOf(results[0].answers, 'gap_material') } : {}),
         judgments: results.flatMap(({ indices, answers }) => indices.map(index => judgmentOf(answers, `c${index}_`))),
       }
     } finally { input.signal?.removeEventListener('abort', abandon) }
@@ -263,6 +276,10 @@ export class OpenAIDecisionsProvider implements DecisionProvider {
   async judgeCandidate(input: Parameters<DecisionProvider['judgeCandidate']>[0]) {
     const state = { question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: clefCandidate(publicCandidate(input.candidate)) }
     return judgmentOf(await this.call('judge-candidate', state, candidateQuestions(undefined, this.wording), input.signal, { resourceId: input.candidate.resourceId }))
+  }
+  /** Coverage (#208, #213): one batched request per evidence state, over free or granted passages only (gate 1). */
+  async judgeCoverage(input: CoverageInput & { signal?: AbortSignal }) {
+    return coverageOf(await this.call('judge-coverage', coverageState(input.question, input.evidence), coverageQuestions(input.requirements), input.signal, { requirements: input.requirements.length, passages: input.evidence.length }), input.requirements)
   }
   /** Granted passages only, after a verified grant (gate 1), in their own request; never in the round's state. */
   async judgePaidRelevance(input: { question: string; gap: string; content: ContentEnvelope; signal?: AbortSignal }) {

@@ -758,103 +758,12 @@
       "expectedSpendMinor": 70,
       "expectedNetSpendMinor": 40,
       "winnerReason": "Round 1: AlphaLeak (S$0.30, relevance inflated to 0.96) beats The Fab Floor (S$0.40 data deep-dive, honest 0.78): its inflated promise scores at least as high and it is cheaper, so it wins on value per dollar even when a judge scores both promises equally. Its dated-figure proof fails, it is refunded and quarantined; round 2 buys The Fab Floor (within the S$1 per-source cap), whose dated series STRENGTHENS the 'getting shorter' answer."
-    }
-  ],
-  "goldenFacts": {
-    "rule": "check-corpus fails when a golden-path article (every article listed in useCases or followUpCases, plus each requested fact's coveredBy) matches a pattern and the captured value is not one of values. pattern is a JavaScript regex source, applied globally; the first defined capture group is the stated value.",
-    "facts": [
-      {
-        "id": "boj-policy-rate",
-        "useCase": "UC1",
-        "text": "The BoJ raised the policy rate to 1.00% on 18 September 2026.",
-        "values": [
-          "1.00"
-        ],
-        "pattern": "(?:policy rate|rate target|current target)[^\\n]{0,60}?\\b(?:to|at|of) (\\d\\.\\d+)(?:%| per cent)"
-      },
-      {
-        "id": "boj-vote",
-        "useCase": "UC1",
-        "text": "The board vote was 7–2.",
-        "values": [
-          "7–2",
-          "7-2"
-        ],
-        "pattern": "vote was (\\d[–-]\\d)"
-      },
-      {
-        "id": "jgb-10y-move-18-sep",
-        "useCase": "UC1",
-        "text": "The 10-year JGB yield rose 9 bp on 18 September 2026.",
-        "values": [
-          "9",
-          "nine"
-        ],
-        "pattern": "(?:10-year|ten-year)[^\\n]{0,60}?(?:rose|added|climbed|gained|jumped|up)(?: by)? (\\d+|[a-z]+) (?:bp|basis points)"
-      },
-      {
-        "id": "jgb-10y-level-18-sep",
-        "useCase": "UC1",
-        "text": "The 10-year JGB yield closed at 2.14% on 18 September 2026.",
-        "values": [
-          "2.14"
-        ],
-        "pattern": "(?:10-year|ten-year)[^\\n]{0,60}?(?:rose|added|climbed|gained|jumped|up)[^\\n]{0,30}? to (\\d\\.\\d+)(?:%| per cent)"
-      },
-      {
-        "id": "kestrel-headquarters",
-        "useCase": "UC2",
-        "text": "Kestrel Semiconductor is headquartered in Singapore.",
-        "values": [
-          "Singapore"
-        ],
-        "pattern": "\\b([A-Z][a-z]+)-based fabless|Kestrel[^.\\n]{0,60}?headquartered in ([A-Z][a-z]+)"
-      },
-      {
-        "id": "prepayment-installments",
-        "useCase": "UC2",
-        "text": "The US$1.1 billion prepayment is paid in three installments.",
-        "values": [
-          "three",
-          "3"
-        ],
-        "pattern": "\\b(?:in|payable in) (two|three|four|five|\\d) (?:installments|instalments|tranches)"
-      },
-      {
-        "id": "phase2-commissioned",
-        "useCase": "UC3",
-        "text": "Penang Phase 2 was commissioned on 15 August 2026.",
-        "values": [
-          "15 August 2026"
-        ],
-        "pattern": "commissioned[^.\\n]{0,40}? on (\\d{1,2} [A-Z][a-z]+ 2026)"
-      },
-      {
-        "id": "phase2-grid-connection",
-        "useCase": "UC4",
-        "text": "The Phase 2 plant needs a 45 MW grid connection.",
-        "values": [
-          "45"
-        ],
-        "pattern": "(\\d+) MW (?:firm )?(?:grid )?connection"
-      },
-      {
-        "id": "phase2-solar-contract",
-        "useCase": "UC4",
-        "text": "Kestrel contracted 40 MW of solar for Phase 2.",
-        "values": [
-          "40"
-        ],
-        "pattern": "(\\d+) MW of solar"
-      }
-    ]
-  },
-  "followUpCases": [
+    },
     {
       "id": "UC4",
       "lane": "power",
       "title": "A focused free search finds the missing fact (#211)",
-      "status": "Content only. The fixture-mode scenario test lands with the follow-up search feature (E3, #194); until then UC4 is not a demo question.",
+      "status": "Demo question (#211): a focused free follow-up search (#210) finds the missing fact; nothing is bought.",
       "question": "When was Kestrel Semiconductor's Penang Phase 2 packaging plant commissioned, how large a grid connection does it need, and how much of its electricity comes from renewable sources?",
       "requestedFacts": [
         {
@@ -973,7 +882,97 @@
           "why": "Promises the missing fact (and more); a judge would buy it if the focused free search did not run first.",
           "expectedRelevance": 0.8
         }
-      ]
+      ],
+      "clarify": null
     }
-  ]
+  ],
+  "goldenFacts": {
+    "rule": "check-corpus fails when a golden-path article (every article listed in useCases or followUpCases, plus each requested fact's coveredBy) matches a pattern and the captured value is not one of values. pattern is a JavaScript regex source, applied globally; the first defined capture group is the stated value.",
+    "facts": [
+      {
+        "id": "boj-policy-rate",
+        "useCase": "UC1",
+        "text": "The BoJ raised the policy rate to 1.00% on 18 September 2026.",
+        "values": [
+          "1.00"
+        ],
+        "pattern": "(?:policy rate|rate target|current target)[^\\n]{0,60}?\\b(?:to|at|of) (\\d\\.\\d+)(?:%| per cent)"
+      },
+      {
+        "id": "boj-vote",
+        "useCase": "UC1",
+        "text": "The board vote was 7–2.",
+        "values": [
+          "7–2",
+          "7-2"
+        ],
+        "pattern": "vote was (\\d[–-]\\d)"
+      },
+      {
+        "id": "jgb-10y-move-18-sep",
+        "useCase": "UC1",
+        "text": "The 10-year JGB yield rose 9 bp on 18 September 2026.",
+        "values": [
+          "9",
+          "nine"
+        ],
+        "pattern": "(?:10-year|ten-year)[^\\n]{0,60}?(?:rose|added|climbed|gained|jumped|up)(?: by)? (\\d+|[a-z]+) (?:bp|basis points)"
+      },
+      {
+        "id": "jgb-10y-level-18-sep",
+        "useCase": "UC1",
+        "text": "The 10-year JGB yield closed at 2.14% on 18 September 2026.",
+        "values": [
+          "2.14"
+        ],
+        "pattern": "(?:10-year|ten-year)[^\\n]{0,60}?(?:rose|added|climbed|gained|jumped|up)[^\\n]{0,30}? to (\\d\\.\\d+)(?:%| per cent)"
+      },
+      {
+        "id": "kestrel-headquarters",
+        "useCase": "UC2",
+        "text": "Kestrel Semiconductor is headquartered in Singapore.",
+        "values": [
+          "Singapore"
+        ],
+        "pattern": "\\b([A-Z][a-z]+)-based fabless|Kestrel[^.\\n]{0,60}?headquartered in ([A-Z][a-z]+)"
+      },
+      {
+        "id": "prepayment-installments",
+        "useCase": "UC2",
+        "text": "The US$1.1 billion prepayment is paid in three installments.",
+        "values": [
+          "three",
+          "3"
+        ],
+        "pattern": "\\b(?:in|payable in) (two|three|four|five|\\d) (?:installments|instalments|tranches)"
+      },
+      {
+        "id": "phase2-commissioned",
+        "useCase": "UC3",
+        "text": "Penang Phase 2 was commissioned on 15 August 2026.",
+        "values": [
+          "15 August 2026"
+        ],
+        "pattern": "commissioned[^.\\n]{0,40}? on (\\d{1,2} [A-Z][a-z]+ 2026)"
+      },
+      {
+        "id": "phase2-grid-connection",
+        "useCase": "UC4",
+        "text": "The Phase 2 plant needs a 45 MW grid connection.",
+        "values": [
+          "45"
+        ],
+        "pattern": "(\\d+) MW (?:firm )?(?:grid )?connection"
+      },
+      {
+        "id": "phase2-solar-contract",
+        "useCase": "UC4",
+        "text": "Kestrel contracted 40 MW of solar for Phase 2.",
+        "values": [
+          "40"
+        ],
+        "pattern": "(\\d+) MW of solar"
+      }
+    ]
+  }
 }

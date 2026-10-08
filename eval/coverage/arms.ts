@@ -6,17 +6,13 @@
 // - overlap fixture: an offline word-overlap baseline (no model) that keeps the pipeline testable and
 //   shows the "right topic, answer absent" failure the hard cases target.
 import { ANSWER_PROMPT } from '../../server/agents/research.js'
+import { COVERAGE_RUBRIC as SERVER_COVERAGE_RUBRIC } from '../../server/agents/requirements.js'
 import { call, type Answer, type Questions } from '../decisions/providers/decisions.js'
 import { request, type Arm, type CallRecord } from '../decisions/transport.js'
 import { STATUSES, type Snapshot, type Status } from './snapshots.js'
 
-/** The coverage rubric both model arms receive (a deliverable of #213). */
-export const COVERAGE_RUBRIC: Record<Status, string> = {
-  supported: 'A passage states this exact fact for the named entity, measure and date. A forecast does not support a measured value; a topic mention without the figure does not support it.',
-  partial: 'A passage states part of the fact (for example one of two figures, or the level without the change) for the right entity and date.',
-  missing: 'No passage states the fact. Passages about the right topic but the wrong entity, the wrong date, a forecast instead of a measured value, or a statement that the figure is not given all count as missing.',
-  conflicting: 'Passages state different values for the same fact for the same entity and date.',
-}
+/** The coverage rubric both model arms receive (a deliverable of #213); production uses the same text (#208). */
+export const COVERAGE_RUBRIC: Record<Status, string> = SERVER_COVERAGE_RUBRIC
 export type CoverageArm = 'writer' | Arm | 'fixture'
 export type Prediction = { snapshotId: string; arm: CoverageArm; statuses: Record<string, Status | null>; latencyMs: number; usd: number; calls: string[]; error?: string }
 

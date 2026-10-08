@@ -22,7 +22,7 @@ export interface AskProps {
   onPick?: (minor: number) => void
 }
 /** Short names for the demo question chips; the full question fills the box and shows on hover. */
-const PRESET_LABEL: Record<string, string> = { UC1: 'Bank of Japan decision', UC2: 'Kestrel–TSMC outlook', UC3: 'Malaysia packaging lead times' }
+const PRESET_LABEL: Record<string, string> = { UC1: 'Bank of Japan decision', UC2: 'Kestrel–TSMC outlook', UC3: 'Malaysia packaging lead times', UC4: 'Penang plant power' }
 /** The demo questions slide out once per visit to the app, not on every return to Home. */
 let introPlayed = false
 /** Home: the question, the budget (the only spending authorisation) and Ask. */

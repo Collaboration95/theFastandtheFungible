@@ -1,6 +1,7 @@
 import { decisionLabel, providerLabels, type Claim, type Report } from '../shared/contracts/index.js'
 import { articleUrl } from '../shared/contracts/manifest.js'
 import { resolveCitation } from './agents/citations.js'
+import { FACT_STATUS } from '../shared/coverage.js'
 
 const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 const money = (minor: number) => `S$${(minor / 100).toFixed(2)}`
@@ -22,7 +23,7 @@ export function reportHtml(report: Report): string {
     const n = referenceNumber(ref.resourceId, ref.version, ref.spanId)
     return `<a href="${escape(writerUrl(ref.resourceId, ref.version, ref.spanId) ?? `#excerpt-${n}`)}">[${n}]</a>`
   }).join(' ')}</p></li>`).join('')
-  const decisions = report.decisions.map(round => `<h3>Round ${round.round} · ${escape(decisionLabel(round))}</h3><p>Gap: ${escape(round.gap)} · material probability ${round.gapMaterial.toFixed(3)} · threshold ${round.threshold.toFixed(3)}</p><table><thead><tr><th>Candidate / price</th><th>Gap / original / credibility</th><th>Value / per S$</th><th>Verdict</th></tr></thead><tbody>${round.rows.map(row => `<tr><td>${escape(row.candidate.title)}<br>${escape(row.candidate.resourceId)} · ${money(row.candidate.price.amountMinor)}</td><td>${row.judgment.addressesGap.toFixed(3)} / ${row.judgment.originality.original.toFixed(3)} / ${row.judgment.credibility.toFixed(3)}</td><td>${row.value.toFixed(3)} / ${row.valuePerDollar.toFixed(3)}</td><td>${escape(row.verdict)}${row.wouldBuy ? ' · would buy' : ''}<br>${escape(row.reason)}</td></tr>`).join('')}</tbody></table>`).join('')
+  const decisions = report.decisions.map(round => `<h3>Round ${round.round} · ${escape(decisionLabel(round))}</h3><p>Gap: ${escape(round.gap)} · ${round.gapMaterialSource === 'requirement' ? 'requested fact' : `material probability ${round.gapMaterial.toFixed(3)}`} · threshold ${round.threshold.toFixed(3)}</p><table><thead><tr><th>Candidate / price</th><th>Gap / original / credibility</th><th>Value / per S$</th><th>Verdict</th></tr></thead><tbody>${round.rows.map(row => `<tr><td>${escape(row.candidate.title)}<br>${escape(row.candidate.resourceId)} · ${money(row.candidate.price.amountMinor)}</td><td>${row.judgment.addressesGap.toFixed(3)} / ${row.judgment.originality.original.toFixed(3)} / ${row.judgment.credibility.toFixed(3)}</td><td>${row.value.toFixed(3)} / ${row.valuePerDollar.toFixed(3)}</td><td>${escape(row.verdict)}${row.wouldBuy ? ' · would buy' : ''}<br>${escape(row.reason)}</td></tr>`).join('')}</tbody></table>`).join('')
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>${escape(report.title)}</title><style>
 @page { size: A4; margin: 18mm; }
 * { box-sizing: border-box; } body { margin: 0 auto; padding: 28px; max-width: 900px; color: #17212d; background: white; font: 16px/1.55 Georgia, serif; }
@@ -34,6 +35,7 @@ h1,h2,h3,th,.label { font-family: Arial, sans-serif; } h1 { font-size: 30px; lin
 <p class="label">${escape(report.disclaimer)}<br>Report: ${escape(providerLabels[report.provider])} · ${escape(report.model)}${report.fallbackReason ? `<br>Fixture fallback: ${escape(report.fallbackReason)}` : ''}<br>Research: ${escape(report.labels?.research ?? 'unspecified')} · Decision: ${escape(report.labels?.decision ?? 'unspecified')} · Publisher: ${escape(report.labels?.publisher ?? 'unspecified')}<br>${escape(report.labels?.settlement ?? 'SIMULATED SGD · no real funds')}</p>
 <p>Budget ${money(report.budgetMinor)} · spent ${money(report.spentMinor)}${report.refunds?.length ? ` · refunded ${money(report.refunds.reduce((sum, r) => sum + r.amountMinor, 0))}` : ''}</p>
 <h2>Executive answer</h2><p>${escape(report.executiveAnswer)}</p>
+${report.facts ? `<p class="label">Requested facts: ${escape(report.facts.line)}<br>${report.facts.facts.map(f => `${escape(FACT_STATUS[f.status])} · ${escape(f.text)}`).join('<br>')}</p>` : ''}
 <h2>Findings</h2><ol>${claims(report.findings)}</ol>
 <h2>What purchases changed</h2><p>${escape(report.purchasesChanged)}</p>${report.impact ? `<p>Impact: <strong>${escape(report.impact.classification)}</strong></p>` : ''}
 <h3>First answer · v${escape(report.firstVersion ?? '—')}</h3><ol>${claims(report.firstFindings ?? [])}</ol>

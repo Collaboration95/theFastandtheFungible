@@ -31,8 +31,12 @@ function tapeRows(run: RunSnapshot): Row[] {
   for (const event of runEvents(run)) {
     const key = `${event.type}-${event.id}`
     const searched = event.type === 'SEARCH' ? rows.find(row => row.kind === 'search') : undefined
+    const followed = event.type === 'FOLLOW_UP' ? rows.find(row => row.kind === 'follow_up') : undefined
     // The server's second SEARCH event carries the hit counts: it details the one Search step instead of adding another.
     if (searched) searched.meta = event.label
+    // The focused free search (#210): its own row (a SEARCH event would overwrite the first search); the result details it.
+    else if (followed) { followed.meta = event.label; if (event.data?.failed) followed.state = 'skip' }
+    else if (event.type === 'FOLLOW_UP') rows.push({ key, kind: 'follow_up', event, title: 'Search again', state: 'now', meta: event.label })
     else if (event.type === 'SEARCH') rows.push({ key, kind: 'search', event, title: 'Search', state: 'now', meta: run.candidates.length ? `${run.candidates.length} sources found` : 'Searching…' })
     else if (event.type === 'READ_FREE') {
       const free = run.candidates.filter(item => item.tier === 'FREE').length
