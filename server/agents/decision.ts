@@ -6,6 +6,7 @@ import type { CandidateJudgment, ContentEnvelope, CoverageStatus, DecisionProvid
 import { fixtureCoverage, type CoverageEvidence } from './requirements.js'
 import { NEWCOMER } from '../reputation.js'
 import { compareTieBreak } from './tie-break.js'
+import { activeCalibrator, calibrate, roundCalibration } from './calibration.js'
 
 /** Every live call takes the round's abort signal (#206): when one call fails the round, its siblings stop. */
 type Signal = { signal?: AbortSignal }
@@ -165,7 +166,7 @@ export function decide(input: DecideInput): Promise<DecisionRound> {
     if (input.provider) scoreStep('decision-unavailable', false)
     if (live) scoreStep('decision-refusal', false)
     scoreStep('gap-material', round.gapMaterial, round.gap)
-    observation.update({ output: { provider: round.provider, model: round.model, promptVersion: round.promptVersion ?? null, gapMaterial: round.gapMaterial, threshold: round.threshold, selected: round.selectedResourceId ?? null, rows: round.rows.map(r => ({ resourceId: r.candidate.resourceId, priceMinor: r.candidate.price.amountMinor, addressesGap: r.judgment.addressesGap, original: r.judgment.originality.original, credibility: r.judgment.credibility, value: r.value, verdict: r.verdict })) } })
+    observation.update({ output: { provider: round.provider, model: round.model, promptVersion: round.promptVersion ?? null, gapMaterial: round.gapMaterial, threshold: round.threshold, selected: round.selectedResourceId ?? null, calibration: round.calibration ?? null, rows: round.rows.map(r => ({ resourceId: r.candidate.resourceId, priceMinor: r.candidate.price.amountMinor, addressesGap: r.judgment.addressesGap, original: r.judgment.originality.original, ...(r.calibrated ? { calibratedAddressesGap: r.calibrated.addressesGap, calibratedOriginal: r.calibrated.original } : {}), credibility: r.judgment.credibility, value: r.value, verdict: r.verdict })) } })
     return round
   }, { asType: 'chain' })
 }
@@ -209,18 +210,23 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // An empty gap makes no model call for any provider (#214): nothing is worth buying, and Luna refused or scored it 0.87.
   const open = input.gap.trim().length > 0
   const { gapMaterial, judgments } = open ? await judgeAll(provider, input, candidates, readSources) : { gapMaterial: 0, judgments: candidates.map(() => NOT_JUDGED) }
-  const threshold = buyThreshold(provider.model, input.threshold)
+  // #207: a versioned calibrator for this exact (provider, model, prompt version), only with DECISION_CALIBRATION=on.
+  // Its threshold is on the calibrated scale; an explicit threshold still wins, and BUY_THRESHOLD (raw scale) never applies to it.
+  const calibrator = open ? activeCalibrator(provider) : undefined
+  const threshold = calibrator && input.threshold === undefined ? calibrator.buyThreshold : buyThreshold(provider.model, input.threshold)
   const acquired = new Set([...readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
   const rows = candidates.map((candidate, index) => {
     const judgment = judgments[index]
     // Trust can only lower value (T ∈ [0, 1]); it never touches the budget or the cap.
     const reputation = input.reputation && candidate.wallet ? input.reputation[candidate.wallet] ?? NEWCOMER : undefined
     const trust = reputation ? Math.min(1, Math.max(0, reputation.T)) : 1
-    const value = gapMaterial * judgment.addressesGap * judgment.originality.original * (0.5 + 0.25 * judgment.credibility) * trust
+    const calibrated = calibrator ? calibrate(calibrator, judgment) : undefined
+    const value = gapMaterial * (calibrated?.addressesGap ?? judgment.addressesGap) * (calibrated?.original ?? judgment.originality.original) * (0.5 + 0.25 * judgment.credibility) * trust
     const price = candidate.price.amountMinor
     // A zero-price PAID resource ranks by value, avoiding Infinity in JSON.
     const valuePerDollar = value / (Math.max(price, 1) / 100)
     // With no model call, a rewrite is known from its public metadata only (derivedFrom, set by retrieval for a shared family).
+    // Always the RAW originality (#207): a calibrator that lifts P(original) can never let a rewrite through.
     const rewrite = open ? judgment.originality.rewrite >= judgment.originality.original : Boolean(candidate.derivedFrom)
     let verdict: DecisionRound['rows'][number]['verdict'] = 'BUY'
     let reason = 'Clears the value threshold and spending policy.'
@@ -232,9 +238,9 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }
-    return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}) }
+    return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}) }
   })
   // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
   const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.resourceId, version: b.candidate.version }))[0]
-  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}) })
+  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), ...(calibrator ? { calibration: roundCalibration(calibrator) } : {}), threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}) })
 }
