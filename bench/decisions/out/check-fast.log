@@ -1,0 +1,1051 @@
+
+> research-agent@0.1.0 check:fast
+> npm run lint && npm run typecheck && npm run test:unit
+
+
+> research-agent@0.1.0 lint
+> eslint .
+
+
+> research-agent@0.1.0 typecheck
+> tsc --noEmit
+
+
+> research-agent@0.1.0 test:unit
+> vitest run
+
+
+ RUN  v3.2.7 /private/tmp/tftf-bench-decisions
+
+ ❯ tests/report.test.ts (18 tests | 1 failed) 429ms
+   ✓ report evidence and drafting > builds a schema-valid labelled fixture from examples without a provider call 11ms
+   ✓ report evidence and drafting > rejects missing paid grant before the LLM receives evidence 2ms
+   ✓ report evidence and drafting > rejects run paid grant before the LLM receives evidence 1ms
+   ✓ report evidence and drafting > rejects version paid grant before the LLM receives evidence 1ms
+   ✓ report evidence and drafting > rejects resource paid grant before the LLM receives evidence 1ms
+   ✓ report evidence and drafting > #142: citations open the writer article (FREE at its #p- anchor, PAID at its page); receipts list refunds 4ms
+   ✓ report evidence and drafting > #142: a PAID citation opens the writer blog page, never the x402 agent endpoint 5ms
+   ✓ report evidence and drafting > gate-4: a quarantined (failed-proof) grant is no source access for the report 1ms
+   ✓ report evidence and drafting > rejects unknown, duplicate sources and non-substring passages 14ms
+   ✓ report evidence and drafting > drops invalid claims without repairing citations and ignores LLM ledger additions 5ms
+   ✓ report evidence and drafting > copies persisted decision and receipt records with source receipt references 4ms
+   ✓ report evidence and drafting > labels stub/provider failure and all-invalid drafts as fixture 3ms
+   ✓ report evidence and drafting > drops invalid final-answer references from fallback and displays cited version changes 2ms
+   ✓ offline rendering (Chromium mocked; actual PDF checked by W2) > uses page.pdf and closes Chromium 3ms
+   ✓ offline rendering (Chromium mocked; actual PDF checked by W2) > writes printable HTML on unavailable Chromium and escapes source content 12ms
+   ✓ offline rendering (Chromium mocked; actual PDF checked by W2) > closes Chromium and returns HTML when PDF generation fails 2ms
+   ✓ offline rendering (Chromium mocked; actual PDF checked by W2) > fails closed before launching a browser for tampered report access or citations 2ms
+   × citation deep links (#147) > a FREE citation links to the writer page and the passage anchor exists there 355ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/proofs.test.ts (4 tests | 4 failed) 186ms
+   × proof check after delivery and quarantine (#131) > gate-4: an honest delivery is VERIFIED, emits a PROOF event and is citable 109ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × proof check after delivery and quarantine (#131) > gate-4: an AlphaLeak delivery is CLAIM_FAILED, kept for audit, quarantined from contents and citations 29ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × proof check after delivery and quarantine (#131) > gate-4: in the loop, a quarantined AlphaLeak source never reaches writeAnswer input, Clef or the answer; the writer is challenged 14ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × proof check after delivery and quarantine (#131) > gate-1: before a grant, no paid body, passage or salt reaches the snapshot, SSE events, LLM input or Clef; gate-2: S$0 buys nothing 21ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/facilitator.test.ts (10 tests | 10 failed) 344ms
+   × publisher facilitator (#129) > happy path: delivers body, passages and salts that recompute the invoiced root, with PAYMENT-RESPONSE 130ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > wrong amount → 402 with an error and no settlement 22ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > wrong payee → 402 with an error and no settlement 14ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > unknown invoice → 402 with an error and no settlement 13ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > past LastLedgerSequence → 402 with an error and no settlement 42ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > refuses a payer other than the SIMULATED test key on the simulated rail 22ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > a duplicate blob returns the same delivery with one settlement; another payment for the same quote is refused 14ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > parallel identical requests settle once 21ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > exposes verify (read-only), settle and supported 46ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher facilitator (#129) > never puts salts in search results 19ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/site-leak.test.ts (2 tests | 1 failed) 300ms
+   ✓ site leak gate (#146) > the oracle catches a leak 5ms
+   × site leak gate (#146) > the paid page shows abstract and badge, and no HTML page leaks a paid body 293ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/decision-loop.test.ts (19 tests | 3 skipped) 811ms
+   ✓ RunLoop with W0 ledger/research doubles > runs free answer, decision, one verified purchase, immutable v2, then stops 19ms
+   ✓ RunLoop with W0 ledger/research doubles > persists throttled fixed progress markers without unvalidated tokens 3ms
+   ✓ RunLoop with W0 ledger/research doubles > S$0 answers and computes would-buy while never calling purchases 4ms
+   ✓ RunLoop with W0 ledger/research doubles > allows only one runner per run 24ms
+   ✓ RunLoop with W0 ledger/research doubles > Stop during asynchronous judgment prevents the next purchase and is durable first 61ms
+   ✓ RunLoop with W0 ledger/research doubles > rejects paid bytes in retrieval before any writer or content persistence 1ms
+   ✓ RunLoop with W0 ledger/research doubles > preserves v1 on delivery failure, then retries verification and v2 without buying 4ms
+   ✓ RunLoop with W0 ledger/research doubles > requires a matching grant even if purchase returns VERIFIED 3ms
+   ✓ RunLoop with W0 ledger/research doubles > fails safely on re-answer errors and rejects retry intents owned by other runs 6ms
+   ✓ RunLoop with W0 ledger/research doubles > reconciles interrupted settlements without starting another purchase 1ms
+   ✓ RunLoop with W0 ledger/research doubles > re-answers after a crash between VERIFIED and READ_PAID without repurchasing 2ms
+   ✓ RunLoop with W0 ledger/research doubles > limits continued acquisition to three rounds and one purchase per round 23ms
+   ✓ RunLoop × reputation (#140, #141) > passes reputation summaries into decide: a quarantined seller is SKIP_LOW_TRUST and never bought 7ms
+   ✓ RunLoop × reputation (#140, #141) > D5: a failed proof that cannot be challenged (no re-checkable claim) still costs trust, once 5ms
+   ✓ RunLoop × reputation (#140, #141) > restart: a terminal challenge outcome whose trust update a crash lost is recorded once, never twice 4ms
+   ✓ RunLoop × reputation (#140, #141) > calibrates once after each verified, granted purchase with the active provider, and a failure never blocks the run 8ms
+   ↓ fixture-mode use cases, end to end (#142) > UC1: free sources suffice: no gap, no purchase, S$0
+   ↓ fixture-mode use cases, end to end (#142) > UC2: the chosen angle drives the gap; NotFT is bought once and changes the answer
+   ↓ fixture-mode use cases, end to end (#142) > UC3: AlphaLeak bought → CLAIM_FAILED → REFUNDED → round 2 buys The Fab Floor; a re-ask shows SKIP_LOW_TRUST
+ ❯ tests/publisher.test.ts (6 tests | 5 failed) 1061ms
+   ✓ publisher HTTP protocol > loads the default writer corpus while preserving the synchronous factory 164ms
+   × publisher HTTP protocol > gate-1: strips premium bodies/spans and extra private properties from search and metadata 36ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher HTTP protocol > gate-3: sells paid bytes only for a settled signed payment, with salts; a duplicate blob resends the same delivery, never a new charge 48ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher HTTP protocol > enables faults only explicitly, behind the secret 23ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher HTTP protocol > settles once across real publisher processes sharing a journal, and survives a restart 779ms
+     → Publisher process failed: node:events:487
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EPERM: operation not permitted 127.0.0.1
+    at Server.setupListenHandle [as _listen2] (node:net:1987:21)
+    at listenInCluster (node:net:2066:12)
+    at node:net:2275:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2045:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '127.0.0.1'
+}
+
+Node.js v26.3.1
+
+   × publisher HTTP protocol > rejects a malformed PAYMENT-SIGNATURE without reflecting it, and the old endpoints are gone 10ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/retrieval.test.ts (5 tests | 4 failed) 142ms
+   × federated retrieval (#138) > fans out sub-queries × publishers, reads only FREE hits and passes verified PAID hits on 84ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × federated retrieval (#138) > drops a PAID hit with a tampered manifest or a foreign key and never passes it on 18ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × federated retrieval (#138) > a publisher that fails is skipped; the others still answer 15ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   ✓ federated retrieval (#138) > fuses with RRF: order-stable and price-blind 10ms
+   × federated retrieval (#138) > keeps both rows of a rewrite but marks it 15ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/challenge.test.ts (6 tests | 6 failed) 148ms
+   × POST /w/:slug/challenge and refund (#132) > gate-3: AlphaLeak is REFUNDED exactly once under parallel and repeated challenges 73ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × POST /w/:slug/challenge and refund (#132) > gate-3: a restart after the challenge was sent challenges again and still refunds once 19ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × POST /w/:slug/challenge and refund (#132) > an honest publisher answers REJECTED when its claim holds 12ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × POST /w/:slug/challenge and refund (#132) > the buyer records CHALLENGE_REJECTED when the writer says the claim holds 12ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × POST /w/:slug/challenge and refund (#132) > a refusing publisher (test toggle) or a timeout is CHALLENGE_REFUSED, with no refund 11ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × POST /w/:slug/challenge and refund (#132) > gate-5: the simulated rail, keyword-only search, SYNTHETIC writers and refunds are labelled 20ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/purchase.test.ts (28 tests | 24 failed) 99ms
+   × atomic ledger and verified purchase flow > gate-3: parallel duplicate pays (same intent) submit once, parse snapshots, and persist safe wires 19ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > gate-3: independent managers share the durable submission claim 5ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > two intents compete for one budget under separate SQLite connections 3ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > gate-2: S+0 budget / Stop (0) produces no settlement 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > gate-2: S200 budget / Stop (200) produces no settlement 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   ✓ atomic ledger and verified purchase flow > gate-2: enforces the over-cap refusal, durable quote, immutable accounting and stopped reservation 4ms
+   × atomic ledger and verified purchase flow > price mismatch skips without charging 0ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > payee mismatch fails before signing, nothing charged 0ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > invoice article mismatch fails before signing, nothing charged 0ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > refuses before signing when the search manifest is missing 0ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > refuses before signing when the search manifest is root mismatch 0ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > refuses before signing when the search manifest is bad signature 0ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > a SIMULATED refusal of the signed blob is proof of no charge and releases the reservation 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > gate-3: a restart mid-submit (ambiguous settlement) survives and reconciles by resending the same blob, one charge 3ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > an unavailable publisher retains the possible-charge reservation; an unsigned one is released 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > gate-3: fault after payment retries GET delivery, never a new charge 0ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > rejects salt mismatch without exposing premium bytes 0ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > rejects passage mismatch without exposing premium bytes 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > rejects article mismatch without exposing premium bytes 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > rejects version mismatch without exposing premium bytes 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > rejects span mismatch without exposing premium bytes 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > rejects shape mismatch without exposing premium bytes 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   ✓ atomic ledger and verified purchase flow > generic writes cannot grant content, and answer versions remain immutable 11ms
+   ✓ atomic ledger and verified purchase flow > callbacks see persisted events; subscriber failure does not undo persistence 4ms
+   × atomic ledger and verified purchase flow > does not coalesce conflicting identities before the quote is durable 1ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > retains one charge across independent concurrent delivery retries 3ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × atomic ledger and verified purchase flow > end to end on the SIMULATED rail: buyer pays the real publisher once and verifies the manifest root 18ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   ✓ atomic ledger and verified purchase flow > lists past runs, pins them, and hides a deleted run without touching its ledger rows 17ms
+stderr | tests/publisher-registry.test.ts > writer corpus loader (#122) > falls back to the mini corpus while the roster or the v2 articles are missing
+Writer corpus not generated yet; serving the mini corpus (SYNTHETIC test fixture)
+
+ ❯ tests/publisher-registry.test.ts (10 tests | 6 failed) 334ms
+   × multi-publisher host (#122) > lists every publisher with root-relative endpoints 60ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × multi-publisher host (#122) > lists all 8 roster publishers from data/writers/, even before the v2 articles land 188ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × multi-publisher host (#122) > serves a discovery doc whose pubKey derives to its wallet 10ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × multi-publisher host (#122) > returns FREE articles with passages and PAID articles as 402 without body bytes 10ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × multi-publisher host (#122) > returns schema-valid hits; PAID hits carry a manifest signed by the publisher wallet 16ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × multi-publisher host (#122) > uses hybrid search when a query embedder answers, and keyword when it fails 7ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   ✓ publisher keys (#122) > derives deterministic SIMULATED keys on the simulated rail 7ms
+   ✓ publisher keys (#122) > reads XRPL_PUBLISHER_<SLUG>_SEED on the Testnet rail and refuses missing or simulated keys 17ms
+   ✓ writer corpus loader (#122) > loads one roster file per publisher plus the v2 articles 13ms
+   ✓ writer corpus loader (#122) > falls back to the mini corpus while the roster or the v2 articles are missing 4ms
+ ❯ tests/search-leak.test.ts (10 tests | 9 failed) 1316ms
+   ✓ search leak gate (#124) > the oracle catches a leak 1ms
+   × search leak gate (#124) > no search response shares 8 consecutive words with any paid body 265ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × search leak gate (#124) > rejects missing q with 400 350ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × search leak gate (#124) > rejects empty q with 400 97ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × search leak gate (#124) > rejects q over 300 characters with 400 120ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × search leak gate (#124) > rejects k = 0 with 400 90ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × search leak gate (#124) > rejects k over 10 with 400 78ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × search leak gate (#124) > rejects k not a number with 400 109ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × search leak gate (#124) > rejects repeated q with 400 78ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × search leak gate (#124) > caps results at k 128ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/manifest-publisher.test.ts (4 tests | 4 failed) 100ms
+   × publisher manifests (#125) > every PAID hit carries a signed manifest that the client verifies, and the delivery checks out 68ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher manifests (#125) > caches proofs per article version: only relevance and the signature change per query 15ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher manifests (#125) > persists salts in publisher.db, so a restart signs the same root 10ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × publisher manifests (#125) > never puts a salt in a /search response 6ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ✓ tests/search.test.ts (17 tests) 245ms
+ ✓ tests/corpus-v2.test.ts (2 tests) 179ms
+ ❯ tests/site.test.ts (9 tests | 8 failed) 158ms
+   × blog pages > renders home, free article, paid article, about, contact and index (snapshots) 44ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × blog pages > serves one stylesheet, fluid (no fixed pixel widths) 32ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × blog pages > 404s unknown publishers and articles as HTML; the agent JSON route is untouched 9ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × blog pages > renders the roster with zero articles 12ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × blog pages > escapes all corpus text 24ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   ✓ passage anchors (#147) > articleUrl builds the human path 0ms
+   × passage anchors (#147) > every FREE passage has its anchor on the page 18ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × /w index (#148) > lists every publisher with domain, kind, lanes and writer count 9ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × /w index (#148) > is linked from every blog footer 9ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/plan.test.ts (3 tests | 1 failed) 72ms
+   ✓ plan and run start (#137) > fixture: each UC gets its expected generic sub-queries (≤ 120 chars, no user identity) 3ms
+   ✓ plan and run start (#137) > a model plan is clipped to 120 chars and refused when it mentions spending 4ms
+   × plan and run start (#137) > POST /runs plans server-side when no plan is given, stores it, and searches the registry with it 65ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/publisher-x402.test.ts (3 tests | 3 failed) 75ms
+   × x402 v2 PAYMENT-REQUIRED (#128) > decodes, and its invoiceId binds the manifest root of that article version 55ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × x402 v2 PAYMENT-REQUIRED (#128) > issues a fresh quote per 402, and FREE articles never need one 10ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × x402 v2 PAYMENT-REQUIRED (#128) > has removed the 5-hop flow: /v1/quotes and /v1/settlements return 404 10ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ❯ tests/alphaleak.test.ts (3 tests | 3 failed) 92ms
+   × AlphaLeak bad actor (#126) > reports inflated relevance and a validly signed manifest, like any honest publisher 62ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × AlphaLeak bad actor (#126) > verifyDelivery fails exactly the planted claim; every other publisher passes 13ms
+     → listen EPERM: operation not permitted 127.0.0.1
+   × AlphaLeak bad actor (#126) > does not call itself a bad actor in its discovery doc 17ms
+     → listen EPERM: operation not permitted 127.0.0.1
+ ✓ tests/generate-corpus.test.ts (7 tests) 107ms
+ ✓ tests/decision-uc.test.ts (5 tests) 11ms
+ ✓ tests/research-agent.test.ts (14 tests) 18ms
+ ✓ src/fixtures/internals.test.tsx (16 tests) 46ms
+ ✓ tests/decision.test.ts (13 tests) 48ms
+ ✓ tests/contracts.test.ts (14 tests) 31ms
+ ✓ tests/wallets.test.ts (3 tests) 37ms
+ ✓ tests/manifest.test.ts (10 tests) 26ms
+ ✓ tests/writers.test.ts (8 tests) 5ms
+ ✓ tests/calibration.test.ts (2 tests) 15ms
+ ✓ tests/fixtures/live-client.test.ts (5 tests) 12ms
+ ✓ tests/x402.test.ts (3 tests) 5ms
+ ✓ tests/live-smoke.test.ts (6 tests) 4ms
+ ✓ tests/telemetry-off.test.ts (1 test) 3ms
+ ✓ tests/telemetry.test.ts (7 tests) 9ms
+(node:18761) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/fixtures/wpui.test.tsx (24 tests) 237ms
+ ❯ tests/scenarios/scenarios.test.ts (11 tests | 7 skipped) 4584ms
+   ↓ UC1–UC3 scenarios: separate API and publisher processes > UC1: free sources suffice: a cited answer, no gap, S$0 spent despite S$2 authorised
+   ↓ UC1–UC3 scenarios: separate API and publisher processes > UC2: one clarifying question; the chosen angle buys NotFT once, the rewrite and the over-cap decoy are rejected
+   ↓ UC1–UC3 scenarios: separate API and publisher processes > S$0: spends nothing but marks the expected article as would-buy
+   ↓ UC1–UC3 scenarios: separate API and publisher processes > an instruction in a free article changes no verdict, purchase, budget or cap
+   ↓ UC3: a bad actor is caught, refunded and quarantined > AlphaLeak is bought → CLAIM_FAILED → REFUNDED once → H 0.80→0.40 quarantined → round 2 buys The Fab Floor; a re-ask shows SKIP_LOW_TRUST
+   ↓ leak gate and Stop: audited Clef and LLM requests > every API/SSE snapshot, Clef and LLM request respects run/version grants
+   ↓ leak gate and Stop: audited Clef and LLM requests > Stop during scoring prevents any purchase and preserves the free answer
+   ✓ premium leak oracle > gate-1: rejects raw and JSON-escaped canaries and unique paid passages without a grant  1556ms
+   ✓ premium leak oracle > requires the grant to match the observation run, article and version 92ms
+   ✓ premium leak oracle > catches a short paid passage and a partial (8-word) leak of a long one 43ms
+   ✓ premium leak oracle > allows text a free article publishes too 22ms
+ ❯ tests/scope.test.ts (6 tests | 1 failed) 5024ms
+   ✓ scope step (#136) > fixture: UC2 gets exactly the story-bible angle question; UC1 and UC3 get none 5ms
+   ✓ scope step (#136) > generic rule: an unnamed bond market is ambiguous on market and timeframe (≤ 2 questions, 2–4 options) 1ms
+   ✓ scope step (#136) > the few-shot mirrors the story bible, and the prompt is snapshot-tested 3ms
+   ✓ scope step (#136) > clarify=never skips the questions; the label says fixture 1ms
+   ✓ scope step (#136) > uses the model when valid, and falls back to the fixture when it mentions spending 9ms
+   × scope step (#136) > POST /api/scope answers with questions and a plan, and honours ?clarify=never 5005ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/reputation.test.ts (6 tests | 1 failed) 5070ms
+   ✓ Beta Reputation honesty × calibration (#140) > matches the §7 numbers 1ms
+   ✓ Beta Reputation honesty × calibration (#140) > calibration is 1 − mean squared error on a fixed series, and T = H × C 0ms
+   ✓ Beta Reputation honesty × calibration (#140) > persists across store reopen, emits REPUTATION before/after events, and resets 10ms
+   × Beta Reputation honesty × calibration (#140) > GET /api/reputation lists records and POST /api/reputation/reset wipes them 5009ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ✓ decision × reputation (#140) > multiplies value by T, and a quarantined or delisted seller gets SKIP_LOW_TRUST 9ms
+   ✓ decision × reputation (#140) > property: for any history T ∈ [0, 1], value never rises and budget and cap stay binding (gate 2) 40ms
+ ❯ tests/xrpl.test.ts (15 tests | 14 failed) 70039ms
+   × XRPL Testnet settlement rail > advertises xrpl:1 in the 402 and pays exactly once, bound to the quote by InvoiceID 5008ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > pays each publisher at its own wallet and refuses a payee the policy did not evaluate 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > signs and submits once when the same intent is bought concurrently 5001ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > refuses a payment whose ledger amount differs from the quote and issues no receipt 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > never lets one ledger payment settle a different quote 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > refuses to sign when the quoted drops differ from the policy-approved price 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > after a restart, settles a stored payment that validated without signing again 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > after a restart, releases the reservation when the payment expired off-ledger 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > keeps the reservation when the payer Sequence moved (the payment may have applied) 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > refuses to settle simulated while the run is labelled XRPL 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > without a payer seed, nothing is signed and the purchase fails visibly 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > serves a read-only ledger view: buyer plus the registry paid publisher wallets, never a seed 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > gate-5: a failed proof is challenged and refunded on the Testnet once, verified by the buyer on the ledger, labelled XRPL TESTNET 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × XRPL Testnet settlement rail > gate-3: a matching payment from a wallet other than the paid publisher is not a refund (CHALLENGE_REFUSED) 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ✓ XRPL Testnet settlement rail > only accepts Testnet endpoints 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/decision-loop.test.ts > fixture-mode use cases, end to end (#142)
+Error: listen EPERM: operation not permitted 127.0.0.1
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/109]⎯
+
+ FAIL  tests/scenarios/scenarios.test.ts > UC1–UC3 scenarios: separate API and publisher processes
+Error: Scenario process exited: node:net:1987
+      const error = new UVExceptionWithHostPort(rval, 'listen', address, port);
+                    ^
+
+Error: listen EPERM: operation not permitted 127.0.0.1
+    at Server.setupListenHandle [as _listen2] (node:net:1987:21)
+    at listenInCluster (node:net:2066:12)
+    at node:net:2275:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '127.0.0.1'
+}
+
+Node.js v26.3.1
+
+ ❯ start tests/scenarios/harness.ts:71:42
+     69|     child.stderr!.on('data', data => logs.push(String(data)))
+     70|     for (let i = 0; i < 500; i++) {
+     71|       if (child.exitCode !== null) throw new Error(`Scenario process e…
+       |                                          ^
+     72|       const actual = port ?? Number(output.match(/PORT=(\d+)/)?.[1])
+     73|       if (actual) {
+ ❯ startScenario tests/scenarios/harness.ts:87:23
+ ❯ tests/scenarios/scenarios.test.ts:70:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/109]⎯
+
+ FAIL  tests/scenarios/scenarios.test.ts > UC3: a bad actor is caught, refunded and quarantined
+Error: Scenario process exited: node:net:1987
+      const error = new UVExceptionWithHostPort(rval, 'listen', address, port);
+                    ^
+
+Error: listen EPERM: operation not permitted 127.0.0.1
+    at Server.setupListenHandle [as _listen2] (node:net:1987:21)
+    at listenInCluster (node:net:2066:12)
+    at node:net:2275:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '127.0.0.1'
+}
+
+Node.js v26.3.1
+
+ ❯ start tests/scenarios/harness.ts:71:42
+     69|     child.stderr!.on('data', data => logs.push(String(data)))
+     70|     for (let i = 0; i < 500; i++) {
+     71|       if (child.exitCode !== null) throw new Error(`Scenario process e…
+       |                                          ^
+     72|       const actual = port ?? Number(output.match(/PORT=(\d+)/)?.[1])
+     73|       if (actual) {
+ ❯ startScenario tests/scenarios/harness.ts:87:23
+ ❯ tests/scenarios/scenarios.test.ts:126:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/109]⎯
+
+ FAIL  tests/scenarios/scenarios.test.ts > leak gate and Stop: audited Clef and LLM requests
+Error: Scenario process exited: node:net:1987
+      const error = new UVExceptionWithHostPort(rval, 'listen', address, port);
+                    ^
+
+Error: listen EPERM: operation not permitted 127.0.0.1
+    at Server.setupListenHandle [as _listen2] (node:net:1987:21)
+    at listenInCluster (node:net:2066:12)
+    at node:net:2275:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '127.0.0.1'
+}
+
+Node.js v26.3.1
+
+ ❯ start tests/scenarios/harness.ts:71:42
+     69|     child.stderr!.on('data', data => logs.push(String(data)))
+     70|     for (let i = 0; i < 500; i++) {
+     71|       if (child.exitCode !== null) throw new Error(`Scenario process e…
+       |                                          ^
+     72|       const actual = port ?? Number(output.match(/PORT=(\d+)/)?.[1])
+     73|       if (actual) {
+ ❯ startScenario tests/scenarios/harness.ts:87:23
+ ❯ tests/scenarios/scenarios.test.ts:156:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/109]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 105 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/alphaleak.test.ts > AlphaLeak bad actor (#126) > reports inflated relevance and a validly signed manifest, like any honest publisher
+ FAIL  tests/alphaleak.test.ts > AlphaLeak bad actor (#126) > verifyDelivery fails exactly the planted claim; every other publisher passes
+ FAIL  tests/alphaleak.test.ts > AlphaLeak bad actor (#126) > does not call itself a bad actor in its discovery doc
+ FAIL  tests/challenge.test.ts > POST /w/:slug/challenge and refund (#132) > gate-3: AlphaLeak is REFUNDED exactly once under parallel and repeated challenges
+ FAIL  tests/challenge.test.ts > POST /w/:slug/challenge and refund (#132) > gate-3: a restart after the challenge was sent challenges again and still refunds once
+ FAIL  tests/challenge.test.ts > POST /w/:slug/challenge and refund (#132) > an honest publisher answers REJECTED when its claim holds
+ FAIL  tests/challenge.test.ts > POST /w/:slug/challenge and refund (#132) > the buyer records CHALLENGE_REJECTED when the writer says the claim holds
+ FAIL  tests/challenge.test.ts > POST /w/:slug/challenge and refund (#132) > a refusing publisher (test toggle) or a timeout is CHALLENGE_REFUSED, with no refund
+ FAIL  tests/challenge.test.ts > POST /w/:slug/challenge and refund (#132) > gate-5: the simulated rail, keyword-only search, SYNTHETIC writers and refunds are labelled
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > happy path: delivers body, passages and salts that recompute the invoiced root, with PAYMENT-RESPONSE
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > wrong amount → 402 with an error and no settlement
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > wrong payee → 402 with an error and no settlement
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > unknown invoice → 402 with an error and no settlement
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > past LastLedgerSequence → 402 with an error and no settlement
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > refuses a payer other than the SIMULATED test key on the simulated rail
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > a duplicate blob returns the same delivery with one settlement; another payment for the same quote is refused
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > parallel identical requests settle once
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > exposes verify (read-only), settle and supported
+ FAIL  tests/facilitator.test.ts > publisher facilitator (#129) > never puts salts in search results
+ FAIL  tests/manifest-publisher.test.ts > publisher manifests (#125) > every PAID hit carries a signed manifest that the client verifies, and the delivery checks out
+ FAIL  tests/manifest-publisher.test.ts > publisher manifests (#125) > caches proofs per article version: only relevance and the signature change per query
+ FAIL  tests/manifest-publisher.test.ts > publisher manifests (#125) > persists salts in publisher.db, so a restart signs the same root
+ FAIL  tests/manifest-publisher.test.ts > publisher manifests (#125) > never puts a salt in a /search response
+ FAIL  tests/plan.test.ts > plan and run start (#137) > POST /runs plans server-side when no plan is given, stores it, and searches the registry with it
+ FAIL  tests/proofs.test.ts > proof check after delivery and quarantine (#131) > gate-4: an honest delivery is VERIFIED, emits a PROOF event and is citable
+ FAIL  tests/proofs.test.ts > proof check after delivery and quarantine (#131) > gate-4: an AlphaLeak delivery is CLAIM_FAILED, kept for audit, quarantined from contents and citations
+ FAIL  tests/proofs.test.ts > proof check after delivery and quarantine (#131) > gate-4: in the loop, a quarantined AlphaLeak source never reaches writeAnswer input, Clef or the answer; the writer is challenged
+ FAIL  tests/proofs.test.ts > proof check after delivery and quarantine (#131) > gate-1: before a grant, no paid body, passage or salt reaches the snapshot, SSE events, LLM input or Clef; gate-2: S$0 buys nothing
+ FAIL  tests/publisher-registry.test.ts > multi-publisher host (#122) > lists every publisher with root-relative endpoints
+ FAIL  tests/publisher-registry.test.ts > multi-publisher host (#122) > lists all 8 roster publishers from data/writers/, even before the v2 articles land
+ FAIL  tests/publisher-registry.test.ts > multi-publisher host (#122) > serves a discovery doc whose pubKey derives to its wallet
+ FAIL  tests/publisher-registry.test.ts > multi-publisher host (#122) > returns FREE articles with passages and PAID articles as 402 without body bytes
+ FAIL  tests/publisher-registry.test.ts > multi-publisher host (#122) > returns schema-valid hits; PAID hits carry a manifest signed by the publisher wallet
+ FAIL  tests/publisher-registry.test.ts > multi-publisher host (#122) > uses hybrid search when a query embedder answers, and keyword when it fails
+ FAIL  tests/publisher-x402.test.ts > x402 v2 PAYMENT-REQUIRED (#128) > decodes, and its invoiceId binds the manifest root of that article version
+ FAIL  tests/publisher-x402.test.ts > x402 v2 PAYMENT-REQUIRED (#128) > issues a fresh quote per 402, and FREE articles never need one
+ FAIL  tests/publisher-x402.test.ts > x402 v2 PAYMENT-REQUIRED (#128) > has removed the 5-hop flow: /v1/quotes and /v1/settlements return 404
+ FAIL  tests/publisher.test.ts > publisher HTTP protocol > gate-1: strips premium bodies/spans and extra private properties from search and metadata
+ FAIL  tests/publisher.test.ts > publisher HTTP protocol > gate-3: sells paid bytes only for a settled signed payment, with salts; a duplicate blob resends the same delivery, never a new charge
+ FAIL  tests/publisher.test.ts > publisher HTTP protocol > enables faults only explicitly, behind the secret
+ FAIL  tests/publisher.test.ts > publisher HTTP protocol > rejects a malformed PAYMENT-SIGNATURE without reflecting it, and the old endpoints are gone
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > gate-3: parallel duplicate pays (same intent) submit once, parse snapshots, and persist safe wires
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > gate-3: independent managers share the durable submission claim
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > two intents compete for one budget under separate SQLite connections
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > gate-2: S+0 budget / Stop (0) produces no settlement
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > gate-2: S200 budget / Stop (200) produces no settlement
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > price mismatch skips without charging
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > payee mismatch fails before signing, nothing charged
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > invoice article mismatch fails before signing, nothing charged
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > refuses before signing when the search manifest is missing
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > refuses before signing when the search manifest is root mismatch
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > refuses before signing when the search manifest is bad signature
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > a SIMULATED refusal of the signed blob is proof of no charge and releases the reservation
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > gate-3: a restart mid-submit (ambiguous settlement) survives and reconciles by resending the same blob, one charge
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > an unavailable publisher retains the possible-charge reservation; an unsigned one is released
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > gate-3: fault after payment retries GET delivery, never a new charge
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > rejects salt mismatch without exposing premium bytes
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > rejects passage mismatch without exposing premium bytes
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > rejects article mismatch without exposing premium bytes
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > rejects version mismatch without exposing premium bytes
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > rejects span mismatch without exposing premium bytes
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > rejects shape mismatch without exposing premium bytes
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > does not coalesce conflicting identities before the quote is durable
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > retains one charge across independent concurrent delivery retries
+ FAIL  tests/purchase.test.ts > atomic ledger and verified purchase flow > end to end on the SIMULATED rail: buyer pays the real publisher once and verifies the manifest root
+ FAIL  tests/report.test.ts > citation deep links (#147) > a FREE citation links to the writer page and the passage anchor exists there
+ FAIL  tests/retrieval.test.ts > federated retrieval (#138) > fans out sub-queries × publishers, reads only FREE hits and passes verified PAID hits on
+ FAIL  tests/retrieval.test.ts > federated retrieval (#138) > drops a PAID hit with a tampered manifest or a foreign key and never passes it on
+ FAIL  tests/retrieval.test.ts > federated retrieval (#138) > a publisher that fails is skipped; the others still answer
+ FAIL  tests/retrieval.test.ts > federated retrieval (#138) > keeps both rows of a rewrite but marks it
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > no search response shares 8 consecutive words with any paid body
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > rejects missing q with 400
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > rejects empty q with 400
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > rejects q over 300 characters with 400
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > rejects k = 0 with 400
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > rejects k over 10 with 400
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > rejects k not a number with 400
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > rejects repeated q with 400
+ FAIL  tests/search-leak.test.ts > search leak gate (#124) > caps results at k
+ FAIL  tests/site-leak.test.ts > site leak gate (#146) > the paid page shows abstract and badge, and no HTML page leaks a paid body
+ FAIL  tests/site.test.ts > blog pages > renders home, free article, paid article, about, contact and index (snapshots)
+ FAIL  tests/site.test.ts > blog pages > serves one stylesheet, fluid (no fixed pixel widths)
+ FAIL  tests/site.test.ts > blog pages > 404s unknown publishers and articles as HTML; the agent JSON route is untouched
+ FAIL  tests/site.test.ts > blog pages > renders the roster with zero articles
+ FAIL  tests/site.test.ts > blog pages > escapes all corpus text
+ FAIL  tests/site.test.ts > passage anchors (#147) > every FREE passage has its anchor on the page
+ FAIL  tests/site.test.ts > /w index (#148) > lists every publisher with domain, kind, lanes and writer count
+ FAIL  tests/site.test.ts > /w index (#148) > is linked from every blog footer
+Error: listen EPERM: operation not permitted 127.0.0.1
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/109]⎯
+
+ FAIL  tests/publisher.test.ts > publisher HTTP protocol > settles once across real publisher processes sharing a journal, and survives a restart
+Error: Publisher process failed: node:events:487
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EPERM: operation not permitted 127.0.0.1
+    at Server.setupListenHandle [as _listen2] (node:net:1987:21)
+    at listenInCluster (node:net:2066:12)
+    at node:net:2275:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2045:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '127.0.0.1'
+}
+
+Node.js v26.3.1
+
+ ❯ ChildProcess.<anonymous> tests/publisher.test.ts:55:60
+     53|   const base = await new Promise<string>((done, reject) => {
+     54|     const timer = setTimeout(() => { child.kill(); reject(new Error('P…
+     55|     child.once('exit', () => { clearTimeout(timer); reject(new Error('…
+       |                                                            ^
+     56|     child.stdout!.on('data', data => {
+     57|       const match = String(data).match(/PORT=(\d+)/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/109]⎯
+
+ FAIL  tests/reputation.test.ts > Beta Reputation honesty × calibration (#140) > GET /api/reputation lists records and POST /api/reputation/reset wipes them
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/reputation.test.ts:54:3
+     52|     expect(reputation.get('alphaleak', W.alpha).H).toBe(0.8)
+     53|   })
+     54|   it('GET /api/reputation lists records and POST /api/reputation/reset…
+       |   ^
+     55|     const dir = tempDir()
+     56|     const api = await createApiApp({ dbPath: join(dir, 'api.db'), publ…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/109]⎯
+
+ FAIL  tests/scope.test.ts > scope step (#136) > POST /api/scope answers with questions and a plan, and honours ?clarify=never
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/scope.test.ts:50:3
+     48|     expect(await scope(uc('UC1'))).toMatchObject({ questions: [], labe…
+     49|   })
+     50|   it('POST /api/scope answers with questions and a plan, and honours ?…
+       |   ^
+     51|     const dir = mkdtempSync(join(tmpdir(), 'scope-test-'))
+     52|     const api = await createApiApp({ dbPath: join(dir, 'api.db'), publ…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > advertises xrpl:1 in the 402 and pays exactly once, bound to the quote by InvoiceID
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:92:3
+     90| 
+     91| describe('XRPL Testnet settlement rail', () => {
+     92|   it('advertises xrpl:1 in the 402 and pays exactly once, bound to the…
+       |   ^
+     93|     const s = await setup()
+     94|     const challenge = await fetch(`${s.baseUrl}${CONTENT}`)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > pays each publisher at its own wallet and refuses a payee the policy did not evaluate
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:115:3
+    113|   })
+    114| 
+    115|   it('pays each publisher at its own wallet and refuses a payee the po…
+       |   ^
+    116|     const s = await setup()
+    117|     const payees = await Promise.all([`/w/alphaleak/articles/${alphaLe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > signs and submits once when the same intent is bought concurrently
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:124:3
+    122|   })
+    123| 
+    124|   it('signs and submits once when the same intent is bought concurrent…
+       |   ^
+    125|     const s = await setup()
+    126|     const a = new PurchaseManager(s.store, s.client, s.payer), b = new…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > refuses a payment whose ledger amount differs from the quote and issues no receipt
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:133:3
+    131|   })
+    132| 
+    133|   it('refuses a payment whose ledger amount differs from the quote and…
+       |   ^
+    134|     const s = await setup()
+    135|     s.chain.state.delivered = '1'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > never lets one ledger payment settle a different quote
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:144:3
+    142|   })
+    143| 
+    144|   it('never lets one ledger payment settle a different quote', async (…
+       |   ^
+    145|     const s = await setup()
+    146|     const first = await buy(s, new PurchaseManager(s.store, s.client, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > refuses to sign when the quoted drops differ from the policy-approved price
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:155:3
+    153|   })
+    154| 
+    155|   it('refuses to sign when the quoted drops differ from the policy-app…
+       |   ^
+    156|     const s = await setup()
+    157|     const accepted = required(await fetch(s.baseUrl + CONTENT)).accept…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > after a restart, settles a stored payment that validated without signing again
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:170:3
+    168|   })
+    169| 
+    170|   it('after a restart, settles a stored payment that validated without…
+       |   ^
+    171|     const s = await setup()
+    172|     s.chain.state.validate = false
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > after a restart, releases the reservation when the payment expired off-ledger
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:183:3
+    181|   })
+    182| 
+    183|   it('after a restart, releases the reservation when the payment expir…
+       |   ^
+    184|     const s = await setup()
+    185|     s.chain.state.record = false
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > keeps the reservation when the payer Sequence moved (the payment may have applied)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:195:3
+    193|   })
+    194| 
+    195|   it('keeps the reservation when the payer Sequence moved (the payment…
+       |   ^
+    196|     const s = await setup()
+    197|     s.chain.state.record = false
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > refuses to settle simulated while the run is labelled XRPL
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:204:3
+    202|   })
+    203| 
+    204|   it('refuses to settle simulated while the run is labelled XRPL', asy…
+       |   ^
+    205|     const s = await setup()
+    206|     const simulated = createPublisherApp({ journal: join(s.dir, 'simul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > without a payer seed, nothing is signed and the purchase fails visibly
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:216:3
+    214|   })
+    215| 
+    216|   it('without a payer seed, nothing is signed and the purchase fails v…
+       |   ^
+    217|     const s = await setup()
+    218|     const intent = await buy(s, new PurchaseManager(s.store, s.client,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > serves a read-only ledger view: buyer plus the registry paid publisher wallets, never a seed
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:223:3
+    221|   })
+    222| 
+    223|   it('serves a read-only ledger view: buyer plus the registry paid pub…
+       |   ^
+    224|     const s = await setup()
+    225|     const api = await createApiApp({ dbPath: join(s.dir, 'api.db'), pu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > gate-5: a failed proof is challenged and refunded on the Testnet once, verified by the buyer on the ledger, labelled XRPL TESTNET
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:237:3
+    235|   })
+    236| 
+    237|   it('gate-5: a failed proof is challenged and refunded on the Testnet…
+       |   ^
+    238|     const chain = fakeLedger()
+    239|     const alphaSeed = Wallet.generate().seed!
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/109]⎯
+
+ FAIL  tests/xrpl.test.ts > XRPL Testnet settlement rail > gate-3: a matching payment from a wallet other than the paid publisher is not a refund (CHALLENGE_REFUSED)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/xrpl.test.ts:263:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/109]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 16 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "advertises xrpl:1 in the 402 and pays exactly once, bound to the quote by InvoiceID". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/scope.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "POST /api/scope answers with questions and a plan, and honours ?clarify=never". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/reputation.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "GET /api/reputation lists records and POST /api/reputation/reset wipes them". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "pays each publisher at its own wallet and refuses a payee the policy did not evaluate". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "signs and submits once when the same intent is bought concurrently". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "refuses a payment whose ledger amount differs from the quote and issues no receipt". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "never lets one ledger payment settle a different quote". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "refuses to sign when the quoted drops differ from the policy-approved price". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "after a restart, settles a stored payment that validated without signing again". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "after a restart, releases the reservation when the payment expired off-ledger". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "keeps the reservation when the payer Sequence moved (the payment may have applied)". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "refuses to settle simulated while the run is labelled XRPL". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "without a payer seed, nothing is signed and the purchase fails visibly". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "serves a read-only ledger view: buyer plus the registry paid publisher wallets, never a seed". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "gate-5: a failed proof is challenged and refunded on the Testnet once, verified by the buyer on the ledger, labelled XRPL TESTNET". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1
+ ❯ Server.setupListenHandle [as _listen2] node:net:1987:21
+ ❯ listenInCluster node:net:2066:12
+ ❯ node:net:2275:7
+ ❯ processTicksAndRejections node:internal/process/task_queues:90:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1' }
+This error originated in "tests/xrpl.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "gate-3: a matching payment from a wallet other than the paid publisher is not a refund (CHALLENGE_REFUSED)". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+  Snapshots  6 obsolete
+             ↳ tests/site.test.ts
+               · blog pages > renders home, free article, paid article, about, contact and index (snapshots) > about 1
+               · blog pages > renders home, free article, paid article, about, contact and index (snapshots) > contact 1
+               · blog pages > renders home, free article, paid article, about, contact and index (snapshots) > free 1
+               · blog pages > renders home, free article, paid article, about, contact and index (snapshots) > home 1
+               · blog pages > renders home, free article, paid article, about, contact and index (snapshots) > index 1
+               · blog pages > renders home, free article, paid article, about, contact and index (snapshots) > paid 1
+
+ Test Files  20 failed | 18 passed (38)
+      Tests  105 failed | 220 passed | 10 skipped (335)
+     Errors  16 errors
+   Start at  13:54:48
+   Duration  71.48s (transform 973ms, setup 0ms, collect 10.03s, tests 91.42s, environment 232ms, prepare 1.64s)
+

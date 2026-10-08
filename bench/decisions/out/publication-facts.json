@@ -1,0 +1,830 @@
+{
+  "generatedAt": "2026-10-08T08:03:57.373Z",
+  "dataset": {
+    "synthetic": true,
+    "status": "structural checks passed; 40-item AI reading audit saved separately",
+    "generator": "GPT-6.1 Sol high structured specifications plus deterministic realization; generator used the Codex subagent, not a billed benchmark model",
+    "counts": {
+      "scenarios": 160,
+      "articles": 686,
+      "paidArticles": 546,
+      "writers": 42,
+      "candidateJudgments": 960,
+      "paidRelevanceExamples": 320,
+      "regressionScenarios": 4,
+      "regressionPaidExamples": 8,
+      "humanReviewQueue": 30,
+      "aiReviewQueue": 40,
+      "families": 70
+    },
+    "splits": {
+      "dev": 96,
+      "test": 64
+    },
+    "domains": {
+      "aviation": 23,
+      "cybersecurity": 23,
+      "energy-load-factor": 22,
+      "logistics": 23,
+      "macro-rates": 23,
+      "semis": 23,
+      "water": 23
+    },
+    "slices": {
+      "adversarial-duplicate-retitle": 14,
+      "adversarial-encoded-instruction": 14,
+      "adversarial-instruction": 14,
+      "adversarial-price-anchor": 14,
+      "adversarial-role-spoof": 14,
+      "budget-bound": 2,
+      "cap-bound": 2,
+      "clean": 70,
+      "negative": 2,
+      "no-gap": 2,
+      "overclaim": 2,
+      "partial": 2,
+      "primary": 2,
+      "secondary": 2,
+      "tangential-gap": 2,
+      "zero-budget": 2
+    },
+    "labels": {
+      "addressesGap": {
+        "0": 502,
+        "1": 458
+      },
+      "credibility": {
+        "0": 240,
+        "1": 320,
+        "2": 400
+      },
+      "originality": {
+        "original": 640,
+        "overlap": 160,
+        "rewrite": 160
+      },
+      "gapLabel": {
+        "0": 4,
+        "1": 156
+      },
+      "paid": {
+        "0": 168,
+        "1": 152
+      }
+    },
+    "selectedPositions": {
+      "0": 27,
+      "1": 22,
+      "2": 22,
+      "3": 29,
+      "4": 25,
+      "5": 25
+    },
+    "expectedNoBuy": 10,
+    "duplicateDifferentTitleScenarios": 160,
+    "adversarialScenarios": 70,
+    "checks": {
+      "exactScenarioSchema": true,
+      "productionCandidateSchema": true,
+      "productionContentSchema": true,
+      "productionPolicyOracle": true,
+      "threshold": 0.2,
+      "uniformTrust": 0.8,
+      "resourceSplitDisjoint": true,
+      "familySplitDisjoint": true,
+      "twinsSameSplit": true,
+      "attackLabelAndBodyInvariant": true,
+      "attackDoesNotElevateOraclePick": true,
+      "priceAndBodyExcludedFromCandidateProjection": true,
+      "publicIsolationChecks": 984,
+      "actualProductionSourceText": true,
+      "binaryLabelsOnly": true,
+      "sixPaidCandidates": true,
+      "twoDistinctPaidExamples": true,
+      "noApiCalls": true,
+      "noPaymentsOrProofExecution": true
+    },
+    "hashes": {
+      "testScenariosSha256": "f43aaa61b35d50d4e763acb3ddbd67043f2245f4b37aa3baee70dbd200c69ba2",
+      "testScenarioIdsSha256": "8a5c75988622efaa0e5ea22d2b716d8ba985931a4fcd56945cf39a7511840116",
+      "topicSpecsSha256": "eeb5c896842e6b1302873a61b4ad002e980ec159bf3d271d4823146a35442243"
+    },
+    "independentRelabel": {
+      "source": "label-qa.json",
+      "performed": true,
+      "n": 192,
+      "expected": 192,
+      "agreement": {
+        "addressesGap": {
+          "kappa": 0.8794222315260624,
+          "agreement": 0.9375,
+          "n": 192
+        },
+        "originality": {
+          "kappa": 0.6972071017957978,
+          "agreement": 0.8385416666666666,
+          "n": 192
+        },
+        "credibility": {
+          "kappa": 0.6373864823595596,
+          "agreement": 0.7552083333333334,
+          "n": 192
+        },
+        "paidRelevance": {
+          "kappa": 0.989340439706862,
+          "agreement": 0.9947916666666666,
+          "n": 192
+        }
+      }
+    },
+    "caveats": [
+      "Short templated synthetic prose is not the production 600-1400 word corpus; production word-count validator is not invoked or relaxed.",
+      "Public-overclaim labels assess advertised coverage, paid labels assess isolated delivered content; hidden bodies must never repair public judgments.",
+      "Topic-family split prevents direct article reuse, but shared sentence templates, writer identities, domain conventions and synthetic generator style occur on both sides.",
+      "No live search scores, signatures, payments, refunds or proofs are tested.",
+      "Test lock is recorded here only. Parent owns writing out/test-lock.txt before tuning."
+    ],
+    "libraryArticles": 686,
+    "distinctBodies": 602,
+    "testArrayLock": "77edfa3767157a6d2a2c6b04520fa53368cfaf2b95e4ca722b084faf58fb1c81",
+    "splitFamilies": {
+      "dev": 42,
+      "test": 28
+    },
+    "metadataCorrection": "This merged publication record supersedes the standalone builder summary for generator naming, test-array lock and independent QA status. Builder hashes use their documented serialization and remain preserved."
+  },
+  "callSummary": [
+    {
+      "arm": "flash",
+      "kind": "batch",
+      "n": 192,
+      "meanInputTokens": 3720.2604166666665,
+      "meanUsd": 0.0003348234374999999,
+      "p50Ms": 1158.1697709999862,
+      "p95Ms": 1796.3883671500657,
+      "p99Ms": 2886.743321779989,
+      "timeouts": 2,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "flash",
+      "kind": "candidate",
+      "n": 2036,
+      "meanInputTokens": 736.1782907662083,
+      "meanUsd": 0.00006625604616895874,
+      "p50Ms": 416.93877049998264,
+      "p95Ms": 859.916364499989,
+      "p99Ms": 1106.9273603000127,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "flash",
+      "kind": "originality",
+      "n": 72,
+      "meanInputTokens": 522.4583333333334,
+      "meanUsd": 0.00004702124999999999,
+      "p50Ms": 360.6214374999945,
+      "p95Ms": 529.0222647999864,
+      "p99Ms": 608.7676026800037,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "flash",
+      "kind": "paid",
+      "n": 455,
+      "meanInputTokens": 396.55384615384617,
+      "meanUsd": 0.000035689846153846144,
+      "p50Ms": 479.70037499978207,
+      "p95Ms": 969.2688660999904,
+      "p99Ms": 1195.3047996399919,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "flash",
+      "kind": "round",
+      "n": 263,
+      "meanInputTokens": 242.0874524714829,
+      "meanUsd": 0.00002178787072243347,
+      "p50Ms": 466.992499999993,
+      "p95Ms": 999.0348458000165,
+      "p99Ms": 1501.27850454001,
+      "timeouts": 0,
+      "httpOrTransportErrors": 3,
+      "estimatedUsage": 3
+    },
+    {
+      "arm": "clef",
+      "kind": "batch",
+      "n": 192,
+      "meanInputTokens": 3720.2604166666665,
+      "meanUsd": 0.0008928625000000001,
+      "p50Ms": 1223.700124999974,
+      "p95Ms": 1820.170615100022,
+      "p99Ms": 2890.978407999944,
+      "timeouts": 2,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "clef",
+      "kind": "candidate",
+      "n": 835,
+      "meanInputTokens": 710.5137724550898,
+      "meanUsd": 0.00017052330538922146,
+      "p50Ms": 868.9927920000046,
+      "p95Ms": 1262.3977168000029,
+      "p99Ms": 1633.587871339989,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "clef",
+      "kind": "paid",
+      "n": 182,
+      "meanInputTokens": 347.3021978021978,
+      "meanUsd": 0.00008335252747252746,
+      "p50Ms": 785.3097910000142,
+      "p95Ms": 1233.6155291499754,
+      "p99Ms": 1485.2418327700013,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "clef",
+      "kind": "round",
+      "n": 106,
+      "meanInputTokens": 234.88679245283018,
+      "meanUsd": 0.00005637283018867928,
+      "p50Ms": 557.3143755000001,
+      "p95Ms": 1052.404031500002,
+      "p99Ms": 1183.1708246499825,
+      "timeouts": 0,
+      "httpOrTransportErrors": 3,
+      "estimatedUsage": 3
+    },
+    {
+      "arm": "luna",
+      "kind": "batch",
+      "n": 424,
+      "meanInputTokens": 4695.202830188679,
+      "meanUsd": 0.0004695202830188676,
+      "p50Ms": 417.3623749999974,
+      "p95Ms": 584.2392874999814,
+      "p99Ms": 690.4370971600025,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "luna",
+      "kind": "candidate",
+      "n": 1599,
+      "meanInputTokens": 819.9143214509069,
+      "meanUsd": 0.0000819914321450907,
+      "p50Ms": 283.5821669999932,
+      "p95Ms": 425.53597440000146,
+      "p99Ms": 659.9630511600058,
+      "timeouts": 2,
+      "httpOrTransportErrors": 1,
+      "estimatedUsage": 1
+    },
+    {
+      "arm": "luna",
+      "kind": "originality",
+      "n": 72,
+      "meanInputTokens": 562.125,
+      "meanUsd": 0.00005621249999999999,
+      "p50Ms": 273.84429150000324,
+      "p95Ms": 386.34479010000183,
+      "p99Ms": 439.73231982000044,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "luna",
+      "kind": "paid",
+      "n": 455,
+      "meanInputTokens": 414.44835164835166,
+      "meanUsd": 0.00004144483516483518,
+      "p50Ms": 274.87258299999667,
+      "p95Ms": 538.9101955000224,
+      "p99Ms": 774.7669910400041,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "luna",
+      "kind": "round",
+      "n": 162,
+      "meanInputTokens": 239.21604938271605,
+      "meanUsd": 0.00002392160493827161,
+      "p50Ms": 270.2070209999729,
+      "p95Ms": 414.33787114998404,
+      "p99Ms": 644.8435207599996,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    },
+    {
+      "arm": "deepseek",
+      "kind": "audit",
+      "n": 24,
+      "meanInputTokens": 3975.9166666666665,
+      "meanUsd": 0.0016209249999999996,
+      "p50Ms": 1856.1707705000001,
+      "p95Ms": 2184.7603937500003,
+      "p99Ms": 2203.7637124999983,
+      "timeouts": 0,
+      "httpOrTransportErrors": 0,
+      "estimatedUsage": 0
+    }
+  ],
+  "baselineCallCost": [
+    {
+      "arm": "flash",
+      "byKind": [
+        {
+          "kind": "round",
+          "nUniqueCalls": 44,
+          "meanInputTokens": 218.9090909090909,
+          "meanUsd": 0.000019701818181818184,
+          "p50Ms": 766.1039795000033,
+          "p95Ms": 1439.9969517500087
+        },
+        {
+          "kind": "candidate",
+          "nUniqueCalls": 316,
+          "meanInputTokens": 702.3512658227849,
+          "meanUsd": 0.00006321161392405064,
+          "p50Ms": 583.0736664999858,
+          "p95Ms": 930.689906500007
+        },
+        {
+          "kind": "paid",
+          "nUniqueCalls": 91,
+          "meanInputTokens": 332.8021978021978,
+          "meanUsd": 0.000029952197802197812,
+          "p50Ms": 771.7024999999994,
+          "p95Ms": 1055.644270499979
+        }
+      ],
+      "meanUsdPerRound": 0.00039816187499999993,
+      "usdPer1000Rounds": 0.39816187499999994,
+      "n": 96,
+      "nCandidates": 6,
+      "convention": "Replay-priced seven-call rounds, including referenced cached responses at their original token charge; not the cost of executing warm cache hits. Excludes paid relevance."
+    },
+    {
+      "arm": "clef",
+      "byKind": [
+        {
+          "kind": "round",
+          "nUniqueCalls": 44,
+          "meanInputTokens": 218.9090909090909,
+          "meanUsd": 0.000052538181818181805,
+          "p50Ms": 559.9858544999934,
+          "p95Ms": 889.8293186999895
+        },
+        {
+          "kind": "candidate",
+          "nUniqueCalls": 316,
+          "meanInputTokens": 702.3512658227849,
+          "meanUsd": 0.0001685643037974684,
+          "p50Ms": 863.262937500002,
+          "p95Ms": 1281.377541999973
+        },
+        {
+          "kind": "paid",
+          "nUniqueCalls": 91,
+          "meanInputTokens": 332.8021978021978,
+          "meanUsd": 0.00007987252747252747,
+          "p50Ms": 796.0043749999968,
+          "p95Ms": 1208.1593749999884
+        }
+      ],
+      "meanUsdPerRound": 0.001061765,
+      "usdPer1000Rounds": 1.061765,
+      "n": 96,
+      "nCandidates": 6,
+      "convention": "Replay-priced seven-call rounds, including referenced cached responses at their original token charge; not the cost of executing warm cache hits. Excludes paid relevance."
+    },
+    {
+      "arm": "luna",
+      "byKind": [
+        {
+          "kind": "round",
+          "nUniqueCalls": 44,
+          "meanInputTokens": 227.3181818181818,
+          "meanUsd": 0.00002273181818181819,
+          "p50Ms": 261.7598330000037,
+          "p95Ms": 396.7369812500009
+        },
+        {
+          "kind": "candidate",
+          "nUniqueCalls": 316,
+          "meanInputTokens": 843.7816455696203,
+          "meanUsd": 0.00008437816455696198,
+          "p50Ms": 276.9529790000033,
+          "p95Ms": 447.9455939999971
+        },
+        {
+          "kind": "paid",
+          "nUniqueCalls": 91,
+          "meanInputTokens": 352.8131868131868,
+          "meanUsd": 0.00003528131868131869,
+          "p50Ms": 271.9129580000008,
+          "p95Ms": 400.21712500000285
+        }
+      ],
+      "meanUsdPerRound": 0.0005281635416666664,
+      "usdPer1000Rounds": 0.5281635416666663,
+      "n": 96,
+      "nCandidates": 6,
+      "convention": "Replay-priced seven-call rounds, including referenced cached responses at their original token charge; not the cost of executing warm cache hits. Excludes paid relevance."
+    }
+  ],
+  "rawDev": [
+    {
+      "arm": "clef",
+      "config": "baseline",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.7192982456140351,
+        "recall": 0.45054945054945056,
+        "f1": 0.5540540540540541,
+        "wastedSpend": 1170,
+        "missedValue": 50,
+        "exactMatch": 0.4791666666666667,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "fixture",
+      "config": "baseline",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.4148936170212766,
+        "recall": 0.42857142857142855,
+        "f1": 0.42162162162162165,
+        "wastedSpend": 965,
+        "missedValue": 52,
+        "exactMatch": 0.4270833333333333,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "flash",
+      "config": "baseline",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.7352941176470589,
+        "recall": 0.27472527472527475,
+        "f1": 0.4,
+        "wastedSpend": 205,
+        "missedValue": 66,
+        "exactMatch": 0.3020833333333333,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "luna",
+      "config": "baseline",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.7714285714285715,
+        "recall": 0.5934065934065934,
+        "f1": 0.6708074534161491,
+        "wastedSpend": 900,
+        "missedValue": 37,
+        "exactMatch": 0.6041666666666666,
+        "n": 96
+      },
+      "fallbackRounds": 7
+    },
+    {
+      "arm": "clef",
+      "config": "abstract-first",
+      "n": 28,
+      "complete": false,
+      "decision": {
+        "precision": 0.7894736842105263,
+        "recall": 0.6,
+        "f1": 0.6818181818181818,
+        "wastedSpend": 240,
+        "missedValue": 10,
+        "exactMatch": 0.6428571428571429,
+        "n": 28
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "flash",
+      "config": "abstract-first",
+      "n": 28,
+      "complete": false,
+      "decision": {
+        "precision": 0.5,
+        "recall": 0.16,
+        "f1": 0.24242424242424243,
+        "wastedSpend": 100,
+        "missedValue": 21,
+        "exactMatch": 0.25,
+        "n": 28
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "luna",
+      "config": "abstract-first",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.8918918918918919,
+        "recall": 0.7252747252747253,
+        "f1": 0.8,
+        "wastedSpend": 280,
+        "missedValue": 25,
+        "exactMatch": 0.7291666666666666,
+        "n": 96
+      },
+      "fallbackRounds": 9
+    },
+    {
+      "arm": "clef",
+      "config": "batch",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.5555555555555556,
+        "recall": 0.32967032967032966,
+        "f1": 0.41379310344827586,
+        "wastedSpend": 1830,
+        "missedValue": 61,
+        "exactMatch": 0.3541666666666667,
+        "n": 96
+      },
+      "fallbackRounds": 2
+    },
+    {
+      "arm": "clef",
+      "config": "batch-evidence",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.6166666666666667,
+        "recall": 0.4065934065934066,
+        "f1": 0.4900662251655629,
+        "wastedSpend": 1745,
+        "missedValue": 54,
+        "exactMatch": 0.4375,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "flash",
+      "config": "batch-evidence",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.6444444444444445,
+        "recall": 0.31868131868131866,
+        "f1": 0.4264705882352941,
+        "wastedSpend": 1210,
+        "missedValue": 62,
+        "exactMatch": 0.3541666666666667,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "luna",
+      "config": "batch-evidence",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.9777777777777777,
+        "recall": 0.967032967032967,
+        "f1": 0.9723756906077348,
+        "wastedSpend": 140,
+        "missedValue": 3,
+        "exactMatch": 0.96875,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "flash",
+      "config": "batch",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.6428571428571429,
+        "recall": 0.2967032967032967,
+        "f1": 0.40601503759398494,
+        "wastedSpend": 1015,
+        "missedValue": 64,
+        "exactMatch": 0.3229166666666667,
+        "n": 96
+      },
+      "fallbackRounds": 2
+    },
+    {
+      "arm": "luna",
+      "config": "batch",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.723404255319149,
+        "recall": 0.37362637362637363,
+        "f1": 0.4927536231884058,
+        "wastedSpend": 885,
+        "missedValue": 57,
+        "exactMatch": 0.40625,
+        "n": 96
+      },
+      "fallbackRounds": 1
+    },
+    {
+      "arm": "clef",
+      "config": "evidence",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.5319148936170213,
+        "recall": 0.27472527472527475,
+        "f1": 0.36231884057971014,
+        "wastedSpend": 1600,
+        "missedValue": 66,
+        "exactMatch": 0.3125,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "flash",
+      "config": "evidence",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.6,
+        "recall": 0.06593406593406594,
+        "f1": 0.1188118811881188,
+        "wastedSpend": 160,
+        "missedValue": 85,
+        "exactMatch": 0.11458333333333333,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "luna",
+      "config": "evidence",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.9302325581395349,
+        "recall": 0.8791208791208791,
+        "f1": 0.903954802259887,
+        "wastedSpend": 510,
+        "missedValue": 11,
+        "exactMatch": 0.8854166666666666,
+        "n": 96
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "clef",
+      "config": "historical",
+      "n": 33,
+      "complete": false,
+      "decision": {
+        "precision": 0.8,
+        "recall": 0.26666666666666666,
+        "f1": 0.4,
+        "wastedSpend": 50,
+        "missedValue": 22,
+        "exactMatch": 0.3333333333333333,
+        "n": 33
+      },
+      "fallbackRounds": 4
+    },
+    {
+      "arm": "flash",
+      "config": "historical",
+      "n": 33,
+      "complete": false,
+      "decision": {
+        "precision": 0.4666666666666667,
+        "recall": 0.23333333333333334,
+        "f1": 0.3111111111111111,
+        "wastedSpend": 270,
+        "missedValue": 23,
+        "exactMatch": 0.30303030303030304,
+        "n": 33
+      },
+      "fallbackRounds": 4
+    },
+    {
+      "arm": "luna",
+      "config": "historical",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.8901098901098901,
+        "recall": 0.8901098901098901,
+        "f1": 0.8901098901098901,
+        "wastedSpend": 790,
+        "missedValue": 10,
+        "exactMatch": 0.8958333333333334,
+        "n": 96
+      },
+      "fallbackRounds": 1
+    },
+    {
+      "arm": "clef",
+      "config": "no-read",
+      "n": 28,
+      "complete": false,
+      "decision": {
+        "precision": 0.8333333333333334,
+        "recall": 0.8,
+        "f1": 0.8163265306122449,
+        "wastedSpend": 260,
+        "missedValue": 5,
+        "exactMatch": 0.8214285714285714,
+        "n": 28
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "flash",
+      "config": "no-read",
+      "n": 28,
+      "complete": false,
+      "decision": {
+        "precision": 0.36363636363636365,
+        "recall": 0.16,
+        "f1": 0.2222222222222222,
+        "wastedSpend": 225,
+        "missedValue": 21,
+        "exactMatch": 0.21428571428571427,
+        "n": 28
+      },
+      "fallbackRounds": 0
+    },
+    {
+      "arm": "luna",
+      "config": "no-read",
+      "n": 96,
+      "complete": true,
+      "decision": {
+        "precision": 0.9154929577464789,
+        "recall": 0.7142857142857143,
+        "f1": 0.8024691358024691,
+        "wastedSpend": 180,
+        "missedValue": 26,
+        "exactMatch": 0.71875,
+        "n": 96
+      },
+      "fallbackRounds": 6
+    }
+  ],
+  "attemptCounts": {
+    "flash": 3018,
+    "clef": 1315,
+    "luna": 2713,
+    "deepseek": 24
+  },
+  "sourceFiles": [
+    "out/cache/*.json",
+    "out/runs/baseline-*.jsonl",
+    "out/runs/tune-*.jsonl",
+    "out/dataset-summary.json",
+    "out/test-lock.txt",
+    "out/label-qa.json"
+  ],
+  "notes": [
+    "Call summaries pool experiment phases and distinct request kinds; they do not estimate a production traffic mix. Cache summaries use the latest record per key; attemptCounts/requests.jsonl retain retried attempts and cost.json is the total meter.",
+    "Raw dev metrics use default thresholds and include recorded fixture fallbacks.",
+    "Dataset samples are synthetic; wrong-purchase SGD values are counterfactual, never real payments."
+  ]
+}

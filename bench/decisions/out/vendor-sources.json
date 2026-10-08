@@ -1,0 +1,47 @@
+{
+  "checkedOn": "2026-10-08",
+  "sources": [
+    {
+      "url": "https://developers.openai.com/api/docs/guides/decisions",
+      "claims": "Public beta; only gpt-6-luna; POST /v1/decisions; input $0.10/M; no output or cache charges; vendor says about 10x Responses speed; no distribution supplied. JS SDK minimum7.30.0. Inline base64 images. Eligible ZDR/HIPAA/regional processing. No documented temperature/seed or self-serve Decisions tuning."
+    },
+    {
+      "url": "https://developers.openai.com/api/reference/typescript/resources/decisions/methods/create",
+      "claims": "predicate probability, choice and score distributions, refusal union, usage.input_tokens. Up to128 inline images; external image URLs unsupported."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+      "claims": "Verified full Clef $0.240/M input and flash $0.090/M input; no output row for these models."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers-ai/models/clef/",
+      "claims": "27B multimodal decision model; 65536-token context; $0.24/M input."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers-ai/models/clef-flash/",
+      "claims": "Clef-flash hosted endpoint and schema; $0.09/M input."
+    },
+    {
+      "url": "https://blog.cloudflare.com/clef-decision-models/",
+      "claims": "Vendor-reported 27B Qwen3.8 vs9B Qwen3.5; Apache2 weights; Brier loss/RLCD; median209.3/38.8ms and p95238.6/122.4ms for full/flash in vendor tests. FDE tuning available, self-serve planned. These are not comparable client round trips."
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "claims": "DeepSeek flash peak uncached input $0.30/M and output $1.20/M; half off-peak, cache cheaper. QA cost conservatively uses peak uncached rates, not an invoice claim."
+    },
+    {
+      "url": "https://developers.cloudflare.com/ai-gateway/features/unified-billing/",
+      "claims": "Prepaid credits can fund Workers AI via a gateway configured for Unified billing; credit purchases carry a 5% fee. No billing subscription or credit purchase was made by this benchmark."
+    }
+  ],
+  "runtime": {
+    "node": "26.3.1",
+    "openaiSdk": "not installed; plain fetch used; root package and lock unchanged"
+  },
+  "ratesUsdPerMillionInput": {
+    "flash": 0.09,
+    "clef": 0.24,
+    "luna": 0.1
+  },
+  "preregistrationCommit": "9eede4d"
+}

@@ -1,0 +1,122 @@
+{
+  "synthetic": true,
+  "status": "structural checks passed; 40-item AI reading audit saved separately",
+  "generator": "GPT-6 Sol structured facts and deterministic prose templates; zero API calls",
+  "counts": {
+    "scenarios": 160,
+    "articles": 686,
+    "paidArticles": 546,
+    "writers": 42,
+    "candidateJudgments": 960,
+    "paidRelevanceExamples": 320,
+    "regressionScenarios": 4,
+    "regressionPaidExamples": 8,
+    "humanReviewQueue": 30,
+    "aiReviewQueue": 40,
+    "families": 70
+  },
+  "splits": {
+    "dev": 96,
+    "test": 64
+  },
+  "domains": {
+    "aviation": 23,
+    "cybersecurity": 23,
+    "energy-load-factor": 22,
+    "logistics": 23,
+    "macro-rates": 23,
+    "semis": 23,
+    "water": 23
+  },
+  "slices": {
+    "adversarial-duplicate-retitle": 14,
+    "adversarial-encoded-instruction": 14,
+    "adversarial-instruction": 14,
+    "adversarial-price-anchor": 14,
+    "adversarial-role-spoof": 14,
+    "budget-bound": 2,
+    "cap-bound": 2,
+    "clean": 70,
+    "negative": 2,
+    "no-gap": 2,
+    "overclaim": 2,
+    "partial": 2,
+    "primary": 2,
+    "secondary": 2,
+    "tangential-gap": 2,
+    "zero-budget": 2
+  },
+  "labels": {
+    "addressesGap": {
+      "0": 502,
+      "1": 458
+    },
+    "credibility": {
+      "0": 240,
+      "1": 320,
+      "2": 400
+    },
+    "originality": {
+      "original": 640,
+      "overlap": 160,
+      "rewrite": 160
+    },
+    "gapLabel": {
+      "0": 4,
+      "1": 156
+    },
+    "paid": {
+      "0": 168,
+      "1": 152
+    }
+  },
+  "selectedPositions": {
+    "0": 27,
+    "1": 22,
+    "2": 22,
+    "3": 29,
+    "4": 25,
+    "5": 25
+  },
+  "expectedNoBuy": 10,
+  "duplicateDifferentTitleScenarios": 160,
+  "adversarialScenarios": 70,
+  "checks": {
+    "exactScenarioSchema": true,
+    "productionCandidateSchema": true,
+    "productionContentSchema": true,
+    "productionPolicyOracle": true,
+    "threshold": 0.2,
+    "uniformTrust": 0.8,
+    "resourceSplitDisjoint": true,
+    "familySplitDisjoint": true,
+    "twinsSameSplit": true,
+    "attackLabelAndBodyInvariant": true,
+    "attackDoesNotElevateOraclePick": true,
+    "priceAndBodyExcludedFromCandidateProjection": true,
+    "publicIsolationChecks": 984,
+    "actualProductionSourceText": true,
+    "binaryLabelsOnly": true,
+    "sixPaidCandidates": true,
+    "twoDistinctPaidExamples": true,
+    "noApiCalls": true,
+    "noPaymentsOrProofExecution": true
+  },
+  "hashes": {
+    "testScenariosSha256": "f43aaa61b35d50d4e763acb3ddbd67043f2245f4b37aa3baee70dbd200c69ba2",
+    "testScenarioIdsSha256": "8a5c75988622efaa0e5ea22d2b716d8ba985931a4fcd56945cf39a7511840116",
+    "topicSpecsSha256": "eeb5c896842e6b1302873a61b4ad002e980ec159bf3d271d4823146a35442243"
+  },
+  "independentRelabel": {
+    "performed": false,
+    "cohensKappa": null,
+    "reason": "No generator or judge API calls authorized for this worker. Agent audit is self-review, not independent relabel and not human verification."
+  },
+  "caveats": [
+    "Short templated synthetic prose is not the production 600-1400 word corpus; production word-count validator is not invoked or relaxed.",
+    "Public-overclaim labels assess advertised coverage, paid labels assess isolated delivered content; hidden bodies must never repair public judgments.",
+    "Topic-family split prevents direct article reuse, but shared sentence templates, writer identities, domain conventions and synthetic generator style occur on both sides.",
+    "No live search scores, signatures, payments, refunds or proofs are tested.",
+    "Test lock is recorded here only. Parent owns writing out/test-lock.txt before tuning."
+  ]
+}
