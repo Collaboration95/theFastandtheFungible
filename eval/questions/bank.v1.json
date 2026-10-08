@@ -1,0 +1,1528 @@
+{
+  "version": 1,
+  "corpus": "data/corpus/v2",
+  "builtAt": "2026-10-08",
+  "label": "REAL corpus (synthetic articles, D20); questions and requested facts hand-planted against the article text",
+  "generator": {
+    "author": "Claude Opus 5.5 coding agent (Claude Code)",
+    "vendor": "Anthropic",
+    "judgedModels": [
+      "gpt-6-luna (OpenAI Decisions)",
+      "@cf/cloudflare/clef-flash (Cloudflare)",
+      "@cf/cloudflare/clef (Cloudflare)"
+    ],
+    "vendorDiffersFromJudged": true,
+    "method": [
+      "UC1-UC3 facts are the story bible's own facts and needles (data/corpus/v2/story-bible.json, generatorRules.winnerMustContainAllNeedles).",
+      "Other questions were written by reading the article passages and choosing dated figures that appear verbatim; each requested fact lists the needles that must all appear in one passage of a listed source article.",
+      "Traps are passages that look like an answer but are not one (topic present but answer absent, a forecast for a measured value, the wrong date, the wrong entity). Conflicts are passages that state a different value for the same fact.",
+      "eval/questions/bank.ts verifies every needle against the live corpus by article id (scripted check); passage ids are resolved at load time, never trusted from this file.",
+      "No model was called to write or label the bank."
+    ]
+  },
+  "humanReview": {
+    "status": "pending",
+    "sample": [
+      "Q09",
+      "Q16",
+      "Q18",
+      "Q41",
+      "Q42",
+      "Q44",
+      "Q45",
+      "Q31"
+    ],
+    "instructions": "Read each sampled question with its source passages (npm run eval:bank -- --show Q09) and record agree/disagree per requested fact, trap and conflict in a comment on #203."
+  },
+  "corpusSensitivity": {
+    "#198": "UC1 and UC2 contradictions are being fixed in the corpus PR. Questions marked corpusSensitive have a conflicting free passage today (or-boj-statement p5 says the 10-year rose 3 bp to 0.85%; the NotFT margins piece says two tranches). Their requested facts use the story-bible values, so they verify before and after the fix; only the conflict label changes. The NotFT board-vote figure moves from 8–1 to 7–2, so Q07 accepts either value through `alt`.",
+    "#204": "The Fab Floor's Penang lead-time article moves to S$0.40. Prices are read from the corpus at eval time and never stored here.",
+    "#211": "UC4 articles are additive; no question here depends on them."
+  },
+  "questions": [
+    {
+      "id": "Q01",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?",
+      "requested": [
+        {
+          "id": "Q01.rate",
+          "need": "What the BoJ changed to its policy rate at the 17–18 September 2026 meeting, with the new level",
+          "text": "The BoJ raised the policy rate 25 bp, from 0.75% to 1.00%, on 18 September 2026.",
+          "needles": [
+            "0.75%",
+            "1.00%"
+          ],
+          "sources": [
+            "or-boj-statement-2026-09-18"
+          ]
+        },
+        {
+          "id": "Q01.yield",
+          "need": "How the 10-year JGB yield moved on 18 September 2026, in basis points and level",
+          "text": "The 10-year JGB yield rose 9 bp to 2.14% on 18 September 2026.",
+          "needles": [
+            "2.14%",
+            "+9 bp"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "conflicts": [
+        {
+          "factId": "Q01.yield",
+          "articleId": "or-boj-statement-2026-09-18",
+          "needles": [
+            "0.85%"
+          ],
+          "note": "Statement says the 10-year rose 3 bp to 0.85% (fixed by #198)."
+        }
+      ],
+      "expect": {
+        "buy": null,
+        "avoid": [
+          "mp-boj-hike-digest",
+          "notft-inside-boj-september-hike",
+          "bp-jgb-curve-10s30s-analysis",
+          "kopi-boj-always-late"
+        ]
+      },
+      "corpusSensitive": "#198"
+    },
+    {
+      "id": "Q02",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "By how much did the Bank of Japan raise its policy rate in September 2026, and what is the new rate?",
+      "requested": [
+        {
+          "id": "Q02.rate",
+          "need": "The size of the September 2026 BoJ rate hike and the new policy rate",
+          "text": "Raised 25 bp from 0.75% to 1.00%.",
+          "needles": [
+            "0.75%",
+            "1.00%"
+          ],
+          "sources": [
+            "or-boj-statement-2026-09-18"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null,
+        "avoid": [
+          "mp-boj-hike-digest"
+        ]
+      }
+    },
+    {
+      "id": "Q03",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "Where did the 10-year JGB yield close on 22 September 2026, after the BoJ hike?",
+      "requested": [
+        {
+          "id": "Q03.close",
+          "need": "The 10-year JGB yield close on 22 September 2026",
+          "text": "The 10-year JGB yield closed at 2.19% on 22 September 2026.",
+          "needles": [
+            "2.19%"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q04",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "Did the Bank of Japan change its JGB purchase taper plan at the September 2026 meeting?",
+      "requested": [
+        {
+          "id": "Q04.taper",
+          "need": "Whether the BoJ changed its JGB purchase taper plan in September 2026",
+          "text": "The JGB purchase taper plan was left unchanged.",
+          "needles": [
+            "taper plan",
+            "left unchanged"
+          ],
+          "sources": [
+            "or-boj-statement-2026-09-18"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q05",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "How much of the September 2026 BoJ hike was priced in beforehand, and why did 10-year yields still rise?",
+      "requested": [
+        {
+          "id": "Q05.priced",
+          "need": "How much of the September 2026 hike was priced in beforehand, and the 10-year yield move it explains",
+          "text": "The hike was roughly 85% priced by 17 September, so the 9 bp rise reflects guidance.",
+          "needles": [
+            "85%",
+            "9 bp"
+          ],
+          "sources": [
+            "bp-boj-september-recap"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q06",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "How did the 2-year JGB yield react to the Bank of Japan hike on 18 September 2026?",
+      "requested": [
+        {
+          "id": "Q06.two",
+          "need": "The 2-year JGB yield move on 18 September 2026",
+          "text": "The 2-year yield rose 12 bp to 1.31% on 18 September 2026.",
+          "needles": [
+            "1.31%"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q07",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "useCase": "UC1",
+      "question": "How did the Bank of Japan board vote on the September 2026 rate hike?",
+      "requested": [
+        {
+          "id": "Q07.vote",
+          "need": "The BoJ board vote split on the September 2026 hike",
+          "text": "The board vote was 8–1 with one member favouring a pause (7–2 with two after #198).",
+          "needles": [
+            "8–1"
+          ],
+          "alt": [
+            [
+              "7–2"
+            ]
+          ],
+          "sources": [
+            "notft-inside-boj-september-hike"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notft-inside-boj-september-hike",
+        "avoid": [
+          "mp-boj-hike-digest",
+          "kopi-boj-always-late"
+        ]
+      },
+      "corpusSensitive": "#198"
+    },
+    {
+      "id": "Q08",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "useCase": "UC1",
+      "question": "How wide was the JGB 10s30s spread after the September 2026 BoJ hike?",
+      "requested": [
+        {
+          "id": "Q08.spread",
+          "need": "The JGB 10s30s spread level after the September 2026 hike, with its date",
+          "text": "The 10s30s spread widened to 86 bp on 24 September 2026.",
+          "needles": [
+            "86 bp"
+          ],
+          "sources": [
+            "bp-jgb-curve-10s30s-analysis"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "bp-jgb-curve-10s30s-analysis"
+      }
+    },
+    {
+      "id": "Q09",
+      "lane": "semis",
+      "kind": "uc-variant",
+      "useCase": "UC2",
+      "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
+      "answers": {
+        "angle": "pricing & margins"
+      },
+      "requested": [
+        {
+          "id": "Q09.margin",
+          "need": "Analysts' (not the company's) gross-margin estimate for Kestrel after the TSMC deal, with the revision",
+          "text": "Analyst consensus fiscal 2027 gross margin was cut to 55.2% from 58.5% on 1 October 2026.",
+          "needles": [
+            "55.2%",
+            "58.5%"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        },
+        {
+          "id": "Q09.price",
+          "need": "The per-wafer price under Kestrel's new TSMC contract compared with the previous contract",
+          "text": "The new contract prices an N3P wafer at about US$22,500 against US$19,800 before.",
+          "needles": [
+            "US$22,500",
+            "US$19,800"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q09.margin",
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "needles": [
+            "no margin guidance"
+          ],
+          "kind": "topic-only",
+          "note": "The free filing mentions margins only to say the company gave no guidance."
+        },
+        {
+          "factId": "Q09.margin",
+          "articleId": "open-kestrel-semiconductor-exchange-filings-july-25-2026",
+          "needles": [
+            "48.7 percent"
+          ],
+          "kind": "wrong-entity",
+          "note": "A company-reported quarterly margin, not an analyst estimate (the UC2 trap)."
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest",
+          "kopi-kestrel-tsmc-hype"
+        ]
+      }
+    },
+    {
+      "id": "Q10",
+      "lane": "semis",
+      "kind": "uc-variant",
+      "useCase": "UC2",
+      "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
+      "answers": {
+        "angle": "capacity allocation"
+      },
+      "requested": [
+        {
+          "id": "Q10.slots",
+          "need": "When and how the capacity slots for Kestrel's TSMC deal were allocated",
+          "text": "Slots for the 24,000 wafers a month were confirmed on 3 October 2026.",
+          "needles": [
+            "3 October 2026"
+          ],
+          "sources": [
+            "fab-floor-kestrel-allocation"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "fab-floor-kestrel-allocation",
+        "avoid": [
+          "mp-kestrel-deal-digest"
+        ]
+      }
+    },
+    {
+      "id": "Q11",
+      "lane": "semis",
+      "kind": "uc-variant",
+      "useCase": "UC2",
+      "question": "What are the terms of Kestrel Semiconductor's September 2026 agreement with TSMC?",
+      "requested": [
+        {
+          "id": "Q11.volume",
+          "need": "The term and monthly wafer volume of Kestrel's September 2026 TSMC agreement",
+          "text": "Five years, 24,000 N3P wafers a month from Q3 2027.",
+          "needles": [
+            "five-year",
+            "24,000"
+          ],
+          "sources": [
+            "or-kestrel-tsmc-filing-2026-09-29"
+          ]
+        },
+        {
+          "id": "Q11.prepay",
+          "need": "The prepayment amount in Kestrel's TSMC agreement",
+          "text": "A US$1.1 billion prepayment.",
+          "needles": [
+            "US$1.1 billion"
+          ],
+          "sources": [
+            "or-kestrel-tsmc-filing-2026-09-29",
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null,
+        "avoid": [
+          "mp-kestrel-deal-digest",
+          "kopi-kestrel-tsmc-hype"
+        ]
+      }
+    },
+    {
+      "id": "Q12",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "useCase": "UC2",
+      "question": "What do analysts now expect for Kestrel Semiconductor's fiscal 2028 revenue after the TSMC deal?",
+      "requested": [
+        {
+          "id": "Q12.rev",
+          "need": "Analysts' fiscal 2028 revenue estimate for Kestrel after the TSMC deal, with the revision",
+          "text": "Analysts raised fiscal 2028 revenue estimates to US$6.4 billion from US$5.5 billion.",
+          "needles": [
+            "US$6.4 billion",
+            "US$5.5 billion"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest"
+        ]
+      }
+    },
+    {
+      "id": "Q13",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "useCase": "UC2",
+      "question": "How much more will Kestrel Semiconductor pay per N3P wafer under its new TSMC contract?",
+      "requested": [
+        {
+          "id": "Q13.wafer",
+          "need": "The per-wafer price change under Kestrel's new TSMC contract, in dollars and percent",
+          "text": "About US$22,500 per wafer against US$19,800, a rise of 13.6%.",
+          "needles": [
+            "US$22,500",
+            "US$19,800",
+            "13.6%"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest"
+        ]
+      }
+    },
+    {
+      "id": "Q14",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "useCase": "UC2",
+      "question": "How large is Kestrel Semiconductor's TSMC prepayment relative to its cash?",
+      "requested": [
+        {
+          "id": "Q14.prepay",
+          "need": "The prepayment amount in Kestrel's TSMC agreement",
+          "text": "The prepayment is US$1.1 billion.",
+          "needles": [
+            "US$1.1 billion"
+          ],
+          "sources": [
+            "or-kestrel-tsmc-filing-2026-09-29",
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        },
+        {
+          "id": "Q14.share",
+          "need": "The prepayment as a share of Kestrel's cash at the time of the deal",
+          "text": "It is about 46% of Kestrel's US$2.4 billion cash.",
+          "needles": [
+            "46%",
+            "US$2.4 billion"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q14.share",
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "needles": [
+            "US$2.3 billion"
+          ],
+          "kind": "wrong-date",
+          "note": "Cash as of 30 June 2026, not the September-quarter balance the share is computed on."
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest"
+        ]
+      }
+    },
+    {
+      "id": "Q15",
+      "lane": "semis",
+      "kind": "free-sufficient",
+      "useCase": "UC2",
+      "question": "How many wafers a month did Kestrel Semiconductor's previous TSMC contract cover?",
+      "requested": [
+        {
+          "id": "Q15.prev",
+          "need": "The monthly wafer volume of Kestrel's previous TSMC contract",
+          "text": "The previous contract covered 16,000 wafers a month.",
+          "needles": [
+            "16,000"
+          ],
+          "sources": [
+            "or-kestrel-tsmc-filing-2026-09-29"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q16",
+      "lane": "semis",
+      "kind": "hard-case",
+      "hardCase": "topic-only",
+      "useCase": "UC2",
+      "question": "What gross-margin estimate do analysts have for Kestrel Semiconductor's fiscal 2027?",
+      "requested": [
+        {
+          "id": "Q16.margin",
+          "need": "Analysts' (not the company's) fiscal 2027 gross-margin estimate for Kestrel",
+          "text": "Consensus fiscal 2027 gross margin is 55.2%, cut from 58.5%.",
+          "needles": [
+            "55.2%",
+            "58.5%"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q16.margin",
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "needles": [
+            "no margin guidance"
+          ],
+          "kind": "topic-only",
+          "note": "Margins are mentioned; no estimate is given."
+        },
+        {
+          "factId": "Q16.margin",
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "needles": [
+            "34.2 percent"
+          ],
+          "kind": "wrong-entity",
+          "note": "Company-reported second-quarter margin, not an analyst estimate."
+        },
+        {
+          "factId": "Q16.margin",
+          "articleId": "open-kestrel-semiconductor-exchange-filings-july-25-2026",
+          "needles": [
+            "48.7 percent"
+          ],
+          "kind": "wrong-entity",
+          "note": "Company-reported margin, not an analyst estimate."
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest",
+          "kopi-kestrel-tsmc-hype"
+        ]
+      }
+    },
+    {
+      "id": "Q17",
+      "lane": "semis",
+      "kind": "free-sufficient",
+      "useCase": "UC2",
+      "question": "What is a wafer-capacity prepayment, and how is it carried on the balance sheet?",
+      "requested": [
+        {
+          "id": "Q17.deposit",
+          "need": "What a wafer-capacity prepayment is and how it is carried until delivery",
+          "text": "A prepayment secures future capacity and is carried as a deposit until wafers are delivered.",
+          "needles": [
+            "deposit"
+          ],
+          "sources": [
+            "or-wafer-capacity-prepayment-explainer"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q18",
+      "lane": "packaging",
+      "kind": "uc-variant",
+      "useCase": "UC3",
+      "question": "Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?",
+      "requested": [
+        {
+          "id": "Q18.series",
+          "need": "Dated lead-time figures in weeks for Kestrel's Penang advanced packaging, showing the trend",
+          "text": "Kestrel's Penang lead time was 26 weeks on 1 June, 22 weeks on 1 August and 18 weeks on 15 September 2026.",
+          "needles": [
+            "26 weeks",
+            "22 weeks",
+            "18 weeks"
+          ],
+          "sources": [
+            "fab-floor-kestrel-penang-lead-times"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q18.series",
+          "articleId": "alphaleak-kestrel-penang-lead-times",
+          "needles": [
+            "collapsing"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "Asserts lead times are collapsing with no figure (the planted claim)."
+        },
+        {
+          "factId": "Q18.series",
+          "articleId": "the-penang-osat-capacity-2026-outlook-and-opportunities",
+          "needles": [
+            "26 weeks",
+            "18 weeks"
+          ],
+          "kind": "wrong-entity",
+          "note": "QFN/BGA lead times at Penang's top three OSATs in May, not Kestrel's advanced packaging."
+        },
+        {
+          "factId": "Q18.series",
+          "articleId": "or-penang-packaging-output-2026-q3",
+          "needles": [
+            "no customer lead times"
+          ],
+          "kind": "topic-only",
+          "note": "The free record covers capacity and says it has no lead times."
+        }
+      ],
+      "expect": {
+        "buy": "fab-floor-kestrel-penang-lead-times",
+        "storyRound1": "alphaleak-kestrel-penang-lead-times",
+        "avoid": [
+          "mp-malaysia-packaging-digest",
+          "notft-malaysia-packaging-capex-2026"
+        ]
+      }
+    },
+    {
+      "id": "Q19",
+      "lane": "packaging",
+      "kind": "free-sufficient",
+      "useCase": "UC3",
+      "question": "When was Kestrel Semiconductor's Penang Phase 2 packaging plant commissioned, and how much capacity did it add?",
+      "requested": [
+        {
+          "id": "Q19.phase2",
+          "need": "When Kestrel's Penang Phase 2 plant was commissioned and the capacity before and after",
+          "text": "Commissioned 15 August 2026, lifting capacity from 11,000 to 16,000 units a month.",
+          "needles": [
+            "15 August 2026",
+            "11,000",
+            "16,000"
+          ],
+          "sources": [
+            "or-penang-packaging-output-2026-q3"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q20",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "useCase": "UC3",
+      "question": "What was the advanced-packaging lead time at Kestrel Semiconductor's Johor alternative in September 2026?",
+      "requested": [
+        {
+          "id": "Q20.johor",
+          "need": "The lead time in weeks at Kestrel's Johor packaging alternative in September 2026",
+          "text": "The Johor alternative remained at 24 weeks on 15 September 2026.",
+          "needles": [
+            "24 weeks"
+          ],
+          "sources": [
+            "fab-floor-kestrel-penang-lead-times"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q20.johor",
+          "articleId": "the-johor-osat-expansion-new-facilities-and-lead-times",
+          "needles": [
+            "34 weeks"
+          ],
+          "kind": "wrong-entity",
+          "note": "Time to qualification of new Johor OSAT lines, not Kestrel's lead time."
+        }
+      ],
+      "expect": {
+        "buy": "fab-floor-kestrel-penang-lead-times"
+      }
+    },
+    {
+      "id": "Q21",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "useCase": "UC3",
+      "question": "How much advanced-packaging capex have Kestrel Semiconductor and its peers committed in Malaysia?",
+      "requested": [
+        {
+          "id": "Q21.capex",
+          "need": "The packaging capex Kestrel and peers committed in Malaysia, with its date",
+          "text": "US$420 million as of 9 September 2026.",
+          "needles": [
+            "US$420 million"
+          ],
+          "sources": [
+            "notft-malaysia-packaging-capex-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notft-malaysia-packaging-capex-2026",
+        "avoid": [
+          "mp-malaysia-packaging-digest"
+        ]
+      }
+    },
+    {
+      "id": "Q22",
+      "lane": "packaging",
+      "kind": "free-sufficient",
+      "useCase": "UC3",
+      "question": "How large a grid connection does Kestrel Semiconductor's Penang Phase 2 plant need?",
+      "requested": [
+        {
+          "id": "Q22.grid",
+          "need": "The grid connection size Kestrel's Penang Phase 2 plant needs",
+          "text": "The Phase 2 plant needs a 45 MW grid connection.",
+          "needles": [
+            "45 MW"
+          ],
+          "sources": [
+            "lf-penang-grid-connection"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q23",
+      "lane": "power",
+      "kind": "free-sufficient",
+      "question": "How much power does a dense AI accelerator rack draw at full load?",
+      "requested": [
+        {
+          "id": "Q23.rack",
+          "need": "The full-load power draw of a dense AI accelerator rack",
+          "text": "A dense accelerator rack draws 120 kW at full load.",
+          "needles": [
+            "120 kW"
+          ],
+          "sources": [
+            "lf-ai-accelerator-rack-power"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q24",
+      "lane": "semis",
+      "kind": "free-sufficient",
+      "question": "What gross margin did Kestrel Semiconductor report in its July 2026 quarterly filings?",
+      "requested": [
+        {
+          "id": "Q24.gm",
+          "need": "The gross margin Kestrel reported in its July 2026 quarterly filings, against a year earlier",
+          "text": "Gross margin of 48.7 percent, down from 51.2 percent a year earlier.",
+          "needles": [
+            "48.7 percent",
+            "51.2 percent"
+          ],
+          "sources": [
+            "open-kestrel-semiconductor-exchange-filings-july-25-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q25",
+      "lane": "power",
+      "kind": "free-sufficient",
+      "question": "How many data-centre projects did Malaysia's MITI register approve in May 2026, and with what investment?",
+      "requested": [
+        {
+          "id": "Q25.register",
+          "need": "The number of approved data-centre projects and committed investment in MITI's May 2026 register",
+          "text": "14 approved projects with RM 9.4 billion committed.",
+          "needles": [
+            "14 approved",
+            "RM 9.4 billion"
+          ],
+          "sources": [
+            "open-malaysia-data-centre-approvals-june-20-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q26",
+      "lane": "semis",
+      "kind": "free-sufficient",
+      "question": "How much did TSMC's customer prepayments for wafer capacity total at the end of 2025?",
+      "requested": [
+        {
+          "id": "Q26.tsmc",
+          "need": "TSMC's customer prepayments for wafer capacity at the end of 2025, against a year earlier",
+          "text": "NT$142.6 billion at 31 December 2025, against NT$118.3 billion a year earlier.",
+          "needles": [
+            "NT$142.6 billion",
+            "NT$118.3 billion"
+          ],
+          "sources": [
+            "open-understanding-wafer-capacity-prepayment-august-30-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q27",
+      "lane": "power",
+      "kind": "free-sufficient",
+      "question": "What peak load did the eastern grid operator forecast for 16 May 2026?",
+      "requested": [
+        {
+          "id": "Q27.peak",
+          "need": "The eastern grid operator's peak-load forecast for 16 May 2026",
+          "text": "A peak load of 118,400 megawatts.",
+          "needles": [
+            "118,400 megawatts"
+          ],
+          "sources": [
+            "open-grid-operator-demand-statistics-may-15-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q28",
+      "lane": "power",
+      "kind": "free-sufficient",
+      "question": "For a 4.2 MW data hall, what is the total facility load and how much of it is cooling and losses?",
+      "requested": [
+        {
+          "id": "Q28.hall",
+          "need": "Total facility load and the cooling-and-losses share for a 4.2 MW data hall",
+          "text": "6.09 MW total, of which 1.89 MW is cooling and losses.",
+          "needles": [
+            "6.09 MW",
+            "1.89 MW"
+          ],
+          "sources": [
+            "load-cooling-load-dynamics-in-southeast-asian-data-halls"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q29",
+      "lane": "rates",
+      "kind": "free-sufficient",
+      "question": "In May 2026, what chance of a Bank of Japan hike by the end of 2026 were overnight index swaps pricing?",
+      "requested": [
+        {
+          "id": "Q29.ois",
+          "need": "The OIS-implied chance of a BoJ hike by end-2026, as priced in May 2026",
+          "text": "Roughly a 40 percent chance.",
+          "needles": [
+            "40 percent"
+          ],
+          "sources": [
+            "basis-boj-signals-future-rate-path-a-closer-look"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      }
+    },
+    {
+      "id": "Q30",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "question": "How much duration do Japan's largest life insurers expect to add in the fiscal year ending March 2027?",
+      "requested": [
+        {
+          "id": "Q30.duration",
+          "need": "How much duration Japan's largest life insurers expect to add in the fiscal year ending March 2027",
+          "text": "Roughly 900 billion yen of duration on a net basis.",
+          "needles": [
+            "900 billion yen"
+          ],
+          "sources": [
+            "basis-life-insurers-appetite-for-super-long-jgbs-what-it-means-for"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "basis-life-insurers-appetite-for-super-long-jgbs-what-it-means-for"
+      }
+    },
+    {
+      "id": "Q31",
+      "lane": "power",
+      "kind": "paid-needed",
+      "question": "What was Singapore's average daily USEP price spread in the week ending 30 April 2026?",
+      "requested": [
+        {
+          "id": "Q31.usep",
+          "need": "Singapore's average daily USEP spread in the week ending 30 April 2026, against a year earlier",
+          "text": "78.4 SGD/MWh, up from 52.1 SGD/MWh a year earlier.",
+          "needles": [
+            "78.4",
+            "52.1"
+          ],
+          "sources": [
+            "load-analyzing-singapore-s-wholesale-price-spreads-for-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-analyzing-singapore-s-wholesale-price-spreads-for-2026"
+      }
+    },
+    {
+      "id": "Q32",
+      "lane": "power",
+      "kind": "paid-needed",
+      "question": "What is the electricity interconnector capacity between Malaysia and Singapore as of June 2026?",
+      "requested": [
+        {
+          "id": "Q32.links",
+          "need": "The Malaysia–Singapore interconnector capacity as of June 2026 and how it is split",
+          "text": "1,000 MW, split between two 500 MW links.",
+          "needles": [
+            "1,000 MW",
+            "500 MW"
+          ],
+          "sources": [
+            "load-interconnector-capacity-between-malaysia-and-singapore-2026-"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-interconnector-capacity-between-malaysia-and-singapore-2026-"
+      }
+    },
+    {
+      "id": "Q33",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "question": "What 2026 revenue forecast did Maybank set for Malaysia's OSAT sector in April 2026?",
+      "requested": [
+        {
+          "id": "Q33.osat",
+          "need": "Maybank's April 2026 revenue forecast for Malaysia's OSAT sector, with the revision",
+          "text": "18.4 billion ringgit, up from 15.1 billion ringgit.",
+          "needles": [
+            "18.4 billion ringgit",
+            "15.1 billion ringgit"
+          ],
+          "sources": [
+            "notfinancialtimes-advanced-packaging-growth-in-penang-market-dynamics"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-advanced-packaging-growth-in-penang-market-dynamics"
+      }
+    },
+    {
+      "id": "Q34",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "question": "What is KGI Securities' 2026 capital expenditure estimate for TSMC?",
+      "requested": [
+        {
+          "id": "Q34.capex",
+          "need": "KGI Securities' 2026 TSMC capex estimate, with the revision",
+          "text": "US$42.5 billion, raised from US$38.0 billion.",
+          "needles": [
+            "$42.5 billion",
+            "$38.0 billion"
+          ],
+          "sources": [
+            "notfinancialtimes-tsmc-customer-capacity-expansion-2026-update"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-tsmc-customer-capacity-expansion-2026-update"
+      }
+    },
+    {
+      "id": "Q35",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "question": "What did TSMC quote for a 5nm wafer in April 2026, and how much was that up?",
+      "requested": [
+        {
+          "id": "Q35.5nm",
+          "need": "TSMC's April 2026 quote for a 5nm wafer, against the previous price",
+          "text": "31,500 USD per wafer, up from 24,000 USD in Q4 2025.",
+          "needles": [
+            "31,500 USD",
+            "24,000 USD"
+          ],
+          "sources": [
+            "the-node-5nm-wafer-pricing-surge-what-it-means-for-startups"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-node-5nm-wafer-pricing-surge-what-it-means-for-startups"
+      }
+    },
+    {
+      "id": "Q36",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "question": "What blended advanced-packaging lead time were buyers seeing at the end of Q1 2026?",
+      "requested": [
+        {
+          "id": "Q36.blended",
+          "need": "The blended advanced-packaging lead time at the end of Q1 2026, against Q4 2025",
+          "text": "58 weeks across CoWoS-S, CoWoS-L and SoIC, up from 47 weeks in Q4 2025.",
+          "needles": [
+            "58 weeks",
+            "47 weeks"
+          ],
+          "sources": [
+            "the-2026-q1-advanced-packaging-lead-times-a-reality-check"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-2026-q1-advanced-packaging-lead-times-a-reality-check"
+      }
+    },
+    {
+      "id": "Q37",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "question": "What CoWoS capacity is TSMC targeting by the end of 2026?",
+      "requested": [
+        {
+          "id": "Q37.cowos",
+          "need": "TSMC's CoWoS capacity target for end-2026, against Q4 2025",
+          "text": "Roughly 330,000 CoWoS wafers a month, up from about 180,000 in Q4 2025.",
+          "needles": [
+            "330,000",
+            "180,000"
+          ],
+          "sources": [
+            "the-cowos-slot-allocation-trends-2026-forecast"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-cowos-slot-allocation-trends-2026-forecast"
+      }
+    },
+    {
+      "id": "Q38",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "question": "How much Singapore-dollar corporate bond issuance was there in the first four months of 2026?",
+      "requested": [
+        {
+          "id": "Q38.issuance",
+          "need": "Singapore-dollar corporate bond issuance in January–April 2026, with the year-on-year change",
+          "text": "S$38.4 billion, up 12.7 per cent year on year.",
+          "needles": [
+            "S$38.4 billion",
+            "12.7 per cent"
+          ],
+          "sources": [
+            "notfinancialtimes-singapore-s-corporate-bond-market-trends-and-outlook"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-singapore-s-corporate-bond-market-trends-and-outlook"
+      }
+    },
+    {
+      "id": "Q39",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "question": "What surplus did Singapore's 2026 budget project, and how much government securities issuance is planned?",
+      "requested": [
+        {
+          "id": "Q39.surplus",
+          "need": "The overall surplus projected in Singapore's 2026 budget",
+          "text": "An overall surplus of S$4.2 billion.",
+          "needles": [
+            "S$4.2 billion"
+          ],
+          "sources": [
+            "notfinancialtimes-singapore-s-fiscal-policy-and-its-effect-on-bond-yields"
+          ]
+        },
+        {
+          "id": "Q39.sgs",
+          "need": "Planned gross SGS issuance for fiscal 2026, against 2025",
+          "text": "Gross SGS issuance falls to S$28 billion from S$32 billion.",
+          "needles": [
+            "S$28 billion",
+            "S$32 billion"
+          ],
+          "sources": [
+            "notfinancialtimes-singapore-s-fiscal-policy-and-its-effect-on-bond-yields"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-singapore-s-fiscal-policy-and-its-effect-on-bond-yields"
+      }
+    },
+    {
+      "id": "Q40",
+      "lane": "power",
+      "kind": "paid-needed",
+      "question": "How large is Malaysia's grid connection queue as of March 2026?",
+      "requested": [
+        {
+          "id": "Q40.queue",
+          "need": "The number and total capacity of large grid-connection applications in Malaysia's queue as of March 2026",
+          "text": "47 active applications over 10 MW, totalling 8.2 GW.",
+          "needles": [
+            "47 active applications",
+            "8.2 GW"
+          ],
+          "sources": [
+            "notfinancialtimes-malaysia-grid-connection-queues-status-and-impact"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-malaysia-grid-connection-queues-status-and-impact",
+        "avoid": [
+          "marketpulse-malaysia-grid-connection-queues-status-impact"
+        ]
+      }
+    },
+    {
+      "id": "Q41",
+      "lane": "power",
+      "kind": "hard-case",
+      "hardCase": "forecast-as-fact",
+      "question": "How much data-centre capacity is contracted in Johor's corridor today?",
+      "requested": [
+        {
+          "id": "Q41.contracted",
+          "need": "The data-centre capacity contracted in Johor's corridor today (not a forecast)",
+          "text": "1.4 gigawatts currently contracted (April 2026).",
+          "needles": [
+            "1.4 gigawatts"
+          ],
+          "sources": [
+            "notfinancialtimes-johor-data-centres-rising-power-demand-forecast"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q41.contracted",
+          "articleId": "notfinancialtimes-johor-data-centres-rising-power-demand-forecast",
+          "needles": [
+            "3.2 gigawatts by 2028"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "A 2028 projection, not today's contracted capacity."
+        },
+        {
+          "factId": "Q41.contracted",
+          "articleId": "marketpulse-johor-data-centres-power-demand-forecast-rising-trends",
+          "needles": [
+            "5.5 gigawatts"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "A 2035 projection in a rewrite."
+        },
+        {
+          "factId": "Q41.contracted",
+          "articleId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+          "needles": [
+            "1.2 gigawatts"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "An approved pipeline, not contracted load."
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-johor-data-centres-rising-power-demand-forecast",
+        "avoid": [
+          "marketpulse-johor-data-centres-power-demand-forecast-rising-trends"
+        ]
+      }
+    },
+    {
+      "id": "Q42",
+      "lane": "power",
+      "kind": "hard-case",
+      "hardCase": "forecast-as-fact",
+      "question": "How much power do Thailand's data centres draw today?",
+      "requested": [
+        {
+          "id": "Q42.current",
+          "need": "Thailand's current data-centre power demand (a measured figure, not a forecast)",
+          "text": "Thailand's current data-centre power demand (no article states it).",
+          "needles": [],
+          "sources": []
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q42.current",
+          "articleId": "marketpulse-thailand-data-centres-power-demand-forecast-2026-outlook",
+          "needles": [
+            "2,000 megawatts by 2027"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "A 2027 forecast; the corpus never states current demand."
+        }
+      ],
+      "expect": {
+        "buy": null,
+        "avoid": [
+          "marketpulse-thailand-data-centres-power-demand-forecast-2026-outlook"
+        ]
+      },
+      "notes": "Unanswerable by construction: every purchase is wasted spend, and the only correct coverage label is missing."
+    },
+    {
+      "id": "Q43",
+      "lane": "rates",
+      "kind": "hard-case",
+      "hardCase": "wrong-date",
+      "useCase": "UC1",
+      "question": "Where did the 10-year JGB yield close on 18 September 2026?",
+      "requested": [
+        {
+          "id": "Q43.close",
+          "need": "The 10-year JGB yield close on 18 September 2026",
+          "text": "2.14%, up 9 bp on the day.",
+          "needles": [
+            "2.14%"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q43.close",
+          "articleId": "open-daily-jgb-yield-table-april-10-2026",
+          "needles": [
+            "0.785 percent"
+          ],
+          "kind": "wrong-date",
+          "note": "The 10 April 2026 close."
+        },
+        {
+          "factId": "Q43.close",
+          "articleId": "notfinancialtimes-jgb-yields-trend-2026-outlook",
+          "needles": [
+            "1.42 percent"
+          ],
+          "kind": "wrong-date",
+          "note": "The 12 April 2026 close."
+        }
+      ],
+      "conflicts": [
+        {
+          "factId": "Q43.close",
+          "articleId": "or-boj-statement-2026-09-18",
+          "needles": [
+            "0.85%"
+          ],
+          "note": "Statement says 0.85% (fixed by #198)."
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "corpusSensitive": "#198"
+    },
+    {
+      "id": "Q44",
+      "lane": "packaging",
+      "kind": "hard-case",
+      "hardCase": "wrong-entity",
+      "question": "What lead times are Penang's top OSATs quoting for advanced QFN and BGA packages?",
+      "requested": [
+        {
+          "id": "Q44.qfn",
+          "need": "Lead times in weeks that Penang's top OSATs quote for advanced QFN and BGA packages, with the trend",
+          "text": "26 weeks as of 1 May 2026, up from 18 weeks in January.",
+          "needles": [
+            "26 weeks",
+            "18 weeks",
+            "QFN"
+          ],
+          "sources": [
+            "the-penang-osat-capacity-2026-outlook-and-opportunities"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q44.qfn",
+          "articleId": "fab-floor-kestrel-penang-lead-times",
+          "needles": [
+            "26 weeks",
+            "18 weeks"
+          ],
+          "kind": "wrong-entity",
+          "note": "Kestrel's own advanced-packaging series uses the same numbers for a different entity and dates."
+        }
+      ],
+      "expect": {
+        "buy": "the-penang-osat-capacity-2026-outlook-and-opportunities"
+      }
+    },
+    {
+      "id": "Q45",
+      "lane": "rates",
+      "kind": "hard-case",
+      "hardCase": "conflicting",
+      "question": "What was the Bank of Japan's policy rate after its January 2026 meeting?",
+      "requested": [
+        {
+          "id": "Q45.rate",
+          "need": "The BoJ policy rate set at the January 2026 meeting",
+          "text": "The board voted 7-2 to lift the call rate to 0.75 percent.",
+          "needles": [
+            "0.75 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-jgb-yields-trend-2026-outlook"
+          ]
+        }
+      ],
+      "conflicts": [
+        {
+          "factId": "Q45.rate",
+          "articleId": "notfinancialtimes-asian-central-bank-rate-paths-a-comparative-analysis",
+          "needles": [
+            "0.5% by early 2026"
+          ],
+          "note": "Says the rate was 0.5% by early 2026."
+        },
+        {
+          "factId": "Q45.rate",
+          "articleId": "basis-asian-central-banks-vs-the-fed-diverging-policy-paths",
+          "needles": [
+            "-0.1%"
+          ],
+          "note": "Stale: describes the negative-rate era as current."
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-jgb-yields-trend-2026-outlook",
+        "avoid": [
+          "marketpulse-jgb-yields-trend-2026-outlook-what-to-expect"
+        ]
+      }
+    },
+    {
+      "id": "Q46",
+      "lane": "semis",
+      "kind": "hard-case",
+      "hardCase": "topic-only",
+      "question": "What AI accelerator revenue growth do sell-side analysts now model for 2026?",
+      "requested": [
+        {
+          "id": "Q46.growth",
+          "need": "Sell-side analysts' modelled 2026 AI accelerator revenue growth, with the revision",
+          "text": "22 percent year over year, down from 38 percent.",
+          "needles": [
+            "22 percent",
+            "38 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-sell-side-estimates-for-ai-chip-designers-2026-projections"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q46.growth",
+          "articleId": "kopi-chip-stock-hype-cycles-a-quick-guide-to-avoiding-the-next-bu",
+          "needles": [
+            "AI is the new electricity"
+          ],
+          "kind": "topic-only",
+          "note": "Opinion on AI chip hype with no estimate."
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-sell-side-estimates-for-ai-chip-designers-2026-projections",
+        "avoid": [
+          "kopi-chip-stock-hype-cycles-a-quick-guide-to-avoiding-the-next-bu"
+        ]
+      }
+    },
+    {
+      "id": "Q47",
+      "lane": "rates",
+      "kind": "hard-case",
+      "hardCase": "conflicting",
+      "useCase": "UC1",
+      "question": "How much did the 10-year JGB yield rise on the day of the Bank of Japan's September 2026 hike?",
+      "requested": [
+        {
+          "id": "Q47.rise",
+          "need": "The 10-year JGB yield change on 18 September 2026, in basis points",
+          "text": "+9 bp, to 2.14%.",
+          "needles": [
+            "+9 bp"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "conflicts": [
+        {
+          "factId": "Q47.rise",
+          "articleId": "or-boj-statement-2026-09-18",
+          "needles": [
+            "3 basis points to 0.85%"
+          ],
+          "note": "Statement says 3 bp to 0.85% (fixed by #198; this becomes a supported-only case)."
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "corpusSensitive": "#198"
+    },
+    {
+      "id": "Q48",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "question": "How far out are HBM interposer substrate lead times running in 2026?",
+      "requested": [
+        {
+          "id": "Q48.hbm",
+          "need": "Lead times in weeks for HBM interposer substrates in 2026, with the trend",
+          "text": "41 weeks as of 25 April 2026, up from 29 weeks in January.",
+          "needles": [
+            "41 weeks",
+            "29 weeks"
+          ],
+          "sources": [
+            "the-hbm-substrate-shortages-impact-on-ai-accelerators"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-hbm-substrate-shortages-impact-on-ai-accelerators"
+      }
+    }
+  ]
+}
