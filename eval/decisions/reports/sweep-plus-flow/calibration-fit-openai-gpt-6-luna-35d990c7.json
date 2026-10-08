@@ -1,0 +1,94 @@
+{
+  "key": {
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "promptVersion": "batch-evidence/v1+gap-plain · originality original,rewrite,overlap · credibility 0,1,2"
+  },
+  "accepted": true,
+  "reasons": [],
+  "sample": {
+    "rows": 988,
+    "groups": 4,
+    "grouping": "family",
+    "folds": 4,
+    "units": 69,
+    "addressesGap": {
+      "n": 973,
+      "positives": 54
+    },
+    "original": {
+      "n": 988,
+      "positives": 881
+    },
+    "buy": {
+      "positives": 42,
+      "unknown": 0
+    }
+  },
+  "methods": {
+    "addressesGap": "platt",
+    "original": "identity"
+  },
+  "cvBrier": {
+    "addressesGap": {
+      "identity": 0.04471582733812951,
+      "platt": 0.039093150754326844,
+      "isotonic": 0.03984879700160785
+    },
+    "original": {
+      "identity": 0.028561740890688178,
+      "platt": 0.03274685539090367,
+      "isotonic": 0.0339286301655492
+    }
+  },
+  "purchase": {
+    "raw": {
+      "threshold": 0.2,
+      "units": 69,
+      "skippedUnknown": 0,
+      "tp": 11,
+      "fp": 4,
+      "fn": 31,
+      "f1": 0.38596491228070173,
+      "precision": 0.7333333333333333,
+      "recall": 0.2619047619047619,
+      "wastedMinor": 190
+    },
+    "rawBestThreshold": {
+      "threshold": 0.0150675,
+      "units": 69,
+      "skippedUnknown": 0,
+      "tp": 27,
+      "fp": 10,
+      "fn": 15,
+      "f1": 0.6835443037974683,
+      "precision": 0.7297297297297297,
+      "recall": 0.6428571428571429,
+      "wastedMinor": 415
+    },
+    "calibrated": {
+      "threshold": 0.11718049262697308,
+      "units": 69,
+      "skippedUnknown": 0,
+      "tp": 30,
+      "fp": 19,
+      "fn": 12,
+      "f1": 0.6593406593406593,
+      "precision": 0.6122448979591837,
+      "recall": 0.7142857142857143,
+      "wastedMinor": 805
+    }
+  },
+  "models": {
+    "addressesGap": {
+      "method": "platt",
+      "a": 0.33579738306668044,
+      "b": 0.14320160949175118
+    },
+    "original": {
+      "method": "identity"
+    }
+  },
+  "note": "Purchase F1 after calibration uses out-of-fold calibrated values, but the threshold is chosen on those same values, so it is optimistic (in-sample for the threshold). rawBestThreshold is the same optimism applied to raw scores, for a fair comparison.",
+  "calibratorFile": "not committed (comparison fit only)"
+}

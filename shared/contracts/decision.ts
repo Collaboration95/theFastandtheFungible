@@ -1,13 +1,20 @@
 import { z } from 'zod'
 import { PublicCandidateSchema, ReputationSummarySchema } from './corpus.js'
 export const CandidateJudgmentSchema = z.object({ addressesGap: z.number().min(0).max(1), originality: z.object({ original: z.number().min(0).max(1), rewrite: z.number().min(0).max(1), overlap: z.number().min(0).max(1) }), credibility: z.number().min(0).max(2) })
-export const DecisionRowSchema = z.object({ candidate: PublicCandidateSchema, judgment: CandidateJudgmentSchema, value: z.number().min(0).max(1), valuePerDollar: z.number().nonnegative().finite(), verdict: z.enum(['BUY', 'SKIP_REWRITE', 'SKIP_OVER_CAP', 'SKIP_OVER_BUDGET', 'SKIP_LOW_VALUE', 'SKIP_NO_GAP', 'SKIP_LOW_TRUST']), reason: z.string(), wouldBuy: z.boolean().default(false), reputation: ReputationSummarySchema.optional() })
+export const DecisionRowSchema = z.object({ candidate: PublicCandidateSchema, judgment: CandidateJudgmentSchema, value: z.number().min(0).max(1), valuePerDollar: z.number().nonnegative().finite(), verdict: z.enum(['BUY', 'SKIP_REWRITE', 'SKIP_OVER_CAP', 'SKIP_OVER_BUDGET', 'SKIP_LOW_VALUE', 'SKIP_NO_GAP', 'SKIP_LOW_TRUST']), reason: z.string(), wouldBuy: z.boolean().default(false), reputation: ReputationSummarySchema.optional(),
+  /** #207: the calibrated probabilities `value` used, when a calibrator ran. `judgment` always keeps the model's raw answers. */
+  calibrated: z.object({ addressesGap: z.number().min(0).max(1), original: z.number().min(0).max(1) }).optional() })
+/** #207: which versioned calibrator mapped the raw scores of a round (absent: raw scores, the default). */
+export const RoundCalibrationSchema = z.object({ id: z.string().min(1), version: z.number().int().positive(), methods: z.object({ addressesGap: z.enum(['identity', 'platt', 'isotonic']), original: z.enum(['identity', 'platt', 'isotonic']) }) })
 /** Who judged a round (gate 5): Cloudflare Clef, OpenAI Decisions, or the offline metadata fixture. Never one labelled as another. */
 export const DecisionProviderSchema = z.enum(['cloudflare', 'openai', 'fixture'])
 export type DecisionProviderName = z.infer<typeof DecisionProviderSchema>
 export const decisionProviderLabels: Record<DecisionProviderName, string> = { cloudflare: 'Cloudflare', openai: 'OpenAI Decisions', fixture: 'fixture' }
-/** "OpenAI Decisions · gpt-6-luna", "Cloudflare · @cf/cloudflare/clef-flash", "fixture · metadata-fixture". */
-export const decisionLabel = (round: { provider: DecisionProviderName; model: string }) => `${decisionProviderLabels[round.provider]} · ${round.model}`
+/**
+ * "OpenAI Decisions · gpt-6-luna", "Cloudflare · @cf/cloudflare/clef-flash", "fixture · metadata-fixture"; a round whose
+ * scores went through a calibrator (#207) adds " · calibrated vN" (gate 5). Shown in the run's details, never the header.
+ */
+export const decisionLabel = (round: { provider: DecisionProviderName; model: string; calibration?: { version: number } }) => `${decisionProviderLabels[round.provider]} · ${round.model}${round.calibration ? ` · calibrated v${round.calibration.version}` : ''}`
 /**
  * `fallbackReason` is no longer written (#216: a failed live round buys nothing and is never substituted);
  * it stays optional so stored runs from before still parse. `promptVersion` names the question wording and option order.
@@ -16,7 +23,7 @@ export const decisionLabel = (round: { provider: DecisionProviderName; model: st
  * `gapMaterialSource` (#208): 'requirement' when the gap is a frozen requested fact, which is part of the question by
  * construction, so gapMaterial is 1 and the model is not asked; 'model' (or absent, older runs) when the model scored it.
  */
-export const DecisionRoundSchema = z.object({ round: z.number().int().positive(), gap: z.string(), gapMaterial: z.number().min(0).max(1), gapMaterialSource: z.enum(['model', 'requirement']).optional(), provider: DecisionProviderSchema, model: z.string(), promptVersion: z.string().optional(), threshold: z.number().min(0).max(1), rows: z.array(DecisionRowSchema), selectedResourceId: z.string().optional(), fallbackReason: z.string().optional() })
+export const DecisionRoundSchema = z.object({ round: z.number().int().positive(), gap: z.string(), gapMaterial: z.number().min(0).max(1), gapMaterialSource: z.enum(['model', 'requirement']).optional(), provider: DecisionProviderSchema, model: z.string(), promptVersion: z.string().optional(), calibration: RoundCalibrationSchema.optional(), threshold: z.number().min(0).max(1), rows: z.array(DecisionRowSchema), selectedResourceId: z.string().optional(), fallbackReason: z.string().optional() })
 export type CandidateJudgment = z.infer<typeof CandidateJudgmentSchema>
 export type DecisionRow = z.infer<typeof DecisionRowSchema>
 export type DecisionRound = z.infer<typeof DecisionRoundSchema>
