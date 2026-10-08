@@ -23,6 +23,13 @@ describe('live smoke pure parts (#158), fake snapshots, no network', () => {
     const bad = detectFallbacks(run({ labels: { ...labels, research: 'fixture · extractive-fixture', decision: 'fixture · metadata-fixture', search: 'keyword only (embeddings unavailable)', settlement: 'SIMULATED SGD · no real funds' }, answers: [{ provider: 'fixture', version: 1 }], decisions: [{ round: 1, provider: 'cloudflare', fallbackReason: 'x', rows: [] }] }), 'fixture · scope-fixture')
     expect(bad.length).toBe(7)
   })
+  it('counts a failed live decision (DECISION_UNAVAILABLE, no fallback since #216) as not fully live', () => {
+    const failed = run({ phase: 'FAILED', decisions: [], events: [{ type: 'DECISION_UNAVAILABLE', label: 'Decision provider timed out; nothing bought.', data: { status: 'timeout' } }] })
+    expect(detectFallbacks(failed, 'DeepSeek · deepseek-flash')).toEqual(['decision unavailable: Decision provider timed out; nothing bought.'])
+    const fails = checkRun('UC2', failed, bible, 'DeepSeek')
+    expect(fails).toContain('decision unavailable: Decision provider timed out; nothing bought.')
+    expect(fails).toContain('run ended FAILED')
+  })
   it('UC1 must spend nothing', () => {
     expect(checkRun('UC1', run(), bible, 'DeepSeek')).toEqual([])
     expect(checkRun('UC1', run({ spentMinor: 90, intents: [intent('x')] }), bible, 'DeepSeek')[0]).toMatch(/S\$0/)
