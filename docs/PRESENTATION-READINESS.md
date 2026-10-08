@@ -7,7 +7,7 @@ direction. Product, decisions and use cases are in
 [prompt.md](../prompt.md). The script below targets the final-push build
 (UC1–UC3), all built on `main` (live smoke passed 8 Oct, 03:00 SGT).
 
-Success means the audience sees a calibrated model decide what is worth
+Success means the audience sees a decision model decide what is worth
 buying, a writer paid directly over a real HTTP boundary on XRPL Testnet, and
 a broken promise caught and refunded. Use a five-minute core demo; keep deeper
 internals and extra scenarios for questions.
@@ -57,41 +57,66 @@ The fixture demo runs the new corpus
 offline with extractive answers and heuristic decisions, all labelled.
 
 Opening line: “Agents are the new readers. Experts should get paid when an
-agent uses their thinking. This is the buyer side: a calibrated model decides
+agent uses their thinking. This is the buyer side: a decision model judges
 what an agent should buy, and every promise a writer made is checked after
 delivery. The writers and articles are fictional and labelled synthetic;
-DeepSeek, Clef and the Testnet payments are live, and carry no real value.”
+the models and the Testnet payments are live, and carry no real value.”
 
 When a provider falls back, the mode badge shows it. Never hide a fallback.
 
 ## Five minute script
 
-The use cases are in [FINAL-PUSH §11](../FINAL-PUSH.md#11-demo-use-cases-questions-are-drafts-until-the-corpus-exists)
-and the talk order is in §1. Lead with Clef and calibration, then the trust
-matrix.
+Updated 8 Oct for the decision-model choice (#214), UC3's new price (#204)
+and the reader-facing name of the trust score (#165). The use cases are in
+[FINAL-PUSH §11](../FINAL-PUSH.md#11-demo-use-cases-questions-are-drafts-until-the-corpus-exists).
+Lead with the decision model and calibration, then the track record. Numbers
+for questions are in [QA-PACK.md](QA-PACK.md).
+
+**Words on stage.** Say "decision model" for the step that judges what is
+worth buying; name the model only in the model-choice beat. The trust score
+is the writer's **track record**. Never say gap, threshold, provider, H/C/T
+or a verdict code such as `SKIP_LOW_TRUST`; the screen says "Blocked".
 
 1. **Frame (about 30 s).** The one-line pitch and the positioning: Pay Per
    Crawl prices pages, Pay Per Use trusts the buyer's word, we price evidence.
 2. **UC1: free is enough (about 45 s).** A bond question answered from free
-   sources with citations. Clef finds no gap worth paying for. S$0 spent.
+   sources with citations. The decision model finds nothing worth paying for.
+   S$0 spent.
+   - **Option, decide at rehearsal:** instead of running it live, open the
+     completed real UC1 run from the sidebar and talk over it. That removes
+     one of four live failure points and frees about 30 s for UC2. If you
+     pre-stage it, say so: "this one ran earlier today".
 3. **UC2: paid evidence changes the answer (about 2 min, the main case).**
-   The open gap, the decision table with Clef's probabilities and each
-   writer's trust multiplier, a rewrite and an op-ed skipped, one purchase
-   with its Testnet receipt, the proof check, and answer v2 qualifying v1.
-4. **UC3: a bad actor pays back (about 90 s).** The trust matrix first.
-   AlphaLeak wins round one on inflated relevance and a low price. Its proof
-   fails, `/challenge` refunds it on Testnet, and its trust falls from 0.8 to
-   0.4. Round two buys The Fab Floor. Ask again and AlphaLeak shows
-   `SKIP_LOW_TRUST`.
-5. **Pop the hood (about 30 s).** One Langfuse trace, the raw 402 exchange and
+   What the free answer is missing, the decision table with the decision
+   model's scores and each writer's track record, a rewrite and an op-ed
+   skipped, one purchase with its Testnet receipt, the proof check, and answer
+   v2 qualifying v1.
+4. **UC3: a bad actor pays back (about 90 s).** The writers' track records
+   first. AlphaLeak (S$0.30) promises the same Penang lead-time data as The
+   Fab Floor's S$0.40 data deep-dive, so it wins round one on an inflated
+   promise and a lower price. Its proof fails, `/challenge` refunds it on
+   Testnet, and its track record falls from 0.80 to 0.40. Round two buys The
+   Fab Floor at S$0.40. Ask again and AlphaLeak shows as Blocked.
+5. **The model choice (about 20 s, take it from UC2's time if needed).** The
+   coordinator keeps one of these after the live comparison (#214):
+   - **If SWITCHED:** “We benchmarked two decision models under a rule we
+     wrote down first. OpenAI's Luna beat Clef-flash on every quality number
+     on our synthetic set. It failed one test: our own demo needed a judge
+     that gets fooled. We fixed the story, not the judge, and switched. The
+     whole study cost under a dollar.”
+   - **If KEPT:** “We benchmarked a challenger under a rule we wrote down
+     first. It won on accuracy on our synthetic set and failed our regression
+     gate, so the rule kept Clef-flash. The whole study cost under a dollar.”
+6. **Pop the hood (about 30 s).** One Langfuse trace, the raw 402 exchange and
    the build log.
 
 “The LLM can't spend” is a single sentence for Q&A, not the opening: five
 other talks that night lead with “don't trust the LLM”.
 
 Keep the S$0 “would buy” run, the fault demo and the
-injection trap for questions or the Science Fair table. Measured live on 8 Oct: UC1 9.6 s, UC2 21.6 s, UC3 35.6 s (the refund took
-7.5 s); time it again at rehearsal pace.
+injection trap for questions or the Science Fair table. Measured live on 8
+Oct (Clef-flash, Fab Floor still at S$0.25): UC1 9.6 s, UC2 21.6 s, UC3 35.6 s
+(the refund took 7.5 s); time it again at rehearsal pace on the stage build.
 
 ## Technical questions to prepare
 
@@ -101,8 +126,9 @@ Have concise, inspectable answers for:
   the limits of decision models (no counting or date arithmetic, sensitivity
   to adversarial text)? How did clef-flash and clef compare on our own
   decisions?
-- How is Clef calibrated, and how do you know claimed relevance matches
-  observed relevance? (The Brier score per writer; FINAL-PUSH §7.)
+- How is the decision model calibrated, and how do you know claimed relevance
+  matches observed relevance? (QA-PACK §1; the writer's track record,
+  FINAL-PUSH §7.)
 - **Arrow's paradox: how do you judge information before you see it?** We
   reduce it, we do not solve it. A buyer gets the writer's abstract, signals
   and a signed manifest before paying, and recomputes the proofs after. Soft
@@ -111,16 +137,16 @@ Have concise, inspectable answers for:
 - **Why not Pay Per Crawl?** It prices pages: one flat price per site, with
   Cloudflare as merchant of record, in closed beta. It gives the buyer no way
   to judge value first or check delivery. Pay Per Use trusts the buyer's
-  reported usage. We let the writer set a price per article, a calibrated
+  reported usage. We let the writer set a price per article, a decision
   model decide, and the buyer check every promise. See FINAL-PUSH §14.
 - **Can the ledger enforce refunds?** No. It enforces hash and time, not a
   regex over text. A failed proof triggers `/challenge`; the writer's
-  facilitator refunds, and trust drops either way. A writer who refuses or
-  times out loses more trust and is delisted. Articles cost S$0.10–0.90, so
+  facilitator refunds, and the track record drops either way. A writer who refuses or
+  times out loses more of its track record and is delisted. Articles cost S$0.10–0.90, so
   one mistake is cheap and cheating is punished over time.
 - **How is the engine neutral?** Ranking ignores price. We never hold the
   money: the buyer pays the writer's wallet directly. Writers set their own
-  prices. Every writer's trust score is public, and answering challenges is a
+  prices. Every writer's track record is public, and answering challenges is a
   listing requirement.
 - **What stops prompt injection inside an article from spending money?** The
   LLM can name what is missing, but no tool buys, picks a purchase or changes
@@ -229,6 +255,10 @@ reruns affected tests and the timed story.
 | Writer refuses or times out a `/challenge` (30 s) | Trust penalty applies, the writer is delisted, no refund is claimed | Say plainly that the ledger cannot force a refund |
 | Presentation process fails | Restart from frozen scripts within 60 seconds | Labelled recording/screenshots |
 
+- [ ] **Before every rehearsal and before the slot:** run `make preflight`
+  (#196), then reset reputation (Presenter menu → Writer reputation → Reset),
+  so no track record is left over from the last run.
+
 Require three clean timed rehearsals on the final machine, running UC1, UC2
 and UC3 in order over a phone hotspot, and one recovery rehearsal. Record
 durations and interruptions; three successes are a release check, not a
@@ -237,7 +267,7 @@ statistically established reliability rate.
 ## Offline artifacts
 
 The offline fallback is `npm run demo` on the new corpus (D18).
-Prepare one current screenshot of the trust matrix after UC3, saved
+Prepare one current screenshot of the writers' track records after UC3, saved
 answer/receipt artifacts from the verifier, a short labelled recording of the
 five-minute flow recorded after the 8 Oct freeze, one Langfuse trace of a live
 run, and the architecture diagram from
