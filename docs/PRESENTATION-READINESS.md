@@ -255,6 +255,10 @@ reruns affected tests and the timed story.
 | Writer refuses or times out a `/challenge` (30 s) | Trust penalty applies, the writer is delisted, no refund is claimed | Say plainly that the ledger cannot force a refund |
 | Presentation process fails | Restart from frozen scripts within 60 seconds | Labelled recording/screenshots |
 
+- [ ] **Before every rehearsal and before the slot:** run `make preflight`
+  (#196), then reset reputation (Presenter menu → Writer reputation → Reset),
+  so no track record is left over from the last run.
+
 Require three clean timed rehearsals on the final machine, running UC1, UC2
 and UC3 in order over a phone hotspot, and one recovery rehearsal. Record
 durations and interruptions; three successes are a release check, not a
