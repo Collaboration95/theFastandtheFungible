@@ -28,7 +28,7 @@ buy = argmax over eligible of value(c) / price(c); none → STOP`}</pre>
     {run.decisions.map((round, index) => <details open={index === 0} key={round.round} aria-label={`Decision round ${round.round}`}>
       <summary>Round {round.round} · {decisionLabel(round)}</summary>
       <p>BUY_THRESHOLD: {round.threshold} · Gap: {round.gap}</p>
-      <Probability label="Gap material" value={round.gapMaterial} />
+      {round.gapMaterialSource === 'requirement' ? <p>Gap material: 1 · requested fact</p> : <Probability label="Gap material" value={round.gapMaterial} />}
       <div className="ra-table-scroll" tabIndex={0} role="region" aria-label={`Candidate scores round ${round.round}`}><table>
         <caption>All candidates · round {round.round}</caption>
         <thead><tr><th scope="col">Candidate / price</th><th scope="col">Probabilities</th><th scope="col">Value / SGD</th><th scope="col">Verdict / reason</th></tr></thead>

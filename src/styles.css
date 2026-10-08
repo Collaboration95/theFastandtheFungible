@@ -620,3 +620,11 @@ tr.is-quarantined .ra-trust-bar i, tr.is-delisted .ra-trust-bar i { background: 
 .ra-buyline::after { width: var(--p, 0%); background: var(--ink); transition: width .6s var(--ease-out); }
 .ra-buyline.is-ok { color: var(--ok); } .ra-buyline.is-ok::after { background: var(--ok); }
 .ra-buyline.is-fail { color: var(--pay-ink); } .ra-buyline.is-fail::after { background: var(--pay-ink); }
+
+/* Requested facts (#208): one quiet line, the list on demand. */
+.ra-facts { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
+.ra-facts summary { cursor: pointer; width: fit-content; font-weight: 600; }
+.ra-facts ul { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.ra-facts li { display: flex; gap: 10px; line-height: 1.4; }
+.ra-facts li span { flex: none; min-width: 112px; font: 500 11px/1.6 var(--f-mono); color: var(--muted); }
+.ra-facts li.f-supported span { color: var(--ink); }

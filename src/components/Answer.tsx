@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { AnswerSchema, providerLabels, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
 import { candidateOf, citationKey, leadSentence, money } from '../format'
+import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
 
 export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): AnswerData | undefined {
   const parsed = AnswerSchema.safeParse(answer)
@@ -78,6 +79,7 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
       {impact && showLatest && <p className={`ra-impact i-${impact.classification.toLowerCase()}`} title={impact.explanation}>{IMPACT[impact.classification]}</p>}
       <div className="ra-vfoot">{report}{answers.length > 1 && <button type="button" className="ra-btn" aria-pressed={compare} onClick={onCompare}>{compare ? `Back to v${latest!.version}` : `Compare v1 → v${latest!.version}`}</button>}{answer.provider === 'fixture' && <span className="ra-hint">{providerLabels[answer.provider]} · {answer.model}</span>}</div>
     </section>
+    {!compare && <RequestedFacts run={run} version={answer.version} />}
     {!compare && gap}
     <section className="ra-claims" aria-label="Claims">
       {GROUPS.map(([stance, name, glyph]) => {
@@ -93,6 +95,16 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
   </>
 }
 
+/** Requested facts (#208, #209): one line ("2 of 3 answered"), the per-fact list on demand (prompt.md §3a). */
+function RequestedFacts({ run, version }: { run: RunSnapshot; version: number }) {
+  const summary = factsSummary(run, version)
+  if (!summary) return null
+  return <details className="ra-facts" aria-label="Requested facts">
+    <summary>{summary.line}</summary>
+    <ul>{summary.facts.map(fact => <li key={fact.id} className={`f-${fact.status}`}><span>{FACT_STATUS[fact.status]}</span>{fact.text}</li>)}</ul>
+  </details>
+}
+
 /** The gap is the hinge: circled in v1, priced by the decision model, filled in v2. */
 function gapCard(run: RunSnapshot, answers: AnswerData[]): ReactNode {
   const first = answers[0], latest = answers.at(-1)
@@ -103,7 +115,7 @@ function gapCard(run: RunSnapshot, answers: AnswerData[]): ReactNode {
   if (answers.length > 1 && !latest.openGaps.some(item => item.text === gap.text)) {
     const spent = run.intents.filter(item => item.runId === run.runId && item.status === 'VERIFIED').reduce((sum, item) => sum + item.amountMinor, 0)
     return <section className="ra-gap is-closed" aria-label="Gap closed"><span className="ra-gap-k">GAP CLOSED</span><p className="ra-gap-t"><mark className="ra-hl">{facet[0].toUpperCase() + facet.slice(1)}</mark> is now covered{bought.length ? ` by ${bought.join(' and ')}` : ''}.</p>
-      <span className="ra-gap-s">Bought for {money(spent)}</span></section>
+      <span className="ra-gap-s">{bought.length ? `Bought for ${money(spent)}` : 'Found free on a focused search'}</span></section>
   }
   const intent = run.intents.filter(item => item.runId === run.runId).at(-1)
   const source = intent && candidateOf(run, intent)
