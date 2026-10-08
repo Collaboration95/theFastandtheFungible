@@ -1,4 +1,5 @@
-// Live smoke (#158): UC1 → UC2 → UC3 (+ a UC3 re-ask) through the HTTP API on DeepSeek, Clef and XRPL Testnet.
+// Live smoke (#158): UC1 → UC2 → UC3 (+ a UC3 re-ask) through the HTTP API on DeepSeek, the configured decision
+// provider (DECISION_PROVIDER: cloudflare = Clef, openai = OpenAI Decisions) and XRPL Testnet.
 // SPENDS live calls and Testnet XRP: the orchestrator runs it, never CI. `make smoke ARGS="--only UC2"`.
 //   --only UC1|UC2|UC3   run one use case (UC3 includes the SKIP_LOW_TRUST re-ask)
 //   --probe              one paid purchase + one forced challenge/refund: UC3 round 1 on its own, no re-ask
@@ -9,8 +10,9 @@ import { mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import dotenv from 'dotenv'
+import { liveDecisionProvider } from './stage-checks.mjs'
 
-export const BUDGET = { deepseek: 60, clef: 200 }
+export const BUDGET = { deepseek: 60, decision: 200 }
 const BUDGET_MINOR = 500
 const RUN_TIMEOUT_MS = 6 * 60_000
 const IDS = ['UC1', 'UC2', 'UC3']
@@ -27,18 +29,27 @@ export function parseArgs(argv, env = {}) {
   return out
 }
 
-/** Every reason a run is not fully live (gate 5: fixtures are labelled, and the smoke fails on any of them). */
-export function detectFallbacks(run, scopeLabel) {
+/** The decision label each live provider shows (shared/contracts decisionLabel: `<provider label> · <model>`). */
+export const DECISION_LABELS = { cloudflare: 'Cloudflare · ', openai: 'OpenAI Decisions · ' }
+
+/**
+ * Every reason a run is not fully live (gate 5: fixtures are labelled, and the smoke fails on any of them). `provider` is
+ * the run's configured DECISION_PROVIDER: its label is required, a fixture or the other provider's label fails.
+ */
+export function detectFallbacks(run, scopeLabel, provider = 'cloudflare') {
   const out = []
   const l = run.labels ?? {}
   if (/fixture/i.test(scopeLabel ?? 'fixture')) out.push(`scope: ${scopeLabel ?? 'no label'}`)
   if (!/deepseek/i.test(l.research ?? '')) out.push(`research label: ${l.research}`)
-  if (!/cloudflare/i.test(l.decision ?? '')) out.push(`decision label: ${l.decision}`)
+  if (!(l.decision ?? '').startsWith(DECISION_LABELS[provider])) out.push(`decision label: ${l.decision} (DECISION_PROVIDER=${provider} expects "${DECISION_LABELS[provider]}…")`)
   if (/fixture/i.test(l.plan ?? 'fixture')) out.push(`plan label: ${l.plan ?? 'none'}`)
   if (!/testnet/i.test(l.settlement ?? '')) out.push(`settlement label: ${l.settlement}`)
   if (l.search !== 'hybrid') out.push(`search label: ${l.search ?? 'none'}`)
   for (const a of run.answers ?? []) if (a.provider === 'fixture') out.push(`answer v${a.version} from fixture`)
-  for (const d of run.decisions ?? []) if (d.provider === 'fixture' || d.fallbackReason) out.push(`decision round ${d.round} fixture`)
+  for (const d of run.decisions ?? []) {
+    if (d.provider === 'fixture' || d.fallbackReason) out.push(`decision round ${d.round} fixture`)
+    else if (d.provider !== provider) out.push(`decision round ${d.round} by ${d.provider}, configured ${provider}`)
+  }
   // #197/#216: a failed live decision no longer falls back; the run ends FAILED with a DECISION_UNAVAILABLE event.
   for (const e of run.events ?? []) if (e.type === 'DECISION_UNAVAILABLE') out.push(`decision unavailable: ${e.label ?? e.data?.status ?? 'no reason'}`)
   return out
@@ -48,9 +59,20 @@ const purchased = run => (run.intents ?? []).filter(i => i.txHash)
 const skipRow = (run, slug) => (run.decisions ?? []).flatMap(d => d.rows).find(r => r.candidate.publisherSlug === slug && r.verdict === 'SKIP_LOW_TRUST')
 const alphaSlug = bible => bible.alphaLeakPlant.articleId.split('-')[0]
 
+/**
+ * The UC3 re-ask expects AlphaLeak SKIP_LOW_TRUST, which only holds when the UC3 run before it refunded (with a hash) or
+ * quarantined AlphaLeak. `reputation` is the publisher list after that run ({slug, status}).
+ */
+export function alphaLeakQuarantined(run, bible, reputation = []) {
+  const bad = (run.intents ?? []).find(i => i.resourceId === bible.useCases.find(u => u.id === 'UC3').expectedPicks.round1)
+  if (bad?.status === 'REFUNDED' && bad.refund?.txHash) return true
+  return reputation.some(p => p.slug === alphaSlug(bible) && p.status !== 'active')
+}
+export const REPEAT_SKIPPED = 'skipped: precondition not met (AlphaLeak not quarantined)'
+
 /** Pass/fail from a finished run snapshot. kind is 'UC1'|'UC2'|'UC3'|'UC3-repeat'|'UC3-probe'. Returns failure strings. */
-export function checkRun(kind, run, bible, scopeLabel) {
-  const fails = detectFallbacks(run, scopeLabel)
+export function checkRun(kind, run, bible, scopeLabel, provider = 'cloudflare') {
+  const fails = detectFallbacks(run, scopeLabel, provider)
   if (run.phase !== 'DONE') fails.push(`run ended ${run.phase}${run.error ? `: ${run.error}` : ''}`)
   const base = kind.replace(/-.*/, '')
   const uc = bible.useCases.find(u => u.id === base)
@@ -76,15 +98,19 @@ export function checkRun(kind, run, bible, scopeLabel) {
   return fails
 }
 
-/** Estimated live calls of a finished run: DeepSeek = scope + plan + one per answer; Clef = one gap call plus one per scored row per round. */
-export const countCalls = run => ({
+/**
+ * Estimated live calls of a finished run: DeepSeek = scope + plan + one per answer. Decision: Clef = one gap call plus one
+ * per scored row per round; OpenAI Decisions = one batched request per round (a further one per 6 candidates past the
+ * first 6, as chunkCandidates splits at 19 questions).
+ */
+export const countCalls = (run, provider = 'cloudflare') => ({
   deepseek: 2 + (run.answers?.length ?? 0),
-  clef: (run.decisions ?? []).reduce((n, d) => n + 1 + d.rows.length, 0),
+  decision: (run.decisions ?? []).reduce((n, d) => n + (provider === 'openai' ? Math.max(1, Math.ceil(d.rows.length / 6)) : 1 + d.rows.length), 0),
 })
 
 const explorer = hash => `https://testnet.xrpl.org/transactions/${hash}`
 const seconds = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 100) / 10
-export function summarise(kind, run, extra) {
+export function summarise(kind, run, extra, provider = 'cloudflare') {
   const ev = type => (run.events ?? []).filter(e => e.type === type)
   const proof = ev('PROOF')[0], refund = ev('REFUND')[0]
   const trace = ev('TRACE')[0]?.data?.url
@@ -93,7 +119,7 @@ export function summarise(kind, run, extra) {
     purchases: purchased(run).map(i => ({ resourceId: i.resourceId, status: i.status, amountMinor: i.amountMinor, txHash: i.txHash, explorer: explorer(i.txHash) })),
     refundTxHash: refund?.data?.txHash, refundExplorer: refund?.data?.txHash ? explorer(refund.data.txHash) : undefined,
     refundLatencySeconds: proof && refund ? seconds(proof.at, refund.at) : undefined,
-    calls: countCalls(run), langfuseTrace: trace, ...extra,
+    calls: countCalls(run, provider), langfuseTrace: trace, ...extra,
   }
 }
 
@@ -134,6 +160,7 @@ async function ask(base, uc, bible) {
 async function main() {
   dotenv.config({ quiet: true })
   const args = parseArgs(process.argv.slice(2), process.env)
+  const provider = liveDecisionProvider(process.env.DECISION_PROVIDER)
   const bible = JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8'))
   const ports = { api: 8788 + args.offset, pub: 8790 + args.offset }
   const base = `http://127.0.0.1:${ports.api}`
@@ -142,13 +169,14 @@ async function main() {
   const dir = 'data/smoke'
   mkdirSync(dir, { recursive: true })
   for (const f of ['app.db', 'app.db-wal', 'app.db-shm']) rmSync(`${dir}/${f}`, { force: true })
-  // demo.mjs --live forces LLM_PROVIDER=deepseek (the user's .env may say groq), DECISION_PROVIDER=cloudflare and SEARCH_EMBEDDINGS=live.
+  // demo.mjs --live forces LLM_PROVIDER=deepseek (the user's .env may say groq), DECISION_PROVIDER=openai|cloudflare (default
+  // cloudflare, the same rule as `provider` above) and SEARCH_EMBEDDINGS=live.
   const env = { ...process.env, DEMO_PORT_OFFSET: String(args.offset), LANGFUSE_ENABLED: '1', LANGFUSE_TRACING_ENVIRONMENT: 'smoke', APP_DB: `${dir}/app.db`, REPORT_DIR: `${dir}/reports`, SEARCH_EMBEDDINGS: 'live', LLM_SYNTHESIS_TIMEOUT_MS: process.env.LLM_SYNTHESIS_TIMEOUT_MS || '120000' }
   const log = openSync(`${dir}/stack.log`, 'w')
   const stack = spawn(process.execPath, ['scripts/demo.mjs', '--live'], { env, stdio: ['ignore', log, log] })
   const stop = () => stack.kill('SIGTERM')
   process.on('SIGINT', () => { stop(); process.exit(130) })
-  const summary = { startedAt: new Date().toISOString(), offset: args.offset, args, runs: [], failures: [], calls: { deepseek: 0, clef: 0 }, budget: BUDGET }
+  const summary = { startedAt: new Date().toISOString(), offset: args.offset, args, decisionProvider: provider, runs: [], failures: [], calls: { deepseek: 0, decision: 0 }, budget: BUDGET }
   try {
     for (let i = 0; i < 150; i++) {
       if (stack.exitCode !== null) throw new Error(`stack exited early (see ${dir}/stack.log)`)
@@ -161,23 +189,31 @@ async function main() {
     await json(base, '/api/reputation/reset', { method: 'POST', body: '{}' })
 
     const plan = args.probe ? ['UC3-probe'] : [...(args.only ? [args.only] : IDS)].flatMap(u => u === 'UC3' ? ['UC3', 'UC3-repeat'] : [u])
+    let uc3Quarantined = true
     for (const kind of plan) {
       const uc = kind.replace(/-.*/, '')
-      let result, fails
+      // UC3's own failure still fails the smoke; the re-ask is not counted as a second failure when its precondition is missing.
+      if (kind === 'UC3-repeat' && !uc3Quarantined) {
+        summary.runs.push({ kind, skipped: REPEAT_SKIPPED })
+        console.log(`${kind}: ${REPEAT_SKIPPED}`)
+        continue
+      }
+      let result, fails, reputation
       for (let attempt = 1; attempt <= 2; attempt++) {
-        if (summary.calls.deepseek >= BUDGET.deepseek || summary.calls.clef >= BUDGET.clef) { summary.failures.push(`${kind}: call budget reached (${JSON.stringify(summary.calls)}); stopped`); break }
+        if (summary.calls.deepseek >= BUDGET.deepseek || summary.calls.decision >= BUDGET.decision) { summary.failures.push(`${kind}: call budget reached (${JSON.stringify(summary.calls)}); stopped`); break }
         if (attempt === 2 && kind === 'UC3') await json(base, '/api/reputation/reset', { method: 'POST', body: '{}' })
         result = await ask(base, uc, bible)
-        const calls = countCalls(result.run)
-        summary.calls.deepseek += calls.deepseek; summary.calls.clef += calls.clef
-        fails = [...result.problems, ...checkRun(kind, result.run, bible, result.scopeLabel)]
-        const reputation = (await json(base, '/api/reputation')).publishers.map(p => ({ slug: p.publisherSlug, H: +p.H.toFixed(2), C: +p.C.toFixed(2), T: +p.T.toFixed(2), status: p.status }))
-        summary.runs.push({ ...summarise(kind, result.run, { attempt, endToEndSeconds: result.seconds, answers: result.answers, reputation }), failures: fails })
+        const calls = countCalls(result.run, provider)
+        summary.calls.deepseek += calls.deepseek; summary.calls.decision += calls.decision
+        fails = [...result.problems, ...checkRun(kind, result.run, bible, result.scopeLabel, provider)]
+        reputation = (await json(base, '/api/reputation')).publishers.map(p => ({ slug: p.publisherSlug, H: +p.H.toFixed(2), C: +p.C.toFixed(2), T: +p.T.toFixed(2), status: p.status }))
+        summary.runs.push({ ...summarise(kind, result.run, { attempt, endToEndSeconds: result.seconds, answers: result.answers, reputation }, provider), failures: fails })
         console.log(JSON.stringify(summary.runs.at(-1), null, 2))
         if (!fails.length) break
         console.log(`${kind} attempt ${attempt} failed: ${fails.join(' | ')}${attempt === 1 ? '; retrying once' : ''}`)
       }
       if (!result) break
+      if (kind === 'UC3') uc3Quarantined = alphaLeakQuarantined(result.run, bible, reputation)
       if (fails.length) summary.failures.push(...fails.map(f => `${kind}: ${f}`))
       if (summary.failures.some(f => f.includes('call budget'))) break
     }
@@ -189,7 +225,7 @@ async function main() {
     summary.passed = summary.failures.length === 0
     writeFileSync(`${dir}/last.json`, `${JSON.stringify(summary, null, 2)}\n`)
   }
-  console.log(`\nLive calls (estimated): DeepSeek ${summary.calls.deepseek}/${BUDGET.deepseek}, Clef ${summary.calls.clef}/${BUDGET.clef}`)
+  console.log(`\nLive calls (estimated): DeepSeek ${summary.calls.deepseek}/${BUDGET.deepseek}, ${provider === 'openai' ? 'OpenAI Decisions' : 'Clef'} ${summary.calls.decision}/${BUDGET.decision}`)
   console.log(summary.passed ? 'SMOKE PASSED · data/smoke/last.json' : `SMOKE FAILED:\n  ${summary.failures.join('\n  ')}`)
   process.exit(summary.passed ? 0 : 1)
 }

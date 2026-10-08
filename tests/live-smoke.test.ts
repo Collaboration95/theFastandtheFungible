@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error plain .mjs script, no declarations
-import { checkRun, countCalls, detectFallbacks, parseArgs } from '../scripts/live-smoke.mjs'
+import { alphaLeakQuarantined, checkRun, countCalls, detectFallbacks, parseArgs, REPEAT_SKIPPED } from '../scripts/live-smoke.mjs'
 
 const bible = JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8'))
 const uc = (id: string) => bible.useCases.find((u: { id: string }) => u.id === id)
@@ -22,6 +22,16 @@ describe('live smoke pure parts (#158), fake snapshots, no network', () => {
     expect(detectFallbacks(run(), 'DeepSeek · deepseek-flash')).toEqual([])
     const bad = detectFallbacks(run({ labels: { ...labels, research: 'fixture · extractive-fixture', decision: 'fixture · metadata-fixture', search: 'keyword only (embeddings unavailable)', settlement: 'SIMULATED SGD · no real funds' }, answers: [{ provider: 'fixture', version: 1 }], decisions: [{ round: 1, provider: 'cloudflare', fallbackReason: 'x', rows: [] }] }), 'fixture · scope-fixture')
     expect(bad.length).toBe(7)
+  })
+  it('accepts the configured decision provider label only (DECISION_PROVIDER openai or cloudflare)', () => {
+    const openai = run({ labels: { ...labels, decision: 'OpenAI Decisions · gpt-6-luna' }, decisions: [{ round: 1, provider: 'openai', rows: [] }] })
+    expect(detectFallbacks(openai, 'DeepSeek', 'openai')).toEqual([])
+    expect(checkRun('UC1', openai, bible, 'DeepSeek', 'openai')).toEqual([])
+    // A mismatch with the configured provider fails, label and rounds alike.
+    expect(detectFallbacks(openai, 'DeepSeek', 'cloudflare')).toEqual(['decision label: OpenAI Decisions · gpt-6-luna (DECISION_PROVIDER=cloudflare expects "Cloudflare · …")', 'decision round 1 by openai, configured cloudflare'])
+    expect(detectFallbacks(run(), 'DeepSeek', 'openai').join()).toMatch(/decision label: Cloudflare · clef .*openai/)
+    // A fixture label fails whichever provider is configured.
+    for (const provider of ['openai', 'cloudflare']) expect(detectFallbacks(run({ labels: { ...labels, decision: 'fixture · metadata-fixture' } }), 'DeepSeek', provider).join()).toMatch(/decision label: fixture/)
   })
   it('counts a failed live decision (DECISION_UNAVAILABLE, no fallback since #216) as not fully live', () => {
     const failed = run({ phase: 'FAILED', decisions: [], events: [{ type: 'DECISION_UNAVAILABLE', label: 'Decision provider timed out; nothing bought.', data: { status: 'timeout' } }] })
@@ -50,7 +60,17 @@ describe('live smoke pure parts (#158), fake snapshots, no network', () => {
     expect(checkRun('UC3-repeat', run({ decisions: [{ round: 1, provider: 'cloudflare', rows: [row] }], intents: [intent(round2)] }), bible, 'DeepSeek')).toEqual([])
     expect(checkRun('UC3-repeat', run({ intents: [intent(round1)] }), bible, 'DeepSeek').length).toBe(2)
   })
+  it('runs the UC3 re-ask only when UC3 refunded or quarantined AlphaLeak', () => {
+    const { round1 } = uc('UC3').expectedPicks
+    expect(alphaLeakQuarantined(run({ intents: [intent(round1, 'REFUNDED', { refund: { txHash: 'RF' } })] }), bible)).toBe(true)
+    expect(alphaLeakQuarantined(run({ intents: [intent(round1, 'REFUNDED')] }), bible)).toBe(false)
+    expect(alphaLeakQuarantined(run({ intents: [intent(round1)] }), bible, [{ slug: 'alphaleak', status: 'active' }])).toBe(false)
+    expect(alphaLeakQuarantined(run(), bible, [{ slug: 'alphaleak', status: 'quarantined' }])).toBe(true)
+    expect(REPEAT_SKIPPED).toBe('skipped: precondition not met (AlphaLeak not quarantined)')
+  })
   it('counts estimated calls for the budget guard', () => {
-    expect(countCalls(run({ decisions: [{ rows: [1, 2, 3] }, { rows: [1] }] }))).toEqual({ deepseek: 3, clef: 6 })
+    expect(countCalls(run({ decisions: [{ rows: [1, 2, 3] }, { rows: [1] }] }))).toEqual({ deepseek: 3, decision: 6 })
+    // OpenAI Decisions: one batched request per round, split past 6 candidates.
+    expect(countCalls(run({ decisions: [{ rows: [1, 2, 3] }, { rows: [] }, { rows: [1, 2, 3, 4, 5, 6, 7, 8] }] }), 'openai')).toEqual({ deepseek: 3, decision: 4 })
   })
 })
