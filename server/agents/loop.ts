@@ -5,7 +5,7 @@ import type { PurchaseManager } from '../purchases.js'
 import { challenge } from '../challenges.js'
 import { AnswerSchema, PlanSchema, PublicCandidateSchema, providerLabels } from '../../shared/contracts/index.js'
 import type { ContentEnvelope, PurchaseIntent, RunSnapshot, TraceEvent } from '../../shared/contracts/index.js'
-import { decide, FixtureDecisionProvider, publicSources } from './decision.js'
+import { decide, DecisionUnavailableError, FixtureDecisionProvider, publicSources } from './decision.js'
 import type { ProofOutcome, Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
 import { hitsByPublisher, retrieve, writeAnswer, type Retrieved } from './research.js'
@@ -107,6 +107,18 @@ export class RunLoop {
     this.store.updateRun(runId, { labels: { ...latest.labels, research: `${providerLabels[answer.provider]} · ${answer.model}` }, checkpoint: { ...latest.checkpoint, answerVersion: answer.version, ...(latest.checkpoint.intentId ? { answeredIntentId: latest.checkpoint.intentId } : {}) } })
     if (this.stopped(runId)) this.trace(runId, 'STOPPED', 'Stopped; last good answer preserved.')
   }
+  /**
+   * Decision 2 (#197): a live decision provider failed, so this round buys nothing and no fixture is substituted.
+   * The run ends FAILED with the reason; the last validated answer stands and the next step is a new ask.
+   */
+  private failDecision(runId: string, error: DecisionUnavailableError) {
+    this.store.appendEvent(runId, { type: 'DECISION_UNAVAILABLE', label: `${error.message}; nothing bought.`, data: { status: error.status } })
+    if (this.stopped(runId)) return
+    const run = this.store.getRun(runId)
+    const bought = run.intents.some(intent => intent.status === 'VERIFIED')
+    this.store.updateRun(runId, { error: `${error.message}; nothing bought. ${bought ? 'The current answer stands.' : 'The free answer stands.'}`, checkpoint: { ...run.checkpoint, nextAction: 'ask' } })
+    this.trace(runId, 'FAILED', 'Decision model unavailable; nothing bought.')
+  }
   private readonly started = new Map<string, number>()
   /** Run-level scores: outcome, impact, spend and whether every layer ran live (the fallback rate). */
   private scoreRun(runId: string) {
@@ -117,8 +129,8 @@ export class RunLoop {
     scoreTrace('spent-sgd', run.spentMinor / 100)
     if (run.refundedMinor) scoreTrace('refunded-sgd', run.refundedMinor / 100)
     if (this.options.reputation) scoreTrace('quarantined-publishers', Object.values(this.options.reputation.summaries()).filter(r => r.status !== 'active').length)
-    const fallbacks = [...run.answers.filter(a => a.provider === 'fixture').map(a => `answer v${a.version}`), ...run.decisions.filter(d => d.provider === 'fixture').map(d => `decision round ${d.round}`)]
-    scoreTrace('fully-live', fallbacks.length === 0, fallbacks.length ? `fixture: ${fallbacks.join(', ')}` : undefined)
+    const fallbacks = [...run.answers.filter(a => a.provider === 'fixture').map(a => `fixture answer v${a.version}`), ...run.decisions.filter(d => d.provider === 'fixture').map(d => `fixture decision round ${d.round}`), ...run.events.filter(e => e.type === 'DECISION_UNAVAILABLE').map(() => 'decision unavailable')]
+    scoreTrace('fully-live', fallbacks.length === 0, fallbacks.length ? fallbacks.join(', ') : undefined)
     // The trace link lands in the run's own activity feed and the API log, ready to click on stage.
     void activeTraceUrl().then(url => {
       if (!url) return
@@ -188,7 +200,14 @@ export class RunLoop {
         this.trace(runId, 'DECIDE', 'Scoring public previews and applying spending policy.')
         const contents = this.accessible(run)
         const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => content.resourceId === candidate.resourceId && content.version === candidate.version)))
-        const decision = await decide({ question: run.question, conclusion: answer.conclusion, gap: gap?.text ?? '', candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
+        let decision: Awaited<ReturnType<typeof decide>>
+        try {
+          decision = await decide({ question: run.question, conclusion: answer.conclusion, gap: gap?.text ?? '', candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
+        } catch (error) {
+          if (!(error instanceof DecisionUnavailableError)) throw error
+          this.failDecision(runId, error)
+          return
+        }
         this.store.addDecision(runId, decision)
         const latest = this.store.getRun(runId)
         this.store.updateRun(runId, { labels: { ...latest.labels, decision: `${decision.provider === 'cloudflare' ? 'Cloudflare' : 'fixture'} · ${decision.model}` } })

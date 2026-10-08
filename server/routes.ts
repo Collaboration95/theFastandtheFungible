@@ -39,8 +39,8 @@ export async function createApiApp(options: ApiOptions = {}) {
   let provider = options.provider
   if (!provider && process.env.DECISION_PROVIDER === 'cloudflare') {
     const clef = new ClefDecisionProvider({ allowLive: true })
-    // The promise caches account discovery; failure falls back visibly in decide().
-    try { await clef.resolveAccount() } catch { /* A fixture decision remains available. */ }
+    // Warm account discovery; a failed lookup is not cached and is retried on the next decision (#195).
+    try { await clef.resolveAccount() } catch { /* A decision round that still cannot reach Clef fails and buys nothing (#197). */ }
     provider = clef
   }
   const reputation = new Reputation(store)

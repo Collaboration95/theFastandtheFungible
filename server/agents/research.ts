@@ -6,6 +6,7 @@ import { CLAIM_KINDS, verifyManifestSignature } from '../../shared/manifest.js'
 import type { PublisherClient, RegistryPublisher } from '../publisher-client.js'
 import { resolveCitation, validateAnswer } from './citations.js'
 import { isLlmConfigured, llmProvider, researchModel, streamJson } from './llm.js'
+import { compareTieBreak } from './tie-break.js'
 
 
 /** Retrieval knobs (#138), tuned on the story-bible questions. */
@@ -29,10 +30,11 @@ export type Retrieved = { candidates: PublicCandidate[]; contents: ContentEnvelo
 const hitKey = (hit: Pick<SearchHit, 'articleId' | 'version'>) => `${hit.articleId}@${hit.version}`
 /**
  * Reciprocal-rank fusion over per-publisher, per-sub-query result lists. Price-blind:
- * only list positions count. Ties break on the article id, so input order never matters.
+ * only list positions count. Ties break on a hash of (query, article id, version) (#204):
+ * deterministic, so input order never matters, and neutral, never by name or claimed relevance.
  * A hit seen in several lists keeps its highest claimed relevance.
  */
-export function fuse(lists: SearchHit[][], k = RETRIEVAL.rrfK): SearchHit[] {
+export function fuse(lists: SearchHit[][], query = '', k = RETRIEVAL.rrfK): SearchHit[] {
   const fused = new Map<string, { hit: SearchHit; ranks: number[] }>()
   for (const list of lists) list.forEach((hit, index) => {
     const entry = fused.get(hitKey(hit))
@@ -42,7 +44,7 @@ export function fuse(lists: SearchHit[][], k = RETRIEVAL.rrfK): SearchHit[] {
   // Sorting the ranks makes the float sum independent of list order.
   const score = (ranks: number[]) => [...ranks].sort((a, b) => a - b).reduce((sum, rank) => sum + 1 / (k + rank), 0)
   return [...fused.values()].map(e => ({ hit: e.hit, score: score(e.ranks) }))
-    .sort((a, b) => b.score - a.score || a.hit.articleId.localeCompare(b.hit.articleId) || a.hit.version.localeCompare(b.hit.version)).map(e => e.hit)
+    .sort((a, b) => b.score - a.score || compareTieBreak(query, { id: a.hit.articleId, version: a.hit.version }, { id: b.hit.articleId, version: b.hit.version })).map(e => e.hit)
 }
 /** Same family or derivedFrom: both rows stay; a rewrite without derivedFrom is marked with the family's earliest original. */
 export function markRewrites(hits: SearchHit[]): SearchHit[] {
@@ -98,7 +100,7 @@ async function retrieveSources(client: PublisherClient, question: string, plan?:
     })
   })
   recordStep('manifest-verify', { paidHits: settled.reduce((n, r) => n + (r.status === 'fulfilled' ? r.value.filter(h => h.tier === 'PAID').length : 0), 0) }, { dropped })
-  const hits = markRewrites(fuse(lists))
+  const hits = markRewrites(fuse(lists, question))
   const bySlug = new Map(publishers.map(p => [p.slug, p]))
   const chosen = [...hits.filter(h => h.tier === 'FREE').slice(0, RETRIEVAL.freeReads), ...hits.filter(h => h.tier === 'PAID').slice(0, RETRIEVAL.paidToDecide)]
   const kept = hits.filter(h => chosen.includes(h))

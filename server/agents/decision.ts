@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
 import type { CandidateJudgment, ContentEnvelope, DecisionRound, PublicCandidate, PublicSourceRef, ReputationSummary } from '../../shared/contracts/index.js'
 import { NEWCOMER } from '../reputation.js'
+import { compareTieBreak } from './tie-break.js'
 
 export interface DecisionProvider {
   name: 'cloudflare' | 'fixture'
@@ -70,14 +71,34 @@ export function buyThreshold(model: string, configured: unknown = process.env.BU
   const value = configured === undefined || configured === '' ? (model.endsWith('/clef') ? 0.35 : model.endsWith('/clef-flash') ? 0.15 : 0.20) : Number(configured)
   return z.number().min(0).max(1).parse(value)
 }
+/**
+ * A live decision provider failed (timeout, HTTP error, daily quota, invalid answer). Decision 2 (8 Oct, #197):
+ * the round fails and nothing is bought; the word-overlap fixture is never substituted for a live provider.
+ */
+export class DecisionUnavailableError extends Error {
+  constructor(readonly status: string) { super(`Decision model unavailable (${status})`) }
+}
+/** A short, secret-free status: the Clef status when the provider gave one, otherwise the failure class. */
+export function decisionFailureStatus(error: unknown): string {
+  const status = (error as { status?: unknown } | null)?.status
+  if (typeof status === 'string' && /^[\w .-]{1,40}$/.test(status)) return status
+  return error instanceof z.ZodError ? 'invalid response' : 'provider error'
+}
 /** Traced as a chain: Clef generations nest inside; the output is the full verdict table. */
 export function decide(input: DecideInput): Promise<DecisionRound> {
   return startActiveObservation('decide-purchase', async observation => {
     observation.update({ input: { round: input.round, gap: input.gap, remainingMinor: input.budgetMinor - input.spentMinor - input.reservedMinor, capMinor: input.perSourceCapMinor } })
-    const round = await decideRound(input)
-    if (input.provider) scoreStep('decision-fallback', Boolean(round.fallbackReason), round.fallbackReason)
+    let round: DecisionRound
+    try { round = await decideRound(input) } catch (error) {
+      if (error instanceof DecisionUnavailableError) {
+        scoreStep('decision-unavailable', true, error.status)
+        observation.update({ level: 'ERROR', statusMessage: error.message })
+      }
+      throw error
+    }
+    if (input.provider) scoreStep('decision-unavailable', false)
     scoreStep('gap-material', round.gapMaterial, round.gap)
-    observation.update({ output: { provider: round.provider, model: round.model, gapMaterial: round.gapMaterial, threshold: round.threshold, selected: round.selectedResourceId ?? null, rows: round.rows.map(r => ({ resourceId: r.candidate.resourceId, priceMinor: r.candidate.price.amountMinor, addressesGap: r.judgment.addressesGap, original: r.judgment.originality.original, credibility: r.judgment.credibility, value: r.value, verdict: r.verdict })) }, ...(round.fallbackReason ? { level: 'WARNING' as const, statusMessage: round.fallbackReason } : {}) })
+    observation.update({ output: { provider: round.provider, model: round.model, gapMaterial: round.gapMaterial, threshold: round.threshold, selected: round.selectedResourceId ?? null, rows: round.rows.map(r => ({ resourceId: r.candidate.resourceId, priceMinor: r.candidate.price.amountMinor, addressesGap: r.judgment.addressesGap, original: r.judgment.originality.original, credibility: r.judgment.credibility, value: r.value, verdict: r.verdict })) } })
     return round
   }, { asType: 'chain' })
 }
@@ -87,18 +108,15 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const readSources = publicSources(input.readSources)
   const remaining = z.number().int().nonnegative().parse(input.budgetMinor) - z.number().int().nonnegative().parse(input.spentMinor) - z.number().int().nonnegative().parse(input.reservedMinor)
   const cap = z.number().int().nonnegative().parse(input.perSourceCapMinor)
-  let provider = input.provider ?? new FixtureDecisionProvider()
-  let fallbackReason: string | undefined
-  const evaluate = (provider: DecisionProvider) => Promise.all([
-    provider.judgeRound({ question: input.question, conclusion: input.conclusion, gap: input.gap }).then(result => z.object({ gapMaterial: z.number().min(0).max(1) }).parse(result)),
-    Promise.all(candidates.map(candidate => provider.judgeCandidate({ question: input.question, gap: input.gap, readSources, candidate }).then(result => CandidateJudgmentSchema.parse(result)))),
-  ])
-  let results: Awaited<ReturnType<typeof evaluate>>
-  try { results = await evaluate(provider) } catch {
-    provider = new FixtureDecisionProvider()
-    fallbackReason = 'Decision provider unavailable or invalid; fixture metadata substituted.'
-    results = await evaluate(provider)
-  }
+  const provider = input.provider ?? new FixtureDecisionProvider()
+  // One round call plus one call per candidate, in parallel; every answer is validated. Any failure fails the round (#197).
+  let results: [{ gapMaterial: number }, CandidateJudgment[]]
+  try {
+    results = await Promise.all([
+      provider.judgeRound({ question: input.question, conclusion: input.conclusion, gap: input.gap }).then(result => z.object({ gapMaterial: z.number().min(0).max(1) }).parse(result)),
+      Promise.all(candidates.map(candidate => provider.judgeCandidate({ question: input.question, gap: input.gap, readSources, candidate }).then(result => CandidateJudgmentSchema.parse(result)))),
+    ])
+  } catch (error) { throw new DecisionUnavailableError(decisionFailureStatus(error)) }
   const [{ gapMaterial }, judgments] = results
   const threshold = buyThreshold(provider.model, input.threshold)
   const acquired = new Set([...readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
@@ -122,6 +140,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }
     return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}) }
   })
-  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || a.candidate.resourceId.localeCompare(b.candidate.resourceId))[0]
-  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, provider: provider.name, model: provider.model, threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}), ...(fallbackReason ? { fallbackReason } : {}) })
+  // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
+  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.resourceId, version: b.candidate.version }))[0]
+  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, provider: provider.name, model: provider.model, threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}) })
 }
