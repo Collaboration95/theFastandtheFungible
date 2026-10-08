@@ -23,16 +23,12 @@ function start(command, args) { const child = spawn(command, args, { env, stdio:
 async function health(url) { for (let i=0;i<100;i++) { if (stopping) throw new Error('Demo stopped'); try { const r=await fetch(url,{signal:AbortSignal.timeout(500)}); if(r.ok)return } catch { /* child becoming ready */ } await new Promise(r=>setTimeout(r,200)) } throw new Error(`Service did not become ready: ${url}`) }
 process.on('SIGINT',()=>shutdown());process.on('SIGTERM',()=>shutdown())
 try {
-  if (live) {
-    const [code] = await once(spawn(process.execPath, ['--import', 'tsx', 'scripts/doctor.mjs', '--keys'], { env, stdio: 'inherit' }), 'exit')
-    if (code) console.warn('\n⚠ Provider preflight failed. Starting anyway; failed calls will show as labelled fixtures.\n')
-  }
+  // Live preflight is advisory (it only warns), so run it beside the startup instead of in front of it.
+  if (live) once(spawn(process.execPath, ['--import', 'tsx', 'scripts/doctor.mjs', '--keys'], { env, stdio: 'inherit' }), 'exit').then(([code]) => { if (code) console.warn('\n⚠ Provider preflight failed. Starting anyway; failed calls will show as labelled fixtures.\n') })
   if (publisherUrl === localPublisher) start(process.execPath, ['--import','tsx','publisher/server.ts'])
-  await health(`${env.PUBLISHER_URL.replace(/\/$/,'')}/health`)
   start(process.execPath,['--import','tsx','server/index.ts'])
-  await health(`http://127.0.0.1:${ports.api}/health`)
   start(process.execPath,[resolve('node_modules/vite/bin/vite.js'),'--host','127.0.0.1','--port',String(ports.web),'--strictPort'])
-  await health(`http://127.0.0.1:${ports.web}`)
+  await Promise.all([health(`${env.PUBLISHER_URL.replace(/\/$/,'')}/health`), health(`http://127.0.0.1:${ports.api}/health`), health(`http://127.0.0.1:${ports.web}`)])
   console.log(`Writers' web (/w/ index): ${env.PUBLISHER_URL.replace(/\/$/,'')}/w/`)
   console.log(`ResearchAgent ready: http://127.0.0.1:${ports.web} · ${live?'live providers (visible fixtures on failure)':'fixture'} · ${env.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'XRPL TESTNET · no real value' : 'SIMULATED SGD · no real funds'}`)
 } catch(error) { console.error(error.message); shutdown(1) }

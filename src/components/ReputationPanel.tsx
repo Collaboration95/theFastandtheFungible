@@ -35,10 +35,10 @@ function PublisherRow({ row }: { row: Row }) {
   const brier = record?.n ? record.brierSum / record.n : undefined
   return <tbody className={drop ? 'is-drop' : undefined}>
     <tr className={`is-${score.status}`}>
-      <th scope="row"><a href={`/w/${row.slug}`} target="_blank" rel="noreferrer">{card?.name ?? row.name} ↗</a> <span className="ra-chip is-sim">SYNTHETIC</span></th>
+      <th scope="row"><a href={`/w/${row.slug}`} target="_blank" rel="noreferrer">{card?.name ?? row.name} ↗</a></th>
       <td>{record ? `${record.passes} / ${record.fails}` : '0 / 0'}</td>
       <td>{record ? `${record.refunds} / ${record.refusals}` : '0 / 0'}</td>
-      <td>{row.claimed === undefined ? '—' : `claimed ${row.claimed.toFixed(2)}`}{brier === undefined ? '' : ` · Brier ${brier.toFixed(2)} (n ${record!.n})`}</td>
+      <td>{row.claimed === undefined ? '—' : `claimed ${row.claimed.toFixed(2)}`}{brier === undefined ? '' : ` · Brier ${brier.toFixed(2)}`}</td>
       <td>H {score.H.toFixed(2)}</td><td>C {score.C.toFixed(2)}</td>
       <td><span className="ra-trust-bar" role="meter" aria-label={`Trust ${score.T.toFixed(2)}`} aria-valuemin={0} aria-valuemax={1} aria-valuenow={Number(score.T.toFixed(2))} style={{ '--t': `${score.T * 100}%` } as CSSProperties}><i /></span> T {score.T.toFixed(2)}</td>
       <td><span className={`ra-trust is-${score.status}`}>{score.status}</span></td>
@@ -51,10 +51,9 @@ function PublisherRow({ row }: { row: Row }) {
 export default function ReputationPanel({ records, run, full, presenter = false, onReset }: { records: ReputationRecord[]; run?: RunSnapshot; full?: RunSnapshot; presenter?: boolean; onReset?: () => void }) {
   const list = rows(records, run, full)
   return <section className="ra-panel ra-rep" aria-label="Writers">
-    <div className="ra-panel-h"><h2>Writers</h2>{presenter && onReset && <button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button>}</div>
-    <p className="ra-muted">Trust T = honesty H × calibration C. Under H 0.50 a publisher is quarantined: never bought or cited. Trust can only lower value; it never raises the budget.</p>
-    {list.length === 0 ? <p>No publisher history yet. Newcomers start at H 0.80.</p> : <div className="ra-table-scroll"><table>
-      <thead><tr><th scope="col">Publisher · writers</th><th scope="col">Proofs ✓/✗</th><th scope="col">Challenges refunded/refused</th><th scope="col">Relevance claimed vs observed</th><th scope="col">H</th><th scope="col">C</th><th scope="col">T</th><th scope="col">Status</th></tr></thead>
+    <div className="ra-panel-h"><h2>Writers</h2><span className="ra-chip is-sim">SYNTHETIC writers</span>{presenter && onReset && <button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button>}</div>
+    {list.length === 0 ? <p>No history yet.</p> : <div className="ra-table-scroll"><table>
+      <thead><tr><th scope="col">Publisher · writers</th><th scope="col">Proofs</th><th scope="col">Challenges</th><th scope="col">Relevance</th><th scope="col">H</th><th scope="col">C</th><th scope="col">T</th><th scope="col">Status</th></tr></thead>
       {list.map(row => <PublisherRow key={row.slug} row={row} />)}
     </table></div>}
   </section>

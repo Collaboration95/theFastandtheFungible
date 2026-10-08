@@ -8,22 +8,22 @@ export const citationKey = (citation: Citation) => `${citation.resourceId}|${cit
 /** First sentence of a conclusion: the short answer. */
 export const leadSentence = (text: string) => text.match(/^.*?[.!?](?=\s+[A-Z]|$)/s)?.[0] ?? text
 
-/** Policy verdicts in words people use. The engine's own codes stay in Show work. */
+/** Policy verdicts in words people use: Buy, Skip, Blocked (plus Would buy at S$0 and Rewrite). `why` is the tooltip; the engine's own codes stay in Show work. */
 export function plainVerdict(row: DecisionRow, run: RunSnapshot): { stamp: string; tone: string; why: string } {
   const price = money(row.candidate.price.amountMinor)
-  if (row.verdict === 'BUY') return run.budgetMinor === 0 ? { stamp: 'WOULD BUY', tone: 'would', why: 'Would buy with a budget of S$1 or more' } : { stamp: 'BUY', tone: 'buy', why: 'Covers the gap, clears the bar, fits the cap' }
-  if (row.verdict === 'SKIP_OVER_CAP') return { stamp: 'OVER CAP', tone: 'cap', why: `${price} is over the ${money(run.perSourceCapMinor)} per-source cap` }
-  if (row.verdict === 'SKIP_OVER_BUDGET') return row.wouldBuy ? { stamp: 'WOULD BUY', tone: 'would', why: run.budgetMinor === 0 ? `Would buy with a budget of ${money(Math.max(100, row.candidate.price.amountMinor))} or more` : 'Would buy, but too little budget is left' } : { stamp: 'OVER BUDGET', tone: 'skip', why: 'Costs more than the budget left' }
+  if (row.verdict === 'BUY') return run.budgetMinor === 0 ? { stamp: 'WOULD BUY', tone: 'would', why: `Would buy with a budget of ${price} or more` } : { stamp: 'BUY', tone: 'buy', why: 'Covers the gap, clears the bar, fits the cap' }
+  if (row.verdict === 'SKIP_OVER_CAP') return { stamp: 'SKIP', tone: 'cap', why: `${price} is over the ${money(run.perSourceCapMinor)} per-source cap` }
+  if (row.verdict === 'SKIP_OVER_BUDGET') return row.wouldBuy ? { stamp: 'WOULD BUY', tone: 'would', why: run.budgetMinor === 0 ? `Would buy with a budget of ${price} or more` : 'Would buy, but too little budget is left' } : { stamp: 'SKIP', tone: 'skip', why: 'Costs more than the budget left' }
   if (row.verdict === 'SKIP_REWRITE') {
     const source = row.candidate.derivedFrom ? run.candidates.find(item => item.resourceId === row.candidate.derivedFrom) : undefined
     return { stamp: 'REWRITE', tone: 'skip', why: source ? `A rewrite of ${source.publisher}` : 'A rewrite of evidence it already has' }
   }
   if (row.verdict === 'SKIP_LOW_TRUST') {
     const H = row.reputation?.H ?? row.candidate.reputation?.H
-    return { stamp: 'LOW TRUST', tone: 'trust', why: `${row.candidate.publisher} failed a proof check${H === undefined ? '' : ` (honesty ${H.toFixed(2)}, under 0.50)`}: quarantined, never bought or cited` }
+    return { stamp: 'BLOCKED', tone: 'trust', why: `${row.candidate.publisher} failed a proof check${H === undefined ? '' : ` (honesty ${H.toFixed(2)}, under 0.50)`}: quarantined, never bought or cited` }
   }
-  if (row.verdict === 'SKIP_NO_GAP') return { stamp: 'NO GAP', tone: 'skip', why: 'No material gap left to close' }
-  return { stamp: 'LOW VALUE', tone: 'skip', why: `Value ${row.value.toFixed(2)} is under the ${(run.decisions[0]?.threshold ?? 0.2).toFixed(2)} bar` }
+  if (row.verdict === 'SKIP_NO_GAP') return { stamp: 'SKIP', tone: 'skip', why: 'No material gap left to close' }
+  return { stamp: 'SKIP', tone: 'skip', why: `Value ${row.value.toFixed(2)} is under the ${(run.decisions[0]?.threshold ?? 0.2).toFixed(2)} bar` }
 }
 
 export function Mark({ className = '' }: { className?: string }) {

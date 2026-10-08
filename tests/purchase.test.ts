@@ -261,4 +261,17 @@ describe('atomic ledger and verified purchase flow', () => {
     expect(simulatedLedgerIndex()).toBeGreaterThan(0)
   })
 
+  it('lists past runs, pins them, and hides a deleted run without touching its ledger rows', () => {
+    const s = store(); const a = s.createRun('first', 100); const b = s.createRun('second', 200)
+    expect(s.listPastRuns().map(run => run.runId)).toEqual([b.runId, a.runId])
+    s.setRunMeta(a.runId, { pinned: true })
+    expect(s.listPastRuns().find(run => run.runId === a.runId)?.pinned).toBe(true)
+    s.setRunMeta(b.runId, { hidden: true })
+    expect(s.listPastRuns().map(run => run.runId)).toEqual([a.runId])
+    expect(s.getRun(b.runId).question).toBe('second')
+    // Only the 4 latest unpinned runs are listed; a pinned run stays however old it is.
+    const later = ['c', 'd', 'e', 'f', 'g'].map(q => s.createRun(q, 100).runId)
+    expect(s.listPastRuns().map(run => run.runId)).toEqual([...later.slice(1).reverse(), a.runId])
+    expect(s.listPastRuns().filter(run => !run.pinned)).toHaveLength(4)
+  })
 })

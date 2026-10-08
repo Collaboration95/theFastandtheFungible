@@ -17,6 +17,11 @@ import Purchase from '../components/Purchase.js'
 import Budget from '../components/Budget.js'
 import RunTape from '../components/RunTape.js'
 import ReputationPanel from '../components/ReputationPanel.js'
+import Sidebar, { NAV_WIDTH, NavToggle } from '../components/Sidebar.js'
+import type { PastRun } from '../api.js'
+import Toasts from '../components/Toasts.js'
+import BudgetSlider from '../components/BudgetSlider.js'
+import Settings from '../components/Settings.js'
 import { getReputation, resetReputation, scope } from '../api.js'
 import { dwell, staged } from '../stage.js'
 
@@ -46,13 +51,14 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
     const runs: Record<string, unknown>[] = []
     const calls = stubBrowser(body => runs.push(body))
     render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /^Kestrel/ }))
     fireEvent.click(screen.getByRole('button', { name: /^Ask/ }))
     const chip = await screen.findByRole('button', { name: 'pricing & margins' })
     expect(calls.find(call => call.path === '/api/scope')?.body).toEqual({ question: DEMO_QUESTIONS[1].text })
     expect(runs).toHaveLength(0)
     fireEvent.click(chip)
     const card = await screen.findByRole('dialog', { name: 'Search plan' })
-    expect(card.textContent).toContain('I’ll search every listed writer for:')
+    expect(card.textContent).toContain('Searching every listed writer for:')
     for (const query of uc2Scope.plan.subqueries) expect(card.textContent).toContain(query)
     expect(card.textContent).not.toMatch(MONEY)
     expect(runs).toHaveLength(0)
@@ -66,6 +72,7 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
     const runs: Record<string, unknown>[] = []
     const calls = stubBrowser(body => runs.push(body))
     render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /^Kestrel/ }))
     fireEvent.click(screen.getByRole('button', { name: /^Ask/ }))
     await screen.findByRole('dialog', { name: 'Search plan' })
     expect(calls.find(call => call.path === '/api/scope')?.body).toEqual({ question: DEMO_QUESTIONS[1].text, clarify: 'never' })
@@ -78,7 +85,7 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
     vi.useFakeTimers()
     const onGo = vi.fn(), onCancel = vi.fn()
     const { unmount } = render(<ActionModal plan={uc2Scope.plan} writers={8} onGo={onGo} onCancel={onCancel} />)
-    expect(screen.getByRole('dialog').textContent).toContain('I’ll search 8 writers for:')
+    expect(screen.getByRole('dialog').textContent).toContain('Searching 8 writers for:')
     expect(screen.getByRole('dialog').textContent).not.toMatch(MONEY)
     act(() => { vi.advanceTimersByTime(4999) })
     expect(onGo).not.toHaveBeenCalled()
@@ -123,16 +130,22 @@ describe('sources: writers, publishers, search mode, trust (#151)', () => {
     expect(leak).toContain('SKIP_LOW_TRUST')
     expect(leak).toContain('AlphaLeak failed a proof check (honesty 0.40, under 0.50)')
     const panel = renderToStaticMarkup(<DecisionPanel run={uc3Run} />)
-    expect(panel).toContain('LOW TRUST')
+    expect(panel).toContain('BLOCKED')
+    expect(panel).toContain('failed a proof check')
     expect(panel).toContain('T 0.40 · quarantined')
     expect(panel).not.toContain('SKIP_')
   })
 
   it('labels each source: writer link, publisher, SYNTHETIC, FREE/PAID price, trust, and the search mode', () => {
-    const html = renderToStaticMarkup(<Sources run={uc3Run} />)
-    for (const text of [`search · ${uc3Run.labels.search}`, 'SYNTHETIC', 'PAID S$0.30', 'href="/w/alphaleak" target="_blank"', 'Priya Nair', 'NotFinancialTimes', 'proof failed · refunded']) expect(html).toContain(text)
+    // T5: one line on the surface (search mode, the corpus label, the named sources); the per-source chips sit behind View all.
+    const line = renderToStaticMarkup(<Sources run={uc3Run} />)
+    for (const text of [`search · ${uc3Run.labels.search}`, 'Synthetic corpus · fictional', 'proof failed · refunded', 'View all']) expect(line).toContain(text)
+    const { container } = render(<Sources run={uc3Run} />)
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }))
+    const html = container.innerHTML
+    for (const text of [`search · ${uc3Run.labels.search}`, 'SYNTHETIC', 'href="/w/alphaleak" target="_blank"', 'Priya Nair', 'NotFinancialTimes', 'proof failed · refunded']) expect(html).toContain(text)
     expect(renderToStaticMarkup(<WriterChip candidate={uc3Run.candidates.find(candidate => candidate.tier === 'FREE')!} />)).toContain('>FREE<')
-    expect(renderToStaticMarkup(<Sources run={{ ...uc3Run, labels: { ...uc3Run.labels, search: 'hybrid' } }} />)).toContain('search · hybrid')
+    expect(renderToStaticMarkup(<Sources run={{ ...uc3Run, labels: { ...uc3Run.labels, search: 'hybrid' } }} />)).not.toContain('search · hybrid')
   })
 })
 
@@ -153,25 +166,29 @@ describe('proofs, challenge → refund, run tape (#152)', () => {
     expect([refunded.spentMinor, refunded.refundedMinor]).toEqual([30, 30])
     expect(staged(uc3Run, first('CHALLENGE', 'REFUNDED') - 1).refundedMinor).toBe(0)
     const tape = renderToStaticMarkup(<RunTape run={uc3Run} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
-    const order = ['Plan', 'Search', 'Choose what to buy', 'Proof check', 'Challenge', 'Refund', 'Reputation', 'Check again', 'Done'].map(title => tape.indexOf(`<b>${title}</b>`))
+    // T3: the run bar's segments, in order; each segment's title carries the step's full name and detail.
+    const order = ['Plan', 'Search', 'Choose what to buy', 'Proof check', 'Challenge', 'Refund', 'Reputation', 'Check again', 'Done'].map(title => tape.indexOf(`title="${title}`))
     expect(order.every(index => index >= 0)).toBe(true)
     expect(order).toEqual([...order].sort((a, b) => a - b))
     expect(tape).toContain(`Proof failed · ${failedClaim}`)
+    // A challenge and its outcome share one segment, so the one-line bar stays readable.
+    expect(tape.split('title="Challenge').length - 1).toBe(1)
+    expect(tape).toContain('<b>Done</b>')
     for (const type of ['PLAN', 'PROOF', 'CHALLENGE', 'REFUND', 'REPUTATION']) expect(dwell({ id: 0, runId: '', type, label: '', at: '' })).toBeGreaterThan(0)
   })
 
   it('shows proof badges, the refund with its rail label, and spent / refunded / net', () => {
     const failed = renderToStaticMarkup(<Purchase run={uc3Run} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
-    for (const text of [`✗ ${failedClaim}`, 'Proof failed', 'Challenged', 'Refunded S$0.30', 'SIMULATED', 'Quarantined: never cited']) expect(failed).toContain(text)
+    for (const text of ['✗ claim failed', 'Proof failed', 'Challenged', 'Refunded S$0.30', 'SIMULATED']) expect(failed).toContain(text)
     const ok = renderToStaticMarkup(<Purchase run={uc3Run} intent={uc3Run.intents[1]} onRetry={() => {}} onReceipt={() => {}} />)
-    expect(ok).toMatch(/✓ \d+ claims?/)
+    expect(ok).toContain('Paid S$0.25 · delivered · verified')
     expect(ok).not.toContain('Refunded')
     const testnet = { ...uc3Run, events: uc3Run.events.map(event => event.type === 'REFUND' ? { ...event, data: { ...event.data, label: 'XRPL TESTNET · no real value', explorerUrl: `https://testnet.xrpl.org/transactions/${leak.refund!.txHash}` } } : event) }
     const onLedger = renderToStaticMarkup(<Purchase run={testnet} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
     expect(onLedger).toContain(`href="https://testnet.xrpl.org/transactions/${leak.refund!.txHash}"`)
     expect(onLedger).toContain('XRPL TESTNET')
     const budget = renderToStaticMarkup(<Budget run={uc3Run} />)
-    for (const text of ['spent</dt><dd>S$0.55', 'refunded</dt><dd', 'S$0.30', 'net</dt><dd>S$0.25']) expect(budget).toContain(text)
+    for (const text of ['spent</dt><dd>S$0.55', 'refunded</dt><dd', 'S$0.30']) expect(budget).toContain(text)
   })
 
   it('never opens or cites a quarantined source, even with its delivered text present (gates 1 and 4)', () => {
@@ -227,17 +244,22 @@ describe('presenter controls, presets and the UC fixture runs (#154)', () => {
     fireEvent.keyDown(window, { key: '.' })
     fireEvent.click(screen.getByLabelText(/Skip them \(clarify=never\)/))
     fireEvent.keyDown(window, { key: '.' })
+    fireEvent.click(screen.getByRole('button', { name: /^Kestrel/ }))
     fireEvent.click(screen.getByRole('button', { name: /^Ask/ }))
     await screen.findByRole('dialog', { name: 'Search plan' })
     expect(calls.find(call => call.path === '/api/scope')?.body).toEqual({ question: DEMO_QUESTIONS[1].text, clarify: 'never' })
   })
 
-  it('three one-click presets fill the question (UC2 by default); free typing stays', () => {
-    render(<Ask onAsk={() => {}} settlement="SIMULATED SGD · no real funds" notify={false} onNotify={() => {}} />)
+  it('three one-click presets fill the question (empty by default); free typing stays', () => {
+    render(<Ask onAsk={() => {}} settlement="SIMULATED SGD · no real funds" />)
     const box = screen.getByLabelText('Your question') as HTMLTextAreaElement
+    expect(box.value).toBe('')
+    expect(screen.getByRole('button', { name: /^Ask/ }).hasAttribute('disabled')).toBe(true)
+    expect(screen.queryAllByRole('button', { pressed: true })).toHaveLength(0)
+    fireEvent.click(screen.getByRole('button', { name: /^Kestrel/ }))
     expect(box.value).toBe(DEMO_QUESTIONS[1].text)
-    expect(screen.getByRole('button', { name: /^UC2/ }).getAttribute('aria-pressed')).toBe('true')
-    fireEvent.click(screen.getByRole('button', { name: /^UC3/ }))
+    expect(screen.getByRole('button', { name: /^Kestrel/ }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: /^Malaysia/ }))
     expect(box.value).toBe(DEMO_QUESTIONS[2].text)
     fireEvent.change(box, { target: { value: 'My own question?' } })
     expect(box.value).toBe('My own question?')
@@ -256,5 +278,124 @@ describe('presenter controls, presets and the UC fixture runs (#154)', () => {
     expect(ucRuns.UC3.intents.map(intent => `${intent.resourceId}:${intent.status}`)).toEqual([`${uc.UC3.expectedPicks.round1}:REFUNDED`, `${uc.UC3.expectedPicks.round2}:VERIFIED`])
     expect([ucRuns.UC3.spentMinor, ucRuns.UC3.refundedMinor]).toEqual([55, 30])
     expect(JSON.stringify(ucRuns)).not.toMatch(/Vertex|CANARY/)
+  })
+})
+
+describe('v1.1 shell: sidebar, past runs and an empty Home (#166)', () => {
+  const pastRun = (runId: string, extra: Partial<PastRun> = {}): PastRun => ({ runId, question: `Question ${runId}?`, phase: 'DONE', stopped: false, budgetMinor: 200, spentMinor: 90, at: new Date().toISOString(), pinned: false, ...extra })
+
+  it('lists pinned and today’s runs; the ⋯ menu pins, and Delete asks first and is off while a run is going', () => {
+    const onPin = vi.fn(), onDelete = vi.fn(), onOpenRun = vi.fn()
+    const onResize = vi.fn()
+    const { container } = render(<Sidebar runs={[pastRun('a', { pinned: true }), pastRun('b'), pastRun('c', { phase: 'DECIDE' })]} busy={false} open width={300} onResize={onResize} onNew={() => {}} onOpenRun={onOpenRun} onPin={onPin} onDelete={onDelete} />)
+    expect(screen.getByText('Pinned')).toBeTruthy()
+    // Titles only: no prices, no workspace or sign-in quips.
+    expect(container.textContent).not.toMatch(/S\$|Demo workspace|Sign-in/)
+    const edge = screen.getByRole('separator', { name: 'Resize sidebar' })
+    fireEvent.keyDown(edge, { key: 'ArrowRight' })
+    expect(onResize).toHaveBeenLastCalledWith(316)
+    fireEvent.doubleClick(edge)
+    expect(onResize).toHaveBeenLastCalledWith(NAV_WIDTH.initial)
+    expect(screen.getByText('Today')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Run: Question b?' }))
+    expect(onOpenRun).toHaveBeenCalledWith('b')
+    fireEvent.click(screen.getByRole('button', { name: 'Options for Question b?' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Pin' }))
+    expect(onPin).toHaveBeenCalledWith('b', true)
+    fireEvent.click(screen.getByRole('button', { name: 'Options for Question b?' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Delete…' }))
+    expect(onDelete).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' }))
+    expect(onDelete).toHaveBeenCalledWith('b')
+    fireEvent.click(screen.getByRole('button', { name: 'Options for Question c?' }))
+    expect(screen.getByRole('menuitem', { name: 'Delete…' }).hasAttribute('disabled')).toBe(true)
+  })
+
+  it('the header toggle is a labelled panel icon that shows and hides the sidebar', () => {
+    const onToggle = vi.fn()
+    const { rerender } = render(<NavToggle open onToggle={onToggle} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Hide sidebar' }))
+    expect(onToggle).toHaveBeenCalledOnce()
+    rerender(<NavToggle open={false} onToggle={onToggle} />)
+    expect(screen.getByRole('button', { name: 'Show sidebar' }).getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it('a toast is one compact row: the end of a run says it is done and offers a way back', () => {
+    const onClick = vi.fn()
+    const { container } = render(<Toasts toasts={[{ id: 'end', tone: '', icon: '✓', title: 'Your answer is ready', runId: 'r1', actions: [{ label: 'Go back to chat', primary: true, onClick }] }]} onDismiss={() => {}} />)
+    expect(container.textContent).not.toMatch(/S\$|spent/)
+    expect(container.querySelector('.ra-t-b p')).toBeNull()
+    expect(container.querySelector('.ra-t-b .ra-t-acts')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Go back to chat' }))
+    expect(onClick).toHaveBeenCalledOnce()
+  })
+
+  it('opens on an empty Home with no header pills; a run opens only when the URL names it', async () => {
+    try { localStorage.setItem('researchagent.october.active-run', paidStoryRun.runId) } catch { /* no storage */ }
+    const calls = stubBrowser(() => {})
+    render(<App />)
+    expect(screen.getByRole('heading', { name: /Ask a question/ })).toBeTruthy()
+    expect((screen.getByLabelText('Your question') as HTMLTextAreaElement).value).toBe('')
+    expect(screen.getByRole('navigation', { name: 'Questions' })).toBeTruthy()
+    expect(screen.queryByLabelText('Provider and simulation labels')).toBeNull()
+    await act(async () => { await Promise.resolve() })
+    expect(calls.some(call => call.path.startsWith('/runs/'))).toBe(false)
+  })
+})
+
+describe('budget slider and the universal budget in Settings', () => {
+  it('the slider runs from free to S$5 in 5-cent steps and says the amount', () => {
+    const onChange = vi.fn()
+    const { rerender } = render(<BudgetSlider value={200} onChange={onChange} />)
+    const slider = screen.getByRole('slider', { name: 'Budget' }) as HTMLInputElement
+    expect([slider.min, slider.max, slider.step]).toEqual(['0', '500', '5'])
+    expect(screen.getByText('S$2.00')).toBeTruthy()
+    fireEvent.change(slider, { target: { value: '35' } })
+    expect(onChange).toHaveBeenCalledWith(35)
+    rerender(<BudgetSlider value={0} onChange={onChange} />)
+    expect(screen.getByText('Free')).toBeTruthy()
+  })
+
+  it('Home sends the slider value; no coin buttons and no explainer text', async () => {
+    const onAsk = vi.fn()
+    const { container } = render(<Ask onAsk={onAsk} settlement="SIMULATED SGD · no real funds" />)
+    expect(container.textContent).not.toMatch(/only spending authorisation|clear the bar|per source\./)
+    fireEvent.change(screen.getByLabelText('Your question'), { target: { value: 'Q?' } })
+    fireEvent.change(screen.getByRole('slider', { name: 'Budget' }), { target: { value: '15' } })
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /^Ask/ })) })
+    expect(onAsk).toHaveBeenCalledWith({ question: 'Q?', budgetMinor: 15 })
+  })
+
+  it('with a universal budget, Home shows a chip to Settings instead of the slider, and every question uses it', async () => {
+    const onAsk = vi.fn(), onSettings = vi.fn()
+    render(<Ask onAsk={onAsk} settlement="SIMULATED SGD · no real funds" universalMinor={45} onSettings={onSettings} />)
+    expect(screen.queryByRole('slider')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'S$0.45 budget' }))
+    expect(onSettings).toHaveBeenCalledOnce()
+    fireEvent.change(screen.getByLabelText('Your question'), { target: { value: 'Q?' } })
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /^Ask/ })) })
+    expect(onAsk).toHaveBeenCalledWith({ question: 'Q?', budgetMinor: 45 })
+  })
+
+  it('Settings: the tick box turns the universal budget on; its slider is off until then', () => {
+    const onUniversal = vi.fn(), onBudget = vi.fn()
+    const { rerender } = render(<Settings universal={false} budgetMinor={200} settlement="SIMULATED SGD · no real funds" notify={false} onNotify={() => {}} onUniversal={onUniversal} onBudget={onBudget} />)
+    expect((screen.getByRole('slider', { name: 'Per query' }) as HTMLInputElement).disabled).toBe(true)
+    fireEvent.click(screen.getByRole('checkbox', { name: /Universal budget per query/ }))
+    expect(onUniversal).toHaveBeenCalledWith(true)
+    rerender(<Settings universal budgetMinor={200} settlement="SIMULATED SGD · no real funds" notify={false} onNotify={() => {}} onUniversal={onUniversal} onBudget={onBudget} />)
+    fireEvent.change(screen.getByRole('slider', { name: 'Per query' }), { target: { value: '10' } })
+    expect(onBudget).toHaveBeenCalledWith(10)
+  })
+
+  it('Settings opens from the sidebar, and the universal budget reaches Home', async () => {
+    stubBrowser(() => {})
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: /Universal budget per query/ }))
+    fireEvent.change(screen.getByRole('slider', { name: 'Per query' }), { target: { value: '95' } })
+    fireEvent.click(screen.getByRole('button', { name: 'New question' }))
+    expect(screen.queryByRole('slider')).toBeNull()
+    expect(screen.getByRole('button', { name: 'S$0.95 budget' })).toBeTruthy()
   })
 })

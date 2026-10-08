@@ -132,6 +132,14 @@ export async function createApiApp(options: ApiOptions = {}) {
       await loop.start(run.runId)
     })
   })
+  app.get('/api/runs', (_req, res) => res.json(store.listPastRuns()))
+  app.post('/api/runs/:id/pin', (req, res) => { store.setRunMeta(String(req.params.id), { pinned: z.object({ pinned: z.boolean() }).parse(req.body).pinned }); res.json(store.listPastRuns()) })
+  app.delete('/api/runs/:id', (req, res) => {
+    const run = store.getRun(String(req.params.id))
+    if (!run.stopped && !['DONE', 'FAILED', 'STOPPED'].includes(run.phase)) return res.status(409).json({ error: 'Stop the run before deleting it.' })
+    store.setRunMeta(run.runId, { hidden: true, pinned: false })
+    res.json(store.listPastRuns())
+  })
   app.get('/runs/:id', (req, res) => res.json(store.getRun(String(req.params.id))))
   app.post('/runs/:id/stop', (req, res) => { loop.stop(String(req.params.id)); res.json(store.getRun(String(req.params.id))) })
   app.post('/runs/:id/retry-delivery', (req, res) => {

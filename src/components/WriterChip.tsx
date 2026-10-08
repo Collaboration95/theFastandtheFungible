@@ -23,23 +23,28 @@ export function usePublisherCard(slug?: string): PublisherCard | undefined {
 const titleCase = (slug: string) => slug.split('-').map(word => word[0]?.toUpperCase() + word.slice(1)).join(' ')
 export const writerName = (slug: string, card?: PublisherCard) => card?.writers.find(writer => writer.slug === slug)?.name ?? titleCase(slug)
 
-/** Reputation chip: trust T and status (D6). */
-export function TrustChip({ reputation }: { reputation?: ReputationSummary }) {
-  if (!reputation) return <span className="ra-trust is-new" title="No history yet: a newcomer starts at H 0.80">T new</span>
-  return <span className={`ra-trust is-${reputation.status}`} title={`Honesty H ${reputation.H.toFixed(2)} · calibration C ${reputation.C.toFixed(2)}`}>T {reputation.T.toFixed(2)} · {reputation.status}</span>
+/** Reputation chip: trust T (D6). The status is spelled out only when it isn't active; `quiet` leaves a newcomer unmarked. */
+export function TrustChip({ reputation, quiet = false }: { reputation?: ReputationSummary; quiet?: boolean }) {
+  if (!reputation) return quiet ? null : <span className="ra-trust is-new" title="No history yet">T new</span>
+  return <span className={`ra-trust is-${reputation.status}`} title={`Honesty H ${reputation.H.toFixed(2)} · calibration C ${reputation.C.toFixed(2)}`}>T {reputation.T.toFixed(2)}{reputation.status === 'active' ? '' : ` · ${reputation.status}`}</span>
 }
 
-/** Who wrote a source and who sells it (D21): writer, publisher, display domain, SYNTHETIC, tier and price, trust. */
-export default function WriterChip({ candidate, reputation }: { candidate: PublicCandidate; reputation?: ReputationSummary }) {
+/** Who wrote a source and who sells it (D21). `card` (source cards) keeps the author link, SYNTHETIC and trust; `row` (decision rows) keeps trust only; the full chip is for Show work. */
+export default function WriterChip({ candidate, reputation, variant = 'full' }: { candidate: PublicCandidate; reputation?: ReputationSummary; variant?: 'full' | 'card' | 'row' }) {
   const slug = candidate.publisherSlug
-  const card = usePublisherCard(slug)
+  const card = usePublisherCard(variant === 'row' ? undefined : slug)
   const writer = candidate.writerSlug ? writerName(candidate.writerSlug, card) : candidate.publisher
+  const trust = <TrustChip reputation={reputation ?? candidate.reputation} quiet={variant !== 'full'} />
+  if (variant === 'row') return trust
+  const link = slug ? <a href={`/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer's site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
+  const synthetic = candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>
+  if (variant === 'card') return <span className="ra-writer">{writer !== candidate.publisher && link}{synthetic}{trust}</span>
   return <span className="ra-writer">
-    {slug ? <a href={`/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer's site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>}
+    {link}
     {writer !== candidate.publisher && <span className="ra-writer-p">{candidate.publisher}</span>}
     {card?.domain && <span className="ra-writer-d">{card.domain}</span>}
-    {candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>}
+    {synthetic}
     <span className={`ra-tier is-${candidate.tier.toLowerCase()}`}>{candidate.tier === 'FREE' ? 'FREE' : `PAID ${money(candidate.price.amountMinor)}`}</span>
-    <TrustChip reputation={reputation ?? candidate.reputation} />
+    {trust}
   </span>
 }

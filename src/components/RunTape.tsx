@@ -9,8 +9,18 @@ interface Row { key: string; title: string; meta: string; state: State; event?: 
 const NOTES: Record<string, string> = { CLARIFY: 'Clarify', PLAN: 'Plan', MANIFEST_DROPPED: 'Manifest dropped', PROOF: 'Proof check', CHALLENGE: 'Challenge', REFUND: 'Refund', REPUTATION: 'Reputation' }
 const noteState = (event: TraceEvent): State => event.type === 'MANIFEST_DROPPED' ? 'skip'
   : (event.type === 'PROOF' && event.data?.ok === false) || (event.type === 'CHALLENGE' && /REJECTED|REFUSED/.test(String(event.data?.status ?? ''))) || (event.type === 'REPUTATION' && event.data?.after && (event.data.after as { status?: string }).status !== 'active') ? 'fail' : 'done'
-const secs = (ms: number) => `${(ms / 1000).toFixed(ms < 1000 ? 2 : 1)} s`
-const clock = (ms: number) => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${(ms % 60000 / 1000).toFixed(1).padStart(4, '0')}`
+
+/** Trust and manifest bookkeeping never become the now-line; the segments still show them. */
+const QUIET = new Set(['manifest_dropped', 'reputation'])
+/** Proof, challenge, refund and trust updates, and a later round's repeat steps, sit in the bar as slim, unlabelled segments; the now line narrates them. */
+const SUBSTEPS = new Set(['manifest_dropped', 'proof', 'challenge', 'refund', 'reputation'])
+/** One segment per step: repeats in a row (a challenge and its outcome, two trust updates) share a segment; a failure wins. */
+const segments = (rows: Row[]) => rows.reduce<Row[]>((list, row) => {
+  const last = list.at(-1)
+  if (last?.title === row.title) list[list.length - 1] = { ...row, state: last.state === 'fail' ? 'fail' : row.state }
+  else list.push(row)
+  return list
+}, [])
 
 /** The run as steps. Built from the trace, so a second purchase round adds rows. */
 function tapeRows(run: RunSnapshot): Row[] {
@@ -20,7 +30,10 @@ function tapeRows(run: RunSnapshot): Row[] {
   let answerN = 0, decideN = 0, buyN = 0
   for (const event of runEvents(run)) {
     const key = `${event.type}-${event.id}`
-    if (event.type === 'SEARCH') rows.push({ key, kind: 'search', event, title: 'Search', state: 'now', meta: run.candidates.length ? `${run.candidates.length} sources found` : 'Searching publisher profiles…' })
+    const searched = event.type === 'SEARCH' ? rows.find(row => row.kind === 'search') : undefined
+    // The server's second SEARCH event carries the hit counts: it details the one Search step instead of adding another.
+    if (searched) searched.meta = event.label
+    else if (event.type === 'SEARCH') rows.push({ key, kind: 'search', event, title: 'Search', state: 'now', meta: run.candidates.length ? `${run.candidates.length} sources found` : 'Searching…' })
     else if (event.type === 'READ_FREE') {
       const free = run.candidates.filter(item => item.tier === 'FREE').length
       rows.push({ key, kind: 'read', event, title: 'Read free sources', state: 'now', meta: `${free} free · ${run.candidates.length - free} paywalled` })
@@ -34,7 +47,7 @@ function tapeRows(run: RunSnapshot): Row[] {
       const round = run.decisions[decideN++]
       const buys = round?.rows.filter(row => row.verdict === 'BUY').length ?? 0
       const would = round?.rows.filter(row => row.wouldBuy).length ?? 0
-      const meta = !round ? 'Scoring paywalled sources…' : run.budgetMinor === 0 && would ? `Would buy ${would} · S$0 budget` : buys ? `${buys} of ${round.rows.length} clears the bar` : 'Nothing clears the bar'
+      const meta = !round ? 'Scoring paywalled sources…' : run.budgetMinor === 0 && would ? `Would buy ${would} · S$0 budget` : buys ? `${buys} of ${round.rows.length} worth buying` : 'Nothing worth buying'
       rows.push({ key, kind: 'decide', event, title: decideN === 1 ? 'Choose what to buy' : 'Check again', state: 'now', meta })
     } else if (event.type === 'BUY') {
       const intent = run.intents[buyN++]
@@ -47,7 +60,7 @@ function tapeRows(run: RunSnapshot): Row[] {
           : intent.status === 'DELIVERY_FAILED' ? 'Paid · delivery failed'
             : intent.status === 'FAILED_NOT_SETTLED' ? 'Not settled · nothing charged'
               : intent.status === 'SETTLED' || intent.status === 'DELIVERY_PENDING' ? `Settled ${amount} · checking delivery…`
-                : intent.status === 'RESERVED' || intent.status === 'SUBMITTING' ? `Holding ${amount}` : `402 → quote ${amount}`
+                : intent.status === 'RESERVED' || intent.status === 'SUBMITTING' ? `Paying ${amount}` : `Quoted ${amount}`
       rows.push({ key, kind: 'buy', event, title: 'Buy', state: intent?.status === 'VERIFIED' ? 'done' : intent && ['DELIVERY_FAILED', 'FAILED_NOT_SETTLED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'].includes(intent.status) ? 'fail' : 'now', meta })
     } else if (NOTES[event.type]) rows.push({ key, kind: event.type.toLowerCase(), event, title: NOTES[event.type], state: noteState(event), meta: event.label })
     else if (event.type === 'DONE') rows.push({ key, kind: 'done', event, title: 'Done', state: 'done', meta: `${money(run.spentMinor)} of ${money(run.budgetMinor)} spent` })
@@ -66,23 +79,17 @@ function tapeRows(run: RunSnapshot): Row[] {
   return rows
 }
 
+/** The run as one line along the bottom: what it is doing now, the steps, the clock, Stop buying and Show work. */
 export default function RunTape({ run, replaying, realDone = false, onStop, stopping, onShowWork }: { run: RunSnapshot; replaying: boolean; realDone?: boolean; onStop: () => void; stopping: boolean; onShowWork: () => void }) {
   const rows = tapeRows(run)
-  const events = runEvents(run)
-  const at = (event?: TraceEvent) => event ? Date.parse(event.at) : NaN
-  const elapsed = events.length ? at(events.at(-1)) - at(events[0]) : 0
   const terminal = isTerminal(run)
-  return <aside className="ra-rail" aria-label="Run steps">
-    <div className="ra-rail-h"><span>Run</span>{terminal && <span className="mono" title="Real time from the first to the last event">{clock(Math.max(0, elapsed))}</span>}</div>
-    {replaying && <p className="ra-pace" title="Replaying the recorded run with a minimum time per step. Change it in the presenter menu (.)">Stage pace · replaying the recorded run</p>}
-    <ol className="ra-tape" aria-live="polite">{rows.map((row, index) => {
-      const next = rows.slice(index + 1).find(item => item.event)?.event
-      const took = row.state === 'done' && row.event && next ? at(next) - at(row.event) : NaN
-      return <li key={row.key} className={`is-${row.state}`}><i className="ra-node" aria-hidden="true" /><div><b>{row.title}</b>{row.meta && <span>{row.meta}</span>}</div><time>{Number.isFinite(took) ? secs(took) : ''}</time></li>
-    })}</ol>
-    <div className="ra-rail-foot">
-      <button type="button" className="ra-stop" onClick={onStop} disabled={terminal || stopping}>{run.stopped || run.phase === 'STOPPED' ? 'Stopped · no new purchases' : terminal ? 'Run finished' : stopping ? 'Stopping…' : replaying && realDone ? 'Skip to the end' : 'Stop buying'}</button>
-      <button type="button" className="ra-showwork" onClick={onShowWork}><span>Show work</span><kbd>W</kbd></button>
-    </div>
-  </aside>
+  // The step in progress, else the latest step: an earlier failed proof doesn't stick once the run has moved on.
+  const now = rows.find(row => row.state === 'now' && !QUIET.has(row.kind)) ?? [...rows].reverse().find(row => row.state !== 'todo' && !QUIET.has(row.kind)) ?? rows[0]
+  return <section className="ra-runbar" aria-label="Run progress">
+    <div className={`ra-runbar-now is-${now?.state ?? 'now'}`} aria-live="polite"><i className="ra-node" aria-hidden="true" /><div><b>{now?.title ?? 'Starting'}</b><span>{replaying ? 'Replaying · ' : ''}{now?.meta ?? 'Opening the run…'}</span></div></div>
+    <ol className="ra-runbar-steps" aria-label="Steps">{segments(rows).map((row, index, all) => <li key={row.key} className={`is-${row.state}${SUBSTEPS.has(row.kind) || all.slice(0, index).some(prior => prior.kind === row.kind) ? ' is-sub' : ''}`} title={`${row.title}${row.meta ? ` · ${row.meta}` : ''}`}><i role="img" aria-label={`${row.title}: ${row.state}`} /></li>)}</ol>
+    {/* Nothing once the run is over; "Skip to the end" lives in the Presenter menu. */}
+    {!terminal && !realDone && <button type="button" className="ra-stop" onClick={onStop} disabled={stopping}>{stopping ? 'Stopping…' : 'Stop'}</button>}
+    <button type="button" className="ra-showwork" onClick={onShowWork}><span>Show work</span><kbd>W</kbd></button>
+  </section>
 }
