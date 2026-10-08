@@ -125,11 +125,7 @@ type BibleArticle = { articleId: string; publisherSlug: string; role: string }
  * coordinator's live `make embeddings` (workers never call it). Until then their publishers search keyword only, so the
  * hybrid half of the golden test is skipped for those publishers. Empty this list in the re-embedding commit.
  */
-const PENDING_REEMBED = new Set([
-  'notft-kestrel-tsmc-deal-margins', 'notft-inside-boj-september-hike', // #198 contradictions
-  'fab-floor-kestrel-penang-lead-times', // #204 S$0.40 deep-dive: title, abstract and tags now name the question's subject
-  'lf-corporate-green-power-round-2026', 'lf-kestrel-penang-phase2-power-deep-dive', // #211 UC4
-])
+const PENDING_REEMBED = new Set<string>([])
 const goldenCases = () => (JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: { id: string; question: string; articles: BibleArticle[] }[] })
   .useCases.flatMap(uc => uc.articles.filter(a => a.role === 'free-source' || a.role === 'winner').map(a => ({ uc: uc.id, q: uc.question, ...a })))
 
