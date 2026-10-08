@@ -39,6 +39,8 @@ export function detectFallbacks(run, scopeLabel) {
   if (l.search !== 'hybrid') out.push(`search label: ${l.search ?? 'none'}`)
   for (const a of run.answers ?? []) if (a.provider === 'fixture') out.push(`answer v${a.version} from fixture`)
   for (const d of run.decisions ?? []) if (d.provider === 'fixture' || d.fallbackReason) out.push(`decision round ${d.round} fixture`)
+  // #197/#216: a failed live decision no longer falls back; the run ends FAILED with a DECISION_UNAVAILABLE event.
+  for (const e of run.events ?? []) if (e.type === 'DECISION_UNAVAILABLE') out.push(`decision unavailable: ${e.label ?? e.data?.status ?? 'no reason'}`)
   return out
 }
 

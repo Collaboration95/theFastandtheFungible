@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { loadWriterCorpus } from '../publisher/corpus.js'
 import { miniCorpus } from './fixtures/corpus-mini/index.js'
-import { buildIndex, createQueryEmbedder, loadEmbeddingCache, embeddingKey, embeddingText, embedTexts, EMBEDDING_DIMS, embeddingsLive, normaliseQuery, searchIndex, SEARCH_TUNING, type EmbeddingCache } from '../publisher/search.js'
+import { buildIndex, cachedVector, createQueryEmbedder, loadEmbeddingCache, embeddingKey, embeddingText, embedTexts, EMBEDDING_DIMS, embeddingsLive, normaliseQuery, searchIndex, SEARCH_TUNING, type EmbeddingCache } from '../publisher/search.js'
 import { sha256 } from '../shared/manifest.js'
 import type { Article } from '../shared/contracts/writers.js'
 
@@ -120,6 +120,12 @@ describe('Workers AI embedding call (#123)', () => {
 const V2_ARTICLES = 'data/corpus/v2/articles'
 const QUERY_VECTORS = 'tests/fixtures/query-vectors.json'
 type BibleArticle = { articleId: string; publisherSlug: string; role: string }
+/**
+ * Articles whose embedded text (title, abstract, tags, first 1,500 body characters) changed or is new, waiting for the
+ * coordinator's live `make embeddings` (workers never call it). Until then their publishers search keyword only, so the
+ * hybrid half of the golden test is skipped for those publishers. Empty this list in the re-embedding commit.
+ */
+const PENDING_REEMBED = new Set<string>([])
 const goldenCases = () => (JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: { id: string; question: string; articles: BibleArticle[] }[] })
   .useCases.flatMap(uc => uc.articles.filter(a => a.role === 'free-source' || a.role === 'winner').map(a => ({ uc: uc.id, q: uc.question, ...a })))
 
@@ -134,6 +140,10 @@ describe.skipIf(!existsSync(V2_ARTICLES))('golden ranking on the v2 corpus (#123
       expect(keyword.ranked.map(r => r.articleId), `${golden.uc} keyword: ${golden.articleId}`).toContain(golden.articleId)
       const vector = queryVectors?.[normaliseQuery(golden.q)]
       if (!vector) continue
+      // A stale vector anywhere in the publisher turns its whole index keyword-only; only the listed articles may be stale.
+      const stale = articles.filter(a => !cachedVector(embeddings, a)).map(a => a.articleId)
+      expect(stale.filter(id => !PENDING_REEMBED.has(id)), `${golden.publisherSlug}: stale vectors not listed in PENDING_REEMBED`).toEqual([])
+      if (stale.length) continue
       const hybrid = await searchIndex(await buildIndex(articles, embeddings), golden.q, 5, vector)
       expect(hybrid.mode).toBe('hybrid')
       expect(hybrid.ranked.map(r => r.articleId), `${golden.uc} hybrid: ${golden.articleId}`).toContain(golden.articleId)

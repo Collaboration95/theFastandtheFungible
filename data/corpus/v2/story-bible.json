@@ -5,9 +5,11 @@
     "name": "Kestrel Semiconductor",
     "kind": "fictional fabless AI-accelerator designer, Singapore HQ, advanced packaging in Penang, Malaysia",
     "keyFacts": [
+      "Headquartered in Singapore; listed on the Taiwan Stock Exchange",
       "FY2026 revenue US$3.9 billion; cash US$2.4 billion",
       "Previous TSMC contract: 16,000 wafers a month at about US$19,800 per N3P wafer",
       "Latest deal announced 29 September 2026: five years, 24,000 wafers a month from Q3 2027, US$1.1 billion prepayment, about US$22,500 per wafer",
+      "Prepayment schedule: three installments, US$400 million by 29 October 2026, then US$350 million each by 31 January 2027 and 30 April 2027",
       "Penang Phase 2 packaging plant commissioned 15 August 2026"
     ]
   },
@@ -192,9 +194,9 @@
           ],
           "facts": [
             {
-              "text": "The board vote was 8–1, with one member favouring a pause.",
+              "text": "The board vote was 7–2, with two members favouring a pause.",
               "needles": [
-                "8–1"
+                "7–2"
               ]
             }
           ],
@@ -686,16 +688,18 @@
           "publisherSlug": "the-fab-floor",
           "writerSlug": "the-fab-floor",
           "tier": "PAID",
-          "priceMinor": 25,
+          "priceMinor": 40,
           "role": "winner",
           "family": "fab-floor-penang",
-          "title": "Kestrel's Penang packaging queue since the summer",
+          "title": "Kestrel Semiconductor advanced-packaging lead times in Malaysia: the dated series",
           "publishedAt": "2026-09-17",
           "tags": [
             "Kestrel Semiconductor",
             "Penang",
+            "Malaysia",
             "lead times",
-            "packaging"
+            "advanced packaging",
+            "data deep-dive"
           ],
           "facts": [
             {
@@ -722,7 +726,7 @@
               ]
             }
           ],
-          "why": "True dated lead-time series; closes the gap and refutes AlphaLeak's missing figures.",
+          "why": "True dated lead-time series; closes the gap and refutes AlphaLeak's missing figures. Priced as a S$0.40 data deep-dive (owner, 8 Oct): AlphaLeak (S$0.30) is cheaper, so it wins round 1 even under a judge that scores both promises equally.",
           "expectedRelevance": 0.78,
           "manifestClaims": [
             {
@@ -751,9 +755,225 @@
         "repeatRun": "alphaleak: SKIP_LOW_TRUST"
       },
       "expectedImpact": "STRENGTHENS",
-      "expectedSpendMinor": 55,
-      "expectedNetSpendMinor": 25,
-      "winnerReason": "Round 1: AlphaLeak (S$0.30, relevance inflated to 0.96) beats The Fab Floor (S$0.25, honest 0.78) on Clef value. Its dated-figure proof fails, it is refunded and quarantined; round 2 buys The Fab Floor, whose dated series STRENGTHENS the 'getting shorter' answer."
+      "expectedSpendMinor": 70,
+      "expectedNetSpendMinor": 40,
+      "winnerReason": "Round 1: AlphaLeak (S$0.30, relevance inflated to 0.96) beats The Fab Floor (S$0.40 data deep-dive, honest 0.78): its inflated promise scores at least as high and it is cheaper, so it wins on value per dollar even when a judge scores both promises equally. Its dated-figure proof fails, it is refunded and quarantined; round 2 buys The Fab Floor (within the S$1 per-source cap), whose dated series STRENGTHENS the 'getting shorter' answer."
+    }
+  ],
+  "goldenFacts": {
+    "rule": "check-corpus fails when a golden-path article (every article listed in useCases or followUpCases, plus each requested fact's coveredBy) matches a pattern and the captured value is not one of values. pattern is a JavaScript regex source, applied globally; the first defined capture group is the stated value.",
+    "facts": [
+      {
+        "id": "boj-policy-rate",
+        "useCase": "UC1",
+        "text": "The BoJ raised the policy rate to 1.00% on 18 September 2026.",
+        "values": [
+          "1.00"
+        ],
+        "pattern": "(?:policy rate|rate target|current target)[^\\n]{0,60}?\\b(?:to|at|of) (\\d\\.\\d+)(?:%| per cent)"
+      },
+      {
+        "id": "boj-vote",
+        "useCase": "UC1",
+        "text": "The board vote was 7–2.",
+        "values": [
+          "7–2",
+          "7-2"
+        ],
+        "pattern": "vote was (\\d[–-]\\d)"
+      },
+      {
+        "id": "jgb-10y-move-18-sep",
+        "useCase": "UC1",
+        "text": "The 10-year JGB yield rose 9 bp on 18 September 2026.",
+        "values": [
+          "9",
+          "nine"
+        ],
+        "pattern": "(?:10-year|ten-year)[^\\n]{0,60}?(?:rose|added|climbed|gained|jumped|up)(?: by)? (\\d+|[a-z]+) (?:bp|basis points)"
+      },
+      {
+        "id": "jgb-10y-level-18-sep",
+        "useCase": "UC1",
+        "text": "The 10-year JGB yield closed at 2.14% on 18 September 2026.",
+        "values": [
+          "2.14"
+        ],
+        "pattern": "(?:10-year|ten-year)[^\\n]{0,60}?(?:rose|added|climbed|gained|jumped|up)[^\\n]{0,30}? to (\\d\\.\\d+)(?:%| per cent)"
+      },
+      {
+        "id": "kestrel-headquarters",
+        "useCase": "UC2",
+        "text": "Kestrel Semiconductor is headquartered in Singapore.",
+        "values": [
+          "Singapore"
+        ],
+        "pattern": "\\b([A-Z][a-z]+)-based fabless|Kestrel[^.\\n]{0,60}?headquartered in ([A-Z][a-z]+)"
+      },
+      {
+        "id": "prepayment-installments",
+        "useCase": "UC2",
+        "text": "The US$1.1 billion prepayment is paid in three installments.",
+        "values": [
+          "three",
+          "3"
+        ],
+        "pattern": "\\b(?:in|payable in) (two|three|four|five|\\d) (?:installments|instalments|tranches)"
+      },
+      {
+        "id": "phase2-commissioned",
+        "useCase": "UC3",
+        "text": "Penang Phase 2 was commissioned on 15 August 2026.",
+        "values": [
+          "15 August 2026"
+        ],
+        "pattern": "commissioned[^.\\n]{0,40}? on (\\d{1,2} [A-Z][a-z]+ 2026)"
+      },
+      {
+        "id": "phase2-grid-connection",
+        "useCase": "UC4",
+        "text": "The Phase 2 plant needs a 45 MW grid connection.",
+        "values": [
+          "45"
+        ],
+        "pattern": "(\\d+) MW (?:firm )?(?:grid )?connection"
+      },
+      {
+        "id": "phase2-solar-contract",
+        "useCase": "UC4",
+        "text": "Kestrel contracted 40 MW of solar for Phase 2.",
+        "values": [
+          "40"
+        ],
+        "pattern": "(\\d+) MW of solar"
+      }
+    ]
+  },
+  "followUpCases": [
+    {
+      "id": "UC4",
+      "lane": "power",
+      "title": "A focused free search finds the missing fact (#211)",
+      "status": "Content only. The fixture-mode scenario test lands with the follow-up search feature (E3, #194); until then UC4 is not a demo question.",
+      "question": "When was Kestrel Semiconductor's Penang Phase 2 packaging plant commissioned, how large a grid connection does it need, and how much of its electricity comes from renewable sources?",
+      "requestedFacts": [
+        {
+          "id": "commissioned",
+          "text": "Penang Phase 2 was commissioned on 15 August 2026.",
+          "coveredBy": "or-penang-packaging-output-2026-q3",
+          "foundBy": "initial search",
+          "needles": [
+            "15 August 2026"
+          ]
+        },
+        {
+          "id": "grid-connection",
+          "text": "The Phase 2 plant needs a 45 MW grid connection.",
+          "coveredBy": "lf-penang-grid-connection",
+          "foundBy": "initial search",
+          "needles": [
+            "45 MW grid connection"
+          ]
+        },
+        {
+          "id": "renewable-share",
+          "text": "Kestrel signed a 21-year contract on 8 September 2026 for 40 MW of solar capacity for Phase 2, about 17% of the plant's expected annual electricity use.",
+          "coveredBy": "lf-corporate-green-power-round-2026",
+          "foundBy": "focused follow-up search",
+          "needles": [
+            "8 September 2026",
+            "40 MW of solar",
+            "17%"
+          ]
+        }
+      ],
+      "freeAnswerAfterInitialSearch": "Phase 2 was commissioned on 15 August 2026 and needs a 45 MW grid connection; no source read so far says how much of its electricity comes from renewable sources.",
+      "missingFact": "renewable-share",
+      "focusedQueryExample": "Kestrel Semiconductor green power contract Penang",
+      "freeAnswer": "Phase 2 was commissioned on 15 August 2026, needs a 45 MW grid connection, and has a 21-year contract for 40 MW of solar signed on 8 September 2026, about 17% of its expected annual electricity use.",
+      "expectedOutcome": "3 of 3 · found free on a focused search · nothing bought",
+      "expectedPicks": {
+        "round1": null,
+        "round2": null,
+        "skippedRewrite": null,
+        "wouldHaveBought": "lf-kestrel-penang-phase2-power-deep-dive",
+        "note": "The paid Load Factor deep-dive promises the same fact; it shows as a \"would have bought\" row and is never bought."
+      },
+      "expectedImpact": null,
+      "expectedSpendMinor": 0,
+      "retrievalDesign": [
+        "The free article's title, abstract, tags and first 1,500 body characters are about the green power round in general and never name Kestrel, Penang or renewables, so neither the embedding nor the title/abstract/tag fields match the question.",
+        "Kestrel, Penang and the solar figure appear only past body character 2,200, where only BM25 (body boost 0.5) sees them.",
+        "Keyword mode, 8 Oct: the article is 10th of 12 Load Factor hits for the question (per-publisher k is 5), and 10th of the fused free hits for a three-sub-query plan (8 are read); for the focused query example it is 2nd in Load Factor and 3rd of the fused free hits after excluding what was already read."
+      ],
+      "articles": [
+        {
+          "articleId": "lf-corporate-green-power-round-2026",
+          "publisherSlug": "load-factor",
+          "writerSlug": "load-factor",
+          "tier": "FREE",
+          "priceMinor": 0,
+          "role": "follow-up-source",
+          "family": "lf-green-power-round-2026",
+          "title": "What this year's corporate green power round actually bought",
+          "publishedAt": "2026-09-24",
+          "tags": [
+            "power",
+            "green electricity",
+            "corporate PPAs",
+            "Peninsular Malaysia"
+          ],
+          "facts": [
+            {
+              "text": "Kestrel Semiconductor signed a 21-year contract on 8 September 2026 for 40 MW of solar capacity, allocated to its Penang Phase 2 advanced-packaging plant; it covers about 17% of the plant's expected annual electricity use.",
+              "needles": [
+                "8 September 2026",
+                "40 MW of solar",
+                "17%"
+              ]
+            }
+          ],
+          "why": "The free source for the missing fact; found only by a focused search."
+        },
+        {
+          "articleId": "lf-kestrel-penang-phase2-power-deep-dive",
+          "publisherSlug": "load-factor",
+          "writerSlug": "load-factor",
+          "tier": "PAID",
+          "priceMinor": 60,
+          "role": "would-have-bought",
+          "family": "lf-kestrel-penang-power",
+          "title": "What Kestrel's second Penang plant buys when it buys electricity",
+          "publishedAt": "2026-09-29",
+          "tags": [
+            "Kestrel Semiconductor",
+            "Penang",
+            "power",
+            "solar",
+            "data deep-dive"
+          ],
+          "facts": [
+            {
+              "text": "The 40 MW of solar contracted on 8 September 2026 covers about 17% of annual consumption, and about 9% on an hourly-matched basis.",
+              "needles": [
+                "40 MW of solar",
+                "8 September 2026",
+                "17%",
+                "9%"
+              ]
+            },
+            {
+              "text": "Phase 2 was commissioned on 15 August 2026 and sits on a 45 MW firm connection.",
+              "needles": [
+                "15 August 2026",
+                "45 MW firm connection"
+              ]
+            }
+          ],
+          "why": "Promises the missing fact (and more); a judge would buy it if the focused free search did not run first.",
+          "expectedRelevance": 0.8
+        }
+      ]
     }
   ]
 }

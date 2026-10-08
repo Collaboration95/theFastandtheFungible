@@ -270,7 +270,7 @@ All writers are fictional and labelled SYNTHETIC. Each one exists to exercise on
 | **NotFinancialTimes** | Masthead, original reporting | rates, Asia markets, data centres, semis | S$0.90 | expensive but credible |
 | **Load Factor** (Prof. Tan Wei Ling) | Energy-systems professor's blog | power grid, data centres, energy prices | free posts / S$0.60 data deep-dives | primary data wins |
 | **Basis Points** (Dr. Arjun Mehta) | Ex-central-bank economist's newsletter | JGBs, BoJ, yield curves, FX | S$0.40 | analysis vs opinion |
-| **The Fab Floor** | Anonymous chip-procurement insider | semis supply chain, lead times, packaging | S$0.25 | original but unnamed source |
+| **The Fab Floor** | Anonymous chip-procurement insider | semis supply chain, lead times, packaging | S$0.25 / S$0.40 data deep-dives | original but unnamed source |
 | **Kopi Contrarian** | Op-ed columnist | macro opinion, SG economy | S$0.10 | cheap ≠ valuable |
 | **MarketPulse Digest** | Rewrites NotFT stories | everything NotFT covers | S$0.20 | rewrite skipped |
 | **AlphaLeak** | Bad actor: inflated relevance, false proof claims | semis, rates | S$0.30 | challenge, refund, quarantine |
@@ -278,7 +278,7 @@ All writers are fictional and labelled SYNTHETIC. Each one exists to exercise on
 
 **Topic lanes:** Asia rates and bonds; data centres and power; semiconductors.
 
-**Writer websites:** minimal personal blogs (D17). **Content:** written by an LLM (D19). The planning step may add staff writers under NotFT and refine topics within the three lanes. The roster above stays fixed.
+**Writer websites:** minimal personal blogs (D17). **Content:** written by an LLM (D19). The planning step may add staff writers under NotFT and refine topics within the three lanes. The roster above stays fixed. **Owner change, 8 Oct (#204):** The Fab Floor's Penang lead-time article (`fab-floor-kestrel-penang-lead-times`) is a S$0.40 data deep-dive; its other posts stay S$0.25 and AlphaLeak stays S$0.30. Writers price per article, so only that article's manifest changes.
 
 ## 11. Demo use cases (D16; the corpus story bible locks the final wording)
 
@@ -286,7 +286,7 @@ All writers are fictional and labelled SYNTHETIC. Each one exists to exercise on
 |---|---|---|---|
 | UC1 (bond) | Free sources are enough | "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?" | Open records + a Basis Points free post → cited answer. Clef finds no gap worth paying for. **S$0 spent.** |
 | UC2 (semis, **main**) | One clarifying question, then paid evidence changes the answer | "What's the analyst outlook on <FictionalCo>'s latest deal with TSMC?" | **Clarify:** one question with a predictable angle, e.g. "Which matters most? [capacity allocation · pricing & margins · delivery timeline]". Free posts cover the announcement. The gap is the angle the user picked. MarketPulse is skipped as a rewrite of NotFT; Kopi Contrarian is cheap but low-credibility opinion. **NotFT or The Fab Floor is bought.** v2 QUALIFIES or STRENGTHENS the answer, with a Testnet receipt. |
-| UC3 (semis) | A bad actor is caught and pays back | "Are <FictionalCo>'s advanced-packaging lead times in Malaysia getting shorter?" | AlphaLeak's inflated relevance plus a low price wins round 1 → bought. Its proof fails (a planted "dated-figure" claim that isn't there) → `/challenge` → refunded on Testnet. Reputation drops 0.8 → 0.4, so it's quarantined. Round 2 buys The Fab Floor. Asking again shows AlphaLeak as `SKIP_LOW_TRUST`. |
+| UC3 (semis) | A bad actor is caught and pays back | "Are <FictionalCo>'s advanced-packaging lead times in Malaysia getting shorter?" | AlphaLeak's inflated relevance plus a lower price (S$0.30 against The Fab Floor's S$0.40 deep-dive) wins round 1 → bought, even under a judge that scores both promises equally. Its proof fails (a planted "dated-figure" claim that isn't there) → `/challenge` → refunded on Testnet. Reputation drops 0.8 → 0.4, so it's quarantined. Round 2 buys The Fab Floor (S$0.40, within the S$1 per-source cap). Asking again shows AlphaLeak as `SKIP_LOW_TRUST`. |
 
 There are no audience questions on stage. Real names are allowed (D20), and all article content is synthetic and labelled.
 

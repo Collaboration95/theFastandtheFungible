@@ -96,7 +96,8 @@ or a verdict code such as `SKIP_LOW_TRUST`; the screen says "Blocked".
    Fab Floor's S$0.40 data deep-dive, so it wins round one on an inflated
    promise and a lower price. Its proof fails, `/challenge` refunds it on
    Testnet, and its track record falls from 0.80 to 0.40. Round two buys The
-   Fab Floor at S$0.40. Ask again and AlphaLeak shows as Blocked.
+   Fab Floor at S$0.40: S$0.70 spent, S$0.30 refunded, S$0.40 net. Ask again
+   and AlphaLeak shows as Blocked.
 5. **The model choice (about 20 s, take it from UC2's time if needed).** The
    coordinator keeps one of these after the live comparison (#214):
    - **If SWITCHED:** “We benchmarked two decision models under a rule we

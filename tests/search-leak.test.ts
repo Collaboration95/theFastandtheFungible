@@ -16,9 +16,12 @@ function rng(seed: number) {
 }
 
 type UseCase = { question: string; clarify: { options: string[] } | null }
-const bible = JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: UseCase[] }
-// Story-bible UC questions plus one clarify-angle sub-query per option.
-const QUESTIONS = bible.useCases.flatMap(uc => [uc.question, ...(uc.clarify?.options ?? []).map(angle => `${uc.question} ${angle}`)])
+const bible = JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: UseCase[]; followUpCases?: { question: string; focusedQueryExample: string }[] }
+// Story-bible UC questions plus one clarify-angle sub-query per option, and UC4's question and focused follow-up query (#211).
+const QUESTIONS = [
+  ...bible.useCases.flatMap(uc => [uc.question, ...(uc.clarify?.options ?? []).map(angle => `${uc.question} ${angle}`)]),
+  ...(bible.followUpCases ?? []).flatMap(uc => [uc.question, uc.focusedQueryExample]),
+]
 
 describe('search leak gate (#124)', async () => {
   // Iterates loadWriterCorpus(); until #120 lands the roster has no articles, so the mini corpus stands in.

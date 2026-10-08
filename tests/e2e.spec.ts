@@ -44,7 +44,7 @@ test('UC3: AlphaLeak bought → proof fails → refunded → quarantined; The Fa
   await expect(leak.getByRole('heading', { name: /Proof failed/ })).toBeVisible()
   await expect(leak.getByRole('list', { name: 'Challenge and refund' })).toBeVisible()
   await expect(leak.getByText('Refunded').first()).toBeVisible()
-  await expect(page.getByRole('button', { name: /The Fab Floor: .*bought S\$0\.(25|40)/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /The Fab Floor: .*bought S\$0\.40/ })).toBeVisible()
   await page.getByRole('tab', { name: 'Writers' }).click()
   await expect(page.getByText(/quarantined/i).first()).toBeVisible()
   await expect(page.getByText(/0\.40/).first()).toBeVisible()

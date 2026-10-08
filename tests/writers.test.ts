@@ -25,7 +25,9 @@ describe('writer roster (#117)', () => {
   it('has exactly one records publisher and the FINAL-PUSH §10 prices', () => {
     expect(publishers.filter(p => p.kind === 'records').map(p => p.slug)).toEqual(['open-records'])
     const price = (slug: string) => Math.max(...Object.values(publishers.find(p => p.slug === slug)!.prices))
-    expect(Object.fromEntries(publishers.map(p => [p.slug, price(p.slug)]))).toEqual({ notfinancialtimes: 90, 'load-factor': 60, 'basis-points': 40, 'the-fab-floor': 25, 'kopi-contrarian': 10, 'marketpulse-digest': 20, alphaleak: 30, 'open-records': 0 })
+    expect(Object.fromEntries(publishers.map(p => [p.slug, price(p.slug)]))).toEqual({ notfinancialtimes: 90, 'load-factor': 60, 'basis-points': 40, 'the-fab-floor': 40, 'kopi-contrarian': 10, 'marketpulse-digest': 20, alphaleak: 30, 'open-records': 0 })
+    // Owner, 8 Oct (#204): The Fab Floor's standard posts stay S$0.25; its Penang lead-time article is a S$0.40 data deep-dive.
+    expect(publishers.find(p => p.slug === 'the-fab-floor')!.prices).toEqual({ standard: 25, 'data-deep-dive': 40 })
   })
 })
 
@@ -78,7 +80,7 @@ describe('story bible (#118)', () => {
     }
     for (const a of all.filter(x => x.role === 'winner')) expect(a.facts.some(f => /\b20\d\d\b/.test(f.text) && /\d/.test(f.text)), a.articleId).toBe(true)
   })
-  it('plants AlphaLeak: cheap, relevance 0.96, dated-figure claim on a passage with no date-plus-number sentence', () => {
+  it('plants AlphaLeak: cheaper than the truth, relevance 0.96, dated-figure claim on a passage with no date-plus-number sentence', () => {
     const plant = bible.alphaLeakPlant, art = all.find(a => a.articleId === plant.articleId)!
     expect(art.priceMinor).toBe(30)
     expect(plant.relevance).toBe(0.96)
@@ -88,7 +90,31 @@ describe('story bible (#118)', () => {
     expect(plant.passageText).not.toMatch(/January|February|March|April|May|June|July|August|September|October|November|December/i)
     const truth = all.find(a => a.articleId === 'fab-floor-kestrel-penang-lead-times')!
     expect(truth.tier).toBe('PAID')
-    expect(truth.priceMinor).toBeLessThan(plant.priceMinor)
+    // #204: the truth is the S$0.40 deep-dive, dearer than AlphaLeak but within the S$1 per-source cap.
+    expect(truth.priceMinor).toBe(40)
+    expect(truth.priceMinor).toBeGreaterThan(plant.priceMinor)
+    expect(truth.priceMinor).toBeLessThanOrEqual(100)
     expect(truth.facts.some(f => /\d+ weeks on \d+ \w+ 2026/.test(f.text))).toBe(true)
+  })
+  it('adds UC4 as a follow-up case: 3 requested facts, 2 read first, the 3rd free only on a focused search, a paid article that would have been bought (#211)', () => {
+    type FollowUp = Uc & { requestedFacts: { id: string; text: string; coveredBy: string; foundBy: string; needles: string[] }[]; missingFact: string; expectedOutcome: string; expectedPicks: { wouldHaveBought: string } }
+    const [uc4, ...rest] = (read('data/corpus/v2/story-bible.json') as { followUpCases: FollowUp[] }).followUpCases
+    expect(rest).toEqual([])
+    expect(uc4!.id).toBe('UC4')
+    expect(uc4!.requestedFacts).toHaveLength(3)
+    expect(uc4!.requestedFacts.filter(f => f.foundBy === 'initial search')).toHaveLength(2)
+    const missing = uc4!.requestedFacts.find(f => f.id === uc4!.missingFact)!
+    expect(missing.foundBy).toBe('focused follow-up search')
+    for (const f of uc4!.requestedFacts) for (const n of f.needles) expect(f.text, `${f.id}: ${n}`).toContain(n)
+    const followUp = uc4!.articles.find(a => a.articleId === missing.coveredBy)!
+    const paid = uc4!.articles.find(a => a.articleId === uc4!.expectedPicks.wouldHaveBought)!
+    expect([followUp.tier, paid.tier]).toEqual(['FREE', 'PAID'])
+    expect(uc4!.expectedSpendMinor).toBe(0)
+    expect(uc4!.expectedOutcome).toBe('3 of 3 · found free on a focused search · nothing bought')
+    for (const a of uc4!.articles) {
+      expect(writers.has(`${a.publisherSlug}/${a.writerSlug}`), a.articleId).toBe(true)
+      expect(all.some(x => x.articleId === a.articleId), `${a.articleId} is also a UC1–UC3 article`).toBe(false)
+      if (a.tier === 'PAID') expect(Object.values(publishers.find(p => p.slug === a.publisherSlug)!.prices)).toContain(a.priceMinor)
+    }
   })
 })
