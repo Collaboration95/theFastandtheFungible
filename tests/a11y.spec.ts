@@ -13,7 +13,7 @@ test('clarify chips, plan card, finished UC2 run and Writers tab have no serious
   // Reduced motion: axe must judge the settled colours, not a card mid-fade.
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/?pace=real')
-  await page.getByRole('button', { name: /^UC2 ·/ }).click()
+  await page.getByRole('button', { name: /^Kestrel–TSMC outlook/ }).click()
   await page.getByRole('button', { name: /^Ask/ }).click()
   await expect(page.getByRole('button', { name: 'pricing & margins' })).toBeVisible()
   expect(await serious(page)).toEqual([])
