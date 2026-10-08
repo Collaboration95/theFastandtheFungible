@@ -1,7 +1,7 @@
-// Live smoke (#158): UC1 → UC2 → UC3 (+ a UC3 re-ask) through the HTTP API on DeepSeek, the configured decision
+// Live smoke (#158): UC1 → UC2 → UC3 (+ a UC3 re-ask) → UC4 (the focused free search, #211) through the HTTP API on DeepSeek, the configured decision
 // provider (DECISION_PROVIDER: cloudflare = Clef, openai = OpenAI Decisions) and XRPL Testnet.
 // SPENDS live calls and Testnet XRP: the orchestrator runs it, never CI. `make smoke ARGS="--only UC2"`.
-//   --only UC1|UC2|UC3   run one use case (UC3 includes the SKIP_LOW_TRUST re-ask)
+//   --only UC1|UC2|UC3|UC4   run one use case (UC3 includes the SKIP_LOW_TRUST re-ask)
 //   --probe              one paid purchase + one forced challenge/refund: UC3 round 1 on its own, no re-ask
 // Env: DEMO_PORT_OFFSET (default 300 → 5400/9088/9090; 0 is refused: never the main demo's 5100/8788/8790).
 // Writes data/smoke/last.json. Exit 1 when any check fails (fixture fallbacks included).
@@ -15,7 +15,9 @@ import { liveDecisionProvider } from './stage-checks.mjs'
 export const BUDGET = { deepseek: 60, decision: 200 }
 const BUDGET_MINOR = 500
 const RUN_TIMEOUT_MS = 6 * 60_000
-const IDS = ['UC1', 'UC2', 'UC3']
+const IDS = ['UC1', 'UC2', 'UC3', 'UC4']
+/** UC4's free source that only the focused follow-up search finds, and the paid deep-dive that must not be bought (#211). */
+export const UC4_FREE = 'lf-corporate-green-power-round-2026'
 
 export function parseArgs(argv, env = {}) {
   const out = { only: null, probe: false, offset: env.DEMO_PORT_OFFSET === undefined || env.DEMO_PORT_OFFSET === '' ? 300 : Number(env.DEMO_PORT_OFFSET) }
@@ -68,9 +70,13 @@ export function alphaLeakQuarantined(run, bible, reputation = []) {
   if (bad?.status === 'REFUNDED' && bad.refund?.txHash) return true
   return reputation.some(p => p.slug === alphaSlug(bible) && p.status !== 'active')
 }
+/** Requested-facts coverage per answer version (#208): [{ version, answered, total }], oldest first; [] for runs without it. */
+export const coverageCounts = run => [...(run.checkpoint?.coverage ?? [])].sort((a, b) => a.answerVersion - b.answerVersion)
+  .map(c => ({ version: c.answerVersion, answered: c.entries.filter(e => e.status === 'supported').length, total: c.entries.length, ...(c.error ? { error: c.error } : {}) }))
+const latestCoverage = run => coverageCounts(run).at(-1)
 export const REPEAT_SKIPPED = 'skipped: precondition not met (AlphaLeak not quarantined)'
 
-/** Pass/fail from a finished run snapshot. kind is 'UC1'|'UC2'|'UC3'|'UC3-repeat'|'UC3-probe'. Returns failure strings. */
+/** Pass/fail from a finished run snapshot. kind is 'UC1'|'UC2'|'UC3'|'UC3-repeat'|'UC3-probe'|'UC4'. Returns failure strings. */
 export function checkRun(kind, run, bible, scopeLabel, provider = 'cloudflare') {
   const fails = detectFallbacks(run, scopeLabel, provider)
   if (run.phase !== 'DONE') fails.push(`run ended ${run.phase}${run.error ? `: ${run.error}` : ''}`)
@@ -81,6 +87,14 @@ export function checkRun(kind, run, bible, scopeLabel, provider = 'cloudflare') 
   if (kind === 'UC2') {
     if (!bought.includes(uc.expectedPicks.round1)) fails.push(`UC2 must buy ${uc.expectedPicks.round1}, bought [${bought}]`)
     if (!run.answers?.length) fails.push('UC2 produced no answer')
+    // #208: the free answer leaves the analyst fact open; the bought one answers every requested fact.
+    const counts = coverageCounts(run)
+    const free = counts.find(c => c.version === 1), last = counts.at(-1)
+    if (!free || !last) fails.push('UC2 recorded no requested-facts coverage')
+    else {
+      if (free.answered >= free.total) fails.push(`UC2 v1 must leave a requested fact open, has ${free.answered} of ${free.total}`)
+      if (last.version === free.version || last.answered !== last.total) fails.push(`UC2 must answer every requested fact after the purchase, has ${last.answered} of ${last.total} (v${last.version})`)
+    }
   }
   if (kind === 'UC3' || kind === 'UC3-probe') {
     if (bought[0] !== uc.expectedPicks.round1) fails.push(`UC3 must buy ${uc.expectedPicks.round1} first, bought [${bought}]`)
@@ -90,6 +104,16 @@ export function checkRun(kind, run, bible, scopeLabel, provider = 'cloudflare') 
   }
   if (kind === 'UC3') {
     if (bought[1] !== uc.expectedPicks.round2) fails.push(`UC3 must buy ${uc.expectedPicks.round2} second, bought [${bought}]`)
+  }
+  if (kind === 'UC4') {
+    if (run.spentMinor !== 0 || bought.length) fails.push(`UC4 must spend S$0, spent ${run.spentMinor} minor, bought [${bought}]`)
+    if (bought.includes(uc.expectedPicks.wouldHaveBought)) fails.push(`UC4 bought the paid deep-dive ${uc.expectedPicks.wouldHaveBought}`)
+    const last = latestCoverage(run)
+    if (!last || last.answered !== last.total) fails.push(`UC4 must answer every requested fact, has ${last ? `${last.answered} of ${last.total}` : 'no coverage'}`)
+    const followUp = run.checkpoint?.followUp
+    const read = (followUp?.added ?? []).some(id => id.startsWith(`${UC4_FREE}@`)) && (run.contents ?? []).some(c => c.resourceId === UC4_FREE)
+    if (!(run.events ?? []).some(e => e.type === 'FOLLOW_UP')) fails.push('UC4 has no FOLLOW_UP event')
+    if (!read) fails.push(`UC4's follow-up search must read ${UC4_FREE}, read [${(followUp?.added ?? []).join(', ')}]`)
   }
   if (kind === 'UC3-repeat') {
     if (!skipRow(run, alphaSlug(bible))) fails.push('re-ask must show AlphaLeak as SKIP_LOW_TRUST')
@@ -105,7 +129,14 @@ export function checkRun(kind, run, bible, scopeLabel, provider = 'cloudflare') 
  */
 export const countCalls = (run, provider = 'cloudflare') => ({
   deepseek: 2 + (run.answers?.length ?? 0),
-  decision: (run.decisions ?? []).reduce((n, d) => n + (provider === 'openai' ? Math.max(1, Math.ceil(d.rows.length / 6)) : 1 + d.rows.length), 0),
+  // Decision rounds (a frozen requested fact skips the gap call; an empty gap makes none), plus one coverage request per
+  // graded answer version and one for the follow-up's new free passages (#208, #210).
+  decision: (run.decisions ?? []).reduce((n, d) => {
+    if (typeof d.gap === 'string' && !d.gap.trim()) return n
+    if (provider === 'openai') return n + Math.max(1, Math.ceil(d.rows.length / 6))
+    return n + (d.gapMaterialSource === 'requirement' ? 0 : 1) + d.rows.length
+  }, 0)
+    + (run.checkpoint?.coverage?.length ?? 0) + (run.checkpoint?.followUp?.freeRead ? 1 : 0),
 })
 
 const explorer = hash => `https://testnet.xrpl.org/transactions/${hash}`
@@ -119,6 +150,7 @@ export function summarise(kind, run, extra, provider = 'cloudflare') {
     purchases: purchased(run).map(i => ({ resourceId: i.resourceId, status: i.status, amountMinor: i.amountMinor, txHash: i.txHash, explorer: explorer(i.txHash) })),
     refundTxHash: refund?.data?.txHash, refundExplorer: refund?.data?.txHash ? explorer(refund.data.txHash) : undefined,
     refundLatencySeconds: proof && refund ? seconds(proof.at, refund.at) : undefined,
+    stopReason: run.checkpoint?.stopReason, coverage: coverageCounts(run), followUp: run.checkpoint?.followUp,
     calls: countCalls(run, provider), langfuseTrace: trace, ...extra,
   }
 }
@@ -201,7 +233,8 @@ async function main() {
       let result, fails, reputation
       for (let attempt = 1; attempt <= 2; attempt++) {
         if (summary.calls.deepseek >= BUDGET.deepseek || summary.calls.decision >= BUDGET.decision) { summary.failures.push(`${kind}: call budget reached (${JSON.stringify(summary.calls)}); stopped`); break }
-        if (attempt === 2 && kind === 'UC3') await json(base, '/api/reputation/reset', { method: 'POST', body: '{}' })
+        // UC4 starts from fresh trust (UC3 quarantined AlphaLeak); a UC3 retry does too.
+        if ((attempt === 2 && kind === 'UC3') || (attempt === 1 && kind === 'UC4')) await json(base, '/api/reputation/reset', { method: 'POST', body: '{}' })
         result = await ask(base, uc, bible)
         const calls = countCalls(result.run, provider)
         summary.calls.deepseek += calls.deepseek; summary.calls.decision += calls.decision
@@ -209,6 +242,8 @@ async function main() {
         reputation = (await json(base, '/api/reputation')).publishers.map(p => ({ slug: p.publisherSlug, H: +p.H.toFixed(2), C: +p.C.toFixed(2), T: +p.T.toFixed(2), status: p.status }))
         summary.runs.push({ ...summarise(kind, result.run, { attempt, endToEndSeconds: result.seconds, answers: result.answers, reputation }, provider), failures: fails })
         console.log(JSON.stringify(summary.runs.at(-1), null, 2))
+        const counts = coverageCounts(result.run).map(c => `v${c.version} ${c.answered}/${c.total}`).join(' → ')
+        console.log(`${kind}: stopReason ${result.run.checkpoint?.stopReason ?? 'none'} · requested facts ${counts || 'none'}`)
         if (!fails.length) break
         console.log(`${kind} attempt ${attempt} failed: ${fails.join(' | ')}${attempt === 1 ? '; retrying once' : ''}`)
       }
@@ -226,6 +261,7 @@ async function main() {
     writeFileSync(`${dir}/last.json`, `${JSON.stringify(summary, null, 2)}\n`)
   }
   console.log(`\nLive calls (estimated): DeepSeek ${summary.calls.deepseek}/${BUDGET.deepseek}, ${provider === 'openai' ? 'OpenAI Decisions' : 'Clef'} ${summary.calls.decision}/${BUDGET.decision}`)
+  for (const r of summary.runs) if (!r.skipped) console.log(`${r.kind}: ${r.phase} · stop ${r.stopReason ?? 'none'} · requested facts ${r.coverage?.map(c => `v${c.version} ${c.answered}/${c.total}`).join(' → ') || 'none'} · spent ${r.spentMinor}`)
   console.log(summary.passed ? 'SMOKE PASSED · data/smoke/last.json' : `SMOKE FAILED:\n  ${summary.failures.join('\n  ')}`)
   process.exit(summary.passed ? 0 : 1)
 }
