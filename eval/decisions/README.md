@@ -36,11 +36,11 @@ used. Spend stops at `EVAL_SPEND_CAP_USD` (default US$2). Output goes to
 
 | Run | Command | Calls |
 |---|---|---|
-| Bench, per-candidate wording, all 48 scenarios, one arm | `run.ts --arms luna --configs baseline --split all --live` | 495 (48 × 9 + 63 paid probes) |
-| Bench, batch-evidence wording, one arm | `run.ts --arms luna --configs batch-evidence --split all --live` | 111 (48 + 63) |
-| Held-out test, 3 repeats, per-candidate, one arm | `run.ts --arms luna --split test --repeats 3 --lock` then `--live` | about 744 |
+| Bench, per-candidate wording, all 48 scenarios, one arm | `run.ts --arms luna --configs baseline --split all --live` | 497 (48 × 9 + 65 paid probes) |
+| Bench, batch-evidence wording, one arm | `run.ts --arms luna --configs batch-evidence --split all --live` | 113 (48 + 65) |
+| Held-out test, 3 repeats, per-candidate, one arm | `run.ts --arms luna --split test --repeats 3 --lock` then `--live` | 759 |
 | Offline eval with a live judge | `offline.ts --decision luna --live` | at least 432 (48 × 9); up to about 1,440 over three rounds, plus 1 per verified purchase |
-| Coverage, per arm | `eval/coverage/run.ts --arms writer,flash,luna --live` | 114 per arm (one per snapshot) |
+| Coverage, per arm | `eval/coverage/run.ts --arms writer,flash,luna --live` | 116 per arm (one per snapshot) |
 
 Use `--plan` on `run.ts` and `eval/coverage/run.ts` to print the exact counts
 without calling anything.

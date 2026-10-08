@@ -52,7 +52,14 @@ export async function runQuestion(world: World, q: Question, provider: DecisionP
       const gap = answer.openGaps[0]?.text ?? ''
       const readSources = publicSources(candidates.filter(c => contents.some(x => x.resourceId === c.resourceId)))
       const reputation = Object.fromEntries([...trust.values()].map(r => [r.wallet, summary(r)]))
-      const decision: DecisionRound = await decide({ question: q.question, conclusion: answer.conclusion, gap, candidates, readSources, boughtResourceIds: purchases.map(p => p.resourceId), budgetMinor, spentMinor, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor, round, provider, ...(options.threshold === undefined ? {} : { threshold: options.threshold }), reputation })
+      let decision: DecisionRound
+      try {
+        decision = await decide({ question: q.question, conclusion: answer.conclusion, gap, candidates, readSources, boughtResourceIds: purchases.map(p => p.resourceId), budgetMinor, spentMinor, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor, round, provider, ...(options.threshold === undefined ? {} : { threshold: options.threshold }), reputation })
+      } catch (e) {
+        // A failed decision fails the round and buys nothing (#197); the answer so far stands.
+        rounds.push({ round, gap, selected: null, fallback: `round failed: ${e instanceof Error ? e.message : String(e)}`, verdicts: {} })
+        break
+      }
       rounds.push({ round, gap, selected: decision.selectedResourceId ?? null, ...(decision.fallbackReason ? { fallback: decision.fallbackReason } : {}), verdicts: Object.fromEntries(decision.rows.map(r => [r.candidate.resourceId, r.verdict])) })
       if (!decision.selectedResourceId) break
       const candidate = candidates.find(c => c.resourceId === decision.selectedResourceId)! as PublicCandidate

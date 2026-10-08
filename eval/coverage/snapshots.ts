@@ -13,7 +13,7 @@ import { retrieveOffline } from '../decisions/world.js'
 export const STATUSES = ['supported', 'partial', 'missing', 'conflicting'] as const
 export type Status = (typeof STATUSES)[number]
 export type EvidencePassage = { articleId: string; passageId: string; tier: 'FREE' | 'PAID'; text: string; role: 'source' | 'trap' | 'conflict' | 'context' | 'partial' }
-export type SnapshotState = 'free' | 'free+paid' | 'traps' | 'partial'
+export type SnapshotState = 'free' | 'free+paid' | 'traps' | 'partial' | 'conflict'
 export type Snapshot = {
   id: string; questionId: string; state: SnapshotState; question: string; kind: Question['kind']; hardCase?: string
   requirements: { id: string; need: string }[]; evidence: EvidencePassage[]; gold: Record<string, Status>
@@ -47,15 +47,22 @@ export async function questionSnapshots(world: World, q: Question): Promise<Snap
   // Context: the first passage of the top two free search hits, so no snapshot is empty and topic noise is realistic.
   const { contents } = await retrieveOffline(world, [q.question])
   const context = contents.slice(0, 2).flatMap(c => passages(world, c.resourceId, [c.spans[0].id], 'context'))
-  const make = (state: SnapshotState, evidence: EvidencePassage[]): Snapshot => {
+  const make = (state: SnapshotState, evidence: EvidencePassage[], suffix = ''): Snapshot => {
     const ev = dedupe(evidence)
-    return { id: `${q.id}:${state}`, questionId: q.id, state, question: q.question, kind: q.kind, ...(q.hardCase ? { hardCase: q.hardCase } : {}),
+    return { id: `${q.id}:${state}${suffix}`, questionId: q.id, state, question: q.question, kind: q.kind, ...(q.hardCase ? { hardCase: q.hardCase } : {}),
       requirements: q.requested.map(f => ({ id: f.id, need: f.need })), evidence: ev,
       gold: Object.fromEntries(q.requested.map(f => [f.id, goldStatus(q, f, ev)])), trapKinds: [...new Set((q.traps ?? []).filter(t => ev.some(e => e.articleId === t.articleId && holds(t.needles, e.text))).map(t => t.kind))] }
   }
   const free = (list: EvidencePassage[]) => list.filter(e => e.tier === 'FREE')
   const out = [make('free', [...context, ...free(sources), ...free(traps), ...free(conflicts)]), make('free+paid', [...context, ...sources, ...traps, ...conflicts])]
   if (traps.length) out.push(make('traps', [...context, ...traps]))
+  // One snapshot per conflicting source: the fact's source passage against that one rival value.
+  ;(q.conflicts ?? []).forEach((c, i) => {
+    const fact = q.requested.find(f => f.id === c.factId)
+    const rival = conflicts.find(e => e.articleId === c.articleId && holds(c.needles, e.text))
+    const src = sources.find(e => fact?.sources.includes(e.articleId) && factHolds(fact, e.text))
+    if (rival && src && (q.conflicts ?? []).length > 1) out.push(make('conflict', [...context, src, rival], `-${i + 1}`))
+  })
   // A partial cut: one sentence of a source passage holding some needles of a multi-needle fact, but not all.
   for (const fact of q.requested.filter(f => f.needles.length > 1)) {
     const src = sources.find(e => fact.sources.includes(e.articleId) && factHolds(fact, e.text))

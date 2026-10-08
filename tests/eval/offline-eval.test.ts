@@ -35,6 +35,16 @@ describe('offline decision eval (#203)', () => {
     }
     expect(attempts).toBe(0)
   })
+  it('treats a failed decision as a failed round: nothing bought, the free answer stands', async () => {
+    const failing = { name: 'cloudflare' as const, model: 'mock-unavailable', judgeRound: async () => { throw new Error('timeout') }, judgeCandidate: async () => { throw new Error('timeout') } }
+    const report = await evaluateBank({ ids: ['Q09'], provider: failing })
+    const [r] = report.results
+    expect(r.purchases).toEqual([])
+    expect(r.spentMinor).toBe(0)
+    expect(r.rounds[0]).toMatchObject({ selected: null })
+    expect(r.rounds[0].fallback).toMatch(/round failed/)
+    expect(r.final.supported).toEqual(r.free.supported)
+  })
   it('summarizes recall, citation validity, purchases per question and wasted spend', () => {
     const base = { kind: 'paid-needed' as const, requested: 2, free: { supported: [], citations: { valid: 2, total: 2 }, gaps: [] }, rounds: [], expectedBuy: 'a', error: undefined }
     const s = summarize([
