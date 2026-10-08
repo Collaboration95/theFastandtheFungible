@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { RunSnapshot } from '../../shared/contracts/index.js'
 import { money } from '../format'
+import InfoDot from './InfoDot'
 
 /** Money never jumps: the remaining amount counts to its new value. */
 function useCount(target: number) {
@@ -38,7 +39,7 @@ export default function Budget({ run }: { run: RunSnapshot }) {
     {run.budgetMinor === 0
       ? <p className="ra-wl">Free sources only.</p>
       : <dl className="ra-wl"><div><dt>spent</dt><dd>{money(run.spentMinor)}</dd></div>{refunded ? <div><dt>refunded</dt><dd title="Paid back by the writer after a failed proof; spent stays the gross charge">{money(refunded)}</dd></div> : null}</dl>}
-    <p className="ra-wallet-label"><span className="ra-chip is-sim">{run.labels.settlement}</span></p>
+    <p className="ra-wallet-label"><InfoDot label={run.labels.settlement} /></p>
     {remaining < 0 && <p role="alert">Spending went over budget.</p>}
   </section>
 }

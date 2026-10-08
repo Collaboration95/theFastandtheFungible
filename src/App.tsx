@@ -40,6 +40,10 @@ function initialPace(): Pace {
 export default function App() {
   const [run, setRun] = useState<RunSnapshot>()
   const [screen, setScreen] = useState<'home' | 'run' | 'settings'>('home')
+  // Settings' Back returns to the screen it was opened from; the half-typed question lives here so Home remounting keeps it.
+  const [backTo, setBackTo] = useState<'home' | 'run'>('home')
+  const [draft, setDraft] = useState('')
+  const [picked, setPicked] = useState<number>(BUDGET.initialMinor)
   const [cursor, setCursor] = useState(Infinity)
   const [pace, setPace] = useState<Pace>(initialPace)
   const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean }>({ faults: false })
@@ -114,10 +118,12 @@ export default function App() {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
     setScreen('home'); setPassage(undefined); setWork(false)
   }, [])
-  const openSettings = useCallback(() => {
+  const openSettings = () => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
+    if (screen !== 'settings') setBackTo(screen === 'run' ? 'run' : 'home')
     setScreen('settings'); setPassage(undefined); setWork(false)
-  }, [])
+  }
+  const closeSettings = () => { if (backTo === 'run' && run) void openRun(run.runId); else newQuestion() }
 
   const refreshPast = useCallback(() => { void listPastRuns().then(setPast).catch(() => { /* the sidebar keeps its last list */ }) }, [])
   const phase = run?.phase
@@ -240,7 +246,7 @@ export default function App() {
       const created = await ask(input)
       const url = new URL(window.location.href); url.searchParams.set('run', created.runId); window.history.replaceState(null, '', url)
       setCursor(pace === 'real' ? Infinity : 0)
-      setRun(created); setScreen('run')
+      setRun(created); setScreen('run'); setDraft('')
     } catch { setError('Can’t reach the server. Try again.'); throw new Error('ask failed') }
     finally { setSending(false) }
   }
@@ -270,7 +276,7 @@ export default function App() {
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
-  const nav = <Sidebar runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={openSettings} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
+  const nav = <Sidebar runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={screen === 'settings' ? closeSettings : openSettings} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
     onOpenRun={id => void openRun(id)} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
   // A run's toast seen from another screen (Home, or another run) gets a way back to that run.
   // A toast about the run in view repeats the screen, so it waits until you leave it.
@@ -282,7 +288,7 @@ export default function App() {
 
   const settlement = shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'
   if (screen === 'settings') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
-    <Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onNotify={chooseNotify}
+    <Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
       onUniversal={on => { setUniversal(on); prefs.set(universalKey, on ? '1' : '0') }} onBudget={minor => { setUniversalMinor(minor); prefs.set(universalMinorKey, String(minor)) }} />
     {overlays}
   </Layout>
@@ -292,7 +298,7 @@ export default function App() {
       {error && <p className="ra-banner" role="alert">{error}</p>}
       <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pending && (pending.step === 'clarify'
         ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
-        : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={() => setPending(undefined)} />)} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} />
+        : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={() => setPending(undefined)} />)} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
     </main>
     {overlays}
   </Layout>
