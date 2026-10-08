@@ -181,14 +181,14 @@ describe('proofs, challenge → refund, run tape (#152)', () => {
     const failed = renderToStaticMarkup(<Purchase run={uc3Run} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
     for (const text of ['✗ claim failed', 'Proof failed', 'Challenged', 'Refunded S$0.30', 'SIMULATED']) expect(failed).toContain(text)
     const ok = renderToStaticMarkup(<Purchase run={uc3Run} intent={uc3Run.intents[1]} onRetry={() => {}} onReceipt={() => {}} />)
-    expect(ok).toContain('Paid S$0.25 · delivered · verified')
+    expect(ok).toContain('Paid S$0.40 · delivered · verified')
     expect(ok).not.toContain('Refunded')
     const testnet = { ...uc3Run, events: uc3Run.events.map(event => event.type === 'REFUND' ? { ...event, data: { ...event.data, label: 'XRPL TESTNET · no real value', explorerUrl: `https://testnet.xrpl.org/transactions/${leak.refund!.txHash}` } } : event) }
     const onLedger = renderToStaticMarkup(<Purchase run={testnet} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
     expect(onLedger).toContain(`href="https://testnet.xrpl.org/transactions/${leak.refund!.txHash}"`)
     expect(onLedger).toContain('XRPL TESTNET')
     const budget = renderToStaticMarkup(<Budget run={uc3Run} />)
-    for (const text of ['spent</dt><dd>S$0.55', 'refunded</dt><dd', 'S$0.30']) expect(budget).toContain(text)
+    for (const text of ['spent</dt><dd>S$0.70', 'refunded</dt><dd', 'S$0.30']) expect(budget).toContain(text)
   })
 
   it('never opens or cites a quarantined source, even with its delivered text present (gates 1 and 4)', () => {
@@ -276,7 +276,7 @@ describe('presenter controls, presets and the UC fixture runs (#154)', () => {
     expect(ucRuns.UC1.spentMinor).toBe(0)
     expect(ucRuns.UC2.intents.map(intent => `${intent.resourceId}:${intent.status}`)).toEqual([`${uc.UC2.expectedPicks.round1}:VERIFIED`])
     expect(ucRuns.UC3.intents.map(intent => `${intent.resourceId}:${intent.status}`)).toEqual([`${uc.UC3.expectedPicks.round1}:REFUNDED`, `${uc.UC3.expectedPicks.round2}:VERIFIED`])
-    expect([ucRuns.UC3.spentMinor, ucRuns.UC3.refundedMinor]).toEqual([55, 30])
+    expect([ucRuns.UC3.spentMinor, ucRuns.UC3.refundedMinor]).toEqual([70, 30])
     expect(JSON.stringify(ucRuns)).not.toMatch(/Vertex|CANARY/)
   })
 })
