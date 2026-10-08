@@ -17,7 +17,7 @@ Open items are listed in §15 and are the only things still up for debate.
 
 1. A reader (the user's agent) asks a question.
 2. Writers (independent experts and publishers) run search over their own articles.
-3. A calibrated decision model (Cloudflare Clef) decides which paywalled article is worth buying for the gap that is still open.
+3. A decision model decides which paywalled article is worth buying for the gap that is still open. Since 8 Oct (owner decision, #214) that is OpenAI Decisions (`gpt-6-luna`, `DECISION_PROVIDER=openai`); Cloudflare Clef-flash stays selectable as the one-line revert (`DECISION_PROVIDER=cloudflare`), and `make live` keeps Clef until the live comparison picks the demo model.
 4. Code pays the writer directly over x402 on XRPL Testnet.
 5. After delivery, the agent checks every promise the writer made. A broken promise is challenged and costs the writer trust.
 
@@ -55,7 +55,7 @@ A question about Japanese bonds produced a DeepSeek answer about Vertex Compute.
  ┌──────────────────────────────────────────────────────────────────────┐
  │ ask ─► clarify (LLM, ≤2 questions) ─► plan ─► 5 s action modal ─► run │
  │ run: fan out sub-queries ─► fuse (price-blind) ─► free read ─► answer │
- │      gap (LLM, free text) ─► Clef value × trust ─► policy picks ─► pay │
+ │      gap (LLM, free text) ─► model value × trust ─► policy picks ─► pay│
  │      verify proof ─► challenge if broken ─► update trust ─► re-answer  │
  └───────┬───────────────────────────┬───────────────────────────┬──────┘
          │ GET /search?q=            │ GET article (x402 v2)     │ POST /challenge
@@ -87,7 +87,7 @@ A question about Japanese bonds produced a DeepSeek answer about Vertex Compute.
 | D6 | **Trust matrix: Beta Reputation System + a calibration score** (§7). It lives on the engine side and is public in the UI. | A standard, simple, statistically grounded model built for this exact problem (Jøsang & Ismail 2002). | EigenTrust: it handles trust passed through many raters, and we are the only rater. Ad-hoc points. |
 | D7 | **Real x402 v2, implemented ourselves** (§9): `PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE` headers, the XRPL exact scheme on `xrpl:1`, and a facilitator hosted by each publisher. | XRPL Testnet is an officially listed x402 network. This replaces today's 5-hop flow with one retry. | t54's hosted facilitator: a third-party service on stage, and no confirmed TypeScript package. Closed. |
 | D8 | **The LLM clarifies, then proposes an action** (§6). Clarification is LLM-driven, with at most 2 short tool questions. The plan appears in a 5-second auto-expiring modal above the input bar, and the run starts on expiry. | Narrows vague questions the way ChatGPT deep research does. Visible agency without an approval step for each purchase. | Answering directly when a question is basic: that use case is dropped. |
-| D9 | **LLM tools are allowed when they don't spend**: `ask_user`, `propose_plan`, `render_report` (PDF). No tool can buy, pick a purchase, or change the budget or cap. The LLM names *what is missing* (a free-text gap). Clef judges value. Policy code pays. | Gate 2 unchanged. Narrows the known injection-steering weak spot. | An LLM purchase tool. |
+| D9 | **LLM tools are allowed when they don't spend**: `ask_user`, `propose_plan`, `render_report` (PDF). No tool can buy, pick a purchase, or change the budget or cap. The LLM names *what is missing* (a free-text gap). A decision model judges value. Policy code pays. **Amended 8 Oct (owner, #214):** the decision model is OpenAI Decisions (`gpt-6-luna`, one "batch-evidence" request per round, raw scores at threshold 0.20, no calibrator); Clef-flash is the revert (`DECISION_PROVIDER=cloudflare`). Only the named model changed; the principle did not. | Gate 2 unchanged. Narrows the known injection-steering weak spot. | An LLM purchase tool. |
 | D10 | **Gaps are free text.** Delete the `FacetSchema` 3-value enum from decisions, gaps and UI. Writers carry free-form `tags`. | Real questions need real gaps. | Keeping facets. |
 | D11 | **Cut:** payment channels, escrow, NFT receipts, Web Bot Auth (signed agent identity), t54, a central index, embeddings computed at query time for the corpus, and audience questions on stage. | Doesn't reinforce a pillar within 2 days. | — |
 | D12 | **Every feature must reinforce one pillar**: (P1) calibrated buying, (P2) verifiable purchase, (P3) fairness to both sides, (P4) the hard gates. A hack job that reinforces none of them is out. | Scope control. | — |
@@ -148,8 +148,9 @@ run(plan, budget):
     else:
       trust.recordPass(writer)
     trust.recordCalibration(writer,
-                            claimed  = pick.relevance,
-                            observed = clef.rescore(gap, res.body))
+                            claimed  = pick.manifest.relevance,          # the signed promise
+                            observed = proof.failed ? 0                  # a broken promise, never re-scored
+                                     : searchRelevance(query, res.body)) # same cosine, after the grant (§7)
     answer = llm.write(question, free + verifiedPaid, previous = answer)
   return answer, receipts, proofs, trustDeltas
 ```
@@ -196,6 +197,12 @@ SKIP_LOW_TRUST  when H < 0.5                      # quarantined: never bought or
 | weight: failed proof + refunded | 5 | after one fail, AlphaLeak drops 0.8 → 0.4 and is quarantined |
 | weight: failed proof + refused or timed out (30 s) | 10 | also delisted |
 | pass | 1 | after one pass, H rises 0.8 → 0.83 |
+
+**Calibration inputs (D6 interpretation, owner decision 8 Oct, #205 option A).** C checks the promise on the scale it was made:
+- `claimed` is the signed manifest relevance (D4: "promises (relevance)").
+- `observed` is the same measure taken on the *delivered* article, after a verified grant: the cosine between the search query (the plan's sub-queries, best one wins) and the delivered article, with the search's embedding model and `cosineRange` mapping. It needs no decision-model call and does not depend on the gap the agent was trying to fill, so an honest writer bought for an unrelated gap keeps C ≈ 1.
+- A delivery whose proof failed records `observed = 0`: the signed promise was broken by definition, and the body is never re-scored (§12.1).
+- A keyword-only search promised on the BM25 scale, so its deliveries are not re-measured (a labelled skip).
 
 **The matrix in the UI.** One row per writer:
 
@@ -292,11 +299,11 @@ There are no audience questions on stage. Real names are allowed (D20), and all 
 
 ## 12. Hard gates (`prompt.md` §2): unchanged, with clarifications
 
-1. **No premium bytes before a grant.** Search hits carry only the writer's abstract, signals and manifest. After a grant, Clef may re-score the paid body (for calibration).
+1. **No premium bytes before a grant.** Search hits carry only the writer's abstract, signals and manifest. After a verified grant, the delivered article may be re-measured for calibration (§7: the search embedder, not a decision-model call).
 2. **The budget is the only authorization.** Non-spending LLM tools are allowed (D9). The 5-second action modal is a plan confirmation, not a purchase approval. Trust can only *lower* value; it can never raise the budget or the cap.
 3. **One charge per intent.** It also covers the new path: resending the same signed blob is idempotent. A refund is write-once per intent.
 4. **Real citations.** A quarantined (failed-proof) source is never cited.
-5. **Labels.** Writers are labelled SYNTHETIC. Search shows `hybrid` or `keyword only (embeddings unavailable)`. Refunds are labelled XRPL TESTNET. The Clef and LLM fallbacks keep their existing labels.
+5. **Labels.** Writers are labelled SYNTHETIC. Search shows `hybrid` or `keyword only (embeddings unavailable)`. Refunds are labelled XRPL TESTNET. The LLM fallbacks keep their existing labels. Every decision round names its provider as itself (`OpenAI Decisions · gpt-6-luna`, `Cloudflare · …`, `fixture · …`); a failed live round buys nothing and is never substituted (#197).
 
 ## 13. Workstreams for the next narrow runs
 
