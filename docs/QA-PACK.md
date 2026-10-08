@@ -41,7 +41,7 @@ Decided after the live comparison on the real corpus (#214,
 [result](https://github.com/Collaboration95/theFastandtheFungible/issues/214#issuecomment-6064805198)):
 the demo uses OpenAI Decisions.
 
-### Outcome A: SWITCHED to OpenAI Decisions (`gpt-6-luna`)
+### SWITCHED to OpenAI Decisions (`gpt-6-luna`)
 
 - We benchmarked two decision models under a preregistered rule
   ([commit 9eede4d](https://github.com/Collaboration95/theFastandtheFungible/commit/9eede4d); [R] "Decision").
