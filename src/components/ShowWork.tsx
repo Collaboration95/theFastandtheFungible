@@ -25,7 +25,6 @@ export default function ShowWork({ run, configured, onClose }: { run: RunSnapsho
     <div className="ra-sheet-h">
       <h2>Show work</h2>
       <div className="ra-seg" role="tablist" aria-label="Show work views">{tabs.map(name => <button key={name} type="button" role="tab" aria-selected={tab === name} onClick={() => setTab(name)}>{name}</button>)}</div>
-      <span className="ra-note">Raw, persisted records · nothing here is needed to understand the answer</span>
       <button type="button" className="ra-btn" onClick={onClose} aria-label="Close show work">Esc ×</button>
     </div>
     <div className="ra-sheet-b" role="tabpanel" aria-label={tab}>

@@ -2,8 +2,8 @@ import { useState } from 'react'
 import type { Pace } from '../stage'
 
 /** Press "." for stage controls. Dev-only switches live here, not in the product header. */
-export interface PresenterProps { pace: Pace; onPace: (pace: Pace) => void; faults: boolean; busy: boolean; onClose: () => void; clarifyNever?: boolean; onClarifyNever?: (on: boolean) => void; onResetReputation?: () => Promise<void> }
-export default function Presenter({ pace, onPace, faults, busy, onClose, clarifyNever = false, onClarifyNever, onResetReputation }: PresenterProps) {
+export interface PresenterProps { pace: Pace; onPace: (pace: Pace) => void; faults: boolean; busy: boolean; onClose: () => void; clarifyNever?: boolean; onClarifyNever?: (on: boolean) => void; onResetReputation?: () => Promise<void>; onSkip?: () => void }
+export default function Presenter({ pace, onPace, faults, busy, onClose, clarifyNever = false, onClarifyNever, onResetReputation, onSkip }: PresenterProps) {
   const [reset, setReset] = useState<'idle' | 'busy' | 'done' | 'failed'>('idle')
   const [armed, setArmed] = useState(false)
   const [arming, setArming] = useState(false)
@@ -21,7 +21,9 @@ export default function Presenter({ pace, onPace, faults, busy, onClose, clarify
     <div className="ra-presenter-h"><h2>Presenter</h2><button type="button" className="ra-btn" onClick={onClose} aria-label="Close presenter menu"><kbd>.</kbd> ×</button></div>
     <div className="ra-pr-row"><span className="ra-pr-label" id="ra-pace">Pace</span>
       <div className="ra-seg" role="radiogroup" aria-labelledby="ra-pace">{([['real', 'Real'], ['stage', 'Stage 1×'], ['slow', 'Stage 0.5×']] as [Pace, string][]).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={pace === value} onClick={() => onPace(value)}>{label}</button>)}</div>
-      <p className="ra-note">Stage pace replays the recorded trace with a minimum time per step. Applies to the next question.</p></div>
+      <p className="ra-note">Stage pace holds each step of the run on screen for a minimum time. Applies to the next question.</p></div>
+    {onSkip && <div className="ra-pr-row"><span className="ra-pr-label">Replay</span>
+      <button type="button" className="ra-btn" onClick={onSkip}>Skip to the end</button></div>}
     {onClarifyNever && <div className="ra-pr-row"><span className="ra-pr-label">Clarifying questions</span>
       <label className="ra-check"><input type="checkbox" checked={clarifyNever} onChange={event => onClarifyNever(event.target.checked)} /> Skip them (clarify=never)</label>
       <p className="ra-note">The 5 s plan card still shows. Applies to the next question.</p></div>}

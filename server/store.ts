@@ -5,7 +5,7 @@ import { leafHash, manifestRoot } from '../shared/manifest.js'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { Manifest } from '../shared/contracts/manifest.js'
-import { AnswerSchema, ContentEnvelopeSchema, DecisionRoundSchema, GrantSchema, ImpactSchema, PurchaseIntentSchema, ReceiptSchema, ReputationRecordSchema, RunSnapshotSchema, TraceEventSchema, type Answer, type ContentEnvelope, type DecisionRound, type DeliveryProof, type Grant, type Impact, type ModeLabels, type PurchaseIntent, type Receipt, type ReputationRecord, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
+import { AnswerSchema, BUDGET, ContentEnvelopeSchema, DecisionRoundSchema, GrantSchema, ImpactSchema, PurchaseIntentSchema, ReceiptSchema, ReputationRecordSchema, RunSnapshotSchema, TraceEventSchema, type Answer, type ContentEnvelope, type DecisionRound, type DeliveryProof, type Grant, type Impact, type ModeLabels, type PurchaseIntent, type Receipt, type ReputationRecord, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
 
 const reservedStatuses = new Set(['RESERVED', 'SUBMITTING'])
 /** A refund never frees budget inside the run: every post-delivery status still counts as the gross charge. */
@@ -65,7 +65,7 @@ export class Store {
     this.db.prepare('UPDATE intents SET json=? WHERE id=?').run(JSON.stringify(PurchaseIntentSchema.parse(intent)), intent.intentId)
   }
   createRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {
-    const run = RunSnapshotSchema.parse({ runId: randomUUID(), question, budgetMinor, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: 100,
+    const run = RunSnapshotSchema.parse({ runId: randomUUID(), question, budgetMinor, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor,
       phase: 'SEARCH', stopped: false, round: 0, candidates: [], contents: [], answers: [], decisions: [], intents: [], receipts: [], grants: [], events: [], checkpoint: {}, reportStatus: 'NONE',
       labels: labels ?? { research: 'fixture', decision: 'fixture', publisher: 'local', settlement: 'SIMULATED SGD · no real funds' } })
     this.db.prepare('INSERT INTO runs VALUES (?,?)').run(run.runId, JSON.stringify(run))
@@ -93,12 +93,13 @@ export class Store {
     })
   }
   listRuns(): RunSnapshot[] { return this.db.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => this.getRun(row.id as string)) }
-  /** Sidebar history, newest first. Deleting only hides a run: its receipts and ledger rows stay (one charge per intent). */
-  listPastRuns(): { runId: string; question: string; phase: RunSnapshot['phase']; stopped: boolean; budgetMinor: number; spentMinor: number; at: string; pinned: boolean }[] {
+  /** Sidebar history, newest first: every pinned run, then the `recent` latest others. Deleting only hides a run: its receipts and ledger rows stay (one charge per intent). */
+  listPastRuns(recent = 4): { runId: string; question: string; phase: RunSnapshot['phase']; stopped: boolean; budgetMinor: number; spentMinor: number; at: string; pinned: boolean }[] {
     const meta = new Map(this.db.prepare('SELECT run_id, pinned, hidden FROM run_meta').all().map(row => [row.run_id as string, row]))
-    return this.db.prepare('SELECT id FROM runs ORDER BY rowid DESC LIMIT 100').all().flatMap(row => {
+    let others = 0
+    return this.db.prepare('SELECT id FROM runs ORDER BY rowid DESC').all().flatMap(row => {
       const id = row.id as string, m = meta.get(id)
-      if (m?.hidden) return []
+      if (m?.hidden || (!m?.pinned && others++ >= recent)) return []
       const run = this.getRun(id)
       return [{ runId: id, question: run.question, phase: run.phase, stopped: run.stopped, budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, at: run.events[0]?.at ?? '', pinned: !!m?.pinned }]
     })

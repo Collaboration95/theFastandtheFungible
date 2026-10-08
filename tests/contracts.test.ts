@@ -97,6 +97,9 @@ describe('run, decision, reputation and scope contracts (#115)', () => {
     expect(ScopeSchema.safeParse({ questions: [{ ...q, options: ['one'] }], plan }).success).toBe(false)
     expect(ScopeSchema.safeParse({ questions: [], plan: { ...plan, subqueries: ['a', 'b', 'c', 'd'] } }).success).toBe(false)
     expect(AskSchema.parse({ question: 'q', budgetMinor: 100, answers: { q1: 'JGBs' }, plan }).plan).toEqual(plan)
+    // The budget is any 5-cent step from S$0 to S$5 (articles cost from S$0.05); nothing else is accepted.
+    for (const budgetMinor of [0, 5, 10, 35, 200, 495, 500]) expect(AskSchema.safeParse({ question: 'q', budgetMinor }).success).toBe(true)
+    for (const budgetMinor of [-5, 3, 12, 2.5, 505, 1000]) expect(AskSchema.safeParse({ question: 'q', budgetMinor }).success).toBe(false)
   })
 
   it('labels the search mode and keeps the reputation record shape', () => {

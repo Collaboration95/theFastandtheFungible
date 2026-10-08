@@ -96,13 +96,15 @@ describe('visible internals', () => {
     expect(html).toContain('SIMULATED SGD')
   })
 
-  it('shows the run as steps with Stop buying, disabled once the run is over', () => {
+  it('shows the run as steps with Stop while live, and no button once the run is over', () => {
     const live = renderToStaticMarkup(<RunTape run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
-    expect(live).toContain('Stop buying')
+    expect(live).toContain('>Stop<')
     expect(live).toContain('Choose what to buy')
-    expect(live).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop buying/)
+    expect(live).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop</)
+    expect(live).not.toContain('ra-runbar-clock')
     const done = renderToStaticMarkup(<RunTape run={offlineZeroBudgetRun} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
-    expect(done).toMatch(/<button[^>]*disabled=""[^>]*>Run finished/)
+    expect(done).not.toContain('ra-stop')
+    expect(done).not.toContain('Run finished')
   })
 
   it('keeps the header quiet unless a provider fell back', () => {
@@ -121,13 +123,13 @@ describe('visible internals', () => {
 
   it('folds the decision round to what was bought and skipped, with Why these? to reopen it', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} fold onWhy={() => {}} />)
-    for (const text of ['Considered', 'Why these?', 'WOULD BUY', 'OVER CAP', `${offlineZeroBudgetRun.decisions[0].model}`]) expect(html).toContain(text)
+    for (const text of ['Considered', 'Why these?', 'WOULD BUY', 'SKIP', `${offlineZeroBudgetRun.decisions[0].model}`]) expect(html).toContain(text)
     expect(html).not.toContain('value = gap')
   })
 
   it('puts plain verdicts on the surface: WOULD BUY at S$0, never a BUY', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} />)
-    for (const text of ['WOULD BUY', 'OVER CAP', 'LOW VALUE', 'REWRITE', 'is over the S$1.00 per-source cap', 'Round 1']) expect(html).toContain(text)
+    for (const text of ['WOULD BUY', 'SKIP', 'REWRITE', 'is over the S$1.00 per-source cap', 'Worth buying']) expect(html).toContain(text)
     expect(html).not.toContain('>BUY<')
     expect(html).not.toContain('SKIP_')
   })
@@ -232,12 +234,12 @@ describe('stage pacing', () => {
   it('leads with a short answer and keeps citation numbers across versions', () => {
     const html = renderToStaticMarkup(<Answer run={paidStoryRun} view="latest" onView={() => {}} compare={false} onCompare={() => {}} onCitation={() => {}} />)
     expect(html).toContain('Short answer')
-    expect(html).toContain('QUALIFIES')
+    expect(html).toContain('Qualifies the free answer')
     expect(html).toContain('GAP CLOSED')
     expect(html).toContain('NEW')
     expect(html).toMatch(/aria-label="Citation 2: Synthetic grid record, exact passage"/)
     const first = renderToStaticMarkup(<Answer run={paidStoryRun} view="baseline" onView={() => {}} compare={false} onCompare={() => {}} />)
     expect(first).toMatch(/aria-label="Citation 1: Synthetic demand record, exact passage"/)
-    expect(first).not.toContain('QUALIFIES')
+    expect(first).not.toContain('Qualifies the free answer')
   })
 })

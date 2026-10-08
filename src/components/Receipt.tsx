@@ -17,10 +17,10 @@ export default function Receipt({ run, receipt, onClose }: { run: RunSnapshot; r
       <dt>Publisher</dt><dd>{source?.publisher ?? '—'}</dd>
       {intent?.quote && <><dt>Invoice</dt><dd title="x402 v2 invoiceId hash, bound to the manifest root">{shortHash(intent.quote.quoteHash)}</dd></>}
       <dt>Settled</dt><dd>{receipt.settledAt.slice(11, 19)}</dd>
-      <dt>Delivered</dt><dd>{intent?.status === 'VERIFIED' && grant ? `manifest root ${shortHash(grant.contentDigest)} ✓` : intent && ['CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'].includes(intent.status) ? 'proof failed · quarantined' : 'not yet verified'}</dd>
+      <dt>Delivered</dt><dd>{intent?.status === 'VERIFIED' && grant ? 'Verified ✓' : intent && ['CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'].includes(intent.status) ? 'proof failed · quarantined' : 'not yet verified'}</dd>
       {intent?.refund && <><dt>Refunded</dt><dd>{money(intent.refund.amountMinor)} · tx {shortHash(intent.refund.txHash)}</dd></>}
       {receipt.xrpl && <><dt>Ledger</dt><dd><a href={receipt.xrpl.explorerUrl} target="_blank" rel="noreferrer">tx {shortHash(receipt.xrpl.txHash)}</a></dd></>}
-      <dt>Charges</dt><dd>{charges} (retries can’t add more)</dd>
+      <dt>Charges</dt><dd>{charges}</dd>
     </dl>
     <div className="tot"><span>Total</span><span>{money(receipt.amountMinor)}</span></div>
     <div className="sim">{receipt.label}</div>

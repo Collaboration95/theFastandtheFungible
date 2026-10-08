@@ -269,5 +269,9 @@ describe('atomic ledger and verified purchase flow', () => {
     s.setRunMeta(b.runId, { hidden: true })
     expect(s.listPastRuns().map(run => run.runId)).toEqual([a.runId])
     expect(s.getRun(b.runId).question).toBe('second')
+    // Only the 4 latest unpinned runs are listed; a pinned run stays however old it is.
+    const later = ['c', 'd', 'e', 'f', 'g'].map(q => s.createRun(q, 100).runId)
+    expect(s.listPastRuns().map(run => run.runId)).toEqual([...later.slice(1).reverse(), a.runId])
+    expect(s.listPastRuns().filter(run => !run.pinned)).toHaveLength(4)
   })
 })

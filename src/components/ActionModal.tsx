@@ -40,13 +40,13 @@ export default function ActionModal({ plan, writers, onGo, onCancel }: ActionMod
   }, [])
   const who = writers ? `${writers} writer${writers === 1 ? '' : 's'}` : 'every listed writer'
   return <section className={`ra-plan${editing ? ' is-editing' : ''}`} role="dialog" aria-label="Search plan" aria-describedby="ra-plan-what">
-    <p className="ra-plan-what" id="ra-plan-what">I’ll search {who} for: {editing ? '' : <em>{subqueries.join(', ')}</em>}</p>
+    <p className="ra-plan-what" id="ra-plan-what">Searching {who} for: {editing ? '' : <em>{subqueries.join(', ')}</em>}</p>
     {editing && <ol className="ra-plan-edit">{subqueries.map((query, index) => <li key={index}>
       <input aria-label={`Search ${index + 1}`} value={query} maxLength={160} onChange={event => setSubqueries(list => list.map((item, i) => i === index ? event.target.value : item))} />
     </li>)}</ol>}
     <div className="ra-plan-bar" aria-hidden="true"><i /></div>
     <div className="ra-plan-act">
-      <span className="ra-plan-hint">{editing ? 'Paused while you edit.' : 'Starts in 5 s.'} Enter = go · Esc = cancel</span>
+      {editing && <span className="ra-plan-hint">Paused while you edit.</span>}
       {!editing && <button type="button" className="ra-btn" onClick={() => setEditing(true)}>Edit</button>}
       <button type="button" className="ra-btn" onClick={cancel}>Cancel</button>
       <button type="button" className="ra-btn ra-btn-go" onClick={go}>Go now</button>

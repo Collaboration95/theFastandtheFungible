@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
+import { BUDGET, ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
 import { ask, createReport, deleteRun, getReputation, getRun, listPastRuns, pinRun, resetReputation, retryDelivery, scope, stop, streamRun, type PastRun, type ScopeResult } from './api'
 import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from './stage'
 import { candidateOf, favicon, leadSentence, money } from './format'
 import Layout from './components/Layout'
-import Sidebar from './components/Sidebar'
+import Sidebar, { NAV_WIDTH, NavToggle } from './components/Sidebar'
 import Modes from './components/Modes'
 import Ask from './components/Ask'
+import Settings from './components/Settings'
 import RunTape from './components/RunTape'
 import Sources, { getAccessibleContent } from './components/Sources'
 import Answer, { validatedAnswers } from './components/Answer'
@@ -14,7 +15,6 @@ import ReportButton from './components/ReportButton'
 import Budget from './components/Budget'
 import DecisionPanel from './components/DecisionPanel'
 import Purchase from './components/Purchase'
-import Ledger from './components/Ledger'
 import Passage from './components/Passage'
 import Receipt from './components/Receipt'
 import ShowWork from './components/ShowWork'
@@ -24,7 +24,10 @@ import ClarifyChips from './components/ClarifyChips'
 import ActionModal from './components/ActionModal'
 import ReputationPanel from './components/ReputationPanel'
 
-const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav'
+const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
+const universalKey = 'researchagent.budget-universal', universalMinorKey = 'researchagent.budget-universal-minor'
+/** A saved budget in minor units: 0 to the maximum, in 5-cent steps; anything else falls back to the default. */
+const savedBudget = (value: string | null) => { const minor = Number(value); return value !== null && Number.isInteger(minor) && minor >= 0 && minor <= BUDGET.maxMinor && minor % BUDGET.stepMinor === 0 ? minor : BUDGET.initialMinor }
 const prefs = {
   get(key: string) { try { return localStorage.getItem(key) } catch { return null } },
   set(key: string, value: string) { try { localStorage.setItem(key, value) } catch { /* private mode */ } },
@@ -33,11 +36,10 @@ function initialPace(): Pace {
   const value = new URLSearchParams(window.location.search).get('pace') ?? prefs.get(paceKey)
   return value === 'real' || value === 'slow' ? value : 'stage'
 }
-const crumb = (question: string) => question.length > 52 ? `${question.slice(0, 50).trimEnd()}…` : question
 
 export default function App() {
   const [run, setRun] = useState<RunSnapshot>()
-  const [screen, setScreen] = useState<'home' | 'run'>('home')
+  const [screen, setScreen] = useState<'home' | 'run' | 'settings'>('home')
   const [cursor, setCursor] = useState(Infinity)
   const [pace, setPace] = useState<Pace>(initialPace)
   const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean }>({ faults: false })
@@ -57,6 +59,10 @@ export default function App() {
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
   const [clarifyNever, setClarifyNever] = useState(() => new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1')
   const [navOpen, setNavOpen] = useState(() => prefs.get(navKey) !== 'rail')
+  // Settings → Universal budget per query: every question uses it, and Home shows a chip instead of the slider.
+  const [universal, setUniversal] = useState(() => prefs.get(universalKey) === '1')
+  const [universalMinor, setUniversalMinor] = useState(() => savedBudget(prefs.get(universalMinorKey)))
+  const [navWidth, setNavWidth] = useState(() => { const saved = Number(prefs.get(navWidthKey)); return saved >= NAV_WIDTH.min && saved <= NAV_WIDTH.max ? saved : NAV_WIDTH.initial })
   const [why, setWhy] = useState(false)
   const [past, setPast] = useState<PastRun[]>([])
 
@@ -71,7 +77,7 @@ export default function App() {
   const runId = run?.runId
   useEffect(() => {
     if (!runId) return
-    return streamRun(runId, { onSnapshot: setRun, onEvent: () => {}, onError: () => setError('Connection interrupted. The server preserves the run and reconnects automatically.') })
+    return streamRun(runId, { onSnapshot: setRun, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
   }, [runId])
 
   // Stage pacing: reveal one trace event at a time, holding each for its dwell.
@@ -108,6 +114,10 @@ export default function App() {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
     setScreen('home'); setPassage(undefined); setWork(false)
   }, [])
+  const openSettings = useCallback(() => {
+    const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
+    setScreen('settings'); setPassage(undefined); setWork(false)
+  }, [])
 
   const refreshPast = useCallback(() => { void listPastRuns().then(setPast).catch(() => { /* the sidebar keeps its last list */ }) }, [])
   const phase = run?.phase
@@ -127,16 +137,15 @@ export default function App() {
       const open = () => { const link = document.createElement('a'); link.href = report.url; link.target = '_blank'; link.rel = 'noopener'; document.body.append(link); link.click(); link.remove() }
       const save = () => { const link = document.createElement('a'); link.href = report.url; link.download = `researchagent-${run.runId}.pdf`; document.body.append(link); link.click(); link.remove() }
       if (report.format === 'PDF') save(); else open()
-      push(report.format === 'PDF'
-        ? { id: 'report', tone: 'pen', icon: '↓', title: 'Report ready', body: 'Findings, what the purchase changed, open questions and receipts, with the same citation numbers.', actions: [{ label: 'Open PDF', onClick: open, primary: true }, { label: 'Download again', onClick: save }] }
-        : { id: 'report', tone: 'pen', icon: '↓', title: 'Report opened as printable HTML', body: 'The PDF engine wasn’t available. Use your browser’s Print to save a PDF.', actions: [{ label: 'Open again', onClick: open }] })
-    } catch { setError('Report generation failed. Your last answer and receipts remain available; try again.'); throw new Error('report failed') }
+      // A PDF download is its own confirmation; only the printable fallback needs a word.
+      if (report.format !== 'PDF') push({ id: 'report', tone: 'pen', icon: '↓', title: 'Opened for printing', body: 'Use Print → Save as PDF.', actions: [{ label: 'Open again', onClick: open }] })
+    } catch { setError('Couldn’t create the report. Try again.'); throw new Error('report failed') }
   }
   const retry = async (intentId: string) => {
     if (!run) return
     setError('')
     if (pace !== 'real') setCursor(events.at(-1)?.id ?? 0)
-    try { setRun(await retryDelivery(run.runId, intentId)) } catch { setError('Delivery could not be retried. The charge remains recorded; no new purchase was made.') }
+    try { setRun(await retryDelivery(run.runId, intentId)) } catch { setError('Retry failed. You weren’t charged again.') }
   }
 
   // Results arrive as toasts; the tab, favicon and (if asked) a desktop notification carry the end state.
@@ -151,9 +160,8 @@ export default function App() {
     if (state.runId !== shown.runId) { memo.current = { runId: shown.runId, verified: new Set(verified), failed: new Set(failed), ended, fallback }; return }
     const rail = shown.labels.settlement === XRPL_LABEL ? 'XRPL Testnet' : 'simulated'
     const queue: [Toast, number][] = []
+    // A purchase is already on screen (the purchase card, the run bar), so it gets no toast of its own.
     for (const id of verified) if (!state.verified.has(id)) {
-      const intent = shown.intents.find(item => item.intentId === id)!
-      queue.push([{ id: `bought-${id}`, tone: 'pen', receipt: true, icon: '✓', title: `Bought ${candidateOf(shown, intent)?.publisher ?? intent.resourceId}`, body: `${money(intent.amountMinor)} · proof verified · ${shown.labels.settlement}` }, 6000])
       state.verified.add(id)
       setTimeout(() => dismiss(`failed-${id}`), 0)
     }
@@ -162,22 +170,18 @@ export default function App() {
       queue.push([{ id: `failed-${id}`, tone: 'err', icon: '!', title: 'Delivery failed after payment', body: `Charged once (${money(intent.amountMinor)}, ${rail}). Retry fetches the same copy.`, actions: [{ label: 'Retry delivery', onClick: () => void retry(id), primary: true }] }, 0])
       state.failed.add(id)
     }
-    if (fallback && !state.fallback) { state.fallback = true; queue.push([{ id: 'fallback', tone: 'warn', icon: '!', title: 'Research model unavailable', body: 'Showing a labelled fixture answer built from the same verified passages.' }, 8000]) }
+    if (fallback && !state.fallback) { state.fallback = true; queue.push([{ id: 'fallback', tone: 'warn', icon: '!', title: 'Research model unavailable', body: 'Showing a fixture answer instead.' }, 8000]) }
     if (ended && ended !== state.ended) {
       state.ended = ended
+      // The end of a run says only that the agent is done (the spend is on the budget card); Go back is added while the run is off screen.
       const answers = validatedAnswers(shown)
-      const spend = `${money(shown.spentMinor)} of ${money(shown.budgetMinor)} spent`
-      const would = shown.decisions[0]?.rows.filter(row => row.wouldBuy) ?? []
-      if (shown.phase === 'STOPPED' || shown.stopped) queue.push([{ id: 'end', tone: 'info', icon: '■', title: 'Stopped', body: `No new purchases will start. ${spend}. The latest answer stays.` }, 6000])
-      else if (shown.phase === 'FAILED' && !failed.length) queue.push([{ id: 'end', tone: 'err', icon: '!', title: 'Research paused', body: 'The last verified answer is kept. You can ask again.' }, 0])
+      if (shown.phase === 'STOPPED' || shown.stopped) queue.push([{ id: 'end', tone: 'info', icon: '■', title: 'Run stopped', runId: shown.runId }, 0])
+      else if (shown.phase === 'FAILED' && !failed.length) queue.push([{ id: 'end', tone: 'err', icon: '!', title: 'Research paused', runId: shown.runId }, 0])
       else if (shown.phase === 'DONE') {
-        const body = shown.budgetMinor === 0 && would.length ? `Free sources only. It would have bought ${would.length} source${would.length === 1 ? '' : 's'} for ${money(would.reduce((sum, row) => sum + row.candidate.price.amountMinor, 0))}.`
-          : !shown.intents.some(isPaid) ? `Nothing was worth buying. ${spend}.`
-            : shown.impact ? `v${answers.at(-1)?.version ?? 2} ${shown.impact.classification.toLowerCase()} the free answer · ${spend}` : spend
-        queue.push([{ id: 'end', tone: '', icon: '✓', title: 'Answer ready', body, actions: [{ label: 'Download report', onClick: () => void downloadReport().catch(() => {}), primary: true }, ...(answers.length > 1 ? [{ label: `Compare v1 → v${answers.at(-1)!.version}`, onClick: () => { setView('latest'); setCompare(true) } }] : [])] }, 0])
+        queue.push([{ id: 'end', tone: '', icon: '✓', title: 'Your answer is ready', runId: shown.runId }, 0])
         if (notify && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-          const note = new Notification('Answer ready · ResearchAgent', { body: `${leadSentence(answers.at(-1)?.conclusion ?? '')} ${spend} (${rail}).`, tag: shown.runId })
-          note.onclick = () => { window.focus(); note.close() }
+          const note = new Notification('Your answer is ready · ResearchAgent', { body: leadSentence(answers.at(-1)?.conclusion ?? ''), tag: shown.runId })
+          note.onclick = () => { window.focus(); void openRun(shown.runId); note.close() }
         }
       }
     }
@@ -203,7 +207,7 @@ export default function App() {
       if (event.metaKey || event.ctrlKey || event.altKey || (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, dialog'))) return
       if (event.key === '.') setPresenter(open => !open)
       else if (event.key.toLowerCase() === 'w' && screen === 'run' && run) setWork(open => !open)
-      else if (event.key.toLowerCase() === 'n' && screen === 'run' && finished) newQuestion()
+      else if (event.key.toLowerCase() === 'n' && ((screen === 'run' && finished) || screen === 'settings')) newQuestion()
       else if (event.key === 'Escape') setPresenter(false)
     }
     window.addEventListener('keydown', onKey)
@@ -216,7 +220,7 @@ export default function App() {
     try {
       const result = await scope(input.question, clarifyNever ? 'never' : undefined)
       setPending({ input, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
-    } catch { setError('The API is unavailable. Start the demo processes, then ask again.'); throw new Error('scope failed') }
+    } catch { setError('Can’t reach the server. Try again.'); throw new Error('scope failed') }
     finally { setSending(false) }
   }
   const answer = (id: string, option: string) => setPending(state => {
@@ -237,7 +241,7 @@ export default function App() {
       const url = new URL(window.location.href); url.searchParams.set('run', created.runId); window.history.replaceState(null, '', url)
       setCursor(pace === 'real' ? Infinity : 0)
       setRun(created); setScreen('run')
-    } catch { setError('The API is unavailable. Start the demo processes, then ask again.'); throw new Error('ask failed') }
+    } catch { setError('Can’t reach the server. Try again.'); throw new Error('ask failed') }
     finally { setSending(false) }
   }
   const stopRun = async () => {
@@ -263,31 +267,40 @@ export default function App() {
     if (on && 'Notification' in window && Notification.permission === 'default') void Notification.requestPermission()
   }
   const labels = <Modes quiet labels={shown?.labels} configured={health.labels} />
+  const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
-  const nav = <Sidebar runs={listed} activeId={screen === 'run' ? runId : undefined} busy={screen === 'run' && !!shown && !finished} open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} onNew={newQuestion}
+  const nav = <Sidebar runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={openSettings} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
     onOpenRun={id => void openRun(id)} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
+  // A run's toast seen from another screen (Home, or another run) gets a way back to that run.
+  // A toast about the run in view repeats the screen, so it waits until you leave it.
+  const wayBack = toasts.filter(toast => !(toast.runId && screen === 'run' && toast.runId === runId)).map(toast => toast.runId && !(screen === 'run' && toast.runId === runId) ? { ...toast, actions: [...(toast.actions ?? []), { label: 'Go back to chat', primary: true, onClick: () => { dismiss(toast.id); void openRun(toast.runId!) } }] } : toast)
   const overlays = <>
-    <Toasts toasts={toasts} onDismiss={dismiss} />
-    {presenter && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
+    <Toasts toasts={wayBack} onDismiss={dismiss} />
+    {presenter && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onSkip={replaying ? () => setCursor(Infinity) : undefined} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
   </>
 
-  if (screen === 'home' || !shown) return <Layout labels={labels} nav={nav}>
+  const settlement = shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'
+  if (screen === 'settings') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
+    <Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onNotify={chooseNotify}
+      onUniversal={on => { setUniversal(on); prefs.set(universalKey, on ? '1' : '0') }} onBudget={minor => { setUniversalMinor(minor); prefs.set(universalMinorKey, String(minor)) }} />
+    {overlays}
+  </Layout>
+
+  if (screen === 'home' || !shown) return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <main className="ra-home-wrap">
       {error && <p className="ra-banner" role="alert">{error}</p>}
       <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pending && (pending.step === 'clarify'
         ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
-        : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={() => setPending(undefined)} />)} settlement={shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'} notify={notify} onNotify={chooseNotify} />
+        : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={() => setPending(undefined)} />)} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} />
     </main>
     {overlays}
   </Layout>
 
   const intents = shown.intents.filter(item => item.runId === shown.runId)
-  const asked = runEvents(shown)[0]?.at
-  return <Layout crumb={crumb(shown.question)} labels={labels} nav={nav}>
+  return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <div className="ra-ws">
       <main className="ra-brief">
-        <p className="ra-eyebrow">Question · Budget {money(shown.budgetMinor)}{asked ? ` · asked ${new Date(asked).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' })}` : ''}</p>
         <h1 className="ra-q">{shown.question}</h1>
         {error && <p className="ra-banner" role="alert">{error}</p>}
         {!compare && <Sources run={shown} onOpen={candidate => setPassage({ candidate })} />}
@@ -304,8 +317,6 @@ export default function App() {
         <Budget run={shown} />
         {[...intents].reverse().map(intent => <Purchase key={intent.intentId} run={shown} intent={intent} onRetry={id => void retry(id)} onReceipt={setReceipt} />)}
         <DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} />
-        {!intents.length && shown.budgetMinor > 0 && !shown.decisions.length && <section className="ra-panel is-idle" aria-label="Purchases"><div className="ra-panel-h"><h2>Purchases</h2></div><p>Each purchase shows 402 → pay → 200 → proof check here. One charge per source, even on retry.</p></section>}
-        <Ledger run={shown} />
         </>}
       </aside>
       <RunTape run={shown} replaying={replaying} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
