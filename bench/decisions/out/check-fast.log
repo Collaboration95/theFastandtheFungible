@@ -630,7 +630,7 @@ If this is a long-running test, pass a timeout value as the last argument or con
 Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:92:3
-     90| 
+     90|
      91| describe('XRPL Testnet settlement rail', () => {
      92|   it('advertises xrpl:1 in the 402 and pays exactly once, bound to the…
        |   ^
@@ -644,7 +644,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:115:3
     113|   })
-    114| 
+    114|
     115|   it('pays each publisher at its own wallet and refuses a payee the po…
        |   ^
     116|     const s = await setup()
@@ -657,7 +657,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:124:3
     122|   })
-    123| 
+    123|
     124|   it('signs and submits once when the same intent is bought concurrent…
        |   ^
     125|     const s = await setup()
@@ -670,7 +670,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:133:3
     131|   })
-    132| 
+    132|
     133|   it('refuses a payment whose ledger amount differs from the quote and…
        |   ^
     134|     const s = await setup()
@@ -683,7 +683,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:144:3
     142|   })
-    143| 
+    143|
     144|   it('never lets one ledger payment settle a different quote', async (…
        |   ^
     145|     const s = await setup()
@@ -696,7 +696,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:155:3
     153|   })
-    154| 
+    154|
     155|   it('refuses to sign when the quoted drops differ from the policy-app…
        |   ^
     156|     const s = await setup()
@@ -709,7 +709,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:170:3
     168|   })
-    169| 
+    169|
     170|   it('after a restart, settles a stored payment that validated without…
        |   ^
     171|     const s = await setup()
@@ -722,7 +722,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:183:3
     181|   })
-    182| 
+    182|
     183|   it('after a restart, releases the reservation when the payment expir…
        |   ^
     184|     const s = await setup()
@@ -735,7 +735,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:195:3
     193|   })
-    194| 
+    194|
     195|   it('keeps the reservation when the payer Sequence moved (the payment…
        |   ^
     196|     const s = await setup()
@@ -748,7 +748,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:204:3
     202|   })
-    203| 
+    203|
     204|   it('refuses to settle simulated while the run is labelled XRPL', asy…
        |   ^
     205|     const s = await setup()
@@ -761,7 +761,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:216:3
     214|   })
-    215| 
+    215|
     216|   it('without a payer seed, nothing is signed and the purchase fails v…
        |   ^
     217|     const s = await setup()
@@ -774,7 +774,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:223:3
     221|   })
-    222| 
+    222|
     223|   it('serves a read-only ledger view: buyer plus the registry paid pub…
        |   ^
     224|     const s = await setup()
@@ -787,7 +787,7 @@ Error: Test timed out in 5000ms.
 If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
  ❯ tests/xrpl.test.ts:237:3
     235|   })
-    236| 
+    236|
     237|   it('gate-5: a failed proof is challenged and refunded on the Testnet…
        |   ^
     238|     const chain = fakeLedger()
@@ -1048,4 +1048,3 @@ The latest test that might've caused the error is "gate-3: a matching payment fr
      Errors  16 errors
    Start at  13:54:48
    Duration  71.48s (transform 973ms, setup 0ms, collect 10.03s, tests 91.42s, environment 232ms, prepare 1.64s)
-

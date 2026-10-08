@@ -1,0 +1,83 @@
+
+> research-agent@0.1.0 check:fast
+> npm run lint && npm run typecheck && npm run test:unit
+
+
+> research-agent@0.1.0 lint
+> eslint .
+
+
+> research-agent@0.1.0 typecheck
+> tsc --noEmit
+
+
+> research-agent@0.1.0 test:unit
+> vitest run
+
+
+ RUN  v3.2.7 /private/tmp/tftf-bench-decisions
+
+ ✓ tests/facilitator.test.ts (10 tests) 575ms
+ ✓ tests/challenge.test.ts (6 tests) 629ms
+ ✓ tests/purchase.test.ts (28 tests) 659ms
+ ✓ tests/xrpl.test.ts (15 tests) 920ms
+stderr | tests/publisher-registry.test.ts > writer corpus loader (#122) > falls back to the mini corpus while the roster or the v2 articles are missing
+Writer corpus not generated yet; serving the mini corpus (SYNTHETIC test fixture)
+
+ ✓ tests/publisher-registry.test.ts (10 tests) 559ms
+   ✓ multi-publisher host (#122) > lists all 8 roster publishers from data/writers/, even before the v2 articles land  325ms
+ ✓ tests/report.test.ts (18 tests) 366ms
+   ✓ citation deep links (#147) > a FREE citation links to the writer page and the passage anchor exists there  311ms
+ ✓ tests/proofs.test.ts (4 tests) 433ms
+ ✓ tests/publisher.test.ts (6 tests) 1985ms
+   ✓ publisher HTTP protocol > settles once across real publisher processes sharing a journal, and survives a restart  1677ms
+ ✓ tests/decision-loop.test.ts (19 tests) 1876ms
+   ✓ fixture-mode use cases, end to end (#142) > UC1: free sources suffice: no gap, no purchase, S$0  327ms
+   ✓ fixture-mode use cases, end to end (#142) > UC2: the chosen angle drives the gap; NotFT is bought once and changes the answer  489ms
+   ✓ fixture-mode use cases, end to end (#142) > UC3: AlphaLeak bought → CLAIM_FAILED → REFUNDED → round 2 buys The Fab Floor; a re-ask shows SKIP_LOW_TRUST  531ms
+ ✓ tests/site.test.ts (9 tests) 246ms
+ ✓ tests/search.test.ts (17 tests) 306ms
+ ✓ tests/retrieval.test.ts (5 tests) 478ms
+ ✓ tests/plan.test.ts (3 tests) 254ms
+ ✓ tests/alphaleak.test.ts (3 tests) 173ms
+ ✓ tests/manifest-publisher.test.ts (4 tests) 250ms
+ ✓ tests/corpus-v2.test.ts (2 tests) 194ms
+ ✓ tests/publisher-x402.test.ts (3 tests) 159ms
+ ✓ tests/scope.test.ts (6 tests) 102ms
+ ✓ tests/generate-corpus.test.ts (7 tests) 137ms
+ ✓ tests/wallets.test.ts (3 tests) 44ms
+ ✓ tests/decision.test.ts (13 tests) 35ms
+ ✓ tests/manifest.test.ts (10 tests) 78ms
+ ✓ tests/fixtures/live-client.test.ts (5 tests) 35ms
+ ✓ tests/research-agent.test.ts (14 tests) 64ms
+ ✓ tests/contracts.test.ts (14 tests) 146ms
+ ✓ tests/reputation.test.ts (6 tests) 196ms
+ ✓ src/fixtures/internals.test.tsx (16 tests) 39ms
+ ✓ tests/writers.test.ts (8 tests) 6ms
+ ✓ tests/x402.test.ts (3 tests) 11ms
+ ✓ tests/telemetry-off.test.ts (1 test) 3ms
+ ✓ tests/calibration.test.ts (2 tests) 22ms
+ ✓ tests/decision-uc.test.ts (5 tests) 18ms
+ ✓ tests/telemetry.test.ts (7 tests) 12ms
+ ✓ tests/live-smoke.test.ts (6 tests) 3ms
+(node:53400) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/fixtures/wpui.test.tsx (24 tests) 327ms
+ ✓ tests/site-leak.test.ts (2 tests) 5055ms
+   ✓ site leak gate (#146) > the paid page shows abstract and badge, and no HTML page leaks a paid body  5049ms
+ ✓ tests/scenarios/scenarios.test.ts (11 tests) 15433ms
+   ✓ UC1–UC3 scenarios: separate API and publisher processes > UC1: free sources suffice: a cited answer, no gap, S$0 spent despite S$2 authorised  498ms
+   ✓ UC1–UC3 scenarios: separate API and publisher processes > UC2: one clarifying question; the chosen angle buys NotFT once, the rewrite and the over-cap decoy are rejected  920ms
+   ✓ UC1–UC3 scenarios: separate API and publisher processes > S$0: spends nothing but marks the expected article as would-buy  879ms
+   ✓ UC1–UC3 scenarios: separate API and publisher processes > an instruction in a free article changes no verdict, purchase, budget or cap  1523ms
+   ✓ UC3: a bad actor is caught, refunded and quarantined > AlphaLeak is bought → CLAIM_FAILED → REFUNDED once → H 0.80→0.40 quarantined → round 2 buys The Fab Floor; a re-ask shows SKIP_LOW_TRUST  1080ms
+   ✓ leak gate and Stop: audited Clef and LLM requests > every API/SSE snapshot, Clef and LLM request respects run/version grants  1660ms
+   ✓ leak gate and Stop: audited Clef and LLM requests > Stop during scoring prevents any purchase and preserves the free answer  991ms
+   ✓ premium leak oracle > gate-1: rejects raw and JSON-escaped canaries and unique paid passages without a grant  1608ms
+ ✓ tests/search-leak.test.ts (10 tests) 30766ms
+   ✓ search leak gate (#124) > no search response shares 8 consecutive words with any paid body  30347ms
+
+ Test Files  38 passed (38)
+      Tests  335 passed (335)
+   Start at  16:11:06
+   Duration  31.48s (transform 1.06s, setup 0ms, collect 10.03s, tests 62.59s, environment 235ms, prepare 1.79s)

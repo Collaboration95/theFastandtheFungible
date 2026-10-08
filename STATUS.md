@@ -76,3 +76,5 @@
   - **UC3 re-ask**: AlphaLeak `SKIP_LOW_TRUST`, S$0, 9.6 s. Reputation after: NotFT 0.83, The Fab Floor 0.83, AlphaLeak 0.40 quarantined.
 - Writer index: `http://localhost:5100/w/` (or `:5400/w/` with `DEMO_PORT_OFFSET=300`).
 - Live API use overnight (approx.): DeepSeek ≈ 115 corpus + 8 eval + ~60 smoke ≈ 185 / 300; Clef ≈ 260 / 1,000; Workers AI 13 / 200; faucet 7 / 20; Groq 120 (accidental, see Decisions).
+
+- 2026-10-08 — Research benchmark: https://gist.github.com/Collaboration95/a8c957e888b5d2e932e69dfcee64a61b — keep Clef-flash at 0.15; tuned Luna leads held-out F1 but regression qualification fails. Full Clef held-out is quota-blocked; Flash resumed on the user-authorized second account (1,703 calls, no HTTP/transport errors). check:fast passes (335 tests), benchmark 45 pass. Research-only explicit-any lint exceptions support heterogeneous provider records; the literal-prefix scan allowlists synthetic publisher IDs and one ordinary phrase, while actual credential matching remains unconditional. No production hard gate or test was relaxed.
