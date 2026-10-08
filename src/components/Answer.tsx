@@ -62,7 +62,8 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
   const lead = leadSentence(answer.conclusion)
   // The rest of the conclusion, minus sentences the claims below already say.
   const said = new Set(answer.claims.map(claim => claim.text.trim()))
-  const rest = (answer.conclusion.slice(lead.length).match(/[^.!?]+[.!?]+/g) ?? []).map(item => item.trim()).filter(item => !said.has(item)).join(' ')
+  // Split only where punctuation is followed by a space and a capital, as leadSentence does, so "55.2%" stays whole.
+  const rest = answer.conclusion.slice(lead.length).split(/(?<=[.!?])\s+(?=[A-Z])/).map(item => item.trim()).filter(item => item && !said.has(item)).join(' ')
   const leadClaims = answer.claims.filter(claim => claim.text.trim() === lead.trim() || lead.includes(claim.text.trim()))
   const words = lead.split(/(\s+)/)
   const highlight = showLatest && leadClaims.some(claim => changed.has(claim.id))

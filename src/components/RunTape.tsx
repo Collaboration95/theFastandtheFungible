@@ -80,13 +80,13 @@ function tapeRows(run: RunSnapshot): Row[] {
 }
 
 /** The run as one line along the bottom: what it is doing now, the steps, the clock, Stop buying and Show work. */
-export default function RunTape({ run, replaying, realDone = false, onStop, stopping, onShowWork }: { run: RunSnapshot; replaying: boolean; realDone?: boolean; onStop: () => void; stopping: boolean; onShowWork: () => void }) {
+export default function RunTape({ run, realDone = false, onStop, stopping, onShowWork }: { run: RunSnapshot; realDone?: boolean; onStop: () => void; stopping: boolean; onShowWork: () => void }) {
   const rows = tapeRows(run)
   const terminal = isTerminal(run)
   // The step in progress, else the latest step: an earlier failed proof doesn't stick once the run has moved on.
   const now = rows.find(row => row.state === 'now' && !QUIET.has(row.kind)) ?? [...rows].reverse().find(row => row.state !== 'todo' && !QUIET.has(row.kind)) ?? rows[0]
   return <section className="ra-runbar" aria-label="Run progress">
-    <div className={`ra-runbar-now is-${now?.state ?? 'now'}`} aria-live="polite"><i className="ra-node" aria-hidden="true" /><div><b>{now?.title ?? 'Starting'}</b><span>{replaying ? 'Replaying · ' : ''}{now?.meta ?? 'Opening the run…'}</span></div></div>
+    <div className={`ra-runbar-now is-${now?.state ?? 'now'}`} aria-live="polite"><i className="ra-node" aria-hidden="true" /><div><b>{now?.title ?? 'Starting'}</b><span>{now?.meta ?? 'Opening the run…'}</span></div></div>
     <ol className="ra-runbar-steps" aria-label="Steps">{segments(rows).map((row, index, all) => <li key={row.key} className={`is-${row.state}${SUBSTEPS.has(row.kind) || all.slice(0, index).some(prior => prior.kind === row.kind) ? ' is-sub' : ''}`} title={`${row.title}${row.meta ? ` · ${row.meta}` : ''}`}><i role="img" aria-label={`${row.title}: ${row.state}`} /></li>)}</ol>
     {/* Nothing once the run is over; "Skip to the end" lives in the Presenter menu. */}
     {!terminal && !realDone && <button type="button" className="ra-stop" onClick={onStop} disabled={stopping}>{stopping ? 'Stopping…' : 'Stop'}</button>}

@@ -67,6 +67,12 @@ describe('report evidence and drafting', () => {
     expect(html).toContain(`href="/w/notfinancialtimes/blog/${snapshot.contents[0].resourceId}"`)
     expect(html).not.toContain('x402-endpoint')
   })
+  it('#199 gate-5: a Testnet run’s PDF carries the Testnet label, never SIMULATED SGD', async () => {
+    const snapshot = run(); snapshot.labels = { ...snapshot.labels, settlement: 'XRPL TESTNET · no real value' }
+    const html = reportHtml(await buildReport(snapshot))
+    expect(html).toContain('XRPL TESTNET · no real value')
+    expect(html).not.toContain('SIMULATED SGD')
+  })
   it('gate-4: a quarantined (failed-proof) grant is no source access for the report', async () => {
     const snapshot = paidRun(); snapshot.intents[0].status = 'CLAIM_FAILED'
     await expect(buildReport(snapshot)).rejects.toThrow('Report source requires a matching delivery grant')

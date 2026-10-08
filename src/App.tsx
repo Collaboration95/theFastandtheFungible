@@ -325,7 +325,7 @@ export default function App() {
         <DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} />
         </>}
       </aside>
-      <RunTape run={shown} replaying={replaying} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
+      <RunTape run={shown} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
     </div>
     {passage && <Passage candidate={passage.candidate} content={getAccessibleContent(shown, passage.candidate)} citation={passage.citation} onClose={() => setPassage(undefined)} />}
     {receipt && <Receipt run={shown} receipt={receipt} onClose={() => setReceipt(undefined)} />}

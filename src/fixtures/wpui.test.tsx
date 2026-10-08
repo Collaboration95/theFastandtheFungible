@@ -165,7 +165,7 @@ describe('proofs, challenge → refund, run tape (#152)', () => {
     const refunded = staged(uc3Run, first('REFUND'))
     expect([refunded.spentMinor, refunded.refundedMinor]).toEqual([30, 30])
     expect(staged(uc3Run, first('CHALLENGE', 'REFUNDED') - 1).refundedMinor).toBe(0)
-    const tape = renderToStaticMarkup(<RunTape run={uc3Run} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    const tape = renderToStaticMarkup(<RunTape run={uc3Run} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
     // T3: the run bar's segments, in order; each segment's title carries the step's full name and detail.
     const order = ['Plan', 'Search', 'Choose what to buy', 'Proof check', 'Challenge', 'Refund', 'Reputation', 'Check again', 'Done'].map(title => tape.indexOf(`title="${title}`))
     expect(order.every(index => index >= 0)).toBe(true)

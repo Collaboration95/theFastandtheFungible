@@ -97,14 +97,19 @@ describe('visible internals', () => {
   })
 
   it('shows the run as steps with Stop while live, and no button once the run is over', () => {
-    const live = renderToStaticMarkup(<RunTape run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    const live = renderToStaticMarkup(<RunTape run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
     expect(live).toContain('>Stop<')
     expect(live).toContain('Choose what to buy')
     expect(live).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop</)
     expect(live).not.toContain('ra-runbar-clock')
-    const done = renderToStaticMarkup(<RunTape run={offlineZeroBudgetRun} replaying={false} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    const done = renderToStaticMarkup(<RunTape run={offlineZeroBudgetRun} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
     expect(done).not.toContain('ra-stop')
     expect(done).not.toContain('Run finished')
+  })
+
+  it('#199: a stage-paced live run never reads as a replay', () => {
+    const html = renderToStaticMarkup(<RunTape run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    expect(html).not.toContain('Replaying')
   })
 
   it('keeps the header quiet unless a provider fell back', () => {
@@ -222,6 +227,15 @@ describe('stage pacing', () => {
     const verified = staged(paidStoryRun, at('GRANT'))
     expect(verified.intents[0].status).toBe('VERIFIED')
     expect(verified.grants).toHaveLength(1)
+  })
+
+  it('#199: keeps decimals whole in the rest of the short answer', () => {
+    const answer = paidStoryRun.answers.at(-1)!
+    const conclusion = 'Margins held up. The spread widened to 55.2% in Q3. Watch the lead times.'
+    const run = { ...paidStoryRun, answers: [...paidStoryRun.answers.slice(0, -1), { ...answer, conclusion }] }
+    const html = renderToStaticMarkup(<Answer run={run} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)
+    expect(html).toContain('55.2%')
+    expect(html).not.toContain('55. 2%')
   })
 
   it('never shows paid text before the replay reaches its verified grant (gate 1)', () => {
