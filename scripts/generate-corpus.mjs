@@ -69,7 +69,8 @@ export async function generate({ llm, root, out, only, dryRun = false, cap = CAL
     const res = await call(`plan:${slug}`, `You plan blog posts for a fictional writer. Return JSON {"articles":[{"title","writerSlug","publishedAt":"YYYY-MM-DD","tags":[string],"tier":"FREE"|"PAID","family":string,"derivedFrom"?:string}]} with exactly ${count} distinct articles. ${RESERVED} Dates must be between ${iso(Date.parse(today) - 183 * day)} and ${iso(Date.parse(today) - day)}. ${mixed ? 'Make about 40% FREE and the rest PAID.' : ''} ${sources ? 'About 70% must be rewrites: set derivedFrom to an articleId from sourceArticles and reuse its family.' : 'Give each article a short kebab-case family name.'}`,
       { publisher: f.publisher.name, bio: f.publisher.bio, writers: f.writers, lanes: f.topics, count, sourceArticles: sources })
     const list = (Array.isArray(res?.articles) ? res.articles : []).slice(0, count)
-    const paid = Math.max(...Object.values(f.publisher.prices))
+    // Generated posts take the standard price; a per-article tier such as The Fab Floor's S$0.40 deep-dive (#204) is set by hand.
+    const paid = f.publisher.prices.standard ?? Math.max(...Object.values(f.publisher.prices))
     const ids = new Set(Object.keys(plan).flatMap(k => Object.keys(plan[k])).concat(golden.map(a => a.articleId)))
     plan[slug] = {}
     list.forEach((p, i) => {
