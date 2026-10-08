@@ -110,6 +110,10 @@ describe('report evidence and drafting', () => {
     expect(html).toContain('bought / granted')
     expect(html).toContain('0.800 / 1.000 / 2.000')
     expect(html).toContain('S$0.80')
+    expect(html).toContain('Round 1 · fixture · metadata-fixture')
+    // #214: the decision provider is named as itself in the report (gate 5).
+    const openai = reportHtml({ ...report, decisions: report.decisions.map(d => ({ ...d, provider: 'openai' as const, model: 'gpt-6-luna' })) })
+    expect(openai).toContain('Round 1 · OpenAI Decisions · gpt-6-luna')
   })
   it('labels stub/provider failure and all-invalid drafts as fixture', async () => {
     vi.mocked(isLlmConfigured).mockReturnValue(true)

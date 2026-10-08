@@ -1,7 +1,9 @@
 // Preflight for the demo. Run: node --import tsx scripts/doctor.mjs [--keys] [--deep] [--stage]
 //   --keys  only the provider checks (used by demo:live before it starts)
-//   --deep  also spend one tiny DeepSeek completion, one Workers AI embedding and one Clef call to prove the models answer
-//   --stage `make preflight` (#196): can the live demo decide right now? One decision-shaped Clef round at the
+//   --deep  also spend one tiny DeepSeek completion, one Workers AI embedding, one Clef call and one OpenAI Decisions call
+//           to prove the models answer (the Decisions call always runs when DECISION_PROVIDER=openai)
+//   --stage `make preflight` (#196): can the live demo decide right now? One decision-shaped round (Clef, or OpenAI
+//           Decisions when DECISION_PROVIDER=openai) at the
 //           server's timeout, the daily quota, leftover reputation and runs, the backup Cloudflare pair, XRPL.
 //           Read-only apart from the Clef and embedding calls; one PASS/FAIL line per check.
 // Never prints keys or provider response bodies. Exits 1 if any check fails.
@@ -10,7 +12,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { ClefDecisionProvider, clefTimeoutMs } from '../server/agents/clef.ts'
 import { llmConfig } from '../server/agents/llm.ts'
-import { applyBackupPair, backupPairCheck, decisionRoundCheck, reputationCheck, unfinishedRunsCheck } from './stage-checks.mjs'
+import { OpenAIDecisionsProvider, decisionsTimeoutMs } from '../server/agents/openai-decisions.ts'
+import { applyBackupPair, backupPairCheck, decisionRoundCheck, decisionsAccessCheck, liveDecisionProvider, reputationCheck, unfinishedRunsCheck } from './stage-checks.mjs'
 
 const args = new Set(process.argv.slice(2))
 const stage = args.has('--stage')
@@ -23,6 +26,28 @@ const report = ({ ok: passed, line }) => passed ? ok(line) : fail(line)
 // The same swap as `CF_BACKUP=1 make live`, so preflight checks the pair the demo will use. Names only, never values.
 if (process.env.CF_BACKUP === '1') {
   try { console.log(`CF_BACKUP=1: using the backup Cloudflare pair (${applyBackupPair(process.env).join(', ')})`) } catch (error) { fail(error.message) }
+}
+// The provider `make live` decides with (#214): DECISION_PROVIDER=openai or cloudflare (the default and the revert).
+const decisionProvider = liveDecisionProvider(process.env.DECISION_PROVIDER)
+/**
+ * OpenAI Decisions access: one cheap call through the app's own client (`candidates` > 0 makes it a batch round of that
+ * size). The status and error body are read only to name the failure; nothing is printed but the PASS/FAIL line.
+ */
+async function decisionsCheck(candidates = 0) {
+  if (!process.env.OPENAI_API_KEY) return decisionsAccessCheck({ missing: 'OPENAI_API_KEY' })
+  let last = {}
+  const recording = async (url, init) => { const res = await fetch(url, init); last = { status: res.status, body: res.ok ? '' : await res.clone().text().catch(() => '') }; return res }
+  const provider = new OpenAIDecisionsProvider({ fetch: recording })
+  const question = 'Will the project be operating by 2028?', conclusion = 'Demand is strong; grid timing is unknown.', gap = 'No evidence on grid energisation dates.'
+  const started = Date.now()
+  try {
+    if (candidates) {
+      const { exampleCandidate } = await import('../shared/contracts/examples.ts')
+      const list = Array.from({ length: candidates }, (_, i) => ({ ...exampleCandidate, resourceId: `preflight-${i + 1}`, family: `preflight-${i + 1}`, tier: 'PAID', price: { amountMinor: 50, currency: 'SGD' }, facets: ['grid-energisation'], preview: 'Grid planner interviews and energisation queue data.' }))
+      await provider.judgeBatch({ question, conclusion, gap, readSources: [exampleCandidate], candidates: list })
+    } else await provider.judgeRound({ question, conclusion, gap })
+    return decisionsAccessCheck({ ms: Date.now() - started }, provider.model)
+  } catch (error) { return decisionsAccessCheck({ ...last, ms: Date.now() - started, error: error?.status ?? 'error' }, provider.model) }
 }
 // Commented-out names in .env.example (e.g. # GROQ_API_KEY=) still count as known.
 const keyNames = text => new Set([...text.matchAll(/^\s*#?\s*([A-Z][A-Z0-9_]*)\s*=/gm)].map(m => m[1]))
@@ -72,9 +97,10 @@ if (stage) {
   console.log('Stage preflight (make preflight)')
   if (process.env.CLOUDFLARE_ACCOUNT_ID) ok('CLOUDFLARE_ACCOUNT_ID set (no account lookup at boot)')
   else warn('CLOUDFLARE_ACCOUNT_ID not set; every process discovers the account first (one more call that can fail)')
-  const timeoutMs = clefTimeoutMs()
+  console.log(`  decision model: ${decisionProvider === 'openai' ? 'OpenAI Decisions' : 'Cloudflare Clef'} (DECISION_PROVIDER=${decisionProvider}; revert with DECISION_PROVIDER=cloudflare)`)
+  const timeoutMs = decisionProvider === 'openai' ? decisionsTimeoutMs() : clefTimeoutMs()
   // One decision-shaped round, as the server makes it: 1 judgeRound + 8 judgeCandidate in parallel, at the server's timeout.
-  const decisionRound = (async () => {
+  const decisionRound = decisionProvider === 'openai' ? decisionsCheck(8) : (async () => {
     if (!process.env.CLOUDFLARE_API_TOKEN) return { ok: false, line: 'decision round: CLOUDFLARE_API_TOKEN not set' }
     const { exampleCandidate } = await import('../shared/contracts/examples.ts')
     const clef = new ClefDecisionProvider({ allowLive: true })
@@ -163,8 +189,14 @@ if (!stage) {
   }
 
 
-  console.log('Cloudflare Clef (decisions)')
-  if (!process.env.CLOUDFLARE_API_TOKEN) fail('CLOUDFLARE_API_TOKEN not set; demo:live decision rounds will fail and buy nothing')
+  // OpenAI Decisions: one cheap call whenever live decides with it (or on --deep); otherwise just whether the key is set.
+  console.log(`OpenAI Decisions (decisions${decisionProvider === 'openai' ? ', selected by DECISION_PROVIDER=openai' : ' with DECISION_PROVIDER=openai'})`)
+  if (decisionProvider === 'openai' || (deep && process.env.OPENAI_API_KEY)) report(await decisionsCheck())
+  else if (process.env.OPENAI_API_KEY) ok('OPENAI_API_KEY set (not called without --deep)')
+  else warn('OPENAI_API_KEY not set; DECISION_PROVIDER=openai would fail every decision round')
+
+  console.log(`Cloudflare Clef (decisions${decisionProvider === 'cloudflare' ? '' : '; the revert with DECISION_PROVIDER=cloudflare'})`)
+  if (!process.env.CLOUDFLARE_API_TOKEN) (decisionProvider === 'cloudflare' ? fail : warn)('CLOUDFLARE_API_TOKEN not set; Clef decision rounds would fail and buy nothing')
   else {
     // Reuse the app's own client so the check exercises the exact request format.
     const clef = new ClefDecisionProvider({ allowLive: true, timeoutMs: 8000 })

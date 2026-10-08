@@ -64,12 +64,18 @@ export async function buildIndex(articles: Article[], cache?: EmbeddingCache): P
   return { db, vectors: withVectors, ...(withVectors ? { vectorOf: new Map(articles.map((a, i) => [a.articleId, vectors[i]!])) } : {}) }
 }
 
-const cosine = (a: number[], b: number[]) => {
+export const cosine = (a: number[], b: number[]) => {
   let dot = 0, na = 0, nb = 0
   for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i] }
   return na && nb ? dot / Math.sqrt(na * nb) : 0
 }
 
+/** The promise scale (#142): cosine mapped linearly from cosineRange to [0, 1]; a returned hit never promises exactly 0.
+ *  The trust check (#205) measures the delivered article on this same scale. */
+export const cosineRelevance = (cos: number) => {
+  const { lo, hi } = SEARCH_TUNING.cosineRange
+  return Math.min(1, Math.max(0.01, (cos - lo) / (hi - lo)))
+}
 /**
  * Ranks one publisher's articles. Relevance is an absolute 0–1 promise, never normalised to the top hit:
  * per-response normalisation made every publisher promise 1.0 for its best hit, so an inflated
@@ -82,11 +88,10 @@ export async function searchIndex(index: PublisherIndex, term: string, k: number
     ? await search(index.db, { ...common, mode: 'hybrid', vector: { value: queryVector!, property: 'embedding' }, similarity: SEARCH_TUNING.similarity, hybridWeights: SEARCH_TUNING.hybridWeights })
     : await search(index.db, { ...common, mode: 'fulltext' })
   // Hybrid: query–article cosine on a fixed scale (comparable across writers). Keyword: BM25 is unbounded, so it saturates.
-  const { lo, hi } = SEARCH_TUNING.cosineRange
   const absolute = (id: string, score: number) => {
     const vector = mode === 'hybrid' ? index.vectorOf?.get(id) : undefined
-    const value = vector ? (cosine(queryVector!, vector) - lo) / (hi - lo) : score / (score + SEARCH_TUNING.keywordHalfScore)
-    return Math.min(1, Math.max(0.01, value)) // a returned hit matched something: never promise exactly 0
+    // A returned hit matched something: never promise exactly 0.
+    return vector ? cosineRelevance(cosine(queryVector!, vector)) : Math.min(1, Math.max(0.01, score / (score + SEARCH_TUNING.keywordHalfScore)))
   }
   const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) }))
   return { mode, ranked }

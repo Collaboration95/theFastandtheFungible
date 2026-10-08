@@ -9,6 +9,7 @@ import { Reputation } from '../server/reputation.js'
 import { fixturePlan } from '../server/agents/scope.js'
 import { RunLoop, type RunLoopOptions } from '../server/agents/loop.js'
 import { FixtureDecisionProvider } from '../server/agents/decision.js'
+import { DECISIONS_PROMPT_VERSION, OpenAIDecisionsProvider } from '../server/agents/openai-decisions.js'
 import type { DecisionProvider } from '../server/agents/decision.js'
 import type { Store } from '../server/store.js'
 import type { PublisherClient } from '../server/publisher-client.js'
@@ -64,7 +65,8 @@ describe('RunLoop with W0 ledger/research doubles', () => {
     const h = harness()
     await h.loop.start(h.run.runId)
     expect(h.run.phase).toBe('DONE')
-    expect(h.published.map(event => event.type)).toEqual(['SEARCH', 'READ_FREE', 'ANSWER', 'DECIDE', 'BUY', 'READ_PAID', 'ANSWER', 'DECIDE', 'DONE'])
+    // v2 has no open gap, so no second round is decided (#206: empty-gap rounds after round 1 are skipped).
+    expect(h.published.map(event => event.type)).toEqual(['SEARCH', 'READ_FREE', 'ANSWER', 'DECIDE', 'BUY', 'READ_PAID', 'ANSWER', 'DONE'])
     expect(h.run.answers.map(answer => answer.version)).toEqual([1, 2])
     expect(h.run.answers[0].conclusion).toBe(exampleAnswer.conclusion)
     expect(h.purchases.purchase).toHaveBeenCalledTimes(1)
@@ -230,6 +232,20 @@ describe('RunLoop with W0 ledger/research doubles', () => {
     expect(new Set(h.run.intents.map(intent => intent.resourceId)).size).toBe(3)
     expect(h.run.answers.map(answer => answer.version)).toEqual([1, 2, 3, 4])
   })
+  it('#214: the OpenAI Decisions provider reaches the run snapshot labelled as itself', async () => {
+    const h = harness()
+    const transport = vi.fn<typeof fetch>(async (_url, init) => {
+      const body = JSON.parse(String(init?.body)) as { questions: { name: string; type: string }[] }
+      return Response.json({ answers: body.questions.map(q => q.type === 'predicate' ? { type: 'predicate', name: q.name, probability: 0.9 } : q.type === 'choice' ? { type: 'choice', name: q.name, probabilities: [{ value: 'original', probability: 0.9 }, { value: 'rewrite', probability: 0.05 }, { value: 'overlap', probability: 0.05 }] } : { type: 'score', name: q.name, score: 2 }) })
+    })
+    const provider = new OpenAIDecisionsProvider({ apiKey: 'mock-key', fetch: transport })
+    const loop = new RunLoop(h.store as unknown as Store, {} as PublisherClient, h.purchases as unknown as PurchaseManager, undefined, { retrieve: h.retrieve, writeAnswer: h.writeAnswer, provider })
+    await loop.start(h.run.runId)
+    expect(transport).toHaveBeenCalledTimes(1) // one batched request for the one decided round
+    expect(h.run.labels.decision).toBe('OpenAI Decisions · gpt-6-luna')
+    expect(h.run.decisions.map(d => [d.provider, d.model, d.promptVersion])).toEqual([['openai', 'gpt-6-luna', DECISIONS_PROMPT_VERSION]])
+    expect(h.purchases.purchase).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('RunLoop × reputation (#140, #141)', () => {
@@ -261,6 +277,8 @@ describe('RunLoop × reputation (#140, #141)', () => {
     expect(h.run.intents[0].status).toBe('CLAIM_FAILED') // nothing the writer could re-check
     expect(recordProof.mock.calls.filter(([c]) => c.outcome === 'REJECTED')).toHaveLength(1)
     expect(recordProof.mock.calls[0][0]).toMatchObject({ wallet: WALLET, outcome: 'REJECTED' })
+    // The signed promise goes along, so the broken promise is recorded as observed 0 (#205).
+    expect(Object.keys(recordProof.mock.calls[0][0])).toContain('claimed')
   })
   it('restart: a terminal challenge outcome whose trust update a crash lost is recorded once, never twice', async () => {
     const recordProof = vi.fn()
@@ -275,9 +293,9 @@ describe('RunLoop × reputation (#140, #141)', () => {
     expect(recordProof.mock.calls[0][0]).toMatchObject({ wallet: WALLET, outcome: 'REFUNDED' })
     expect(h.run.checkpoint.trustRecorded).toEqual(['leak'])
   })
-  it('calibrates once after each verified, granted purchase with the active provider, and a failure never blocks the run', async () => {
+  it('calibrates once after each verified, granted purchase, and a failure never blocks the run', async () => {
     let grantsAtCall = -1
-    const calibrate = vi.fn(async (input: { run: RunSnapshot; intentId: string; provider: unknown }) => {
+    const calibrate = vi.fn(async (input: { run: RunSnapshot; intentId: string }) => {
       grantsAtCall = input.run.grants.filter(g => g.intentId === input.intentId).length
       throw new Error('Clef down')
     })
@@ -286,9 +304,38 @@ describe('RunLoop × reputation (#140, #141)', () => {
     expect(h.purchases.purchase).toHaveBeenCalledTimes(1)
     expect(calibrate).toHaveBeenCalledTimes(1)
     expect(grantsAtCall).toBe(1)
-    expect(calibrate.mock.calls[0][0].provider).toBeInstanceOf(FixtureDecisionProvider)
     expect(h.run.phase).toBe('DONE')
     expect(h.run.answers).toHaveLength(2)
+  })
+  it('#206: calibration runs beside the re-answer and finishes before the next decision', async () => {
+    const log: string[] = []
+    const provider = new FixtureDecisionProvider()
+    const judgeRound = provider.judgeRound.bind(provider)
+    vi.spyOn(provider, 'judgeRound').mockImplementation(async value => { log.push('decide'); return judgeRound(value) })
+    const calibrate = vi.fn(async () => {
+      log.push('calibrate:start')
+      await new Promise(resolve => setTimeout(resolve, 20))
+      log.push('calibrate:end')
+      return { status: 'SKIPPED' as const, reason: 'test' }
+    })
+    const h = harness(500)
+    const wallet = (c: PublicCandidate) => ({ ...c, wallet: WALLET })
+    const retrieve = vi.fn(async () => ({ candidates: [exampleCandidate, wallet(paid('a')), wallet(paid('b'))], contents: [exampleContent] }))
+    // Every answer keeps the gap open, so a second round is decided.
+    const writeAnswer = vi.fn(async (input: { version: number }) => { log.push(`answer v${input.version}`); return { answer: { ...structuredClone(exampleAnswer), version: input.version } } })
+    const loop = new RunLoop(h.store as unknown as Store, {} as PublisherClient, h.purchases as unknown as PurchaseManager, undefined, { retrieve, writeAnswer, provider, reputation: { summaries: () => ({}), calibrate } })
+    await loop.start(h.run.runId)
+    // Both start before either finishes; the re-answer does not wait for calibration, the next decision does.
+    expect(log.slice(0, 6)).toEqual(['answer v1', 'decide', 'answer v2', 'calibrate:start', 'calibrate:end', 'decide'])
+    // Every calibration finishes before the next decision, and before the run ends.
+    let pending = false
+    for (const entry of log) {
+      if (entry === 'calibrate:start') pending = true
+      if (entry === 'calibrate:end') pending = false
+      if (entry === 'decide') expect(pending).toBe(false)
+    }
+    expect(pending).toBe(false)
+    expect(calibrate).toHaveBeenCalledTimes(h.purchases.purchase.mock.calls.length)
   })
 })
 
@@ -358,6 +405,10 @@ describe('fixture-mode use cases, end to end (#142)', () => {
     expect(cited(run)).toContain(round2)
     expect(new Set(run.intents.map(i => i.intentId)).size).toBe(run.intents.length) // gate 3
     expect(h.reputation.list().find(r => r.publisherSlug === 'alphaleak')).toMatchObject({ H: 0.4, refunds: 1, status: 'quarantined' })
+    // #205: the broken promise lowers AlphaLeak's calibration; the honest Fab Floor stays above it on the Writers tab.
+    const writer = (slug: string) => h.reputation.list().find(r => r.publisherSlug === slug)!
+    expect(writer('alphaleak').C).toBeLessThan(writer('the-fab-floor').C)
+    expect(writer('alphaleak').T).toBeLessThan(writer('the-fab-floor').T)
     const again = await h.ask('UC3')
     expect(verdicts(again, 1)[round1!]).toBe('SKIP_LOW_TRUST')
     expect(bought(again)).toEqual([`${round2}:VERIFIED`])

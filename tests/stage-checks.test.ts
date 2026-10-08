@@ -1,7 +1,7 @@
 // #196: the `make preflight` parsers, with fixtures only (no network, no store).
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error plain .mjs script, no declarations
-import { applyBackupPair, backupPairCheck, decisionRoundCheck, errorCodes, isDailyQuota, QUOTA_LINE, reputationCheck, unfinishedRunsCheck } from '../scripts/stage-checks.mjs'
+import { applyBackupPair, backupPairCheck, decisionRoundCheck, decisionsAccessCheck, errorCodes, isDailyQuota, liveDecisionProvider, QUOTA_LINE, reputationCheck, unfinishedRunsCheck } from '../scripts/stage-checks.mjs'
 
 const prior = { publisherSlug: 'notft', wallet: 'rA', r: 0, s: 0, passes: 0, fails: 0, refunds: 0, refusals: 0, brierSum: 0, n: 0, H: 0.8, C: 1, T: 0.8, status: 'active', updatedAt: '2026-10-08T00:00:00.000Z' }
 const quotaBody = JSON.stringify({ success: false, errors: [{ code: 4006, message: 'AiError: Daily free allocation of 10000 neurons exhausted' }] })
@@ -72,5 +72,24 @@ describe('preflight: backup pair', () => {
     const env: Record<string, string> = { CLOUDFLARE_API_TOKEN: 'primary-token', CLOUDFLARE_API_TOKEN_2: 'backup-token' }
     expect(() => applyBackupPair(env)).toThrow('CF_BACKUP=1 needs CLOUDFLARE_ACCOUNT_ID_2 in .env')
     expect(env.CLOUDFLARE_API_TOKEN).toBe('primary-token')
+  })
+})
+
+describe('preflight: OpenAI Decisions (#214)', () => {
+  it('make live honours an explicit DECISION_PROVIDER and otherwise stays on Clef', () => {
+    expect(liveDecisionProvider('openai')).toBe('openai')
+    expect(liveDecisionProvider('cloudflare')).toBe('cloudflare')
+    for (const value of [undefined, '', 'fixture', 'OpenAI']) expect(liveDecisionProvider(value)).toBe('cloudflare')
+  })
+  it('names access, credit, model and rate problems in plain words, never the response text', () => {
+    expect(decisionsAccessCheck({ missing: 'OPENAI_API_KEY' })).toEqual({ ok: false, line: 'OpenAI Decisions: OPENAI_API_KEY not set' })
+    expect(decisionsAccessCheck({ status: 401, body: '{"error":{"code":"invalid_api_key","message":"Incorrect API key provided: sk-SECRET"}}', error: 'HTTP 401' })).toEqual({ ok: false, line: 'OpenAI Decisions: key rejected (HTTP 401)' })
+    expect(decisionsAccessCheck({ status: 429, body: '{"error":{"code":"insufficient_quota"}}', error: 'no credit' }).line).toContain('no credit left')
+    expect(decisionsAccessCheck({ status: 429, body: '{"error":{"code":"rate_limit_exceeded"}}', error: 'HTTP 429' }).line).toContain('rate limited')
+    expect(decisionsAccessCheck({ status: 404, body: '', error: 'HTTP 404' }).line).toContain('gpt-6-luna')
+    expect(decisionsAccessCheck({ status: 200, body: '', error: 'refusal' })).toEqual({ ok: false, line: 'OpenAI Decisions: call failed (refusal)' })
+    expect(decisionsAccessCheck({ error: 'timeout' }).line).toBe('OpenAI Decisions: call failed (timeout)')
+    expect(decisionsAccessCheck({ ms: 291 })).toEqual({ ok: true, line: 'OpenAI Decisions: gpt-6-luna answered in 291 ms' })
+    expect(JSON.stringify(decisionsAccessCheck({ status: 401, body: 'sk-SECRET', error: 'x' }))).not.toContain('SECRET')
   })
 })

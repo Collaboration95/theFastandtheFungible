@@ -2,22 +2,25 @@ import express, { type ErrorRequestHandler, type Response } from 'express'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { z } from 'zod'
-import { AskSchema, DROPS_PER_MINOR, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
+import { AskSchema, DROPS_PER_MINOR, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, decisionLabel, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
 import { XrplPayer } from './xrpl.js'
 import { scoreTrace, traceEvent, traceRun } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { Store } from './store.js'
 import { PublisherClient } from './publisher-client.js'
 import { PurchaseManager } from './purchases.js'
-import { Reputation } from './reputation.js'
+import { cosineObserver, Reputation, type RelevanceObserver } from './reputation.js'
+import { embeddingsLive, embedTexts } from '../publisher/search.js'
 import { RunLoop } from './agents/loop.js'
 import { ClefDecisionProvider } from './agents/clef.js'
+import { OpenAIDecisionsProvider } from './agents/openai-decisions.js'
 import { type DecisionProvider } from './agents/decision.js'
 import { buildReport, renderReport } from './agents/report.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 import { plan as planSearch, scope } from './agents/scope.js'
 
-export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider }
+/** `observe`: the trust check's relevance re-measure (#205); defaults to Workers AI embeddings when SEARCH_EMBEDDINGS=live. */
+export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver }
 export async function createApiApp(options: ApiOptions = {}) {
   const app = express()
   app.disable('x-powered-by')
@@ -37,19 +40,22 @@ export async function createApiApp(options: ApiOptions = {}) {
   const payer = options.payer ?? (process.env.SETTLEMENT_RAIL === 'xrpl-testnet' && process.env.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
   const purchases = new PurchaseManager(store, client, payer)
   let provider = options.provider
+  // DECISION_PROVIDER=openai: OpenAI Decisions (gpt-6-luna, #214); =cloudflare: Clef (the one-line revert); otherwise the labelled fixture.
+  if (!provider && process.env.DECISION_PROVIDER === 'openai') provider = new OpenAIDecisionsProvider({ allowLive: true })
   if (!provider && process.env.DECISION_PROVIDER === 'cloudflare') {
     const clef = new ClefDecisionProvider({ allowLive: true })
     // Warm account discovery; a failed lookup is not cached and is retried on the next decision (#195).
     try { await clef.resolveAccount() } catch { /* A decision round that still cannot reach Clef fails and buys nothing (#197). */ }
     provider = clef
   }
-  const reputation = new Reputation(store)
+  // The trust check re-measures a delivered article with the search's own embedder, after a verified grant only (gate 1).
+  const reputation = new Reputation(store, { observe: options.observe ?? (embeddingsLive() ? cosineObserver((texts, signal) => embedTexts(texts, { signal })) : undefined) })
   const loop = new RunLoop(store, client, purchases, undefined, { provider, reputation })
   const reportDir = resolve(options.reportDir ?? process.env.REPORT_DIR ?? 'data/reports')
   const reportJobs = new Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>()
   const timers = new Set<ReturnType<typeof setInterval>>()
   const publisherUrl = options.publisherUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'
-  const labels: ModeLabels = { research: isLlmConfigured() ? `${llmLabel()} · ${researchModel()} (pending)` : 'fixture · extractive-fixture', decision: provider?.name === 'cloudflare' ? `Cloudflare · ${provider.model} (pending)` : 'fixture · metadata-fixture', publisher: /\.run\.app(?:\/|$)/.test(publisherUrl) ? 'Cloud Run' : 'local', settlement: payer ? XRPL_LABEL : SIMULATED_LABEL }
+  const labels: ModeLabels = { research: isLlmConfigured() ? `${llmLabel()} · ${researchModel()} (pending)` : 'fixture · extractive-fixture', decision: provider && provider.name !== 'fixture' ? `${decisionLabel({ provider: provider.name, model: provider.model })} (pending)` : 'fixture · metadata-fixture', publisher: /\.run\.app(?:\/|$)/.test(publisherUrl) ? 'Cloud Run' : 'local', settlement: payer ? XRPL_LABEL : SIMULATED_LABEL }
   const progress = (runId: string, label: string) => {
     const timer = setInterval(() => {
       try { store.appendEvent(runId, { type: 'PROGRESS', label }) } catch { /* Shutdown or missing run. */ }

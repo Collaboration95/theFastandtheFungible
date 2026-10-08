@@ -3,9 +3,9 @@ import type { Store } from '../store.js'
 import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
 import { challenge } from '../challenges.js'
-import { AnswerSchema, PlanSchema, PublicCandidateSchema, providerLabels } from '../../shared/contracts/index.js'
+import { AnswerSchema, PlanSchema, PublicCandidateSchema, decisionLabel, providerLabels } from '../../shared/contracts/index.js'
 import type { ContentEnvelope, PurchaseIntent, RunSnapshot, TraceEvent } from '../../shared/contracts/index.js'
-import { decide, DecisionUnavailableError, FixtureDecisionProvider, publicSources } from './decision.js'
+import { decide, DecisionUnavailableError, publicSources } from './decision.js'
 import type { ProofOutcome, Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
 import { hitsByPublisher, retrieve, writeAnswer, type Retrieved } from './research.js'
@@ -46,7 +46,8 @@ export class RunLoop {
     const candidate = run.candidates.find(c => c.resourceId === intent.resourceId && c.version === intent.version && c.tier === 'PAID')
     if (!outcome || recorded.includes(intent.intentId) || !candidate?.wallet || !this.options.reputation?.recordProof) return
     try {
-      this.options.reputation.recordProof({ publisherSlug: candidate.publisherSlug ?? candidate.profileId, wallet: candidate.wallet, outcome, runId })
+      // The signed promise goes along: a failed proof records it as broken (observed 0, #205).
+      this.options.reputation.recordProof({ publisherSlug: candidate.publisherSlug ?? candidate.profileId, wallet: candidate.wallet, outcome, runId, claimed: candidate.manifest?.relevance ?? candidate.relevance })
       // Synchronous with the record above: no await between them, so it is recorded at most once.
       this.store.updateRun(runId, { checkpoint: { ...this.store.getRun(runId).checkpoint, trustRecorded: [...recorded, intent.intentId] } })
     } catch { /* reputation never blocks the run */ }
@@ -190,11 +191,17 @@ export class RunLoop {
       for (const intent of this.store.getRun(runId).intents.filter(i => i.status === 'CLAIM_FAILED' || i.status === 'CHALLENGED')) await this.challengeAndRecord(runId, intent.intentId)
       // A crash between a terminal outcome and its trust update: record what is missing (idempotent per intent).
       for (const intent of this.store.getRun(runId).intents) this.recordProof(runId, intent)
-      while (!this.stopped(runId)) {
+      // Calibration runs beside the re-answer (#206) and is awaited before the next decision, so trust ordering holds.
+      let calibration: Promise<unknown> | undefined
+      try { while (!this.stopped(runId)) {
+        await calibration
+        calibration = undefined
         run = this.store.getRun(runId)
         if (run.round >= 3 || (run.budgetMinor > 0 && run.spentMinor + run.reservedMinor >= run.budgetMinor)) break
         const answer = run.answers.at(-1)!
         const gap = answer.openGaps[0]
+        // An empty gap after round 1 has nothing to decide (#206); round 1 still records its table (UC1: "no gap").
+        if (run.round >= 1 && !gap?.text.trim()) break
         const round = run.round + 1
         this.store.updateRun(runId, { round })
         this.trace(runId, 'DECIDE', 'Scoring public previews and applying spending policy.')
@@ -210,7 +217,7 @@ export class RunLoop {
         }
         this.store.addDecision(runId, decision)
         const latest = this.store.getRun(runId)
-        this.store.updateRun(runId, { labels: { ...latest.labels, decision: `${decision.provider === 'cloudflare' ? 'Cloudflare' : 'fixture'} · ${decision.model}` } })
+        this.store.updateRun(runId, { labels: { ...latest.labels, decision: decisionLabel(decision) } })
         if (this.stopped(runId)) return
         if (!decision.selectedResourceId) break
         const candidate = decision.rows.find(row => row.candidate.resourceId === decision.selectedResourceId)!.candidate
@@ -228,12 +235,11 @@ export class RunLoop {
         this.recordProof(runId, intent)
         if (this.stopped(runId)) return
         this.trace(runId, 'READ_PAID', 'Verified grant permits paid evidence.', { intentId })
-        // Calibration (#141): re-score the granted body; a failure is labelled inside calibrate() and never blocks the run.
-        if (this.options.reputation) {
-          try { await this.options.reputation.calibrate({ run: this.store.getRun(runId), intentId, question: run.question, gap: gap?.text ?? '', provider: this.options.provider ?? new FixtureDecisionProvider() }) } catch { /* reputation never blocks the run */ }
-        }
+        // Calibration (#141, #205): re-measure the granted article; a failure is labelled inside calibrate() and never blocks the run.
+        const reputation = this.options.reputation
+        if (reputation) calibration = Promise.resolve().then(() => reputation.calibrate({ run: this.store.getRun(runId), intentId })).catch(() => undefined)
         await this.answer(runId)
-      }
+      } } finally { await calibration }
       if (!this.stopped(runId)) this.trace(runId, 'DONE', 'Stopped: no eligible purchase, exhausted budget, or three-round limit.')
     })
   }

@@ -9,7 +9,9 @@
   Never implement an issue labelled `deferred` ("DO NOT IMPLEMENT").
 - The product is a neutral search engine for agent-readable expertise, with a
   wallet. Writers search their own articles; DeepSeek clarifies, plans and
-  writes; a Cloudflare Clef decision model judges what is worth buying; trust
+  writes; a decision model judges what is worth buying (OpenAI Decisions
+  `gpt-6-luna` since the owner's 8 Oct decision, #214, amending D9; Cloudflare
+  Clef-flash is the one-line revert, `DECISION_PROVIDER=cloudflare`); trust
   scores weight it; deterministic policy code pays over x402 on XRPL Testnet
   within the per-prompt budget. The 5 s action modal confirms the plan before
   any spending; there is no per-purchase approval modal.
