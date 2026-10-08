@@ -37,9 +37,9 @@ what that buys (above) and on what data.
 
 ## 2. The model choice
 
-The coordinator keeps **one** of the two blocks below after the live
-comparison on the real corpus (#214), and deletes the other. Until then,
-neither is final.
+Decided after the live comparison on the real corpus (#214,
+[result](https://github.com/Collaboration95/theFastandtheFungible/issues/214#issuecomment-6064805198)):
+the demo uses OpenAI Decisions.
 
 ### Outcome A: SWITCHED to OpenAI Decisions (`gpt-6-luna`)
 
@@ -56,17 +56,19 @@ neither is final.
   Fab Floor's Penang article is now a S$0.40 data deep-dive, so AlphaLeak
   at S$0.30 wins round 1 on price as well), not the judge, and switched.
 - The whole study cost about US$0.96 ([R] "Cost and latency"; [COST]).
-- Clef-flash stays selectable as the revert.
+- Clef-flash stays selectable as the revert (`DECISION_PROVIDER=cloudflare`).
 
-### Outcome B: KEPT Clef-flash
-
-- Same benchmark, same numbers as Outcome A, but the beat becomes "the
-  challenger that won on F1 and failed our regression gate".
-- Luna won on F1, Brier, injection and request count on SYNTHETIC data
-  ([R]), but did not hold up in the live comparison on the real corpus
-  (coordinator: one line on what failed).
-- A preregistered rule is only worth something if you obey it when it says
-  no. Total study cost about US$0.96 ([COST]).
+**LIVE (real corpus, XRPL Testnet, 9 Oct; a small sample, separate from the SYNTHETIC numbers above):**
+- Clef-flash as production ran it told the UC3 story in 0 of 2 runs (The
+  Fab Floor scored under the 0.15 bar).
+- OpenAI Decisions with the plain gap question ("The open gap is part of what
+  the question asks."): UC3 story 3 of 3, UC2 bought NotFT 3 of 4, 0
+  refusals, 3 of 5 new real-corpus questions right.
+- The gap-question wording, not the model, was the main fix: with the
+  benchmark's gap sentence, the same model scored on-question gaps anywhere
+  from 0.06 to 0.94 and bought NotFT in only 4 of 10 UC2 runs.
+- Since #208, a gap that is one of the question's frozen requested facts is
+  not scored at all: it counts as fully material.
 
 ## 3. Injection: the known weak spot
 

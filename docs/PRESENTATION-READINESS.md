@@ -98,16 +98,18 @@ or a verdict code such as `SKIP_LOW_TRUST`; the screen says "Blocked".
    Testnet, and its track record falls from 0.80 to 0.40. Round two buys The
    Fab Floor at S$0.40: S$0.70 spent, S$0.30 refunded, S$0.40 net. Ask again
    and AlphaLeak shows as Blocked.
-5. **The model choice (about 20 s, take it from UC2's time if needed).** The
-   coordinator keeps one of these after the live comparison (#214):
-   - **If SWITCHED:** “We benchmarked two decision models under a rule we
-     wrote down first. OpenAI's Luna beat Clef-flash on every quality number
-     on our synthetic set. It failed one test: our own demo needed a judge
-     that gets fooled. We fixed the story, not the judge, and switched. The
-     whole study cost under a dollar.”
-   - **If KEPT:** “We benchmarked a challenger under a rule we wrote down
-     first. It won on accuracy on our synthetic set and failed our regression
-     gate, so the rule kept Clef-flash. The whole study cost under a dollar.”
+5. **The model choice (about 20 s, take it from UC2's time if needed).**
+   SWITCHED, by the rule, after the live comparison (#214):
+   “We benchmarked two decision models under a rule we wrote down first.
+   OpenAI's Luna beat Clef-flash on every quality number on our synthetic
+   set. It failed one test: our own demo needed a judge that gets fooled. We
+   fixed the story, not the judge, and switched. The whole study cost under a
+   dollar.”
+   - LIVE, small sample (real corpus, 9 Oct; keep apart from the SYNTHETIC
+     numbers): Clef-flash told the UC3 story 0 of 2 times. Luna with a plain
+     gap question told it 3 of 3, bought NotFT in UC2 3 of 4 times, refused 0
+     times, and got 3 of 5 new real-corpus questions right. The wording of
+     the gap question, not the model, was the main fix.
 6. **Pop the hood (about 30 s).** One Langfuse trace, the raw 402 exchange and
    the build log.
 
