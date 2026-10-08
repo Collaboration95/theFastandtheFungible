@@ -2,8 +2,13 @@ import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { resolve } from 'node:path'
 import dotenv from 'dotenv'
+import { applyBackupPair } from './stage-checks.mjs'
 dotenv.config({ quiet: true })
 const live = process.argv.includes('--live')
+// CF_BACKUP=1 (#196): every Cloudflare client in this demo uses the backup pair (_2) instead. Names only, never values.
+if (process.env.CF_BACKUP === '1') {
+  try { console.log(`CF_BACKUP=1: using the backup Cloudflare pair for ${applyBackupPair(process.env).join(', ')}`) } catch (error) { console.error(error.message); process.exit(1) }
+}
 // DEMO_PORT_OFFSET shifts all three ports so a worktree can run beside main (100 → 5200/8888/8890).
 const offset = Number(process.env.DEMO_PORT_OFFSET || 0)
 const ports = { web: 5100 + offset, api: 8788 + offset, pub: 8790 + offset }
@@ -24,11 +29,11 @@ async function health(url) { for (let i=0;i<100;i++) { if (stopping) throw new E
 process.on('SIGINT',()=>shutdown());process.on('SIGTERM',()=>shutdown())
 try {
   // Live preflight is advisory (it only warns), so run it beside the startup instead of in front of it.
-  if (live) once(spawn(process.execPath, ['--import', 'tsx', 'scripts/doctor.mjs', '--keys'], { env, stdio: 'inherit' }), 'exit').then(([code]) => { if (code) console.warn('\n⚠ Provider preflight failed. Starting anyway; failed calls will show as labelled fixtures.\n') })
+  if (live) once(spawn(process.execPath, ['--import', 'tsx', 'scripts/doctor.mjs', '--keys'], { env, stdio: 'inherit' }), 'exit').then(([code]) => { if (code) console.warn('\n⚠ Provider preflight failed. Starting anyway; failed answer calls show as labelled fixtures and failed decision rounds buy nothing.\n') })
   if (publisherUrl === localPublisher) start(process.execPath, ['--import','tsx','publisher/server.ts'])
   start(process.execPath,['--import','tsx','server/index.ts'])
   start(process.execPath,[resolve('node_modules/vite/bin/vite.js'),'--host','127.0.0.1','--port',String(ports.web),'--strictPort'])
   await Promise.all([health(`${env.PUBLISHER_URL.replace(/\/$/,'')}/health`), health(`http://127.0.0.1:${ports.api}/health`), health(`http://127.0.0.1:${ports.web}`)])
   console.log(`Writers' web (/w/ index): ${env.PUBLISHER_URL.replace(/\/$/,'')}/w/`)
-  console.log(`ResearchAgent ready: http://127.0.0.1:${ports.web} · ${live?'live providers (visible fixtures on failure)':'fixture'} · ${env.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'XRPL TESTNET · no real value' : 'SIMULATED SGD · no real funds'}`)
+  console.log(`ResearchAgent ready: http://127.0.0.1:${ports.web} · ${live?'live providers (a failed decision round buys nothing)':'fixture'} · ${env.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'XRPL TESTNET · no real value' : 'SIMULATED SGD · no real funds'}`)
 } catch(error) { console.error(error.message); shutdown(1) }
