@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ClaimSchema, ImpactSchema, LlmProviderSchema } from './answer.js'
+import { ClaimSchema, CoverageStatusSchema, ImpactSchema, LlmProviderSchema } from './answer.js'
 import { DecisionRoundSchema } from './decision.js'
 import { ReceiptSchema } from './publisher.js'
 import { PublicCandidateSchema, ContentEnvelopeSchema } from './corpus.js'
@@ -22,6 +22,8 @@ export const ReportSchema = z.object({
   labels: ModeLabelsSchema.optional(),
   /** Writer refunds after a failed proof (#132, #142), from the persisted intents. */
   refunds: z.array(z.object({ intentId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), txHash: z.string() })).optional(),
+  /** Requested facts (#208, #209): the checklist line and the per-fact statuses of the final answer. */
+  facts: z.object({ line: z.string(), facts: z.array(z.object({ text: z.string(), status: CoverageStatusSchema })) }).optional(),
   access: z.object({ runId: z.string(), candidates: z.array(PublicCandidateSchema), grants: z.array(GrantSchema) }).optional(),
 })
 export type Report = z.infer<typeof ReportSchema>

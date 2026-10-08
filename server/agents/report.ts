@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
+import { factsSummary } from '../../shared/coverage.js'
 import { dirname, extname } from 'node:path'
 import { chromium } from '@playwright/test'
 import { z } from 'zod'
@@ -68,6 +69,7 @@ export async function buildReport(input: RunSnapshot): Promise<Report> {
       fallbackReason = `${llmLabel()} draft failed or contained no valid findings; using validated final-answer extracts.`
     }
   }
+  const facts = factsSummary(run)
   const summary = (claims: Claim[]) => claims.map(c => c.text).join('\n') || 'No validated findings are available.'
   const firstAnswer = summary(firstFindings)
   const finalAnswer = summary(finalFindings)
@@ -85,6 +87,7 @@ export async function buildReport(input: RunSnapshot): Promise<Report> {
     labels: run.labels,
     refunds: run.intents.filter(i => i.runId === run.runId && i.refund).map(i => ({ intentId: i.intentId, resourceId: i.resourceId, version: i.version, ...i.refund! })),
     access: { runId: run.runId, candidates: run.candidates, grants: run.grants },
+    ...(facts ? { facts: { line: facts.line, facts: facts.facts.map(f => ({ text: f.text, status: f.status })) } } : {}),
   })
 }
 

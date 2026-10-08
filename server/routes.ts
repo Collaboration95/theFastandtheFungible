@@ -17,7 +17,7 @@ import { OpenAIDecisionsProvider } from './agents/openai-decisions.js'
 import { type DecisionProvider } from './agents/decision.js'
 import { buildReport, renderReport } from './agents/report.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
-import { plan as planSearch, scope } from './agents/scope.js'
+import { freezeRequirements, plan as planSearch, scope } from './agents/scope.js'
 
 /** `observe`: the trust check's relevance re-measure (#205); defaults to Workers AI embeddings when SEARCH_EMBEDDINGS=live. */
 export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver }
@@ -128,13 +128,25 @@ export async function createApiApp(options: ApiOptions = {}) {
     const run = store.createRun(input.question, input.budgetMinor, labels)
     res.status(201).json(run)
     launch(run.runId, async () => {
-      // No plan from the UI: the server plans itself, so tests and API users need no UI.
+      // No plan from the UI: the server plans itself, so tests and API users need no UI. A clarify answer re-plans
+      // on the server too (#208): the client's plan predates the answer, so the angle would never reach search.
       // The planner label stays visible (gate 5): client, live model, or the fixture fallback.
-      const { label: planLabel, ...plan } = input.plan ? { ...input.plan, label: 'client plan' } : await planSearch(input.question, input.answers)
+      const clarified = Object.values(input.answers ?? {}).some(answer => answer.trim())
+      const planned = input.plan && !clarified ? { ...input.plan, label: 'client plan' } : await planSearch(input.question, input.answers)
+      // Requested facts are frozen here, before any evidence is read (#208). An edited or legacy client plan carries
+      // none bound to this question, so the server derives them from the question (and answers) instead.
+      let frozen = freezeRequirements(input.question, planned, input.answers)
+      let requirementsBy = frozen.source === 'plan' ? planned.label : 'fixture · scope-fixture'
+      if (frozen.source === 'fixture' && planned.label === 'client plan') {
+        const replanned = await planSearch(input.question, input.answers)
+        const again = freezeRequirements(input.question, replanned, input.answers)
+        if (again.source === 'plan') { frozen = again; requirementsBy = replanned.label }
+      }
+      const { label: planLabel, requirements: _texts, requirementsKey: _key, ...plan } = planned
       const current = store.getRun(run.runId)
-      store.updateRun(run.runId, { labels: { ...current.labels, plan: planLabel }, checkpoint: { ...current.checkpoint, plan, ...(input.answers ? { answers: input.answers } : {}) } })
+      store.updateRun(run.runId, { labels: { ...current.labels, plan: planLabel }, checkpoint: { ...current.checkpoint, plan, requirements: frozen.requirements, requirementsBy, ...(input.answers ? { answers: input.answers } : {}) } })
       if (input.answers && Object.keys(input.answers).length) store.appendEvent(run.runId, { type: 'CLARIFY', label: `Clarified: ${Object.values(input.answers).join(' · ')}`, data: { answers: input.answers } })
-      store.appendEvent(run.runId, { type: 'PLAN', label: `Search plan (${planLabel}): ${plan.subqueries.join(' · ')}`, data: { plan, planner: planLabel } })
+      store.appendEvent(run.runId, { type: 'PLAN', label: `Search plan (${planLabel}): ${plan.subqueries.join(' · ')}`, data: { plan, planner: planLabel, requirements: frozen.requirements.map(r => r.text), requirementsBy } })
       await loop.start(run.runId)
     })
   })

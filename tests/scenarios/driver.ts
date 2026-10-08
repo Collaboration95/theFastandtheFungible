@@ -43,6 +43,13 @@ if (mode === 'publisher') {
     audit('clef', payload)
     // Slow scoring makes SSE coverage and Stop deterministic without changing app code.
     await new Promise(done => setTimeout(done, 40))
+    // Coverage (#208): one choice question per requirement; the fixture judge grades the same passages.
+    const coverage = Object.entries(payload.questions as Record<string, { instructions: string }>).filter(([name]) => name.startsWith('coverage_'))
+    if (coverage.length) {
+      const requirements = coverage.map(([, q]) => { const [, id, text] = q.instructions.match(/^Requirement (r\d): (.*)\. Using only the evidence passages/)!; return { id, text } })
+      const statuses = await fixture.judgeCoverage({ question: payload.state.question, requirements, evidence: payload.state.evidence })
+      return Response.json({ success: true, result: { answers: Object.fromEntries(requirements.map(r => [`coverage_${r.id}`, { type: 'choice', choice: statuses[r.id] }])) } })
+    }
     const answers = payload.questions.gap_material
       ? { gap_material: { type: 'noul', noul: (await fixture.judgeRound(payload.state)).gapMaterial } }
       : !payload.questions.originality

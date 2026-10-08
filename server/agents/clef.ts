@@ -1,9 +1,10 @@
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema } from '../../shared/contracts/index.js'
-import type { CandidateJudgment, ContentEnvelope, PublicCandidate } from '../../shared/contracts/index.js'
+import type { CandidateJudgment, ContentEnvelope, CoverageStatus, PublicCandidate, Requirement } from '../../shared/contracts/index.js'
+import { COVERAGE_RUBRIC, coverageInstructions, coverageQuestionName, coverageState, isJudged } from './requirements.js'
 import { decisionModel, publicCandidate, publicSources } from './decision.js'
-import type { DecisionProvider } from './decision.js'
+import type { CoverageInput, DecisionProvider } from './decision.js'
 
 const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 export class ClefUnavailableError extends Error {
@@ -47,6 +48,17 @@ export function parseClefCandidate(payload: unknown): CandidateJudgment {
 export function parseClefPaidRelevance(payload: unknown): { observed: number } {
   return { observed: NoulSchema.parse(EnvelopeSchema.parse(payload).result.answers.addresses_gap).noul }
 }
+/** Coverage answers by question name; a missing or malformed entry is `unknown` (never complete). */
+export function parseClefCoverage(payload: unknown, requirements: Pick<Requirement, 'id'>[]): Record<string, CoverageStatus> {
+  const { answers } = EnvelopeSchema.parse(payload).result
+  return Object.fromEntries(requirements.map(r => {
+    const answer = z.object({ type: z.literal('choice'), choice: z.string().optional(), probabilities: z.record(z.string(), probability).optional() }).safeParse(answers[coverageQuestionName(r)])
+    const top = answer.success ? answer.data.choice ?? Object.entries(answer.data.probabilities ?? {}).sort((a, b) => b[1] - a[1])[0]?.[0] : undefined
+    return [r.id, isJudged(top) ? top : 'unknown']
+  }))
+}
+/** One choice question per requirement, the #213 rubric as criteria in the pinned order supported, partial, missing, conflicting. */
+export const clefCoverageQuestions = (requirements: Pick<Requirement, 'id' | 'text'>[]) => Object.fromEntries(requirements.map(r => [coverageQuestionName(r), { type: 'choice', instructions: coverageInstructions(r), criteria: { ...COVERAGE_RUBRIC } }]))
 export const clefQuestions = {
   paid: { addresses_gap: { type: 'noul', instructions: 'The purchased passages contain evidence that directly addresses the open gap.' } },
   // Question-centred (8 Oct live tuning). The displayed conclusion is the verified claim list (citations.ts), so asking whether
@@ -163,6 +175,11 @@ export class ClefDecisionProvider implements DecisionProvider {
   /** Calibration (#141): one call per VERIFIED purchase, with the granted passages only (gate 1). */
   async judgePaidRelevance(input: { question: string; gap: string; content: ContentEnvelope; signal?: AbortSignal }) {
     return parseClefPaidRelevance(await this.judge('judge-paid-relevance', { question: input.question, gap: input.gap, passages: input.content.spans.map(s => s.text) }, clefQuestions.paid, parseClefPaidRelevance, { resourceId: input.content.resourceId }, input.signal))
+  }
+  /** Coverage (#208): one multi-question request per evidence state, over free or granted passages only (gate 1). */
+  async judgeCoverage(input: CoverageInput & { signal?: AbortSignal }) {
+    const validate = (payload: unknown) => parseClefCoverage(payload, input.requirements)
+    return validate(await this.judge('judge-coverage', coverageState(input.question, input.evidence), clefCoverageQuestions(input.requirements), validate, { requirements: input.requirements.length, passages: input.evidence.length }, input.signal))
   }
   async judgeCandidate(input: Parameters<DecisionProvider['judgeCandidate']>[0]) {
     return parseClefCandidate(await this.judge('judge-candidate', { question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: clefCandidate(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate, { resourceId: input.candidate.resourceId, priceMinor: input.candidate.price.amountMinor }, input.signal))

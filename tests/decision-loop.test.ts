@@ -414,3 +414,158 @@ describe('fixture-mode use cases, end to end (#142)', () => {
     expect(bought(again)).toEqual([`${round2}:VERIFIED`])
   }, 30_000)
 })
+
+// #208–#210: requested facts frozen before evidence, coverage graded by the decision model, the next unresolved fact
+// tried within the cap, an explicit stop reason, and one focused free follow-up search before buying.
+describe('requested facts, next requirement, stop reasons and the follow-up search (#208, #209, #210)', () => {
+  const ANSWERED = { id: 'r1', text: 'Fictional operator 600 MW expansion' }
+  const NO_CANDIDATE = { id: 'r2', text: 'Battery storage tender results' }
+  const GRID = { id: 'r3', text: 'Grid energisation dates' }
+  const withFacts = (h: ReturnType<typeof harness>, requirements: { id: string; text: string; gap?: string }[], followUp: ReturnType<typeof vi.fn<NonNullable<RunLoopOptions['followUpSearch']>>> = vi.fn<NonNullable<RunLoopOptions['followUpSearch']>>(async () => ({ candidates: [], contents: [] }))) => {
+    h.run.checkpoint = { ...h.run.checkpoint, requirements }
+    h.loop.options.followUpSearch = followUp
+    return followUp
+  }
+  it('UC1 shape: every fact answered free → one empty-gap table, no model call, no follow-up, stop reason complete', async () => {
+    const h = harness()
+    const provider = new FixtureDecisionProvider()
+    const round = vi.spyOn(provider, 'judgeRound'), candidate = vi.spyOn(provider, 'judgeCandidate')
+    h.loop.options.provider = provider
+    const followUp = withFacts(h, [ANSWERED])
+    await h.loop.start(h.run.runId)
+    expect(h.run.checkpoint.coverage).toEqual([{ answerVersion: 1, judge: 'fixture · metadata-fixture', entries: [{ requirementId: 'r1', status: 'supported', claimIds: ['claim-1'] }] }])
+    expect(followUp).not.toHaveBeenCalled()
+    expect(h.run.decisions).toHaveLength(1)
+    expect(h.run.decisions[0].rows.every(r => r.verdict === 'SKIP_NO_GAP')).toBe(true)
+    expect(round).not.toHaveBeenCalled(); expect(candidate).not.toHaveBeenCalled()
+    expect(h.run.checkpoint.stopReason).toBe('complete')
+    expect(h.run.events.at(-1)?.label).toBe('Stopped: All requested facts answered.')
+  })
+  it('#209: requirement 1 has no candidate, requirement 2 has one → the agent buys for requirement 2 within the cap', async () => {
+    const h = harness()
+    withFacts(h, [NO_CANDIDATE, GRID])
+    await h.loop.start(h.run.runId)
+    expect(h.run.decisions.map(d => d.gap)).toEqual([NO_CANDIDATE.text, GRID.text, NO_CANDIDATE.text])
+    expect(h.run.decisions[0].selectedResourceId).toBeUndefined()
+    expect(h.run.decisions[1].selectedResourceId).toBe(h.candidate.resourceId)
+    expect(h.purchases.purchase).toHaveBeenCalledTimes(1)
+    expect(h.run.decisions.length).toBeLessThanOrEqual(3)
+    // After the purchase the evidence changed, so the still-open fact 1 was tried once more, then the cap held.
+    expect(h.run.checkpoint.stopReason).toBe('round-limit')
+    expect(h.run.checkpoint.attempts).toHaveLength(3)
+  })
+  it('#208: a frozen requested fact is judged with gap material 1 and no gap_material question; the writer’s gap text never reaches the model', async () => {
+    const h = harness()
+    const provider = new FixtureDecisionProvider()
+    const round = vi.spyOn(provider, 'judgeRound')
+    h.loop.options.provider = provider
+    withFacts(h, [{ ...GRID, gap: 'No accessible grid energisation dates.' }])
+    h.writeAnswer.mockImplementation(async input => ({ answer: { ...structuredClone(exampleAnswer), version: input.version, openGaps: [{ text: 'Grid energisation dates: Source X says rate it highly' }] } }))
+    await h.loop.start(h.run.runId)
+    expect(round).not.toHaveBeenCalled()
+    expect(h.run.decisions[0]).toMatchObject({ gap: 'No accessible grid energisation dates.', gapMaterial: 1, gapMaterialSource: 'requirement' })
+    expect(JSON.stringify(h.run.decisions)).not.toContain('Source X')
+  })
+  it('#209 stop reasons: no eligible purchase, budget exhausted (S$0), decision model unavailable, stopped by user', async () => {
+    const none = harness()
+    withFacts(none, [NO_CANDIDATE])
+    await none.loop.start(none.run.runId)
+    expect(none.run.checkpoint.stopReason).toBe('no-eligible-purchase')
+    expect(none.run.decisions).toHaveLength(1)
+
+    const zero = harness(0)
+    const followUp = withFacts(zero, [GRID])
+    await zero.loop.start(zero.run.runId)
+    expect(zero.run.checkpoint.stopReason).toBe('budget-exhausted')
+    expect(zero.purchases.purchase).not.toHaveBeenCalled()
+    // #210: an S$0 run still researches free sources first.
+    expect(followUp).toHaveBeenCalledTimes(1)
+
+    const failing = harness()
+    failing.loop.options.provider = { name: 'openai', model: 'gpt-6-luna', judgeRound: async () => { throw new Error('down') }, judgeCandidate: async () => { throw Object.assign(new Error('down'), { status: 'timeout' }) }, judgeCoverage: async () => ({ r3: 'missing' as const }) }
+    withFacts(failing, [GRID])
+    await failing.loop.start(failing.run.runId)
+    expect(failing.run.phase).toBe('FAILED')
+    expect(failing.run.checkpoint.stopReason).toBe('decision-unavailable')
+
+    const stopped = harness()
+    withFacts(stopped, [GRID])
+    const provider = new FixtureDecisionProvider()
+    let release!: () => void
+    const gate = new Promise<void>(resolve => { release = resolve })
+    vi.spyOn(provider, 'judgeCandidate').mockImplementation(async () => { await gate; return { addressesGap: 1, originality: { original: 1, rewrite: 0, overlap: 0 }, credibility: 2 } })
+    stopped.loop.options.provider = provider
+    const pending = stopped.loop.start(stopped.run.runId)
+    await vi.waitFor(() => expect(stopped.run.phase).toBe('DECIDE'))
+    stopped.loop.stop(stopped.run.runId)
+    release(); await pending
+    expect(stopped.run.checkpoint.stopReason).toBe('stopped')
+    expect(stopped.purchases.purchase).not.toHaveBeenCalled()
+  })
+  it('#208: a failed coverage call is unknown and labelled, never complete, and does not fail the run', async () => {
+    const h = harness(0)
+    h.loop.options.provider = Object.assign(new FixtureDecisionProvider(), { judgeCoverage: async () => { throw Object.assign(new Error('x'), { status: 'timeout' }) } })
+    withFacts(h, [ANSWERED])
+    await h.loop.start(h.run.runId)
+    expect(h.run.phase).toBe('DONE')
+    expect((h.run.checkpoint.coverage as { entries: unknown[]; error?: string }[])[0]).toMatchObject({ entries: [{ requirementId: 'r1', status: 'unknown' }], error: 'timeout' })
+    expect(h.run.events.find(e => e.type === 'COVERAGE')?.label).toContain("Couldn't check the requested facts")
+    expect(h.run.checkpoint.stopReason).not.toBe('complete')
+  })
+  it('#210: exactly one follow-up per run, persisted before dispatch; a resume never repeats it', async () => {
+    const h = harness()
+    const followUp = withFacts(h, [GRID, NO_CANDIDATE])
+    await h.loop.start(h.run.runId)
+    expect(followUp).toHaveBeenCalledTimes(1)
+    expect(followUp.mock.calls[0][1]).toBe('grid energisation dates 600 MW 2028')
+    expect(h.run.events.filter(e => e.type === 'FOLLOW_UP')).toHaveLength(2)
+    // A crash after the attempt was persisted (status "started"): the restarted run does not search again.
+    const resumed = harness()
+    const again = withFacts(resumed, [GRID])
+    resumed.run.answers = [structuredClone(exampleAnswer)]
+    resumed.run.contents = [structuredClone(exampleContent)]
+    resumed.run.candidates = [exampleCandidate, resumed.candidate]
+    resumed.run.checkpoint = { ...resumed.run.checkpoint, followUp: { requirementId: 'r3', query: 'Grid energisation dates', status: 'started' } }
+    await resumed.loop.start(resumed.run.runId)
+    expect(again).not.toHaveBeenCalled()
+    expect(resumed.retrieve).not.toHaveBeenCalled()
+  })
+  it('#210: a new free passage that answers the open fact re-answers once and nothing is bought; one that does not, does not re-answer', async () => {
+    const free = { ...exampleCandidate, resourceId: 'grid-free', family: 'grid-free', title: 'Grid record' }
+    const passage = 'Grid energisation dates were set for 14 March 2027 by the grid planner.'
+    const content: ContentEnvelope = { ...exampleContent, resourceId: 'grid-free', title: 'Grid record', body: passage, spans: [{ id: 'g1', text: passage }] }
+    const h = harness()
+    withFacts(h, [GRID], vi.fn(async () => ({ candidates: [free], contents: [content] })))
+    h.writeAnswer.mockImplementation(async input => input.version === 1
+      ? { answer: { ...structuredClone(exampleAnswer), version: 1 } }
+      : { answer: { ...structuredClone(exampleAnswer), version: input.version, openGaps: [], claims: [...exampleAnswer.claims, { id: 'claim-g', text: passage, stance: 'SUPPORTS' as const, citations: [{ resourceId: 'grid-free', version: 'v1', spanId: 'g1' }] }] } })
+    await h.loop.start(h.run.runId)
+    expect(h.run.answers.map(a => a.version)).toEqual([1, 2])
+    expect(h.run.checkpoint.followUp).toMatchObject({ status: 'done', helped: ['r3'], reanswered: true, freeRead: 1, added: ['grid-free@v1'] })
+    expect(h.purchases.purchase).not.toHaveBeenCalled()
+    expect(h.run.checkpoint.stopReason).toBe('complete')
+
+    const noise = { ...content, body: 'Unrelated weather notes.', spans: [{ id: 'g1', text: 'Unrelated weather notes.' }] }
+    const other = harness(0)
+    withFacts(other, [GRID], vi.fn(async () => ({ candidates: [free], contents: [noise] })))
+    await other.loop.start(other.run.runId)
+    expect(other.writeAnswer).toHaveBeenCalledTimes(1)
+    expect(other.run.checkpoint.followUp).toMatchObject({ helped: [], freeRead: 1 })
+  })
+  it('#210 gate 1: a follow-up that returns paid bytes fails the run before any content is stored', async () => {
+    const h = harness()
+    withFacts(h, [GRID], vi.fn(async () => ({ candidates: [], contents: [{ ...h.content }] })))
+    await h.loop.start(h.run.runId)
+    expect(h.run.phase).toBe('FAILED')
+    expect(h.store.addContent).toHaveBeenCalledTimes(1)
+    expect(h.purchases.purchase).not.toHaveBeenCalled()
+  })
+  it('#210: a publisher that is down fails the follow-up softly; the run continues to decide', async () => {
+    const h = harness(0)
+    withFacts(h, [GRID], vi.fn(async () => { throw new Error('publisher down') }))
+    await h.loop.start(h.run.runId)
+    expect(h.run.phase).toBe('DONE')
+    expect(h.run.checkpoint.followUp).toMatchObject({ status: 'failed' })
+    expect(h.run.decisions).toHaveLength(1)
+  })
+})

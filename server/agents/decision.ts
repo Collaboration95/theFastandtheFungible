@@ -2,7 +2,8 @@ import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
-import type { CandidateJudgment, ContentEnvelope, DecisionProviderName, DecisionRound, PublicCandidate, PublicSourceRef, ReputationSummary } from '../../shared/contracts/index.js'
+import type { CandidateJudgment, ContentEnvelope, CoverageStatus, DecisionProviderName, DecisionRound, PublicCandidate, PublicSourceRef, Requirement, ReputationSummary } from '../../shared/contracts/index.js'
+import { fixtureCoverage, type CoverageEvidence } from './requirements.js'
 import { NEWCOMER } from '../reputation.js'
 import { compareTieBreak } from './tie-break.js'
 
@@ -19,10 +20,16 @@ export interface DecisionProvider {
    * One request for the whole round (#214, "batch-evidence"): the gap question plus three questions per candidate.
    * Judgments come back in `candidates` order. When present, decideRound uses it instead of the per-call path.
    */
-  judgeBatch?(input: { question: string; conclusion: string; gap: string; readSources: PublicSourceRef[]; candidates: PublicCandidate[] } & Signal): Promise<{ gapMaterial: number; judgments: CandidateJudgment[] }>
+  judgeBatch?(input: { question: string; conclusion: string; gap: string; readSources: PublicSourceRef[]; candidates: PublicCandidate[]; skipGapMaterial?: boolean } & Signal): Promise<{ gapMaterial?: number; judgments: CandidateJudgment[] }>
   /** Calibration (#141): does a granted paid body address the gap? Called only after a verified grant (gate 1). */
   judgePaidRelevance?(input: { question: string; gap: string; content: ContentEnvelope } & Signal): Promise<{ observed: number }>
+  /**
+   * Requested-fact coverage (#208, #213): one multi-question request per evidence state, one choice question per
+   * requirement over free or verified-granted passages only (gate 1). A missing or malformed entry is `unknown`.
+   */
+  judgeCoverage?(input: CoverageInput & Signal): Promise<Record<string, CoverageStatus>>
 }
+export type CoverageInput = { question: string; requirements: Pick<Requirement, 'id' | 'text'>[]; evidence: CoverageEvidence[] }
 const SourceRefSchema = PublicCandidateSchema.pick({ resourceId: true, version: true, title: true, publisher: true, family: true, facets: true })
 // W3-LIVE: both matched tables selected the grid report; retain flash for latency.
 // Flash grid value reached 0.1743 while the live supplier maximum was 0.0508.
@@ -84,6 +91,10 @@ export class FixtureDecisionProvider implements DecisionProvider {
   async judgeRound({ gap }: { question: string; conclusion: string; gap: string }) {
     return { gapMaterial: gap.trim() ? 0.9 : 0 }
   }
+  /** Coverage fixture: the story-bible cue rules, else entity or word overlap with a figure (requirements.ts). */
+  async judgeCoverage({ requirements, evidence }: CoverageInput) {
+    return fixtureCoverage(requirements, evidence)
+  }
   async judgeCandidate({ question, gap, readSources, candidate: raw }: { question: string; gap: string; readSources: PublicSourceRef[]; candidate: PublicCandidate }): Promise<CandidateJudgment> {
     const candidate = publicCandidate(raw)
     const sources = publicSources(readSources)
@@ -106,6 +117,12 @@ export type DecideInput = {
   reputation?: Record<string, ReputationSummary>
   /** Abandons the round from outside (e.g. Stop); the round's own controller also aborts siblings on the first failure (#206). */
   signal?: AbortSignal
+  /**
+   * The gap is a frozen requested fact (#208): derived from the question and clarify answers before any evidence, so
+   * it is part of what the question asks by construction. gapMaterial is 1 and the model is not asked (the live
+   * gap_material score swung 0.06–0.94 on on-question gaps and dropped right articles under the threshold).
+   */
+  requirement?: boolean
 }
 /** Raw-score buy thresholds per model. gpt-6-luna runs raw at 0.20 with no calibrator (#214): never the benchmark's calibrated 0.05. */
 export function buyThreshold(model: string, configured: unknown = process.env.BUY_THRESHOLD): number {
@@ -165,12 +182,15 @@ async function judgeAll(provider: DecisionProvider, input: DecideInput, candidat
   const { signal } = controller
   const failRound = (error: unknown): never => { controller.abort(); throw error }
   try {
+    const fixed = input.requirement ? { gapMaterial: 1 } : undefined
+    // Nothing left to ask: a requested fact with no paid candidate makes no model call.
+    if (fixed && !candidates.length) return { gapMaterial: 1, judgments: [] }
     if (provider.judgeBatch) {
-      const result = await provider.judgeBatch({ question: input.question, conclusion: input.conclusion, gap: input.gap, readSources, candidates, signal })
-      return { gapMaterial: GapMaterialSchema.parse(result).gapMaterial, judgments: z.array(CandidateJudgmentSchema).length(candidates.length).parse(result.judgments) }
+      const result = await provider.judgeBatch({ question: input.question, conclusion: input.conclusion, gap: input.gap, readSources, candidates, signal, ...(fixed ? { skipGapMaterial: true } : {}) })
+      return { gapMaterial: fixed?.gapMaterial ?? GapMaterialSchema.parse(result).gapMaterial, judgments: z.array(CandidateJudgmentSchema).length(candidates.length).parse(result.judgments) }
     }
     const [{ gapMaterial }, judgments] = await Promise.all([
-      provider.judgeRound({ question: input.question, conclusion: input.conclusion, gap: input.gap, signal }).then(result => GapMaterialSchema.parse(result)).catch(failRound),
+      fixed ? Promise.resolve(fixed) : provider.judgeRound({ question: input.question, conclusion: input.conclusion, gap: input.gap, signal }).then(result => GapMaterialSchema.parse(result)).catch(failRound),
       Promise.all(candidates.map(candidate => provider.judgeCandidate({ question: input.question, gap: input.gap, readSources, candidate, signal }).then(result => CandidateJudgmentSchema.parse(result)).catch(failRound))),
     ])
     return { gapMaterial, judgments }
@@ -216,5 +236,5 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   })
   // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
   const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.resourceId, version: b.candidate.version }))[0]
-  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}) })
+  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}) })
 }

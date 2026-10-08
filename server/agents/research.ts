@@ -2,11 +2,13 @@ import { recordStep, scoreStep, traceStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { AnswerSchema, PublicCandidateSchema, SEARCH_LABELS, type Answer, type Claim, type ContentEnvelope, type Gap, type Impact, type ModeLabels, type Plan, type PublicCandidate } from '../../shared/contracts/index.js'
 import type { SearchHit } from '../../shared/contracts/manifest.js'
-import { CLAIM_KINDS, verifyManifestSignature } from '../../shared/manifest.js'
+import { verifyManifestSignature } from '../../shared/manifest.js'
 import type { PublisherClient, RegistryPublisher } from '../publisher-client.js'
 import { resolveCitation, validateAnswer } from './citations.js'
 import { isLlmConfigured, llmProvider, researchModel, streamJson } from './llm.js'
 import { compareTieBreak } from './tie-break.js'
+import { FIXTURE_GAP_RULES, fixtureSupports, INSTRUCTION, noNewEvidence, ruleGap } from './requirements.js'
+export { FIXTURE_GAP_RULES } from './requirements.js'
 
 
 /** Retrieval knobs (#138), tuned on the story-bible questions. */
@@ -110,27 +112,63 @@ async function retrieveSources(client: PublisherClient, question: string, plan?:
   return { candidates: kept.map(h => toCandidate(h, bySlug.get(h.publisherSlug)!)), contents, hits: kept, dropped, ...(search ? { search } : {}), unavailable: [...unavailable] }
 }
 
+/** The focused follow-up search's bounds (#210): one query per run, at most this many new paid hits join the judging pool. */
+export const FOLLOW_UP = { paidToAdd: 4, maxK: 10 }
+export type FollowUpRetrieved = Retrieved
+const identity = (c: { resourceId: string; version: string }) => `${c.resourceId}@${c.version}`
+/**
+ * One focused federated search for an unresolved requirement (#210), traced as the follow-up-search retriever.
+ * Exclusions stay client-side and per publisher: each publisher is asked for k = min(10, 5 + its known hits), and
+ * hits already registered in the run (read free, acquired or already in the paid pool) are dropped, so a seller
+ * never learns what was read from a competitor. Returns only NEW candidates (never mutating known ones): the new
+ * free hits that were read, and at most four new paid hits, ranked price-blind.
+ */
+export function followUpSearch(client: PublisherClient, query: string, known: Pick<PublicCandidate, 'resourceId' | 'version' | 'profileId' | 'publisherSlug'>[]): Promise<FollowUpRetrieved> {
+  return traceStep('follow-up-search', { query, known: known.length }, () => followUp(client, query, known), result => ({
+    searchMode: result.search, perPublisher: hitsByPublisher(result.hits), unavailable: result.unavailable, dropped: result.dropped,
+    candidates: result.candidates.map(c => ({ resourceId: c.resourceId, profile: c.profileId, tier: c.tier })), readFree: result.contents.map(c => c.resourceId),
+  }), 'retriever')
+}
+async function followUp(client: PublisherClient, query: string, known: Pick<PublicCandidate, 'resourceId' | 'version' | 'profileId' | 'publisherSlug'>[]): Promise<FollowUpRetrieved> {
+  const publishers = await client.registry().catch(() => [])
+  const knownBy = (slug: string) => new Set(known.filter(c => (c.publisherSlug ?? c.profileId) === slug).map(identity))
+  const settled = await Promise.allSettled(publishers.map(p => client.searchPublisher(p.slug, query, Math.min(FOLLOW_UP.maxK, RETRIEVAL.perPublisherK + knownBy(p.slug).size), RETRIEVAL.searchTimeoutMs)))
+  const dropped: DroppedHit[] = []
+  const unavailable = new Set<string>()
+  const lists = settled.map((result, i) => {
+    const publisher = publishers[i]
+    if (result.status === 'rejected') { unavailable.add(publisher.slug); return [] }
+    const excluded = knownBy(publisher.slug)
+    return result.value.filter(hit => {
+      if (excluded.has(identity({ resourceId: hit.articleId, version: hit.version }))) return false
+      const problem = manifestProblem(hit, publisher.wallet)
+      if (problem && !dropped.some(d => d.resourceId === hit.articleId)) dropped.push({ publisherSlug: hit.publisherSlug, resourceId: hit.articleId, reason: problem })
+      return !problem
+    })
+  })
+  // A hit another publisher's list already registered (same id and version) is known too.
+  const all = new Set(known.map(identity))
+  const hits = markRewrites(fuse(lists, query)).filter(h => !all.has(identity({ resourceId: h.articleId, version: h.version })))
+  const bySlug = new Map(publishers.map(p => [p.slug, p]))
+  const free = hits.filter(h => h.tier === 'FREE').slice(0, RETRIEVAL.freeReads)
+  const paid = hits.filter(h => h.tier === 'PAID').slice(0, FOLLOW_UP.paidToAdd)
+  const reads = await Promise.allSettled(free.map(h => client.readFree(h, bySlug.get(h.publisherSlug)!.name)))
+  const contents = reads.flatMap(r => r.status === 'fulfilled' ? [r.value] : [])
+  // Register only what was read or may be judged: a free hit whose read failed adds nothing.
+  const kept = hits.filter(h => paid.includes(h) || contents.some(c => c.resourceId === h.articleId && c.version === h.version && c.profileId === h.publisherSlug))
+  // Gate 5: any publisher answering in keyword mode makes the follow-up keyword-only, even when nothing new was kept.
+  const returned = settled.flatMap(r => r.status === 'fulfilled' ? r.value : [])
+  const search = !returned.length ? undefined : returned.some(h => h.searchMode === 'keyword') ? SEARCH_LABELS[1] : SEARCH_LABELS[0]
+  return { candidates: kept.map(h => toCandidate(h, bySlug.get(h.publisherSlug)!)), contents, hits: kept, dropped, ...(search ? { search } : {}), unavailable: [...unavailable] }
+}
+
 // Source instructions are data, never agent commands or evidence for an answer.
-const instruction = /(?:AI agents?|assistant|ignore (?:all |previous )?instructions|system prompt|you (?:must|should))|(?:buy|purchase).*(?:immediately|now)/i
-const usableContents = (contents: ContentEnvelope[]) => contents.map(c => ({ ...c, spans: c.spans.filter(s => !instruction.test(s.text) && c.body.includes(s.text)) }))
-// These passages describe an evidence boundary, not a new schedule finding.
-const noNewEvidence = /adds nothing|no new (?:material )?(?:evidence|information)|unchanged|\brepeats?\b|\bredundant\b|\bno confirmed\b|\bno independent (?:evidence|update)\b|\bno\b[^.]*\bor independent update\b|\bgap (?:unresolved|remains|is still)|\bgap\b[^.]*\bunresolved\b/i
+const instruction = INSTRUCTION
+export const usableContents = (contents: ContentEnvelope[]) => contents.map(c => ({ ...c, spans: c.spans.filter(s => !instruction.test(s.text) && c.body.includes(s.text)) }))
 function priorContents(contents: ContentEnvelope[], candidates: PublicCandidate[], previous: Answer) {
   return contents.filter(c => candidates.some(m => m.resourceId === c.resourceId && m.version === c.version && m.tier === 'FREE')
     || previous.claims.some(p => p.citations.some(ref => ref.resourceId === c.resourceId && ref.version === c.version)))
 }
-/**
- * Fixture gap rules (D10), story-bible-like: a question cue, the accessible evidence
- * that answers it, and the free-text gap otherwise. The live LLM names gaps itself.
- */
-export const FIXTURE_GAP_RULES: { cue: RegExp; answered: (text: string, focus?: string) => boolean; gap: string | ((focus?: string) => string) }[] = [
-  // The clarified angle (UC2) narrows the analyst gap: estimates must speak to that angle to close it.
-  { cue: /\b(?:analysts?|outlook)\b/i, answered: (text, focus) => /\b(?:analysts?|consensus)\b/i.test(text) && /\d/.test(text) && (!focus || focusWords(focus).some(w => text.toLowerCase().includes(w))), gap: focus => `No accessible analyst estimates on ${focus ? focus.replace(/\s*&\s*/g, ' and ') : 'pricing or margins'}.` },
-  { cue: /\blead[- ]times?\b/i, answered: text => /\b\d+(?:\.\d+)?\s*weeks?\b/i.test(text), gap: 'No accessible dated figures for lead times in weeks, or their trend.' },
-  { cue: /\b(?:change|changed|react|reacted)\b/i, answered: text => CLAIM_KINDS['dated-figure'](text), gap: 'No accessible dated figures on what changed and how the market reacted.' },
-]
-/** Stems of the clarify answers' content words ("pricing & margins" → pric, marg). */
-const focusWords = (focus: string) => (focus.toLowerCase().match(/[a-z]{4,}/g) ?? []).map(w => w.slice(0, 4))
 /** Evidence that counts toward closing a gap: free spans, plus granted spans that are not repeats of free text. */
 function substantive(contents: ContentEnvelope[], candidates: PublicCandidate[]) {
   const isFree = (c: ContentEnvelope) => candidates.some(m => m.resourceId === c.resourceId && m.version === c.version && m.tier === 'FREE')
@@ -140,7 +178,7 @@ function substantive(contents: ContentEnvelope[], candidates: PublicCandidate[])
 function gaps(question: string, contents: ContentEnvelope[], candidates: PublicCandidate[], focus?: string): Gap[] {
   const evidence = substantive(contents, candidates)
   const rules = FIXTURE_GAP_RULES.filter(rule => rule.cue.test(question))
-  if (rules.length) return rules.filter(rule => !evidence.some(e => e.spans.some(s => rule.answered(s.text, focus)))).map(rule => ({ text: typeof rule.gap === 'string' ? rule.gap : rule.gap(focus) }))
+  if (rules.length) return rules.filter(rule => !evidence.some(e => e.spans.some(s => rule.answered(s.text, focus)))).map(rule => ({ text: ruleGap(rule, focus) }))
   // No rule: tags the found sources carry that no accessible evidence covers yet.
   const covered = new Set(evidence.filter(e => e.spans.length).flatMap(e => candidates.find(c => c.resourceId === e.content.resourceId && c.version === e.content.version)?.facets ?? []))
   return [...new Set(candidates.flatMap(c => c.facets))].filter(tag => !covered.has(tag)).map(tag => ({ text: `No accessible evidence on ${tag.replace(/-/g, ' ')}.`, tags: [tag] }))
@@ -161,7 +199,7 @@ function stance(text: string): Claim['stance'] {
   if (/only\b|delay|slip|behind|shortfall|unconfirmed|not confirmed/i.test(text)) return 'CHALLENGES'
   return 'UNCERTAIN'
 }
-function fixture(question: string, contents: ContentEnvelope[], candidates: PublicCandidate[], version: number, previous?: Answer, focus?: string): Answer {
+function fixture(question: string, contents: ContentEnvelope[], candidates: PublicCandidate[], version: number, previous?: Answer, focus?: string, requirements: string[] = []): Answer {
   const priorEvidence = new Set((previous ? priorContents(contents, candidates, previous) : []).flatMap(c => c.spans.map(s => s.text)))
   const evidence = contents.flatMap(c => c.spans.map(s => {
     const metadata = candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
@@ -186,6 +224,16 @@ function fixture(question: string, contents: ContentEnvelope[], candidates: Publ
     if (selected.length >= 8) break
     if (!selected.includes(item) && !selected.some(e => e.claim.text === item.claim.text)) selected.push(item)
   }
+  // One claim per requested fact the evidence states (#208), as the live prompt asks: a fact the evidence answers is cited.
+  for (const text of requirements) {
+    if (selected.some(e => fixtureSupports({ text }, e.claim.text))) continue
+    const best = evidence.find(e => fixtureSupports({ text }, e.claim.text) && !selected.includes(e))
+    if (!best) continue
+    // At the cap, the lowest-scoring claim that answers no requested fact makes room.
+    const spare = selected.filter(e => !requirements.some(r => fixtureSupports({ text: r }, e.claim.text)))
+    if (selected.length >= 8 && spare.length) selected.splice(selected.indexOf(spare.reduce((low, e) => e.score < low.score ? e : low)), 1)
+    if (selected.length < 8) selected.push(best)
+  }
   selected.sort((a, b) => b.score - a.score)
   const claims = selected.map(e => e.claim)
   return validateAnswer({ conclusion: 'Evidence summary', claims, openGaps: gaps(question, contents, candidates, focus), version, provider: 'fixture', model: 'extractive-fixture' }, contents)
@@ -195,12 +243,14 @@ export const ANSWER_PROMPT = `Write a cited answer using only supplied evidence.
 Return one JSON object: {"conclusion":"summary", "claims":[{"id":"claim-1","text":"supported fact","stance":"SUPPORTS|CHALLENGES|UNCERTAIN","citations":[{"resourceId":"exact id","version":"exact version","spanId":"exact span id"}]}],"openGaps":[{"text":"what is still missing"}]}.
 Write a concise 4–8 claims when evidence permits; prioritise new material evidence on the previous open gaps. Every claim must be supported by the exact cited span. Never invent or replace citation bindings. Preserve uncertainty. Do not invent evidence from previews.
 focus, when present, is the angle the user chose when clarifying: name gaps in its terms, and make the first gap the one about that angle.
+requestedFacts, when present, lists the facts the user asked for: include a cited claim for each requested fact the evidence states.
 openGaps: compare the question with what your cited claims establish, and name at most 3 things the question needs that the evidence does not state (each ≤ 160 characters), most important first. Name the missing fact, never a source, publisher, article or purchase. Return [] when the evidence answers the question.`
 
 /** Caller supplies only FREE/verified-grant contents and stores returned versions immutably.
  * onToken emits a fixed progress marker, never unvalidated model text. */
 /** Traced as a chain: the generation (if any), citation validation and the impact class. */
-export function writeAnswer(input: { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; onToken?: (delta: string) => void }): Promise<{ answer: Answer; impact?: Impact }> {
+export type WriteAnswerInput = { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; requirements?: string[]; onToken?: (delta: string) => void }
+export function writeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer; impact?: Impact }> {
   return startActiveObservation('write-answer', async observation => {
     observation.update({ input: { question: input.question, version: input.version, evidence: input.contents.map(c => c.resourceId) } })
     const result = await composeAnswer(input)
@@ -210,16 +260,16 @@ export function writeAnswer(input: { question: string; contents: ContentEnvelope
     return result
   }, { asType: 'chain' })
 }
-async function composeAnswer(input: { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; onToken?: (delta: string) => void }): Promise<{ answer: Answer; impact?: Impact }> {
+async function composeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer; impact?: Impact }> {
   if (!Number.isInteger(input.version) || input.version < 1) throw new Error('Answer version must be positive')
   const contents = usableContents(input.contents)
-  let answer = fixture(input.question, contents, input.candidates, input.version, input.previous, input.focus)
+  let answer = fixture(input.question, contents, input.candidates, input.version, input.previous, input.focus, input.requirements)
   if (isLlmConfigured() && contents.some(c => c.spans.length)) {
     try {
       const result = await streamJson(ANSWER_PROMPT, { question: input.question, evidence: contents.map(c => {
         const metadata = input.candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
         return { resourceId: c.resourceId, version: c.version, spans: c.spans, tags: metadata?.facets ?? [], authority: metadata?.authority ?? 0 }
-      }), previousOpenGaps: input.previous?.openGaps ?? [], ...(input.focus ? { focus: input.focus } : {}) }, () => input.onToken?.('Generating cited answer…'), 'generate-answer')
+      }), previousOpenGaps: input.previous?.openGaps ?? [], ...(input.focus ? { focus: input.focus } : {}), ...(input.requirements?.length ? { requestedFacts: input.requirements } : {}) }, () => input.onToken?.('Generating cited answer…'), 'generate-answer')
       const openGaps = sanitizeGaps((result as { openGaps?: unknown } | null)?.openGaps, input.candidates)
       const parsed = AnswerSchema.parse({ ...(result as object), openGaps, version: input.version, provider: llmProvider(), model: researchModel() })
       const validated = validateAnswer(parsed, contents)
