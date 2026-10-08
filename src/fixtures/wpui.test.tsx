@@ -132,7 +132,8 @@ describe('sources: writers, publishers, search mode, trust (#151)', () => {
     const panel = renderToStaticMarkup(<DecisionPanel run={uc3Run} />)
     expect(panel).toContain('BLOCKED')
     expect(panel).toContain('failed a proof check')
-    expect(panel).toContain('T 0.40 · quarantined')
+    // #205 (already on main): the failed proof also records its broken promise (observed 0), so T = H 0.40 × C 0.08.
+    expect(panel).toContain('T 0.03 · quarantined')
     expect(panel).not.toContain('SKIP_')
   })
 

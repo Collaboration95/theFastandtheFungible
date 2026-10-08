@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { assertNoLeaks, canary, INJECTION, OVER_CAP, scenarioCorpus, startScenario, type Observation } from './harness.js'
 import { USE_CASES } from './use-cases.js'
 import type { RunSnapshot } from '../../shared/contracts/index.js'
+import { factsSummary } from '../../shared/coverage.js'
 
 type Harness = Awaited<ReturnType<typeof startScenario>>
 const UC2 = USE_CASES.UC2, UC3 = USE_CASES.UC3
@@ -58,13 +59,19 @@ function uc2Bought(run: RunSnapshot) {
   expect(run.answers[0].openGaps[0].text).toMatch(/pricing and margins/)
   expect(cited(run)).toContain(UC2.expected.round1)
   expect(run.impact?.classification).toMatch(/^(QUALIFIES|STRENGTHENS)$/)
-  expect(verdicts(run)[UC2.expected.skippedRewrite]).toBe('SKIP_REWRITE')
+  expect(verdicts(run)[UC2.expected.skippedRewrite!]).toBe('SKIP_REWRITE')
   expect(verdicts(run)[OVER_CAP.articleId]).toBe('SKIP_OVER_CAP')
   expect(run.perSourceCapMinor).toBe(100)
   expect(run.events.find(e => e.type === 'CLARIFY')?.data).toEqual({ answers: UC2.answers })
+  // #208: requested facts frozen at run start; 1 of 2 answered free, 2 of 2 after the purchase.
+  expect(factsSummary(run, 1)?.line).toBe('1 of 2 answered')
+  expect(factsSummary(run)?.line).toBe('2 of 2 answered')
+  expect(run.checkpoint.stopReason).toBe('complete')
+  // The decision model judged the frozen requirement's wording (gap material 1, not asked), never the writer's gap text.
+  expect(run.decisions[0]).toMatchObject({ gap: run.checkpoint.requirements!.find(r => r.id === 'r2')!.gap, gapMaterial: 1, gapMaterialSource: 'requirement' })
 }
 
-describe('UC1–UC3 scenarios: separate API and publisher processes', () => {
+describe('UC1–UC4 scenarios: separate API and publisher processes', () => {
   let h: Harness
   let uc2Baseline: RunSnapshot
   beforeAll(async () => { h = await startScenario() }, 30_000)
@@ -78,8 +85,32 @@ describe('UC1–UC3 scenarios: separate API and publisher processes', () => {
     expect(run.grants).toEqual([])
     expect(run.answers).toHaveLength(1)
     expect(run.answers[0].openGaps).toEqual([])
-    expect(verdicts(run)[USE_CASES.UC1.expected.skippedRewrite]).toBe('SKIP_REWRITE')
+    expect(verdicts(run)[USE_CASES.UC1.expected.skippedRewrite!]).toBe('SKIP_REWRITE')
     expect(run.decisions[0].rows.every(r => r.verdict === 'SKIP_NO_GAP' || r.verdict === 'SKIP_REWRITE')).toBe(true)
+    // #208/#209: every requested fact answered free; no follow-up search; the reason is recorded.
+    expect(factsSummary(run)).toMatchObject({ answered: 2, total: 2, stopReason: 'complete' })
+    expect(run.checkpoint.followUp).toBeUndefined()
+    assertNoLeaks(h.observations, h.corpus)
+  }, 30_000)
+
+  it('UC4: a focused free search finds the missing fact: 3 of 3 answered, nothing bought, the paid deep-dive only a skip row (#211)', async () => {
+    const UC4 = USE_CASES.UC4
+    const run = await h.until(await h.ask('UC4'))
+    verify(run)
+    expect(run).toMatchObject({ spentMinor: 0, intents: [], grants: [], receipts: [] })
+    // v1 from the first search answers 2 of 3; the one follow-up reads the free article; v2 answers all 3.
+    expect(factsSummary(run, 1)?.line).toBe('2 of 3 answered')
+    expect(factsSummary(run)?.line).toBe('3 of 3 answered · found free on a focused search · nothing bought')
+    expect(run.answers.map(a => a.version)).toEqual([1, 2])
+    expect(run.checkpoint.followUp).toMatchObject({ requirementId: 'r3', status: 'done', helped: ['r3'], reanswered: true })
+    expect(run.events.filter(e => e.type === 'FOLLOW_UP')).toHaveLength(2)
+    const missing = 'lf-corporate-green-power-round-2026'
+    expect(run.answers[0].claims.flatMap(c => c.citations.map(r => r.resourceId))).not.toContain(missing)
+    expect(cited(run)).toContain(missing)
+    // Complete before any decision: round 1 records the table without asking a model; the deep-dive is a skip row.
+    expect(run.decisions).toHaveLength(1)
+    expect(verdicts(run)[UC4.expected.wouldHaveBought!]).toBe('SKIP_NO_GAP')
+    expect(run.checkpoint.stopReason).toBe('complete')
     assertNoLeaks(h.observations, h.corpus)
   }, 30_000)
 
@@ -168,6 +199,12 @@ describe('leak gate and Stop: audited Clef and LLM requests', () => {
     expect(audits.filter(a => a.kind === 'groq' && isAnswer(a))).toHaveLength(2)
     expect(audits.filter(a => a.kind === 'groq' && !isAnswer(a)).every(a => JSON.stringify(a.body).includes('You plan a search'))).toBe(true)
     expect(audits.filter(a => a.kind === 'clef').length).toBeGreaterThanOrEqual(5)
+    // #208: coverage is graded by the decision model in one multi-question request per evidence state; a frozen
+    // requested fact is part of the question by construction, so no gap_material question is ever sent for it.
+    const clefQuestions = (a: { body: unknown }) => Object.keys((a.body as { questions: object }).questions)
+    // Three evidence states: answer v1, the follow-up's new free passages (nothing found), answer v2 after the purchase.
+    expect(audits.filter(a => a.kind === 'clef' && clefQuestions(a).some(q => q.startsWith('coverage_r')))).toHaveLength(3)
+    expect(audits.filter(a => a.kind === 'clef' && clefQuestions(a).includes('gap_material'))).toHaveLength(0)
     expect(audits.some(a => a.kind === 'clef' && a.grants.length === 0)).toBe(true)
     expect(audits.some(a => a.kind === 'groq' && a.grants.length === 1)).toBe(true)
     assertNoLeaks([...h.observations, ...requests()], h.corpus)

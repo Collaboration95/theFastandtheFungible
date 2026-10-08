@@ -6,6 +6,7 @@ import { ReputationRecordSchema, ScopeSchema } from '../../shared/contracts/inde
 import uc1 from './uc/uc1.json'
 import uc2 from './uc/uc2.json'
 import uc3 from './uc/uc3.json'
+import uc4 from './uc/uc4.json'
 import reputation from './uc/reputation.json'
 import scopeUc2 from './uc/scope-uc2.json'
 
@@ -94,8 +95,8 @@ export const paidStoryRun = RunSnapshotSchema.parse({
 /* UC1–UC3 (story bible, D16) as the #157 scenario harness recorded them: fixture providers, the
    SIMULATED rail, the v2 corpus. Regenerate with `node --import tsx src/fixtures/generate-uc.ts`.
    UC3: AlphaLeak's proof fails, it is challenged, refunded and quarantined (H 0.80 → 0.40); round 2
-   skips it (SKIP_LOW_TRUST) and buys The Fab Floor. */
-export const ucRuns = { UC1: RunSnapshotSchema.parse(uc1), UC2: RunSnapshotSchema.parse(uc2), UC3: RunSnapshotSchema.parse(uc3) }
+   skips it (SKIP_LOW_TRUST) and buys The Fab Floor. UC4 (#211): one focused free search finds the third fact. */
+export const ucRuns = { UC1: RunSnapshotSchema.parse(uc1), UC2: RunSnapshotSchema.parse(uc2), UC3: RunSnapshotSchema.parse(uc3), UC4: RunSnapshotSchema.parse(uc4) }
 export const uc3Run = ucRuns.UC3
 /** GET /api/reputation after UC1–UC3. */
 export const uc3Reputation = z.array(ReputationRecordSchema).parse(reputation)

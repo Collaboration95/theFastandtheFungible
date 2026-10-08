@@ -85,7 +85,7 @@ describe('golden facts (#198)', () => {
 
 describe('UC4 content: the missing fact is free, but only a focused search finds it (#211)', async () => {
   type Uc4 = { question: string; focusedQueryExample: string; missingFact: string; requestedFacts: { id: string; coveredBy: string }[]; expectedPicks: { wouldHaveBought: string } }
-  const uc4 = (JSON.parse(readFileSync(join(root, 'data/corpus/v2/story-bible.json'), 'utf8')) as { followUpCases: Uc4[] }).followUpCases[0]!
+  const uc4 = (JSON.parse(readFileSync(join(root, 'data/corpus/v2/story-bible.json'), 'utf8')) as { useCases: (Uc4 & { id: string })[] }).useCases.find(u => u.id === 'UC4')!
   const hidden = uc4.requestedFacts.find(f => f.id === uc4.missingFact)!.coveredBy
   const corpus = await loadWriterCorpus(undefined, { allowMini: false })
   const loadFactor = corpus.articles.filter(a => a.publisherSlug === 'load-factor')

@@ -39,8 +39,9 @@ const bible = read('data/corpus/v2/story-bible.json') as { alphaLeakPlant: { art
 describe('story bible (#118)', () => {
   const writers = new Set(files.flatMap(f => f.writers.map(w => `${w.publisherSlug}/${w.slug}`)))
   const all = bible.useCases.flatMap(u => u.articles)
-  it('locks three questions: UC1 bond, UC2 and UC3 semis', () => {
-    expect(bible.useCases.map(u => u.id)).toEqual(['UC1', 'UC2', 'UC3'])
+  it('locks four questions: UC1 bond, UC2 and UC3 semis, UC4 power (the focused free search, #211)', () => {
+    expect(bible.useCases.map(u => u.id)).toEqual(['UC1', 'UC2', 'UC3', 'UC4'])
+    expect(bible.useCases[3]!.question).toMatch(/Kestrel Semiconductor.*Penang Phase 2.*renewable/)
     expect(bible.useCases[0]!.question).toMatch(/Bank of Japan.*10-year JGB/)
     expect(bible.useCases[1]!.question).toMatch(/Kestrel Semiconductor.*TSMC/)
     expect(bible.useCases[2]!.question).toMatch(/Kestrel Semiconductor.*advanced-packaging lead times in Malaysia/)
@@ -56,7 +57,8 @@ describe('story bible (#118)', () => {
     }
   })
   it('gives each UC 2+ decoys, one winner (UC2/UC3), a skipped rewrite, and picks that exist', () => {
-    for (const u of bible.useCases) {
+    // UC4 is the follow-up story: no purchase, so no decoys, winner or skipped rewrite (checked below).
+    for (const u of bible.useCases.filter(u => u.id !== 'UC4')) {
       const ids = new Set(u.articles.map(a => a.articleId))
       expect(u.articles.filter(a => ['decoy', 'alternative'].includes(a.role)).length, u.id).toBeGreaterThanOrEqual(2)
       expect(u.articles.some(a => a.tier === 'FREE' && a.role === 'free-source'), u.id).toBe(true)
@@ -96,10 +98,11 @@ describe('story bible (#118)', () => {
     expect(truth.priceMinor).toBeLessThanOrEqual(100)
     expect(truth.facts.some(f => /\d+ weeks on \d+ \w+ 2026/.test(f.text))).toBe(true)
   })
-  it('adds UC4 as a follow-up case: 3 requested facts, 2 read first, the 3rd free only on a focused search, a paid article that would have been bought (#211)', () => {
+  it('adds UC4 as a use case: 3 requested facts, 2 read first, the 3rd free only on a focused search, a paid article that would have been bought (#211)', () => {
     type FollowUp = Uc & { requestedFacts: { id: string; text: string; coveredBy: string; foundBy: string; needles: string[] }[]; missingFact: string; expectedOutcome: string; expectedPicks: { wouldHaveBought: string } }
-    const [uc4, ...rest] = (read('data/corpus/v2/story-bible.json') as { followUpCases: FollowUp[] }).followUpCases
-    expect(rest).toEqual([])
+    const cases = (read('data/corpus/v2/story-bible.json') as { useCases: FollowUp[]; followUpCases?: unknown }).useCases
+    const uc4 = cases.find(u => u.id === 'UC4')
+    expect(cases.at(-1)).toBe(uc4)
     expect(uc4!.id).toBe('UC4')
     expect(uc4!.requestedFacts).toHaveLength(3)
     expect(uc4!.requestedFacts.filter(f => f.foundBy === 'initial search')).toHaveLength(2)
@@ -113,7 +116,7 @@ describe('story bible (#118)', () => {
     expect(uc4!.expectedOutcome).toBe('3 of 3 · found free on a focused search · nothing bought')
     for (const a of uc4!.articles) {
       expect(writers.has(`${a.publisherSlug}/${a.writerSlug}`), a.articleId).toBe(true)
-      expect(all.some(x => x.articleId === a.articleId), `${a.articleId} is also a UC1–UC3 article`).toBe(false)
+      expect(bible.useCases.filter(u => u.id !== 'UC4').flatMap(u => u.articles).some(x => x.articleId === a.articleId), `${a.articleId} is also a UC1–UC3 article`).toBe(false)
       if (a.tier === 'PAID') expect(Object.values(publishers.find(p => p.slug === a.publisherSlug)!.prices)).toContain(a.priceMinor)
     }
   })

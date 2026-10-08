@@ -4,6 +4,7 @@ export const DEMO_QUESTIONS = [
   { id: 'UC1', text: 'What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?' },
   { id: 'UC2', text: "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?" },
   { id: 'UC3', text: "Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?" },
+  { id: 'UC4', text: "When was Kestrel Semiconductor's Penang Phase 2 packaging plant commissioned, how large a grid connection does it need, and how much of its electricity comes from renewable sources?" },
 ] as const
 /** A neutral synthetic question for unit-test fixtures (not a demo use case). */
 const EXAMPLE_QUESTION = "Can a fictional operator's announced 600 MW expansion actually be operating by 2028?"
