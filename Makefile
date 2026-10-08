@@ -18,7 +18,7 @@ setup: ## install deps and create .env if missing
 run: ## fixture demo (offline, no keys)
 	npm run demo
 
-live: ## live demo: DeepSeek writes, Clef decides (runs key preflight first); CF_BACKUP=1 uses the backup Cloudflare pair
+live: ## live demo: DeepSeek writes, Clef decides (DECISION_PROVIDER=openai: OpenAI Decisions); runs key preflight first; CF_BACKUP=1 uses the backup Cloudflare pair
 	npm run demo:live
 
 fault: ## fixture demo with the "fail next delivery" toggle
@@ -36,7 +36,7 @@ verify: ## check + browser tests + build
 doctor: ## node, deps, .env drift, ports, provider keys
 	$(DOCTOR)
 
-keys: ## provider keys only, plus one real DeepSeek + Clef call (latency, limits)
+keys: ## provider keys only, plus one real DeepSeek + Clef + OpenAI Decisions call (latency, limits)
 	$(DOCTOR) --keys --deep
 
 preflight: ## stage check before the slot: one live decision round at the server timeout, quota, leftover trust/runs, backup pair, XRPL (CF_BACKUP=1 checks the backup pair as primary)

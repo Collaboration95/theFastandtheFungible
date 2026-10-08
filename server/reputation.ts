@@ -1,8 +1,9 @@
 // Trust matrix (D6, FINAL-PUSH §7): Beta Reputation honesty × Brier calibration,
 // keyed by the seller of record, the publisher wallet (D21). Trust only lowers
 // value; it never touches the budget or the per-source cap (gate 2).
-import type { ReputationRecord, ReputationSummary, RunSnapshot } from '../shared/contracts/index.js'
-import type { DecisionProvider } from './agents/decision.js'
+import { PlanSchema, SEARCH_LABELS } from '../shared/contracts/index.js'
+import type { ContentEnvelope, PublicCandidate, ReputationRecord, ReputationSummary, RunSnapshot } from '../shared/contracts/index.js'
+import { cosine, cosineRelevance, normaliseQuery, SEARCH_TUNING } from '../publisher/search.js'
 import type { Store } from './store.js'
 import { recordStep } from './telemetry.js'
 
@@ -50,9 +51,45 @@ export function applyCalibration(record: ReputationRecord, claimed: number, obse
 export const summary = (record: ReputationRecord): ReputationSummary => ({ H: record.H, C: record.C, T: record.T, status: record.status })
 export const NEWCOMER: ReputationSummary = summary(newRecord('newcomer', 'newcomer', '1970-01-01T00:00:00.000Z'))
 
+/**
+ * The trust check's "observed" relevance (#205, option A): the same measure as the signed promise, taken on the
+ * delivered article. `queries` are the search queries the promise answered; `text` is the delivered article.
+ */
+export type RelevanceObserver = (input: { queries: string[]; text: string }) => Promise<number>
+/**
+ * The delivered article as the search index embeds an article (publisher/search.ts embeddingText): public title,
+ * abstract and tags plus the head of the DELIVERED body. An honest writer's article re-measures to its promise.
+ */
+export const deliveredText = (candidate: Pick<PublicCandidate, 'title' | 'preview' | 'facets'>, content: Pick<ContentEnvelope, 'body'>) =>
+  `${candidate.title}\n${candidate.preview}\n${candidate.facets.join(', ')}\n${content.body.slice(0, SEARCH_TUNING.embedBodyChars)}`
+/**
+ * Cosine observer over the search embedder: one embedding call for the queries and the delivered text, then the
+ * search's own cosineRange mapping; the best query wins, as fusion keeps a hit's highest promise. Called only after a
+ * verified grant (gate 1).
+ */
+export function cosineObserver(embed: (texts: string[], signal: AbortSignal) => Promise<number[][]>, timeoutMs = 5000): RelevanceObserver {
+  return async ({ queries, text }) => {
+    const vectors = await embed([...queries.map(normaliseQuery), text], AbortSignal.timeout(timeoutMs))
+    if (vectors.length !== queries.length + 1) throw new Error('Unexpected embedding count')
+    const body = vectors.at(-1)!
+    return Math.max(...vectors.slice(0, -1).map(query => cosineRelevance(cosine(query, body))))
+  }
+}
+/** The queries a run's search promises answered: the plan's sub-queries, else the question (as research.ts searches). */
+export function searchQueries(run: Pick<RunSnapshot, 'question' | 'checkpoint'>): string[] {
+  const plan = PlanSchema.safeParse(run.checkpoint.plan)
+  return plan.success && plan.data.subqueries.length ? plan.data.subqueries : [run.question.slice(0, 300)]
+}
+export type ReputationOptions = { config?: typeof REPUTATION; observe?: RelevanceObserver }
+
 /** Persistent reputation (survives runs; `make reset` and POST /api/reputation/reset wipe it). Emits REPUTATION events. */
 export class Reputation {
-  constructor(private readonly store: Store, private readonly config = REPUTATION) {}
+  private readonly config: typeof REPUTATION
+  private readonly observe?: RelevanceObserver
+  constructor(private readonly store: Store, options: ReputationOptions = {}) {
+    this.config = options.config ?? REPUTATION
+    this.observe = options.observe
+  }
   get(publisherSlug: string, wallet: string): ReputationRecord { return this.store.getReputation(wallet) ?? newRecord(publisherSlug, wallet, undefined, this.config) }
   list(): ReputationRecord[] { return this.store.listReputation() }
   reset(): void { this.store.resetReputation() }
@@ -66,18 +103,26 @@ export class Reputation {
     if (runId) this.store.appendEvent(runId, { type: 'REPUTATION', label: `${publisherSlug}: ${label} · H ${before.H.toFixed(2)}→${after.H.toFixed(2)} · C ${before.C.toFixed(2)}→${after.C.toFixed(2)} · ${after.status}`, data: { publisherSlug, wallet, before: summary(before), after: summary(after) } })
     return after
   }
-  recordProof(input: { publisherSlug: string; wallet: string; outcome: ProofOutcome; runId?: string }): ReputationRecord {
-    return this.update(input.publisherSlug, input.wallet, r => applyProof(r, input.outcome, undefined, this.config), input.runId, `proof ${input.outcome.toLowerCase()}`)
+  /**
+   * A proof outcome (D5). A failed proof also records the broken promise for calibration (#205): observed = 0, with no
+   * re-scoring of a body that arrived without a verified grant. The loop calls this once per intent.
+   */
+  recordProof(input: { publisherSlug: string; wallet: string; outcome: ProofOutcome; runId?: string; claimed?: number }): ReputationRecord {
+    const record = this.update(input.publisherSlug, input.wallet, r => applyProof(r, input.outcome, undefined, this.config), input.runId, `proof ${input.outcome.toLowerCase()}`)
+    if (input.outcome === 'PASS' || input.claimed === undefined) return record
+    return this.recordCalibration({ publisherSlug: input.publisherSlug, wallet: input.wallet, claimed: input.claimed, observed: 0, runId: input.runId, note: 'proof failed' })
   }
-  recordCalibration(input: { publisherSlug: string; wallet: string; claimed: number; observed: number; runId?: string }): ReputationRecord {
-    return this.update(input.publisherSlug, input.wallet, r => applyCalibration(r, input.claimed, input.observed, undefined, this.config), input.runId, `relevance claimed ${input.claimed.toFixed(2)}, observed ${input.observed.toFixed(2)}`)
+  recordCalibration(input: { publisherSlug: string; wallet: string; claimed: number; observed: number; runId?: string; note?: string }): ReputationRecord {
+    return this.update(input.publisherSlug, input.wallet, r => applyCalibration(r, input.claimed, input.observed, undefined, this.config), input.runId, `relevance claimed ${input.claimed.toFixed(2)}, observed ${input.observed.toFixed(2)}${input.note ? ` (${input.note})` : ''}`)
   }
   /**
-   * Calibration after a purchase (#141). Only a VERIFIED intent with a grant for this run,
-   * resource and version reaches the model (gate 1); a quarantined delivery is never scored.
-   * A model failure skips the update with a label and never blocks the run.
+   * Calibration after a verified purchase (#141, #205 option A). claimed = the signed manifest relevance; observed = the
+   * same cosine measure on the delivered article. Only a VERIFIED intent with a grant for this run, resource and version
+   * is measured (gate 1); a quarantined delivery never is (its failed proof records observed = 0 in recordProof).
+   * Once per intent (#206): the run checkpoint lists intents already calibrated. A failure skips with a label and never
+   * blocks the run. A keyword-only search promised on the BM25 scale, so it is not re-measured on the cosine scale.
    */
-  async calibrate(input: { run: RunSnapshot; intentId: string; question: string; gap: string; provider: DecisionProvider }): Promise<{ status: 'RECORDED'; record: ReputationRecord } | { status: 'SKIPPED'; reason: string }> {
+  async calibrate(input: { run: RunSnapshot; intentId: string }): Promise<{ status: 'RECORDED'; record: ReputationRecord } | { status: 'SKIPPED'; reason: string }> {
     const { run } = input
     const intent = run.intents.find(i => i.intentId === input.intentId && i.runId === run.runId)
     if (!intent || intent.status !== 'VERIFIED') return { status: 'SKIPPED', reason: 'No verified delivery.' }
@@ -87,18 +132,26 @@ export class Reputation {
     if (!grant || !content) return { status: 'SKIPPED', reason: 'No grant for this delivery.' }
     const claimed = candidate?.manifest?.relevance ?? candidate?.relevance
     if (!candidate?.wallet || claimed === undefined) return { status: 'SKIPPED', reason: 'No wallet or claimed relevance.' }
+    const calibrated = (runId: string) => { const list = this.store.getRun(runId).checkpoint.calibrated; return Array.isArray(list) ? list as string[] : [] }
+    if (calibrated(run.runId).includes(intent.intentId)) return { status: 'SKIPPED', reason: 'Already calibrated.' }
     const publisherSlug = candidate.publisherSlug ?? candidate.profileId
-    const { provider } = input
+    const skip = (why: string) => {
+      const reason = `Calibration skipped for ${publisherSlug}: ${why}.`
+      this.store.appendEvent(run.runId, { type: 'REPUTATION', label: reason, data: { publisherSlug, wallet: candidate.wallet, skipped: true } })
+      return { status: 'SKIPPED' as const, reason }
+    }
+    if (run.labels.search === SEARCH_LABELS[1]) return skip('search ran keyword only, so relevance cannot be re-measured')
+    if (!this.observe) return skip('no live embedding to re-measure relevance')
     let observed: number
     try {
-      if (!provider.judgePaidRelevance) throw new Error('Provider cannot re-score')
-      observed = (await provider.judgePaidRelevance({ question: input.question, gap: input.gap, content: structuredClone(content) })).observed
+      observed = await this.observe({ queries: searchQueries(run), text: deliveredText(candidate, content) })
       if (!(observed >= 0 && observed <= 1)) throw new Error('Invalid observed relevance')
-    } catch {
-      const reason = `Calibration skipped for ${publisherSlug}: ${provider.name === 'cloudflare' ? 'Clef' : 'decision model'} unavailable.`
-      this.store.appendEvent(run.runId, { type: 'REPUTATION', label: reason, data: { publisherSlug, wallet: candidate.wallet, skipped: true } })
-      return { status: 'SKIPPED', reason }
-    }
-    return { status: 'RECORDED', record: this.recordCalibration({ publisherSlug, wallet: candidate.wallet, claimed, observed, runId: run.runId }) }
+    } catch { return skip('relevance re-measure unavailable') }
+    // No await between this check and the record: a second caller for the same intent sees it and skips.
+    if (calibrated(run.runId).includes(intent.intentId)) return { status: 'SKIPPED', reason: 'Already calibrated.' }
+    const record = this.recordCalibration({ publisherSlug, wallet: candidate.wallet, claimed, observed, runId: run.runId })
+    const latest = this.store.getRun(run.runId)
+    this.store.updateRun(run.runId, { checkpoint: { ...latest.checkpoint, calibrated: [...calibrated(run.runId), intent.intentId] } })
+    return { status: 'RECORDED', record }
   }
 }

@@ -138,6 +138,17 @@ describe('visible internals', () => {
     expect(html).not.toContain('>BUY<')
     expect(html).not.toContain('SKIP_')
   })
+
+  it('names the decision provider as itself in the panel, folded or not, and in the table (#214, gate 5)', () => {
+    const round = { ...offlineZeroBudgetRun.decisions[0], provider: 'openai' as const, model: 'gpt-6-luna', fallbackReason: 'legacy stored run' }
+    const run = { ...offlineZeroBudgetRun, decisions: [round, { ...round, round: 2 }] }
+    for (const html of [renderToStaticMarkup(<DecisionPanel run={run} />), renderToStaticMarkup(<DecisionPanel run={run} fold onWhy={() => {}} />), renderToStaticMarkup(<DecisionTable run={run} />)]) {
+      expect(html).toContain('OpenAI Decisions · gpt-6-luna')
+      expect(html).not.toContain('Cloudflare')
+      // fallbackReason is never written since #216; an old stored value still parses but is not shown.
+      expect(html).not.toContain('legacy stored run')
+    }
+  })
 })
 
 describe('run command adapter', () => {

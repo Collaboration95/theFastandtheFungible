@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { DecisionRound, RunSnapshot } from '../../shared/contracts/index.js'
+import { decisionLabel, type DecisionRound, type RunSnapshot } from '../../shared/contracts/index.js'
 import { money, plainVerdict } from '../format'
 import WriterChip from './WriterChip'
 
@@ -17,9 +17,8 @@ function FullRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) {
   const scale = Math.max(0.8, ...round.rows.map(row => row.value))
   const order = [...round.rows].sort((a, b) => Number(a.verdict === 'BUY') - Number(b.verdict === 'BUY'))
   return <section className="ra-panel ra-decide" aria-label={`Decision round ${round.round}`}>
-    <div className="ra-panel-h"><h2>Worth buying</h2><span className="mono">{round.provider === 'cloudflare' ? 'Cloudflare' : 'fixture'} · {round.model}</span></div>
+    <div className="ra-panel-h"><h2>Worth buying</h2><span className="mono">{decisionLabel(round)}</span></div>
     <div className="ra-gapline"><span>Gap: {round.gap || 'none left open'}</span></div>
-    {round.fallbackReason && <p className="ra-fallback">Fixture substitution: {round.fallbackReason}</p>}
     <ul className="ra-rows">{round.rows.map((row, index) => {
       const verdict = plainVerdict(row, run)
       const buy = verdict.tone === 'buy' || verdict.tone === 'would'
@@ -37,9 +36,8 @@ function FullRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) {
 function FoldedRound({ run, round, onWhy }: { run: RunSnapshot; round: DecisionRound; onWhy?: () => void }) {
   return <section className="ra-panel ra-decide is-fold" aria-label={`Decision round ${round.round}`}>
     <div className="ra-panel-h"><h2>Considered {round.rows.length} paywalled source{round.rows.length === 1 ? '' : 's'}</h2>{onWhy && <button type="button" className="ra-link" onClick={onWhy}>Why these?</button>}</div>
-    {/* Gate 5: folded or not, the decision provider and any fixture substitution stay on screen. */}
-    <p className="ra-fold-by mono">{round.provider === 'cloudflare' ? 'Cloudflare' : 'fixture'} · {round.model}</p>
-    {round.fallbackReason && <p className="ra-fallback">Fixture substitution: {round.fallbackReason}</p>}
+    {/* Gate 5: folded or not, the decision provider stays on screen. */}
+    <p className="ra-fold-by mono">{decisionLabel(round)}</p>
     <ul className="ra-mini">{round.rows.map(row => {
       const verdict = plainVerdict(row, run)
       return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className={verdict.tone === 'buy' || verdict.tone === 'would' ? 'is-buy' : ''}><span className="ra-row-n" title={row.candidate.title}>{row.candidate.publisher}</span><span className={`ra-price${row.candidate.price.amountMinor > run.perSourceCapMinor ? ' is-over' : ''}`}>{money(row.candidate.price.amountMinor)}</span><span className={`ra-stamp s-${verdict.tone}`} title={verdict.why}>{verdict.stamp}</span></li>
@@ -51,9 +49,8 @@ function LaterRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) 
   const left = run.budgetMinor - run.spentMinor - run.reservedMinor
   const buys = round.rows.filter(row => row.verdict === 'BUY')
   return <section className="ra-panel ra-decide is-later" aria-label={`Decision round ${round.round}`}>
-    <div className="ra-panel-h"><h2>Round {round.round}</h2><span className="mono">{round.provider === 'cloudflare' ? 'Cloudflare' : 'fixture'} · {round.model}</span></div>
+    <div className="ra-panel-h"><h2>Round {round.round}</h2><span className="mono">{decisionLabel(round)}</span></div>
     <div className="ra-gapline"><span>Gap: {round.gap || 'none left open'}</span></div>
-    {round.fallbackReason && <p className="ra-fallback">Fixture substitution: {round.fallbackReason}</p>}
     <ul className="ra-rows is-r2">{round.rows.map((row, index) => {
       const verdict = plainVerdict(row, run)
       return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className="ra-row" style={{ '--i': index, '--w': pct(row.value) } as CSSProperties}><span className="ra-row-n">{row.candidate.publisher}</span><span className="ra-bar"><i /></span><span className={`ra-stamp s-${verdict.tone}`} title={verdict.why}>{verdict.stamp}</span><WriterChip candidate={row.candidate} reputation={row.reputation} variant="row" /></li>

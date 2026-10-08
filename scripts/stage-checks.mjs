@@ -60,3 +60,21 @@ export function applyBackupPair(env) {
   for (const [from, to] of pairs) env[to] = env[from]
   return pairs.map(([, to]) => to)
 }
+
+/** `make live`'s decision provider (#214): an explicit openai or cloudflare is honoured; anything else (unset, fixture) is cloudflare. */
+export const liveDecisionProvider = value => value === 'openai' || value === 'cloudflare' ? value : 'cloudflare'
+
+/**
+ * One cheap OpenAI Decisions call (a single gap question): { ms, status?, body?, error? }. Access, credit and the model
+ * in plain words; never the key or the response text.
+ */
+export function decisionsAccessCheck(result, model = 'gpt-6-luna') {
+  if (result.missing) return { ok: false, line: `OpenAI Decisions: ${result.missing} not set` }
+  const code = (() => { try { return JSON.parse(result.body ?? '')?.error?.code } catch { return undefined } })()
+  if (result.status === 401 || result.status === 403) return { ok: false, line: `OpenAI Decisions: key rejected (HTTP ${result.status})` }
+  if (code === 'insufficient_quota' || result.status === 402) return { ok: false, line: 'OpenAI Decisions: no credit left on this key; top up, or revert with DECISION_PROVIDER=cloudflare' }
+  if (result.status === 404) return { ok: false, line: `OpenAI Decisions: model ${model} or the endpoint is not available to this key (HTTP 404)` }
+  if (result.status === 429) return { ok: false, line: 'OpenAI Decisions: rate limited now (HTTP 429)' }
+  if (result.error) return { ok: false, line: `OpenAI Decisions: call failed (${result.status >= 400 ? `HTTP ${result.status}` : result.error})` }
+  return { ok: true, line: `OpenAI Decisions: ${model} answered in ${result.ms} ms` }
+}

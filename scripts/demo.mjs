@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { resolve } from 'node:path'
 import dotenv from 'dotenv'
-import { applyBackupPair } from './stage-checks.mjs'
+import { applyBackupPair, liveDecisionProvider } from './stage-checks.mjs'
 dotenv.config({ quiet: true })
 const live = process.argv.includes('--live')
 // CF_BACKUP=1 (#196): every Cloudflare client in this demo uses the backup pair (_2) instead. Names only, never values.
@@ -16,7 +16,10 @@ const localPublisher = `http://127.0.0.1:${ports.pub}`
 const publisherUrl = !process.env.PUBLISHER_URL || /^https?:\/\/(?:localhost|127\.0\.0\.1):8790\/?$/.test(process.env.PUBLISHER_URL) ? localPublisher : process.env.PUBLISHER_URL
 const env = { ...process.env, HOST: '127.0.0.1', PORT: String(ports.api), PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: publisherUrl, PUBLISHER_SECRET: process.env.PUBLISHER_SECRET || 'local-simulated-demo-secret', LLM_PROVIDER: live ? 'deepseek' : 'fixture', // live forces DeepSeek even when .env says groq
   // Live search embeds queries with Workers AI (hybrid); fixtures and tests stay keyword-only.
-  SEARCH_EMBEDDINGS: live ? 'live' : (process.env.SEARCH_EMBEDDINGS || 'off'), DECISION_PROVIDER: live ? 'cloudflare' : 'fixture',
+  SEARCH_EMBEDDINGS: live ? 'live' : (process.env.SEARCH_EMBEDDINGS || 'off'),
+  // Live decides with DECISION_PROVIDER=openai (OpenAI Decisions, gpt-6-luna) or cloudflare (Clef-flash, the default and the
+  // one-line revert, #214); any other value means cloudflare. The fixture demo always uses the labelled metadata fixture.
+  DECISION_PROVIDER: live ? liveDecisionProvider(process.env.DECISION_PROVIDER) : 'fixture',
   // Live pays on the XRPL Testnet when a payer seed exists; SETTLEMENT_RAIL overrides (e.g. XRPL with fixture LLMs).
   SETTLEMENT_RAIL: process.env.SETTLEMENT_RAIL || (live && process.env.XRPL_PAYER_SEED ? 'xrpl-testnet' : 'simulated'),
   // Langfuse Cloud traces for live runs only (fixture demos and browser tests stay local).

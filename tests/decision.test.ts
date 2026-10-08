@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { buyThreshold, decide, DecisionUnavailableError, FixtureDecisionProvider } from '../server/agents/decision.js'
+import { buyThreshold, decide, DecisionUnavailableError, entityOverlap, FixtureDecisionProvider, NO_GAP_NOT_CALLED, questionEntities } from '../server/agents/decision.js'
 import type { DecideInput, DecisionProvider } from '../server/agents/decision.js'
 import { ClefDecisionProvider, parseClefCandidate, parseClefRound } from '../server/agents/clef.js'
 import { tieBreakKey } from '../server/agents/tie-break.js'
@@ -137,5 +137,75 @@ describe('recorded Clef client', () => {
     const globalFetch = vi.spyOn(globalThis, 'fetch')
     await expect(decide(input({ provider: new ClefDecisionProvider({ token: 'mock', accountId: 'account' }) }))).rejects.toBeInstanceOf(DecisionUnavailableError)
     expect(globalFetch).not.toHaveBeenCalled()
+  })
+})
+
+describe('round robustness and the empty gap (#206, #214)', () => {
+  it('an empty gap makes no model call for any provider; policy records labelled SKIP_NO_GAP rows and a metadata rewrite', async () => {
+    const fixture = new FixtureDecisionProvider()
+    const spies = [vi.spyOn(fixture, 'judgeRound'), vi.spyOn(fixture, 'judgeCandidate')]
+    const transport = vi.fn<typeof fetch>(async () => response(recorded))
+    for (const provider of [fixture, new ClefDecisionProvider({ token: 'mock', accountId: 'account', fetch: transport })]) {
+      const round = await decide(input({ gap: '', provider, candidates: [paid('a'), paid('digest', 20, { derivedFrom: 'a' })] }))
+      expect(round.rows.map(row => [row.verdict, row.reason])).toEqual([['SKIP_NO_GAP', NO_GAP_NOT_CALLED], ['SKIP_REWRITE', 'Already acquired or a rewrite of existing evidence.']])
+      expect(round.rows.every(row => row.value === 0 && !row.wouldBuy)).toBe(true)
+      expect(round).toMatchObject({ gapMaterial: 0, provider: provider.name })
+    }
+    for (const spy of spies) expect(spy).not.toHaveBeenCalled()
+    expect(transport).not.toHaveBeenCalled()
+  })
+  it('Clef: a failed candidate call is retried once before it fails the round', async () => {
+    let failures = 1
+    const transport = vi.fn<typeof fetch>(async (_url, init) => {
+      const body = String(init?.body)
+      if (body.includes('"resourceId":"b"') && failures-- > 0) return new Response('', { status: 503 })
+      return response(body.includes('gap_material') ? roundResponse : recorded)
+    })
+    const round = await decide(input({ provider: new ClefDecisionProvider({ token: 'mock', accountId: 'account', fetch: transport }), candidates: [paid('a'), paid('b')] }))
+    expect(round.rows.map(row => row.judgment.addressesGap)).toEqual([0.4546, 0.4546])
+    expect(transport).toHaveBeenCalledTimes(4) // round, a, b twice
+  })
+  it('one AbortController per round: the first failure aborts every sibling still in flight', async () => {
+    const signals: AbortSignal[] = []
+    const transport = vi.fn<typeof fetch>(async (_url, init) => {
+      const body = String(init?.body)
+      if (body.includes('"resourceId":"bad"')) return new Response('', { status: 400 })
+      signals.push(init!.signal!)
+      return new Promise<Response>(() => {}) // never answers on its own
+    })
+    const started = Date.now()
+    await expect(decide(input({ provider: new ClefDecisionProvider({ token: 'mock', accountId: 'account', fetch: transport, timeoutMs: 60_000 }), candidates: [paid('slow-1'), paid('bad'), paid('slow-2')] }))).rejects.toMatchObject({ status: 'HTTP 400' })
+    expect(Date.now() - started).toBeLessThan(1000)
+    expect(signals).toHaveLength(3) // the round call and both slow candidates
+    expect(signals.every(signal => signal.aborted)).toBe(true)
+    expect(transport).toHaveBeenCalledTimes(4) // aborted siblings are not retried
+  })
+  it('a caller can abandon the round: in-flight calls abort and nothing is bought', async () => {
+    const controller = new AbortController()
+    const signals: AbortSignal[] = []
+    const transport = vi.fn<typeof fetch>(async (_url, init) => { signals.push(init!.signal!); return new Promise<Response>(() => {}) })
+    const pending = decide(input({ signal: controller.signal, provider: new ClefDecisionProvider({ token: 'mock', accountId: 'account', fetch: transport, timeoutMs: 60_000 }) }))
+    await new Promise(resolve => setTimeout(resolve, 5))
+    controller.abort()
+    await expect(pending).rejects.toMatchObject({ status: 'abandoned' })
+    expect(signals.every(signal => signal.aborted)).toBe(true)
+  })
+})
+
+describe('fixture judge: the question\'s named entities (UC3 round 2)', () => {
+  it('reads entities from capitalised words after the first and acronyms', () => {
+    expect([...questionEntities("Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?")]).toEqual(['kestrel', 'semiconductor', 'malaysia'])
+    expect([...questionEntities("What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?")]).toEqual(['kestrel', 'semiconductor', 'tsmc'])
+    expect(questionEntities('Will the project operate?').size).toBe(0)
+  })
+  it('prefers an on-entity deep-dive over a generic post that shares only the gap words', async () => {
+    const question = "Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?"
+    const gap = 'No accessible dated figures for lead times in weeks, or their trend.'
+    const deepDive = paid('fab-floor-kestrel-penang-lead-times', 25, { title: "Kestrel's Penang packaging queue since the summer", preview: 'How customer lead times in Kestrel\'s Penang packaging queue have moved since the summer.', facets: ['Kestrel Semiconductor', 'Penang', 'lead times', 'packaging'], relevance: 0.6 })
+    const generic = paid('the-2026-q1-advanced-packaging-lead-times-a-reality-check', 25, { title: 'Advanced packaging lead times in early 2026: a reality check', preview: 'My Q1 2026 lead-time data shows the packaging bottleneck is shifting.', facets: ['advanced-packaging', 'lead-times', '2026-q1'], relevance: 0.7 })
+    expect(entityOverlap(question, deepDive)).toBe(1)
+    expect(entityOverlap(question, generic)).toBe(0)
+    const round = await decide(input({ question, gap, candidates: [generic, deepDive] }))
+    expect(round.selectedResourceId).toBe(deepDive.resourceId)
   })
 })

@@ -78,11 +78,19 @@ export class ClefDecisionProvider implements DecisionProvider {
     // Production transport requires explicit opt-in; fixtures and recorded mocks do not.
     this.transport = options.fetch ?? (options.allowLive ? fetch : async () => { throw new Error('Live Clef disabled') })
   }
-  private async request(path: string, body?: unknown, validate?: (payload: unknown) => unknown): Promise<unknown> {
+  /**
+   * Two attempts per call (#195): a timeout, HTTP 5xx/429, transport failure or invalid answer is retried once before the
+   * call fails the round (#206); a 4xx or the daily quota fails at once. `signal` is the round's: when a sibling call
+   * fails the round, this call aborts and is not retried.
+   */
+  private async request(path: string, body?: unknown, validate?: (payload: unknown) => unknown, signal?: AbortSignal): Promise<unknown> {
     const token = this.options.token ?? process.env.CLOUDFLARE_API_TOKEN
     if (!token) throw new ClefUnavailableError('no credentials')
     for (let attempt = 0; attempt < 2; attempt++) {
+      if (signal?.aborted) throw new ClefUnavailableError('abandoned')
       const controller = new AbortController()
+      const abandon = () => controller.abort()
+      signal?.addEventListener('abort', abandon, { once: true })
       let timer: ReturnType<typeof setTimeout> | undefined
       try {
         return await Promise.race([
@@ -101,15 +109,19 @@ export class ClefDecisionProvider implements DecisionProvider {
             validate?.(payload)
             return payload
           })(),
-          new Promise<never>((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Clef timeout')) }, this.options.timeoutMs ?? clefTimeoutMs()) }),
+          new Promise<never>((_, reject) => {
+            timer = setTimeout(() => { controller.abort(); reject(new Error('Clef timeout')) }, this.options.timeoutMs ?? clefTimeoutMs())
+            controller.signal.addEventListener('abort', () => reject(new Error('Clef aborted')), { once: true })
+          }),
         ])
       } catch (error) {
         clearTimeout(timer)
         if (error instanceof ClefUnavailableError) throw error
+        if (signal?.aborted) throw new ClefUnavailableError('abandoned')
         const status = error instanceof ClefHttpError ? `HTTP ${error.status}` : controller.signal.aborted ? 'timeout' : error instanceof z.ZodError ? 'invalid response' : 'transport failure'
         if (attempt === 1 || (error instanceof ClefHttpError && error.status >= 400 && error.status < 500 && error.status !== 429)) throw new ClefUnavailableError(status)
         if (error instanceof ClefHttpError && error.status === 429) await pause(error.retryMs)
-      } finally { clearTimeout(timer) }
+      } finally { clearTimeout(timer); signal?.removeEventListener('abort', abandon) }
     }
     throw new Error('Clef unavailable')
   }
@@ -131,28 +143,28 @@ export class ClefDecisionProvider implements DecisionProvider {
     return this.account
   }
   /** Each Clef call is a Langfuse generation: public state in, calibrated answers out. */
-  private judge(name: string, state: unknown, questions: unknown, validate: (payload: unknown) => unknown, metadata?: Record<string, unknown>): Promise<unknown> {
+  private judge(name: string, state: unknown, questions: unknown, validate: (payload: unknown) => unknown, metadata?: Record<string, unknown>, signal?: AbortSignal): Promise<unknown> {
     return startActiveObservation(name, async generation => {
       generation.update({ model: this.model, input: { state, questions }, metadata })
       try {
-        const payload = await this.callModel(state, questions, validate) as { result?: { answers?: unknown; usage?: { input_tokens?: number; output_tokens?: number } } }
+        const payload = await this.callModel(state, questions, validate, signal) as { result?: { answers?: unknown; usage?: { input_tokens?: number; output_tokens?: number } } }
         generation.update({ output: payload.result?.answers, usageDetails: { input: payload.result?.usage?.input_tokens ?? 0, output: payload.result?.usage?.output_tokens ?? 0 } })
         return payload
       } catch (error) { generation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'Clef failed' }); throw error }
     }, { asType: 'generation' })
   }
-  private async callModel(state: unknown, questions: unknown, validate: (payload: unknown) => unknown): Promise<unknown> {
+  private async callModel(state: unknown, questions: unknown, validate: (payload: unknown) => unknown, signal?: AbortSignal): Promise<unknown> {
     const account = await this.resolveAccount()
-    return this.request(`/accounts/${encodeURIComponent(account)}/ai/run/${this.model.split('/').map(encodeURIComponent).join('/')}`, { model: this.model.endsWith('/clef') ? 'clef' : 'clef-flash', state, questions }, validate)
+    return this.request(`/accounts/${encodeURIComponent(account)}/ai/run/${this.model.split('/').map(encodeURIComponent).join('/')}`, { model: this.model.endsWith('/clef') ? 'clef' : 'clef-flash', state, questions }, validate, signal)
   }
   async judgeRound(input: Parameters<DecisionProvider['judgeRound']>[0]) {
-    return parseClefRound(await this.judge('judge-gap', { question: input.question, conclusion: input.conclusion, gap: input.gap }, clefQuestions.round, parseClefRound))
+    return parseClefRound(await this.judge('judge-gap', { question: input.question, conclusion: input.conclusion, gap: input.gap }, clefQuestions.round, parseClefRound, undefined, input.signal))
   }
   /** Calibration (#141): one call per VERIFIED purchase, with the granted passages only (gate 1). */
-  async judgePaidRelevance(input: { question: string; gap: string; content: ContentEnvelope }) {
-    return parseClefPaidRelevance(await this.judge('judge-paid-relevance', { question: input.question, gap: input.gap, passages: input.content.spans.map(s => s.text) }, clefQuestions.paid, parseClefPaidRelevance, { resourceId: input.content.resourceId }))
+  async judgePaidRelevance(input: { question: string; gap: string; content: ContentEnvelope; signal?: AbortSignal }) {
+    return parseClefPaidRelevance(await this.judge('judge-paid-relevance', { question: input.question, gap: input.gap, passages: input.content.spans.map(s => s.text) }, clefQuestions.paid, parseClefPaidRelevance, { resourceId: input.content.resourceId }, input.signal))
   }
   async judgeCandidate(input: Parameters<DecisionProvider['judgeCandidate']>[0]) {
-    return parseClefCandidate(await this.judge('judge-candidate', { question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: clefCandidate(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate, { resourceId: input.candidate.resourceId, priceMinor: input.candidate.price.amountMinor }))
+    return parseClefCandidate(await this.judge('judge-candidate', { question: input.question, gap: input.gap, readSources: publicSources(input.readSources), candidate: clefCandidate(publicCandidate(input.candidate)) }, clefQuestions.candidate, parseClefCandidate, { resourceId: input.candidate.resourceId, priceMinor: input.candidate.price.amountMinor }, input.signal))
   }
 }

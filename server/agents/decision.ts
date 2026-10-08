@@ -2,23 +2,42 @@ import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
-import type { CandidateJudgment, ContentEnvelope, DecisionRound, PublicCandidate, PublicSourceRef, ReputationSummary } from '../../shared/contracts/index.js'
+import type { CandidateJudgment, ContentEnvelope, DecisionProviderName, DecisionRound, PublicCandidate, PublicSourceRef, ReputationSummary } from '../../shared/contracts/index.js'
 import { NEWCOMER } from '../reputation.js'
 import { compareTieBreak } from './tie-break.js'
 
+/** Every live call takes the round's abort signal (#206): when one call fails the round, its siblings stop. */
+type Signal = { signal?: AbortSignal }
 export interface DecisionProvider {
-  name: 'cloudflare' | 'fixture'
+  name: DecisionProviderName
   model: string
-  judgeRound(input: { question: string; conclusion: string; gap: string }): Promise<{ gapMaterial: number }>
-  judgeCandidate(input: { question: string; gap: string; readSources: PublicSourceRef[]; candidate: PublicCandidate }): Promise<CandidateJudgment>
+  /** The question wording and option order this provider sends, recorded on each round (#214). */
+  promptVersion?: string
+  judgeRound(input: { question: string; conclusion: string; gap: string } & Signal): Promise<{ gapMaterial: number }>
+  judgeCandidate(input: { question: string; gap: string; readSources: PublicSourceRef[]; candidate: PublicCandidate } & Signal): Promise<CandidateJudgment>
+  /**
+   * One request for the whole round (#214, "batch-evidence"): the gap question plus three questions per candidate.
+   * Judgments come back in `candidates` order. When present, decideRound uses it instead of the per-call path.
+   */
+  judgeBatch?(input: { question: string; conclusion: string; gap: string; readSources: PublicSourceRef[]; candidates: PublicCandidate[] } & Signal): Promise<{ gapMaterial: number; judgments: CandidateJudgment[] }>
   /** Calibration (#141): does a granted paid body address the gap? Called only after a verified grant (gate 1). */
-  judgePaidRelevance?(input: { question: string; gap: string; content: ContentEnvelope }): Promise<{ observed: number }>
+  judgePaidRelevance?(input: { question: string; gap: string; content: ContentEnvelope } & Signal): Promise<{ observed: number }>
 }
 const SourceRefSchema = PublicCandidateSchema.pick({ resourceId: true, version: true, title: true, publisher: true, family: true, facets: true })
 // W3-LIVE: both matched tables selected the grid report; retain flash for latency.
 // Flash grid value reached 0.1743 while the live supplier maximum was 0.0508.
 // Use 0.15 for flash; fixture stays 0.20 and larger Clef stays 0.35.
-export const decisionModel = () => process.env.DECISION_MODEL || '@cf/cloudflare/clef-flash'
+export const CLEF_DECISION_MODEL = '@cf/cloudflare/clef-flash'
+export const OPENAI_DECISION_MODEL = 'gpt-6-luna'
+/**
+ * The model for a live provider. `DECISION_MODEL` applies only when it names that provider's kind of model
+ * (`@cf/…` for Cloudflare), so `DECISION_PROVIDER=cloudflare` alone is the one-line revert (#214).
+ */
+export function decisionModel(provider: 'cloudflare' | 'openai' = 'cloudflare', configured: string | undefined = process.env.DECISION_MODEL): string {
+  const cloudflareModel = Boolean(configured?.startsWith('@cf/'))
+  if (provider === 'openai') return configured && !cloudflareModel ? configured : OPENAI_DECISION_MODEL
+  return configured && cloudflareModel ? configured : CLEF_DECISION_MODEL
+}
 export const publicCandidate = (input: unknown): PublicCandidate => PublicCandidateSchema.parse(input)
 export const publicSources = (input: unknown): PublicSourceRef[] => z.array(SourceRefSchema).parse(input)
 // Words that say nothing about which evidence a gap needs.
@@ -30,11 +49,29 @@ export const textOverlap = (gap: string, text: string) => {
   return Math.min(1, [...words(gap)].filter(word => own.has(word)).length / 2)
 }
 export const gapOverlap = (gap: string, candidate: PublicCandidate) => textOverlap(gap, `${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`)
+/**
+ * The question's named entities: capitalised words after the first, and acronyms ("Kestrel", "Semiconductor",
+ * "Malaysia", "TSMC"). Possessives split off ("Semiconductor's" → "semiconductor").
+ */
+export const questionEntities = (question: string) => {
+  const tokens = question.match(/[A-Za-z][A-Za-z0-9-]*/g) ?? []
+  return new Set(tokens.filter((token, index) => (index > 0 && /^[A-Z]/.test(token)) || /^[A-Z0-9]{2,}$/.test(token)).map(token => token.toLowerCase()))
+}
+/**
+ * Share of the question's named entities a candidate's public fields name: two matches (or all, when fewer) count as
+ * fully on-entity; a question with no named entity scores 1. A generic post that shares only the gap's words scores 0.
+ */
+export const entityOverlap = (question: string, candidate: PublicCandidate) => {
+  const entities = questionEntities(question)
+  if (!entities.size) return 1
+  const own = new Set(`${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`.toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [])
+  return Math.min(1, [...entities].filter(entity => own.has(entity)).length / Math.min(2, entities.size))
+}
 
 /**
  * Generic metadata heuristics, with no named-source or hidden corpus knowledge.
- * addressesGap = word/tag overlap × the hit's claimed relevance (a promise that
- * calibration later checks); originality from family/derivedFrom; credibility
+ * addressesGap = word/tag overlap with the gap × (0.5 + 0.5 × named-entity overlap with the question) × the hit's
+ * claimed relevance (a promise that calibration later checks); originality from family/derivedFrom; credibility
  * from the publisher kind (carried as `authority`). Price never enters.
  */
 export class FixtureDecisionProvider implements DecisionProvider {
@@ -47,13 +84,14 @@ export class FixtureDecisionProvider implements DecisionProvider {
   async judgeRound({ gap }: { question: string; conclusion: string; gap: string }) {
     return { gapMaterial: gap.trim() ? 0.9 : 0 }
   }
-  async judgeCandidate({ gap, readSources, candidate: raw }: { question: string; gap: string; readSources: PublicSourceRef[]; candidate: PublicCandidate }): Promise<CandidateJudgment> {
+  async judgeCandidate({ question, gap, readSources, candidate: raw }: { question: string; gap: string; readSources: PublicSourceRef[]; candidate: PublicCandidate }): Promise<CandidateJudgment> {
     const candidate = publicCandidate(raw)
     const sources = publicSources(readSources)
     const rewrite = Boolean(candidate.derivedFrom)
     const repeated = sources.some(source => source.family === candidate.family)
     return {
-      addressesGap: gap.trim() ? Math.max(0.05, gapOverlap(gap, candidate)) * (candidate.relevance ?? 1) : 0,
+      // On the gap's words AND the question's entities: UC3 round 2 prefers the Kestrel/Penang deep-dive over a generic lead-times post.
+      addressesGap: gap.trim() ? Math.max(0.05, gapOverlap(gap, candidate)) * (0.5 + 0.5 * entityOverlap(question, candidate)) * (candidate.relevance ?? 1) : 0,
       originality: rewrite ? { original: 0.02, rewrite: 0.96, overlap: 0.02 } : repeated ? { original: 0.05, rewrite: 0.05, overlap: 0.9 } : { original: 0.9, rewrite: 0.03, overlap: 0.07 },
       credibility: candidate.authority,
     }
@@ -66,41 +104,80 @@ export type DecideInput = {
   round: number; provider?: DecisionProvider; threshold?: number; boughtResourceIds?: string[]
   /** Trust by publisher wallet (D6, D21). When given, value × T and quarantined/delisted sellers get SKIP_LOW_TRUST; a wallet with no entry is a newcomer. */
   reputation?: Record<string, ReputationSummary>
+  /** Abandons the round from outside (e.g. Stop); the round's own controller also aborts siblings on the first failure (#206). */
+  signal?: AbortSignal
 }
+/** Raw-score buy thresholds per model. gpt-6-luna runs raw at 0.20 with no calibrator (#214): never the benchmark's calibrated 0.05. */
 export function buyThreshold(model: string, configured: unknown = process.env.BUY_THRESHOLD): number {
   const value = configured === undefined || configured === '' ? (model.endsWith('/clef') ? 0.35 : model.endsWith('/clef-flash') ? 0.15 : 0.20) : Number(configured)
   return z.number().min(0).max(1).parse(value)
 }
 /**
- * A live decision provider failed (timeout, HTTP error, daily quota, invalid answer). Decision 2 (8 Oct, #197):
+ * A live decision provider failed (timeout, HTTP error, daily quota, refusal, invalid answer). Decision 2 (8 Oct, #197):
  * the round fails and nothing is bought; the word-overlap fixture is never substituted for a live provider.
  */
 export class DecisionUnavailableError extends Error {
   constructor(readonly status: string) { super(`Decision model unavailable (${status})`) }
 }
-/** A short, secret-free status: the Clef status when the provider gave one, otherwise the failure class. */
+/** A short, secret-free status: the provider's status when it gave one, otherwise the failure class. */
 export function decisionFailureStatus(error: unknown): string {
   const status = (error as { status?: unknown } | null)?.status
   if (typeof status === 'string' && /^[\w .-]{1,40}$/.test(status)) return status
   return error instanceof z.ZodError ? 'invalid response' : 'provider error'
 }
-/** Traced as a chain: Clef generations nest inside; the output is the full verdict table. */
+/** The SKIP_NO_GAP reason when the gap is empty: policy decides without asking any model (#214). */
+export const NO_GAP_NOT_CALLED = 'no open gap — decision model not called'
+/** Placeholder judgment for rows the model never saw (empty gap): every probability 0, so value is 0. */
+const NOT_JUDGED: CandidateJudgment = { addressesGap: 0, originality: { original: 0, rewrite: 0, overlap: 0 }, credibility: 0 }
+const GapMaterialSchema = z.object({ gapMaterial: z.number().min(0).max(1) })
+/** Traced as a chain: the provider's generations nest inside; the output is the full verdict table. */
 export function decide(input: DecideInput): Promise<DecisionRound> {
   return startActiveObservation('decide-purchase', async observation => {
     observation.update({ input: { round: input.round, gap: input.gap, remainingMinor: input.budgetMinor - input.spentMinor - input.reservedMinor, capMinor: input.perSourceCapMinor } })
+    const live = Boolean(input.provider && input.provider.name !== 'fixture' && input.gap.trim())
     let round: DecisionRound
     try { round = await decideRound(input) } catch (error) {
       if (error instanceof DecisionUnavailableError) {
         scoreStep('decision-unavailable', true, error.status)
+        // The refusal rate (#214): a refusal fails the round like any other failure, and is counted on its own.
+        if (live) scoreStep('decision-refusal', error.status === 'refusal')
         observation.update({ level: 'ERROR', statusMessage: error.message })
       }
       throw error
     }
     if (input.provider) scoreStep('decision-unavailable', false)
+    if (live) scoreStep('decision-refusal', false)
     scoreStep('gap-material', round.gapMaterial, round.gap)
-    observation.update({ output: { provider: round.provider, model: round.model, gapMaterial: round.gapMaterial, threshold: round.threshold, selected: round.selectedResourceId ?? null, rows: round.rows.map(r => ({ resourceId: r.candidate.resourceId, priceMinor: r.candidate.price.amountMinor, addressesGap: r.judgment.addressesGap, original: r.judgment.originality.original, credibility: r.judgment.credibility, value: r.value, verdict: r.verdict })) } })
+    observation.update({ output: { provider: round.provider, model: round.model, promptVersion: round.promptVersion ?? null, gapMaterial: round.gapMaterial, threshold: round.threshold, selected: round.selectedResourceId ?? null, rows: round.rows.map(r => ({ resourceId: r.candidate.resourceId, priceMinor: r.candidate.price.amountMinor, addressesGap: r.judgment.addressesGap, original: r.judgment.originality.original, credibility: r.judgment.credibility, value: r.value, verdict: r.verdict })) } })
     return round
   }, { asType: 'chain' })
+}
+/**
+ * The model's view of the round. Batch providers get one request; the rest one round call plus one call per candidate,
+ * in parallel. Every answer is validated, and any failure fails the round (#197). One AbortController per round (#206):
+ * the first failure, or the caller abandoning the round, aborts every sibling still in flight.
+ */
+async function judgeAll(provider: DecisionProvider, input: DecideInput, candidates: PublicCandidate[], readSources: PublicSourceRef[]): Promise<{ gapMaterial: number; judgments: CandidateJudgment[] }> {
+  const controller = new AbortController()
+  const abandon = () => controller.abort()
+  if (input.signal?.aborted) abandon()
+  input.signal?.addEventListener('abort', abandon, { once: true })
+  const { signal } = controller
+  const failRound = (error: unknown): never => { controller.abort(); throw error }
+  try {
+    if (provider.judgeBatch) {
+      const result = await provider.judgeBatch({ question: input.question, conclusion: input.conclusion, gap: input.gap, readSources, candidates, signal })
+      return { gapMaterial: GapMaterialSchema.parse(result).gapMaterial, judgments: z.array(CandidateJudgmentSchema).length(candidates.length).parse(result.judgments) }
+    }
+    const [{ gapMaterial }, judgments] = await Promise.all([
+      provider.judgeRound({ question: input.question, conclusion: input.conclusion, gap: input.gap, signal }).then(result => GapMaterialSchema.parse(result)).catch(failRound),
+      Promise.all(candidates.map(candidate => provider.judgeCandidate({ question: input.question, gap: input.gap, readSources, candidate, signal }).then(result => CandidateJudgmentSchema.parse(result)).catch(failRound))),
+    ])
+    return { gapMaterial, judgments }
+  } catch (error) {
+    controller.abort()
+    throw new DecisionUnavailableError(input.signal?.aborted ? 'abandoned' : decisionFailureStatus(error))
+  } finally { input.signal?.removeEventListener('abort', abandon) }
 }
 async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // Zod strips every unknown property, including body, spans, and injected commands.
@@ -108,16 +185,10 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const readSources = publicSources(input.readSources)
   const remaining = z.number().int().nonnegative().parse(input.budgetMinor) - z.number().int().nonnegative().parse(input.spentMinor) - z.number().int().nonnegative().parse(input.reservedMinor)
   const cap = z.number().int().nonnegative().parse(input.perSourceCapMinor)
-  const provider = input.provider ?? new FixtureDecisionProvider()
-  // One round call plus one call per candidate, in parallel; every answer is validated. Any failure fails the round (#197).
-  let results: [{ gapMaterial: number }, CandidateJudgment[]]
-  try {
-    results = await Promise.all([
-      provider.judgeRound({ question: input.question, conclusion: input.conclusion, gap: input.gap }).then(result => z.object({ gapMaterial: z.number().min(0).max(1) }).parse(result)),
-      Promise.all(candidates.map(candidate => provider.judgeCandidate({ question: input.question, gap: input.gap, readSources, candidate }).then(result => CandidateJudgmentSchema.parse(result)))),
-    ])
-  } catch (error) { throw new DecisionUnavailableError(decisionFailureStatus(error)) }
-  const [{ gapMaterial }, judgments] = results
+  const provider: DecisionProvider = input.provider ?? new FixtureDecisionProvider()
+  // An empty gap makes no model call for any provider (#214): nothing is worth buying, and Luna refused or scored it 0.87.
+  const open = input.gap.trim().length > 0
+  const { gapMaterial, judgments } = open ? await judgeAll(provider, input, candidates, readSources) : { gapMaterial: 0, judgments: candidates.map(() => NOT_JUDGED) }
   const threshold = buyThreshold(provider.model, input.threshold)
   const acquired = new Set([...readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
   const rows = candidates.map((candidate, index) => {
@@ -129,12 +200,15 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     const price = candidate.price.amountMinor
     // A zero-price PAID resource ranks by value, avoiding Infinity in JSON.
     const valuePerDollar = value / (Math.max(price, 1) / 100)
+    // With no model call, a rewrite is known from its public metadata only (derivedFrom, set by retrieval for a shared family).
+    const rewrite = open ? judgment.originality.rewrite >= judgment.originality.original : Boolean(candidate.derivedFrom)
     let verdict: DecisionRound['rows'][number]['verdict'] = 'BUY'
     let reason = 'Clears the value threshold and spending policy.'
     // A rewrite is labelled as one even when no gap is open (story bible UC1).
     if (reputation && reputation.status !== 'active') { verdict = 'SKIP_LOW_TRUST'; reason = `Publisher ${reputation.status}: never bought or cited.` }
-    else if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || judgment.originality.rewrite >= judgment.originality.original) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
-    else if (!input.gap.trim() || gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
+    else if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || rewrite) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
+    else if (!open) { verdict = 'SKIP_NO_GAP'; reason = NO_GAP_NOT_CALLED }
+    else if (gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }
@@ -142,5 +216,5 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   })
   // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
   const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.resourceId, version: b.candidate.version }))[0]
-  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, provider: provider.name, model: provider.model, threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}) })
+  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}) })
 }

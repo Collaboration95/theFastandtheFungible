@@ -2,7 +2,17 @@ import { z } from 'zod'
 import { PublicCandidateSchema, ReputationSummarySchema } from './corpus.js'
 export const CandidateJudgmentSchema = z.object({ addressesGap: z.number().min(0).max(1), originality: z.object({ original: z.number().min(0).max(1), rewrite: z.number().min(0).max(1), overlap: z.number().min(0).max(1) }), credibility: z.number().min(0).max(2) })
 export const DecisionRowSchema = z.object({ candidate: PublicCandidateSchema, judgment: CandidateJudgmentSchema, value: z.number().min(0).max(1), valuePerDollar: z.number().nonnegative().finite(), verdict: z.enum(['BUY', 'SKIP_REWRITE', 'SKIP_OVER_CAP', 'SKIP_OVER_BUDGET', 'SKIP_LOW_VALUE', 'SKIP_NO_GAP', 'SKIP_LOW_TRUST']), reason: z.string(), wouldBuy: z.boolean().default(false), reputation: ReputationSummarySchema.optional() })
-export const DecisionRoundSchema = z.object({ round: z.number().int().positive(), gap: z.string(), gapMaterial: z.number().min(0).max(1), provider: z.enum(['cloudflare', 'fixture']), model: z.string(), threshold: z.number().min(0).max(1), rows: z.array(DecisionRowSchema), selectedResourceId: z.string().optional(), fallbackReason: z.string().optional() })
+/** Who judged a round (gate 5): Cloudflare Clef, OpenAI Decisions, or the offline metadata fixture. Never one labelled as another. */
+export const DecisionProviderSchema = z.enum(['cloudflare', 'openai', 'fixture'])
+export type DecisionProviderName = z.infer<typeof DecisionProviderSchema>
+export const decisionProviderLabels: Record<DecisionProviderName, string> = { cloudflare: 'Cloudflare', openai: 'OpenAI Decisions', fixture: 'fixture' }
+/** "OpenAI Decisions · gpt-6-luna", "Cloudflare · @cf/cloudflare/clef-flash", "fixture · metadata-fixture". */
+export const decisionLabel = (round: { provider: DecisionProviderName; model: string }) => `${decisionProviderLabels[round.provider]} · ${round.model}`
+/**
+ * `fallbackReason` is no longer written (#216: a failed live round buys nothing and is never substituted);
+ * it stays optional so stored runs from before still parse. `promptVersion` names the question wording and option order.
+ */
+export const DecisionRoundSchema = z.object({ round: z.number().int().positive(), gap: z.string(), gapMaterial: z.number().min(0).max(1), provider: DecisionProviderSchema, model: z.string(), promptVersion: z.string().optional(), threshold: z.number().min(0).max(1), rows: z.array(DecisionRowSchema), selectedResourceId: z.string().optional(), fallbackReason: z.string().optional() })
 export type CandidateJudgment = z.infer<typeof CandidateJudgmentSchema>
 export type DecisionRow = z.infer<typeof DecisionRowSchema>
 export type DecisionRound = z.infer<typeof DecisionRoundSchema>

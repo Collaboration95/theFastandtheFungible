@@ -1,4 +1,4 @@
-import { providerLabels, type Claim, type Report } from '../shared/contracts/index.js'
+import { decisionLabel, providerLabels, type Claim, type Report } from '../shared/contracts/index.js'
 import { articleUrl } from '../shared/contracts/manifest.js'
 import { resolveCitation } from './agents/citations.js'
 
@@ -22,7 +22,7 @@ export function reportHtml(report: Report): string {
     const n = referenceNumber(ref.resourceId, ref.version, ref.spanId)
     return `<a href="${escape(writerUrl(ref.resourceId, ref.version, ref.spanId) ?? `#excerpt-${n}`)}">[${n}]</a>`
   }).join(' ')}</p></li>`).join('')
-  const decisions = report.decisions.map(round => `<h3>Round ${round.round} · ${escape(round.provider)} ${escape(round.model)}</h3><p>Gap: ${escape(round.gap)} · material probability ${round.gapMaterial.toFixed(3)} · threshold ${round.threshold.toFixed(3)}${round.fallbackReason ? ` · fallback: ${escape(round.fallbackReason)}` : ''}</p><table><thead><tr><th>Candidate / price</th><th>Gap / original / credibility</th><th>Value / per S$</th><th>Verdict</th></tr></thead><tbody>${round.rows.map(row => `<tr><td>${escape(row.candidate.title)}<br>${escape(row.candidate.resourceId)} · ${money(row.candidate.price.amountMinor)}</td><td>${row.judgment.addressesGap.toFixed(3)} / ${row.judgment.originality.original.toFixed(3)} / ${row.judgment.credibility.toFixed(3)}</td><td>${row.value.toFixed(3)} / ${row.valuePerDollar.toFixed(3)}</td><td>${escape(row.verdict)}${row.wouldBuy ? ' · would buy' : ''}<br>${escape(row.reason)}</td></tr>`).join('')}</tbody></table>`).join('')
+  const decisions = report.decisions.map(round => `<h3>Round ${round.round} · ${escape(decisionLabel(round))}</h3><p>Gap: ${escape(round.gap)} · material probability ${round.gapMaterial.toFixed(3)} · threshold ${round.threshold.toFixed(3)}</p><table><thead><tr><th>Candidate / price</th><th>Gap / original / credibility</th><th>Value / per S$</th><th>Verdict</th></tr></thead><tbody>${round.rows.map(row => `<tr><td>${escape(row.candidate.title)}<br>${escape(row.candidate.resourceId)} · ${money(row.candidate.price.amountMinor)}</td><td>${row.judgment.addressesGap.toFixed(3)} / ${row.judgment.originality.original.toFixed(3)} / ${row.judgment.credibility.toFixed(3)}</td><td>${row.value.toFixed(3)} / ${row.valuePerDollar.toFixed(3)}</td><td>${escape(row.verdict)}${row.wouldBuy ? ' · would buy' : ''}<br>${escape(row.reason)}</td></tr>`).join('')}</tbody></table>`).join('')
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>${escape(report.title)}</title><style>
 @page { size: A4; margin: 18mm; }
 * { box-sizing: border-box; } body { margin: 0 auto; padding: 28px; max-width: 900px; color: #17212d; background: white; font: 16px/1.55 Georgia, serif; }
