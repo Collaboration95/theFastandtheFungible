@@ -127,6 +127,7 @@ type BibleArticle = { articleId: string; publisherSlug: string; role: string }
  */
 const PENDING_REEMBED = new Set([
   'notft-kestrel-tsmc-deal-margins', 'notft-inside-boj-september-hike', // #198 contradictions
+  'fab-floor-kestrel-penang-lead-times', // #204 S$0.40 deep-dive: title, abstract and tags now name the question's subject
   'lf-corporate-green-power-round-2026', 'lf-kestrel-penang-phase2-power-deep-dive', // #211 UC4
 ])
 const goldenCases = () => (JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: { id: string; question: string; articles: BibleArticle[] }[] })
