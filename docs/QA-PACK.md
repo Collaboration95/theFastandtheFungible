@@ -54,7 +54,7 @@ neither is final.
 - It failed one of five criteria: our own demo story. UC3 needed a judge that
   gets fooled ([R] "Decision", criterion 4). We fixed the story (#204: The
   Fab Floor's Penang article is now a S$0.40 data deep-dive, so AlphaLeak
-  wins round 1 on price as well), not the judge, and switched.
+  at S$0.30 wins round 1 on price as well), not the judge, and switched.
 - The whole study cost about US$0.96 ([R] "Cost and latency"; [COST]).
 - Clef-flash stays selectable as the revert.
 
@@ -112,3 +112,5 @@ T, `reputation`); never say those on stage.
 
 UC3 on 8 Oct, live ([ST] "Demo check"): AlphaLeak's track record fell from
 0.80 to 0.40 after one failed proof and refund, and it was quarantined.
+At today's prices the run buys AlphaLeak for S$0.30 (refunded) and The Fab
+Floor for S$0.40: S$0.70 spent, S$0.40 net.
