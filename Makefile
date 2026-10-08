@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live fault reset check verify doctor keys ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus smoke
+.PHONY: help setup run live fault reset check verify doctor keys preflight ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus smoke
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -18,7 +18,7 @@ setup: ## install deps and create .env if missing
 run: ## fixture demo (offline, no keys)
 	npm run demo
 
-live: ## live demo: DeepSeek writes, Clef decides (runs key preflight first)
+live: ## live demo: DeepSeek writes, Clef decides (runs key preflight first); CF_BACKUP=1 uses the backup Cloudflare pair
 	npm run demo:live
 
 fault: ## fixture demo with the "fail next delivery" toggle
@@ -38,6 +38,9 @@ doctor: ## node, deps, .env drift, ports, provider keys
 
 keys: ## provider keys only, plus one real DeepSeek + Clef call (latency, limits)
 	$(DOCTOR) --keys --deep
+
+preflight: ## stage check before the slot: one live decision round at the server timeout, quota, leftover trust/runs, backup pair, XRPL (CF_BACKUP=1 checks the backup pair as primary)
+	$(DOCTOR) --stage
 
 wallets: ## top up XRPL Testnet wallets from the faucet (same addresses); CREATE=1 first creates missing paid-publisher wallets in .env
 	node --import tsx scripts/wallets.mjs $(if $(CREATE),--create)

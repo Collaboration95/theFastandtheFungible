@@ -12,6 +12,25 @@ export class ClefUnavailableError extends Error {
 class ClefHttpError extends Error {
   constructor(readonly status: number, readonly retryMs: number) { super(`Clef HTTP ${status}`) }
 }
+/** Default live per-attempt timeout (#195): 2 attempts × 5 s, so a dead call fails the round within ~12 s, never a minute. */
+export const CLEF_DEFAULT_TIMEOUT_MS = 5000
+/** The live per-attempt timeout: `CLEF_TIMEOUT_MS` when set to a positive number, otherwise 5 s. Shared with `make preflight`. */
+export function clefTimeoutMs(configured: unknown = process.env.CLEF_TIMEOUT_MS): number {
+  const value = Number(configured)
+  return configured !== undefined && configured !== '' && Number.isFinite(value) && value > 0 ? value : CLEF_DEFAULT_TIMEOUT_MS
+}
+/** A 429 that waits for longer than this is not worth stalling the stage for; the next attempt runs after at most ~2 s. */
+export const CLEF_MAX_RETRY_PAUSE_MS = 2000
+/** Cloudflare's daily free-allocation error ("Daily free allocation of 10000 neurons exhausted"); it resets 00:00 UTC. */
+export const CLOUDFLARE_DAILY_QUOTA_CODE = 4006
+/** The `errors[].code` values of a Cloudflare API error body (a JSON string or parsed object); [] when it has none. */
+export function cloudflareErrorCodes(body: unknown): number[] {
+  let payload = body
+  if (typeof body === 'string') { try { payload = JSON.parse(body) } catch { return [] } }
+  const parsed = z.object({ errors: z.array(z.object({ code: z.coerce.number() }).passthrough()) }).safeParse(payload)
+  return parsed.success ? parsed.data.errors.map(error => error.code) : []
+}
+export const isDailyQuotaExhausted = (status: number, body: unknown) => status === 429 && cloudflareErrorCodes(body).includes(CLOUDFLARE_DAILY_QUOTA_CODE)
 const probability = z.number().min(0).max(1)
 const NoulSchema = z.object({ type: z.literal('noul'), noul: probability })
 const EnvelopeSchema = z.object({ success: z.literal(true), result: z.object({ answers: z.record(z.string(), z.unknown()) }) })
@@ -61,7 +80,7 @@ export class ClefDecisionProvider implements DecisionProvider {
   }
   private async request(path: string, body?: unknown, validate?: (payload: unknown) => unknown): Promise<unknown> {
     const token = this.options.token ?? process.env.CLOUDFLARE_API_TOKEN
-    if (!token) throw new Error('Clef credentials unavailable')
+    if (!token) throw new ClefUnavailableError('no credentials')
     for (let attempt = 0; attempt < 2; attempt++) {
       const controller = new AbortController()
       let timer: ReturnType<typeof setTimeout> | undefined
@@ -70,20 +89,23 @@ export class ClefDecisionProvider implements DecisionProvider {
           (async () => {
             const response = await this.transport(`https://api.cloudflare.com/client/v4${path}`, { method: body === undefined ? 'GET' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, signal: controller.signal, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
             if (!response.ok) {
+              // The daily quota will not clear in seconds: fail at once, without a retry or a pause (#195).
+              if (response.status === 429 && isDailyQuotaExhausted(429, await response.text().catch(() => ''))) throw new ClefUnavailableError('daily quota')
               const retryAfter = response.headers.get('retry-after')
               const seconds = Number(retryAfter)
               const delay = retryAfter && !Number.isFinite(seconds) ? Date.parse(retryAfter) - Date.now() : seconds * 1000
-              throw new ClefHttpError(response.status, Math.min(60000, Math.max(1000, delay || 1000)))
+              throw new ClefHttpError(response.status, Math.min(CLEF_MAX_RETRY_PAUSE_MS, Math.max(1000, delay || 1000)))
             }
             const payload: unknown = await response.json()
             z.object({ success: z.literal(true) }).parse(payload)
             validate?.(payload)
             return payload
           })(),
-          new Promise<never>((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Clef timeout')) }, this.options.timeoutMs ?? 3000) }),
+          new Promise<never>((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Clef timeout')) }, this.options.timeoutMs ?? clefTimeoutMs()) }),
         ])
       } catch (error) {
         clearTimeout(timer)
+        if (error instanceof ClefUnavailableError) throw error
         const status = error instanceof ClefHttpError ? `HTTP ${error.status}` : controller.signal.aborted ? 'timeout' : error instanceof z.ZodError ? 'invalid response' : 'transport failure'
         if (attempt === 1 || (error instanceof ClefHttpError && error.status >= 400 && error.status < 500 && error.status !== 429)) throw new ClefUnavailableError(status)
         if (error instanceof ClefHttpError && error.status === 429) await pause(error.retryMs)
@@ -91,14 +113,21 @@ export class ClefDecisionProvider implements DecisionProvider {
     }
     throw new Error('Clef unavailable')
   }
-  /** Cached once, shared by parallel candidate and round requests. */
+  /**
+   * Cached once, shared by parallel candidate and round requests. A failed lookup is not cached (#195): the
+   * next call retries discovery, so one network blip at boot cannot fail every decision in the session.
+   */
   async resolveAccount(): Promise<string> {
     const configured = this.options.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
     if (configured) return configured
-    this.account ??= this.request('/accounts').then(payload => {
-      const accounts = z.object({ success: z.literal(true), result: z.array(z.object({ id: z.string().min(1) })).length(1) }).parse(payload)
-      return accounts.result[0].id
-    })
+    if (!this.account) {
+      const lookup = this.request('/accounts').then(payload => {
+        const accounts = z.object({ success: z.literal(true), result: z.array(z.object({ id: z.string().min(1) })).length(1) }).parse(payload)
+        return accounts.result[0].id
+      })
+      this.account = lookup
+      lookup.catch(() => { if (this.account === lookup) this.account = undefined })
+    }
     return this.account
   }
   /** Each Clef call is a Langfuse generation: public state in, calibrated answers out. */

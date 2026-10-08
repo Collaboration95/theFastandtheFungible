@@ -3,10 +3,12 @@ import { once } from 'node:events'
 import { createPublisherApp } from '../publisher/routes.js'
 import { PublisherClient } from '../server/publisher-client.js'
 import { fuse, markRewrites, RETRIEVAL, retrieve } from '../server/agents/research.js'
+import { tieBreakKey } from '../server/agents/tie-break.js'
 import type { SearchHit } from '../shared/contracts/manifest.js'
 import { alphaLeakCorpus } from './fixtures/corpus-mini/index.js'
 
 const cleanups: (() => Promise<void>)[] = []
+const byHash = (q: string, ids: string[]) => [...ids].sort((x, y) => tieBreakKey(q, x, 'v1') - tieBreakKey(q, y, 'v1'))
 afterEach(async () => { vi.restoreAllMocks(); for (const cleanup of cleanups.splice(0)) await cleanup() })
 
 async function serve() {
@@ -73,16 +75,32 @@ describe('federated retrieval (#138)', () => {
 
   it('fuses with RRF: order-stable and price-blind', () => {
     const lists = [[hit('a'), hit('b'), hit('c')], [hit('b'), hit('d')], [hit('d'), hit('a')]]
-    const order = fuse(lists).map(h => h.articleId)
-    expect(order).toEqual(['a', 'b', 'd', 'c'])
-    // Any list order gives the same ranking; ties break on the article id.
-    expect(fuse([...lists].reverse()).map(h => h.articleId)).toEqual(order)
-    expect(fuse([[hit('y')], [hit('x')]]).map(h => h.articleId)).toEqual(['x', 'y'])
+    const order = fuse(lists, 'q').map(h => h.articleId)
+    // a, b and d tie on ranks {1, 2}; c (rank 3 once) is last. The tie follows the neutral hash.
+    expect(order).toEqual([...byHash('q', ['a', 'b', 'd']), 'c'])
+    // Any list order gives the same ranking.
+    expect(fuse([...lists].reverse(), 'q').map(h => h.articleId)).toEqual(order)
     // Prices do not move rank.
     const priced = lists.map(list => list.map((h, i) => ({ ...h, tier: 'PAID' as const, priceMinor: (i + 1) * 37 })))
-    expect(fuse(priced).map(h => h.articleId)).toEqual(order)
+    expect(fuse(priced, 'q').map(h => h.articleId)).toEqual(order)
     // The highest claimed relevance of a repeated hit is kept.
     expect(fuse([[hit('a', { relevance: 0.2 })], [hit('a', { relevance: 0.9 })]])[0].relevance).toBe(0.9)
+  })
+
+  it('breaks score ties neutrally (#204): a hash of query + id + version, never alphabetical, never claimed relevance', () => {
+    // Intended change: ties used to sort alphabetically, so `alphaleak-*` always came first.
+    const tie = (q: string, first = 'alphaleak-post', second = 'notft-post') => fuse([[hit(first, { relevance: 0.96 })], [hit(second, { relevance: 0.2 })]], q).map(h => h.articleId)
+    const queries = Array.from({ length: 16 }, (_, i) => `question ${i}`)
+    for (const q of queries) {
+      expect(tie(q)).toEqual(tie(q)) // deterministic
+      expect(tie(q, 'notft-post', 'alphaleak-post')).toEqual(tie(q)) // input order never matters
+      expect(tie(q)).toEqual(byHash(q, ['alphaleak-post', 'notft-post']))
+    }
+    // Across questions the tie goes both ways: no slug and no inflated relevance wins every tie.
+    const firsts = new Set(queries.map(q => tie(q)[0]))
+    expect(firsts).toEqual(new Set(['alphaleak-post', 'notft-post']))
+    // The version is part of the key.
+    expect(tieBreakKey('q', 'a', 'v1')).not.toBe(tieBreakKey('q', 'a', 'v2'))
   })
 
   it('keeps both rows of a rewrite but marks it', async () => {

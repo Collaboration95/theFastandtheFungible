@@ -1,19 +1,29 @@
-// Preflight for the demo. Run: node --import tsx scripts/doctor.mjs [--keys] [--deep]
+// Preflight for the demo. Run: node --import tsx scripts/doctor.mjs [--keys] [--deep] [--stage]
 //   --keys  only the provider checks (used by demo:live before it starts)
 //   --deep  also spend one tiny DeepSeek completion, one Workers AI embedding and one Clef call to prove the models answer
+//   --stage `make preflight` (#196): can the live demo decide right now? One decision-shaped Clef round at the
+//           server's timeout, the daily quota, leftover reputation and runs, the backup Cloudflare pair, XRPL.
+//           Read-only apart from the Clef and embedding calls; one PASS/FAIL line per check.
 // Never prints keys or provider response bodies. Exits 1 if any check fails.
 import 'dotenv/config'
 import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
-import { ClefDecisionProvider } from '../server/agents/clef.ts'
+import { ClefDecisionProvider, clefTimeoutMs } from '../server/agents/clef.ts'
 import { llmConfig } from '../server/agents/llm.ts'
+import { applyBackupPair, backupPairCheck, decisionRoundCheck, reputationCheck, unfinishedRunsCheck } from './stage-checks.mjs'
 
 const args = new Set(process.argv.slice(2))
-const keysOnly = args.has('--keys'), deep = args.has('--deep')
+const stage = args.has('--stage')
+const keysOnly = args.has('--keys') || stage, deep = args.has('--deep')
 let failed = false
-const ok = msg => console.log(`  ✓ ${msg}`)
-const warn = msg => console.log(`  ⚠ ${msg}`)
-const fail = msg => { failed = true; console.log(`  ✗ ${msg}`) }
+const ok = msg => console.log(stage ? `  PASS ${msg}` : `  ✓ ${msg}`)
+const warn = msg => console.log(stage ? `  WARN ${msg}` : `  ⚠ ${msg}`)
+const fail = msg => { failed = true; console.log(stage ? `  FAIL ${msg}` : `  ✗ ${msg}`) }
+const report = ({ ok: passed, line }) => passed ? ok(line) : fail(line)
+// The same swap as `CF_BACKUP=1 make live`, so preflight checks the pair the demo will use. Names only, never values.
+if (process.env.CF_BACKUP === '1') {
+  try { console.log(`CF_BACKUP=1: using the backup Cloudflare pair (${applyBackupPair(process.env).join(', ')})`) } catch (error) { fail(error.message) }
+}
 // Commented-out names in .env.example (e.g. # GROQ_API_KEY=) still count as known.
 const keyNames = text => new Set([...text.matchAll(/^\s*#?\s*([A-Z][A-Z0-9_]*)\s*=/gm)].map(m => m[1]))
 
@@ -58,66 +68,117 @@ if (!keysOnly) {
   }
 }
 
-console.log('DeepSeek (answer + report, used by make live)')
-// make live forces LLM_PROVIDER=deepseek, so check that config whatever .env selects.
-const { baseUrl: base, model, apiKey: llmKey } = llmConfig('deepseek')
-if (!llmKey) fail('LLM_API_KEY not set; demo:live answers will be labelled fixtures')
-else {
-  console.log(`    ${base}, model ${model}`)
-  let llmOk = false
-  const headers = { Authorization: `Bearer ${llmKey}`, 'Content-Type': 'application/json' }
-  try {
-    const res = await fetch(`${base}/models`, { headers, signal: AbortSignal.timeout(5000) })
-    if (res.status === 401 || res.status === 403) fail(`key rejected (HTTP ${res.status})`)
-    else if (!res.ok) fail(`models endpoint HTTP ${res.status}`)
-    else {
-      ok('key accepted')
-      const ids = (await res.json()).data?.map(m => m.id) ?? []
-      if (ids.includes(model)) { llmOk = true; ok(`model ${model} available`) }
-      else fail(`model ${model} not offered to this key (available: ${ids.join(', ')})`)
-    }
-  } catch { fail('DeepSeek unreachable (network or timeout)') }
-  if (deep && llmOk) {
-    try {
-      const started = Date.now()
-      const res = await fetch(`${base}/chat/completions`, { method: 'POST', headers, signal: AbortSignal.timeout(20000), body: JSON.stringify({ model, max_tokens: 8, thinking: { type: 'disabled' }, messages: [{ role: 'user', content: 'Reply OK.' }] }) })
-      const limit = res.headers.get('x-ratelimit-remaining-tokens')
-      if (res.status === 429) fail(`rate limited now (retry-after ${res.headers.get('retry-after') ?? '?'}s)`)
-      else if (res.status === 402) fail('account balance exhausted (HTTP 402); top up at platform.deepseek.com')
-      else if (!res.ok) fail(`completion HTTP ${res.status}`)
-      else ok(`completion in ${Date.now() - started} ms${limit ? `; tokens left ${limit}` : ''}`)
-    } catch { fail('completion timed out') }
-  }
-}
-
-if (deep) {
-  console.log('Cloudflare Workers AI embeddings (query vectors for hybrid search)')
-  if (!process.env.CLOUDFLARE_API_TOKEN) fail('CLOUDFLARE_API_TOKEN not set; live search would be keyword only (labelled)')
+if (stage) {
+  console.log('Stage preflight (make preflight)')
+  if (process.env.CLOUDFLARE_ACCOUNT_ID) ok('CLOUDFLARE_ACCOUNT_ID set (no account lookup at boot)')
+  else warn('CLOUDFLARE_ACCOUNT_ID not set; every process discovers the account first (one more call that can fail)')
+  const timeoutMs = clefTimeoutMs()
+  // One decision-shaped round, as the server makes it: 1 judgeRound + 8 judgeCandidate in parallel, at the server's timeout.
+  const decisionRound = (async () => {
+    if (!process.env.CLOUDFLARE_API_TOKEN) return { ok: false, line: 'decision round: CLOUDFLARE_API_TOKEN not set' }
+    const { exampleCandidate } = await import('../shared/contracts/examples.ts')
+    const clef = new ClefDecisionProvider({ allowLive: true })
+    const gap = 'No evidence on grid energisation dates.', question = 'Will the project be operating by 2028?'
+    const timed = async call => { const started = Date.now(); try { await call(); return { ms: Date.now() - started } } catch (error) { return { ms: Date.now() - started, error: { status: error?.status } } } }
+    const candidates = Array.from({ length: 8 }, (_, i) => ({ ...exampleCandidate, resourceId: `preflight-${i + 1}`, family: `preflight-${i + 1}`, tier: 'PAID', price: { amountMinor: 50, currency: 'SGD' }, facets: ['grid-energisation'], preview: 'Grid planner interviews and energisation queue data.' }))
+    const results = await Promise.all([
+      timed(() => clef.judgeRound({ question, conclusion: 'Demand is strong; grid timing is unknown.', gap })),
+      ...candidates.map(candidate => timed(() => clef.judgeCandidate({ question, gap, readSources: [exampleCandidate], candidate }))),
+    ])
+    return decisionRoundCheck(results, timeoutMs)
+  })()
+  // The backup pair answers one cheap embedding (Workers AI), with the quota code read from the raw response.
+  const backup = (async () => {
+    const token = process.env.CLOUDFLARE_API_TOKEN_2, accountId = process.env.CLOUDFLARE_ACCOUNT_ID_2
+    if (!token || !accountId) return backupPairCheck({ missing: [!token && 'CLOUDFLARE_API_TOKEN_2', !accountId && 'CLOUDFLARE_ACCOUNT_ID_2'].filter(Boolean).join(' and ') })
+    const { embedTexts } = await import('../publisher/search.ts')
+    let last = {}
+    const recording = async (url, init) => { const res = await fetch(url, init); last = { status: res.status, body: res.ok ? '' : await res.clone().text().catch(() => '') }; return res }
+    const started = Date.now()
+    try { await embedTexts(['preflight'], { token, accountId, fetch: recording, signal: AbortSignal.timeout(timeoutMs) }); return backupPairCheck({ ms: Date.now() - started }) }
+    catch (error) { return backupPairCheck({ ...last, error: error?.name === 'TimeoutError' ? 'timeout' : 'error' }) }
+  })()
+  // Leftover state, read-only from the API's store (works whether or not the demo is running).
+  const dbPath = process.env.APP_DB || 'data/app.db'
+  if (!existsSync(dbPath)) ok(`no store at ${dbPath} yet: reputation clean, no unfinished runs`)
   else {
     try {
-      const { embedTexts, EMBEDDING_MODEL } = await import('../publisher/search.ts')
-      const started = Date.now()
-      const [vector] = await embedTexts(['Kestrel TSMC pricing and margins'])
-      ok(`${EMBEDDING_MODEL} answered in ${Date.now() - started} ms (${vector.length} dims)`)
-    } catch (error) { fail(`embedding call failed (${error?.status ?? error?.message ?? 'error'})`) }
+      const { DatabaseSync } = await import('node:sqlite')
+      const db = new DatabaseSync(dbPath, { readOnly: true })
+      const rows = sql => { try { return db.prepare(sql).all().map(row => JSON.parse(row.json)) } catch { return [] } }
+      report(reputationCheck(rows('SELECT json FROM publisher_reputation')))
+      report(unfinishedRunsCheck(rows('SELECT json FROM runs')))
+      db.close()
+    } catch (error) { fail(`store ${dbPath} unreadable (${error?.code ?? 'error'})`) }
   }
+  report(await decisionRound)
+  report(await backup)
 }
 
-console.log('Cloudflare Clef (decisions)')
-if (!process.env.CLOUDFLARE_API_TOKEN) fail('CLOUDFLARE_API_TOKEN not set; demo:live decisions will be labelled fixtures')
-else {
-  // Reuse the app's own client so the check exercises the exact request format.
-  const clef = new ClefDecisionProvider({ allowLive: true, timeoutMs: 8000 })
-  try {
-    await clef.resolveAccount()
-    ok(process.env.CLOUDFLARE_ACCOUNT_ID ? 'token set; account id from .env (not verified without --deep)' : 'token accepted; account resolved')
-  } catch (error) { fail(`token/account check failed (${error.status ?? 'error'})`) }
-  if (deep) {
+// The ordinary doctor's provider checks; --stage replaces them with its own.
+if (!stage) {
+  console.log('DeepSeek (answer + report, used by make live)')
+  // make live forces LLM_PROVIDER=deepseek, so check that config whatever .env selects.
+  const { baseUrl: base, model, apiKey: llmKey } = llmConfig('deepseek')
+  if (!llmKey) fail('LLM_API_KEY not set; demo:live answers will be labelled fixtures')
+  else {
+    console.log(`    ${base}, model ${model}`)
+    let llmOk = false
+    const headers = { Authorization: `Bearer ${llmKey}`, 'Content-Type': 'application/json' }
     try {
-      const started = Date.now()
-      const { gapMaterial } = await clef.judgeRound({ question: 'Will the project be operating by 2028?', conclusion: 'Demand is strong; grid timing is unknown.', gap: 'No evidence on grid energisation dates.' })
-      ok(`${clef.model} answered in ${Date.now() - started} ms (gap_material ${gapMaterial.toFixed(2)})`)
-    } catch (error) { fail(`${clef.model} call failed (${error.status ?? 'error'})`) }
+      const res = await fetch(`${base}/models`, { headers, signal: AbortSignal.timeout(5000) })
+      if (res.status === 401 || res.status === 403) fail(`key rejected (HTTP ${res.status})`)
+      else if (!res.ok) fail(`models endpoint HTTP ${res.status}`)
+      else {
+        ok('key accepted')
+        const ids = (await res.json()).data?.map(m => m.id) ?? []
+        if (ids.includes(model)) { llmOk = true; ok(`model ${model} available`) }
+        else fail(`model ${model} not offered to this key (available: ${ids.join(', ')})`)
+      }
+    } catch { fail('DeepSeek unreachable (network or timeout)') }
+    if (deep && llmOk) {
+      try {
+        const started = Date.now()
+        const res = await fetch(`${base}/chat/completions`, { method: 'POST', headers, signal: AbortSignal.timeout(20000), body: JSON.stringify({ model, max_tokens: 8, thinking: { type: 'disabled' }, messages: [{ role: 'user', content: 'Reply OK.' }] }) })
+        const limit = res.headers.get('x-ratelimit-remaining-tokens')
+        if (res.status === 429) fail(`rate limited now (retry-after ${res.headers.get('retry-after') ?? '?'}s)`)
+        else if (res.status === 402) fail('account balance exhausted (HTTP 402); top up at platform.deepseek.com')
+        else if (!res.ok) fail(`completion HTTP ${res.status}`)
+        else ok(`completion in ${Date.now() - started} ms${limit ? `; tokens left ${limit}` : ''}`)
+      } catch { fail('completion timed out') }
+    }
+  }
+
+  if (deep) {
+    console.log('Cloudflare Workers AI embeddings (query vectors for hybrid search)')
+    if (!process.env.CLOUDFLARE_API_TOKEN) fail('CLOUDFLARE_API_TOKEN not set; live search would be keyword only (labelled)')
+    else {
+      try {
+        const { embedTexts, EMBEDDING_MODEL } = await import('../publisher/search.ts')
+        const started = Date.now()
+        const [vector] = await embedTexts(['Kestrel TSMC pricing and margins'])
+        ok(`${EMBEDDING_MODEL} answered in ${Date.now() - started} ms (${vector.length} dims)`)
+      } catch (error) { fail(`embedding call failed (${error?.status ?? error?.message ?? 'error'})`) }
+    }
+  }
+
+
+  console.log('Cloudflare Clef (decisions)')
+  if (!process.env.CLOUDFLARE_API_TOKEN) fail('CLOUDFLARE_API_TOKEN not set; demo:live decision rounds will fail and buy nothing')
+  else {
+    // Reuse the app's own client so the check exercises the exact request format.
+    const clef = new ClefDecisionProvider({ allowLive: true, timeoutMs: 8000 })
+    try {
+      await clef.resolveAccount()
+      ok(process.env.CLOUDFLARE_ACCOUNT_ID ? 'token set; account id from .env (not verified without --deep)' : 'token accepted; account resolved')
+    } catch (error) { fail(`token/account check failed (${error.status ?? 'error'})`) }
+    if (deep) {
+      try {
+        const started = Date.now()
+        const { gapMaterial } = await clef.judgeRound({ question: 'Will the project be operating by 2028?', conclusion: 'Demand is strong; grid timing is unknown.', gap: 'No evidence on grid energisation dates.' })
+        ok(`${clef.model} answered in ${Date.now() - started} ms (gap_material ${gapMaterial.toFixed(2)})`)
+      } catch (error) { fail(`${clef.model} call failed (${error.status ?? 'error'})`) }
+    }
   }
 }
 
@@ -174,7 +235,7 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
   } finally { await ledger?.close() }
 }
 
-if (process.env.LANGFUSE_PUBLIC_KEY || process.env.LANGFUSE_SECRET_KEY) {
+if (!stage && (process.env.LANGFUSE_PUBLIC_KEY || process.env.LANGFUSE_SECRET_KEY)) {
   console.log('Langfuse Cloud (traces, used by make live)')
   const base = (process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com').replace(/\/$/, '')
   try {
@@ -185,6 +246,9 @@ if (process.env.LANGFUSE_PUBLIC_KEY || process.env.LANGFUSE_SECRET_KEY) {
   } catch { fail(`${base} unreachable`) }
 }
 
-if (!deep) console.log('\n(add --deep to spend one DeepSeek + one Clef call and check latency)')
-console.log(failed ? '\nDoctor: problems found.' : '\nDoctor: all good.')
+if (stage) console.log(failed ? '\nPreflight: FAIL. Fix the lines above, or present the known-good build.' : '\nPreflight: PASS.')
+else {
+  if (!deep) console.log('\n(add --deep to spend one DeepSeek + one Clef call and check latency)')
+  console.log(failed ? '\nDoctor: problems found.' : '\nDoctor: all good.')
+}
 process.exit(failed ? 1 : 0)

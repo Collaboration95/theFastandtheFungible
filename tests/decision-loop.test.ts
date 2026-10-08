@@ -9,6 +9,7 @@ import { Reputation } from '../server/reputation.js'
 import { fixturePlan } from '../server/agents/scope.js'
 import { RunLoop, type RunLoopOptions } from '../server/agents/loop.js'
 import { FixtureDecisionProvider } from '../server/agents/decision.js'
+import type { DecisionProvider } from '../server/agents/decision.js'
 import type { Store } from '../server/store.js'
 import type { PublisherClient } from '../server/publisher-client.js'
 import type { PurchaseManager } from '../server/purchases.js'
@@ -183,6 +184,41 @@ describe('RunLoop with W0 ledger/research doubles', () => {
     expect(h.run.answers.map(answer => answer.version)).toEqual([1, 2])
     expect(h.run.checkpoint.answeredIntentId).toBe('verified-intent')
     expect(h.purchases.purchase).not.toHaveBeenCalled()
+  })
+  it('#197: a live decision provider that fails for one candidate fails the round: nothing bought, v1 kept, run FAILED', async () => {
+    const h = harness()
+    const fixture = new FixtureDecisionProvider()
+    h.retrieve.mockResolvedValue({ candidates: [exampleCandidate, h.candidate, paid('second')], contents: [exampleContent] })
+    const live: DecisionProvider = {
+      name: 'cloudflare', model: '@cf/cloudflare/clef-flash',
+      judgeRound: input => fixture.judgeRound(input),
+      judgeCandidate: async input => { if (input.candidate.resourceId === 'second') throw Object.assign(new Error('Clef unavailable (timeout)'), { status: 'timeout' }); return fixture.judgeCandidate(input) },
+    }
+    h.loop.options.provider = live
+    await h.loop.start(h.run.runId)
+    expect(h.purchases.purchase).not.toHaveBeenCalled()
+    expect(h.run.intents).toHaveLength(0)
+    expect(h.run.decisions).toHaveLength(0) // no fixture round substituted
+    expect(h.run.phase).toBe('FAILED')
+    expect(h.run.error).toBe('Decision model unavailable (timeout); nothing bought. The free answer stands.')
+    expect(h.run.checkpoint.nextAction).toBe('ask')
+    expect(h.run.answers.map(answer => answer.version)).toEqual([1])
+    expect(h.run.answers[0].conclusion).toBe(exampleAnswer.conclusion)
+    expect(h.run.events.find(event => event.type === 'DECISION_UNAVAILABLE')).toMatchObject({ data: { status: 'timeout' } })
+    expect(h.published.map(event => event.type)).toEqual(['SEARCH', 'READ_FREE', 'ANSWER', 'DECIDE', 'FAILED'])
+  })
+  it('#197: Stop during a failing live decision stays STOPPED, buys nothing, and keeps v1', async () => {
+    const h = harness()
+    let release!: () => void
+    const gate = new Promise<void>(resolve => { release = resolve })
+    h.loop.options.provider = { name: 'cloudflare', model: '@cf/cloudflare/clef-flash', judgeRound: async () => { await gate; throw Object.assign(new Error('x'), { status: 'HTTP 503' }) }, judgeCandidate: async () => { await gate; throw new Error('x') } }
+    const pending = h.loop.start(h.run.runId)
+    await vi.waitFor(() => expect(h.run.phase).toBe('DECIDE'))
+    h.loop.stop(h.run.runId)
+    release(); await pending
+    expect(h.run.phase).toBe('STOPPED')
+    expect(h.purchases.purchase).not.toHaveBeenCalled()
+    expect(h.run.answers).toHaveLength(1)
   })
   it('limits continued acquisition to three rounds and one purchase per round', async () => {
     const h = harness(500)

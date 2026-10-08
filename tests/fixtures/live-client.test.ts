@@ -17,12 +17,12 @@ describe('bounded live client recovery', () => {
     expect(clefQuestions.candidate.originality).not.toHaveProperty('choices')
     expect(clefQuestions.candidate.credibility).not.toHaveProperty('legend')
   })
-  it('honours Clef Retry-After outside the per-attempt timeout', async () => {
+  it('honours Clef Retry-After outside the per-attempt timeout, capped at 2 s (#195)', async () => {
     vi.useFakeTimers()
     const transport = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response('', { status: 429, headers: { 'Retry-After': '5' } })).mockResolvedValueOnce(new Response(JSON.stringify(round)))
     const provider = new ClefDecisionProvider({ token: 'mock', accountId: 'mock', fetch: transport })
     const result = provider.judgeRound({ question: 'q', conclusion: 'c', gap: 'g' })
-    await vi.advanceTimersByTimeAsync(4999)
+    await vi.advanceTimersByTimeAsync(1999)
     expect(transport).toHaveBeenCalledTimes(1)
     await vi.advanceTimersByTimeAsync(1)
     expect(await result).toEqual({ gapMaterial: 0.8 })

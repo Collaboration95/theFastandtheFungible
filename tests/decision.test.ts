@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { buyThreshold, decide, FixtureDecisionProvider } from '../server/agents/decision.js'
+import { buyThreshold, decide, DecisionUnavailableError, FixtureDecisionProvider } from '../server/agents/decision.js'
 import type { DecideInput, DecisionProvider } from '../server/agents/decision.js'
 import { ClefDecisionProvider, parseClefCandidate, parseClefRound } from '../server/agents/clef.js'
+import { tieBreakKey } from '../server/agents/tie-break.js'
 import { exampleCandidate } from '../shared/contracts/examples.js'
 import type { PublicCandidate } from '../shared/contracts/index.js'
 
@@ -36,6 +37,22 @@ describe('decision policy', () => {
     expect((await decide(input({ gap: '' }))).rows[0].verdict).toBe('SKIP_NO_GAP')
     expect((await decide(input({ candidates: [paid('a', 80), paid('b', 40)] }))).selectedResourceId).toBe('b')
   })
+  it('breaks equal value-per-dollar ties on a neutral hash, never alphabetically or on claimed relevance (#204)', async () => {
+    const questions = Array.from({ length: 16 }, (_, i) => `Will project ${i} operate?`)
+    const picks = await Promise.all(questions.map(async question => {
+      // Identical public fields except the id, so value per dollar is exactly equal.
+      const candidates = [paid('alphaleak-claim', 80, { relevance: 1 }), paid('notft-data', 80, { relevance: 1 })]
+      const result = await decide(input({ question, candidates }))
+      expect(result.rows.every(row => row.verdict === 'BUY')).toBe(true)
+      expect(result.rows[0].valuePerDollar).toBe(result.rows[1].valuePerDollar)
+      const reversed = await decide(input({ question, candidates: [...candidates].reverse() }))
+      expect(reversed.selectedResourceId).toBe(result.selectedResourceId) // input order never matters
+      const expected = tieBreakKey(question, 'alphaleak-claim', 'v1') < tieBreakKey(question, 'notft-data', 'v1') ? 'alphaleak-claim' : 'notft-data'
+      expect(result.selectedResourceId).toBe(expected)
+      return result.selectedResourceId
+    }))
+    expect(new Set(picks)).toEqual(new Set(['alphaleak-claim', 'notft-data']))
+  })
   it('calibrates thresholds by model and permits explicit configuration', () => {
     expect(buyThreshold('@cf/cloudflare/clef-flash')).toBe(0.15)
     expect(buyThreshold('@cf/cloudflare/clef')).toBe(0.35)
@@ -53,7 +70,7 @@ describe('decision policy', () => {
     await decide(input({ candidates: [leaked], readSources: [{ ...exampleCandidate, body: 'PAID_CANARY' } as typeof exampleCandidate], provider }))
     expect(JSON.stringify(candidateSpy.mock.calls)).not.toContain('PAID_CANARY')
   })
-  it('starts one round and every candidate concurrently and visibly substitutes a failed round', async () => {
+  it('starts one round and every candidate concurrently; a failed call fails the round with no fixture substitution (#197)', async () => {
     const calls: string[] = []
     let release!: () => void
     const barrier = new Promise<void>(resolve => { release = resolve })
@@ -62,10 +79,11 @@ describe('decision policy', () => {
     const pending = decide(input({ provider, candidates: [paid('a'), paid('b')] }))
     expect(calls).toEqual(['round', 'a', 'b'])
     release()
-    const result = await pending
-    expect(result).toMatchObject({ provider: 'fixture', model: 'metadata-fixture', threshold: 0.2 })
-    expect(result.fallbackReason).toContain('substituted')
-    expect(JSON.stringify(result)).not.toContain('secret-token')
+    const error = await pending.then(() => undefined, (e: unknown) => e)
+    expect(error).toBeInstanceOf(DecisionUnavailableError)
+    expect(error).toMatchObject({ status: 'provider error', message: 'Decision model unavailable (provider error)' })
+    expect(JSON.stringify(error)).not.toContain('secret-token')
+    expect((error as Error).message).not.toContain('secret-token')
   })
 })
 
@@ -98,29 +116,26 @@ describe('recorded Clef client', () => {
     vi.stubEnv('CLOUDFLARE_ACCOUNT_ID', '')
     await expect(new ClefDecisionProvider({ token: 'mock', fetch: async () => response({ success: true, result: [{ id: 'a' }, { id: 'b' }] }) }).resolveAccount()).rejects.toThrow()
   })
-  it('retries malformed model answers once before substituting fixtures', async () => {
+  it('retries malformed model answers once, then fails the round as an invalid response (#197)', async () => {
     const transport = vi.fn<typeof fetch>(async (_url, init) => response(String(init?.body).includes('gap_material') ? roundResponse : { success: true, result: { answers: {} } }))
-    const result = await decide(input({ provider: new ClefDecisionProvider({ token: 'mock', accountId: 'account', fetch: transport }) }))
+    await expect(decide(input({ provider: new ClefDecisionProvider({ token: 'mock', accountId: 'account', fetch: transport }) }))).rejects.toMatchObject({ status: 'invalid response' })
     expect(transport).toHaveBeenCalledTimes(3) // round once, invalid candidate twice
-    expect(result.provider).toBe('fixture')
-    expect(result.fallbackReason).toBeDefined()
   })
-  it('aborts at 3 seconds per attempt even when transport ignores abort, then labels fallback', async () => {
+  it('aborts at the 5 s default per attempt even when transport ignores abort, then fails the round (#195, #197)', async () => {
     vi.useFakeTimers()
+    vi.stubEnv('CLEF_TIMEOUT_MS', '')
     const transport = vi.fn<typeof fetch>(() => new Promise(() => {}))
     const provider = new ClefDecisionProvider({ token: 'mock', accountId: 'account', fetch: transport })
-    const pending = decide(input({ provider }))
-    await vi.advanceTimersByTimeAsync(6001)
-    const result = await pending
+    const failed = expect(decide(input({ provider }))).rejects.toMatchObject({ status: 'timeout' })
+    await vi.advanceTimersByTimeAsync(9999)
     expect(transport).toHaveBeenCalledTimes(4) // round + candidate, two attempts each
+    await vi.advanceTimersByTimeAsync(2)
+    await failed
     expect(transport.mock.calls.every(([, init]) => init?.signal?.aborted)).toBe(true)
-    expect(result.provider).toBe('fixture')
-    expect(result.fallbackReason).toBeDefined()
   })
   it('never uses global fetch without explicit live opt-in', async () => {
     const globalFetch = vi.spyOn(globalThis, 'fetch')
-    const result = await decide(input({ provider: new ClefDecisionProvider({ token: 'mock', accountId: 'account' }) }))
+    await expect(decide(input({ provider: new ClefDecisionProvider({ token: 'mock', accountId: 'account' }) }))).rejects.toBeInstanceOf(DecisionUnavailableError)
     expect(globalFetch).not.toHaveBeenCalled()
-    expect(result.provider).toBe('fixture')
   })
 })
