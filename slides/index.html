@@ -96,7 +96,12 @@ h1.q { font-size: 112px; }
 .dg .ar.now path { stroke: var(--pen); stroke-width: 4.5; marker-end: url(#ahNow); }
 .dg .ar.now .bdg circle { fill: var(--pen); }
 .dg .ar.now .lab { fill: var(--pen); }
-.cap { font: 500 36px/1.42 var(--f-ui); color: var(--ink); margin-top: 18px; max-width: 1700px; min-height: 104px; }
+.cap { font: 500 36px/1.42 var(--f-ui); color: var(--ink); margin-top: 18px; max-width: 1700px; min-height: 104px; display: grid; }
+/* flow: one slow pulse walks the numbered arrows in order; the caption follows it */
+.dg .ar path, .dg .ar .lab, .dg .ar .bdg circle { transition: stroke 1.2s ease, stroke-width 1.2s ease, fill 1.2s ease; }
+.dg .ar path.pulse { fill: none; stroke: var(--pen); stroke-width: 9; stroke-linecap: round; opacity: .35; marker-end: none; pointer-events: none; }
+.cap > [data-cap] { grid-area: 1 / 1; opacity: 0; transition: opacity 1.2s ease; }
+.cap > [data-cap].shown { opacity: 1; }
 .cap .n { display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--pen); color: #fff; font: 700 24px var(--f-mono); margin-right: 14px; vertical-align: 4px; }
 .maplink { font: 500 22px var(--f-mono); color: var(--faint); }
 .maplink a { color: var(--pen); }
@@ -224,7 +229,7 @@ body.show-ov #ov { display: grid; }
   <p class="say" style="font-size:30px"><span id="egg">Team</span>: TheFastandTheFungible | Guru | Jiamin | Andrew | Thanh Minh</p>
   <aside class="notes">
     <ul>
-      <li>"How we picked the model" covers slides 4–16: what decision models are for, Jev vs Clef-flash on paper, then our own benchmark and why we switched to OpenAI Decisions.</li>
+      <li>"How we picked the model": what decision models are for, Jev vs Clef-flash on paper, then our own benchmark and why we switched to OpenAI Decisions.</li>
     </ul>
   </aside>
 </section>
@@ -278,29 +283,29 @@ body.show-ov #ov { display: grid; }
       <text class="go" x="1086" y="400" text-anchor="end">open ↗</text></g></a>
 
     <!-- arrows, numbered as in the project map -->
-    <g class="ar" data-step="1"><path d="M290 160 H462"/><text class="lab" x="380" y="108" text-anchor="middle">question</text><text class="lab" x="380" y="135" text-anchor="middle">+ budget</text><g class="bdg"><circle cx="380" cy="160" r="19"/><text x="380" y="167" text-anchor="middle">1</text></g></g>
-    <g class="ar" data-step="2"><path d="M760 120 H932"/><text class="lab" x="850" y="96" text-anchor="middle">search · pay</text><g class="bdg"><circle cx="850" cy="120" r="19"/><text x="850" y="127" text-anchor="middle">2</text></g></g>
-    <g class="ar" data-step="3"><path d="M940 185 H768"/><text class="lab" x="850" y="232" text-anchor="middle">hits · article</text><g class="bdg"><circle cx="850" cy="185" r="19"/><text x="850" y="192" text-anchor="middle">3</text></g></g>
-    <g class="ar" data-step="4"><path d="M1230 120 H1402"/><text class="lab" x="1320" y="70" text-anchor="middle">submit</text><text class="lab" x="1320" y="96" text-anchor="middle">· refund</text><g class="bdg"><circle cx="1320" cy="120" r="19"/><text x="1320" y="127" text-anchor="middle">4</text></g></g>
-    <g class="ar" data-step="5"><path d="M1410 185 H1238"/><text class="lab" x="1320" y="232" text-anchor="middle">validated</text><g class="bdg"><circle cx="1320" cy="185" r="19"/><text x="1320" y="192" text-anchor="middle">5</text></g></g>
-    <g class="ar dash" data-step="6"><path d="M496 250 V610 H1555 V258"/><text class="lab" x="1340" y="596" text-anchor="middle">buyer checks the ledger itself</text><g class="bdg"><circle cx="1150" cy="610" r="19"/><text x="1150" y="617" text-anchor="middle">6</text></g></g>
-    <g class="ar dash" data-step="7"><path d="M700 250 V352"/><text class="lab" x="666" y="312" text-anchor="end">ask a model</text><g class="bdg"><circle cx="700" cy="300" r="19"/><text x="700" y="307" text-anchor="middle">7</text></g></g>
-    <g class="ar dash" data-step="8"><path d="M1000 250 V352"/><text class="lab" x="1026" y="312">embed the query</text><g class="bdg"><circle cx="1000" cy="300" r="19"/><text x="1000" y="307" text-anchor="middle">8</text></g></g>
+    <g class="ar" data-flow="1"><path d="M290 160 H462"/><text class="lab" x="380" y="108" text-anchor="middle">question</text><text class="lab" x="380" y="135" text-anchor="middle">+ budget</text><g class="bdg"><circle cx="380" cy="160" r="19"/><text x="380" y="167" text-anchor="middle">1</text></g></g>
+    <g class="ar" data-flow="2"><path d="M760 120 H932"/><text class="lab" x="850" y="96" text-anchor="middle">search · pay</text><g class="bdg"><circle cx="850" cy="120" r="19"/><text x="850" y="127" text-anchor="middle">2</text></g></g>
+    <g class="ar" data-flow="3"><path d="M940 185 H768"/><text class="lab" x="850" y="232" text-anchor="middle">hits · article</text><g class="bdg"><circle cx="850" cy="185" r="19"/><text x="850" y="192" text-anchor="middle">3</text></g></g>
+    <g class="ar" data-flow="4"><path d="M1230 120 H1402"/><text class="lab" x="1320" y="70" text-anchor="middle">submit</text><text class="lab" x="1320" y="96" text-anchor="middle">· refund</text><g class="bdg"><circle cx="1320" cy="120" r="19"/><text x="1320" y="127" text-anchor="middle">4</text></g></g>
+    <g class="ar" data-flow="5"><path d="M1410 185 H1238"/><text class="lab" x="1320" y="232" text-anchor="middle">validated</text><g class="bdg"><circle cx="1320" cy="185" r="19"/><text x="1320" y="192" text-anchor="middle">5</text></g></g>
+    <g class="ar dash" data-flow="6"><path d="M496 250 V610 H1555 V258"/><text class="lab" x="1340" y="596" text-anchor="middle">buyer checks the ledger itself</text><g class="bdg"><circle cx="1150" cy="610" r="19"/><text x="1150" y="617" text-anchor="middle">6</text></g></g>
+    <g class="ar dash" data-flow="7"><path d="M700 250 V352"/><text class="lab" x="666" y="312" text-anchor="end">ask a model</text><g class="bdg"><circle cx="700" cy="300" r="19"/><text x="700" y="307" text-anchor="middle">7</text></g></g>
+    <g class="ar dash" data-flow="8"><path d="M1000 250 V352"/><text class="lab" x="1026" y="312">embed the query</text><g class="bdg"><circle cx="1000" cy="300" r="19"/><text x="1000" y="307" text-anchor="middle">8</text></g></g>
   </svg>
   <div class="cap">
-    <div data-only="0">Five parts. Solid arrows always happen, dashed ones sometimes or read-only. <span class="maplink">Click a box to open its level in the <a data-map="" target="_blank" rel="noopener">project map ↗</a></span></div>
-    <div data-only="1"><span class="n">1</span>You press Ask with a budget. The budget is the only permission to spend.</div>
-    <div data-only="2"><span class="n">2</span>A asks all eight writers. Later it retries one paywalled article, with a payment attached.</div>
-    <div data-only="3"><span class="n">3</span>Writers send teasers and signed promises, never the paid text. After payment: the article.</div>
-    <div data-only="4"><span class="n">4</span>The writer's own facilitator submits the payment to the ledger. Refunds go the same way.</div>
-    <div data-only="5"><span class="n">5</span>The ledger validates it. Only then does the writer deliver.</div>
-    <div data-only="6"><span class="n">6</span>A looks the payment up on the ledger itself. It never takes the seller's word.</div>
-    <div data-only="7"><span class="n">7</span>DeepSeek writes the cited answer. OpenAI Decisions scores which paid article is worth buying.</div>
-    <div data-only="8"><span class="n">8</span>Writers embed the query with Workers AI to search by meaning. If that fails: keywords, labelled.</div>
+    <div data-cap="1"><span class="n">1</span>You press Ask with a budget. The budget is the only permission to spend.</div>
+    <div data-cap="2"><span class="n">2</span>A asks all eight writers. Later it retries one paywalled article, with a payment attached.</div>
+    <div data-cap="3"><span class="n">3</span>Writers send teasers and signed promises, never the paid text. After payment: the article.</div>
+    <div data-cap="4"><span class="n">4</span>The writer's own facilitator submits the payment to the ledger. Refunds go the same way.</div>
+    <div data-cap="5"><span class="n">5</span>The ledger validates it. Only then does the writer deliver.</div>
+    <div data-cap="6"><span class="n">6</span>A looks the payment up on the ledger itself. It never takes the seller's word.</div>
+    <div data-cap="7"><span class="n">7</span>DeepSeek writes the cited answer. OpenAI Decisions scores which paid article is worth buying.</div>
+    <div data-cap="8"><span class="n">8</span>Writers embed the query with Workers AI to search by meaning. If that fails: keywords, labelled.</div>
   </div>
+  <div class="src">Solid arrows always happen, dashed ones sometimes or read-only. <span class="maplink">Click a box to open its level in the <a data-map="" target="_blank" rel="noopener">project map ↗</a></span></div>
   <aside class="notes">
     <ul>
-      <li>→ reveals arrows 1–8 one at a time, numbered as in the project map. Boxes link to the map's level-1 pages (needs the map server; set MAP_URL at the bottom of this file).</li>
+      <li>No builds: a slow pulse walks arrows 1 → 8 (about 4.5 s each, then loops) and the caption follows it. → goes straight to the next slide. Numbered as in the project map. Boxes link to the map's level-1 pages (needs the map server; set MAP_URL at the bottom of this file).</li>
       <li>Close on 7: "That purple box is the part I want to spend the rest of the time on."</li>
     </ul>
   </aside>
@@ -310,11 +315,11 @@ body.show-ov #ov { display: grid; }
 <section class="slide" data-title="What decision models are for">
   <div class="kick">One part · the decision model</div>
   <h1>A decision model answers in numbers, not sentences</h1>
-  <div class="cols">
+  <div class="cols" style="grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);margin-top:56px;align-items:start">
     <div class="card">
       <div class="who">A language model</div>
-      <div class="prose">"This article appears highly relevant to your question and likely contains valuable analyst insight on the deal…"</div>
-      <div class="verdict-line">You can't put a threshold on a sentence.</div>
+      <div class="prose">"Looks highly relevant, likely valuable…"</div>
+      <div class="verdict-line">No threshold fits a sentence.</div>
     </div>
     <div class="card dm">
       <div class="who">A decision model</div>
@@ -323,13 +328,13 @@ body.show-ov #ov { display: grid; }
         <span class="t">choice</span><span class="q">Original, rewrite or overlap?</span><span class="v">0.76</span>
         <span class="t">score</span><span class="q">How credible, 0 to 2?</span><span class="v">0.83</span>
       </div>
-      <div class="verdict-line ok">Bounded answers with probabilities. Code can use them directly.</div>
     </div>
   </div>
-  <p class="say" style="font-size:32px;margin-top:40px"><b>Jev</b> (TypeSafe) calls these "System One" models: fast, typed judgments for routing, ranking, verification and guardrails, not for chat or writing.</p>
-  <div class="src">Numbers: the S$0.90 article in a 9 Oct rehearsal of the run you just saw. Jev: TypeSafe's listing and DataCamp / Kanerika write-ups (vendor claims).</div>
+  <div class="src">The S$0.90 article in a 9 Oct rehearsal of the run you just saw.</div>
   <aside class="notes">
     <ul>
+      <li>Say: bounded answers with probabilities, so code can put a threshold on them.</li>
+      <li>Jev (TypeSafe) calls these "System One" models: fast, typed judgments for routing, ranking, verification and guardrails, not for chat or writing (TypeSafe's listing, DataCamp / Kanerika write-ups; vendor claims).</li>
       <li>Three question types: a yes/no probability, a distribution over fixed choices, an ordinal score. Jev, Cloudflare Clef and OpenAI Decisions all expose the same three.</li>
       <li>The 0.76 is P(original) for NotFinancialTimes, from run 484550aa.</li>
     </ul>
@@ -360,7 +365,7 @@ body.show-ov #ov { display: grid; }
 </section>
 
 <!-- ============ 6 · VENDOR BENCHMARK ============ -->
-<section class="slide" data-title="On paper: Clef-flash vs Jev">
+<section class="slide" data-title="On paper: Clef-flash vs Jev" data-skip>
   <div class="kick">Picking a decision model</div>
   <h1>On paper, Clef-flash was 13× faster than Jev and ahead on 7 of 10 tests</h1>
   <div class="split" style="grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:70px">
@@ -400,6 +405,7 @@ body.show-ov #ov { display: grid; }
       <li>Jev would have been a natural fit. Clef (Cloudflare) speaks the same request format, has open weights, is about US$0.09 per million input tokens for flash, and its launch numbers beat Jev on speed and on most of the index.</li>
       <li>Clef-flash ahead on 7 (tool calls, API calls, intents, phishing…), Jev ahead on 3 (When2Call, CLINC150, BRIGHT retrieval).</li>
       <li><span class="todo">Say why Jev wasn't in our own run</span></li>
+      <li>Skipped: backup for Q&amp;A. Its headline now sits on "So how do we decide?", and its latency claim on "Take benchmarks with a grain of salt".</li>
     </ul>
   </aside>
 </section>
@@ -409,13 +415,14 @@ body.show-ov #ov { display: grid; }
   <div class="kick">Picking a decision model</div>
   <h1 class="q">So how do we decide?</h1>
   <ul class="facts">
-    <li data-step="1"><span>Those benchmarks grade tool calls, intent labels and retrieval. None asks ours: <b>is this article worth S$0.90 for this gap?</b></span></li>
-    <li data-step="2"><span>On 6 Oct OpenAI shipped <b>Decisions (gpt-6-luna)</b>: the same three question types, a speed claim, no distribution.</span></li>
-    <li data-step="3"><span>So we wrote our own test, and gave it to a coding agent to run.</span></li>
+    <li data-step="1"><span>On paper, Cloudflare's <b>Clef-flash</b> was 13× faster than TypeSafe's <b>Jev</b> and ahead on 7 of 10 tests.</span></li>
+    <li data-step="2"><span>Those tests grade tool calls, intent labels and retrieval. None asks ours: <b>is this article worth S$0.90 for this gap?</b></span></li>
+    <li data-step="3"><span>On 6 Oct OpenAI shipped <b>Decisions (gpt-6-luna)</b>: the same three question types, a speed claim, no distribution.</span></li>
+    <li data-step="4"><span>So we wrote our own test, and gave it to a coding agent to run.</span></li>
   </ul>
   <aside class="notes">
     <ul>
-      <li>Three builds: → → →.</li>
+      <li>Four builds: → → → →. Vendor numbers: Cloudflare's Clef launch post, "Jev Decision Index", 1 Oct 2026 (server-side latency, 38.8 ms vs 524.1 ms). The full 10-test chart is the skipped slide before this one.</li>
     </ul>
   </aside>
 </section>
@@ -505,6 +512,7 @@ The incumbent is Clef-flash. Switch only if ALL of these hold on the test split:
     <div class="side">
       <div class="tile"><b>0.015 vs 0.075</b><span>probability error (Brier), Luna vs Clef-flash. Lower is better.</span></div>
       <div class="tile"><b>$0.48 vs $0.44</b><span>per 1,000 buying rounds. About the same.</span></div>
+      <div class="call" style="font-size:27px">Out of the box, neither model's probabilities meant what they said. A calibrator fitted on the dev split fixed that; the test split stayed locked.</div>
     </div>
   </div>
   <div class="src">SYNTHETIC. 64 held-out scenarios × 3 repeats, 28 topic families.</div>
@@ -513,34 +521,45 @@ The incumbent is Clef-flash. Switch only if ALL of these hold on the test split:
       <li>F1 here = picking exactly the article a careful buyer would (or correctly buying nothing).</li>
       <li>"Out of the box" = production wording and thresholds. "Tuned" = best wording, calibrator and threshold chosen on the dev split only.</li>
       <li>Luna untuned-but-reworded (no calibrator) already scored 0.915.</li>
+      <li>Calibration, if asked (detail on the skipped "Calibration" slide): Clef-flash's 0.22–0.50 band came true only 24–31% of the time; Luna was too timid (said 0.09, true 37%). Platt or isotonic per question, picked by 5-fold family-grouped CV on dev.</li>
     </ul>
   </aside>
 </section>
 
-<!-- ============ 12 · SPEED ============ -->
-<section class="slide" data-title="Speed: claimed vs measured">
-  <div class="kick">Results · speed</div>
-  <h1>Measured from our machine, the "39 ms" model took 583 ms a call</h1>
-  <div class="legend"><span><i class="out" style="border-color:var(--flash)"></i>vendor claim, server time</span><span><i class="bar" style="background:var(--ink-2)"></i>our median per call, network included</span></div>
-  <div class="chart" data-chart="hbar"><script type="application/json">
-    { "w": 1700, "labelW": 420, "rowH": 112, "max": 900, "unit": " ms", "ticks": [0, 300, 600, 900],
-      "rows": [
-        { "label": "Clef-flash", "sub": "vendor claim", "v": 38.8, "color": "flash", "outline": true },
-        { "label": "Clef-flash", "sub": "measured", "v": 583.1, "color": "flash" },
-        { "label": "OpenAI Decisions", "sub": "measured", "v": 277.0, "color": "luna" }
-      ] }
-  </script></div>
-  <div class="src">Median candidate-call round trip, baseline run. Vendor and client numbers measure different things; the comparison that holds is our two measured bars.</div>
+<!-- ============ 12 · BENCHMARKS, ON PAPER VS MEASURED ============ -->
+<section class="slide" data-title="Benchmarks: on paper vs measured">
+  <div class="kick">Results · on paper vs measured</div>
+  <h1>Take vendor benchmarks with a grain of salt</h1>
+  <div class="split">
+    <div>
+      <div class="legend"><span><i class="out"></i>vendor claim, server time</span><span><i class="bar" style="background:var(--ink-2)"></i>our median per call, network included</span></div>
+      <div class="chart" data-chart="hbar"><script type="application/json">
+        { "w": 1060, "labelW": 330, "rowH": 100, "max": 900, "unit": " ms", "ticks": [0, 300, 600, 900],
+          "rows": [
+            { "label": "Clef-flash", "sub": "vendor claim", "v": 38.8, "color": "flash", "outline": true },
+            { "label": "Jev", "sub": "vendor claim", "v": 524.1, "color": "jev", "outline": true },
+            { "label": "Clef-flash", "sub": "measured", "v": 583.1, "color": "flash" },
+            { "label": "OpenAI Decisions", "sub": "measured", "v": 277.0, "color": "luna" }
+          ] }
+      </script></div>
+    </div>
+    <div class="side" style="margin-top:20px">
+      <div class="call flash"><b>On paper:</b> Clef-flash 13× faster than Jev, ahead on 7 of 10 tests.</div>
+      <div class="call luna"><b>On our task:</b> 2× slower than OpenAI Decisions, and 0.78 vs 0.98 F1.</div>
+      <div class="call">Vendors time their servers on their tests. We timed our laptop on our question.</div>
+    </div>
+  </div>
+  <div class="src">Vendor: Cloudflare's Clef launch post, "Jev Decision Index", 1 Oct 2026. Ours: median candidate-call round trip, baseline run. Jev was not in our run.</div>
   <aside class="notes">
     <ul>
-      <li>Not "the vendor lied": 38.8 ms is inference time on their servers. Ours includes the network from our laptop.</li>
+      <li>Not "the vendor lied": 38.8 ms is inference time on their servers. Ours includes the network from our laptop. The comparison that holds is our two measured bars.</li>
       <li>Batched Luna rounds: p95 577 ms. Criterion 3 (p95 ≤ 2.5 s) passed.</li>
     </ul>
   </aside>
 </section>
 
 <!-- ============ 13 · CALIBRATION ============ -->
-<section class="slide" data-title="Calibration">
+<section class="slide" data-title="Calibration" data-skip>
   <div class="kick">What surprised us · 1</div>
   <h1>Out of the box, neither model's numbers meant what they said</h1>
   <div class="split" style="grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
@@ -561,6 +580,7 @@ The incumbent is Clef-flash. Switch only if ALL of these hold on the test split:
   <div class="src">"Does it fill the gap?", baseline wording, dev split, equal-count bins.</div>
   <aside class="notes">
     <ul>
+      <li>Skipped: backup for Q&amp;A. The headline now sits on the results slide.</li>
       <li>Read the chart: x is what the model said, y is how often that was true. On the diagonal = honest.</li>
       <li>Calibration = Platt or isotonic, picked by 5-fold family-grouped CV on dev.</li>
     </ul>
@@ -821,15 +841,44 @@ function render() {
   const s = slides[cur];
   for (const e of $$('[data-step]', s)) { const n = +e.dataset.step; e.classList.toggle('shown', step >= n); e.classList.toggle('now', step === n); }
   for (const e of $$('[data-only]', s)) e.classList.toggle('shown', step === +e.dataset.only);
-  $('#num').textContent = `${cur + 1} / ${slides.length}` + (maxStep(s) ? ` · ${step}/${maxStep(s)}` : '');
-  $('#bar').style.width = ((cur + 1) / slides.length * 100) + '%';
+  // count only the slides the arrow keys reach; a skipped slide opened from the overview shows "skipped"
+  const shown = slides.filter((_, k) => !skipped(k)), pos = shown.indexOf(s) + 1;
+  $('#num').textContent = (pos ? `${pos} / ${shown.length}` : `skipped · ${cur + 1}`) + (maxStep(s) ? ` · ${step}/${maxStep(s)}` : '');
+  $('#bar').style.width = ((pos || cur + 1) / (pos ? shown.length : slides.length) * 100) + '%';
   const notes = $('.notes', s);
   $('#notesp').innerHTML = `<h4>${cur + 1} · ${s.dataset.title || ''}</h4>` + (notes ? notes.innerHTML : '<p>No notes.</p>');
   $('#of').hidden = !(s.scrollHeight > s.clientHeight + 2 || s.scrollWidth > s.clientWidth + 2);
   history.replaceState(null, '', '#' + (cur + 1) + (step ? '.' + step : ''));
   $$('.ovc').forEach((c, k) => c.classList.toggle('cur', k === cur));
 }
-function go(i, st = 0) { cur = Math.max(0, Math.min(slides.length - 1, i)); step = st; render(); }
+function go(i, st = 0) { cur = Math.max(0, Math.min(slides.length - 1, i)); step = st; render(); flow(); }
+
+// flow (Level 0): while its slide shows, a slow pulse walks arrows 1 → n and loops; the caption follows it
+const FLOW_MS = 4500, calm = matchMedia('(prefers-reduced-motion: reduce)');
+let flowTimer = 0, flowSlide = null;
+function flow() {
+  const s = slides[cur], arrows = $$('[data-flow]', s);
+  if (s === flowSlide) return;
+  clearInterval(flowTimer); flowTimer = 0;
+  if (flowSlide) for (const e of $$('[data-flow],[data-cap]', flowSlide)) e.classList.remove('now', 'shown');
+  flowSlide = arrows.length ? s : null;
+  if (!flowSlide) return;
+  let n = 0;
+  const tick = () => {
+    n = n % arrows.length + 1;
+    for (const a of arrows) a.classList.toggle('now', +a.dataset.flow === n);
+    for (const c of $$('[data-cap]', s)) c.classList.toggle('shown', +c.dataset.cap === n);
+    const a = arrows.find(a => +a.dataset.flow === n), path = a && $('path', a);
+    if (!path || calm.matches) return;
+    // one short, soft dash runs along the arrow
+    const len = path.getTotalLength(), seg = Math.min(60, len / 3);
+    const p = svg('path', { d: path.getAttribute('d'), class: 'pulse', style: `stroke-dasharray: ${seg} ${len + seg}` }, a);
+    p.animate([{ strokeDashoffset: seg }, { strokeDashoffset: -len }], { duration: Math.min(3600, Math.max(1600, len * 2.4)), easing: 'ease-in-out' })
+      .finished.then(() => p.remove(), () => p.remove());
+  };
+  tick();
+  flowTimer = setInterval(tick, FLOW_MS);
+}
 function next() {
   if (step < maxStep(slides[cur])) { step++; return render(); }
   let i = cur + 1; while (i < slides.length && skipped(i)) i++;
