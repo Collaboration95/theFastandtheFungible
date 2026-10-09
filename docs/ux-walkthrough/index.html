@@ -7,12 +7,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Geist+Mono:wght@400..700&family=Geist:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap">
 <link rel="stylesheet" href="doc.css">
 <link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="ship.css">
 
 <div class="doc">
   <aside class="side">
     <div class="side-brand">
       <svg class="ra-mark" viewBox="0 0 32 32" aria-hidden="true"><path class="br l" d="M11.5 6.5H7.5v19h4"/><path class="br r" d="M20.5 6.5h4v19h-4"/><circle class="coin" cx="16" cy="19" r="4.4"/></svg>
-      <div><b>ResearchAgent</b><span>UX direction · v1.1</span></div>
+      <div><b>ResearchAgent</b><span>UX direction · v1.3</span></div>
     </div>
     <nav class="side-nav" aria-label="Sections on this tab" id="sideNav"></nav>
     <div class="side-box">
@@ -20,8 +21,13 @@
       <p>Mockups switch to cuts. Numbers still update.</p>
     </div>
     <div class="side-box">
-      <label class="side-toggle" for="twToggle"><input type="checkbox" id="twToggle"> Recommended tweaks</label>
-      <p>Redraws the Overview, Flow and Play mockups with the v1.1 tweaks.</p>
+      <h4>Mockups show</h4>
+      <div class="seg seg-sm seg-col" id="pageVer" role="radiogroup" aria-label="Which version the Overview, Flow and Play mockups draw">
+        <button type="button" role="radio" data-v="ship" aria-checked="true">As shipped · v1.2</button>
+        <button type="button" role="radio" data-v="rec" aria-checked="false">Proposal · v1.1</button>
+        <button type="button" role="radio" data-v="v1" aria-checked="false">Proposal · v1</button>
+      </div>
+      <p>Redraws the Overview, Flow and Play mockups. The Shipped and Review tabs always draw v1.2.</p>
     </div>
     <div class="side-box">
       <h4>Screen tags</h4>
@@ -39,6 +45,8 @@
     <div class="tabs-wrap">
       <nav class="tabs" role="tablist" aria-label="Walkthrough">
         <a role="tab" href="#overview" id="t-overview">Overview</a>
+        <a role="tab" href="#shipped" id="t-shipped">Shipped <span class="newtag">v1.2</span></a>
+        <a role="tab" href="#review" id="t-review">Review <span class="newtag">v1.3</span></a>
         <a role="tab" href="#tweaks" id="t-tweaks">Tweaks <span class="newtag">v1.1</span></a>
         <a role="tab" href="#flow" id="t-flow">Flow</a>
         <a role="tab" href="#play" id="t-play">Play</a>
@@ -46,7 +54,7 @@
         <a role="tab" href="#brand" id="t-brand">Brand</a>
         <a role="tab" href="#notify" id="t-notify">Notify</a>
       </nav>
-      <span class="ver">v1.1 · 5 Oct 2026</span>
+      <span class="ver">v1.3 · 9 Oct 2026</span>
     </div>
 
     <!-- ============ OVERVIEW ============ -->
@@ -55,14 +63,15 @@
         <p class="eyebrow">Overview · audit and direction</p>
         <h1>Let the room watch it decide.</h1>
         <p class="lede">ResearchAgent’s best moment lasts 40 milliseconds and happens behind a tab. A decision model prices evidence, code pays for it, and the answer changes. Today the audience lands on the finished answer and never sees the decision. This proposal puts the whole run on one screen, paces it for people, and gives the product a look and a motion language of its own. Light theme only.</p>
-        <div class="hero-acts"><a class="btn btn-pen" href="#play">Play the full run · 30 s</a><a class="btn" href="#flow">See all 39 screens</a><a class="btn" href="#tweaks">v1.1: feedback tweaks →</a></div>
+        <div class="hero-acts"><a class="btn btn-pen" href="#play">Play the full run · 30 s</a><a class="btn" href="#flow">See all 38 screens</a><a class="btn" href="#tweaks">v1.1: feedback tweaks →</a></div>
       </header>
+      <div class="rv-note"><b>Update, 9 Oct.</b> Most of this proposal has shipped. The <a href="#shipped">Shipped</a> tab shows the build on main as it runs live, and <a href="#review">Review</a> has what three rehearsal reviewers found, a ten-minute script and alternatives to vote on. The mockups below now draw the shipped build by default; use “Mockups show” on the left to see the original proposals. The audit and the text on this tab describe the 5 Oct build and the v1 proposal, so read them as history.</div>
       <figure class="hero-mock">
         <div class="m-fit" data-mock='{"scn":"story","step":"impact"}'></div>
         <figcaption><b>F2 · Impact.</b> Run tape on the left, the answer in the middle, the wallet on the right. The purchase and the answer it changed are on screen together.</figcaption>
       </figure>
 
-      <h2 id="ov-audit">What the current build does</h2>
+      <h2 id="ov-audit">What the 5 Oct build did</h2>
       <p class="sub">I ran <code>npm run demo</code> (fixture providers) on 5 Oct and captured every state at 1440 × 900. The five gates hold up well: labels are present, citations resolve, retries charge once. The problems are about flow and legibility. Click a screenshot to see it full size.</p>
       <div class="audit" id="audit"></div>
 
@@ -119,6 +128,116 @@
         <li><a href="https://emilkowal.ski/ui/building-a-toast-component" target="_blank" rel="noreferrer">Emil Kowalski: building a toast component</a>: stacked toasts that tuck behind each other and use interruptible transitions.</li>
         <li><a href="https://www.x402.org/x402-whitepaper.pdf" target="_blank" rel="noreferrer">x402 whitepaper</a>: the 402 → payment → resource shape the wire track draws.</li>
       </ul>
+    </section>
+
+
+    <!-- ============ SHIPPED ============ -->
+    <section class="tab" id="tab-shipped" role="tabpanel" aria-labelledby="t-shipped" hidden>
+      <header class="hero">
+        <p class="eyebrow">Shipped · v1.2 · main on 9 Oct</p>
+        <h1>What the room actually sees</h1>
+        <p class="lede">The build on main most closely follows the v1.1 tweaks: a sidebar, a run bar along the bottom, a quiet top bar, a folded decision list and one line of sources. This tab shows it as it runs live today (DeepSeek writes, OpenAI Decisions chooses, XRPL Testnet settles), with real screenshots from a UC2 run at 1440 × 900. Every mockup in the other tabs can now be switched to draw this version.</p>
+      </header>
+      <figure class="hero-mock">
+        <div class="m-fit" data-mock='{"scn":"story","step":"done","tw":{"ship":1,"quiet":1,"nav":"open","bar":1,"fold":1,"pills":1}}'></div>
+        <figcaption><b>F2 · Done, as shipped.</b> The same moment as the Overview hero, redrawn from the live UC2 run: real prices, real probabilities, the real v2 headline.</figcaption>
+      </figure>
+
+      <h2 id="sh-live">A live run, screen by screen</h2>
+      <p class="sub">UC2 (“What’s the analyst outlook on Kestrel Semiconductor’s latest deal with TSMC?”), S$2.00, 9 Oct, on the backup Cloudflare account. About 45 seconds from Ask to Done at Stage 1× pace. Click a screenshot to enlarge it.</p>
+      <div class="rv-shot" id="shShots"></div>
+
+      <h2 id="sh-map">What shipped from v1.1</h2>
+      <div class="tbl-wrap"><table class="tbl decide">
+        <thead><tr><th>Move</th><th>Status</th><th>As built</th><th>Gap against the proposal</th></tr></thead>
+        <tbody>
+          <tr><td>T1 · Quiet top bar</td><td><span class="dec ship">Shipped</span></td><td>Only the logo and a panel icon. A chip appears only on a fallback (“Fixture fallback · Search”).</td><td>“Simulated” is now a small yellow “i” beside the budget, not a label. See <a href="#rv-sim">R6</a>: hard gate 5 asks for a label, and AB3 required five of five viewers to say “no real money”.</td></tr>
+          <tr><td>T2 · App sidebar</td><td><span class="dec ship">Shipped</span></td><td>New question (N), runs grouped Pinned, Today, Earlier, a ⋯ menu to pin or delete, a draggable edge, Settings at the foot.</td><td>Beyond the proposal. “New question” greys out while a run is going.</td></tr>
+          <tr><td>T3 · Run bar</td><td><span class="dec test">Shipped, changed</span></td><td>The current step in words, then nine thin segments, Stop and Show work.</td><td>The step names under each segment were dropped. See <a href="#rv-seg">R1</a>.</td></tr>
+          <tr><td>T4 · Fold after the moment</td><td><span class="dec test">Shipped, changed</span></td><td>After the buy, “Worth buying” becomes “Considered 12 paywalled sources”, a flat list of publisher, price and stamp.</td><td>Article titles and bars are gone, and a publisher with several articles appears several times. See <a href="#rv-dec">R2</a>.</td></tr>
+          <tr><td>T5 · Sources in one line</td><td><span class="dec ship">Shipped</span></td><td>“28 sources · 16 read · 11 not bought”, one named pill for the purchase, View all.</td><td>The counts move during the run (16, then 28) without saying why.</td></tr>
+          <tr><td>Home</td><td><span class="dec ship">Shipped, changed</span></td><td>A budget chip with a notched-slider popover replaces the coins. Four demo questions sit in rows under the box. The “how it works” cells are gone.</td><td>A click on a demo row only fills the box. Typing N does not focus it.</td></tr>
+          <tr><td>Plan and clarify</td><td><span class="dec ship">New</span></td><td>An optional “Which angle matters most?” card, then a 5-second plan card with Edit, Cancel and Go now.</td><td>The only moment before spending where the user can stop it, and the smallest thing on screen. See <a href="#rv-plan">R4</a> and <a href="#rv-clar">R5</a>.</td></tr>
+          <tr><td>Right rail</td><td><span class="dec ship">New</span></td><td>Run and Writers tabs. The Writers tab lists each writer with proofs, challenges and a trust score.</td><td>The trust columns run off the right edge at 1440 and 1280. See <a href="#rv-wr">R8</a>.</td></tr>
+          <tr><td>Answer card</td><td><span class="dec ship">Shipped, changed</span></td><td>A short answer, a “Qualifies the free answer” pill, Compare v1 → v2, and a line “2 of 2 answered” that opens the requested facts.</td><td>The v2 headline can repeat v1’s sentence. See <a href="#rv-hl">R3</a>.</td></tr>
+          <tr><td>Show work</td><td><span class="dec ship">Shipped</span></td><td>A sheet with Trace, Wire, Policy, Receipts, Models and Ledger. Policy lists every article with its probabilities and verdict.</td><td>The best proof screen, but it still shows engine words such as SKIP_LOW_TRUST.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ============ REVIEW ============ -->
+    <section class="tab" id="tab-review" role="tabpanel" aria-labelledby="t-review" hidden>
+      <header class="hero">
+        <p class="eyebrow">Review · v1.3 · stage rehearsal, 9 Oct</p>
+        <h1>Point at five things. Leave the rest.</h1>
+        <p class="lede">Three reviewers played an audience member, the presenter and a skeptical engineer, and ran the live demo on main thirteen times: a random question to prove it is live, then the demo questions. This tab is what they found: how cluttered it is, what to point at and what to skip, a ten-minute script, a ranked list of simplifications, and alternatives for each of them to vote on.</p>
+      </header>
+      <div class="rv-note"><b>About the reviewers.</b> They were AI agents (Sonnet 5.5) driving the browser, not people in a room. Their timings are good to a second or two, and their reading of “clutter” is a judgement, not a measurement. The Stop finding was checked against the server’s own event log. Run each fix past a person before it ships.</div>
+
+      <h2 id="rv-clutter">Is it too cluttered?</h2>
+      <p class="sub">Yes at the end, no at the start. Home is clean and the motion works. The last screen carries about 60 separate things, and the ones that carry the story are the smallest.</p>
+      <div class="rv-grid">
+        <div class="rv-card"><h4>What the numbers say</h4><ul>
+          <li>The shipped Done screen has <b data-words='{"scn":"story","step":"done","tw":{"ship":1,"quiet":1,"nav":"open","bar":1,"fold":1,"pills":1}}'></b>; the v1.1 mockup of the same moment has <b data-words='{"scn":"story","step":"done","tw":{"quiet":1,"nav":"open","bar":1,"fold":1,"pills":1}}'></b>, and the first v1 proposal <b data-words='{"scn":"story","step":"done","tw":{}}'></b>. The build is no lighter than the proposal it followed.</li>
+          <li>Right rail: 12 decision rows, most of them the same writer’s name, at 9–11 px.</li>
+          <li>The row that matters (the BUY) is one of twelve and sits in the same type as the others.</li>
+        </ul></div>
+        <div class="rv-card"><h4>What reads from the back of a room</h4><ul>
+          <li>The home heading, the big budget number, the yellow highlight on v2, “Done · S$0.90 of S$2.00”.</li>
+          <li>Everything in the right rail below the budget does not.</li>
+          <li>At 1280 × 720 the refund card, the round-2 rows and the Writers trust columns fall off the screen.</li>
+        </ul></div>
+      </div>
+
+      <h2 id="rv-point">What to point at, and what not to</h2>
+      <div class="rv-grid">
+        <div class="rv-card is-good"><h4>Point at</h4><ul>
+          <li><b>Home.</b> “Ask a question. Give it a budget.” and the budget chip.</li>
+          <li><b>The big budget number</b> counting S$2.00 → S$1.10. Money visibly moves.</li>
+          <li><b>The yellow v2 answer</b> with “Qualifies the free answer” and Compare v1 → v2.</li>
+          <li><b>The receipt</b> (View): the best proof object. Invoice, ledger link, “Charges 1”, the striped “XRPL TESTNET · no real value”.</li>
+          <li><b>Show work → Policy</b> if asked how it chose: probabilities, “only code purchases”.</li>
+          <li><b>UC3 only:</b> the red “Proof failed”, the green “Refunded S$0.30” and the BLOCKED row on the re-ask.</li>
+        </ul></div>
+        <div class="rv-card is-bad"><h4>Do not point at</h4><ul>
+          <li><b>The short answer, when the question is off-topic.</b> It answers with whatever is nearest in the corpus. Point at the open gap and “S$0.00 spent” instead.</li>
+          <li><b>The 12-row decision list.</b> Repeated names, no titles. It looks like a bug.</li>
+          <li><b>The v2 headline and the “Gap closed” sentence</b> (they repeat v1, and splice two sentences).</li>
+          <li><b>The Writers tab.</b> Clipped columns, “T 0.03”, a trust score you will have to say out loud.</li>
+          <li><b>The bottom stepper, “T 0.80” chips, Wire, the yellow “i”.</b> Unlabeled, tiny, or does nothing visible.</li>
+          <li><b>“OpenAI Decisions · gpt-6-luna”</b> while you say Clef. Say “decision model”.</li>
+        </ul></div>
+      </div>
+
+      <h2 id="rv-risk">What could go wrong on stage</h2>
+      <div class="rv-risk">
+        <div><span class="n">1</span><span><b>Stop does not stop a purchase already in flight.</b><p>Checked against the event log on three UC3 runs. No purchase started after Stop was accepted, so the gate holds. But Stop at about 12 s still ended with S$0.40 paid, an article never read and no v2, under the words “stopped by you”. The clean window is roughly the first 6 s after the plan card closes. A presenter pressing Stop for effect will spend money.</p></span></div>
+        <div><span class="n">2</span><span><b>The screen can say the opposite of the server.</b><p>At Stage 1× pace the UI kept “Nothing paywalled was worth buying” and “S$0.00 spent” for about 10 s after the server had bought. Say “watch” and talk over it, or switch pace to Real.</p></span></div>
+        <div><span class="n">3</span><span><b>UC4 spent S$0.60 in one review run.</b><p>The handoff says UC4 finds its missing fact for free and spends S$0. In the skeptic’s run the free follow-up left 2 of 3 facts, a purchase made it 3 of 3, and the screen still said “found free on a focused search”. The same question went S$0 in the final smoke, so it varies.</p></span></div>
+        <div><span class="n">4</span><span><b>Cloudflare’s free quota.</b><p>The primary account’s 10,000 daily neurons ran out. Live search fell back to keyword only and the header showed “Fixture fallback · Search”. That is the fallback label working, but it undermines “live”. Run with <span class="mono">CF_BACKUP=1</span> until 08:00 SGT.</p></span></div>
+        <div><span class="n">5</span><span><b>A random question gets a confident, irrelevant answer.</b><p>“What time is it, and what are you?” returned a short answer about rack power draw and six “challenges” to irrelevant records. Honest in the gap (“no evidence states what the system is”), strange in the headline.</p></span></div>
+        <div><span class="n">6</span><span><b>Dead air.</b><p>0–5 s after Ask (“Starting…”), up to 26 s if the clarify card waits, and about 6 s between the refund and round 2 in UC3. UC3 took 69 s at Stage 1× against 34 s in the live smoke.</p></span></div>
+        <div class="ok"><span class="n">✓</span><span><b>What held up.</b><p>No console errors. The receipt, Show work → Policy and the citation drawer all survived poking. “Proof verified · 6 claims recomputed” matches the server’s proof event. The five gates were not broken in any run.</p></span></div>
+      </div>
+
+      <h2 id="rv-script">Ten-minute script</h2>
+      <p class="sub">Written for the live build with <span class="mono">CF_BACKUP=1</span> and the Presenter menu (press “.”) set to “Skip them (clarify=never)”. Times assume Stage 1× pace; the UC3 run is the longest.</p>
+      <div class="rv-script" id="rvScript"></div>
+
+      <h2 id="rv-list">Simplifications, ranked</h2>
+      <p class="sub">By what it does for a ten-minute stage demo. Sizes: XS under an hour, S half a day, M a day. Items 1, 2, 7 and 10 are bugs or label problems; the rest are choices, shown as alternatives below.</p>
+      <div class="tbl-wrap"><table class="rv-list" id="rvList"></table></div>
+
+      <h2 id="rv-alts">Alternatives</h2>
+      <p class="sub">Each shows what ships today as A, with one or two options that change only that part. Click a frame to open it large and “Play into this screen” to see its motion. Votes stay in this browser until you copy them.</p>
+      <div id="rvAlts"></div>
+
+      <div class="picks" style="margin-top:28px">
+        <h3>Leave your picks</h3>
+        <p>Pick on each block above, then copy the lot into the thread or the PR.</p>
+        <button class="btn btn-pen" id="rvCopy" type="button">Copy my picks</button>
+        <textarea id="rvOut" readonly rows="9" aria-label="Your picks as text" hidden></textarea>
+      </div>
     </section>
 
     <!-- ============ TWEAKS ============ -->
@@ -221,7 +340,7 @@
       <header class="hero">
         <p class="eyebrow">Flow · build spec</p>
         <h1>Every screen, and how you get there</h1>
-        <p class="lede">39 screens in 11 groups. Each has a code, what leads to it, what you can do there and where that goes. Click a screen to open it large. In the large view, “Play into this screen” animates the step that leads to it.</p>
+        <p class="lede">38 screens in 11 groups. The mockups follow the “Mockups show” switch (the shipped v1.2 by default); the written behaviour is still the v1 proposal, so where they differ, the <a href="#shipped">Shipped</a> tab is right. Each has a code, what leads to it, what you can do there and where that goes. Click a screen to open it large. In the large view, “Play into this screen” animates the step that leads to it.</p>
       </header>
       <h2 id="fl-map">Route map</h2>
       <p class="sub">The thick line is the 10 Oct demo story. Branches drop off it; the bottom row can happen at any step. Click a station to jump to its screen.</p>
@@ -323,7 +442,7 @@
       <h2 id="br-type">Type says who is talking</h2>
       <p class="sub">The product has three authors. The type tells you which one wrote what you’re reading.</p>
       <div class="typerows">
-        <div class="typerow"><span class="tr-k">The LLM wrote this</span><p class="tr-s read">Only partly. 240 of the 600 MW has a confirmed grid slot before 2028.</p><span class="tr-n">Newsreader · answers, claims, passages</span></div>
+        <div class="typerow"><span class="tr-k">The LLM wrote this</span><p class="tr-s read">Analysts are cutting margins, not demand: 55.2% from 58.5%.</p><span class="tr-n">Newsreader · answers, claims, passages</span></div>
         <div class="typerow"><span class="tr-k">A model or code computed this</span><p class="tr-s monoface">value 0.729 · 0.91 per S$ · sha-256 b11dd6…a980c3 ✓</p><span class="tr-n">Geist Mono · scores, money, hashes, receipts</span></div>
         <div class="typerow"><span class="tr-k">The interface is talking</span><p class="tr-s ui">Choose what to buy · 1 of 4 clears the bar</p><span class="tr-n">Geist · labels, buttons, steps</span></div>
         <div class="typerow"><span class="tr-k">The brand is talking</span><p class="tr-s brandface">Ask a question. Give it a budget.</p><span class="tr-n">Bricolage Grotesque · home, logo, big moments only</span></div>
@@ -339,10 +458,10 @@
         <thead><tr><th>Today</th><th>Proposed</th></tr></thead>
         <tbody>
           <tr><td><code>SKIP_OVER_CAP</code> · Price exceeds the per-source cap.</td><td><span class="mono">OVER CAP</span> · S$1.40 is over the S$1.00 per-source cap</td></tr>
-          <tr><td><code>SKIP_REWRITE</code> · Already acquired or a rewrite of existing evidence.</td><td><span class="mono">REWRITE</span> · A rewrite of Northstar Wire (96%)</td></tr>
-          <tr><td><code>READ_FREE</code> · Reading free sources only.</td><td>Read free sources · 14 read · 4 paywalled</td></tr>
+          <tr><td><code>SKIP_REWRITE</code> · Already acquired or a rewrite of existing evidence.</td><td><span class="mono">REWRITE</span> · A rewrite of NotFinancialTimes (99%)</td></tr>
+          <tr><td><code>READ_FREE</code> · Reading free sources only.</td><td>Read free sources · 8 read · 4 paywalled</td></tr>
           <tr><td><code>2026-10-05T09:24:51.712Z</code></td><td><span class="mono">+0.4 s</span> in Show work; nothing on the surface</td></tr>
-          <tr><td><code>amountMinor 80</code></td><td>S$0.80</td></tr>
+          <tr><td><code>amountMinor 90</code></td><td>S$0.90</td></tr>
           <tr><td>Fixture · extractive-fixture</td><td>Research · fixture fallback (amber chip, with the reason)</td></tr>
           <tr><td>Research paused after an error. The last verified answer is preserved; you can ask again.</td><td>Paid, but the delivery failed. Your receipt is kept. Retrying fetches the same paid copy and can’t charge you again.</td></tr>
           <tr><td>Would buy · with sufficient budget / Would buy with a sufficient budget; S$0 authorizes no purchase.</td><td><span class="mono">WOULD BUY</span> · Would buy with any budget of S$1 or more</td></tr>
@@ -362,7 +481,7 @@
         <thead><tr><th>Event</th><th>Run tape</th><th>Toast</th><th>Tab title</th><th>Favicon</th><th>Desktop</th></tr></thead>
         <tbody>
           <tr><td>Run starts</td><td>step pulses</td><td>–</td><td>Reading sources</td><td>coin flips</td><td>–</td></tr>
-          <tr><td>Source bought</td><td>Buy ✓, Verify ✓</td><td>receipt, 6 s</td><td>Buying S$0.80</td><td>coin flips</td><td>–</td></tr>
+          <tr><td>Source bought</td><td>Buy ✓, Verify ✓</td><td>receipt, 6 s</td><td>Buying S$0.90</td><td>coin flips</td><td>–</td></tr>
           <tr><td>Injected text ignored</td><td>read step notes it</td><td>warning, 8 s</td><td>–</td><td>–</td><td>–</td></tr>
           <tr><td>Fallback used</td><td>–</td><td>warning, 8 s; chip turns amber</td><td>–</td><td>–</td><td>–</td></tr>
           <tr><td>Delivery failed</td><td>Buy turns orange</td><td>error, stays</td><td>! Delivery failed</td><td>orange dot</td><td>if hidden</td></tr>
@@ -412,3 +531,4 @@
 <script src="data.js"></script>
 <script src="mock.js"></script>
 <script src="doc.js"></script>
+<script src="review.js"></script>

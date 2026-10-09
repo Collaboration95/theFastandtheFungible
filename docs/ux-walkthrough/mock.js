@@ -14,26 +14,25 @@
     zero: { label: 'S$0 · free only', budget: 0, steps: ['home', 'takeoff', 'search', 'read', 'answer1', 'gap', 'decide', 'wouldbuy', 'done'] },
     open: { label: 'Nothing worth buying', budget: 2, steps: ['home', 'takeoff', 'search', 'read', 'answer1', 'gap', 'decide', 'nothing', 'done'] },
     fault: { label: 'Delivery fails once', budget: 2, steps: ['home', 'takeoff', 'search', 'read', 'answer1', 'gap', 'decide', 'verdicts', 'pay402', 'settle', 'failed', 'retry', 'verified', 'answer2', 'impact', 'round2', 'done'] },
-    inject: { label: 'Injection trap', budget: 2, steps: ['home', 'takeoff', 'search', 'read', 'answer1', 'gap', 'decide', 'verdicts', 'pay402', 'settle', 'verified', 'answer2', 'impact', 'round2', 'done'] },
   }
 
   // Dwell time (ms at 1×) and the presenter caption for each step.
   const STEP = {
-    home: [2900, 'Home. The demo question is prefilled with a S$2 budget. The sentence under the coins says what that budget allows. Ask.'],
+    home: [2900, 'Home. Pick a demo question or type one, set the budget chip (S$2.00 here), and Ask.'],
     takeoff: [800, 'The question card lifts into the workspace. No page load, no spinner.'],
-    search: [1900, 'Search: three publisher profiles return 18 sources, dealt onto the strip.'],
+    search: [1900, 'Search: every listed writer searches its own articles; 12 sources are dealt onto the strip.'],
     read: [1900, 'Free sources are read. Four paywalled ones stay locked behind a price tag.'],
     answer1: [3400, 'Answer v1 streams in with citations. Every number opens the exact passage.'],
-    gap: [2000, 'The answer names what it still doesn’t know: grid energisation. The pen circles it.'],
+    gap: [2000, 'The answer names what it still doesn’t know: analyst margins. The pen circles it.'],
     decide: [2400, 'The decision model scores the four paywalled sources in 0.75 s. Each bar is value against the 0.20 bar.'],
     verdicts: [2900, 'Policy code stamps a verdict on every row. Only one source clears the bar and fits the cap.'],
-    pay402: [2000, 'The publisher answers 402 Payment Required with a S$0.80 quote. The wallet holds it: S$1.20 left.'],
+    pay402: [2000, 'The publisher answers 402 Payment Required with a S$0.90 quote. The wallet holds it: S$1.10 left.'],
     settle: [2000, 'Simulated settlement turns the hold into one charge, with one receipt.'],
     verified: [2400, 'Delivery arrives and its sha-256 matches. Only now may the premium text be read.'],
     answer2: [3300, 'Answer v2 is rewritten around the new evidence. The gap card fills in.'],
-    impact: [2300, 'Impact: QUALIFIES. The short answer moves from “unclear” to “240 of 600 MW”.'],
+    impact: [2300, 'Impact: QUALIFIES. The short answer moves from “no analyst view” to “margins cut to 55.2%”.'],
     round2: [2100, 'Round 2: with the gap closed, nothing clears the bar. It stops on its own.'],
-    done: [3000, 'Done. S$0.80 of S$2.00 spent. The toast, tab title and favicon all say so.'],
+    done: [3000, 'Done. S$0.90 of S$2.00 spent. The toast, tab title and favicon all say so.'],
     report: [2200, 'Download report: the button becomes a progress pill while the PDF is written.'],
     reportReady: [3000, 'Report ready. The PDF uses the same citation numbers as the screen.'],
     failed: [2900, 'Delivery fails after payment. The receipt is kept, and the card says retrying can’t charge again.'],
@@ -62,6 +61,11 @@
   // Tweaks (feedback round 1): quiet, nav ('open' | 'rail'), bar, fold, pills, simbar.
   // A spec's own tw wins; otherwise the page-wide default set by setTweaks().
   let DEF = {}
+  // v1.2: { ship: 1 } is the build as merged on 9 Oct. Each key below is one thing the stage review questioned;
+  // a variant overrides one key and keeps the rest as shipped. seg: nine | labeled | phases. dec: flat | frozen | cards.
+  // hl: same | bought | diff. plan: small | big | strip. clar: card | auto. sim: dot | label.
+  const SHIP = { seg: 'nine', dec: 'flat', hl: 'same', plan: 'small', clar: 'card', sim: 'dot', rtabs: 1, ans: 1, home: 'ship' }
+  const shipTw = tw => (tw && tw.ship ? Object.assign({}, SHIP, tw) : tw || {})
   function ctx(spec) {
     const scnKey = spec.scn || 'story'
     const scn = SCN[scnKey]
@@ -74,7 +78,7 @@
       r: n => reached.has(n),
       nw: (...names) => (anim && names.includes(step) ? ' n' : ''),
       budget: spec.overlay === 'budgetOut' ? 1 : scn.budget,
-      tw: spec.tw || DEF,
+      tw: shipTw(spec.tw || DEF),
     }
   }
 
@@ -86,7 +90,7 @@
     if (c.step === 'failed') return { t: '! Delivery failed · ResearchAgent', f: 'alert' }
     if (c.r('reportReady')) return { t: '✓ Report ready · ResearchAgent', f: 'done' }
     if (c.r('done')) return { t: '✓ Answer ready · ResearchAgent', f: 'done' }
-    if (['pay402', 'settle', 'retry', 'verified'].includes(c.step)) return { t: 'Buying S$0.80 · ResearchAgent', f: 'work' }
+    if (['pay402', 'settle', 'retry', 'verified'].includes(c.step)) return { t: 'Buying S$0.90 · ResearchAgent', f: 'work' }
     if (c.r('answer2')) return { t: 'Rewriting answer · ResearchAgent', f: 'work' }
     if (c.r('decide')) return { t: 'Choosing sources · ResearchAgent', f: 'work' }
     return { t: 'Reading sources · ResearchAgent', f: 'work' }
@@ -104,30 +108,30 @@
   function top(c, ws) {
     const fb = c.o === 'fallback', tw = c.tw
     // T1: normal is silent. A chip appears only when something is substituted.
-    const chips = tw.quiet ? (fb ? '<span class="m-chip is-fallback"><i></i>Offline answer · Groq timed out</span>' : '') : `
-        <span class="m-chip ${fb ? 'is-fallback' : ''}"><i></i>Research · ${fb ? 'fixture fallback' : 'Groq llama-3.3-70b'}</span>
-        <span class="m-chip"><i></i>Decide · Cloudflare clef-flash</span>
+    const chips = tw.quiet ? (fb ? '<span class="m-chip is-fallback"><i></i>Fixture fallback · Research</span>' : '') : `
+        <span class="m-chip ${fb ? 'is-fallback' : ''}"><i></i>Research · ${fb ? 'fixture fallback' : 'DeepSeek deepseek-flash'}</span>
+        <span class="m-chip"><i></i>Decide · OpenAI Decisions · gpt-6-luna</span>
         <span class="m-chip"><i></i>Publisher · local</span>
         <span class="m-chip is-sim">SIMULATED SGD · no real funds</span>`
     return `<header class="m-top${c.nw('takeoff', 'search') && ws ? ' n' : ''}">
       ${tw.nav ? `<span class="m-iconbtn">${ICON.panel}</span>` : ''}
       <div class="m-brand">${mark()}<span>ResearchAgent</span></div>
-      ${ws ? `<div class="m-crumb"><span>Run</span><b>${D.short}</b></div>` : ''}
+      ${ws && !tw.ship ? `<div class="m-crumb"><span>Run</span><b>${D.short}</b></div>` : ''}
       <div class="m-prov">${chips}</div>
-      ${ws && tw.nav ? '' : `<button class="m-btn">${ws ? 'New question' : 'How it works'}</button>`}
+      ${ws && tw.nav || tw.ship ? '' : `<button class="m-btn">${ws ? 'New question' : 'How it works'}</button>`}
     </header>`
   }
   const SIMBAR = '<div class="m-simbar"><b>SIMULATED SGD</b>Demo money. No real funds move.</div>'
-  const simTag = (c, long) => c.tw.quiet && !c.tw.simbar ? `<span class="m-chip is-sim">SIMULATED SGD${long ? ' · no real funds' : ''}</span>` : ''
+  const simTag = (c, long) => c.tw.quiet && !c.tw.simbar && !c.tw.ship ? `<span class="m-chip is-sim">SIMULATED SGD${long ? ' · no real funds' : ''}</span>` : ''
 
   // ---------- rail: the run tape ----------
   function tapeItems(c) {
     const k = c.scnKey
     const base = [
-      { title: 'Search', start: ['search'], done: ['read'], now: '3 publisher profiles…', fin: '18 sources found', t: '0.4 s' },
-      { title: 'Read free sources', start: ['read'], done: ['answer1'], now: '14 free · 4 paywalled', fin: k === 'inject' ? '14 read · 1 flagged' : '14 read · 4 paywalled', t: '1.5 s' },
+      { title: 'Search', start: ['search'], done: ['read'], now: 'every listed writer…', fin: '12 sources found', t: '0.4 s' },
+      { title: 'Read free sources', start: ['read'], done: ['answer1'], now: '8 free · 4 paywalled', fin: '8 read · 4 paywalled', t: '1.5 s' },
       { title: 'Write answer v1', start: ['answer1'], done: ['gap'], now: 'Streaming…', fin: '8 cited claims', t: '2.7 s' },
-      { title: 'Name the gap', start: ['gap'], done: ['decide'], now: 'Grid energisation', fin: k === 'open' ? 'Nothing material' : 'Grid energisation', t: '0.1 s' },
+      { title: 'Name the gap', start: ['gap'], done: ['decide'], now: 'Analyst margins', fin: k === 'open' ? 'Nothing material' : 'Analyst margins', t: '0.1 s' },
     ]
     if (k === 'zero') return base.concat([
       { title: 'Choose what to buy', start: ['decide'], done: ['done'], now: 'Scoring 4 paywalled…', fin: 'Would buy 1 · S$0 budget', t: '0.8 s' },
@@ -139,14 +143,14 @@
       { title: 'Buy', skip: true, fin: 'Nothing worth buying' },
       { title: 'Done', start: ['done'], done: ['done'], fin: 'S$0.00 of S$2.00 spent', t: '5.1 s' },
     ])
-    const buyNow = { pay402: '402 → quote S$0.80', settle: 'Settling S$0.80…', failed: 'Paid · delivery failed', retry: 'Retrying, same receipt…' }
+    const buyNow = { pay402: '402 → quote S$0.90', settle: 'Settling S$0.90…', failed: 'Paid · delivery failed', retry: 'Retrying, same receipt…' }
     return base.concat([
       { title: 'Choose what to buy', start: ['decide'], done: ['pay402'], now: 'Scoring 4 paywalled…', fin: '1 of 4 clears the bar', t: '0.8 s' },
-      { title: 'Buy', start: ['pay402'], done: ['verified'], fail: ['failed'], nowMap: buyNow, fin: 'Grid Operators Report · S$0.80', t: k === 'fault' ? '3.9 s' : '0.6 s' },
+      { title: 'Buy', start: ['pay402'], done: ['verified'], fail: ['failed'], nowMap: buyNow, fin: 'NotFinancialTimes · S$0.90', t: k === 'fault' ? '3.9 s' : '0.6 s' },
       { title: 'Verify delivery', start: ['verified'], done: ['answer2'], now: 'Checking sha-256…', fin: 'sha-256 matches', t: '0.1 s' },
       { title: 'Rewrite answer', start: ['answer2'], done: ['round2'], now: 'Writing v2…', fin: 'v2 · qualifies', t: '2.6 s' },
       { title: 'Check again', start: ['round2'], done: ['done'], now: 'Round 2…', fin: 'Nothing clears the bar', t: '0.4 s' },
-      { title: 'Done', start: ['done'], done: ['done'], fin: c.o === 'budgetOut' ? 'S$0.80 of S$1.00 spent' : 'S$0.80 of S$2.00 spent', t: k === 'fault' ? '12.7 s' : '9.4 s' },
+      { title: 'Done', start: ['done'], done: ['done'], fin: c.o === 'budgetOut' ? 'S$0.90 of S$1.00 spent' : 'S$0.90 of S$2.00 spent', t: k === 'fault' ? '12.7 s' : '9.4 s' },
     ])
   }
   // One state machine for the tape, the run bar (T3) and the sidebar's mini tape (T2).
@@ -181,6 +185,7 @@
   // T3: the run as one line along the bottom.
   const SHORT = { 'Search': 'Search', 'Read free sources': 'Read', 'Write answer v1': 'Answer', 'Name the gap': 'Gap', 'Choose what to buy': 'Choose', 'Buy': 'Buy', 'Verify delivery': 'Verify', 'Rewrite answer': 'Rewrite', 'Check again': 'Check', 'Done': 'Done' }
   function runbar(c) {
+    if (c.tw.seg === 'nine' || c.tw.seg === 'phases') return runbarShip(c)
     const rows = tapeStates(c)
     const cur = rows.find(x => x.st === 'now' || x.st === 'fail')
     const stop = rows.find(x => x.meta === 'Stopped by you')
@@ -192,8 +197,26 @@
       <ol class="m-rb-steps">${steps}</ol><span class="m-rb-clock">${clock(c)}</span>${stopBtn(c).replace('Stopped · no new purchases', 'Stopped').replace('Run finished', 'Finished')}${SHOWWORK}</div>`
   }
 
+  // v1.2: the bar as merged (nine unlabeled segments) and the labelled-phases alternative.
+  const PHASES = [['Read', ['Search', 'Read free sources', 'Write answer v1', 'Name the gap']], ['Decide', ['Choose what to buy']], ['Buy', ['Buy', 'Verify delivery']], ['Check', ['Rewrite answer', 'Check again', 'Done']]]
+  function runbarShip(c) {
+    const rows = tapeStates(c)
+    const cur = rows.find(x => x.st === 'now' || x.st === 'fail')
+    const done = c.r('done')
+    const head = done ? ['is-done', 'Done', c.o === 'budgetOut' ? 'S$0.90 of S$1.00 spent' : 'S$0.90 of S$2.00 spent'] : cur ? ['is-' + cur.st, cur.it.title, cur.meta] : ['is-now', 'Starting', 'Opening the run…']
+    const sw = `<span class="m-rb-sw">${stopBtn(c).replace('Stopped · no new purchases', 'Stopped').replace('Run finished', '').replace('Stop buying', 'Stop')}${SHOWWORK.replace('<kbd>W</kbd>', '<kbd>W</kbd>')}</span>`
+    if (c.tw.seg === 'phases') {
+      const state = names => { const xs = rows.filter(x => names.includes(x.it.title)); return xs.every(x => x.st === 'done' || x.st === 'skip') ? 'is-done' : xs.some(x => x.st === 'now' || x.st === 'fail' || x.st === 'done') ? 'is-now' : '' }
+      const ph = PHASES.map(([n, names]) => `<li class="${state(names)}"><b>${n}</b><i></i></li>`).join('')
+      return `<div class="m-runbar m-rb-ph${c.nw('takeoff', 'search')}"><div class="m-rb-now ${head[0]}"><i class="m-node"></i><div><b>${head[1]}</b><span>${head[2]}</span></div></div><ol class="m-phases">${ph}</ol><span class="m-rb-clock">${clock(c)}</span>${sw}</div>`
+    }
+    const nine = rows.filter(x => x.it.title !== 'Name the gap')
+    return `<div class="m-runbar m-rb-nine${c.nw('takeoff', 'search')}"><div class="m-rb-now ${head[0]}"><i class="m-node${cur && cur.entering ? ' n' : ''}"></i><div><b>${head[1]}</b><span>${head[2]}</span></div></div>
+      <ol class="m-rb-steps">${nine.map(x => `<li class="is-${x.st}${x.entering ? ' n' : ''}"><i></i></li>`).join('')}</ol>${sw}</div>`
+  }
+
   // T2: an app sidebar. Past runs are placeholders until the API can list runs.
-  const HISTORY = [['Johor grid queue 2027', 'S$0.00'], ['Hyperscaler PPAs in SEA', 'S$1.30'], ['Data-centre water use', 'S$0.40'], ['Batam subsea cable timing', 'S$0.00']]
+  const HISTORY = [['Malaysia packaging lead times', 'S$0.40'], ['Bank of Japan decision', 'S$0.00'], ['Penang plant power', 'S$0.60'], ['Kestrel–TSMC outlook', 'S$0.90']]
   function sidebar(c, onHome) {
     const dot = st => `<span class="m-dot d-${st}"></span>`
     const runSt = c.step === 'failed' ? 'alert' : c.o === 'stopped' ? 'idle' : c.r('done') ? 'done' : 'work'
@@ -205,7 +228,7 @@
         ${tape ? `<ol class="m-tape is-dots">${rows.map(x => `<li class="is-${x.st}"><i class="m-node${x.entering ? ' n' : ''}"></i></li>`).join('')}</ol>` : ''}
         <div class="m-nav-foot"><span class="av">D</span><span class="m-collapse">»</span></div></aside>`
     }
-    const active = onHome ? '' : `<div class="m-nav-run is-on">${dot(runSt)}<span class="t">${D.short}</span><span class="m">${c.r('settle') ? 'S$0.80' : 'S$0.00'}</span></div>`
+    const active = onHome ? '' : `<div class="m-nav-run is-on">${dot(runSt)}<span class="t">${D.short}</span><span class="m">${c.r('settle') ? 'S$0.90' : 'S$0.00'}</span></div>`
     const mini = tape ? `<ol class="m-tape is-mini">${rows.map(x => `<li class="is-${x.st}"><i class="m-node${x.entering ? ' n' : ''}"></i><div><b>${x.it.title}</b>${(x.st === 'now' || x.st === 'fail') && x.meta ? `<span>${x.meta}</span>` : ''}</div></li>`).join('')}</ol>` : ''
     const hist = HISTORY.map(([t, m], i) => `${i === 2 ? '<div class="m-nav-sec">Earlier</div>' : ''}<div class="m-nav-run">${dot('idle')}<span class="t">${t}</span><span class="m">${m}</span></div>`).join('')
     return `<aside class="m-nav${enter}"><div class="m-newq"><span>+</span>New question<kbd>N</kbd></div>
@@ -214,57 +237,63 @@
   }
 
   // ---------- brief ----------
-  const STRIP_IDS = { inject: ['gor', 'cr', 'cs', 'eo', 'gs', 'fp'] }
+  const STRIP_IDS = {}
   function cardState(c, s) {
     const k = c.scnKey
     if (!c.r('read')) return ['st-found', 'found', '']
-    if (s.tier === 'free') return k === 'inject' && s.id === 'fp' ? ['st-flag', 'flagged', 'is-flag', ICON.flag] : ['st-read', 'read', '', ICON.check]
+    if (s.tier === 'free') return ['st-read', 'read', '', ICON.check]
     const decided = c.r('verdicts') || c.r('wouldbuy') || c.r('nothing')
-    if (s.id === 'gor') {
-      if (k === 'zero' && c.r('wouldbuy')) return ['st-would', 'would buy · S$0.80', '']
+    if (s.id === 'nf') {
+      if (k === 'zero' && c.r('wouldbuy')) return ['st-would', 'would buy · S$0.90', '']
       if (k === 'open' && c.r('nothing')) return ['st-skip', 'below the bar', '']
-      if (c.r('verified')) return ['st-bought', 'bought S$0.80', 'is-bought', ICON.check]
+      if (c.r('verified')) return ['st-bought', 'bought S$0.90', 'is-bought', ICON.check]
       if (c.step === 'failed') return ['st-fail', 'paid · not delivered', '']
       if (c.r('pay402')) return ['st-buying', 'buying…', '']
     }
     if (decided) {
-      if (s.id === 'gs') return ['st-cap', 'over cap · S$1.40', '']
-      if (s.id === 'nw') return ['st-skip', 'low value · S$0.20', '']
-      if (s.id === 'cn') return ['st-skip', 'rewrite · S$0.30', '']
+      if (s.id === 'ff') return ['st-skip', 'low value · S$0.25', '']
+      if (s.id === 'kc') return ['st-skip', 'low value · S$0.10', '']
+      if (s.id === 'mp') return ['st-skip', 'rewrite · S$0.20', '']
     }
     return ['st-lock', money(s.price), '', ICON.lock]
   }
   function strip(c) {
     if (!c.r('search')) {
       const ghosts = Array.from({ length: 6 }, () => '<div class="m-card is-ghost"><i style="width:60%"></i><i></i><i style="width:80%"></i></div>').join('')
-      return `<section class="m-strip"><div class="m-strip-h"><b>Sources</b><span class="m-count">Searching 3 publisher profiles…</span></div><div class="m-cards">${ghosts}<div class="m-more">…</div></div></section>`
+      return `<section class="m-strip"><div class="m-strip-h"><b>Sources</b><span class="m-count">Searching every listed writer…</span></div><div class="m-cards">${ghosts}<div class="m-more">…</div></div></section>`
     }
-    const ids = STRIP_IDS[c.scnKey] || ['gor', 'cr', 'cs', 'eo', 'gs', 'nw']
+    const ids = STRIP_IDS[c.scnKey] || ['nf', 'or1', 'or2', 'or3', 'ff', 'kc']
     const cards = ids.map((id, i) => {
       const s = src(id)
       const [cls, label, cardCls, icon] = cardState(c, s)
-      const changed = c.step === 'read' || (['verdicts', 'wouldbuy', 'nothing'].includes(c.step) && s.tier === 'paid') || (['pay402', 'verified', 'failed'].includes(c.step) && s.id === 'gor')
+      const changed = c.step === 'read' || (['verdicts', 'wouldbuy', 'nothing'].includes(c.step) && s.tier === 'paid') || (['pay402', 'verified', 'failed'].includes(c.step) && s.id === 'nf')
       const flip = c.anim && changed
       return `<div class="m-card ${cardCls}${c.nw('search')}" style="--i:${i}"><div class="m-card-top"><span class="m-mono">${s.mono}</span><span class="m-card-p">${s.pub}</span></div><div class="m-card-t">${s.title}</div><div class="m-card-s ${cls}${flip ? ' n' : ''}" style="--i:${i}">${icon || ''}${label}</div></div>`
     }).join('')
-    const read = c.r('read') ? 14 : 0
+    const read = c.r('read') ? 8 : 0
     const bought = c.r('verified') ? 1 : 0
     const skipped = c.r('verdicts') ? 3 : c.r('wouldbuy') || c.r('nothing') ? 4 : 0
-    return `<section class="m-strip"><div class="m-strip-h"><b>Sources</b><span class="m-count${c.nw('read', 'verified')}"><span><em>18</em> found</span><span><em>${read}</em> read</span><span class="c-b"><em>${bought}</em> bought</span><span><em>${skipped}</em> skipped</span></span></div>
-      <div class="m-cards">${cards}<div class="m-more">+12</div></div></section>`
+    return `<section class="m-strip"><div class="m-strip-h"><b>Sources</b><span class="m-count${c.nw('read', 'verified')}"><span><em>12</em> found</span><span><em>${read}</em> read</span><span class="c-b"><em>${bought}</em> bought</span><span><em>${skipped}</em> skipped</span></span></div>
+      <div class="m-cards">${cards}<div class="m-more">+6</div></div></section>`
   }
 
   // T5: sources in one line. Initials coloured by state; only the source that matters is named.
   function pills(c) {
-    const ids = STRIP_IDS[c.scnKey] || ['gor', 'cr', 'cs', 'eo', 'gs', 'nw']
-    if (!c.r('search')) return `<section class="m-pills"><b>Sources</b><span class="m-stack">${ids.map(() => '<span class="m-av is-ghost"></span>').join('')}</span><span class="m-count">Searching 3 publisher profiles…</span></section>`
+    if (c.tw.ship && c.r('search')) {
+      const skipped = c.r('verdicts') ? 3 : c.r('wouldbuy') || c.r('nothing') ? 4 : 0
+      const b = cardState(c, src('nf'))
+      const hot = ['st-bought', 'st-buying', 'st-fail', 'st-would'].includes(b[0]) ? `<span class="m-pill ${b[0]}${c.nw('pay402', 'verified')}"><span class="m-mono">NF</span>NotFinancialTimes<em>${b[3] || ''}${b[1]}</em></span>` : ''
+      return `<section class="m-pills is-ship"><b>12 sources</b><span class="m-count${c.nw('read')}"><span><em>${c.r('read') ? 8 : 0}</em> read</span>${skipped ? `<span><em>${skipped}</em> not bought</span>` : ''}</span>${hot}<u class="m-viewall">View all</u><span class="m-syn">Synthetic corpus · fictional</span></section>`
+    }
+    const ids = STRIP_IDS[c.scnKey] || ['nf', 'or1', 'or2', 'or3', 'ff', 'kc']
+    if (!c.r('search')) return `<section class="m-pills"><b>Sources</b><span class="m-stack">${ids.map(() => '<span class="m-av is-ghost"></span>').join('')}</span><span class="m-count">Searching every listed writer…</span></section>`
     const heads = ids.map((id, i) => { const s = src(id); return `<span class="m-av ${cardState(c, s)[0]}${c.nw('search')}" style="--i:${i}">${s.mono}</span>` }).join('')
     const hot = ids.map(src).map(s => [s, cardState(c, s)]).filter(([, st]) => ['st-bought', 'st-buying', 'st-fail', 'st-would', 'st-flag'].includes(st[0]))
     const named = hot.map(([s, [cls, label, , icon]]) => `<span class="m-pill ${cls}${c.nw('read', 'pay402', 'verified', 'failed', 'wouldbuy')}"><span class="m-mono">${s.mono}</span>${s.pub}<em>${icon || ''}${label}</em></span>`).join('')
     // The named pill says what was bought, so the counts skip it.
     const skipped = c.r('verdicts') ? 3 : c.r('wouldbuy') || c.r('nothing') ? 4 : 0
-    return `<section class="m-pills"><b>18 sources</b><span class="m-stack">${heads}<span class="m-av more">+12</span></span>
-      <span class="m-count${c.nw('read')}"><span><em>${c.r('read') ? 14 : 0}</em> read</span>${skipped ? `<span><em>${skipped}</em> skipped</span>` : ''}</span>${named}<u class="m-viewall">View all</u></section>`
+    return `<section class="m-pills"><b>12 sources</b><span class="m-stack">${heads}<span class="m-av more">+6</span></span>
+      <span class="m-count${c.nw('read')}"><span><em>${c.r('read') ? 8 : 0}</em> read</span>${skipped ? `<span><em>${skipped}</em> skipped</span>` : ''}</span>${named}<u class="m-viewall">View all</u></section>`
   }
 
   // Turns "text [9] more" into words + citation chips. When animating, each token streams in.
@@ -291,10 +320,11 @@
     }
     const v2 = c.r('answer2')
     const compare = c.o === 'compare'
-    const text = v2 ? D.verdictV2 : c.scnKey === 'open' ? 'Free sources are enough for a first view: demand [1] and equipment on order [7] are documented, and nothing paywalled would change the answer enough to be worth buying.' : D.verdictV1
-    const label = v2 ? 'v2 · after 1 purchase' : c.o === 'fallback' ? 'v1 · fixture fallback · Groq timed out after 8 s' : 'v1 · free sources only'
+    const sh = c.tw.ship
+    const text = v2 ? (sh && c.tw.hl === 'same' ? D.v2Ship : D.verdictV2) : sh && c.scnKey !== 'open' ? D.v1Ship : c.scnKey === 'open' ? 'Free sources are enough for a first view: the deal terms [1] and the prepayment [3] are on record, and nothing paywalled would change the answer enough to be worth buying.' : D.verdictV1
+    const label = v2 ? 'v2 · after 1 purchase' : c.o === 'fallback' ? 'v1 · fixture fallback · DeepSeek timed out' : 'v1 · free sources only'
     const typing = c.anim && (c.step === 'answer1' || c.step === 'answer2')
-    const body = stream(text, { anim: typing, newSet: new Set([9, 10, 11]), hover: c.o === 'hover' ? 9 : 0, hl: v2 ? '240 of the 600 MW has a confirmed grid slot before 2028' : '', hlNew: c.anim && c.step === 'answer2' })
+    const body = stream(text, { anim: typing, newSet: new Set([9, 10, 11]), hover: c.o === 'hover' ? 9 : 0, hl: v2 ? (sh && c.tw.hl === 'same' ? text.replace(/ \[1\]$/, '') : 'the consensus gross-margin estimate falls to 55.2% from 58.5%') : '', hlNew: c.anim && c.step === 'answer2' })
     const done = c.r('done')
     let action
     if (c.r('reportReady')) action = `<button class="m-btn m-btn-ok">Report ready · Open PDF</button><button class="m-btn">Download</button>`
@@ -304,7 +334,9 @@
       <div class="m-vlabel"><b>Short answer</b><span class="m-ver ${c.o === 'fallback' ? 'is-warn' : ''}">${label}</span></div>
       ${v2 ? `<div class="m-vswitch"><span${compare ? ' class="on"' : ''}>v1 → v2</span><span${compare ? '' : ' class="on"'}>v2</span></div>` : ''}
       <p class="m-vtext">${body}</p>
-      ${c.r('impact') ? `<div class="m-impact${c.nw('impact')}">QUALIFIES<small>impact of 1 purchase</small></div><div class="m-impact-line${c.nw('impact')}">${D.impact.line}</div>` : ''}
+      ${v2 && sh && c.tw.hl === 'diff' ? `<div class="m-added"><span class="k">Added by the purchase</span>${D.added.map(([v, l, was]) => `<span class="m-add"><b>${v}</b>${l}<em>${was}</em></span>`).join('')}</div>` : ''}
+      ${c.r('impact') && sh ? `<span class="m-qpill${c.nw('impact')}">Qualifies the free answer</span>` : ''}
+      ${c.r('impact') && !sh ? `<div class="m-impact${c.nw('impact')}">QUALIFIES<small>impact of 1 purchase</small></div><div class="m-impact-line${c.nw('impact')}">${D.impact.line}</div>` : ''}
       <div class="m-vfoot">${action}${v2 ? '<button class="m-btn">Compare v1 → v2</button>' : ''}<span class="m-hint">${done ? 'PDF keeps these citation numbers' : 'report unlocks when the run ends'}</span></div>
     </section>`
   }
@@ -313,12 +345,12 @@
   function gapCard(c) {
     if (!c.r('gap')) return ''
     if (c.scnKey === 'open') return `<section class="m-gap is-minor${c.nw('gap')}"><span class="m-gap-k">GAP CHECK</span><p class="m-gap-t">Nothing material left open (12%).</p><span class="m-gap-s">The decision model still prices paywalled sources, in case one is worth it.</span></section>`
-    if (c.r('answer2')) return `<section class="m-gap is-closed${c.nw('answer2')}"><span class="m-gap-k">GAP CLOSED</span><p class="m-gap-t"><mark class="m-hl">Grid energisation</mark> is now covered by the Grid Operators Report.</p><span class="m-gap-s">Bought for S$0.80 · new citations 9, 10 and 11</span></section>`
-    const sub = c.scnKey === 'zero' && c.r('wouldbuy') ? 'Grid Operators Report (S$0.80) would close it. Your budget is S$0, so nothing was bought.'
+    if (c.r('answer2')) return `<section class="m-gap is-closed${c.nw('answer2')}"><span class="m-gap-k">GAP CLOSED</span><p class="m-gap-t">${c.tw.ship && c.tw.hl === 'same' ? `<mark class="m-hl">${D.gapShip}</mark> is now covered by NotFinancialTimes.` : '<mark class="m-hl">Analyst estimates on pricing and margins</mark> are now covered by NotFinancialTimes.'}</p><span class="m-gap-s">Bought for S$0.90 · new citations 9, 10 and 11</span></section>`
+    const sub = c.scnKey === 'zero' && c.r('wouldbuy') ? 'NotFinancialTimes (S$0.90) would close it. Your budget is S$0, so nothing was bought.'
       : c.step === 'failed' || c.step === 'retry' ? 'Paid for. Waiting on a verified delivery before the answer can use it.'
-        : c.r('pay402') ? 'Buying Grid Operators Report to close it →'
+        : c.r('pay402') ? 'Buying NotFinancialTimes to close it →'
           : c.r('decide') ? 'Pricing 4 paywalled sources that might close it →' : 'Next: a decision model prices sources that could close it.'
-    return `<section class="m-gap${c.nw('gap')}"><span class="m-gap-k">OPEN GAP</span><p class="m-gap-t">No accessible evidence on <span class="m-circ">grid energisation${PEN}</span>.</p><span class="m-gap-s">${sub}</span></section>`
+    return `<section class="m-gap${c.nw('gap')}"><span class="m-gap-k">OPEN GAP</span><p class="m-gap-t">No accessible <span class="m-circ">analyst estimates on pricing and margins${PEN}</span>.</p><span class="m-gap-s">${sub}</span></section>`
   }
 
   const GLYPH = { c: ['▼', 's-c', 'Challenges'], s: ['▲', 's-s', 'Supports'], u: ['◆', 's-u', 'Uncertain'] }
@@ -344,11 +376,13 @@
     return `<main class="m-brief${c.nw('takeoff', 'search')}">
       ${c.tw.quiet ? '' : `<div class="m-eyebrow"><span>Question</span><span>·</span><span>Budget ${money(c.budget)}</span><span>·</span><span>asked 10:41</span></div>`}
       <h1 class="m-q">${D.question}</h1>
-      ${c.o === 'compare' ? `${verdict(c)}${claims(c)}` : `${c.tw.pills ? pills(c) : strip(c)}${verdict(c)}${gapCard(c)}${claims(c)}`}
+      ${c.o === 'compare' ? `${verdict(c)}${claims(c)}` : `${c.tw.pills ? pills(c) : strip(c)}${verdict(c)}${c.tw.ans && c.r('answer1') ? `<div class="m-answered">▸ ${c.r('answer2') ? '2 of 2' : '1 of 2'} answered${c.r('verified') ? '' : c.r('decide') && c.scnKey !== 'zero' ? '' : ''}</div>` : ''}${gapCard(c)}${claims(c)}`}
     </main>`
   }
 
   // ---------- wallet column ----------
+  const INFO = '<span class="m-info" aria-label="No real money">i</span>'
+  const SIMLAB = '<span class="m-simlab">SIMULATED S$ · XRPL Testnet · no real money</span>'
   function wallet(c) {
     const b = c.budget
     const tag = simTag(c)
@@ -357,15 +391,15 @@
         <div class="m-amt"><span class="m-odo">S$0.00</span><span class="m-of">nothing can be bought</span></div><div class="m-meter"></div>
         <div class="m-wl"><span>Free sources only · decisions still shown</span></div></section>`
     }
-    const reserved = c.r('pay402') && !c.r('settle') ? 0.8 : 0
-    const spent = c.r('settle') ? 0.8 : 0
+    const reserved = c.r('pay402') && !c.r('settle') ? 0.9 : 0
+    const spent = c.r('settle') ? 0.9 : 0
     const left = b - spent - reserved
     const tick = c.anim && (c.step === 'pay402' || c.step === 'settle')
     const odo = c.anim && c.step === 'pay402' ? `<span class="m-odo" data-odo-from="${b}" data-odo-to="${left}">${money(b)}</span>` : `<span class="m-odo">${money(left)}</span>`
     return `<section class="m-panel m-wallet"><div class="m-panel-h"><b>Budget for this question</b>${tag || '<span class="mono">cap S$1.00 / source</span>'}</div>
-      <div class="m-amt">${odo}<span class="m-of">left of ${money(b)}</span>${tick ? `<span class="m-delta n">${c.step === 'pay402' ? 'holding S$0.80' : 'settled −S$0.80'}</span>` : ''}</div>
+      <div class="m-amt">${odo}<span class="m-of">left of ${money(b)}</span>${tick ? `<span class="m-delta n">${c.step === 'pay402' ? 'holding S$0.90' : 'settled −S$0.90'}</span>` : ''}</div>
       <div class="m-meter${tick ? ' n' : ''}"><i class="sp" style="width:${spent / b * 100}%"></i><i class="rs" style="width:${reserved / b * 100}%"></i></div>
-      <div class="m-wl"><span>spent <em>${money(spent)}</em></span><span>held <em>${money(reserved)}</em></span><span>${tag ? 'cap <em>S$1.00</em> a source' : c.r('done') ? (c.o === 'budgetOut' ? 'too little left for any source' : 'unspent stays unspent') : 'nothing bought below the bar'}</span></div></section>`
+      <div class="m-wl"><span>spent <em>${money(spent)}</em></span><span>held <em>${money(reserved)}</em></span><span>${tag ? 'cap <em>S$1.00</em> a source' : c.r('done') ? (c.o === 'budgetOut' ? 'too little left for any source' : 'unspent stays unspent') : 'nothing bought below the bar'}</span></div>${c.tw.ship ? `<div class="m-wsim">${c.tw.sim === 'label' ? SIMLAB : INFO}</div>` : ''}</section>`
   }
 
   const VERDICT = {
@@ -373,6 +407,26 @@
     WOULD: ['s-would', 'WOULD BUY'], BAR: ['s-bar', 'BELOW BAR'], GAP: ['s-gap', 'NO GAP'],
   }
   // T4: once the purchase starts (or the run ends), the round folds to its results.
+  // v1.2: the list after the purchase. flat = as merged (12 rows, publisher names only); frozen = titles and bars stay;
+  // cards = one Bought card and a Skipped group with a reason each.
+  function decideShip(c, r2, solo) {
+    const by = '<p class="m-fold-by mono">OpenAI Decisions · gpt-6-luna</p>'
+    const would = c.scnKey === 'zero'
+    const stamp = v => v === 'BUY' ? (would ? ['s-would', 'WOULD BUY'] : ['s-buy', 'BUY']) : v === 'REWRITE' ? ['s-rw', 'REWRITE'] : ['s-skip', 'SKIP']
+    if (c.tw.dec === 'cards') {
+      const b = D.candidates[0], sk = D.candidates.slice(1)
+      return `<section class="m-panel m-decide is-cards${c.nw(solo ? 'done' : 'pay402')}"><div class="m-panel-h"><b>${would ? 'Would buy' : 'Bought'}</b><span class="m-price">${money(b.price)}</span></div>
+        <div class="m-bcard"><b>${b.name}</b><span>${D.buy.title}</span><em>${would ? 'Your S$0 budget allows no purchase' : 'Covers 93% of the gap · original reporting'}</em></div>
+        <div class="m-panel-h" style="margin-top:12px"><b>Skipped</b><u>Why these?</u></div>
+        <ul class="m-skips">${sk.map(x => `<li><b>${x.name}</b><span class="m-price">${money(x.price)}</span><em>${x.why}</em></li>`).join('')}<li class="more">+ 8 more, all scored under the 0.20 bar</li></ul>${r2}</section>`
+    }
+    if (c.tw.dec === 'frozen') {
+      const rows = D.candidates.map(x => { const st = stamp(x.verdict); return `<li class="${x.verdict === 'BUY' ? 'is-buy' : ''}"><span class="m-row-n">${x.name}<small>${x.id === 'nf' ? D.buy.title : x.id === 'mp' ? 'Kestrel’s TSMC deal: analysts trim margins' : x.id === 'kc' ? 'Another ‘deal of the decade’' : 'Where Kestrel’s 24,000 wafers come from'}</small></span><span class="m-price">${money(x.price)}</span><span class="m-bar m-bar-s"><i style="width:${Math.min(100, x.value / 0.8 * 100)}%"></i><b class="m-thr"></b></span><span class="m-stamp ${st[0]}">${st[1]}</span></li>`}).join('')
+      return `<section class="m-panel m-decide is-frozen${c.nw(solo ? 'done' : 'pay402')}"><div class="m-panel-h"><b>Considered 12 paywalled sources</b><u>Why these?</u></div>${by}<ul class="m-mini is-titles">${rows}<li class="more">+ 8 more under the 0.20 bar</li></ul>${r2}</section>`
+    }
+    const rows = D.rows12.map(([n, , p, v]) => { const st = stamp(v); return `<li class="${v === 'BUY' ? 'is-buy' : ''}"><span class="m-row-n">${n}</span><span class="m-price">${money(p)}</span><span class="m-stamp ${st[0]}">${st[1]}</span></li>` }).join('')
+    return `<section class="m-panel m-decide is-fold is-flat${c.nw(solo ? 'done' : 'pay402')}"><div class="m-panel-h"><b>Considered 12 paywalled sources</b><u>Why these?</u></div>${by}<ul class="m-mini">${rows}</ul>${r2}</section>`
+  }
   function decideFold(c) {
     const k = c.scnKey
     const rows = D.candidates.map((x, i) => {
@@ -383,7 +437,8 @@
       return `<li class="${v === 'BUY' || v === 'WOULD' ? 'is-buy' : ''}" style="--i:${i}"><span class="m-row-n">${x.name}</span><span class="m-price ${x.price > D.cap ? 'is-over' : ''}">${money(x.price)}</span><span class="m-stamp ${st[0]}">${st[1]}</span></li>`
     }).join('')
     const solo = k === 'zero' || k === 'open'
-    const r2 = !solo && c.r('round2') ? `<p class="m-fold-note${c.nw('round2')}">Round 2: nothing else clears the bar. ${c.o === 'budgetOut' ? 'S$0.20 is left.' : 'S$1.20 stays unspent.'}</p>` : ''
+    const r2 = !solo && c.r('round2') ? `<p class="m-fold-note${c.nw('round2')}">Round 2: nothing else clears the bar. ${c.o === 'budgetOut' ? 'S$0.10 is left.' : 'S$1.10 stays unspent.'}</p>` : ''
+    if (c.tw.ship) return decideShip(c, r2, solo)
     return `<section class="m-panel m-decide is-fold${c.nw(solo ? 'done' : 'pay402')}"><div class="m-panel-h"><b>Considered 4 paywalled sources</b><u>Why these?</u></div><ul class="m-mini">${rows}</ul>${r2}</section>`
   }
   function decide(c) {
@@ -393,16 +448,16 @@
     }
     if (c.r('round2')) {
       const rows = D.candidates.map((x, i) => `<li class="m-row" style="--i:${i};--w:0%;--from:${Math.min(100, x.value / 0.8 * 100)}%"><span class="m-row-n">${x.name}</span><span class="m-bar"><i></i><b class="m-thr"></b></span><span class="m-stamp s-gap">NO GAP</span></li>`).join('')
-      return `<section class="m-panel m-decide${c.nw('round2')}"><div class="m-panel-h"><b>Round 2 · anything else?</b><span class="mono">Clef · 0.61 s</span></div>
-        <div class="m-r1"><span>Round 1</span><b>Bought Grid Operators Report · S$0.80</b></div>
+      return `<section class="m-panel m-decide${c.nw('round2')}"><div class="m-panel-h"><b>Round 2 · anything else?</b><span class="mono">OpenAI Decisions · gpt-6-luna</span></div>
+        <div class="m-r1"><span>Round 1</span><b>Bought NotFinancialTimes · S$0.90</b></div>
         <div class="m-gapline"><span>Gap: none left open</span><em>0% material</em></div>
         <ul class="m-rows is-r2 m-r2${c.nw('round2')}">${rows}</ul>
-        <p class="m-r2-msg">Nothing clears the bar, so the run stops. ${c.o === 'budgetOut' ? 'S$0.20 is left.' : 'S$1.20 stays unspent.'}</p></section>`
+        <p class="m-r2-msg">Nothing clears the bar, so the run stops. ${c.o === 'budgetOut' ? 'S$0.10 is left.' : 'S$1.10 stays unspent.'}</p></section>`
     }
     const k = c.scnKey
     const gm = k === 'open' ? 0.12 : D.gapMaterial
     const stamped = c.r('verdicts') || c.r('wouldbuy') || c.r('nothing')
-    const order = stamped ? ['cn', 'nw', 'gs', 'gor'] : ['gor', 'gs', 'nw', 'cn']
+    const order = stamped ? ['mp', 'kc', 'ff', 'nf'] : ['nf', 'ff', 'kc', 'mp']
     const stampIdx = id => order.indexOf(id)
     const rows = D.candidates.map((x, i) => {
       const value = x.value * gm / D.gapMaterial
@@ -418,28 +473,28 @@
         <span class="m-row-n">${x.name}</span><span class="m-price ${x.price > D.cap ? 'is-over' : ''}">${money(x.price)}</span>
         <span class="m-bar"><i></i><b class="m-thr"></b></span><div class="m-row-f">${foot}</div></li>`
     }).join('')
-    return `<section class="m-panel m-decide${c.nw('decide')}"><div class="m-panel-h"><b>Round 1 · what’s worth buying</b><span class="mono">Clef · 0.75 s</span></div>
-      <div class="m-gapline"><span>Gap: grid energisation</span><em>${Math.round(gm * 100)}% material</em></div>
+    return `<section class="m-panel m-decide${c.nw('decide')}"><div class="m-panel-h"><b>Round 1 · what’s worth buying</b><span class="mono">OpenAI Decisions · gpt-6-luna</span></div>
+      <div class="m-gapline"><span>Gap: analyst margins</span><em>${Math.round(gm * 100)}% material</em></div>
       <div class="m-axis"><span style="left:0">0</span><span class="thr" style="left:25%">bar 0.20</span><span style="right:0">value 0.8</span></div>
       <ul class="m-rows">${rows}</ul>
-      ${c.r('pay402') || c.r('wouldbuy') || c.r('nothing') ? '' : `<div class="m-formula">value = gap × covers gap × original × (0.5 + 0.25 × credibility)<br>buy the best value per S$ above the bar, at most S$1.00 per source</div>`}</section>`
+      ${c.r('pay402') || c.r('wouldbuy') || c.r('nothing') ? '' : `<div class="m-formula">value = gap × covers gap × original × (0.5 + 0.25 × credibility) × track record<br>buy the best value per S$ above the bar, at most S$1.00 per source</div>`}</section>`
   }
 
   function buy(c) {
     const k = c.scnKey
-    if (k === 'zero') return c.r('wouldbuy') ? `<section class="m-panel m-buy${c.nw('wouldbuy')}"><div class="m-panel-h"><b>Would buy</b><span class="m-price">S$0.80</span></div><p class="m-note" style="margin:0">Grid Operators Report clears the bar. <b>Your S$0 budget allows no purchases</b>, so nothing was charged. Ask again with S$1 to buy it.</p></section>` : ''
+    if (k === 'zero') return c.r('wouldbuy') ? `<section class="m-panel m-buy${c.nw('wouldbuy')}"><div class="m-panel-h"><b>Would buy</b><span class="m-price">S$0.90</span></div><p class="m-note" style="margin:0">NotFinancialTimes clears the bar. <b>Your S$0 budget allows no purchases</b>, so nothing was charged. Ask again with S$1 to buy it.</p></section>` : ''
     if (k === 'open') return c.r('nothing') ? `<section class="m-panel m-buy${c.nw('nothing')}"><div class="m-panel-h"><b>Nothing bought</b><span class="mono">S$2.00 unspent</span></div><p class="m-note" style="margin:0">Every paywalled source scored under the 0.20 bar, so the free answer stands.</p></section>` : ''
     if (!c.r('pay402')) return c.r('decide') ? '' : '<section class="m-panel is-idle"><div class="m-panel-h"><b>Purchases</b></div>Each purchase shows 402 → quote → settle → delivery → sha-256 here. One charge per source, even on retry.</section>'
     const short = D.quoteHash.slice(0, 6) + '…' + D.quoteHash.slice(-5)
     if (c.tw.fold && c.r('answer2')) {
-      return `<section class="m-panel m-buy is-fold${c.nw('answer2')}"><div class="m-panel-h"><b>Bought · Grid Operators Report</b><span class="m-price">S$0.80</span></div>
+      return `<section class="m-panel m-buy is-fold${c.nw('answer2')}"><div class="m-panel-h"><b>Bought · NotFinancialTimes</b><span class="m-price">S$0.90</span></div>
         <div class="m-okline">✓ Delivered · sha-256 matches</div><div class="m-rcpt"><span>Receipt ${short}</span><span>charged once <u>View</u></span></div></section>`
     }
     const failed = c.step === 'failed', retry = c.step === 'retry'
     const ok = c.r('verified')
     const nodes = [
       ['402', 'Payment required', 'w402', true],
-      ['Quote', 'S$0.80 held', '', true],
+      ['Quote', 'S$0.90 held', '', true],
       ['Settle', 'simulated', '', c.r('settle')],
       [failed ? '✕' : retry ? '<span class="m-spin"></span>' : '200', failed ? 'delivery failed' : retry ? 'retrying' : 'delivered', failed ? 'wfail' : retry ? 'wspin' : 'wok', ok],
       ['sha-256', 'matches', 'wok', ok],
@@ -448,7 +503,7 @@
     const lis = nodes.map(([lab, sub, cls, on], i) => `<li class="${cls} ${on ? 'on' : ''}${c.anim && enterStep.includes(i) ? ' n' : ''}" style="--i:${enterStep.indexOf(i)}"><i>${lab}</i><span>${sub}</span></li>`).join('')
     const p = ok ? 80 : failed || retry ? 60 : c.r('settle') ? 40 : 20
     const packetTo = { pay402: '30%', settle: '50%', verified: '90%' }[c.step]
-    return `<section class="m-panel m-buy${c.nw('pay402')}"><div class="m-panel-h"><b>${ok ? 'Bought' : 'Buying'} · Grid Operators Report</b><span class="m-price">S$0.80</span></div>
+    return `<section class="m-panel m-buy${c.nw('pay402')}"><div class="m-panel-h"><b>${ok ? 'Bought' : 'Buying'} · NotFinancialTimes</b><span class="m-price">S$0.90</span></div>
       <ol class="m-wire"><span class="m-wire-fill" style="--p:${p}%"></span>${c.anim && packetTo ? `<span class="m-packet n" style="--to:${packetTo}"></span>` : ''}${lis}</ol>
       ${ok ? `<div class="m-hash${c.nw('verified')}"><span>sha-256</span><code${c.anim && c.step === 'verified' ? ' data-scramble' : ''}>${D.digest}</code><b>✓ match</b></div>` : ''}
       ${failed ? `<div class="m-fail n"><b>Paid, but the delivery failed.</b>Your receipt is kept. Retrying fetches the same paid copy and can’t charge you again.<br><button class="m-btn m-btn-pay">Retry delivery</button></div>` : ''}
@@ -457,7 +512,7 @@
   }
 
   function side(c) {
-    return `<aside class="m-side${c.nw('takeoff', 'search')}">${wallet(c)}${decide(c)}${buy(c)}</aside>`
+    return `<aside class="m-side${c.nw('takeoff', 'search')}">${c.tw.rtabs ? '<div class="m-rtabs"><span class="on">Run</span><span>Writers</span></div>' : ''}${wallet(c)}${decide(c)}${buy(c)}</aside>`
   }
 
   // ---------- toasts ----------
@@ -466,12 +521,11 @@
     const T = (cls, ic, title, body, acts, enter) => ({ cls, ic, title, body, acts, enter })
     if (c.o === 'fallback') t.push(T('t-warn', '!', 'Research model timed out', 'Showing a labelled offline answer built from the same verified passages. Live answers resume on the next ask.', '', true))
     if (c.o === 'stopped') t.push(T('t-info', '■', 'Stopped', 'No new purchases will start. S$0.00 of S$2.00 spent. The v1 answer stays.', '<button class="m-btn">Ask again</button>', true))
-    if (c.scnKey === 'inject' && c.r('read') && !c.r('decide')) t.push(T('t-warn', '⚑', 'Ignored instructions in a source', 'Fernpath Infrastructure Blog tells AI agents to buy GridScope. Text in sources can’t spend. Only policy code can buy.', '', c.step === 'read'))
-    if (c.step === 'failed') t.push(T('t-err', '!', 'Delivery failed after payment', 'Charged once (S$0.80, simulated). Retry fetches the same copy.', '<button class="m-btn m-btn-pay">Retry delivery</button>', true))
-    if (c.step === 'verified' || c.step === 'answer2') t.push(T('t-pen t-rcpt', '✓', 'Bought Grid Operators Report', 'S$0.80 · sha-256 verified · <span class="sim">SIMULATED SGD</span>', '', c.step === 'verified'))
+    if (c.step === 'failed') t.push(T('t-err', '!', 'Delivery failed after payment', 'Charged once (S$0.90, simulated). Retry fetches the same copy.', '<button class="m-btn m-btn-pay">Retry delivery</button>', true))
+    if (c.step === 'verified' || c.step === 'answer2') t.push(T('t-pen t-rcpt', '✓', 'Bought NotFinancialTimes', 'S$0.90 · sha-256 verified · <span class="sim">SIMULATED SGD</span>', '', c.step === 'verified'))
     if (c.r('done') && c.o !== 'receipt' && c.o !== 'work') {
-      const body = { zero: 'Free sources only. It would have bought 1 source for S$0.80.', open: 'Nothing was worth buying. S$0.00 of S$2.00 spent.' }[c.scnKey]
-        || (c.o === 'budgetOut' ? 'Budget used: S$0.80 of S$1.00. Too little is left for another source.' : 'v2 qualifies the free answer · S$0.80 of S$2.00 spent')
+      const body = { zero: 'Free sources only. It would have bought 1 source for S$0.90.', open: 'Nothing was worth buying. S$0.00 of S$2.00 spent.' }[c.scnKey]
+        || (c.o === 'budgetOut' ? 'Budget used: S$0.90 of S$1.00. Too little is left for another source.' : 'v2 qualifies the free answer · S$0.90 of S$2.00 spent')
       const acts = c.scnKey === 'zero' ? '<button class="m-btn m-btn-pen">Ask again with S$1</button>' : c.scnKey === 'open' ? '' : '<button class="m-btn m-btn-pen">Download report</button><button class="m-btn">Compare v1 → v2</button>'
       t.push(T('', '✓', 'Answer ready', body, acts, c.step === 'done'))
     }
@@ -490,26 +544,26 @@
     if (o === 'passage' || o === 'locked') {
       const locked = o === 'locked'
       const body = locked
-        ? `<p>Fictional demo source. Independent operator interviews and site planning records investigating energisation prerequisites and connection schedules.</p>
+        ? `<p>Fictional demo source. A supply-side note on where Kestrel’s 24,000 wafers a month come from.</p>
            <div class="m-locked"><i style="width:94%"></i><i style="width:88%"></i><i style="width:91%"></i><i style="width:60%"></i>
-           <p><b>Not bought.</b> S$1.40 is over the S$1.00 per-source cap. The full text stays with the publisher until a purchase is verified for this run. These bars are placeholders, not the article.</p></div>`
+           <p><b>Not bought.</b> It covers 1% of the gap, so its value (0.005) is under the 0.20 bar. The full text stays with the publisher until a purchase is verified for this run. These bars are placeholders, not the article.</p></div>`
         : D.passage.map(p => p.startsWith('§') ? `<p class="is-span"><mark class="m-hl">${p.slice(1)}</mark></p>` : `<p>${p}</p>`).join('')
       return `<div class="m-scrim${c.anim ? ' n' : ''}"></div><aside class="m-drawer${c.anim ? ' n' : ''}">
         <div class="m-dr-h"><div class="m-dr-top"><span>${locked ? 'PUBLIC PREVIEW' : 'EXACT PASSAGE · CITATION 9'}</span><span>Esc ×</span></div>
-          <h3>${locked ? 'GridScope Asia: connection schedule investigation' : 'Grid Operators Report: capacity and energisation audit'}</h3>
-          <div class="m-dr-chips">${locked ? '<span class="m-chip">grid-research · v1</span><span class="m-chip" style="color:var(--pay-ink)">S$1.40 · over cap</span>' : '<span class="m-chip">grid-research · v1</span><span class="m-chip" style="color:var(--pen)">bought S$0.80</span><span class="m-chip"><i></i>sha-256 b11dd6…a980c3</span>'}</div></div>
+          <h3>${locked ? 'The Fab Floor: Where Kestrel’s 24,000 wafers come from' : 'NotFinancialTimes: Analysts cut Kestrel margin estimates'}</h3>
+          <div class="m-dr-chips">${locked ? '<span class="m-chip">the-fab-floor · v1</span><span class="m-chip" style="color:var(--pay-ink)">S$0.25 · value 0.005</span>' : '<span class="m-chip">notfinancialtimes · v1</span><span class="m-chip" style="color:var(--pen)">bought S$0.90</span><span class="m-chip"><i></i>sha-256 b11dd6…a980c3</span>'}</div></div>
         <div class="m-dr-b">${body}</div>
         <div class="m-dr-f"><span>${locked ? 'Judged on public metadata and preview only' : 'Cited in: short answer, claim 9'}</span><span>synthetic corpus</span></div></aside>`
     }
     if (o === 'hover') {
-      return `<div class="m-hover${c.anim ? ' n' : ''}" data-anchor style="left:548px;top:404px"><div class="m-hover-h"><span class="m-mono">GO</span>Grid Operators Report <span class="m-chip" style="margin-left:auto;color:var(--pen)">bought S$0.80</span></div>
-        <q>“<mark class="m-hl">Only 240 of the announced 600 MW has a confirmed energisation slot before 2028.</mark>”</q>
-        <div class="m-hover-f"><span>Capacity and energisation audit · v1</span><span>Click to open ↗</span></div></div>`
+      return `<div class="m-hover${c.anim ? ' n' : ''}" data-anchor style="left:548px;top:404px"><div class="m-hover-h"><span class="m-mono">NF</span>NotFinancialTimes <span class="m-chip" style="margin-left:auto;color:var(--pen)">bought S$0.90</span></div>
+        <q>“<mark class="m-hl">On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers fell to 55.2% from 58.5%.</mark>”</q>
+        <div class="m-hover-f"><span>Analysts cut Kestrel margin estimates · v1</span><span>Click to open ↗</span></div></div>`
     }
     if (o === 'receipt') {
       return `<div class="m-scrim${c.anim ? ' n' : ''}"></div><div class="m-receipt${c.anim ? ' n' : ''}"><h5>RECEIPT</h5><div class="sub">ResearchAgent · run b5390658</div>
-        <dl><dt>Item</dt><dd>Capacity and energisation audit</dd><dt>Publisher</dt><dd>Grid Operators Report</dd><dt>Quote</dt><dd>${D.quoteHash.slice(0, 10)}…</dd><dt>Settled</dt><dd>10:41:06 · simulated</dd><dt>Delivered</dt><dd>sha-256 ${D.digest.slice(0, 8)}… ✓</dd><dt>Charges</dt><dd>1 (retries can’t add more)</dd></dl>
-        <div class="tot"><span>Total</span><span>S$0.80</span></div><div class="sim">SIMULATED SGD · NO REAL FUNDS</div></div>`
+        <dl><dt>Item</dt><dd>Analysts cut Kestrel margin estimates</dd><dt>Publisher</dt><dd>NotFinancialTimes</dd><dt>Quote</dt><dd>${D.quoteHash.slice(0, 10)}…</dd><dt>Settled</dt><dd>10:41:06 · simulated</dd><dt>Delivered</dt><dd>sha-256 ${D.digest.slice(0, 8)}… ✓</dd><dt>Charges</dt><dd>1 (retries can’t add more)</dd></dl>
+        <div class="tot"><span>Total</span><span>S$0.90</span></div><div class="sim">SIMULATED SGD · NO REAL FUNDS</div></div>`
     }
     if (o === 'work') {
       const rows = D.trace.map(([t, type, label]) => {
@@ -529,7 +583,37 @@
   }
 
   // ---------- whole screens ----------
+  // v1.2 Home as merged: budget chip with a popover, an info dot, and the four demo questions in rows.
+  const PRESETS = [['Bank of Japan decision', 'What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?'], ['Kestrel–TSMC outlook', 'What’s the analyst outlook on Kestrel Semiconductor’s latest deal with TSMC?'], ['Malaysia packaging lead times', 'Are Kestrel Semiconductor’s advanced-packaging lead times in Malaysia getting shorter?'], ['Penang plant power', 'When was Kestrel Semiconductor’s Penang Phase 2 packaging plant commissioned, how large a grid connection does it need…']]
+  function planCard(c) {
+    const q = '<b>Kestrel Semiconductor TSMC deal analyst outlook</b>, <b>Kestrel Semiconductor TSMC deal capacity pricing timing</b>'
+    const btns = '<span class="m-pbtns"><span>Edit</span><span>Cancel</span><span class="go">Go now</span></span>'
+    const bar = `<i class="m-pbar${c.anim ? ' n' : ''}"></i>`
+    if (c.tw.plan === 'big') return `<div class="m-plan is-big"><div class="m-plan-h"><b>Plan</b><span>starts in <em>5</em> s</span></div>
+      <ul><li><i>1</i><span>Search every listed writer for ${q}</span></li><li><i>2</i><span>Answer from free sources first, then name the gap</span></li><li><i>3</i><span>Buy only inside <b>S$2.00</b>, at most <b>S$1.00</b> a source</span></li></ul>${bar}
+      <div class="m-plan-f"><span>Nothing is spent until this closes.</span>${btns}</div></div>`
+    if (c.tw.plan === 'strip') return `<div class="m-plan is-strip"><span class="cnt">5</span><div><b>Starting in 5 s. Nothing is spent yet.</b><span>Searching every listed writer · budget S$2.00 · cap S$1.00 a source</span></div>${btns}${bar}</div>`
+    return `<div class="m-plan is-small"><span>Searching every listed writer for: ${q}</span>${bar}${btns}</div>`
+  }
+  function clarCard(c) {
+    const auto = c.tw.clar === 'auto'
+    return `<div class="m-clar${auto ? ' is-auto' : ''}"><b>Which angle matters most to you?</b><span class="m-clar-chips"><span>capacity allocation</span><span>pricing &amp; margins</span><span>delivery timeline</span></span>${auto ? '<u>Skipping in 3 s</u><i class="m-pbar"></i>' : '<u>Skip</u>'}</div>`
+  }
+  function homeShip(c) {
+    const live = c.anim && c.step === 'home'
+    const starting = c.o === 'plan' || c.o === 'clarify' || (c.step === 'takeoff' && c.anim)
+    const filled = starting || c.o === 'filled' || live
+    const q = PRESETS[1][1]
+    return `<div class="m-app">${top(c, false)}<div class="m-homews">${sidebar(c, true)}<div class="m-home is-ship${live ? ' n' : ''}">
+      <h1 class="m-hero">Ask a question. <em>Give it a budget.</em></h1>
+      ${c.o === 'plan' ? planCard(c) : c.o === 'clarify' ? clarCard(c) : ''}
+      <div class="m-composer is-ship"><div class="m-qbox ${filled ? '' : 'is-empty'}">${filled ? q : 'Ask about a company, a market or a claim…'}${live ? '<span class="caret"></span>' : ''}</div>
+        <div class="m-comp-row"><span class="m-bchip"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 6.5v7M12.2 8.2c-.4-.7-1.2-1-2.2-1-1.2 0-2 .6-2 1.4 0 2 4.4.8 4.4 2.9 0 .9-.9 1.5-2.2 1.5-1 0-1.9-.4-2.3-1.1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>${c.variant === 'zero' ? 'Free' : 'S$2.00'}<em>⌄</em></span>${c.tw.sim === 'label' ? SIMLAB : INFO}
+          <button class="m-ask ${starting ? 'is-busy' : ''}" ${filled ? '' : 'disabled'}>${starting ? 'Starting…' : c.variant === 'zero' ? 'Ask free' : 'Ask'}</button></div></div>
+      <div class="m-presets"><p>Not sure what to ask? Try one</p>${PRESETS.map(([l, t], i) => `<div class="m-preset${filled && i === 1 ? ' is-on' : ''}"><i>?</i><b>${l}</b><span>${t}</span></div>`).join('')}</div>${live ? ICON.cursor : ''}</div></div></div>`
+  }
   function home(c) {
+    if (c.tw.home === 'ship') return homeShip(c)
     const v = c.variant
     const zero = v === 'zero', err = v === 'err'
     const coin = val => `<span class="m-coin ${(zero ? 0 : 2) === val ? 'on' : ''}">S$${val}</span>`
@@ -543,8 +627,8 @@
         <div class="m-comp-row"><div class="m-coins">${[0, 1, 2, 5].map(coin).join('')}</div><p class="m-consq">${consq}</p>
         <button class="m-ask ${c.step === 'takeoff' ? 'is-busy' : ''}" ${err ? 'disabled' : ''}>${c.step === 'takeoff' ? '<span class="m-spin"></span>Starting' : zero ? 'Ask free' : 'Ask'} <kbd style="font:500 11px var(--f-mono);opacity:.75">↵</kbd></button></div>
         <div class="m-comp-foot">${err ? '<span class="m-err">Type a question first. Up to 2,000 characters.</span>' : `<span>A run takes about 10 seconds. ${simTag(c, true)}</span>`}<span class="m-check on"><i></i>Tell me when it’s done</span></div></div>
-      <div class="m-try"><span>Try</span><span>Vertex 600 MW by 2028?</span><span>A question free sources can answer</span><span>An article that tells agents to buy</span></div>
-      ${v === 'returning' ? '<div class="m-recent"><span class="k">Last run</span><b>Vertex 600 MW by 2028?</b><span class="m-chip">v2 · qualifies</span><span class="mono" style="font-size:12px">S$0.80 of S$2.00</span><button class="m-btn">Open</button></div>' : ''}
+      <div class="m-try"><span>Try</span><span>Kestrel–TSMC outlook</span><span>A question free sources can answer</span><span>An article that tells agents to buy</span></div>
+      ${v === 'returning' ? '<div class="m-recent"><span class="k">Last run</span><b>Kestrel–TSMC outlook</b><span class="m-chip">v2 · qualifies</span><span class="mono" style="font-size:12px">S$0.90 of S$2.00</span><button class="m-btn">Open</button></div>' : ''}
       <div class="m-how">
         <div style="--i:0"><span class="ic ic-read">Aa</span><b>An LLM writes</b><p>Reads free sources and drafts a cited answer that names its gap.</p></div>
         <div style="--i:1"><span class="ic ic-bars"><i style="height:40%"></i><i style="height:90%"></i><i style="height:25%"></i><i style="height:60%"></i></span><b>A decision model chooses</b><p>Scores each paywalled source: does it close the gap, is it original, is it credible.</p></div>
@@ -558,13 +642,13 @@
     if (c.view === 'launch') return `<div class="m-app"><div class="m-launch">${mark()}<span>ResearchAgent</span></div></div>`
     if (c.view === 'signin') return `<div class="m-app">${top(c, false)}<div class="m-signin"><div class="m-signin-card">${mark()}<h3>Sign in to ResearchAgent</h3><div class="m-field">you@company.com</div><button class="m-btn m-btn-pen" style="height:46px">Continue</button><span class="m-note" style="text-align:center">or <u>use the demo workspace</u></span></div></div><span class="m-later">LATER · accounts are out of scope for Oct 10</span></div>`
     if (c.view === 'osnote') return `<div class="m-app"><div class="m-otherpage"><i></i><i></i><i style="width:90%"></i><i style="width:70%"></i><i></i><i style="width:84%"></i></div>
-      <div class="m-osnote${c.anim ? ' n' : ''}">${appIcon(38)}<div><b>Answer ready · Vertex 600 MW by 2028?</b><p>Only partly: 240 of 600 MW has a grid slot before 2028. Spent S$0.80 of S$2.00 (simulated).</p></div><time>now</time></div></div>`
+      <div class="m-osnote${c.anim ? ' n' : ''}">${appIcon(38)}<div><b>Answer ready · Kestrel–TSMC outlook</b><p>Margins are being cut: consensus 55.2% from 58.5%. Spent S$0.90 of S$2.00 (simulated).</p></div><time>now</time></div></div>`
     if (c.view === 'tabstates') {
       const row = (f, t, d) => `<div class="row"><div class="m-tab is-on"><span class="m-fav ${f ? 'f-' + f : ''}">${mark()}</span><span class="m-tab-t">${t}</span></div><p>${d}</p></div>`
       return `<div class="m-app"><div class="m-tabstates"><h3>The tab says what the run is doing.</h3>
         ${row('', 'ResearchAgent', '<b>Idle.</b> Home, or a finished run you’ve already seen.')}
         ${row('work', 'Reading sources · ResearchAgent', '<b>Working.</b> The coin in the icon flips. The title names the current step.')}
-        ${row('work', 'Buying S$0.80 · ResearchAgent', '<b>Spending.</b> Any money step names the amount.')}
+        ${row('work', 'Buying S$0.90 · ResearchAgent', '<b>Spending.</b> Any money step names the amount.')}
         ${row('done', '✓ Answer ready · ResearchAgent', '<b>Done, unseen.</b> Green dot until you come back to the tab.')}
         ${row('alert', '! Delivery failed · ResearchAgent', '<b>Needs you.</b> Orange dot until the retry succeeds.')}
       </div></div>`
@@ -584,7 +668,19 @@
   // ---------- mounting + live effects ----------
   const fits = new Set()
   const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(entries => entries.forEach(e => scale(e.target))) : null
-  function scale(fit) { const b = fit.firstElementChild; if (b) b.style.setProperty('--k', fit.clientWidth / 1440) }
+  // data-crop="[x,y,w,h]" (in 1440 × 900 screen pixels) zooms a frame onto one region.
+  function scale(fit) {
+    const b = fit.firstElementChild
+    if (!b) return
+    if (fit.dataset.crop) {
+      const [x, y, w, h] = JSON.parse(fit.dataset.crop), k = fit.clientWidth / w
+      fit.style.aspectRatio = `${w} / ${h}`
+      b.style.setProperty('--k', k)
+      b.style.transform = `scale(${k}) translate(${-x}px, ${-y}px)`
+      return
+    }
+    b.style.setProperty('--k', fit.clientWidth / 1440)
+  }
   function mount(fit, spec) {
     fit._spec = spec
     fit.innerHTML = html(spec)
