@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResearchAgent project map</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --card: #ffffff; --ink: #1d2430; --mute: #667085; --line: #d9dde3; --soft: #f1f2f4;
+    --arrow: #4b5563;
+    --you: #475467;     --you-bg: #f2f4f7;
+    --model: #5b3fc4;   --model-bg: #f1edff;
+    --code: #1b62d1;    --code-bg: #eaf2ff;
+    --writer: #17794a;  --writer-bg: #e7f6ee;
+    --money: #9a5b00;   --money-bg: #fff3d9;
+    --store: #475467;   --store-bg: #eef1f5;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px 80px; }
+  header.top { padding: 22px 0 6px; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  header.top .brand { font-weight: 700; letter-spacing: -.01em; font-size: 15px; }
+  header.top .sub { color: var(--mute); font-size: 13px; }
+  .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 2px; font-size: 14px; }
+  .crumbs a { color: var(--code); text-decoration: none; padding: 3px 8px; border-radius: 6px; }
+  .crumbs a:hover { background: var(--code-bg); }
+  .crumbs .sep { color: var(--mute); }
+  .crumbs .here { font-weight: 600; padding: 3px 8px; }
+  .level { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); background: var(--soft); border-radius: 99px; padding: 2px 9px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 14px 0 8px; letter-spacing: -.02em; }
+  .lead { font-size: 17px; color: #2f3846; max-width: 860px; margin: 0 0 18px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--mute); margin: 8px 0 10px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1.5px solid; }
+  .stage { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 8px; overflow-x: auto; }
+  .stage svg { display: block; width: 100%; height: auto; min-width: 760px; }
+  /* nodes */
+  .node { width: 100%; height: 100%; border: 1.5px solid; border-radius: 12px; padding: 10px 12px 9px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; background: #fff; font-family: inherit; }
+  .node .kind { font-size: 9.5px; font-weight: 800; letter-spacing: .09em; opacity: .85; }
+  .node .t { font-size: 14.5px; font-weight: 700; line-height: 1.22; color: var(--ink); }
+  .node .s { font-size: 12.3px; line-height: 1.36; color: #3c4655; flex: 1; }
+  .node .tech { font-size: 10.8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--mute); }
+  .node .open { font-size: 11.5px; font-weight: 700; margin-top: 1px; }
+  .node.go { cursor: pointer; transition: transform .12s, box-shadow .12s; }
+  .node.go:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(20, 30, 50, .12); }
+  .k-you    { border-color: var(--you);    background: var(--you-bg);    } .k-you .kind, .k-you .open { color: var(--you); }
+  .k-model  { border-color: var(--model);  background: var(--model-bg);  } .k-model .kind, .k-model .open { color: var(--model); }
+  .k-code   { border-color: var(--code);   background: var(--code-bg);   } .k-code .kind, .k-code .open { color: var(--code); }
+  .k-writer { border-color: var(--writer); background: var(--writer-bg); } .k-writer .kind, .k-writer .open { color: var(--writer); }
+  .k-money  { border-color: var(--money);  background: var(--money-bg);  } .k-money .kind, .k-money .open { color: var(--money); }
+  .k-store  { border-color: var(--store);  background: var(--store-bg);  } .k-store .kind, .k-store .open { color: var(--store); }
+  .k-ghost  { border-style: dashed; border-color: #98a2b3; background: #fafafa; opacity: .78; } .k-ghost .kind { color: #98a2b3; }
+  .lane { fill: #f7f8fa; stroke: none; }
+  .lanelabel { font-size: 11px; font-weight: 700; letter-spacing: .07em; fill: #98a2b3; text-transform: uppercase; }
+  /* arrows */
+  .arr path { fill: none; stroke: var(--arrow); stroke-width: 1.8; }
+  .arr.dash path { stroke-dasharray: 6 5; }
+  .arr .badge { fill: #1d2430; }
+  .arr text.n { fill: #fff; font-size: 11px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+  .arr text.lbl { fill: #344054; font-size: 11.5px; font-weight: 600; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+  .arr.hl path { stroke: #d92d20; stroke-width: 3; }
+  .arr.hl .badge { fill: #d92d20; }
+  .arr { cursor: default; }
+  /* sections */
+  h2 { font-size: 18px; margin: 34px 0 10px; letter-spacing: -.01em; }
+  h2 small { font-weight: 500; color: var(--mute); font-size: 13px; margin-left: 8px; }
+  .arrows { display: flex; flex-direction: column; gap: 8px; }
+  .arow { display: grid; grid-template-columns: 210px 1fr 1fr 1.25fr; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; font-size: 13.3px; transition: border-color .12s, box-shadow .12s; }
+  .arow:hover, .arow.hl { border-color: #d92d20; box-shadow: 0 0 0 3px rgba(217, 45, 32, .12); }
+  .arow .who { display: flex; gap: 9px; align-items: flex-start; font-weight: 700; }
+  .arow .num { flex: none; width: 22px; height: 22px; border-radius: 50%; background: #1d2430; color: #fff; font-size: 11.5px; display: grid; place-items: center; margin-top: 1px; }
+  .arow .who span.p { display: block; font-weight: 500; color: var(--mute); font-size: 12px; }
+  .arow h4 { margin: 0 0 2px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+  .arow .col p { margin: 0; }
+  .arow code, .cards code, .extra code, .lead code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: var(--soft); border-radius: 4px; padding: 1px 4px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 13.6px; }
+  .card b { display: block; margin-bottom: 2px; }
+  .card.rule { border-left: 4px solid #d92d20; }
+  .card.prim { border-left: 4px solid var(--model); }
+  .demo { background: #fff8e6; border: 1px solid #f2d78c; border-radius: 10px; padding: 12px 16px; font-size: 14px; margin-top: 22px; }
+  .demo b { color: #8a5a00; }
+  .extra { margin-top: 10px; }
+  .extra table { border-collapse: collapse; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 13.4px; }
+  .extra th, .extra td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .extra th { background: var(--soft); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--mute); }
+  .extra tr:last-child td { border-bottom: 0; }
+  .formula { background: #10151f; color: #e8ecf4; border-radius: 10px; padding: 14px 18px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13.2px; line-height: 1.8; margin: 8px 0 14px; overflow-x: auto; }
+  .formula em { color: #9cc2ff; font-style: normal; }
+  .formula span.c { color: #8b97aa; }
+  .warn { background: #fef3f2; border: 1px solid #fecdca; border-radius: 10px; padding: 12px 16px; font-size: 14px; margin: 10px 0; }
+  .warn b { color: #b42318; }
+  ol.steps { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; counter-reset: s; }
+  ol.steps li { counter-increment: s; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px 10px 44px; position: relative; font-size: 13.4px; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 12px; top: 10px; width: 22px; height: 22px; border-radius: 50%; background: #1d2430; color: #fff; font-size: 11.5px; font-weight: 700; display: grid; place-items: center; }
+  ol.steps li b { display: block; }
+  ol.steps li a { color: var(--code); font-weight: 700; text-decoration: none; }
+  .tree { font-size: 13.6px; columns: 2 320px; margin: 0; padding: 0; list-style: none; }
+  .tree li { padding: 2px 0; break-inside: avoid; }
+  .tree a { color: var(--code); text-decoration: none; }
+  .tree a:hover { text-decoration: underline; }
+  .tree .kid { padding-left: 18px; }
+  .tree .cur { font-weight: 700; }
+  footer { margin-top: 50px; font-size: 12.5px; color: var(--mute); border-top: 1px solid var(--line); padding-top: 14px; }
+  .kids { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kids a { text-decoration: none; background: var(--card); border: 1px solid var(--line); border-radius: 99px; padding: 6px 13px; font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .kids a:hover { border-color: var(--code); color: var(--code); }
+  @media (max-width: 900px) { .arow { grid-template-columns: 1fr; gap: 6px; } h1 { font-size: 24px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><span class="brand">ResearchAgent · project map</span><span class="sub">Click a box to go one level deeper. Hover a numbered arrow row to light it up. Backspace goes up a level.</span></header>
+  <nav class="crumbs" id="crumbs"></nav>
+  <div id="page"></div>
+  <footer>
+    Built from the code on <code>main</code> at c5a2732 (10 Oct 2026), FINAL-PUSH.md, STATUS.md and docs/x402-xrpl.md. Numbers come from constants in the code; benchmark figures are from the team's own synthetic benchmark. The open PR for live answer streaming (#239) is not merged and is not shown.
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   DATA. One entry per page. Ids are paths: 'A', 'A/A4' ...
+   ============================================================ */
+const PAGES = {};
+const T = (s) => s; // text helper (keeps the data readable)
+
+/* ---------- LEVEL 0 ---------- */
+PAGES[''] = {
+  title: `Three layers: A asks, B sells, C settles`,
+  lead: `ResearchAgent is a search engine for paywalled expertise, with a wallet. You ask a question. <b>A</b>, the reader's agent, searches independent writers (<b>B</b>). When the missing piece is behind a paywall, A can pay that writer directly over the XRPL Testnet ledger (<b>C</b>), inside the budget you set, then checks the writer kept every promise.`,
+  fixed: true, nw: 190, nh: 214, gx: 316, gy: 290, cols: 4, rows: 2,
+  nodes: [
+    { id: 'you', c: 0, r: 0, kind: 'you', t: 'You', s: 'Type a question. Pick a budget: Free, S$1, S$2, S$3 or S$5. The budget is the only thing that lets the agent spend.', tech: 'React UI in the browser' },
+    { id: 'A', c: 1, r: 0, kind: 'code', t: 'A · Reader\'s agent', s: 'Plans, searches, writes the cited answer, judges what is worth buying, pays, then checks the delivery.', tech: 'Node · Express · SQLite', go: 'A' },
+    { id: 'B', c: 2, r: 0, kind: 'writer', t: 'B · Writers', s: 'Eight fictional writers. Each searches its own articles and sells the paywalled ones with a price and a signed promise.', tech: 'Orama search · x402 paywall', go: 'B' },
+    { id: 'C', c: 3, r: 0, kind: 'money', t: 'C · Ledger', s: 'XRPL Testnet. Moves test XRP from our wallet to the writer\'s wallet. Refunds travel the same way.', tech: 'XRPL · xrpl:1 · no real value', go: 'C' },
+    { id: 'M', c: 1.5, r: 1, kind: 'model', t: 'Hired models', s: 'DeepSeek writes. OpenAI Decisions (gpt-6-luna) judges value. Cloudflare Workers AI makes the embeddings used for search.', tech: 'plus Langfuse traces', go: 'M' },
+  ],
+  arrows: [
+    { id: 1, from: 'you', to: 'A', label: 'question + budget', d: `You press Ask. The UI calls <code>POST /api/scope</code> (clarify + plan), then <code>POST /runs</code> when the 5 s plan card ends.`, c: `HTTP JSON, validated by Zod schemas.`, r: `The budget (max S$5, steps of S$0.05, S$2 by default) is the only spending permission. S$0 produces a would-buy table and spends nothing.` },
+    { id: 2, from: 'A', to: 'B', label: 'search · read · pay · challenge', lab: 'search · pay', off: -14, d: `The run loop: search every writer, read free articles, retry a paywalled one with a payment, challenge a broken promise.`, c: `<code>GET /w/:slug/search</code>, <code>GET /w/:slug/articles/:id</code>, <code>POST /w/:slug/challenge</code>.`, r: `Search results never contain paid text. A has to see a valid signed promise before it signs a payment.` },
+    { id: 3, from: 'B', to: 'A', label: 'hits · article · refund result', lab: 'hits · article', off: 14, lpos: 'below', d: `A writer answers a search with teasers, answers a paid request with the article after payment, answers a challenge with a refund or a rejection.`, c: `JSON plus x402 headers (<code>PAYMENT-REQUIRED</code>, <code>PAYMENT-RESPONSE</code>).`, r: `No paid bytes before a verified grant (hard rule 1).` },
+    { id: 4, from: 'B', to: 'C', label: 'submit payment · refund', lab: 'submit · refund', off: -14, d: `The writer's own facilitator receives a signed payment from A and submits it. On a valid challenge it sends the refund.`, c: `xrpl.js to the Testnet RPC.`, r: `The writer is paid directly. We never hold the money.` },
+    { id: 5, from: 'C', to: 'B', label: 'validated', off: 14, lpos: 'below', d: `The ledger closes and the transaction becomes final (<code>tesSUCCESS</code>). The facilitator waits for this before it delivers.`, c: `Ledger lookup by transaction hash.`, r: `No delivery on a pending payment.` },
+    { id: 6, from: 'A', to: 'C', label: 'buyer checks the ledger itself', route: 'under', fromOff: -52, dash: true, d: `After the writer says it was paid, A looks the transaction up on the ledger itself.`, c: `Ledger lookup (read only).`, r: `Never trust the seller's word that a payment arrived.` },
+    { id: 7, from: 'A', to: 'M', label: 'ask a model', dash: true, toOff: -22, d: `Every time A needs text written, a fact graded, or a candidate scored.`, c: `HTTPS to DeepSeek and OpenAI Decisions.`, r: `Models can name what is missing. Only policy code can buy.` },
+    { id: 8, from: 'B', to: 'M', label: 'embed the query', dash: true, toOff: 22, d: `A writer needs a vector for your query to do search by meaning.`, c: `Cloudflare Workers AI, cached and time-boxed (2.5 s).`, r: `If embedding fails, search falls back to keywords, and the screen says so.` },
+  ],
+  rules: [
+    { h: 'Hard rule 1: no premium bytes before a grant', b: `Search hits carry only the writer's abstract, tags, price, a relevance promise and a signed manifest.` },
+    { h: 'Hard rule 2: the budget is the only permission', b: `Only policy code can start a purchase. No LLM has a buy tool, and trust can only lower a value, never raise the budget or cap.` },
+    { h: 'Hard rule 3: one charge per intent', b: `Resending the same signed payment returns the same delivery and charges nothing more.` },
+    { h: 'Hard rule 4: real citations', b: `Every claim cites a passage that exists word for word in what was delivered. A source whose proof failed is never cited.` },
+    { h: 'Hard rule 5: label everything simulated', b: `Synthetic writers, Testnet money, fixture fallbacks, keyword-only search: each carries a visible label.` },
+  ],
+  extraTitle: `What has changed since your mental picture`,
+  extra: `
+  <div class="cards">
+    <div class="card"><b>No central index any more</b>Each writer searches its own full text and sends back teasers. We are a registry, a ranker and a verifier.</div>
+    <div class="card"><b>The judge is OpenAI Decisions (gpt-6-luna)</b>Since 8 Oct. Cloudflare Clef-flash is the one-line revert (<code>DECISION_PROVIDER=cloudflare</code>). If the judge call fails, the round buys nothing; no fixture is ever substituted.</div>
+    <div class="card"><b>Chat route (9 Oct)</b>A question that needs no research (greeting, haiku, "what are you?") gets a direct reply labelled "no sources searched · nothing bought". No plan card, no run.</div>
+    <div class="card"><b>Requested facts are frozen first</b>Before reading anything, the plan fixes up to 5 facts the answer must establish. The judge scores candidates against those, not against a gap the writing model invents mid-run.</div>
+    <div class="card"><b>One free follow-up search</b>If a fact is still missing after the free answer, it searches once more for free before it considers buying anything.</div>
+    <div class="card"><b>Real x402 v2 on XRPL Testnet</b>Each writer runs its own facilitator. Offline mode uses a labelled SIMULATED rail; it never fakes a Testnet hash.</div>
+    <div class="card"><b>Trust is "track record"</b>Honesty (did the proofs pass?) times calibration (did the relevance promise hold up on the delivered article?). A failed proof halves it and blocks the writer.</div>
+    <div class="card"><b>New corpus</b>81 LLM-written articles from 8 fictional writers (Kestrel Semiconductor × TSMC story, BoJ/JGBs, power for data centres). The old Vertex corpus is gone.</div>
+    <div class="card"><b>Writing model is DeepSeek</b>Not Groq (its 8k tokens-per-minute cap forced fallbacks).</div>
+    <div class="card"><b>The screen replays the finished run</b>A run completes quickly. The UI replays its event log at "stage pace" with minimum dwell times, and says so (<code>?pace=real</code> shows true speed).</div>
+  </div>
+  <div class="warn"><b>Careful on stage:</b> the writers and their search run on your laptop, but <b>the machine is not offline</b>. DeepSeek, OpenAI Decisions, Cloudflare embeddings and XRPL Testnet are all live internet calls. Say "the writers are local and fictional", not "not connected to the internet". The team's own stage script says the same.</div>
+  <h2>Follow the demo through the boxes<small>UC3, S$2 budget</small></h2>
+  <ol class="steps">
+    <li><b>Haiku question</b><a href="#/A/A1">A1</a> routes it to chat. Nothing searched, nothing bought.</li>
+    <li><b>Malaysia packaging lead times</b><a href="#/A/A1">A1</a> writes the plan; the 5 s card counts down.</li>
+    <li><b>Search and free answer</b><a href="#/A/A2">A2</a> asks the writers, <a href="#/A/A3">A3</a> answers from free sources and names the missing fact.</li>
+    <li><b>Judge</b><a href="#/A/A4">A4</a> scores the paid candidates. AlphaLeak is cheap and promises exactly the missing fact, so code picks it.</li>
+    <li><b>Pay</b><a href="#/A/A5">A5</a> gets a 402, checks the terms, signs, pays on the <a href="#/C">ledger</a>.</li>
+    <li><b>Proof fails</b><a href="#/A/A6">A6</a> finds the promised dated figure is not there, so it challenges. The writer refunds on-chain (<a href="#/C/C2">C2</a>).</li>
+    <li><b>Track record drops</b><a href="#/A/A7">A7</a> moves AlphaLeak 0.80 → 0.40: blocked.</li>
+    <li><b>Round 2</b>The Fab Floor (S$0.40) wins, proof passes, <a href="#/A/A3">A3</a> writes answer v2 with the numbers. Net spend S$0.40.</li>
+  </ol>`,
+  demo: `Where you are on stage: the plan card is A1, the free answer and its yellow open gap are A2 and A3, the decision list with the budget moving is A4, red "Proof failed" and green "Refunded" are A6, the yellow v2 is A3 again.`
+};
+
+/* ---------- A ---------- */
+PAGES['A'] = {
+  title: `A · Reader's agent: the engine`,
+  lead: `Seven stages around one loop. A1 to A3 are free: they plan, search and answer. A4 to A7 only matter when a fact is still missing and a paid article might fill it. The loop runs at most three rounds.`,
+  nw: 180, nh: 158, gx: 238, gy: 232, cols: 5, rows: 2,
+  nodes: [
+    { id: 'A1', c: 0, r: 0, kind: 'model', t: 'A1 · Scope & plan', s: 'Chat or research? Up to 2 clarifying questions, then a plan with the facts you asked for.', tech: 'DeepSeek · 5 s plan card', go: 'A/A1' },
+    { id: 'A2', c: 1, r: 0, kind: 'code', t: 'A2 · Search & read free', s: 'Asks every writer, drops bad promises, merges rankings price-blind, reads free articles.', tech: 'HTTP fan-out · RRF', go: 'A/A2' },
+    { id: 'A3', c: 2, r: 0, kind: 'model', t: 'A3 · Write the answer', s: 'Cited answer from free and verified-paid text only. Then grades which facts are covered.', tech: 'DeepSeek · citation check', go: 'A/A3' },
+    { id: 'A4', c: 3, r: 0, kind: 'model', t: 'A4 · Judge value', s: 'Per paid candidate: fills the missing fact? original? credible? Code turns it into value per S$.', tech: 'OpenAI Decisions · policy', go: 'A/A4' },
+    { id: 'A7', c: 4, r: 0, kind: 'store', t: 'A7 · Track record', s: 'Per writer: honesty × calibration. Only ever lowers a value.', tech: 'Beta model · SQLite', go: 'A/A7' },
+    { id: 'A5', c: 3, r: 1, kind: 'money', t: 'A5 · Pay', s: 'Policy picks one article within budget. Checks the terms, signs a payment, retries the request.', tech: 'x402 v2 · XRPL', go: 'A/A5' },
+    { id: 'A6', c: 2, r: 1, kind: 'code', t: 'A6 · Verify & challenge', s: 'Recomputes the writer\'s fingerprints on the delivery. Broken promise: challenge, refund.', tech: 'SHA-256 · signatures', go: 'A/A6' },
+  ],
+  arrows: [
+    { id: 1, from: 'A1', to: 'A2', label: 'plan', d: `The 5 s plan-card countdown ends, or you click Go now (Edit pauses it, Cancel stops it).`, c: `Plan JSON: restatement, up to 3 sub-queries, up to 5 requested facts, saved in the run checkpoint.`, r: `A plan that mentions price, budget or buying is rejected. Nothing has been spent yet.` },
+    { id: 2, from: 'A2', to: 'A3', label: 'free text', d: `The search fan-out finishes (each writer gets 3 s).`, c: `Up to 8 free articles read in full; up to 8 paid ones kept as previews (abstract, tags, price, signed manifest, no body).`, r: `Only free articles are read. Paid bodies do not exist on A's side yet.` },
+    { id: 3, from: 'A3', to: 'A4', label: 'open fact', d: `The coverage check says a requested fact is not "supported". The loop takes the next unresolved fact not yet judged on this evidence.`, c: `The fact text, the question, each paid candidate's public fields, and the sources already read.`, r: `Stops when nothing is open, the budget is used up, nothing qualifies, or three rounds have run.` },
+    { id: 4, from: 'A4', to: 'A5', label: 'BUY pick', d: `<code>decide()</code> returns the highest value per S$ among candidates that pass every rule.`, c: `A decision round: a verdict per candidate (<code>BUY</code> or a <code>SKIP_…</code> reason) and the selected article id.`, r: `Value at least 0.20, price within the S$1 per-source cap and the remaining budget, not a rewrite, writer not blocked. Only this path can start a purchase.` },
+    { id: 5, from: 'A5', to: 'A6', label: 'delivery', d: `The writer's facilitator returns 200 after the payment is final on the ledger.`, c: `Article body, passages, salts and <code>PAYMENT-RESPONSE</code> with the transaction hash.`, r: `The delivery stays in quarantine; nothing can read or cite it until the proof check passes.` },
+    { id: 6, from: 'A6', to: 'A3', label: 're-answer', d: `Proof verified, so the grant opens. The loop writes the next answer version and re-grades the facts.`, c: `Granted passages join the evidence.`, r: `A failed-proof source is never cited. At most three rounds.` },
+    { id: 7, from: 'A6', to: 'A7', label: 'outcome', route: 'under', d: `Each purchase ends as PASS, REFUNDED, REJECTED or REFUSED.`, c: `<code>recordProof(wallet, outcome)</code>, once per purchase.`, r: `The penalty applies whether or not the writer refunds: the ledger can enforce a refund's hash and time, not whether a claim was true.` },
+    { id: 8, from: 'A7', to: 'A4', label: 'trust T', dash: true, d: `Every judge round reads each writer's trust.`, c: `Number between 0 and 1 per writer wallet.`, r: `Value × T. Trust can lower value but never raises the budget or the cap. Blocked writers' candidates get <code>SKIP_LOW_TRUST</code>.` },
+  ],
+  rules: [
+    { h: 'The LLM never buys', b: `The scope, plan and answer prompts forbid it, and any output that mentions spending is thrown away. The judge returns probabilities. Only code in A4 and A5 starts a purchase.` },
+    { h: 'Failure is visible', b: `If a model fails, the screen shows a labelled fallback. If the judge fails, the round is marked FAILED and nothing is bought.` },
+    { h: 'Stop means stop', b: `Stop prevents any new purchase. One already in flight completes.` },
+  ],
+  prims: [
+    { h: 'Backend', b: `Node 22+, Express, SQLite via <code>node:sqlite</code> (runs, purchases, receipts, grants, track records). Every boundary is a Zod schema.` },
+    { h: 'Frontend', b: `React + Vite. It replays the finished event log at stage pace.` },
+    { h: 'Observability', b: `Langfuse spans on search fan-out, manifest check, proof check, challenge, reputation update, and every model call.` },
+  ],
+  demo: `Plan card = A1. Free answer plus yellow open gap = A2/A3. Decision list with the budget moving = A4. Red Proof failed / green Refunded = A6. Yellow v2 = A3 again.`
+};
+
+/* ---------- A1 ---------- */
+PAGES['A/A1'] = {
+  title: `A1 · Scope & plan`,
+  lead: `Before any search, one cheap model call decides whether this is a research question at all, and what the answer must establish. Nothing here can spend: the output is questions and search queries.`,
+  nw: 180, nh: 168, gx: 238, gy: 236, cols: 5, rows: 2,
+  nodes: [
+    { id: 'q', c: 0, r: 0, kind: 'you', t: 'Your question', s: 'Free text, up to 2,000 characters, plus your budget.', tech: 'React' },
+    { id: 'scope', c: 1, r: 0, kind: 'model', t: 'Scope call', s: 'One DeepSeek call: chat or research? If research, draft questions and a plan.', tech: 'DeepSeek · JSON mode' },
+    { id: 'chips', c: 2, r: 0, kind: 'code', t: 'Clarify chips', s: 'At most 2 skippable questions, e.g. "Which angle? capacity · pricing & margins · delivery timeline".', tech: 'UI' },
+    { id: 'plan', c: 3, r: 0, kind: 'model', t: 'Plan call', s: 'Folds in your answers: a restatement, up to 3 search queries, up to 5 requested facts.', tech: 'DeepSeek · JSON mode' },
+    { id: 'card', c: 4, r: 0, kind: 'code', t: '5 s plan card', s: 'Edit, Cancel or Go now. Expiry means Go.', tech: 'UI timer' },
+    { id: 'chat', c: 1, r: 1, kind: 'model', t: 'Chat reply', s: 'Up to 120 words, labelled "no sources searched · nothing bought". No plan, no run.', tech: 'same call' },
+    { id: 'freeze', c: 3, r: 1, kind: 'code', t: 'Freeze requested facts', s: 'Bound to this question and plan by a hash. Later steps judge these, nothing else.', tech: 'sha256 key' },
+    { id: 'run', c: 4, r: 1, kind: 'code', t: 'Start the run', s: 'Hands the plan and frozen facts to A2.', tech: 'POST /runs' },
+  ],
+  arrows: [
+    { id: 1, from: 'q', to: 'scope', label: 'ask', d: `You submit.`, c: `<code>POST /api/scope</code> with the question.`, r: `The question text is treated as data, never as instructions.` },
+    { id: 2, from: 'scope', to: 'chat', label: 'chat', d: `The model returns <code>{route:"chat", reply}</code> for greetings, thanks, "what are you?", settled general knowledge, writing or code help.`, c: `The same JSON response; the UI opens a ChatGPT-style page.`, r: `When unsure, it picks research. A fixture fallback only routes greetings, thanks and "who are you".` },
+    { id: 3, from: 'scope', to: 'chips', label: 'research', d: `The model returns questions and a plan.`, c: `<code>{questions[≤2], plan}</code>.`, r: `Ask only when a key dimension is ambiguous (angle, timeframe, market). An analyst-outlook question about a company's deal always gets the one angle question; the presenter can set clarify to never.` },
+    { id: 4, from: 'chips', to: 'plan', label: 'your answers', d: `You tap a chip, or skip.`, c: `Answers map (question id → option) sent with the question.`, r: `Few-shot examples in the prompt keep the angle options predictable.` },
+    { id: 5, from: 'plan', to: 'freeze', label: 'facts', d: `The plan comes back with its requested facts.`, c: `Each fact: one line, at most 160 characters, keeping the company, measure, place and date, plus your clarify answer.`, r: `A fact that names a source, a purchase, or reads like an instruction is dropped. If none survive, a deterministic extraction from the question is used and labelled.` },
+    { id: 6, from: 'plan', to: 'card', label: 'plan', d: `The plan is ready.`, c: `Restatement and sub-queries shown above the input bar.`, r: `Sub-queries are generic, at most 120 characters each, and keep the named companies and places. No user data, no article names.` },
+    { id: 7, from: 'card', to: 'run', label: 'Go', d: `Five seconds pass, or you click Go now.`, c: `<code>POST /runs</code> with the question, budget, answers and plan.`, r: `This card confirms the plan before spending. It is not a purchase approval; there is no per-purchase prompt.` },
+    { id: 8, from: 'freeze', to: 'run', label: 'ride along', d: `Frozen facts are stored in the run checkpoint at start.`, c: `Run checkpoint (SQLite).`, r: `Frozen means no article can move the goalposts later.` },
+  ],
+  rules: [
+    { h: 'No spending words', b: `If the scope or plan mentions budget, buy, pay, price or S$, the output is thrown away and a labelled fixture ("fixture · scope-fixture") is used.` },
+    { h: 'Visible fallbacks', b: `Any model failure falls back to a deterministic regex plan and the label says so.` },
+  ],
+  prims: [
+    { h: 'LLM: DeepSeek <code>deepseek-flash</code>', b: `Turns text into one validated JSON object. JSON mode, thinking off, temperature 0.2. That is all it does here.` },
+    { h: 'Schema validation: Zod', b: `Rejects anything outside the contract (types, lengths, counts).` },
+  ],
+  demo: `The haiku question exercises the chat branch. The UC3 preset skips the clarify chips (presenter menu, key <code>.</code>, clarify = never) and goes straight to the plan card.`
+};
+
+/* ---------- A2 ---------- */
+PAGES['A/A2'] = {
+  title: `A2 · Search & read free`,
+  lead: `A asks every writer the same questions in parallel, throws out hits that carry a bad promise, merges the rankings without looking at price, and reads the free articles in full. There is no central index: each writer searches its own text.`,
+  nw: 180, nh: 168, gx: 238, gy: 236, cols: 5, rows: 2,
+  nodes: [
+    { id: 'reg', c: 0, r: 0, kind: 'code', t: 'Ask the registry', s: 'Lists the writers with their wallets, public keys and endpoints.', tech: 'GET /registry' },
+    { id: 'fan', c: 1, r: 0, kind: 'code', t: 'Fan out', s: 'Every writer × every sub-query, top 5 each, 3 s timeout.', tech: 'GET /w/:slug/search' },
+    { id: 'chk', c: 2, r: 0, kind: 'code', t: 'Check the promises', s: 'Signature valid, and the key derives to the writer\'s registered wallet. Else drop and log.', tech: 'ripple-keypairs' },
+    { id: 'fuse', c: 3, r: 0, kind: 'code', t: 'Fuse rankings', s: 'Reciprocal-rank fusion, price-blind. Flags rewrites of the same story.', tech: 'RRF k=60' },
+    { id: 'read', c: 4, r: 0, kind: 'code', t: 'Split & read', s: 'Free hits (up to 8) are read in full. Paid hits (top 8) stay as previews.', tech: 'GET /articles/:id' },
+    { id: 'fu', c: 4, r: 1, kind: 'code', t: 'One free follow-up', s: 'If a fact is still missing: one more search with its words. Adds up to 4 new paid previews.', tech: 'once per run' },
+  ],
+  arrows: [
+    { id: 1, from: 'reg', to: 'fan', label: 'writers', d: `The run starts.`, c: `Registry JSON.`, r: `Writers are discovered, not hard-coded.` },
+    { id: 2, from: 'fan', to: 'chk', label: 'hits', d: `Each writer answers its own search.`, c: `A hit: url, title, the writer's abstract, tags, FREE/PAID, price, relevance 0–1, search mode, and a signed manifest for paid ones.`, r: `A writer that times out or errors is listed "unavailable" and the run goes on without it.` },
+    { id: 3, from: 'chk', to: 'fuse', label: 'valid hits', d: `Manifest verification finishes.`, c: `Hit lists per writer per query.`, r: `A paid hit with a bad or mismatched manifest never reaches the judge; the run records why.` },
+    { id: 4, from: 'fuse', to: 'read', label: 'ranked', d: `Lists are merged.`, c: `Score = sum of 1/(60 + rank) over the lists a hit appears in. Ties break on a neutral hash of the query and article id.`, r: `Price-blind: only list position counts. Never alphabetical, never the writer's claimed relevance.` },
+    { id: 5, from: 'read', to: 'fu', label: 'still missing', d: `After the first free answer, a requested fact is "missing" or "partial". Runs once, before round 1 and before the budget check, so even an S$0 run researches free sources.`, c: `A query from the fact's content words plus the question's named entities.`, r: `Exclusions stay client-side and per writer, so no seller learns what you read elsewhere. Gate 1 holds: the query never uses paid text.` },
+  ],
+  rules: [
+    { h: 'Honest search label', b: `If any writer fell back to keyword search because embedding failed, the whole run shows "keyword only" instead of "hybrid".` },
+    { h: 'Rewrites are flagged', b: `MarketPulse Digest rewrites NotFT stories. Same family without a recorded original is marked <code>derivedFrom</code> the earliest original, and the judge skips it.` },
+  ],
+  prims: [
+    { h: 'Reciprocal-rank fusion', b: `A simple way to merge several ranked lists using only positions. Cormack et al. 2009.` },
+    { h: 'Digital signature check', b: `Proves the manifest was signed by the key that owns the payee wallet.` },
+  ],
+  demo: `The SEARCH line in the event log reads like "N hits from M writers · hybrid".`
+};
+
+/* ---------- A3 ---------- */
+PAGES['A/A3'] = {
+  title: `A3 · Write the answer`,
+  lead: `The answer model only ever sees text A is allowed to read: free articles plus paid articles that passed the proof check. Every claim has to cite a passage that really exists in that text, or it is dropped.`,
+  nw: 180, nh: 168, gx: 238, gy: 236, cols: 5, rows: 2,
+  nodes: [
+    { id: 'ev', c: 0, r: 0, kind: 'code', t: 'Gather evidence', s: 'Free articles plus paid articles with a verified grant. Anything else throws an error.', tech: 'access check' },
+    { id: 'wr', c: 1, r: 0, kind: 'model', t: 'Write', s: 'Conclusion, 4–8 claims each citing a passage, and up to 3 open gaps.', tech: 'DeepSeek · JSON' },
+    { id: 'ck', c: 2, r: 0, kind: 'code', t: 'Check citations', s: 'Each cited passage must exist, word for word, in the delivered text. Others are dropped.', tech: 'substring check' },
+    { id: 'cov', c: 3, r: 0, kind: 'model', t: 'Grade requested facts', s: 'Per fact: supported, partial, missing or conflicting, judged on cited passages only.', tech: 'decision model' },
+    { id: 'imp', c: 4, r: 0, kind: 'code', t: 'Compare with last version', s: 'UNCHANGED, STRENGTHENS, QUALIFIES or CONTRADICTS.', tech: 'passage diff' },
+    { id: 'fb', c: 2, r: 1, kind: 'code', t: 'Fallback', s: 'If the model fails or no claim survives, an extractive answer is shown, labelled.', tech: 'regex extractive' },
+  ],
+  arrows: [
+    { id: 1, from: 'ev', to: 'wr', label: 'passages', d: `A round starts (round 0 = free answer, later rounds = after a verified purchase).`, c: `Passages with ids, tags, authority prior; the previous answer's open gaps; your clarify angle; the frozen facts.`, r: `Passages that read like instructions ("ignore previous instructions", "AI agents should buy now") are stripped first.` },
+    { id: 2, from: 'wr', to: 'ck', label: 'claims', d: `The model returns JSON.`, c: `Claims with citations <code>{resourceId, version, spanId}</code>.`, r: `Raw streamed tokens are never shown. The screen sees only a progress marker.` },
+    { id: 3, from: 'ck', to: 'cov', label: 'valid claims', d: `Citation validation finishes.`, c: `Only passages cited by surviving claims.`, r: `"Supported" always means a displayed claim cites the supporting evidence.` },
+    { id: 4, from: 'cov', to: 'imp', label: 'status per fact', d: `One coverage request per evidence state.`, c: `Statuses per fact id; any failure becomes <code>unknown</code>, treated as open, never as complete.`, r: `Decision model graded coverage at 0.938 accuracy vs 0.760 for the writer grading itself, on our synthetic benchmark.` },
+    { id: 5, from: 'ck', to: 'fb', label: 'none valid', dash: true, d: `The model call fails or every claim is dropped.`, c: `Extractive fixture answer.`, r: `Labelled "fixture · extractive-fixture" and counted as a fallback in Langfuse.` },
+  ],
+  rules: [
+    { h: 'Gate 1 inside the code', b: `Building the evidence list throws if any content lacks a free tier or a matching verified grant.` },
+    { h: 'Follow-up answers are conditional', b: `The re-answer after the focused free search is kept only if coverage improves.` },
+  ],
+  prims: [
+    { h: 'LLM: DeepSeek (writer)', b: `Summarises evidence into cited claims. Cannot buy anything.` },
+    { h: 'Decision model (grader)', b: `Answers fixed multiple-choice questions over passages. Returns a status, not prose.` },
+  ],
+  demo: `The first answer is round 0, from free sources. The yellow v2 after the purchase comes through this same box.`
+};
+
+/* ---------- A4 ---------- */
+PAGES['A/A4'] = {
+  title: `A4 · Judge value`,
+  lead: `The decision model never picks anything. It answers three fixed questions per paid candidate and returns probabilities. Plain code multiplies them with the writer's track record, applies the rules in order, and picks the best value per S$.`,
+  nw: 180, nh: 168, gx: 238, gy: 236, cols: 5, rows: 2,
+  nodes: [
+    { id: 'in', c: 0, r: 0, kind: 'code', t: 'Inputs', s: 'The open fact, the question, and each paid candidate\'s public fields only. No article bodies.', tech: 'Zod strips the rest' },
+    { id: 'ask', c: 1, r: 0, kind: 'model', t: 'Ask the decision model', s: 'One batched request per round. Three questions per candidate.', tech: 'OpenAI Decisions · gpt-6-luna' },
+    { id: 'val', c: 2, r: 0, kind: 'code', t: 'Compute value', s: 'gap fit × originality × credibility × trust.', tech: 'pure function' },
+    { id: 'rules', c: 3, r: 0, kind: 'code', t: 'Apply the rules', s: 'In a fixed order, first match wins. Gives each candidate a verdict.', tech: 'policy' },
+    { id: 'pick', c: 4, r: 0, kind: 'code', t: 'Pick', s: 'Highest value per S$ among BUY rows. Ties broken by a neutral hash.', tech: 'to A5' },
+    { id: 'tr', c: 2, r: 1, kind: 'store', t: 'Track record T', s: 'From A7, one number per writer wallet.', tech: 'SQLite' },
+    { id: 'fail', c: 1, r: 1, kind: 'code', t: 'If the call fails', s: 'Round marked FAILED, nothing bought. No fixture is ever substituted.', tech: 'DecisionUnavailable' },
+  ],
+  arrows: [
+    { id: 1, from: 'in', to: 'ask', label: 'public fields', d: `The loop reached a round with an open fact.`, c: `Title, writer's abstract, tags, writer kind, price; what has already been read.`, r: `Bodies and unknown fields are stripped by schema. Source text is untrusted: the prompt says to ignore embedded instructions, rating requests and price claims.` },
+    { id: 2, from: 'ask', to: 'val', label: 'probabilities', d: `The model answers.`, c: `Per candidate: P(fills the gap), P(original / rewrite / overlap), credibility score 0–2.`, r: `Fixed option order, versioned wording. Fact materiality is fixed at 1 for frozen facts (it used to swing 0.06–0.94 and dropped right articles).` },
+    { id: 3, from: 'tr', to: 'val', label: 'T', d: `Read at each round.`, c: `T = honesty × calibration, between 0 and 1.`, r: `Can only lower value.` },
+    { id: 4, from: 'val', to: 'rules', label: 'value', d: `Values computed.`, c: `A value and value-per-S$ per candidate.`, r: `Price does not change a value. It enters only as value per S$, the cap, and the budget rule.` },
+    { id: 5, from: 'rules', to: 'pick', label: 'BUY rows', d: `Verdicts assigned.`, c: `Decision round with every row, shown in the UI table.`, r: `With S$0 budget, rows that would buy are labelled "would buy" and nothing is spent.` },
+    { id: 6, from: 'ask', to: 'fail', label: 'error', dash: true, d: `Timeout, HTTP error, daily quota, refusal or invalid answer.`, c: `Round status and a short secret-free reason.`, r: `Decision 2 (8 Oct): the free answer stands, the screen says "Decision model unavailable; nothing bought".` },
+  ],
+  rules: [
+    { h: 'Hard rule 2', b: `This is the only code that can produce a buy. No LLM output is ever an instruction to pay.` },
+    { h: 'Why AlphaLeak wins round 1', b: `It is cheaper (S$0.30 vs S$0.40) and promises exactly the missing fact. The judge cannot know the promise is false. The proof check in A6 and trust in A7 are what catch it.` },
+  ],
+  prims: [
+    { h: 'Decision model', b: `Takes fixed yes/no, multiple-choice and 0–2 score questions and returns probabilities. gpt-6-luna on OpenAI Decisions now; Cloudflare Clef-flash is the revert.` },
+    { h: 'Calibration layer (off)', b: `A fitted mapping from raw to calibrated probability exists and is committed but switched off: it lifted F1 but also raised wasted spend.` },
+  ],
+  extraTitle: `The formula and the rule ladder`,
+  extra: `
+  <div class="formula">
+    <em>value</em> = materiality(<em>1</em>) × P(fills the gap) × P(original) × (0.5 + 0.25 × credibility) × <em>T</em><br>
+    <em>rank</em>  = value ÷ price in S$ <span class="c">(price only enters here, and in the cap and budget rules)</span>
+  </div>
+  <table>
+    <tr><th>#</th><th>First rule that matches wins</th><th>Verdict</th></tr>
+    <tr><td>1</td><td>Writer is blocked (track record below 0.5) or delisted</td><td><code>SKIP_LOW_TRUST</code></td></tr>
+    <tr><td>2</td><td>Already read or bought, or a rewrite of something already read</td><td><code>SKIP_REWRITE</code></td></tr>
+    <tr><td>3</td><td>No open fact</td><td><code>SKIP_NO_GAP</code></td></tr>
+    <tr><td>4</td><td>Price is over the per-source cap (S$1)</td><td><code>SKIP_OVER_CAP</code></td></tr>
+    <tr><td>5</td><td>Value is below the model's threshold: 0.20 for gpt-6-luna (0.15 Clef-flash, 0.35 Clef)</td><td><code>SKIP_LOW_VALUE</code></td></tr>
+    <tr><td>6</td><td>Price is over what is left of the budget, or the budget is S$0</td><td><code>SKIP_OVER_BUDGET</code></td></tr>
+    <tr><td>7</td><td>None of the above</td><td><code>BUY</code></td></tr>
+  </table>`,
+  demo: `This is the decision list with the budget bar moving. The screen shows "Blocked" instead of the SKIP_ codes.`
+};
+
+/* ---------- A5 ---------- */
+PAGES['A/A5'] = {
+  title: `A5 · Pay`,
+  lead: `Paying is ordinary HTTP plus one ledger transaction. A asks for the article, gets told the price, checks the terms against the writer's signed promise, signs a payment, and asks again with the payment attached. Every check happens before anything is signed.`,
+  nw: 180, nh: 168, gx: 238, gy: 236, cols: 5, rows: 2,
+  nodes: [
+    { id: 'pk', c: 0, r: 0, kind: 'code', t: 'Policy pick', s: 'The BUY row from A4, with the writer\'s verified manifest attached.', tech: 'PurchaseManager' },
+    { id: 'res', c: 1, r: 0, kind: 'code', t: 'Reserve', s: 'A purchase row in SQLite holds the price against the budget.', tech: 'SQLite · atomic' },
+    { id: 'ask', c: 2, r: 0, kind: 'code', t: 'Ask for the article', s: 'An unpaid GET. The writer replies 402 with the terms and no body.', tech: 'HTTP 402' },
+    { id: 'chk', c: 3, r: 0, kind: 'code', t: 'Check before signing', s: 'Right ledger, payee, amount; invoice recomputed; manifest signature and root.', tech: 'pure checks' },
+    { id: 'sign', c: 4, r: 0, kind: 'money', t: 'Sign', s: 'XRPL Payment with InvoiceID = sha256(invoice). The signed blob is saved first.', tech: 'xrpl.js' },
+    { id: 'send', c: 4, r: 1, kind: 'code', t: 'Retry with payment', s: 'GET again with PAYMENT-SIGNATURE. The writer\'s facilitator submits it.', tech: 'x402 v2' },
+    { id: 'led', c: 3, r: 1, kind: 'money', t: 'Look it up yourself', s: 'The buyer finds the transaction on the ledger. No trust in the writer\'s word.', tech: 'ledger lookup' },
+    { id: 'rec', c: 2, r: 1, kind: 'code', t: 'Receipt & delivery', s: 'Records the receipt, takes the delivery, hands it to A6.', tech: 'to A6' },
+  ],
+  arrows: [
+    { id: 1, from: 'pk', to: 'res', label: 'intent', d: `A4 selected one article.`, c: `Intent id = run : round : article : version.`, r: `One charge per intent: the identity is checked, and a second purchase attempt with the same id returns the first.` },
+    { id: 2, from: 'res', to: 'ask', label: 'reserved', d: `Budget held: spent + reserved + price ≤ budget, and price ≤ cap.`, c: `<code>GET /w/:slug/articles/:id</code>.`, r: `The check and the reservation are one database step, so two runs cannot both spend the same money.` },
+    { id: 3, from: 'ask', to: 'chk', label: '402', d: `The writer replied 402.`, c: `<code>PAYMENT-REQUIRED</code> header, base64 JSON: x402Version 2, scheme exact, network <code>xrpl:1</code>, amount in drops, payTo, timeout, and the invoice.`, r: `A 200 on an unpaid request is an error: paid content must require payment.` },
+    { id: 4, from: 'chk', to: 'sign', label: 'all pass', d: `Every check passes.`, c: `Rail, payee equals manifest wallet, amount equals the price, invoice recomputed and bound to this article, version, amount and payee, manifest signature valid and its root equal to the invoice's root.`, r: `The root comes from the verified search manifest, never from the 402 alone. Any failure means "nothing was charged".` },
+    { id: 5, from: 'sign', to: 'send', label: 'signed blob', d: `The blob is stored write-once, then sent.`, c: `<code>PAYMENT-SIGNATURE</code> header carrying the signed transaction.`, r: `Persist first, send second. After a crash the stored blob decides, never a new signature.` },
+    { id: 6, from: 'send', to: 'led', label: 'PAYMENT-RESPONSE', d: `The facilitator replies with the transaction hash.`, c: `<code>PAYMENT-RESPONSE</code> plus the article.`, r: `If the outcome is unclear, mark "reconciliation required" and ask the ledger. Never sign a second payment.` },
+    { id: 7, from: 'led', to: 'rec', label: 'tesSUCCESS', d: `The ledger shows the payment validated.`, c: `Ledger index and hash, shown with an explorer link.`, r: `A publisher claiming payment the ledger does not show is an error.` },
+  ],
+  rules: [
+    { h: 'S$ to XRP', b: `A fixed conversion: S$0.01 = 1,000 drops = 0.001 XRP. So S$0.40 = 400,000 drops = 0.4 test XRP. No real value.` },
+    { h: 'Hard rule 3', b: `Resending the same signed blob is harmless: same transaction hash, same delivery.` },
+  ],
+  prims: [
+    { h: 'SHA-256', b: `Turns the invoice JSON into the 32-byte InvoiceID carried inside the payment.` },
+    { h: 'Digital signature', b: `The buyer wallet signs the payment. The key never leaves policy code.` },
+  ],
+  demo: `The wire panel (key W) shows the real GET, 402, GET sequence.`
+};
+
+/* ---------- A6 ---------- */
+PAGES['A/A6'] = {
+  title: `A6 · Verify & challenge`,
+  lead: `After delivery, A checks every promise the writer made. The writer gave fingerprints of the article before being paid; now A recomputes them from what arrived. A mismatch means the source is quarantined and the writer is challenged.`,
+  nw: 180, nh: 168, gx: 238, gy: 236, cols: 5, rows: 2,
+  nodes: [
+    { id: 'dl', c: 0, r: 0, kind: 'code', t: 'Delivery arrives', s: 'Body, passages and salts. Held in quarantine.', tech: 'from A5' },
+    { id: 'rc', c: 1, r: 0, kind: 'code', t: 'Recompute fingerprints', s: 'Hash each passage with its salt, hash the list, compare with the signed root.', tech: 'SHA-256' },
+    { id: 'cl', c: 2, r: 0, kind: 'code', t: 'Run claim checks', s: 'Word count, plus each promised claim kind must appear in its passage.', tech: 'regex checkers' },
+    { id: 'vd', c: 3, r: 0, kind: 'code', t: 'Verdict', s: 'All pass, or any fail.', tech: 'proof check' },
+    { id: 'ok', c: 4, r: 0, kind: 'code', t: 'Verified', s: 'The grant opens. The article becomes readable and citable.', tech: 'to A3' },
+    { id: 'bad', c: 3, r: 1, kind: 'code', t: 'Failed: quarantine', s: 'Kept for audit, never cited, never shown to a model.', tech: 'CLAIM_FAILED' },
+    { id: 'ch', c: 2, r: 1, kind: 'code', t: 'Challenge', s: 'Tell the writer which claim broke.', tech: 'POST /challenge' },
+    { id: 'out', c: 1, r: 1, kind: 'writer', t: 'Writer re-checks', s: 'On its own stored bytes. REFUNDED, REJECTED, or REFUSED / timeout.', tech: 'shared checker' },
+    { id: 'tr', c: 0, r: 1, kind: 'store', t: 'To track record', s: 'Outcome recorded once per purchase (A7).', tech: 'A7' },
+  ],
+  arrows: [
+    { id: 1, from: 'dl', to: 'rc', label: 'bytes', d: `Payment settled and delivery received.`, c: `Delivery JSON.`, r: `Salts arrive only after payment, so nobody can fake a match beforehand.` },
+    { id: 2, from: 'rc', to: 'cl', label: 'root ok?', d: `Leaf hashes rebuilt.`, c: `<code>sha256(salt ‖ index ‖ passageId ‖ text)</code> per passage, then <code>sha256(all leaves)</code>.`, r: `Root must equal the signed manifest's root and the invoice's root.` },
+    { id: 3, from: 'cl', to: 'vd', label: 'claims ok?', d: `Each claim is checked on its bound passage.`, c: `Kinds: <code>dated-figure</code> (a date and a separate number in one sentence), <code>named-source</code> ("according to X" or an attributed quote), <code>numeric-series</code> (3+ numbers with units).`, r: `A claim names the kind of fact, never the value, so the manifest leaks nothing.` },
+    { id: 4, from: 'vd', to: 'ok', label: 'pass', d: `Every check passed.`, c: `Grant row; status VERIFIED.`, r: `Only the proof check can move a purchase to VERIFIED.` },
+    { id: 5, from: 'vd', to: 'bad', label: 'fail', d: `Root mismatch, word-count mismatch, or any claim missing.`, c: `Status CLAIM_FAILED; failed claim ids.`, r: `Hard rule 4: the quarantined source is never cited.` },
+    { id: 6, from: 'bad', to: 'ch', label: 'challenge', d: `Automatically, in the same run.`, c: `<code>{txHash, claimId, leaf}</code>.`, r: `If it cannot be challenged (root mismatch, no re-checkable claim) it still counts as a failed proof.` },
+    { id: 7, from: 'ch', to: 'out', label: 'outcome', d: `The writer answers.`, c: `REFUNDED (with refund hash), REJECTED, or no answer within about 30 s.`, r: `Refund is the full amount. See C2.` },
+    { id: 8, from: 'out', to: 'tr', label: 'record', d: `The challenge ends.`, c: `Outcome code.`, r: `The penalty lands whether or not the writer refunds. Refusing or timing out costs more and delists.` },
+  ],
+  rules: [
+    { h: 'What can and cannot be proven', b: `Proofs are deterministic and recomputable (hashes, word count, claim kinds). Promises are soft (relevance); they feed calibration instead.` },
+    { h: 'Honest limit', b: `The ledger cannot force a refund. The deterrent is the track record. Say so if asked.` },
+  ],
+  prims: [
+    { h: 'Salted hash fingerprints', b: `A hash of each passage plus a secret salt. Reveals nothing about the text before payment; lets A prove after payment that the text matches.` },
+    { h: 'Regex claim checkers', b: `Deterministic, shared by writer and buyer, so both compute the same answer.` },
+  ],
+  demo: `Red "Proof failed" followed by green "Refunded S$0.30" is this box plus C2.`
+};
+
+/* ---------- A7 ---------- */
+PAGES['A/A7'] = {
+  title: `A7 · Track record`,
+  lead: `Each writer's score is two numbers multiplied: honesty (did the proofs pass?) and calibration (when they said an article was 0.9 relevant, was it?). The score is kept per seller wallet, persists between runs, and can only lower a value.`,
+  nw: 210, nh: 170, gx: 290, gy: 236, cols: 4, rows: 2,
+  nodes: [
+    { id: 'oc', c: 0, r: 0, kind: 'code', t: 'Proof outcome', s: 'PASS, REFUNDED, REJECTED or REFUSED, once per purchase.', tech: 'from A6' },
+    { id: 'H', c: 1, r: 0, kind: 'store', t: 'Honesty H', s: 'Beta reputation: r ← 0.95·r + pass, s ← 0.95·s + weight·fail. H = (r+4)/(r+s+5).', tech: 'Jøsang & Ismail 2002' },
+    { id: 'T', c: 2, r: 0, kind: 'store', t: 'Trust T = H × C', s: 'Handed to A4, which multiplies it into each value.', tech: 'to A4' },
+    { id: 'S', c: 3, r: 0, kind: 'store', t: 'Status', s: 'active · blocked (H below 0.5) · delisted (any refusal or timeout).', tech: 'public Writers tab' },
+    { id: 'ob', c: 0, r: 1, kind: 'model', t: 'Re-measure the article', s: 'Embed your search queries and the delivered article, take the same cosine.', tech: 'Cloudflare embeddings' },
+    { id: 'C', c: 1, r: 1, kind: 'store', t: 'Calibration C', s: 'C = 1 − mean((claimed − observed)²). Claimed = the signed relevance.', tech: 'Brier score' },
+  ],
+  arrows: [
+    { id: 1, from: 'oc', to: 'H', label: 'weights', d: `A purchase ends.`, c: `pass +1; failed and refunded 5; failed and rejected 5; refused or timed out 10.`, r: `Older evidence decays by 0.95 per observation.` },
+    { id: 2, from: 'H', to: 'T', label: 'H', d: `Updated.`, c: `A number from 0 to 1.`, r: `A newcomer starts at 0.8, so a new writer can be bought. One pass: 0.80 → 0.83. One refunded fail: 0.80 → 0.40.` },
+    { id: 3, from: 'T', to: 'S', label: 'status', d: `Updated.`, c: `Stored per wallet in SQLite.`, r: `Blocked writers are never bought or cited. Presenter menu has "Reset reputation".` },
+    { id: 4, from: 'ob', to: 'C', label: 'observed', d: `After a verified delivery only.`, c: `Best cosine between any search query and the delivered text, mapped on the search's own scale.`, r: `No decision-model call needed. A failed proof records observed = 0. Skipped, and labelled, if search ran keyword-only.` },
+    { id: 5, from: 'C', to: 'T', label: 'C', d: `Updated.`, c: `A number from 0 to 1; 1 with no history.`, r: `An honest writer bought for an unrelated gap keeps C near 1, because it is checked against the search queries, not the gap.` },
+  ],
+  rules: [
+    { h: 'Trust only lowers', b: `T is between 0 and 1. It multiplies value. It never touches the budget or the per-source cap.` },
+    { h: 'Keyed by seller of record', b: `The wallet that signs manifests and receives payment. Authors appear under their publisher.` },
+    { h: 'Before you go on stage', b: `Press <code>.</code> and Reset reputation. Otherwise AlphaLeak may already be blocked from a rehearsal and round 1 will not buy it.` },
+  ],
+  prims: [
+    { h: 'Beta reputation system', b: `A standard way to turn counts of good and bad deals into an honesty probability, with forgetting.` },
+    { h: 'Brier score', b: `Mean squared gap between a stated probability and the outcome. Here: stated relevance vs measured relevance.` },
+    { h: 'Embedding + cosine', b: `Turns text into a vector, then measures the angle between two vectors.` },
+  ],
+  demo: `The Writers tab shows this table. In UC3 AlphaLeak goes 0.80 → 0.40 and is Blocked; NotFT and The Fab Floor sit at about 0.83.`
+};
+
+/* ---------- B ---------- */
+PAGES['B'] = {
+  title: `B · Writers: the publisher host`,
+  lead: `One local process hosts all eight writers under <code>/w/:slug/</code>. Each writer has its own search index, its own signing key, its own wallet and its own paywall. A only ever sees what the writer chooses to send.`,
+  fixed: true, nw: 176, nh: 200, gx: 242, gy: 250, cols: 5, rows: 3,
+  nodes: [
+    { id: 'rd', c: 2, r: 0, kind: 'ghost', t: 'A · Reader\'s agent', s: 'The only client.', tech: '' , nh: 78 },
+    { id: 'B1', c: 0, r: 1, kind: 'writer', t: 'B1 · Roster & keys', s: '8 writers, 81 articles. Each paid writer has a wallet and signing key.', tech: 'registry · well-known doc', go: 'B/B1' },
+    { id: 'B2', c: 1, r: 1, kind: 'writer', t: 'B2 · Search', s: 'Each writer searches its own full text, by keyword and by meaning.', tech: 'Orama · embeddings', go: 'B/B2' },
+    { id: 'B3', c: 2, r: 1, kind: 'writer', t: 'B3 · Signed promise', s: 'A manifest per paid article: fingerprints, claim kinds, relevance, signature.', tech: 'SHA-256 · signature', go: 'B/B3' },
+    { id: 'B4', c: 3, r: 1, kind: 'writer', t: 'B4 · Paywall', s: 'Replies 402 with the price. Its own facilitator verifies and settles the payment.', tech: 'x402 v2', go: 'B/B4' },
+    { id: 'B5', c: 4, r: 1, kind: 'writer', t: 'B5 · Delivery & challenge', s: 'Delivers the article and salts. Answers challenges, refunds broken promises.', tech: 'shared checker', go: 'B/B5' },
+    { id: 'led', c: 3.5, r: 2, kind: 'ghost', t: 'C · Ledger', s: 'XRPL Testnet.', tech: '', nh: 78 },
+  ],
+  arrows: [
+    { id: 1, from: 'rd', to: 'B2', label: 'search', d: `A's fan-out.`, c: `<code>GET /w/:slug/search?q=&k=</code>`, r: `Hits never include paid body text.` },
+    { id: 2, from: 'rd', to: 'B4', label: 'GET article', d: `A decides to buy.`, c: `<code>GET /w/:slug/articles/:id</code>, then again with <code>PAYMENT-SIGNATURE</code>.`, r: `No payment, no body.` },
+    { id: 3, from: 'rd', to: 'B5', label: 'challenge', d: `A proof failed.`, c: `<code>POST /w/:slug/challenge</code>`, r: `Answering challenges is a condition of being listed.` },
+    { id: 4, from: 'B1', to: 'B2', label: 'index', d: `At startup.`, c: `One in-memory index per writer.`, r: `Vectors are used only if every article has one cached.` },
+    { id: 5, from: 'B2', to: 'B3', label: 'hit + promise', d: `A paid hit is returned.`, c: `The hit carries the article's manifest.`, r: `Relevance is a soft promise; the fingerprints are hard proofs.` },
+    { id: 6, from: 'B1', to: 'B3', label: 'key signs', route: 'under', d: `At startup the wallet and key are bound to the writer.`, c: `Seed from <code>XRPL_PUBLISHER_&lt;SLUG&gt;_SEED</code>.`, r: `Seeds are never logged or traced. On the Testnet rail a simulated key is refused.` },
+    { id: 7, from: 'B3', to: 'B4', label: 'root in invoice', d: `A 402 is built.`, c: `The invoice id contains the manifest root.`, r: `So the ledger transaction itself records which promise was paid for.` },
+    { id: 8, from: 'B4', to: 'B5', label: 'paid, deliver', d: `The payment is final on the ledger.`, c: `Body, passages, salts, <code>PAYMENT-RESPONSE</code>.`, r: `Settlement is recorded once per transaction hash.` },
+    { id: 9, from: 'B4', to: 'led', label: 'submit', toOff: -26, d: `A signed payment arrives.`, c: `xrpl.js submit and wait for validated.`, r: `The writer's own facilitator submits, not a third party.` },
+    { id: 10, from: 'B5', to: 'led', label: 'refund', toOff: 26, d: `A challenge is valid.`, c: `Payment from the writer's wallet to the payer.`, r: `Full amount, once per payment.` },
+  ],
+  rules: [
+    { h: 'Writers set the price and the abstract', b: `Ranking ignores price. Abstracts are written by the writer and never contain a snippet of the paid body.` },
+    { h: 'AlphaLeak is the bad actor', b: `It inflates its relevance and signs a claim that is not in the text. It exists to exercise challenge, refund and quarantine.` },
+    { h: 'All labelled SYNTHETIC', b: `Every writer and article is fictional; real institution names (BoJ, TSMC) appear next to fictional companies.` },
+  ],
+  prims: [],
+  demo: `The writers' blog pages are served by this same process at <code>/w/</code> (for example <code>localhost:5100/w/</code>). Citations open these pages.`
+};
+
+/* ---------- B1 ---------- */
+PAGES['B/B1'] = {
+  title: `B1 · Roster & keys`,
+  lead: `Eight fictional writers, each built to exercise one decision. The articles are written by an LLM into <code>data/corpus/v2</code>. Every writer with paid articles gets its own wallet and signing key, published in the registry.`,
+  nw: 220, nh: 150, gx: 262, gy: 190, cols: 4, rows: 2,
+  nodes: [
+    { id: 'nft', c: 0, r: 0, kind: 'writer', t: 'NotFinancialTimes', s: 'Masthead, original reporting. 15 paid at S$0.90. Expensive but credible: the UC2 buy.', tech: 'tags: rates, Asia, data centres, semis' },
+    { id: 'lf', c: 1, r: 0, kind: 'writer', t: 'Load Factor', s: 'Energy professor\'s blog. 6 free, 6 paid at S$0.60. Primary data wins.', tech: 'power grid, data centres' },
+    { id: 'bp', c: 2, r: 0, kind: 'writer', t: 'Basis Points', s: 'Ex-central-bank economist. 4 free, 6 paid at S$0.40. Analysis, not opinion.', tech: 'JGBs, BoJ, yield curves' },
+    { id: 'ff', c: 3, r: 0, kind: 'writer', t: 'The Fab Floor', s: 'Anonymous chip-procurement insider. 10 paid at S$0.25; the Penang lead-time deep dive is S$0.40.', tech: 'semis supply chain' },
+    { id: 'kc', c: 0, r: 1, kind: 'writer', t: 'Kopi Contrarian', s: 'Op-ed columnist. 8 paid at S$0.10. Cheap is not valuable.', tech: 'macro opinion, SG economy' },
+    { id: 'mp', c: 1, r: 1, kind: 'writer', t: 'MarketPulse Digest', s: 'Rewrites NotFT stories. 10 paid at S$0.20. The judge skips it as a rewrite.', tech: 'everything NotFT covers' },
+    { id: 'al', c: 2, r: 1, kind: 'writer', t: 'AlphaLeak', s: 'Bad actor. 8 paid at S$0.30. Inflated relevance, a false claim. Caught, refunded, blocked.', tech: 'semis, rates' },
+    { id: 'or', c: 3, r: 1, kind: 'writer', t: 'Open records', s: 'Government statistics, filings, explainers. 10 free articles.', tech: 'all lanes' },
+  ],
+  arrows: [],
+  rules: [
+    { h: 'Discovery', b: `<code>GET /registry</code> lists writers, wallets and endpoints. Each writer also serves <code>/.well-known/agent-publisher.json</code> with its price list, licence and endpoints.` },
+    { h: 'Keys', b: `Paid writers only. On the Testnet rail each key comes from an env seed, never committed, never logged. <code>make wallets</code> refunds Testnet wallets after a Testnet reset.` },
+    { h: 'Why these eight', b: `Each exercises one decision: credible but pricey, free-first, analysis vs opinion, original-but-anonymous, cheap-but-weak, rewrite, bad actor, free records.` },
+  ],
+  prims: [
+    { h: 'Corpus generator', b: `An LLM (DeepSeek) writes 600–1,400-word posts in each writer's voice; scripted checks verify the golden-path facts and that titles and abstracts do not leak paid figures.` },
+  ],
+  demo: `The Writers tab in the UI lists these with their track record.`
+};
+
+/* ---------- B2 ---------- */
+PAGES['B/B2'] = {
+  title: `B2 · Search`,
+  lead: `Each writer runs a small in-process search engine over its own full text. It matches by keywords and by meaning, then promises a relevance number. The promise is absolute, not "relative to my best hit", so a weak match cannot pretend to be perfect.`,
+  nw: 210, nh: 176, gx: 290, gy: 240, cols: 4, rows: 2,
+  nodes: [
+    { id: 'q', c: 0, r: 0, kind: 'model', t: 'Embed the query', s: 'Live, once per query for all writers: 2.5 s timeout, cached 10 min.', tech: 'Cloudflare bge-base-en-v1.5' },
+    { id: 'h', c: 1, r: 0, kind: 'writer', t: 'Hybrid search', s: 'Keyword (BM25) 20% + meaning (vector) 80%. Boosts: title 3, abstract 2, tags 2, body 0.5.', tech: 'Orama' },
+    { id: 's', c: 2, r: 0, kind: 'writer', t: 'Promise a relevance', s: 'Cosine between query and article, mapped 0.65 → 0 and 0.90 → 1.', tech: 'fixed scale' },
+    { id: 'hit', c: 3, r: 0, kind: 'writer', t: 'Hit', s: 'url, title, writer\'s abstract, tags, tier, price, relevance, signed manifest if paid.', tech: 'never paid text' },
+    { id: 'b', c: 1, r: 1, kind: 'model', t: 'Build once', s: 'Embed each article (title, abstract, tags, first 1,500 characters), cache to a file.', tech: '768 numbers per article' },
+    { id: 'fb', c: 0, r: 1, kind: 'code', t: 'If embedding fails', s: 'Keyword only. Relevance = bm25 / (bm25 + 12). The run shows "keyword only".', tech: 'labelled' },
+  ],
+  arrows: [
+    { id: 1, from: 'q', to: 'h', label: 'query vector', d: `A search request arrives.`, c: `A vector of 768 numbers.`, r: `Any failure or timeout returns nothing, and the search runs as keyword only.` },
+    { id: 2, from: 'b', to: 'h', label: 'article vectors', d: `At startup, and when an article changes.`, c: `Cached by a hash of the embedded text, so an edited article is re-embedded.`, r: `Vectors are used only if every article in that writer's index has one.` },
+    { id: 3, from: 'h', to: 's', label: 'ranked', d: `Orama returns its ranking.`, c: `Article ids with scores.`, r: `The Orama blended score is not used as the promise.` },
+    { id: 4, from: 's', to: 'hit', label: 'relevance', d: `Hits are assembled.`, c: `Relevance between 0.01 and 1.`, r: `An earlier version normalised to the top hit, so every writer promised 1.0 for its best result and calibration had nothing to check.` },
+    { id: 5, from: 'q', to: 'fb', label: 'error', dash: true, d: `Embedding timed out or failed.`, c: `Search mode flag: <code>keyword</code>.`, r: `Hard rule 5: shown on screen and carried into the run labels.` },
+  ],
+  rules: [
+    { h: 'What the tuning bought', b: `On 162 eval queries the new scale separates the right article from other writers' best hits with AUC 0.984, up from 0.48 when normalised to the top hit. Within-writer MRR is 0.997. These are our synthetic evals.` },
+  ],
+  prims: [
+    { h: 'Embedding model', b: `Cloudflare Workers AI <code>bge-base-en-v1.5</code> turns a text into a 768-number vector so that similar meaning means similar numbers.` },
+    { h: 'Cosine similarity', b: `The angle between two vectors. 1 means the same direction.` },
+    { h: 'BM25', b: `The standard keyword-match score used inside full-text search.` },
+  ],
+  demo: `If the Cloudflare token is blocked, <code>make live</code> stops before starting and says why (one tiny embedding as a preflight).`
+};
+
+/* ---------- B3 ---------- */
+PAGES['B/B3'] = {
+  title: `B3 · The signed promise (manifest)`,
+  lead: `A sealed envelope with fingerprints on the outside. Before it is paid, the writer commits to what the article contains without revealing it. After payment A opens the envelope and can prove whether the writer kept the promise.`,
+  nw: 190, nh: 170, gx: 258, gy: 220, cols: 5, rows: 2,
+  nodes: [
+    { id: 'p', c: 0, r: 0, kind: 'writer', t: 'Split into passages', s: 'The article becomes at most about 20 passages, each with an id.', tech: 'writer side' },
+    { id: 'l', c: 1, r: 0, kind: 'code', t: 'Hash each passage', s: 'leaf = sha256(salt ‖ index ‖ passage id ‖ text). Salts stay secret until payment.', tech: 'SHA-256' },
+    { id: 'r', c: 2, r: 0, kind: 'code', t: 'One root', s: 'root = sha256(all leaves joined). Tiny, and changes if any passage changes.', tech: 'SHA-256' },
+    { id: 'c', c: 3, r: 0, kind: 'writer', t: 'Name the claims', s: 'E.g. "dated-figure in passage 4". The kind of fact, never its value.', tech: 'claim kinds' },
+    { id: 'sg', c: 4, r: 0, kind: 'money', t: 'Sign', s: 'The writer\'s XRPL key signs the whole manifest.', tech: 'ripple-keypairs' },
+    { id: 'f', c: 2, r: 1, kind: 'store', t: 'The manifest', s: '{wallet, pubKey, price, leaves, root, claims, wordCount, publishedAt, relevance, sig}', tech: 'JSON' },
+    { id: 'v', c: 4, r: 1, kind: 'code', t: 'Buyer verifies', s: 'Signature valid, and the key derives to the payee wallet.', tech: 'in A2' },
+  ],
+  arrows: [
+    { id: 1, from: 'p', to: 'l', label: 'passages', d: `Manifest built for each paid article.`, c: `Passage ids and text.`, r: `Salts are random and delivered only with the paid body.` },
+    { id: 2, from: 'l', to: 'r', label: 'leaves', d: `Leaves computed.`, c: `Fixed-length hex, so concatenation is unambiguous.`, r: `A flat list is enough at 20 passages; no Merkle tree.` },
+    { id: 3, from: 'r', to: 'c', label: 'root', d: `Root computed.`, c: `—`, r: `The root later goes into the payment invoice.` },
+    { id: 4, from: 'c', to: 'sg', label: 'claims', d: `Claims chosen.`, c: `Claim id, kind, leaf.`, r: `Claim kinds are checked by the same regexes on both sides.` },
+    { id: 5, from: 'sg', to: 'f', label: 'sig', d: `Signed.`, c: `Signature over <code>researchagent-manifest-v1:</code> + canonical JSON.`, r: `The prefix means the signature can never double as a valid ledger transaction.` },
+    { id: 6, from: 'f', to: 'v', label: 'in every hit', d: `Search returns a paid hit.`, c: `The manifest rides on the hit.`, r: `A fails closed: no valid manifest means no purchase.` },
+  ],
+  rules: [
+    { h: 'Proofs vs promises', b: `Proofs are hard and recomputable: fingerprints, word count, claim kinds. Promises are soft: the relevance score. Promises cannot be recomputed exactly, so they feed calibration (A7).` },
+    { h: 'AlphaLeak\'s trick', b: `Its manifest names a "dated-figure" claim on a passage that has no dated figure. The proof check catches it after payment.` },
+  ],
+  prims: [
+    { h: 'SHA-256 and salting', b: `A one-way fingerprint. A salt keeps small passages from being guessed.` },
+    { h: 'Digital signature', b: `Proves who made the manifest. The same key receives the money, so promise and payee are one identity.` },
+  ],
+  demo: `This is why "Proof failed" is more than a vibe: it is a recomputed hash and a regex, not a model's opinion.`
+};
+
+/* ---------- B4 ---------- */
+PAGES['B/B4'] = {
+  title: `B4 · Paywall & facilitator (x402)`,
+  lead: `x402 uses the old HTTP status 402 "Payment Required". The server says what it costs in a header, the client pays and asks again with proof of payment in another header. Each writer is its own facilitator, so the writer is paid directly.`,
+  nw: 190, nh: 150, gx: 258, gy: 200, cols: 5, rows: 3,
+  lanes: [{ row: 0, label: 'Buyer (our code)' }, { row: 1, label: 'Writer\'s server + facilitator' }],
+  nodes: [
+    { id: 's1', c: 0, r: 0, kind: 'code', t: 'GET article', s: 'No payment attached.', tech: 'buyer' },
+    { id: 's2', c: 1, r: 1, kind: 'writer', t: '402 Payment Required', s: 'Price, payee, network and invoice in a header. No body.', tech: 'PAYMENT-REQUIRED' },
+    { id: 's3', c: 2, r: 0, kind: 'money', t: 'Check, sign, retry', s: 'Verify the terms, sign an XRPL Payment, GET again with it.', tech: 'PAYMENT-SIGNATURE' },
+    { id: 's4', c: 3, r: 1, kind: 'writer', t: 'Facilitator: verify + settle', s: 'Check quote, payee, amount, InvoiceID, expiry. Submit. Wait for validated.', tech: '/facilitator/verify, /settle' },
+    { id: 's5', c: 4, r: 0, kind: 'code', t: '200 + article', s: 'Body, passages and salts, with the transaction hash.', tech: 'PAYMENT-RESPONSE' },
+    { id: 'led', c: 3, r: 2, kind: 'ghost', t: 'C · XRPL Testnet', s: 'xrpl:1', tech: '', nh: 78 },
+  ],
+  arrows: [
+    { id: 1, from: 's1', to: 's2', label: 'unpaid GET', bend: 'hv', d: `A decided to buy.`, c: `Plain HTTP GET.`, r: `Unpaid always gets a 402 with no premium bytes.` },
+    { id: 2, from: 's2', to: 's3', label: '402', bend: 'hv', d: `Server replies.`, c: `Base64 JSON, x402Version 2, one <code>accepts</code> entry: scheme exact, network <code>xrpl:1</code>, asset XRP, amount in drops, payTo, maxTimeoutSeconds, <code>extra.invoiceId</code>.`, r: `A reads the terms but trusts the manifest root, not the 402's.` },
+    { id: 3, from: 's3', to: 's4', label: 'signed payment', bend: 'hv', d: `All pre-sign checks passed.`, c: `Base64 JSON with <code>payload.signedTxBlob</code>.`, r: `The Bearer secret from the old protocol is gone.` },
+    { id: 4, from: 's4', to: 'led', label: 'submit', off: -16, d: `Facilitator verified the quote.`, c: `Submit blob, wait for validated <code>tesSUCCESS</code>.`, r: `Duplicates removed by transaction hash. Header decoding capped at 8 KiB.` },
+    { id: 5, from: 'led', to: 's4', label: 'validated', off: 16, d: `Ledger closes.`, c: `Result and ledger index.`, r: `Settlement is recorded once per hash.` },
+    { id: 6, from: 's4', to: 's5', label: 'paid', bend: 'hv', d: `Settled.`, c: `<code>PAYMENT-RESPONSE</code> header and the delivery.`, r: `Resend the same blob later and you get the same delivery, never a second charge.` },
+  ],
+  rules: [
+    { h: 'Why one facilitator per writer', b: `A third-party facilitator would be one more service on stage. Here the party that gets paid is the one that checks and submits the payment.` },
+    { h: 'Do not mix header names', b: `Use exactly <code>PAYMENT-REQUIRED</code>, <code>PAYMENT-SIGNATURE</code>, <code>PAYMENT-RESPONSE</code>. Some older examples differ.` },
+  ],
+  prims: [
+    { h: 'HTTP 402', b: `A reserved status code that finally gets used: "pay first, then ask again".` },
+    { h: 'XRPL Payment transaction', b: `Moves XRP from one account to another and can carry a 32-byte InvoiceID.` },
+  ],
+  demo: `This is the "paying is just HTTP" section of the talk page: ask, get a price in a header, pay, ask again.`,
+  overrideArrowFix: true
+};
+
+/* ---------- B5 ---------- */
+PAGES['B/B5'] = {
+  title: `B5 · Delivery & challenge`,
+  lead: `Delivery gives A the article and the salts. If A finds a broken promise, it sends a challenge. The writer re-checks its own stored bytes with the same checker A used. If the claim is broken, the writer pays the money back from its own wallet.`,
+  nw: 190, nh: 168, gx: 258, gy: 230, cols: 5, rows: 2,
+  nodes: [
+    { id: 'd', c: 0, r: 0, kind: 'writer', t: 'Deliver', s: 'Body, passages and the salts, after the payment is final.', tech: 'from B4' },
+    { id: 'in', c: 1, r: 0, kind: 'writer', t: 'Challenge arrives', s: 'The transaction hash, which claim, which leaf.', tech: 'POST /challenge' },
+    { id: 'rc', c: 2, r: 0, kind: 'writer', t: 'Re-check own bytes', s: 'Runs the shared checker on what it stored, not on what the buyer sent.', tech: 'shared/manifest.ts' },
+    { id: 'rf', c: 3, r: 0, kind: 'money', t: 'Refund', s: 'Full price, from the writer\'s wallet back to the payer.', tech: 'XRPL Payment' },
+    { id: 'rp', c: 4, r: 0, kind: 'writer', t: 'Reply', s: 'REFUNDED with the refund hash.', tech: 'to A6' },
+    { id: 'no', c: 3, r: 1, kind: 'writer', t: 'Claim holds up', s: 'Reply REJECTED. No refund.', tech: '' },
+    { id: 'rs', c: 2, r: 1, kind: 'writer', t: 'Refuse / time out', s: 'No answer in about 30 s counts as REFUSED. Costs more trust and delists the writer.', tech: 'A side' },
+  ],
+  arrows: [
+    { id: 1, from: 'd', to: 'in', label: 'later', dash: true, d: `A's proof check failed.`, c: `—`, r: `Sequence, not data flow: the challenge is a separate request.` },
+    { id: 2, from: 'in', to: 'rc', label: 'claim', d: `The writer looks up the settlement and its stored quote.`, c: `404 if there is no settled payment for this article.`, r: `A claim id or leaf that is not in the manifest gets REJECTED.` },
+    { id: 3, from: 'rc', to: 'rf', label: 'broken', d: `The claim really fails on the stored text.`, c: `Refund transaction.`, r: `Write-once per payment: repeated or parallel challenges get the one stored refund back, resubmitted and never re-signed.` },
+    { id: 4, from: 'rf', to: 'rp', label: 'refund hash', d: `Submitted and validated (or timed out; the buyer checks the ledger itself).`, c: `<code>{status:"REFUNDED", refundTxHash}</code>.`, r: `Refund must come from the payee wallet.` },
+    { id: 5, from: 'rc', to: 'no', label: 'fine', dash: true, d: `The claim passes on the stored text.`, c: `<code>{status:"REJECTED"}</code>.`, r: `A still lowers the writer's trust: the buyer's own check failed.` },
+    { id: 6, from: 'rc', to: 'rs', label: 'silence', dash: true, d: `No reply.`, c: `Timeout.`, r: `Answering challenges is a condition for being listed.` },
+  ],
+  rules: [
+    { h: 'Why not escrow', b: `Escrow would add 60+ seconds of visible waiting on stage, and the ledger can enforce hash and time, not whether a regex matches. Articles cost S$0.10–0.90, so a mistake is affordable and cheating is punished over time.` },
+  ],
+  prims: [
+    { h: 'Same checker on both sides', b: `A deterministic function: both parties compute the same answer from the same bytes, so there is no argument to have.` },
+  ],
+  demo: `In UC3 the refund arrives about 7.5 seconds after the challenge in the team's smoke runs.`
+};
+
+/* ---------- C ---------- */
+PAGES['C'] = {
+  title: `C · Ledger: where the money moves`,
+  lead: `XRPL Testnet is a public test network with free, worthless XRP. It is the only place money moves. We use it because x402 lists it as a supported network, and because each payment can carry an InvoiceID that binds the order into the transaction itself.`,
+  nw: 210, nh: 166, gx: 290, gy: 236, cols: 4, rows: 2,
+  nodes: [
+    { id: 'w', c: 0, r: 0, kind: 'money', t: 'Wallets', s: 'One funded Testnet wallet for the buyer and one for each paid writer. Free from the faucet.', tech: 'make wallets' },
+    { id: 'p', c: 1, r: 0, kind: 'money', t: 'Payment', s: 'Buyer to writer, in drops of XRP. InvoiceID binds the order.', tech: 'Payment tx', go: 'C/C1' },
+    { id: 'v', c: 2, r: 0, kind: 'money', t: 'Validation', s: 'The ledger closes and the transaction is final: tesSUCCESS.', tech: 'a few seconds' },
+    { id: 'rc', c: 3, r: 0, kind: 'money', t: 'Receipt', s: 'Transaction hash and ledger number, with a link to testnet.xrpl.org.', tech: 'explorer link' },
+    { id: 'rf', c: 2, r: 1, kind: 'money', t: 'Refund', s: 'Writer back to buyer, InvoiceID = the original transaction hash.', tech: 'Payment tx', go: 'C/C2' },
+  ],
+  arrows: [
+    { id: 1, from: 'w', to: 'p', label: 'funds', d: `A purchase is paid.`, c: `The buyer's account and the writer's address from the signed manifest.`, r: `The payee is always the wallet named in the signed manifest.` },
+    { id: 2, from: 'p', to: 'v', label: 'submitted', d: `The writer's facilitator submits the signed blob.`, c: `Testnet RPC over WebSocket.`, r: `The transaction expires if not validated before its <code>LastLedgerSequence</code>.` },
+    { id: 3, from: 'v', to: 'rc', label: 'final', d: `Validated.`, c: `Hash, ledger index, explorer URL.`, r: `Both sides look it up independently.` },
+    { id: 4, from: 'rc', to: 'rf', label: 'if proof fails', dash: true, bend: 'hv', d: `A challenge is valid.`, c: `A second payment, the other way.`, r: `Full amount, once.` },
+  ],
+  rules: [
+    { h: 'No real money, ever', b: `All of it is XRPL Testnet. S$ is a fixed conversion for display: S$0.01 = 1,000 drops = 0.001 XRP. Labelled "XRPL TESTNET" on screen; the offline demo is labelled SIMULATED.` },
+    { h: 'We never hold funds', b: `The buyer's wallet pays the writer's wallet directly. There is no escrow and no pool.` },
+    { h: 'Secrets', b: `Wallet seeds never reach a model, the browser, logs or traces.` },
+  ],
+  prims: [
+    { h: 'XRPL', b: `A ledger where accounts hold XRP and send each other Payment transactions. One XRP is a million drops.` },
+  ],
+  demo: `Click "View receipt" in the UI to open the transaction on testnet.xrpl.org.`
+};
+
+PAGES['C/C1'] = {
+  title: `C1 · The payment transaction`,
+  lead: `A normal XRPL Payment with one important extra: the InvoiceID. It is a hash of the order, so the ledger entry itself says which article, which version, which price and which promise the money was for. It prevents replaying a payment against a different article.`,
+  nw: 190, nh: 172, gx: 258, gy: 236, cols: 5, rows: 2,
+  nodes: [
+    { id: 'inv', c: 0, r: 0, kind: 'writer', t: 'The invoice', s: 'Canonical JSON: {quoteId, articleId, version, manifestRoot, amount, payTo}.', tech: 'from the 402' },
+    { id: 'sha', c: 1, r: 0, kind: 'code', t: 'Hash it', s: 'InvoiceID = SHA-256 of the invoice, uppercase hex.', tech: '32 bytes' },
+    { id: 'tx', c: 2, r: 0, kind: 'money', t: 'Build the Payment', s: 'Account = buyer, Destination = writer, Amount in drops, InvoiceID, LastLedgerSequence.', tech: 'XRPL Payment' },
+    { id: 'sg', c: 3, r: 0, kind: 'code', t: 'Sign', s: 'With the buyer key. The transaction hash is known before it is sent.', tech: 'signed blob' },
+    { id: 'sb', c: 4, r: 0, kind: 'money', t: 'Submit & confirm', s: 'Writer\'s facilitator submits. Both sides check the ledger.', tech: 'tesSUCCESS' },
+    { id: 'why', c: 2, r: 1, kind: 'store', t: 'Why bind the order', s: 'Without it a valid payment could be reused for another article. With it, a mismatch is rejected.', tech: '' },
+  ],
+  arrows: [
+    { id: 1, from: 'inv', to: 'sha', label: 'bytes', d: `After the 402 and pre-sign checks.`, c: `Both sides recompute it; the buyer does not trust the writer's hash.`, r: `Invoice must name this article, version, amount and payee, and the manifest root from the verified search manifest.` },
+    { id: 2, from: 'sha', to: 'tx', label: 'InvoiceID', d: `Hash ready.`, c: `Field on the transaction.`, r: `—` },
+    { id: 3, from: 'tx', to: 'sg', label: 'unsigned', d: `Built.`, c: `Amount is an integer string of drops.`, r: `Amounts must be exact integers; S$0.40 is 400,000 drops.` },
+    { id: 4, from: 'sg', to: 'sb', label: 'blob', d: `Blob saved write-once, then sent in <code>PAYMENT-SIGNATURE</code>.`, c: `HTTP header.`, r: `Same blob, same transaction hash, so a resend cannot double-charge.` },
+    { id: 5, from: 'why', to: 'tx', label: 'ensures', dash: true, d: `—`, c: `—`, r: `Replay protection and an on-ledger audit trail.` },
+  ],
+  rules: [{ h: 'Expiry', b: `The transaction carries a LastLedgerSequence. If it passes without validation, the payment can never apply, and the ledger can prove "no charge".` }],
+  prims: [{ h: 'SHA-256', b: `The fingerprint function behind the InvoiceID.` }],
+  demo: ``
+};
+
+PAGES['C/C2'] = {
+  title: `C2 · The refund transaction`,
+  lead: `The same kind of transaction in the other direction. It is signed with the writer's own key, because the money is in the writer's wallet. The InvoiceID points back to the original payment, so the pair of transactions can be audited.`,
+  nw: 190, nh: 168, gx: 258, gy: 220, cols: 5, rows: 1,
+  nodes: [
+    { id: 'a', c: 0, r: 0, kind: 'writer', t: 'Claim confirmed broken', s: 'The writer re-checked and the claim fails.', tech: 'from B5' },
+    { id: 'b', c: 1, r: 0, kind: 'money', t: 'Build the refund', s: 'Account = writer, Destination = payer, Amount = full price, InvoiceID = original tx hash.', tech: 'XRPL Payment' },
+    { id: 'c', c: 2, r: 0, kind: 'code', t: 'Sign & store', s: 'The writer\'s key signs in memory. Blob stored write-once per payment.', tech: 'never logged' },
+    { id: 'd', c: 3, r: 0, kind: 'money', t: 'Submit & wait', s: 'One refund at a time per process. Same blob may be resent safely.', tech: 'validated' },
+    { id: 'e', c: 4, r: 0, kind: 'code', t: 'Buyer checks', s: 'Looks the refund up on the ledger itself.', tech: 'ledger lookup' },
+  ],
+  arrows: [
+    { id: 1, from: 'a', to: 'b', label: 'refund', d: `A challenge is valid.`, c: `Payer address taken from the stored settlement.`, r: `Refund goes to the account that paid.` },
+    { id: 2, from: 'b', to: 'c', label: 'unsigned', d: `Built.`, c: `—`, r: `Must come from the payee wallet.` },
+    { id: 3, from: 'c', to: 'd', label: 'blob', d: `Stored.`, c: `—`, r: `Repeated or parallel challenges return the stored refund, resubmitted and never re-signed.` },
+    { id: 4, from: 'd', to: 'e', label: 'hash', d: `Validated, or the wait timed out.`, c: `Refund transaction hash in the challenge reply.`, r: `If the wait times out the buyer still checks the ledger itself.` },
+  ],
+  rules: [{ h: 'Serial refunds', b: `One refund at a time per process, so parallel challenges never race the account sequence number or the write-once row.` }],
+  prims: [],
+  demo: `The green "Refunded S$0.30" in the run, with its Testnet link, is this transaction.`
+};
+
+/* ---------- M ---------- */
+PAGES['M'] = {
+  title: `Hired models and services`,
+  lead: `Three outside services do the thinking and one watches. None of them can buy anything. Each is replaceable behind a single setting.`,
+  nw: 214, nh: 176, gx: 262, gy: 200, cols: 4, rows: 1,
+  nodes: [
+    { id: 'ds', c: 0, r: 0, kind: 'model', t: 'DeepSeek · deepseek-flash', s: 'Writes: scope, plan, cited answers, the PDF report, and the corpus articles.', tech: 'LLM_PROVIDER=deepseek' },
+    { id: 'od', c: 1, r: 0, kind: 'model', t: 'OpenAI Decisions · gpt-6-luna', s: 'Judges: scores paid candidates and grades whether facts are covered. Returns probabilities.', tech: 'DECISION_PROVIDER=openai' },
+    { id: 'cf', c: 2, r: 0, kind: 'model', t: 'Cloudflare Workers AI', s: 'Embeddings (bge-base-en-v1.5) for search and for re-measuring a delivered article. Clef-flash is the judge revert.', tech: 'CLOUDFLARE_API_TOKEN' },
+    { id: 'lf', c: 3, r: 0, kind: 'store', t: 'Langfuse', s: 'Traces every run: search, decisions, purchases, proofs, challenges. A trace link is printed per run.', tech: 'LANGFUSE_ENABLED=1' },
+  ],
+  arrows: [],
+  rules: [
+    { h: 'What none of them can do', b: `Buy, pay, change the budget, or change the cap. The writer model's output is rejected if it mentions spending; the judge returns numbers only.` },
+    { h: 'What each one sees', b: `The judge sees public fields (title, abstract, tags, price, writer kind), not article bodies. The coverage grader sees only passages A is allowed to read.` },
+    { h: 'These need internet', b: `All four are live API calls. The local part is the writers and their search.` },
+  ],
+  prims: [],
+  demo: `Say "decision model" on stage; name gpt-6-luna only on the model-choice section of the talk page.`
+};
+
+/* ============================================================
+   RENDERER
+   ============================================================ */
+const KIND = { you: 'YOU', model: 'MODEL', code: 'CODE', writer: 'WRITER', money: 'LEDGER', store: 'STORED STATE', ghost: 'OUTSIDE THIS BOX' };
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const pageKeys = Object.keys(PAGES);
+
+function titleOf(id) { return PAGES[id] ? PAGES[id].title : id; }
+function shortTitle(id) { return id === '' ? 'Overview' : titleOf(id).replace(/ ·.*$/, m => m).split(':')[0]; }
+function childrenOf(id) { return pageKeys.filter(k => k !== '' && (id === '' ? !k.includes('/') && k !== '' : k.startsWith(id + '/') && k.split('/').length === id.split('/').length + 1)); }
+function parentOf(id) { if (id === '') return null; const p = id.split('/'); p.pop(); return p.join('/'); }
+function levelOf(id) { return id === '' ? 0 : id.split('/').length; }
+
+function normalise(page) {
+  if (page.fixed) return;
+  if (page.cols >= 5) { page.nw = 166; page.gx = 244; page.nh = Math.max(page.nh, 210); page.gy = Math.max(page.gy, page.nh + 70); }
+  else if (page.cols === 4) { page.nw = 200; page.gx = 304; page.nh = Math.max(page.nh, 200); page.gy = Math.max(page.gy, page.nh + 70); }
+}
+function layout(page) {
+  normalise(page);
+  const PAD = 24;
+  const hasOver = page.arrows.some(a => a.route === 'over');
+  const top = PAD + (hasOver ? 34 : 0) + (page.lanes ? 22 : 0);
+  const nodes = {};
+  let maxX = 0, maxY = 0;
+  page.nodes.forEach(n => {
+    const h = n.nh || page.nh;
+    const y0 = top + n.r * page.gy;
+    const o = { ...n, x: PAD + n.c * page.gx, y: y0, w: page.nw, h };
+    nodes[n.id] = o;
+    maxX = Math.max(maxX, o.x + o.w); maxY = Math.max(maxY, o.y + o.h);
+  });
+  const lowY = maxY;
+  return { nodes, W: maxX + PAD, lowY, PAD, top, H: maxY + PAD + (page.arrows.some(a => a.route === 'under') ? 20 + page.arrows.filter(a => a.route === 'under').length * 16 : 0) };
+}
+
+function anchor(n, side, off) {
+  off = off || 0;
+  if (side === 'r') return [n.x + n.w, n.y + n.h / 2 + off];
+  if (side === 'l') return [n.x, n.y + n.h / 2 + off];
+  if (side === 't') return [n.x + n.w / 2 + off, n.y];
+  return [n.x + n.w / 2 + off, n.y + n.h];
+}
+
+function route(a, L, page, index) {
+  const f = L.nodes[a.from], t = L.nodes[a.to];
+  const fc = f.x + f.w / 2, tc = t.x + t.w / 2;
+  const fm = f.y + f.h / 2, tm = t.y + t.h / 2;
+  const sameRow = Math.abs(fm - tm) < 4;
+  const sameCol = Math.abs(fc - tc) < 4;
+  const off = a.off || 0;
+  let pts, lx, ly, anchorMode = 'above';
+  if (a.route === 'under') {
+    const yE = L.lowY + 20 + (a.lane != null ? a.lane : index) * 16;
+    const p1 = anchor(f, 'b', a.fromOff || 0), p2 = anchor(t, 'b', a.toOff || 0);
+    pts = [p1, [p1[0], yE], [p2[0], yE], p2];
+    lx = (p1[0] + p2[0]) / 2; ly = yE - 8;
+  } else if (a.route === 'over') {
+    const yE = L.PAD - 6;
+    const p1 = anchor(f, 't', a.fromOff || 0), p2 = anchor(t, 't', a.toOff || 0);
+    pts = [p1, [p1[0], yE], [p2[0], yE], p2];
+    lx = (p1[0] + p2[0]) / 2; ly = yE - 8;
+  } else if (sameRow) {
+    const right = tc > fc;
+    const p1 = anchor(f, right ? 'r' : 'l', off), p2 = anchor(t, right ? 'l' : 'r', off);
+    pts = [p1, p2]; lx = (p1[0] + p2[0]) / 2; ly = p1[1] + (a.lpos === 'below' ? 18 : -9);
+  } else if (sameCol) {
+    const down = tm > fm;
+    const p1 = anchor(f, down ? 'b' : 't', off), p2 = anchor(t, down ? 't' : 'b', off);
+    pts = [p1, p2]; lx = p1[0] + 12; ly = (p1[1] + p2[1]) / 2 + 4; anchorMode = 'right';
+  } else if (a.bend === 'hv') {
+    const right = tc > fc, down = tm > fm;
+    const p1 = anchor(f, right ? 'r' : 'l'), p2 = anchor(t, down ? 't' : 'b');
+    pts = [p1, [p2[0], p1[1]], p2]; lx = (p1[0] + p2[0]) / 2; ly = p1[1] - 9;
+  } else {
+    const down = tm > fm;
+    const p1 = anchor(f, down ? 'b' : 't', a.fromOff || 0), p2 = anchor(t, down ? 't' : 'b', a.toOff || 0);
+    const midY = (p1[1] + p2[1]) / 2;
+    pts = [p1, [p1[0], midY], [p2[0], midY], p2];
+    // label on the horizontal run, nudged to the clearer half
+    lx = (p1[0] + p2[0]) / 2; ly = midY - 8;
+  }
+  return { pts, lx, ly, anchorMode };
+}
+
+function renderDiagram(id, page) {
+  const L = layout(page);
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${L.W} ${L.H}`);
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', page.title + ' diagram');
+  let h = `<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#4b5563"/></marker>
+    <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#d92d20"/></marker></defs>`;
+  if (page.lanes) {
+    page.lanes.forEach(l => {
+      const y = L.top + l.row * page.gy - 12;
+      h += `<rect class="lane" x="6" y="${y}" width="${L.W - 12}" height="${page.nh + 24}" rx="12"/>`;
+      h += `<text class="lanelabel" x="18" y="${y + 14}">${esc(l.label)}</text>`;
+    });
+  }
+  // arrows first (under nodes)
+  const underIdx = {};
+  let ui = 0;
+  page.arrows.forEach((a, i) => {
+    const idx = a.route === 'under' ? ui++ : i;
+    const g = route(a, L, page, idx);
+    const d = g.pts.map((p, k) => (k ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    h += `<g class="arr${a.dash ? ' dash' : ''}" data-id="${a.id}"><path d="${d}" marker-end="url(#ah)"/>`;
+    const bx = g.anchorMode === 'right' ? g.lx - 4 : g.lx;
+    const by = g.anchorMode === 'right' ? g.ly - 4 : g.ly + 1;
+    h += `</g>`;
+    underIdx[a.id] = { g, a };
+  });
+  // nodes
+  Object.values(L.nodes).forEach(n => {
+    const kind = n.kind;
+    const go = n.go !== undefined;
+    h += `<foreignObject x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}"><div xmlns="http://www.w3.org/1999/xhtml" class="node k-${kind}${go ? ' go' : ''}" ${go ? `data-go="${n.go}" tabindex="0" role="link"` : ''}>
+      <div class="kind">${KIND[kind]}</div><div class="t">${esc(n.t)}</div><div class="s">${esc(n.s)}</div>${n.tech ? `<div class="tech">${esc(n.tech)}</div>` : ''}${go ? '<div class="open">open ›</div>' : ''}</div></foreignObject>`;
+  });
+  // badges + labels on top: badge on the longest segment, label only if it fits
+  Object.values(underIdx).forEach(({ g, a }) => {
+    const pts = g.pts;
+    let best = null;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const dx = pts[i + 1][0] - pts[i][0], dy = pts[i + 1][1] - pts[i][1];
+      const len = Math.hypot(dx, dy);
+      if (!best || len > best.len) best = { len, horiz: Math.abs(dx) >= Math.abs(dy), x: (pts[i][0] + pts[i + 1][0]) / 2, y: (pts[i][1] + pts[i + 1][1]) / 2 };
+    }
+    const text = a.lab !== undefined ? a.lab : a.label;
+    h += `<g class="arr${a.dash ? ' dash' : ''}" data-id="${a.id}" data-badge="1"><circle class="badge" cx="${best.x}" cy="${best.y}" r="10"/><text class="n" x="${best.x}" y="${best.y}">${a.id}</text>`;
+    if (text) {
+      if (best.horiz && textW(text) + 8 <= best.len) {
+        const below = a.lpos === 'below';
+        h += `<text class="lbl" x="${best.x}" y="${best.y + (below ? 26 : -16)}" text-anchor="middle">${esc(text)}</text>`;
+      } else if (!best.horiz) {
+        h += `<text class="lbl" x="${best.x + 16}" y="${best.y + 4}">${esc(text)}</text>`;
+      }
+    }
+    h += `</g>`;
+  });
+  svg.innerHTML = h;
+  return svg;
+}
+function textW(s) { return s.length * 6.3; }
+
+function render() {
+  const raw = decodeURIComponent((location.hash || '#/').replace(/^#\/?/, ''));
+  const id = PAGES[raw] ? raw : '';
+  const page = PAGES[id];
+  document.title = (id === '' ? 'ResearchAgent project map' : shortTitle(id) + ' · ResearchAgent map');
+
+  // breadcrumbs
+  const trail = [];
+  let cur = id;
+  while (cur !== null) { trail.unshift(cur); cur = parentOf(cur); }
+  $('#crumbs').innerHTML = trail.map((k, i) => i === trail.length - 1
+    ? `<span class="here">${esc(k === '' ? 'Overview' : shortTitle(k))}</span>`
+    : `<a href="#/${k}">${esc(k === '' ? 'Overview' : shortTitle(k))}</a><span class="sep">›</span>`).join('');
+
+  const kinds = new Set(page.nodes.map(n => n.kind));
+  const legend = ['you', 'code', 'model', 'writer', 'money', 'store', 'ghost'].filter(k => kinds.has(k)).map(k => {
+    const col = { you: 'var(--you)', code: 'var(--code)', model: 'var(--model)', writer: 'var(--writer)', money: 'var(--money)', store: 'var(--store)', ghost: '#98a2b3' }[k];
+    const bg = { you: 'var(--you-bg)', code: 'var(--code-bg)', model: 'var(--model-bg)', writer: 'var(--writer-bg)', money: 'var(--money-bg)', store: 'var(--store-bg)', ghost: '#fafafa' }[k];
+    const label = { you: 'a person', code: 'plain code (no AI)', model: 'a model call', writer: 'writer side', money: 'ledger / money', store: 'stored state', ghost: 'outside this box' }[k];
+    return `<span><i style="border-color:${col};background:${bg}"></i>${label}</span>`;
+  }).join('');
+
+  const kids = childrenOf(id);
+  let html = `<span class="level">Level ${levelOf(id)}${id === '' ? ' · overview' : ''}</span><h1>${esc(page.title)}</h1><p class="lead">${page.lead}</p>`;
+  html += `<div class="legend">${legend}${page.arrows.length ? '<span>solid arrow = always happens · dashed = sometimes / read only</span>' : ''}</div>`;
+  html += `<div class="stage" id="stage"></div>`;
+
+  if (page.arrows.length) {
+    html += `<h2>What drives each arrow<small>number matches the diagram</small></h2><div class="arrows">`;
+    page.arrows.forEach(a => {
+      const f = page.nodes.find(n => n.id === a.from), t = page.nodes.find(n => n.id === a.to);
+      html += `<div class="arow" data-id="${a.id}"><div class="who"><span class="num">${a.id}</span><div>${esc(short(f.t))} → ${esc(short(t.t))}<span class="p">${esc(a.label || '')}</span></div></div>
+        <div class="col"><h4>What triggers it</h4><p>${a.d}</p></div>
+        <div class="col"><h4>Carried by</h4><p>${a.c}</p></div>
+        <div class="col"><h4>Rule</h4><p>${a.r}</p></div></div>`;
+    });
+    html += `</div>`;
+  }
+  if (page.extra) html += `<h2>${esc(page.extraTitle || 'More')}</h2><div class="extra">${page.extra}</div>`;
+  if (page.rules && page.rules.length) html += `<h2>Rules that apply here</h2><div class="cards">${page.rules.map(r => `<div class="card rule"><b>${r.h}</b>${r.b}</div>`).join('')}</div>`;
+  if (page.prims && page.prims.length) html += `<h2>Primitives we stop at<small>the building blocks used here</small></h2><div class="cards">${page.prims.map(r => `<div class="card prim"><b>${r.h}</b>${r.b}</div>`).join('')}</div>`;
+  if (page.demo) html += `<div class="demo"><b>In the demo:</b> ${page.demo}</div>`;
+  if (kids.length) html += `<h2>Go one level deeper</h2><div class="kids">${kids.map(k => `<a href="#/${k}">${esc(titleOf(k))}</a>`).join('')}</div>`;
+
+  html += `<h2>All pages</h2><ul class="tree">${treeHtml(id)}</ul>`;
+  $('#page').innerHTML = html;
+  $('#stage').appendChild(renderDiagram(id, page));
+  wire();
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+function short(t) { return t.replace(/ —.*/, ''); }
+function treeHtml(cur) {
+  const walk = (id, depth) => {
+    let s = `<li class="${depth ? 'kid' : ''} ${id === cur ? 'cur' : ''}" style="padding-left:${depth * 18}px"><a href="#/${id}">${esc(id === '' ? 'Overview' : titleOf(id))}</a></li>`;
+    childrenOf(id).forEach(k => { s += walk(k, depth + 1); });
+    return s;
+  };
+  return walk('', 0);
+}
+function wire() {
+  document.querySelectorAll('[data-go]').forEach(el => {
+    const go = () => { location.hash = '#/' + el.getAttribute('data-go'); };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+  const set = (id, on) => {
+    document.querySelectorAll(`.arr[data-id="${id}"]`).forEach(g => { g.classList.toggle('hl', on); const p = g.querySelector('path'); if (p) p.setAttribute('marker-end', on ? 'url(#ahr)' : 'url(#ah)'); });
+    document.querySelectorAll(`.arow[data-id="${id}"]`).forEach(r => r.classList.toggle('hl', on));
+  };
+  document.querySelectorAll('.arow').forEach(r => { const id = r.getAttribute('data-id'); r.addEventListener('mouseenter', () => set(id, true)); r.addEventListener('mouseleave', () => set(id, false)); });
+  document.querySelectorAll('.arr[data-badge]').forEach(g => {
+    const id = g.getAttribute('data-id');
+    g.addEventListener('mouseenter', () => set(id, true));
+    g.addEventListener('mouseleave', () => set(id, false));
+    g.addEventListener('click', () => { const r = document.querySelector(`.arow[data-id="${id}"]`); if (r) r.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
+    g.style.cursor = 'pointer';
+  });
+}
+window.addEventListener('hashchange', render);
+window.addEventListener('keydown', e => {
+  if (e.key === 'Backspace' || e.key === 'Escape') {
+    if (/input|textarea/i.test(document.activeElement && document.activeElement.tagName)) return;
+    const raw = decodeURIComponent((location.hash || '#/').replace(/^#\/?/, ''));
+    const p = parentOf(PAGES[raw] ? raw : '');
+    if (p !== null) { e.preventDefault(); location.hash = '#/' + p; }
+  }
+});
+render();
+</script>
+</body>
+</html>

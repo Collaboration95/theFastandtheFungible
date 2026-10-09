@@ -1,0 +1,1271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inside ResearchAgent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
+<style>
+/* Layout: one reading column of prose with full-width "instrument" panels that replay a real run; a quiet table of contents on wide screens.
+   Light only, by the owner's choice. Palette and faces follow the ResearchAgent app (src/styles.css). */
+:root {
+  color-scheme: light;
+  --paper: #F6F7F9; --sheet: #FFFFFF; --mist: #EEF0F5; --rule: #E3E6EE; --rule-2: #CDD2DE;
+  --ink: #0F1222; --ink-2: #2B3046; --muted: #555B70; --faint: #8A90A3;
+  --pen: #2F45FF; --pen-deep: #1E2FD0; --pen-wash: #ECEEFF; --pen-wash-2: #D7DCFF;
+  --hi: #FFE45C; --hi-wash: #FFF4B8;
+  --ok: #0B7A50; --ok-bright: #12B76A; --ok-wash: #E3F5EC;
+  --pay: #FF5A1F; --pay-ink: #B83B0A; --pay-wash: #FFEDE4;
+  --bad: #C8312B; --bad-wash: #FDECEA;
+  --f-display: 'Bricolage Grotesque', 'Geist', system-ui, -apple-system, sans-serif;
+  --f-ui: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --col: 1040px; --prose: 700px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 19px/1.6 var(--f-ui); -webkit-font-smoothing: antialiased; }
+a { color: var(--pen); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; border-radius: 6px; }
+code, .mono { font-family: var(--f-mono); }
+
+.mast { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); }
+.mast-in { max-width: var(--col); margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; justify-content: space-between; font: 500 13px/1.3 var(--f-mono); color: var(--muted); }
+.mast b { color: var(--ink); font-weight: 600; }
+.mast .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--pen); margin-right: 8px; vertical-align: 1px; }
+.keys kbd { font: 600 11px var(--f-mono); border: 1px solid var(--rule-2); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; background: var(--sheet); color: var(--ink-2); }
+
+.wrap { padding-inline: 16px; padding-block: 0 96px; }
+main { max-width: var(--col); margin: 0 auto; }
+section { padding-top: 72px; scroll-margin-top: 48px; }
+.prose { max-width: var(--prose); }
+.kick { font: 600 12.5px/1.2 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--pen); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -.02em; }
+h1 { font-size: clamp(44px, 7vw, 84px); line-height: .98; font-weight: 800; margin-top: 14px; }
+h2 { font-size: clamp(32px, 4.4vw, 50px); line-height: 1.04; font-weight: 750; margin-top: 10px; }
+h3 { font-size: 22px; font-weight: 700; }
+.lede { font-size: 21px; color: var(--ink-2); margin: 16px 0 0; }
+.lede strong { color: var(--ink); }
+p { margin: 14px 0 0; }
+.hl { background: linear-gradient(transparent 58%, var(--hi) 58%); padding: 0 2px; }
+
+/* panels: the instruments */
+.panel { margin-top: 28px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; box-shadow: 0 1px 0 var(--rule), 0 18px 40px -28px rgba(15, 18, 34, .28); overflow: hidden; }
+.panel-in { padding: 22px 24px 20px; }
+.ph { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline; justify-content: space-between; }
+.tag { font: 600 11.5px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.tag .chip { color: var(--pay-ink); border: 1px solid color-mix(in srgb, var(--pay) 60%, transparent); background: var(--pay-wash); border-radius: 999px; padding: 4px 9px; margin-right: 10px; letter-spacing: .1em; }
+.clock { font: 500 14px var(--f-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.replay { font: 600 14px var(--f-mono); color: var(--ink); background: var(--mist); border: 1px solid var(--rule-2); border-radius: 8px; padding: 9px 16px; cursor: pointer; min-width: 132px; }
+.replay:hover { background: var(--pen-wash); border-color: var(--pen-wash-2); }
+.foot { border-top: 1px solid var(--rule); padding: 14px 24px 16px; margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
+.foot b { color: var(--ink-2); font-weight: 600; }
+.foot .k { color: var(--pen); }
+.well { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; }
+
+/* hero run */
+.run-top { display: grid; grid-template-columns: auto auto 1fr; gap: 12px 40px; align-items: end; margin-top: 18px; }
+.big .num { display: block; font: 800 clamp(46px, 7vw, 80px)/.95 var(--f-display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.big .cap { display: block; margin-top: 8px; font: 500 12px/1.3 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.big.pay .num { color: var(--pay); }
+.run-side { justify-self: end; display: grid; gap: 10px; justify-items: end; }
+.mini { font: 500 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+svg { display: block; width: 100%; height: auto; }
+.strip { margin-top: 18px; }
+.strip text { font: 500 11.5px var(--f-mono); fill: var(--muted); }
+.log { margin-top: 12px; padding: 12px 16px; font: 500 14px/1.65 var(--f-mono); min-height: 92px; }
+.log-row { display: grid; grid-template-columns: 74px 1fr auto; gap: 12px; color: var(--faint); white-space: nowrap; }
+.log-row span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.log-row.now { color: var(--ink); }
+.log-row .amt { font-weight: 600; }
+.amt.minus { color: var(--pay-ink); } .amt.plus { color: var(--ok); } .amt.bad { color: var(--bad); }
+
+/* map */
+.map svg text { font-family: var(--f-ui); }
+.map .sub { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center; justify-content: space-between; margin-top: 14px; }
+.map .say { font: 650 22px/1.3 var(--f-display); letter-spacing: -.01em; min-height: 58px; max-width: 760px; }
+.map .say small { display: block; font: 500 13px/1.4 var(--f-mono); color: var(--muted); letter-spacing: 0; margin-bottom: 4px; }
+.steps { display: flex; flex-wrap: wrap; gap: 6px; }
+.steps button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule-2); background: var(--sheet); font: 600 12px var(--f-mono); color: var(--muted); cursor: pointer; }
+.steps button.on { background: var(--pen); border-color: var(--pen); color: #fff; }
+.steps button.done { background: var(--pen-wash); color: var(--pen-deep); border-color: var(--pen-wash-2); }
+
+/* search */
+.search-grid { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 22px; margin-top: 18px; }
+.qbox { padding: 14px 16px; }
+.qbox .lab { font: 600 11px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.qbox .q { font: 500 16px/1.45 var(--f-mono); margin-top: 8px; min-height: 70px; }
+.caret { display: inline-block; width: 9px; height: 1.1em; background: var(--pen); vertical-align: -3px; margin-left: 2px; }
+.vec { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; margin-top: 10px; height: 46px; align-items: end; }
+.vec i { display: block; border-radius: 2px; background: var(--pen); transform-origin: bottom; }
+.vec-cap { font: 500 12px/1.4 var(--f-mono); color: var(--muted); margin-top: 8px; }
+.lanes { display: grid; gap: 7px; }
+.lane { display: grid; grid-template-columns: 170px minmax(0, 1fr) 64px; gap: 12px; align-items: center; font: 500 14px var(--f-mono); }
+.lane .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lane .nm em { font-style: normal; font-size: 11px; color: var(--ok); margin-left: 6px; }
+.track { position: relative; height: 26px; border-radius: 6px; background: var(--mist); overflow: hidden; }
+.track .pk { position: absolute; top: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--pen); }
+.track .hits { position: absolute; inset: 4px 6px; display: flex; gap: 5px; justify-content: flex-end; }
+.hit { width: 26px; border-radius: 4px; background: var(--pen-wash-2); border: 1px solid color-mix(in srgb, var(--pen) 40%, transparent); }
+.hit.free { background: var(--ok-wash); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.hit.bait { background: var(--hi); border-color: #E2C21F; }
+.lane .ct { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.total { margin-top: 12px; font: 600 15px var(--f-mono); }
+.total span { color: var(--pen); }
+.anat { margin-top: 22px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 22px; }
+.card { border: 1px solid var(--rule-2); border-radius: 12px; padding: 16px 18px; background: var(--sheet); }
+.card .who { font: 600 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 10px; }
+.card .ttl { font: 700 20px/1.25 var(--f-display); margin-top: 8px; }
+.card .abs { font-size: 15.5px; color: var(--ink-2); margin-top: 8px; line-height: 1.5; }
+.fields { display: grid; gap: 8px; margin-top: 12px; font: 500 13.5px/1.4 var(--f-mono); }
+.fields div { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; border-top: 1px dashed var(--rule-2); }
+.fields b { font-weight: 600; }
+.leaves { display: flex; flex-wrap: wrap; gap: 3px; }
+.leaves i { width: 13px; height: 13px; border-radius: 3px; background: var(--mist); border: 1px solid var(--rule-2); }
+.locked { border: 1px dashed var(--rule-2); border-radius: 12px; padding: 16px 18px; background: repeating-linear-gradient(-45deg, var(--paper) 0 10px, var(--mist) 10px 20px); display: grid; align-content: center; gap: 8px; }
+.locked .big-l { font: 700 19px/1.3 var(--f-display); }
+.locked .sm { font: 500 13px/1.5 var(--f-mono); color: var(--muted); }
+.rv { transition: opacity .35s var(--ease), transform .35s var(--ease); }
+.rv.off { opacity: .08; transform: translateY(6px); }
+
+/* answer */
+.ans-grid { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 22px; margin-top: 18px; }
+.facts { padding: 16px 18px; }
+.facts h3, .v1 h3 { font: 600 12px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.fact { margin-top: 12px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--sheet); font-size: 15.5px; line-height: 1.45; }
+.st { display: inline-block; margin-top: 8px; font: 600 12px var(--f-mono); padding: 3px 8px; border-radius: 999px; background: var(--mist); color: var(--muted); }
+.st.miss { background: var(--bad-wash); color: var(--bad); }
+.st.ok { background: var(--ok-wash); color: var(--ok); }
+.follow { margin-top: 12px; font: 500 13px/1.5 var(--f-mono); color: var(--muted); }
+.v1 { padding: 18px 20px; border: 1px solid var(--rule); border-radius: 12px; }
+.v1 .sent { font: 400 18px/1.55 var(--f-ui); margin-top: 10px; }
+.cite { display: inline-block; font: 600 11.5px/1 var(--f-mono); color: var(--pen-deep); background: var(--pen-wash); border: 1px solid var(--pen-wash-2); border-radius: 5px; padding: 4px 6px; margin-left: 4px; vertical-align: 2px; white-space: nowrap; }
+.gapbar { margin-top: 18px; padding: 14px 16px; border-radius: 12px; background: var(--hi-wash); border: 1px solid #F1D54A; display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+.gapbar b { font: 600 12px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: #6E5A00; }
+.gapbar span { font: 650 19px/1.35 var(--f-display); }
+
+/* decide */
+.tbl { margin-top: 18px; overflow-x: auto; }
+.dt { width: 100%; border-collapse: collapse; font: 500 14px/1.35 var(--f-mono); min-width: 800px; font-variant-numeric: tabular-nums; }
+.dt th { text-align: left; font: 600 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 6px 10px; border-bottom: 1px solid var(--rule-2); white-space: nowrap; }
+.dt th.model { color: var(--pen); }
+.dt th.code { color: var(--pay-ink); }
+.dt td { padding: 9px 6px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.dt .w { font-weight: 600; white-space: nowrap; }
+.dt .t { display: block; font: 400 13px/1.35 var(--f-ui); color: var(--muted); white-space: normal; }
+.dt td:first-child { min-width: 210px; max-width: 250px; }
+.bar { position: relative; width: 46px; height: 10px; border-radius: 5px; background: var(--mist); overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 8px; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--pen); border-radius: 5px; }
+.dt .num { min-width: 34px; display: inline-block; }
+.verdict small { display: block; font: 600 10px/1 var(--f-mono); letter-spacing: .03em; margin-top: 4px; text-transform: none; }
+.verdict { display: inline-block; font: 700 12px/1 var(--f-mono); letter-spacing: .06em; padding: 6px 9px; border-radius: 6px; border: 1.5px solid currentColor; transform: rotate(-2deg); white-space: nowrap; }
+.verdict.buy { color: var(--ok); background: var(--ok-wash); }
+.verdict.skip { color: var(--faint); }
+.dt tr.pick td { background: var(--hi-wash); }
+.dt tr.pick .vpd { font-weight: 700; color: var(--ink); }
+.formula { margin-top: 16px; padding: 12px 16px; font: 500 14.5px/1.6 var(--f-mono); }
+.formula .m { color: var(--pen); } .formula .c { color: var(--pay-ink); }
+.callout { margin-top: 16px; display: flex; gap: 12px; align-items: flex-start; font-size: 17px; line-height: 1.5; }
+.callout b.flag { flex: none; font: 700 12px/1 var(--f-mono); letter-spacing: .08em; color: var(--bad); background: var(--bad-wash); border-radius: 6px; padding: 7px 9px; margin-top: 2px; }
+.bench { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+.bm h4 { margin: 0; font: 600 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.bm .row { display: grid; grid-template-columns: 92px minmax(0, 1fr) 54px; gap: 8px; align-items: center; margin-top: 10px; font: 500 13px var(--f-mono); }
+.bm .row .bar { width: 100%; margin: 0; height: 12px; }
+.bm .row.alt .bar i { background: var(--rule-2); }
+.bm .row span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* budget */
+.bud-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 24px; margin-top: 18px; align-items: start; }
+pre.code { margin: 0; padding: 16px 18px; font: 500 13.5px/1.7 var(--f-mono); overflow-x: auto; background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; color: var(--ink-2); }
+pre.code .cm { color: var(--faint); } pre.code .kw { color: var(--pen-deep); } pre.code .st { color: var(--ok); background: none; padding: 0; font: inherit; margin: 0; display: inline; } pre.code .ln { transition: background .3s; display: inline-block; width: 100%; }
+pre.code .ln.on { background: var(--hi-wash); }
+.meter .lab { display: flex; justify-content: space-between; font: 600 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.meter .left { font: 800 64px/1 var(--f-display); letter-spacing: -.03em; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.mbar { position: relative; height: 26px; border-radius: 8px; background: var(--ok-wash); border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent); margin-top: 12px; overflow: hidden; }
+.mbar i { position: absolute; top: 0; bottom: 0; }
+.mbar .sp { background: var(--pay); }
+.mbar .rs { background: repeating-linear-gradient(-45deg, var(--pay) 0 6px, var(--pay-wash) 6px 12px); }
+.mlog { margin-top: 12px; display: grid; gap: 6px; font: 500 14px var(--f-mono); }
+.mlog div { display: flex; justify-content: space-between; gap: 10px; }
+.rules { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.rules li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 16px; line-height: 1.45; }
+.rules li::before { content: "✓"; font: 700 14px var(--f-mono); color: var(--ok); background: var(--ok-wash); border-radius: 6px; width: 24px; height: 24px; display: grid; place-items: center; }
+
+/* x402 */
+.seq { margin-top: 18px; }
+.seq text { font-family: var(--f-mono); }
+.hdr { margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.hdr h4 { margin: 0 0 8px; font: 600 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* verify */
+.ver-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.ck { padding: 16px 18px; border: 1px solid var(--rule); border-radius: 12px; }
+.ck h4 { margin: 0; font: 600 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ck h4 span { display: block; color: var(--ink); font: 700 18px/1.25 var(--f-display); letter-spacing: -.01em; text-transform: none; margin-top: 4px; }
+.ck ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.ck li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; font-size: 15px; line-height: 1.4; }
+.ck li i { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font: 700 13px var(--f-mono); font-style: normal; background: var(--mist); color: var(--faint); transition: background .25s, color .25s; }
+.ck li.ok i { background: var(--ok-wash); color: var(--ok); }
+.ck li.no i { background: var(--bad-wash); color: var(--bad); }
+.proof { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.pf { border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; }
+.pf .who { font: 600 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.pf .leaves { margin-top: 10px; }
+.pf .leaves i.g { background: var(--ok-bright); border-color: var(--ok); }
+.pf .prom { margin-top: 12px; font: 500 13px var(--f-mono); color: var(--muted); }
+.pf blockquote { margin: 8px 0 0; padding: 10px 12px; border-left: 3px solid var(--rule-2); background: var(--paper); font: 400 15.5px/1.5 var(--f-ui); color: var(--ink-2); border-radius: 0 8px 8px 0; }
+.pf blockquote mark { background: var(--hi); color: var(--ink); padding: 0 2px; }
+.res { margin-top: 12px; font: 700 14px var(--f-mono); padding: 8px 10px; border-radius: 8px; display: inline-block; }
+.res.no { color: var(--bad); background: var(--bad-wash); } .res.ok { color: var(--ok); background: var(--ok-wash); }
+.env { margin-top: 18px; display: flex; gap: 12px; align-items: flex-start; font-size: 16.5px; line-height: 1.5; color: var(--ink-2); }
+.env b.flag { flex: none; font: 700 12px/1 var(--f-mono); letter-spacing: .08em; color: var(--pen-deep); background: var(--pen-wash); border-radius: 6px; padding: 7px 9px; margin-top: 2px; }
+
+/* refund + trust */
+.ref-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; margin-top: 18px; }
+.gauge { margin-top: 14px; }
+.gauge .gl { display: flex; justify-content: space-between; font: 600 13px var(--f-mono); }
+.gauge .gv { font: 800 44px/1 var(--f-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 6px; }
+.scale { position: relative; height: 18px; margin-top: 10px; border-radius: 9px; background: linear-gradient(90deg, var(--bad-wash) 0 50%, var(--ok-wash) 50% 100%); border: 1px solid var(--rule); }
+.scale .mk { position: absolute; top: -5px; width: 4px; height: 26px; border-radius: 2px; background: var(--ink); transform: translateX(-2px); }
+.scale .half { position: absolute; left: 50%; top: -3px; bottom: -3px; border-left: 2px dashed var(--bad); }
+.scale-l { display: flex; justify-content: space-between; font: 500 11.5px var(--f-mono); color: var(--muted); margin-top: 6px; }
+.stamp { display: inline-block; margin-top: 10px; font: 800 14px/1 var(--f-mono); letter-spacing: .1em; padding: 7px 10px; border-radius: 6px; border: 2px solid var(--bad); color: var(--bad); transform: rotate(-3deg); }
+.stamp.good { border-color: var(--ok); color: var(--ok); }
+.tl { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 0; }
+.tl li { display: grid; grid-template-columns: 70px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--rule-2); font-size: 15.5px; line-height: 1.45; }
+.tl li .tm { font: 600 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.tl li code { font-size: 13px; background: var(--mist); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+.chart text { font: 500 12px var(--f-mono); fill: var(--muted); }
+.mathbox { margin-top: 16px; padding: 12px 16px; font: 500 14px/1.75 var(--f-mono); overflow-x: auto; }
+
+/* built */
+.built-top { display: flex; flex-wrap: wrap; gap: 14px 36px; align-items: end; margin-top: 16px; }
+.built-top .big .num { font-size: clamp(40px, 6vw, 64px); }
+.built-top .big.add .num { color: var(--pen); }
+.built-top .big.del .num { color: var(--faint); }
+.prlog { margin-top: 12px; padding: 12px 16px; font: 500 14px/1.65 var(--f-mono); min-height: 74px; }
+.stats4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.stat { border-top: 2px solid var(--ink); padding-top: 10px; }
+.stat b { display: block; font: 800 32px/1 var(--f-display); letter-spacing: -.02em; }
+.stat span { display: block; margin-top: 6px; font-size: 14.5px; line-height: 1.4; color: var(--ink-2); }
+
+details { margin-top: 18px; border-top: 1px solid var(--rule); padding-top: 12px; }
+summary { cursor: pointer; font: 600 14px var(--f-mono); color: var(--pen-deep); list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "+ "; }
+details[open] summary::before { content: "− "; }
+details p, details li { font-size: 16.5px; color: var(--ink-2); }
+details ul { padding-left: 20px; margin: 10px 0 0; }
+
+.close { text-align: left; }
+.close h2 { font-size: clamp(38px, 6vw, 72px); font-weight: 800; }
+.close .links { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px 22px; font: 500 15px var(--f-mono); }
+.close .links a { overflow-wrap: anywhere; min-width: 0; }
+.labels { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 8px; }
+.labels span { font: 600 12px var(--f-mono); letter-spacing: .06em; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--rule-2); background: var(--sheet); color: var(--ink-2); }
+
+.toc { position: fixed; top: 92px; right: 18px; width: 190px; display: none; font: 500 13px/1.3 var(--f-ui); }
+.toc a { display: block; padding: 5px 10px; color: var(--muted); text-decoration: none; border-left: 2px solid var(--rule); }
+.toc a.on { color: var(--ink); border-left-color: var(--pen); font-weight: 600; }
+/* hero run: scrubbable log + bar tooltips */
+#w-run .panel-in { position: relative; }
+#w-run .strip { cursor: col-resize; touch-action: pan-y; }
+#w-run .log { height: 210px; min-height: 0; overflow-y: auto; position: relative; padding-block: 88px; -webkit-mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent); mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent); }
+#w-run .log:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; }
+#w-run .log-row { white-space: normal; cursor: pointer; border-radius: 6px; padding: 2px 8px; margin-inline: -8px; color: var(--ink-2); transition: background .15s; }
+#w-run .log-row span:nth-child(2) { overflow: visible; text-overflow: clip; }
+#w-run .log-row.future { color: var(--faint); opacity: .6; }
+#w-run .log-row.now { background: var(--hi-wash); color: var(--ink); }
+#w-run .log-row.hover, #w-run .log-row:hover { background: var(--pen-wash); }
+.scrub-hint { margin-top: 8px; font: 500 12px/1.4 var(--f-mono); color: var(--muted); }
+.tip { position: absolute; z-index: 5; pointer-events: none; max-width: 360px; background: var(--ink); color: var(--paper); border-radius: 8px; padding: 8px 11px; font: 500 12.5px/1.45 var(--f-mono); box-shadow: 0 10px 24px -12px rgba(15, 18, 34, .5); }
+.tip b { display: flex; gap: 7px; align-items: center; font-weight: 600; margin-bottom: 2px; }
+.tip b i { flex: none; width: 9px; height: 9px; border-radius: 2px; }
+.run-btns { display: flex; gap: 8px; align-items: center; }
+.replay.sq { min-width: 0; padding-inline: 14px; }
+.mstatus { flex: 1; min-width: 0; display: grid; gap: 3px; min-height: 48px; font: 500 14px/1.45 var(--f-mono); }
+.mstatus .prev { color: var(--faint); font-size: 12.5px; min-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mstatus .cur { display: flex; align-items: center; gap: 9px; color: var(--ink); font-weight: 600; min-width: 0; }
+.mstatus .cur .caret { flex: none; width: 8px; height: 1.05em; margin-left: -6px; }
+.mstatus .pulse { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--rule-2); }
+.is-playing .mstatus .pulse { background: var(--pen); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .3; transform: scale(.7); } }
+@media (min-width: 1460px) { .toc { display: block; } }
+
+@media (max-width: 860px) {
+  body { font-size: 17.5px; }
+  .run-top { grid-template-columns: 1fr 1fr; }
+  .run-side { grid-column: 1 / -1; justify-self: start; justify-items: start; }
+  .search-grid, .ans-grid, .anat, .bud-grid, .hdr, .ref-grid, .proof { grid-template-columns: minmax(0, 1fr); }
+  .ver-grid, .bench { grid-template-columns: minmax(0, 1fr); }
+  .stats4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lane { grid-template-columns: 120px minmax(0, 1fr) 54px; font-size: 12.5px; }
+  .keys { display: none; }
+  .panel-in { padding: 18px 16px; }
+  .foot { padding: 12px 16px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .rv { transition: none; } .is-playing .mstatus .pulse { animation: none; } }
+</style>
+</head>
+<body>
+<header class="mast"><div class="mast-in"><span><span class="dot"></span><b>ResearchAgent</b> · AI Tinkerers Singapore · 10 Oct 2026</span><span class="keys"><kbd>→</kbd> next <kbd>←</kbd> back <kbd>R</kbd> replay <kbd>P</kbd> pause</span></div></header>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#top">The run</a>
+  <a href="#map">Who does what</a>
+  <a href="#search">1 · Search</a>
+  <a href="#answer">2 · Free answer</a>
+  <a href="#decide">3 · Decide</a>
+  <a href="#budget">4 · Only code pays</a>
+  <a href="#x402">5 · Pay over HTTP</a>
+  <a href="#verify">6 · Verify</a>
+  <a href="#refund">7 · Refund + track record</a>
+  <a href="#built">How we built it</a>
+  <a href="#close">Questions</a>
+</nav>
+
+<div class="wrap"><main>
+
+<!-- HERO -->
+<section id="top" style="padding-top:56px">
+  <div class="prose">
+    <div class="kick">ResearchAgent</div>
+    <h1>A research agent with a wallet.</h1>
+    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy <strong>that one article</strong> straight from the writer, for cents, inside a budget you set. If the article doesn't contain what the writer promised, <span class="hl">the money comes back.</span></p>
+  </div>
+
+  <div class="panel" id="w-run">
+    <div class="panel-in">
+      <div class="ph">
+        <div class="tag"><span class="chip">Live run</span>Replayed from its event log</div>
+        <div class="clock" data-clock>Fri 9 Oct · 04:00:31 SGT</div>
+      </div>
+      <div class="run-top">
+        <div class="big"><span class="num" data-left>S$1.60</span><span class="cap">budget left of S$2.00</span></div>
+        <div class="big pay"><span class="num" data-net>S$0.40</span><span class="cap">spent, net of refund</span></div>
+        <div class="run-side">
+          <div class="run-btns"><button class="replay" data-toggle type="button">▶ play</button><button class="replay sq" data-replay type="button" aria-label="Replay from the start" title="Replay from the start">↻</button></div>
+          <div class="mini" data-elapsed>33.6 s · 2 bought · 1 refunded</div>
+        </div>
+      </div>
+      <svg class="strip" viewBox="0 0 1000 170" data-strip role="img" aria-label="Timeline of the run's events"></svg>
+      <div class="log well" data-log tabindex="0" aria-label="Run log. Scroll it to scrub through the run."></div>
+      <div class="scrub-hint">Scroll the log or drag the timeline to scrub · hover a bar to see its event · click a row to jump to it</div>
+      <div class="tip" data-tip hidden></div>
+    </div>
+    <p class="foot">The question you just watched, <b>"Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?"</b>, with a S$2 budget. This is the live rehearsal run of 9 Oct (DeepSeek writing, OpenAI Decisions judging, XRPL Testnet settling), replayed at 2.4× from its 38 recorded events. <span class="k">Blue</span> bars read and decide, <span style="color:var(--pay-ink)">orange</span> bars pay, <span style="color:var(--bad)">red</span> is the failed proof, <span style="color:var(--ok)">green</span> is the refund and the verified article.</p>
+  </div>
+</section>
+
+<!-- MAP -->
+<section id="map">
+  <div class="prose">
+    <div class="kick">The whole system</div>
+    <h2>Who does what</h2>
+    <p class="lede">An <strong>LLM</strong> writes. A <strong>decision model</strong> judges what's worth buying. <strong>Plain code</strong> pays. The writers' sites and their search run on this laptop, so nothing comes from the open web. The models and the ledger are real online services.</p>
+  </div>
+  <div class="panel map" id="w-map">
+    <div class="panel-in">
+      <div class="ph"><div class="mstatus"><span class="prev" data-mprev></span><span class="cur"><i class="pulse"></i><span data-mcur></span><span class="caret" data-mcaret hidden></span></span></div><div class="run-btns"><button class="replay" data-toggle type="button">▶ play</button><button class="replay sq" data-replay type="button" aria-label="Replay from the start" title="Replay from the start">↻</button></div></div>
+      <svg viewBox="0 0 1000 560" data-svg role="img" aria-label="Architecture: you, the ResearchAgent engine, eight writers' sites on this laptop, three online model services and the XRPL Testnet ledger"></svg>
+      <div class="sub"><div class="say" data-say></div><div class="steps" data-steps></div></div>
+    </div>
+    <p class="foot">Online: <b>DeepSeek</b> (writes), <b>OpenAI Decisions · gpt-6-luna</b> (judges; Cloudflare's Clef-flash is the one-line fallback), <b>Cloudflare Workers AI</b> (turns text into numbers for search), <b>XRPL Testnet</b> (settles payments). On this laptop: the engine, the wallet's spending rules, and eight writers' sites. The writers and their 81 articles are fictional and labelled SYNTHETIC.</p>
+  </div>
+</section>
+
+<!-- SEARCH -->
+<section id="search">
+  <div class="prose">
+    <div class="kick">Step 1 · Search</div>
+    <h2>Every writer searches its own shelf.</h2>
+    <p class="lede">There is no central index. The question goes to each writer's site. Each one searches its own articles and sends back a teaser and a <strong>signed list of promises</strong>. The paid text stays on the writer's server until someone pays.</p>
+  </div>
+  <div class="panel" id="w-search">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">Fan-out to 8 writers</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="search-grid">
+        <div>
+          <div class="qbox well"><div class="lab">Search query (from the plan)</div><div class="q" data-q></div>
+            <div class="vec" data-vec></div>
+            <div class="vec-cap" data-veccap>768 numbers that stand for the meaning · Cloudflare Workers AI</div>
+          </div>
+        </div>
+        <div>
+          <div class="lanes" data-lanes></div>
+          <div class="total" data-total><span>16 hits</span> from 8 writers · keyword + meaning · 0.75 s</div>
+        </div>
+      </div>
+      <div class="anat">
+        <div class="card rv" data-hitcard>
+          <div class="who"><span>AlphaLeak · one hit</span><span>what the agent sees</span></div>
+          <div class="ttl">Kestrel's Penang packaging lead times, week by week</div>
+          <div class="abs">Customer lead times for Kestrel's Penang advanced-packaging lines, tracked week by week through the third quarter from three procurement desks, and where they go next.</div>
+          <div class="fields">
+            <div class="rv" data-f><span>relevance the writer claims</span><b>0.96</b></div>
+            <div class="rv" data-f><span>price</span><b>S$0.30</b></div>
+            <div class="rv" data-f><span>15 passage fingerprints</span><span class="leaves" data-leaves></span></div>
+            <div class="rv" data-f><span>promises</span><b>a dated figure, in passage "lead-times"</b></div>
+            <div class="rv" data-f><span>signed by</span><b>the wallet that gets paid</b></div>
+          </div>
+        </div>
+        <div class="locked rv" data-locked>
+          <div class="big-l">🔒 The article itself</div>
+          <div class="sm">Stays on AlphaLeak's server. No snippet, no preview. Only the abstract the writer chose to show.</div>
+          <div class="sm">Hold on to that promise: "a dated figure". Step 6 checks it.</div>
+        </div>
+      </div>
+    </div>
+    <p class="foot">Real numbers from the run: 16 hits from 8 writers in 0.75 s, hybrid mode. <b>Hybrid</b> means two searches mixed: matching words, and matching meaning. If the meaning search is down, the screen says "keyword only".</p>
+  </div>
+  <details class="prose"><summary>Under the hood</summary>
+    <ul>
+      <li>Each writer's site runs <code>Orama</code> hybrid search (BM25 keywords + vectors) over its own full text, in its own process.</li>
+      <li>Cloudflare Workers AI (<code>bge-base-en-v1.5</code>) turns text into 768 numbers. Articles are embedded once when the corpus is built; the question is embedded live. Close numbers mean close meaning.</li>
+      <li>The engine merges every writer's list with reciprocal-rank fusion. Price is not an input to ranking, and rewrites collapse into their source's family.</li>
+    </ul>
+  </details>
+</section>
+
+<!-- ANSWER -->
+<section id="answer">
+  <div class="prose">
+    <div class="kick">Step 2 · Free answer</div>
+    <h2>Free first. Then name what's missing.</h2>
+    <p class="lede">DeepSeek writes from the free sources only, and every sentence cites an exact passage. The plan froze the facts you asked for <strong>before</strong> anything was read, so no article can change what counts as missing.</p>
+  </div>
+  <div class="panel" id="w-answer">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">Answer v1 · free sources</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ans-grid">
+        <div class="facts well">
+          <h3>Requested facts · frozen by the plan</h3>
+          <div class="fact">Kestrel's advanced-packaging lead times in Malaysia, with dates and figures<br><span class="st" data-st="0">waiting</span></div>
+          <div class="fact">Whether those lead times are trending shorter<br><span class="st" data-st="1">waiting</span></div>
+          <div class="follow rv" data-follow>One more focused free search: 8 new free sources, nothing new on lead times.</div>
+        </div>
+        <div class="v1">
+          <h3>DeepSeek · cited answer</h3>
+          <div class="sent rv" data-sent>Kestrel's Phase 2 plant in Penang was commissioned on 15 August 2026, raising capacity from 11,000 to 16,000 advanced-packaging units a month.<span class="cite">Open Records · p2</span></div>
+          <div class="sent rv" data-sent>Kestrel signed a 21-year contract on 8 September 2026 for 40 MW of solar for the plant.<span class="cite">Load Factor · free post</span></div>
+          <div class="sent rv" data-sent>No operator filing in the record gives customer lead times.<span class="cite">Open Records · p17</span></div>
+          <div class="gapbar rv" data-gap><b>Still missing</b><span>Lead times in Malaysia, with dates and figures</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="foot">Real text from the run's answer v1. The citation chips point at passage IDs (<b>p2</b>, <b>p17</b>) in a source the agent has read; code checks each one before the answer is shown. The coverage check found <b>0 of 2</b> requested facts answered, so a gap stays open.</p>
+  </div>
+</section>
+
+<!-- DECIDE -->
+<section id="decide">
+  <div class="prose">
+    <div class="kick">Step 3 · Decide</div>
+    <h2>A decision model scores what's worth buying.</h2>
+    <p class="lede">It reads each paywalled article's public teaser and returns <strong>numbers, not prose</strong>: does it fill the gap, is it original, is it credible. Code multiplies those by the writer's track record and compares value per dollar.</p>
+  </div>
+  <div class="panel" id="w-decide">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">Round 1 · 12 paywalled candidates · top 6 shown</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="tbl">
+        <table class="dt">
+          <thead><tr>
+            <th>Writer · article</th><th>Price</th>
+            <th class="model">Fills the gap?</th><th class="model">Original?</th><th class="model">Credible?</th>
+            <th class="code">× track record</th><th class="code">Value</th><th class="code">Per S$</th><th class="code">Policy</th>
+          </tr></thead>
+          <tbody data-rows></tbody>
+        </table>
+      </div>
+      <div class="formula well"><span class="c">value</span> = <span class="m">fills-gap</span> × <span class="m">original</span> × (0.5 + 0.25 × <span class="m">credible</span>) × <span class="c">track record</span> &nbsp;·&nbsp; buy only if value ≥ 0.20, then best <span class="c">value per S$</span> wins</div>
+      <div class="callout rv" data-callout><b class="flag">THE OPENING</b><span>AlphaLeak is cheaper and promises the same thing, so it wins round 1 at <b>1.70</b> per S$ against The Fab Floor's 1.38. That is exactly the gap a bad actor aims for. Steps 6 and 7 close it.</span></div>
+    </div>
+    <p class="foot"><b class="k">Blue</b> columns are the decision model's output (OpenAI Decisions · gpt-6-luna, one batched call per round). <b style="color:var(--pay-ink)">Orange</b> columns are plain code. All numbers are from the live run. Every new writer starts with a track record of 0.80.</p>
+  </div>
+
+  <div class="panel" id="w-bench">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">Why this model · we benchmarked two decision models</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="bench">
+        <div class="bm"><h4>Buys the right article · F1 ↑</h4>
+          <div class="row"><span>gpt-6-luna</span><span class="bar"><i data-b="0.983"></i></span><span>0.983</span></div>
+          <div class="row alt"><span>Clef-flash</span><span class="bar"><i data-b="0.783"></i></span><span>0.783</span></div></div>
+        <div class="bm"><h4>Probability error · Brier ↓</h4>
+          <div class="row"><span>gpt-6-luna</span><span class="bar"><i data-b="0.15"></i></span><span>0.015</span></div>
+          <div class="row alt"><span>Clef-flash</span><span class="bar"><i data-b="0.75"></i></span><span>0.075</span></div></div>
+        <div class="bm"><h4>Cost per 1,000 rounds</h4>
+          <div class="row"><span>gpt-6-luna</span><span class="bar"><i data-b="0.96"></i></span><span>$0.48</span></div>
+          <div class="row alt"><span>Clef-flash</span><span class="bar"><i data-b="0.88"></i></span><span>$0.44</span></div></div>
+      </div>
+    </div>
+    <p class="foot"><b>SYNTHETIC benchmark:</b> 160 generated scenarios, 64 held out, 3 repeats, under a decision rule written down before the run. Both models with our best wording and calibration. The whole study cost about US$0.96. A decision model returns probabilities instead of prose, so a threshold like 0.20 can mean the same thing on every question.</p>
+  </div>
+</section>
+
+<!-- BUDGET -->
+<section id="budget">
+  <div class="prose">
+    <div class="kick">Step 4 · Only code pays</div>
+    <h2>The budget is the only permission to spend.</h2>
+    <p class="lede">The LLM has no buy button. It can say what's missing. It can't pick a purchase, raise the budget or pay. That happens in a few lines of ordinary code.</p>
+  </div>
+  <div class="panel" id="w-budget">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">server/agents/decision.ts · the whole spending decision</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="bud-grid">
+<pre class="code" data-code><span class="ln"><span class="cm">// trust can only lower value, never the budget or cap</span></span>
+<span class="ln" data-l="trust"><span class="kw">if</span> (status !== <span class="st">'active'</span>) verdict = <span class="st">'SKIP_LOW_TRUST'</span></span>
+<span class="ln" data-l="rew"><span class="kw">else if</span> (rewrite)        verdict = <span class="st">'SKIP_REWRITE'</span></span>
+<span class="ln" data-l="cap"><span class="kw">else if</span> (price &gt; cap)    verdict = <span class="st">'SKIP_OVER_CAP'</span>  <span class="cm">// S$1</span></span>
+<span class="ln" data-l="val"><span class="kw">else if</span> (value &lt; 0.20)   verdict = <span class="st">'SKIP_LOW_VALUE'</span></span>
+<span class="ln" data-l="bud"><span class="kw">else if</span> (price &gt; left)   verdict = <span class="st">'SKIP_OVER_BUDGET'</span></span>
+<span class="ln" data-l="buy"><span class="kw">else</span>                     verdict = <span class="st">'BUY'</span></span>
+
+<span class="ln" data-l="pick"><span class="cm">// best value per dollar wins</span>
+pick = rows.filter(BUY).sort(byValuePerDollar)[0]</span></pre>
+        <div class="meter">
+          <div class="lab"><span>Budget left</span><span>of S$2.00</span></div>
+          <div class="left" data-mleft>S$1.60</div>
+          <div class="mbar" data-mbar><i class="sp" data-sp></i><i class="rs" data-rs></i></div>
+          <div class="mlog" data-mlog></div>
+        </div>
+      </div>
+      <ul class="rules">
+        <li>The LLM gets tools that can't spend: ask you a question, propose a plan, write the report.</li>
+        <li>S$1 cap per article, at most 3 buying rounds, buy only above the 0.20 bar.</li>
+        <li>One charge per intent. The signed payment is saved before it is sent, so a retry resends the same transaction and can't pay twice.</li>
+      </ul>
+    </div>
+    <p class="foot">The meter replays the run's money: S$0.30 reserved and paid to AlphaLeak, S$0.30 refunded, S$0.40 paid to The Fab Floor.</p>
+  </div>
+</section>
+
+<!-- X402 -->
+<section id="x402">
+  <div class="prose">
+    <div class="kick">Step 5 · Pay over HTTP</div>
+    <h2>Paying is one extra round trip.</h2>
+    <p class="lede">HTTP has had a status code for this since 1997: <strong>402 Payment Required</strong>. x402 puts the price in a header. The agent pays on the ledger and asks again with the signed payment attached. Like a vending machine that speaks HTTP.</p>
+  </div>
+  <div class="panel" id="w-x402">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">x402 v2 · scheme exact · network xrpl:1</div><div class="clock" data-xclock>+15.6 s</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <svg class="seq" viewBox="0 0 1000 470" data-seq role="img" aria-label="Sequence: the agent requests the article, gets 402 with a price, checks it, signs an XRPL payment, retries with the payment, the writer's facilitator submits it to XRPL Testnet, the ledger validates it, and the writer returns the article"></svg>
+      <div class="hdr">
+        <div><h4>The price tag (decoded header)</h4>
+<pre class="code">HTTP/1.1 402 Payment Required
+PAYMENT-REQUIRED: base64({
+  "x402Version": 2,
+  "accepts": [{
+    "scheme": "exact", "network": "xrpl:1",
+    "asset": "XRP", "amount": "30000",
+    "payTo": "rGeN8NcEVRVvWeFoyY9Df1TyiLq9AhoX5T",
+    "maxTimeoutSeconds": 60,
+    "extra": { "invoiceId": <span class="cm">"{quote, article, version,
+                 manifestRoot, amount, payTo}"</span> }
+  }]
+})</pre></div>
+        <div><h4>The receipt</h4>
+<pre class="code">HTTP/1.1 200 OK
+PAYMENT-RESPONSE: base64({
+  "success": true,
+  "network": "xrpl:1",
+  "transaction": "FCC78F2D571A…E1C28323"
+})
+
+<span class="cm">// + the article, its passages and their salts
+// ledger 21,384,313 · tesSUCCESS
+// 30,000 drops = 0.03 XRP, shown as S$0.30</span></pre></div>
+      </div>
+    </div>
+    <p class="foot">The real AlphaLeak purchase. The agent pays the <b>writer's own wallet</b>; we never hold the money. Each writer runs its own facilitator, the part that checks and submits the payment. 8.7 s from 402 to article, most of it waiting for the ledger to validate. Explorer: <a href="https://testnet.xrpl.org/transactions/FCC78F2D571A2F204969EA9DA4B465E08FB41917DAF8556C57BAE684E1C28323" target="_blank" rel="noopener">testnet.xrpl.org · FCC78F2D…</a></p>
+  </div>
+</section>
+
+<!-- VERIFY -->
+<section id="verify">
+  <div class="prose">
+    <div class="kick">Step 6 · Verify</div>
+    <h2>Neither side trusts the other.</h2>
+    <p class="lede">The writer checks the payment on the ledger before it delivers. The agent checks the writer's signature before it pays, then <strong>recomputes every promise</strong> after delivery.</p>
+  </div>
+  <div class="panel" id="w-verify">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">Checks on both sides of one purchase</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ver-grid">
+        <div class="ck"><h4>Agent · before paying<span>Is this writer who it says?</span></h4><ol data-ck="a">
+          <li><i>·</i>Manifest signature is valid</li>
+          <li><i>·</i>Signing key belongs to the wallet being paid</li>
+          <li><i>·</i>402 price and payee match the manifest</li>
+          <li><i>·</i>Invoice names this article and its manifest</li></ol></div>
+        <div class="ck"><h4>Writer · before delivering<span>Did I really get paid?</span></h4><ol data-ck="b">
+          <li><i>·</i>Pays my wallet, exact amount</li>
+          <li><i>·</i>Invoice ID matches this quote</li>
+          <li><i>·</i>Not expired, not seen before</li>
+          <li><i>·</i>Validated on the ledger · tesSUCCESS</li></ol></div>
+        <div class="ck"><h4>Agent · after delivery<span>Did I get what was promised?</span></h4><ol data-ck="c">
+          <li><i>·</i>Every passage matches its fingerprint</li>
+          <li><i>·</i>Word count matches</li>
+          <li><i>·</i>Every promised fact is really there</li></ol></div>
+      </div>
+      <div class="proof">
+        <div class="pf"><div class="who"><span>AlphaLeak · S$0.30</span><span>15 passages</span></div>
+          <div class="leaves" data-la></div>
+          <div class="prom">Promised: a dated figure in passage "lead-times". Delivered:</div>
+          <blockquote>"Our sources say lead times out of Penang are collapsing and customers are already noticing the difference. Allocation is loosening, queues are shrinking… Expect the confirmation soon, and expect it to be big."</blockquote>
+          <div class="res no rv" data-rna>✗ Proof failed · no number, no date</div>
+        </div>
+        <div class="pf"><div class="who"><span>The Fab Floor · S$0.40</span><span>round 2</span></div>
+          <div class="leaves" data-lf></div>
+          <div class="prom">Promised: dated lead-time figures. Delivered:</div>
+          <blockquote>"By <mark>1 August 2026</mark>, the same Penang line was quoting <mark>22 weeks</mark>… Then on <mark>15 September 2026</mark>, the number came in at <mark>18 weeks</mark>."</blockquote>
+          <div class="res ok rv" data-rfa>✓ Proof verified · 6 claims recomputed</div>
+        </div>
+      </div>
+      <div class="env"><b class="flag">ANALOGY</b><span>The manifest is a sealed envelope with fingerprints on the outside. Before paying you can't read the passages, but you can see their fingerprints (salted hashes). After paying you get the salts, so you can recompute every fingerprint and check every promise. A promise names the <b>kind</b> of fact, never its value, so it gives nothing away.</span></div>
+    </div>
+    <p class="foot">Real passages from the two articles bought in the run. AlphaLeak's fingerprints all matched (the text is what it said it was) but its promised <b>dated figure</b> isn't in the text. Fingerprint = <code>sha256(salt ‖ index ‖ passageId ‖ text)</code>; the manifest is signed by the same XRPL key that receives the payment.</p>
+  </div>
+</section>
+
+<!-- REFUND -->
+<section id="refund">
+  <div class="prose">
+    <div class="kick">Step 7 · Refund and track record</div>
+    <h2>A broken promise costs the writer.</h2>
+    <p class="lede">The agent challenges the writer. The writer's own server re-checks and refunds on the ledger. Its <strong>track record</strong> drops either way, so a cheat gets one sale and then gets blocked.</p>
+  </div>
+  <div class="panel" id="w-refund">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">From broken promise to blocked writer</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ref-grid">
+        <ol class="tl" data-tl>
+          <li class="rv"><span class="tm">+16.1 s</span><span>Agent sends <code>POST /w/alphaleak/challenge</code> with the tx hash and the claim <code>lead-times-dated</code></span></li>
+          <li class="rv"><span class="tm">+22.3 s</span><span>AlphaLeak's server re-checks the bytes it stored, finds the claim broken, and <b style="color:var(--ok)">refunds S$0.30</b> on the ledger. Invoice ID = the original tx hash. Tx <code>A23F2033…</code></span></li>
+          <li class="rv"><span class="tm">+22.3 s</span><span>Track record 0.80 → <b style="color:var(--bad)">0.40</b>. Below 0.50 the writer is blocked: never bought, never cited.</span></li>
+          <li class="rv"><span class="tm">+22.8 s</span><span>Round 2 buys The Fab Floor (S$0.40). Proof verified, track record 0.80 → <b style="color:var(--ok)">0.83</b>.</span></li>
+        </ol>
+        <div>
+          <div class="gauge"><div class="gl"><span>AlphaLeak · track record</span><span data-gs>active</span></div>
+            <div class="gv" data-ga>0.40</div>
+            <div class="scale"><span class="half"></span><span class="mk" data-ma></span></div>
+            <div class="scale-l"><span>0</span><span>0.50 blocked below</span><span>1</span></div>
+            <div class="rv" data-blocked><span class="stamp">BLOCKED</span></div></div>
+          <div class="gauge" style="margin-top:22px"><div class="gl"><span>The Fab Floor · track record</span><span>active</span></div>
+            <div class="gv" data-gf>0.83</div>
+            <div class="scale"><span class="half"></span><span class="mk" data-mf></span></div></div>
+        </div>
+      </div>
+      <div class="mathbox well">track record = (kept + 4) ÷ (kept + 5 × broken + 5) &nbsp;·&nbsp; new writer: 4 ÷ 5 = <b>0.80</b> &nbsp;·&nbsp; one broken: 4 ÷ 10 = <b style="color:var(--bad)">0.40</b> &nbsp;·&nbsp; one kept: 5 ÷ 6 = <b style="color:var(--ok)">0.83</b></div>
+      <div class="ref-grid" style="margin-top:22px;align-items:center">
+        <div>
+          <h3>The answer changes</h3>
+          <p style="font-size:17px;color:var(--ink-2)">Answer v2: Kestrel's Penang lead time fell from <b>26 weeks</b> (1 Jun) to <b>22</b> (1 Aug) to <b>18</b> (15 Sep 2026), a cut of 31% while capacity grew from 11,000 to 16,000 units a month. <span class="hl">2 of 2 requested facts answered.</span></p>
+        </div>
+        <svg class="chart" viewBox="0 0 460 210" data-chart role="img" aria-label="Lead time in weeks: 26 on 1 June, 22 on 1 August, 18 on 15 September 2026"></svg>
+      </div>
+    </div>
+    <p class="foot">The ledger can't force a refund: it can check a hash and a deadline, not whether a sentence contains a date. So the penalty lives in the track record. A writer who refuses or ignores a challenge for 30 s loses twice as much and is delisted. Calibration also counts: AlphaLeak claimed relevance 0.96 and delivered 0, so its score is multiplied by 1 − 0.96² = 0.08 as well.</p>
+  </div>
+</section>
+
+<!-- BUILT -->
+<section id="built">
+  <div class="prose">
+    <div class="kick">How we built it</div>
+    <h2>Built by coding agents, specced as GitHub issues.</h2>
+    <p class="lede">Issues as specs, overnight orchestrated runs, parallel git worktrees, and agents that rehearsed this demo and wrote down where it breaks.</p>
+  </div>
+  <div class="panel" id="w-built">
+    <div class="panel-in">
+      <div class="ph"><div class="tag">git log · every merged pull request</div><div class="clock" data-bclock>Fri 9 Oct</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="built-top">
+        <div class="big"><span class="num" data-bprs>72</span><span class="cap">pull requests merged</span></div>
+        <div class="big add"><span class="num" data-badd>+75,352</span><span class="cap">lines added</span></div>
+        <div class="big del"><span class="num" data-bdel>−65,301</span><span class="cap">lines deleted</span></div>
+      </div>
+      <svg class="strip" viewBox="0 0 1000 196" data-bstrip role="img" aria-label="Merged pull requests over time, 7 Sep to 9 Oct 2026"></svg>
+      <div class="prlog well" data-prlog></div>
+      <div class="stats4">
+        <div class="stat"><b>165</b><span>GitHub issues, used as the specs</span></div>
+        <div class="stat"><b>23</b><span>PRs merged in one overnight run, in 2 h 17 min</span></div>
+        <div class="stat"><b>3</b><span>agent reviewers ran the live demo 13 times</span></div>
+        <div class="stat"><b>US$0.96</b><span>for the whole decision-model benchmark</span></div>
+      </div>
+    </div>
+    <p class="foot">Real PR titles and line counts from GitHub (Collaboration95/theFastandtheFungible). <span class="k">Blue</span> bars are mostly new code, grey bars mostly deletion; bar height is lines changed (log scale), one bar per PR. The 6 Oct pivot threw away the first corpus and rebuilt search, payments and the agent loop in two days.</p>
+  </div>
+</section>
+
+<!-- CLOSE -->
+<section id="close" class="close">
+  <div class="kick">ResearchAgent</div>
+  <h2>An LLM writes.<br>A decision model chooses.<br>Code pays.</h2>
+  <div class="links"><a href="https://github.com/Collaboration95/theFastandtheFungible" target="_blank" rel="noopener">github.com/Collaboration95/theFastandtheFungible</a></div>
+  <div class="labels"><span>Writers and articles: SYNTHETIC</span><span>Models: live</span></div>
+</section>
+
+</main></div>
+
+<script>
+(() => {
+const EVENTS = [[0.0,"PLAN","Plan: 2 searches, 2 requested facts"],[0.01,"SEARCH","Searching publisher public metadata."],[0.75,"SEARCH","16 hits from 8 writers · hybrid"],[0.77,"ANSWER","Writing the free answer."],[4.84,"COVERAGE","0 of 2 requested facts answered."],[4.86,"FOLLOW_UP","Searching again for: Kestrel Semiconductor's advanced-packaging lead times in Malaysia, with dates and figures"],[5.95,"FOLLOW_UP","8 new free sources · nothing new on: Kestrel Semiconductor's advanced-packaging lead times in Malaysia, with dates and figures"],[5.96,"DECIDE","Scoring public previews and applying spending policy."],[6.86,"BUY","Policy selected one purchase within budget."],[6.87,"WIRE","GET /w/alphaleak/articles/alphaleak-kestrel-penang-lead-times → 402"],[6.88,"PURCHASE","RESERVED"],[15.58,"WIRE","GET /w/alphaleak/articles/alphaleak-kestrel-penang-lead-times → 200"],[15.59,"XRPL","Signed 0.03 XRP → rGeN8NcEVRVvWeFoyY9Df1TyiLq9AhoX5T · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator"],[16.04,"XRPL","Validated in ledger 21384313 · tesSUCCESS"],[16.05,"XRPL","Publisher verified the payment on the ledger and issued a receipt"],[16.05,"PROOF","Proof failed · lead-times-dated · source quarantined, never cited"],[16.06,"CHALLENGE","POST /w/alphaleak/challenge · claim lead-times-dated"],[22.05,"WIRE","POST /w/alphaleak/challenge → 200"],[22.27,"CHALLENGE","REFUNDED"],[22.28,"REFUND","Refunded S$0.30 · InvoiceID = original tx"],[22.29,"REPUTATION","alphaleak: proof refunded · H 0.80→0.40 · C 1.00→1.00 · quarantined"],[22.29,"REPUTATION","alphaleak: relevance claimed 0.96, observed 0.00 (proof failed) · H 0.40→0.40 · C 1.00→0.08 · quarantined"],[22.31,"DECIDE","Scoring public previews and applying spending policy."],[22.82,"BUY","Policy selected one purchase within budget."],[22.84,"WIRE","GET /w/the-fab-floor/articles/fab-floor-kestrel-penang-lead-times → 402"],[22.85,"PURCHASE","RESERVED"],[29.08,"WIRE","GET /w/the-fab-floor/articles/fab-floor-kestrel-penang-lead-times → 200"],[29.09,"XRPL","Signed 0.04 XRP → rnkdwreaQygabFAALPboYfDGtMXCHYoMAF · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator"],[29.59,"XRPL","Validated in ledger 21384317 · tesSUCCESS"],[29.6,"XRPL","Publisher verified the payment on the ledger and issued a receipt"],[29.61,"PROOF","Proof verified · 6 claims recomputed"],[29.62,"GRANT","manifest root verified"],[29.63,"REPUTATION","the-fab-floor: proof pass · H 0.80→0.83 · C 1.00→1.00 · active"],[29.65,"READ_PAID","Verified grant permits paid evidence."],[29.66,"ANSWER","Re-answering with verified evidence."],[30.26,"REPUTATION","the-fab-floor: relevance claimed 1.00, observed 0.88 · H 0.83→0.83 · C 1.00→0.98 · active"],[33.61,"COVERAGE","2 of 2 requested facts answered."],[33.63,"DONE","Stopped: All requested facts answered."]];
+const PRS = [[1,"2026-09-07T14:45:13Z",381,310,"chore: organize ResearchAgent documentation"],[28,"2026-09-16T05:34:48Z",249,107,"feat(research-agent): establish truthful local evidence workspace"],[29,"2026-09-17T14:03:52Z",293,301,"refactor(repo): flatten ResearchAgent into repository root"],[57,"2026-09-19T06:16:21Z",11253,12065,"feat(research-plan): define finance research plan artifacts"],[79,"2026-10-04T13:40:28Z",1612,1278,"refactor(foundation): establish demo contracts [W0]"],[80,"2026-10-04T13:52:35Z",318,7,"feat(report): add cited PDF report with print fallback [W1-REPORT]"],[83,"2026-10-04T13:56:03Z",691,154,"feat(corpus): add fictional evidence and scenario variants [W1-CORPUS]"],[82,"2026-10-04T13:57:02Z",485,3,"feat(publisher): add durable simulated purchase protocol [W1-PUB]"],[81,"2026-10-04T13:58:04Z",320,8,"feat(research): implement cited streaming answers [W1-RESEARCH]"],[84,"2026-10-04T13:59:41Z",626,12,"feat(decision): add bounded decisions and run loop [W1-DECIDE]"],[85,"2026-10-04T14:01:06Z",587,30,"feat(ledger): persist budgeted purchases and verified grants [W1-LEDGER]"],[86,"2026-10-04T14:08:01Z",292,12,"feat(ui): add budgeted cited answer experience [W1-UI-ASK]"],[87,"2026-10-04T14:10:30Z",414,14,"feat(ui): expose policy and agent internals [W1-UI-AGENT]"],[88,"2026-10-04T14:22:43Z",311,3483,"feat(integration): wire autonomous research demo [W2-INTEGRATE]"],[89,"2026-10-04T14:30:57Z",468,0,"test(scenarios): guard budgeted demo flows and premium leaks [W2-SCENARIOS]"],[90,"2026-10-04T14:40:22Z",72,14,"fix(research): keep redundant paid evidence unchanged [W3-IMPACT-FIX]"],[91,"2026-10-04T14:45:11Z",42,3,"feat(fault): expose one-charge delivery retry demo [W3-FAULT]"],[92,"2026-10-04T14:46:06Z",261,0,"build(publisher): prepare guarded Cloud Run image [W3-CLOUDRUN]"],[93,"2026-10-04T14:46:43Z",179,38,"feat(ui): polish the projector evidence stage [W3-POLISH]"],[94,"2026-10-04T14:55:14Z",24,1,"test(e2e): follow polished stage navigation [W3-STAGE-CHECK-FIX]"],[95,"2026-10-04T15:21:29Z",15108,11,"fix(providers): qualify Clef schema and calibrate live policy [W3-LIVE]"],[97,"2026-10-05T10:23:26Z",248,34,"chore(tooling): make targets, provider doctor and port offset"],[100,"2026-10-05T10:24:15Z",122,80,"feat(llm): switch the writing gateway to DeepSeek deepseek-flash"],[101,"2026-10-05T10:25:15Z",827,52,"feat(settlement): pay publishers on the XRPL Testnet"],[103,"2026-10-05T10:44:55Z",281,28,"feat(xrpl): per-publisher Testnet wallets and a live ledger panel (#98 phase 2)"],[104,"2026-10-05T10:54:37Z",1025,48,"feat(observability): trace live runs to Langfuse Cloud"],[105,"2026-10-05T12:49:15Z",227,42,"feat(observability): score live runs and build a Langfuse health dashboard"],[107,"2026-10-06T10:35:36Z",227,1,"build(docker): run the demo from lean Alpine containers built per commit"],[106,"2026-10-06T12:43:14Z",2738,0,"docs(ux): UX walkthrough with v1.1 tweaks and A/B flows"],[109,"2026-10-06T13:13:59Z",1507,1213,"feat(ui): ship the v1 UX: one paced workspace, plain verdicts, notifications"],[110,"2026-10-06T15:44:27Z",1757,26754,"docs: pivot to the 6 Oct final-push direction"],[167,"2026-10-06T16:38:19Z",231,39,"docs: amend final push for 7 Oct and add the overnight run plan"],[168,"2026-10-06T17:02:03Z",1000,47,"feat(contracts): writers, manifest, x402 v2 and run contracts [WP-W0]"],[169,"2026-10-06T17:08:46Z",1314,0,"feat(corpus): writer roster and story bible for UC1–UC3 [WP-C1]"],[170,"2026-10-06T17:16:24Z",723,5,"feat(search): multi-publisher host, Orama search and leak-safe search route [WP-S1]"],[171,"2026-10-06T17:18:46Z",320,5,"feat(corpus): resumable DeepSeek corpus generator [WP-C2]"],[172,"2026-10-06T17:23:21Z",293,24,"feat(search): signed manifests with persisted salts and the AlphaLeak bad actor [WP-S2]"],[174,"2026-10-06T17:43:21Z",725,103,"feat(agent): scope, plan, federated retrieval and free-text gaps [WP-A1]"],[173,"2026-10-06T17:46:54Z",827,491,"feat(pay): x402 v2 402, publisher facilitator and one-blob buyer [WP-P1]"],[175,"2026-10-06T17:50:41Z",358,14,"feat(agent): reputation module and post-purchase calibration [WP-A2]"],[176,"2026-10-06T17:57:39Z",345,3,"feat(sites): publisher blog sites, paid abstract pages, passage anchors, /w index [WP-SITE"],[177,"2026-10-06T17:59:30Z",7268,1,"feat(corpus): commit the v2 corpus and its self-check [WP-C3]"],[179,"2026-10-06T18:04:46Z",32,32,"fix(corpus): reword stock phrases free posts shared with paid bodies [WP-C3]"],[180,"2026-10-06T18:09:11Z",2,0,"feat(search): commit v2 embeddings and UC query vectors [S2]"],[178,"2026-10-06T18:09:25Z",754,72,"feat(pay): proof check, quarantine, challenge/refund and paid-publisher wallets [WP-P2]"],[181,"2026-10-06T18:25:58Z",317,42,"feat(agent): run-loop proof, challenge, reputation and Langfuse step spans [WP-A3]"],[182,"2026-10-06T18:26:43Z",1432,60,"feat(ui): clarify chips, plan card, writer chips, proofs and refunds, Writers tab [WP-UI]"],[183,"2026-10-06T18:33:03Z",584,21,"perf(search): tuned hybrid ranking and absolute relevance [S2]"],[185,"2026-10-06T18:40:17Z",288,5,"feat(ops): doctor, make targets and the live smoke script [WP-T5]"],[184,"2026-10-06T18:42:54Z",437,16368,"test(ship): retire the Vertex corpus and /v1 paths; UC1–UC3 process scenarios [WP-T1]"],[186,"2026-10-06T18:49:51Z",209,125,"feat(ui): presenter controls, UC presets and generated UC1–UC3 fixture runs [WP-UI]"],[187,"2026-10-06T19:05:56Z",46,33,"fix(live): deterministic UC1–UC3 on live DeepSeek + Clef + Testnet [T3]"],[188,"2026-10-06T19:13:11Z",72,48,"test(e2e): UC2/UC3 browser flow and a11y for the new components [T4]"],[189,"2026-10-06T19:18:49Z",139,53,"docs: as-built docs and the build log [T6]"],[190,"2026-10-06T19:19:00Z",148,3,"docs: overnight report, tuning journey and newcomer UI review"],[191,"2026-10-07T02:40:09Z",51,33,"feat(llm): configure the LLM with LLM_BASE_URL, LLM_MODEL and LLM_API_KEY"],[192,"2026-10-07T02:42:38Z",67,3,"chore(agents): ship-pr skill, review script, worktree and loosening rules"],[193,"2026-10-08T01:54:29Z",920,394,"UI v1.1 port, 7 Oct UI critique pass, faster make live"],[216,"2026-10-08T15:43:56Z",580,127,"Decision-path hardening: no decision fallback, Clef resilience, make preflight, neutral ti"],[215,"2026-10-08T15:50:02Z",489,88,"Stage UI and Q&A: v1.2 UI, on-stage strings (#199), Q&A pack (#200)"],[217,"2026-10-08T15:57:34Z",645,65,"Corpus: golden-fact check (#198), UC3 S$0.40 deep-dive (#204), UC4 content (#211)"],[218,"2026-10-08T16:04:33Z",3650,2,"Measurement: in-domain eval set and label flywheel (#203), decisions bench v2 harness (#21"],[219,"2026-10-08T16:16:51Z",979,155,"Decision-model switch: OpenAI Decisions (#214), trust check (#205), round robustness (#206"],[220,"2026-10-08T16:39:17Z",209,41,"Live-comparison fixes: OpenAI Decisions wording switches, provider-aware smoke"],[221,"2026-10-08T16:57:46Z",1298,273,"Requested facts, decision-model coverage, next-fact rounds and one free follow-up search ("],[222,"2026-10-08T17:23:03Z",2430,78,"Calibration layer (off by default), production-path decision harness, decision and coverag"],[223,"2026-10-09T03:39:40Z",1251,190,"docs(ux): v1.2 walkthrough, shipped screenshots, Oct 9 stage review"],[234,"2026-10-09T05:07:27Z",1459,48,"docs: 5-minute stage cut, 8 Oct re-plan notes, demo-prep status"],[235,"2026-10-09T05:13:59Z",1,0,"chore(git): ignore local notes under final-push/analysis"],[236,"2026-10-09T05:36:26Z",200,24,"Answer non-research questions directly; harden make live start-up"],[237,"2026-10-09T06:07:33Z",196,80,"Chat page for direct replies (ChatGPT-style)"],[238,"2026-10-09T07:05:36Z",118,3,"Stop make live when Workers AI refuses the Cloudflare token"]];
+
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const ease = x => 1 - Math.pow(1 - x, 3);
+const lerp = (a, b, x) => a + (b - a) * x;
+const money = n => 'S$' + Math.max(0, n).toFixed(2);
+const sv = (tag, attrs = {}, parent) => { const el = document.createElementNS(NS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); if (parent) parent.appendChild(el); return el; };
+const show = (el, on) => el.classList.toggle('off', !on);
+
+/* widget runtime: each widget is render(t) for t in [0, duration]; rest state = the end */
+const W = [];
+function widget(id, duration, render) {
+  const root = document.getElementById(id);
+  const w = { root, duration, render, raf: 0, state: 'rest', t: duration, onstate: null };
+  const set = s => { w.state = s; if (w.onstate) w.onstate(s); };
+  w.seek = t => { cancelAnimationFrame(w.raf); w.t = clamp(t, 0, duration); render(w.t); set('paused'); };
+  w.play = (from = 0) => {
+    cancelAnimationFrame(w.raf);
+    if (REDUCE) { w.t = duration; render(duration); set('done'); return; }
+    const t0 = performance.now() - from;
+    set('playing');
+    const tick = now => { const t = Math.min(duration, now - t0); w.t = t; render(t); if (t < duration) w.raf = requestAnimationFrame(tick); else set('done'); };
+    w.raf = requestAnimationFrame(tick);
+  };
+  render(duration);
+  $$('[data-replay]', root).forEach(b => b.addEventListener('click', () => w.play()));
+  W.push(w);
+  return w;
+}
+
+/* ---------- W0: the run (scrub by scrolling the log or dragging the timeline) ---------- */
+(() => {
+  const root = $('#w-run'), inner = $('.panel-in', root), strip = $('[data-strip]', root), log = $('[data-log]', root), tip = $('[data-tip]', root);
+  const END = EVENTS.length ? EVENTS[EVENTS.length - 1][0] : 33.63;
+  const SPEED = 2.4, DUR = END / SPEED * 1000 + 600;
+  const START = Date.UTC(2026, 9, 8, 19, 59, 57, 648);
+  const KIND = {
+    PLAN: ['pen', 34], SEARCH: ['pen', 44], ANSWER: ['pen', 40], COVERAGE: ['pen', 52], FOLLOW_UP: ['pen', 38], DECIDE: ['ink', 58],
+    BUY: ['pay', 70], WIRE: ['pay', 52], PURCHASE: ['pay', 86], XRPL: ['pay', 96], CHALLENGE: ['bad', 82], REFUND: ['ok', 108],
+    REPUTATION: ['ink', 62], GRANT: ['ok', 64], READ_PAID: ['ok', 48], DONE: ['ok', 76],
+  };
+  const color = (type, label) => {
+    if (type === 'PROOF') return /failed/i.test(label) ? 'var(--bad)' : 'var(--ok-bright)';
+    if (type === 'REPUTATION') return /quarantin/i.test(label) ? 'var(--bad)' : 'var(--ok-bright)';
+    const k = (KIND[type] || ['ink'])[0];
+    return { pen: 'var(--pen)', ink: 'var(--ink-2)', pay: 'var(--pay)', bad: 'var(--bad)', ok: 'var(--ok-bright)' }[k];
+  };
+  const height = (type, label) => type === 'PROOF' ? (/failed/i.test(label) ? 118 : 100) : (KIND[type] || ['', 40])[1];
+  const X0 = 14, X1 = 986, BASE = 128;
+  const xs = []; let prev = -1e9;
+  EVENTS.forEach(([t]) => { const x = Math.max(X0 + (t / END) * (X1 - X0), prev + 9); xs.push(x); prev = x; });
+  const over = xs.length ? xs[xs.length - 1] : X1; const k = (X1 - X0) / Math.max(1, over - X0);
+  for (let i = 0; i < xs.length; i++) xs[i] = X0 + (xs[i] - X0) * k;
+  const xAt = t => { // run time → x, following the spread bars
+    if (!EVENTS.length) return X0;
+    let i = 0; while (i < EVENTS.length - 1 && EVENTS[i + 1][0] <= t) i++;
+    if (t <= EVENTS[0][0]) return xs[0];
+    if (i >= EVENTS.length - 1) return xs[xs.length - 1];
+    const a = EVENTS[i][0], b = EVENTS[i + 1][0];
+    return lerp(xs[i], xs[i + 1], b > a ? (t - a) / (b - a) : 0);
+  };
+  const tAtX = x => { // x → run time (inverse of xAt)
+    if (!xs.length || x <= xs[0]) return 0;
+    for (let i = 0; i < xs.length - 1; i++) if (x < xs[i + 1]) return lerp(EVENTS[i][0], EVENTS[i + 1][0], (x - xs[i]) / Math.max(1e-6, xs[i + 1] - xs[i]));
+    return END;
+  };
+  const waits = [[6.88, 15.58, 'waiting for the ledger'], [16.06, 22.27, 'writer re-checks, refunds'], [22.85, 29.08, 'waiting for the ledger']];
+  waits.forEach(([a, b, l]) => { const xa = xAt(a), xb = xAt(b); sv('rect', { x: xa, y: 14, width: Math.max(0, xb - xa), height: BASE - 14, fill: 'var(--mist)', rx: 4 }, strip); const tx = sv('text', { x: (xa + xb) / 2, y: 30, 'text-anchor': 'middle' }, strip); tx.textContent = l; });
+  sv('line', { x1: X0, x2: X1, y1: BASE + .5, y2: BASE + .5, stroke: 'var(--rule-2)' }, strip);
+  const bars = EVENTS.map(([t, type, label], i) => sv('rect', { x: xs[i] - 2.5, y: BASE - height(type, label), width: 5, height: height(type, label), rx: 1.5, fill: color(type, label) }, strip));
+  const marks = [[0.77, 'free answer'], [6.86, 'buys AlphaLeak'], [16.05, 'proof fails'], [22.28, 'refund'], [22.82, 'buys Fab Floor'], [33.6, 'answer v2']];
+  let lastX = -1e9;
+  marks.forEach(([t, l], i) => { const x = xAt(t); const anchor = i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle'; const y = x - lastX < 92 ? 164 : 148; lastX = y === 148 ? x : lastX; sv('line', { x1: x, x2: x, y1: BASE + 3, y2: y - 12, stroke: 'var(--rule-2)', 'stroke-dasharray': '2 3' }, strip); const tx = sv('text', { x, y, 'text-anchor': anchor }, strip); tx.textContent = l; });
+  const cursor = sv('line', { x1: X0, x2: X0, y1: 6, y2: BASE + 2, stroke: 'var(--ink)', 'stroke-width': 2 }, strip);
+  const knob = sv('circle', { cx: X0, cy: 6, r: 6, fill: 'var(--ink)' }, strip);
+  const elLeft = $('[data-left]', root), elNet = $('[data-net]', root), elClock = $('[data-clock]', root), elEl = $('[data-elapsed]', root);
+  const fmtClock = ms => { const p = n => String(n).padStart(2, '0'); const sg = new Date(START + ms + 8 * 3600e3); return `Fri 9 Oct · ${p(sg.getUTCHours())}:${p(sg.getUTCMinutes())}:${p(sg.getUTCSeconds())} SGT`; };
+  const left = r => r < 6.88 ? 2 : r < 22.28 ? 1.7 : r < 22.85 ? 2 : 1.6;
+  const amt = (type, label) => type === 'PURCHASE' ? ['minus', ''] : type === 'REFUND' ? ['plus', '+S$0.30'] : type === 'PROOF' && /failed/i.test(label) ? ['bad', '✗'] : type === 'PROOF' ? ['plus', '✓'] : ['', ''];
+  const purchaseAmt = i => EVENTS.slice(0, i).some(e => e[1] === 'REFUND') ? '−S$0.40' : '−S$0.30';
+  const amount = i => { const e = EVENTS[i]; const r = amt(e[1], e[2]); if (e[1] === 'PURCHASE') r[1] = purchaseAmt(i); return r; };
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+  // the full log, one row per event; the row in the middle of the window is "now"
+  const rows = EVENTS.map((e, i) => {
+    const d = document.createElement('div'); d.className = 'log-row'; d.dataset.i = i;
+    const [cls, a] = amount(i);
+    d.innerHTML = `<span>+${e[0].toFixed(2)}s</span><span>${esc(e[2])}</span><span class="amt ${cls}">${a}</span>`;
+    log.appendChild(d); return d;
+  });
+  const tOf = i => EVENTS[i][0] / SPEED * 1000 + 1;
+  let w = null, focus = null, userScroll = false, dragging = false, suppress = 0, lastKey = '', hoverI = -1;
+  const following = () => !w || dragging || (w.state === 'playing' && !userScroll);
+  const center = el => { const top = Math.max(0, el.offsetTop + el.offsetHeight / 2 - log.clientHeight / 2); if (Math.abs(log.scrollTop - top) > 1) { suppress = performance.now() + 250; log.scrollTop = top; } };
+
+  const render = t => {
+    const r = Math.min(END, t / 1000 * SPEED);
+    let n = 0; while (n < EVENTS.length && EVENTS[n][0] <= r) n++;
+    const cur = focus !== null ? focus : n - 1, live = t < DUR - 1;
+    bars.forEach((b, i) => b.setAttribute('opacity', i < n ? 1 : .14));
+    const x = xAt(r);
+    cursor.setAttribute('x1', x); cursor.setAttribute('x2', x); cursor.setAttribute('opacity', live ? 1 : 0);
+    knob.setAttribute('cx', x); knob.setAttribute('opacity', live ? 1 : 0);
+    const l = left(r); elLeft.textContent = money(l); elNet.textContent = money(2 - l);
+    elClock.textContent = fmtClock(r * 1000);
+    const bought = (r >= 6.88 ? 1 : 0) + (r >= 22.85 ? 1 : 0), refunded = r >= 22.28 ? 1 : 0;
+    elEl.textContent = `${r.toFixed(1)} s · ${bought} bought · ${refunded} refunded`;
+    const key = n + ':' + cur + ':' + live;
+    if (key !== lastKey) { lastKey = key; rows.forEach((d, i) => { d.classList.toggle('future', i >= n); d.classList.toggle('now', i === cur && live); }); }
+    if (cur >= 0 && following()) center(rows[cur]);
+  };
+  w = widget('w-run', DUR, render);
+  render(DUR);
+
+  // scrub state resets whenever the run plays; controls() wires the pause/play button
+  w.onstate = s => { if (s === 'playing') { focus = null; userScroll = false; } };
+
+  // scrolling the log stops the run and scrubs it
+  const takeOver = () => { userScroll = true; if (w.state === 'playing') w.seek(w.t); };
+  log.addEventListener('wheel', takeOver, { passive: true });
+  log.addEventListener('touchstart', takeOver, { passive: true });
+  log.addEventListener('pointerdown', takeOver);
+  log.addEventListener('keydown', e => { if (/^(Arrow(Up|Down)|Page(Up|Down)|Home|End)$/.test(e.key)) takeOver(); });
+  log.addEventListener('scroll', () => {
+    if (!userScroll || performance.now() < suppress) return;
+    const mid = log.scrollTop + log.clientHeight / 2; let i = 0;
+    for (let j = 0; j < rows.length; j++) { if (rows[j].offsetTop <= mid) i = j; else break; }
+    if (i !== focus) { focus = i; w.seek(tOf(i)); }
+  }, { passive: true });
+  log.addEventListener('click', e => { const d = e.target.closest('.log-row'); if (!d) return; focus = +d.dataset.i; w.seek(tOf(focus)); center(d); });
+
+  // hovering a bar (or a log row) names its event
+  const vx = e => { const b = strip.getBoundingClientRect(); return (e.clientX - b.left) / b.width * 1000; };
+  const nearest = x => { let best = -1, d = 1e9; xs.forEach((xx, i) => { const dd = Math.abs(xx - x); if (dd < d) { d = dd; best = i; } }); return d <= 10 ? best : -1; };
+  const hover = i => {
+    if (i === hoverI) return;
+    if (hoverI >= 0) { bars[hoverI].setAttribute('width', 5); bars[hoverI].setAttribute('x', xs[hoverI] - 2.5); rows[hoverI].classList.remove('hover'); }
+    hoverI = i;
+    if (i < 0) { tip.hidden = true; return; }
+    bars[i].setAttribute('width', 9); bars[i].setAttribute('x', xs[i] - 4.5); rows[i].classList.add('hover');
+    const e = EVENTS[i], a = amount(i)[1];
+    tip.innerHTML = `<b><i style="background:${color(e[1], e[2])}"></i>+${e[0].toFixed(2)} s · ${e[1].replace('_', ' ')}${a ? ' · ' + a : ''}</b>${esc(e[2])}`;
+    tip.hidden = false;
+    const sr = strip.getBoundingClientRect(), pr = inner.getBoundingClientRect();
+    const px = sr.left - pr.left + xs[i] / 1000 * sr.width, py = sr.top - pr.top + (BASE - height(e[1], e[2])) / 170 * sr.height;
+    tip.style.left = clamp(px - tip.offsetWidth / 2, 8, pr.width - tip.offsetWidth - 8) + 'px';
+    tip.style.top = Math.max(4, py - tip.offsetHeight - 10) + 'px';
+  };
+  strip.addEventListener('pointerdown', e => { dragging = true; userScroll = false; focus = null; try { strip.setPointerCapture(e.pointerId); } catch (_) {} w.seek(tAtX(vx(e)) / SPEED * 1000); });
+  strip.addEventListener('pointermove', e => { const x = vx(e); if (dragging) { focus = null; w.seek(tAtX(x) / SPEED * 1000); } hover(nearest(x)); });
+  const release = () => { dragging = false; };
+  strip.addEventListener('pointerup', release); strip.addEventListener('pointercancel', release);
+  strip.addEventListener('pointerleave', () => { if (!dragging) hover(-1); });
+  log.addEventListener('pointermove', e => { const d = e.target.closest('.log-row'); hover(d ? +d.dataset.i : -1); });
+  log.addEventListener('pointerleave', () => hover(-1));
+})();
+
+/* ---------- W1: map ---------- */
+(() => {
+  const root = $('#w-map'), svg = $('[data-svg]', root), say = $('[data-say]', root), stepsEl = $('[data-steps]', root);
+  const box = (x, y, w, h, o = {}) => sv('rect', Object.assign({ x, y, width: w, height: h, rx: 12, fill: 'var(--sheet)', stroke: 'var(--rule-2)', 'stroke-width': 1.5 }, o), svg);
+  const txt = (x, y, s, o = {}) => { const t = sv('text', Object.assign({ x, y, 'font-size': 15, fill: 'var(--ink)' }, o), svg); t.textContent = s; return t; };
+  // bands
+  sv('rect', { x: 10, y: 104, width: 980, height: 344, rx: 18, fill: 'none', stroke: 'var(--rule-2)', 'stroke-width': 1.5, 'stroke-dasharray': '6 6' }, svg);
+  txt(26, 126, 'THIS LAPTOP', { 'font-size': 12, 'font-family': 'var(--f-mono)', 'letter-spacing': '.12em', fill: 'var(--muted)', 'font-weight': 600 });
+  txt(26, 30, 'ONLINE', { 'font-size': 12, 'font-family': 'var(--f-mono)', 'letter-spacing': '.12em', fill: 'var(--muted)', 'font-weight': 600 });
+  const N = {};
+  const node = (id, x, y, w, h, title, sub, o = {}) => {
+    const g = sv('g', {}, svg);
+    const r = sv('rect', Object.assign({ x, y, width: w, height: h, rx: 10, fill: 'var(--sheet)', stroke: 'var(--rule-2)', 'stroke-width': 1.5 }, o), g);
+    const t = sv('text', { x: x + 14, y: y + (sub ? 24 : h / 2 + 5), 'font-size': 15, 'font-weight': 650, fill: 'var(--ink)' }, g); t.textContent = title;
+    if (sub) { const s = sv('text', { x: x + 14, y: y + 43, 'font-size': 12.5, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, g); s.textContent = sub; }
+    N[id] = { g, r, x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
+  };
+  // online services
+  node('ds', 262, 18, 170, 56, 'DeepSeek', 'writes · plans');
+  node('oa', 444, 18, 196, 56, 'OpenAI Decisions', 'judges · gpt-6-luna');
+  node('cf', 700, 18, 270, 56, 'Cloudflare Workers AI', 'text → 768 numbers');
+  // laptop
+  node('you', 30, 216, 170, 96, 'You', 'question + budget');
+  sv('rect', { x: 248, y: 140, width: 330, height: 292, rx: 14, fill: 'var(--pen-wash)', stroke: 'none' }, svg);
+  txt(262, 164, 'ResearchAgent engine', { 'font-weight': 700, 'font-size': 15 });
+  node('llm', 262, 178, 302, 50, 'LLM', 'plans · writes · names the gap');
+  node('dm', 262, 238, 302, 50, 'Decision model', 'scores paywalled articles');
+  node('pc', 262, 298, 302, 50, 'Policy code + wallet', 'the only thing that pays');
+  node('vf', 262, 358, 302, 50, 'Verifier', 'checks every promise');
+  sv('rect', { x: 640, y: 140, width: 330, height: 292, rx: 14, fill: 'var(--mist)', stroke: 'none' }, svg);
+  txt(654, 164, "8 writers' sites", { 'font-weight': 700, 'font-size': 15 });
+  txt(956, 164, 'search · 402 · refund', { 'font-size': 11.5, 'text-anchor': 'end', fill: 'var(--muted)', 'font-family': 'var(--f-mono)' });
+  const WR = ['Open Records · free', 'NotFinancialTimes', 'Load Factor', 'Basis Points', 'The Fab Floor', 'Kopi Contrarian', 'MarketPulse Digest', 'AlphaLeak'];
+  const wrows = WR.map((nm, i) => { const y = 176 + i * 31; const r = sv('rect', { x: 654, y, width: 302, height: 26, rx: 6, fill: 'var(--sheet)', stroke: 'var(--rule)', 'stroke-width': 1 }, svg); const t = sv('text', { x: 666, y: y + 18, 'font-size': 13.5, fill: 'var(--ink-2)', 'font-family': 'var(--f-mono)' }, svg); t.textContent = nm; return { r, y: y + 13 }; });
+  N.alpha = { r: wrows[7].r, cx: 805, cy: wrows[7].y }; N.fab = { r: wrows[4].r, cx: 805, cy: wrows[4].y };
+  node('xrpl', 248, 474, 722, 56, 'XRPL Testnet', 'public ledger · settles every payment', { fill: 'var(--pay-wash)', stroke: 'color-mix(in srgb, var(--pay) 45%, transparent)' });
+  // paths
+  const P = {};
+  const path = (id, d) => { P[id] = sv('path', { d, fill: 'none', stroke: 'var(--rule-2)', 'stroke-width': 1.5, 'stroke-dasharray': '3 5' }, svg); };
+  path('you-eng', 'M200 250 C 225 250, 230 203, 262 203');
+  path('llm-ds', 'M347 178 L 347 74');
+  path('dm-oa', 'M542 238 C 600 238, 600 120, 542 74');
+  wrows.forEach((w, i) => path('fan' + i, `M564 203 C 610 203, 610 ${w.y}, 654 ${w.y}`));
+  path('wr-cf', 'M835 140 L 835 74');
+  path('pc-x', 'M413 348 C 413 420, 430 474, 470 474');
+  path('x-alpha', `M900 474 C 900 440, 980 ${wrows[7].y}, 956 ${wrows[7].y}`);
+  path('alpha-vf', `M654 ${wrows[7].y} C 610 ${wrows[7].y}, 610 383, 564 383`);
+  path('x-fab', `M930 474 C 930 420, 990 ${wrows[4].y}, 956 ${wrows[4].y}`);
+  path('fab-vf', `M654 ${wrows[4].y} C 600 ${wrows[4].y}, 610 383, 564 383`);
+  path('eng-you', 'M262 390 C 230 390, 225 290, 200 290');
+  const dots = []; const dot = c => { const d = sv('circle', { r: 6, fill: c, opacity: 0 }, svg); dots.push(d); return d; };
+  for (let i = 0; i < 12; i++) dot('var(--pen)');
+  const S = [
+    { say: 'You ask, with a budget.', hi: ['you', 'llm'], fly: [['you-eng', 'var(--pen)']] },
+    { say: 'The LLM turns the question into a plan and the facts you need.', hi: ['llm', 'ds'], fly: [['llm-ds', 'var(--pen)'], ['llm-ds', 'var(--pen)', 1]] },
+    { say: 'Every writer searches its own articles. Cloudflare turns text into numbers for meaning search.', hi: ['llm'], w: [0, 1, 2, 3, 4, 5, 6, 7], fly: WR.map((_, i) => ['fan' + i, 'var(--pen)']).concat([['wr-cf', 'var(--pen)']]) },
+    { say: 'Teasers and signed promises come back. Never the paid text.', hi: ['llm'], w: [0, 1, 2, 3, 4, 5, 6, 7], fly: WR.map((_, i) => ['fan' + i, 'var(--ink-2)', 1]) },
+    { say: 'The LLM answers from free sources and names what is still missing.', hi: ['llm', 'ds'], fly: [['llm-ds', 'var(--pen)'], ['llm-ds', 'var(--pen)', 1]] },
+    { say: 'The decision model scores every paywalled article against that gap.', hi: ['dm', 'oa'], fly: [['dm-oa', 'var(--pen)'], ['dm-oa', 'var(--pen)', 1]] },
+    { say: 'Policy code pays one writer directly, on the ledger.', hi: ['pc', 'xrpl'], w: [7], fly: [['pc-x', 'var(--pay)'], ['x-alpha', 'var(--pay)']] },
+    { say: 'The article arrives. The verifier recomputes every promise. One fails.', hi: ['vf'], w: [7], bad: true, fly: [['alpha-vf', 'var(--bad)']] },
+    { say: 'Challenge. The writer refunds on the ledger, and its track record drops.', hi: ['vf', 'xrpl'], w: [7], bad: true, fly: [['alpha-vf', 'var(--bad)', 1], ['x-alpha', 'var(--ok-bright)', 1], ['pc-x', 'var(--ok-bright)', 1]] },
+    { say: 'Round 2 buys an honest writer. Proof checks out.', hi: ['pc', 'vf', 'xrpl'], w: [4], fly: [['pc-x', 'var(--pay)'], ['x-fab', 'var(--pay)'], ['fab-vf', 'var(--ok-bright)']] },
+    { say: 'You get answer v2, every sentence cited.', hi: ['you', 'llm'], fly: [['eng-you', 'var(--ok-bright)']] },
+  ];
+  const STEP = 1700, DUR = S.length * STEP + 400;
+  S.forEach((s, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = i + 1; b.setAttribute('aria-label', 'Step ' + (i + 1) + ': ' + s.say); b.addEventListener('click', () => mapW.play(i * STEP)); stepsEl.appendChild(b); });
+  const btns = $$('button', stepsEl);
+  const lens = {}; for (const k in P) lens[k] = P[k].getTotalLength();
+  const ids = ['you', 'llm', 'dm', 'pc', 'vf', 'ds', 'oa', 'cf', 'xrpl'];
+  let lastStep = -1;
+  const THINK = [
+    ['Reading your question and your budget…', 'Budget set · only code can spend it'],
+    ['Querying DeepSeek: planning the searches…', 'Plan ready · 2 searches, 2 requested facts'],
+    ['Embedding the query with Cloudflare Workers AI…', "Searching 8 writers' sites in parallel…"],
+    ['Receiving teasers and signed promises…', '16 hits from 8 writers · no paid text'],
+    ['Reading the free articles only…', 'Writing a cited answer · 0 of 2 facts found'],
+    ['Querying the decision model on 12 paywalled articles…', 'AlphaLeak 1.70 per S$ · The Fab Floor 1.38'],
+    ['Policy code picks AlphaLeak · S$0.30', 'Signing the XRPL payment · waiting for the ledger…'],
+    ['Article delivered · recomputing 15 fingerprints…', 'Promised dated figure is missing · proof failed'],
+    ['POST /challenge · the writer re-checks its bytes…', 'Refunded S$0.30 · track record 0.80 → 0.40'],
+    ['Round 2 · AlphaLeak blocked · buying The Fab Floor…', 'Proof verified · 6 claims recomputed'],
+    ['Rewriting the answer with verified evidence…', '2 of 2 facts answered · done in 33.7 s'],
+  ];
+  const mPrev = $('[data-mprev]', root), mCur = $('[data-mcur]', root), mCaret = $('[data-mcaret]', root);
+  const status = (i, p, atRest) => {
+    if (atRest) { mPrev.textContent = 'idle'; mCur.textContent = '11 steps of one live run · press play or a step'; mCaret.hidden = true; return; }
+    const li = p < 0.5 ? 0 : 1, lp = clamp((p - li * 0.5) / 0.3), line = THINK[i][li];
+    mPrev.textContent = li ? '✓ ' + THINK[i][0] : i ? '✓ ' + THINK[i - 1][1] : '';
+    mCur.textContent = line.slice(0, Math.ceil(line.length * lp));
+    mCaret.hidden = lp >= 1;
+  };
+  const mapW = widget('w-map', DUR, t => {
+    const i = Math.min(S.length - 1, Math.floor(t / STEP)), p = (t - i * STEP) / STEP, s = S[i], atRest = t >= DUR;
+    status(i, p, atRest);
+    if (i !== lastStep || atRest) {
+      lastStep = i;
+      say.innerHTML = atRest ? '<small>11 steps · 33.7 s in the live run</small>The whole loop, under budget.' : `<small>Step ${i + 1} of ${S.length}</small>${s.say}`;
+      btns.forEach((b, j) => { b.classList.toggle('on', j === i && !atRest); b.classList.toggle('done', j < i || atRest); });
+      ids.forEach(id => { const on = !atRest && s.hi.includes(id); N[id].r.setAttribute('stroke', on ? (s.bad && id === 'vf' ? 'var(--bad)' : 'var(--pen)') : (id === 'xrpl' ? 'color-mix(in srgb, var(--pay) 45%, transparent)' : 'var(--rule-2)')); N[id].r.setAttribute('stroke-width', on ? 3 : 1.5); });
+      wrows.forEach((w, j) => { const on = !atRest && s.w && s.w.includes(j); w.r.setAttribute('stroke', on ? (s.bad && j === 7 ? 'var(--bad)' : 'var(--pen)') : 'var(--rule)'); w.r.setAttribute('stroke-width', on ? 2.5 : 1); w.r.setAttribute('fill', atRest ? 'var(--sheet)' : j === 7 && i >= 8 ? 'var(--bad-wash)' : 'var(--sheet)'); });
+      for (const k in P) { const used = !atRest && s.fly.some(f => f[0] === k); P[k].setAttribute('stroke', used ? 'var(--pen-wash-2)' : 'var(--rule-2)'); P[k].setAttribute('stroke-width', used ? 3 : 1.5); }
+    }
+    dots.forEach((d, j) => {
+      const f = !atRest && s.fly[j];
+      if (!f) { d.setAttribute('opacity', 0); return; }
+      const [pid, c, rev] = f; const q = ease(seg(p, 0.05 + (j % 8) * 0.02, 0.75 + (j % 8) * 0.02)); const L = lens[pid];
+      const pt = P[pid].getPointAtLength((rev ? 1 - q : q) * L);
+      d.setAttribute('cx', pt.x); d.setAttribute('cy', pt.y); d.setAttribute('fill', c); d.setAttribute('opacity', q > 0 && q < 1 ? 1 : q >= 1 ? .35 : 0);
+    });
+  });
+})();
+
+/* ---------- W2: search ---------- */
+(() => {
+  const root = $('#w-search');
+  const Q = 'Kestrel Semiconductor advanced packaging lead times Malaysia';
+  const qEl = $('[data-q]', root), vec = $('[data-vec]', root), lanes = $('[data-lanes]', root), total = $('[data-total]', root);
+  const VALS = Array.from({ length: 48 }, (_, i) => 0.18 + 0.82 * Math.abs(Math.sin(i * 12.9898 + 4.1) * 0.5 + Math.sin(i * 3.7) * 0.5));
+  const ticks = VALS.map((v, i) => { const e = document.createElement('i'); e.style.height = (v * 100).toFixed(0) + '%'; e.style.opacity = (0.35 + v * 0.65).toFixed(2); vec.appendChild(e); return e; });
+  vec.style.gridTemplateColumns = 'repeat(48, 1fr)';
+  const L = [['Open Records', 4, 'free'], ['NotFinancialTimes', 1], ['Load Factor', 3], ['Basis Points', 2], ['AlphaLeak', 1, 'bait'], ['The Fab Floor', 2], ['MarketPulse Digest', 2], ['Kopi Contrarian', 1]];
+  const lane = L.map(([nm, n, kind]) => {
+    const row = document.createElement('div'); row.className = 'lane';
+    row.innerHTML = `<span class="nm">${nm}${kind === 'free' ? '<em>free</em>' : ''}</span><span class="track"><span class="pk"></span><span class="hits"></span></span><span class="ct">0</span>`;
+    lanes.appendChild(row);
+    const hits = $('.hits', row); const hs = Array.from({ length: n }, (_, j) => { const h = document.createElement('i'); h.className = 'hit' + (kind === 'free' ? ' free' : kind === 'bait' ? ' bait' : ''); hits.appendChild(h); return h; });
+    return { pk: $('.pk', row), hs, ct: $('.ct', row), n };
+  });
+  const leaves = $('[data-leaves]', root); const lv = Array.from({ length: 15 }, () => { const i = document.createElement('i'); leaves.appendChild(i); return i; });
+  const card = $('[data-hitcard]', root), fields = $$('[data-f]', root), locked = $('[data-locked]', root);
+  widget('w-search', 7600, t => {
+    const qn = Math.round(Q.length * seg(t, 0, 1100));
+    qEl.innerHTML = Q.slice(0, qn).replace(/</g, '&lt;') + (t < 1300 ? '<span class="caret"></span>' : '');
+    ticks.forEach((e, i) => { e.style.transform = `scaleY(${ease(seg(t, 1100 + i * 14, 1500 + i * 14)).toFixed(3)})`; });
+    let sum = 0;
+    lane.forEach((l, i) => {
+      const a = 2100 + i * 90, q = ease(seg(t, a, a + 650));
+      l.pk.style.left = `calc(${(q * 100).toFixed(1)}% - ${(q * 8).toFixed(1)}px)`; l.pk.style.opacity = q > 0 && q < 1 ? 1 : 0;
+      let shown = 0; l.hs.forEach((h, j) => { const on = t >= a + 700 + j * 160; h.style.opacity = on ? 1 : 0; h.style.transform = on ? 'none' : 'scale(.4)'; h.style.transition = 'opacity .2s, transform .25s var(--ease)'; if (on) shown++; });
+      l.ct.textContent = shown + (shown === 1 ? ' hit' : ' hits'); sum += shown;
+    });
+    total.innerHTML = `<span>${sum} hit${sum === 1 ? '' : 's'}</span> from 8 writers · keyword + meaning${sum === 16 ? ' · 0.75 s' : ''}`;
+    show(card, t >= 4400);
+    fields.forEach((f, i) => show(f, t >= 4700 + i * 380));
+    lv.forEach((e, i) => { e.style.background = t >= 5100 + i * 40 ? 'var(--pen-wash-2)' : 'var(--mist)'; e.style.borderColor = t >= 5100 + i * 40 ? 'color-mix(in srgb, var(--pen) 40%, transparent)' : 'var(--rule-2)'; });
+    show(locked, t >= 6700);
+  });
+})();
+
+/* ---------- W3: answer ---------- */
+(() => {
+  const root = $('#w-answer');
+  const sts = $$('[data-st]', root), sents = $$('[data-sent]', root), follow = $('[data-follow]', root), gap = $('[data-gap]', root);
+  widget('w-answer', 7400, t => {
+    sents.forEach((s, i) => show(s, t >= 400 + i * 1100));
+    sts.forEach((s, i) => {
+      const checking = t >= 3700 + i * 250, missing = t >= 4500 + i * 300;
+      s.textContent = missing ? '✗ not in the free sources' : checking ? 'checking…' : 'waiting';
+      s.className = 'st' + (missing ? ' miss' : '');
+    });
+    show(follow, t >= 5300);
+    show(gap, t >= 6300);
+  });
+})();
+
+/* ---------- W4: decide ---------- */
+(() => {
+  const root = $('#w-decide'), tb = $('[data-rows]', root), callout = $('[data-callout]', root);
+  const R = [
+    { w: 'AlphaLeak', t: "Kestrel's Penang packaging lead times, week by week", p: .30, g: .88, o: .97, c: .99, v: .510, d: 1.70, vd: 'BUY', pick: true },
+    { w: 'The Fab Floor', t: 'Kestrel Semiconductor advanced-packaging lead times in Malaysia: the dated series', p: .40, g: .99, o: .98, c: .85, v: .553, d: 1.38, vd: 'BUY' },
+    { w: 'Load Factor', t: "What Kestrel's second Penang plant buys when it buys electricity", p: .60, g: .02, o: .85, c: .83, v: .010, d: .02, vd: 'SKIP', why: 'low value' },
+    { w: 'NotFinancialTimes', t: "What Malaysia's packaging boom is costing", p: .90, g: .01, o: .97, c: .55, v: .005, d: .01, vd: 'SKIP', why: 'low value' },
+    { w: 'MarketPulse Digest', t: 'Malaysia packaging: the bill keeps growing', p: .20, g: 0, o: 0, c: .28, v: 0, d: 0, vd: 'SKIP', why: 'rewrite' },
+    { w: 'Kopi Contrarian', t: "Another 'deal of the decade'", p: .10, g: 0, o: .89, c: .13, v: 0, d: 0, vd: 'SKIP', why: 'low value' },
+  ];
+  const cell = v => `<span class="bar"><i></i></span><span class="num">${v.toFixed(2)}</span>`;
+  const rows = R.map(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><span class="w">${r.w}</span><span class="t">${r.t}</span></td><td>S$${r.p.toFixed(2)}</td><td>${cell(r.g)}</td><td>${cell(r.o)}</td><td>${cell(r.c)}</td><td class="tr">× 0.80</td><td class="v">${r.v.toFixed(3)}</td><td class="vpd">${r.d.toFixed(2)}</td><td><span class="verdict ${r.vd === 'BUY' ? 'buy' : 'skip'}">${r.vd}${r.why ? `<small>${r.why}</small>` : ''}</span></td>`;
+    tb.appendChild(tr);
+    const bars = $$('.bar i', tr), nums = $$('.num', tr);
+    return { r, tr, bars, nums, tr2: $('.tr', tr), v: $('.v', tr), vpd: $('.vpd', tr), vd: $('.verdict', tr) };
+  });
+  widget('w-decide', 8200, t => {
+    rows.forEach((x, i) => {
+      const vals = [x.r.g, x.r.o, x.r.c];
+      x.bars.forEach((b, k) => { const q = ease(seg(t, 300 + k * 900 + i * 90, 1000 + k * 900 + i * 90)); b.style.width = (vals[k] * q * 100).toFixed(1) + '%'; x.nums[k].textContent = (vals[k] * q).toFixed(2); x.nums[k].style.opacity = q > 0 ? 1 : .25; });
+      x.tr2.style.opacity = t >= 3200 + i * 60 ? 1 : .15;
+      const qv = seg(t, 3600 + i * 80, 4400 + i * 80);
+      x.v.textContent = (x.r.v * qv).toFixed(3); x.v.style.opacity = qv > 0 ? 1 : .15;
+      x.vpd.textContent = (x.r.d * seg(t, 4800, 5400)).toFixed(2); x.vpd.style.opacity = t >= 4800 ? 1 : .15;
+      const stamped = t >= 5600 + i * 160;
+      x.vd.style.opacity = stamped ? 1 : 0; x.vd.style.transform = stamped ? 'rotate(-2deg)' : 'rotate(-2deg) scale(1.6)'; x.vd.style.transition = 'transform .25s var(--ease), opacity .2s';
+      x.tr.classList.toggle('pick', Boolean(x.r.pick) && t >= 6900);
+    });
+    show(callout, t >= 7300);
+  });
+  const bench = $('#w-bench'), bb = $$('[data-b]', bench);
+  widget('w-bench', 2200, t => { bb.forEach((b, i) => { b.style.width = (parseFloat(b.dataset.b) * ease(seg(t, i * 120, 900 + i * 120)) * 100).toFixed(1) + '%'; }); });
+})();
+
+/* ---------- W5: budget ---------- */
+(() => {
+  const root = $('#w-budget'), left = $('[data-mleft]', root), sp = $('[data-sp]', root), rs = $('[data-rs]', root), mlog = $('[data-mlog]', root);
+  const lines = {}; $$('[data-l]', root).forEach(l => { lines[l.dataset.l] = l; });
+  const STEPS = [
+    [600, 'buy', 'Round 1 · AlphaLeak passes every rule', '', ''],
+    [1500, 'pick', 'Best value per S$: AlphaLeak', '', ''],
+    [2300, null, 'Reserve S$0.30, sign, pay', '−S$0.30', 'minus'],
+    [4100, null, 'Proof fails · refund arrives', '+S$0.30', 'plus'],
+    [5200, 'trust', 'Round 2 · AlphaLeak blocked', '', ''],
+    [6000, 'pick', 'Best value per S$: The Fab Floor', '', ''],
+    [6800, null, 'Reserve S$0.40, sign, pay', '−S$0.40', 'minus'],
+  ];
+  const state = t => { // [spent, reserved]
+    if (t < 2300) return [0, 0];
+    if (t < 3000) return [0, .30 * ease(seg(t, 2300, 2700))];
+    if (t < 4100) return [.30, 0];
+    if (t < 4800) return [.30 * (1 - ease(seg(t, 4100, 4700))), 0];
+    if (t < 6800) return [0, 0];
+    if (t < 7500) return [0, .40 * ease(seg(t, 6800, 7200))];
+    return [.40, 0];
+  };
+  let last = -1;
+  widget('w-budget', 8400, t => {
+    const [s, r] = state(t);
+    left.textContent = money(2 - s - r);
+    sp.style.left = '0'; sp.style.width = (s / 2 * 100).toFixed(2) + '%';
+    rs.style.left = (s / 2 * 100).toFixed(2) + '%'; rs.style.width = (r / 2 * 100).toFixed(2) + '%';
+    let k = -1; STEPS.forEach((st, i) => { if (t >= st[0]) k = i; });
+    for (const id in lines) lines[id].classList.toggle('on', k >= 0 && k < STEPS.length && STEPS[k][1] === id && t < 8400);
+    if (k !== last) { last = k; mlog.innerHTML = STEPS.slice(Math.max(0, k - 3), k + 1).map(st => `<div><span>${st[2]}</span><b class="amt ${st[4]}">${st[3]}</b></div>`).join(''); }
+  });
+})();
+
+/* ---------- W6: x402 sequence ---------- */
+(() => {
+  const root = $('#w-x402'), svg = $('[data-seq]', root), clock = $('[data-xclock]', root);
+  const LX = [150, 520, 870], LN = ['ResearchAgent · buyer', "AlphaLeak's site · seller", 'XRPL Testnet'];
+  LX.forEach((x, i) => {
+    sv('rect', { x: x - 115, y: 8, width: 230, height: 40, rx: 10, fill: i === 2 ? 'var(--pay-wash)' : i === 0 ? 'var(--pen-wash)' : 'var(--mist)', stroke: 'var(--rule-2)' }, svg);
+    const t = sv('text', { x, y: 33, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 600, fill: 'var(--ink)' }, svg); t.textContent = LN[i];
+    sv('line', { x1: x, x2: x, y1: 48, y2: 462, stroke: 'var(--rule-2)', 'stroke-dasharray': '4 5' }, svg);
+  });
+  const M = [
+    { a: 0, b: 1, y: 82, l: 'GET /w/alphaleak/articles/…lead-times', s: '+6.87 s', c: 'var(--ink-2)' },
+    { a: 1, b: 0, y: 128, l: '402 · price in the PAYMENT-REQUIRED header', s: '+6.87 s', c: 'var(--pay)' },
+    { self: 0, y: 166, l: ['checks: payee = manifest wallet ✓ price ✓ invoice ✓', 'signs XRPL Payment, InvoiceID = sha256(invoice)', 'saves the signed blob once, before sending'], c: 'var(--pen)' },
+    { a: 0, b: 1, y: 262, l: 'GET again · PAYMENT-SIGNATURE: signed tx', s: '', c: 'var(--ink-2)' },
+    { a: 1, b: 2, y: 306, l: 'checks it, submits it', s: '', c: 'var(--pay)' },
+    { a: 2, b: 1, y: 350, l: 'validated · ledger 21,384,313 · tesSUCCESS', s: '', c: 'var(--ok)' },
+    { a: 1, b: 0, y: 400, l: '200 OK · article + salts + PAYMENT-RESPONSE', s: '+15.6 s', c: 'var(--ok)' },
+  ];
+  const STEP = 1050;
+  const els = M.map(m => {
+    const g = sv('g', {}, svg);
+    if (m.self !== undefined) {
+      const x = LX[m.self];
+      sv('rect', { x: x - 118, y: m.y - 22, width: 462, height: 82, rx: 10, fill: 'var(--pen-wash)', stroke: 'var(--pen-wash-2)' }, g);
+      m.l.forEach((s, i) => { const t = sv('text', { x: x - 104, y: m.y + 2 + i * 24, 'font-size': 13, fill: i ? 'var(--ink-2)' : 'var(--pen-deep)', 'font-weight': i ? 500 : 600 }, g); t.textContent = s; });
+      return { g, m };
+    }
+    const x1 = LX[m.a], x2 = LX[m.b], dir = Math.sign(x2 - x1);
+    const ln = sv('line', { x1, x2: x1, y1: m.y, y2: m.y, stroke: m.c, 'stroke-width': 2.5 }, g);
+    const head = sv('path', { d: '', fill: m.c }, g);
+    const t = sv('text', { x: (x1 + x2) / 2, y: m.y - 9, 'text-anchor': 'middle', 'font-size': 13.5, fill: 'var(--ink)' }, g); t.textContent = m.l;
+    if (m.s) { const s = sv('text', { x: 14, y: m.y + 4, 'font-size': 12, fill: 'var(--muted)' }, g); s.textContent = m.s; }
+    return { g, m, ln, head, x1, x2, dir };
+  });
+  widget('w-x402', M.length * STEP + 500, t => {
+    els.forEach((e, i) => {
+      const q = ease(seg(t, i * STEP, i * STEP + 650));
+      e.g.setAttribute('opacity', q > 0 ? Math.min(1, .25 + q) : 0);
+      if (!e.ln) return;
+      const x = lerp(e.x1, e.x2, q);
+      e.ln.setAttribute('x2', x);
+      e.head.setAttribute('d', q > 0.02 ? `M${x} ${e.m.y} l${-10 * e.dir} -6 l0 12 z` : '');
+    });
+    const i = Math.min(M.length - 1, Math.floor(t / STEP));
+    clock.textContent = t >= M.length * STEP ? '402 → 200 in 8.7 s' : `${i + 1} / ${M.length} · ` + ['ask', 'price tag', 'check + sign', 'ask again', 'settle', 'validated', 'delivered'][i];
+  });
+})();
+
+/* ---------- W7: verify ---------- */
+(() => {
+  const root = $('#w-verify');
+  const A = $$('[data-ck="a"] li', root), B = $$('[data-ck="b"] li', root), C = $$('[data-ck="c"] li', root);
+  const la = $('[data-la]', root), lf = $('[data-lf]', root);
+  const mk = (host, n) => Array.from({ length: n }, () => { const i = document.createElement('i'); host.appendChild(i); return i; });
+  const LA = mk(la, 15), LF = mk(lf, 15);
+  const rna = $('[data-rna]', root), rfa = $('[data-rfa]', root);
+  const mark = (li, on, bad) => { li.className = on ? (bad ? 'no' : 'ok') : ''; li.firstElementChild.textContent = on ? (bad ? '✗' : '✓') : '·'; };
+  widget('w-verify', 8200, t => {
+    A.forEach((li, i) => mark(li, t >= 300 + i * 380));
+    B.forEach((li, i) => mark(li, t >= 2000 + i * 380));
+    LA.forEach((e, i) => e.classList.toggle('g', t >= 3700 + i * 70));
+    C.forEach((li, i) => mark(li, t >= (i < 2 ? 4000 + i * 600 : 5400), i === 2));
+    show(rna, t >= 5600);
+    LF.forEach((e, i) => e.classList.toggle('g', t >= 6200 + i * 50));
+    show(rfa, t >= 7400);
+  });
+})();
+
+/* ---------- W8: refund + track record ---------- */
+(() => {
+  const root = $('#w-refund'), items = $$('[data-tl] li', root);
+  const ga = $('[data-ga]', root), gf = $('[data-gf]', root), ma = $('[data-ma]', root), mf = $('[data-mf]', root), gs = $('[data-gs]', root), blocked = $('[data-blocked]', root);
+  const chart = $('[data-chart]', root);
+  const P = [[0, 26, '1 Jun'], [61, 22, '1 Aug'], [106, 18, '15 Sep']];
+  const X = d => 54 + d / 106 * 370, Y = w => 20 + (30 - w) / 15 * 150;
+  [15, 20, 25, 30].forEach(w => { sv('line', { x1: 50, x2: 440, y1: Y(w), y2: Y(w), stroke: 'var(--rule)' }, chart); const t = sv('text', { x: 40, y: Y(w) + 4, 'text-anchor': 'end' }, chart); t.textContent = w; });
+  const yl = sv('text', { x: 50, y: 12 }, chart); yl.textContent = 'weeks';
+  const line = sv('polyline', { points: P.map(p => `${X(p[0])},${Y(p[1])}`).join(' '), fill: 'none', stroke: 'var(--pen)', 'stroke-width': 3, 'stroke-linejoin': 'round' }, chart);
+  const LEN = P.slice(1).reduce((s, p, i) => s + Math.hypot(X(p[0]) - X(P[i][0]), Y(p[1]) - Y(P[i][1])), 0);
+  line.setAttribute('stroke-dasharray', LEN);
+  const pts = P.map(p => { const c = sv('circle', { cx: X(p[0]), cy: Y(p[1]), r: 6, fill: 'var(--sheet)', stroke: 'var(--pen)', 'stroke-width': 3 }, chart); const v = sv('text', { x: X(p[0]), y: Y(p[1]) - 13, 'text-anchor': 'middle', 'font-weight': 700, style: 'fill: var(--ink); font-size: 14px' }, chart); v.textContent = p[1] + ' wk'; const d = sv('text', { x: X(p[0]), y: 200, 'text-anchor': 'middle' }, chart); d.textContent = p[2]; return [c, v]; });
+  widget('w-refund', 7600, t => {
+    items.forEach((li, i) => show(li, t >= 200 + i * 1200));
+    const qa = ease(seg(t, 2700, 3600)), ha = lerp(.8, .4, qa);
+    ga.textContent = ha.toFixed(2); ga.style.color = ha < .5 ? 'var(--bad)' : 'var(--ink)';
+    ma.style.left = (ha * 100).toFixed(1) + '%';
+    gs.textContent = ha < .5 ? 'blocked' : 'active'; gs.style.color = ha < .5 ? 'var(--bad)' : 'var(--muted)';
+    show(blocked, t >= 3700);
+    const qf = ease(seg(t, 4100, 4800)), hf = lerp(.8, 5 / 6, qf);
+    gf.textContent = hf.toFixed(2); mf.style.left = (hf * 100).toFixed(1) + '%';
+    const qc = ease(seg(t, 5000, 7000));
+    line.setAttribute('stroke-dashoffset', (LEN * (1 - qc)).toFixed(1));
+    pts.forEach(([c, v], i) => { const on = qc >= i / 2 - 0.001; c.setAttribute('opacity', on ? 1 : 0); v.setAttribute('opacity', on ? 1 : 0); });
+  });
+})();
+
+/* ---------- W9: built ---------- */
+(() => {
+  const root = $('#w-built'), strip = $('[data-bstrip]', root), plog = $('[data-prlog]', root), clock = $('[data-bclock]', root);
+  const ePRs = $('[data-bprs]', root), eAdd = $('[data-badd]', root), eDel = $('[data-bdel]', root);
+  if (!PRS.length) return;
+  const T = PRS.map(p => Date.parse(p[1])), t0 = Date.UTC(2026, 8, 6), t1 = Date.UTC(2026, 9, 10);
+  const X0 = 14, X1 = 986, BASE = 150;
+  const xs = PRS.map((_, i) => X0 + 3 + i * (X1 - X0 - 6) / Math.max(1, PRS.length - 1));
+  sv('line', { x1: X0, x2: X1, y1: BASE + .5, y2: BASE + .5, stroke: 'var(--rule-2)' }, strip);
+  const idx = n => Math.max(0, PRS.findIndex(p => p[0] === n));
+  const marks = [[idx(107), 'pivot · 6 Oct', 'end', 172], [idx(168), 'overnight run: 23 PRs', 'start', 188], [idx(219), 'model switch', 'end', 172]];
+  marks.forEach(([pi, l, anchor, ly], i) => { const x = xs[pi] - 6; sv('line', { x1: x, x2: x, y1: 8, y2: BASE, stroke: 'var(--rule-2)', 'stroke-dasharray': '3 4' }, strip); const tx = sv('text', { x: anchor === 'end' ? x - 4 : x + 4, y: ly, 'text-anchor': anchor }, strip); tx.textContent = l; });
+  const first = sv('text', { x: X0, y: 172, 'text-anchor': 'start' }, strip); first.textContent = '7 Sep';
+  const lastL = sv('text', { x: X1, y: 188, 'text-anchor': 'end' }, strip); lastL.textContent = '9 Oct';
+  const H = a => 8 + Math.min(1, Math.log10(1 + a) / 4.3) * 128;
+  const bars = PRS.map((p, i) => sv('rect', { x: xs[i] - 2.5, y: BASE - H(p[2] + p[3]), width: 5, height: H(p[2] + p[3]), rx: 1.5, fill: p[3] > p[2] ? 'var(--rule-2)' : 'var(--pen)' }, strip));
+  const cur = sv('line', { x1: X0, x2: X0, y1: 4, y2: BASE + 2, stroke: 'var(--ink)', 'stroke-width': 2 }, strip);
+  const DUR = 9000; let last = -2;
+  const fmtD = ms => new Date(ms).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
+  widget('w-built', DUR + 300, t => {
+    const q = clamp(t / DUR); const n = Math.round(q * PRS.length);
+    bars.forEach((b, i) => b.setAttribute('opacity', i < n ? 1 : .14));
+    const x = n > 0 ? xs[n - 1] : X0; cur.setAttribute('x1', x); cur.setAttribute('x2', x); cur.setAttribute('opacity', q >= 1 ? 0 : 1);
+    let a = 0, d = 0; for (let i = 0; i < n; i++) { a += PRS[i][2]; d += PRS[i][3]; }
+    ePRs.textContent = n; eAdd.textContent = '+' + a.toLocaleString('en-US'); eDel.textContent = '−' + d.toLocaleString('en-US');
+    clock.textContent = n ? fmtD(T[n - 1]) : 'Sun 6 Sept';
+    if (n !== last) { last = n; plog.innerHTML = PRS.slice(Math.max(0, n - 2), n).map((p, j, arr) => `<div class="log-row${j === arr.length - 1 ? ' now' : ''}" style="grid-template-columns:56px 1fr auto"><span>#${p[0]}</span><span>${p[4].replace(/</g, '&lt;')}</span><span class="amt plus" style="color:var(--pen)">+${p[2].toLocaleString('en-US')}</span></div>`).join(''); }
+  });
+})();
+
+/* ---------- pause/play buttons ---------- */
+const toggle = w => { if (w.state === 'playing') w.seek(w.t); else if (w.state === 'paused' && w.t < w.duration - 50) w.play(w.t); else w.play(0); };
+W.forEach(w => {
+  const tg = $('[data-toggle]', w.root);
+  const prev = w.onstate;
+  w.onstate = s => { if (prev) prev(s); w.root.classList.toggle('is-playing', s === 'playing'); if (tg) tg.textContent = s === 'playing' ? '❚❚ pause' : '▶ play'; };
+  if (tg) tg.addEventListener('click', () => toggle(w));
+});
+
+/* ---------- play on view, keys, toc ---------- */
+const near = new IntersectionObserver(es => es.forEach(e => { const w = W.find(x => x.root === e.target); if (w && e.isIntersecting && w.state === 'rest' && !REDUCE) { w.render(0); w.state = 'armed'; } }), { rootMargin: '0px 0px 35% 0px' });
+const seen = new IntersectionObserver(es => es.forEach(e => { const w = W.find(x => x.root === e.target); if (w && e.intersectionRatio >= 0.4 && (w.state === 'rest' || w.state === 'armed')) w.play(); }), { threshold: [0, 0.4, 0.6] });
+W.forEach(w => { near.observe(w.root); seen.observe(w.root); });
+
+const sections = $$('main > section');
+const current = () => { let i = 0; sections.forEach((s, j) => { if (s.getBoundingClientRect().top <= innerHeight * 0.35) i = j; }); return i; };
+const inView = () => { let best = null, bestV = 0; W.forEach(w => { const r = w.root.getBoundingClientRect(); const v = Math.max(0, Math.min(innerHeight, r.bottom) - Math.max(0, r.top)); if (v > bestV) { bestV = v; best = w; } }); return best; };
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || /input|textarea|select/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowRight' || e.key === 'j') { e.preventDefault(); const s = sections[Math.min(sections.length - 1, current() + 1)]; s.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }); }
+  else if (e.key === 'ArrowLeft' || e.key === 'k') { e.preventDefault(); const c = current(); const s = sections[sections[c].getBoundingClientRect().top < -40 ? c : Math.max(0, c - 1)]; s.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }); }
+  else if (e.key === 'r' || e.key === 'R') { const w = inView(); if (w) w.play(); }
+  else if (e.key === 'p' || e.key === 'P') { const w = inView(); if (w) toggle(w); }
+});
+const toc = $$('.toc a');
+const syncToc = () => { const i = current(); toc.forEach((a, j) => a.classList.toggle('on', a.getAttribute('href') === '#' + sections[i].id)); };
+addEventListener('scroll', syncToc, { passive: true }); syncToc();
+})();
+</script>
+</body>
+</html>

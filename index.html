@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ResearchAgent explainers</title>
+<meta name="description" content="Interactive explainers for ResearchAgent, a research agent with a wallet. AI Tinkerers Singapore, 10 Oct 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
+<style>
+/* Light only, by the owner's choice. Palette and faces follow the talk page. */
+:root {
+  color-scheme: light;
+  --paper: #F6F7F9; --sheet: #FFFFFF; --rule: #E3E6EE;
+  --ink: #0F1222; --ink-2: #2B3046; --muted: #555B70;
+  --pen: #2F45FF; --hi: #FFE45C; --pay: #FF5A1F; --ok: #12B76A; --model: #7A5AF8; --gold: #C98500;
+  --f-display: 'Bricolage Grotesque', 'Geist', system-ui, -apple-system, sans-serif;
+  --f-ui: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 18px/1.6 var(--f-ui); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+main { max-width: 1080px; margin: 0 auto; padding: 0 16px 96px; }
+.mast { font: 500 13px/1.3 var(--f-mono); color: var(--muted); padding: 18px 0; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.mast b { color: var(--ink); font-weight: 600; }
+.mast .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--pen); margin-right: 8px; vertical-align: 1px; }
+.mast a { color: var(--pen); text-underline-offset: 3px; }
+header { padding: 72px 0 40px; }
+.kick { font: 600 12.5px/1.2 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--pen); }
+h1 { font-family: var(--f-display); font-size: clamp(42px, 7vw, 80px); line-height: .98; font-weight: 800; letter-spacing: -.02em; margin: 14px 0 0; text-wrap: balance; }
+.hl { background: linear-gradient(transparent 58%, var(--hi) 58%); padding: 0 2px; }
+.lede { font-size: 21px; color: var(--ink-2); max-width: 680px; margin: 18px 0 0; }
+
+.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+.card { --c: var(--pen); grid-column: span 2; position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 12px; padding: 22px 22px 18px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; text-decoration: none; overflow: hidden;
+  box-shadow: 0 1px 0 var(--rule), 0 18px 40px -30px rgba(15, 18, 34, .3);
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+  animation: rise .7s var(--ease) both; animation-delay: calc(var(--i) * 90ms); }
+.card.wide { grid-column: span 3; }
+.card.full { grid-column: 1 / -1; }
+.card::before { content: ""; position: absolute; inset: 0 0 auto; height: 5px; background: var(--c); transform: scaleX(.18); transform-origin: left; transition: transform .5s var(--ease); }
+.card:hover, .card:focus-visible { transform: translateY(-4px); border-color: color-mix(in srgb, var(--c) 45%, var(--rule)); box-shadow: 0 1px 0 var(--rule), 0 26px 50px -28px color-mix(in srgb, var(--c) 55%, transparent); outline: none; }
+.card:hover::before, .card:focus-visible::before { transform: scaleX(1); }
+.card .tag { font: 600 11.5px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--c); display: flex; align-items: center; gap: 8px; }
+.card .tag::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.card h2 { font-family: var(--f-display); font-size: 30px; line-height: 1.05; font-weight: 750; letter-spacing: -.02em; margin: 0; }
+.card p { margin: 0; color: var(--muted); font-size: 16.5px; }
+.card .go { font: 600 14px/1 var(--f-mono); color: var(--ink); display: flex; justify-content: space-between; align-items: center; padding-top: 6px; }
+.card .go span { transition: transform .35s var(--ease); color: var(--c); }
+.card:hover .go span { transform: translateX(6px); }
+.keys { font: 500 12.5px/1.5 var(--f-mono); color: var(--muted); }
+.keys kbd { font: 600 11px var(--f-mono); border: 1px solid #CDD2DE; border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; background: var(--sheet); color: var(--ink-2); }
+
+footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule); font: 500 13px/1.6 var(--f-mono); color: var(--muted); }
+footer a { color: var(--pen); text-underline-offset: 3px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } }
+@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .card, .card.wide, .card.full { grid-column: auto; } header { padding-top: 48px; } }
+@media (prefers-reduced-motion: reduce) { .card, .card::before, .card .go span { animation: none; transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="mast"><span><span class="dot"></span><b>ResearchAgent</b> · AI Tinkerers Singapore · 10 Oct 2026</span><a href="https://github.com/Collaboration95/theFastandtheFungible">Code on GitHub ↗</a></div>
+
+  <header>
+    <div class="kick">Explainers</div>
+    <h1>A research agent <span class="hl">with a wallet.</span></h1>
+    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy one article straight from the writer, inside a budget you set. Three ways in, from a two-minute replay to the full system map.</p>
+  </header>
+
+  <div class="grid">
+    <a class="card wide" href="talk/" style="--c: var(--pen); --i: 0">
+      <div class="tag">Start here</div>
+      <div><h2>Inside ResearchAgent</h2><p style="margin-top:10px">Replays a real run from its event log: free search, a purchase, a proof that fails, an on-chain refund, then a second buy that answers the question.</p></div>
+      <div class="go">Open the walkthrough <span>→</span></div>
+    </a>
+    <a class="card wide" href="slides/" style="--c: var(--pay); --i: 1">
+      <div class="tag">The talk</div>
+      <div><h2>Slide deck</h2><p style="margin-top:10px">The AI Tinkerers deck. Boxes on the architecture slide open the project map.</p><p class="keys" style="margin-top:12px"><kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>O</kbd> overview · <kbd>N</kbd> notes · <kbd>F</kbd> fullscreen</p></div>
+      <div class="go">Open the deck <span>→</span></div>
+    </a>
+    <a class="card full" href="project-map/" style="--c: var(--ok); --i: 2">
+      <div class="tag">Architecture</div>
+      <div><h2>Project map</h2><p style="margin-top:10px">Three clickable levels, from the reader's agent, the writers and the ledger down to the primitives. Every arrow is numbered and explained.</p></div>
+      <div class="go">Open the map <span>→</span></div>
+    </a>
+  </div>
+
+  <footer>The writers and their articles are fictional. Payments settle on the XRPL Testnet.</footer>
+</main>
+</body>
+</html>

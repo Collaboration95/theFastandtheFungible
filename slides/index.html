@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResearchAgent · AIT talk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
+<!--
+  HOW TO EDIT THIS DECK
+  - Every slide is one <section class="slide"> below, in order. Cut, paste or delete whole sections to reorder.
+  - data-title="…"   the name shown in the overview (press O).
+  - data-skip         skipped by the arrow keys, still reachable from the overview. Delete it to bring the slide back.
+  - data-step="n"     the element appears on the n-th press of → on that slide (builds).
+  - data-only="n"     the element shows only on step n (used for the diagram captions).
+  - <aside class="notes">   speaker notes, shown with N. Never shown on the slide.
+  - class="todo"      yellow highlight for text you still need to fill in.
+  - Charts: edit the JSON inside <script type="application/json"> next to each chart.
+  - QR codes: edit data-url on the .qr elements. MAP_URL (bottom script) is the project-map server.
+  - The canvas is 1920 × 1080 and scales to the window. A red "overflow" tag in the corner means the slide's content is too tall.
+  KEYS  → / Space / PageDown: next · ← / PageUp: back · O: overview · N: notes · F: fullscreen · B: blank screen · Home / End
+-->
+<style>
+:root {
+  color-scheme: light;
+  --paper: #F6F7F9; --sheet: #FFFFFF; --mist: #EEF0F5; --rule: #E3E6EE; --rule-2: #CDD2DE;
+  --ink: #0F1222; --ink-2: #2B3046; --muted: #555B70; --faint: #8A90A3;
+  --pen: #2F45FF; --pen-wash: #ECEEFF; --pen-wash-2: #D7DCFF;
+  --hi: #FFE45C; --hi-wash: #FFF4B8;
+  --ok: #0B7A50; --ok-wash: #E3F5EC; --bad: #C8312B; --bad-wash: #FDECEA; --pay-ink: #B83B0A;
+  /* chart series: colour follows the model on every slide */
+  --luna: #2a78d6; --flash: #eb6834; --jev: #1baf7a; --rules: #9a9890;
+  /* diagram kinds, as in the project map */
+  --k-you: #8A90A3; --k-code: #2F6FE0; --k-writer: #2E9E5B; --k-money: #C98500; --k-model: #7A5AF8;
+  --f-display: 'Bricolage Grotesque', 'Geist', system-ui, -apple-system, sans-serif;
+  --f-ui: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #E6E8EE; color: var(--ink); font-family: var(--f-ui); -webkit-font-smoothing: antialiased; }
+#stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform: translate(-50%, -50%) scale(var(--s, .5)); background: var(--paper); overflow: hidden; box-shadow: 0 24px 70px -36px rgba(15, 18, 34, .45); }
+body.blank #stage { visibility: hidden; }
+body.blank { background: #fff; }
+
+/* slide frame */
+.slide { position: absolute; inset: 0; padding: 80px 110px 96px; display: none; flex-direction: column; }
+.slide.active { display: flex; }
+.kick { font: 600 26px/1.2 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--pen); }
+h1 { font: 780 76px/1.05 var(--f-display); letter-spacing: -.025em; margin: 14px 0 0; max-width: 1640px; text-wrap: balance; }
+h1.xl { font-size: 156px; line-height: .95; margin-top: 22px; }
+h1.q { font-size: 112px; }
+.lead { font: 400 40px/1.42 var(--f-ui); color: var(--ink-2); margin: 26px 0 0; max-width: 1560px; }
+.lead b, .say b { color: var(--ink); }
+.say { font: 400 38px/1.45 var(--f-ui); color: var(--ink-2); margin: 22px 0 0; max-width: 1560px; }
+.muted { color: var(--muted); }
+.src { position: absolute; left: 110px; right: 110px; bottom: 34px; font: 500 21px/1.35 var(--f-mono); color: var(--faint); }
+.todo { background: var(--hi); color: var(--ink); border-radius: 8px; padding: 0 10px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.notes { display: none; }
+.grow { flex: 1; }
+.chip { display: inline-block; font: 600 28px/1 var(--f-mono); padding: 14px 20px; border-radius: 999px; border: 2px solid var(--rule-2); background: var(--sheet); color: var(--ink-2); margin-right: 14px; }
+
+/* builds */
+.slide [data-step] { transition: opacity .35s ease, transform .35s ease; }
+.slide [data-step]:not(.shown) { opacity: 0; }
+.slide [data-only]:not(.shown) { display: none; }
+
+/* title slide */
+.hello { font: 400 46px/1.4 var(--f-ui); color: var(--ink-2); margin-top: 40px; max-width: 1500px; }
+.hello b { color: var(--ink); }
+
+/* demo cue */
+.ask { margin-top: 56px; padding: 44px 52px; background: var(--sheet); border: 2px solid var(--rule); border-radius: 24px; font: 500 60px/1.25 var(--f-ui); letter-spacing: -.01em; max-width: 1600px; }
+.ask small { display: block; font: 600 24px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+
+/* level-0 diagram */
+.dg { width: 1700px; height: auto; margin-top: 30px; display: block; overflow: visible; }
+.dg text { font-family: var(--f-ui); }
+.dg .box rect { stroke-width: 2.5; }
+.dg a .box:hover rect { stroke-width: 5; }
+.dg .k-you rect { fill: #F1F2F5; stroke: var(--k-you); }
+.dg .k-code rect { fill: #EAF1FE; stroke: var(--k-code); }
+.dg .k-writer rect { fill: #E8F6EE; stroke: var(--k-writer); }
+.dg .k-money rect { fill: #FFF4DC; stroke: var(--k-money); }
+.dg .k-model rect { fill: #F1EDFF; stroke: var(--k-model); }
+.dg .bk { font: 600 18px var(--f-mono); letter-spacing: .12em; }
+.dg .k-you .bk { fill: var(--muted); } .dg .k-code .bk { fill: var(--k-code); } .dg .k-writer .bk { fill: var(--k-writer); } .dg .k-money .bk { fill: #9A6600; } .dg .k-model .bk { fill: var(--k-model); }
+.dg .bt { font: 700 27px var(--f-ui); fill: var(--ink); }
+.dg .bs { font: 400 24px var(--f-ui); fill: var(--ink-2); }
+.dg .go { font: 600 20px var(--f-mono); fill: var(--faint); }
+.dg .ar path { fill: none; stroke: var(--ink-2); stroke-width: 3; marker-end: url(#ah); }
+.dg .ar.dash path { stroke-dasharray: 11 8; }
+.dg .ar .lab { font: 600 24px var(--f-ui); fill: var(--ink-2); }
+.dg .ar .bdg circle { fill: var(--ink); stroke: var(--paper); stroke-width: 3; }
+.dg .ar .bdg text { fill: #fff; font: 700 21px var(--f-mono); }
+.dg .ar.now path { stroke: var(--pen); stroke-width: 4.5; marker-end: url(#ahNow); }
+.dg .ar.now .bdg circle { fill: var(--pen); }
+.dg .ar.now .lab { fill: var(--pen); }
+.cap { font: 500 36px/1.42 var(--f-ui); color: var(--ink); margin-top: 18px; max-width: 1700px; min-height: 104px; }
+.cap .n { display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--pen); color: #fff; font: 700 24px var(--f-mono); margin-right: 14px; vertical-align: 4px; }
+.maplink { font: 500 22px var(--f-mono); color: var(--faint); }
+.maplink a { color: var(--pen); }
+
+/* cards */
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 44px; margin-top: 44px; }
+.card { background: var(--sheet); border: 2px solid var(--rule); border-radius: 22px; padding: 34px 38px 36px; }
+.card .who { font: 600 22px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.card.dm { border-color: var(--pen-wash-2); box-shadow: 0 0 0 6px var(--pen-wash); }
+.card.dm .who { color: var(--pen); }
+.prose { font: italic 400 34px/1.5 var(--f-ui); color: var(--ink-2); margin-top: 20px; }
+.verdict-line { margin-top: 26px; font: 600 28px/1.35 var(--f-ui); color: var(--bad); }
+.verdict-line.ok { color: var(--ok); }
+.qa { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px 20px; align-items: center; margin-top: 24px; }
+.qa .t { font: 600 19px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--pen); background: var(--pen-wash); border-radius: 8px; padding: 8px 10px; }
+.qa .q { font: 500 31px/1.3 var(--f-ui); color: var(--ink); }
+.qa .v { font: 700 40px var(--f-mono); color: var(--ink); text-align: right; }
+.facts { margin: 34px 0 0; padding: 0; list-style: none; display: grid; gap: 16px; max-width: 1600px; }
+.facts li { font: 400 40px/1.4 var(--f-ui); color: var(--ink-2); display: grid; grid-template-columns: 40px 1fr; }
+.facts li::before { content: "—"; color: var(--faint); }
+.facts b { color: var(--ink); }
+
+/* formula + table */
+.formula { margin-top: 34px; padding: 22px 30px; background: var(--sheet); border: 2px solid var(--rule); border-radius: 16px; font: 500 29px/1.5 var(--f-mono); color: var(--ink-2); }
+.formula .m { color: var(--pen); } .formula .c { color: var(--pay-ink); }
+table.dt { width: 100%; border-collapse: collapse; margin-top: 26px; font: 500 30px var(--f-mono); font-variant-numeric: tabular-nums; }
+.dt th { font: 600 19px/1.25 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; text-align: right; padding: 0 14px 14px; border-bottom: 2px solid var(--rule-2); vertical-align: bottom; }
+.dt th.m { color: var(--pen); } .dt th.c { color: var(--pay-ink); } .dt th:first-child { text-align: left; color: var(--muted); }
+.dt td { padding: 18px 14px; border-bottom: 1px solid var(--rule); text-align: right; }
+.dt td:first-child { text-align: left; }
+.dt .nm { font: 600 30px/1.2 var(--f-ui); }
+.dt .sub { display: block; font: 400 22px/1.3 var(--f-ui); color: var(--muted); margin-top: 4px; }
+.dt tr.pick td { background: var(--hi-wash); }
+.stamp { display: inline-block; font: 700 21px/1 var(--f-mono); letter-spacing: .04em; padding: 9px 12px; border-radius: 8px; border: 2.5px solid currentColor; white-space: nowrap; }
+.stamp.buy { color: var(--ok); background: var(--ok-wash); }
+.stamp.skip { color: var(--faint); }
+
+/* prompt excerpt */
+pre.code { margin: 30px 0 0; padding: 30px 38px; background: var(--sheet); border: 2px solid var(--rule); border-radius: 18px; font: 500 28px/1.52 var(--f-mono); color: var(--ink-2); white-space: pre-wrap; }
+pre.code .h { color: var(--pen); font-weight: 700; }
+pre.code .dim { color: var(--faint); }
+pre.code mark { background: var(--hi-wash); color: var(--ink); padding: 0 4px; border-radius: 4px; }
+
+/* tiles */
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px; margin-top: 56px; }
+.tile { border-top: 3px solid var(--ink); padding-top: 18px; }
+.tile b { display: block; font: 760 92px/1 var(--f-display); letter-spacing: -.03em; }
+.tile span { display: block; margin-top: 14px; font: 400 29px/1.35 var(--f-ui); color: var(--ink-2); }
+.side { display: grid; gap: 30px; align-content: start; }
+.side .tile b { font-size: 70px; }
+.side .tile span { font-size: 26px; }
+.split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 60px; margin-top: 30px; align-items: start; }
+.call { border-left: 6px solid var(--rule-2); padding: 6px 0 6px 26px; font: 400 32px/1.42 var(--f-ui); color: var(--ink-2); }
+.call b { color: var(--ink); }
+.call + .call { margin-top: 30px; }
+.call.flash { border-color: var(--flash); } .call.luna { border-color: var(--luna); }
+
+/* big numbers */
+.bign { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin-top: 60px; }
+.bign div { background: var(--sheet); border: 2px solid var(--rule); border-radius: 22px; padding: 34px 38px; }
+.bign b { display: block; font: 780 150px/1 var(--f-display); letter-spacing: -.04em; }
+.bign span { display: block; margin-top: 16px; font: 500 28px/1.35 var(--f-mono); color: var(--muted); }
+
+/* scorecard */
+.score { margin: 34px 0 0; padding: 0; list-style: none; }
+.score li { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 26px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.score .ck { width: 58px; height: 58px; border-radius: 14px; display: grid; place-items: center; font: 800 34px var(--f-mono); }
+.score .ok .ck { background: var(--ok-wash); color: var(--ok); }
+.score .no .ck { background: var(--bad-wash); color: var(--bad); }
+.score .r { font: 500 34px/1.3 var(--f-ui); }
+.score .e { font: 500 27px var(--f-mono); color: var(--muted); text-align: right; }
+.score .no .r, .score .no .e { color: var(--bad); }
+
+/* qr */
+.qrs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 80px; margin-top: 40px; }
+.qrbox { display: grid; grid-template-columns: 470px minmax(0, 1fr); gap: 40px; align-items: center; }
+.qr { width: 470px; height: 470px; background: #fff; border: 2px solid var(--rule); border-radius: 18px; padding: 22px; display: grid; place-items: center; }
+.qr svg { width: 100%; height: 100%; display: block; }
+.qr.fail { font: 500 20px/1.4 var(--f-mono); color: var(--muted); overflow-wrap: anywhere; text-align: center; }
+.qrbox h3 { margin: 0; font: 750 48px/1.1 var(--f-display); letter-spacing: -.02em; }
+.qrbox p { margin: 14px 0 0; font: 400 30px/1.4 var(--f-ui); color: var(--ink-2); }
+.repo { margin-top: 44px; font: 500 30px var(--f-mono); color: var(--ink-2); }
+
+/* charts */
+.chart svg { display: block; overflow: visible; }
+.chart text { font-family: var(--f-ui); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px 34px; font: 500 26px var(--f-ui); color: var(--ink-2); margin-top: 26px; }
+.legend i { display: inline-block; width: 22px; height: 22px; border-radius: 50%; margin-right: 10px; vertical-align: -3px; }
+.legend i.ring { background: var(--paper) !important; border: 3.5px solid var(--ink-2); }
+.legend i.bar { border-radius: 4px; width: 30px; height: 18px; }
+.legend i.out { background: transparent !important; border: 3px solid var(--ink-2); border-radius: 4px; width: 30px; height: 18px; }
+
+/* chrome outside the stage */
+#hud { position: fixed; right: 14px; bottom: 10px; font: 500 13px var(--f-mono); color: #8A90A3; display: flex; gap: 10px; align-items: center; z-index: 5; }
+#hud .of { background: var(--bad); color: #fff; border-radius: 4px; padding: 2px 6px; }
+#bar { position: fixed; left: 0; bottom: 0; height: 3px; background: var(--pen); transition: width .3s ease; z-index: 5; }
+#notesp { position: fixed; left: 0; right: 0; bottom: 0; max-height: 40vh; overflow: auto; background: #fff; border-top: 1px solid var(--rule-2); padding: 14px 28px 24px; font: 16px/1.55 var(--f-ui); color: var(--ink-2); display: none; z-index: 20; }
+#notesp h4 { margin: 0 0 6px; font: 600 12px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+#notesp ul { margin: 0; padding-left: 20px; }
+body.show-notes #notesp { display: block; }
+#ov { position: fixed; inset: 0; background: rgba(246, 247, 249, .97); display: none; overflow: auto; padding: 28px; z-index: 30; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; align-content: start; }
+body.show-ov #ov { display: grid; }
+.ovc { text-align: left; background: #fff; border: 1px solid var(--rule-2); border-radius: 10px; padding: 12px 14px; cursor: pointer; font: 500 15px/1.35 var(--f-ui); color: var(--ink); }
+.ovc small { display: block; font: 600 11px var(--f-mono); letter-spacing: .08em; color: var(--muted); margin-bottom: 4px; }
+.ovc.cur { border-color: var(--pen); box-shadow: 0 0 0 2px var(--pen-wash-2); }
+.ovc.skip { opacity: .45; }
+.ovc:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ============ 1 · INTRO ============ -->
+<section class="slide" data-title="Intro">
+  <div class="kick">AI Tinkerers Singapore · 10 Oct 2026</div>
+  <h1 class="xl">ResearchAgent</h1>
+  <p class="hello">Hi, I'm Guru. I'm going to demo ResearchAgent, then show how we chose the model at the heart of it.</p>
+  <div class="grow"></div>
+  <p class="say" style="font-size:30px">Team: TheFastandTheFungible | Guru | Jiamin | Andrew | Thanh Minh</p>
+  <aside class="notes">
+    <ul>
+      <li>"How we picked the model" covers slides 4–16: what decision models are for, Jev vs Clef-flash on paper, then our own benchmark and why we switched to OpenAI Decisions.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 2 · DEMO ============ -->
+<section class="slide" data-title="Live demo">
+  <div class="kick">Live demo</div>
+  <h1>Kestrel–TSMC outlook</h1>
+  <div class="ask"><small>Preset · Kestrel–TSMC outlook</small>What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?</div>
+  <div style="margin-top:40px"><span class="chip">Budget S$2</span><span class="chip">Writers: fictional, on this laptop</span><span class="chip">Models + XRPL Testnet: live</span></div>
+  <aside class="notes">
+    <ul>
+      <li>Before stage: <code>make live</code> (add <code>CF_BACKUP=1</code> if the primary Cloudflare quota is spent). Header must say hybrid search, not "Fixture fallback · Search".</li>
+      <li>Presenter menu (<code>.</code>): Stage 1× pace, clarify = never, Reset reputation.</li>
+      <li>9 Oct rehearsals at S$2: 3 of 3 bought NotFinancialTimes for S$0.90, 16–21 s at real pace. At "Free" it only shows "would buy".</li>
+      <li>What the room should see: free answer has the deal (24,000 wafers/month, US$1.1B prepayment) but "no margin guidance" → the decision table skips the S$0.10 op-ed and the S$0.20 rewrite, buys the S$0.90 original → v2: margin estimates 58.5% → 55.2%, wafer price ~US$19,800 → ~US$22,500, revenue estimates up.</li>
+      <li>Don't press Stop mid-run.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 3 · LEVEL 0 ============ -->
+<section class="slide" data-title="What just happened · Level 0">
+  <div class="kick">What just happened · Level 0</div>
+  <h1>Three layers: A asks, B sells, C settles</h1>
+  <svg class="dg" viewBox="0 0 1700 640" role="img" aria-label="You send a question and budget to A, the reader's agent. A searches and pays B, the writers. B settles payments on C, the XRPL Testnet ledger. A and B call hired models.">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2B3046"/></marker>
+      <marker id="ahNow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2F45FF"/></marker>
+    </defs>
+
+    <!-- boxes: click opens that level of the project map (MAP_URL, bottom script) -->
+    <g class="box k-you"><rect x="0" y="40" width="290" height="210" rx="16"/>
+      <text class="bk" x="24" y="80">YOU</text><text class="bt" x="24" y="120">You</text>
+      <text class="bs" x="24" y="160">Ask a question,</text><text class="bs" x="24" y="192">set the budget.</text></g>
+    <a data-map="A"><g class="box k-code"><rect x="470" y="40" width="290" height="210" rx="16"/>
+      <text class="bk" x="494" y="80">CODE</text><text class="bt" x="494" y="120">A · Reader's agent</text>
+      <text class="bs" x="494" y="160">Plans, searches,</text><text class="bs" x="494" y="192">writes, judges,</text><text class="bs" x="494" y="224">pays, checks.</text>
+      <text class="go" x="736" y="80" text-anchor="end">open ↗</text></g></a>
+    <a data-map="B"><g class="box k-writer"><rect x="940" y="40" width="290" height="210" rx="16"/>
+      <text class="bk" x="964" y="80">WRITERS</text><text class="bt" x="964" y="120">B · Writers</text>
+      <text class="bs" x="964" y="160">Eight fictional</text><text class="bs" x="964" y="192">writers. Each sells</text><text class="bs" x="964" y="224">its own articles.</text>
+      <text class="go" x="1206" y="80" text-anchor="end">open ↗</text></g></a>
+    <a data-map="C"><g class="box k-money"><rect x="1410" y="40" width="290" height="210" rx="16"/>
+      <text class="bk" x="1434" y="80">LEDGER</text><text class="bt" x="1434" y="120">C · Ledger</text>
+      <text class="bs" x="1434" y="160">XRPL Testnet.</text><text class="bs" x="1434" y="192">Payments, refunds,</text><text class="bs" x="1434" y="224">test money.</text>
+      <text class="go" x="1676" y="80" text-anchor="end">open ↗</text></g></a>
+    <a data-map="M"><g class="box k-model"><rect x="590" y="360" width="520" height="200" rx="16"/>
+      <text class="bk" x="614" y="400">MODELS</text><text class="bt" x="614" y="440">Hired models</text>
+      <text class="bs" x="614" y="480">DeepSeek writes.</text><text class="bs" x="614" y="512">OpenAI Decisions judges value.</text><text class="bs" x="614" y="544">Workers AI embeds for search.</text>
+      <text class="go" x="1086" y="400" text-anchor="end">open ↗</text></g></a>
+
+    <!-- arrows, numbered as in the project map -->
+    <g class="ar" data-step="1"><path d="M290 160 H462"/><text class="lab" x="380" y="108" text-anchor="middle">question</text><text class="lab" x="380" y="135" text-anchor="middle">+ budget</text><g class="bdg"><circle cx="380" cy="160" r="19"/><text x="380" y="167" text-anchor="middle">1</text></g></g>
+    <g class="ar" data-step="2"><path d="M760 120 H932"/><text class="lab" x="850" y="96" text-anchor="middle">search · pay</text><g class="bdg"><circle cx="850" cy="120" r="19"/><text x="850" y="127" text-anchor="middle">2</text></g></g>
+    <g class="ar" data-step="3"><path d="M940 185 H768"/><text class="lab" x="850" y="232" text-anchor="middle">hits · article</text><g class="bdg"><circle cx="850" cy="185" r="19"/><text x="850" y="192" text-anchor="middle">3</text></g></g>
+    <g class="ar" data-step="4"><path d="M1230 120 H1402"/><text class="lab" x="1320" y="70" text-anchor="middle">submit</text><text class="lab" x="1320" y="96" text-anchor="middle">· refund</text><g class="bdg"><circle cx="1320" cy="120" r="19"/><text x="1320" y="127" text-anchor="middle">4</text></g></g>
+    <g class="ar" data-step="5"><path d="M1410 185 H1238"/><text class="lab" x="1320" y="232" text-anchor="middle">validated</text><g class="bdg"><circle cx="1320" cy="185" r="19"/><text x="1320" y="192" text-anchor="middle">5</text></g></g>
+    <g class="ar dash" data-step="6"><path d="M496 250 V610 H1555 V258"/><text class="lab" x="1340" y="596" text-anchor="middle">buyer checks the ledger itself</text><g class="bdg"><circle cx="1150" cy="610" r="19"/><text x="1150" y="617" text-anchor="middle">6</text></g></g>
+    <g class="ar dash" data-step="7"><path d="M700 250 V352"/><text class="lab" x="666" y="312" text-anchor="end">ask a model</text><g class="bdg"><circle cx="700" cy="300" r="19"/><text x="700" y="307" text-anchor="middle">7</text></g></g>
+    <g class="ar dash" data-step="8"><path d="M1000 250 V352"/><text class="lab" x="1026" y="312">embed the query</text><g class="bdg"><circle cx="1000" cy="300" r="19"/><text x="1000" y="307" text-anchor="middle">8</text></g></g>
+  </svg>
+  <div class="cap">
+    <div data-only="0">Five parts. Solid arrows always happen, dashed ones sometimes or read-only. <span class="maplink">Click a box to open its level in the <a data-map="" target="_blank" rel="noopener">project map ↗</a></span></div>
+    <div data-only="1"><span class="n">1</span>You press Ask with a budget. The budget is the only permission to spend.</div>
+    <div data-only="2"><span class="n">2</span>A asks all eight writers. Later it retries one paywalled article, with a payment attached.</div>
+    <div data-only="3"><span class="n">3</span>Writers send teasers and signed promises, never the paid text. After payment: the article.</div>
+    <div data-only="4"><span class="n">4</span>The writer's own facilitator submits the payment to the ledger. Refunds go the same way.</div>
+    <div data-only="5"><span class="n">5</span>The ledger validates it. Only then does the writer deliver.</div>
+    <div data-only="6"><span class="n">6</span>A looks the payment up on the ledger itself. It never takes the seller's word.</div>
+    <div data-only="7"><span class="n">7</span>DeepSeek writes the cited answer. OpenAI Decisions scores which paid article is worth buying.</div>
+    <div data-only="8"><span class="n">8</span>Writers embed the query with Workers AI to search by meaning. If that fails: keywords, labelled.</div>
+  </div>
+  <aside class="notes">
+    <ul>
+      <li>→ reveals arrows 1–8 one at a time, numbered as in the project map. Boxes link to the map's level-1 pages (needs the map server; set MAP_URL at the bottom of this file).</li>
+      <li>Close on 7: "That purple box is the part I want to spend the rest of the time on."</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 4 · DECISION MODELS ============ -->
+<section class="slide" data-title="What decision models are for">
+  <div class="kick">One part · the decision model</div>
+  <h1>A decision model answers in numbers, not sentences</h1>
+  <div class="cols">
+    <div class="card">
+      <div class="who">A language model</div>
+      <div class="prose">"This article appears highly relevant to your question and likely contains valuable analyst insight on the deal…"</div>
+      <div class="verdict-line">You can't put a threshold on a sentence.</div>
+    </div>
+    <div class="card dm">
+      <div class="who">A decision model</div>
+      <div class="qa">
+        <span class="t">yes / no</span><span class="q">Does it fill the gap?</span><span class="v">0.90</span>
+        <span class="t">choice</span><span class="q">Original, rewrite or overlap?</span><span class="v">0.76</span>
+        <span class="t">score</span><span class="q">How credible, 0 to 2?</span><span class="v">0.83</span>
+      </div>
+      <div class="verdict-line ok">Bounded answers with probabilities. Code can use them directly.</div>
+    </div>
+  </div>
+  <p class="say" style="font-size:32px;margin-top:40px"><b>Jev</b> (TypeSafe) calls these "System One" models: fast, typed judgments for routing, ranking, verification and guardrails, not for chat or writing.</p>
+  <div class="src">Numbers: the S$0.90 article in a 9 Oct rehearsal of the run you just saw. Jev: TypeSafe's listing and DataCamp / Kanerika write-ups (vendor claims).</div>
+  <aside class="notes">
+    <ul>
+      <li>Three question types: a yes/no probability, a distribution over fixed choices, an ordinal score. Jev, Cloudflare Clef and OpenAI Decisions all expose the same three.</li>
+      <li>The 0.76 is P(original) for NotFinancialTimes, from run 484550aa.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 5 · HOW WE USE IT ============ -->
+<section class="slide" data-title="How the agent uses it">
+  <div class="kick">One part · the decision model</div>
+  <h1>That is exactly our buying step</h1>
+  <div class="formula"><span class="c">value</span> = <span class="m">fills gap</span> × <span class="m">P(original)</span> × (0.5 + 0.25 × <span class="m">credible</span>) × <span class="c">track record</span> &nbsp;→&nbsp; buy if ≥ 0.20</div>
+  <table class="dt">
+    <thead><tr><th>Paywalled article</th><th class="m">Fills gap?</th><th class="m">Original?</th><th class="m">Credible?</th><th class="c">× Track record</th><th class="c">Value</th><th class="c">Code says</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><span class="nm">NotFinancialTimes · S$0.90</span><span class="sub">Analysts cut Kestrel margin estimates…</span></td><td>0.90</td><td>0.76</td><td>0.83</td><td>0.80</td><td><b>0.39</b></td><td><span class="stamp buy">BUY</span></td></tr>
+      <tr><td><span class="nm">MarketPulse Digest · S$0.20</span><span class="sub">Kestrel's TSMC deal: analysts trim margins</span></td><td>0.10</td><td>0.00</td><td>0.73</td><td>0.80</td><td>0.00</td><td><span class="stamp skip">SKIP · REWRITE</span></td></tr>
+      <tr><td><span class="nm">Kopi Contrarian · S$0.10</span><span class="sub">Another 'deal of the decade'</span></td><td>0.00</td><td>0.96</td><td>0.02</td><td>0.80</td><td>0.00</td><td><span class="stamp skip">SKIP · LOW VALUE</span></td></tr>
+    </tbody>
+  </table>
+  <p class="say" style="font-size:32px;margin-top:30px">Blue columns come from the model. Orange is plain code. The model never sees the price, and it can't buy.</p>
+  <aside class="notes">
+    <ul>
+      <li>The cheapest relevant article is a rewrite of the one it bought, so paying it pays the copier. The cheapest overall is an op-ed with no evidence.</li>
+      <li>gap_material is fixed at 1 for the question's frozen requested facts, so it's left out of the formula here.</li>
+      <li>Best value per S$ wins among BUYs; S$1 cap per article; at most 3 rounds.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 6 · VENDOR BENCHMARK ============ -->
+<section class="slide" data-title="On paper: Clef-flash vs Jev">
+  <div class="kick">Picking a decision model</div>
+  <h1>On paper, Clef-flash was 13× faster than Jev and ahead on 7 of 10 tests</h1>
+  <div class="split" style="grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:70px">
+    <div>
+      <div class="legend" style="margin-top:10px"><span>Median latency, ms</span></div>
+      <div class="chart" data-chart="hbar"><script type="application/json">
+        { "w": 640, "labelW": 200, "rowH": 96, "max": 600, "unit": " ms", "ticks": [0, 200, 400, 600],
+          "rows": [
+            { "label": "Clef-flash", "v": 38.8, "color": "flash" },
+            { "label": "Clef 27B", "v": 209.3, "color": "rules" },
+            { "label": "Jev", "v": 524.1, "color": "jev" }
+          ] }
+      </script></div>
+    </div>
+    <div>
+      <div class="legend" style="margin-top:10px"><span><i style="background:var(--flash)"></i>Clef-flash</span><span><i style="background:var(--jev)"></i>Jev</span><span class="muted">score, higher is better</span></div>
+      <div class="chart" data-chart="pairs"><script type="application/json">
+        { "w": 1000, "labelW": 250, "rowH": 54, "domain": [0, 100], "ticks": [0, 50, 100], "a": "flash", "b": "jev", "aName": "Clef-flash", "bName": "Jev",
+          "rows": [
+            { "label": "BFCL", "a": 98.76, "b": 95.75 },
+            { "label": "API-Bank", "a": 93.11, "b": 88.19 },
+            { "label": "Home appliances", "a": 97.73, "b": 52.27 },
+            { "label": "BANKING77", "a": 90.93, "b": 79.74 },
+            { "label": "PhishNChips", "a": 75.05, "b": 62.55 },
+            { "label": "ToolRet", "a": 66.43, "b": 65.28 },
+            { "label": "Amazon ESCI", "a": 57.39, "b": 55.21 },
+            { "label": "When2Call", "a": 65.58, "b": 80.97 },
+            { "label": "CLINC150", "a": 66.77, "b": 89.27 },
+            { "label": "BRIGHT", "a": 39.26, "b": 47.52 }
+          ] }
+      </script></div>
+    </div>
+  </div>
+  <div class="src">Vendor-reported: Cloudflare's Clef launch post, "Jev Decision Index", 1 Oct 2026. Server-side latency. Same request format as Jev.</div>
+  <aside class="notes">
+    <ul>
+      <li>Jev would have been a natural fit. Clef (Cloudflare) speaks the same request format, has open weights, is about US$0.09 per million input tokens for flash, and its launch numbers beat Jev on speed and on most of the index.</li>
+      <li>Clef-flash ahead on 7 (tool calls, API calls, intents, phishing…), Jev ahead on 3 (When2Call, CLINC150, BRIGHT retrieval).</li>
+      <li><span class="todo">Say why Jev wasn't in our own run</span></li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 7 · HOW DO WE DECIDE ============ -->
+<section class="slide" data-title="So how do we decide?">
+  <div class="kick">Picking a decision model</div>
+  <h1 class="q">So how do we decide?</h1>
+  <ul class="facts">
+    <li data-step="1"><span>Those benchmarks grade tool calls, intent labels and retrieval. None asks ours: <b>is this article worth S$0.90 for this gap?</b></span></li>
+    <li data-step="2"><span>On 6 Oct OpenAI shipped <b>Decisions (gpt-6-luna)</b>: the same three question types, a speed claim, no distribution.</span></li>
+    <li data-step="3"><span>So we wrote our own test, and gave it to a coding agent to run.</span></li>
+  </ul>
+  <aside class="notes">
+    <ul>
+      <li>Three builds: → → →.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 8 · THE PROMPT ============ -->
+<section class="slide" data-title="The research prompt">
+  <div class="kick">The prompt · excerpt</div>
+  <h1 style="font-size:60px">One prompt, handed to an autonomous coding agent</h1>
+<pre class="code"><span class="h"># Task: benchmark OpenAI Decisions API vs Cloudflare Clef for tftf's
+#       purchase decisions, then publish a mini research paper</span>
+
+Work unattended: when something is ambiguous, decide, write the decision
+down in the paper's "Protocol deviations" section, and keep going.
+
+Arms: A clef-flash (production) · B clef 27B · C gpt-6-luna · F rules only
+<mark>Hard stop at US$5 per provider and US$10 in total.</mark>
+Cache every response on disk. Reruns must cost nothing.
+Labels by construction. Arms A–C must never generate or label data.
+<mark>Lock the test split by writing its SHA-256 before any tuning.</mark>
+Why calibration matters more than accuracy: the probabilities are
+multiplied together and compared to a fixed threshold.</pre>
+  <div class="src">Full prompt: about 10,000 tokens in 11 sections (setup, corpus, metrics, baseline, tuning, final run, decision rule, paper).</div>
+  <aside class="notes">
+    <ul>
+      <li>Ran in Codex on 8 Oct with GPT-6.1 Sol sub-agents. They generated the synthetic corpus from structured specs; the models under test never labelled anything.</li>
+      <li>Every number in the paper had to come from a file in <code>bench/decisions/out/</code>; vendor claims labelled as such.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 9 · THE RULE ============ -->
+<section class="slide" data-title="The rule, committed first">
+  <div class="kick">The prompt · §9</div>
+  <h1 style="font-size:60px">The pass/fail rule was committed before the first API call</h1>
+<pre class="code"><span class="h">## 9. Decision rule: pre-register it before Phase 2</span>
+
+The incumbent is Clef-flash. Switch only if ALL of these hold on the test split:
+  1. Decision F1 higher by ≥ 0.05, with a 95% CI that excludes 0
+  2. Mean Brier (probability error) not worse
+  3. Round p95 latency ≤ 2.5 s, timeouts at 3 s ≤ 1%
+  4. Injection lift no worse, and UC1–UC3 all pass
+  5. $ per 1,000 rounds ≤ 3× the incumbent's
+<span class="dim">If none qualify, keep Clef-flash.</span></pre>
+  <div class="src">Committed as 9eede4d before the baseline run. Gist: preregistration.md.</div>
+  <aside class="notes">
+    <ul>
+      <li>Brier = mean squared error of a probability. 0 is perfect. It's the calibration measure.</li>
+      <li>UC1–UC3 are our three demo stories; criterion 4 comes back at the end.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 10 · WHAT IT BUILT ============ -->
+<section class="slide" data-title="What the agent produced" data-skip>
+  <div class="kick">What came back</div>
+  <h1>What the agent produced</h1>
+  <div class="tiles">
+    <div class="tile"><b>160</b><span>synthetic buying scenarios, 64 held out, 3 repeats</span></div>
+    <div class="tile"><b>686</b><span>articles from 42 fictional writers</span></div>
+    <div class="tile"><b>5</b><span>attack types: injections, role spoofs, price anchors, retitled copies</span></div>
+    <div class="tile"><b>US$0.96</b><span>total API cost for the whole study</span></div>
+  </div>
+  <div class="src">All SYNTHETIC. 7,190 files, listed in the gist. 30 gold items still await human review.</div>
+  <aside class="notes">
+    <ul>
+      <li>Skipped by default. Remove data-skip if you want it.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 11 · RESULTS ============ -->
+<section class="slide" data-title="Results: held-out F1">
+  <div class="kick">Results · held-out test split</div>
+  <h1>On held-out scenarios, OpenAI Decisions scored 0.98 and Clef-flash 0.78</h1>
+  <div class="split">
+    <div>
+      <div class="legend"><span><i class="ring"></i>out of the box</span><span><i style="background:var(--ink-2)"></i>tuned + calibrated</span><span class="muted">bar: 95% CI · purchase F1</span></div>
+      <div class="chart" data-chart="arrows"><script type="application/json">
+        { "w": 1040, "labelW": 330, "rowH": 132, "domain": [0.3, 1], "ticks": [0.4, 0.6, 0.8, 1.0],
+          "rows": [
+            { "label": "OpenAI Decisions", "sub": "gpt-6-luna", "color": "luna", "from": 0.680, "to": 0.983, "ci": [0.947, 1.0] },
+            { "label": "Clef-flash", "sub": "Cloudflare, 9B", "color": "flash", "from": 0.506, "to": 0.783, "ci": [0.643, 0.898] },
+            { "label": "Rules only", "sub": "no model", "color": "rules", "from": 0.433, "to": 0.667, "ci": [0.492, 0.832] }
+          ] }
+      </script></div>
+    </div>
+    <div class="side">
+      <div class="tile"><b>0.015 vs 0.075</b><span>probability error (Brier), Luna vs Clef-flash. Lower is better.</span></div>
+      <div class="tile"><b>$0.48 vs $0.44</b><span>per 1,000 buying rounds. About the same.</span></div>
+    </div>
+  </div>
+  <div class="src">SYNTHETIC. 64 held-out scenarios × 3 repeats, 28 topic families.</div>
+  <aside class="notes">
+    <ul>
+      <li>F1 here = picking exactly the article a careful buyer would (or correctly buying nothing).</li>
+      <li>"Out of the box" = production wording and thresholds. "Tuned" = best wording, calibrator and threshold chosen on the dev split only.</li>
+      <li>Luna untuned-but-reworded (no calibrator) already scored 0.915.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 12 · SPEED ============ -->
+<section class="slide" data-title="Speed: claimed vs measured">
+  <div class="kick">Results · speed</div>
+  <h1>Measured from our machine, the "39 ms" model took 583 ms a call</h1>
+  <div class="legend"><span><i class="out" style="border-color:var(--flash)"></i>vendor claim, server time</span><span><i class="bar" style="background:var(--ink-2)"></i>our median per call, network included</span></div>
+  <div class="chart" data-chart="hbar"><script type="application/json">
+    { "w": 1700, "labelW": 420, "rowH": 112, "max": 900, "unit": " ms", "ticks": [0, 300, 600, 900],
+      "rows": [
+        { "label": "Clef-flash", "sub": "vendor claim", "v": 38.8, "color": "flash", "outline": true },
+        { "label": "Clef-flash", "sub": "measured", "v": 583.1, "color": "flash" },
+        { "label": "OpenAI Decisions", "sub": "measured", "v": 277.0, "color": "luna" }
+      ] }
+  </script></div>
+  <div class="src">Median candidate-call round trip, baseline run. Vendor and client numbers measure different things; the comparison that holds is our two measured bars.</div>
+  <aside class="notes">
+    <ul>
+      <li>Not "the vendor lied": 38.8 ms is inference time on their servers. Ours includes the network from our laptop.</li>
+      <li>Batched Luna rounds: p95 577 ms. Criterion 3 (p95 ≤ 2.5 s) passed.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 13 · CALIBRATION ============ -->
+<section class="slide" data-title="Calibration">
+  <div class="kick">What surprised us · 1</div>
+  <h1>Out of the box, neither model's numbers meant what they said</h1>
+  <div class="split" style="grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)">
+    <div class="chart" data-chart="reliability"><script type="application/json">
+      { "size": 520,
+        "series": [
+          { "name": "Clef-flash", "color": "flash", "bins": [[0.095,0.154,39],[0.146,0.158,38],[0.187,0.231,39],[0.218,0.308,39],[0.269,0.243,37],[0.332,0.275,40],[0.379,0.270,37],[0.431,0.308,39],[0.501,0.282,39],[0.588,0.757,37],[0.669,0.650,40],[0.774,0.811,37],[0.848,0.897,39],[0.892,0.895,38],[0.919,1.000,38]] },
+          { "name": "OpenAI Decisions", "color": "luna", "bins": [[0.000,0.000,80],[0.013,0.028,36],[0.036,0.146,41],[0.060,0.240,50],[0.087,0.373,51],[0.100,0.571,21],[0.115,0.417,36],[0.136,0.487,39],[0.216,0.533,30],[0.637,0.850,40],[0.851,0.812,48],[0.897,1.000,31],[0.930,1.000,44],[0.953,1.000,29]] }
+        ] }
+    </script></div>
+    <div>
+      <div class="legend" style="margin-top:0"><span><i style="background:var(--flash)"></i>Clef-flash</span><span><i style="background:var(--luna)"></i>OpenAI Decisions</span><span class="muted">— perfect</span></div>
+      <div class="call flash" style="margin-top:34px"><b>Clef-flash:</b> anything it scored 0.22 to 0.50 came true 24–31% of the time. The middle of its scale carried no signal.</div>
+      <div class="call luna"><b>OpenAI Decisions:</b> too timid. When it said 0.09, it was right 37% of the time.</div>
+      <div class="call">Our rule multiplies these and compares to 0.20, so we fitted a calibrator per question on the dev split. Test stayed locked.</div>
+    </div>
+  </div>
+  <div class="src">"Does it fill the gap?", baseline wording, dev split, equal-count bins. Gist: reliability.md.</div>
+  <aside class="notes">
+    <ul>
+      <li>Read the chart: x is what the model said, y is how often that was true. On the diagonal = honest.</li>
+      <li>Calibration = Platt or isotonic, picked by 5-fold family-grouped CV on dev.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 14 · WORDING ============ -->
+<section class="slide" data-title="Wording">
+  <div class="kick">What surprised us · 2</div>
+  <h1>The same prompt change helped one model and broke the other</h1>
+  <div class="legend"><span><i class="ring"></i>production wording</span><span><i style="background:var(--ink-2)"></i>"evidence" wording</span><span class="muted">purchase F1, dev split, no calibrator</span></div>
+  <div class="chart" data-chart="arrows"><script type="application/json">
+    { "w": 1700, "labelW": 420, "rowH": 150, "domain": [0, 1], "ticks": [0, 0.25, 0.5, 0.75, 1.0],
+      "rows": [
+        { "label": "OpenAI Decisions", "sub": "gpt-6-luna", "color": "luna", "from": 0.671, "to": 0.904 },
+        { "label": "Clef-flash", "sub": "Cloudflare, 9B", "color": "flash", "from": 0.400, "to": 0.119 }
+      ] }
+  </script></div>
+  <p class="say" style="font-size:32px">The new wording named the entity, measure and time, and told the model to treat text inside abstracts as data. On the held-out split, a calibrator pulled Clef-flash back from 0.18 to 0.78.</p>
+  <div class="src">Gist: "Tuning and architecture experiments". Live, the fix that mattered was one sentence: "The open gap is part of what the question asks."</div>
+  <aside class="notes">
+    <ul>
+      <li>Live on the real corpus, with the old gap sentence, the same model scored on-question gaps anywhere from 0.06 to 0.94.</li>
+      <li>Batching all questions into one request (Luna) also changed results: alone it hurt, with the evidence wording it was best (0.972 dev).</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 15 · OPTION ORDER ============ -->
+<section class="slide" data-title="Option order">
+  <div class="kick">What surprised us · 3</div>
+  <h1>Same input, same answer, every time. Until we reordered the options.</h1>
+  <div class="bign">
+    <div><b>0.99</b><span>order 1</span></div>
+    <div><b>0.80</b><span>order 2</span></div>
+    <div><b>0.05</b><span>order 3</span></div>
+  </div>
+  <p class="say" style="font-size:32px;margin-top:40px">P(original) for one article, asked three times with the options rotated. Repeated identical calls barely moved. Rotating "original / rewrite / overlap" moved OpenAI Decisions by up to <b>0.94</b> across 24 items; Clef-flash by 0.00. Option order is now part of the versioned prompt.</p>
+  <div class="src">Baseline wording, 24 dev items, three cyclic orders. Deterministic is not the same as invariant.</div>
+  <aside class="notes">
+    <ul>
+      <li>Named options map by value, not by array index, so this is the model's preference, not a parsing bug.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 16 · SCORECARD ============ -->
+<section class="slide" data-title="The better model failed our rule">
+  <div class="kick">What surprised us · 4</div>
+  <h1>The better model failed our own rule</h1>
+  <ul class="score">
+    <li class="ok"><span class="ck">✓</span><span class="r">1 · F1 higher by ≥ 0.05</span><span class="e">+0.20 [0.10, 0.33]</span></li>
+    <li class="ok"><span class="ck">✓</span><span class="r">2 · Probability error not worse</span><span class="e">−0.060 [−0.080, −0.042]</span></li>
+    <li class="ok"><span class="ck">✓</span><span class="r">3 · Round p95 ≤ 2.5 s, timeouts ≤ 1%</span><span class="e">577 ms · 0%</span></li>
+    <li class="no"><span class="ck">✗</span><span class="r">4 · Injection lift no worse, UC1–UC3 pass</span><span class="e">lift ✓ · UC3 ✗</span></li>
+    <li class="ok"><span class="ck">✓</span><span class="r">5 · Cost ≤ 3× Clef-flash</span><span class="e">1.09×</span></li>
+  </ul>
+  <p class="say" style="font-size:33px;margin-top:30px" data-step="1">Our refund demo needed a judge that would buy the cheap, dishonest article first. We fixed the story, not the judge, and switched on 8 Oct. Clef-flash is a one-line revert.</p>
+  <aside class="notes">
+    <ul>
+      <li>The paper's analyzer said "keep Clef-flash" because of criterion 4. The switch was a human call after a live comparison on the real corpus: UC3 story 3/3, UC2 bought NotFT 3/4, 0 refusals.</li>
+      <li>The fix: The Fab Floor's Penang article became a S$0.40 deep-dive, so AlphaLeak (S$0.30) wins round 1 on price as well.</li>
+      <li>The gist's abstract still says "keep Clef-flash". Add an update line before sharing it.</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- ============ 17 · SCAN ============ -->
+<section class="slide" data-title="Go deeper (QR)">
+  <div class="kick">Go deeper</div>
+  <h1>Pick one</h1>
+  <div class="qrs">
+    <div class="qrbox">
+      <div class="qr" data-url="https://collaboration95.github.io/theFastandtheFungible/talk/"></div>
+      <div><h3>The interactive walkthrough</h3><p>Replays a run where a writer lies, gets caught and refunds on-chain.</p></div>
+    </div>
+    <div class="qrbox">
+      <div class="qr" data-url="https://gist.github.com/Collaboration95/a8c957e888b5d2e932e69dfcee64a61b"></div>
+      <div><h3>The benchmark paper</h3><p>Every number, every caveat, and the prompt that produced it.</p></div>
+    </div>
+  </div>
+  <div class="repo">Code · github.com/Collaboration95/theFastandtheFungible</div>
+  <aside class="notes">
+    <ul>
+      <li>QR codes are drawn at load time from data-url (needs internet once; the demo needs it anyway). If offline, the box shows the URL instead.</li>
+    </ul>
+  </aside>
+</section>
+
+</div>
+
+<div id="hud"><span id="of" class="of" hidden>overflow</span><span id="num"></span></div>
+<div id="bar"></div>
+<div id="notesp"></div>
+<div id="ov" role="dialog" aria-label="All slides"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+// Project map server for the Level 0 slide's links (its "#/A" etc. are the level-1 pages).
+const MAP_URL = '../project-map/index.html';
+
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const css = name => getComputedStyle(document.documentElement).getPropertyValue('--' + name).trim() || name;
+function svg(tag, attrs = {}, parent, text) {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  if (parent) parent.appendChild(n);
+  return n;
+}
+const fmt = (v, d = 2) => Number(v).toFixed(d);
+
+/* ---------- charts ---------- */
+function spec(node) { return JSON.parse($('script[type="application/json"]', node).textContent); }
+
+// from → to per row (or a hollow/solid pair), coloured by entity, optional 95% CI band
+function arrowsChart(node, s) {
+  const W = s.w, rowH = s.rowH, top = 40, H = top + s.rows.length * rowH + 50;
+  const x0 = s.labelW, x1 = W - 40, [d0, d1] = s.domain;
+  const x = v => x0 + (v - d0) / (d1 - d0) * (x1 - x0);
+  const root = svg('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, node);
+  const axisY = top + s.rows.length * rowH;
+  for (const t of s.ticks) {
+    svg('line', { x1: x(t), x2: x(t), y1: top - 20, y2: axisY, stroke: css('rule'), 'stroke-width': 1 }, root);
+    svg('text', { x: x(t), y: axisY + 38, 'text-anchor': 'middle', fill: css('faint'), 'font-size': 24, 'font-family': 'var(--f-mono)' }, root, fmt(t, t % 1 ? 2 : 1).replace(/\.0$/, '.0'));
+  }
+  s.rows.forEach((r, i) => {
+    const cy = top + i * rowH + rowH / 2, c = css(r.color), up = r.to >= r.from;
+    svg('text', { x: 0, y: cy + (r.sub ? -2 : 10), fill: css('ink'), 'font-size': 32, 'font-weight': 650 }, root, r.label);
+    if (r.sub) svg('text', { x: 0, y: cy + 32, fill: css('muted'), 'font-size': 24 }, root, r.sub);
+    if (r.ci) svg('rect', { x: x(r.ci[0]), y: cy - 9, width: Math.max(4, x(r.ci[1]) - x(r.ci[0])), height: 18, rx: 9, fill: c, 'fill-opacity': .2 }, root);
+    const gap = 17, xa = x(r.from) + (up ? 12 : -12), xb = x(r.to) + (up ? -gap : gap);
+    const id = 'mk' + Math.random().toString(36).slice(2, 8);
+    const m = svg('marker', { id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, root);
+    svg('path', { d: 'M0 0 L10 5 L0 10 z', fill: c }, m);
+    svg('line', { x1: xa, x2: xb, y1: cy, y2: cy, stroke: c, 'stroke-width': 4, 'stroke-linecap': 'round', 'marker-end': `url(#${id})` }, root);
+    const a = svg('circle', { cx: x(r.from), cy, r: 11, fill: css('paper'), stroke: c, 'stroke-width': 4 }, root);
+    svg('title', {}, a, `${r.label}: ${fmt(r.from, 3)} before`);
+    const b = svg('circle', { cx: x(r.to), cy, r: 14, fill: c, stroke: css('paper'), 'stroke-width': 3 }, root);
+    svg('title', {}, b, `${r.label}: ${fmt(r.to, 3)} after` + (r.ci ? ` (95% CI ${fmt(r.ci[0], 3)}–${fmt(r.ci[1], 3)})` : ''));
+    svg('text', { x: x(r.from), y: cy - 28, 'text-anchor': 'middle', fill: css('muted'), 'font-size': 27, 'font-family': 'var(--f-mono)' }, root, fmt(r.from));
+    svg('text', { x: x(r.to), y: cy - 30, 'text-anchor': 'middle', fill: css('ink'), 'font-size': 36, 'font-weight': 700, 'font-family': 'var(--f-mono)' }, root, fmt(r.to));
+  });
+}
+
+// two entities per row (a vs b), values labelled on the outer side of each dot
+function pairsChart(node, s) {
+  const W = s.w, rowH = s.rowH, top = 16, H = top + s.rows.length * rowH + 50;
+  const x0 = s.labelW, x1 = W - 90, [d0, d1] = s.domain;
+  const x = v => x0 + (v - d0) / (d1 - d0) * (x1 - x0);
+  const root = svg('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, node);
+  const axisY = top + s.rows.length * rowH;
+  for (const t of s.ticks) {
+    svg('line', { x1: x(t), x2: x(t), y1: top, y2: axisY, stroke: css('rule'), 'stroke-width': 1 }, root);
+    svg('text', { x: x(t), y: axisY + 36, 'text-anchor': 'middle', fill: css('faint'), 'font-size': 24, 'font-family': 'var(--f-mono)' }, root, t);
+  }
+  s.rows.forEach((r, i) => {
+    const cy = top + i * rowH + rowH / 2;
+    svg('text', { x: 0, y: cy + 9, fill: css('ink'), 'font-size': 26, 'font-weight': 600 }, root, r.label);
+    svg('line', { x1: x(r.a), x2: x(r.b), y1: cy, y2: cy, stroke: css('rule-2'), 'stroke-width': 3 }, root);
+    for (const [k, v, name] of [[s.a, r.a, s.aName], [s.b, r.b, s.bName]]) {
+      const other = v === r.a ? r.b : r.a, right = v >= other;
+      const d = svg('circle', { cx: x(v), cy, r: 11, fill: css(k), stroke: css('paper'), 'stroke-width': 3 }, root);
+      svg('title', {}, d, `${r.label} · ${name}: ${v}`);
+      svg('text', { x: x(v) + (right ? 20 : -20), y: cy + 8, 'text-anchor': right ? 'start' : 'end', fill: css('ink-2'), 'font-size': 22, 'font-family': 'var(--f-mono)' }, root, fmt(v, 1));
+    }
+  });
+}
+
+// horizontal bars from one baseline, value at the tip; "outline" draws a claimed (not measured) value
+function hbarChart(node, s) {
+  const W = s.w, rowH = s.rowH, top = 10, H = top + s.rows.length * rowH + 50, barH = 30;
+  const x0 = s.labelW, x1 = W - 150, x = v => x0 + v / s.max * (x1 - x0);
+  const root = svg('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, node);
+  const axisY = top + s.rows.length * rowH;
+  for (const t of s.ticks) {
+    svg('line', { x1: x(t), x2: x(t), y1: top, y2: axisY, stroke: css('rule'), 'stroke-width': 1 }, root);
+    svg('text', { x: x(t), y: axisY + 36, 'text-anchor': 'middle', fill: css('faint'), 'font-size': 24, 'font-family': 'var(--f-mono)' }, root, t);
+  }
+  s.rows.forEach((r, i) => {
+    const cy = top + i * rowH + rowH / 2, c = css(r.color), w = Math.max(6, x(r.v) - x0);
+    svg('text', { x: 0, y: cy + (r.sub ? -4 : 10), fill: css('ink'), 'font-size': 30, 'font-weight': 650 }, root, r.label);
+    if (r.sub) svg('text', { x: 0, y: cy + 28, fill: css('muted'), 'font-size': 23 }, root, r.sub);
+    // square at the baseline, 4px round at the data end
+    const p = `M${x0} ${cy - barH / 2} H${x0 + w - 4} a4 4 0 0 1 4 4 V${cy + barH / 2 - 4} a4 4 0 0 1 -4 4 H${x0} Z`;
+    const bar = svg('path', r.outline ? { d: p, fill: 'none', stroke: c, 'stroke-width': 3 } : { d: p, fill: c }, root);
+    svg('title', {}, bar, `${r.label}${r.sub ? ' · ' + r.sub : ''}: ${r.v}${s.unit}`);
+    svg('text', { x: x0 + w + 16, y: cy + 10, fill: css('ink'), 'font-size': 30, 'font-weight': 700, 'font-family': 'var(--f-mono)' }, root, r.v + s.unit);
+  });
+}
+
+// reliability diagram: said (x) vs was right (y), with the honest diagonal
+function reliabilityChart(node, s) {
+  const S = s.size, m = { l: 90, r: 20, t: 20, b: 84 }, W = S + m.l + m.r, H = S + m.t + m.b;
+  const x = v => m.l + v * S, y = v => m.t + (1 - v) * S;
+  const root = svg('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, node);
+  for (const t of [0, .25, .5, .75, 1]) {
+    svg('line', { x1: x(t), x2: x(t), y1: y(0), y2: y(1), stroke: css('rule'), 'stroke-width': 1 }, root);
+    svg('line', { x1: x(0), x2: x(1), y1: y(t), y2: y(t), stroke: css('rule'), 'stroke-width': 1 }, root);
+    svg('text', { x: x(t), y: y(0) + 34, 'text-anchor': 'middle', fill: css('faint'), 'font-size': 22, 'font-family': 'var(--f-mono)' }, root, t);
+    svg('text', { x: x(0) - 14, y: y(t) + 8, 'text-anchor': 'end', fill: css('faint'), 'font-size': 22, 'font-family': 'var(--f-mono)' }, root, t);
+  }
+  svg('text', { x: x(.5), y: H - 8, 'text-anchor': 'middle', fill: css('muted'), 'font-size': 24 }, root, 'what the model said');
+  svg('text', { x: 22, y: y(.5), 'text-anchor': 'middle', fill: css('muted'), 'font-size': 24, transform: `rotate(-90 22 ${y(.5)})` }, root, 'how often it was true');
+  svg('line', { x1: x(0), y1: y(0), x2: x(1), y2: y(1), stroke: css('faint'), 'stroke-width': 2 }, root);
+  for (const se of s.series) {
+    const c = css(se.color);
+    svg('polyline', { points: se.bins.map(b => `${x(b[0])},${y(b[1])}`).join(' '), fill: 'none', stroke: c, 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, root);
+    for (const b of se.bins) {
+      const d = svg('circle', { cx: x(b[0]), cy: y(b[1]), r: 7, fill: c, stroke: css('paper'), 'stroke-width': 2.5 }, root);
+      svg('title', {}, d, `${se.name}: said ${fmt(b[0])}, true ${fmt(b[1])} (n=${b[2]})`);
+    }
+  }
+}
+
+const CHARTS = { arrows: arrowsChart, pairs: pairsChart, hbar: hbarChart, reliability: reliabilityChart };
+for (const n of $$('[data-chart]')) CHARTS[n.dataset.chart](n, spec(n));
+
+/* ---------- QR codes ---------- */
+for (const n of $$('.qr[data-url]')) {
+  try {
+    const q = qrcode(0, 'M'); q.addData(n.dataset.url); q.make();
+    n.innerHTML = q.createSvgTag({ cellSize: 8, margin: 0 });
+    const s = n.querySelector('svg'); s.removeAttribute('width'); s.removeAttribute('height');
+  } catch { n.textContent = n.dataset.url; n.classList.add('fail'); }
+}
+
+/* ---------- project map links ---------- */
+for (const a of $$('[data-map]')) {
+  const href = MAP_URL + '#/' + a.dataset.map;
+  a.setAttribute('href', href); a.setAttribute('target', '_blank');
+  if (a.namespaceURI === NS) a.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', href);
+}
+
+/* ---------- deck ---------- */
+const slides = $$('.slide');
+let cur = 0, step = 0;
+const maxStep = s => Math.max(0, ...$$('[data-step],[data-only]', s).map(e => +(e.dataset.step ?? e.dataset.only)));
+const skipped = i => slides[i].hasAttribute('data-skip');
+
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  document.documentElement.style.setProperty('--s', s);
+  $('#stage').style.setProperty('--s', s);
+}
+function render() {
+  slides.forEach((s, k) => s.classList.toggle('active', k === cur));
+  const s = slides[cur];
+  for (const e of $$('[data-step]', s)) { const n = +e.dataset.step; e.classList.toggle('shown', step >= n); e.classList.toggle('now', step === n); }
+  for (const e of $$('[data-only]', s)) e.classList.toggle('shown', step === +e.dataset.only);
+  $('#num').textContent = `${cur + 1} / ${slides.length}` + (maxStep(s) ? ` · ${step}/${maxStep(s)}` : '');
+  $('#bar').style.width = ((cur + 1) / slides.length * 100) + '%';
+  const notes = $('.notes', s);
+  $('#notesp').innerHTML = `<h4>${cur + 1} · ${s.dataset.title || ''}</h4>` + (notes ? notes.innerHTML : '<p>No notes.</p>');
+  $('#of').hidden = !(s.scrollHeight > s.clientHeight + 2 || s.scrollWidth > s.clientWidth + 2);
+  history.replaceState(null, '', '#' + (cur + 1) + (step ? '.' + step : ''));
+  $$('.ovc').forEach((c, k) => c.classList.toggle('cur', k === cur));
+}
+function go(i, st = 0) { cur = Math.max(0, Math.min(slides.length - 1, i)); step = st; render(); }
+function next() {
+  if (step < maxStep(slides[cur])) { step++; return render(); }
+  let i = cur + 1; while (i < slides.length && skipped(i)) i++;
+  if (i < slides.length) go(i, 0);
+}
+function prev() {
+  if (step > 0) { step--; return render(); }
+  let i = cur - 1; while (i >= 0 && skipped(i)) i--;
+  if (i >= 0) go(i, maxStep(slides[i]));
+}
+
+// overview (O): one card per slide
+$('#ov').innerHTML = slides.map((s, k) => `<button type="button" class="ovc${skipped(k) ? ' skip' : ''}" data-k="${k}"><small>${k + 1}${skipped(k) ? ' · SKIPPED' : ''}</small>${s.dataset.title || 'Slide ' + (k + 1)}</button>`).join('');
+$('#ov').addEventListener('click', e => { const b = e.target.closest('.ovc'); if (b) { go(+b.dataset.k); document.body.classList.remove('show-ov'); } });
+
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key;
+  if (document.body.classList.contains('show-ov') && k !== 'o' && k !== 'Escape') return;
+  if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); prev(); }
+  else if (k === 'Home') go(0);
+  else if (k === 'End') go(slides.length - 1, maxStep(slides[slides.length - 1]));
+  else if (k === 'o' || k === 'O') document.body.classList.toggle('show-ov');
+  else if (k === 'Escape') document.body.classList.remove('show-ov', 'blank');
+  else if (k === 'n' || k === 'N') document.body.classList.toggle('show-notes');
+  else if (k === 'b' || k === 'B') document.body.classList.toggle('blank');
+  else if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); }
+});
+addEventListener('resize', fit);
+
+fit();
+const [h, st] = location.hash.slice(1).split('.').map(Number);
+go(h ? h - 1 : 0, st || 0);
+</script>
+</body>
+</html>
