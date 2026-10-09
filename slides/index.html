@@ -139,6 +139,27 @@ table.dt { width: 100%; border-collapse: collapse; margin-top: 26px; font: 500 3
 .stamp.buy { color: var(--ok); background: var(--ok-wash); }
 .stamp.skip { color: var(--faint); }
 
+/* value bars against the buy line */
+.pipe { display: flex; align-items: center; gap: 18px; margin-top: 50px; font: 600 26px/1.2 var(--f-mono); }
+.pipe span { padding: 16px 20px; border-radius: 14px; border: 2px solid; }
+.pipe .m { color: var(--pen); background: var(--pen-wash); border-color: var(--pen-wash-2); }
+.pipe .c { color: var(--pay-ink); background: #FFF1E8; border-color: #F6D2BC; }
+.pipe i { font-style: normal; color: var(--faint); font-size: 32px; }
+.vrows { position: relative; margin-top: 100px; display: grid; gap: 64px; }
+.vrow { display: grid; grid-template-columns: 500px minmax(0, 1fr) 110px 150px; gap: 30px; align-items: center; }
+.vrow .nm { display: block; font: 650 32px/1.2 var(--f-ui); }
+.vrow .sub { display: block; font: 400 25px/1.3 var(--f-ui); color: var(--muted); margin-top: 4px; }
+.vrow.pick .nm { color: var(--ok); }
+.track { position: relative; height: 48px; background: var(--mist); border-radius: 8px; }
+.track b { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--v) / .5 * 100%); min-width: 4px; background: var(--ok); border-radius: 8px; transform-origin: left; }
+.slide.active .track b { animation: grow 1.4s cubic-bezier(.2, .7, .2, 1) .3s both; }
+@keyframes grow { from { transform: scaleX(0); } }
+.track::after { content: ""; position: absolute; left: 40%; top: -14px; bottom: -14px; border-left: 3px dashed var(--ink-2); }
+.vrow:first-child .track::before { content: "buy line 0.20"; position: absolute; left: 40%; top: -52px; transform: translateX(-50%); font: 600 22px var(--f-mono); color: var(--ink-2); white-space: nowrap; }
+.vv { font: 700 36px var(--f-mono); text-align: right; }
+.vrow .stamp { justify-self: start; font-size: 24px; }
+@media (prefers-reduced-motion: reduce) { .slide.active .track b { animation: none; } }
+
 /* prompt excerpt */
 pre.code { margin: 30px 0 0; padding: 30px 38px; background: var(--sheet); border: 2px solid var(--rule); border-radius: 18px; font: 500 28px/1.52 var(--f-mono); color: var(--ink-2); white-space: pre-wrap; }
 pre.code .h { color: var(--pen); font-weight: 700; }
@@ -344,22 +365,21 @@ body.show-ov #ov { display: grid; }
 <!-- ============ 5 · HOW WE USE IT ============ -->
 <section class="slide" data-title="How the agent uses it">
   <div class="kick">One part · the decision model</div>
-  <h1>That is exactly our buying step</h1>
-  <div class="formula"><span class="c">value</span> = <span class="m">fills gap</span> × <span class="m">P(original)</span> × (0.5 + 0.25 × <span class="m">credible</span>) × <span class="c">track record</span> &nbsp;→&nbsp; buy if ≥ 0.20</div>
-  <table class="dt">
-    <thead><tr><th>Paywalled article</th><th class="m">Fills gap?</th><th class="m">Original?</th><th class="m">Credible?</th><th class="c">× Track record</th><th class="c">Value</th><th class="c">Code says</th></tr></thead>
-    <tbody>
-      <tr class="pick"><td><span class="nm">NotFinancialTimes · S$0.90</span><span class="sub">Analysts cut Kestrel margin estimates…</span></td><td>0.90</td><td>0.76</td><td>0.83</td><td>0.80</td><td><b>0.39</b></td><td><span class="stamp buy">BUY</span></td></tr>
-      <tr><td><span class="nm">MarketPulse Digest · S$0.20</span><span class="sub">Kestrel's TSMC deal: analysts trim margins</span></td><td>0.10</td><td>0.00</td><td>0.73</td><td>0.80</td><td>0.00</td><td><span class="stamp skip">SKIP · REWRITE</span></td></tr>
-      <tr><td><span class="nm">Kopi Contrarian · S$0.10</span><span class="sub">Another 'deal of the decade'</span></td><td>0.00</td><td>0.96</td><td>0.02</td><td>0.80</td><td>0.00</td><td><span class="stamp skip">SKIP · LOW VALUE</span></td></tr>
-    </tbody>
-  </table>
-  <p class="say" style="font-size:32px;margin-top:30px">Blue columns come from the model. Orange is plain code. The model never sees the price, and it can't buy.</p>
+  <h1>The model scores. Code buys.</h1>
+  <div class="pipe">
+    <span class="m">Model: fills gap × original × credible</span><i>→</i><span class="c">Code: × track record = value</span><i>→</i><span class="c">Code: buy if value ≥ 0.20</span>
+  </div>
+  <div class="vrows">
+    <div class="vrow pick"><div><span class="nm">NotFinancialTimes · S$0.90</span><span class="sub">the original analysis</span></div><div class="track"><b style="--v:.39"></b></div><span class="vv">0.39</span><span class="stamp buy">BUY</span></div>
+    <div class="vrow"><div><span class="nm">MarketPulse · S$0.20</span><span class="sub">a rewrite of it</span></div><div class="track"><b style="--v:0"></b></div><span class="vv">0.00</span><span class="stamp skip">SKIP</span></div>
+    <div class="vrow"><div><span class="nm">Kopi Contrarian · S$0.10</span><span class="sub">op-ed, no evidence</span></div><div class="track"><b style="--v:0"></b></div><span class="vv">0.00</span><span class="stamp skip">SKIP</span></div>
+  </div>
+  <div class="src">The same 9 Oct rehearsal. The model never sees the price, and it can't buy.</div>
   <aside class="notes">
     <ul>
-      <li>The cheapest relevant article is a rewrite of the one it bought, so paying it pays the copier. The cheapest overall is an op-ed with no evidence.</li>
-      <li>gap_material is fixed at 1 for the question's frozen requested facts, so it's left out of the formula here.</li>
-      <li>Best value per S$ wins among BUYs; S$1 cap per article; at most 3 rounds.</li>
+      <li>Say: "The model scores, code buys. Only the original clears the bar."</li>
+      <li>Full formula: value = fills gap × P(original) × (0.5 + 0.25 × credible) × track record. NotFT: 0.90 × 0.76 × 0.71 × 0.80 = 0.39. MarketPulse: P(original) 0.00 (rewrite). Kopi: fills gap 0.00, credible 0.02.</li>
+      <li>The cheapest relevant article is a rewrite of the one it bought, so paying it pays the copier. Best value per S$ wins among BUYs; S$1 cap per article; at most 3 rounds.</li>
     </ul>
   </aside>
 </section>
