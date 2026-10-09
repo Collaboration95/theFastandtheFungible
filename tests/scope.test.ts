@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { DEMO_QUESTIONS } from '../shared/contracts/examples.js'
 import { ScopeSchema } from '../shared/contracts/index.js'
-import { ANGLE_QUESTION, SCOPE_FEW_SHOT, SCOPE_PROMPT, fixtureScope, scope } from '../server/agents/scope.js'
+import { ABOUT, ANGLE_QUESTION, SCOPE_FEW_SHOT, SCOPE_PROMPT, fixtureScope, scope } from '../server/agents/scope.js'
 import { createApiApp } from '../server/routes.js'
 
 const bible = JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: { id: string; clarify: null | { question: string; options: string[]; fewShot: { user: string; assistant: { questions: { text: string; options: string[] }[] } }[] } }[] }
@@ -60,6 +60,24 @@ describe('scope step (#136)', () => {
       expect(scoped.plan.subqueries.length).toBeGreaterThan(0)
       expect((await post('/api/scope?clarify=never', { question: uc('UC2') })).questions).toEqual([])
       expect((await post('/api/scope', { question: uc('UC2'), clarify: 'never' })).questions).toEqual([])
+      expect(await post('/api/scope', { question: 'What are you?' })).toMatchObject({ questions: [], chat: { reply: ABOUT } })
     } finally { server.close(); api.close(); rmSync(dir, { recursive: true, force: true }) }
+  })
+  // Chat route (owner, 9 Oct): a question that needs no research gets a direct reply and no clarify questions.
+  it('fixture chat: greetings, thanks and questions about the assistant get a direct reply; research questions do not', () => {
+    for (const q of ['What are you ?', 'who are you', 'hi', 'Hello there!', 'thanks', 'What can you do?']) expect(fixtureScope(q)).toMatchObject({ questions: [], chat: { reply: expect.any(String) } })
+    expect(fixtureScope('What are you?').chat?.reply).toBe(ABOUT)
+    for (const q of [...DEMO_QUESTIONS.map(d => d.text), 'Who are the analysts bullish on TSMC?', 'What happened to the bond market?', 'hi, what did the BoJ change?']) expect(fixtureScope(q).chat).toBeUndefined()
+  })
+  it('model chat route: {route:"chat"} returns the reply with no questions; an empty reply falls back to the fixture', async () => {
+    llm({ route: 'chat', reply: "The Sun is about 1.39 million km across, roughly 109 times Earth's diameter." })
+    expect(await scope('What is the size of our star?')).toMatchObject({ questions: [], chat: { reply: expect.stringContaining('1.39 million km') }, label: 'DeepSeek · deepseek-flash' })
+    // clarify=never keeps the chat reply: it is not a clarify question.
+    expect((await scope('What is the size of our star?', { clarify: 'never' })).chat).toBeDefined()
+    llm({ route: 'chat', reply: '   ' })
+    const fallback = await scope('What is the size of our star?')
+    expect(fallback).toMatchObject({ label: 'fixture · scope-fixture' })
+    expect(fallback.chat).toBeUndefined()
+    expect(SCOPE_PROMPT).toContain('{"route":"chat","reply":"..."}')
   })
 })

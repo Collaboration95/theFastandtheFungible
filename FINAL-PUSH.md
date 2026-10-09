@@ -167,7 +167,7 @@ run(plan, budget):
   - Buttons: **Edit** (pauses and opens the plan inline), **Cancel**, **Go now**.
   - On expiry, the card collapses into the run tape and the run starts.
 - **What the modal is not.** It is a plan confirmation that happens before any spending. It is not a purchase approval. The budget is still the only authorization.
-- **Out of scope:** detecting trivial questions and answering them directly.
+- **Out of scope:** detecting trivial questions and answering them directly. **Amended 9 Oct (owner):** the clarify call now routes too. A question that needs no research (a greeting, "what are you?", settled general knowledge) gets a short direct DeepSeek reply on Home, labelled "no sources searched · nothing bought", and no plan card or run follows. Research questions are unchanged.
 - **Style:** light theme only, desktop only. Keep the motion language of v1.
 
 ## 7. Trust matrix (D6)

@@ -31,6 +31,9 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
   // Starts empty: the presets below fill it in one click.
   const [question, setQuestionNow] = useState(draft)
   const setQuestion = (text: string) => { setQuestionNow(text); onDraft?.(text) }
+  // The app clears the draft after a direct reply (no run follows); the box empties with it.
+  const [seenDraft, setSeenDraft] = useState(draft)
+  if (draft !== seenDraft) { setSeenDraft(draft); if (draft === '') setQuestionNow('') }
   const [chosen, setChosen] = useState<number>(picked)
   const setBudget = (minor: number) => { setChosen(minor); onPick?.(minor) }
   const budgetMinor = universalMinor ?? chosen
