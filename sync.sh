@@ -5,7 +5,7 @@ set -eu
 cd "$(dirname "$0")"
 MAIN=../../tftf
 
-mkdir -p talk slides project-map
+mkdir -p talk slides notes project-map
 cp ../talk-page/talk/index.html talk/index.html
 cp ../project-map/docs/project-map/index.html project-map/index.html
 # The deck's boxes link to a local map server; on Pages they open the map published here.
