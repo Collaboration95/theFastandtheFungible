@@ -1,0 +1,9 @@
+# Cloud Run build context: everything tracked except local output and secrets. The root .dockerignore is the
+# publisher-only allowlist for Dockerfile.publisher, so scripts/cloudrun-deploy.sh puts this file in its place.
+**/node_modules
+/dist
+/out
+**/.env
+**/.env.*
+data/*.db*
+data/reports

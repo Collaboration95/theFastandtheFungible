@@ -8,7 +8,9 @@ ResearchAgent is a neutral search engine for agent-readable expertise, with a wa
 
 **Implemented (8 Oct):** a roster of fictional writers, each with their own site and Orama (BM25 + vector) search over the full text of 81 synthetic articles (19 free, 62 paid), behind one local publisher host. A search hit carries the abstract, signals and a signed manifest, never premium bytes. The buyer pays over x402 v2 (`PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE`) on XRPL Testnet to a writer-run facilitator; a broken promise is caught by the proof check and refunded through `POST /challenge`, and the writer's trust score falls. The client asks at most two clarifying questions, shows a plan in a 5 s action modal, and a public Writers tab shows the trust matrix. DeepSeek writes, Clef decides, policy code pays, Langfuse traces live runs. No real funds are used; everything simulated or substituted is labelled.
 
-**Not built:** Cloud Run deployment (the local publisher is the demo path), mainnet, licensing and a central index (D11).
+**Cloud Run (10 Oct):** `make cloudrun` deploys the live demo as one container (nginx + API + publisher, `docker/cloudrun/`) with the keys from `.env`; its ledgers live on the one instance and start fresh on each deploy.
+
+**Not built:** durable Cloud Run storage, mainnet, licensing and a central index (D11).
 
 ```sh
 make setup     # npm ci + create .env from .env.example
@@ -17,6 +19,7 @@ make doctor    # Node, deps, .env drift, ports, provider keys
 make keys      # one real DeepSeek + Clef call; shows latency
 make live      # DeepSeek + Cloudflare Clef, key preflight first, labelled fixtures on failure
 make corpus    # (live) generate the v2 writer corpus; make embeddings embeds it
+make cloudrun  # (live) deploy the live demo to Cloud Run (needs gcloud auth login)
 make smoke     # (live, spends calls) UC1-UC3 end to end on port offset 300; ARGS="--only UC2" or "--probe"
 make reset     # stop the demo, wipe data/*.db and generated reports
 make check     # lint + typecheck + unit tests (pre-commit and CI run this)
