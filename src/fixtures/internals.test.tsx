@@ -207,6 +207,24 @@ describe('run command adapter', () => {
     source.dispatchEvent(new MessageEvent('snapshot', { data: JSON.stringify(exampleRun) }))
     expect(onSnapshot).toHaveBeenCalledTimes(1)
   })
+  it('relays streamed answer drafts only to a caller that asks for them, and rejects malformed ones', () => {
+    class FakeSource extends EventTarget {
+      static instance: FakeSource
+      close = vi.fn()
+      constructor(readonly url: string) { super(); FakeSource.instance = this }
+    }
+    vi.stubGlobal('EventSource', FakeSource)
+    const onDraft = vi.fn(), onError = vi.fn()
+    const unsubscribe = streamRun('run', { onSnapshot: vi.fn(), onEvent: vi.fn(), onDraft, onError })
+    const draft = { runId: 'run', version: 1, conditional: false, status: 'WRITING', claims: [{ text: 'Lead times fell' }] }
+    FakeSource.instance.dispatchEvent(new MessageEvent('draft', { data: JSON.stringify(draft) }))
+    FakeSource.instance.dispatchEvent(new MessageEvent('draft', { data: JSON.stringify({ ...draft, status: 'PAID' }) }))
+    expect(onDraft).toHaveBeenCalledTimes(1); expect(onDraft).toHaveBeenCalledWith(draft)
+    expect(onError).toHaveBeenCalledTimes(1)
+    unsubscribe()
+    FakeSource.instance.dispatchEvent(new MessageEvent('draft', { data: JSON.stringify(draft) }))
+    expect(onDraft).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('stage pacing', () => {

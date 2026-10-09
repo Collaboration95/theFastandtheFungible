@@ -1,11 +1,12 @@
 import { recordStep, scoreStep, traceStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
-import { AnswerSchema, PublicCandidateSchema, SEARCH_LABELS, type Answer, type Claim, type ContentEnvelope, type Gap, type Impact, type ModeLabels, type Plan, type PublicCandidate } from '../../shared/contracts/index.js'
+import { AnswerSchema, ClaimSchema, PublicCandidateSchema, SEARCH_LABELS, type Answer, type Claim, type ContentEnvelope, type DraftClaim, type Gap, type Impact, type ModeLabels, type Plan, type PublicCandidate } from '../../shared/contracts/index.js'
 import type { SearchHit } from '../../shared/contracts/manifest.js'
 import { verifyManifestSignature } from '../../shared/manifest.js'
 import type { PublisherClient, RegistryPublisher } from '../publisher-client.js'
 import { resolveCitation, validateAnswer } from './citations.js'
 import { isLlmConfigured, llmProvider, researchModel, streamJson } from './llm.js'
+import { parsePartialJson } from './partial-json.js'
 import { compareTieBreak } from './tie-break.js'
 import { FIXTURE_GAP_RULES, fixtureSupports, INSTRUCTION, noNewEvidence, ruleGap } from './requirements.js'
 export { FIXTURE_GAP_RULES } from './requirements.js'
@@ -246,10 +247,25 @@ focus, when present, is the angle the user chose when clarifying: name gaps in i
 requestedFacts, when present, lists the facts the user asked for: include a cited claim for each requested fact the evidence states.
 openGaps: compare the question with what your cited claims establish, and name at most 3 things the question needs that the evidence does not state (each ≤ 160 characters), most important first. Name the missing fact, never a source, publisher, article or purchase. Return [] when the evidence answers the question.`
 
+/** The claims the model has written so far, unvalidated; `removed` (set once, after the check) lists the rejected ones. */
+export type WriteAnswerDraft = { claims: DraftClaim[]; removed?: string[] }
+/** Draft updates are throttled: about 20 a second is smooth enough to type from and cheap to send. */
+const DRAFT_INTERVAL_MS = 50
+const STANCES = new Set<string>(ClaimSchema.shape.stance.options)
+/** Claims from a partial or complete model object; text is capped so a runaway stream cannot flood the SSE channel. */
+export function draftClaims(raw: unknown): DraftClaim[] {
+  const claims = (raw as { claims?: unknown } | null | undefined)?.claims
+  if (!Array.isArray(claims)) return []
+  return claims.flatMap(item => {
+    const claim = item as { text?: unknown; stance?: unknown } | null
+    if (!claim || typeof claim.text !== 'string' || !claim.text) return []
+    return [{ text: claim.text.slice(0, 600), ...(typeof claim.stance === 'string' && STANCES.has(claim.stance) ? { stance: claim.stance as DraftClaim['stance'] } : {}) }]
+  }).slice(0, 12)
+}
 /** Caller supplies only FREE/verified-grant contents and stores returned versions immutably.
- * onToken emits a fixed progress marker, never unvalidated model text. */
+ * onToken emits a fixed progress marker; onDraft gets the unvalidated claims for a labelled, never-stored draft view. */
 /** Traced as a chain: the generation (if any), citation validation and the impact class. */
-export type WriteAnswerInput = { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; requirements?: string[]; onToken?: (delta: string) => void }
+export type WriteAnswerInput = { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; requirements?: string[]; onToken?: (delta: string) => void; onDraft?: (draft: WriteAnswerDraft) => void }
 export function writeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer; impact?: Impact }> {
   return startActiveObservation('write-answer', async observation => {
     observation.update({ input: { question: input.question, version: input.version, evidence: input.contents.map(c => c.resourceId) } })
@@ -265,16 +281,25 @@ async function composeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer;
   const contents = usableContents(input.contents)
   let answer = fixture(input.question, contents, input.candidates, input.version, input.previous, input.focus, input.requirements)
   if (isLlmConfigured() && contents.some(c => c.spans.length)) {
+    let drafted = 0
+    const onToken = (_delta: string, text: string) => {
+      input.onToken?.('Generating cited answer…')
+      if (!input.onDraft || Date.now() - drafted < DRAFT_INTERVAL_MS) return
+      drafted = Date.now()
+      input.onDraft({ claims: draftClaims(parsePartialJson(text)) })
+    }
     try {
       const result = await streamJson(ANSWER_PROMPT, { question: input.question, evidence: contents.map(c => {
         const metadata = input.candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
         return { resourceId: c.resourceId, version: c.version, spans: c.spans, tags: metadata?.facets ?? [], authority: metadata?.authority ?? 0 }
-      }), previousOpenGaps: input.previous?.openGaps ?? [], ...(input.focus ? { focus: input.focus } : {}), ...(input.requirements?.length ? { requestedFacts: input.requirements } : {}) }, () => input.onToken?.('Generating cited answer…'), 'generate-answer')
+      }), previousOpenGaps: input.previous?.openGaps ?? [], ...(input.focus ? { focus: input.focus } : {}), ...(input.requirements?.length ? { requestedFacts: input.requirements } : {}) }, onToken, 'generate-answer')
       const openGaps = sanitizeGaps((result as { openGaps?: unknown } | null)?.openGaps, input.candidates)
       const parsed = AnswerSchema.parse({ ...(result as object), openGaps, version: input.version, provider: llmProvider(), model: researchModel() })
       const validated = validateAnswer(parsed, contents)
       scoreStep('citation-validity', parsed.claims.length ? validated.claims.length / parsed.claims.length : 0, `${validated.claims.length} of ${parsed.claims.length} model claims kept by the exact-passage check`)
       if (validated.claims.length) answer = validated
+      const kept = new Set(validated.claims.map(claim => claim.id))
+      input.onDraft?.({ claims: draftClaims(parsed), removed: parsed.claims.filter(claim => !kept.has(claim.id)).map(claim => claim.text.slice(0, 600)) })
     } catch { /* Clearly labelled extractive fixture remains available on provider/validation failure. */ }
   }
   return { answer: AnswerSchema.parse(answer), ...(input.previous ? { impact: compareAnswers(input.previous, answer, contents, priorContents(contents, input.candidates, input.previous)) } : {}) }

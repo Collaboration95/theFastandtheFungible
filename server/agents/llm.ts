@@ -21,15 +21,17 @@ export const llmConfig = (name = process.env.LLM_PROVIDER) => {
 }
 export const researchModel = () => llmConfig().model
 export const isLlmConfigured = () => Boolean(current() && llmConfig().apiKey)
+export type OnToken = (delta: string, text: string) => void
 
 /**
- * Raw JSON deltas are progress only. Consumers must validate before displaying facts.
+ * Raw JSON deltas are unvalidated: show them only as a labelled draft, and validate before displaying facts.
+ * onToken also gets this attempt's text so far, so a retry starts a clean draft.
  * Each attempt is one Langfuse generation: model, parameters, messages, output, tokens, first-token time.
  */
-function streamJsonAttempt(name: string, system: string, input: unknown, onToken?: (delta: string) => void): Promise<unknown> {
+function streamJsonAttempt(name: string, system: string, input: unknown, onToken?: OnToken): Promise<unknown> {
   return startActiveObservation(name, generation => attemptJson(generation, system, input, onToken), { asType: 'generation' })
 }
-async function attemptJson(generation: LangfuseGeneration, system: string, input: unknown, onToken?: (delta: string) => void): Promise<unknown> {
+async function attemptJson(generation: LangfuseGeneration, system: string, input: unknown, onToken?: OnToken): Promise<unknown> {
   const provider = current()
   if (!provider || !isLlmConfigured()) throw new Error('LLM is not configured')
   const { baseUrl, apiKey } = llmConfig()
@@ -76,7 +78,7 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
       if (frame.error) throw new Error('LLM stream failed')
       if (frame.choices?.[0]?.finish_reason === 'length') throw new Error('LLM JSON truncated')
       const delta = frame.choices?.[0]?.delta?.content
-      if (typeof delta === 'string') { if (!text) generation.update({ completionStartTime: new Date() }); text += delta; onToken?.(delta) }
+      if (typeof delta === 'string') { if (!text) generation.update({ completionStartTime: new Date() }); text += delta; onToken?.(delta, text) }
       if (text.length > 1_000_000) throw new Error('LLM JSON exceeds limit')
     }
     while (!finished) {
@@ -106,7 +108,7 @@ class LlmHttpError extends Error {
 }
 
 /** Retry once; rate limits wait before retrying. Never expose response bodies. */
-export async function streamJson(system: string, input: unknown, onToken?: (delta: string) => void, name = 'generate-json'): Promise<unknown> {
+export async function streamJson(system: string, input: unknown, onToken?: OnToken, name = 'generate-json'): Promise<unknown> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try { return await streamJsonAttempt(name, system, input, onToken) } catch (error) {
       if (attempt === 1 || !isLlmConfigured()) throw error

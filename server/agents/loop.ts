@@ -5,7 +5,7 @@ import type { PurchaseManager } from '../purchases.js'
 import { challenge } from '../challenges.js'
 import { createHash } from 'node:crypto'
 import { AnswerSchema, COVERAGE_STATUSES, CoverageSchema, PlanSchema, PublicCandidateSchema, RunCheckpointSchema, SEARCH_LABELS, STOP_LABELS, decisionLabel, providerLabels } from '../../shared/contracts/index.js'
-import type { Answer, ContentEnvelope, Coverage, CoverageStatus, FollowUp, PublicCandidate, PurchaseIntent, Requirement, RunSnapshot, StopReason, TraceEvent } from '../../shared/contracts/index.js'
+import type { Answer, AnswerDraft, ContentEnvelope, Coverage, CoverageStatus, FollowUp, PublicCandidate, PurchaseIntent, Requirement, RunSnapshot, StopReason, TraceEvent } from '../../shared/contracts/index.js'
 import { decide, decisionFailureStatus, DecisionUnavailableError, FixtureDecisionProvider, publicSources } from './decision.js'
 import type { ProofOutcome, Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
@@ -18,6 +18,8 @@ export type RunLoopOptions = {
   provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number; reputation?: Pick<Reputation, 'summaries' | 'calibrate'> & Partial<Pick<Reputation, 'recordProof'>>
   /** The focused follow-up search (#210); tests inject a double. */
   followUpSearch?: (client: PublisherClient, query: string, known: PublicCandidate[]) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>
+  /** The answer as it is written (unvalidated, ephemeral): the API relays it over SSE and never stores it. */
+  onDraft?: (draft: AnswerDraft) => void
 }
 const ANSWERED: CoverageStatus[] = ['supported']
 /** Did coverage improve? More facts answered, else a better total rank. */
@@ -122,19 +124,37 @@ export class RunLoop {
       lastProgressAt = now
       this.progress(runId)
     }
-    const result = await (this.options.writeAnswer ?? writeAnswer)({ question: run.question, contents: this.accessible(run), candidates: run.candidates.map(candidate => PublicCandidateSchema.parse(candidate)), version: (previous?.version ?? 0) + 1, onToken, ...(this.focus(run) ? { focus: this.focus(run) } : {}), ...(requirements ? { requirements: requirements.map(r => r.text) } : {}), ...(previous ? { previous: structuredClone(previous) } : {}) })
-    const answer = AnswerSchema.parse(result.answer)
-    if (answer.version !== (previous?.version ?? 0) + 1) throw new Error('Answer version mismatch')
+    const version = (previous?.version ?? 0) + 1
+    // The streamed draft (unvalidated, never stored): WRITING → CHECKING → KEPT, or DISCARDED / FAILED.
+    let draft: AnswerDraft | undefined
+    const sendDraft = (patch: Partial<AnswerDraft>) => {
+      if (!this.options.onDraft || (!draft && patch.status !== 'WRITING' && patch.status !== 'CHECKING')) return
+      draft = { runId, version, conditional, status: 'WRITING', claims: [], ...draft, ...patch }
+      try { this.options.onDraft(structuredClone(draft)) } catch { /* A disconnected viewer must not interrupt the run. */ }
+    }
+    const onDraft = ({ claims, removed }: { claims: AnswerDraft['claims']; removed?: string[] }) => {
+      if (!this.stopped(runId)) sendDraft(removed ? { status: 'CHECKING', claims, removed } : { status: 'WRITING', claims })
+    }
+    let answer: Answer, result: Awaited<ReturnType<typeof writeAnswer>>
+    try {
+      result = await (this.options.writeAnswer ?? writeAnswer)({ question: run.question, contents: this.accessible(run), candidates: run.candidates.map(candidate => PublicCandidateSchema.parse(candidate)), version, onToken, onDraft, ...(this.focus(run) ? { focus: this.focus(run) } : {}), ...(requirements ? { requirements: requirements.map(r => r.text) } : {}), ...(previous ? { previous: structuredClone(previous) } : {}) })
+      answer = AnswerSchema.parse(result.answer)
+      if (answer.version !== version) throw new Error('Answer version mismatch')
+    } catch (error) { sendDraft({ status: 'FAILED' }); throw error }
+    // The model's draft failed the check entirely: the labelled extractive fixture replaces it.
+    if (answer.provider === 'fixture') sendDraft({ status: 'FAILED' })
     let coverage: Coverage | undefined
     if (conditional) {
       coverage = await this.assessCoverage(runId, answer)
       if (!coverageImproves(coverage.entries, this.coverageOf(this.store.getRun(runId), previous?.version)?.entries)) {
         this.store.appendEvent(runId, { type: 'COVERAGE', label: 'The focused search added no answered fact; the earlier answer stands.', data: { answerVersion: answer.version, kept: false } })
+        sendDraft({ status: 'DISCARDED' })
         return false
       }
       this.trace(runId, 'ANSWER', 'Re-answering with free evidence from the focused search.')
     }
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
+    if (answer.provider !== 'fixture') sendDraft({ status: 'KEPT' })
     const started = this.started.get(runId)
     if (!previous && started) scoreTrace('time-to-first-answer-s', (Date.now() - started) / 1000, 'ask → validated cited answer v1')
     const latest = this.store.getRun(runId)

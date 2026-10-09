@@ -2,7 +2,7 @@ import express, { type ErrorRequestHandler, type Response } from 'express'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { z } from 'zod'
-import { AskSchema, DROPS_PER_MINOR, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, decisionLabel, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
+import { AskSchema, DROPS_PER_MINOR, LedgerViewSchema, SIMULATED_LABEL, XRPL_LABEL, decisionLabel, type AnswerDraft, type LedgerView, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
 import { XrplPayer } from './xrpl.js'
 import { scoreTrace, traceEvent, traceRun } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
@@ -33,6 +33,17 @@ export async function createApiApp(options: ApiOptions = {}) {
       res.write(`event: snapshot\ndata: ${JSON.stringify(store.getRun(event.runId))}\n\n`)
     }
   }
+  // The answer as it is written: relayed live, held in memory for late joiners, never stored (it is unvalidated).
+  const drafts = new Map<string, AnswerDraft>()
+  const relayDraft = (draft: AnswerDraft) => {
+    const done = draft.status === 'KEPT' || draft.status === 'DISCARDED' || draft.status === 'FAILED'
+    if (done) drafts.delete(draft.runId); else drafts.set(draft.runId, draft)
+    for (const res of streams.get(draft.runId) ?? []) {
+      res.write(`event: draft\ndata: ${JSON.stringify(draft)}\n\n`)
+      // A kept draft is now a stored, validated answer: send it at once rather than at the next trace event.
+      if (draft.status === 'KEPT') res.write(`event: snapshot\ndata: ${JSON.stringify(store.getRun(draft.runId))}\n\n`)
+    }
+  }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? process.env.APP_DB ?? 'data/app.db', event => { try { traceEvent(event) } catch { /* telemetry never blocks the run */ } publish(event) })
   const client = new PublisherClient({ baseUrl: options.publisherUrl ?? process.env.PUBLISHER_URL, secret: options.secret ?? process.env.PUBLISHER_SECRET })
@@ -50,7 +61,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   }
   // The trust check re-measures a delivered article with the search's own embedder, after a verified grant only (gate 1).
   const reputation = new Reputation(store, { observe: options.observe ?? (embeddingsLive() ? cosineObserver((texts, signal) => embedTexts(texts, { signal })) : undefined) })
-  const loop = new RunLoop(store, client, purchases, undefined, { provider, reputation })
+  const loop = new RunLoop(store, client, purchases, undefined, { provider, reputation, onDraft: relayDraft })
   const reportDir = resolve(options.reportDir ?? process.env.REPORT_DIR ?? 'data/reports')
   const reportJobs = new Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>()
   const timers = new Set<ReturnType<typeof setInterval>>()
@@ -176,6 +187,8 @@ export async function createApiApp(options: ApiOptions = {}) {
     streams.set(runId, streams.get(runId) ?? new Set())
     streams.get(runId)!.add(res)
     res.write(`event: snapshot\ndata: ${JSON.stringify(snapshot)}\n\n`)
+    const draft = drafts.get(runId)
+    if (draft) res.write(`event: draft\ndata: ${JSON.stringify(draft)}\n\n`)
     const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 15000)
     req.on('close', () => { clearInterval(heartbeat); streams.get(runId)?.delete(res) })
   })

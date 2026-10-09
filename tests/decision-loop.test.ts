@@ -14,7 +14,7 @@ import type { DecisionProvider } from '../server/agents/decision.js'
 import type { Store } from '../server/store.js'
 import type { PublisherClient } from '../server/publisher-client.js'
 import type { PurchaseManager } from '../server/purchases.js'
-import type { Answer, ContentEnvelope, DecisionRound, Impact, PurchaseIntent, RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
+import type { Answer, AnswerDraft, ContentEnvelope, DecisionRound, Impact, PurchaseIntent, RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
 import { exampleAnswer, exampleCandidate, exampleContent, exampleRun } from '../shared/contracts/examples.js'
 import type { PublicCandidate } from '../shared/contracts/index.js'
 const paid = (resourceId: string): PublicCandidate => ({ ...exampleCandidate, resourceId, family: resourceId, tier: 'PAID', preview: 'Grid planner energisation queue data.', facets: ['grid-energisation'], price: { amountMinor: 80, currency: 'SGD' } })
@@ -46,7 +46,7 @@ function harness(budgetMinor = 200) {
     reconcile: vi.fn(async () => {}),
   }
   const retrieve = vi.fn(async () => ({ candidates: [exampleCandidate, candidate], contents: [exampleContent] }))
-  const writeAnswer = vi.fn(async (input: { version: number; previous?: Answer; onToken?: (delta: string) => void }) => {
+  const writeAnswer = vi.fn(async (input: { version: number; previous?: Answer; onToken?: (delta: string) => void; onDraft?: (draft: { claims: { text: string }[]; removed?: string[] }) => void }) => {
     if (input.previous) input.previous.conclusion = 'mutated clone'
     return { answer: { ...structuredClone(exampleAnswer), version: input.version, openGaps: input.version > 1 ? [] : exampleAnswer.openGaps } }
   })
@@ -85,6 +85,45 @@ describe('RunLoop with W0 ledger/research doubles', () => {
     expect(h.published.find(event => event.type === 'ANSWER_PROGRESS')?.label).toBe('Writing and validating cited evidence.')
     expect(JSON.stringify(h.run.events)).not.toContain('UNVALIDATED_PAID_CANARY')
     expect(JSON.stringify(h.run.events)).not.toContain('buy expensive')
+  })
+  it('streams the draft as WRITING → CHECKING → KEPT over onDraft only: never into events, snapshots or the stored run', async () => {
+    const h = harness(0)
+    const drafts: AnswerDraft[] = []
+    h.loop.options.onDraft = draft => drafts.push(draft)
+    h.writeAnswer.mockImplementation(async input => {
+      input.onDraft?.({ claims: [{ text: 'UNVALIDATED_DRAFT_CANARY' }] })
+      input.onDraft?.({ claims: [{ text: exampleAnswer.claims[0].text }, { text: 'REJECTED_CANARY' }], removed: ['REJECTED_CANARY'] })
+      return { answer: { ...structuredClone(exampleAnswer), provider: 'deepseek', model: 'deepseek-flash', version: input.version } }
+    })
+    await h.loop.start(h.run.runId)
+    expect(drafts.map(draft => draft.status)).toEqual(['WRITING', 'CHECKING', 'KEPT'])
+    expect(drafts.every(draft => draft.runId === h.run.runId && draft.version === 1 && !draft.conditional)).toBe(true)
+    expect(drafts.at(-1)?.removed).toEqual(['REJECTED_CANARY'])
+    for (const canary of ['UNVALIDATED_DRAFT_CANARY', 'REJECTED_CANARY']) {
+      expect(JSON.stringify(h.run)).not.toContain(canary)
+      expect(JSON.stringify(h.published)).not.toContain(canary)
+    }
+  })
+  it('a draft that fails (the labelled fixture replaces it, or the writer throws) ends FAILED', async () => {
+    const fixture = harness(0)
+    const drafts: AnswerDraft[] = []
+    fixture.loop.options.onDraft = draft => drafts.push(draft)
+    fixture.writeAnswer.mockImplementation(async input => { input.onDraft?.({ claims: [{ text: 'draft' }] }); return { answer: { ...structuredClone(exampleAnswer), version: input.version } } })
+    await fixture.loop.start(fixture.run.runId)
+    expect(drafts.map(draft => draft.status)).toEqual(['WRITING', 'FAILED'])
+
+    const thrown = harness(0)
+    const more: AnswerDraft[] = []
+    thrown.loop.options.onDraft = draft => more.push(draft)
+    thrown.writeAnswer.mockImplementation(async input => { input.onDraft?.({ claims: [{ text: 'draft' }] }); throw new Error('provider down') })
+    await thrown.loop.start(thrown.run.runId)
+    expect(more.map(draft => draft.status)).toEqual(['WRITING', 'FAILED'])
+    // No draft, nothing to end: a writer that never drafted sends nothing.
+    const quiet = harness(0)
+    const none: AnswerDraft[] = []
+    quiet.loop.options.onDraft = draft => none.push(draft)
+    await quiet.loop.start(quiet.run.runId)
+    expect(none).toEqual([])
   })
   it('S$0 answers and computes would-buy while never calling purchases', async () => {
     const h = harness(0)

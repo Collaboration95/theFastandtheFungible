@@ -19,11 +19,25 @@ export const CoverageStatusSchema = z.enum(COVERAGE_STATUSES)
 export const CoverageEntrySchema = z.object({ requirementId: z.string(), status: CoverageStatusSchema, claimIds: z.array(z.string()).optional() })
 /** Coverage of one answer version, judged by the decision model over the passages its validated claims cite. */
 export const CoverageSchema = z.object({ answerVersion: z.number().int().positive(), judge: z.string(), entries: z.array(CoverageEntrySchema), error: z.string().optional() })
+/**
+ * The answer as the model writes it (streaming): UNVERIFIED text, shown only under a "draft" label until the citation
+ * check runs. Ephemeral: sent over SSE only, never stored in the run, its events or telemetry. `removed` lists drafted
+ * claims the citation check rejected; a `conditional` draft is kept only if it answers more requested facts.
+ * Claims only: the validated conclusion is rebuilt from the kept claims, so the model's own summary is never shown.
+ */
+export const DraftClaimSchema = z.object({ text: z.string(), stance: ClaimSchema.shape.stance.optional() })
+export const AnswerDraftSchema = z.object({
+  runId: z.string(), version: z.number().int().positive(), conditional: z.boolean(),
+  status: z.enum(['WRITING', 'CHECKING', 'KEPT', 'DISCARDED', 'FAILED']),
+  claims: z.array(DraftClaimSchema).max(12), removed: z.array(z.string()).optional(),
+})
 export type Citation = z.infer<typeof CitationSchema>
 export type Claim = z.infer<typeof ClaimSchema>
 export type Gap = z.infer<typeof GapSchema>
 export type Answer = z.infer<typeof AnswerSchema>
 export type Impact = z.infer<typeof ImpactSchema>
+export type DraftClaim = z.infer<typeof DraftClaimSchema>
+export type AnswerDraft = z.infer<typeof AnswerDraftSchema>
 export type Requirement = z.infer<typeof RequirementSchema>
 export type CoverageStatus = z.infer<typeof CoverageStatusSchema>
 export type CoverageEntry = z.infer<typeof CoverageEntrySchema>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { BUDGET, ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
+import { BUDGET, ModeLabelsSchema, XRPL_LABEL, type AnswerDraft, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
 import { ask, createReport, deleteRun, getReputation, getRun, listPastRuns, pinRun, resetReputation, retryDelivery, scope, stop, streamRun, type PastRun, type ScopeResult } from './api'
 import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from './stage'
 import { candidateOf, favicon, leadSentence, money } from './format'
@@ -72,6 +72,19 @@ export default function App() {
   const [navWidth, setNavWidth] = useState(() => { const saved = Number(prefs.get(navWidthKey)); return saved >= NAV_WIDTH.min && saved <= NAV_WIDTH.max ? saved : NAV_WIDTH.initial })
   const [why, setWhy] = useState(false)
   const [past, setPast] = useState<PastRun[]>([])
+  // The answer as it is being written (streamed, unvalidated): the latest draft of each version, for the current run only.
+  const [drafts, setDrafts] = useState<AnswerDraft[]>([])
+  // When the model starts writing, a paced replay that is behind jumps to that version's step, so the typing shows live.
+  const live = useRef<RunSnapshot>(undefined)
+  useEffect(() => { live.current = run }, [run])
+  const onDraft = useCallback((draft: AnswerDraft) => {
+    setDrafts(list => [...list.filter(item => item.runId === draft.runId && item.version !== draft.version), draft].sort((a, b) => a.version - b.version))
+    const current = live.current
+    if (draft.status !== 'WRITING' || current?.runId !== draft.runId) return
+    const events = runEvents(current)
+    const step = draft.conditional ? events.filter(event => event.type === 'FOLLOW_UP').at(-1) : events.filter(event => event.type === 'ANSWER')[draft.version - 1]
+    if (step) setCursor(at => Number.isFinite(at) && at < step.id ? step.id : at)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -84,8 +97,8 @@ export default function App() {
   const runId = run?.runId
   useEffect(() => {
     if (!runId) return
-    return streamRun(runId, { onSnapshot: setRun, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
-  }, [runId])
+    return streamRun(runId, { onSnapshot: setRun, onEvent: () => {}, onDraft, onError: () => setError('Connection lost. Reconnecting…') })
+  }, [runId, onDraft])
 
   // Stage pacing: reveal one trace event at a time, holding each for its dwell.
   const events = run ? runEvents(run) : []
@@ -337,7 +350,7 @@ export default function App() {
         {!compare && <Sources run={shown} onOpen={candidate => setPassage({ candidate })} />}
         <Answer run={shown} view={view} onView={setView} compare={compare} onCompare={() => { setView('latest'); setCompare(!compare) }}
           onCitation={citation => { const candidate = candidateOf(shown, citation); if (candidate) setPassage({ candidate, citation }) }}
-          report={<ReportButton run={shown} onReport={downloadReport} busy={!finished} />} />
+          report={<ReportButton run={shown} onReport={downloadReport} busy={!finished} />} drafts={drafts.filter(item => item.runId === shown.runId)} />
       </main>
       <aside className="ra-side" aria-label="Budget and purchases">
         <div className="ra-tabs" role="tablist" aria-label="Right panel">

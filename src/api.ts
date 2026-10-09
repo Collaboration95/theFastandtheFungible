@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { AskSchema, LedgerViewSchema, ReputationRecordSchema, RunSnapshotSchema, ScopeSchema, TraceEventSchema } from '../shared/contracts/index.js'
-import type { Ask, LedgerView, ReputationRecord, RunSnapshot, Scope, TraceEvent } from '../shared/contracts/index.js'
+import { AnswerDraftSchema, AskSchema, LedgerViewSchema, ReputationRecordSchema, RunSnapshotSchema, ScopeSchema, TraceEventSchema } from '../shared/contracts/index.js'
+import type { AnswerDraft, Ask, LedgerView, ReputationRecord, RunSnapshot, Scope, TraceEvent } from '../shared/contracts/index.js'
 
 const runPath = (runId: string) => `/runs/${encodeURIComponent(runId)}`
 
@@ -56,6 +56,8 @@ export async function createReport(runId: string): Promise<{ format: 'PDF' | 'HT
 export function streamRun(runId: string, handlers: {
   onSnapshot: (run: RunSnapshot) => void
   onEvent: (event: TraceEvent) => void
+  /** The answer as it is written: unvalidated, shown only as a labelled draft. */
+  onDraft?: (draft: AnswerDraft) => void
   onError?: (error: Error) => void
 }): () => void {
   const source = new EventSource(`${runPath(runId)}/events`)
@@ -70,6 +72,11 @@ export function streamRun(runId: string, handlers: {
     const parsed = parseMessage(event.data, TraceEventSchema)
     if (parsed !== undefined) handlers.onEvent(parsed)
   }
+  const draft = (event: MessageEvent<string>) => {
+    if (closed) return
+    const parsed = parseMessage(event.data, AnswerDraftSchema)
+    if (parsed !== undefined) handlers.onDraft?.(parsed)
+  }
   function parseMessage<T>(data: string, schema: z.ZodType<T>): T | undefined {
     try { return schema.parse(JSON.parse(data)) }
     catch { handlers.onError?.(new Error('Invalid run stream payload')); return undefined }
@@ -79,12 +86,14 @@ export function streamRun(runId: string, handlers: {
   }
   source.addEventListener('snapshot', snapshot)
   source.addEventListener('trace', trace)
+  if (handlers.onDraft) source.addEventListener('draft', draft)
   source.addEventListener('error', error)
   return () => {
     if (closed) return
     closed = true
     source.removeEventListener('snapshot', snapshot)
     source.removeEventListener('trace', trace)
+    if (handlers.onDraft) source.removeEventListener('draft', draft)
     source.removeEventListener('error', error)
     source.close()
   }

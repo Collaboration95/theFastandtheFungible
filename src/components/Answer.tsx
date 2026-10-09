@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components -- Shared validation for impact/report components. */
-import type { CSSProperties, ReactNode } from 'react'
-import { AnswerSchema, providerLabels, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
+import { useCallback, useState, type CSSProperties, type ReactNode } from 'react'
+import { AnswerSchema, providerLabels, type Answer as AnswerData, type AnswerDraft, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
+import DraftAnswer from './DraftAnswer'
 import { candidateOf, citationKey, leadSentence, money } from '../format'
 import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
 
@@ -33,8 +34,26 @@ const PEN = <svg className="ra-pen" viewBox="0 0 200 60" preserveAspectRatio="no
 const IMPACT = { STRENGTHENS: 'Strengthens the free answer', QUALIFIES: 'Qualifies the free answer', CONTRADICTS: 'Contradicts the free answer', UNCHANGED: 'Leaves the free answer unchanged' } as const
 const GROUPS: [Claim['stance'], string, string][] = [['CHALLENGES', 'Challenges', '▼'], ['SUPPORTS', 'Supports', '▲'], ['UNCERTAIN', 'Uncertain', '◆']]
 
-export interface AnswerProps { run: RunSnapshot; onCitation?: (citation: Citation) => void; view: 'latest' | 'baseline'; onView: (view: 'latest' | 'baseline') => void; compare: boolean; onCompare: () => void; report?: ReactNode }
-export default function Answer({ run, onCitation, view, onView, compare, onCompare, report }: AnswerProps) {
+export interface AnswerProps { run: RunSnapshot; onCitation?: (citation: Citation) => void; view: 'latest' | 'baseline'; onView: (view: 'latest' | 'baseline') => void; compare: boolean; onCompare: () => void; report?: ReactNode; drafts?: AnswerDraft[] }
+const draftKey = (draft: AnswerDraft) => `${draft.runId}:${draft.version}`
+export default function Answer({ run, onCitation, view, onView, compare, onCompare, report, drafts = [] }: AnswerProps) {
+  // Streamed drafts (one per version) show while written and checked, then hand over to the validated answer once typed out.
+  const [settled, setSettled] = useState<string[]>([])
+  // `run` may be the paced replay, behind the live run: a draft shows only as the next version of what is on screen,
+  // and only once the replay has reached its ANSWER step (a conditional re-answer announces itself only when kept).
+  const ended = run.stopped || ['DONE', 'FAILED', 'STOPPED'].includes(run.phase)
+  const newest = Math.max(0, ...run.answers.map(item => item.version))
+  const answerSteps = run.events.filter(event => event.type === 'ANSWER').length
+  const searchedAgain = run.events.some(event => event.type === 'FOLLOW_UP' && event.data && 'helped' in event.data)
+  const showable = (draft: AnswerDraft) => {
+    if (settled.includes(draftKey(draft))) return false
+    const due = draft.version === newest + 1 && (draft.conditional ? searchedAgain && answerSteps === newest : run.phase === 'ANSWER' && answerSteps >= draft.version)
+    // A kept draft finishes typing and shows what the check removed before the stored answer takes over.
+    return draft.status === 'KEPT' ? draft.version === newest || (due && !draft.conditional) : (draft.status === 'WRITING' || draft.status === 'CHECKING') && due && !ended
+  }
+  const draft = compare || view !== 'latest' ? undefined : drafts.find(showable)
+  const settle = useCallback((key: string) => setSettled(list => list.includes(key) ? list : [...list, key]), [])
+  if (draft) return <DraftAnswer key={draftKey(draft)} draft={draft} onSettled={settle} />
   const answers = validatedAnswers(run)
   const numbers = citationNumbers(answers)
   const baseline = answers[0]
@@ -70,9 +89,13 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
   const highlight = showLatest && leadClaims.some(claim => changed.has(claim.id))
   const gap = gapCard(run, answers)
   const list = compare && showLatest ? [...answer.claims, ...removed.map(claim => ({ ...claim, gone: true }))] : answer.claims
+  // This version was just typed out as a draft: keep the text still, stamp it checked, and say what the check removed.
+  const handed = view === 'latest' && !compare ? drafts.find(item => item.version === answer.version && item.status === 'KEPT' && settled.includes(draftKey(item))) : undefined
+  const typed = !!handed
+  const struck = handed?.removed ?? []
   return <>
-    <section className={`ra-verdict${impact && showLatest ? ' has-impact' : ''}`} aria-label="Research answer" key={`v${answer.version}`}>
-      <div className="ra-vlabel"><h2>Short answer</h2></div>
+    <section className={`ra-verdict${impact && showLatest ? ' has-impact' : ''}${typed ? ' is-typed' : ''}`} aria-label="Research answer" key={`v${answer.version}`}>
+      <div className="ra-vlabel"><h2>Short answer</h2>{typed && <span className="ra-checked">✓ Citations checked</span>}</div>
       {answers.length > 1 && <div className="ra-vswitch" role="group" aria-label="Answer version">{answers.map(item => <button type="button" key={item.version} aria-pressed={item === answer} onClick={() => onView(item === latest ? 'latest' : 'baseline')}>v{item.version}</button>).filter((_, index) => index === 0 || index === answers.length - 1)}</div>}
       <p className={`ra-vtext${highlight ? ' is-hl' : ''}`}><span className="ra-lead">{words.map((word, index) => /^\s+$/.test(word) ? word : <span className="w" key={index} style={{ '--d': `${index * 22}ms` } as CSSProperties}>{word}</span>)}</span>{leadClaims.flatMap(cites)}</p>
       {rest && <p className="ra-vrest">{rest}</p>}
@@ -90,6 +113,7 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
           return <li key={claim.id + (gone ? '-gone' : '')} className={`ra-claim${changed.has(claim.id) ? ' is-new' : ''}${gone ? ' is-gone' : ''}`}><span className={`ra-sg s-${stance.toLowerCase()}`} aria-hidden="true">{glyph}</span><p>{changed.has(claim.id) && <span className="ra-new">NEW</span>}{gone && <span className="ra-new">REMOVED</span>}{claim.text}{cites(claim)}</p></li>
         })}</ul></div>
       })}
+      {struck.length > 0 && <details className="ra-dropped ra-struck-list"><summary>The citation check removed {struck.length} drafted claim{struck.length === 1 ? '' : 's'} that {struck.length === 1 ? 'its passage did' : 'their passages did'} not support.</summary><ul>{struck.map((text, index) => <li key={index}><s>{text}</s></li>)}</ul></details>}
       {!compare && removed.length > 0 && <p className="ra-dropped">{removed.length} claim{removed.length === 1 ? '' : 's'} from v1 {removed.length === 1 ? 'was' : 'were'} dropped. <button type="button" className="ra-link" onClick={onCompare}>Compare v1 → v{latest!.version}</button></p>}
     </section>
   </>
