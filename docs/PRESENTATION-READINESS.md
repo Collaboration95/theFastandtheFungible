@@ -66,60 +66,79 @@ When a provider falls back, the mode badge shows it. Never hide a fallback.
 
 ## Five minute script
 
-Updated 8 Oct for the decision-model choice (#214), UC3's new price (#204)
-and the reader-facing name of the trust score (#165). The use cases are in
-[FINAL-PUSH §11](../FINAL-PUSH.md#11-demo-use-cases-questions-are-drafts-until-the-corpus-exists).
-Lead with the decision model and calibration, then the track record. Numbers
-for questions are in [QA-PACK.md](QA-PACK.md).
+Rewritten 9 Oct: **two minutes of live demo, then three minutes on one
+blog-style page** (diagrams, a code snippet or two, a few graphics; no
+slides). The page is still to be built. Numbers for questions are in
+[QA-PACK.md](QA-PACK.md); the stage risks are in
+[STAGE-REVIEW-OCT9.md](STAGE-REVIEW-OCT9.md).
 
 **Words on stage.** Say "decision model" for the step that judges what is
-worth buying; name the model only in the model-choice beat. The trust score
-is the writer's **track record**. Never say gap, threshold, provider, H/C/T
-or a verdict code such as `SKIP_LOW_TRUST`; the screen says "Blocked".
+worth buying; name the model only on the page's model-choice section. The
+trust score is the writer's **track record**. Never say gap, threshold,
+provider, H/C/T or a verdict code such as `SKIP_LOW_TRUST`; the screen says
+"Blocked".
 
-1. **Frame (about 30 s).** The one-line pitch and the positioning: Pay Per
-   Crawl prices pages, Pay Per Use trusts the buyer's word, we price evidence.
-2. **UC1: free is enough (about 45 s).** A bond question answered from free
-   sources with citations. The decision model finds nothing worth paying for.
-   S$0 spent.
-   - **Option, decide at rehearsal:** instead of running it live, open the
-     completed real UC1 run from the sidebar and talk over it. That removes
-     one of four live failure points and frees about 30 s for UC2. If you
-     pre-stage it, say so: "this one ran earlier today".
-3. **UC2: paid evidence changes the answer (about 2 min, the main case).**
-   What the free answer is missing, the decision table with the decision
-   model's scores and each writer's track record, a rewrite and an op-ed
-   skipped, one purchase with its Testnet receipt, the proof check, and answer
-   v2 qualifying v1.
-4. **UC3: a bad actor pays back (about 90 s).** The writers' track records
-   first. AlphaLeak (S$0.30) promises the same Penang lead-time data as The
-   Fab Floor's S$0.40 data deep-dive, so it wins round one on an inflated
-   promise and a lower price. Its proof fails, `/challenge` refunds it on
-   Testnet, and its track record falls from 0.80 to 0.40. Round two buys The
-   Fab Floor at S$0.40: S$0.70 spent, S$0.30 refunded, S$0.40 net. Ask again
-   and AlphaLeak shows as Blocked.
-5. **The model choice (about 20 s, take it from UC2's time if needed).**
-   SWITCHED, by the rule, after the live comparison (#214):
-   “We benchmarked two decision models under a rule we wrote down first.
-   OpenAI's Luna beat Clef-flash on every quality number on our synthetic
-   set. It failed one test: our own demo needed a judge that gets fooled. We
-   fixed the story, not the judge, and switched. The whole study cost under a
-   dollar.”
+### Part 1: the demo (2:00 max, one live run)
+
+One run carries both cases: UC3, "Malaysia packaging lead times". It shows
+a good purchase and a failure caught live, and the answer changes. It took
+35.6 s at real pace on 8 Oct and about 69 s at Stage 1× pace on 9 Oct.
+
+Before going on stage: press "." for the Presenter menu, set clarify to
+never, and **Reset reputation** (every rehearsal leaves AlphaLeak blocked,
+and then round one won't buy it). Use `CF_BACKUP=1 make live` if the primary
+Cloudflare quota is spent.
+
+| Time | Say | Do / point at |
+|---|---|---|
+| 0:00 | "An LLM writes, a decision model chooses, code pays. You give it a budget, and that is the only thing that can spend." | Home: "Ask a question. Give it a budget." |
+| 0:15 | "S$2 budget. A real question." | "Malaysia packaging lead times" preset, Ask |
+| 0:20 | "It shows its plan and gives me five seconds before it can spend a cent." | The plan card |
+| 0:30 | "Free sources first. It names what it still doesn't know." | Short answer, then the open question |
+| 0:45 | "The decision model scores every paywalled article against that. AlphaLeak is cheap and promises exactly the data, so it gets bought." | The decision list, the budget counting down |
+| 1:05 | "Its proof fails. Code challenges it, the writer refunds on-chain, and its track record halves." | Red "Proof failed", green "Refunded S$0.30" |
+| 1:25 | "Round two buys the honest writer, and the answer changes." | Yellow v2, Compare v1 → v2 |
+| 1:45 | "Every charge is on the XRPL Testnet ledger. No real money." | View receipt |
+
+If it runs long, stop narrating the run and go to the page; open the
+finished run from the sidebar during Q&A. Do not press Stop (a purchase
+already in flight still completes). If a fallback chip appears: "that is the
+labelled fallback".
+
+### Part 2: the page (3:00)
+
+Scroll one page, top to bottom, in the browser tab next to the app.
+Planned sections:
+
+1. **What it is (about 30 s).** Agents are the new readers; writers get paid
+   when an agent uses their work. Pay Per Crawl prices pages, Pay Per Use
+   trusts the buyer's word, we price evidence.
+2. **How a run works (about 30 s).** One diagram: LLM writes → decision
+   model scores → policy code pays over x402 → proof check → refund.
+3. **The model choice (about 45 s).** "We benchmarked two decision models
+   under a rule we wrote down first. OpenAI's Luna beat Clef-flash on every
+   quality number on our synthetic set. It failed one test: our own demo
+   needed a judge that gets fooled. We fixed the story, not the judge, and
+   switched. The whole study cost under a dollar."
    - LIVE, small sample (real corpus, 9 Oct; keep apart from the SYNTHETIC
      numbers): Clef-flash told the UC3 story 0 of 2 times. Luna with a plain
      gap question told it 3 of 3, bought NotFT in UC2 3 of 4 times, refused 0
      times, and got 3 of 5 new real-corpus questions right. The wording of
      the gap question, not the model, was the main fix.
-6. **Pop the hood (about 30 s).** One Langfuse trace, the raw 402 exchange and
-   the build log.
+4. **How it was built (about 60 s).** The organizers ask for the stack,
+   workflow and agentic process: issues as specs, overnight orchestrated
+   runs, parallel worktrees, agents rehearsing the demo, and an honest
+   "where it breaks" list.
+5. **Close (about 15 s).** The one line again, and a QR code to the page.
 
-“The LLM can't spend” is a single sentence for Q&A, not the opening: five
-other talks that night lead with “don't trust the LLM”.
+### Kept for Q&A
 
-Keep the S$0 “would buy” run, the fault demo and the
-injection trap for questions or the Science Fair table. Measured live on 8
-Oct (Clef-flash, Fab Floor still at S$0.25): UC1 9.6 s, UC2 21.6 s, UC3 35.6 s
-(the refund took 7.5 s); time it again at rehearsal pace on the stage build.
+- **Live proof:** "Shout a question, I'll type it in." Off-corpus questions
+  should spend S$0 and name what they couldn't find.
+- The AlphaLeak re-ask (Blocked), UC2 (Kestrel–TSMC), the S$0 "would buy"
+  run, the fault demo and the injection trap.
+- “The LLM can't spend” is a single sentence for Q&A, not the opening: five
+  other talks that night lead with “don't trust the LLM”.
 
 ## Technical questions to prepare
 
