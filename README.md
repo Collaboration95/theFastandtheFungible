@@ -1,59 +1,141 @@
 # ResearchAgent
 
-Agents are the new readers. Experts should get paid when an agent uses their thinking.
+**A research agent with a wallet.** Agents are the new readers, so experts should get paid when an agent uses their thinking.
 
-ResearchAgent is a neutral search engine for agent-readable expertise, with a wallet. A reader's agent asks a question, writers search their own articles, a calibrated decision model (Cloudflare Clef) picks which paywalled article is worth buying, code pays the writer directly, and every promise the writer made is checked after delivery. LLMs on DeepSeek write the answer and report; they never choose or trigger a purchase.
+ResearchAgent answers from free sources first. When the missing piece sits behind a paywall, it can buy that one article straight from the writer, inside a budget you set, and it checks every promise the writer made after delivery.
 
-**Direction and decisions:** [FINAL-PUSH.md](FINAL-PUSH.md) (6 Oct pivot, decisions D1-D24, open items) is the source of truth for the product.
+<p>
+  <a href="https://collaboration95.github.io/theFastandtheFungible/"><strong>Explainers site →</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://collaboration95.github.io/theFastandtheFungible/talk/">Walkthrough</a>
+  &nbsp;·&nbsp;
+  <a href="https://collaboration95.github.io/theFastandtheFungible/slides/">Slides</a>
+  &nbsp;·&nbsp;
+  <a href="https://collaboration95.github.io/theFastandtheFungible/project-map/">Project map</a>
+</p>
 
-**Implemented (8 Oct):** a roster of fictional writers, each with their own site and Orama (BM25 + vector) search over the full text of 81 synthetic articles (19 free, 62 paid), behind one local publisher host. A search hit carries the abstract, signals and a signed manifest, never premium bytes. The buyer pays over x402 v2 (`PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE`) on XRPL Testnet to a writer-run facilitator; a broken promise is caught by the proof check and refunded through `POST /challenge`, and the writer's trust score falls. The client asks at most two clarifying questions, shows a plan in a 5 s action modal, and a public Writers tab shows the trust matrix. DeepSeek writes, Clef decides, policy code pays, Langfuse traces live runs. No real funds are used; everything simulated or substituted is labelled.
+Presented at AI Tinkerers Singapore, 10 Oct 2026.
 
-**Cloud Run (10 Oct):** `make cloudrun` deploys the live demo as one container (nginx + API + publisher, `docker/cloudrun/`) with the keys from `.env`; its ledgers live on the one instance and start fresh on each deploy.
+## See it first
 
-**Not built:** durable Cloud Run storage, mainnet, licensing and a central index (D11).
+| | |
+|---|---|
+| [**Inside ResearchAgent**](https://collaboration95.github.io/theFastandtheFungible/talk/) | Replays a real run from its event log: free search, a purchase, a proof that fails, an on-chain refund, then a second buy that answers the question. Start here. |
+| [**Slide deck**](https://collaboration95.github.io/theFastandtheFungible/slides/) | The AI Tinkerers talk. Boxes on the architecture slide open the project map. Keys: `→` `←` · `O` overview · `N` notes · `F` fullscreen. |
+| [**Project map**](https://collaboration95.github.io/theFastandtheFungible/project-map/) | Three clickable levels, from the reader's agent, the writers and the ledger down to the primitives. Every arrow is numbered and explained. |
+
+The writers and their articles are fictional. Payments settle on the XRPL Testnet, so no real money moves.
+
+## How a run works
+
+1. **Ask.** You set a prompt budget (S$0, S$1, S$2 or S$5) and ask a question. The model asks at most two short clarifying questions, which you can skip.
+2. **Confirm the plan.** An action modal shows the plan and counts down for 5 s (Edit, Cancel, Go now). It confirms the plan, not a purchase: the budget is the only spending authorization.
+3. **Search the writers.** Each writer runs their own site with hybrid search (BM25 + vectors) over their full text. A hit returns the abstract, signals and a signed manifest, never the premium text.
+4. **Decide what's worth buying.** A calibrated decision model judges each candidate, weighted by the writer's trust score. Cloudflare Clef-flash is the default; the demo runs OpenAI Decisions `gpt-6-luna` (`DECISION_PROVIDER=openai`).
+5. **Pay.** Deterministic policy code, never the LLM, pays the writer over [x402 v2](docs/x402-xrpl.md) on XRPL Testnet, within the budget and a S$1 per-source cap.
+6. **Verify and refund.** The delivered article is checked against the writer's promises. A broken promise is challenged, refunded on-chain, and the writer's trust score drops.
+7. **Answer.** DeepSeek writes the answer and a PDF report. Every citation resolves to an exact delivered passage. Langfuse traces live runs.
+
+### Hard guarantees
+
+- No premium bytes reach the browser or a model before a matching grant.
+- The budget is the only spending authorization, and only policy code can start a purchase.
+- One charge per intent: retrying a failed delivery never charges again, and Stop blocks new purchases.
+- Citations are real: they point at delivered passages.
+- Anything simulated or substituted is labelled on screen.
+
+## Quick start
+
+Needs Node ≥ 22.13 (for `node:sqlite`; see `.nvmrc`).
 
 ```sh
-make setup     # npm ci + create .env from .env.example
-make run       # offline fixture demo (no keys)
-make doctor    # Node, deps, .env drift, ports, provider keys
-make keys      # one real DeepSeek + Clef call; shows latency
-make live      # DeepSeek + Cloudflare Clef, key preflight first, labelled fixtures on failure
-make corpus    # (live) generate the v2 writer corpus; make embeddings embeds it
-make cloudrun  # (live) deploy the live demo to Cloud Run (needs gcloud auth login)
-make smoke     # (live, spends calls) UC1-UC3 end to end on port offset 300; ARGS="--only UC2" or "--probe"
-make reset     # stop the demo, wipe data/*.db and generated reports
-make check     # lint + typecheck + unit tests (pre-commit and CI run this)
-make verify    # check + serial browser tests + build
-make           # every target
+make setup   # npm ci, and create .env from .env.example
+make run     # offline demo with fixture providers, no keys needed
 ```
 
-`make` wraps the npm scripts (`npm run demo`, `demo:live`, `demo:reset`, `verify`, `doctor`). Needs Node ≥ 22.13 for `node:sqlite` (`.nvmrc`). To run a second checkout beside a running demo, shift every port: `make run OFFSET=100` serves 5200/8888/8890.
+Open <http://127.0.0.1:5100>. The API listens on 8788 and the local publisher on 8790.
 
-Open http://127.0.0.1:5100. API: 8788. Local publisher: 8790. Set a prompt budget of S$0, S$1, S$2 or S$5. The budget is the only spending authorization: there is no per-purchase approval dialog. S$0 computes a would-buy table and spends nothing. The default S$1 per-source cap stays in policy code.
-
-One screen holds the run: steps on the left, the short answer in the middle, budget, purchases and decisions on the right. A run finishes in far less time than a person can follow, so the screen replays its trace at stage pace (a minimum time per step, labelled while it plays; D13). Press `.` for the presenter menu (pace, the fail-next-delivery switch under `make fault`) and `W` for Show work (raw trace, wire, full policy table, receipts). `?pace=real` skips the replay and shows the run at its true speed; `?run=<id>` reopens a run. Design walkthrough: `docs/ux-walkthrough/index.html`.
-
-After you submit, the model asks at most two short clarifying questions (skippable chips), then shows its plan in an action modal above the input bar ([FINAL-PUSH §6](FINAL-PUSH.md#6-clarify-step-and-action-modal-d8)). The modal counts down for 5 s with Edit, Cancel and Go now, and the run starts on expiry. It confirms the plan before any spending; it is not a purchase approval, the budget stays the only authorization. The presenter menu can set clarify to never, and presets load UC1-UC3.
-
-Copy `.env.example` to `.env` and supply DeepSeek and Cloudflare keys for live mode. Keys and wallet seeds remain private; do not commit them. `CLOUDFLARE_ACCOUNT_ID` is resolved once with the account token if missing. `PUBLISHER_URL` can point at another publisher host. `PUBLISHER_SECRET` only guards the local fault toggle.
-
-Each run has durable SQLite reservations, intents, receipts and verified grants (`make wallets CREATE=1` funds the writers' Testnet wallets). No premium bodies or spans enter the browser or models before a matching grant. Retrying a failed delivery never creates a new charge. Stop prevents new purchases. Citations resolve to exact delivered passages; the PDF includes decision tables and simulated receipts. When Chromium fails, the report endpoint returns labelled printable HTML.
-
-`make fault` enables the local fault demo. A fresh run never erases historical receipts. Runtime files are ignored in `data/`. The offline backup is `npm run demo` (fixture providers) on the v2 writer corpus (D18); `tests/scenarios` runs UC1–UC3 end to end.
-
-## Docker (venue laptop)
-
-The same demo in three Alpine containers (web · api · publisher), no Node on the host. Images are built locally from one commit with `git archive` (no registry, no `.env` or `node_modules` in the context) and tagged with its short SHA plus `:local`.
+For live mode, fill `.env` with DeepSeek and Cloudflare keys (plus an OpenAI key for OpenAI Decisions), then:
 
 ```sh
-make docker-build              # or: scripts/docker-build.sh <commit>; prints image sizes
-make docker-run                # fixture demo on http://127.0.0.1:5100 (no keys)
-make docker-live               # DeepSeek + Clef + XRPL Testnet + Langfuse, keys read from .env at runtime
-TAG=<sha> make docker-live     # run a specific commit's images
-make docker-logs               # follow logs
-make docker-down               # stop; V=1 also wipes the ledgers and reports volumes
+make doctor  # checks Node, deps, .env drift, ports and provider keys
+make keys    # one real call per provider, with latency
+make live    # live providers, key preflight first; labelled fixtures if a provider fails
 ```
 
-`WEB_PORT=5200` (or `OFFSET=100`) runs it beside a host demo. Only the web port is published, on 127.0.0.1; the api and publisher are reachable only inside the compose network. The local fault toggle is off in Docker, and `PUBLISHER_URL` always points at the publisher container.
+Keys and wallet seeds stay in `.env`, which is never committed. `make wallets CREATE=1` creates and funds the writers' Testnet wallets.
 
-[FINAL-PUSH.md](FINAL-PUSH.md) is the product source of truth; [prompt.md](prompt.md) holds the hard gates and the worker workflow. [STATUS.md](STATUS.md) records unattended progress and human-only steps. [docs/README.md](docs/README.md) is the documentation index. Cloud deployment, fallback recording, rehearsals and the release tag remain human work.
+<details>
+<summary><strong>All make targets</strong></summary>
+
+| Target | What it does |
+|---|---|
+| `make setup` | `npm ci` and create `.env` from `.env.example` |
+| `make run` | Offline fixture demo (no keys) |
+| `make live` | Live demo: DeepSeek, decision model, XRPL Testnet, Langfuse |
+| `make doctor` | Node, deps, `.env` drift, ports, provider keys |
+| `make keys` | One real DeepSeek, Clef and OpenAI Decisions call; shows latency |
+| `make preflight` | Stage check before the slot: a live decision round, quota, leftover trust and runs, XRPL |
+| `make fault` | Fixture demo with the "fail next delivery" switch |
+| `make corpus` / `make embeddings` | (live) Generate and embed the writer corpus |
+| `make smoke` | (live, spends calls) UC1–UC3 end to end on port offset 300; `ARGS="--only UC2"` or `"--probe"` |
+| `make cloudrun` | (live) Deploy to Google Cloud Run |
+| `make reset` | Stop the demo; wipe `data/*.db` and generated reports |
+| `make check` | Lint, typecheck and unit tests (pre-commit and CI) |
+| `make verify` | `check`, serial browser tests and a build |
+| `make` | List every target |
+
+To run a second checkout beside a running demo, shift every port: `make run OFFSET=100` serves 5200/8888/8890.
+
+</details>
+
+## Using the demo
+
+One screen holds the run: steps on the left, the answer in the middle, and budget, purchases and decisions on the right. A run finishes faster than anyone can follow, so the screen replays its trace at stage pace and labels the replay.
+
+| Key or URL | Effect |
+|---|---|
+| `.` | Presenter menu: pace, clarify on/off, UC1–UC3 presets, fail-next-delivery (under `make fault`) |
+| `W` | Show work: raw trace, wire, full policy table, receipts |
+| `?pace=real` | Skip the replay and show the true speed |
+| `?run=<id>` | Reopen a past run |
+
+With a S$0 budget, the agent builds a would-buy table and spends nothing. When Chromium is unavailable, the report endpoint returns labelled printable HTML instead of a PDF.
+
+The corpus has 8 fictional writers and 83 synthetic articles (20 free, 63 paid), served by one local publisher host. `tests/scenarios` runs the three demo use cases end to end.
+
+## Deploy
+
+### Docker (venue laptop)
+
+Three Alpine containers (web · api · publisher), no Node needed on the host. Images are built from one commit with `git archive`, so `.env` and `node_modules` never enter the build context.
+
+```sh
+make docker-build            # or scripts/docker-build.sh <commit>
+make docker-run              # fixture demo on http://127.0.0.1:5100
+make docker-live             # live providers, keys read from .env at runtime
+TAG=<sha> make docker-live   # a specific commit's images
+make docker-logs
+make docker-down             # V=1 also wipes the ledger and report volumes
+```
+
+Only the web port is published, on 127.0.0.1. `WEB_PORT=5200` (or `OFFSET=100`) runs it beside a host demo.
+
+### Google Cloud Run
+
+`make cloudrun` deploys the live demo as one container (nginx + API + publisher, see [`docker/cloudrun/`](docker/cloudrun/)) to `asia-southeast1` (Singapore). Cloud Build builds it remotely, so no local Docker is needed. Run `gcloud auth login` once first; the keys go from `.env` into Cloud Run environment variables.
+
+The service runs one always-on instance (2 vCPU, 2 GiB). Its SQLite ledgers start fresh on every deploy or restart. Reset reputation before a stage run:
+
+```sh
+curl -X POST <service URL>/api/reputation/reset
+```
+
+## Documentation
+
+- [FINAL-PUSH.md](FINAL-PUSH.md): the product source of truth (direction, decisions D1–D24, open items)
+- [prompt.md](prompt.md): the five hard gates and the worker workflow
+- [docs/README.md](docs/README.md): documentation index, including architecture, design and the x402/XRPL flow
+- [STATUS.md](STATUS.md): progress log and human-only steps
+
+**Not built yet:** durable storage on Cloud Run, mainnet, licensing, and a central index.
