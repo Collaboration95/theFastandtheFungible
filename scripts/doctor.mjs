@@ -195,6 +195,16 @@ if (!stage) {
   else if (process.env.OPENAI_API_KEY) ok('OPENAI_API_KEY set (not called without --deep)')
   else warn('OPENAI_API_KEY not set; DECISION_PROVIDER=openai would fail every decision round')
 
+  // One tiny embedding (owner, 9 Oct): an IP-filtered or quota-capped token otherwise only shows mid-demo as "keyword only".
+  console.log('Cloudflare Workers AI (search embeddings, used by make live)')
+  if (!process.env.CLOUDFLARE_API_TOKEN) warn('CLOUDFLARE_API_TOKEN not set; live search would be keyword only')
+  else {
+    const { probeWorkersAi } = await import('./cf-probe.mjs')
+    const probe = await probeWorkersAi()
+    ;(probe.ok ? ok : fail)(probe.line)
+    if (probe.hint) console.log(`    ${probe.hint}`)
+  }
+
   console.log(`Cloudflare Clef (decisions${decisionProvider === 'cloudflare' ? '' : '; the revert with DECISION_PROVIDER=cloudflare'})`)
   if (!process.env.CLOUDFLARE_API_TOKEN) (decisionProvider === 'cloudflare' ? fail : warn)('CLOUDFLARE_API_TOKEN not set; Clef decision rounds would fail and buy nothing')
   else {
