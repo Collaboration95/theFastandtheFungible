@@ -161,6 +161,7 @@ table.dt { width: 100%; border-collapse: collapse; margin-top: 26px; font: 500 3
 @media (prefers-reduced-motion: reduce) { .slide.active .track b { animation: none; } }
 
 /* prompt excerpt */
+.plabel { font: 600 22px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 pre.code { margin: 30px 0 0; padding: 30px 38px; background: var(--sheet); border: 2px solid var(--rule); border-radius: 18px; font: 500 28px/1.52 var(--f-mono); color: var(--ink-2); white-space: pre-wrap; }
 pre.code .h { color: var(--pen); font-weight: 700; }
 pre.code .dim { color: var(--faint); }
@@ -447,50 +448,44 @@ body.show-ov #ov { display: grid; }
   </aside>
 </section>
 
-<!-- ============ 8 · THE PROMPT ============ -->
-<section class="slide" data-title="The research prompt">
-  <div class="kick">The prompt · excerpt</div>
-  <h1 style="font-size:60px">One prompt, handed to an autonomous coding agent</h1>
-<pre class="code"><span class="h"># Task: benchmark OpenAI Decisions API vs Cloudflare Clef for tftf's
-#       purchase decisions, then publish a mini research paper</span>
+<!-- ============ 8 · THE TEST: PROMPT + RULE ============ -->
+<section class="slide" data-title="The test: prompt and rule">
+  <div class="kick">Our own test</div>
+  <h1>One prompt to a coding agent. The pass mark set first.</h1>
+  <div class="cols" style="margin-top:36px">
+    <div>
+      <div class="plabel">The prompt · excerpt</div>
+<pre class="code"><span class="h"># Benchmark OpenAI Decisions vs Cloudflare
+# Clef on our buying decisions. Write it up.</span>
 
-Work unattended: when something is ambiguous, decide, write the decision
-down in the paper's "Protocol deviations" section, and keep going.
+Run unattended: decide, log why, keep going.
 
-Arms: A clef-flash (production) · B clef 27B · C gpt-6-luna · F rules only
-<mark>Hard stop at US$5 per provider and US$10 in total.</mark>
-Cache every response on disk. Reruns must cost nothing.
-Labels by construction. Arms A–C must never generate or label data.
-<mark>Lock the test split by writing its SHA-256 before any tuning.</mark>
-Why calibration matters more than accuracy: the probabilities are
-multiplied together and compared to a fixed threshold.</pre>
-  <div class="src">Full prompt: about 10,000 tokens in 11 sections (setup, corpus, metrics, baseline, tuning, final run, decision rule, paper).</div>
+Models: Clef-flash · Clef 27B · gpt-6-luna
+        · rules only (no model)
+<mark>Hard stop at US$10.</mark>
+Cache every call, so reruns are free.
+<mark>The models under test never write
+or grade the test data.</mark></pre>
+    </div>
+    <div>
+      <div class="plabel">The pass mark · before the first call</div>
+<pre class="code"><span class="h">Switch from Clef-flash only if ALL hold:</span>
+
+1 · F1 higher by ≥ 0.05
+2 · Probabilities no less honest
+3 · p95 ≤ 2.5 s per round
+4 · No worse on injections; demo
+    stories pass
+5 · Cost ≤ 3× Clef-flash
+
+<span class="dim">Otherwise keep Clef-flash.</span></pre>
+    </div>
+  </div>
   <aside class="notes">
     <ul>
-      <li>Ran in Codex on 8 Oct with GPT-6.1 Sol sub-agents. They generated the synthetic corpus from structured specs; the models under test never labelled anything.</li>
-      <li>Every number in the paper had to come from a file in <code>bench/decisions/out/</code>; vendor claims labelled as such.</li>
-    </ul>
-  </aside>
-</section>
-
-<!-- ============ 9 · THE RULE ============ -->
-<section class="slide" data-title="The rule, committed first">
-  <div class="kick">The prompt · §9</div>
-  <h1 style="font-size:60px">The pass/fail rule was committed before the first API call</h1>
-<pre class="code"><span class="h">## 9. Decision rule: pre-register it before Phase 2</span>
-
-The incumbent is Clef-flash. Switch only if ALL of these hold on the test split:
-  1. Decision F1 higher by ≥ 0.05, with a 95% CI that excludes 0
-  2. Mean Brier (probability error) not worse
-  3. Round p95 latency ≤ 2.5 s, timeouts at 3 s ≤ 1%
-  4. Injection lift no worse, and UC1–UC3 all pass
-  5. $ per 1,000 rounds ≤ 3× the incumbent's
-<span class="dim">If none qualify, keep Clef-flash.</span></pre>
-  <div class="src">Committed as 9eede4d before the baseline run.</div>
-  <aside class="notes">
-    <ul>
-      <li>Brier = mean squared error of a probability. 0 is perfect. It's the calibration measure.</li>
-      <li>UC1–UC3 are our three demo stories; criterion 4 comes back at the end.</li>
+      <li>Say: "One prompt, run unattended, capped at US$10. The pass mark was written before the first API call."</li>
+      <li>Ran in Codex on 8 Oct with GPT-6.1 Sol sub-agents. They generated the synthetic corpus from structured specs; the models under test never labelled anything. Full prompt: about 10,000 tokens in 11 sections.</li>
+      <li>Criterion 1 also needs a 95% CI that excludes 0. Criterion 2 is mean Brier (probability error, 0 is perfect). Criterion 3 also needs timeouts at 3 s ≤ 1%. Criterion 4 = UC1–UC3, our three demo stories; it comes back at the end.</li>
     </ul>
   </aside>
 </section>
