@@ -22,7 +22,7 @@ import Presenter from './components/Presenter'
 import Toasts, { type Toast } from './components/Toasts'
 import ClarifyChips from './components/ClarifyChips'
 import ActionModal from './components/ActionModal'
-import ChatReply from './components/ChatReply'
+import ChatThread, { type ChatMessage } from './components/ChatThread'
 import ReputationPanel from './components/ReputationPanel'
 
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
@@ -40,9 +40,9 @@ function initialPace(): Pace {
 
 export default function App() {
   const [run, setRun] = useState<RunSnapshot>()
-  const [screen, setScreen] = useState<'home' | 'run' | 'settings'>('home')
+  const [screen, setScreen] = useState<'home' | 'run' | 'settings' | 'chat'>('home')
   // Settings' Back returns to the screen it was opened from; the half-typed question lives here so Home remounting keeps it.
-  const [backTo, setBackTo] = useState<'home' | 'run'>('home')
+  const [backTo, setBackTo] = useState<'home' | 'run' | 'chat'>('home')
   const [draft, setDraft] = useState('')
   const [picked, setPicked] = useState<number>(BUDGET.initialMinor)
   const [cursor, setCursor] = useState(Infinity)
@@ -60,8 +60,8 @@ export default function App() {
   const [compare, setCompare] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
   const [pending, setPending] = useState<{ input: AskInput; scope: ScopeResult; answers: Record<string, string>; step: 'clarify' | 'plan' }>()
-  // A question that needs no research is answered directly (owner, 9 Oct): one exchange, shown on Home, never saved to history, no run.
-  const [chat, setChat] = useState<{ question: string; reply: string; label?: string }>()
+  // A question that needs no research opens the chat page (owner, 9 Oct): a plain conversation, never saved to history, no run.
+  const [thread, setThread] = useState<ChatMessage[]>([])
   const [tab, setTab] = useState<'run' | 'writers'>('run')
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
   const [clarifyNever, setClarifyNever] = useState(() => new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1')
@@ -108,7 +108,7 @@ export default function App() {
       const value = await getRun(id)
       show()
       setPassage(undefined); setReceipt(undefined); setWork(false); setCompare(false); setView('latest'); setWhy(false); setToasts([]); setError('')
-      setCursor(Infinity); setChat(undefined); setRun(value); setScreen('run')
+      setCursor(Infinity); setRun(value); setScreen('run')
     } catch { setError('That run could not be opened.') }
   }
   const deletePast = async (id: string) => {
@@ -119,14 +119,14 @@ export default function App() {
   }
   const newQuestion = useCallback(() => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
-    setScreen('home'); setPassage(undefined); setWork(false); setChat(undefined)
+    setScreen('home'); setPassage(undefined); setWork(false); setThread([]); setPending(undefined)
   }, [])
   const openSettings = () => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
-    if (screen !== 'settings') setBackTo(screen === 'run' ? 'run' : 'home')
+    if (screen !== 'settings') setBackTo(screen === 'run' ? 'run' : screen === 'chat' ? 'chat' : 'home')
     setScreen('settings'); setPassage(undefined); setWork(false)
   }
-  const closeSettings = () => { if (backTo === 'run' && run) void openRun(run.runId); else newQuestion() }
+  const closeSettings = () => { if (backTo === 'run' && run) void openRun(run.runId); else if (backTo === 'chat' && thread.length) setScreen('chat'); else newQuestion() }
 
   const refreshPast = useCallback(() => { void listPastRuns().then(setPast).catch(() => { /* the sidebar keeps its last list */ }) }, [])
   const phase = run?.phase
@@ -216,7 +216,7 @@ export default function App() {
       if (event.metaKey || event.ctrlKey || event.altKey || (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, dialog'))) return
       if (event.key === '.') setPresenter(open => !open)
       else if (event.key.toLowerCase() === 'w' && screen === 'run' && run) setWork(open => !open)
-      else if (event.key.toLowerCase() === 'n' && ((screen === 'run' && finished) || screen === 'settings')) newQuestion()
+      else if (event.key.toLowerCase() === 'n' && ((screen === 'run' && finished) || screen === 'settings' || screen === 'chat')) newQuestion()
       else if (event.key === 'Escape') setPresenter(false)
     }
     window.addEventListener('keydown', onKey)
@@ -225,14 +225,29 @@ export default function App() {
 
   // Clarify (D8): questions as chips, then the 5 s plan card; the run starts only from the card.
   const sendAsk = async (input: AskInput) => {
-    setSending(true); setError(''); setChat(undefined)
+    setSending(true); setError('')
     try {
       const result = await scope(input.question, clarifyNever ? 'never' : undefined)
-      if (result.chat) { setChat({ question: input.question, reply: result.chat.reply, label: result.label }); setDraft(''); return }
+      if (result.chat) { setThread([{ id: 1, question: input.question, reply: result.chat.reply, label: result.label }]); setDraft(''); setScreen('chat'); return }
       setPending({ input, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
     } catch { setError('Can’t reach the server. Try again.'); throw new Error('scope failed') }
     finally { setSending(false) }
   }
+  // A follow-up on the chat page: a chat reply joins the thread; a research question opens the plan card there,
+  // with the budget from Home (or Settings' universal budget), and Go starts the run as usual.
+  const sendChat = async (question: string) => {
+    const id = (thread.at(-1)?.id ?? 0) + 1
+    const settle = (patch: Partial<ChatMessage>) => setThread(list => list.map(item => item.id === id ? { ...item, ...patch } : item))
+    setThread(list => [...list, { id, question }]); setSending(true)
+    try {
+      const result = await scope(question, clarifyNever ? 'never' : undefined)
+      if (result.chat) settle({ reply: result.chat.reply, label: result.label })
+      else setPending({ input: { question, budgetMinor: universal ? universalMinor : picked }, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
+    } catch { settle({ error: 'Can’t reach the server. Try again.' }) }
+    finally { setSending(false) }
+  }
+  // Cancelling a plan card on the chat page drops the unanswered message with it.
+  const cancelPending = () => { setPending(undefined); if (screen === 'chat') setThread(list => list.filter(item => item.reply !== undefined || item.error)) }
   const answer = (id: string, option: string) => setPending(state => {
     if (!state) return state
     const answers = { ...state.answers, [id]: option }
@@ -290,6 +305,9 @@ export default function App() {
     {presenter && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onSkip={replaying ? () => setCursor(Infinity) : undefined} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
   </>
 
+  const pendingCard = pending && (pending.step === 'clarify'
+    ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
+    : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={cancelPending} />)
   const settlement = shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'
   if (screen === 'settings') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
@@ -297,12 +315,15 @@ export default function App() {
     {overlays}
   </Layout>
 
+  if (screen === 'chat') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
+    <ChatThread messages={thread} busy={sending || !!pending} onSend={sendChat} above={pendingCard} />
+    {overlays}
+  </Layout>
+
   if (screen === 'home' || !shown) return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <main className="ra-home-wrap">
       {error && <p className="ra-banner" role="alert">{error}</p>}
-      <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pending ? (pending.step === 'clarify'
-        ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
-        : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={() => setPending(undefined)} />) : chat && <ChatReply question={chat.question} reply={chat.reply} label={chat.label} onDismiss={() => setChat(undefined)} />} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
+      <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
     </main>
     {overlays}
   </Layout>
