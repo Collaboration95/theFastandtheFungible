@@ -140,12 +140,23 @@ table.dt { width: 100%; border-collapse: collapse; margin-top: 26px; font: 500 3
 .stamp.skip { color: var(--faint); }
 
 /* value bars against the buy line */
-.pipe { display: flex; align-items: center; gap: 18px; margin-top: 50px; font: 600 26px/1.2 var(--f-mono); }
-.pipe span { padding: 16px 20px; border-radius: 14px; border: 2px solid; }
-.pipe .m { color: var(--pen); background: var(--pen-wash); border-color: var(--pen-wash-2); }
-.pipe .c { color: var(--pay-ink); background: #FFF1E8; border-color: #F6D2BC; }
-.pipe i { font-style: normal; color: var(--faint); font-size: 32px; }
-.vrows { position: relative; margin-top: 100px; display: grid; gap: 64px; }
+.fx { display: flex; align-items: center; gap: 60px; margin-top: 96px; }
+.fx .eq { font: 500 42px/1 var(--f-ui); color: var(--ink); white-space: nowrap; }
+.fx .eq b { font-weight: 700; }
+.ring { position: relative; display: inline-block; padding: 0 14px; margin: 0 14px; }
+.ring svg { position: absolute; left: -30px; top: -28px; width: calc(100% + 60px); height: calc(100% + 56px); overflow: visible; pointer-events: none; }
+.ring path { fill: none; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.slide.active .ring path { animation: draw 1.1s ease-out both; }
+.slide.active .ring.code path { animation-delay: .9s; }
+@keyframes draw { from { stroke-dashoffset: 1; } }
+.ring .tag { position: absolute; left: 50%; transform: translateX(-50%); font: 700 30px/1.1 var(--f-display); text-align: center; white-space: nowrap; }
+.ring.model { color: var(--pen); } .ring.model .tag { bottom: calc(100% + 34px); }
+.ring.code { color: var(--pay-ink); } .ring.code .tag { top: calc(100% + 34px); }
+.ring > span:first-child { color: var(--ink); }
+.pseudo { font: 600 34px/1 var(--f-mono); color: var(--ink-2); background: var(--sheet); border: 2px solid var(--rule); border-radius: 14px; padding: 20px 26px; white-space: nowrap; }
+.pseudo .k { color: var(--pen); } .pseudo .f { color: var(--pay-ink); }
+@media (prefers-reduced-motion: reduce) { .slide.active .ring path { animation: none; } }
+.vrows { position: relative; margin-top: 150px; display: grid; gap: 56px; }
 .vrow { display: grid; grid-template-columns: 500px minmax(0, 1fr) 110px 150px; gap: 30px; align-items: center; }
 .vrow .nm { display: block; font: 650 32px/1.2 var(--f-ui); }
 .vrow .sub { display: block; font: 400 25px/1.3 var(--f-ui); color: var(--muted); margin-top: 4px; }
@@ -367,8 +378,9 @@ body.show-ov #ov { display: grid; }
 <section class="slide" data-title="How the agent uses it">
   <div class="kick">One part · the decision model</div>
   <h1>The model scores. Code buys.</h1>
-  <div class="pipe">
-    <span class="m">Model: fills gap × original × credible</span><i>→</i><span class="c">Code: × track record = value</span><i>→</i><span class="c">Code: buy if value ≥ 0.20</span>
+  <div class="fx">
+    <div class="eq"><b>value</b> = <span class="ring model"><span>fills gap × original × credible</span><svg aria-hidden="true"><path pathLength="1"/></svg><span class="tag">Model<br>↑</span></span> × <span class="ring code"><span>track record</span><svg aria-hidden="true"><path pathLength="1"/></svg><span class="tag">↓<br>Code</span></span></div>
+    <div class="pseudo"><span class="k">if</span> value ≥ 0.20: <span class="f">buy()</span></div>
   </div>
   <div class="vrows">
     <div class="vrow pick"><div><span class="nm">NotFinancialTimes · S$0.90</span><span class="sub">the original analysis</span></div><div class="track"><b style="--v:.39"></b></div><span class="vv">0.39</span><span class="stamp buy">BUY</span></div>
@@ -866,7 +878,20 @@ function render() {
   history.replaceState(null, '', '#' + (cur + 1) + (step ? '.' + step : ''));
   $$('.ovc').forEach((c, k) => c.classList.toggle('cur', k === cur));
 }
-function go(i, st = 0) { cur = Math.max(0, Math.min(slides.length - 1, i)); step = st; render(); flow(); }
+function go(i, st = 0) { cur = Math.max(0, Math.min(slides.length - 1, i)); step = st; render(); flow(); rings(); }
+
+// hand-drawn loops around formula terms: a 100 × 40 sketch, stretched to each term once its slide is laid out
+const LOOP = [[24, 37], [8, 35, 2, 27, 4, 19], [6, 9, 28, 3, 55, 3], [82, 3, 99, 11, 97, 22], [95, 33, 70, 39, 45, 39], [28, 39, 14, 36, 8, 28]];
+function rings() {
+  for (const svgEl of $$('.ring svg', slides[cur])) {
+    const W = svgEl.parentNode.offsetWidth + 60, H = svgEl.parentNode.offsetHeight + 56;
+    if (!W || svgEl.dataset.w == W) continue;
+    svgEl.dataset.w = W;
+    svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const pt = a => a.map((v, k) => (k % 2 ? v * H / 40 : v * W / 100).toFixed(1)).join(' ');
+    $('path', svgEl).setAttribute('d', `M${pt(LOOP[0])} ` + LOOP.slice(1).map(c => 'C' + pt(c)).join(' '));
+  }
+}
 
 // flow (Level 0): while its slide shows, a slow pulse walks arrows 1 → n and loops; the caption follows it
 const FLOW_MS = 4500, calm = matchMedia('(prefers-reduced-motion: reduce)');
@@ -952,6 +977,7 @@ addEventListener('keydown', e => { if (dvdRaf) { e.preventDefault(); e.stopImmed
 fit();
 const [h, st] = location.hash.slice(1).split('.').map(Number);
 go(h ? h - 1 : 0, st || 0);
+document.fonts?.ready.then(rings); // web fonts change the terms' widths
 </script>
 </body>
 </html>
