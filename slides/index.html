@@ -63,6 +63,12 @@ h1.q { font-size: 112px; }
 /* builds */
 .slide [data-step] { transition: opacity .35s ease, transform .35s ease; }
 .slide [data-step]:not(.shown) { opacity: 0; }
+/* lines that share one step fade in one after another */
+.facts li[data-step] { transition-duration: .9s; transform: none; }
+.facts li[data-step]:not(.shown) { transform: translateY(14px); }
+.facts li.shown:nth-child(2) { transition-delay: .8s; }
+.facts li.shown:nth-child(3) { transition-delay: 1.6s; }
+.facts li.shown:nth-child(4) { transition-delay: 2.4s; }
 .slide [data-only]:not(.shown) { display: none; }
 
 /* title slide */
@@ -449,13 +455,13 @@ body.show-ov #ov { display: grid; }
   <h1 class="q">So how do we decide?</h1>
   <ul class="facts">
     <li data-step="1"><span>On paper, Cloudflare's <b>Clef-flash</b> was 13× faster than TypeSafe's <b>Jev</b> and ahead on 7 of 10 tests.</span></li>
-    <li data-step="2"><span>Those tests grade tool calls, intent labels and retrieval. None asks ours: <b>is this article worth S$0.90 for this gap?</b></span></li>
-    <li data-step="3"><span>On 6 Oct OpenAI shipped <b>Decisions (gpt-6-luna)</b>: the same three question types, a speed claim, no distribution.</span></li>
-    <li data-step="4"><span>So we wrote our own test, and gave it to a coding agent to run.</span></li>
+    <li data-step="1"><span>Those tests grade tool calls, intent labels and retrieval. None asks ours: <b>is this article worth S$0.90 for this gap?</b></span></li>
+    <li data-step="1"><span>On 6 Oct OpenAI shipped <b>Decisions (gpt-6-luna)</b>: the same three question types, a speed claim, no distribution.</span></li>
+    <li data-step="1"><span>So we wrote our own test, and gave it to a coding agent to run.</span></li>
   </ul>
   <aside class="notes">
     <ul>
-      <li>Four builds: → → → →. Vendor numbers: Cloudflare's Clef launch post, "Jev Decision Index", 1 Oct 2026 (server-side latency, 38.8 ms vs 524.1 ms). The full 10-test chart is the skipped slide before this one.</li>
+      <li>One press: the four lines fade in one after another. Vendor numbers: Cloudflare's Clef launch post, "Jev Decision Index", 1 Oct 2026 (server-side latency, 38.8 ms vs 524.1 ms). The full 10-test chart is the skipped slide before this one.</li>
     </ul>
   </aside>
 </section>
