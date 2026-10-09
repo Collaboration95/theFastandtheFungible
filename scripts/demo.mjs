@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
+import { createServer } from 'node:net'
 import { resolve } from 'node:path'
 import dotenv from 'dotenv'
 import { applyBackupPair, liveDecisionProvider } from './stage-checks.mjs'
@@ -26,11 +27,19 @@ const env = { ...process.env, HOST: '127.0.0.1', PORT: String(ports.api), PUBLIS
   LANGFUSE_ENABLED: process.env.LANGFUSE_ENABLED || (live ? '1' : '0'), LANGFUSE_TRACING_ENVIRONMENT: process.env.LANGFUSE_TRACING_ENVIRONMENT || (live ? 'live' : 'fixture') }
 const children = []
 let stopping = false
-function shutdown(code = 0) { if (stopping) return; stopping = true; children.forEach(c => c.kill('SIGTERM')); setTimeout(() => { children.forEach(c => c.kill('SIGKILL')); process.exit(code) }, 1500).unref() }
+// The SIGKILL timer stays referenced: an unref'd one let the launcher exit first and leave servers holding the ports.
+function shutdown(code = 0) { if (stopping) return; stopping = true; children.forEach(c => c.kill('SIGTERM')); setTimeout(() => { children.forEach(c => { if (c.exitCode === null && c.signalCode === null) c.kill('SIGKILL') }); process.exit(code) }, 1500) }
+/** A port still held by an earlier demo answered the health checks and hid the new server's crash, so check first. */
+const bindable = (port, host) => new Promise(done => { const probe = createServer().once('error', () => done(false)).once('listening', () => probe.close(() => done(true))); probe.listen(port, host) })
+// On macOS a wildcard bind succeeds beside a loopback listener and vice versa, so probe both (the publisher binds 0.0.0.0).
+const portFree = async port => await bindable(port, '127.0.0.1') && await bindable(port, '0.0.0.0')
 function start(command, args) { const child = spawn(command, args, { env, stdio: 'inherit', cwd: process.cwd() }); children.push(child); child.on('error', () => shutdown(1)); child.on('exit', code => { if (!stopping) { console.error('A demo process stopped. Check the visible error and available ports.'); shutdown(code || 1) } }); return child }
 async function health(url) { for (let i=0;i<100;i++) { if (stopping) throw new Error('Demo stopped'); try { const r=await fetch(url,{signal:AbortSignal.timeout(500)}); if(r.ok)return } catch { /* child becoming ready */ } await new Promise(r=>setTimeout(r,200)) } throw new Error(`Service did not become ready: ${url}`) }
-process.on('SIGINT',()=>shutdown());process.on('SIGTERM',()=>shutdown())
+process.on('SIGINT',()=>shutdown());process.on('SIGTERM',()=>shutdown());process.on('SIGHUP',()=>shutdown())
 try {
+  const busy = []
+  for (const [name, port] of Object.entries(ports)) if (!(name === 'pub' && publisherUrl !== localPublisher) && !(await portFree(port))) busy.push(port)
+  if (busy.length) { console.error(`Port ${busy.join(', ')} already in use, probably by an earlier demo. Run \`make kill\` (or \`make run OFFSET=100\` beside it), then start again.`); process.exit(1) }
   // Live preflight is advisory (it only warns), so run it beside the startup instead of in front of it.
   if (live) once(spawn(process.execPath, ['--import', 'tsx', 'scripts/doctor.mjs', '--keys'], { env, stdio: 'inherit' }), 'exit').then(([code]) => { if (code) console.warn('\n⚠ Provider preflight failed. Starting anyway; failed answer calls show as labelled fixtures and failed decision rounds buy nothing.\n') })
   if (publisherUrl === localPublisher) start(process.execPath, ['--import','tsx','publisher/server.ts'])

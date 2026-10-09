@@ -11,7 +11,9 @@ export const SEARCH_LABELS = ['hybrid', 'keyword only (embeddings unavailable)']
  * question and plan, so an edited or legacy plan never carries stale requirements into a run (routes re-derive them).
  */
 export const PlanSchema = z.object({ restatement: z.string().min(1), subqueries: z.array(z.string().min(1)).min(1).max(3), requirements: z.array(z.string().min(1).max(160)).min(1).max(5).optional(), requirementsKey: z.string().max(64).optional() })
-export const ScopeSchema = z.object({ questions: z.array(z.object({ id: z.string().min(1), text: z.string().min(1), options: z.array(z.string().min(1)).min(2).max(4) })).max(2), plan: PlanSchema })
+/** `chat` (owner, 9 Oct): a question that needs no research gets a direct reply; the UI shows it and never starts a run. */
+export const ChatReplySchema = z.object({ reply: z.string().trim().min(1).max(1500) })
+export const ScopeSchema = z.object({ questions: z.array(z.object({ id: z.string().min(1), text: z.string().min(1), options: z.array(z.string().min(1)).min(2).max(4) })).max(2), plan: PlanSchema, chat: ChatReplySchema.optional() })
 /** The per-question budget: S$0 to S$5 in 5-cent steps (articles cost from S$0.05). It is still the only spending authorisation. */
 export const BUDGET = { maxMinor: 500, stepMinor: 5, initialMinor: 200, capMinor: 100 } as const
 /** `answers` maps a scope question id to the chosen option; both are optional (questions can be skipped). */

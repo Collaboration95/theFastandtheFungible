@@ -22,6 +22,7 @@ import Presenter from './components/Presenter'
 import Toasts, { type Toast } from './components/Toasts'
 import ClarifyChips from './components/ClarifyChips'
 import ActionModal from './components/ActionModal'
+import ChatReply from './components/ChatReply'
 import ReputationPanel from './components/ReputationPanel'
 
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
@@ -59,6 +60,8 @@ export default function App() {
   const [compare, setCompare] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
   const [pending, setPending] = useState<{ input: AskInput; scope: ScopeResult; answers: Record<string, string>; step: 'clarify' | 'plan' }>()
+  // A question that needs no research is answered directly (owner, 9 Oct): one exchange, shown on Home, never saved to history, no run.
+  const [chat, setChat] = useState<{ question: string; reply: string; label?: string }>()
   const [tab, setTab] = useState<'run' | 'writers'>('run')
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
   const [clarifyNever, setClarifyNever] = useState(() => new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1')
@@ -105,7 +108,7 @@ export default function App() {
       const value = await getRun(id)
       show()
       setPassage(undefined); setReceipt(undefined); setWork(false); setCompare(false); setView('latest'); setWhy(false); setToasts([]); setError('')
-      setCursor(Infinity); setRun(value); setScreen('run')
+      setCursor(Infinity); setChat(undefined); setRun(value); setScreen('run')
     } catch { setError('That run could not be opened.') }
   }
   const deletePast = async (id: string) => {
@@ -116,7 +119,7 @@ export default function App() {
   }
   const newQuestion = useCallback(() => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
-    setScreen('home'); setPassage(undefined); setWork(false)
+    setScreen('home'); setPassage(undefined); setWork(false); setChat(undefined)
   }, [])
   const openSettings = () => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
@@ -222,9 +225,10 @@ export default function App() {
 
   // Clarify (D8): questions as chips, then the 5 s plan card; the run starts only from the card.
   const sendAsk = async (input: AskInput) => {
-    setSending(true); setError('')
+    setSending(true); setError(''); setChat(undefined)
     try {
       const result = await scope(input.question, clarifyNever ? 'never' : undefined)
+      if (result.chat) { setChat({ question: input.question, reply: result.chat.reply, label: result.label }); setDraft(''); return }
       setPending({ input, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
     } catch { setError('Can’t reach the server. Try again.'); throw new Error('scope failed') }
     finally { setSending(false) }
@@ -296,9 +300,9 @@ export default function App() {
   if (screen === 'home' || !shown) return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <main className="ra-home-wrap">
       {error && <p className="ra-banner" role="alert">{error}</p>}
-      <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pending && (pending.step === 'clarify'
+      <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pending ? (pending.step === 'clarify'
         ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
-        : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={() => setPending(undefined)} />)} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
+        : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={() => setPending(undefined)} />) : chat && <ChatReply question={chat.question} reply={chat.reply} label={chat.label} onDismiss={() => setChat(undefined)} />} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
     </main>
     {overlays}
   </Layout>
