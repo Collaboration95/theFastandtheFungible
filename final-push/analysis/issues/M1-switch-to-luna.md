@@ -1,0 +1,94 @@
+**Owner decision (8 Oct):** OpenAI Decisions (`gpt-6-luna`) becomes the purchase-decision model. Clef-flash stays selectable as a one-line revert (`DECISION_PROVIDER=cloudflare`).
+
+This amends **D9** and FINAL-PUSH §1. The principle stays: the LLM names what is missing, a *decision model* judges value, and policy code pays. Only the named model changes. The known-good revert point is the tag `known-good-2026-10-08` (`cb04be4`).
+
+**Why, from the decisions benchmark** on [`bench/decisions-vs-clef`](https://github.com/Collaboration95/theFastandtheFungible/tree/bench/decisions-vs-clef/bench/decisions). The data is synthetic (64 held-out scenarios × 3 repeats, 28 topic families):
+
+| Held-out | Purchase F1 | 4-question Brier |
+|---|---|---|
+| Clef-flash as production runs it (raw, 0.15) | 0.505 | 0.186 |
+| Clef-flash tuned + calibrated | 0.782 | 0.074 |
+| **Luna, batch-evidence wording, raw scores (0.20), no calibration** | **0.915** | **0.031** |
+| Luna tuned + calibrated | 0.983 | 0.014 |
+
+The other measured axes, where available, also favour Luna:
+- **Injection lift:** mean −0.014 and max +0.021, against Flash's +0.025 and +0.246.
+- **Requests:** one per round instead of 1 + N.
+- **Per-call latency:** p50 291 ms.
+- **Cost:** about the same, US$0.48 vs 0.44 per 1,000 rounds.
+
+The preregistered rule failed Luna only on UC3. That is a story flaw: AlphaLeak and The Fab Floor make equal promises, so a good judge buys the cheaper honest article. Q2 (#204) fixes the story.
+
+**Do** (one PR, or two if large):
+
+1. **Amend the docs.**
+   - D9 and §1 in `FINAL-PUSH.md`, and the matching line in `AGENTS.md`, so agents don't treat this as a reopened decision.
+   - Record the decision and the revert path in STATUS.md.
+2. **Provider.**
+   - Add a production `OpenAIDecisionsProvider` in `server/agents/openai-decisions.ts`, selected by `DECISION_PROVIDER=openai`, with `OPENAI_API_KEY` and `DECISION_MODEL=gpt-6-luna`.
+   - Port the request and response mapping from `bench/decisions/providers/openai-decisions.ts` and `bench/decisions/transport.ts`:
+     - `POST /v1/decisions`;
+     - predicate, choice and score map from noul, choice and score;
+     - results are matched **by value, never by index**.
+3. **Batch-evidence topology and wording.**
+   - Make one request per round with state `{question, conclusion, gap, readSources, candidates[]}`: the gap question plus indexed per-candidate questions.
+   - Use the "evidence" instruction bundle exactly as in `bench/decisions/variants.ts` and `out/question-wordings.md`.
+   - Add a batch method to `DecisionProvider` (for example `judgeBatch`) and have `decideRound` use it when present. Clef keeps its per-call path.
+   - Production sends up to 8 candidates, which is 1 + 8 × 3 = 25 questions. Check the API's question limit, and split into two requests if needed.
+4. **Labels (gate 5).**
+   - Extend the provider enum to `'cloudflare' | 'openai' | 'fixture'` (`shared/contracts/decision.ts`, `DecisionProvider.name`).
+   - Update `providerLabels`, the run's decision label, the report and Langfuse, so the UI says "OpenAI Decisions · gpt-6-luna".
+   - Never let one provider be labelled as another.
+5. **Empty gap.**
+   - When the gap is empty, make no model call, and let policy record `SKIP_NO_GAP` rows labelled "no open gap — decision model not called".
+   - Reason: Luna refused or scored an empty gap 0.87 in the UC1 regression, and under H3 (#197) a refusal fails the round.
+6. **Refusals and failures.**
+   - Treat any `refusal` answer, timeout or invalid response as a failed round (H3: nothing bought, the free answer stands).
+   - Record the refusal rate in telemetry.
+   - Use a 5 s timeout, consistent with H1.
+7. **Determinism.**
+   - Pin the order of the choice options, and version the wording plus the order.
+   - Luna's option-order sensitivity measured up to 0.94; a fixed order makes runs reproducible.
+8. **Threshold and calibration.**
+   - Use the raw default of 0.20 for `gpt-6-luna` in `buyThreshold`, with no calibrator yet (Q5 #207 adds in-domain calibration later).
+   - Never use the benchmark's 0.05: it applies to calibrated values.
+9. **Calibration call.** Run `judgePaidRelevance` through the same provider.
+10. **Preflight.** `make keys` / `make preflight` (#196) checks Decisions access and credit.
+
+**Gate checks:**
+- Only public candidate fields go into the batch state; it is the same Zod-stripped `PublicCandidate` as today.
+- No premium bytes go out before a grant; the paid call happens after the grant only.
+- Policy alone buys, and the budget and cap are unchanged.
+
+**Live comparison before making it the default:**
+- Run at least 5 runs each of UC1–UC3, plus 5 new questions on the real v2 corpus, per provider.
+- Record purchases, the story-beat pass (with Q2's UC3 price fix in place), refusals and failed rounds, round latency and spend.
+- Make Luna the default if it matches or beats Flash on story passes and has no refusals.
+- Note that the benchmark's data was generated by an OpenAI model. This real-corpus check is the guard against that home advantage.
+
+**Write scope:**
+- `server/agents/{decision,openai-decisions,loop}.ts`, `server/routes.ts` (provider selection)
+- `shared/contracts/decision.ts` and the provider labels
+- `.env.example`, `scripts/doctor.mjs`
+- tests (mocked transport)
+- `FINAL-PUSH.md`, `AGENTS.md`, `STATUS.md`
+- the UI label only where the provider name is rendered
+
+**Acceptance:**
+- Unit tests with a mocked Decisions transport:
+  - mapping by value;
+  - refusal → failed round;
+  - an empty gap makes no call;
+  - labels reach the snapshot.
+- Fixture-mode UC scenario tests are unchanged.
+- The live comparison is recorded in STATUS.md.
+- `DECISION_PROVIDER=cloudflare` restores today's behaviour exactly.
+
+**Depends on:** H3 (#197) for the failure semantics, and Q2 (#204) for the UC3 price fix, which must land before or together with this.
+
+---
+**Rules:** read `AGENTS.md` and `FINAL-PUSH.md` first; the hard gates are in `prompt.md` §2.
+- Work in `../tftf-wt/<id>`.
+- Never bind 5100, 8788 or 8790.
+- `npm run check:fast` must pass.
+- Ship with the `ship-pr` skill.
