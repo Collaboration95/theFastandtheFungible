@@ -204,6 +204,12 @@ body.show-ov #ov { display: grid; }
 .ovc.cur { border-color: var(--pen); box-shadow: 0 0 0 2px var(--pen-wash-2); }
 .ovc.skip { opacity: .45; }
 .ovc:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; }
+
+/* easter egg: "Team" on slide 1 starts a DVD-style screensaver; only a click on the logo stops it */
+#egg { cursor: inherit; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+#dvd { position: fixed; inset: 0; z-index: 100; background: #fff; overflow: hidden; }
+#dvd[hidden] { display: none; }
+#dvd svg { position: absolute; left: 0; top: 0; width: clamp(180px, 22vw, 380px); height: auto; color: var(--pen); cursor: pointer; will-change: transform; }
 </style>
 </head>
 <body>
@@ -215,7 +221,7 @@ body.show-ov #ov { display: grid; }
   <h1 class="xl">ResearchAgent</h1>
   <p class="hello">Hi, I'm Guru. I'm going to demo ResearchAgent, then show how we chose the model at the heart of it.</p>
   <div class="grow"></div>
-  <p class="say" style="font-size:30px">Team: TheFastandTheFungible | Guru | Jiamin | Andrew | Thanh Minh</p>
+  <p class="say" style="font-size:30px"><span id="egg">Team</span>: TheFastandTheFungible | Guru | Jiamin | Andrew | Thanh Minh</p>
   <aside class="notes">
     <ul>
       <li>"How we picked the model" covers slides 4–16: what decision models are for, Jev vs Clef-flash on paper, then our own benchmark and why we switched to OpenAI Decisions.</li>
@@ -650,6 +656,15 @@ The incumbent is Clef-flash. Switch only if ALL of these hold on the test split:
 <div id="notesp"></div>
 <div id="ov" role="dialog" aria-label="All slides"></div>
 
+<div id="dvd" hidden>
+  <svg viewBox="0 0 400 226" role="img" aria-label="TFTF">
+    <text x="232" y="126" text-anchor="middle" textLength="372" lengthAdjust="spacingAndGlyphs" transform="skewX(-14)"
+      fill="currentColor" style="font: 800 136px/1 var(--f-display); letter-spacing: -.02em">TFTF</text>
+    <ellipse cx="200" cy="184" rx="192" ry="36" fill="currentColor"/>
+    <ellipse cx="200" cy="184" rx="40" ry="9" fill="#fff"/>
+  </svg>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 // Project map server for the Level 0 slide's links (its "#/A" etc. are the level-1 pages).
@@ -845,6 +860,30 @@ addEventListener('keydown', e => {
   else if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); }
 });
 addEventListener('resize', fit);
+
+// easter egg: "Team" (slide 1) starts the DVD screensaver; it bounces until the logo itself is clicked
+const dvd = $('#dvd'), logo = $('#dvd svg');
+let dvdRaf = 0;
+$('#egg').addEventListener('click', e => {
+  e.stopPropagation();
+  if (dvdRaf) return;
+  dvd.hidden = false;
+  const speed = Math.max(160, innerWidth / 7); // px per second on each axis
+  let x = Math.random() * (innerWidth - logo.clientWidth), y = Math.random() * (innerHeight - logo.clientHeight);
+  let vx = speed * (Math.random() < .5 ? -1 : 1), vy = speed * (Math.random() < .5 ? -1 : 1), last = performance.now();
+  const tick = now => {
+    const dt = Math.min(.05, (now - last) / 1000), w = innerWidth - logo.clientWidth, h = innerHeight - logo.clientHeight;
+    last = now; x += vx * dt; y += vy * dt;
+    if (x <= 0 || x >= w) { vx = x <= 0 ? Math.abs(vx) : -Math.abs(vx); x = Math.max(0, Math.min(w, x)); }
+    if (y <= 0 || y >= h) { vy = y <= 0 ? Math.abs(vy) : -Math.abs(vy); y = Math.max(0, Math.min(h, y)); }
+    logo.style.transform = `translate(${x}px, ${y}px)`;
+    dvdRaf = requestAnimationFrame(tick);
+  };
+  dvdRaf = requestAnimationFrame(tick);
+});
+logo.addEventListener('click', () => { cancelAnimationFrame(dvdRaf); dvdRaf = 0; dvd.hidden = true; });
+// while it bounces, the deck ignores keys, so the slide behind stays put
+addEventListener('keydown', e => { if (dvdRaf) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
 
 fit();
 const [h, st] = location.hash.slice(1).split('.').map(Number);
