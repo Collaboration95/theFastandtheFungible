@@ -4,6 +4,7 @@ import { createServer } from 'node:net'
 import { resolve } from 'node:path'
 import dotenv from 'dotenv'
 import { applyBackupPair, liveDecisionProvider } from './stage-checks.mjs'
+import { probeWorkersAi } from './cf-probe.mjs'
 dotenv.config({ quiet: true })
 const live = process.argv.includes('--live')
 // CF_BACKUP=1 (#196): every Cloudflare client in this demo uses the backup pair (_2) instead. Names only, never values.
@@ -16,8 +17,9 @@ const ports = { web: 5100 + offset, api: 8788 + offset, pub: 8790 + offset }
 const localPublisher = `http://127.0.0.1:${ports.pub}`
 const publisherUrl = !process.env.PUBLISHER_URL || /^https?:\/\/(?:localhost|127\.0\.0\.1):8790\/?$/.test(process.env.PUBLISHER_URL) ? localPublisher : process.env.PUBLISHER_URL
 const env = { ...process.env, HOST: '127.0.0.1', PORT: String(ports.api), PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: publisherUrl, PUBLISHER_SECRET: process.env.PUBLISHER_SECRET || 'local-simulated-demo-secret', LLM_PROVIDER: live ? 'deepseek' : 'fixture', // live forces DeepSeek even when .env says groq
-  // Live search embeds queries with Workers AI (hybrid); fixtures and tests stay keyword-only.
-  SEARCH_EMBEDDINGS: live ? 'live' : (process.env.SEARCH_EMBEDDINGS || 'off'),
+  // Live search embeds queries with Workers AI (hybrid); fixtures and tests stay keyword-only. SEARCH_EMBEDDINGS=off make live
+  // starts keyword-only on purpose (labelled on screen), e.g. when the venue network is blocked.
+  SEARCH_EMBEDDINGS: live ? (process.env.SEARCH_EMBEDDINGS === 'off' ? 'off' : 'live') : (process.env.SEARCH_EMBEDDINGS || 'off'),
   // Live decides with DECISION_PROVIDER=openai (OpenAI Decisions, gpt-6-luna) or cloudflare (Clef-flash, the default and the
   // one-line revert, #214); any other value means cloudflare. The fixture demo always uses the labelled metadata fixture.
   DECISION_PROVIDER: live ? liveDecisionProvider(process.env.DECISION_PROVIDER) : 'fixture',
@@ -40,6 +42,11 @@ try {
   const busy = []
   for (const [name, port] of Object.entries(ports)) if (!(name === 'pub' && publisherUrl !== localPublisher) && !(await portFree(port))) busy.push(port)
   if (busy.length) { console.error(`Port ${busy.join(', ')} already in use, probably by an earlier demo. Run \`make kill\` (or \`make run OFFSET=100\` beside it), then start again.`); process.exit(1) }
+  // A refused Workers AI token used to start anyway and leave live search keyword-only; stop here with Cloudflare's reason.
+  if (live && env.SEARCH_EMBEDDINGS === 'live') {
+    const probe = await probeWorkersAi(env)
+    if (!probe.ok) { console.error(`✗ Cloudflare Workers AI (search embeddings): ${probe.line}${probe.hint ? `\n  ${probe.hint}` : ''}\n  Start keyword-only on purpose with SEARCH_EMBEDDINGS=off make live.\nmake live stopped before starting.`); process.exit(1) }
+  }
   // Live preflight is advisory (it only warns), so run it beside the startup instead of in front of it.
   if (live) once(spawn(process.execPath, ['--import', 'tsx', 'scripts/doctor.mjs', '--keys'], { env, stdio: 'inherit' }), 'exit').then(([code]) => { if (code) console.warn('\n⚠ Provider preflight failed. Starting anyway; failed answer calls show as labelled fixtures and failed decision rounds buy nothing.\n') })
   if (publisherUrl === localPublisher) start(process.execPath, ['--import','tsx','publisher/server.ts'])

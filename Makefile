@@ -18,7 +18,7 @@ setup: ## install deps and create .env if missing
 run: ## fixture demo (offline, no keys)
 	npm run demo
 
-live: ## live demo: DeepSeek writes, Clef decides (DECISION_PROVIDER=openai: OpenAI Decisions); runs key preflight first; CF_BACKUP=1 uses the backup Cloudflare pair
+live: ## live demo: DeepSeek writes, Clef decides (DECISION_PROVIDER=openai: OpenAI Decisions); runs key preflight first and stops if Workers AI refuses the token; CF_BACKUP=1 uses the backup Cloudflare pair; SEARCH_EMBEDDINGS=off starts keyword-only
 	npm run demo:live
 
 fault: ## fixture demo with the "fail next delivery" toggle
