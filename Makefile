@@ -6,7 +6,7 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
-.PHONY: help setup run live fault reset check verify doctor keys preflight ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus smoke
+.PHONY: help setup run live fault reset check verify doctor keys preflight ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs cloudrun corpus smoke
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -84,6 +84,10 @@ docker-down: ## stop the Docker demo (ledgers and reports stay in volumes; add V
 
 docker-logs: ## follow the Docker demo logs
 	$(DC) logs -f --tail=100
+
+# --- Cloud Run (docker/cloudrun/): the live demo as one container, built remotely by Cloud Build ---
+cloudrun: ## deploy the live demo to Cloud Run (keys from .env, needs gcloud auth login); REF=<commit> (default HEAD), ENV_FILE=<path>
+	scripts/cloudrun-deploy.sh $(or $(REF),HEAD)
 
 corpus: ## generate the writer corpus with DeepSeek (resumable; ARGS="--only alphaleak" or "--dry-run")
 	node --import tsx scripts/generate-corpus.mjs $(ARGS)
