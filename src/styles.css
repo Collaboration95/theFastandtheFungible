@@ -531,13 +531,6 @@ dialog::backdrop { background: rgba(15, 18, 34, .2); backdrop-filter: blur(2px);
 .ra-clarify-opts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .ra-chip-opt { padding: 6px 12px; border: 1px solid var(--rule-2); border-radius: 999px; background: var(--sheet); font-size: 13px; }
 .ra-chip-opt:hover, .ra-chip-opt.is-on { border-color: var(--pen); background: var(--pen-wash); color: var(--pen-deep); }
-.ra-chat { position: relative; display: grid; gap: 8px; margin: 0 0 12px; padding: 12px 40px 10px 14px; border: 1px solid var(--rule); border-radius: 14px; background: var(--sheet); animation: rise .35s var(--ease-out) both; }
-.ra-chat-q { justify-self: end; max-width: 85%; margin: 0; padding: 6px 12px; border-radius: 14px 14px 4px 14px; background: var(--mist); color: var(--ink-2); font-size: 13px; overflow-wrap: anywhere; }
-.ra-chat-a { display: grid; gap: 8px; }
-.ra-chat-a p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
-.ra-chat-meta { margin: 0; font: 500 11px var(--f-mono); color: var(--muted); }
-.ra-chat-x { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 18px; line-height: 1; }
-.ra-chat-x:hover { background: var(--mist); color: var(--ink); }
 .ra-plan { margin: 0 0 12px; padding: 12px 14px 10px; border: 1px solid var(--pen-wash-2); border-radius: 14px; background: var(--sheet); box-shadow: 0 6px 24px rgba(47, 69, 255, .08); animation: slideup .35s var(--ease-out) both; }
 .ra-plan-what { margin: 0 0 10px; font-size: 14px; }
 .ra-plan-what em { font-style: normal; color: var(--pen-deep); }
@@ -635,3 +628,34 @@ tr.is-quarantined .ra-trust-bar i, tr.is-delisted .ra-trust-bar i { background: 
 .ra-facts li { display: flex; gap: 10px; line-height: 1.4; }
 .ra-facts li span { flex: none; min-width: 112px; font: 500 11px/1.6 var(--f-mono); color: var(--muted); }
 .ra-facts li.f-supported span { color: var(--ink); }
+
+/* Chat page (owner, 9 Oct): a question that needs no research opens a plain conversation. Your messages on the right,
+   replies on the left under the mark, the box docked at the bottom; no budget, no suggestions. */
+.ra-chatpage { display: flex; flex-direction: column; height: calc(100vh - var(--top)); background: var(--paper); }
+.ra-thread { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 28px; padding: 40px max(24px, calc((100% - 760px) / 2)) 24px; }
+.ra-turn { display: flex; flex-direction: column; gap: 18px; }
+.ra-msg-user { align-self: flex-end; max-width: min(75%, 560px); margin: 0; padding: 10px 16px; border-radius: 20px 20px 6px 20px; background: var(--pen-wash); color: var(--ink); font-size: 15px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; animation: ra-msg-in .3s var(--ease-out) both; }
+.ra-msg-bot { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 14px; align-items: start; animation: ra-msg-in .35s var(--ease-out) both; }
+.ra-msg-avatar { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 50%; background: var(--sheet); }
+.ra-msg-avatar .ra-mark { width: 18px; height: 18px; color: var(--ink); }
+.ra-msg-body { display: grid; gap: 12px; padding-top: 4px; font-size: 15.5px; line-height: 1.65; color: var(--ink); }
+.ra-msg-body p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ra-msg-body .ra-msg-meta { font: 500 11.5px/1.4 var(--f-mono); color: var(--faint); }
+.ra-msg-err { align-self: flex-start; margin: 0 0 0 44px; color: var(--pay-ink); font-size: 14px; }
+.ra-typing { display: inline-flex; gap: 5px; padding: 12px 0 0; }
+.ra-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); animation: ra-typing 1.1s ease-in-out infinite; }
+.ra-typing i:nth-child(2) { animation-delay: .15s; }
+.ra-typing i:nth-child(3) { animation-delay: .3s; }
+.ra-chat-dock { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px max(24px, calc((100% - 760px) / 2)) 18px; background: linear-gradient(to bottom, rgba(246, 247, 249, 0), var(--paper) 26px); }
+.ra-chat-dock > * { width: 100%; }
+.ra-chat-box { display: flex; align-items: flex-end; gap: 10px; padding: 10px 10px 10px 18px; border: 1px solid var(--rule-2); border-radius: 24px; background: var(--sheet); box-shadow: 0 18px 40px -26px rgba(31, 47, 208, .35); }
+.ra-chat-box:focus-within { border-color: var(--pen); }
+.ra-chat-box textarea { flex: 1; min-height: 26px; max-height: 200px; padding: 7px 0; border: 0; resize: none; background: transparent; font: 400 15.5px/1.5 var(--f-ui); color: var(--ink); field-sizing: content; }
+.ra-chat-box textarea:focus { outline: none; }
+.ra-chat-send { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--pen); color: #fff; transition: background .15s, transform .15s var(--ease-spring); }
+.ra-chat-send:hover:not(:disabled) { background: var(--pen-deep); transform: scale(1.06); }
+.ra-chat-send:disabled { background: var(--rule-2); }
+.ra-chat-send svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.ra-chat-note { margin: 0; text-align: center; font-size: 12px; color: var(--faint); }
+@keyframes ra-msg-in { from { opacity: 0; transform: translateY(8px); } }
+@keyframes ra-typing { 0%, 60%, 100% { opacity: .35; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
