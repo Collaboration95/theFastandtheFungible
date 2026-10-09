@@ -11,6 +11,8 @@ export interface ChatThreadProps {
   /** Clarify chips or the plan card when a follow-up turns out to need research. */
   above?: ReactNode
 }
+/** The model name alone ("DeepSeek · deepseek-flash" → "deepseek-flash"); a fixture label stays whole (gate 5). */
+const modelName = (label = 'model') => /^fixture\b/.test(label) ? label : label.replace(/^[^·]*·\s*/, '')
 /**
  * The chat page (owner, 9 Oct): a question that needs no research opens a plain conversation, with no budget,
  * no suggested questions and no hero. Replies carry no citations, so each says so (gate 5). Text only; never HTML.
@@ -38,7 +40,7 @@ export default function ChatThread({ messages, onSend, busy = false, above }: Ch
           <span className="ra-msg-avatar" aria-hidden="true"><Mark /></span>
           <div className="ra-msg-body">
             {message.reply.split(/\n\s*\n/).map(part => part.trim()).filter(Boolean).map((part, index) => <p key={index}>{part}</p>)}
-            <p className="ra-msg-meta">{message.label ?? 'model'} · no sources searched · nothing bought</p>
+            <p className="ra-msg-meta">{modelName(message.label)} · no sources searched · nothing bought</p>
           </div>
         </div>
           : message.error ? <p className="ra-msg-err" role="alert">{message.error}</p>

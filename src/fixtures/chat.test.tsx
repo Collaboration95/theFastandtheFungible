@@ -7,14 +7,14 @@ import App from '../App.js'
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.history.replaceState(null, '', '/'); try { localStorage.clear() } catch { /* no storage */ } })
 
 /** Stub the browser; `/api/scope` answers each question from `replies` with a chat reply, anything else with a normal scope. */
-function stub(replies: Record<string, string>) {
+function stub(replies: Record<string, string>, label = 'fixture · scope-fixture') {
   const calls: { path: string; body?: Record<string, unknown> }[] = []
   vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined
     calls.push({ path, body })
     const json = (data: unknown, status = 200) => ({ ok: status < 400, status, json: async () => data })
     if (path === '/api/health') return json({ status: 'ok', labels: exampleRun.labels, faults: false })
-    if (path === '/api/scope') { const reply = replies[String(body?.question)]; return json({ ...uc2Scope, questions: [], label: 'fixture · scope-fixture', ...(reply ? { chat: { reply } } : {}) }) }
+    if (path === '/api/scope') { const reply = replies[String(body?.question)]; return json({ ...uc2Scope, questions: [], label, ...(reply ? { chat: { reply } } : {}) }) }
     if (path === '/runs') return json({ ...paidStoryRun, question: body?.question }, 201)
     return json({}, 404)
   }))
@@ -47,6 +47,14 @@ describe('chat page (owner, 9 Oct)', () => {
     expect(screen.queryByLabelText('Your question')).toBeNull()
     expect(screen.queryByRole('dialog', { name: 'Search plan' })).toBeNull()
     expect(calls.some(call => call.path === '/runs')).toBe(false)
+  })
+
+  it('a live reply names the model alone, without the provider', async () => {
+    stub({ hi: 'Hello!' }, 'DeepSeek · deepseek-flash')
+    render(<App />)
+    ask('hi')
+    const reply = await screen.findByTestId('ra-chat-reply')
+    expect(reply.querySelector('.ra-msg-meta')?.textContent).toBe('deepseek-flash · no sources searched · nothing bought')
   })
 
   it('a chat follow-up joins the thread', async () => {
