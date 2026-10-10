@@ -107,10 +107,10 @@ describe('run, decision, reputation and scope contracts (#115)', () => {
     expect(ReputationRecordSchema.safeParse({ publisherSlug: 'p', wallet: 'r', r: 0, s: 0, passes: 0, fails: 0, refunds: 0, refusals: 0, brierSum: 0, n: 0, H: 0.8, C: 1, T: 0.8, status: 'active', updatedAt: 'now' }).success).toBe(true)
   })
 
-  it('the facet enum schema is gone from code outside docs/archive (D10; docs may still name it)', () => {
+  it('the facet enum schema is gone from code (D10; docs may still name it)', () => {
     const name = ['Facet', 'Schema'].join('')
     let hits = ''
-    try { hits = execFileSync('git', ['grep', '-l', name, '--', '.', ':!docs/archive', ':!*.md'], { encoding: 'utf8' }) } catch { /* exit 1: no match */ }
+    try { hits = execFileSync('git', ['grep', '-l', name, '--', '.', ':!*.md'], { encoding: 'utf8' }) } catch { /* exit 1: no match */ }
     expect(hits).toBe('')
   })
 })

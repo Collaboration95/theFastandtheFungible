@@ -95,7 +95,7 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
   </>
 }
 
-/** Requested facts (#208, #209): one line ("2 of 3 answered"), the per-fact list on demand (prompt.md §3a). */
+/** Requested facts (#208, #209): one line ("2 of 3 answered"), the per-fact list on demand. */
 function RequestedFacts({ run, version }: { run: RunSnapshot; version: number }) {
   const summary = factsSummary(run, version)
   if (!summary) return null

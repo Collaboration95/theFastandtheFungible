@@ -1,6 +1,6 @@
 # ResearchAgent security posture
 
-Design: [FINAL-PUSH.md](../../FINAL-PUSH.md) (D3–D7, §8–§9). Everything below
+Design: [FINAL-PUSH.md](../FINAL-PUSH.md) (D3–D7, §8–§9). Everything below
 is built and covered by the gate suite.
 
 - Source text is treated as quoted, untrusted evidence; it is never executed

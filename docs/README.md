@@ -1,53 +1,32 @@
 # ResearchAgent documentation
 
-This is the single index for active product documentation. Historical audits,
-event notes, orchestration prompts, and duplicate backlogs are intentionally
-not part of the maintained documentation set; Git history preserves them.
+Start with the [README](../README.md) for setup and the demo, and the
+[explainers site](https://collaboration95.github.io/theFastandtheFungible/) for
+the walkthrough, slides and project map.
 
-## Start here
-
-- [FINAL-PUSH.md](../FINAL-PUSH.md) is the product source of truth: the 6 Oct
-  pivot, decisions D1–D24, demo use cases UC1–UC3 and open items (§15). It
-  overrides `prompt.md` wherever the two conflict.
-- [prompt.md](../prompt.md) holds the five hard gates, the worker protocol and
-  the schedule.
-- [AGENTS.md](../AGENTS.md) holds the standing agent rules.
-- [OVERNIGHT-OCT7.md](../OVERNIGHT-OCT7.md) is the orchestration plan for the
-  milestone's issues (work packages, review commands, live steps).
-- [Writer-site reference look](reference/) (D17).
-- [Repository overview and setup](../README.md)
-
-`docs/archive/` holds the replaced 4 Oct direction (old prompt, plans and
-company context). It is history only. Do not use it as guidance.
-
-## Reference
-
-- [x402 and XRPL](x402-xrpl.md): the as-built v2 flow (headers, invoiceId,
-  facilitator, refund), validation before signing, finality, wallet safety.
-- [Team manifesto and planned features](DEMO-MANIFESTO.md)
-- [Presentation readiness](PRESENTATION-READINESS.md): event logistics, the
-  five-minute script, likely questions, rehearsal matrix.
-- [Publisher deployment](publisher-deploy.md)
-- [UX walkthrough](ux-walkthrough/index.html): owned by the UX session. It
-  may lag the built UI.
-- [Build log](../talk/build-log.md): raw material for the talk.
-
-## Active contracts
+## Contracts (as built)
 
 - [Product](contracts/PRODUCT.md): what we promise, to whom, and the demo use
   cases.
-- [Architecture](contracts/ARCHITECTURE.md): as built, and the shape of a run.
-- [Design](contracts/DESIGN.md): visual system, layout, and content rules.
+- [Architecture](contracts/ARCHITECTURE.md): the components and the shape of a
+  run.
+- [Design](contracts/DESIGN.md): visual system, layout and content rules.
 - [Security](contracts/SECURITY.md): secrets, access, settlement, manifests and
   refunds.
 
-Contracts describe durable behavior and identify current implementation limits.
-FINAL-PUSH.md states direction and decisions; `prompt.md` owns gates and
-workflow. A plan or brief is not proof of implementation.
+## Reference
+
+- [x402 and XRPL](x402-xrpl.md): the v2 flow as built (headers, invoiceId,
+  facilitator, refund), validation before signing, finality, wallet safety.
+- [Design record](FINAL-PUSH.md): the October 2026 decisions D1–D24 and why.
+- [Decision model report](../eval/REPORT-decisions.md) and
+  [coverage report](../eval/REPORT-coverage.md): measured on the real corpus.
+- [Publisher container](publisher-deploy.md): the standalone publisher image.
+- [UX walkthrough](ux-walkthrough/index.html): the design walkthrough, with
+  screenshots of the shipped UI.
+- [Writer-site reference look](reference/).
 
 ## Maintenance rule
 
-Update an existing active document instead of adding a dated audit, handoff,
-prompt, or status ledger. Keep transient verification output in the pull
-request or task record. Add a new document only when it has a distinct durable
-owner and audience.
+Update an existing document instead of adding a dated audit, handoff, prompt
+or status log. Keep transient verification output in the pull request.

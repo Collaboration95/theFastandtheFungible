@@ -8,7 +8,7 @@ import type { PublicCandidate } from '../shared/contracts/index.js'
 
 export const paid = (resourceId: string, price = 80, extra: Partial<PublicCandidate> = {}): PublicCandidate => ({ ...exampleCandidate, resourceId, title: `Evidence ${resourceId}`, family: resourceId, tier: 'PAID', preview: 'Interviews with grid planners and energisation queue data.', facets: ['grid-energisation'], price: { amountMinor: price, currency: 'SGD' }, ...extra })
 const input = (extra: Partial<DecideInput> = {}): DecideInput => ({ question: 'Will the project operate?', conclusion: 'Grid dates remain unknown.', gap: 'No independent evidence on grid energisation dates.', candidates: [paid('report')], readSources: [exampleCandidate], budgetMinor: 200, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: 100, round: 1, ...extra })
-// Recorded response values from prompt.md §4, not a live request.
+// Recorded response values, not a live request.
 const recorded = { success: true, result: { model: 'clef-flash', answers: { addresses_gap: { type: 'noul', noul: 0.4546 }, originality: { type: 'choice', choice: 'original', probabilities: { original: 0.9035, rewrite: 0.0404, overlap: 0.0561 }, confidence: 0.7316 }, credibility: { type: 'score', score: 1.802, probabilities: { '0': 0.0234, '1': 0.1511, '2': 0.8255 }, confidence: 0.5572 } }, usage: { input_tokens: 428, output_tokens: 0 } }, errors: [], messages: [] }
 const roundResponse = { success: true, result: { answers: { gap_material: { type: 'noul', noul: 0.8 } } } }
 const response = (body: unknown) => new Response(JSON.stringify(body), { status: 200 })
