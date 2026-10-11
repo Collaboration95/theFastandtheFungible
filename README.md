@@ -12,9 +12,11 @@ ResearchAgent answers from free sources first. When the missing piece sits behin
   <a href="https://collaboration95.github.io/theFastandtheFungible/slides/">Slides</a>
   &nbsp;·&nbsp;
   <a href="https://collaboration95.github.io/theFastandtheFungible/project-map/">Project map</a>
+  &nbsp;·&nbsp;
+  <a href="https://collaboration95.github.io/theFastandtheFungible/evolution/">How it evolved</a>
 </p>
 
-Presented at AI Tinkerers Singapore, 10 Oct 2026.
+Presented at AI Tinkerers Singapore, 10 Oct 2026. The live demo ran on Google Cloud Run and placed in the sponsor's top three Cloud Run demos.
 
 ## See it first
 
@@ -23,6 +25,7 @@ Presented at AI Tinkerers Singapore, 10 Oct 2026.
 | [**Inside ResearchAgent**](https://collaboration95.github.io/theFastandtheFungible/talk/) | Replays a real run from its event log: free search, a purchase, a proof that fails, an on-chain refund, then a second buy that answers the question. Start here. |
 | [**Slide deck**](https://collaboration95.github.io/theFastandtheFungible/slides/) | The AI Tinkerers talk. Boxes on the architecture slide open the project map. Keys: `→` `←` · `O` overview · `N` notes · `F` fullscreen. |
 | [**Project map**](https://collaboration95.github.io/theFastandtheFungible/project-map/) | Three clickable levels, from the reader's agent, the writers and the ledger down to the primitives. Every arrow is numbered and explained. |
+| [**How it evolved**](https://collaboration95.github.io/theFastandtheFungible/evolution/) | The build log in charts: 39 days of commits, pull requests, coding-agent prompts and tokens, replayed from git, GitHub and the agents' own logs. |
 
 The writers and their articles are fictional. Payments settle on the XRPL Testnet, so no real money moves.
 
