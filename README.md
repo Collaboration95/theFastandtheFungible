@@ -82,7 +82,6 @@ Keys and wallet seeds stay in `.env`, which is never committed. `make wallets CR
 | `make fault` | Fixture demo with the "fail next delivery" switch |
 | `make corpus` / `make embeddings` | (live) Generate and embed the writer corpus |
 | `make smoke` | (live, spends calls) UC1–UC3 end to end on port offset 300; `ARGS="--only UC2"` or `"--probe"` |
-| `make cloudrun` | (live) Deploy to Google Cloud Run |
 | `make reset` | Stop the demo; wipe `data/*.db` and generated reports |
 | `make check` | Lint, typecheck and unit tests (pre-commit and CI) |
 | `make verify` | `check`, serial browser tests and a build |
@@ -124,15 +123,7 @@ make docker-down             # V=1 also wipes the ledger and report volumes
 
 Only the web port is published, on 127.0.0.1. `WEB_PORT=5200` (or `OFFSET=100`) runs it beside a host demo.
 
-### Google Cloud Run
-
-`make cloudrun` deploys the live demo as one container (nginx + API + publisher, see [`docker/cloudrun/`](docker/cloudrun/)) to `asia-southeast1` (Singapore). Cloud Build builds it remotely, so no local Docker is needed. Run `gcloud auth login` once first; the keys go from `.env` into Cloud Run environment variables.
-
-The service runs one always-on instance (2 vCPU, 2 GiB). Its SQLite ledgers start fresh on every deploy or restart. Reset reputation before a stage run:
-
-```sh
-curl -X POST <service URL>/api/reputation/reset
-```
+The 10 Oct live demo ran on Google Cloud Run. That deploy (`make cloudrun`, `docker/cloudrun/`) was removed after the talk and the Google Cloud project was shut down. The last commit that has it is `ce77f59`.
 
 ## Documentation
 
@@ -141,4 +132,4 @@ curl -X POST <service URL>/api/reputation/reset
 - [Design record](docs/FINAL-PUSH.md): the decisions D1–D24 behind the October build
 - [Decision model report](eval/REPORT-decisions.md): how the buying decisions were measured on the real corpus
 
-**Not built yet:** durable storage on Cloud Run, mainnet, licensing, and a central index.
+**Not built yet:** durable hosted storage, mainnet, licensing, and a central index.
