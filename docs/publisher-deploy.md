@@ -4,7 +4,7 @@ This package prepares an image and an offline dry run. **Cloud Run deployment
 is withheld.** No cloud commands are executed by the script, including in
 `--deploy` mode. It never creates a service, registry, secret, IAM binding,
 volume, database, or enables an API. The human performs any eventual deployment.
-AWS AgentCore (#78) was removed by [prompt.md §§3 and 6](../prompt.md).
+AWS AgentCore (#78) was dropped from scope.
 
 ## Needs you: durable journal storage
 
@@ -37,8 +37,7 @@ revision overlap as well: [max instances](https://docs.cloud.google.com/run/docs
 is a scaling limit, not an exclusive-writer lock. This package does not change
 the journal, add a framework/database, or provision storage to solve this.
 If that requires a different hosting/storage design, leave Cloud Run unused
-for the demo and retain the local publisher. This is a Needs you item for the
-orchestrator's STATUS.md; this worker does not edit that file.
+for the demo and retain the local publisher.
 
 ## Reproducible build inputs
 

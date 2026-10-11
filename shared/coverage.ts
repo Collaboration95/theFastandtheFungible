@@ -1,7 +1,7 @@
 // The requested-facts checklist (#208, #209), shared by the answer card and the report so both say the same thing.
 import { RunCheckpointSchema, STOP_LABELS, type CoverageStatus, type RunSnapshot, type StopReason } from './contracts/index.js'
 
-/** Reader-facing status words: no code vocabulary (prompt.md §3a). */
+/** Reader-facing status words: no code vocabulary. */
 export const FACT_STATUS: Record<CoverageStatus, string> = { supported: 'Answered', partial: 'Partly answered', missing: 'Not found', conflicting: 'Sources disagree', unknown: "Couldn't check" }
 export type FactsSummary = { answered: number; total: number; facts: { id: string; text: string; status: CoverageStatus }[]; foundFree: boolean; stopReason?: StopReason; line: string; judge?: string; error?: string }
 

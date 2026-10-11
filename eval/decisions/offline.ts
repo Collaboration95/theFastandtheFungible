@@ -238,8 +238,8 @@ export function summarize(results: QuestionResult[]) {
 }
 
 /**
- * Questions run in bank order. Trust is reset per question by default, as before every live use-case run
- * (prompt.md §4); `sharedTrust` keeps one table across questions, as one long-lived server would, so an
+ * Questions run in bank order. Trust is reset per question by default, as before every live use-case run;
+ * `sharedTrust` keeps one table across questions, as one long-lived server would, so an
  * earlier purchase's calibration or refund changes later decisions (order-dependent by design).
  */
 export async function evaluateBank(options: { provider?: DecisionProvider; ids?: string[]; budgetMinor?: number; world?: World; sharedTrust?: boolean; flow?: Flow; paidRelevance?: boolean; dataset?: DatasetRow[] } = {}) {

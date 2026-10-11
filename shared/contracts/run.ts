@@ -27,7 +27,7 @@ export const RunPhaseSchema = z.enum(['SEARCH', 'READ_FREE', 'ANSWER', 'DECIDE',
 /** Why a run stopped looking (#209): shown next to the requested-facts checklist and in the report. */
 export const STOP_REASONS = ['complete', 'no-eligible-purchase', 'budget-exhausted', 'round-limit', 'decision-unavailable', 'stopped'] as const
 export const StopReasonSchema = z.enum(STOP_REASONS)
-/** Reader-facing stop reasons, one short line each (prompt.md §3a). */
+/** Reader-facing stop reasons, one short line each. */
 export const STOP_LABELS: Record<z.infer<typeof StopReasonSchema>, string> = {
   complete: 'All requested facts answered.',
   'no-eligible-purchase': 'No source worth buying for the rest.',

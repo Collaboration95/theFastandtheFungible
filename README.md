@@ -133,9 +133,9 @@ curl -X POST <service URL>/api/reputation/reset
 
 ## Documentation
 
-- [FINAL-PUSH.md](FINAL-PUSH.md): the product source of truth (direction, decisions D1–D24, open items)
-- [prompt.md](prompt.md): the five hard gates and the worker workflow
-- [docs/README.md](docs/README.md): documentation index, including architecture, design and the x402/XRPL flow
-- [STATUS.md](STATUS.md): progress log and human-only steps
+- [docs/README.md](docs/README.md): documentation index
+- [Architecture](docs/contracts/ARCHITECTURE.md), [security](docs/contracts/SECURITY.md) and the [x402/XRPL flow](docs/x402-xrpl.md)
+- [Design record](docs/FINAL-PUSH.md): the decisions D1–D24 behind the October build
+- [Decision model report](eval/REPORT-decisions.md): how the buying decisions were measured on the real corpus
 
 **Not built yet:** durable storage on Cloud Run, mainnet, licensing, and a central index.

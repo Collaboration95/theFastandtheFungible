@@ -1,13 +1,8 @@
-# October 10 final push: new direction
+# Design record: the October 2026 build
 
-Decided 6 Oct 2026, amended 7 Oct (D15–D24). Demo: AI Tinkerers SG, Sat 10 Oct. Code freeze: Thu 8 Oct, night.
+Decided 6 Oct 2026, amended 7–8 Oct, for the AI Tinkerers Singapore demo on 10 Oct.
 
-**Execution:** the work is split into GitHub issues (epics with sub-issues, milestone "10 Oct 2026 — AI Tinkerers demo"). The overnight run follows [OVERNIGHT-OCT7.md](OVERNIGHT-OCT7.md).
-
-**Authority.** This file overrides `prompt.md` wherever the two conflict.
-The five hard gates in `prompt.md` §2 still apply, with the clarifications in §12 below.
-Each decision has an ID (D1, D2, …). Later narrow runs cite these IDs and must not reopen a decision.
-Open items are listed in §15 and are the only things still up for debate.
+This is the sprint's design record: decisions D1–D24 and the reasons behind them. Code comments cite its sections (for example "FINAL-PUSH §7"). D9 was amended on 8 Oct: the demo runs OpenAI Decisions `gpt-6-luna` (#214), with Cloudflare Clef-flash as the one-line revert. Sections on sprint execution (§13 streams, §15 open items, §16 document moves) are kept as history. The as-built behaviour is in [contracts/](contracts/), and the hard gates are listed in the [README](../README.md#hard-guarantees); §12 below adds clarifications.
 
 ---
 
@@ -307,7 +302,7 @@ There are no audience questions on stage. Real names are allowed (D20), and all 
 
 ## 13. Workstreams for the next narrow runs
 
-The work is split into GitHub issues: one epic per stream, each with sub-issues that carry the write scope and acceptance checks. [OVERNIGHT-OCT7.md](OVERNIGHT-OCT7.md) lists them in execution order.
+The work is split into GitHub issues: one epic per stream, each with sub-issues that carry the write scope and acceptance checks. `OVERNIGHT-OCT7.md` (removed after the demo; see git history) lists them in execution order.
 
 Order:
 1. **W0 contracts** first. The build log's lesson: agree typed boundaries before working in parallel.

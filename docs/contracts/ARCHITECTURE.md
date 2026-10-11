@@ -2,7 +2,7 @@
 
 The browser is a view and command surface. The API server owns retrieval,
 decisions, budget, payment and cited synthesis. Direction:
-[FINAL-PUSH.md](../../FINAL-PUSH.md).
+[FINAL-PUSH.md](../FINAL-PUSH.md).
 
 ## As built (8 Oct, on `main`)
 
@@ -57,13 +57,13 @@ The third writer column is the bad actor; the last is free open records.
         └──── buyer pays writer directly on XRPL Testnet (we never hold funds)
 ```
 
-Detail: client flow [§5](../../FINAL-PUSH.md#5-client-flow-pseudocode), writer
-site and manifest [§8](../../FINAL-PUSH.md#8-what-every-publisher-writer-site-must-do),
-x402 v2 changes [§9](../../FINAL-PUSH.md#9-x402-v2-changes-to-todays-flow-d7).
+Detail: client flow [§5](../FINAL-PUSH.md#5-client-flow-pseudocode), writer
+site and manifest [§8](../FINAL-PUSH.md#8-what-every-publisher-writer-site-must-do),
+x402 v2 changes [§9](../FINAL-PUSH.md#9-x402-v2-changes-to-todays-flow-d7).
 
 ## Trust boundaries
 
 The browser holds no keys, seeds or premium bytes. Only policy code starts a
 purchase. A failed proof quarantines a source, and it is never cited. The five
-hard gates are in [prompt.md §2](../../prompt.md); controls are in
+hard gates are in [the README](../../README.md#hard-guarantees); controls are in
 [Security](SECURITY.md).

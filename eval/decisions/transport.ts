@@ -114,7 +114,7 @@ export async function request(arm: TransportArm, body: unknown, meta: { phase: s
       rec.error = `HTTP ${response.status}`
       if (response.status === 429) {
         retryAfter = Math.min(60_000, Math.max(1000, Number(response.headers.get('retry-after')) * 1000 || 60_000))
-        // A daily-allowance error stops Cloudflare work for the run (prompt.md §4: stop at the first quota error).
+        // A daily-allowance error stops Cloudflare work for the run (stop at the first quota error).
         if (arm === 'flash' || arm === 'clef') save('blocked-cloudflare.json', { at: new Date().toISOString(), status: 429, reason: JSON.stringify(rec.response).slice(0, 200) })
       }
     }

@@ -12,9 +12,9 @@ else
 fi
 # stdin carries the prompt; without it codex waits on the terminal.
 codex exec "${flags[@]}" -s read-only --ephemeral -C "$PWD" -o "$out" - >/dev/null <<EOP
-Review the changes on this branch versus origin/main (run \`git diff origin/main...HEAD\` and read touched files as needed) for PR #$2, which closes issues $3. Read AGENTS.md and FINAL-PUSH.md §12 first.
+Review the changes on this branch versus origin/main (run \`git diff origin/main...HEAD\` and read touched files as needed) for PR #$2, which closes issues $3. Read AGENTS.md and docs/FINAL-PUSH.md §12 first.
 This is a demo shipping in days. Report at most 5 BLOCKERS, each with file:line and a one-line fix. A blocker is only:
-(a) a violation of a hard gate in prompt.md §2 (premium bytes before a grant; any spend path not gated by policy code and the budget; more than one charge per intent; a citation that doesn't resolve to an accessible exact span; an unlabelled simulation or fallback);
+(a) a violation of a hard gate (README → Hard guarantees: premium bytes before a grant; any spend path not gated by policy code and the budget; more than one charge per intent; a citation that doesn't resolve to an accessible exact span; an unlabelled simulation or fallback);
 (b) something that breaks build, typecheck, tests or app startup;
 (c) an Acceptance item in the closed issues that is not met or has no test;
 (d) a leaked secret or a seed or key in logs.
