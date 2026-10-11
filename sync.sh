@@ -1,6 +1,7 @@
 #!/bin/sh
 # Copy the explainer pages from their working copies into this gh-pages tree.
 # Run it after editing a page, then commit and push; GitHub Pages redeploys on push.
+# evolution/ is edited in place here; refresh its numbers with evolution/build_data.py.
 set -eu
 cd "$(dirname "$0")"
 MAIN=../../tftf
