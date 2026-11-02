@@ -26,13 +26,13 @@ PR or issue.
 | Product | Pay writers in RLUSD on Testnet | #275 | planned · Wed 11 |
 | Product | Surprise bet 2: hire the agent (agent-to-agent x402 with citation royalties) | #274 | planned · Tue 10 |
 | Product | Publish in one command: a Markdown folder becomes a paid writer | #277 | planned · Fri 13 |
-| UI/UX | The cast (restrained, on one grid with the brand) + motion: the money visibly moves | #258, #262 | planned · cast Thu 5, motion Sun 8 |
+| UI/UX | The cast (restrained, on one grid with the brand) + motion: the money visibly moves | #258, #262 | cast v1 done (#258); motion planned Sun 8 (#262) |
 | Repo | Front door: settings, topics, community files, hygiene check, a release per feature day | #269 | planned · Wed 4 – Thu 5 |
 | Repo | Brand kit: wordmark, mark, favicon, app icon, social preview, naming audit | #271 | planned · Thu 5 – Fri 6 |
 | Repo | README overhaul + one header across the explainers site | #272 | planned · Sat 7, numbers Wed 11 |
 | Submission | Short description · demo video · pitch deck · public repo | plan only | planned · 8–11 Nov |
-| Builder feedback | Living log from building + mainnet-readiness checklist | #257 | planned · 3 Nov |
-| Story | Daily posts (two on weekends, [post calendar](#post-calendar)) + SFF chapter on the [evolution page](https://collaboration95.github.io/theFastandtheFungible/evolution/) | #257 | planned · 3 Nov, then daily |
+| Builder feedback | [Living log from building + mainnet-readiness checklist](BUILDER-FEEDBACK.md) | #257 | done (15 implementation findings + 15 historical submissions) |
+| Story | Daily posts (two on weekends, [post calendar](#post-calendar)) + SFF chapter on the [evolution page](https://collaboration95.github.io/theFastandtheFungible/evolution/) | #257 | daily log ready; SFF chapter publishes after main merge |
 | Presentation | 2-minute pitch, rehearsed | plan only | planned · 14–18 Nov |
 
 ## Hill-climb scorecard
@@ -207,7 +207,7 @@ section (feature, visual, number, takeaway) and a clip from `make clip`
 
 ### Needs a human
 
-Everything only the owner can do lives in **#265** (pinned, `needs-human`).
+Everything only the owner can do lives in **[pinned issue #265](https://github.com/Collaboration95/theFastandtheFungible/issues/265)** (pinned, `needs-human`).
 Agents add items there and keep working around them.
 
 ## Decisions log
@@ -230,6 +230,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
 
 ### Mon 2 Nov
+- Lane C: added 15 implementation-backed feedback items plus the 15 September submissions, a mainnet gap checklist, and a restrained 48-state SVG system (including 16/24 px marks) with accessible React marks and reusable post cards (#257, #258); SFF timeline chapter follows the main merge.
 - Planned the next 10 days: three lanes, two surprise bets, wave-1 issues #255–#262 ([Plan](#plan)).
 - Audit cleanup: patched production dependencies, synchronized Stop scoring, isolated browser-test ports/ledgers, corrected preflight and docs, and aligned the search eval with production ([#254](https://github.com/Collaboration95/theFastandtheFungible/pull/254)).
 - Resumed after the 10–11 Oct demo. Audits: CI green, 478 tests pass, fixture demo runs end to end.

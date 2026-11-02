@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { Receipt as ReceiptData, RunSnapshot } from '../../shared/contracts/index.js'
+import Cast from './Cast'
 import { candidateOf, money, shortHash } from '../format'
 
 /** A paper receipt: one charge per intent, labelled simulated (or Testnet). */
@@ -11,7 +12,7 @@ export default function Receipt({ run, receipt, onClose }: { run: RunSnapshot; r
   const grant = run.grants.find(item => item.intentId === receipt.intentId)
   const charges = run.receipts.filter(item => item.intentId === receipt.intentId).length
   return <dialog ref={dialog} className="ra-receipt" aria-label="Receipt" onCancel={event => { event.preventDefault(); onClose() }} onClick={event => { if (event.target === dialog.current) onClose() }}>
-    <h2>RECEIPT</h2><p className="sub">ResearchAgent · run {shortHash(run.runId)}</p>
+    <h2><Cast who="receipt" pose={/simulated/i.test(receipt.label) ? 'simulated' : intent?.status === 'REFUNDED' ? 'refunded' : intent?.status === 'VERIFIED' ? 'verified' : 'printing'} size={64} /> RECEIPT</h2><p className="sub">ResearchAgent · run {shortHash(run.runId)}</p>
     <dl>
       <dt>Item</dt><dd>{source?.title ?? receipt.resourceId}</dd>
       <dt>Publisher</dt><dd>{source?.publisher ?? '—'}</dd>

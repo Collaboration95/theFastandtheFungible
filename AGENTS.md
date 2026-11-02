@@ -31,7 +31,17 @@
 - Do not bind ports 5100, 8788 or 8790 in tests; use ephemeral ports.
 - Never use real money, create cloud resources, or log API keys or wallet seeds.
 
+- Visuals use a restrained geometric icon/illustration system: light palette,
+  consistent grid and stroke, legible at 16–24 px. No cartoon mascots or generic
+  entrance motion; short motion must explain money or refund state changes.
+- Needs-human items belong in pinned issue #265, not in docs.
+
 ## How work is run (SFF push)
+
+- Append XRPL, x402, Starter Kit, Testnet or tooling friction to
+  `docs/BUILDER-FEEDBACK.md` on the day it happens: date, evidence path/commit,
+  workaround, suggested fix, severity and mainnet impact. Distinguish observed
+  incidents from code-derived failure modes and historical research.
 
 - The project runs hands-off: agents plan, build, ship and merge in loops. Agents
   have full authority to merge to `main` once the merge gate passes.

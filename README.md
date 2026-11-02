@@ -207,6 +207,8 @@ The 10 Oct live demo ran on Google Cloud Run. That deploy (`make cloudrun`, `doc
 
 ## Documentation
 
+- [Builder feedback](docs/BUILDER-FEEDBACK.md): implementation friction, repros and mainnet-readiness gaps
+
 - [docs/README.md](docs/README.md): documentation index
 - [Architecture](docs/contracts/ARCHITECTURE.md), [security](docs/contracts/SECURITY.md) and the [x402/XRPL flow](docs/x402-xrpl.md)
 - [Design record](docs/FINAL-PUSH.md): the decisions D1–D24 behind the October build
