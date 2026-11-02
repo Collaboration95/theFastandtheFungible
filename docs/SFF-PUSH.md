@@ -27,7 +27,7 @@ PR or issue.
 | Product | Surprise bet 2: hire the agent (agent-to-agent x402 with citation royalties) | #274 | planned · Tue 10 |
 | Product | Publish in one command: a Markdown folder becomes a paid writer | #277 | planned · Fri 13 |
 | UI/UX | The cast (restrained, on one grid with the brand) + motion: the money visibly moves | #258, #262 | cast v1 done (#258); motion planned Sun 8 (#262) |
-| Repo | Front door: settings, topics, community files, hygiene check, a release per feature day | #269 | planned · Wed 4 – Thu 5 |
+| Repo | Front door: settings, topics, community files, hygiene check, a release per feature day | #269 | done · social preview upload on #265 |
 | Repo | Brand kit: wordmark, mark, favicon, app icon, social preview, naming audit | #271 | planned · Thu 5 – Fri 6 |
 | Repo | README overhaul + one header across the explainers site | #272 | planned · Sat 7, numbers Wed 11 |
 | Submission | Short description · demo video · pitch deck · public repo | plan only | planned · 8–11 Nov |
@@ -201,7 +201,9 @@ section (feature, visual, number, takeaway) and a clip from `make clip`
 - Each lane agent takes the next item in its lane, ships it with
   `.claude/skills/ship-pr/SKILL.md`, adds one changelog line here, fills the
   PR's **Story** section (post line, visual, number) and, on a feature day,
-  cuts that day's release (`scripts/release.mjs` from #269).
+  cuts that day's release: from a clean, current `main`,
+  `node scripts/release.mjs <day> "<title>" --push` (Day N is `v0.(N+1).0`; add
+  `--dry-run` to preview the notes). Pushing the tag publishes the GitHub release.
 - Every hill-climb PR pastes `make scorecard -- --compare <previous>` output.
   Ship it only if no gate metric regresses.
 - Friction with XRPL, x402, the Starter Kit or Testnet goes into the builder
@@ -234,6 +236,7 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ### Tue 3 Nov
 - Architecture review ([REVIEW-NOV-2026.md](contracts/REVIEW-NOV-2026.md)): four do-now seams filed as #285 (SDK v0, config, route split), #286 (one spend gate, auth, injection hardening), #287 (live reconciler, health, metrics), #288 (audit trail, export, COMPLIANCE.md); fold-ins commented on #259, #273–#275, #277–#281.
+- Lane light #269: repo front door. Description, topics and homepage set; MIT licence (revertible until the owner's veto on #265), CONTRIBUTING, SECURITY, Code of Conduct, issue templates, CODEOWNERS; `npm run hygiene` in `check:fast`; `scripts/release.mjs` and a release workflow for one tag per feature day.
 - Planned the feature-a-day run (9 days, 5–13 Nov, slack of 4), repo identity and the post calendar; filed #269–#281; owner-only items moved to #265 ([calendar](#feature-a-day-5-13-nov)).
 - Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
 

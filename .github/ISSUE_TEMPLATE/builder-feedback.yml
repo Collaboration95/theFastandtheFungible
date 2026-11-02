@@ -1,0 +1,28 @@
+name: Builder feedback
+description: Friction with XRPL, x402, MCP or the Starter Kit that we hit while building
+labels: [builder-feedback]
+body:
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      placeholder: XRPL Testnet, x402, Starter Kit, MCP
+    validations:
+      required: true
+  - type: textarea
+    id: friction
+    attributes:
+      label: What got in the way
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Repro
+      description: Exact commands or transactions (Testnet hashes are fine), and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: What would have helped

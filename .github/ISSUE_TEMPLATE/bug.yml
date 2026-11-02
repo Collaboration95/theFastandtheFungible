@@ -1,0 +1,26 @@
+name: Bug
+description: Something broke or behaved unexpectedly
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Commands, the question you asked, and whether it was the fixture or live demo.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: v0.1.0 or a SHA
+  - type: markdown
+    attributes:
+      value: Don't paste seeds, API keys or `.env` contents.
