@@ -34,7 +34,7 @@ The writers and their articles are fictional. Payments settle on the XRPL Testne
 1. **Ask.** You set a prompt budget (S$0, S$1, S$2 or S$5) and ask a question. The model asks at most two short clarifying questions, which you can skip.
 2. **Confirm the plan.** An action modal shows the plan and counts down for 5 s (Edit, Cancel, Go now). It confirms the plan, not a purchase: the budget is the only spending authorization.
 3. **Search the writers.** Each writer runs their own site with hybrid search (BM25 + vectors) over their full text. A hit returns the abstract, signals and a signed manifest, never the premium text.
-4. **Decide what's worth buying.** A calibrated decision model judges each candidate, weighted by the writer's trust score. Cloudflare Clef-flash is the default; the demo runs OpenAI Decisions `gpt-6-luna` (`DECISION_PROVIDER=openai`).
+4. **Decide what's worth buying.** A selectable decision model judges each candidate, weighted by the writer's trust score: OpenAI Decisions `gpt-6-luna` (`DECISION_PROVIDER=openai`) or Cloudflare Clef-flash (`DECISION_PROVIDER=cloudflare`, the `make live` default). Scores are raw by default; calibration requires `DECISION_CALIBRATION=on` and a matching provider/model/prompt calibrator.
 5. **Pay.** Deterministic policy code, never the LLM, pays the writer over [x402 v2](docs/x402-xrpl.md) on XRPL Testnet, within the budget and a S$1 per-source cap.
 6. **Verify and refund.** The delivered article is checked against the writer's promises. A broken promise is challenged, refunded on-chain, and the writer's trust score drops.
 7. **Answer.** DeepSeek writes the answer and a PDF report. Every citation resolves to an exact delivered passage. Langfuse traces live runs.

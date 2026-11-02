@@ -3,8 +3,12 @@
 A neutral search engine for agent-readable expertise, with a wallet. Direction
 and decisions: [FINAL-PUSH.md](../FINAL-PUSH.md). This file keeps the promises.
 
-A reader's agent asks a question. Writers search their own articles. Clef, a
-calibrated model, picks the paywalled article worth buying. Code pays the
+A reader's agent asks a question. Writers search their own articles. A selectable
+decision model judges the paywalled articles: OpenAI Decisions `gpt-6-luna`
+(`DECISION_PROVIDER=openai`) or Cloudflare Clef-flash
+(`DECISION_PROVIDER=cloudflare`, the `make live` default). Scores are raw by
+default; calibration requires `DECISION_CALIBRATION=on` and a matching
+provider/model/prompt calibrator. Policy code picks and pays the
 writer over x402 on XRPL Testnet, inside the budget, and the agent then checks
 every promise ([§1](../FINAL-PUSH.md#1-what-we-are-building)).
 
