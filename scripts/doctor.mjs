@@ -10,6 +10,7 @@
 import 'dotenv/config'
 import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
+import { DROPS_PER_MINOR } from '../shared/contracts/publisher.ts'
 import { ClefDecisionProvider, clefTimeoutMs } from '../server/agents/clef.ts'
 import { llmConfig } from '../server/agents/llm.ts'
 import { OpenAIDecisionsProvider, decisionsTimeoutMs } from '../server/agents/openai-decisions.ts'
@@ -260,7 +261,7 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
       if (process.env[addressEnvName(slug)] && process.env[addressEnvName(slug)] !== address) fail(`${slug}: ${seedEnvName(slug)} does not match ${addressEnvName(slug)}`)
       publishers.set(address, slug)
     }
-    const refundDrops = 900_000 // the highest article price, S$0.90, refunded in full
+    const refundDrops = 90 * DROPS_PER_MINOR // the highest article price, S$0.90, refunded in full
     for (const [address, name] of publishers) {
       try {
         const { result } = await ledger.request({ command: 'account_info', account: address, ledger_index: 'validated' })
