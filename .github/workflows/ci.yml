@@ -3,14 +3,63 @@ on:
   push:
     branches: [main]
   pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Always report check: workflow-level paths-ignore would strand a required check.
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Detect changes
+        id: changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        shell: bash
+        run: |
+          # Missing history (including a new branch) must take the full check path.
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            echo 'run_checks=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          fi
+          # Compare the full PR against its base, or the entire pushed range.
+          # Include both sides of renames so moving code into docs cannot bypass CI.
+          git diff --no-renames --name-only -z "$BASE_SHA" HEAD > "$RUNNER_TEMP/ci-changed-files"
+          run_checks=false
+          while IFS= read -r -d '' file; do
+            case "$file" in
+              # Code, corpus, test inputs and config always keep the full suite,
+              # even if a changed file happens to be Markdown or an image.
+              src/*|server/*|shared/*|publisher/*|data/*|tests/*|scripts/*|eval/*|docker/*|.github/workflows/*)
+                run_checks=true; break ;;
+              *.md|*.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico)
+                ;;
+              *) run_checks=true; break ;;
+            esac
+          done < "$RUNNER_TEMP/ci-changed-files"
+          echo "run_checks=$run_checks" >> "$GITHUB_OUTPUT"
+      - name: Documentation-only change
+        if: steps.changes.outputs.run_checks == 'false'
+        run: echo 'Documentation/images only; installation and code checks skipped.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Set up Node
+        if: steps.changes.outputs.run_checks == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
-      - run: npm run check:fast
+      - name: Install dependencies
+        if: steps.changes.outputs.run_checks == 'true'
+        run: npm ci
+      - name: Check code and hard gates
+        if: steps.changes.outputs.run_checks == 'true'
+        run: npm run check:fast
