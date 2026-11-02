@@ -43,3 +43,9 @@ Cleanup observation: the first demo process retained WebSockets after the verifi
 read. It was terminated after persisting its receipt, without another purchase.
 The concurrent-connect race in our `testnetLedger` wrapper is fixed and covered
 by `tests/xrpl-connection.test.ts`; a subsequent read-only lookup exited cleanly.
+
+The timed Testnet read preceded the #260 v2 integration. After integration,
+an **offline** check loaded that same paid body and its stored salts, signed a
+v2 manifest with **six menu claims**, and verified the root, word count and all
+menu promises. No extra payment or network call was used for that check.
+The CLI + fixture policy tests cover the final v2 path end to end.

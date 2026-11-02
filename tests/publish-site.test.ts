@@ -15,6 +15,7 @@ import { retrieve } from '../server/agents/research.js'
 import { PurchaseManager } from '../server/purchases.js'
 import { RunLoop } from '../server/agents/loop.js'
 import { Store } from '../server/store.js'
+import { authorFactMenu } from '../publisher/publishing/fact-menu.js'
 import { sharesRun } from '../shared/contracts/writers.js'
 import { verifyManifestSignature } from '../shared/manifest.js'
 
@@ -64,6 +65,13 @@ describe('Markdown folder → paid writer (#277)', () => {
     const paidCandidate = result.candidates.find(c => c.resourceId === result.intents[0].resourceId)!
     await manager.purchase({ runId: run.runId, candidate: paidCandidate, intentId: result.intents[0].intentId })
     expect(store.getRun(run.runId).receipts).toHaveLength(1)
+  })
+
+  it('derives menus for expertise outside the built-in catalogue without copying an answer value', () => {
+    const menu = authorFactMenu({ tier: 'PAID', passages: [{ id: 'p1', text: 'In 2026 TurbineLabs thermal loss was 10%.' }] }, ['TurbineLabs', 'thermal loss'])
+    expect(menu.p1).toMatchObject({ entity: 'TurbineLabs', measure: 'thermal loss' })
+    expect(JSON.stringify(menu)).not.toMatch(/10|2026/)
+    expect(authorFactMenu({ tier: 'PAID', passages: [{ id: 'p1', text: 'Other material only.' }] }, [], { entity: 'TurbineLabs', measure: 'thermal loss' })).toEqual({})
   })
 
   it('the repo bin starts on an ephemeral port and exits cleanly on SIGTERM', async () => {

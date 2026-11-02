@@ -10,7 +10,7 @@ export function authorFactMenu(article: Pick<Article, 'tier' | 'passages'>, topi
   const phrases = topics.filter(t => FactCoverSchema.shape.measure.safeParse(t).success)
   return Object.fromEntries(article.passages.flatMap(p => {
     const old = fallback[p.id]
-    const entity = authored.entity ?? old?.entity
+    const entity = authored.entity ?? old?.entity ?? phrases.find(t => mentionsMenuPhrase(p.text, t))
     const measure = authored.measure ?? phrases.find(t => t !== entity && mentionsMenuPhrase(p.text, t)) ?? old?.measure
     if (!entity || !measure) return []
     const covers = FactCoverSchema.safeParse({ entity, measure, ...(old?.period ? { period: old.period } : {}) })
