@@ -1,13 +1,10 @@
+import { loadConfig } from '../server/config.js'
 import { BUDGET } from '../shared/contracts/run.js'
 
 /** Read once from the operator environment. Tool arguments never configure authority. */
-export function budgetPolicy(env: NodeJS.ProcessEnv = process.env) {
-  const read = (key: string) => {
-    const value = env[key] ?? '0'
-    if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value))) throw new Error(`Invalid ${key}`)
-    return Number(value)
-  }
-  return { maxMinor: Math.min(read('MCP_MAX_BUDGET_MINOR'), BUDGET.maxMinor), dailyMinor: read('MCP_DAILY_CAP_MINOR') }
+export function budgetPolicy(env: NodeJS.ProcessEnv = loadConfig()) {
+  const config = loadConfig(env)
+  return { maxMinor: Math.min(Number(config.MCP_MAX_BUDGET_MINOR ?? '0'), BUDGET.maxMinor), dailyMinor: Number(config.MCP_DAILY_CAP_MINOR ?? '0') }
 }
 
 export function clampBudget(requestedMinor: number, maxMinor: number, remainingMinor: number) {

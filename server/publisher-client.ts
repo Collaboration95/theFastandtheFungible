@@ -1,3 +1,4 @@
+import { loadConfig } from './config.js'
 import { z } from 'zod'
 import { SearchHitSchema, type SearchHit } from '../shared/contracts/manifest.js'
 import { PassageSchema } from '../shared/contracts/writers.js'
@@ -17,7 +18,7 @@ export class PublisherClient {
     const headers: Record<string, string> = { Accept: 'application/json' }
     if (body !== undefined) headers['Content-Type'] = 'application/json'
     if (token) headers['X-Delivery-Token'] = token
-    const response = await fetch(new URL(path, this.options.baseUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
+    const response = await fetch(new URL(path, this.options.baseUrl ?? loadConfig().PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
       method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(this.options.timeoutMs ?? 5000), redirect: 'error',
     })
     const bytes = Buffer.from(await response.arrayBuffer())
@@ -38,7 +39,7 @@ export class PublisherClient {
    * status, the decoded PAYMENT-RESPONSE and, on 200, the delivered JSON. Only status/path reach the wire log.
    */
   async paidGet(path: string, signature: string | undefined, observer?: WireObserver): Promise<{ status: number; required?: PaymentRequired; response?: PaymentResponse; delivery?: unknown }> {
-    const response = await fetch(new URL(path, this.options.baseUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
+    const response = await fetch(new URL(path, this.options.baseUrl ?? loadConfig().PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
       headers: { Accept: 'application/json', ...(signature ? { 'PAYMENT-SIGNATURE': signature } : {}) }, signal: AbortSignal.timeout(this.options.timeoutMs ?? 60_000), redirect: 'error',
     })
     const text = await response.text()
@@ -54,7 +55,7 @@ export class PublisherClient {
   /** POST /w/:slug/challenge (#132). Any non-200, timeout or malformed answer throws: the caller records REFUSED. */
   async challenge(slug: string, challenge: Challenge, timeoutMs: number, observer?: WireObserver): Promise<ChallengeResult> {
     const path = `/w/${encodeURIComponent(slug)}/challenge`
-    const response = await fetch(new URL(path, this.options.baseUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
+    const response = await fetch(new URL(path, this.options.baseUrl ?? loadConfig().PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
       method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(challenge), signal: AbortSignal.timeout(timeoutMs), redirect: 'error',
     })
     const wire = { method: 'POST', path, status: response.status }
@@ -65,7 +66,7 @@ export class PublisherClient {
   }
   // Federated search (D1, #138): registry, per-publisher search and FREE article reads.
   private async getJson(path: string, timeoutMs?: number): Promise<unknown> {
-    const response = await fetch(new URL(path, this.options.baseUrl ?? process.env.PUBLISHER_URL ?? 'http://127.0.0.1:8790'), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(timeoutMs ?? this.options.timeoutMs ?? 5000), redirect: 'error' })
+    const response = await fetch(new URL(path, this.options.baseUrl ?? loadConfig().PUBLISHER_URL ?? 'http://127.0.0.1:8790'), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(timeoutMs ?? this.options.timeoutMs ?? 5000), redirect: 'error' })
     const wire = { method: 'GET', path, status: response.status }
     try { this.options.onWire?.(wire) } catch { /* telemetry cannot alter retrieval */ }
     if (!response.ok) throw new PublisherHttpError(response.status)

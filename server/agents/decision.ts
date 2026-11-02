@@ -1,3 +1,4 @@
+import { loadConfig } from '../config.js'
 import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
@@ -41,7 +42,7 @@ export const OPENAI_DECISION_MODEL = 'gpt-6-luna'
  * The model for a live provider. `DECISION_MODEL` applies only when it names that provider's kind of model
  * (`@cf/…` for Cloudflare), so `DECISION_PROVIDER=cloudflare` alone is the one-line revert (#214).
  */
-export function decisionModel(provider: 'cloudflare' | 'openai' = 'cloudflare', configured: string | undefined = process.env.DECISION_MODEL): string {
+export function decisionModel(provider: 'cloudflare' | 'openai' = 'cloudflare', configured: string | undefined = loadConfig().DECISION_MODEL): string {
   const cloudflareModel = Boolean(configured?.startsWith('@cf/'))
   if (provider === 'openai') return configured && !cloudflareModel ? configured : OPENAI_DECISION_MODEL
   return configured && cloudflareModel ? configured : CLEF_DECISION_MODEL
@@ -126,7 +127,7 @@ export type DecideInput = {
   requirement?: boolean
 }
 /** Raw-score buy thresholds per model. gpt-6-luna runs raw at 0.20 with no calibrator (#214): never the benchmark's calibrated 0.05. */
-export function buyThreshold(model: string, configured: unknown = process.env.BUY_THRESHOLD): number {
+export function buyThreshold(model: string, configured: unknown = loadConfig().BUY_THRESHOLD): number {
   const value = configured === undefined || configured === '' ? (model.endsWith('/clef') ? 0.35 : model.endsWith('/clef-flash') ? 0.15 : 0.20) : Number(configured)
   return z.number().min(0).max(1).parse(value)
 }

@@ -1,3 +1,4 @@
+import { loadConfig } from '../server/config.js'
 import dotenv from 'dotenv'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -9,10 +10,11 @@ import { createMcpServer } from './tools.js'
 const root = fileURLToPath(new URL('..', import.meta.url))
 process.chdir(root)
 dotenv.config({ path: resolve(root, '.env'), quiet: true })
-const dataDir = resolve(process.env.RA_DATA_DIR ?? resolve(root, 'data/mcp'))
 let engine: Awaited<ReturnType<typeof startEngine>> | undefined
 try {
-  const apiUrl = process.env.RA_BACKEND_URL || (engine = await startEngine({ dataDir, live: process.env.RA_LIVE === '1' })).apiUrl
+  const config = loadConfig()
+  const dataDir = resolve(config.RA_DATA_DIR ?? resolve(root, 'data/mcp'))
+  const apiUrl = config.RA_BACKEND_URL || (engine = await startEngine({ dataDir, live: config.RA_LIVE === '1' })).apiUrl
   const server = createMcpServer(apiUrl)
   let closing = false
   const close = async () => {
@@ -25,8 +27,8 @@ try {
   process.once('SIGINT', () => { void close() })
   process.once('SIGTERM', () => { void close() })
   await server.connect(new StdioServerTransport())
-} catch {
-  console.error('ResearchAgent MCP startup failed; check operator configuration. No credentials are logged.')
+} catch (error) {
+  console.error(error instanceof Error && error.message.startsWith('Invalid configuration:') ? error.message : 'ResearchAgent MCP startup failed; check operator configuration. No credentials are logged.')
   await engine?.close()
   process.exitCode = 1
 }

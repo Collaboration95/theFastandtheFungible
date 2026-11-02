@@ -5,7 +5,6 @@ register()
 const { startPublisher } = await import('../publisher/server.ts')
 const publisher = await startPublisher({ host: '127.0.0.1' })
 const publisherUrl = `http://127.0.0.1:${publisher.address().port}`
-process.env.PUBLISHER_URL = publisherUrl
 const { createApiApp } = await import('./routes.ts')
 let api
 let server
@@ -14,7 +13,7 @@ const closeServer = server => new Promise((done, fail) => {
   server.closeAllConnections()
 })
 try {
-  api = await createApiApp()
+  api = await createApiApp({ publisherUrl })
   server = api.app.listen(workerData.apiPort, '127.0.0.1')
   await once(server, 'listening')
   parentPort.postMessage({ apiUrl: `http://127.0.0.1:${server.address().port}`, publisherUrl })

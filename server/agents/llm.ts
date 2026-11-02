@@ -1,3 +1,4 @@
+import { loadConfig } from '../config.js'
 import { startActiveObservation, type LangfuseGeneration } from '@langfuse/tracing'
 import { deepseekPricingWindow } from '../telemetry.js'
 /**
@@ -11,13 +12,13 @@ const providers = {
   groq: { label: 'Groq', base: 'https://api.groq.com/openai/v1', key: 'GROQ_API_KEY', model: 'llama-3.3-70b-versatile', extra: {} },
 } as const
 export type LlmProvider = keyof typeof providers
-const current = () => providers[process.env.LLM_PROVIDER as LlmProvider] as (typeof providers)[LlmProvider] | undefined
-export const llmProvider = (): LlmProvider | undefined => current() ? process.env.LLM_PROVIDER as LlmProvider : undefined
+const current = () => providers[loadConfig().LLM_PROVIDER as LlmProvider] as (typeof providers)[LlmProvider] | undefined
+export const llmProvider = (): LlmProvider | undefined => current() ? loadConfig().LLM_PROVIDER as LlmProvider : undefined
 export const llmLabel = () => current()?.label ?? 'fixture'
 /** Effective endpoint, model and key for a provider (default: the selected one, else DeepSeek). */
-export const llmConfig = (name = process.env.LLM_PROVIDER) => {
+export const llmConfig = (name = loadConfig().LLM_PROVIDER) => {
   const p = providers[name as LlmProvider] ?? providers.deepseek
-  return { baseUrl: (process.env.LLM_BASE_URL || p.base).replace(/\/$/, ''), model: process.env.LLM_MODEL || p.model, apiKey: process.env.LLM_API_KEY || process.env[p.key] || '' }
+  return { baseUrl: (loadConfig().LLM_BASE_URL || p.base).replace(/\/$/, ''), model: loadConfig().LLM_MODEL || p.model, apiKey: loadConfig().LLM_API_KEY || loadConfig()[p.key] || '' }
 }
 export const researchModel = () => llmConfig().model
 export const isLlmConfigured = () => Boolean(current() && llmConfig().apiKey)
@@ -35,7 +36,7 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
   const { baseUrl, apiKey } = llmConfig()
   const endpoint = baseUrl.endsWith('/chat/completions') ? baseUrl : `${baseUrl}/chat/completions`
   const controller = new AbortController()
-  const configuredTimeout = Number(process.env.LLM_SYNTHESIS_TIMEOUT_MS ?? process.env.LLM_TIMEOUT_MS ?? 45000)
+  const configuredTimeout = Number(loadConfig().LLM_SYNTHESIS_TIMEOUT_MS ?? loadConfig().LLM_TIMEOUT_MS ?? 45000)
   const timeout = setTimeout(() => controller.abort(), Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : 45000)
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
   const messages = [

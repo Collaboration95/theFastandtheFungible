@@ -1,3 +1,4 @@
+import { loadConfig } from './config.js'
 import { Wallet, decode } from 'xrpl'
 import type { PaymentRequirement } from '../shared/contracts/index.js'
 import { lookupTx, simulatedLedgerIndex, simulatedPayerWallet, testnetLedger, validatedLedgerIndex, type Ledger } from '../shared/xrpl.js'
@@ -19,7 +20,7 @@ export class XrplPayer {
     this.address = wallet?.classicAddress
   }
   static fromEnv(): XrplPayer {
-    const seed = process.env.XRPL_PAYER_SEED
+    const seed = loadConfig().XRPL_PAYER_SEED
     return new XrplPayer(testnetLedger(), seed ? Wallet.fromSeed(seed) : undefined)
   }
   /** Amount, network and invoice must match the quote exactly; the publisher cannot ask for more. */

@@ -1,3 +1,4 @@
+import { loadConfig } from '../config.js'
 // #207: versioned calibrators for the decision model's raw scores, fitted on in-domain data (never synthetic) by
 // `npm run calibration:fit`. OFF by default: decide() applies one only when DECISION_CALIBRATION=on AND a file under
 // data/calibration/ matches the active (provider, model, prompt version) exactly; otherwise scores stay raw (identity).
@@ -49,19 +50,19 @@ export function calibratorFileName(key: CalibratorKey): string {
 export const calibratorId = (c: Pick<Calibrator, 'key' | 'version'>) => `${calibratorFileName(c.key).replace(/\.json$/, '')}@v${c.version}`
 
 /** Every valid calibrator file in `dir`; an unreadable or invalid file is skipped (it can never be applied). */
-export function loadCalibrators(dir: string = process.env.DECISION_CALIBRATION_DIR || CALIBRATION_DIR): Calibrator[] {
+export function loadCalibrators(dir: string = loadConfig().DECISION_CALIBRATION_DIR || CALIBRATION_DIR): Calibrator[] {
   const root = resolve(dir)
   if (!existsSync(root)) return []
   return readdirSync(root).filter(name => name.endsWith('.json')).flatMap(name => {
     try { return [CalibratorSchema.parse(JSON.parse(readFileSync(join(root, name), 'utf8')))] } catch { return [] }
   })
 }
-export const calibrationEnabled = (configured: unknown = process.env.DECISION_CALIBRATION) => configured === 'on'
+export const calibrationEnabled = (configured: unknown = loadConfig().DECISION_CALIBRATION) => configured === 'on'
 /**
  * The calibrator decide() applies: undefined unless DECISION_CALIBRATION=on and one matches the provider's exact
  * (provider, model, prompt version). A changed wording or model therefore falls back to raw scores, never a stale map.
  */
-export function activeCalibrator(provider: { name: DecisionProviderName; model: string; promptVersion?: string }, env: NodeJS.ProcessEnv = process.env): Calibrator | undefined {
+export function activeCalibrator(provider: { name: DecisionProviderName; model: string; promptVersion?: string }, env: NodeJS.ProcessEnv = loadConfig()): Calibrator | undefined {
   if (!calibrationEnabled(env.DECISION_CALIBRATION)) return undefined
   const key = calibratorKey(provider)
   return loadCalibrators(env.DECISION_CALIBRATION_DIR || CALIBRATION_DIR).filter(c => sameKey(c.key, key)).sort((a, b) => b.version - a.version)[0]

@@ -1,0 +1,19 @@
+import { expect, it, vi } from 'vitest'
+import type { Express } from 'express'
+import { createApiApp } from '../server/routes.js'
+import before from './fixtures/routes-before-285.json'
+
+type Layer = { route?: { path: string | string[]; methods: Record<string, boolean> }; handle?: { stack?: Layer[] } }
+function routeTable(layers: Layer[]): string[][] {
+  return layers.flatMap(layer => layer.route
+    ? Object.keys(layer.route.methods).flatMap(method => [layer.route!.path].flat().map(path => [method.toUpperCase(), path]))
+    : routeTable(layer.handle?.stack ?? []))
+}
+it.each([false, true])('preserves the pre-#285 route table (fault controls: %s)', async faults => {
+  vi.stubEnv('PUBLISHER_FAULTS', faults ? '1' : '0')
+  const api = await createApiApp({ dbPath: ':memory:' })
+  try {
+    const app = api.app as Express & { router: { stack: Layer[] } }
+    expect(routeTable(app.router.stack).sort()).toEqual(faults ? before : before.filter(([, path]) => path !== '/api/demo/faults'))
+  } finally { api.close(); vi.unstubAllEnvs() }
+})

@@ -222,6 +222,9 @@ Agents add items there and keep working around them.
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
 
 - 3 Nov: Logo direction chosen: open index, because source boundaries and a route to evidence read at 16 px on the cast’s 24-unit grid; Ink/Paper with sparse Salmon layout accents. Explainers source moves into `site/` for one reviewable app/site identity kit (#271).
+- 3 Nov: Added a 4th lane (Architecture) for #285–#288 because #286 auth must land before the Mac app #259 and hire-the-agent #274.
+- 3 Nov: SDK: TypeScript in-repo now, Python stdlib example, npm publish pending owner (#265).
+
 - 3 Nov: Overnight autonomous run: Opus orchestrates, Sol/Terra/Sonnet code, auto-merge on green (owner request).
 - 3 Nov: Design bar: YC-style clean (Linear/Vercel/Stripe), no childish or hyper-interactive UI; motion only for meaning.
 - 3 Nov: Day 1 of the feature run is the local app foundation (#270), because every later post needs a recordable clip.
@@ -237,6 +240,7 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ### Tue 3 Nov
 - Lane C #271: shipped the open-index brand kit, deterministic SVG/PNG/ICO/ICNS exports, app and explainers-source favicons/OG cards, naming audit, and two restrained cast refinements.
+- Lane D #285: typed TypeScript SDK, SDK-backed MCP tools, validated config and mechanical API routers; fixture delivery/idempotency, route parity and unchanged MCP e2e verified.
 - Architecture review ([REVIEW-NOV-2026.md](contracts/REVIEW-NOV-2026.md)): four do-now seams filed as #285 (SDK v0, config, route split), #286 (one spend gate, auth, injection hardening), #287 (live reconciler, health, metrics), #288 (audit trail, export, COMPLIANCE.md); fold-ins commented on #259, #273–#275, #277–#281.
 - Lane light #269: repo front door. Description, topics and homepage set; MIT licence (revertible until the owner's veto on #265), CONTRIBUTING, SECURITY, Code of Conduct, issue templates, CODEOWNERS; `npm run hygiene` in `check:fast`; `scripts/release.mjs` and a release workflow for one tag per feature day.
 - Lane A #270: keyboard-first Run/Writers, one event-derived state model, visible simulation rails, stage-review fixes #225–#231 and isolated recording/18 s clips; 11 production-browser checks pass, UC2 CLS 0.0138.

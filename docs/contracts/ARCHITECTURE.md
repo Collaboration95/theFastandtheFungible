@@ -41,7 +41,13 @@ environment readers, and drains run jobs before closing listeners and SQLite.
 `dataDir` determines APP_DB, PUBLISHER_DB and REPORT_DIR; fixtures force offline
 providers and simulated settlement. The web CLI and demo launcher remain usable.
 
-`mcp/server.ts` connects the SDK stdio transport to four schema-validated tools.
+`sdk/` provides a typed HTTP client and the shared, grant-checked run
+presentation. `server/config.ts` validates API/MCP configuration;
+`server/api/{runs,mcp,wallet,reports}.ts` register surface routers on one engine
+context. The SDK has no purchase method. See [SDK usage](../sdk.md).
+
+`mcp/server.ts` connects the MCP stdio transport to four schema-validated tools;
+`mcp/tools.ts` delegates their commands to the shared SDK.
 Without `RA_BACKEND_URL`, it boots the local engine; with one, it uses the API's
 MCP endpoints over HTTP. The API owns caps, daily reservations and persistent
 key-to-run mappings in app.db. No model-facing input can configure spending

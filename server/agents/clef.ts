@@ -1,3 +1,4 @@
+import { loadConfig } from '../config.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema } from '../../shared/contracts/index.js'
@@ -16,7 +17,7 @@ class ClefHttpError extends Error {
 /** Default live per-attempt timeout (#195): 2 attempts × 5 s, so a dead call fails the round within ~12 s, never a minute. */
 export const CLEF_DEFAULT_TIMEOUT_MS = 5000
 /** The live per-attempt timeout: `CLEF_TIMEOUT_MS` when set to a positive number, otherwise 5 s. Shared with `make preflight`. */
-export function clefTimeoutMs(configured: unknown = process.env.CLEF_TIMEOUT_MS): number {
+export function clefTimeoutMs(configured: unknown = loadConfig().CLEF_TIMEOUT_MS): number {
   const value = Number(configured)
   return configured !== undefined && configured !== '' && Number.isFinite(value) && value > 0 ? value : CLEF_DEFAULT_TIMEOUT_MS
 }
@@ -96,7 +97,7 @@ export class ClefDecisionProvider implements DecisionProvider {
    * fails the round, this call aborts and is not retried.
    */
   private async request(path: string, body?: unknown, validate?: (payload: unknown) => unknown, signal?: AbortSignal): Promise<unknown> {
-    const token = this.options.token ?? process.env.CLOUDFLARE_API_TOKEN
+    const token = this.options.token ?? loadConfig().CLOUDFLARE_API_TOKEN
     if (!token) throw new ClefUnavailableError('no credentials')
     for (let attempt = 0; attempt < 2; attempt++) {
       if (signal?.aborted) throw new ClefUnavailableError('abandoned')
@@ -142,7 +143,7 @@ export class ClefDecisionProvider implements DecisionProvider {
    * next call retries discovery, so one network blip at boot cannot fail every decision in the session.
    */
   async resolveAccount(): Promise<string> {
-    const configured = this.options.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
+    const configured = this.options.accountId ?? loadConfig().CLOUDFLARE_ACCOUNT_ID
     if (configured) return configured
     if (!this.account) {
       const lookup = this.request('/accounts').then(payload => {

@@ -1,3 +1,4 @@
+import { loadConfig } from './config.js'
 // Langfuse Cloud tracing (OpenTelemetry). Off unless LANGFUSE_ENABLED=1 and both keys are set;
 // without a started SDK every @langfuse/tracing call below is a cheap no-op.
 // Gate ①: traces carry only what the LLM and Clef were already allowed to see (free or granted
@@ -11,7 +12,7 @@ const SECRET_ENV = ['LLM_API_KEY', 'DEEPSEEK_API_KEY', 'GROQ_API_KEY', 'CLOUDFLA
 const PUBLISHER_SEED = /^XRPL_PUBLISHER_.+_SEED$/
 
 /** Replaces every configured secret value (and delivery-token-like headers) before export. */
-export function maskSecrets(data: string, env: NodeJS.ProcessEnv = process.env): string {
+export function maskSecrets(data: string, env: NodeJS.ProcessEnv = loadConfig()): string {
   let masked = data
   for (const name of [...SECRET_ENV, ...Object.keys(env).filter(key => PUBLISHER_SEED.test(key))]) {
     const value = env[name]
@@ -20,7 +21,7 @@ export function maskSecrets(data: string, env: NodeJS.ProcessEnv = process.env):
   return masked.replace(/("?(?:deliveryToken|authorization|x-delivery-token)"?\s*:\s*)"[^"]*"/gi, '$1"[REDACTED]"')
 }
 
-export const telemetryEnabled = (env: NodeJS.ProcessEnv = process.env) =>
+export const telemetryEnabled = (env: NodeJS.ProcessEnv = loadConfig()) =>
   env.LANGFUSE_ENABLED === '1' && Boolean(env.LANGFUSE_PUBLIC_KEY && env.LANGFUSE_SECRET_KEY)
 
 /** Starts the exporter once per process; returns a shutdown that flushes pending spans. */
@@ -32,7 +33,7 @@ export async function startTelemetry(): Promise<() => Promise<void>> {
     serviceName: 'researchagent-api', resourceDetectors: [],
     spanProcessors: [new LangfuseSpanProcessor({
       mask: ({ data }) => maskSecrets(typeof data === 'string' ? data : JSON.stringify(data)),
-      environment: process.env.LANGFUSE_TRACING_ENVIRONMENT || 'development',
+      environment: loadConfig().LANGFUSE_TRACING_ENVIRONMENT || 'development',
     })],
   })
   sdk.start()
@@ -52,7 +53,7 @@ export function traceRun<T>(name: string, run: RunInfo, fn: () => Promise<T>, su
     startActiveObservation(name, async observation => {
       observation.update({ input: { question: run.question, budget: money(run.budgetMinor) } })
       // Public traces open without a login: stage backups when the venue wifi or login fails.
-      if (process.env.LANGFUSE_PUBLIC_TRACES === '1') setActiveTraceAsPublic()
+      if (loadConfig().LANGFUSE_PUBLIC_TRACES === '1') setActiveTraceAsPublic()
       try { return await fn() }
       catch (error) { observation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'failed' }); throw error }
       finally {
