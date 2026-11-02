@@ -226,7 +226,7 @@ if (!stage) {
 
 if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet') {
   console.log('XRPL Testnet (settlement, used by make live)')
-  const { testnetLedger, testnetUrl, TESTNET_RECEIVER } = await import('../shared/xrpl.ts')
+  const { testnetLedger, testnetUrl } = await import('../shared/xrpl.ts')
   const { Wallet } = await import('xrpl')
   let ledger
   try {
@@ -252,7 +252,7 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
     // and refunds (D5) come out of the writer's own balance. Addresses are derived from the seeds in .env.
     const { paidSlugs, addressEnvName } = await import('./wallets.mjs')
     const { seedEnvName } = await import('../publisher/registry.ts')
-    const publishers = new Map([[process.env.XRPL_RECEIVER_ADDRESS || TESTNET_RECEIVER, 'fallback receiver']])
+    const publishers = new Map()
     for (const slug of paidSlugs()) {
       const seed = process.env[seedEnvName(slug)]
       if (!seed) { fail(`${slug}: ${seedEnvName(slug)} not set; run make wallets CREATE=1`); continue }
@@ -266,7 +266,7 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
         const { result } = await ledger.request({ command: 'account_info', account: address, ledger_index: 'validated' })
         const drops = Number(result.account_data.Balance)
         const line = `${name}: ${address} (${(drops / 1e6).toFixed(2)} XRP)`
-        if (name !== 'fallback receiver' && drops < 10_000_000 + refundDrops) fail(`${line}; too low to refund a purchase above the reserve; run make wallets`)
+        if (drops < 10_000_000 + refundDrops) fail(`${line}; too low to refund a purchase above the reserve; run make wallets`)
         else ok(line)
       } catch (error) {
         fail(`${name}: ${address} ${error?.data?.error === 'actNotFound' ? 'does not exist (Testnet reset?); run make wallets' : 'check failed'}`)
