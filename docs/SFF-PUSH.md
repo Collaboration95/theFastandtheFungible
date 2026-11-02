@@ -225,6 +225,8 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
+- MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
+
 ### Tue 3 Nov
 - Planned the feature-a-day run (9 days, 5–13 Nov, slack of 4), repo identity and the post calendar; filed #269–#281; owner-only items moved to #265 ([calendar](#feature-a-day-5-13-nov)).
 - Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
