@@ -56,3 +56,13 @@ Only the web port is published, on 127.0.0.1. `WEB_PORT=5200` (or `OFFSET=100`) 
 
 The 10 Oct live demo ran on Google Cloud Run. That deploy (`make cloudrun`, `docker/cloudrun/`) was removed after the talk and the Google Cloud project was shut down. The last commit that has it is `ce77f59`.
 
+
+## Publish the explainers site
+
+`site/` on main owns the published pages and brand assets. From a clean,
+up-to-date main checkout run `python3 scripts/site-publish.py`; it fetches
+`gh-pages`, checks for conflicting edits, copies the site into a temporary
+worktree, commits and pushes. It leaves branch-only files and `evolution/data.js`
+untouched, including the evolution refresh tools. Reconcile any reported conflict
+before retrying. Removed source files are not deleted from the deploy branch.
+Slides and notes keep their presentation chrome instead of the shared header.
