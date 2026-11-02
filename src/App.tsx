@@ -386,7 +386,7 @@ export default function App() {
         {model.budgetBlocked && <p className="ra-note" role="status">Budget too small for eligible sources. The free answer is kept; start a new question to change the cap.</p>}
         {model.phase === 'stopped' && <p role="status">{model.stopMessage}</p>}
         <div className="ra-purchase-slot">{[...intents].reverse().map(intent => <Purchase key={intent.intentId} run={shown} intent={intent} onRetry={id => void retry(id)} onReceipt={setReceipt} />)}{!intents.length && <p className="ra-note">{finished ? 'No purchases on this run.' : 'Purchase activity will appear here. Policy code checks each source against your cap.'}</p>}</div>
-        <details className="ra-decision-details"><summary>Purchase decisions · {shown.decisions.length} rounds</summary><DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>
+        <details className="ra-decision-details"><summary>Purchase decisions · {shown.decisions.length} {shown.decisions.length === 1 ? 'round' : 'rounds'}</summary><DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>
       </aside>
       <RunTape run={shown} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
     </div>
