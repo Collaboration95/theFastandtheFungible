@@ -237,7 +237,7 @@ Significant product, design and process decisions, newest first. One line each: 
 ### Tue 3 Nov
 - Architecture review ([REVIEW-NOV-2026.md](contracts/REVIEW-NOV-2026.md)): four do-now seams filed as #285 (SDK v0, config, route split), #286 (one spend gate, auth, injection hardening), #287 (live reconciler, health, metrics), #288 (audit trail, export, COMPLIANCE.md); fold-ins commented on #259, #273–#275, #277–#281.
 - Lane light #269: repo front door. Description, topics and homepage set; MIT licence (revertible until the owner's veto on #265), CONTRIBUTING, SECURITY, Code of Conduct, issue templates, CODEOWNERS; `npm run hygiene` in `check:fast`; `scripts/release.mjs` and a release workflow for one tag per feature day.
-- Lane A #270: keyboard-first Run/Writers, one event-derived state model, visible simulation rails, stage-review fixes #225–#231 and isolated recording/18 s clips; 10 production-browser checks pass, UC2 CLS 0.0138.
+- Lane A #270: keyboard-first Run/Writers, one event-derived state model, visible simulation rails, stage-review fixes #225–#231 and isolated recording/18 s clips; 11 production-browser checks pass, UC2 CLS 0.0138.
 - Planned the feature-a-day run (9 days, 5–13 Nov, slack of 4), repo identity and the post calendar; filed #269–#281; owner-only items moved to #265 ([calendar](#feature-a-day-5-13-nov)).
 - Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
 

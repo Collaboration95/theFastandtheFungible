@@ -21,6 +21,7 @@ export function purchaseState(run: RunSnapshot, intent: PurchaseIntent) {
     explorerUrl: receipt?.xrpl?.explorerUrl, pendingSince: run.events.find(event => event.type === 'PURCHASE' && event.data?.intentId === intent.intentId && event.data?.status === 'SUBMITTING')?.at,
   }
 }
+const SCOUT_POSE = { idle: 'idle', clarifying: 'clarifying', planning: 'clarifying', searching: 'searching', deciding: 'weighing', buying: 'paying', verifying: 'verifying', refunding: 'caught-a-lie', writing: 'verifying', done: 'done', stopped: 'stopped', failed: 'stopped' } as const
 export function deriveRunState(run?: RunSnapshot, pending?: 'clarify' | 'plan') {
   const purchases = run?.intents.map(intent => purchaseState(run, intent)) ?? []
   const terminal = isTerminal(run)
@@ -35,7 +36,7 @@ export function deriveRunState(run?: RunSnapshot, pending?: 'clarify' | 'plan') 
   const stopMessage = inFlight.length ? 'No new purchases. A purchase already in flight may still settle.' : paidUnused.length ? 'No new purchases. An earlier payment completed; its source is not used in this answer.' : 'No new purchases will start. Earlier payments remain recorded.'
   const rows = run ? tapeRows(run) : []
   const now = rows.find(row => row.state === 'now' && !QUIET.has(row.kind)) ?? [...rows].reverse().find(row => row.state !== 'todo' && !QUIET.has(row.kind))
-  return { phase, terminal, purchases, payments: run?.receipts.filter(item => item.runId === run.runId) ?? [], rows, now, rail: railLabel(run?.labels.settlement), stopMessage,
+  return { phase, scoutPose: SCOUT_POSE[phase], terminal, purchases, payments: run?.receipts.filter(item => item.runId === run.runId) ?? [], rows, now, rail: railLabel(run?.labels.settlement), stopMessage,
     status: phase === 'stopped' ? stopMessage : phase === 'failed' ? run?.error ?? 'Research paused. Last verified answer kept.' : now?.meta ?? (phase === 'idle' ? 'Ready for a question' : phase === 'clarifying' ? 'Choose the research focus' : 'Review the search plan'),
     budgetBlocked: !!run?.decisions.some(round => round.rows.some(row => row.verdict === 'SKIP_OVER_BUDGET')) && !purchases.length,
   }

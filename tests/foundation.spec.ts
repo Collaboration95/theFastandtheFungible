@@ -40,6 +40,13 @@ test('UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views,
   expect(axe.violations.filter(item => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([])
   await page.screenshot({ path: '.playwright/evidence/after-uc2.png' })
   await info.attach('UC2 after', { path: '.playwright/evidence/after-uc2.png', contentType: 'image/png' })
+  for (const width of [320, 360, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 844 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+  await page.addStyleTag({ content: 'html { font-size: 200% }' })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.setViewportSize({ width: 1280, height: 720 })
   await page.keyboard.press('Control+n')
   await expect(page.getByRole('textbox', { name: 'Your question' })).toBeFocused()
   await expect(page.getByRole('textbox', { name: 'Your question' })).toHaveValue('')

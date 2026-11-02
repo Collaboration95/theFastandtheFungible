@@ -27,6 +27,7 @@ import ReputationPanel from './components/ReputationPanel'
 import CommandPalette, { type Command } from './components/CommandPalette'
 import { deriveRunState } from './runState'
 import { modifier } from './shortcuts'
+import Cast from './components/Cast'
 import { DEMO_QUESTIONS } from '../shared/contracts/examples'
 
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
@@ -330,7 +331,7 @@ export default function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-  const labels = <><nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav><span className="ra-phase" role="status">{model.phase}</span><Modes quiet labels={shown?.labels} configured={health.labels} /><button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands">Commands <kbd>{modifier}K</kbd></button></>
+  const labels = <><nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav><span className="ra-phase" role="status"><Cast who="scout" pose={model.scoutPose} size={20} />{model.phase}</span><Modes quiet labels={shown?.labels} configured={health.labels} /><button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands">Commands <kbd>{modifier}K</kbd></button></>
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
