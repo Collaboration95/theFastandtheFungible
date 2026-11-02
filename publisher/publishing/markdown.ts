@@ -1,6 +1,8 @@
 import { readdir, readFile, stat } from 'node:fs/promises'
 import { basename, join } from 'node:path'
 import { z } from 'zod'
+import { FactCoverSchema } from '../../shared/contracts/manifest.js'
+import { authorFactMenu } from './fact-menu.js'
 import { sha256 } from '../../shared/manifest.js'
 import { sharesRun, validateWriterCorpus, type Article, type WriterCorpus } from '../../shared/contracts/writers.js'
 
@@ -13,6 +15,8 @@ const Meta = z.object({
   synthetic: z.enum(['true', 'false']).default('false'),
   // Public questions/topics only. Never put the answer in a heading or this field.
   questions: z.string().default(''),
+  entity: FactCoverSchema.shape.entity.optional(),
+  measure: FactCoverSchema.shape.measure.optional(),
 }).strict()
 
 /** Deliberately small front matter: scalar key: value lines, no YAML execution/coercion. */
@@ -42,10 +46,11 @@ export function parseMarkdown(text: string, slug: string, id: string, publishedA
     publisherSlug: slug, writerSlug: slug, title: meta.title,
     publishedAt, tier: meta.tier, priceMinor,
     abstract: meta.abstract, tags, family: `${slug}-${id}`, body, passages,
+    factMenu: authorFactMenu({ tier: meta.tier, passages }, tags, { entity: meta.entity, measure: meta.measure }),
     synthetic: meta.synthetic === 'true',
   }
   // Public headings are intentionally repeated in the body. Gate 1 still forbids an 8-word run.
-  if (article.tier === 'PAID' && sharesRun(JSON.stringify({ title: article.title, abstract: article.abstract, tags }), body)) {
+  if (article.tier === 'PAID' && sharesRun(JSON.stringify({ title: article.title, abstract: article.abstract, tags, factMenu: article.factMenu }), body)) {
     throw new Error('Public title, abstract or topics share 8+ consecutive words with premium text; write shorter topic labels and a separate abstract')
   }
   return article

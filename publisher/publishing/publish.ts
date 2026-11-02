@@ -95,6 +95,7 @@ export async function publishSite(options: PublishOptions) {
         // The cache stays alongside private content; loadWriterCorpus merges it at next startup.
         log('Search: hybrid · Workers AI embeddings')
       } else log('Search: keyword · live embeddings off (SEARCH_EMBEDDINGS=live enables hybrid)')
+      log('Metadata: deterministic · headings/front matter → signed fact menu · no LLM calls')
       const seconds = (performance.now() - started) / 1000
       log(`Published ${corpus.articles.length} articles · unverified writer · ${corpus.publishers[0].synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED'}`)
       log(`Site ${baseUrl}/w/${options.slug}/`)

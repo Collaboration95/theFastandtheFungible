@@ -20,10 +20,14 @@ export async function main() {
     const port = Number(values.port ?? 8790 + Number(process.env.OFFSET || 0))
     if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('--port must be an integer from 0 to 65535')
     const folder = resolve(positionals[0])
-    const site = await publishSite({ folder, slug: values.slug ?? basename(folder), name: values.name, port, rail })
-    const shutdown = () => { site.server.close(); site.server.closeAllConnections() }
+    let site: Awaited<ReturnType<typeof publishSite>> | undefined
+    let stopping = false
+    const shutdown = () => { stopping = true; site?.server.close(); site?.server.closeAllConnections() }
+    // Install before readiness output: a terminal/host may stop us immediately on ready.
     process.once('SIGINT', shutdown)
     process.once('SIGTERM', shutdown)
+    site = await publishSite({ folder, slug: values.slug ?? basename(folder), name: values.name, port, rail })
+    if (stopping) shutdown()
   } catch (error) {
     // Library failures can include submitted credentials. Only our actionable messages leave this boundary.
     const message = error instanceof Error ? error.message : ''

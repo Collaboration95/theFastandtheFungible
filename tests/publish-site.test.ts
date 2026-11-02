@@ -1,10 +1,13 @@
+import { spawn } from 'node:child_process'
+import { once } from 'node:events'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { Wallet } from 'xrpl'
 import { publishSite } from '../publisher/publishing/publish.js'
 import { markdownCorpus, parseMarkdown } from '../publisher/publishing/markdown.js'
+import { loadWriterCorpus } from '../publisher/corpus.js'
 import { loadLocalWriters } from '../publisher/local-writers.js'
 import { seedEnvName } from '../publisher/registry.js'
 import { PublisherClient } from '../server/publisher-client.js'
@@ -42,6 +45,9 @@ describe('Markdown folder → paid writer (#277)', () => {
     const candidate = retrieved.candidates.find(c => c.tier === 'PAID')!
     expect(candidate.verification).toBe('unverified writer')
     expect(verifyManifestSignature(candidate.manifest!)).toBe(true)
+    expect(candidate.manifest!.schemaVersion).toBe(2)
+    expect(candidate.manifest!.claims.some(c => c.covers)).toBe(true)
+    for (const claim of candidate.manifest!.claims) for (const field of Object.values(claim.covers ?? {})) expect(field).not.toMatch(/\d/)
     const unpaid = await fetch(site.baseUrl + candidate.url)
     expect(unpaid.status).toBe(402)
     expect(sharesRun(await unpaid.text(), corpus.articles[0].body)).toBe(false)
@@ -58,6 +64,42 @@ describe('Markdown folder → paid writer (#277)', () => {
     const paidCandidate = result.candidates.find(c => c.resourceId === result.intents[0].resourceId)!
     await manager.purchase({ runId: run.runId, candidate: paidCandidate, intentId: result.intents[0].intentId })
     expect(store.getRun(run.runId).receipts).toHaveLength(1)
+  })
+
+  it('the repo bin starts on an ephemeral port and exits cleanly on SIGTERM', async () => {
+    const root = await temporary()
+    const child = spawn(process.execPath, ['scripts/publish-site.mjs', 'examples/writer-starter', '--slug', 'bin-writer', '--rail', 'simulated', '--port', '0'], {
+      env: { ...process.env, LOCAL_WRITERS_DIR: root, SEARCH_EMBEDDINGS: 'off', PUBLISHER_FAULTS: '0' }, stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    let output = ''
+    const exited = once(child, 'exit')
+    try {
+      await new Promise<void>((done, reject) => {
+        const timer = setTimeout(() => reject(new Error('CLI did not become ready')), 8000)
+        child.stdout.on('data', chunk => { output += String(chunk); if (output.includes('Folder → searchable, payable writer:')) { clearTimeout(timer); done() } })
+        child.once('exit', code => { clearTimeout(timer); if (!output.includes('Folder →')) reject(new Error(`CLI exited ${code}`)) })
+      })
+      child.kill('SIGTERM')
+      expect((await exited)[0]).toBe(0)
+      expect(output).toContain('SIMULATED')
+      vi.stubEnv('LOCAL_WRITERS_DIR', root)
+      expect((await loadWriterCorpus()).publishers.some(p => p.slug === 'bin-writer')).toBe(true)
+    } finally { if (child.exitCode === null) child.kill('SIGKILL') }
+  }, 10000)
+
+  it('labels real author content separately from synthetic starters', async () => {
+    const root = await temporary()
+    const folder = join(root, 'input'); await mkdir(folder)
+    await writeFile(join(folder, 'article.md'), (await readFile('examples/writer-starter/1-capacity.md', 'utf8')).replace('synthetic: true', 'synthetic: false'))
+    const site = await publishSite({ folder, slug: 'real-author', root: join(root, 'writers'), port: 0, rail: 'simulated', env: {}, log: () => {} })
+    cleanup.push(() => new Promise<void>(done => { site.server.closeAllConnections(); site.server.close(() => done()) }))
+    const client = new PublisherClient({ baseUrl: site.baseUrl })
+    expect((await client.registry())[0]).toMatchObject({ synthetic: false, verification: 'unverified writer' })
+    const candidate = (await retrieve(client, 'solar electricity')).candidates[0]
+    expect(candidate.license.kind).toBe('AUTHOR SUPPLIED')
+    const html = await (await fetch(site.baseUrl + '/w/real-author/')).text()
+    expect(html).toContain('AUTHOR SUPPLIED · unverified writer')
+    expect(html).not.toContain('SYNTHETIC · fictional writer')
   })
 
   it('runs the eight-word leak oracle against every new paid body, including body queries and HTML', async () => {

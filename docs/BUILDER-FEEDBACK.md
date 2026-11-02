@@ -1,6 +1,6 @@
 # Builder feedback: six weeks of XRPL integration
 
-A living record for the SFF judges. **30 items: 15 implementation findings below,
+A living record for the SFF judges. **31 items: 16 implementation findings below,
 plus the 15 September research submissions in the appendix.** This is a source
 and history audit recorded on **2 Nov 2026**, not a fresh live-network test.
 The dates in the log are audit dates; the commit column dates the original work.
@@ -64,6 +64,7 @@ no faucet, live models or Testnet funds are required.
 
 | ID · recorded | Area | What happened / evidence | Our workaround (path) | Suggested upstream fix | Severity | Mainnet impact |
 |---|---|---|---|---|---|---|
+| B16 · 2026-11-03 | XRPL tooling | Observed: #277 Testnet demo settled successfully but the Node process retained sockets after cleanup. Code-derived cause: parallel account/fee/ledger requests could create three clients before any connected, retaining only the last. Evidence: `docs/evidence/publish-site-277.md`, `tests/xrpl-connection.test.ts`. | `shared/xrpl.ts`: share one in-flight connection promise; close waits for it. No second payment was made. | Document sharing a connecting client in concurrent RPC examples; this is our wrapper bug, not an XRPL ledger defect. | medium | Resource lifetime issue on any rail; no payment correctness change. |
 | B01 · 2026-11-02 | XRPL | A single account must not sign concurrent payments with the same Sequence; integration `36ae0b7`. | `server/xrpl.ts`: hold the payer queue through the facilitator response. | Provide a per-account sequence queue example, including multiple processes. | critical | In-process locking is done; distributed signer coordination is a gap. |
 | B02 · 2026-11-02 | XRPL | A restart after signing loses payment identity unless persisted first; `tests/xrpl.test.ts` restart case. | `server/xrpl.ts`, `server/store.ts`: persist signed blob before send. | Include a durable outbox in the quickstart. | critical | Done locally; backup/recovery and durable production storage remain gaps. |
 | B03 · 2026-11-02 | XRPL | A missing tx lookup can coexist with an advanced payer sequence; `tests/xrpl.test.ts` reservation case. | `server/xrpl.ts`: validated ledger + LastLedgerSequence + account Sequence proof, otherwise pending. | Specify pending and provable expiry in SDK return types. | critical | Done locally; reconciliation service and alarms are gaps. |

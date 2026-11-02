@@ -36,3 +36,8 @@ LinkedIn angle: the supply side of agent commerce can fit in one command:
 Markdown, a signed manifest and a Testnet wallet. A fixture agent found the new
 writer and paid for proof-verified evidence in 19.30 seconds. Public topic labels
 help it decide; the full article stays behind x402.
+
+Cleanup observation: the first demo process retained WebSockets after the verified
+read. It was terminated after persisting its receipt, without another purchase.
+The concurrent-connect race in our `testnetLedger` wrapper is fixed and covered
+by `tests/xrpl-connection.test.ts`; a subsequent read-only lookup exited cleanly.

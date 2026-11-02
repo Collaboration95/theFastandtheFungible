@@ -173,7 +173,11 @@ The existing corpus rules apply: 600–1,400 words and at least four paragraphs.
 Filenames and writer slugs use lowercase letters, numbers and hyphens. Public
 abstracts, titles and topic labels must not reproduce eight consecutive premium
 words. Short headings and optional `questions` supply public topics; keep answers
-in the body. Metadata generation is deterministic, with no LLM calls.
+in the body. The v2 fact menu uses headings and front matter as vocabulary, with the existing
+entity/measure catalogue as a fallback. Optional `entity` and `measure` noun
+phrases override that vocabulary; a menu is bound only to passages that actually
+mention both phrases. Digits and answer values are rejected by the menu schema.
+Metadata generation is deterministic, with no LLM calls.
 Search uses the existing hybrid index when `SEARCH_EMBEDDINGS=live` is explicitly
 set with Workers AI credentials; otherwise it says keyword search. Enabling live
 embeddings sends the existing index text to Workers AI and uses that provider.

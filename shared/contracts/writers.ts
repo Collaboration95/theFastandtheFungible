@@ -12,7 +12,7 @@ export const PublisherSchema = z.object({
   domain: z.string().min(1), wallet: xrplAddress.optional(), pubKey: z.string().regex(/^[0-9A-F]{66}$/i).optional(),
   prices: z.record(z.string(), z.number().int().nonnegative()), licence: z.string().min(1),
   accent: z.string().min(1), heroQuote: z.string().min(1), bio: z.string().min(1), synthetic: z.boolean(), verification: z.literal('unverified writer').optional(),
-})
+}).refine(p => p.synthetic || p.verification === 'unverified writer', { message: 'Author-supplied writers must be labelled unverified writer' })
 /** For an independent writer, writer = publisher (same slug). */
 export const WriterSchema = z.object({ slug, name: z.string().min(1), publisherSlug: slug, bio: z.string().min(1), voice: z.string().min(1) })
 export const PassageSchema = z.object({ id: z.string().regex(/^[A-Za-z0-9._-]+$/), heading: z.string().optional(), text: z.string().min(1) })
