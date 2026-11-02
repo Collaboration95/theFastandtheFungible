@@ -59,7 +59,7 @@ export default function Sources({ run, onOpen }: SourcesProps) {
   return <section className="ra-strip" aria-label="Sources">
     {run.candidates.length === 0
       ? <div className="ra-pills"><b>Sources</b><span className="ra-count">Searching…</span></div>
-      : <div className="ra-pills"><b>{cards.length} sources</b>
+      : <div className="ra-pills"><b>{cards.length} {cards.length === 1 ? 'source' : 'sources'}</b>
         <span className="ra-count"><span><em>{read}</em> read</span>{skipped > 0 && <span><em>{skipped}</em> not bought</span>}</span>
         {named.map(({ candidate, state }) => <button key={identity(candidate)} type="button" className={`ra-pill st-${state.tone}`} disabled={!onOpen} onClick={() => open(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`}><span className="ra-mono" aria-hidden="true">{initials(candidate.publisher)}</span>{candidate.publisher}<em>{state.bought ? '✓ ' : ''}{state.label}</em></button>)}
         {/* Gate 5: only a keyword-only search needs saying; hybrid is the quiet default. */}

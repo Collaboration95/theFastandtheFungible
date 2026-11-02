@@ -31,7 +31,7 @@ export default function Budget({ run }: { run: RunSnapshot }) {
   const refunded = run.refundedMinor ?? run.intents.reduce((sum, item) => sum + (item.status === 'REFUNDED' ? item.refund?.amountMinor ?? 0 : 0), 0)
   const pct = (minor: number) => `${run.budgetMinor ? Math.min(100, minor / run.budgetMinor * 100) : 0}%`
   return <section className={`ra-panel ra-wallet${run.budgetMinor === 0 ? ' is-zero' : ''}`} aria-label="Prompt budget">
-    <div className="ra-panel-h"><h2><Cast who="purse" pose={/simulated/i.test(run.labels.settlement) ? 'simulated' : remaining <= 0 ? 'empty' : refunded > 0 ? 'refunded' : run.reservedMinor > 0 ? 'spending' : 'full'} size={48} /> Budget for this question</h2><span className="mono">cap {money(run.perSourceCapMinor)} / source</span></div>
+    <div className="ra-panel-h"><h2><Cast who="purse" pose={remaining <= 0 ? 'empty' : refunded > 0 ? 'refunded' : run.reservedMinor > 0 ? 'spending' : 'full'} size={24} /> Budget for this question</h2><span className="mono">cap {money(run.perSourceCapMinor)} / source</span></div>
     <div className="ra-amt"><span className="ra-odo" aria-live="polite">{money(run.budgetMinor === 0 ? 0 : shown)}</span><span className="ra-of">{run.budgetMinor === 0 ? 'free sources only' : `left of ${money(run.budgetMinor)}`}</span>
       {run.reservedMinor > 0 && <span className="ra-delta">holding {money(run.reservedMinor)}</span>}</div>
     <div className="ra-meter" role="meter" aria-label="Spent plus held budget" aria-valuemin={0} aria-valuemax={run.budgetMinor} aria-valuenow={run.spentMinor + run.reservedMinor}>

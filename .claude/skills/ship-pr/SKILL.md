@@ -8,7 +8,7 @@ argument-hint: <worktree path> "<closes #issues>"
 
 Run from the worktree given in the arguments. Stop and report at the first failing step; never skip one.
 
-1. `git fetch -q origin && git rebase origin/main`. If the branch was cut from `origin/main`, run `git branch --unset-upstream` first so a bare push can never target main.
+1. `git fetch -q origin && git rebase origin/main`. If the branch was cut from `origin/main`, run `git branch --unset-upstream 2>/dev/null || true` first so a bare push can never target main ("no upstream" means it's already safe; carry on).
 2. `npm run check:fast`. Fix failures here, not after the PR.
 3. `git push -u origin HEAD`, then `gh pr create --base main` and a body that fills in every section of `.github/pull_request_template.md`. Start with the **Focus / How / Metric** lines, naming the judging criterion the PR serves (see `docs/JUDGING-CRITERIA.md`), or `Upkeep`. Use `--body-file`; `gh` ignores the template when you pass `--body`.
 4. Review: only inside an overnight/orchestrated run, or if the user asked for one. Then run `scripts/orch/review.sh <worktree> <pr> "<issues>"`, stop on BLOCKERS, and carry anything under LOOSENED into your update. Otherwise skip this step.
