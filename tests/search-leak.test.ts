@@ -1,5 +1,5 @@
 // Gate 1 (#124): /search never returns 8 consecutive words of any paid body.
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { once } from 'node:events'
 import { readFileSync } from 'node:fs'
 import { miniCorpus } from './fixtures/corpus-mini/index.js'
@@ -7,8 +7,11 @@ import { createPublisherApp } from '../publisher/routes.js'
 import { loadWriterCorpus } from '../publisher/corpus.js'
 import { ABSTRACT_LEAK_WORDS, sharesRun } from '../shared/contracts/writers.js'
 
-const cleanups: (() => Promise<void>)[] = []
-afterEach(async () => { for (const cleanup of cleanups.splice(0)) await cleanup() })
+// Match sharesRun's tokenization exactly; index bodies once, not once per response.
+function runs(text: string): Set<string> {
+  const words = text.toLowerCase().match(/[\p{L}\p{N}]+(?:['’][\p{L}]+)?/gu) ?? []
+  return new Set(Array.from({ length: Math.max(0, words.length - ABSTRACT_LEAK_WORDS + 1) }, (_, i) => words.slice(i, i + ABSTRACT_LEAK_WORDS).join(' ')))
+}
 
 /** Seeded so a failure is reproducible. */
 function rng(seed: number) {
@@ -34,15 +37,27 @@ describe('search leak gate (#124)', async () => {
   const randomQueries = Array.from({ length: 20 }, () => Array.from({ length: 3 + Math.floor(random() * 10) }, () => words[Math.floor(random() * words.length)]).join(' '))
   const paidRuns = paid.map(a => a.body.split(/\s+/).slice(0, 40).join(' '))
 
-  async function serve() {
+  const paidIndex = paid.map(article => runs(article.body))
+  let base: string
+  let cleanup: () => Promise<void>
+  beforeAll(async () => {
     const app = createPublisherApp({ secret: 'leak-test', journal: ':memory:', rail: 'simulated', writers: corpus, env: {} })
     await app.locals.ready
     await app.locals.writersReady
     const server = app.listen(0, '127.0.0.1')
     await once(server, 'listening')
-    cleanups.push(async () => { await new Promise<void>(done => server.close(() => done())); app.locals.journal.close() })
-    return `http://127.0.0.1:${(server.address() as { port: number }).port}`
-  }
+    cleanup = async () => { await new Promise<void>(done => server.close(() => done())); app.locals.journal.close() }
+    base = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+  })
+  afterAll(async () => { await cleanup?.() })
+
+  it('indexed comparisons agree with sharesRun on paid bodies and token boundaries', () => {
+    const samples = [paidRuns[0], '', 'one two three four five six seven', "ONE two three four five six seven can't", "one, two three four five six seven can’t"]
+    for (const sample of samples) {
+      const sampleRuns = runs(sample)
+      expect([...sampleRuns].some(run => paidIndex[0].has(run))).toBe(sharesRun(sample, paid[0].body))
+    }
+  })
 
   it('the oracle catches a leak', () => {
     expect(paid.length).toBeGreaterThan(0)
@@ -50,7 +65,6 @@ describe('search leak gate (#124)', async () => {
   })
 
   it(`no search response shares ${ABSTRACT_LEAK_WORDS} consecutive words with any paid body`, async () => {
-    const base = await serve()
     let responses = 0
     for (const publisher of corpus.publishers) {
       for (const q of [...QUESTIONS, ...randomQueries, ...paidRuns]) {
@@ -58,7 +72,8 @@ describe('search leak gate (#124)', async () => {
         expect(response.status).toBe(200)
         const text = await response.text()
         responses++
-        for (const article of paid) expect(sharesRun(text, article.body), `${publisher.slug} leaked ${article.articleId} for "${q}"`).toBe(false)
+        const responseRuns = runs(text)
+        for (const [i, article] of paid.entries()) expect([...responseRuns].some(run => paidIndex[i].has(run)), `${publisher.slug} leaked ${article.articleId} for "${q}"`).toBe(false)
       }
     }
     expect(responses).toBe(corpus.publishers.length * (QUESTIONS.length + 20 + paidRuns.length))
@@ -73,13 +88,11 @@ describe('search leak gate (#124)', async () => {
     ['k not a number', 'q=kestrel&k=five'],
     ['repeated q', 'q=a&q=b'],
   ])('rejects %s with 400', async (_name, query) => {
-    const base = await serve()
     const response = await fetch(`${base}/w/load-factor/search?${query}`)
     expect(response.status).toBe(400)
   })
 
   it('caps results at k', async () => {
-    const base = await serve()
     const hits = await (await fetch(`${base}/w/load-factor/search?q=TSMC%20kestrel%20capacity&k=1`)).json() as unknown[]
     expect(hits).toHaveLength(1)
   })
