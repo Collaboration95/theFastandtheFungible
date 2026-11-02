@@ -210,6 +210,19 @@ section (feature, visual, number, takeaway) and a clip from `make clip`
 Everything only the owner can do lives in **#265** (pinned, `needs-human`).
 Agents add items there and keep working around them.
 
+## Decisions log
+
+Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
+
+- 3 Nov: Overnight autonomous run: Opus orchestrates, Sol/Terra/Sonnet code, auto-merge on green (owner request).
+- 3 Nov: Design bar: YC-style clean (Linear/Vercel/Stripe), no childish or hyper-interactive UI; motion only for meaning.
+- 3 Nov: Day 1 of the feature run is the local app foundation (#270), because every later post needs a recordable clip.
+- 3 Nov: Electron chosen over Tauri for the Mac app (#259): the backend is Node and runs unchanged.
+- 3 Nov: Apple Developer ID: yes, owner sets it up later (#265). Until then the app is unsigned with a signing pipeline ready.
+- 3 Nov: Nightly scorecard runs locally on the owner's Mac, not in CI.
+- 3 Nov: Owner-only tasks live in pinned issue #265.
+- 3 Nov: Cloud Run held in reserve; local-first.
+
 ## Changelog
 
 ### Tue 3 Nov

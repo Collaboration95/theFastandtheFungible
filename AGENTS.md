@@ -35,12 +35,9 @@
 
 - The project runs hands-off: agents plan, build, ship and merge in loops. Agents
   have full authority to merge to `main` once the merge gate passes.
-- Model split, by share of work:
-  - **about 50%: GPT-6.1 Sol (Codex)** for coding and implementation;
-  - **about 30%: Claude Opus at medium effort** for higher-order thinking:
-    planning, design, product calls, reviewing direction;
-  - **about 20%: Claude Sonnet** for lighter thinking work: writing, summaries,
-    post drafts, triage.
+- **Coding is about 70–80% GPT-6.1 Sol (Codex)** for bigger features, and **GPT-6.1 Terra** for small, well-scoped changes; the rest is Claude Sonnet.
+- **Claude Opus (medium) orchestrates:** it holds context, decides next steps, reviews direction, and only plans large re-architecture itself. It delegates all code.
+- If Codex usage runs out, Sonnet takes over coding.
 - Prefer fewer, larger PRs: bundle related issues into one PR rather than
   splitting for parallelism. Many small PRs mean more CI waits and rebases.
   Run at most about three lanes at once.
