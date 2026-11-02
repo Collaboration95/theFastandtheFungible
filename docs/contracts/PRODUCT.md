@@ -31,7 +31,7 @@ trust D6, x402 v2 D7, clarify D8, free-text gaps D10. Hard gates:
 UC1 spends S$0 because free sources suffice. UC2 (the main case) buys a paid
 article that changes the answer. UC3 catches a bad actor, refunds it on Testnet
 and quarantines it. The questions run end to end (`tests/scenarios`, `make smoke`); see
-[§11](../FINAL-PUSH.md#11-demo-use-cases-questions-are-drafts-until-the-corpus-exists).
+[§11](../FINAL-PUSH.md#11-demo-use-cases-d16-the-corpus-story-bible-locks-the-final-wording).
 
 ## Limits
 
