@@ -262,7 +262,7 @@ describe('premium leak oracle', () => {
     }
     const paid = corpus.articles.find(a => a.articleId === UC2.expected.round1)!
     expect(() => assertNoLeaks([{ kind: 'poisoned', runId: 'run-a', raw: JSON.stringify(paid.passages[0].text), grants: [] }], corpus)).toThrow(`leaked ${paid.articleId}`)
-  }, 30_000) // the oracle scans every paid article; a loaded CI runner exceeded the 5 s default
+  })
   it('requires the grant to match the observation run, article and version', () => {
     const paid = corpus.articles.find(a => a.articleId === UC2.expected.round1)!
     const grant = { runId: 'run-a', resourceId: paid.articleId, version: paid.version, intentId: 'i', contentDigest: 'd', grantedAt: new Date().toISOString() }

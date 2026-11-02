@@ -233,6 +233,8 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
+- 2026-11-03: Reused test search indexes and optimized leak-oracle comparisons to shorten hard-gate runs without changing coverage.
+
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 
 ### Tue 3 Nov

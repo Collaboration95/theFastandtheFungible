@@ -217,7 +217,7 @@ export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus)
       }
       if (!raws.has(observation)) raws.set(observation, new Set(runsOf(observation.raw)))
       const seen = raws.get(observation)!
-      for (const run of runs) if (seen.has(run) && !grantedRuns.has(run)) throw new Error(`${observation.kind} leaked ${article.articleId} before its run/version grant: ${run}`)
+      for (const run of seen) if (runs.has(run) && !grantedRuns.has(run)) throw new Error(`${observation.kind} leaked ${article.articleId} before its run/version grant: ${run}`)
     }
   }
 }
