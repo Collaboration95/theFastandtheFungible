@@ -10,7 +10,7 @@ Run from the worktree given in the arguments. Stop and report at the first faili
 
 1. `git fetch -q origin && git rebase origin/main`. If the branch was cut from `origin/main`, run `git branch --unset-upstream` first so a bare push can never target main.
 2. `npm run check:fast`. Fix failures here, not after the PR.
-3. `git push -u origin HEAD`, then `gh pr create --base main` with `Closes #…` lines and a short body: what changed, behaviour changes, how it was tested.
+3. `git push -u origin HEAD`, then `gh pr create --base main` and a body that fills in every section of `.github/pull_request_template.md`. Start with the **Focus / How / Metric** lines, naming the judging criterion the PR serves (see `docs/JUDGING-CRITERIA.md`), or `Upkeep`. Use `--body-file`; `gh` ignores the template when you pass `--body`.
 4. Review: only inside an overnight/orchestrated run, or if the user asked for one. Then run `scripts/orch/review.sh <worktree> <pr> "<issues>"`, stop on BLOCKERS, and carry anything under LOOSENED into your update. Otherwise skip this step.
 5. `gh pr checks <pr> --watch --fail-fast`. Never merge before CI is green and never poll with `sleep`.
 6. Merge: `gh pr merge <pr> --squash`, or `--rebase` when the commits are deliberately separate so one can be reverted alone. If GitHub reports mergeability `UNKNOWN`, re-check `gh pr view <pr> --json mergeable` a few times before retrying; on `CONFLICTING`, rebase and go back to step 2. Never hide `gh` errors with `>/dev/null 2>&1`.

@@ -19,7 +19,9 @@
   - real citations;
   - everything simulated or substituted is labelled.
 - Merge gate: `npm run check:fast` passes and CI is green. Ship with the
-  `ship-pr` skill.
+  `ship-pr` skill. PR bodies follow `.github/pull_request_template.md`, which
+  opens with the judging criterion the PR serves
+  ([docs/JUDGING-CRITERIA.md](docs/JUDGING-CRITERIA.md)).
 - You may loosen a gate check, leak threshold or test when the fix belongs
   elsewhere, but say what was loosened and why in the PR description. Never
   loosen one silently.
