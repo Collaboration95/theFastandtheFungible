@@ -18,14 +18,21 @@ PR or issue.
 | Product | Cheaper CI: docs-only changes skip tests, no duplicate runs | #252 | done |
 | Product | Nightly scorecard + hard-gate audit | #256 | planned · 3–4 Nov |
 | Product | MCP server: any agent searches and buys within a human-set cap | #255 | done · fixture proof + Claude Code transcript |
-| Product | macOS app (Electron DMG): local engine, Keychain seed, local or remote backend | #259 | planned · 5–7 Nov |
-| Product | Hill-climb: one shipped improvement per day that moves a scorecard number | #260 first | planned · from 5 Nov |
-| Product | Surprise bet 1: proof-or-refund escrow on XRPL | #261 spike | planned · 6–9 Nov |
-| Product | Surprise bet 2: hire the agent (agent-to-agent x402 with citation royalties) | plan only | planned · 10 Nov |
-| UI/UX | The cast (sprites) + motion pass: the money visibly moves | #258, #262 | planned · 4–7 Nov |
+| Product | Feature-a-day run: 9 notable features, one release each, Thu 5 → Fri 13 ([calendar](#feature-a-day-5-13-nov)) | #270, #260, #259, #262, #273–#277; slack #278–#281 | planned · 5–13 Nov |
+| Product | Day 1: the local app done properly (keyboard-first, state model, record mode) | #270 | planned · Thu 5 |
+| Product | macOS app (Electron DMG): Keychain seed, signing pipeline ready for the Developer ID | #259 | planned · Sat 7 |
+| Product | Hill-climb: fact menu, then value-of-information buying + nightly refit | #260, #276 | planned · Fri 6, Thu 12 |
+| Product | Surprise bet 1: proof-or-refund escrow on XRPL | #261 spike, #273 build | planned · Mon 9 |
+| Product | Pay writers in RLUSD on Testnet | #275 | planned · Wed 11 |
+| Product | Surprise bet 2: hire the agent (agent-to-agent x402 with citation royalties) | #274 | planned · Tue 10 |
+| Product | Publish in one command: a Markdown folder becomes a paid writer | #277 | planned · Fri 13 |
+| UI/UX | The cast (restrained, on one grid with the brand) + motion: the money visibly moves | #258, #262 | planned · cast Thu 5, motion Sun 8 |
+| Repo | Front door: settings, topics, community files, hygiene check, a release per feature day | #269 | planned · Wed 4 – Thu 5 |
+| Repo | Brand kit: wordmark, mark, favicon, app icon, social preview, naming audit | #271 | planned · Thu 5 – Fri 6 |
+| Repo | README overhaul + one header across the explainers site | #272 | planned · Sat 7, numbers Wed 11 |
 | Submission | Short description · demo video · pitch deck · public repo | plan only | planned · 8–11 Nov |
 | Builder feedback | Living log from building + mainnet-readiness checklist | #257 | planned · 3 Nov |
-| Story | Daily posts + SFF chapter on the [evolution page](https://collaboration95.github.io/theFastandtheFungible/evolution/) | #257 | planned · 3 Nov, then daily |
+| Story | Daily posts (two on weekends, [post calendar](#post-calendar)) + SFF chapter on the [evolution page](https://collaboration95.github.io/theFastandtheFungible/evolution/) | #257 | planned · 3 Nov, then daily |
 | Presentation | 2-minute pitch, rehearsed | plan only | planned · 14–18 Nov |
 
 ## Hill-climb scorecard
@@ -49,113 +56,164 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 
 ## Plan
 
-Written 2 Nov by the planning agent. Lanes run in parallel; one Sol agent per
-issue; at most three PRs in flight. Wave 1 (3–7 Nov) is filed as issues; later
-waves live here until the lane reaches them, then the lane's agent files the
-issue with the same shape (criterion, checklist, files, acceptance, post angle).
+### Feature-a-day: 5-13 Nov
 
-### What we build, ranked by criterion weight per day
+Written 3 Nov by the second planning pass. **Public commitment: one notable
+feature a day for nine days, Thu 5 → Fri 13 Nov,** each with its own tagged
+release, then polish to the pitch. Owner rules: every day's feature must make an
+engineer stop scrolling, nothing gets padded out to fill a day, and nothing
+bloats the product. If a feature slips, a slack feature (F10–F13) takes its
+day; the streak doesn't break. Day 0 (Wed 4) is the announcement: MCP (#255,
+shipped 3 Nov) and the first scorecard (#256).
 
-| # | Idea | Serves | Why |
-|---|---|---|---|
-| 1 | **MCP server** (#255) | Reachability 25% | Any agent becomes a customer in one `claude mcp add`. Two days. |
-| 2 | **Nightly scorecard + gate audit** (#256) | Feasibility, Technical depth | Every other claim needs numbers; turns the five gates into a nightly 0. |
-| 3 | **Fact menu** (#260) | Technical depth, Creativity | Attacks the measured cause of under-buying (teaser abstracts): F1 0.24, 39.5% waste. |
-| 4 | **macOS app** (#259) | Reachability, Feasibility | The owner's gold standard; runs offline for judges; seed in the Keychain. |
-| 5 | **Builder-feedback log** (#257) | Builder feedback 10% | Cheapest 10% on the sheet; every lane feeds it. |
-| 6 | **The cast + motion** (#258, #262) | UX & design 10% | "How payments are communicated" is the UX criterion's own wording. |
-| 7 | **Escrow** (#261) | Technical depth, Creativity | Surprise bet 1 (below). |
-| 8 | **Hire the agent** | Creativity, Reachability | Surprise bet 2 (below). |
+**Design bar (owner, 3 Nov):** a YC-style startup product: clean, fast, it
+works (Linear, Vercel, Stripe docs). No childish or hyper-interactive gimmicks.
+Motion only where it carries meaning (money moving, a state changing). This
+applies to the app, README, logo, site and the cast (#258).
+
+| Day | Date | Feature | Criterion | Post angle (feature · visual · number · takeaway) | Issue | Release |
+|---|---|---|---|---|---|---|
+| 0 | Wed 4 | MCP server + first scorecard | Reachability · Feasibility | Claude Code bought an article on XRPL inside a cap I set · terminal clip · `claude mcp add` → paid answer in 23 s · the calling LLM never authorizes spend; the cap lives in env | #255, #256 | `v0.1.0` |
+| **1** | **Thu 5** | **The local app done properly:** keyboard-first (⌘1…, ⌘K), one state model, empty/loading states, record mode, stage-review bugs | UX & design (base for every clip) | ⌘K → ask → paid, cited answer, no mouse · 15 s clip · view switch p95 ms, 0 layout shift · design the state model before the motion | #270 | `v0.2.0` |
+| 2 | Fri 6 | **Fact menu:** writers sign what each article answers | Technical depth · Creativity | our agent stopped buying teasers · before → after chart · selection F1 0.24 → N, wasted spend 39.5% → N · signed metadata beat prompt tweaks | #260 | `v0.3.0` |
+| 3 | Sat 7 | **Mac app** (DMG, Keychain seed, signing pipeline) on Day 1's UI | Reachability · Feasibility | install → first paid answer · 20 s clip from DMG to receipt · cold start N s · Electron's `utilityProcess` ran our Node engine unchanged | #259 | `v0.4.0` |
+| 4 | Sun 8 | **Watch the money move:** coin flight, ledger close, refund | UX & design | animate the money, nothing else · UC3 clip · ledger close → receipt in N s · motion should carry state, not decoration | #262 | `v0.5.0` |
+| 5 | Mon 9 | **Proof-or-refund escrow** on XRPL | Technical depth · Creativity | the ledger, not the writer, enforces refunds · explorer EscrowCreate → EscrowCancel · +N s, N drops per purchase · a native ledger primitive beat deploying a contract | #273 (spike #261) | `v0.6.0` |
+| 6 | Tue 10 | **Hire the agent:** x402 answers for other agents, citation royalties | Creativity · Reachability | one question, three+ wallets · money-chain diagram with tx hashes · split of one S$2 question · the citation list is a payment instruction | #274 | `v0.7.0` |
+| 7 | Wed 11 | **Pay in RLUSD** on Testnet | Reachability · Technical depth · Feasibility | agents pay writers in a stablecoin · receipt + explorer · settle time and fee · check `delivered_amount`, never `Amount` | #275 | `v0.8.0` |
+| 8 | Thu 12 | **Learns from its receipts:** value-of-information buying + nightly refit | Feasibility · Technical depth | it got better at spending by itself · wasted spend by night, 9 Oct → 12 Nov · 39.5% → N% · your purchase log is free ground truth | #276 | `v0.9.0` |
+| 9 | Fri 13 | **Publish in one command:** Markdown folder → paid writer | Reachability (supply side) | any expert, one command · 20 s terminal clip · folder → paid by an agent in N s · agent commerce supply side = static site + signed manifest + wallet | #277 | `v0.10.0` |
+
+**Slack (fills a slipped day, or extends the streak into Sat 14 / Sun 15):**
+
+| # | Feature | Criterion | Post angle | Issue |
+|---|---|---|---|---|
+| F10 | **Verify any answer:** receipt bundle + `npm run verify` + browser verifier | Technical depth | don't trust our agent, verify it · all-green table, then one red after a byte flips | #278 |
+| F11 | **Chaos test + 12 h soak** | Feasibility | 500 injected failures, 0 double charges | #279 |
+| F12 | **One wallet, many agents:** per-agent keys and allowances | Reachability · Technical depth | give each AI agent its own allowance; revoke in a click | #280 |
+| F13 | **Answers in seconds:** stream the free draft, upgrade with paid evidence | Feasibility | p95 time to first answer N s → N s | #281 |
+
+**Ranked by judging impact** (weights in [JUDGING-CRITERIA.md](JUDGING-CRITERIA.md)):
+1 hire the agent (#274) · 2 Mac app (#259) · 3 escrow (#273) · 4 RLUSD (#275) ·
+5 fact menu (#260) · 6 publish (#277) · 7 many agents (#280) · 8 verify (#278) ·
+9 learns from receipts (#276) · 10 chaos (#279) · 11 streaming (#281) ·
+12 app foundation (#270) · 13 motion (#262). The app foundation ranks low on
+weight but goes first: every later clip, the Mac app and the video are recorded
+on it.
+
+**Dependencies:** #270 → #259, #262, #273, #274, #275 (state model and rail
+label) and every clip. #258 → #271 (brand) → #259 (icon), #272 (README).
+#261 spike → #273 (no-go: F10 takes Day 5). #163 price units → #275.
+#255 → #274, #277, #280. #256 → #260, #276, #279, #281 (before → after).
+#260 → #276, #277 (fact menu). #273 → #275 only for RLUSD escrow.
 
 **Why Electron for the app:** the engine is Node (`node:sqlite`, `xrpl`, Orama,
 Express). Electron runs it unchanged in a `utilityProcess`; Tauri needs a
 bundled Node sidecar and a Rust shell. ~120 MB download, zero rewrite (#259).
 
+### Repo identity (the timeline will get traffic; make it look funded)
+
+| Issue | What | When | Who |
+|---|---|---|---|
+| #269 | **Repo front door:** description, topics, homepage (`gh repo edit`); LICENSE, CONTRIBUTING, SECURITY, CoC, issue templates; hygiene check in `check:fast`; **one tagged release per feature day** | Wed 4 – Thu 5 | Sonnet + small Sol pass |
+| #271 | **Brand kit:** wordmark and mark generated in SVG on #258's grid, favicon set, app icon (`.icns` for #259), social preview, OG images, naming audit ("ResearchAgent" everywhere) | Thu 5 – Fri 6 | Opus directs, Sol builds |
+| #272 | **README overhaul + one site header:** hero, real badges, 15 s demo, 3-command quick start, "try it in Claude Code", Mac download, generated architecture SVG and scorecard table; shared header across gh-pages | Sat 7, numbers refreshed Wed 11 | Sonnet writes, Sol builds |
+
 ### Surprise bets
 
-1. **Proof-or-refund escrow** (#261, spike 6 Nov, build 8–9 Nov). The buyer pays
-   into an XRPL Escrow; the article's proof releases it, a broken promise lets
-   it cancel back. Refunds stop depending on the writer's goodwill. Native XRPL
-   (Escrow + crypto-conditions, no contract deploy) and new ground for x402.
-   *Could win because* it is the one feature only XRPL makes cheap, and it turns
-   our UC3 refund scene from "the liar cooperated" into "the ledger enforced it".
-2. **Hire the agent** (10 Nov). ResearchAgent sells its own answers over x402:
-   an outside agent (through the MCP server or any x402 client) pays it, it pays
-   the writers it buys from, then forwards a small **citation royalty** to every
-   writer it cited, free ones included. One question becomes a visible money
-   chain on Testnet: agent → agent → writers. Gates hold: the outside caller's
-   payment is its budget, our policy code still makes every purchase, royalties
-   are deterministic from the citation list. *Could win because* it is an
-   AI-native business model (agents as customers *and* sellers), which is the
-   Creativity criterion verbatim, and it pays writers for being cited, not only
-   for being bought.
-3. *Stretch, after 12 Nov:* **publish in one command**: `npx` turns a folder of
-   Markdown into a writer site with search, signed manifests, an x402
-   facilitator and a funded Testnet wallet (the supply side of Reachability).
+1. **Proof-or-refund escrow** (#261 spike Fri 6, build #273 Sat 7 – Mon 9). The
+   buyer pays into an XRPL Escrow; the article's proof releases it, a broken
+   promise lets it cancel back. Refunds stop depending on the writer's goodwill.
+   Native XRPL (Escrow + crypto-conditions, no contract deploy) and new ground
+   for x402. *Could win because* it is the one feature only XRPL makes cheap,
+   and it turns our UC3 refund scene from "the liar cooperated" into "the
+   ledger enforced it".
+2. **Hire the agent** (#274, Tue 10). ResearchAgent sells its own answers over
+   x402: an outside agent pays it, it pays the writers it buys from, then
+   forwards a **citation royalty** to every writer it cited, free ones
+   included, and returns the change. Gates hold: the caller's payment is the
+   budget, our policy code makes every purchase, royalties are deterministic
+   from the citation list. *Could win because* it is an AI-native business
+   model (agents as customers *and* sellers), the Creativity criterion
+   verbatim.
+3. **Publish in one command** (#277, Fri 13): promoted from stretch to Day 9.
 
 ### Lanes
 
-- **Lane A · Reach** (Sol): engine boot → MCP → Mac app → escrow → hire the agent.
-- **Lane B · Hill-climb** (Opus designs, Sol builds): scorecard → one lever a day.
-- **Lane C · Story & design** (Sonnet writes, Opus art-directs, Sol builds UI):
-  feedback log and timeline → cast → motion → deck → video.
+At most three coding lanes; the light lane (Sonnet/Opus docs, config, deck,
+video, post drafts) runs beside them and touches no product code.
 
-Dependencies: #255's `server/engine.ts` → #259 (app) and #256 (latency, cold
-start). #258 (cast) → #262 (motion) → video. #256 → every hill-climb "before →
-after" and the deck's numbers. #261 spike → escrow build. #255 → hire the agent.
+| Lane | Now (3 Nov) | Next |
+|---|---|---|
+| A · Reach (Sol) | #255 shipped | #270 app foundation (Wed 4 → Thu 5) → #259 Mac app (→ Sat 7) → #274 hire the agent (Sun 8 → Tue 10) → #277 publish (Wed 11 → Fri 13) → slack #280 |
+| B · Engine (Sol; Opus designs) | #256 scorecard | #260 fact menu (Wed 4 → Fri 6) · Opus #261 spike Fri 6 → #273 escrow (Sat 7 → Mon 9) → #276 learns from receipts (Tue 10 → Thu 12) → slack #279, #281 |
+| C · Design (Sol; Opus directs) | #257 + #258 | #271 brand kit (Thu 5 → Fri 6) → #262 motion (Sat 7 → Sun 8) → #275 RLUSD (Mon 9 → Wed 11) → slack #278 |
+| Light (Sonnet, Opus) | — | #269 repo front door (Wed 4 → Thu 5) · #272 README (Sat 7, Wed 11) · deck v1 Sun 8, v2 Wed 11 · video storyboard Mon 9, cut Wed 11 · short description Tue 10 · daily post drafts |
 
-### Day by day
-
-| Day | Lane A · Reach | Lane B · Hill-climb | Lane C · Story & design | Post angle |
-|---|---|---|---|---|
-| Tue 3 | #255 engine boot + MCP tools | #256 scorecard + gate audit | #257 feedback log; timeline chapter | "We're finalists. 10 days, 3 agent lanes, building in public." |
-| Wed 4 | #255 ships: Claude Code buys via MCP (Reachability) | #256 ships: first full report card (Feasibility) | #258 cast v1 | "Claude Code just bought its first article on XRPL, inside a budget I set." |
-| Thu 5 | #259 app shell, engine in `utilityProcess` | #260 fact menu: schema, signing, prompts | #258 ships: QA sheet + post cards (UX) | "Meet the cast: Scout, Purse, eight writers and one liar." |
-| Fri 6 | #259 Keychain seed, backend switch | #260 ships: F1 and wasted spend move (Technical depth) · #261 spike (Opus) | #262 motion: money flight, ledger close | "Writers now sign what they know. Our agent stopped buying teasers." |
-| Sat 7 | #259 ships: DMG (Reachability, Feasibility) | B3 value-of-information rule: buy only when expected supported facts × trust beat the price; budget-aware stop (wasted spend) | #262 ships + #225–#231 (UX) | "ResearchAgent is a Mac app. Your seed never leaves the Keychain." |
-| Sun 8 | A3 escrow build from the #261 decision | B4 learn from receipts: nightly refit of calibration from verified/refunded purchases (F1, Brier) | C4 pitch deck v1: extend `gh-pages:slides/` into a 2-minute SFF deck + PDF | "You can now watch the money move." |
-| Mon 9 | A3 ships: UC3 refund via escrow cancel (Technical depth) | B5 latency: stream the free answer before purchases, parallel decision rounds (p95 TTFA) | C5 video storyboard + scripted Playwright capture of app, MCP terminal and explorer | "Refunds no longer depend on the writer's goodwill." |
-| Tue 10 | A4 hire the agent: x402 `ask` endpoint + citation royalties, via MCP (Creativity) | B6 reliability and cost: provider-failure chaos test, 12 h local soak, cost per query (Feasibility) | C6 video cut v1 (captions, ffmpeg) + short description draft | "The agent got better at spending overnight, by itself." |
-| Wed 11 | Freeze. App v1.0 on GitHub Releases; clean-account install test | Final live scorecard; numbers into deck and README | Final video with the human's voice; deck v2; feedback writeup final | "One question, three wallets: an agent hired an agent that paid the writers it cited." |
-| **Thu 12** | **Submit** (human): description, deck, repo, video | — | — | "Submitted. Here's everything we shipped in 10 days." (timeline link) |
-
-Polish to the pitch (no new features; fixes and rehearsal only):
+### Polish to the pitch (no new features unless the streak runs into the weekend)
 
 | Day | Work |
 |---|---|
-| Fri 13 | Buffer (official deadline 23:59 SGT). Fix anything the submission run-through found. |
-| Sat 14 – Sun 15 | Stage kit: app runs fully offline (fixture) as the venue fallback; `make preflight` covers the app; 2-minute script timed; Q&A sheet with the scorecard numbers (Opus). |
-| Mon 16 | Recorded run-throughs, fix what stumbles; final post card set. |
-| Tue 17 | Dress rehearsal on a phone hotspot; freeze `main`. |
+| Thu 12 | **Submit** (owner): description, deck, repo, video. Day 8 ships the same day; nothing in the video depends on it. |
+| Fri 13 | Day 9 ships. Buffer for the official deadline (23:59 SGT). |
+| Sat 14 – Sun 15 | Slack features if one slipped. Stage kit: the app runs fully offline (fixture) as the venue fallback; `make preflight` covers the app; 2-minute script timed; Q&A sheet with the scorecard numbers (Opus). |
+| Mon 16 | Recorded run-throughs; fix what stumbles. |
+| Tue 17 | Dress rehearsal on a phone hotspot; freeze `main`; release `v1.0.0`. |
 | Wed 18 | Pitch, 11:30 SGT. |
+
+### Post calendar
+
+About one LinkedIn post a day, two on Saturdays and Sundays. Drafts come from
+the li-bot skill (Sonnet); each feature post uses that day's issue **Post**
+section (feature, visual, number, takeaway) and a clip from `make clip`
+(#270).
+
+| Date | Post | Visual | Number | Takeaway for engineers |
+|---|---|---|---|---|
+| Tue 3 | We're SFF finalists; publicly committing to one feature a day, 5–13 Nov | the calendar as a card | 9 days, 9 releases | how three agent lanes ship hands-off, merge on green |
+| Wed 4 | Day 0: Claude Code bought an article over MCP | terminal clip | 23 s to a paid, cited answer | the LLM caller never holds spending authority |
+| Thu 5 | Day 1: the app (#270) | 15 s keyboard-only clip | view switch ms, CLS 0 | one derived state model |
+| Fri 6 | Day 2: fact menu (#260) | before → after chart | F1, wasted spend | signed metadata > prompt tweaks |
+| Sat 7 a | Day 3: Mac app (#259) | DMG → receipt clip | cold start s | Electron `utilityProcess` ran the Node engine unchanged |
+| Sat 7 b | Design: the README and brand, before / after (#271, #272) | README hero before/after | — | treat the README as a landing page with tests |
+| Sun 8 a | Day 4: watch the money move (#262) | UC3 clip | ledger close → receipt s | animate the money, nothing else |
+| Sun 8 b | Builder feedback: 5 things we'd fix on XRPL / x402 (#257) | the Top-5 table | N items from building | concrete repros beat wishlists |
+| Mon 9 | Day 5: escrow (#273) | explorer create → cancel | +s, drops per purchase | native primitives over contracts |
+| Tue 10 | Day 6: hire the agent (#274) | money-chain diagram | split of one S$2 question | citations as payment instructions |
+| Wed 11 | Day 7: RLUSD (#275) | receipt + explorer | settle time, fee | `delivered_amount`, never `Amount` |
+| Thu 12 | Day 8: learns from receipts (#276), and we submitted | wasted-spend-by-night chart | 39.5% → N% | your purchase log is ground truth |
+| Fri 13 | Day 9: publish in one command (#277) | terminal clip | folder → paid in N s | supply side in one command |
+| Sat 14 a | Build story: 9 features in 9 days | Releases page / evolution timeline | PRs, releases, agent-hours | a release a day forces "done" to mean shipped |
+| Sat 14 b | Numbers: the 10-day scorecard, every metric before → after | scorecard table | all rows | measure nightly or you are guessing |
+| Sun 15 a | Design: one grid for brand, icon and cast (#271, #258) | brand sheet | — | generate the brand from code |
+| Sun 15 b | How the agents built it: Sol / Opus / Sonnet split | evolution charts | tokens, PRs per model | which work went to which model, and why |
+| Mon 16 | Five hard gates: how we test that an LLM can't spend | gate-audit output | 0 violations over N runs | put the money rules in code and audit them nightly |
+| Tue 17 | Two minutes: what we cut from the pitch | script draft | 120 s | — |
+| Wed 18 | Pitch day at SFF | stage photo | — | — |
 
 ### How the loops run
 
 - Each lane agent takes the next item in its lane, ships it with
-  `.claude/skills/ship-pr/SKILL.md`, adds one changelog line here, and fills the
-  PR's **Story** section (one-line post + an image from the post-card template
-  once #258 lands).
+  `.claude/skills/ship-pr/SKILL.md`, adds one changelog line here, fills the
+  PR's **Story** section (post line, visual, number) and, on a feature day,
+  cuts that day's release (`scripts/release.mjs` from #269).
 - Every hill-climb PR pastes `make scorecard -- --compare <previous>` output.
   Ship it only if no gate metric regresses.
 - Friction with XRPL, x402, the Starter Kit or Testnet goes into the builder
   feedback log the day it happens.
 - Live calls use `EVAL_*` keys within `EVAL_SPEND_CAP_USD`; Testnet only; never
-  real money, never cloud resources, never a printed key or seed.
+  real money, never cloud resources, never a printed key or seed. The live
+  nightly scorecard runs on the owner's Mac, not in CI (decided).
 
-### Needs the human
+### Needs a human
 
-- Confirm the team name and the submission form fields; submit on Thu 12 Nov.
-- Record the video voice-over on Wed 11 (or approve a text-to-speech track).
-- Post on LinkedIn daily (drafts arrive in each PR's Story section).
-- Decide on an Apple Developer ID (US$99/yr) for a signed, notarized DMG.
-  Without it the DMG is unsigned and judges right-click → Open.
-- Optional: add `EVAL_*` repository secrets if the nightly live scorecard
-  should run in CI; otherwise it runs on the owner's Mac.
-- Rehearse and deliver the 2-minute pitch (14–18 Nov).
+Everything only the owner can do lives in **#265** (pinned, `needs-human`).
+Agents add items there and keep working around them.
 
 ## Changelog
 
 ### Tue 3 Nov
+- Planned the feature-a-day run (9 days, 5–13 Nov, slack of 4), repo identity and the post calendar; filed #269–#281; owner-only items moved to #265 ([calendar](#feature-a-day-5-13-nov)).
 - Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
 
 ### Mon 2 Nov
