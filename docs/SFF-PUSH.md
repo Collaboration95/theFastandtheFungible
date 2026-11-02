@@ -17,7 +17,7 @@ PR or issue.
 | Product | Cleanup: security deps, test safety, dead code, docs truth | #248–#250 | done ([#254](https://github.com/Collaboration95/theFastandtheFungible/pull/254)) |
 | Product | Cheaper CI: docs-only changes skip tests, no duplicate runs | #252 | done |
 | Product | Nightly scorecard + hard-gate audit | #256 | planned · 3–4 Nov |
-| Product | MCP server: any agent searches and buys within a human-set cap | #255 | planned · 3–4 Nov |
+| Product | MCP server: any agent searches and buys within a human-set cap | #255 | done · fixture proof + Claude Code transcript |
 | Product | macOS app (Electron DMG): local engine, Keychain seed, local or remote backend | #259 | planned · 5–7 Nov |
 | Product | Hill-climb: one shipped improvement per day that moves a scorecard number | #260 first | planned · from 5 Nov |
 | Product | Surprise bet 1: proof-or-refund escrow on XRPL | #261 spike | planned · 6–9 Nov |
@@ -43,7 +43,8 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 | p95 time to first answer | not measured | — | set after baseline |
 | Cost per query (model US$ + XRP spent) | not measured | — | set after baseline |
 | Cold start (launch → ready; app and engine) | not measured | — | < 5 s |
-| MCP: question → paid, cited answer from Claude Code | not possible | — | passes nightly |
+| MCP e2e pass (fixture stdio) | 0 | 1 | 1 nightly |
+| MCP: question → paid, cited answer from Claude Code | not possible | PASS · fresh fixture session, 23.3 s including retry | passes nightly |
 | Hard-gate violations (`scripts/gate-audit.ts`) | 0 expected, not re-verified | — | 0, audited nightly |
 
 ## Plan
@@ -153,6 +154,9 @@ Polish to the pitch (no new features; fixes and rehearsal only):
 - Rehearse and deliver the 2-minute pitch (14–18 Nov).
 
 ## Changelog
+
+### Tue 3 Nov
+- Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
 
 ### Mon 2 Nov
 - Planned the next 10 days: three lanes, two surprise bets, wave-1 issues #255–#262 ([Plan](#plan)).

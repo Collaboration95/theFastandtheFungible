@@ -90,3 +90,10 @@ corpus: ## generate the writer corpus with DeepSeek (resumable; ARGS="--only alp
 
 smoke: ## live smoke UC1-UC3 on DeepSeek + Clef + Testnet (SPENDS live calls); ARGS="--only UC2" or "--probe"; port offset 300 unless OFFSET= given
 	DEMO_PORT_OFFSET=$(if $(filter command line,$(origin OFFSET)),$(OFFSET),300) node --import tsx scripts/live-smoke.mjs $(ARGS)
+
+.PHONY: mcp mcp-live
+mcp: ## stdio MCP server; fixture providers and simulated settlement, human caps default to zero
+	@node --import tsx mcp/server.ts
+
+mcp-live: ## stdio MCP server; live providers and XRPL Testnet when a payer seed is configured
+	@RA_LIVE=1 node --import tsx mcp/server.ts
