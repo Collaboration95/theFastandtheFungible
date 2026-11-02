@@ -10,6 +10,7 @@
 import 'dotenv/config'
 import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
+import { DROPS_PER_MINOR } from '../shared/contracts/publisher.ts'
 import { ClefDecisionProvider, clefTimeoutMs } from '../server/agents/clef.ts'
 import { llmConfig } from '../server/agents/llm.ts'
 import { OpenAIDecisionsProvider, decisionsTimeoutMs } from '../server/agents/openai-decisions.ts'
@@ -63,8 +64,8 @@ if (!keysOnly) {
   else {
     const expected = keyNames(readFileSync('.env.example', 'utf8')), actual = keyNames(readFileSync('.env', 'utf8'))
     const stale = [...actual].filter(k => !expected.has(k))
-    if (stale.length) warn(`.env has vars nothing reads (safe to delete): ${stale.join(', ')}`)
-    if (!stale.length) ok('.env only uses known vars (unset ones take .env.example defaults)')
+    if (stale.length) warn(`.env has vars not listed in .env.example: ${stale.join(', ')}`)
+    if (!stale.length) ok('.env variable names are all listed in .env.example')
   }
 
   console.log('Corpus (v2) and embeddings')
@@ -226,7 +227,7 @@ if (!stage) {
 
 if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet') {
   console.log('XRPL Testnet (settlement, used by make live)')
-  const { testnetLedger, testnetUrl, TESTNET_RECEIVER } = await import('../shared/xrpl.ts')
+  const { testnetLedger, testnetUrl } = await import('../shared/xrpl.ts')
   const { Wallet } = await import('xrpl')
   let ledger
   try {
@@ -252,7 +253,7 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
     // and refunds (D5) come out of the writer's own balance. Addresses are derived from the seeds in .env.
     const { paidSlugs, addressEnvName } = await import('./wallets.mjs')
     const { seedEnvName } = await import('../publisher/registry.ts')
-    const publishers = new Map([[process.env.XRPL_RECEIVER_ADDRESS || TESTNET_RECEIVER, 'fallback receiver']])
+    const publishers = new Map()
     for (const slug of paidSlugs()) {
       const seed = process.env[seedEnvName(slug)]
       if (!seed) { fail(`${slug}: ${seedEnvName(slug)} not set; run make wallets CREATE=1`); continue }
@@ -260,13 +261,13 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
       if (process.env[addressEnvName(slug)] && process.env[addressEnvName(slug)] !== address) fail(`${slug}: ${seedEnvName(slug)} does not match ${addressEnvName(slug)}`)
       publishers.set(address, slug)
     }
-    const refundDrops = 900_000 // the highest article price, S$0.90, refunded in full
+    const refundDrops = 90 * DROPS_PER_MINOR // the highest article price, S$0.90, refunded in full
     for (const [address, name] of publishers) {
       try {
         const { result } = await ledger.request({ command: 'account_info', account: address, ledger_index: 'validated' })
         const drops = Number(result.account_data.Balance)
         const line = `${name}: ${address} (${(drops / 1e6).toFixed(2)} XRP)`
-        if (name !== 'fallback receiver' && drops < 10_000_000 + refundDrops) fail(`${line}; too low to refund a purchase above the reserve; run make wallets`)
+        if (drops < 10_000_000 + refundDrops) fail(`${line}; too low to refund a purchase above the reserve; run make wallets`)
         else ok(line)
       } catch (error) {
         fail(`${name}: ${address} ${error?.data?.error === 'actNotFound' ? 'does not exist (Testnet reset?); run make wallets' : 'check failed'}`)

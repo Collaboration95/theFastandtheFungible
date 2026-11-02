@@ -58,17 +58,17 @@ export function toSearchHit(article: Article, relevance: number, searchMode: Sea
 /** The app stays synchronous; locals.ready exposes asynchronous corpus loading to startup/tests. */
 export function createPublisherApp(config: PublisherConfig = {}) {
   const app = express()
+  const env = config.env ?? process.env
   const secret = config.secret ?? process.env.PUBLISHER_SECRET
   const faults = config.faults ?? process.env.PUBLISHER_FAULTS === '1'
   // The only Bearer secret left guards the fault toggle; payments carry their own signed proof.
   if (faults && !secret) throw new Error('PUBLISHER_SECRET is required with PUBLISHER_FAULTS')
-  const journal = config.journal instanceof PublisherJournal ? config.journal : new PublisherJournal(config.journal ?? 'data/publisher.db')
+  const journal = config.journal instanceof PublisherJournal ? config.journal : new PublisherJournal(config.journal ?? env.PUBLISHER_DB ?? 'data/publisher.db')
   const rail: Rail = config.rail ?? (process.env.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'xrpl-testnet' : 'simulated')
   const ledger = rail === 'xrpl-testnet' ? config.ledger ?? testnetLedger() : undefined
   const label = rail === 'xrpl-testnet' ? XRPL_LABEL : SIMULATED_LABEL
   let failNextDelivery = false
   let registry = new Map<string, PublisherEntry>()
-  const env = config.env ?? process.env
   const embedder = config.embedder ?? (embeddingsLive(env) ? createQueryEmbedder() : undefined)
   // Live only: one warm-up call at startup, so the first question doesn't lose hybrid search to a cold-start timeout.
   if (!config.embedder && embedder) void embedder('warm-up').catch(() => undefined)

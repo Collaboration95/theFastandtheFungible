@@ -1,4 +1,4 @@
-// Ported from bench/decisions/metrics.ts on bench/decisions-vs-clef (c176f43) for #212; unchanged except imports.
+// Ported from bench/decisions/metrics.ts on bench/decisions-vs-clef (c176f43) for #212; unused multiclass/score helpers removed for #249.
 /** Offline benchmark statistics. Undefined estimates are null, never fabricated. */
 export type Estimate = number | null;
 export type GroupId = string | number;
@@ -79,63 +79,6 @@ export function binaryMetrics(y: number[], p: number[]): {
   return { n, brier, logLoss, ece,
     auroc: positives && negatives ? concordance / (positives * negatives) : null,
     auprc: positives ? averagePrecision : null, bins };
-}
-
-export function multiclassMetrics(labels: string[], probabilities: Record<string, number>[]): {
-  brier: Estimate; macroF1: Estimate; perClassEce: Record<string, Estimate>;
-} {
-  if (labels.length !== probabilities.length) throw new RangeError('Array lengths must match');
-  const classes = [...new Set([...labels, ...probabilities.flatMap((row) => Object.keys(row))])].sort();
-  probabilities.forEach((row) => {
-    Object.values(row).forEach((v) => probability(v, 'class probability'));
-    if (Math.abs(Object.values(row).reduce((sum, v) => sum + v, 0) - 1) > 1e-6)
-      throw new RangeError('Class probabilities must sum to 1');
-  });
-  const predictions = probabilities.map((row) => classes.reduce((best, c) =>
-    (row[c] ?? 0) > (row[best] ?? 0) ? c : best, classes[0]));
-  const perClassEce: Record<string, Estimate> = {};
-  const f1 = classes.map((c) => {
-    let tp = 0, fp = 0, fn = 0;
-    labels.forEach((label, i) => {
-      if (label === c && predictions[i] === c) tp++;
-      else if (predictions[i] === c) fp++;
-      else if (label === c) fn++;
-    });
-    // Define absent-class F1 as zero, with the class universe disclosed in the notes.
-    perClassEce[c] = binaryMetrics(labels.map((label) => Number(label === c)),
-      probabilities.map((row) => row[c] ?? 0)).ece;
-    return 2 * tp + fp + fn ? 2 * tp / (2 * tp + fp + fn) : 0;
-  });
-  return {
-    brier: mean(labels.map((label, i) => classes.reduce((sum, c) =>
-      sum + ((probabilities[i][c] ?? 0) - Number(label === c)) ** 2, 0))),
-    macroF1: mean(f1), perClassEce,
-  };
-}
-
-function ranks(values: readonly number[]): number[] {
-  const order = values.map((value, index) => ({ value, index })).sort((a, b) => a.value - b.value);
-  const result = new Array<number>(values.length);
-  for (let start = 0; start < order.length;) {
-    let end = start + 1;
-    while (end < order.length && order[end].value === order[start].value) end++;
-    for (let i = start; i < end; i++) result[order[i].index] = (start + end - 1) / 2;
-    start = end;
-  }
-  return result;
-}
-
-export function scoreMetrics(y: number[], p: number[]): { mae: Estimate; spearman: Estimate } {
-  paired(y, p, false);
-  const a = ranks(y), b = ranks(p), center = (y.length - 1) / 2;
-  let covariance = 0, varA = 0, varB = 0;
-  a.forEach((v, i) => {
-    covariance += (v - center) * (b[i] - center);
-    varA += (v - center) ** 2;
-    varB += (b[i] - center) ** 2;
-  });
-  return { mae: mean(y.map((v, i) => Math.abs(v - p[i]))),
-    spearman: varA && varB ? covariance / Math.sqrt(varA * varB) : null };
 }
 
 export interface DecisionRow { expected: string | null; selected: string | null; priceMinor: number }

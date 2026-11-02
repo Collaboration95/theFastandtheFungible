@@ -9,15 +9,19 @@ decisions, budget, payment and cited synthesis. Direction:
 - **Web** (`src/`): the run screen: clarify chips, the 5 s action modal,
   writer and trust chips, proof badges, the refund timeline and a Writers tab.
   It replays the finished trace at stage pace (D13).
-- **API** (`server/`, Express): `agents/` (scope, plan, retrieval, gaps, Clef
+- **API** (`server/`, Express): `agents/` (scope, plan, retrieval, gaps, model
   decisions, the loop, report), `reputation.ts` (trust), `purchases.ts`
   (the policy-only purchase core and x402 v2 buyer), `proofs.ts`,
-  `challenges.ts`, and the PDF. DeepSeek writes, Clef decides, code pays.
+  `challenges.ts`, and the PDF. DeepSeek writes; OpenAI Decisions `gpt-6-luna`
+  (`DECISION_PROVIDER=openai`) or Cloudflare Clef-flash
+  (`DECISION_PROVIDER=cloudflare`, the `make live` default) judges value;
+  policy code pays. Scores are raw by default; calibration requires
+  `DECISION_CALIBRATION=on` and a matching provider/model/prompt calibrator.
 - **Publisher host** (`publisher/`): one local process serving every writer
   under `/w/:slug/`: `search` (Orama hybrid over full text), `articles/:id`
   (free, or x402 v2 paid), `facilitator/{supported,verify,settle}`,
   `challenge`, and the signed manifest. `/registry` lists writers and wallets.
-  The roster and 81 articles are generated into `data/` (`make corpus`).
+  The roster and 83 articles are generated into `data/` (`make corpus`).
 - **Shared** (`shared/`): contracts, manifest and proof checker, x402 header
   codec, XRPL helpers.
 - **Store**: SQLite via `node:sqlite`: `data/app.db` (runs, receipts, grants,
@@ -37,7 +41,7 @@ The third writer column is the bad actor; the last is free open records.
  ┌──────────────────────────────────────────────────────────────────────┐
  │ ask ─► clarify (LLM, ≤2 questions) ─► plan ─► 5 s action modal ─► run │
  │ run: fan out sub-queries ─► fuse (price-blind) ─► free read ─► answer │
- │      gap (LLM, free text) ─► Clef value × trust ─► policy picks ─► pay │
+ │      gap (LLM, free text) ─► model value × trust ─► policy picks ─► pay│
  │      verify proof ─► challenge if broken ─► update trust ─► re-answer  │
  └───────┬───────────────────────────┬───────────────────────────┬──────┘
          │ GET /search?q=            │ GET article (x402 v2)     │ POST /challenge

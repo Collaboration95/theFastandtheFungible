@@ -235,10 +235,14 @@ describe('leak gate and Stop: audited Clef and LLM requests', () => {
   }, 30_000)
 
   it('Stop during scoring prevents any purchase and preserves the free answer', async () => {
-    const id = await h.ask('UC2')
-    await h.until(id, run => run.phase === 'DECIDE')
-    const stopped = await h.request(`/runs/${id}/stop`, {})
-    expect(stopped.phase).toBe('STOPPED')
+    await h.scoring('arm')
+    let id!: string
+    try {
+      id = await h.ask('UC2')
+      await h.scoring('entered')
+      const stopped = await h.request(`/runs/${id}/stop`, {})
+      expect(stopped.phase).toBe('STOPPED')
+    } finally { await h.scoring('release') }
     // A persisted decision proves scoring finished; a Stop response alone could miss a late purchase.
     const final = await h.until(id, run => run.decisions.length > 0)
     expect(final.stopped).toBe(true)

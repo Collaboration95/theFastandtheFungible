@@ -244,7 +244,7 @@ Each writer row also gets a chip on its search hits and decision rows.
 
 ## 9. x402 v2 changes to today's flow (D7)
 
-*Status 8 Oct: built as described below; the as-built flow is in [docs/x402-xrpl.md](docs/x402-xrpl.md).*
+*Status 8 Oct: built as described below; the as-built flow is in [x402-xrpl.md](x402-xrpl.md).*
 
 Flow before the push (replaced): 402 JSON body → `POST /v1/quotes` → the buyer submits the Payment itself → `POST /v1/settlements` (with a Bearer secret) → GET with a token.
 

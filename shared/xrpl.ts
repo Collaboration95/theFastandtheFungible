@@ -8,8 +8,6 @@ import type { LedgerProof, PaymentRequirement } from './contracts/publisher.js'
 export type Ledger = { request(request: Record<string, unknown>): Promise<{ result: any }> } // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export const TESTNET_WSS = 'wss://s.altnet.rippletest.net:51233'
-/** Phase 1 (#98): every simulated publisher is paid at this one funded Testnet address. */
-export const TESTNET_RECEIVER = 'r4Dg79JKSPuVdhULa8TKVnX6VsMPzruZMV'
 
 /** The rail must never reach Mainnet: only rippletest.net hosts are accepted. */
 export function testnetUrl(url = process.env.XRPL_RPC_URL || TESTNET_WSS): string {

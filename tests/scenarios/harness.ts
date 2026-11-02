@@ -162,7 +162,11 @@ export async function startScenario(options: { injection?: boolean; audited?: bo
       observations.push({ kind: 'API /api/scope', raw, grants: [] })
       return JSON.parse(raw) as { questions: { id: string; text: string; options: string[] }[]; plan: { restatement: string; subqueries: string[] }; label: string }
     }
-    return { base, publisher, corpus, observations, scope, logs, ask, until, request, stop, audits: (): Audit[] => readFileSync(join(dir, 'audit.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line)) }
+    async function scoring(action: 'arm' | 'entered' | 'release') {
+      const response = await fetch(`${base}/__scenario/scoring/${action}`, { method: 'POST', signal: AbortSignal.timeout(10_000) })
+      if (!response.ok) throw new Error(`Scoring barrier ${action}: ${response.status}`)
+    }
+    return { base, publisher, corpus, observations, scope, logs, ask, until, request, stop, scoring, audits: (): Audit[] => readFileSync(join(dir, 'audit.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line)) }
   } catch (error) { await stop(); throw error }
 }
 
