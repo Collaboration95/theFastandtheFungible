@@ -16,7 +16,7 @@ stroke, warm light palette, generous space. Scout uses wayfinding, question,
 lantern, scales, transfer, magnifier, alert, report and stop symbols. Purse is
 an abstract wallet with explicit full/spending/refunded/locked/empty/simulated
 states. Writer marks combine a neutral geometric profile with a signature
-wafer, kopi cup, bond chart, paper, energy, stack, record or mask prop. Receipt
+wafer, kopi cup, bond chart, paper, energy, stack, record or split-seal prop. Receipt
 and Ledger use document geometry. No anthropomorphic faces or cartoon tone.
 Colour never carries state alone. Motion only for short, meaningful money or
 refund movement, respecting reduced motion; full choreography is #262.

@@ -74,7 +74,7 @@ every named pose; `design/cast/PROMPT.md` records direction and regeneration.
 A restrained 24-unit grid and 1.5-unit stroke keeps small marks legible at
 16–24 px. No anthropomorphic faces, mascots or decorative motion.
 Scout is the researcher; Purse represents the human-set budget authority;
-eight fictional writers carry distinct props; AlphaLeak's slipping mask marks
+eight fictional writers carry distinct props; AlphaLeak's split seal marks
 a failed promise; Receipt and Ledger represent proof and Testnet settlement.
 Each state has both a prop/shape and a text label.
 
@@ -89,3 +89,45 @@ not a shipped escrow claim. Full flow choreography is #262.
 `design/cards/post-card.html` and `design/cards/render.mjs` produce light-theme
 1200×630 and 1080×1350 daily post images with title, before → after metric and
 cast pose. Keep fictional/illustrative and Testnet labels in exports.
+
+## Design bar
+
+The owner's bar: a YC-style startup. Clean, restrained, professional, in the
+vein of Linear, Vercel and Stripe. No childish or hyper-interactive gimmicks.
+Motion only explains money or state changes. The working product stays light.
+
+## Brand
+
+**ResearchAgent** is the product name, one word and camel case. The **open
+index** mark frames an ascending route between two source boundaries: research
+that leads to evidence. No mascot or currency symbol in the logo. The cast
+shares its 24-unit grid and 1.5-unit stroke. The search pose is a lens;
+AlphaLeak's broken promise uses a split seal without a cartoon face.
+
+`design/brand/build-brand.mjs` is the SVG source of truth. It outlines the
+bundled Geist Regular glyphs (no external font request), produces ink and
+on-dark marks, wordmarks and horizontal/stacked lockups, then rasterizes via
+pinned Chromium. Ink `#24211E` on Paper `#FBF8F2` is primary. Editorial Salmon
+`#D9A28F` is a sparse layout accent, never small text. Evidence Green and Block
+Red retain their semantic state meanings with check/exclamation shapes and
+adjacent text. On-dark artwork is for Dock and dark social surfaces only.
+
+Keep at least **4 grid units of clear space** around the mark and **one capital
+R height** around a wordmark or lockup. Minimum mark size **16 px**, wordmark
+visible capital height **16 px**, horizontal lockup height **32 px**. Do not
+stretch, rotate, add shadows, recolour to imply a transaction, or animate the
+logo. The macOS master has a 100 px transparent inset, an 824 px rounded tile
+and centered mark at 1024 px; leave the padding intact. Maskable PWA marks stay
+within the central 80% safe circle. `desktop/build/icon.icns` and `icon.png`
+are ready for the packaging lane; no claim of a signed or installed Mac app.
+
+Geist is the identity and interface face, Geist Mono is for prices and metadata,
+and Newsreader is for limited editorial use. Write plainly and specifically:
+“Search expertise. Buy the missing evidence.” Avoid hype and unsupported
+quality claims. `npm run check:naming` scans prose and visible UI names,
+preserving URL/npm slugs, code identifiers and verbatim historical records.
+
+Regenerate with `npm run brand:build`, then `npm run brand:verify`. See
+`design/brand/README.md` for the output map and cast review. `site/` holds the
+explainers source with page-specific OG/Twitter metadata; merging it to main
+is distinct from publishing it to gh-pages.

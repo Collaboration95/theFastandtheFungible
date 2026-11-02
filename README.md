@@ -1,6 +1,6 @@
 # ResearchAgent
 
-**A research agent with a wallet.** Agents are the new readers, so experts should get paid when an agent uses their thinking.
+**Research with a wallet.** Agents are the new readers, so experts should get paid when an agent uses their thinking.
 
 ResearchAgent answers from free sources first. When the missing piece sits behind a paywall, it can buy that one article straight from the writer, inside a budget you set, and it checks every promise the writer made after delivery.
 
@@ -216,3 +216,7 @@ The 10 Oct live demo ran on Google Cloud Run. That deploy (`make cloudrun`, `doc
 - [Decision model report](eval/REPORT-decisions.md): how the buying decisions were measured on the real corpus
 
 **Not built yet:** durable hosted storage, mainnet, licensing, and a central index.
+
+---
+
+`theFastandtheFungible` is the team / repository name; the product is **ResearchAgent**. The repository name stays stable for published Pages URLs.

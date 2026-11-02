@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- Small shared helpers next to the logo mark. */
+import { brandPath, brandFavicons } from './assets/brand/identity'
 import type { Citation, DecisionRow, RunSnapshot } from '../shared/contracts/index.js'
 
 export const money = (minor: number) => `S$${(minor / 100).toFixed(2)}`
@@ -27,13 +28,10 @@ export function plainVerdict(row: DecisionRow, run: RunSnapshot): { stamp: strin
 }
 
 export function Mark({ className = '' }: { className?: string }) {
-  return <svg className={`ra-mark ${className}`} viewBox="0 0 32 32" aria-hidden="true"><path className="br l" d="M11.5 6.5H7.5v19h4" /><path className="br r" d="M20.5 6.5h4v19h-4" /><circle className="coin" cx="16" cy="19" r="4.4" /></svg>
+  return <svg className={`ra-mark ${className}`} viewBox="0 0 24 24" aria-hidden="true"><path d={brandPath} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" /></svg>
 }
 
-/** Favicon: the mark on blue, with a coin colour and an optional dot for the run state. */
+/** Named run states use the same generated mark as the static favicon. */
 export function favicon(state: 'idle' | 'work' | 'done' | 'alert'): string {
-  const coin = state === 'done' ? '#12B76A' : state === 'alert' ? '#FF5A1F' : '#FFE45C'
-  const dot = state === 'done' || state === 'alert' ? `<circle cx="54" cy="10" r="9" fill="${coin}" stroke="#fff" stroke-width="3"/>` : ''
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#2F45FF"/><path d="M24 15h-7v34h7M40 15h7v34h-7" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="38" r="8" fill="${coin}"/>${dot}</svg>`
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+  return `data:image/svg+xml,${encodeURIComponent(brandFavicons[state])}`
 }
