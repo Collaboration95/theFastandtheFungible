@@ -35,14 +35,19 @@ if (mode === 'publisher') {
     return transport(url, options)
   }
   const fixture = new FixtureDecisionProvider()
+  // A test-controlled barrier holds candidate scoring until Stop has been acknowledged.
+  let barrier: { entered: Promise<void>; signal: () => void; hold: Promise<void>; release: () => void } | undefined
   // Clef sees a price-blind public view (abstract, tags); rebuild the candidate shape the fixture scores.
   const fromClefState = (c: { abstract: string; tags: string[] }) => ({ profileId: 'clef-state', version: 'v1', price: { amountMinor: 0, currency: 'SGD' }, license: { kind: 'SYNTHETIC', attribution: 'clef-state' }, ...c, preview: c.abstract, facets: c.tags })
   const fromPassages = (passages: string[]) => ({ profileId: 'clef-state', resourceId: 'granted', version: 'v1', title: 'granted', publisher: 'granted', body: passages.join(' '), spans: passages.map((text, i) => ({ id: `p${i}`, text })) })
   const provider = new ClefDecisionProvider({ accountId: 'fixture-account', token: 'fixture-token', fetch: async (_url, options) => {
     const payload = JSON.parse(String(options?.body))
     audit('clef', payload)
-    // Slow scoring makes SSE coverage and Stop deterministic without changing app code.
-    await new Promise(done => setTimeout(done, 40))
+    if (payload.questions.originality && barrier) {
+      const pending = barrier
+      pending.signal()
+      await pending.hold
+    }
     // Coverage (#208): one choice question per requirement; the fixture judge grades the same passages.
     const coverage = Object.entries(payload.questions as Record<string, { instructions: string }>).filter(([name]) => name.startsWith('coverage_'))
     if (coverage.length) {
@@ -59,6 +64,23 @@ if (mode === 'publisher') {
   } })
   const api = await createApiApp({ provider })
   context.store = api.store
+  api.app.post('/__scenario/scoring/arm', (_req, res) => {
+    let signal!: () => void, release!: () => void
+    const entered = new Promise<void>(done => { signal = done })
+    const hold = new Promise<void>(done => { release = done })
+    barrier = { entered, signal, hold, release }
+    res.sendStatus(204)
+  })
+  api.app.post('/__scenario/scoring/entered', async (_req, res) => {
+    if (!barrier) { res.sendStatus(409); return }
+    await barrier.entered
+    res.sendStatus(204)
+  })
+  api.app.post('/__scenario/scoring/release', (_req, res) => {
+    barrier?.release()
+    barrier = undefined
+    res.sendStatus(204)
+  })
   const server = api.app.listen(0, '127.0.0.1')
   await once(server, 'listening')
   console.log(`PORT=${(server.address() as { port: number }).port}`)
