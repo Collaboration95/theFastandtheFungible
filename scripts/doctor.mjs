@@ -63,8 +63,8 @@ if (!keysOnly) {
   else {
     const expected = keyNames(readFileSync('.env.example', 'utf8')), actual = keyNames(readFileSync('.env', 'utf8'))
     const stale = [...actual].filter(k => !expected.has(k))
-    if (stale.length) warn(`.env has vars nothing reads (safe to delete): ${stale.join(', ')}`)
-    if (!stale.length) ok('.env only uses known vars (unset ones take .env.example defaults)')
+    if (stale.length) warn(`.env has vars not listed in .env.example: ${stale.join(', ')}`)
+    if (!stale.length) ok('.env variable names are all listed in .env.example')
   }
 
   console.log('Corpus (v2) and embeddings')
