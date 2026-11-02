@@ -21,7 +21,7 @@ if (mode === 'publisher') {
   process.once('SIGTERM', () => server.close(() => { app.locals.journal.close(); process.exit(0) }))
 } else if (mode === 'audit-api') {
   // Dynamic import keeps the harness compilable on the legacy branch too.
-  const { createApiApp } = await import(pathToFileURL(resolve(process.env.SCENARIO_API_ROUTES ?? 'server/routes.ts')).href)
+  const { createApiApp }: typeof import('../../server/routes.js') = await import(pathToFileURL(resolve(process.env.SCENARIO_API_ROUTES ?? 'server/routes.ts')).href)
   const context: { store?: Store } = {}
   const audit = (kind: string, body: unknown) => {
     const run = context.store?.listRuns().at(-1)
