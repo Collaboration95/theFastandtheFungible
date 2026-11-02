@@ -1,3 +1,4 @@
+import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
 import { scoreStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
@@ -22,7 +23,7 @@ export interface DecisionProvider {
    * One request for the whole round (#214, "batch-evidence"): the gap question plus three questions per candidate.
    * Judgments come back in `candidates` order. When present, decideRound uses it instead of the per-call path.
    */
-  judgeBatch?(input: { question: string; conclusion: string; gap: string; readSources: PublicSourceRef[]; candidates: PublicCandidate[]; skipGapMaterial?: boolean } & Signal): Promise<{ gapMaterial?: number; judgments: CandidateJudgment[] }>
+  judgeBatch?(input: { question: string; conclusion?: string; gap: string; readSources: PublicSourceRef[]; candidates: PublicCandidate[]; skipGapMaterial?: boolean } & Signal): Promise<{ gapMaterial?: number; judgments: CandidateJudgment[] }>
   /** Calibration (#141): does a granted paid body address the gap? Called only after a verified grant (gate 1). */
   judgePaidRelevance?(input: { question: string; gap: string; content: ContentEnvelope } & Signal): Promise<{ observed: number }>
   /**
@@ -47,8 +48,21 @@ export function decisionModel(provider: 'cloudflare' | 'openai' = 'cloudflare', 
   if (provider === 'openai') return configured && !cloudflareModel ? configured : OPENAI_DECISION_MODEL
   return configured && cloudflareModel ? configured : CLEF_DECISION_MODEL
 }
-export const publicCandidate = (input: unknown): PublicCandidate => PublicCandidateSchema.parse(input)
-export const publicSources = (input: unknown): PublicSourceRef[] => z.array(SourceRefSchema).parse(input)
+export const publicCandidate = (input: unknown): PublicCandidate => {
+  const c = PublicCandidateSchema.omit({ manifest: true, wallet: true, url: true }).parse(input)
+  return { ...c, title: quotedText(c.title, 200) || '[untrusted title omitted]',
+    publisher: quotedText(c.publisher, 120) || '[untrusted publisher omitted]',
+    preview: quotedText(c.preview, 1200) || '[untrusted abstract omitted]',
+    family: quotedText(c.family, 160) || '[untrusted family omitted]',
+    facets: c.facets.slice(0, 16).map(t => quotedText(t, 80)).filter(Boolean),
+    license: { kind: quotedText(c.license.kind, 80), attribution: quotedText(c.license.attribution, 200) } }
+}
+export const publicSources = (input: unknown): PublicSourceRef[] => z.array(SourceRefSchema).parse(input).slice(0, 50).map(s => ({
+  ...s, title: quotedText(s.title, 200) || '[untrusted title omitted]',
+  publisher: quotedText(s.publisher, 120) || '[untrusted publisher omitted]',
+  family: quotedText(s.family, 160) || '[untrusted family omitted]',
+  facets: s.facets.slice(0, 16).map(t => quotedText(t, 80)).filter(Boolean),
+}))
 // Words that say nothing about which evidence a gap needs.
 const STOP = new Set(['accessible', 'evidence', 'source', 'sources', 'about', 'their', 'there', 'which', 'what', 'with', 'from', 'that', 'this', 'whether', 'still', 'missing', 'figures', 'dated', 'data'])
 const words = (text: string) => new Set(text.toLowerCase().match(/[a-z0-9]+/g)?.filter(word => word.length > 3 && !STOP.has(word)) ?? [])
@@ -188,12 +202,12 @@ async function judgeAll(provider: DecisionProvider, input: DecideInput, candidat
     // Nothing left to ask: a requested fact with no paid candidate makes no model call.
     if (fixed && !candidates.length) return { gapMaterial: 1, judgments: [] }
     if (provider.judgeBatch) {
-      const result = await provider.judgeBatch({ question: input.question, conclusion: input.conclusion, gap: input.gap, readSources, candidates, signal, ...(fixed ? { skipGapMaterial: true } : {}) })
+      const result = await provider.judgeBatch({ question: input.question, ...(input.requirement ? {} : { conclusion: input.conclusion }), gap: input.gap, readSources, candidates: candidates.map(publicCandidate), signal, ...(fixed ? { skipGapMaterial: true } : {}) })
       return { gapMaterial: fixed?.gapMaterial ?? GapMaterialSchema.parse(result).gapMaterial, judgments: z.array(CandidateJudgmentSchema).length(candidates.length).parse(result.judgments) }
     }
     const [{ gapMaterial }, judgments] = await Promise.all([
       fixed ? Promise.resolve(fixed) : provider.judgeRound({ question: input.question, conclusion: input.conclusion, gap: input.gap, signal }).then(result => GapMaterialSchema.parse(result)).catch(failRound),
-      Promise.all(candidates.map(candidate => provider.judgeCandidate({ question: input.question, gap: input.gap, readSources, candidate, signal }).then(result => CandidateJudgmentSchema.parse(result)).catch(failRound))),
+      Promise.all(candidates.map(candidate => provider.judgeCandidate({ question: input.question, gap: input.gap, readSources, candidate: publicCandidate(candidate), signal }).then(result => CandidateJudgmentSchema.parse(result)).catch(failRound))),
     ])
     return { gapMaterial, judgments }
   } catch (error) {

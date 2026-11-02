@@ -18,14 +18,14 @@ it('follows a fixture ask to cited, granted delivery and reuses the intent', asy
   const dataDir = mkdtempSync(join(tmpdir(), 'sdk-'))
   const engine = await startEngine({ dataDir })
   let streams = 0
-  const client = createClient({ baseUrl: engine.apiUrl, fetch: (url, init) => {
+  const client = createClient({ baseUrl: engine.apiUrl, token: engine.apiToken, fetch: (url, init) => {
     if (String(url).endsWith('/events')) streams++
     return fetch(url, init)
   } })
   try {
     const hits = await client.search(USE_CASES.UC2.question)
     expect(hits.hits.length).toBeGreaterThan(0)
-    expect(Object.keys(hits.hits[0]).sort()).toEqual(['abstract', 'priceMinor', 'relevance', 'tier', 'title', 'url', 'writer'])
+    expect(Object.keys(hits.hits[0]).sort()).toEqual(['abstract', 'priceMinor', 'relevance', 'tier', 'title', 'untrusted', 'url', 'writer'])
     const question = USE_CASES.UC2.question.replace(/\?$/, ' (pricing & margins)?')
     const run = await client.ask(question, { budgetSgd: 2, idempotencyKey: 'sdk-uc2' })
     expect(streams).toBeGreaterThan(0)
@@ -54,7 +54,7 @@ it('follows a fixture ask to cited, granted delivery and reuses the intent', asy
     expect((await client.wallet()).spentMinor).toBe(run.spentMinor)
     // Block only SSE: polling must finish the same admission, with no automatic POST retry.
     let posts = 0
-    const polling = createClient({ baseUrl: engine.apiUrl, fetch: (url, init) => {
+    const polling = createClient({ baseUrl: engine.apiUrl, token: engine.apiToken, fetch: (url, init) => {
       if (String(url).endsWith('/events')) return Promise.resolve(new Response('', { status: 503 }))
       if (init?.method === 'POST') posts++
       return fetch(url, init)

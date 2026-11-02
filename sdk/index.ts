@@ -14,11 +14,12 @@ export class ResearchAgentError extends Error {
 const StatusSchema = z.object({
   labels: ModeLabelsSchema, corpusLabel: z.string(), publisherUrl: z.url(),
   maxMinor: z.number(), dailyMinor: z.number(), spentMinor: z.number(), reservedMinor: z.number(),
+  paused: z.boolean().optional(), wallet: z.object({ dailyMinor: z.number(), spentMinor: z.number(), reservedMinor: z.number(), paused: z.boolean(), label: z.string(), policyVersion: z.string() }).optional(),
   rail: z.string(), payerAddress: z.string().nullable(),
 })
 const SearchSchema = z.object({
   labels: ModeLabelsSchema, corpusLabel: z.string(), unavailable: z.array(z.string()),
-  hits: z.array(z.object({ title: z.string(), writer: z.string(), tier: z.enum(['FREE', 'PAID']),
+  hits: z.array(z.object({ untrusted: z.literal(true), title: z.string(), writer: z.string(), tier: z.enum(['FREE', 'PAID']),
     priceMinor: z.number(), abstract: z.string(), relevance: z.number(), url: z.url() })),
 })
 export type SearchResult = z.infer<typeof SearchSchema>
@@ -32,7 +33,8 @@ const terminal = (run: RunSnapshot) => ['DONE', 'STOPPED', 'FAILED'].includes(ru
 /** Authority remains in backend policy. This client has no purchase or settlement command. */
 export function createClient(options: { baseUrl: string; token?: string; fetch?: typeof fetch }) {
   const transport = options.fetch ?? globalThis.fetch
-  const headers = { 'Content-Type': 'application/json', ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}) }
+  const token = options.token ?? (typeof process !== 'undefined' ? process.env.RA_API_TOKEN : undefined)
+  const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
   const request = async (path: string, init: RequestInit = {}) => {
     try {
       const response = await transport(new URL(path, options.baseUrl), {

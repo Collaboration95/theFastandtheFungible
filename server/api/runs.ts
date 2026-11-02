@@ -1,5 +1,7 @@
 import { Router, type RequestHandler } from 'express'
 import type { ApiContext } from './context.js'
+import { admit } from '../spend-policy.js'
+import { BUDGET } from '../../shared/contracts/run.js'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { AskSchema } from '../../shared/contracts/index.js'
@@ -55,10 +57,13 @@ export function startRun(context: ApiContext): RequestHandler {
     const isMcp = req.path === '/api/mcp/runs'
     const input = AskSchema.parse(isMcp ? { question: req.body.question, budgetMinor: 0 } : req.body)
     const request = isMcp ? z.object({ budget_sgd: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER / 100), idempotency_key: z.string().min(1).max(200).optional() }).parse(req.body) : undefined
-    const admitted = request ? store.createMcpRun(input.question, Math.floor(request.budget_sgd * 100 + 1e-7), request.idempotency_key ?? randomUUID(), mcpPolicy, labels) : undefined
-    const run = admitted?.run ?? store.createRun(input.question, input.budgetMinor, labels)
-    res.status(admitted?.reused ? 200 : 201).json(run)
-    if (admitted?.reused) return
+    const admitted = admit(store, { surface: isMcp ? 'mcp' : 'web', principal: 'operator',
+      question: input.question, requestedMinor: request ? Math.floor(request.budget_sgd * 100 + 1e-7) : input.budgetMinor,
+      idempotencyKey: request?.idempotency_key ?? z.string().min(1).max(200).optional().parse(req.get('Idempotency-Key')) ?? randomUUID(),
+      maxMinor: isMcp ? mcpPolicy.maxMinor : BUDGET.maxMinor, ...(isMcp ? { dailyMinor: mcpPolicy.dailyMinor } : {}), labels })
+    const run = admitted.run
+    res.status(admitted.reused ? 200 : 201).json(run)
+    if (admitted.reused) return
     launch(run.runId, async () => {
       // No plan from the UI: the server plans itself, so tests and API users need no UI. A clarify answer re-plans
       // on the server too (#208): the client's plan predates the answer, so the angle would never reach search.

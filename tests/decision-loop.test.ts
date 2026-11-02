@@ -61,6 +61,9 @@ function harness(budgetMinor = 200) {
 }
 
 describe('RunLoop with W0 ledger/research doubles', () => {
+  // These historical W0 doubles have no frozen requirements; opt in to testing legacy live gaps.
+  beforeAll(() => vi.stubEnv('LEGACY_GAP', '1'))
+  afterAll(() => vi.unstubAllEnvs())
   it('runs free answer, decision, one verified purchase, immutable v2, then stops', async () => {
     const h = harness()
     await h.loop.start(h.run.runId)

@@ -5,6 +5,7 @@
 //   --probe              one paid purchase + one forced challenge/refund: UC3 round 1 on its own, no re-ask
 // Env: DEMO_PORT_OFFSET (default 300 → 5400/9088/9090; 0 is refused: never the main demo's 5100/8788/8790).
 // Writes data/smoke/last.json. Exit 1 when any check fails (fixture fallbacks included).
+import { randomBytes } from 'node:crypto'
 import { spawn } from 'node:child_process'
 import { mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -157,8 +158,9 @@ export function summarise(kind, run, extra, provider = 'cloudflare') {
 
 // --- everything below talks to a live stack and is only run as a script ---
 
+let apiToken
 async function json(base, path, init) {
-  const res = await fetch(`${base}${path}`, { ...init, headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(60_000) })
+  const res = await fetch(`${base}${path}`, { ...init, headers: { 'Content-Type': 'application/json', ...(apiToken ? { Authorization: `Bearer ${apiToken}` } : {}) }, signal: AbortSignal.timeout(60_000) })
   if (!res.ok) throw new Error(`${init?.method ?? 'GET'} ${path} → HTTP ${res.status}`)
   return res.json()
 }
@@ -203,7 +205,8 @@ async function main() {
   for (const f of ['app.db', 'app.db-wal', 'app.db-shm']) rmSync(`${dir}/${f}`, { force: true })
   // demo.mjs --live forces LLM_PROVIDER=deepseek (the user's .env may say groq), DECISION_PROVIDER=openai|cloudflare (default
   // cloudflare, the same rule as `provider` above) and SEARCH_EMBEDDINGS=live.
-  const env = { ...process.env, DEMO_PORT_OFFSET: String(args.offset), LANGFUSE_ENABLED: '1', LANGFUSE_TRACING_ENVIRONMENT: 'smoke', APP_DB: `${dir}/app.db`, REPORT_DIR: `${dir}/reports`, SEARCH_EMBEDDINGS: 'live', LLM_SYNTHESIS_TIMEOUT_MS: process.env.LLM_SYNTHESIS_TIMEOUT_MS || '120000' }
+  apiToken = process.env.RA_API_TOKEN || randomBytes(32).toString('hex')
+  const env = { ...process.env, RA_API_TOKEN: apiToken, DEMO_PORT_OFFSET: String(args.offset), LANGFUSE_ENABLED: '1', LANGFUSE_TRACING_ENVIRONMENT: 'smoke', APP_DB: `${dir}/app.db`, REPORT_DIR: `${dir}/reports`, SEARCH_EMBEDDINGS: 'live', LLM_SYNTHESIS_TIMEOUT_MS: process.env.LLM_SYNTHESIS_TIMEOUT_MS || '120000' }
   const log = openSync(`${dir}/stack.log`, 'w')
   const stack = spawn(process.execPath, ['scripts/demo.mjs', '--live'], { env, stdio: ['ignore', log, log] })
   const stop = () => stack.kill('SIGTERM')

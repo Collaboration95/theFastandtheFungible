@@ -1,3 +1,4 @@
+import { loadConfig } from '../config.js'
 import { activeTraceUrl, scoreTrace, traceRun } from '../telemetry.js'
 import type { Store } from '../store.js'
 import type { PublisherClient } from '../publisher-client.js'
@@ -373,7 +374,9 @@ export class RunLoop {
         const fingerprint = this.fingerprint(run)
         // #209: the next unresolved requested fact not yet judged on this evidence; a legacy run judges its first free-text gap.
         const target = open?.find(r => !(run.checkpoint.attempts ?? []).some(a => a.requirementId === r.id && a.fingerprint === fingerprint))
-        const legacyGap = requirements ? undefined : answer.openGaps[0]
+        // Historical fixture scenarios still exercise the legacy path. Live legacy gaps require operator opt-in.
+        const allowLegacy = !this.options.provider || this.options.provider.name === 'fixture' || loadConfig().LEGACY_GAP === '1'
+        const legacyGap = requirements || !allowLegacy ? undefined : answer.openGaps[0]
         const nothingOpen = requirements ? !open!.length : !legacyGap?.text.trim()
         if (run.round >= 1 && nothingOpen) { stopReason = 'complete'; break }
         if (run.round >= 3) { stopReason = 'round-limit'; break }

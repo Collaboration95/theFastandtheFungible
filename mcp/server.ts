@@ -15,7 +15,7 @@ try {
   const config = loadConfig()
   const dataDir = resolve(config.RA_DATA_DIR ?? resolve(root, 'data/mcp'))
   const apiUrl = config.RA_BACKEND_URL || (engine = await startEngine({ dataDir, live: config.RA_LIVE === '1' })).apiUrl
-  const server = createMcpServer(apiUrl)
+  const server = createMcpServer(apiUrl, config.RA_API_TOKEN || engine?.apiToken)
   let closing = false
   const close = async () => {
     if (closing) return

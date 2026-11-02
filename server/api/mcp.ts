@@ -12,12 +12,12 @@ export function mcpRouter(context: ApiContext) {
     res.json(store.getRun(String(req.params.id)))
   })
   router.get('/api/mcp/status', async (_req, res) => {
-    res.json({ labels, corpusLabel: 'SYNTHETIC · fictional writers and articles', publisherUrl, ...mcpPolicy, ...store.mcpStatus(), rail: payer ? 'xrpl-testnet' : 'simulated', payerAddress: payer?.address ?? null })
+    res.json({ labels, corpusLabel: 'SYNTHETIC · fictional writers and articles', publisherUrl, ...mcpPolicy, ...store.mcpStatus(), wallet: store.walletStatus(), paused: store.isPaused(), rail: payer ? 'xrpl-testnet' : 'simulated', payerAddress: payer?.address ?? null })
   })
   router.get('/api/mcp/search', async (req, res) => {
     const { query, k } = z.object({ query: z.string().trim().min(1).max(2000), k: z.coerce.number().int().min(1).max(50).default(10) }).parse(req.query)
     const writers = await client.registry()
-    const found = await Promise.allSettled(writers.map(async writer => (await client.searchPublisher(writer.slug, query, k)).map(hit => ({ title: hit.title, writer: writer.name, tier: hit.tier, priceMinor: hit.priceMinor, abstract: hit.abstract, relevance: hit.relevance, url: new URL(hit.url, publisherUrl).href }))))
+    const found = await Promise.allSettled(writers.map(async writer => (await client.searchPublisher(writer.slug, query, k)).map(hit => ({ untrusted: true, title: hit.title, writer: writer.name, tier: hit.tier, priceMinor: hit.priceMinor, abstract: hit.abstract, relevance: hit.relevance, url: new URL(hit.url, publisherUrl).href }))))
     res.json({ labels, corpusLabel: 'SYNTHETIC · fictional writers and articles', hits: found.flatMap(result => result.status === 'fulfilled' ? result.value : []).sort((a, b) => b.relevance - a.relevance).slice(0, k), unavailable: writers.filter((_, i) => found[i].status === 'rejected').map(w => w.slug) })
   })
   return router

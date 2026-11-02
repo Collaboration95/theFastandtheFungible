@@ -1,3 +1,4 @@
+import { admissionGuard } from './admission.js'
 import { loadConfig } from './config.js'
 import type { ApiContext } from './api/context.js'
 import { walletRouter } from './api/wallet.js'
@@ -30,6 +31,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const jobs = new Set<Promise<void>>()
   const app = express()
   app.disable('x-powered-by')
+  app.use(admissionGuard(config))
   app.use(express.json({ limit: '16kb' }))
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next() })
   const streams = new Map<string, Set<Response>>()
