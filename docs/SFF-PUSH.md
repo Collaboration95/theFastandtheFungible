@@ -14,7 +14,7 @@ PR or issue.
 
 | Track | Deliverable | Status |
 |---|---|---|
-| Product | Cleanup: security deps, test safety, dead code, docs truth (#248–#250) | in progress |
+| Product | Cleanup: security deps, test safety, dead code, docs truth (#248–#250) | done ([#254](https://github.com/Collaboration95/theFastandtheFungible/pull/254)) |
 | Product | Cheaper CI: docs-only changes skip tests, no duplicate runs | in progress |
 | Product | Hill-climb scorecard (wasted spend, selection F1, fact uplift…) run nightly | planned |
 | Product | Next big features (local-first desktop app, MCP server, …) | being planned |
@@ -41,6 +41,7 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 ## Changelog
 
 ### Mon 2 Nov
+- Audit cleanup: patched production dependencies, synchronized Stop scoring, isolated browser-test ports/ledgers, corrected preflight and docs, and aligned the search eval with production ([#254](https://github.com/Collaboration95/theFastandtheFungible/pull/254)).
 - Resumed after the 10–11 Oct demo. Audits: CI green, 478 tests pass, fixture demo runs end to end.
 - Judging criteria and PR template: every PR opens with the criterion it serves (#251).
 - Filed the cleanup as #248–#250 (one PR). Started the CI-cost work. Started planning the next feature set.
