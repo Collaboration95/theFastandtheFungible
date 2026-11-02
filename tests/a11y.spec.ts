@@ -26,3 +26,26 @@ test('clarify chips, plan card, finished UC2 run and Writers tab have no serious
   await page.getByRole('tab', { name: 'Writers' }).click()
   expect(await serious(page)).toEqual([])
 })
+
+test('all cast states have names, load artwork, reflow and respect reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/design/cast/qa.html')
+  const marks = page.getByRole('img')
+  await expect(marks).toHaveCount(48)
+  await expect(page.getByRole('img', { name: 'Purse · simulated', exact: true })).toBeVisible()
+  await expect(page.getByRole('img', { name: /AlphaLeak · caught · fictional writer/ })).toHaveCount(1)
+  const artwork = await page.locator('.ra-cast img').evaluateAll(images => images.every(img => (img as HTMLImageElement).complete && (img as HTMLImageElement).naturalWidth > 0))
+  expect(artwork).toBe(true)
+  expect(await serious(page)).toEqual([])
+  expect(await marks.first().evaluate(el => getComputedStyle(el).animationName)).toBe('none')
+  for (const width of [320, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 844 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.addStyleTag({ content: 'html { font-size: 200% }' })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.reload()
+  expect(await marks.first().evaluate(el => getComputedStyle(el).animationName)).toBe('cast-arrive')
+})

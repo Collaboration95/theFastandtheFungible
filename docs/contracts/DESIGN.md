@@ -14,8 +14,9 @@ surfaces and restrained semantic accent. The working canvas is a reading
 surface; the application frame is stable; panels are reserved for decisions,
 source inspection, and the dossier. A neutral sans-serif carries interface and
 answer text. A compact mono treatment may be used for token caps, prices, state
-labels, and event metadata. Any expressive/editorial face or illustration is
-limited to the first-run home/demo, not the research workspace.
+labels, and event metadata. Any expressive/editorial face remains limited to
+the first-run home/demo.
+The cast marks agent and money states in the research workspace.
 
 The signature elements are the **scope bar** and the **research path**. The
 scope bar is a compact, editable checkpoint before research begins. The path is
@@ -54,7 +55,8 @@ zoom, and 320px reflow without body overflow.
 ## Shape, motion, and content
 
 Surfaces are flat with hairline rules and near-square controls. Rounded pills
-are limited to semantic badges and compact filter chips. Motion is minimal:
+are limited to semantic badges and compact filter chips. Motion is purposeful:
+cast marks can briefly enter or sweep as states change;
 state changes may transition the budget bar, but research results do not depend
 on animation. Reduced motion removes transitions and smooth scrolling.
 
@@ -63,3 +65,25 @@ Write in plain, specific language: “Buy S$0.20”, “Skipped · duplicate”,
 score or imply that fixture payment reached a real publisher. Open evidence,
 premium preview, unlocked text, fixture settlement, and dossier citations stay
 distinct.
+
+## Cast: agent and money states
+
+`design/cast/build-cast.mjs` owns shared parts and the palette above, generating
+48 compact 160×160 SVGs in `src/assets/cast/`. See `design/cast/sheet.html` for
+every named pose; `design/cast/PROMPT.md` records direction and regeneration.
+Scout is the researcher; Purse represents the human-set budget authority;
+eight fictional writers carry distinct props; AlphaLeak's slipping mask marks
+a failed promise; Receipt and Ledger represent proof and Testnet settlement.
+Each state has both a prop/shape and a text label.
+
+`src/components/Cast.tsx` supplies `role="img"` and an accessible name; adjacent
+transaction text remains authoritative. Its optional brief motion is disabled
+by `prefers-reduced-motion`. No endless animation, fake ledger-clock finality,
+or spend initiated by artwork. Stamps describe actual evidence only: a payment
+receipt is not a content-verification proof. SIMULATED stays visible in ochre
+with text; Ledger says Testnet. Locked Purse is future escrow artwork (#261),
+not a shipped escrow claim. Full flow choreography is #262.
+
+`design/cards/post-card.html` and `design/cards/render.mjs` produce light-theme
+1200×630 and 1080×1350 daily post images with title, before → after metric and
+cast pose. Keep fictional/illustrative and Testnet labels in exports.

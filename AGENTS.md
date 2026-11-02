@@ -33,6 +33,11 @@
 
 ## How work is run (SFF push)
 
+- Append XRPL, x402, Starter Kit, Testnet or tooling friction to
+  `docs/BUILDER-FEEDBACK.md` on the day it happens: date, evidence path/commit,
+  workaround, suggested fix, severity and mainnet impact. Distinguish observed
+  incidents from code-derived failure modes and historical research.
+
 - The project runs hands-off: agents plan, build, ship and merge in loops. Agents
   have full authority to merge to `main` once the merge gate passes.
 - Model split, by share of work:

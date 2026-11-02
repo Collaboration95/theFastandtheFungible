@@ -1,0 +1,9 @@
+.ra-cast { display: inline-block; flex: none; vertical-align: middle; max-width: 100%; }
+.ra-cast img { display: block; width: 100%; height: auto; }
+/* One short entrance per state mount, opt-in only. Never a fake settlement timer. */
+@media (prefers-reduced-motion: no-preference) {
+  .ra-cast-motion { animation: cast-arrive .4s ease-out both; }
+  .ra-cast-motion[data-pose="searching"] { animation: cast-sweep .7s ease-in-out both; }
+}
+@keyframes cast-arrive { from { transform: translateY(5px); opacity: .3; } to { transform: none; opacity: 1; } }
+@keyframes cast-sweep { 0% { transform: rotate(-7deg); } 65% { transform: rotate(5deg); } 100% { transform: none; } }
