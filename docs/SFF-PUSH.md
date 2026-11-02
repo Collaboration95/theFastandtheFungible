@@ -219,6 +219,8 @@ Agents add items there and keep working around them.
 
 ## Decisions log
 
+- 3 Nov: #277 publishes locally with a private `.env.writer`, deterministic public topics, unverified identity and the operator payee denylist; npm distribution stays an owner choice on #265.
+
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
 
 - 3 Nov: Logo direction chosen: open index, because source boundaries and a route to evidence read at 16 px on the cast’s 24-unit grid; Ink/Paper with sparse Salmon layout accents. Explainers source moves into `site/` for one reviewable app/site identity kit (#271).
@@ -237,6 +239,7 @@ Significant product, design and process decisions, newest first. One line each: 
 ## Changelog
 
 - 2026-11-03: Reused test search indexes and optimized leak-oracle comparisons to shorten hard-gate runs without changing coverage.
+- 3 Nov: #277 Markdown publishing command, three starter articles, signed x402 writer and local registration; Testnet folder → verified paid read **19.30 s**, one **0.01 XRP** payment ([proof](evidence/publish-site-277.md)).
 
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 

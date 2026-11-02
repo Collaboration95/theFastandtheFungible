@@ -1,3 +1,4 @@
+import { payeeRefusal } from './payee-screening.js'
 import { scoreStep } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
@@ -103,6 +104,8 @@ export class PurchaseManager {
     return intent
   }
   private refusal(intent: PurchaseIntent, candidate: PublicCandidate, manifest?: Manifest): string | undefined {
+    const screened = payeeRefusal(intent.quote?.payment?.payTo ?? candidate.wallet ?? '')
+    if (screened) return screened
     const quote = intent.quote!, terms = quote.payment!
     const bound = invoiceFields(quote.quoteId)
     if (terms.rail !== this.payer.rail) return this.payer.rail === 'xrpl-testnet' ? 'Publisher is not on the XRPL Testnet rail; nothing was charged' : 'Publisher is on the XRPL Testnet but this run is SIMULATED; nothing was charged'

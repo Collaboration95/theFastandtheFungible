@@ -1,4 +1,5 @@
 // Every publisher in one process (#122): roster, keys and one search index each.
+import { localWriterEnv } from './local-writers.js'
 import { createHash } from 'node:crypto'
 import { deriveAddress, deriveKeypair, generateSeed } from 'ripple-keypairs'
 import type { Rail } from '../shared/contracts/publisher.js'
@@ -26,7 +27,7 @@ export const simulatedKeys = (slug: string) => keysFromSeed(simulatedSeed(slug),
  */
 export function publisherKeys(slug: string, rail: Rail, env: NodeJS.ProcessEnv = process.env): PublisherKeys {
   if (rail === 'simulated') return simulatedKeys(slug)
-  const seed = env[seedEnvName(slug)]
+  const seed = env[seedEnvName(slug)] || localWriterEnv(slug)[seedEnvName(slug)]
   if (!seed) throw new Error(`${seedEnvName(slug)} is required on the xrpl-testnet rail`)
   const keys = keysFromSeed(seed, false)
   if (keys.wallet === simulatedKeys(slug).wallet) throw new Error(`${seedEnvName(slug)} is the simulated test key; refused on the xrpl-testnet rail`)

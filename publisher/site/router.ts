@@ -11,11 +11,11 @@ const sgd = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 const date = (iso: string) => esc(iso.slice(0, 10))
 const CSP = "default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'"
 
-const page = (title: string, nav: string, main: string) => `<!doctype html>
+const page = (title: string, nav: string, main: string, synthetic = true) => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><link rel="stylesheet" href="/w/site.css"></head>
 <body>${nav}<main>${main}</main>
-<footer><span>SYNTHETIC · fictional writer. Nothing here is real reporting.</span><a href="/w/">The web the engine searches</a></footer></body></html>
+<footer><span>${synthetic ? 'SYNTHETIC · fictional writer. Nothing here is real reporting.' : 'AUTHOR SUPPLIED · unverified writer · XRPL Testnet'}</span><a href="/w/">The web the engine searches</a></footer></body></html>
 `
 
 const navFor = ({ publisher }: PublisherEntry) => {
@@ -23,11 +23,13 @@ const navFor = ({ publisher }: PublisherEntry) => {
   return `<nav><a class="name" href="${base}/">${esc(publisher.name)}</a><div class="mid"><a href="${base}/">Blogs</a><a href="${base}/about">About</a></div><div class="right"><a href="${base}/contact">Contact</a></div></nav>`
 }
 
+const entryPage = (entry: PublisherEntry, title: string, nav: string, main: string) => page(title, nav, main, entry.publisher.synthetic)
+
 const homePage = (entry: PublisherEntry) => {
   const { publisher, articles } = entry
   const rows = [...articles].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(a =>
     `<li><time datetime="${esc(a.publishedAt)}">${date(a.publishedAt)}</time><span><a href="${esc(articleUrl(a.publisherSlug, a.articleId))}">${esc(a.title)}</a>${a.tier === 'PAID' ? `<span class="tag">402 · ${sgd(a.priceMinor)}</span>` : ''}</span></li>`).join('')
-  return page(publisher.name, navFor(entry), `<p class="hero">${esc(publisher.heroQuote)}</p><ul class="rows">${rows || '<li class="note">No posts yet.</li>'}</ul>`)
+  return entryPage(entry, publisher.name, navFor(entry), `<p class="hero">${esc(publisher.heroQuote)}</p><ul class="rows">${rows || '<li class="note">No posts yet.</li>'}</ul>`)
 }
 
 const paragraphs = (a: Article) => a.passages.map(p =>
@@ -39,26 +41,26 @@ const articlePage = (entry: PublisherEntry, a: Article) => {
   const body = a.tier === 'FREE'
     ? paragraphs(a)
     : `<p class="abstract">${esc(a.abstract)}</p><div class="badge">402 · agents pay ${sgd(a.priceMinor)} · XRPL Testnet</div><p class="note">The full text is sold to agents, per article, over x402. This page shows the abstract only.</p>`
-  return page(a.title, navFor(entry), head + body)
+  return entryPage(entry, a.title, navFor(entry), head + body)
 }
 
 const aboutPage = (entry: PublisherEntry) => {
   const { publisher, writers } = entry
   const prices = Object.entries(publisher.prices).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${sgd(v)}</dd>`).join('')
   const wallet = publisher.wallet ? `<h2>Wallet</h2><p><a href="https://testnet.xrpl.org/accounts/${esc(publisher.wallet)}" rel="noopener">${esc(publisher.wallet)}</a><br><span class="note">XRPL Testnet, no real funds.</span></p>` : ''
-  return page(`About · ${publisher.name}`, navFor(entry), `<h1>About</h1><p>${esc(publisher.bio)}</p><p class="note">${esc(publisher.domain)} · ${esc(publisher.kind)}</p>
+  return entryPage(entry, `About · ${publisher.name}`, navFor(entry), `<h1>About</h1><p>${esc(publisher.bio)}</p><p class="note">${esc(publisher.domain)} · ${esc(publisher.kind)}</p>
 <h2>Writers</h2><ul class="rows">${writers.map(w => `<li><strong>${esc(w.name)}</strong><span>${esc(w.bio)}</span></li>`).join('')}</ul>
 <h2>Price list</h2>${prices ? `<dl>${prices}</dl>` : '<p class="note">Everything here is free.</p>'}
 <h2>Licence</h2><p>${esc(publisher.licence)}</p>${wallet}`)
 }
 
-const contactPage = (entry: PublisherEntry) => page(`Contact · ${entry.publisher.name}`, navFor(entry), `<h1>Contact</h1><p class="note">This is a synthetic publication. There is no inbox behind this page.</p>`)
+const contactPage = (entry: PublisherEntry) => page(`Contact · ${entry.publisher.name}`, navFor(entry), `<h1>Contact</h1><p class="note">No contact inbox is provided by this local site.</p>`)
 
 const indexPage = (entries: PublisherEntry[]) => page('The web the engine searches', `<nav><a class="name" href="/w/">The web the engine searches</a><div class="mid"></div><div class="right"></div></nav>`,
-  `<h1>The web the engine searches</h1><p class="note">Every publisher the research agent can search. All fictional.</p><ul class="rows">${entries.map(({ publisher, writers, articles }) => {
+  `<h1>The web the engine searches</h1><p class="note">Every publisher the research agent can search. Testnet · writers are unverified.</p><ul class="rows">${entries.map(({ publisher, writers, articles }) => {
     const lanes = [...new Set(articles.map(a => a.tier === 'PAID' ? 'paid' : 'free'))].sort().join(' + ') || 'none yet'
-    return `<li><span><a href="/w/${esc(publisher.slug)}/">${esc(publisher.name)}</a><br><span class="note">${esc(publisher.domain)} · ${esc(publisher.kind)} · ${esc(lanes)} · ${writers.length} writer${writers.length === 1 ? '' : 's'}</span></span></li>`
-  }).join('')}</ul>`)
+    return `<li><span><a href="/w/${esc(publisher.slug)}/">${esc(publisher.name)}</a><br><span class="note">${esc(publisher.domain)} · ${publisher.verification ? esc(publisher.verification) : esc(publisher.kind)} · ${esc(lanes)} · ${writers.length} writer${writers.length === 1 ? '' : 's'}</span></span></li>`
+  }).join('')}</ul>`, entries.every(e => e.publisher.synthetic))
 
 /** Mounted once by routes.ts after the writer registry is ready. */
 export function siteRouter(getRegistry: () => Map<string, PublisherEntry>) {

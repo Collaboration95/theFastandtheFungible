@@ -128,6 +128,80 @@ The explainers site shares one header across its pages (source in [`site/`](site
 
 **Not built yet:** durable hosted storage, mainnet, licensing and a central index. The 10 Oct live demo ran on Google Cloud Run; that deploy was removed after the talk (last commit with it: `ce77f59`).
 
+## Publish your own expertise
+
+From a clone with Node 22.13+ and `npm ci`, turn a Markdown folder into a local
+writer that UI and MCP agents can search and pay:
+
+```sh
+cp -R examples/writer-starter my-notes
+npm run publish:site -- ./my-notes
+# Beside another stack: OFFSET=800 npm run publish:site -- ./my-notes
+```
+
+The command serves the site, signed manifests and an x402 facilitator on loopback,
+creates and faucet-funds an **XRPL Testnet** wallet, and prints the time to ready.
+Keep it running and use the printed `PUBLISHER_URL` with the UI/MCP engine.
+It also registers the writer in the ignored `data/local-writers/` directory;
+the next normal publisher start includes it alongside the built-in writers.
+Stop that site before starting the normal stack on the same port. Ctrl-C stops
+the host; rerun the same command after edits. Use `--slug my-name`, `--name "My Name"`,
+`--port 9590`, or `--rail simulated` for an explicitly labelled offline run.
+`node scripts/publish-site.mjs ./my-notes` is the equivalent repo-local bin entry.
+
+Each top-level `.md` file needs scalar front matter (plain or quoted values):
+
+```markdown
+---
+title: Solar electricity share
+tier: PAID
+price: 0.10
+abstract: A separately written public summary of the research scope.
+tags: solar, electricity, Malaysia
+questions: Contracted share? | Hourly matching?
+synthetic: false
+---
+
+## Contract scope
+
+Your article goes here, split into paragraphs…
+```
+
+`price` is SGD with up to two decimal places, converted at the existing labelled
+demo rate (S$0.10 = 0.01 Testnet XRP). FREE articles use `price: 0.00`.
+The existing corpus rules apply: 600–1,400 words and at least four paragraphs.
+Filenames and writer slugs use lowercase letters, numbers and hyphens. Public
+abstracts, titles and topic labels must not reproduce eight consecutive premium
+words. Short headings and optional `questions` supply public topics; keep answers
+in the body. Metadata generation is deterministic, with no LLM calls.
+Search uses the existing hybrid index when `SEARCH_EMBEDDINGS=live` is explicitly
+set with Workers AI credentials; otherwise it says keyword search. Enabling live
+embeddings sends the existing index text to Workers AI and uses that provider.
+
+Keys are never printed. A wallet is created once in a mode-0600 `.env.writer`
+inside the private writer directory, or attached from the existing
+`XRPL_PUBLISHER_<SLUG>_SEED` environment variable. A failed faucet call keeps the
+key for retry. Back up this ignored directory privately. Mainnet is disabled.
+Every new writer is shown as **unverified writer**; an operator denylist at
+`data/payee-denylist.json` (an array of `{ "address": "r…", "reason": "…" }`)
+is checked before wallet funding and before payment signing. This is not KYB
+or a sanctions provider.
+
+To reproduce the end-to-end demo with real retrieval, fixture decisions and
+proof verification:
+
+```sh
+node --import tsx scripts/publish-demo.ts           # SIMULATED, no network payment
+node --import tsx scripts/publish-demo.ts --testnet # one 0.01 Testnet XRP read
+```
+
+The Testnet demo uses `XRPL_PAYER_SEED` from the ignored `.env`, binds port 9590,
+and stores private state under `scratch/published-demo/`. It refuses to start a
+second Testnet demo against an existing buyer journal; reconcile that journal
+instead of paying again. [Recorded Testnet proof](docs/evidence/publish-site-277.md).
+The three starter articles are adaptations of the repository's original
+synthetic corpus (energy, grid planning and wafer contracts), not real reporting.
+
 ---
 
 `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**. The repository name stays stable for published Pages URLs.

@@ -31,6 +31,7 @@ export const SearchHitSchema = z.object({
   title: z.string().min(1), abstract: z.string().min(1).max(220), tags: z.array(z.string()),
   tier: z.enum(['FREE', 'PAID']), priceMinor: z.number().int().nonnegative(), relevance: z.number().min(0).max(1),
   publishedAt: z.string().min(1), family: z.string().min(1), derivedFrom: z.string().optional(),
+  verification: z.literal('unverified writer').optional(),
   manifest: ManifestSchema.optional(), searchMode: z.enum(['hybrid', 'keyword']),
 }).strict().refine(hit => (hit.tier === 'PAID') === Boolean(hit.manifest), { message: 'a PAID hit needs a manifest; a FREE hit has none' })
 
