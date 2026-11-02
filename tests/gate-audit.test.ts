@@ -8,6 +8,7 @@ import { exampleAnswer, exampleCandidate, exampleContent, exampleRun } from '../
 import { SIMULATED_LABEL, type RunSnapshot } from '../shared/contracts/index.js'
 import { loadWriterCorpus } from '../publisher/corpus.js'
 import type { WriterCorpus } from '../shared/contracts/writers.js'
+import { assertNoLeaks } from './scenarios/harness.js'
 import { Store } from '../server/store.js'
 
 let corpus: WriterCorpus
@@ -62,6 +63,16 @@ describe('hard-gate audit', () => {
   it('catches orphan purchase events without an intent row', () => {
     const r = copy(); r.events.push({ id: 1, runId: r.runId, type: 'PURCHASE', at: '', label: 'RESERVED', data: { intentId: 'unknown' } })
     expect(auditRuns([r], corpus).byRule.purchase_without_policy).toBe(1)
+  })
+  it('invalidates cached leak markers after paid or public corpus mutation', () => {
+    const c = structuredClone(corpus), paid = c.articles.find(a => a.tier === 'PAID')!, free = c.articles.find(a => a.tier === 'FREE')!
+    assertNoLeaks([], c)
+    const text = 'Private cache mutation sentinel has nine entirely novel words.'
+    paid.passages.push({ id: 'new-private', text }); paid.body += '\n' + text
+    const observation = { kind: 'mutated', raw: text, grants: [] }
+    expect(() => assertNoLeaks([observation], c)).toThrow(`leaked ${paid.articleId}`)
+    free.body += '\n' + text
+    expect(() => assertNoLeaks([observation], c)).not.toThrow()
   })
   it('audits raw SQLite without sanitizing corrupt public fields or writing to the store', () => {
     const dir = mkdtempSync(join(tmpdir(), 'gate-audit-')); dirs.push(dir)
