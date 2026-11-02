@@ -16,7 +16,7 @@ PR or issue.
 |---|---|---|---|
 | Product | Cleanup: security deps, test safety, dead code, docs truth | #248–#250 | done ([#254](https://github.com/Collaboration95/theFastandtheFungible/pull/254)) |
 | Product | Cheaper CI: docs-only changes skip tests, no duplicate runs | #252 | done |
-| Product | Nightly scorecard + hard-gate audit | #256 | planned · 3–4 Nov |
+| Product | Nightly scorecard + hard-gate audit | #256 | implemented · fixture baseline, 2 Nov; live keys unavailable |
 | Product | MCP server: any agent searches and buys within a human-set cap | #255 | done · fixture proof + Claude Code transcript |
 | Product | Feature-a-day run: 9 notable features, one release each, Thu 5 → Fri 13 ([calendar](#feature-a-day-5-13-nov)) | #270, #260, #259, #262, #273–#277; slack #278–#281 | planned · 5–13 Nov |
 | Product | Day 1: the local app done properly (keyboard-first, state model, record mode) | #270 | planned · Thu 5 |
@@ -43,16 +43,21 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 
 | Metric | Baseline (9 Oct) | Latest | Target 12 Nov |
 |---|---|---|---|
-| Wasted spend (purchases adding no supported fact) | 39.5% | — | ≤ 20% |
-| Purchase-selection F1 | 0.24 (flow) / 0.41 (sweep) | — | ≥ 0.5 (flow) |
-| Supported-fact uplift from paying | +9.5 pts | — | ≥ +20 pts |
-| False-complete rate | 1.9% | — | ≤ 2% |
-| p95 time to first answer | not measured | — | set after baseline |
-| Cost per query (model US$ + XRP spent) | not measured | — | set after baseline |
-| Cold start (launch → ready; app and engine) | not measured | — | < 5 s |
+| Wasted spend (purchases adding no supported fact) | 39.5% | 67.93% · fixture, 2 Nov UTC | ≤ 20% |
+| Purchase-selection F1 | 0.24 (flow) / 0.41 (sweep) | 0.310 flow / 0.222 sweep · fixture, 2 Nov UTC | ≥ 0.5 (flow) |
+| Supported-fact uplift from paying | +9.5 pts | +28.30 pts · fixture, 2 Nov UTC | ≥ +20 pts |
+| False-complete rate | 1.9% | 37.74% (overlap fixture) · fixture, 2 Nov UTC | ≤ 2% |
+| p95 time to first answer | not measured | 162.0 ms (p50 83.1; final p95 340.8) · fixture, 2 Nov UTC | set after baseline |
+| Cost per query (model US$ + XRP spent) | not measured | US$0 + 0 actual XRP drops · fixture, 2 Nov UTC | set after baseline |
+| Cold start (launch → ready; app and engine) | not measured | 668.1 ms (booted demo; engine/app unmeasured) · fixture, 2 Nov UTC | < 5 s |
 | MCP e2e pass (fixture stdio) | 0 | 1 | 1 nightly |
 | MCP: question → paid, cited answer from Claude Code | not possible | PASS · fresh fixture session, 23.3 s including retry | passes nightly |
-| Hard-gate violations (`scripts/gate-audit.ts`) | 0 expected, not re-verified | — | 0, audited nightly |
+| Hard-gate violations (`scripts/gate-audit.ts`) | 0 expected, not re-verified | 0 / 10 runs; all six rules · fixture, 2 Nov UTC | 0, audited nightly |
+
+Latest fixture numbers above are from `eval/scorecard/latest.json` (#256). Live
+was not run on 2 Nov: no local `EVAL_*` credentials. The October live column is
+preserved; fixture and live scores are different benchmarks. Timing is measured
+wall clock on macOS; deterministic quality metrics repeat exactly.
 
 ## Plan
 
@@ -230,6 +235,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
 
 ### Mon 2 Nov
+- Lane B: nightly scorecard + six-rule read-only gate audit (#256); 48 questions, 116 coverage snapshots, 10 timed API queries, zero provider calls and zero gate violations. Live unavailable without EVAL credentials.
 - Lane C: added 15 implementation-backed feedback items plus the 15 September submissions, a mainnet gap checklist, and a restrained 48-state SVG system (including 16/24 px marks) with accessible React marks and reusable post cards (#257, #258); SFF timeline chapter follows the main merge.
 - Planned the next 10 days: three lanes, two surprise bets, wave-1 issues #255–#262 ([Plan](#plan)).
 - Audit cleanup: patched production dependencies, synchronized Stop scoring, isolated browser-test ports/ledgers, corrected preflight and docs, and aligned the search eval with production ([#254](https://github.com/Collaboration95/theFastandtheFungible/pull/254)).

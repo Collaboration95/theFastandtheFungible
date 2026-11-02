@@ -1,0 +1,42 @@
+name: nightly scorecard
+on:
+  schedule:
+    - cron: '0 18 * * *' # 02:00 SGT
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'eval/**'
+      - 'scripts/gate-audit.ts'
+      - 'tests/gate-audit.test.ts'
+      - 'tests/scorecard.test.ts'
+      - '.github/workflows/nightly.yml'
+permissions:
+  contents: read
+concurrency:
+  group: nightly-scorecard
+  cancel-in-progress: false
+jobs:
+  fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run scorecard -- --check
+      - name: Independently audit the generated store
+        run: |
+          db=$(find eval/scorecard/out -name api.db -print -quit)
+          test -n "$db"
+          npm run gate:audit -- --db "$db" --observations "$(dirname "$db")/observations.jsonl"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-scorecard
+          path: |
+            eval/scorecard/latest.json
+            eval/scorecard/out/*/report.json
+          if-no-files-found: error
