@@ -15,10 +15,12 @@ is built and covered by the gate suite.
 - Every claim is allowlisted to a source and evidence span in the dossier
   contract. Derivative sources do not add independent families.
 - Offline scenario mode settles in a labelled simulation and never produces a
-  fake Testnet hash. When `XRPL_MODE=live`, the server signs and submits only
-  to the configured XRPL Testnet endpoint, waits for validation, and records
-  the real transaction hash and explorer URL. Testnet XRP has no S$
-  equivalence.
+  fake Testnet hash. With `SETTLEMENT_RAIL=xrpl-testnet` and a payer seed,
+  the buyer server signs a Payment bound to the article's x402 terms; the
+  publisher's facilitator verifies the signed blob, submits it to the
+  configured XRPL Testnet endpoint, waits for validation, and records the
+  transaction hash. The buyer records the receipt and explorer URL. Both
+  sides restrict ledger access to Testnet; Testnet XRP has no real value.
 - Each paid article carries a writer manifest signed with the XRPL
   key that receives payment. The buyer accepts it only if the key derives to
   the payee wallet and the signature verifies. The signed message is
