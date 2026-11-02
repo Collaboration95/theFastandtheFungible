@@ -207,7 +207,7 @@ section (feature, visual, number, takeaway) and a clip from `make clip`
 
 ### Needs a human
 
-Everything only the owner can do lives in **#265** (pinned, `needs-human`).
+Everything only the owner can do lives in **[pinned issue #265](https://github.com/Collaboration95/theFastandtheFungible/issues/265)** (pinned, `needs-human`).
 Agents add items there and keep working around them.
 
 ## Changelog
@@ -217,7 +217,7 @@ Agents add items there and keep working around them.
 - Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
 
 ### Mon 2 Nov
-- Lane C: added 15 implementation-backed feedback items plus the 15 September submissions, a mainnet gap checklist, and a 48-pose SVG cast with accessible React marks and reusable post cards (#257, #258); SFF timeline chapter follows the main merge.
+- Lane C: added 15 implementation-backed feedback items plus the 15 September submissions, a mainnet gap checklist, and a restrained 48-state SVG system (including 16/24 px marks) with accessible React marks and reusable post cards (#257, #258); SFF timeline chapter follows the main merge.
 - Planned the next 10 days: three lanes, two surprise bets, wave-1 issues #255–#262 ([Plan](#plan)).
 - Audit cleanup: patched production dependencies, synchronized Stop scoring, isolated browser-test ports/ledgers, corrected preflight and docs, and aligned the search eval with production ([#254](https://github.com/Collaboration95/theFastandtheFungible/pull/254)).
 - Resumed after the 10–11 Oct demo. Audits: CI green, 478 tests pass, fixture demo runs end to end.

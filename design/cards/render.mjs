@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { chromium } from 'playwright'
 const root = resolve(dirname(fileURLToPath(import.meta.url)),'../..')
-const { values } = parseArgs({ options: { title:{type:'string',default:'Meet the cast: Scout, Purse and eight writers.'}, metric:{type:'string',default:'0 → 48 SVG poses'}, pose:{type:'string',default:'scout-paying'}, format:{type:'string',default:'both'}, out:{type:'string',default:'design/cards/first-post'} } })
+const { values } = parseArgs({ options: { title:{type:'string',default:'The ResearchAgent state system.'}, metric:{type:'string',default:'0 → 48 SVG poses'}, pose:{type:'string',default:'scout-paying'}, format:{type:'string',default:'both'}, out:{type:'string',default:'design/cards/first-post'} } })
 const manifest = JSON.parse(readFileSync(resolve(root,'src/assets/cast/manifest.json'),'utf8'))
 const asset = manifest.find(a=>`${a.who}-${a.pose}`===values.pose)
 if (!asset) throw new Error('Unknown cast pose: choose one from src/assets/cast/manifest.json')
@@ -21,6 +21,7 @@ try {
    document.querySelector('[data-title]').textContent=title
    document.querySelector('[data-metric]').textContent=metric
    const img = document.querySelector('[data-cast]');img.src=`../../src/assets/cast/${pose.file}`;img.alt=pose.label
+   if (pose.who === 'purse' && pose.pose === 'locked') document.querySelector('[data-note]').textContent = 'Future escrow illustration · not implemented'
    document.querySelector('.card').classList.toggle('portrait',format==='portrait')
   },{title:values.title,metric:values.metric,pose:asset,format})
   await page.locator('[data-cast]').evaluate(img=>img.decode())

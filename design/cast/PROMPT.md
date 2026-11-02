@@ -1,34 +1,29 @@
 # Cast v1: art direction and concept prompt
 
-Production art is parametric SVG: 160×160, 4 px Ink outlines, flat fills,
-shared proportions, restrained spark strokes. Light theme only. Source of truth:
-`build-cast.mjs`; do not edit generated SVGs by hand. Adapted technique from
-`Collaboration95/yald`'s Yaldi `docs/brand/yaldi/build-assets.mjs` and concept
-prompt, read as reference only. Scout is an original folded-paper field
-researcher; no Yaldi artwork is copied. The optional `common-grounds-makeathon`
-`server/animate.mjs` / `tools/slice-sheet.mjs` raster-loop pipeline was read;
-no frame strip is needed for v1.
+Production art is a restrained geometric icon and illustration system: one
+24-unit grid, 1.5-unit Ink strokes, flat Paper surfaces and sparse semantic
+accents. No faces, mascots, sparks, bobbing or generic entrance animation.
+Legible at 16–24 px and large. Each state has a small mark and a labelled
+160×160 illustration. The technique, not the tone, comes from Yald's
+`docs/brand/yaldi/build-assets.mjs`. The reference clones were read only.
+The optional common-grounds raster-loop pipeline is not needed here.
 
-## Concept-sheet prompt
+## Concept-sheet prompt / production direction
 
-Create a concept exploration sheet for ResearchAgent, an expertise search
-engine with a wallet. Warm Paper #FBF8F2, Ink #24211E, Editorial Salmon #D9A28F,
-Salmon Deep #91503F, Evidence Green #2F6B4F, Ochre #9A6B20, Block Red #9B3E35.
-Clean flat illustration, strong silhouettes, dark 4 px outlines, generous
-spacing, consistent scale. Scout is a paper-faced field researcher in a salmon
-folded paper hat: lantern, scales, coin, magnifier, alarm, report, stop sign.
-Purse is a drawstring wallet with visible full, spending, returning-coin, lock,
-empty and SIMULATED-tag props. Eight fictional writer busts have signature
-props: wafer, kopi cup, bond curve, salmon newspaper, lightning, paper stack,
-public-record courthouse, gossip mask. AlphaLeak's mask slips when caught.
-Receipt prints and takes VERIFIED / REFUNDED / SIMULATED stamps. Ledger stacks
-pages; any tick and hash are illustrative placeholders. Light theme only,
-no gradients, no 3D, no stock robot, no real people or real publisher branding.
-A concept exploration only, not payment evidence. Never communicate state by
-colour alone: use a prop and text label.
+Design a professional state illustration system for ResearchAgent. Think the
+restraint of Linear, Vercel or Stripe: simple geometry, consistent grid and
+stroke, warm light palette, generous space. Scout uses wayfinding, question,
+lantern, scales, transfer, magnifier, alert, report and stop symbols. Purse is
+an abstract wallet with explicit full/spending/refunded/locked/empty/simulated
+states. Writer marks combine a neutral geometric profile with a signature
+wafer, kopi cup, bond chart, paper, energy, stack, record or mask prop. Receipt
+and Ledger use document geometry. No anthropomorphic faces or cartoon tone.
+Colour never carries state alone. Motion only for short, meaningful money or
+refund movement, respecting reduced motion; full choreography is #262.
 
-The generated `concept.png` is an exploration, not the production asset source.
-`sheet.html` is the authoritative contact sheet for all 48 production poses.
+`concept.png` is the deterministic code-rendered contact sheet. It supersedes
+the discarded playful image-model exploration; the production SVG generator is
+the source of truth. `sheet.html` shows every state at large, 24 px and 16 px.
 
 ## Regenerate and use
 
@@ -40,8 +35,8 @@ The generated `concept.png` is an exploration, not the production asset source.
 - `design/cast/qa.html` through Vite renders every pose using the real React
   `<Cast>`; `tests/a11y.spec.ts` checks axe, reduced motion and narrow reflow.
 
-`<Cast who="scout" pose="paying" />` is a labelled state mark; `motion` opts
-into a brief entrance. It never controls policy or settlement. Keep the real
+`<Cast who="scout" pose="paying" />` is a labelled, static state mark.
+It never controls policy or settlement. Keep the real
 budget, receipt label and transaction link alongside it. Ledger does not infer
 finality after four seconds. Locked Purse is reserved for the future #261;
 using its artwork does not mean escrow exists. Writer `paid` poses include the

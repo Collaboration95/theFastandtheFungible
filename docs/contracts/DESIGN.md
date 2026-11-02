@@ -55,8 +55,8 @@ zoom, and 320px reflow without body overflow.
 ## Shape, motion, and content
 
 Surfaces are flat with hairline rules and near-square controls. Rounded pills
-are limited to semantic badges and compact filter chips. Motion is purposeful:
-cast marks can briefly enter or sweep as states change;
+are limited to semantic badges and compact filter chips. Motion is purposeful: short money and refund movement may explain real state
+changes; static cast marks have no generic entrance animation;
 state changes may transition the budget bar, but research results do not depend
 on animation. Reduced motion removes transitions and smooth scrolling.
 
@@ -69,16 +69,18 @@ distinct.
 ## Cast: agent and money states
 
 `design/cast/build-cast.mjs` owns shared parts and the palette above, generating
-48 compact 160×160 SVGs in `src/assets/cast/`. See `design/cast/sheet.html` for
+48 states with 160×160 and 24-unit SVGs in `src/assets/cast/`. See `design/cast/sheet.html` for
 every named pose; `design/cast/PROMPT.md` records direction and regeneration.
+A restrained 24-unit grid and 1.5-unit stroke keeps small marks legible at
+16–24 px. No anthropomorphic faces, mascots or decorative motion.
 Scout is the researcher; Purse represents the human-set budget authority;
 eight fictional writers carry distinct props; AlphaLeak's slipping mask marks
 a failed promise; Receipt and Ledger represent proof and Testnet settlement.
 Each state has both a prop/shape and a text label.
 
 `src/components/Cast.tsx` supplies `role="img"` and an accessible name; adjacent
-transaction text remains authoritative. Its optional brief motion is disabled
-by `prefers-reduced-motion`. No endless animation, fake ledger-clock finality,
+transaction text remains authoritative. The marks remain static. Any future payment movement must respect
+`prefers-reduced-motion`. No endless animation, fake ledger-clock finality,
 or spend initiated by artwork. Stamps describe actual evidence only: a payment
 receipt is not a content-verification proof. SIMULATED stays visible in ochre
 with text; Ledger says Testnet. Locked Purse is future escrow artwork (#261),
