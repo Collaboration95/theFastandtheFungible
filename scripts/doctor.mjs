@@ -8,6 +8,7 @@
 //           Read-only apart from the Clef and embedding calls; one PASS/FAIL line per check.
 // Never prints keys or provider response bodies. Exits 1 if any check fails.
 import 'dotenv/config'
+import { loadConfig } from '../server/config.ts'
 import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { DROPS_PER_MINOR } from '../shared/contracts/publisher.ts'
@@ -25,17 +26,18 @@ const warn = msg => console.log(stage ? `  WARN ${msg}` : `  ⚠ ${msg}`)
 const fail = msg => { failed = true; console.log(stage ? `  FAIL ${msg}` : `  ✗ ${msg}`) }
 const report = ({ ok: passed, line }) => passed ? ok(line) : fail(line)
 // The same swap as `CF_BACKUP=1 make live`, so preflight checks the pair the demo will use. Names only, never values.
-if (process.env.CF_BACKUP === '1') {
+if (loadConfig().CF_BACKUP === '1') {
   try { console.log(`CF_BACKUP=1: using the backup Cloudflare pair (${applyBackupPair(process.env).join(', ')})`) } catch (error) { fail(error.message) }
 }
 // The provider `make live` decides with (#214): DECISION_PROVIDER=openai or cloudflare (the default and the revert).
-const decisionProvider = liveDecisionProvider(process.env.DECISION_PROVIDER)
+const config = loadConfig()
+const decisionProvider = liveDecisionProvider(config.DECISION_PROVIDER)
 /**
  * OpenAI Decisions access: one cheap call through the app's own client (`candidates` > 0 makes it a batch round of that
  * size). The status and error body are read only to name the failure; nothing is printed but the PASS/FAIL line.
  */
 async function decisionsCheck(candidates = 0) {
-  if (!process.env.OPENAI_API_KEY) return decisionsAccessCheck({ missing: 'OPENAI_API_KEY' })
+  if (!config.OPENAI_API_KEY) return decisionsAccessCheck({ missing: 'OPENAI_API_KEY' })
   let last = {}
   const recording = async (url, init) => { const res = await fetch(url, init); last = { status: res.status, body: res.ok ? '' : await res.clone().text().catch(() => '') }; return res }
   const provider = new OpenAIDecisionsProvider({ fetch: recording })
@@ -85,7 +87,7 @@ if (!keysOnly) {
   } catch (error) { fail(`corpus/embeddings check failed (${error?.message ?? 'error'})`) }
 
   console.log('Ports')
-  const offset = Number(process.env.DEMO_PORT_OFFSET || 0)
+  const offset = Number(config.DEMO_PORT_OFFSET || 0)
   for (const [name, port, path] of [['web', 5100 + offset, '/'], ['api', 8788 + offset, '/health'], ['publisher', 8790 + offset, '/health']]) {
     const free = await new Promise(resolve => { const s = createServer().once('error', () => resolve(false)).listen(port, '127.0.0.1', () => s.close(() => resolve(true))) })
     if (free) { ok(`${name} :${port} free`); continue }
@@ -96,13 +98,13 @@ if (!keysOnly) {
 
 if (stage) {
   console.log('Stage preflight (make preflight)')
-  if (process.env.CLOUDFLARE_ACCOUNT_ID) ok('CLOUDFLARE_ACCOUNT_ID set (no account lookup at boot)')
+  if (config.CLOUDFLARE_ACCOUNT_ID) ok('CLOUDFLARE_ACCOUNT_ID set (no account lookup at boot)')
   else warn('CLOUDFLARE_ACCOUNT_ID not set; every process discovers the account first (one more call that can fail)')
   console.log(`  decision model: ${decisionProvider === 'openai' ? 'OpenAI Decisions' : 'Cloudflare Clef'} (DECISION_PROVIDER=${decisionProvider}; revert with DECISION_PROVIDER=cloudflare)`)
   const timeoutMs = decisionProvider === 'openai' ? decisionsTimeoutMs() : clefTimeoutMs()
   // One decision-shaped round, as the server makes it: 1 judgeRound + 8 judgeCandidate in parallel, at the server's timeout.
   const decisionRound = decisionProvider === 'openai' ? decisionsCheck(8) : (async () => {
-    if (!process.env.CLOUDFLARE_API_TOKEN) return { ok: false, line: 'decision round: CLOUDFLARE_API_TOKEN not set' }
+    if (!config.CLOUDFLARE_API_TOKEN) return { ok: false, line: 'decision round: CLOUDFLARE_API_TOKEN not set' }
     const { exampleCandidate } = await import('../shared/contracts/examples.ts')
     const clef = new ClefDecisionProvider({ allowLive: true })
     const gap = 'No evidence on grid energisation dates.', question = 'Will the project be operating by 2028?'
@@ -116,7 +118,7 @@ if (stage) {
   })()
   // The backup pair answers one cheap embedding (Workers AI), with the quota code read from the raw response.
   const backup = (async () => {
-    const token = process.env.CLOUDFLARE_API_TOKEN_2, accountId = process.env.CLOUDFLARE_ACCOUNT_ID_2
+    const token = config.CLOUDFLARE_API_TOKEN_2, accountId = config.CLOUDFLARE_ACCOUNT_ID_2
     if (!token || !accountId) return backupPairCheck({ missing: [!token && 'CLOUDFLARE_API_TOKEN_2', !accountId && 'CLOUDFLARE_ACCOUNT_ID_2'].filter(Boolean).join(' and ') })
     const { embedTexts } = await import('../publisher/search.ts')
     let last = {}
@@ -126,7 +128,7 @@ if (stage) {
     catch (error) { return backupPairCheck({ ...last, error: error?.name === 'TimeoutError' ? 'timeout' : 'error' }) }
   })()
   // Leftover state, read-only from the API's store (works whether or not the demo is running).
-  const dbPath = process.env.APP_DB || 'data/app.db'
+  const dbPath = config.APP_DB || 'data/app.db'
   if (!existsSync(dbPath)) ok(`no store at ${dbPath} yet: reputation clean, no unfinished runs`)
   else {
     try {
@@ -178,7 +180,7 @@ if (!stage) {
 
   if (deep) {
     console.log('Cloudflare Workers AI embeddings (query vectors for hybrid search)')
-    if (!process.env.CLOUDFLARE_API_TOKEN) fail('CLOUDFLARE_API_TOKEN not set; live search would be keyword only (labelled)')
+    if (!config.CLOUDFLARE_API_TOKEN) fail('CLOUDFLARE_API_TOKEN not set; live search would be keyword only (labelled)')
     else {
       try {
         const { embedTexts, EMBEDDING_MODEL } = await import('../publisher/search.ts')
@@ -192,13 +194,13 @@ if (!stage) {
 
   // OpenAI Decisions: one cheap call whenever live decides with it (or on --deep); otherwise just whether the key is set.
   console.log(`OpenAI Decisions (decisions${decisionProvider === 'openai' ? ', selected by DECISION_PROVIDER=openai' : ' with DECISION_PROVIDER=openai'})`)
-  if (decisionProvider === 'openai' || (deep && process.env.OPENAI_API_KEY)) report(await decisionsCheck())
-  else if (process.env.OPENAI_API_KEY) ok('OPENAI_API_KEY set (not called without --deep)')
+  if (decisionProvider === 'openai' || (deep && config.OPENAI_API_KEY)) report(await decisionsCheck())
+  else if (config.OPENAI_API_KEY) ok('OPENAI_API_KEY set (not called without --deep)')
   else warn('OPENAI_API_KEY not set; DECISION_PROVIDER=openai would fail every decision round')
 
   // One tiny embedding (owner, 9 Oct): an IP-filtered or quota-capped token otherwise only shows mid-demo as "keyword only".
   console.log('Cloudflare Workers AI (search embeddings, used by make live)')
-  if (!process.env.CLOUDFLARE_API_TOKEN) warn('CLOUDFLARE_API_TOKEN not set; live search would be keyword only')
+  if (!config.CLOUDFLARE_API_TOKEN) warn('CLOUDFLARE_API_TOKEN not set; live search would be keyword only')
   else {
     const { probeWorkersAi } = await import('./cf-probe.mjs')
     const probe = await probeWorkersAi()
@@ -207,13 +209,13 @@ if (!stage) {
   }
 
   console.log(`Cloudflare Clef (decisions${decisionProvider === 'cloudflare' ? '' : '; the revert with DECISION_PROVIDER=cloudflare'})`)
-  if (!process.env.CLOUDFLARE_API_TOKEN) (decisionProvider === 'cloudflare' ? fail : warn)('CLOUDFLARE_API_TOKEN not set; Clef decision rounds would fail and buy nothing')
+  if (!config.CLOUDFLARE_API_TOKEN) (decisionProvider === 'cloudflare' ? fail : warn)('CLOUDFLARE_API_TOKEN not set; Clef decision rounds would fail and buy nothing')
   else {
     // Reuse the app's own client so the check exercises the exact request format.
     const clef = new ClefDecisionProvider({ allowLive: true, timeoutMs: 8000 })
     try {
       await clef.resolveAccount()
-      ok(process.env.CLOUDFLARE_ACCOUNT_ID ? 'token set; account id from .env (not verified without --deep)' : 'token accepted; account resolved')
+      ok(config.CLOUDFLARE_ACCOUNT_ID ? 'token set; account id from .env (not verified without --deep)' : 'token accepted; account resolved')
     } catch (error) { fail(`token/account check failed (${error.status ?? 'error'})`) }
     if (deep) {
       try {
@@ -225,18 +227,18 @@ if (!stage) {
   }
 }
 
-if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet') {
+if (config.XRPL_PAYER_SEED || config.SETTLEMENT_RAIL === 'xrpl-testnet') {
   console.log('XRPL Testnet (settlement, used by make live)')
   const { testnetLedger, testnetUrl } = await import('../shared/xrpl.ts')
   const { Wallet } = await import('xrpl')
   let ledger
   try {
     ledger = testnetLedger(testnetUrl())
-    const seed = process.env.XRPL_PAYER_SEED
+    const seed = config.XRPL_PAYER_SEED
     if (!seed) fail('XRPL_PAYER_SEED not set; XRPL settlement cannot pay')
     else {
       const payer = Wallet.fromSeed(seed).classicAddress
-      if (process.env.XRPL_PAYER_ADDRESS && process.env.XRPL_PAYER_ADDRESS !== payer) fail('XRPL_PAYER_SEED does not match XRPL_PAYER_ADDRESS')
+      if (config.XRPL_PAYER_ADDRESS && config.XRPL_PAYER_ADDRESS !== payer) fail('XRPL_PAYER_SEED does not match XRPL_PAYER_ADDRESS')
       const [{ result: info }, { result: server }] = await Promise.all([
         ledger.request({ command: 'account_info', account: payer, ledger_index: 'validated' }),
         ledger.request({ command: 'server_info' }),
@@ -255,10 +257,10 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
     const { seedEnvName } = await import('../publisher/registry.ts')
     const publishers = new Map()
     for (const slug of paidSlugs()) {
-      const seed = process.env[seedEnvName(slug)]
+      const seed = config[seedEnvName(slug)]
       if (!seed) { fail(`${slug}: ${seedEnvName(slug)} not set; run make wallets CREATE=1`); continue }
       const address = Wallet.fromSeed(seed).classicAddress
-      if (process.env[addressEnvName(slug)] && process.env[addressEnvName(slug)] !== address) fail(`${slug}: ${seedEnvName(slug)} does not match ${addressEnvName(slug)}`)
+      if (config[addressEnvName(slug)] && config[addressEnvName(slug)] !== address) fail(`${slug}: ${seedEnvName(slug)} does not match ${addressEnvName(slug)}`)
       publishers.set(address, slug)
     }
     const refundDrops = 90 * DROPS_PER_MINOR // the highest article price, S$0.90, refunded in full
@@ -278,11 +280,11 @@ if (process.env.XRPL_PAYER_SEED || process.env.SETTLEMENT_RAIL === 'xrpl-testnet
   } finally { await ledger?.close() }
 }
 
-if (!stage && (process.env.LANGFUSE_PUBLIC_KEY || process.env.LANGFUSE_SECRET_KEY)) {
+if (!stage && (config.LANGFUSE_PUBLIC_KEY || config.LANGFUSE_SECRET_KEY)) {
   console.log('Langfuse Cloud (traces, used by make live)')
-  const base = (process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com').replace(/\/$/, '')
+  const base = (config.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com').replace(/\/$/, '')
   try {
-    const auth = Buffer.from(`${process.env.LANGFUSE_PUBLIC_KEY}:${process.env.LANGFUSE_SECRET_KEY}`).toString('base64')
+    const auth = Buffer.from(`${config.LANGFUSE_PUBLIC_KEY}:${config.LANGFUSE_SECRET_KEY}`).toString('base64')
     const res = await fetch(`${base}/api/public/projects`, { headers: { Authorization: `Basic ${auth}` }, signal: AbortSignal.timeout(5000) })
     if (!res.ok) fail(`keys rejected by ${base} (HTTP ${res.status}); check the region in LANGFUSE_BASE_URL`)
     else ok(`keys accepted · project ${(await res.json()).data?.[0]?.name ?? '?'} · ${base}`)

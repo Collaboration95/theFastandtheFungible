@@ -128,6 +128,14 @@ A separate [Testnet MCP purchase proof](eval/mcp/testnet-2026-11-03.md) records 
 Run `npx vitest run tests/engine.test.ts tests/mcp-policy.test.ts tests/mcp.e2e.test.ts`
 for offline transport, isolation, cap and restart checks.
 
+## Use from code
+
+The [TypeScript SDK](docs/sdk.md) shares the MCP client's capped, idempotent
+ask flow: `createClient({ baseUrl }).ask(question, { budgetSgd: 1 })`. It also
+provides metadata search, run snapshots, trace streaming and wallet status;
+only backend policy can purchase. See `examples/sdk-quickstart.ts` and the
+stdlib-only `examples/python/ask.py`.
+
 ## Quick start
 
 Needs Node ≥ 22.13 (for `node:sqlite`; see `.nvmrc`).

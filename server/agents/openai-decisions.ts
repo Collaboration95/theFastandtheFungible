@@ -1,3 +1,4 @@
+import { loadConfig } from '../config.js'
 // OpenAI Decisions (gpt-6-luna) as the purchase-decision model (#214, owner decision 8 Oct; amends D9).
 // Request and response mapping ported from the research adapter on `bench/decisions-vs-clef`
 // (providers/openai-decisions.ts, transport.ts, variants.ts, run.ts, out/question-wordings.md).
@@ -62,7 +63,7 @@ export const PRODUCTION: InstructionBundle = {
  */
 export type CandidateWording = 'evidence' | 'production'
 export const CANDIDATE_WORDINGS: Record<CandidateWording, InstructionBundle> = { evidence: EVIDENCE, production: PRODUCTION }
-export const decisionsWording = (configured: unknown = process.env.DECISIONS_WORDING): CandidateWording => configured === 'production' ? 'production' : 'evidence'
+export const decisionsWording = (configured: unknown = loadConfig().DECISIONS_WORDING): CandidateWording => configured === 'production' ? 'production' : 'evidence'
 /**
  * The round's gap_material wording (interim switch, live comparison 9 Oct): `plain` (default) is the question-centred
  * Clef sentence that fixed the same 0.06–0.94 swing on 8 Oct; `evidence` is the benchmark sentence above.
@@ -70,7 +71,7 @@ export const decisionsWording = (configured: unknown = process.env.DECISIONS_WOR
  */
 export type GapWording = 'plain' | 'evidence'
 export const GAP_WORDINGS: Record<GapWording, string> = { plain: clefQuestions.round.gap_material.instructions, evidence: EVIDENCE.round.gap_material }
-export const decisionsGapWording = (configured: unknown = process.env.DECISIONS_GAP_WORDING): GapWording => configured === 'evidence' ? 'evidence' : 'plain'
+export const decisionsGapWording = (configured: unknown = loadConfig().DECISIONS_GAP_WORDING): GapWording => configured === 'evidence' ? 'evidence' : 'plain'
 /** Wording + option order + topology. Bump it whenever any of the three changes; it is recorded on every round. */
 export const decisionsPromptVersion = (gap: GapWording, wording: CandidateWording = 'evidence') => `batch-${wording}/v1+gap-${gap} · originality original,rewrite,overlap · credibility 0,1,2`
 /** The default version: evidence candidate wording, plain gap wording. */
@@ -81,12 +82,12 @@ export const DECISIONS_PROMPT_VERSION = decisionsPromptVersion('plain', 'evidenc
  * `DECISIONS_MAX_QUESTIONS` raises it once a live check confirms the API accepts more.
  */
 export const DECISIONS_DEFAULT_MAX_QUESTIONS = 19
-export function decisionsMaxQuestions(configured: unknown = process.env.DECISIONS_MAX_QUESTIONS): number {
+export function decisionsMaxQuestions(configured: unknown = loadConfig().DECISIONS_MAX_QUESTIONS): number {
   const value = Number(configured)
   return configured !== undefined && configured !== '' && Number.isInteger(value) && value >= 4 ? value : DECISIONS_DEFAULT_MAX_QUESTIONS
 }
 /** Per-attempt timeout: `DECISION_TIMEOUT_MS`, else `CLEF_TIMEOUT_MS`, else 5 s (H1). */
-export const decisionsTimeoutMs = (env: NodeJS.ProcessEnv = process.env) => clefTimeoutMs(env.DECISION_TIMEOUT_MS || env.CLEF_TIMEOUT_MS)
+export const decisionsTimeoutMs = (env: NodeJS.ProcessEnv = loadConfig()) => clefTimeoutMs(env.DECISION_TIMEOUT_MS || env.CLEF_TIMEOUT_MS)
 
 export type DecisionsQuestion =
   | { name: string; type: 'predicate'; instructions: string }
@@ -192,7 +193,7 @@ export class OpenAIDecisionsProvider implements DecisionProvider {
    * answer is retried once; a refusal, another 4xx or exhausted credit fails at once. `signal` is the round's.
    */
   private async request(input: string, questions: DecisionsQuestion[], signal?: AbortSignal): Promise<{ answers: Map<string, Answer>; usage?: Usage }> {
-    const key = this.options.apiKey ?? process.env.OPENAI_API_KEY
+    const key = this.options.apiKey ?? loadConfig().OPENAI_API_KEY
     if (!key) throw new DecisionsUnavailableError('no credentials')
     const body = JSON.stringify({ model: this.model, input, questions })
     let status = 'transport failure'
