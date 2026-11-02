@@ -4,6 +4,10 @@ Start with the [README](../README.md) for setup and the demo, and the
 [explainers site](https://collaboration95.github.io/theFastandtheFungible/) for
 the walkthrough, slides and project map.
 
+**Current push:** [SFF-PUSH.md](SFF-PUSH.md) tracks the SingHacks finals
+deliverables and changelog; [JUDGING-CRITERIA.md](JUDGING-CRITERIA.md) has the
+Ripple-track criteria.
+
 ## Contracts (as built)
 
 - [Product](contracts/PRODUCT.md): what we promise, to whom, and the demo use
@@ -29,4 +33,4 @@ the walkthrough, slides and project map.
 ## Maintenance rule
 
 Update an existing document instead of adding a dated audit, handoff, prompt
-or status log. Keep transient verification output in the pull request.
+or status log. The one exception is the changelog in SFF-PUSH.md. Keep transient verification output in the pull request.
