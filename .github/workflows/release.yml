@@ -37,7 +37,7 @@ jobs:
           fi
       - name: Create the release
         run: |
-          title=$(head -n 1 "$RUNNER_TEMP/notes.md" | sed 's/^# //')
+          title=$(head -n 1 "$RUNNER_TEMP/notes.md")
           shopt -s nullglob
           assets=("$RUNNER_TEMP"/assets/*)
           gh release create "$TAG" --verify-tag --title "$TAG · $title" --notes-file "$RUNNER_TEMP/notes.md" "${assets[@]}"

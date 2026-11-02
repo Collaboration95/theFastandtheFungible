@@ -1,5 +1,5 @@
 // One tagged release per feature day (#269). Day N is v0.(N+1).0: Day 0 is v0.1.0, Day 9 is v0.10.0.
-// Run from a clean, up-to-date `main` checkout:
+// Run from a clean checkout whose HEAD is origin/main (main itself, or a worktree on a detached/spare branch):
 //   node scripts/release.mjs <day> "<title>" [--date YYYY-MM-DD] [--dry-run] [--push]
 // What it does: bumps package.json (and the lockfile's root entry), commits that, and creates an annotated tag
 // whose message is the release notes. The tag's push triggers .github/workflows/release.yml, which publishes the
@@ -34,10 +34,9 @@ const heading = `### ${WEEKDAYS[SECTION_DATE.getDay()]} ${SECTION_DATE.getDate()
 
 if (git('tag', '-l', tag)) { console.error(`${tag} already exists`); process.exit(1) }
 if (!dryRun) {
-  if (git('rev-parse', '--abbrev-ref', 'HEAD') !== 'main') { console.error('run from main'); process.exit(1) }
   if (git('status', '--porcelain')) { console.error('working tree is not clean'); process.exit(1) }
   git('fetch', '-q', 'origin', 'main')
-  if (git('rev-parse', 'HEAD') !== git('rev-parse', 'origin/main')) { console.error('main is not at origin/main; pull or push first'); process.exit(1) }
+  if (git('rev-parse', 'HEAD') !== git('rev-parse', 'origin/main')) { console.error('HEAD is not at origin/main; rebase or pull first'); process.exit(1) }
 }
 
 const changelog = readFileSync('docs/SFF-PUSH.md', 'utf8').split('\n')
@@ -54,7 +53,7 @@ const prs = git('log', '--first-parent', '--format=- %s', ...range).split('\n').
 
 const visual = ['png', 'jpg', 'gif'].map((e) => `docs/releases/day-${day}.${e}`).find(existsSync)
 const notes = [
-  `# Day ${day} · ${title}`,
+  `Day ${day} · ${title}`,
   visual && `![Day ${day}](https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/${tag}/${visual})`,
   section && `## What shipped\n\n${section}`,
   prs.length && `## Merged since ${previous ?? 'the start of the push'}\n\n${prs.join('\n')}`,
@@ -74,11 +73,12 @@ if (pkg.version !== version) {
   git('add', 'package.json', 'package-lock.json')
   git('commit', '-q', '-m', `chore(release): ${tag} Day ${day} · ${title}`)
 }
-git('tag', '-a', tag, '-m', notes)
+// verbatim: the default cleanup would strip every line that starts with "#" (the notes' headings).
+git('tag', '-a', '--cleanup=verbatim', tag, '-m', notes)
 console.log(`Created ${tag} at ${git('rev-parse', '--short', 'HEAD')}.`)
 if (push) {
-  git('push', 'origin', 'main', tag)
-  console.log(`Pushed main and ${tag}; the release workflow publishes it.`)
+  git('push', 'origin', 'HEAD:main', tag)
+  console.log(`Pushed HEAD to main and ${tag}; the release workflow publishes it.`)
 } else {
-  console.log(`Publish with: git push origin main ${tag}`)
+  console.log(`Publish with: git push origin HEAD:main ${tag}`)
 }
