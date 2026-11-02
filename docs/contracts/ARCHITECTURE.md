@@ -32,6 +32,26 @@ decisions, budget, payment and cited synthesis. Direction:
 
 Flow, headers and refund: [x402 and XRPL](../x402-xrpl.md).
 
+## MCP and reusable engine (2 Nov 2026, #255)
+
+`server/engine.ts` exports `startEngine({ apiPort = 0, publisherPort = 0,
+dataDir, live = false })` and returns `{ apiUrl, publisherUrl, close() }`.
+An in-process worker starts the existing publisher and API, isolates their legacy
+environment readers, and drains run jobs before closing listeners and SQLite.
+`dataDir` determines APP_DB, PUBLISHER_DB and REPORT_DIR; fixtures force offline
+providers and simulated settlement. The web CLI and demo launcher remain usable.
+
+`mcp/server.ts` connects the SDK stdio transport to four schema-validated tools.
+Without `RA_BACKEND_URL`, it boots the local engine; with one, it uses the API's
+MCP endpoints over HTTP. The API owns caps, daily reservations and persistent
+key-to-run mappings in app.db. No model-facing input can configure spending
+limits, choose an article to buy, or invoke settlement. Purchases still flow
+through the existing RunLoop → PurchaseManager policy and grant/proof boundary.
+Search returns explicit public metadata fields; answer citations are checked
+against delivered contents and VERIFIED grants before their passages are exposed.
+Every result retains mode labels; simulated receipts have no invented XRPL hash.
+Setup, accounting semantics and operator boundaries are in the README's MCP section.
+
 ## Shape of one run
 
 The third writer column is the bad actor; the last is free open records.

@@ -6,12 +6,12 @@ import { createPublisherApp } from './routes.js'
 import { SIMULATED_LABEL, XRPL_LABEL } from '../shared/contracts/publisher.js'
 export { createPublisherApp } from './routes.js'
 
-export async function startPublisher() {
+export async function startPublisher(options: { host?: string } = {}) {
   const port = Number(process.env.PUBLISHER_PORT ?? process.env.PORT ?? 8790)
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid publisher port')
   const app = createPublisherApp()
   try { await app.locals.ready } catch (error) { app.locals.journal.close(); throw error }
-  const server = app.listen(port, '0.0.0.0')
+  const server = app.listen(port, options.host ?? '0.0.0.0')
   try { await once(server, 'listening') } catch (error) { app.locals.journal.close(); throw error }
   const address = server.address()
   const label = process.env.SETTLEMENT_RAIL === 'xrpl-testnet' ? XRPL_LABEL : SIMULATED_LABEL

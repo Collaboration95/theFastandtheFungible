@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto'
+import { budgetPolicy } from '../mcp/policy.js'
 import express, { type ErrorRequestHandler, type Response } from 'express'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
@@ -22,6 +24,8 @@ import { freezeRequirements, plan as planSearch, scope } from './agents/scope.js
 /** `observe`: the trust check's relevance re-measure (#205); defaults to Workers AI embeddings when SEARCH_EMBEDDINGS=live. */
 export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver }
 export async function createApiApp(options: ApiOptions = {}) {
+  const mcpPolicy = budgetPolicy()
+  const jobs = new Set<Promise<void>>()
   const app = express()
   app.disable('x-powered-by')
   app.use(express.json({ limit: '16kb' }))
@@ -65,7 +69,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   }
   const launch = (runId: string, job: () => Promise<void>) => {
     const done = progress(runId, 'Working with accessible evidence; spending policy remains enforced.')
-    void job().catch(() => {
+    const task = job().catch(() => {
       store.updateRun(runId, { phase: 'FAILED', error: 'Run interrupted; start a new ask or retry a settled delivery.' })
     }).finally(() => {
       done()
@@ -75,7 +79,9 @@ export async function createApiApp(options: ApiOptions = {}) {
         store.updateRun(runId, { labels: { ...run.labels, research: 'fixture · extractive-fixture' } })
       }
       store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Latest validated answer and ledger saved.' })
+      jobs.delete(task)
     })
+    jobs.add(task)
   }
   const faultsAvailable = process.env.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
   // Read-only Testnet view for the ledger panel: public addresses, live balances, receipts per payee.
@@ -123,10 +129,14 @@ export async function createApiApp(options: ApiOptions = {}) {
     res.json(await scope(input.question, never ? { clarify: 'never' } : {}))
   })
   // The 5 s modal is UI only: calling this starts the run. The budget, not the plan, is the spending authorization (gate 2).
-  app.post('/runs', (req, res) => {
-    const input = AskSchema.parse(req.body)
-    const run = store.createRun(input.question, input.budgetMinor, labels)
-    res.status(201).json(run)
+  app.post(['/runs', '/api/mcp/runs'], (req, res) => {
+    const isMcp = req.path === '/api/mcp/runs'
+    const input = AskSchema.parse(isMcp ? { question: req.body.question, budgetMinor: 0 } : req.body)
+    const request = isMcp ? z.object({ budget_sgd: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER / 100), idempotency_key: z.string().min(1).max(200).optional() }).parse(req.body) : undefined
+    const admitted = request ? store.createMcpRun(input.question, Math.floor(request.budget_sgd * 100 + 1e-7), request.idempotency_key ?? randomUUID(), mcpPolicy, labels) : undefined
+    const run = admitted?.run ?? store.createRun(input.question, input.budgetMinor, labels)
+    res.status(admitted?.reused ? 200 : 201).json(run)
+    if (admitted?.reused) return
     launch(run.runId, async () => {
       // No plan from the UI: the server plans itself, so tests and API users need no UI. A clarify answer re-plans
       // on the server too (#208): the client's plan predates the answer, so the angle would never reach search.
@@ -149,6 +159,19 @@ export async function createApiApp(options: ApiOptions = {}) {
       store.appendEvent(run.runId, { type: 'PLAN', label: `Search plan (${planLabel}): ${plan.subqueries.join(' · ')}`, data: { plan, planner: planLabel, requirements: frozen.requirements.map(r => r.text), requirementsBy } })
       await loop.start(run.runId)
     })
+  })
+  app.get('/api/mcp/runs/:id', (req, res) => {
+    if (!store.isMcpRun(String(req.params.id))) return res.status(404).json({ error: 'Run not found.' })
+    res.json(store.getRun(String(req.params.id)))
+  })
+  app.get('/api/mcp/status', async (_req, res) => {
+    res.json({ labels, corpusLabel: 'SYNTHETIC · fictional writers and articles', publisherUrl, ...mcpPolicy, ...store.mcpStatus(), rail: payer ? 'xrpl-testnet' : 'simulated', payerAddress: payer?.address ?? null })
+  })
+  app.get('/api/mcp/search', async (req, res) => {
+    const { query, k } = z.object({ query: z.string().trim().min(1).max(2000), k: z.coerce.number().int().min(1).max(50).default(10) }).parse(req.query)
+    const writers = await client.registry()
+    const found = await Promise.allSettled(writers.map(async writer => (await client.searchPublisher(writer.slug, query, k)).map(hit => ({ title: hit.title, writer: writer.name, tier: hit.tier, priceMinor: hit.priceMinor, abstract: hit.abstract, relevance: hit.relevance, url: new URL(hit.url, publisherUrl).href }))))
+    res.json({ labels, corpusLabel: 'SYNTHETIC · fictional writers and articles', hits: found.flatMap(result => result.status === 'fulfilled' ? result.value : []).sort((a, b) => b.relevance - a.relevance).slice(0, k), unavailable: writers.filter((_, i) => found[i].status === 'rejected').map(w => w.slug) })
   })
   app.get('/api/runs', (_req, res) => res.json(store.listPastRuns()))
   app.post('/api/runs/:id/pin', (req, res) => { store.setRunMeta(String(req.params.id), { pinned: z.object({ pinned: z.boolean() }).parse(req.body).pinned }); res.json(store.listPastRuns()) })
@@ -226,5 +249,5 @@ export async function createApiApp(options: ApiOptions = {}) {
   await purchases.reconcile()
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
   for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => loop.start(run.runId))
-  return { app, store, loop, reputation, close: () => { timers.forEach(clearInterval); for (const set of streams.values()) for (const res of set) res.end(); store.close(); void (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.() } }
+  return { app, store, loop, reputation, drain: async () => { for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) loop.stop(run.runId); await Promise.allSettled(jobs) }, close: () => { timers.forEach(clearInterval); for (const set of streams.values()) for (const res of set) res.end(); store.close(); void (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.() } }
 }

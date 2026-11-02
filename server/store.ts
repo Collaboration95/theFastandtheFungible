@@ -1,3 +1,4 @@
+import { clampBudget } from '../mcp/policy.js'
 import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import type { Submission } from './xrpl.js'
@@ -31,6 +32,7 @@ export class Store {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
     this.db = new DatabaseSync(path)
     this.db.exec(`PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;
+      CREATE TABLE IF NOT EXISTS mcp_requests (key TEXT PRIMARY KEY, question TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, budget INTEGER NOT NULL, day TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL REFERENCES runs(id), json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS answers (run_id TEXT NOT NULL REFERENCES runs(id), version INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(run_id,version));
@@ -64,12 +66,52 @@ export class Store {
   private saveIntent(intent: PurchaseIntent): void {
     this.db.prepare('UPDATE intents SET json=? WHERE id=?').run(JSON.stringify(PurchaseIntentSchema.parse(intent)), intent.intentId)
   }
-  createRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {
+  private insertRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {
     const run = RunSnapshotSchema.parse({ runId: randomUUID(), question, budgetMinor, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor,
       phase: 'SEARCH', stopped: false, round: 0, candidates: [], contents: [], answers: [], decisions: [], intents: [], receipts: [], grants: [], events: [], checkpoint: {}, reportStatus: 'NONE',
       labels: labels ?? { research: 'fixture', decision: 'fixture', publisher: 'local', settlement: 'SIMULATED SGD · no real funds' } })
     this.db.prepare('INSERT INTO runs VALUES (?,?)').run(run.runId, JSON.stringify(run))
-    return this.getRun(run.runId)
+    return run
+  }
+  createRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {
+    return this.getRun(this.insertRun(question, budgetMinor, labels).runId)
+  }
+  /** Gross charges (refunds never replenish authority) plus full budgets of unfinished runs. */
+  private mcpUsage(day: string) {
+    let spentMinor = 0, reservedMinor = 0
+    for (const row of this.db.prepare('SELECT run_id, budget FROM mcp_requests').all()) {
+      const run = this.rawRun(row.run_id as string)
+      const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', run.runId)
+      const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', run.runId)
+      const charged = intents.filter(i => chargedStatuses.has(i.status))
+      const gross = charged.reduce((sum, i) => sum + i.amountMinor, 0)
+      // Receipt dates, not admission dates, own the UTC gross-spend counter. Refunds never replenish it.
+      spentMinor += charged.reduce((sum, i) => {
+        const receipt = receipts.find(r => r.intentId === i.intentId)
+        return sum + (!receipt || receipt.settledAt.slice(0, 10) === day ? i.amountMinor : 0)
+      }, 0)
+      // An unfinished or uncertain run reserves everything it could still charge, across midnight/restarts.
+      if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase) || intents.some(i => reservedStatuses.has(i.status))) reservedMinor += Math.max(0, Number(row.budget) - gross)
+    }
+    return { spentMinor, reservedMinor }
+  }
+  mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.mcpUsage(day)) }
+  isMcpRun(runId: string) { return !!this.db.prepare('SELECT key FROM mcp_requests WHERE run_id=?').get(runId) }
+  /** Key insertion, cap reservation and run creation commit together, before any async work. */
+  createMcpRun(question: string, requestedMinor: number, key: string, policy: { maxMinor: number; dailyMinor: number }, labels?: ModeLabels, day = new Date().toISOString().slice(0, 10)) {
+    const admitted = this.atomic(() => {
+      const old = this.db.prepare('SELECT question, run_id FROM mcp_requests WHERE key=?').get(key)
+      if (old) {
+        if (old.question !== question) throw new Error('Idempotency key belongs to a different question')
+        return { run: this.rawRun(old.run_id as string), reused: true }
+      }
+      const usage = this.mcpUsage(day)
+      const budget = clampBudget(requestedMinor, policy.maxMinor, Math.max(0, policy.dailyMinor - usage.spentMinor - usage.reservedMinor))
+      const run = this.insertRun(question, budget, labels)
+      this.db.prepare('INSERT INTO mcp_requests (key, question, run_id, budget, day) VALUES (?,?,?,?,?)').run(key, question, run.runId, budget, day)
+      return { run, reused: false }
+    })
+    return { ...admitted, run: this.getRun(admitted.run.runId) }
   }
   getRun(runId: string): RunSnapshot {
     // A consistent read also makes callbacks observe the committed event and ledger.
