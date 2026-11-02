@@ -91,3 +91,23 @@ The browser holds no keys, seeds or premium bytes. Only policy code starts a
 purchase. A failed proof quarantines a source, and it is never cited. The five
 hard gates are in [the README](../../README.md#hard-guarantees); controls are in
 [Security](SECURITY.md).
+
+## Review, Nov 2026
+
+Full review, ranked table and reasoning:
+[REVIEW-NOV-2026.md](REVIEW-NOV-2026.md). The money core holds up
+(persist-before-submit, one blob per intent, ledger-proven release, a
+policy-only purchaser). The limits are around it, and four seams go in before
+the features that need them:
+
+| Do now | What | Criterion | Issue |
+|---|---|---|---|
+| Wed 4 | Typed client SDK v0 in `sdk/`, one config module, `server/routes.ts` split by surface | Reachability · dev speed | #285 |
+| Thu 5 | One spend gate for every surface: wallet-wide daily cap, API token + host guard, pause, decision-input hardening | Technical depth · compliance | #286 |
+| Fri 6 | Live reconciler, balance pre-check, deep health, `/api/metrics`, runbook | Feasibility | #287 |
+| Sat 7 | Hash-chained audit log, receipts export + on-ledger verify, payee screening, retention, `COMPLIANCE.md` | Compliance · Builder feedback | #288 |
+
+Folded into feature days: #259, #273, #274 (the `sdk/x402` buyer), #275, #277,
+#278, #279, #280, #281. After SFF: parallel signing (Tickets), Postgres and
+multi-tenant engines, KMS/RegularKey custody, KYB and sanctions providers, a
+Python SDK.

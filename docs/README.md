@@ -13,7 +13,8 @@ Ripple-track criteria.
 - [Product](contracts/PRODUCT.md): what we promise, to whom, and the demo use
   cases.
 - [Architecture](contracts/ARCHITECTURE.md): the components and the shape of a
-  run.
+  run. Its [Nov 2026 review](contracts/REVIEW-NOV-2026.md) ranks the seams
+  for the SFF push (#285–#288).
 - [Design](contracts/DESIGN.md): visual system, layout and content rules.
 - [Security](contracts/SECURITY.md): secrets, access, settlement, manifests and
   refunds.
