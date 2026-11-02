@@ -52,7 +52,7 @@ try {
   if (live) once(spawn(process.execPath, ['--import', 'tsx', 'scripts/doctor.mjs', '--keys'], { env, stdio: 'inherit' }), 'exit').then(([code]) => { if (code) console.warn('\n⚠ Provider preflight failed. Starting anyway; failed answer calls show as labelled fixtures and failed decision rounds buy nothing.\n') })
   if (publisherUrl === localPublisher) start(process.execPath, ['--import','tsx','publisher/server.ts'])
   start(process.execPath,['--import','tsx','server/index.ts'])
-  start(process.execPath,[resolve('node_modules/vite/bin/vite.js'),'--host','127.0.0.1','--port',String(ports.web),'--strictPort'])
+  start(process.execPath,[resolve('node_modules/vite/bin/vite.js'),...(process.env.DEMO_PREVIEW === '1' ? ['preview'] : []),'--host','127.0.0.1','--port',String(ports.web),'--strictPort'])
   await Promise.all([health(`${env.PUBLISHER_URL.replace(/\/$/,'')}/health`), health(`http://127.0.0.1:${ports.api}/health`), health(`http://127.0.0.1:${ports.web}`)])
   console.log(`Writers' web (/w/ index): ${env.PUBLISHER_URL.replace(/\/$/,'')}/w/`)
   console.log(`ResearchAgent ready: http://127.0.0.1:${ports.web} · ${live?'live providers (a failed decision round buys nothing)':'fixture'} · ${env.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'XRPL TESTNET · no real value' : 'SIMULATED SGD · no real funds'}`)

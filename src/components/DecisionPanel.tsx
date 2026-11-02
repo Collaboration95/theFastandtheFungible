@@ -23,7 +23,7 @@ function FullRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) {
       const verdict = plainVerdict(row, run)
       const buy = verdict.tone === 'buy' || verdict.tone === 'would'
       return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className={`ra-row ${buy ? 'is-buy' : 'is-dim'}`} style={{ '--i': index, '--w': pct(Math.min(1, row.value / scale)), '--s': order.indexOf(row) } as CSSProperties}>
-        <span className="ra-row-n" title={row.candidate.title}>{row.candidate.publisher}</span><span className={`ra-price${row.candidate.price.amountMinor > run.perSourceCapMinor ? ' is-over' : ''}`}>{money(row.candidate.price.amountMinor)}</span>
+        <span className="ra-row-n" title={row.candidate.title}><b>{row.candidate.title}</b><small>{row.candidate.publisher}</small></span><span className={`ra-price${row.candidate.price.amountMinor > run.perSourceCapMinor ? ' is-over' : ''}`}>{money(row.candidate.price.amountMinor)}</span>
         <span className="ra-bar" role="meter" aria-label={`${row.candidate.publisher} value`} aria-valuemin={0} aria-valuemax={1} aria-valuenow={Number(row.value.toFixed(3))}><i /><b className="ra-thr" style={{ left: pct(round.threshold / scale) }} /></span>
         <span className={`ra-stamp s-${verdict.tone}`} title={verdict.why}>{verdict.stamp}</span>
         <WriterChip candidate={row.candidate} reputation={row.reputation} variant="row" />
@@ -40,7 +40,7 @@ function FoldedRound({ run, round, onWhy }: { run: RunSnapshot; round: DecisionR
     <p className="ra-fold-by mono">{decisionLabel(round)}</p>
     <ul className="ra-mini">{round.rows.map(row => {
       const verdict = plainVerdict(row, run)
-      return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className={verdict.tone === 'buy' || verdict.tone === 'would' ? 'is-buy' : ''}><span className="ra-row-n" title={row.candidate.title}>{row.candidate.publisher}</span><span className={`ra-price${row.candidate.price.amountMinor > run.perSourceCapMinor ? ' is-over' : ''}`}>{money(row.candidate.price.amountMinor)}</span><span className={`ra-stamp s-${verdict.tone}`} title={verdict.why}>{verdict.stamp}</span></li>
+      return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className={verdict.tone === 'buy' || verdict.tone === 'would' ? 'is-buy' : ''}><span className="ra-row-n" title={row.candidate.title}><b>{row.candidate.title}</b><small>{row.candidate.publisher}</small></span><span className={`ra-price${row.candidate.price.amountMinor > run.perSourceCapMinor ? ' is-over' : ''}`}>{money(row.candidate.price.amountMinor)}</span><span className={`ra-stamp s-${verdict.tone}`} title={verdict.why}>{verdict.stamp}</span></li>
     })}</ul>
   </section>
 }
@@ -53,7 +53,7 @@ function LaterRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) 
     <div className="ra-gapline"><span>Gap: {round.gap || 'none left open'}</span></div>
     <ul className="ra-rows is-r2">{round.rows.map((row, index) => {
       const verdict = plainVerdict(row, run)
-      return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className="ra-row" style={{ '--i': index, '--w': pct(row.value) } as CSSProperties}><span className="ra-row-n">{row.candidate.publisher}</span><span className="ra-bar"><i /></span><span className={`ra-stamp s-${verdict.tone}`} title={verdict.why}>{verdict.stamp}</span><WriterChip candidate={row.candidate} reputation={row.reputation} variant="row" /></li>
+      return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className="ra-row" style={{ '--i': index, '--w': pct(row.value) } as CSSProperties}><span className="ra-row-n"><b>{row.candidate.title}</b><small>{row.candidate.publisher}</small></span><span className="ra-bar"><i /></span><span className={`ra-stamp s-${verdict.tone}`} title={verdict.why}>{verdict.stamp}</span><WriterChip candidate={row.candidate} reputation={row.reputation} variant="row" /></li>
     })}</ul>
     <p className="ra-r2-msg">{buys.length ? `Buying ${buys.map(row => row.candidate.publisher).join(', ')}.` : `Nothing else worth buying. ${money(Math.max(0, left))} unspent.`}</p>
   </section>

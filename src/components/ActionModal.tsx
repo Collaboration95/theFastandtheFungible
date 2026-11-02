@@ -33,7 +33,7 @@ export default function ActionModal({ plan, writers, onGo, onCancel }: ActionMod
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') { event.preventDefault(); latest.current.cancel() }
-      else if (event.key === 'Enter' && !event.shiftKey && !(event.target instanceof HTMLButtonElement)) { event.preventDefault(); latest.current.go() }
+      else if (event.key === 'Enter' && !event.shiftKey && ((event.metaKey || event.ctrlKey) || !(event.target instanceof HTMLButtonElement))) { event.preventDefault(); latest.current.go() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

@@ -19,7 +19,7 @@ PR or issue.
 | Product | Nightly scorecard + hard-gate audit | #256 | implemented · fixture baseline, 2 Nov; live keys unavailable |
 | Product | MCP server: any agent searches and buys within a human-set cap | #255 | done · fixture proof + Claude Code transcript |
 | Product | Feature-a-day run: 9 notable features, one release each, Thu 5 → Fri 13 ([calendar](#feature-a-day-5-13-nov)) | #270, #260, #259, #262, #273–#277; slack #278–#281 | planned · 5–13 Nov |
-| Product | Day 1: the local app done properly (keyboard-first, state model, record mode) | #270 | planned · Thu 5 |
+| Product | Day 1: the local app done properly (keyboard-first, state model, record mode) | #270 | done · keyboard-first app, unified state and record mode (Lane A) |
 | Product | macOS app (Electron DMG): Keychain seed, signing pipeline ready for the Developer ID | #259 | planned · Sat 7 |
 | Product | Hill-climb: fact menu, then value-of-information buying + nightly refit | #260, #276 | planned · Fri 6, Thu 12 |
 | Product | Surprise bet 1: proof-or-refund escrow on XRPL | #261 spike, #273 build | planned · Mon 9 |
@@ -239,6 +239,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - Lane C #271: shipped the open-index brand kit, deterministic SVG/PNG/ICO/ICNS exports, app and explainers-source favicons/OG cards, naming audit, and two restrained cast refinements.
 - Architecture review ([REVIEW-NOV-2026.md](contracts/REVIEW-NOV-2026.md)): four do-now seams filed as #285 (SDK v0, config, route split), #286 (one spend gate, auth, injection hardening), #287 (live reconciler, health, metrics), #288 (audit trail, export, COMPLIANCE.md); fold-ins commented on #259, #273–#275, #277–#281.
 - Lane light #269: repo front door. Description, topics and homepage set; MIT licence (revertible until the owner's veto on #265), CONTRIBUTING, SECURITY, Code of Conduct, issue templates, CODEOWNERS; `npm run hygiene` in `check:fast`; `scripts/release.mjs` and a release workflow for one tag per feature day.
+- Lane A #270: keyboard-first Run/Writers, one event-derived state model, visible simulation rails, stage-review fixes #225–#231 and isolated recording/18 s clips; 11 production-browser checks pass, UC2 CLS 0.0138.
 - Planned the feature-a-day run (9 days, 5–13 Nov, slack of 4), repo identity and the post calendar; filed #269–#281; owner-only items moved to #265 ([calendar](#feature-a-day-5-13-nov)).
 - Lane A #255: reusable isolated engine + four stdio MCP tools; human caps and durable retries; fixture search → simulated purchase → delivered citations proven end to end.
 

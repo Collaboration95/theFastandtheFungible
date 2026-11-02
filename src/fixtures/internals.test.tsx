@@ -112,14 +112,14 @@ describe('visible internals', () => {
     expect(html).not.toContain('Replaying')
   })
 
-  it('keeps the header quiet unless a provider fell back', () => {
-    expect(renderToStaticMarkup(<Modes quiet labels={exampleRun.labels} />)).toBe('')
+  it('always labels the rail in the header and names provider fallbacks', () => {
+    expect(renderToStaticMarkup(<Modes quiet labels={exampleRun.labels} />)).toContain('SIMULATED')
     const down = renderToStaticMarkup(<Modes quiet labels={exampleRun.labels} configured={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-chat' }} />)
     expect(down).toContain('is-fallback')
     expect(down).not.toContain('Publisher')
     // Final-push labels: a keyword-only search or a fixture plan on a live setup is a substitution too (gate 5).
     const live = { ...exampleRun.labels, research: 'DeepSeek · deepseek-flash (pending)' }
-    expect(renderToStaticMarkup(<Modes quiet labels={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-flash', search: 'hybrid', plan: 'client plan' }} configured={live} />)).toBe('')
+    expect(renderToStaticMarkup(<Modes quiet labels={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-flash', search: 'hybrid', plan: 'client plan' }} configured={live} />)).toContain('SIMULATED')
     const search = renderToStaticMarkup(<Modes quiet labels={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-flash', search: 'keyword only (embeddings unavailable)', plan: 'fixture · scope-fixture' }} configured={live} />)
     expect(search).toContain('Fixture fallback · Plan + Search')
     const models = renderToStaticMarkup(<Modes labels={{ ...exampleRun.labels, search: 'hybrid', plan: 'client plan' }} />)

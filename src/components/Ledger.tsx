@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { XRPL_LABEL, type LedgerView, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getLedger } from '../api'
+import { deriveRunState } from '../runState'
 
 const xrp = (drops: string | null) => drops === null ? '—' : `${(Number(drops) / 1_000_000).toLocaleString('en-SG', { maximumFractionDigits: 6 })} XRP`
 const short = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)}`
@@ -10,9 +11,10 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
   const [view, setView] = useState<LedgerView>()
   const previous = useRef(new Map<string, string | null>())
   const [moved, setMoved] = useState<Set<string>>(new Set())
-  const onLedger = run.labels.settlement === XRPL_LABEL
-  const active = !['DONE', 'FAILED', 'STOPPED'].includes(run.phase)
-  const paid = run.receipts.filter(receipt => receipt.runId === run.runId && receipt.xrpl).length
+  const model = deriveRunState(run)
+  const onLedger = model.rail === 'XRPL TESTNET'
+  const active = !model.terminal
+  const paid = model.purchases.filter(item => item.receipt?.xrpl).length
   useEffect(() => {
     if (!onLedger) return
     let live = true
@@ -28,7 +30,7 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
     return () => { live = false; if (timer) clearInterval(timer) }
   }, [onLedger, active, paid])
   if (!onLedger) return null
-  const payments = run.receipts.filter(receipt => receipt.runId === run.runId && receipt.xrpl)
+  const payments = model.payments.filter(item => item.xrpl)
   const steps = run.events.filter(event => event.type === 'XRPL' && event.runId === run.runId)
   const nameOf = (address: string) => view?.rail === 'xrpl-testnet' ? view.wallets.find(w => w.address === address)?.name ?? short(address) : short(address)
   return <section className="ra-panel ra-ledger" aria-label="XRPL Testnet ledger">
