@@ -13,7 +13,8 @@ if (process.env.CF_BACKUP === '1') {
 }
 // DEMO_PORT_OFFSET shifts all three ports so a worktree can run beside main (100 → 5200/8888/8890).
 const offset = Number(process.env.DEMO_PORT_OFFSET || 0)
-const ports = { web: 5100 + offset, api: 8788 + offset, pub: 8790 + offset }
+// Browser tests supply OS-assigned ports; interactive demos retain make run OFFSET support.
+const ports = { web: Number(process.env.DEMO_WEB_PORT || 5100 + offset), api: Number(process.env.DEMO_API_PORT || 8788 + offset), pub: Number(process.env.DEMO_PUBLISHER_PORT || 8790 + offset) }
 const localPublisher = `http://127.0.0.1:${ports.pub}`
 const publisherUrl = !process.env.PUBLISHER_URL || /^https?:\/\/(?:localhost|127\.0\.0\.1):8790\/?$/.test(process.env.PUBLISHER_URL) ? localPublisher : process.env.PUBLISHER_URL
 const env = { ...process.env, HOST: '127.0.0.1', PORT: String(ports.api), PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: publisherUrl, PUBLISHER_SECRET: process.env.PUBLISHER_SECRET || 'local-simulated-demo-secret', LLM_PROVIDER: live ? 'deepseek' : 'fixture', // live forces DeepSeek even when .env says groq
