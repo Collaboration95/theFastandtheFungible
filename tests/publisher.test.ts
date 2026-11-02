@@ -72,6 +72,24 @@ process.once('SIGTERM', () => server.close(() => { app.locals.journal.close(); p
 
 // Assert raw discovery bytes, rather than relying on the test's schema to strip leaks.
 describe('publisher HTTP protocol', () => {
+  it('isolates the publisher journal with PUBLISHER_DB and lets explicit config override it', async () => {
+    const dir = temporaryDirectory()
+    const path = join(dir, 'isolated.db')
+    const app = createPublisherApp({ writers: miniCorpus, rail: 'simulated', env: { PUBLISHER_DB: path } })
+    const journal = app.locals.journal as PublisherJournal
+    cleanups.push(() => journal.close())
+    await app.locals.ready
+    expect(journal.path).toBe(path)
+    const salts = journal.salts('isolated-article@v1', 1)
+    const persisted = new PublisherJournal(path)
+    cleanups.push(() => persisted.close())
+    expect(persisted.salts('isolated-article@v1', 1)).toEqual(salts)
+    const explicit = createPublisherApp({ writers: miniCorpus, rail: 'simulated', journal: ':memory:', env: { PUBLISHER_DB: path } })
+    cleanups.push(() => explicit.locals.journal.close())
+    await explicit.locals.ready
+    expect(explicit.locals.journal.path).toBe(':memory:')
+    expect(explicit.locals.journal.salts('isolated-article@v1', 1)).not.toEqual(salts)
+  })
   it('loads the default writer corpus while preserving the synchronous factory', async () => {
     vi.mocked(loadWriterCorpus).mockClear()
     const journal = new PublisherJournal(':memory:')
