@@ -49,6 +49,21 @@ describe('transport opt-in (#212)', () => {
     process.env.EVAL_LIVE = '1'
     try { expect(() => enableLive()).toThrow(/test runner/) } finally { delete process.env.EVAL_LIVE }
   })
+  it('retries one transient failure, meters both attempts, and never retries a rejection', async () => {
+    let calls = 0
+    setTransport(async () => ++calls === 1 ? Response.json({ error: 'inference unavailable' }, { status: 503 }) : clefOk({}))
+    const first = await request('luna', { state: 'transient' }, { phase: 'unit', kind: 'round' })
+    expect(first.status).toBe(200)
+    expect(calls).toBe(2)
+    const cached = readdirSync(join(out, 'cache')).map(f => JSON.parse(readFileSync(join(out, 'cache', f), 'utf8')))
+    expect(cached.filter(r => r.request.state === 'transient').map(r => r.status).sort()).toEqual([200, 503])
+    setTransport(async () => { calls++; return Response.json({}, { status: 403 }) })
+    await expect(request('luna', { state: 'rejected' }, { phase: 'unit', kind: 'round' })).rejects.toThrow(/access rejected/)
+    expect(calls).toBe(3)
+    setTransport(async () => { calls++; return Response.json({}, { status: 503 }) })
+    expect((await request('luna', { state: 'still-down' }, { phase: 'unit', kind: 'round' })).status).toBe(503)
+    expect(calls).toBe(5)
+  })
   it('caches a mocked call without writing any credential, then replays it with no transport', async () => {
     let calls = 0
     setTransport(async (_url, init) => { calls++; expect(String((init?.headers as Record<string, string>).Authorization)).toContain('mock-credential'); return clefOk({ gap_material: { type: 'noul', noul: 0.7 } }) })

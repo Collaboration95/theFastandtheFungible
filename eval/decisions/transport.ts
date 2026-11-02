@@ -81,7 +81,14 @@ function endpoint(arm: TransportArm, account: string) {
 const credentialFor = (arm: TransportArm) => arm === 'luna' ? CREDENTIALS.openai : arm === 'deepseek' ? CREDENTIALS.deepseek : CREDENTIALS.cloudflareToken
 
 /** One provider call, cached by request body. Without live opt-in or a mock transport only cache hits return. */
-export async function request(arm: TransportArm, body: unknown, meta: { phase: string; kind: string; repeat?: number; ordinal?: string }): Promise<CallRecord> {
+type RequestMeta = { phase: string; kind: string; repeat?: number; ordinal?: string }
+/** One bounded retry for transient inference failures. Both attempts remain cached and metered. */
+export async function request(arm: TransportArm, body: unknown, meta: RequestMeta): Promise<CallRecord> {
+  const first = await requestOnce(arm, body, meta)
+  if (first.status !== 0 && first.status < 500) return first
+  return requestOnce(arm, body, { ...meta, ordinal: `${meta.ordinal ?? ''}:transient-retry` })
+}
+async function requestOnce(arm: TransportArm, body: unknown, meta: RequestMeta): Promise<CallRecord> {
   const repeat = meta.repeat ?? 0
   const key = hash({ arm, body, repeat, ordinal: meta.ordinal ?? '' })
   const file = path.join(outDir(), 'cache', key + '.json')

@@ -43,21 +43,25 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 
 | Metric | Baseline (9 Oct) | Latest | Target 12 Nov |
 |---|---|---|---|
-| Wasted spend (purchases adding no supported fact) | 39.5% | 67.93% · fixture, 2 Nov UTC | ≤ 20% |
-| Purchase-selection F1 | 0.24 (flow) / 0.41 (sweep) | 0.310 flow / 0.222 sweep · fixture, 2 Nov UTC | ≥ 0.5 (flow) |
-| Supported-fact uplift from paying | +9.5 pts | +28.30 pts · fixture, 2 Nov UTC | ≥ +20 pts |
-| False-complete rate | 1.9% | 37.74% (overlap fixture) · fixture, 2 Nov UTC | ≤ 2% |
-| p95 time to first answer | not measured | 162.0 ms (p50 83.1; final p95 340.8) · fixture, 2 Nov UTC | set after baseline |
-| Cost per query (model US$ + XRP spent) | not measured | US$0 + 0 actual XRP drops · fixture, 2 Nov UTC | set after baseline |
-| Cold start (launch → ready; app and engine) | not measured | 668.1 ms (booted demo; engine/app unmeasured) · fixture, 2 Nov UTC | < 5 s |
+| Wasted spend (purchases adding no supported fact) | 39.5% | 36.19% · live, 3 Nov, pre-fact-menu | ≤ 20% |
+| Purchase-selection F1 | 0.24 (flow) / 0.41 (sweep) | 0.235 flow / 0.400 sweep · live, 3 Nov, pre-fact-menu | ≥ 0.5 (flow) |
+| Supported-fact uplift from paying | +9.5 pts | +11.32 pts · live, 3 Nov, pre-fact-menu | ≥ +20 pts |
+| False-complete rate | 1.9% | 1.89% · live, 3 Nov, pre-fact-menu | ≤ 2% |
+| p95 time to first answer | not measured | 132.7 ms (p50 77.9; final p95 3682.2) · live, 3 Nov, pre-fact-menu | set after baseline |
+| Cost per query (model US$ + XRP spent) | not measured | US$0.00236 timed query + 0 XRP drops · live, 3 Nov, pre-fact-menu | set after baseline |
+| Cold start (launch → ready; app and engine) | not measured | 761.5 ms (booted demo; engine/app unmeasured) · live, 3 Nov, pre-fact-menu | < 5 s |
 | MCP e2e pass (fixture stdio) | 0 | 1 | 1 nightly |
 | MCP: question → paid, cited answer from Claude Code | not possible | PASS · fresh fixture session, 23.3 s including retry | passes nightly |
-| Hard-gate violations (`scripts/gate-audit.ts`) | 0 expected, not re-verified | 0 / 10 runs; all six rules · fixture, 2 Nov UTC | 0, audited nightly |
+| Hard-gate violations (`scripts/gate-audit.ts`) | 0 expected, not re-verified | 0 / 10 runs; all six rules · live, 3 Nov, pre-fact-menu | 0, audited nightly |
 
-Latest fixture numbers above are from `eval/scorecard/latest.json` (#256). Live
-was not run on 2 Nov: no local `EVAL_*` credentials. The October live column is
-preserved; fixture and live scores are different benchmarks. Timing is measured
-wall clock on macOS; deterministic quality metrics repeat exactly.
+3 Nov pre-fact-menu baseline: live decision/coverage models; fixture planner and
+writer, keyword search, SIMULATED payments, synthetic demo articles. US$0.1469052
+usage-derived model cost (not an invoice), 296 calls, no actual XRP transferred.
+An earlier attempt stopped on one coverage HTTP 503 and published no score;
+its metered US$0.1233354 also counts toward this task's US$3 limit. The local
+key was explicitly mapped to the evaluation process; keys were never committed.
+October live and November fixture results remain separate history entries.
+Timing is macOS wall clock, not full live-product or XRPL latency.
 
 ## Plan
 

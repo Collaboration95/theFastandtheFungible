@@ -1,3 +1,4 @@
+import dotenv from 'dotenv'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { resolve, join } from 'node:path'
@@ -44,7 +45,13 @@ export async function run() {
       substitutions: 'fixture writer/planner, keyword search, simulated payments; LIVE decision + coverage only', settlement: 'SIMULATED, zero Testnet drops or real funds' }
     console.log('Pre-run call/cost forecast: ' + JSON.stringify(forecast))
     if (planOnly) return
-    if (!secret('EVAL_OPENAI_API_KEY')) throw new Error('LIVE not run: missing EVAL_OPENAI_API_KEY (demo credentials are never used)')
+    // LIVE=1 explicitly authorizes local evaluation calls. Prefer isolated EVAL credentials,
+    // otherwise use the owner's local key without loading wallet seeds or the whole .env.
+    if (process.env.EVAL_LIVE === '1' && !secret('EVAL_OPENAI_API_KEY')) {
+      const local = existsSync('.env') ? dotenv.parse(readFileSync('.env')) : {}
+      process.env.EVAL_OPENAI_API_KEY = process.env.OPENAI_API_KEY || local.OPENAI_API_KEY || ''
+    }
+    if (!secret('EVAL_OPENAI_API_KEY')) throw new Error('LIVE not run: missing EVAL_OPENAI_API_KEY or local OPENAI_API_KEY')
     enableLive()
   } else console.log('Forecast: fixture, 0 provider calls, US$0; simulated payments only.')
   const at = new Date().toISOString(), dir = resolve('eval/scorecard/out', at.replaceAll(':', '-') + (live ? '-live' : '-fixture'))

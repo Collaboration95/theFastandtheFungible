@@ -4,6 +4,7 @@
 // so a re-run after a 429 or a crash spends nothing on finished work. Never logs keys.
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { deriveFactMenu } from '../shared/fact-menu.ts'
 import { ArticleSchema, articleProblems } from '../shared/contracts/writers.ts'
 
 export const CALL_CAP = 120
@@ -158,6 +159,7 @@ export function assemble(entry, { abstract, body }, bible) {
     if (hit) hit.id = c.passageId
   }
   return {
+    ...(entry.tier === 'PAID' ? { factMenu: deriveFactMenu({ tier: 'PAID', passages }) } : {}),
     articleId: entry.articleId, version: 'v1', publisherSlug: entry.publisherSlug, writerSlug: entry.writerSlug, title: entry.title, publishedAt: entry.publishedAt,
     tier: entry.tier, priceMinor: entry.priceMinor, abstract: abstract.slice(0, 220), tags: entry.tags, family: entry.family, ...(entry.derivedFrom ? { derivedFrom: entry.derivedFrom } : {}), body, passages,
   }

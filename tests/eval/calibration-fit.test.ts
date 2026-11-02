@@ -29,7 +29,7 @@ describe('the production decision provider in the harness (#212)', () => {
     expect(openai).toBeInstanceOf(OpenAIDecisionsProvider)
     expect(openai).toMatchObject({ name: 'openai', model: 'gpt-6-luna', arm: 'luna', promptVersion: new OpenAIDecisionsProvider().promptVersion })
     vi.stubEnv('DECISIONS_WORDING', 'production')
-    expect(productionProvider({ env: { DECISION_PROVIDER: 'openai' } }).promptVersion).toMatch(/^batch-production\/v1/)
+    expect(productionProvider({ env: { DECISION_PROVIDER: 'openai' } }).promptVersion).toMatch(/^batch-production\/v2-fact-menu/)
     const clef = productionProvider({ env: { DECISION_PROVIDER: 'cloudflare' }, fetch: countingFetch().fetch })
     expect(clef).toBeInstanceOf(ClefDecisionProvider)
     expect(clef).toMatchObject({ name: 'cloudflare', model: '@cf/cloudflare/clef-flash', arm: 'flash' })
@@ -64,7 +64,7 @@ describe('the requested-fact flow and the calibration sweep (#207, #221)', () =>
     expect(dataset.length).toBeGreaterThan(0)
     for (const row of dataset) {
       expect(row).toMatchObject({ schema: DATASET_SCHEMA, mode: 'flow', provider: 'openai', model: 'gpt-6-luna', gapMaterial: 1 })
-      expect(row.promptVersion).toMatch(/^batch-evidence\/v1\+gap-plain/)
+      expect(row.promptVersion).toMatch(/^batch-evidence\/v2-fact-menu\+gap-plain/)
     }
     // No gap_material question is ever sent for a requested fact.
     expect(stub.calls.length).toBeGreaterThan(0)

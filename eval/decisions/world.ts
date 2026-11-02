@@ -4,16 +4,21 @@
 import type { ContentEnvelope, PublicCandidate } from '../../shared/contracts/index.js'
 import { PublicCandidateSchema } from '../../shared/contracts/index.js'
 import type { Article, Publisher, WriterCorpus } from '../../shared/contracts/writers.js'
-import { CLAIM_KINDS } from '../../shared/manifest.js'
+import { verifyDelivery } from '../../shared/manifest.js'
+import { createManifests } from '../../publisher/manifest.js'
+import { PublisherJournal } from '../../publisher/journal.js'
 import { loadWriterCorpus } from '../../publisher/corpus.js'
 import { buildIndex, searchIndex, type PublisherIndex } from '../../publisher/search.js'
-import { plantedClaims, reportedRelevance } from '../../publisher/bad-actors.js'
+import { reportedRelevance } from '../../publisher/bad-actors.js'
 import { simulatedKeys } from '../../publisher/registry.js'
 import { RETRIEVAL } from '../../server/agents/research.js'
 
 export const WORLD_LABELS = { search: 'keyword only (embeddings unavailable)', settlement: 'SIMULATED · no payment', wallets: 'SIMULATED publisher keys', corpus: 'data/corpus/v2 (synthetic articles)' } as const
 /** Credibility prior by publisher kind, as server/agents/research.ts assigns it. */
 const KIND_AUTHORITY = { records: 2, masthead: 1.5, independent: 1 } as const
+
+const journal = new PublisherJournal(':memory:')
+const manifests = createManifests(journal)
 
 export type World = { corpus: WriterCorpus; articles: Map<string, Article>; publishers: Map<string, Publisher>; indexes: Map<string, PublisherIndex> }
 export async function loadWorld(corpus?: WriterCorpus): Promise<World> {
@@ -26,8 +31,11 @@ export async function loadWorld(corpus?: WriterCorpus): Promise<World> {
 /** The public search-hit view of an article: what the decision step may see (no body, no passages). */
 export function candidateOf(world: World, article: Article, relevance?: number): PublicCandidate {
   const publisher = world.publishers.get(article.publisherSlug)!
+  const keys = simulatedKeys(article.publisherSlug)
+  const manifest = manifests.manifestFor({ publisher: { ...publisher, wallet: keys.wallet, pubKey: keys.publicKey }, keys }, article, reportedRelevance(article.publisherSlug, relevance ?? 0))
   return PublicCandidateSchema.parse({
     profileId: article.publisherSlug, resourceId: article.articleId, version: article.version, title: article.title, publisher: publisher.name, preview: article.abstract,
+    ...(manifest ? { manifest } : {}),
     price: { amountMinor: article.priceMinor, currency: 'SGD' }, ...(article.tier === 'PAID' ? { wallet: simulatedKeys(article.publisherSlug).wallet } : {}),
     family: article.family, ...(article.derivedFrom ? { derivedFrom: article.derivedFrom } : {}), facets: article.tags, authority: KIND_AUTHORITY[publisher.kind], tier: article.tier,
     license: { kind: 'SYNTHETIC', attribution: publisher.name }, publisherSlug: article.publisherSlug, writerSlug: article.writerSlug,
@@ -61,6 +69,8 @@ export async function retrieveOffline(world: World, queries: string[]): Promise<
 
 /** verifyDelivery's claim check on the delivered passages: a failed planted claim is a failed proof (D4). */
 export function proofPasses(article: Article): boolean {
-  const claims = plantedClaims(article.publisherSlug, article.articleId, article.passages.map(p => p.id))
-  return claims.every(claim => CLAIM_KINDS[claim.kind](article.passages[claim.passageIndex].text))
+  const keys = simulatedKeys(article.publisherSlug)
+  const publisher = { slug: article.publisherSlug, wallet: keys.wallet, pubKey: keys.publicKey }
+  const manifest = manifests.manifestFor({ publisher, keys }, article, 0)
+  return Boolean(manifest && verifyDelivery(article.body, article.passages, manifests.saltsFor(article), manifest).ok)
 }
