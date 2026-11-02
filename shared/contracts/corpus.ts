@@ -29,9 +29,7 @@ export const ContentEnvelopeSchema = z.object({
   profileId: z.string(), resourceId: z.string(), version: z.string(), title: z.string(), publisher: z.string(),
   body: z.string().min(1), spans: z.array(SpanSchema).min(1),
 })
-export const CorpusResourceSchema = PublicCandidateSchema.extend({ body: z.string().min(1), spans: z.array(SpanSchema).min(1) })
 export type ReputationSummary = z.infer<typeof ReputationSummarySchema>
 export type PublicCandidate = z.infer<typeof PublicCandidateSchema>
 export type PublicSourceRef = Pick<PublicCandidate, 'resourceId' | 'version' | 'title' | 'publisher' | 'family' | 'facets'>
 export type ContentEnvelope = z.infer<typeof ContentEnvelopeSchema>
-export type CorpusResource = z.infer<typeof CorpusResourceSchema>
