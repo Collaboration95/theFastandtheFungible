@@ -18,7 +18,7 @@
     "test:e2e": "playwright test tests/e2e.spec.ts",
     "test:a11y": "playwright test tests/a11y.spec.ts",
     "testing": "npm run test:unit && playwright test",
-    "hygiene": "npm run check:naming && node scripts/repo-hygiene.mjs",
+    "hygiene": "npm run check:naming && node scripts/repo-hygiene.mjs && node scripts/site-header.mjs --check",
     "release": "node scripts/release.mjs",
     "check:fast": "npm run hygiene && npm run lint && npm run typecheck && npm run test:unit",
     "verify": "npm run lint && npm run typecheck && npm run testing && npm run build",
