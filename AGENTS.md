@@ -10,6 +10,9 @@
 - Design record: [docs/FINAL-PUSH.md](docs/FINAL-PUSH.md) (decisions D1–D24).
   As-built contracts: [docs/contracts/](docs/contracts/). Index:
   [docs/README.md](docs/README.md).
+- Current push (SFF finals, Nov 2026): if you need a reference, start with
+  [docs/SFF-PUSH.md](docs/SFF-PUSH.md), the tracker and changelog. Add one line
+  there when you ship something significant.
 - Never break the five hard gates ([README](README.md#hard-guarantees),
   clarified in FINAL-PUSH §12):
   - no premium bytes before a grant;
@@ -27,3 +30,17 @@
   loosen one silently.
 - Do not bind ports 5100, 8788 or 8790 in tests; use ephemeral ports.
 - Never use real money, create cloud resources, or log API keys or wallet seeds.
+
+## How work is run (SFF push)
+
+- The project runs hands-off: agents plan, build, ship and merge in loops. Agents
+  have full authority to merge to `main` once the merge gate passes.
+- Model split, by share of work:
+  - **about 50%: GPT-6.1 Sol (Codex)** for coding and implementation;
+  - **about 30%: Claude Opus at medium effort** for higher-order thinking:
+    planning, design, product calls, reviewing direction;
+  - **about 20%: Claude Sonnet** for lighter thinking work: writing, summaries,
+    post drafts, triage.
+- Prefer fewer, larger PRs: bundle related issues into one PR rather than
+  splitting for parallelism. Many small PRs mean more CI waits and rebases.
+  Run at most about three lanes at once.
