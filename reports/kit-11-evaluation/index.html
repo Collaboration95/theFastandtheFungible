@@ -3,8 +3,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f3ed">
-  <meta name="description" content="A code-grounded evaluation of extending ResearchAgent for Kit 11: three research agents, one account, and limits that adapt to supplier prices. Proposal only.">
   <title>ResearchAgent × Kit 11 — visual evaluation</title>
   <style>
     :root{--paper:#f5f3ed;--ink:#20292b;--muted:#526164;--line:#d6dcd5;--green:#225c46;--mint:#e6f0e7;--orange:#a94225;--peach:#f8e8dc;--blue:#245b80;--ice:#e9f0f6;--purple:#665080;--lilac:#f0ebf5;--white:#fffefa;--radius:20px}
@@ -14,16 +12,58 @@
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
     @media print{.top{position:static}.jump,.story-tabs,.demo-controls,.secondary{display:none}body{background:white}.wrap{max-width:none;padding:0}.hero{padding-top:20px}section{padding:25px 0}.card,.rating,.agent,.counterfactual,.decision-gate{break-inside:avoid}details{display:block}details>div{display:block!important}a{color:inherit}.demo{box-shadow:none}.footer{padding-bottom:0}}
   </style>
+<!-- brand:start -->
+<meta name="description" content="A code-grounded banking proposal.">
+<meta name="theme-color" content="#FBF8F2">
+<link rel="icon" type="image/svg+xml" href="../../brand/favicon.svg">
+<link rel="icon" sizes="16x16 32x32 48x48" href="../../brand/favicon.ico">
+<link rel="apple-touch-icon" href="../../brand/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ResearchAgent">
+<meta property="og:title" content="ResearchAgent · Kit 11 evaluation">
+<meta property="og:description" content="A code-grounded banking proposal.">
+<meta property="og:url" content="https://collaboration95.github.io/theFastandtheFungible/reports/kit-11-evaluation/">
+<meta property="og:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/reports-kit-11-evaluation.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ResearchAgent · Kit 11 evaluation — A code-grounded banking proposal.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ResearchAgent · Kit 11 evaluation">
+<meta name="twitter:description" content="A code-grounded banking proposal.">
+<meta name="twitter:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/reports-kit-11-evaluation.png">
+<!-- brand:end -->
 </head>
 <body>
+<!-- site-header:start -->
+<style>.ra-hdr{position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E3E6EE;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
+.ra-hdr *{box-sizing:border-box}
+.ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:52px;display:flex;align-items:center;gap:20px}
+.ra-hdr a{color:inherit;text-decoration:none}
+.ra-hdr-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em;flex:none}
+.ra-hdr-brand svg{width:22px;height:22px;display:block}
+.ra-hdr nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.ra-hdr nav::-webkit-scrollbar{display:none}
+.ra-hdr nav a{padding:8px 10px;border-radius:7px;color:#655D55;white-space:nowrap}
+.ra-hdr nav a:hover{color:#24211E;background:rgba(36,33,30,.06)}
+.ra-hdr nav a[aria-current=page]{color:#24211E;box-shadow:inset 0 -2px 0 #24211E;border-radius:0}
+.ra-hdr-end{display:flex;align-items:center;gap:14px;flex:none;color:#655D55;font-size:13px}
+.ra-hdr-end a:hover{color:#24211E}
+.ra-hdr-note{font-family:"Geist Mono",ui-monospace,Menlo,monospace;font-size:12px;color:#655D55;white-space:nowrap}
+.ra-hdr-note kbd{font:600 11px "Geist Mono",ui-monospace,Menlo,monospace;border:1px solid #CDD2DE;border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:#fff;color:#2B3046}
+.ra-hdr a:focus-visible{outline:2px solid #2F45FF;outline-offset:2px}
+@media(max-width:860px){.ra-hdr-note{display:none}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}}
+@media print{.ra-hdr{display:none}}</style>
+<div class="ra-hdr" role="banner"><div class="ra-hdr-in">
+<a class="ra-hdr-brand" href="../../" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
+<nav aria-label="Explainers"><a href="../../">Explainers</a><a href="../../talk/">Walkthrough</a><a href="../../slides/">Slides</a><a href="../../project-map/">Project map</a><a href="../../evolution/">Build log</a></nav>
+<div class="ra-hdr-end"><span class="ra-hdr-note">Kit 11 evaluation · 22 Oct 2026 · draft</span><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible">GitHub ↗</a></div>
+</div></div>
+<!-- site-header:end -->
 <a class="skip" href="#verdict">Skip to verdict</a>
-<header class="top"><div class="wrap top-inner">
-  <div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="#225c46"/><path d="M9 23V9h7a5 5 0 0 1 0 10H9m7 0 7 4" fill="none" stroke="#f5f3ed" stroke-width="2" stroke-linejoin="round"/></svg>ResearchAgent <span style="font-weight:400;color:var(--muted)">/ field notes</span></div>
-  <span class="top-note">Kit 11 evaluation<br>22 October 2026 · draft</span>
-</div></header>
 <main class="wrap">
   <div class="hero" id="verdict">
-    <p class="eyebrow">The Fast and the Fungible × Agentic Banking</p>
+    <p class="eyebrow">ResearchAgent × Agentic Banking</p>
     <h1>Same research.<br>A <em>smarter shared wallet.</em></h1>
     <p class="hero-lead">Three analysts. One account. Buy the missing evidence, even when its price changes. Extend the ResearchAgent you already have.</p>
     <div class="verdict">
@@ -188,7 +228,7 @@
       <li id="e3"><strong>Purchases and payment rails</strong> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/server/purchases.ts">PurchaseManager</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/publisher/facilitator.ts">facilitator</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/shared/contracts/publisher.ts#L3">rail / asset contracts</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/tests/xrpl.test.ts#L91">XRPL tests</a><p>Buyer/facilitator quote binding, once-only submission, restart reconciliation and refunds are implemented. Tests inject a ledger double; their existence is not evidence of a Metal deployment or a live ledger run in this evaluation.</p></li>
       <li id="e4"><strong>Financial policy</strong> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/server/store.ts#L182">reserveIntent / claimSubmitting</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/shared/contracts/run.ts#L17">budget / run contracts</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/tests/purchase.test.ts#L102">competing intents / price mismatch tests</a><p>Commitments are selected with <code>WHERE run_id=?</code>. A quote/evaluated-price mismatch is skipped without charging. No account-wide agent-limit ledger or automatic repricing/rebalancing was found.</p></li>
       <li id="e5"><strong>The existing experience</strong> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/src/components/Layout.tsx">layout</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/src/components/ActionModal.tsx">plan confirmation</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/src/stage.ts">trace pacing</a><p>Reuse the run/answer/budget presentation. The 5-second modal confirms the plan; the budget authorizes spending. There is no per-purchase approval modal to invent or preserve.</p></li>
-      <li id="e6"><strong>Delivery integrity and quarantine</strong> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/shared/manifest.ts#L36">signature / claim-pattern checks</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/server/proofs.ts">proof gate</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/tests/proofs.test.ts">quarantine / content leakage tests</a><p>Checks establish delivery against signed promises. They do not fact-check the world or make a second research agent redundant.</p></li>
+      <li id="e6"><strong>Delivery integrity and quarantine</strong> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/shared/manifest.ts#L36">signature / claim-pattern checks</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/server/proofs.ts">proof gate</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/tests/proofs.test.ts">quarantine / content leakage tests</a><p>Checks establish delivery against signed promises. They do not fact-check the world or make a second research worker redundant.</p></li>
       <li id="e7"><strong>Talk and publishing route</strong> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/521841561d451998e16f3708edd15030474849d1/talk/index.html">talk at inspected gh-pages commit</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/521841561d451998e16f3708edd15030474849d1/sync.sh">manual page-copy publishing script</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/.github/workflows/ci.yml">main CI</a><p>The presentation is on a separate branch and includes static traces. Existing hosting serves <code>gh-pages:/</code>; the publishing script copies HTML and relies on a push to redeploy. Main CI checks code; it does not publish PR previews.</p></li>
       <li id="e8"><strong>Storyboard source facts</strong> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/data/corpus/v2/articles/notfinancialtimes/notft-kestrel-tsmc-deal-margins.json">margin analysis</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/data/corpus/v2/articles/the-fab-floor/fab-floor-kestrel-penang-lead-times.json">lead-time series</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/data/corpus/v2/articles/load-factor/lf-corporate-green-power-round-2026.json">free solar evidence</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/c280ba2c6329b1655ca5105c23cdefa10404ac68/data/corpus/v2/STORY-BIBLE.md">story bible</a><p>All are synthetic. Numbers and source prices were checked in the article JSON. The combined question, team, transfer and 40 → 90 c price event are new illustrative proposals.</p></li>
     </ol></div></details>

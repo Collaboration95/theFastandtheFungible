@@ -4,10 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>How ResearchAgent evolved · SFF build log</title>
-<meta name="description" content="ResearchAgent in evidence: 39 days to the October demo, followed by the November SFF finals changelog and scorecard history.">
-<meta property="og:title" content="How ResearchAgent evolved · SFF build log">
-<meta property="og:description" content="Commits, pull requests, coding-agent prompts and tokens, replayed from real logs. AI Tinkerers Singapore, 10 Oct 2026.">
-<meta property="og:image" content="https://collaboration95.github.io/theFastandtheFungible/evolution/img/stage.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
@@ -37,13 +33,6 @@ a { color: var(--pen); text-underline-offset: 3px; }
 a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; border-radius: 6px; }
 code, .mono { font-family: var(--f-mono); }
 
-.mast { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); }
-.mast-in { max-width: var(--col); margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; justify-content: space-between; font: 500 13px/1.3 var(--f-mono); color: var(--muted); }
-.mast b { color: var(--ink); font-weight: 600; }
-.mast .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--pen); margin-right: 8px; vertical-align: 1px; }
-.mast nav { display: flex; gap: 16px; }
-.mast nav a { color: var(--muted); text-decoration: none; }
-.mast nav a:hover { color: var(--pen); }
 
 .wrap { padding: 0 16px 96px; }
 main { max-width: var(--col); margin: 0 auto; }
@@ -167,7 +156,6 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   .bigs, .stats4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .two, .stage { grid-template-columns: 1fr; }
   .bar { grid-template-columns: 120px minmax(0, 1fr) 60px; font-size: 13px; }
-  .mast nav { display: none; }
   .waffle { grid-template-columns: repeat(20, minmax(0, 1fr)); }
 }
 /* phones: wide charts keep a readable size and scroll sideways, starting at the final push */
@@ -191,12 +179,54 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 @media(prefers-reduced-motion:no-preference) { .sff-day.sff-enter { animation:sff-enter .35s ease-out; } }
 @keyframes sff-enter { from { opacity:.65; transform:translateY(8px); } to { opacity:1; transform:none; } }
 </style>
+<!-- brand:start -->
+<meta name="description" content="Built in public. Measured in receipts.">
+<meta name="theme-color" content="#FBF8F2">
+<link rel="icon" type="image/svg+xml" href="../brand/favicon.svg">
+<link rel="icon" sizes="16x16 32x32 48x48" href="../brand/favicon.ico">
+<link rel="apple-touch-icon" href="../brand/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ResearchAgent">
+<meta property="og:title" content="ResearchAgent · Evolution">
+<meta property="og:description" content="Built in public. Measured in receipts.">
+<meta property="og:url" content="https://collaboration95.github.io/theFastandtheFungible/evolution/">
+<meta property="og:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/evolution.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ResearchAgent · Evolution — Built in public. Measured in receipts.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ResearchAgent · Evolution">
+<meta name="twitter:description" content="Built in public. Measured in receipts.">
+<meta name="twitter:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/evolution.png">
+<!-- brand:end -->
 </head>
 <body>
-<div class="mast"><div class="mast-in">
-  <span><span class="dot"></span><b>ResearchAgent</b> · how it evolved</span>
-  <nav><a href="../">Explainers</a><a href="../talk/">Walkthrough</a><a href="https://github.com/Collaboration95/theFastandtheFungible">GitHub ↗</a></nav>
+<!-- site-header:start -->
+<style>.ra-hdr{position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E3E6EE;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
+.ra-hdr *{box-sizing:border-box}
+.ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:52px;display:flex;align-items:center;gap:20px}
+.ra-hdr a{color:inherit;text-decoration:none}
+.ra-hdr-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em;flex:none}
+.ra-hdr-brand svg{width:22px;height:22px;display:block}
+.ra-hdr nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.ra-hdr nav::-webkit-scrollbar{display:none}
+.ra-hdr nav a{padding:8px 10px;border-radius:7px;color:#655D55;white-space:nowrap}
+.ra-hdr nav a:hover{color:#24211E;background:rgba(36,33,30,.06)}
+.ra-hdr nav a[aria-current=page]{color:#24211E;box-shadow:inset 0 -2px 0 #24211E;border-radius:0}
+.ra-hdr-end{display:flex;align-items:center;gap:14px;flex:none;color:#655D55;font-size:13px}
+.ra-hdr-end a:hover{color:#24211E}
+.ra-hdr-note{font-family:"Geist Mono",ui-monospace,Menlo,monospace;font-size:12px;color:#655D55;white-space:nowrap}
+.ra-hdr-note kbd{font:600 11px "Geist Mono",ui-monospace,Menlo,monospace;border:1px solid #CDD2DE;border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:#fff;color:#2B3046}
+.ra-hdr a:focus-visible{outline:2px solid #2F45FF;outline-offset:2px}
+@media(max-width:860px){.ra-hdr-note{display:none}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}}
+@media print{.ra-hdr{display:none}}</style>
+<div class="ra-hdr" role="banner"><div class="ra-hdr-in">
+<a class="ra-hdr-brand" href="../" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
+<nav aria-label="Explainers"><a href="../">Explainers</a><a href="../talk/">Walkthrough</a><a href="../slides/">Slides</a><a href="../project-map/">Project map</a><a href="../evolution/" aria-current="page">Build log</a></nav>
+<div class="ra-hdr-end"><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible">GitHub ↗</a></div>
 </div></div>
+<!-- site-header:end -->
 
 <nav class="toc" aria-label="On this page">
   <div class="h">On this page</div>
@@ -219,7 +249,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   <div class="prose">
     <div class="kick">Build log · 3 Sep → 11 Oct 2026</div>
     <h1>39 days, two coding agents, <span class="hl">one demo.</span></h1>
-    <p class="lede">ResearchAgent is a research agent with a wallet. This page is how it got built, told only in numbers: every commit, pull request, prompt and token, replayed from git, GitHub and the coding agents' own logs.</p>
+    <p class="lede">ResearchAgent is an evidence workspace with a wallet. This page is how it got built, told only in numbers: every commit, pull request, prompt and token, replayed from git, GitHub and the coding agents' own logs.</p>
   </div>
 
   <div class="panel" id="w-journey">
