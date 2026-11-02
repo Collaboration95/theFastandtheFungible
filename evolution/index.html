@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>How ResearchAgent evolved · 39 days in data</title>
-<meta name="description" content="The build log of ResearchAgent in charts: 39 days of commits, pull requests, coding-agent prompts and tokens, replayed from git, GitHub and the agents' own logs.">
-<meta property="og:title" content="How ResearchAgent evolved · 39 days in data">
+<title>How ResearchAgent evolved · SFF build log</title>
+<meta name="description" content="ResearchAgent in evidence: 39 days to the October demo, followed by the November SFF finals changelog and scorecard history.">
+<meta property="og:title" content="How ResearchAgent evolved · SFF build log">
 <meta property="og:description" content="Commits, pull requests, coding-agent prompts and tokens, replayed from real logs. AI Tinkerers Singapore, 10 Oct 2026.">
 <meta property="og:image" content="https://collaboration95.github.io/theFastandtheFungible/evolution/img/stage.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -176,6 +176,20 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   .sc svg { min-width: 780px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .tip, .waffle i { transition: none; } .ticker.flash { animation: none; } }
+/* SFF additions: restrained cards; movement only on first entry. */
+.sff-day { margin-top:24px; padding:24px 0; border-top:1px solid var(--rule-2); }
+.sff-day h3 { font:600 20px var(--f-ui); }
+.sff-day li { margin:10px 0; overflow-wrap:anywhere; }
+.sff-day img { display:block; max-width:100%; height:auto; margin-top:20px; border:1px solid var(--rule); }
+.sff-metric { font:500 14px/1.6 var(--f-mono); color:var(--ok); }
+#sff-source { font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+#sff-scorecards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:24px; }
+.sff-series { min-width:0; margin-top:24px; padding-top:16px; border-top:1px solid var(--rule); }
+.sff-series h4 { font:600 15px/1.4 var(--f-ui); margin:0; overflow-wrap:anywhere; }
+.sff-series svg { height:64px; width:100%; margin:12px 0; overflow:hidden; }
+.sff-series p { font:400 12px/1.5 var(--f-mono); overflow-wrap:anywhere; }
+@media(prefers-reduced-motion:no-preference) { .sff-day.sff-enter { animation:sff-enter .35s ease-out; } }
+@keyframes sff-enter { from { opacity:.65; transform:translateY(8px); } to { opacity:1; transform:none; } }
 </style>
 </head>
 <body>
@@ -195,6 +209,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   <a href="#tests">Tests and CI</a>
   <a href="#design">Design</a>
   <a href="#stage">Demo day</a>
+  <a href="#sff">SFF push (Nov)</a>
 </nav>
 
 <div class="wrap"><main>
@@ -380,6 +395,21 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   </div>
 </section>
 
+<section id="sff" aria-labelledby="sff-title">
+  <div class="prose"><div class="kick">SFF push · November 2026</div>
+    <h2 id="sff-title">Build, measure, ship.</h2>
+    <p class="lede">The finals chapter, one card per day from our running changelog. Each ship keeps its evidence and any recorded metric move.</p>
+    <p><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/BUILDER-FEEDBACK.md">Builder feedback and mainnet gaps ↗</a></p>
+  </div>
+  <p id="sff-source" class="mono"></p>
+  <div id="sff-days"><p>SFF changelog coming soon.</p></div>
+  <div class="panel panel-in"><h3>Scorecard history</h3>
+    <p id="sff-score-note">Coming soon — the nightly scorecard has not been published.</p>
+    <div id="sff-scorecards"></div>
+  </div>
+  <noscript><p>JavaScript is required for the generated timeline cards. <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/SFF-PUSH.md#changelog">Read the changelog directly.</a></p></noscript>
+</section>
+
 <section class="close" id="close">
   <div class="kick">ResearchAgent</div>
   <h2>An LLM writes.<br>A decision model chooses.<br>Code pays.</h2>
@@ -390,6 +420,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 </main></div>
 
 <script src="data.js"></script>
+<script src="sff.js"></script>
 <script>
 (() => {
 const D = window.EVO;
