@@ -76,6 +76,8 @@ export const cosineRelevance = (cos: number) => {
   const { lo, hi } = SEARCH_TUNING.cosineRange
   return Math.min(1, Math.max(0.01, (cos - lo) / (hi - lo)))
 }
+/** Absolute keyword promise scale, shared with the offline search eval. */
+export const keywordRelevance = (score: number) => Math.min(1, Math.max(0.01, score / (score + SEARCH_TUNING.keywordHalfScore)))
 /**
  * Ranks one publisher's articles. Relevance is an absolute 0–1 promise, never normalised to the top hit:
  * per-response normalisation made every publisher promise 1.0 for its best hit, so an inflated
@@ -91,7 +93,7 @@ export async function searchIndex(index: PublisherIndex, term: string, k: number
   const absolute = (id: string, score: number) => {
     const vector = mode === 'hybrid' ? index.vectorOf?.get(id) : undefined
     // A returned hit matched something: never promise exactly 0.
-    return vector ? cosineRelevance(cosine(queryVector!, vector)) : Math.min(1, Math.max(0.01, score / (score + SEARCH_TUNING.keywordHalfScore)))
+    return vector ? cosineRelevance(cosine(queryVector!, vector)) : keywordRelevance(score)
   }
   const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) }))
   return { mode, ranked }

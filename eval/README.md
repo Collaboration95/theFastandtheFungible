@@ -2,7 +2,8 @@
 
 Reproduce (offline once the vectors exist):
 
-    npx tsx eval/run-eval.mts            # baseline grid
+    npx tsx eval/run-eval.mts --chosen   # chosen production hybrid + keyword fallback
+    npx tsx eval/run-eval.mts            # production configs + historical baseline grid
     npx tsx eval/run-eval.mts '<json>'   # custom grid: [["name", {mode, boost, w, sim, rel, bm25?, body?}], ...]
 
 - `queries.json`: 162 eval queries (2 per article: a 3–7 word keyword query and a natural question), written by
@@ -50,3 +51,9 @@ Caveats: the eval queries are LLM-written from the head of each article, which f
 writer there are only 8–15 candidates, so MRR saturates. The cross-writer AUC is the number to watch.
 Relevance scale: hybrid cosine 0.65 → 0, 0.90 → 1 (target median ≈ 0.83, other writers' median best hit ≈ 0);
 keyword `bm25 / (bm25 + 12)` (target median ≈ 0.70, other writers' median best hit ≈ 0.44).
+
+The eval imports `SEARCH_TUNING`, `cosineRelevance` and `keywordRelevance` from
+`publisher/search.ts`, including the production 0.01 floor for returned hits.
+Run `npx tsx eval/run-eval.mts --chosen` to measure the chosen configuration on
+the checked-in query vectors and current corpus, without provider calls.
+The table above records the 8 Oct study; reruns on the current corpus may differ.
