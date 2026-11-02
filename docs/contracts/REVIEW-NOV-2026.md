@@ -174,9 +174,11 @@ parallel signing come after SFF.
 
 ## 5. Dev speed
 
-- **Tests are not the bottleneck:** 491 unit tests in 58 files run in 53 s
-  locally (`vitest run`, 3 Nov). Use `vitest related <files>` in the inner
-  loop; leave the suite alone.
+- **Tests are not the bottleneck:** 491 unit tests in 58 files run in 39–53 s
+  locally (`vitest run`, 3 Nov). The long pole is the search leak gate
+  (`tests/search-leak.test.ts`, ~38 s alone). It is a hard-gate test, so
+  don't loosen it; if the suite grows, give it its own vitest project so it
+  runs beside the rest. Use `vitest related <files>` in the inner loop.
 - **Hot files are.** `server/routes.ts` (one 250-line closure),
   `server/purchases.ts`, `server/store.ts` and `server/agents/loop.ts` are on
   the file list of #273, #274, #275 and #280, which run in different lanes.
