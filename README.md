@@ -124,6 +124,7 @@ incur model fees separately from the article cap. `node scripts/mcp-demo.mjs`
 uses a real authenticated Claude Code session with fixture engine providers,
 only the four MCP tools, and simulated settlement; it saves a sanitized tool
 transcript summary under `eval/mcp/` (or prints manual steps if Claude is absent).
+A separate [Testnet MCP purchase proof](eval/mcp/testnet-2026-11-03.md) records validated settlement and retry evidence.
 Run `npx vitest run tests/engine.test.ts tests/mcp-policy.test.ts tests/mcp.e2e.test.ts`
 for offline transport, isolation, cap and restart checks.
 
