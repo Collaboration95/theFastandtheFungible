@@ -1,0 +1,43 @@
+name: release
+# Pushing a v* tag (made by scripts/release.mjs) publishes a GitHub release.
+# The notes are the tag's annotation. Nothing here builds or deploys code.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read the tag notes
+        run: |
+          git fetch --force origin "refs/tags/$TAG:refs/tags/$TAG"
+          git for-each-ref "refs/tags/$TAG" --format='%(contents)' > "$RUNNER_TEMP/notes.md"
+          test -s "$RUNNER_TEMP/notes.md" || { echo "::error::$TAG has no annotation; create it with scripts/release.mjs"; exit 1; }
+      - name: Attach the Mac app when the desktop workflow exists
+        run: |
+          mkdir -p "$RUNNER_TEMP/assets"
+          if [ -f .github/workflows/desktop.yml ]; then
+            run_id=$(gh run list --workflow desktop.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$run_id" ] && gh run download "$run_id" --dir "$RUNNER_TEMP/dl" --pattern '*dmg*'; then
+              find "$RUNNER_TEMP/dl" -name '*.dmg' -exec mv {} "$RUNNER_TEMP/assets/" \;
+            fi
+          fi
+          if ls "$RUNNER_TEMP"/assets/*.dmg >/dev/null 2>&1; then
+            printf '\n\nThe Mac app is attached. It is unsigned until the Developer ID lands: right-click, Open on first launch.\n' >> "$RUNNER_TEMP/notes.md"
+          fi
+      - name: Create the release
+        run: |
+          title=$(head -n 1 "$RUNNER_TEMP/notes.md" | sed 's/^# //')
+          shopt -s nullglob
+          assets=("$RUNNER_TEMP"/assets/*)
+          gh release create "$TAG" --verify-tag --title "$TAG · $title" --notes-file "$RUNNER_TEMP/notes.md" "${assets[@]}"
