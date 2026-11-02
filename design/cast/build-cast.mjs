@@ -18,7 +18,7 @@ const badge = (label,color=P.ink) => `<text x="80" y="151" text-anchor="middle" 
 function scout(pose) {
  if(pose==='idle') return `${path('M12 2l8 18-8-4-8 4z',P.paper)}${path('M12 8v8')}`
  if(pose==='clarifying') return `${path('M3 4h18v13H10l-5 4v-4H3z',P.paper)}${path('M10 8a2 2 0 0 1 4 0c0 2-2 2-2 4M12 14v.1')}`
- if(pose==='searching') return `${path('M8 6V4a4 4 0 0 1 8 0v2M7 8h10l2 13H5z',P.paper)}${rect(9,11,6,6,P.salmon)}${path('M4 21h16')}`
+ if(pose==='searching') return `${circle(10,10,6)}${path('M14.5 14.5L21 21M7 10h6m-3-3v6')}`
  if(pose==='weighing') return `${path('M12 3v18M4 7h16M7 7l-4 8h8zM17 7l-4 8h8zM8 21h8')}`
  if(pose==='paying') return `${coin(8,12)}${path('M14 12h8m-3-3 3 3-3 3')}`
  if(pose==='verifying') return `${circle(10,10,6)}${path('M15 15l6 6M7 10l2 2 4-4','none',`stroke="${P.green}"`)}`
@@ -43,7 +43,7 @@ const props = {
  'load-factor': () => path('M18 10l-6 8h5l-1 5 7-9h-5l1-4z',P.paper),
  'marketpulse-digest': () => `${rect(14,13,9,9,P.salmon)}${rect(11,10,9,9)}${path('M13 13h5m-5 3h5')}`,
  'open-records': () => `${path('M12 14l5-4 6 4z',P.paper)}${path('M13 16v5m4-5v5m4-5v5m-10 2h12')}`,
- alphaleak: () => `${path('M12 13q5-4 11 0l-2 6h-7z',P.paper)}${path('M15 14v1m5-1v1')}`,
+ alphaleak: () => `${path('M12 11h11v11H12z',P.paper)}${path('M18 11l-3 5h5l-3 6')}`,
 }
 function writer(who,pose) {
  const avatar=`${circle(8,6,3)}${path('M2 20v-3a6 6 0 0 1 10-4')}`

@@ -28,7 +28,7 @@ PR or issue.
 | Product | Publish in one command: a Markdown folder becomes a paid writer | #277 | planned · Fri 13 |
 | UI/UX | The cast (restrained, on one grid with the brand) + motion: the money visibly moves | #258, #262 | cast v1 done (#258); motion planned Sun 8 (#262) |
 | Repo | Front door: settings, topics, community files, hygiene check, a release per feature day | #269 | done · social preview upload on #265 |
-| Repo | Brand kit: wordmark, mark, favicon, app icon, social preview, naming audit | #271 | planned · Thu 5 – Fri 6 |
+| Repo | Brand kit: wordmark, mark, favicon, app icon, social preview, naming audit | #271 | done · reproducible exports + app/site source integration |
 | Repo | README overhaul + one header across the explainers site | #272 | planned · Sat 7, numbers Wed 11 |
 | Submission | Short description · demo video · pitch deck · public repo | plan only | planned · 8–11 Nov |
 | Builder feedback | [Living log from building + mainnet-readiness checklist](BUILDER-FEEDBACK.md) | #257 | done (15 implementation findings + 15 historical submissions) |
@@ -221,6 +221,7 @@ Agents add items there and keep working around them.
 
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
 
+- 3 Nov: Logo direction chosen: open index, because source boundaries and a route to evidence read at 16 px on the cast’s 24-unit grid; Ink/Paper with sparse Salmon layout accents. Explainers source moves into `site/` for one reviewable app/site identity kit (#271).
 - 3 Nov: Overnight autonomous run: Opus orchestrates, Sol/Terra/Sonnet code, auto-merge on green (owner request).
 - 3 Nov: Design bar: YC-style clean (Linear/Vercel/Stripe), no childish or hyper-interactive UI; motion only for meaning.
 - 3 Nov: Day 1 of the feature run is the local app foundation (#270), because every later post needs a recordable clip.
@@ -235,6 +236,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 
 ### Tue 3 Nov
+- Lane C #271: shipped the open-index brand kit, deterministic SVG/PNG/ICO/ICNS exports, app and explainers-source favicons/OG cards, naming audit, and two restrained cast refinements.
 - Architecture review ([REVIEW-NOV-2026.md](contracts/REVIEW-NOV-2026.md)): four do-now seams filed as #285 (SDK v0, config, route split), #286 (one spend gate, auth, injection hardening), #287 (live reconciler, health, metrics), #288 (audit trail, export, COMPLIANCE.md); fold-ins commented on #259, #273–#275, #277–#281.
 - Lane light #269: repo front door. Description, topics and homepage set; MIT licence (revertible until the owner's veto on #265), CONTRIBUTING, SECURITY, Code of Conduct, issue templates, CODEOWNERS; `npm run hygiene` in `check:fast`; `scripts/release.mjs` and a release workflow for one tag per feature day.
 - Planned the feature-a-day run (9 days, 5–13 Nov, slack of 4), repo identity and the post calendar; filed #269–#281; owner-only items moved to #265 ([calendar](#feature-a-day-5-13-nov)).
