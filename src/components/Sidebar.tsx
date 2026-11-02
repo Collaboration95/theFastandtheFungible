@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- NAV_WIDTH bounds are shared with App's saved width. */
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { modifier } from '../shortcuts'
 import type { PastRun } from '../api'
 
 export const NAV_WIDTH = { min: 200, max: 420, initial: 260 }
@@ -47,8 +48,8 @@ export default function Sidebar({ runs, activeId, busy, open, width = NAV_WIDTH.
     </div>}
   </li>
   return <nav className={`ra-nav${open ? '' : ' is-rail'}${drag === undefined ? '' : ' is-resizing'}`} aria-label="Questions" style={open ? { '--nav-w': `${shown}px` } as CSSProperties : undefined}>
-    <button type="button" className="ra-newq" onClick={onNew} disabled={busy} title={busy ? 'Finish or stop the run first.' : undefined} aria-label="New question"><span aria-hidden="true">+</span>{open && <>New question<kbd>N</kbd></>}</button>
-    <div className="ra-nav-list">{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
+    <button type="button" className="ra-newq" onClick={onNew} disabled={busy} title={busy ? 'Finish or stop the run first.' : undefined} aria-label="New question"><span aria-hidden="true">+</span>{open && <>New question<kbd>{modifier}N</kbd></>}</button>
+    <div className="ra-nav-list">{runs.length === 0 && open && <p className="ra-nav-empty">No runs yet.</p>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
       {open && <p className="ra-nav-sec">{name}</p>}<ul>{list.map(row)}</ul>
     </section>)}</div>
     {onSettings && <button type="button" className={`ra-nav-set${settingsOn ? ' is-on' : ''}`} onClick={onSettings} aria-current={settingsOn ? 'page' : undefined} aria-label="Settings" title={open ? undefined : 'Settings'}>

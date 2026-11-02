@@ -24,6 +24,10 @@ import ClarifyChips from './components/ClarifyChips'
 import ActionModal from './components/ActionModal'
 import ChatThread, { type ChatMessage } from './components/ChatThread'
 import ReputationPanel from './components/ReputationPanel'
+import CommandPalette, { type Command } from './components/CommandPalette'
+import { deriveRunState } from './runState'
+import { modifier } from './shortcuts'
+import { DEMO_QUESTIONS } from '../shared/contracts/examples'
 
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
 const universalKey = 'researchagent.budget-universal', universalMinorKey = 'researchagent.budget-universal-minor'
@@ -33,12 +37,18 @@ const prefs = {
   get(key: string) { try { return localStorage.getItem(key) } catch { return null } },
   set(key: string, value: string) { try { localStorage.setItem(key, value) } catch { /* private mode */ } },
 }
+const recording = new URLSearchParams(window.location.search).get('record') === '1'
 function initialPace(): Pace {
+  if (recording) return 'stage'
   const value = new URLSearchParams(window.location.search).get('pace') ?? prefs.get(paceKey)
   return value === 'real' || value === 'slow' ? value : 'stage'
 }
 
 export default function App() {
+  const [palette, setPalette] = useState<'commands' | 'shortcuts'>()
+  const [writersLoading, setWritersLoading] = useState(false)
+  const [writersError, setWritersError] = useState('')
+  const [healthError, setHealthError] = useState(false)
   const [run, setRun] = useState<RunSnapshot>()
   const [screen, setScreen] = useState<'home' | 'run' | 'settings' | 'chat'>('home')
   // Settings' Back returns to the screen it was opened from; the half-typed question lives here so Home remounting keeps it.
@@ -48,7 +58,7 @@ export default function App() {
   const [cursor, setCursor] = useState(Infinity)
   const [pace, setPace] = useState<Pace>(initialPace)
   const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean }>({ faults: false })
-  const [notify, setNotify] = useState(() => prefs.get(notifyKey) === '1')
+  const [notify, setNotify] = useState(() => !recording && prefs.get(notifyKey) === '1')
   const [sending, setSending] = useState(false)
   const [stopping, setStopping] = useState(false)
   const [error, setError] = useState('')
@@ -64,10 +74,10 @@ export default function App() {
   const [thread, setThread] = useState<ChatMessage[]>([])
   const [tab, setTab] = useState<'run' | 'writers'>('run')
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
-  const [clarifyNever, setClarifyNever] = useState(() => new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1')
-  const [navOpen, setNavOpen] = useState(() => prefs.get(navKey) !== 'rail')
+  const [clarifyNever, setClarifyNever] = useState(() => !recording && (new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1'))
+  const [navOpen, setNavOpen] = useState(() => !recording && prefs.get(navKey) !== 'rail')
   // Settings → Universal budget per query: every question uses it, and Home shows a chip instead of the slider.
-  const [universal, setUniversal] = useState(() => prefs.get(universalKey) === '1')
+  const [universal, setUniversal] = useState(() => !recording && prefs.get(universalKey) === '1')
   const [universalMinor, setUniversalMinor] = useState(() => savedBudget(prefs.get(universalMinorKey)))
   const [navWidth, setNavWidth] = useState(() => { const saved = Number(prefs.get(navWidthKey)); return saved >= NAV_WIDTH.min && saved <= NAV_WIDTH.max ? saved : NAV_WIDTH.initial })
   const [why, setWhy] = useState(false)
@@ -75,7 +85,7 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false
-    void fetch('/api/health').then(response => response.json()).then(data => { if (!cancelled) setHealth({ labels: ModeLabelsSchema.safeParse(data.labels).data, faults: data.faults === true }) }).catch(() => { /* labels fall back to the run's own */ })
+    void fetch('/api/health').then(response => response.json()).then(data => { if (!cancelled) setHealth({ labels: ModeLabelsSchema.safeParse(data.labels).data, faults: data.faults === true }) }).catch(() => { if (!cancelled) setHealthError(true) })
     // Home is the default; a run opens only when the URL names it (a refresh keeps it). Past runs live in the sidebar.
     const id = new URLSearchParams(window.location.search).get('run')
     if (id) void getRun(id).then(value => { if (!cancelled) { setRun(value); setScreen('run') } }).catch(() => { /* unknown run: stay on Home */ })
@@ -93,14 +103,15 @@ export default function App() {
   const current = events.find(event => event.id === cursor)
   const replaying = !!run && Number.isFinite(cursor) && !(isTerminal(run) && !next)
   const nextId = next?.id
-  const delay = current ? dwell(current) / SPEED[pace] : 350
+  const delay = current ? (recording ? dwell(current) * 0.28 : dwell(current)) / SPEED[pace] : 350
   useEffect(() => {
     if (!replaying || nextId === undefined) return
     const timer = setTimeout(() => setCursor(nextId), delay)
     return () => clearTimeout(timer)
   }, [replaying, nextId, delay])
   const shown = run && replaying ? staged(run, cursor) : run
-  const finished = !!shown && isTerminal(shown) && !replaying
+  const model = deriveRunState(shown, pending?.step)
+  const finished = !!shown && model.terminal && !replaying
   const openRun = async (id: string) => {
     const show = () => { const url = new URL(window.location.href); url.searchParams.set('run', id); window.history.replaceState(null, '', url) }
     if (id === run?.runId) { show(); setScreen('run'); return }
@@ -119,14 +130,14 @@ export default function App() {
   }
   const newQuestion = useCallback(() => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
-    setScreen('home'); setPassage(undefined); setWork(false); setThread([]); setPending(undefined)
+    setTab('run'); setDraft(''); setReceipt(undefined); setScreen('home'); setPassage(undefined); setWork(false); setThread([]); setPending(undefined)
   }, [])
   const openSettings = () => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
     if (screen !== 'settings') setBackTo(screen === 'run' ? 'run' : screen === 'chat' ? 'chat' : 'home')
     setScreen('settings'); setPassage(undefined); setWork(false)
   }
-  const closeSettings = () => { if (backTo === 'run' && run) void openRun(run.runId); else if (backTo === 'chat' && thread.length) setScreen('chat'); else newQuestion() }
+  const closeSettings = () => { if (backTo === 'run' && run) void openRun(run.runId); else if (backTo === 'chat' && thread.length) setScreen('chat'); else setScreen('home') }
 
   const refreshPast = useCallback(() => { void listPastRuns().then(setPast).catch(() => { /* the sidebar keeps its last list */ }) }, [])
   const phase = run?.phase
@@ -200,28 +211,15 @@ export default function App() {
   useEffect(() => {
     let title = 'ResearchAgent', icon: Parameters<typeof favicon>[0] = 'idle'
     if (screen === 'run' && shown) {
-      const buying = shown.intents.find(item => !isPaid(item) && !['VERIFIED', 'SKIPPED', 'FAILED_NOT_SETTLED'].includes(item.status))
-      if (shown.intents.some(item => item.status === 'DELIVERY_FAILED')) { title = '! Delivery failed · ResearchAgent'; icon = 'alert' }
-      else if (finished) { title = shown.phase === 'DONE' ? '✓ Answer ready · ResearchAgent' : shown.phase === 'STOPPED' ? 'Stopped · ResearchAgent' : '! Paused · ResearchAgent'; icon = shown.phase === 'DONE' ? 'done' : shown.phase === 'FAILED' ? 'alert' : 'idle' }
-      else { icon = 'work'; title = `${buying ? `Buying ${money(buying.amountMinor)}` : shown.answers.length > 1 || (shown.phase === 'ANSWER' && shown.intents.length) ? 'Rewriting answer' : shown.phase === 'DECIDE' ? 'Choosing sources' : 'Reading sources'} · ResearchAgent` }
+      if (model.purchases.some(item => item.failed)) { title = '! Delivery failed · ResearchAgent'; icon = 'alert' }
+      else if (finished) { title = model.phase === 'done' ? '✓ Answer ready · ResearchAgent' : model.phase === 'stopped' ? 'Stopped · ResearchAgent' : '! Paused · ResearchAgent'; icon = model.phase === 'done' ? 'done' : model.phase === 'failed' ? 'alert' : 'idle' }
+      else { icon = 'work'; title = `${model.phase[0].toUpperCase() + model.phase.slice(1)} · ResearchAgent` }
     }
     document.title = title
     let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
     if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.append(link) }
     link.href = favicon(icon)
   })
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey || event.altKey || (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, dialog'))) return
-      if (event.key === '.') setPresenter(open => !open)
-      else if (event.key.toLowerCase() === 'w' && screen === 'run' && run) setWork(open => !open)
-      else if (event.key.toLowerCase() === 'n' && ((screen === 'run' && finished) || screen === 'settings' || screen === 'chat')) newQuestion()
-      else if (event.key === 'Escape') setPresenter(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [screen, run, finished, newQuestion])
 
   // Clarify (D8): questions as chips, then the 5 s plan card; the run starts only from the card.
   const sendAsk = async (input: AskInput) => {
@@ -260,12 +258,13 @@ export default function App() {
     void startRun({ ...input, plan, ...(Object.keys(answers).length ? { answers } : {}) }).catch(() => { /* error banner already set */ })
   }
   const startRun = async (input: AskInput) => {
+    if (recording && (!health.labels?.research.startsWith('fixture') || !health.labels.decision.startsWith('fixture') || health.labels.settlement === XRPL_LABEL)) { setError('Record mode requires fixture providers and simulated settlement. Start make record.'); return }
     setSending(true); setError(''); setPassage(undefined); setCompare(false); setView('latest'); setWhy(false); setToasts([])
     try {
       const created = await ask(input)
       const url = new URL(window.location.href); url.searchParams.set('run', created.runId); window.history.replaceState(null, '', url)
       setCursor(pace === 'real' ? Infinity : 0)
-      setRun(created); setScreen('run'); setDraft('')
+      setRun(created); setTab('run'); setScreen('run'); setDraft('')
     } catch { setError('Can’t reach the server. Try again.'); throw new Error('ask failed') }
     finally { setSending(false) }
   }
@@ -281,17 +280,57 @@ export default function App() {
   useEffect(() => {
     if (tab !== 'writers') return
     let cancelled = false
-    void getReputation().then(list => { if (!cancelled) setReputation(list) }).catch(() => { /* the panel shows what the run carries */ })
+    void getReputation().then(list => { if (!cancelled) setReputation(list) }).catch(() => { if (!cancelled) setWritersError('Could not load writers. Switch to Run and back to retry.') }).finally(() => { if (!cancelled) setWritersLoading(false) })
     return () => { cancelled = true }
   }, [tab, reputationEvents])
-  const resetWriters = () => void resetReputation().then(setReputation).catch(() => setError('Reputation reset failed.'))
   const chooseClarifyNever = (on: boolean) => { setClarifyNever(on); prefs.set(clarifyKey, on ? '1' : '0') }
   const choosePace = (value: Pace) => { setPace(value); prefs.set(paceKey, value) }
   const chooseNotify = (on: boolean) => {
     setNotify(on); prefs.set(notifyKey, on ? '1' : '0')
     if (on && 'Notification' in window && Notification.permission === 'default') void Notification.requestPermission()
   }
-  const labels = <Modes quiet labels={shown?.labels} configured={health.labels} />
+  const focusAsk = () => { newQuestion(); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()) }
+  const switchView = (next: 'run' | 'writers') => { if (next === 'writers' && tab !== 'writers') { setWritersLoading(true); setWritersError('') } setTab(next); if (next === 'run' && run) setScreen('run'); else setScreen('home') }
+  const commands: Command[] = [
+    { id: 'cmd-new', label: 'New question', hint: `${modifier}N`, run: focusAsk },
+    { id: 'cmd-run', label: 'Run', hint: `${modifier}1`, run: () => switchView('run') },
+    { id: 'cmd-writers', label: 'Writers', hint: `${modifier}2`, run: () => switchView('writers') },
+    ...DEMO_QUESTIONS.slice(0, 3).map(preset => ({ id: `cmd-${preset.id}`, label: `${preset.id} · ${preset.text}`, run: () => { newQuestion(); setDraft(preset.text); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()) } })),
+    { id: 'cmd-budget', label: 'Set budget', run: () => { newQuestion(); requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.ra-budget-chip')?.click()) } },
+    ...(shown ? [{ id: 'cmd-work', label: 'Show Work', hint: 'W', run: () => { switchView('run'); setWork(true) } }] : []),
+    ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: `Recent · ${item.question}`, run: () => { setTab('run'); void openRun(item.runId) } })),
+    { id: 'cmd-record', label: recording ? 'Leave record mode' : 'Record mode · clean fixture recording', run: () => { const url = new URL(window.location.href); url.search = recording ? '' : '?record=1'; window.location.assign(url) } },
+    { id: 'cmd-mcp', label: 'Copy Claude MCP setup command', run: () => { void navigator.clipboard.writeText('claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- make mcp').catch(() => setError('Clipboard unavailable. Run: claude mcp add researchagent -- make mcp')) } },
+    { id: 'cmd-stop', label: 'Stop buying', hint: `${modifier}.`, run: () => void stopRun() },
+    { id: 'cmd-ask', label: 'Submit question / Go now', hint: `${modifier}↵`, run: () => { if (pending?.step === 'plan') go(pending.scope.plan); else document.querySelector<HTMLFormElement>('.ra-composer')?.requestSubmit() } },
+    { id: 'cmd-focus', label: 'Focus question', hint: '/', run: focusAsk },
+    { id: 'cmd-shortcuts', label: 'Keyboard shortcuts', hint: '?', run: () => setPalette('shortcuts') },
+    { id: 'cmd-presenter', label: 'Presenter controls', hint: '.', run: () => setPresenter(true) },
+  ]
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || palette || document.querySelector('dialog[open]')) return
+      const mod = event.metaKey || event.ctrlKey
+      const key = event.key.toLowerCase()
+      const editing = event.target instanceof HTMLElement && !!event.target.closest('input, textarea, select, [contenteditable="true"]')
+      if (mod && key === 'k') { event.preventDefault(); setPalette('commands') }
+      else if (mod && key === 'n') { event.preventDefault(); focusAsk() }
+      else if (mod && (key === '1' || key === '2')) { event.preventDefault(); switchView(key === '1' ? 'run' : 'writers') }
+      else if (mod && key === '.') { event.preventDefault(); void stopRun() }
+      else if (mod && key === 'enter') { event.preventDefault(); if (pending?.step === 'plan') go(pending.scope.plan); else document.querySelector<HTMLFormElement>('.ra-composer')?.requestSubmit() }
+      else if (key === 'Escape'.toLowerCase()) { if (presenter) setPresenter(false); else if (pending) cancelPending() }
+      else if (!mod && !event.altKey && !editing) {
+        if (key === '/') { event.preventDefault(); if (screen !== 'home') focusAsk(); else document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus() }
+        else if (key === '?') { event.preventDefault(); setPalette('shortcuts') }
+        else if (key === '.' && !recording) setPresenter(open => !open)
+        else if (key === 'w' && shown) setWork(open => !open)
+        else if (key === 'n') focusAsk()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+  const labels = <><nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav><span className="ra-phase" role="status">{model.phase}</span><Modes quiet labels={shown?.labels} configured={health.labels} /><button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands">Commands <kbd>{modifier}K</kbd></button></>
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
@@ -301,14 +340,16 @@ export default function App() {
   // A toast about the run in view repeats the screen, so it waits until you leave it.
   const wayBack = toasts.filter(toast => !(toast.runId && screen === 'run' && toast.runId === runId)).map(toast => toast.runId && !(screen === 'run' && toast.runId === runId) ? { ...toast, actions: [...(toast.actions ?? []), { label: 'Go back to chat', primary: true, onClick: () => { dismiss(toast.id); void openRun(toast.runId!) } }] } : toast)
   const overlays = <>
-    <Toasts toasts={wayBack} onDismiss={dismiss} />
-    {presenter && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onSkip={replaying ? () => setCursor(Infinity) : undefined} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
+    <Toasts toasts={recording ? [] : wayBack} onDismiss={dismiss} />
+    {palette && <CommandPalette commands={commands} sheet={palette === 'shortcuts'} onClose={() => setPalette(undefined)} />}
+    {presenter && !recording && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onSkip={replaying ? () => setCursor(Infinity) : undefined} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
   </>
 
   const pendingCard = pending && (pending.step === 'clarify'
     ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
     : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={cancelPending} />)
   const settlement = shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'
+  if (tab === 'writers') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main className="ra-writers-view">{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading">Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>
   if (screen === 'settings') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
       onUniversal={on => { setUniversal(on); prefs.set(universalKey, on ? '1' : '0') }} onBudget={minor => { setUniversalMinor(minor); prefs.set(universalMinorKey, String(minor)) }} />
@@ -322,7 +363,7 @@ export default function App() {
 
   if (screen === 'home' || !shown) return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <main className="ra-home-wrap">
-      {error && <p className="ra-banner" role="alert">{error}</p>}
+      {(error || healthError) && <p className="ra-banner" role="alert">{error || "Backend unreachable."} <button className="ra-link" onClick={() => window.location.reload()}>Retry connection</button></p>}
       <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
     </main>
     {overlays}
@@ -333,22 +374,18 @@ export default function App() {
     <div className="ra-ws">
       <main className="ra-brief">
         <h1 className="ra-q">{shown.question}</h1>
-        {error && <p className="ra-banner" role="alert">{error}</p>}
-        {!compare && <Sources run={shown} onOpen={candidate => setPassage({ candidate })} />}
+        {(error || healthError) && <p className="ra-banner" role="alert">{error || "Backend unreachable."} <button className="ra-link" onClick={() => window.location.reload()}>Retry connection</button></p>}
+        {!compare && <details className="ra-source-details"><summary>Sources · {shown.candidates.length} found</summary><Sources run={shown} onOpen={candidate => setPassage({ candidate })} /></details>}
         <Answer run={shown} view={view} onView={setView} compare={compare} onCompare={() => { setView('latest'); setCompare(!compare) }}
           onCitation={citation => { const candidate = candidateOf(shown, citation); if (candidate) setPassage({ candidate, citation }) }}
           report={<ReportButton run={shown} onReport={downloadReport} busy={!finished} />} />
       </main>
       <aside className="ra-side" aria-label="Budget and purchases">
-        <div className="ra-tabs" role="tablist" aria-label="Right panel">
-          <button type="button" role="tab" aria-selected={tab === 'run'} onClick={() => setTab('run')}>Run</button>
-          <button type="button" role="tab" aria-selected={tab === 'writers'} onClick={() => setTab('writers')}>Writers</button>
-        </div>
-        {tab === 'writers' ? <ReputationPanel records={reputation} run={shown} full={run} presenter={presenter} onReset={resetWriters} /> : <>
         <Budget run={shown} />
-        {[...intents].reverse().map(intent => <Purchase key={intent.intentId} run={shown} intent={intent} onRetry={id => void retry(id)} onReceipt={setReceipt} />)}
-        <DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} />
-        </>}
+        {model.budgetBlocked && <p className="ra-note" role="status">Budget too small for eligible sources. The free answer is kept; start a new question to change the cap.</p>}
+        {model.phase === 'stopped' && <p role="status">{model.stopMessage}</p>}
+        <div className="ra-purchase-slot">{[...intents].reverse().map(intent => <Purchase key={intent.intentId} run={shown} intent={intent} onRetry={id => void retry(id)} onReceipt={setReceipt} />)}{!intents.length && <p className="ra-note">{finished ? 'No purchases on this run.' : 'Purchase activity will appear here. Policy code checks each source against your cap.'}</p>}</div>
+        <details className="ra-decision-details"><summary>Purchase decisions · {shown.decisions.length} rounds</summary><DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>
       </aside>
       <RunTape run={shown} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
     </div>

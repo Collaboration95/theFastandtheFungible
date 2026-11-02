@@ -44,7 +44,7 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
   // Impact is shown only when neither version lost claims to citation validation.
   const impact = baseline && latest && baseline.version !== latest.version && run.impact && baseline.claims.length === raw(baseline.version)?.claims.length && latest.claims.length === raw(latest.version)?.claims.length ? run.impact : undefined
   const showLatest = answer === latest && answers.length > 1
-  const changed = new Set(showLatest ? impact?.claimChanges.filter(change => change.change === 'ADDED' || change.change === 'REVISED').map(change => change.toClaimId) : [])
+  const changed = new Set(showLatest ? impact?.claimChanges.filter(change => (change.change === 'ADDED' || change.change === 'REVISED') && !baseline?.claims.some(claim => claim.text.trim() === latest?.claims.find(item => item.id === change.toClaimId)?.text.trim())).map(change => change.toClaimId) : [])
   const removed = showLatest && impact ? impact.claimChanges.filter(change => change.change === 'REMOVED' && change.fromClaimId).map(change => baseline.claims.find(claim => claim.id === change.fromClaimId)).filter((claim): claim is Claim => !!claim) : []
   const firstKeys = new Set(baseline?.claims.flatMap(claim => claim.citations.map(citationKey)))
   const chip = (citation: Citation) => {
@@ -67,7 +67,7 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
   const rest = answer.conclusion.slice(lead.length).split(/(?<=[.!?])\s+(?=[A-Z])/).map(item => item.trim()).filter(item => item && !said.has(item)).join(' ')
   const leadClaims = answer.claims.filter(claim => claim.text.trim() === lead.trim() || lead.includes(claim.text.trim()))
   const words = lead.split(/(\s+)/)
-  const highlight = showLatest && leadClaims.some(claim => changed.has(claim.id))
+  const highlight = showLatest && lead !== leadSentence(baseline?.conclusion ?? '') && leadClaims.some(claim => changed.has(claim.id))
   const gap = gapCard(run, answers)
   const list = compare && showLatest ? [...answer.claims, ...removed.map(claim => ({ ...claim, gone: true }))] : answer.claims
   return <>
@@ -75,7 +75,7 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
       <div className="ra-vlabel"><h2>Short answer</h2></div>
       {answers.length > 1 && <div className="ra-vswitch" role="group" aria-label="Answer version">{answers.map(item => <button type="button" key={item.version} aria-pressed={item === answer} onClick={() => onView(item === latest ? 'latest' : 'baseline')}>v{item.version}</button>).filter((_, index) => index === 0 || index === answers.length - 1)}</div>}
       <p className={`ra-vtext${highlight ? ' is-hl' : ''}`}><span className="ra-lead">{words.map((word, index) => /^\s+$/.test(word) ? word : <span className="w" key={index} style={{ '--d': `${index * 22}ms` } as CSSProperties}>{word}</span>)}</span>{leadClaims.flatMap(cites)}</p>
-      {rest && <p className="ra-vrest">{rest}</p>}
+      {rest && <details className="ra-answer-context"><summary>Read full context</summary><p className="ra-vrest">{rest}</p></details>}
       {impact && showLatest && <p className={`ra-impact i-${impact.classification.toLowerCase()}`} title={impact.explanation}>{IMPACT[impact.classification]}</p>}
       <div className="ra-vfoot">{report}{answers.length > 1 && <button type="button" className="ra-btn" aria-pressed={compare} onClick={onCompare}>{compare ? `Back to v${latest!.version}` : `Compare v1 → v${latest!.version}`}</button>}{answer.provider === 'fixture' && <span className="ra-hint">{providerLabels[answer.provider]} · {answer.model}</span>}</div>
     </section>
@@ -113,9 +113,9 @@ function gapCard(run: RunSnapshot, answers: AnswerData[]): ReactNode {
   const facet = (gap.tags?.[0] ?? gap.text).replace(/-/g, ' ')
   const bought = run.intents.filter(item => item.runId === run.runId && item.status === 'VERIFIED').map(item => candidateOf(run, item)?.publisher ?? item.resourceId)
   if (answers.length > 1 && !latest.openGaps.some(item => item.text === gap.text)) {
-    const spent = run.intents.filter(item => item.runId === run.runId && item.status === 'VERIFIED').reduce((sum, item) => sum + item.amountMinor, 0)
-    return <section className="ra-gap is-closed" aria-label="Gap closed"><span className="ra-gap-k">GAP CLOSED</span><p className="ra-gap-t"><mark className="ra-hl">{facet[0].toUpperCase() + facet.slice(1)}</mark> is now covered{bought.length ? ` by ${bought.join(' and ')}` : ''}.</p>
-      <span className="ra-gap-s">{bought.length ? `Bought for ${money(spent)}` : 'Found free on a focused search'}</span></section>
+    const spent = run.spentMinor
+    return <section className="ra-gap is-closed" aria-label="Gap closed"><span className="ra-gap-k">GAP CLOSED</span><p className="ra-gap-t">The earlier evidence gap is now covered{bought.length ? ` by ${bought.join(' and ')}` : ''}.</p>
+      <span className="ra-gap-s">{spent > 0 ? `${money(spent)} spent on this run${bought.length ? ' · verified paid evidence included' : ' · gap closed by free evidence'}` : 'Found free on a focused search'}</span></section>
   }
   const intent = run.intents.filter(item => item.runId === run.runId).at(-1)
   const source = intent && candidateOf(run, intent)

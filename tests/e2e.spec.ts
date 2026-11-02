@@ -19,6 +19,7 @@ test('UC2: clarify chip → plan card → paid purchase with proof ✓ → STREN
   // The plan card confirms the plan before any spending; it is not a purchase approval.
   await page.getByRole('button', { name: 'Go now' }).click()
   await finished(page)
+  await page.locator('.ra-source-details > summary').click()
   await expect(page.getByRole('button', { name: /NotFinancialTimes: .*bought S\$0\.90/ })).toBeVisible()
   await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ }).getByText('verified')).toBeVisible()
   await expect(page.getByText('Strengthens the free answer').first()).toBeVisible()
@@ -40,6 +41,7 @@ test('UC3: AlphaLeak bought → proof fails → refunded → quarantined; The Fa
   await ask(page, /^Malaysia packaging lead times/)
   await page.getByRole('button', { name: 'Go now' }).click()
   await finished(page)
+  await page.locator('.ra-source-details > summary').click()
   const leak = page.getByRole('region', { name: /Purchase: AlphaLeak/ })
   await expect(leak.getByRole('heading', { name: /Proof failed/ })).toBeVisible()
   await expect(leak.getByRole('list', { name: 'Challenge and refund' })).toBeVisible()

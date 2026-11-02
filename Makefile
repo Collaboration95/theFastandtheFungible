@@ -100,3 +100,10 @@ mcp-live: ## stdio MCP server; live providers and XRPL Testnet when a payer seed
 .PHONY: scorecard
 scorecard: ## nightly numbers + hard-gate audit (LIVE=1 opts in to evaluation calls; <= US$1)
 	$(if $(filter 1,$(LIVE)),EVAL_LIVE=1 )npm run scorecard -- $(if $(filter 1,$(LIVE)),--live) $(ARGS)
+
+.PHONY: record clip
+record: ## clean fixture recording workspace; OFFSET=300 recommended
+	node --import tsx scripts/record.mjs
+
+clip: ## keyboard-driven fixture clip; UC=UC2 VIEWPORT=1280x800 (or 1920x1080, 1080x1350)
+	UC=$(or $(UC),UC2) VIEWPORT=$(or $(VIEWPORT),1280x800) node --import tsx scripts/record.mjs --clip
