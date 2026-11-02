@@ -21,7 +21,7 @@ decisions, budget, payment and cited synthesis. Direction:
   under `/w/:slug/`: `search` (Orama hybrid over full text), `articles/:id`
   (free, or x402 v2 paid), `facilitator/{supported,verify,settle}`,
   `challenge`, and the signed manifest. `/registry` lists writers and wallets.
-  The roster and 81 articles are generated into `data/` (`make corpus`).
+  The roster and 83 articles are generated into `data/` (`make corpus`).
 - **Shared** (`shared/`): contracts, manifest and proof checker, x402 header
   codec, XRPL helpers.
 - **Store**: SQLite via `node:sqlite`: `data/app.db` (runs, receipts, grants,
