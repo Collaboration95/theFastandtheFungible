@@ -14,12 +14,14 @@ No live research/decision model is claimed. No mainnet funds or cloud resources.
 - Public receipt and exact citation references: `publish-site-277.json`.
 - Retried network access was read-only transaction lookup, not another purchase.
 
-Terminal transcript (public output excerpt; publishing and purchase invoked by
-`node --import tsx scripts/publish-demo.ts --testnet`):
+Terminal transcript (public output excerpt). The demo script calls the same
+`publishSite` implementation as the CLI; its printed shell recipes are shown
+below as comments. The actual CLI is separately exercised by the fixture test:
 
 ```text
-$ cp -R examples/writer-starter scratch/publish-demo-testnet
-$ OFFSET=800 npm run publish:site -- scratch/publish-demo-testnet
+$ node --import tsx scripts/publish-demo.ts --testnet
+# Recipe: cp -R examples/writer-starter scratch/publish-demo-testnet
+# Recipe: OFFSET=800 npm run publish:site -- scratch/publish-demo-testnet
 Wallet r3qSDtFPYsWLiGkNa22C8grJN72M37cUbc · XRPL TESTNET · key saved privately
 Search: keyword · live embeddings off (SEARCH_EMBEDDINGS=live enables hybrid)
 Published 3 articles · unverified writer · SYNTHETIC
