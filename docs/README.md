@@ -22,7 +22,8 @@ Ripple-track criteria.
 ## Reference
 
 - [Builder feedback](BUILDER-FEEDBACK.md): living implementation log, Top 5, mainnet checklist and September submissions.
-
+- [MCP server](mcp.md): connect Claude Code or Codex, the four tools, caps and idempotency.
+- [Running it](running.md): every make target, the demo keys, Docker.
 - [x402 and XRPL](x402-xrpl.md): the v2 flow as built (headers, invoiceId,
   facilitator, refund), validation before signing, finality, wallet safety.
 - [Design record](FINAL-PUSH.md): the October 2026 decisions D1–D24 and why.

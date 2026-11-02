@@ -1,230 +1,133 @@
-# ResearchAgent
-
-**Research with a wallet.** Agents are the new readers, so experts should get paid when an agent uses their thinking.
-
-ResearchAgent answers from free sources first. When the missing piece sits behind a paywall, it can buy that one article straight from the writer, inside a budget you set, and it checks every promise the writer made after delivery.
-
-<p>
-  <a href="https://collaboration95.github.io/theFastandtheFungible/"><strong>Explainers site →</strong></a>
-  &nbsp;·&nbsp;
-  <a href="https://collaboration95.github.io/theFastandtheFungible/talk/">Walkthrough</a>
-  &nbsp;·&nbsp;
-  <a href="https://collaboration95.github.io/theFastandtheFungible/slides/">Slides</a>
-  &nbsp;·&nbsp;
-  <a href="https://collaboration95.github.io/theFastandtheFungible/project-map/">Project map</a>
-  &nbsp;·&nbsp;
-  <a href="https://collaboration95.github.io/theFastandtheFungible/evolution/">How it evolved</a>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="design/brand/lockup-on-dark.svg">
+    <img src="design/brand/lockup.svg" alt="ResearchAgent" height="48">
+  </picture>
 </p>
 
-Presented at AI Tinkerers Singapore, 10 Oct 2026. The live demo ran on Google Cloud Run and placed in the sponsor's top three Cloud Run demos.
+<h3 align="center">Research with a wallet.</h3>
 
-## See it first
+<p align="center">
+  An agent that answers from free sources first, then buys the one missing article straight from the writer,<br>
+  inside a budget you set. It checks every promise the writer made, and the money comes back if one is broken.
+</p>
 
-| | |
-|---|---|
-| [**Inside ResearchAgent**](https://collaboration95.github.io/theFastandtheFungible/talk/) | Replays a real run from its event log: free search, a purchase, a proof that fails, an on-chain refund, then a second buy that answers the question. Start here. |
-| [**Slide deck**](https://collaboration95.github.io/theFastandtheFungible/slides/) | The AI Tinkerers talk. Boxes on the architecture slide open the project map. Keys: `→` `←` · `O` overview · `N` notes · `F` fullscreen. |
-| [**Project map**](https://collaboration95.github.io/theFastandtheFungible/project-map/) | Three clickable levels, from the reader's agent, the writers and the ledger down to the primitives. Every arrow is numbered and explained. |
-| [**How it evolved**](https://collaboration95.github.io/theFastandtheFungible/evolution/) | The build log in charts: 39 days of commits, pull requests, coding-agent prompts and tokens, replayed from git, GitHub and the agents' own logs. |
+<p align="center">
+  <a href="https://github.com/Collaboration95/theFastandtheFungible/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Collaboration95/theFastandtheFungible/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?display_name=tag&sort=semver"></a>
+  <a href="LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-informational"></a>
+  <a href="eval/mcp/testnet-2026-11-03.md"><img alt="Payments settle on XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet%20only-informational"></a>
+</p>
 
-The writers and their articles are fictional. Payments settle on the XRPL Testnet, so no real money moves.
+<p align="center">
+  <a href="https://collaboration95.github.io/theFastandtheFungible/"><b>Explainers</b></a> ·
+  <a href="https://collaboration95.github.io/theFastandtheFungible/talk/">Walkthrough</a> ·
+  <a href="https://collaboration95.github.io/theFastandtheFungible/project-map/">Project map</a> ·
+  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a> ·
+  <a href="docs/BUILDER-FEEDBACK.md">Builder feedback</a>
+</p>
 
-## How a run works
+<!-- TODO(pass 2; #270 and `make clip` are merged): hero GIF of the local app, a 15–20 s refund scene under 4 MB from `make clip`, committed under docs/media/ -->
 
-1. **Ask.** You set a prompt budget from S$0 to S$5 in 5-cent steps (quick picks: S$0, S$1, S$2, S$3 and S$5) and ask a question. The model asks at most two short clarifying questions, which you can skip.
-2. **Confirm the plan.** An action modal shows the plan and counts down for 5 s (Edit, Cancel, Go now). It confirms the plan, not a purchase: the budget is the only spending authorization.
-3. **Search the writers.** Each writer runs their own site with hybrid search (BM25 + vectors) over their full text. A hit returns the abstract, signals and a signed manifest, never the premium text.
-4. **Decide what's worth buying.** A selectable decision model judges each candidate, weighted by the writer's trust score: OpenAI Decisions `gpt-6-luna` (`DECISION_PROVIDER=openai`) or Cloudflare Clef-flash (`DECISION_PROVIDER=cloudflare`, the `make live` default). Scores are raw by default; calibration requires `DECISION_CALIBRATION=on` and a matching provider/model/prompt calibrator.
-5. **Pay.** Deterministic policy code, never the LLM, pays the writer over [x402 v2](docs/x402-xrpl.md) on XRPL Testnet, within the budget and a S$1 per-source cap.
-6. **Verify and refund.** The delivered article is checked against the writer's promises. A broken promise is challenged, refunded on-chain, and the writer's trust score drops.
-7. **Answer.** DeepSeek writes the answer and a PDF report. Every citation resolves to an exact delivered passage. Langfuse traces live runs.
+> The writers and their articles are **fictional**, and payments settle on the **XRPL Testnet**: no real money moves.
 
-### Hard guarantees
+## Try it in Claude Code
 
-- No premium bytes reach the browser or a model before a matching grant.
-- The budget is the only spending authorization, and only policy code can start a purchase.
-- One charge per intent: retrying a failed delivery never charges again, and Stop blocks new purchases.
-- Citations are real: they point at delivered passages.
-- Anything simulated or substituted is labelled on screen.
-
-## Use it from Claude Code / Codex
-
-After `npm ci` in this checkout, add the local stdio server with one command.
-These examples authorize **S$2 per question and S$5 per UTC day** in simulated
-fixture mode. Set both caps to `0` for free research / would-buy only (the default).
-The operator sets caps in configuration; a calling model's `budget_sgd` is only a
-request and cannot raise them. No per-purchase approval is needed.
+Add the MCP server (S$2 per question and S$5 per UTC day, simulated fixture mode, no keys):
 
 ```sh
+git clone https://github.com/Collaboration95/theFastandtheFungible && cd theFastandtheFungible && npm ci
 claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- node --import "$PWD/node_modules/tsx/dist/loader.mjs" "$PWD/mcp/server.ts"
 ```
 
-Or for Codex:
+Start a fresh session and ask:
 
-```sh
-codex mcp add researchagent --env MCP_MAX_BUDGET_MINOR=200 --env MCP_DAILY_CAP_MINOR=500 -- node --import "$PWD/node_modules/tsx/dist/loader.mjs" "$PWD/mcp/server.ts"
-```
+> Search the writers, then ask_expert: What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC (pricing & margins)? Request budget_sgd=2. Show citations, purchases and all mode labels.
 
-The equivalent Codex `~/.codex/config.toml` entry (replace `/absolute/checkout`):
+Four tools: `search_expertise`, `ask_expert`, `get_run`, `wallet_status`. You set the caps; the calling model cannot raise them, and both default to `0` (free research, would-buy only). Codex, config files and the details: [docs/MCP](docs/mcp.md).
 
-```toml
-[mcp_servers.researchagent]
-command = "node"
-args = ["--import", "/absolute/checkout/node_modules/tsx/dist/loader.mjs", "/absolute/checkout/mcp/server.ts"]
-tool_timeout_sec = 60
-
-[mcp_servers.researchagent.env]
-MCP_MAX_BUDGET_MINOR = "200"
-MCP_DAILY_CAP_MINOR = "500"
-```
-
-Configuration fields follow the [official OpenAI MCP documentation](https://developers.openai.com/codex/mcp).
-Start a fresh client session, then ask:
-
-> Search the writers, then ask_expert: What's the analyst outlook on Kestrel
-> Semiconductor's latest deal with TSMC (pricing & margins)? Request budget_sgd=2,
-> idempotency_key="my-uc2". Show citations, purchases and all mode labels.
-
-The question includes UC2's recorded clarification inline: MCP deliberately never
-pauses for clarification. `search_expertise({query,k?})` returns only public
-metadata. `ask_expert({question,budget_sgd,idempotency_key?})` returns an answer,
-exact delivered citation passages with URLs, verified/refunded purchase statuses,
-and actual Testnet transaction/explorer links when present (null for simulation).
-`get_run({run_id})` reads an existing MCP run; `wallet_status()` shows public payer
-address, rail, gross spend, reservations and caps, never credentials.
-
-Run `make mcp` directly, or `make mcp-live` for live providers. Fixture mode forces
-fixture research/decisions, keyword search and simulated settlement, even if the
-shell has live settings. Every result labels its mode; the writer corpus is
-fictional. Local boot uses two ephemeral loopback ports with isolated ledgers in
-`data/mcp/`; set `RA_DATA_DIR` to persist them elsewhere. Keep that directory to
-preserve idempotency and daily accounting. Separate data directories are separate
-allowances; this is an operator boundary, not a wallet-wide cap.
-
-Set `RA_BACKEND_URL` to an existing ResearchAgent API for HTTP-backed tools. That
-API **must include the MCP routes from #255** and have its own human caps set at
-startup. Client-side cap variables do not override a remote API's caps. The API
-is a trusted operator service; protect network access when hosting it remotely.
-These caps cover MCP runs, not web UI runs. No cloud resource is created by MCP.
-
-Both caps default to zero. Budgets round down to the existing 5-cent step and
-S$5 engine maximum. Each active run reserves its remaining possible charge;
-uncertain settlements retain the reservation across shutdown/restart and UTC
-midnight. Gross charges are attributed to their receipt's UTC settlement day;
-refunds do not replenish authority. A key maps atomically to one run in the
-engine's `app.db`; reuse with a different question is rejected. Reuse with a new
-requested budget returns the original run. Without a key, each call is a new
-intent. `ask_expert` waits up to 45 seconds, then returns the running id for
-`get_run`; a timeout does not cancel a purchase or authorize a retry with a new key.
-
-`RA_LIVE=1` enables live providers and, only with `XRPL_PAYER_SEED`, XRPL Testnet.
-Provider credentials stay in the engine environment; tools cannot supply keys,
-rail, provider, plan, article selection or higher caps. Live provider usage can
-incur model fees separately from the article cap. `node scripts/mcp-demo.mjs`
-uses a real authenticated Claude Code session with fixture engine providers,
-only the four MCP tools, and simulated settlement; it saves a sanitized tool
-transcript summary under `eval/mcp/` (or prints manual steps if Claude is absent).
-A separate [Testnet MCP purchase proof](eval/mcp/testnet-2026-11-03.md) records validated settlement and retry evidence.
-Run `npx vitest run tests/engine.test.ts tests/mcp-policy.test.ts tests/mcp.e2e.test.ts`
-for offline transport, isolation, cap and restart checks.
-
+<!-- TODO(pass 2, after #259): "Download for Mac" link to the latest release, and the right-click → Open note until the Developer ID lands (#265) -->
 ## Use from code
 
-The [TypeScript SDK](docs/sdk.md) shares the MCP client's capped, idempotent
-ask flow: `createClient({ baseUrl }).ask(question, { budgetSgd: 1 })`. It also
-provides metadata search, run snapshots, trace streaming and wallet status;
-only backend policy can purchase. See `examples/sdk-quickstart.ts` and the
-stdlib-only `examples/python/ask.py`.
+The [TypeScript SDK](docs/sdk.md) shares the MCP client's capped, idempotent ask flow:
 
-## Quick start
+```ts
+const run = await createClient({ baseUrl }).ask('What changed in the deal?', { budgetSgd: 1 })
+```
 
-Needs Node ≥ 22.13 (for `node:sqlite`; see `.nvmrc`).
+It also has metadata search, run snapshots, trace streaming and wallet status. It has no purchase method: only backend policy can buy. Examples: [`examples/sdk-quickstart.ts`](examples/sdk-quickstart.ts) and the stdlib-only [`examples/python/ask.py`](examples/python/ask.py).
+
+## Run it locally
+
+Needs Node ≥ 22.13 (see `.nvmrc`).
 
 ```sh
 make setup   # npm ci, and create .env from .env.example
 make run     # offline demo with fixture providers, no keys needed
 ```
 
-Open <http://127.0.0.1:5100>. The API listens on 8788 and the local publisher on 8790.
+Open <http://127.0.0.1:5100>. For live mode, put DeepSeek and Cloudflare keys (plus an OpenAI key for OpenAI Decisions) in `.env`, then `make doctor`, `make keys` and `make live`. Keys and wallet seeds stay in `.env`, which is never committed. Every make target, the demo keys and Docker: [docs/running.md](docs/running.md).
 
-For live mode, fill `.env` with DeepSeek and Cloudflare keys (plus an OpenAI key for OpenAI Decisions), then:
+## How a run works
 
-```sh
-make doctor  # checks Node, deps, .env drift, ports and provider keys
-make keys    # one real call per provider, with latency
-make live    # live providers, key preflight first; labelled fixtures if a provider fails
-```
+1. **Ask.** Set a prompt budget (S$0 to S$5) and a question. Up to two short clarifying questions, skippable.
+2. **Confirm the plan.** A 5 s action modal shows the plan (Edit, Cancel, Go now). It confirms the plan, not a purchase.
+3. **Search the writers.** Each writer's own site runs hybrid search over their full text. A hit returns an abstract, signals and a signed manifest, never the premium text.
+4. **Decide.** A decision model (OpenAI Decisions `gpt-6-luna`, or Cloudflare Clef-flash) judges what is worth buying, weighted by the writer's trust score.
+5. **Pay.** Deterministic policy code, never the LLM, pays over [x402 v2](docs/x402-xrpl.md) on XRPL Testnet, within the budget and a S$1 per-source cap.
+6. **Verify and refund.** The delivered article is checked against the writer's promises. A broken one is challenged and refunded on-chain, and the writer's trust score drops.
+7. **Answer.** DeepSeek writes the answer and a PDF report. Every citation resolves to a delivered passage.
 
-Keys and wallet seeds stay in `.env`, which is never committed. `make wallets CREATE=1` creates and funds the writers' Testnet wallets.
+### Hard guarantees
 
-<details>
-<summary><strong>All make targets</strong></summary>
+Five gates hold on every run, enforced by tests (`tests/purchase.test.ts`, `gate-N` cases) and a read-only audit ([`scripts/gate-audit.ts`](scripts/gate-audit.ts), six rules):
 
-| Target | What it does |
+- no premium bytes before a grant;
+- the budget is the only spending authorization, and only policy code can start a purchase;
+- one charge per intent, even across retries and restarts;
+- citations point at delivered passages;
+- anything simulated or substituted is labelled.
+
+Architecture: [contracts/ARCHITECTURE.md](docs/contracts/ARCHITECTURE.md) · [security](docs/contracts/SECURITY.md) · [interactive project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) · [Nov 2026 architecture review](docs/contracts/REVIEW-NOV-2026.md)
+
+## Proof
+
+**A real Testnet purchase, from an MCP client.** On 3 Nov 2026 a stdio MCP client asked UC2's question with a S$2 cap and an idempotency key. One purchase was verified and settled for 0.09 Testnet XRP in 22.8 s, all 8 returned citations matched delivered passages, and a retry with the same key returned the same run with no second charge.
+[Transaction `D65FDA44…2FC9F9`](https://testnet.xrpl.org/transactions/D65FDA447AAC788BA7451615FCB6BDD62960AB066DC5A0BB150980B9E32FC9F9) (validated `tesSUCCESS`, ledger 22015773) · [full write-up](eval/mcp/testnet-2026-11-03.md). Testnet XRP has no value, and the writer and corpus are fictional.
+
+**Scorecard.** From `make scorecard` (`eval/scorecard/latest.json`). The numbers below are a **fixture baseline** (keyword search, simulated settlement, synthetic corpus); no live run has been done yet because the evaluation keys were unavailable. They are our starting point for the hill-climb, not a result: the targets and the October live baseline are in the [tracker](docs/SFF-PUSH.md#hill-climb-scorecard).
+
+<!-- scorecard:start -->
+| Metric | Latest | Mode · date |
+|---|---|---|
+| Hard-gate violations (six-rule audit) | 0 across 10 runs, 343 observations | fixture · 2026-11-02 |
+| Supported-fact uplift from paying | +28.3 pts | fixture · 2026-11-02 |
+| Purchase-selection F1 (flow / sweep) | 0.31 / 0.22 | fixture · 2026-11-02 |
+| Wasted spend | 67.9% | fixture · 2026-11-02 |
+| p50 / p95 time to first answer | 83 ms / 162 ms | fixture · 2026-11-02 |
+| Cold start (demo API + publisher) | 668 ms | fixture · 2026-11-02 |
+| Model cost per query | US$0 (no provider calls) | fixture · 2026-11-02 |
+<!-- scorecard:end -->
+
+**Builder feedback.** [15 implementation findings, a mainnet-readiness checklist and 15 earlier submissions](docs/BUILDER-FEEDBACK.md) on XRPL, x402 and the Starter Kit, each with evidence, our workaround and the suggested upstream fix. Mainnet is not enabled.
+
+## Explainers
+
+| | |
 |---|---|
-| `make setup` | `npm ci` and create `.env` from `.env.example` |
-| `make run` | Offline fixture demo (no keys) |
-| `make live` | Live demo: DeepSeek, decision model, XRPL Testnet, Langfuse |
-| `make doctor` | Node, deps, `.env` drift, ports, provider keys |
-| `make keys` | One real DeepSeek, Clef and OpenAI Decisions call; shows latency |
-| `make preflight` | Stage check before the slot: a live decision round, quota, leftover trust and runs, XRPL |
-| `make fault` | Fixture demo with the "fail next delivery" switch |
-| `make corpus` / `make embeddings` | (live) Generate and embed the writer corpus |
-| `make smoke` | (live, spends calls) UC1–UC3 end to end on port offset 300; `ARGS="--only UC2"` or `"--probe"` |
-| `make reset` | Stop the demo; wipe `data/*.db` and generated reports |
-| `make check` | Lint, typecheck and unit tests (pre-commit and CI) |
-| `make verify` | `check`, serial browser tests and a build |
-| `make` | List every target |
+| [**Inside ResearchAgent**](https://collaboration95.github.io/theFastandtheFungible/talk/) | Replays a real run from its event log: a purchase, a proof that fails, an on-chain refund, then a second buy that answers the question. Start here. |
+| [**Project map**](https://collaboration95.github.io/theFastandtheFungible/project-map/) | Three clickable levels from the agent, writers and ledger down to the primitives. |
+| [**Slides**](https://collaboration95.github.io/theFastandtheFungible/slides/) | The AI Tinkerers Singapore talk, 10 Oct 2026. |
+| [**How it evolved**](https://collaboration95.github.io/theFastandtheFungible/evolution/) | The build log in charts, replayed from git, GitHub and the agents' own logs. |
 
-To run a second checkout beside a running demo, shift every port: `make run OFFSET=100` serves 5200/8888/8890.
+The explainers site shares one header across its pages (source in [`site/`](site/SOURCE.md), generated by `scripts/site-header.mjs`).
 
-</details>
+## More
 
-## Using the demo
+[Documentation index](docs/README.md) · [SFF finals tracker and changelog](docs/SFF-PUSH.md) · [Judging criteria](docs/JUDGING-CRITERIA.md) · [Design record D1–D24](docs/FINAL-PUSH.md) · [Decision model report](eval/REPORT-decisions.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
-One screen holds the run: steps on the left, the answer in the middle, and budget, purchases and decisions on the right. A run finishes faster than anyone can follow, so the screen replays its trace at stage pace and labels the replay.
-
-| Key or URL | Effect |
-|---|---|
-| `.` | Presenter menu: pace, skip replay, skip clarifying questions, reset writer reputation, fail-next-delivery (under `make fault`) |
-| `W` | Show work: raw trace, wire, full policy table, receipts |
-| `?pace=real` | Skip the replay and show the true speed |
-| `?run=<id>` | Reopen a past run |
-
-With a S$0 budget, the agent builds a would-buy table and spends nothing. When Chromium is unavailable, the report endpoint returns labelled printable HTML instead of a PDF.
-
-The corpus has 8 fictional writers and 83 synthetic articles (20 free, 63 paid), served by one local publisher host. `tests/scenarios` runs the three demo use cases end to end.
-
-## Deploy
-
-### Docker (venue laptop)
-
-Three Alpine containers (web · api · publisher), no Node needed on the host. Images are built from one commit with `git archive`, so `.env` and `node_modules` never enter the build context.
-
-```sh
-make docker-build            # or scripts/docker-build.sh <commit>
-make docker-run              # fixture demo on http://127.0.0.1:5100
-make docker-live             # live providers, keys read from .env at runtime
-TAG=<sha> make docker-live   # a specific commit's images
-make docker-logs
-make docker-down             # V=1 also wipes the ledger and report volumes
-```
-
-Only the web port is published, on 127.0.0.1. `WEB_PORT=5200` (or `OFFSET=100`) runs it beside a host demo.
-
-The 10 Oct live demo ran on Google Cloud Run. That deploy (`make cloudrun`, `docker/cloudrun/`) was removed after the talk and the Google Cloud project was shut down. The last commit that has it is `ce77f59`.
-
-## Documentation
-
-- [Builder feedback](docs/BUILDER-FEEDBACK.md): implementation friction, repros and mainnet-readiness gaps
-
-- [docs/README.md](docs/README.md): documentation index
-- [Architecture](docs/contracts/ARCHITECTURE.md), [security](docs/contracts/SECURITY.md) and the [x402/XRPL flow](docs/x402-xrpl.md)
-- [Design record](docs/FINAL-PUSH.md): the decisions D1–D24 behind the October build
-- [Decision model report](eval/REPORT-decisions.md): how the buying decisions were measured on the real corpus
-
-**Not built yet:** durable hosted storage, mainnet, licensing, and a central index.
+**Not built yet:** durable hosted storage, mainnet, licensing and a central index. The 10 Oct live demo ran on Google Cloud Run; that deploy was removed after the talk (last commit with it: `ce77f59`).
 
 ---
 
-`theFastandtheFungible` is the team / repository name; the product is **ResearchAgent**. The repository name stays stable for published Pages URLs.
+`theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**. The repository name stays stable for published Pages URLs.

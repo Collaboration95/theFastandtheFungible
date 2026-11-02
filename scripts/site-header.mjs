@@ -1,0 +1,88 @@
+// One header for the explainers site (#272). Run: node scripts/site-header.mjs [--check]
+// Writes the same self-contained header block (markup + scoped CSS) between
+// <!-- site-header:start --> and <!-- site-header:end --> right after <body> on each page.
+// --check exits 1 if any page is out of date (used by repo-hygiene). Offline, no dependencies.
+// slides/ and notes/ are full-viewport presentation tools with their own chrome, so they are skipped.
+import { readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
+const PAGES = [
+  { file: 'index.html', key: 'home' },
+  { file: 'talk/index.html', key: 'talk', note: '<kbd>→</kbd> next <kbd>←</kbd> back <kbd>R</kbd> replay <kbd>P</kbd> pause' },
+  { file: 'project-map/index.html', key: 'map' },
+  { file: 'evolution/index.html', key: 'build' },
+  { file: 'reports/kit-11-evaluation/index.html', key: 'none', note: 'Kit 11 evaluation · 22 Oct 2026 · draft' },
+  { file: 'reports/airwallex-before-after/index.html', key: 'none', note: 'Airwallex before / after' },
+]
+const NAV = [
+  ['home', '', 'Explainers'],
+  ['talk', 'talk/', 'Walkthrough'],
+  ['slides', 'slides/', 'Slides'],
+  ['map', 'project-map/', 'Project map'],
+  ['build', 'evolution/', 'Build log'],
+]
+const START = '<!-- site-header:start -->'
+const END = '<!-- site-header:end -->'
+
+const CSS = `.ra-hdr{position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E3E6EE;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
+.ra-hdr *{box-sizing:border-box}
+.ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:52px;display:flex;align-items:center;gap:20px}
+.ra-hdr a{color:inherit;text-decoration:none}
+.ra-hdr-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em;flex:none}
+.ra-hdr-brand svg{width:22px;height:22px;display:block}
+.ra-hdr nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.ra-hdr nav::-webkit-scrollbar{display:none}
+.ra-hdr nav a{padding:8px 10px;border-radius:7px;color:#655D55;white-space:nowrap}
+.ra-hdr nav a:hover{color:#24211E;background:rgba(36,33,30,.06)}
+.ra-hdr nav a[aria-current=page]{color:#24211E;box-shadow:inset 0 -2px 0 #24211E;border-radius:0}
+.ra-hdr-end{display:flex;align-items:center;gap:14px;flex:none;color:#655D55;font-size:13px}
+.ra-hdr-end a:hover{color:#24211E}
+.ra-hdr-note{font-family:"Geist Mono",ui-monospace,Menlo,monospace;font-size:12px;color:#655D55;white-space:nowrap}
+.ra-hdr-note kbd{font:600 11px "Geist Mono",ui-monospace,Menlo,monospace;border:1px solid #CDD2DE;border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:#fff;color:#2B3046}
+.ra-hdr a:focus-visible{outline:2px solid #2F45FF;outline-offset:2px}
+@media(max-width:860px){.ra-hdr-note{display:none}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}}
+@media print{.ra-hdr{display:none}}`
+
+// The mark: 24-unit grid, 1.5 stroke (design/brand/mark.svg).
+const MARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>'
+
+function block(page) {
+  const depth = page.file.split('/').length - 1
+  const up = '../'.repeat(depth)
+  const nav = NAV.map(([key, href, label]) =>
+    `<a href="${up}${href}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
+  const note = page.note ? `<span class="ra-hdr-note">${page.note}</span>` : ''
+  return `${START}
+<style>${CSS}</style>
+<div class="ra-hdr" role="banner"><div class="ra-hdr-in">
+<a class="ra-hdr-brand" href="${up}" aria-label="ResearchAgent explainers">${MARK}<span>ResearchAgent</span></a>
+<nav aria-label="Explainers">${nav}</nav>
+<div class="ra-hdr-end">${note}<a class="ra-hdr-gh" href="${REPO}#readme">README</a><a href="${REPO}">GitHub ↗</a></div>
+</div></div>
+${END}`
+}
+
+const check = process.argv.includes('--check')
+const root = join(import.meta.dirname, '..', 'site')
+let stale = 0
+for (const page of PAGES) {
+  const path = join(root, page.file)
+  const html = readFileSync(path, 'utf8')
+  const wanted = block(page)
+  let next
+  if (html.includes(START)) {
+    next = html.slice(0, html.indexOf(START)) + wanted + html.slice(html.indexOf(END) + END.length)
+  } else {
+    const m = html.match(/<body[^>]*>/)
+    if (!m) throw new Error(`${page.file}: no <body>`)
+    next = html.slice(0, m.index + m[0].length) + '\n' + wanted + html.slice(m.index + m[0].length)
+  }
+  if (next === html) continue
+  stale++
+  if (check) console.error(`site-header: ${page.file} is out of date; run node scripts/site-header.mjs`)
+  else writeFileSync(path, next)
+}
+if (check && stale) process.exit(1)
+console.log(check ? 'site-header: ok' : `site-header: updated ${stale} page${stale === 1 ? '' : 's'}`)
