@@ -182,7 +182,13 @@ const runsOf = (text: string) => { const w = words(text); return Array.from({ le
  * may carry a marker only under a grant for the same run, article and version, or when that exact
  * text is also in an article granted to it (a rewrite repeating its original).
  */
-export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus) {
+type LeakIndex = { fingerprint: string; paid: Article[]; markers: Map<Article, { exact: string[]; runs: Set<string> }> }
+const leakIndexes = new WeakMap<WriterCorpus, LeakIndex>()
+function leakIndex(corpus: WriterCorpus): LeakIndex {
+  // Full structural comparison detects in-place edits to paid passages AND public exemptions.
+  const fingerprint = JSON.stringify(corpus.articles)
+  const cached = leakIndexes.get(corpus)
+  if (cached?.fingerprint === fingerprint) return cached
   const publicText = corpus.articles.flatMap(a => [a.title, a.abstract, a.publishedAt, ...a.tags, ...(a.tier === 'FREE' ? [a.body] : [])])
   const publicRuns = new Set(publicText.flatMap(runsOf))
   const paid = corpus.articles.filter(a => a.tier === 'PAID')
@@ -191,6 +197,13 @@ export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus)
     const runs = new Set(a.passages.flatMap(p => words(p.text).length < RUN ? [] : runsOf(p.text)).filter(run => !publicRuns.has(run)))
     return [a, { exact: [canary(a.articleId), ...short], runs }]
   }))
+  const index = { fingerprint, paid, markers }
+  leakIndexes.set(corpus, index)
+  return index
+}
+
+export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus) {
+  const { paid, markers } = leakIndex(corpus)
   const raws = new Map<Observation, Set<string>>()
   for (const observation of observations) {
     const granted = paid.filter(a => observation.grants.some(g => g.runId === observation.runId && g.resourceId === a.articleId && g.version === a.version))

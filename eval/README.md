@@ -57,3 +57,94 @@ The eval imports `SEARCH_TUNING`, `cosineRelevance` and `keywordRelevance` from
 Run `npx tsx eval/run-eval.mts --chosen` to measure the chosen configuration on
 the checked-in query vectors and current corpus, without provider calls.
 The table above records the 8 Oct study; reruns on the current corpus may differ.
+
+## Nightly scorecard (#256)
+
+`make scorecard` (or `npm run scorecard`) runs offline with **zero provider
+calls**, then audits a fresh demo store. It writes `eval/scorecard/latest.json`,
+**appends** to committed `eval/scorecard/history.jsonl`, and prints a Markdown
+table. Commit the new line in the daily ship PR; never edit or truncate old
+lines. The fixture workflow runs at **18:00 UTC / 02:00 SGT**, on dispatch, and
+on PRs changing the scorecard. It uploads reports and never pushes commits.
+
+```
+make scorecard                         # free fixture baseline
+npm run scorecard -- --check           # fail on >10% quality regression
+npm run scorecard -- --compare 2026-11-02  # same mode/input set, last matching row
+npm run scorecard -- --plan            # no calls: live call/cost forecast
+EVAL_ENV_FILE=/private/eval.env make scorecard LIVE=1
+npm run gate:audit -- --db /path/to/api.db
+npm run gate:audit -- --db /path/to/api.db --observations /path/to/observations.jsonl
+```
+
+Live requires **both** `--live` and `EVAL_LIVE=1` (`make … LIVE=1` supplies both),
+and **only** `EVAL_OPENAI_API_KEY`, from the shell or `EVAL_ENV_FILE`. It never
+uses demo credentials. The runner prints call bounds and an estimated cost
+before enabling network access; `EVAL_SPEND_CAP_USD` defaults to **US$1**, and
+must be positive and at most US$1 for this scorecard. The inherited transport
+reserves projected request cost before calls. Live decisions and coverage use
+`gpt-6-luna`; the planner/writer remain extractive fixtures, search is keyword
+only, and payments stay **SIMULATED** (zero real or Testnet funds transferred).
+This is a deliberately substituted decision benchmark, not full live-product
+latency or XRPL performance. No live baseline was obtained on 2 Nov: no local
+`EVAL_*` keys were available; the live command refused before any provider call.
+MCP e2e and DMG cold start remain `null` until measured by their owning lanes.
+
+`frozen.json` fingerprints the entire bank, corpus, constructed coverage
+snapshots and prompt source files, and pins configuration, bank order, and ten
+timing questions (UC1–UC3 plus seven bank items). All 48 questions and all 116
+snapshots are evaluation data: no training, threshold tuning or random split.
+Trust resets per quality question; timing runs share one fresh demo instance,
+as a server would. An input/prompt change fails closed; introduce a reviewed,
+versioned eval set instead of silently replacing the baseline. Each row records
+HEAD, whether the worktree was dirty, input hash, date, mode, labels and sample
+observations. Initial bootstrap rows precede the implementation commit; HEAD
+there identifies the evaluated policy/harness base. Compare only matching mode
+and input hash. A fresh output/cache directory prevents replayed live responses
+from masquerading as a new measurement.
+
+Metric definitions:
+
+- **Waste:** gross purchase cost adding no bank-supported requested fact / gross
+  spend; refunded failed proofs still count. No spend means `null`.
+- **Flow F1:** first purchase per question against the bank's expected purchase,
+  using the existing flow harness with `--flow requested` and raw thresholds.
+- **Sweep F1:** existing `purchaseMetrics` over open fact decision units, raw
+  values and the frozen production threshold; unknown picks excluded as in the
+  calibration report. No fitting occurs.
+- **Uplift:** (final supported facts minus free supported facts) / all requested
+  facts, in percentage points. **False-complete:** unsupported requirements
+  predicted supported / all unsupported requirements, from the coverage harness.
+- **Timing:** fresh child process launch through publisher/API boot and successful
+  `/health` for cold start (imports included); ten sequential HTTP `/runs` calls
+  through the actual API, SSE plus 10 ms polling. First answer is the first
+  visible validated answer; final answer is terminal DONE. p50/p95 use linear
+  interpolation at `(n-1)*p`. Timings vary with hardware/load and are observational;
+  only deterministic **quality** metrics gate the >10% fixture regression check.
+- **Cost:** provider `usage` tokens using the transport's explicitly dated
+  8 Oct rates, with `estimatedUsageCalls` disclosed when usage was missing.
+  `modelUsd` includes flow, sweep, coverage and timed queries;
+  `flowDecisionUsdPerQuery` covers flow decision calls / 48 questions;
+  `latencyModelUsdPerQuery` covers timed-query calls / 10 questions. XRP drops
+  come separately from timed-run receipts, never an invented USD conversion.
+  Fixture model cost and XRP drops are zero. These are usage-derived estimates,
+  not billing invoices.
+
+The audit reads raw SQLite in a read-only transaction (no schema sanitization),
+checks **every run in the newly produced store**, and scans captured raw SSE and
+publisher search responses. Six rules detect inaccessible citations, duplicate
+settlements, gross spend/reservations or per-source cap overflow, purchases
+without an earlier policy round/BUY trace and matching BUY verdict, premature
+premium text, and missing/inconsistent rail labels. It reuses the existing
+8-word leak detector and exact short-passage markers without changing its
+threshold. Permission requires a matching run/resource/version VERIFIED grant;
+public search metadata never gains permission to contain premium text. Replayed
+receipts with the same transaction hash are not additional charges. Failed
+proofs stay quarantined; refunds do not replenish the budget. The standalone
+`--db` audit can check only persisted evidence; pass `--observations` to include
+captured wire bytes. It reports IDs and rule names, never leaked text or tokens.
+
+Raw stores, observations and full reports live under ignored
+`eval/scorecard/out/<date>-<mode>/`; only summaries/history are committed. Failed
+runs never become baselines. The six zeroes describe the generated ten-query
+store and captured surfaces, not unobserved production traffic.
