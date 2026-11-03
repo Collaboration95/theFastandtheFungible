@@ -29,7 +29,7 @@ export function createMcpServer(apiUrl: string, token?: string, options: { allow
   server.registerTool('wallet_status', { description: 'Read settlement rail, public payer address, operator per-call and daily caps, gross SGD spend and reserved budgets for the UTC day. Never returns seeds, signing keys or other credentials. No spending.', inputSchema: z.object({}).strict(), annotations: { readOnlyHint: true, openWorldHint: false } }, async () => guarded(async () => {
     return client.wallet()
   }))
-  server.registerTool('verify_answer', { description: 'Verify signed manifests, citations, grants, receipts and audit chain for your run. Read-only; optionally check XRPL Testnet.', inputSchema: z.object({ run_id: z.string().uuid(), testnet: z.boolean().optional(), expect_head: z.string().regex(/^[a-f0-9]{64}$/i).optional() }).strict(), annotations: { readOnlyHint: true } }, args => guarded(async () => {
+  server.registerTool('verify_answer', { description: 'Verify structural contribution links, signed manifests, citations, grants, receipts and audit chain for your run. Read-only; optionally check XRPL Testnet.', inputSchema: z.object({ run_id: z.string().uuid(), testnet: z.boolean().optional(), expect_head: z.string().regex(/^[a-f0-9]{64}$/i).optional() }).strict(), annotations: { readOnlyHint: true } }, args => guarded(async () => {
     const response = await fetch(new URL(`/runs/${args.run_id}/receipts.json`, apiUrl), { headers: token ? { Authorization: `Bearer ${token}` } : {}, redirect: 'error', signal: AbortSignal.timeout(15_000) })
     if (!response.ok) throw new Error('Receipt export refused')
     return verifyAnswer(await response.json(), { testnet: args.testnet, expectHead: args.expect_head })

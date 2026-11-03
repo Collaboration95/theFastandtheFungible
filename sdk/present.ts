@@ -1,3 +1,4 @@
+import { contributions } from '../shared/contribution.js'
 import { sameSource } from '../shared/source-identity.js'
 import type { RunSnapshot } from '../shared/contracts/run.js'
 import { articleUrl } from '../shared/contracts/manifest.js'
@@ -14,7 +15,7 @@ export function presentRun(run: RunSnapshot, publisherUrl: string) {
     if (!candidate || (candidate.tier !== 'FREE' && !grant)) throw new Error('Citation has no verified grant')
     return { ...citation, untrusted: true as const, claimId: claim.id, writer: content.publisher, passage: content.spans.find(p => p.id === citation.spanId)!.text, url: new URL(articleUrl(content.profileId, content.resourceId, citation.spanId), content.source?.origin ?? publisherUrl).href, grantIntentId: grant?.intentId ?? null }
   })) ?? []
-  return { run_id: run.runId, phase: run.phase, corpusLabel, untrusted: true as const, labels: run.labels, budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, answer, citations,
+  return { contributions: contributions({ ...run, sources: run.contents }), run_id: run.runId, phase: run.phase, corpusLabel, untrusted: true as const, labels: run.labels, budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, answer, citations,
     purchases: run.intents.map(intent => {
       const receipt = run.receipts.find(r => r.intentId === intent.intentId)
       return { source: intent.source, intentId: intent.intentId, resourceId: intent.resourceId, writer: run.candidates.find(c => c.profileId === intent.profileId && sameSource(c,intent))?.publisher ?? intent.profileId,

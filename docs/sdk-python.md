@@ -96,3 +96,8 @@ reason is at most 240 characters, excludes control characters, and is stored in
 the audit trail. No client resume method exists: resume remains operator-only.
 In-flight unsigned purchases cannot sign; signed obligations reconcile normally
 without releasing their reservations. Cached desktop preferences cannot resume it.
+
+Receipt contribution v3 exposes exact claim/passage use with semantic assessment
+labelled not independently verified. See [receipt contribution contract](contracts/CONTRIBUTION.md)
+and [offline fixture evidence](evidence/round2-g/README.md). Python callers can use
+`Client.receipts(run_id)`; the existing offline verifier accepts v1/v2/v3.

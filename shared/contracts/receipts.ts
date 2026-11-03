@@ -1,6 +1,7 @@
 import { SourceIdentitySchema } from '../source-identity.js'
+import { ContributionsSchema } from '../contribution.js'
 import { z } from 'zod'
-import { AnswerSchema } from './answer.js'
+import { AnswerSchema, RequirementSchema } from './answer.js'
 import { ContentEnvelopeSchema, PublicCandidateSchema } from './corpus.js'
 import { ManifestSchema } from './manifest.js'
 import { GrantSchema, PurchaseIntentSchema } from './ledger.js'
@@ -16,7 +17,7 @@ export const ReceiptRowSchema = z.object({
 })
 /** A portable, explicit export of accessible evidence. Never includes quarantined bodies or signed blobs. */
 export const ReceiptBundleSchema = z.object({
-  schemaVersion: z.union([z.literal(1), z.literal(2)]), runId: z.string(), label: z.string(),
+  schemaVersion: z.union([z.literal(1), z.literal(2), z.literal(3)]), identityVersion: z.union([z.literal(1), z.literal(2)]).optional(), contributions: ContributionsSchema.optional(), requirements: z.array(RequirementSchema).optional(), runId: z.string(), label: z.string(),
   answers: z.array(AnswerSchema).min(1), sources: z.array(ContentEnvelopeSchema), candidates: z.array(PublicCandidateSchema),
   intents: z.array(PurchaseIntentSchema), grants: z.array(GrantSchema), receipts: z.array(ReceiptSchema), payments: z.array(ReceiptRowSchema),
   proofs: z.array(z.object({ source: SourceIdentitySchema.optional(), resourceId: z.string(), version: z.string(), manifest: ManifestSchema, salts: z.array(z.string()), intentId: z.string().optional() })),
