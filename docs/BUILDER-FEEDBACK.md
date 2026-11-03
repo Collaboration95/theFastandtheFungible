@@ -649,3 +649,35 @@ and avoid ornamental money transitions. Severity: low tooling/UX; mainnet impact
 none observed, no ledger or provider calls in this inspection.
 
 - 2026-11-04 — Observed local SDK packaging friction (Lane K, docs/evidence/round2-k/README.md): a clean wheel without site packages exposed a remaining absolute six.moves import masked by the development environment. Workaround: relocate every vendored import; extend the existing clean-wheel consumer to run independent receipt verification. Suggested tooling fix: exercise optional SDK capabilities from installed artifacts with --no-deps, not just source imports. Severity: low, caught before release; no ledger interaction or mainnet impact observed, but an uncorrected package would block offline verification on a clean installation.
+
+### 2026-11-04 — Lane N credential lookup admission and HTTP transport
+
+Observed local integration friction: the initial strict two-request admission
+returned check_failed for the third concurrent wallet while two valid credentials
+were verified. Evidence: `docs/evidence/round2-n/availability.json` (initial run),
+`observations.json` (read-only retry), `tests/writer-credentials.test.ts`.
+Workaround/fix: bounded queue with deadlines and two active requests; no repeat
+credential transactions. Suggested fix: XRPL SDK expose response-byte limits and
+bounded queue configuration for read-only clients; current xrpl.js Client has
+request deadlines but no public maxPayload setting, so this lane uses capped HTTP
+reads on the configured Testnet host. SDK limitation is code-derived from 4.7.0;
+the initial admission failure is observed. Severity: low, identity display only.
+Mainnet impact: none observed; feature restricted to Testnet. Both CredentialCreate
+and CredentialAccept worked; no amendment or RPC support blocker was observed.
+
+### 2026-11-04 — GitGuardian treats public XRPL credential type as a secret
+
+Observed scanner friction, Lane N PR #357, GitGuardian incident 39528977:
+all 12 flagged locations are `credentialType` values encoding the public UTF-8
+string `ResearchAgent-writer-2026-11-03`, not signer credentials. Evidence:
+`docs/evidence/round2-n/transactions.json`, `observations.json`, `engine.json`,
+`site/ledger/transactions.json`, and PR #357's GitGuardian check/comment. Each
+flagged commit line was independently checked against the public decoded type.
+Workaround: retain accurate ledger evidence and request incident classification
+in pinned issue #265; do not disable scanning or merge with a failed check.
+Suggested fix: distinguish public XRPL CredentialType blobs from authentication
+secrets, or expose a scoped false-positive classification through authenticated
+CLI tooling. Severity: medium release/tooling blocker, no runtime impact.
+Mainnet impact: none observed; these operations and evidence are Testnet only.
+
+- 2026-11-04 — Observed tooling friction: GitGuardian incident #39528977 classified the public XRPL CredentialType as a generic secret in PR #357 (`docs/evidence/round2-n/transactions.json`). Workaround: store public UTF-8 text, derive wire hex, squash PR history. Suggested fix: recognize public XRPL CredentialType context. Severity: CI blocker; mainnet impact: none, representation only.

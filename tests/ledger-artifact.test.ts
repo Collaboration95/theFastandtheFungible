@@ -8,7 +8,7 @@ import { classify, refresh } from '../site/ledger/ledger.js'
 const row = data.rows[0]
 function valid() { return {result:{hash:row.hash,ledger_index:row.ledgerIndex,validated:true,tx_json:{TransactionType:"Payment",Account:row.from,Destination:row.to,InvoiceID:row.invoiceId,Fee:row.feeDrops},meta:{TransactionResult:'tesSUCCESS',delivered_amount:row.deliveredAmount}}} }
 describe('public ledger',()=>{
- it('rebuilds nine source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(9); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(9)})
+ it('rebuilds thirteen source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(13); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(13)})
  it('only matching validated success is fresh',()=>{
   expect(classify(row,valid())).toContain('Freshly verified')
   for(const mutate of [(b: {result: Record<string, any>})=>b.result.validated=false,(b: {result: Record<string, any>})=>b.result.tx_json.NetworkID=0,(b: {result: Record<string, any>})=>b.result.meta.TransactionResult='tecFAILED',(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,value:'9'},(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,issuer:'wrong'},(b: {result: Record<string, any>})=>b.result.error='txnNotFound',(b: {result: Record<string, any>})=>delete b.result.meta]){const b=valid();mutate(b);expect(classify(row,b)).not.toContain('Freshly verified')}
@@ -17,7 +17,7 @@ describe('public ledger',()=>{
  it('bounds concurrency, methods and response bytes; handles unavailable states',async()=>{
   let active=0,max=0,calls=0
   await refresh(data.rows,async(_url:string,init:RequestInit)=>{active++; max=Math.max(max,active);const b=JSON.parse(String(init.body));expect(b.method).toBe('tx');expect(data.rows.some((r:{hash:string})=>r.hash===b.params[0].transaction)).toBe(true);await new Promise(r=>setTimeout(r,2));active--;calls++;return new Response('{}')})
-  expect(calls).toBe(9);expect(max).toBe(2)
+  expect(calls).toBe(13);expect(max).toBe(2)
   for(const fetcher of [async()=>{throw Error('CORS')},async()=>new Response('bad'),async()=>new Response('x'.repeat(262145)),async()=>new Response('{}',{status:429})]){const states:string[]=[];await refresh([row],fetcher,(_h:string,s:string)=>states.push(s));expect(states[0]).toContain('Historical')}
  })
 })
@@ -32,5 +32,13 @@ it('matches escrow operation identity and rejects cross-role substitution',()=>{
   const body={result:{hash:r.hash,ledger_index:r.ledgerIndex,validated:true,tx_json:t,meta:{TransactionResult:'tesSUCCESS'}}}
   expect(classify(r,body)).toContain('Freshly verified')
   t.OfferSequence++;t.Sequence++;expect(classify(r,body)).toContain('Historical')
+ }
+})
+it('binds credential transactions to issuer, subject and type',()=>{
+ for(const r of data.rows.filter((r:{group:string})=>r.group==='Testnet, credential')) {
+  const t={TransactionType:r.operation,Account:r.operation==='CredentialCreate'?r.issuer:r.subject,Subject:r.subject,Issuer:r.issuer,CredentialType:Buffer.from(r.credentialTypeText,'utf8').toString('hex').toUpperCase(),Fee:r.feeDrops}
+  const body={result:{hash:r.hash,ledger_index:r.ledgerIndex,validated:true,tx_json:t,meta:{TransactionResult:'tesSUCCESS'}}}
+  expect(classify(r,body)).toContain('Freshly verified')
+  t.CredentialType='00';expect(classify(r,body)).toContain('Historical')
  }
 })

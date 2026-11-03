@@ -1,3 +1,5 @@
+import { writerVerification } from './writer-credentials.js'
+import { WriterVerificationSchema } from '../shared/writer-verification.js'
 import { deriveAddress } from 'ripple-keypairs'
 import { validateProviderUrl } from './agents/compatible.js'
 import { verifyManifestSignature } from '../shared/manifest.js'
@@ -112,7 +114,8 @@ export class PublisherClient {
   async registry(): Promise<RegistryPublisher[]> {
     const publishers = RegistrySchema.parse(await this.getJson('/registry')).publishers.slice(0, 50)
     for (const p of publishers) if (p.wallet) this.sellerWallets.set(p.slug, p.wallet)
-    return publishers
+    // Registry metadata alone is not proof of possession of the seller key.
+    return publishers.map(p => ({ ...p, verification: { status: 'unverified' as const } }))
   }
   private sellerKey(slug: string): Promise<string> {
     if (!this.sellerKeys.has(slug)) this.sellerKeys.set(slug, this.getJson(`/w/${encodeURIComponent(slug)}/.well-known/agent-publisher.json`).then(raw => {
@@ -126,7 +129,18 @@ export class PublisherClient {
   async searchPublisher(slug: string, q: string, k: number, timeoutMs?: number): Promise<SearchHit[]> {
     const raw = z.array(z.unknown()).parse(await this.getJson(`/w/${encodeURIComponent(slug)}/search?${new URLSearchParams({ q, k: String(k) })}`, timeoutMs))
     const freeKey = this.options.federated && raw.some(i => !!i && typeof i === 'object' && 'tier' in i && i.tier === 'FREE') ? await this.sellerKey(slug) : undefined
-    return raw.slice(0, Math.min(k, 50)).flatMap(item => { const hit = SearchHitSchema.safeParse(item); if (!hit.success || hit.data.publisherSlug !== slug || hit.data.source) return []; return [{ ...hit.data, ...(this.options.federated ? { source: { schemaVersion: 1 as const, origin: this.origin, sellerKey: hit.data.manifest?.pubKey ?? freeKey ?? 'unverified', profileId: slug, resourceId: hit.data.articleId, version: hit.data.version } } : {}) }] })
+    const hits = raw.slice(0, Math.min(k, 50)).flatMap(item => { const hit = SearchHitSchema.safeParse(item); if (!hit.success || hit.data.publisherSlug !== slug || hit.data.source) return []; return [{ ...hit.data, ...(this.options.federated ? { source: { schemaVersion: 1 as const, origin: this.origin, sellerKey: hit.data.manifest?.pubKey ?? freeKey ?? 'unverified', profileId: slug, resourceId: hit.data.articleId, version: hit.data.version } } : {}) }] })
+    return Promise.all(hits.map(async hit => {
+      const wallet = this.sellerWallets.get(slug)
+      let verification = { status: 'unverified' } as import('../shared/writer-verification.js').WriterVerification
+      if (!loadConfig().WRITER_CREDENTIAL_ISSUERS || !hit.manifest) return { ...hit, verification }
+      try {
+        const key = hit.manifest?.pubKey ?? await this.sellerKey(slug)
+        if (wallet && deriveAddress(key) === wallet && (!hit.manifest || verifyManifestSignature(hit.manifest) && hit.manifest.wallet === wallet)) verification = await writerVerification(wallet)
+      } catch { verification = { status: 'check_failed' } }
+      return { ...hit, verification }
+    }))
+
   }
   /** FREE articles only (gate 1): a PAID url answers 402 and is never read here. */
   async readFree(hit: SearchHit, publisherName: string): Promise<ContentEnvelope> {
@@ -137,10 +151,12 @@ export class PublisherClient {
       if (!article.verification || !verifyManifestSignature(article.verification.manifest) || article.verification.manifest.wallet !== this.sellerWallets.get(hit.publisherSlug) || article.verification.manifest.articleId !== hit.articleId || article.verification.manifest.version !== hit.version || article.verification.manifest.publisherSlug !== hit.publisherSlug) throw new Error('Free source requires signed identity')
       hit.source = { ...hit.source, sellerKey: article.verification.manifest.pubKey }
     }
+    const signed = article.verification?.manifest
+    if (loadConfig().WRITER_CREDENTIAL_ISSUERS && signed && verifyManifestSignature(signed) && signed.wallet === this.sellerWallets.get(hit.publisherSlug) && signed.publisherSlug === hit.publisherSlug && signed.articleId === hit.articleId && signed.version === hit.version) hit.verification = await writerVerification(signed.wallet)
     return ContentEnvelopeSchema.parse({ source: hit.source, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, verification: article.verification, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.heading ? { label: p.heading } : {}) })) })
   }
 }
-const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), verification: z.literal('unverified writer').optional() })
+const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), verification: WriterVerificationSchema.optional() })
 const RegistrySchema = z.object({ publishers: z.array(RegistryPublisherSchema) })
 const FreeArticleSchema = z.object({ publisherSlug: z.string(), articleId: z.string(), version: z.string(), title: z.string().min(1), tier: z.literal('FREE'), verification: z.object({ manifest: ManifestSchema, salts: z.array(z.string()) }).optional(), body: z.string().min(1), passages: z.array(PassageSchema).min(1) })
 export type RegistryPublisher = z.infer<typeof RegistryPublisherSchema>

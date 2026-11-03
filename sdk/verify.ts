@@ -22,6 +22,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   if (input && typeof input === 'object' && 'verification' in input) { const exported = input as { verification: unknown; report?: unknown }; raw = exported.verification; exportedReport = exported.report }
   const parsed = ReceiptBundleSchema.safeParse(raw)
   if (!parsed.success) return { ok: false, checks: [{ check: 'bundle', status: 'FAIL', detail: `Invalid or legacy bundle at ${parsed.error.issues[0]?.path.join('.')}. Export receipts.json with this version.` }] }
+  checks.push({ check: 'writer credentials', status: 'SKIP', detail: 'Unsigned advisory identity; requires online check' })
   const b = parsed.data
   if (b.schemaVersion === 3) {
     add('contribution dispatch', !!b.identityVersion && !!b.contributions, 'v3 requires explicit identity semantics and structural contribution evidence')

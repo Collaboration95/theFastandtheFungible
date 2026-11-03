@@ -17,7 +17,7 @@ const ConfigSchema = z.object({
   ACTIVE_WORK_LIMIT: numeric(n => Number.isInteger(n) && n > 0), RECONCILE_INTERVAL_MS: positive, LOG_FORMAT: z.enum(['json', 'human']).optional(), MODEL_INPUT_USD_PER_MILLION: numeric(n => n >= 0), MODEL_OUTPUT_USD_PER_MILLION: numeric(n => n >= 0),
   PORT: port, HOST: text, APP_DB: text, REPORT_DIR: text,
   PUBLISHER_URLS: text, PUBLISHER_URL: url, PUBLISHER_SECRET: text, PUBLISHER_FAULTS: text,
-  SETTLEMENT_RAIL: text, XRPL_PAYER_SEED: text, XRPL_PAYER_ADDRESS: text, XRPL_RPC_URL: text,
+  WRITER_CREDENTIAL_ISSUERS: text, SETTLEMENT_RAIL: text, XRPL_PAYER_SEED: text, XRPL_PAYER_ADDRESS: text, XRPL_RPC_URL: text,
   LLM_PROVIDER: text, LLM_BASE_URL: url, LLM_MODEL: text, LLM_API_KEY: text,
   DEEPSEEK_API_KEY: text, GROQ_API_KEY: text,
   LLM_TIMEOUT_MS: positive, LLM_SYNTHESIS_TIMEOUT_MS: positive,

@@ -15,14 +15,17 @@ export function artifact() {
       if (!ts.some(t => t.hash === r.hash && Object.entries(t).every(([k,v]) => JSON.stringify(r[k]) === JSON.stringify(v)))) throw Error('Source fields differ')
     } else if (!read(r.source).includes(`\`${r.hash}\` | ${r.ledgerIndex} | ${r.deliveredAmount} / ${r.deliveredAmount}`)) throw Error('Interop fields differ')
   }
-  return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-03', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
+  const credentials = JSON.parse(read('docs/evidence/round2-n/transactions.json')).transactions
+  for (const row of credentials) if (!/^[A-F0-9]{64}$/.test(row.hash) || !Number.isInteger(row.ledgerIndex) || typeof row.credentialTypeText !== 'string' || !/^(?:[A-F0-9]{2}){1,64}$/.test(Buffer.from(row.credentialTypeText, 'utf8').toString('hex').toUpperCase())) throw Error('Invalid credential evidence')
+  rows.push(...credentials)
+  return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-04', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
 }
 function htmlArtifact(out) {
   const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')
   const rows = JSON.parse(out).rows.map(r => {
     const a = r.deliveredAmount ?? r.amountDrops
     const amount = typeof a === 'object' ? `${a.value} RLUSD · issuer ${a.issuer}` : a ? `${a} drops` : 'Principal amount not recorded in this evidence'
-    return `<tr><td>${escape(r.group)}: ${escape(r.operation ?? r.kind)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
+    return `<tr><td>${escape(r.group)}: ${escape(r.operation ?? r.kind)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.group === 'Testnet, credential' ? 'main' : 'ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
   }).join('')
   return read('site/ledger/index.html').replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
 }

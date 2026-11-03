@@ -1,3 +1,4 @@
+import { WriterVerificationSchema } from '../writer-verification.js'
 import { SourceIdentitySchema } from '../source-identity.js'
 import { z } from 'zod'
 
@@ -40,7 +41,7 @@ export const SearchHitSchema = z.object({ source: SourceIdentitySchema.optional(
   title: z.string().min(1), abstract: z.string().min(1).max(220), tags: z.array(z.string()),
   tier: z.enum(['FREE', 'PAID']), priceMinor: z.number().int().nonnegative(), relevance: z.number().min(0).max(1),
   publishedAt: z.string().min(1), family: z.string().min(1), derivedFrom: z.string().optional(),
-  verification: z.literal('unverified writer').optional(),
+  verification: WriterVerificationSchema.optional(),
   manifest: ManifestSchema.optional(), searchMode: z.enum(['hybrid', 'keyword']),
 }).strict().refine(hit => (hit.tier === 'PAID') === Boolean(hit.manifest), { message: 'a PAID hit needs a manifest; a FREE hit has none' }).refine(hit => hit.tier !== 'PAID' || (hit.manifest?.priceMinor ?? 0) > 0, { message: 'a PAID search manifest must have a positive price' })
 

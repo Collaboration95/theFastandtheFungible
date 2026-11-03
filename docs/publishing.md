@@ -48,3 +48,11 @@ accepts scalar front matter and derives article identity from each filename.
 Federated runtime references carry `source` version 1: origin, signed seller public key, profileId, resourceId and version. `shared/source-identity.ts` supplies the canonical tuple and citation key. TS, Python and MCP preserve that identity; wallet reputation crosses hosts. Receipt bundles dispatch v1/v2 explicitly. Historical missing origins remain unresolved; invoices, signed manifests, blobs, audit entries and intent IDs are unchanged. New obligations save endpoint context before signing; removal prevents new admission while recovery uses the saved endpoint. No engine bearer, delivery token or payment signature is forwarded across origins.
 
 Offline reproduction: `node --import tsx scripts/demo-multi-origin.ts --fixture --output scratch/multi-origin.json`. Evidence and migration handoff: `docs/evidence/round2-f/README.md`. The proof is synthetic, uses simulated payments and an explicit fixture judging/citation rubric, and does not establish adoption or live model quality.
+
+### Get a verified writer identity
+
+Ask the operator for its trusted credential issuer and type. That issuer vouches
+for your seller wallet with Testnet CredentialCreate; accept with CredentialAccept.
+The same seller wallet carries its identity across approved origins. Verification
+attests identity, not article truth, and never changes purchase policy or prices.
+See [writer verification](writer-verification.md) for setup, limits and revocation.

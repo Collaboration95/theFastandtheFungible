@@ -408,7 +408,7 @@ def contributions(b):
 
 def verify(export, *, expect_head=None):
     """Verify a dict or JSON path; valid means internal consistency, not ledger truth."""
-    checks = []
+    checks = [dict(check="writer credentials", status="SKIP", detail="Unsigned advisory identity; requires online check")]
 
     def add(name, ok, detail="Offline structural check"):
         checks.append(dict(check=name, status="PASS" if ok else "FAIL", detail=detail))
