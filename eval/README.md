@@ -391,3 +391,10 @@ and `publisher/manifest.ts` from evaluated base `0a97a52`. The added method is
 unused by this experiment and the new optional flag defaults to the old branch
 (static diff inspection only); no post-result live rerun was made. Offline
 result/CI reproduction remains valid on the integrated tree.
+
+
+A later #317 integration also changes the pinned runner to import/report
+optional reliability evidence. Neither live run used that option. Exact live
+replication needs the pre-run `eval/scorecard/run.ts` from the archived Git
+bundle as well; never bypass the fresh freeze guard. Offline metric reproduction
+continues to use the exact committed records and frozen receipts.

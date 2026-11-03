@@ -738,7 +738,7 @@ The original same-input comparison guard is unchanged. Raw traces, databases,
 wire observations and all provider records are archived outside the worktree
 before cleanup; no `.env` or credentials are archived.
 
-Validation: `OFFSET=700 npm run check:fast` passes **713 tests** after the final shipping rebase;
+Validation: `OFFSET=700 npm run check:fast` passes **713 tests** after the first shipping rebase;
 `npm run build` passes. Fresh and historical bank validators, combined corpus
 schema/leak check, README/SFF generator check, metric/CI reproduction, frozen
 evaluated-fingerprint comparison, source boundary and secret/whitespace checks pass.
@@ -751,7 +751,7 @@ deck owner exact slide-7/pitch wording; deck HTML is untouched.
 
 
 Shipping integration note: the final rebase includes #322 (`d6b7bb4`) and #325.
-Two pinned sources differ from the pre-run receipts: `server/agents/loop.ts`
+Two product sources differ from the pre-run receipts: `server/agents/loop.ts`
 adds `recoverAnswer`, unused in these successful simulated purchases, and
 `publisher/manifest.ts` adds optional `includeFree=false` with the prior default
 branch preserved. This is static diff inspection, not a fresh merged-head live
@@ -762,3 +762,14 @@ receipts. For exact live replication, restore those two upstream files from
 base `0a97a52` as well as the chosen scope/selection candidate. The offline
 compact reproduction needs no checkout changes or provider calls. Full live
 merged-head performance remains unmeasured by this fresh-set experiment.
+
+
+The later #317/#328 shipping rebase adds optional reliability-evidence import/
+reporting in `eval/scorecard/run.ts`, a third changed pinned source. Default
+quality/metric paths are unchanged by static inspection; no reliability option
+was used in either live run. Exact live replay also needs the pre-run runner,
+retained in the archived pre-run Git bundle; advancing or bypassing the fresh
+freeze guard would misrepresent the experiment. #326's README layout, badge and
+money formatting are preserved while generating the fresh result table. Final
+integrated unit suite: 718 pass; seeded chaos smoke is part of the current merge
+gate and its outcome is recorded in the PR.
