@@ -579,8 +579,6 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None):
                 add('audit anchor', chain and reason is None, reason or ('Validated XRPL Testnet ledger ' + str(anchor['ledgerIndex']) if chain else 'Audit head mismatch'))
             except (OSError, ValueError, KeyError, TypeError) as error:
                 add('audit anchor', False, str(error))
-        elif expect_head:
-            add('audit anchor', prev == expect_head)
         else:
             skip('audit anchor', 'not anchored (simulated); requires online check' if 'SIMULATED' in b['label'] else 'requires online check (--ledger)')
         source_ok = {}

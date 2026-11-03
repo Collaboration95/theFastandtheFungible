@@ -65,7 +65,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
       const reason = checkAnchor(b.ledgerAnchor, b.runId, prev, await (options.anchorLookup ?? anchorLookup)(b.ledgerAnchor.txHash))
       add('audit anchor', chainOk && !reason, reason ?? (chainOk ? `Validated XRPL Testnet ledger ${b.ledgerAnchor.ledgerIndex}` : 'Audit head mismatch'))
     } catch (e) { add('audit anchor', false, e instanceof Error ? e.message : 'Ledger unavailable') }
-  } else checks.push({ check: 'audit anchor', status: options.expectHead ? (prev === options.expectHead ? 'PASS' : 'FAIL') : 'SKIP', detail: options.expectHead ? 'Compared to independently supplied head' : b.label.includes('SIMULATED') ? 'not anchored (simulated); requires online check' : 'requires online check (--ledger); other runs are opaque commitments' })
+  } else checks.push({ check: 'audit anchor', status: 'SKIP', detail: b.label.includes('SIMULATED') ? 'not anchored (simulated); requires online check' : 'requires online check (--ledger); other runs are opaque commitments' })
   const sourceOk = new Map<string, boolean>()
   for (const s of b.sources) {
     const proofs = b.proofs.filter(p => key(p) === key(s)), p = proofs[0]

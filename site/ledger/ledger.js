@@ -14,6 +14,9 @@ export function classify(row, body) {
   } else if (row.group === 'escrow') {
     const type = { create: 'EscrowCreate', finish: 'EscrowFinish', cancel: 'EscrowCancel' }[row.operation]
     if (t.TransactionType !== type || (row.operation === 'create' ? t.Account !== row.owner || t.Sequence !== row.createSequence || t.Amount !== row.amountDrops : t.Owner !== row.owner || t.OfferSequence !== row.createSequence)) return 'Historical; escrow mismatch'
+  } else if (row.group === 'anchor') {
+    const memo = t.Memos?.length === 1 ? t.Memos[0]?.Memo : undefined
+    if (t.TransactionType !== 'AccountSet' || t.Account !== row.account || memo?.MemoType?.toUpperCase() !== credentialTypeHex('researchagent/anchor-v1') || !new RegExp('^' + credentialTypeHex(row.head + ':') + '[A-F0-9]{128}$').test(memo?.MemoData?.toUpperCase() ?? '')) return 'Historical; anchor memo mismatch'
   } else {
     if (t.TransactionType !== 'Payment' || (Number(t.Flags ?? 0) & 0x20000) || t.SendMax || t.Paths) return 'Historical; payment mismatch'
     const a = r.meta.delivered_amount

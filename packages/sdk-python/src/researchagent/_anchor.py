@@ -17,6 +17,7 @@ _ENDPOINTS = ('s.altnet.rippletest.net', 'clio.altnet.rippletest.net')
 def _lookup(host, tx_hash):
     deadline = time.monotonic() + 5
     with socket.create_connection((host, 51233), timeout=5) as raw:
+        raw.settimeout(max(.001, deadline - time.monotonic()))
         with ssl.create_default_context().wrap_socket(raw, server_hostname=host) as sock:
             def read(n):
                 data = b''

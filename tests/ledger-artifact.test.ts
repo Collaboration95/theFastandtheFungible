@@ -8,7 +8,7 @@ import { classify, refresh, lookup, endpoints } from '../site/ledger/ledger.js'
 const row = data.rows[0]
 function valid() { return {result:{hash:row.hash,ledger_index:row.ledgerIndex,validated:true,tx_json:{TransactionType:"Payment",Account:row.from,Destination:row.to,InvoiceID:row.invoiceId,NetworkID:1,Fee:row.feeDrops,Amount:row.deliveredAmount},meta:{TransactionResult:'tesSUCCESS',delivered_amount:row.deliveredAmount}}} }
 describe('public ledger',()=>{
- it('rebuilds twenty source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(20); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(20)})
+ it('rebuilds twenty-one source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(21); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(21)})
  it('only matching validated success is fresh',()=>{
   expect(classify(row,valid())).toContain('validated · tesSUCCESS')
   for(const mutate of [(b: {result: Record<string, any>})=>b.result.validated=false,(b: {result: Record<string, any>})=>b.result.tx_json.NetworkID=0,(b: {result: Record<string, any>})=>b.result.meta.TransactionResult='tecFAILED',(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,value:'9'},(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,issuer:'wrong'},(b: {result: Record<string, any>})=>b.result.error='txnNotFound',(b: {result: Record<string, any>})=>delete b.result.meta]){const b=valid();mutate(b);expect(classify(row,b)).not.toContain('validated · tesSUCCESS')}
@@ -76,4 +76,12 @@ it('uses the five-second deadline by default',async()=>{
   await vi.advanceTimersByTimeAsync(4999);expect(stub.active()).toBe(1)
   await vi.advanceTimersByTimeAsync(1);expect(await result).toBe('timeout');expect(stub.active()).toBe(0)
  } finally {vi.useRealTimers()}
+})
+
+it('freshly verifies the answer anchor row and refuses memo edits', () => {
+ const row = data.rows.find((r: {group:string}) => r.group === 'anchor')
+ const memo = { MemoType: Buffer.from('researchagent/anchor-v1').toString('hex').toUpperCase(), MemoData: Buffer.from(row.head + ':' + '0'.repeat(64)).toString('hex').toUpperCase() }
+ const body = { result: { hash: row.hash, ledger_index: row.ledgerIndex, validated: true, meta: {TransactionResult:'tesSUCCESS'}, tx_json: { TransactionType:'AccountSet', Account:row.account, Fee:row.feeDrops, Memos:[{Memo:memo}] } } }
+ expect(classify(row,body)).toContain('validated · tesSUCCESS')
+ memo.MemoData = '00'; expect(classify(row,body)).toContain('anchor memo mismatch')
 })

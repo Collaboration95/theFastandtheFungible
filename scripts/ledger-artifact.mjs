@@ -29,6 +29,11 @@ export function artifact() {
     const create = reveal.find(c => c.path === r.path && c.type === 'EscrowCreate')
     rows.push({ ...r, group: 'escrow', operation: { EscrowCreate: 'create', EscrowFinish: 'finish', EscrowCancel: 'cancel' }[r.type], date: '2026-11-04', owner: create.account, createSequence: r.offerSequence ?? create.sequence, amountDrops: create.amount, source: evidencePath, sourceCommit: sourceRef })
   }
+  const anchors = JSON.parse(read('docs/evidence/round2-t/transactions.json')).transactions
+  for (const row of anchors) {
+    if (!/^[A-F0-9]{64}$/.test(row.hash) || row.result !== 'tesSUCCESS' || !Number.isInteger(row.ledgerIndex)) throw Error('Invalid answer anchor evidence')
+    rows.push({ ...row, sourceCommit: 'fba9010bb52ab245370ba7c8362226ff107ada90' })
+  }
   return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-04', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
 }
 function htmlArtifact(out) {

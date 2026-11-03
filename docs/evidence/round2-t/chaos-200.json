@@ -1,0 +1,255 @@
+{
+  "schema": "chaos-v1",
+  "label": "SYNTHETIC fixture ledger; real SIGKILL; production API/SDK/MCP/publisher; no Testnet, providers or real value",
+  "seed": 279,
+  "testedCommit": "b5e991c0554cdb6bb1c6e7fe246d2fe6f8b01e42",
+  "worktreeDirty": true,
+  "startedAt": "2026-11-03T23:41:35.201Z",
+  "durationMs": 286901,
+  "iterations": 200,
+  "faultsInjected": 200,
+  "processKills": 55,
+  "payments": 259,
+  "refunds": 34,
+  "recovered": 171,
+  "failedCleanly": 29,
+  "doubleCharges": 0,
+  "invariantViolations": 0,
+  "stuckReservations": 0,
+  "reservationsHeld": 0,
+  "byFault": {
+    "kill-before-sign": 10,
+    "kill-after-sign": 8,
+    "kill-after-submit": 13,
+    "kill-after-validation": 13,
+    "submit-timeout-before": 9,
+    "submit-timeout-after": 14,
+    "duplicate-submit": 11,
+    "publisher-down": 14,
+    "publisher-slow": 8,
+    "engine-restart": 11,
+    "identical-intents": 12,
+    "sdk-retry": 9,
+    "mcp-retry": 11,
+    "hire-replay": 6,
+    "refund-replay": 12,
+    "sse-drop": 8,
+    "caps": 9,
+    "decision-down": 10,
+    "provider-down": 12
+  },
+  "byUseCase": {
+    "UC2": 147,
+    "UC1": 10,
+    "UC3": 34,
+    "UC4": 9
+  },
+  "maxRssBytes": 361007496,
+  "maxHandles": 35,
+  "latencyMs": {
+    "firstWindowP95": 2221.119832999997,
+    "lastWindowP95": 2263.755541999999,
+    "p95DriftMs": 42.63570900000195
+  },
+  "lastMetrics": {
+    "schema": "operations-v1",
+    "rail": "xrpl-testnet",
+    "purchasesByStatus": {
+      "VERIFIED": 1
+    },
+    "settleLatencyMs": {
+      "samples": 1,
+      "p50": 14,
+      "p95": 14
+    },
+    "payerLockWaitMs": {
+      "samples": 1,
+      "p95": 0,
+      "scope": "last 1024 successful lock acquisitions in this process"
+    },
+    "reconcileBacklog": {
+      "count": 0,
+      "oldestAgeMs": null,
+      "unknownAgeCount": 0,
+      "exhaustedDeliveries": 0
+    },
+    "spendTodayBySurface": {
+      "web": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "mcp": {
+        "spentMinor": 90,
+        "reservedMinor": 0
+      },
+      "x402": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "agent": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      }
+    },
+    "fallbacks": {
+      "llm": 2,
+      "decisionUnavailable": 0,
+      "decision": 0
+    },
+    "modelUsageByRun": [
+      {
+        "runId": "e73dc977-3b0a-4aa3-99fd-3f5c226af706",
+        "reportedCalls": 0,
+        "inputTokens": null,
+        "outputTokens": null,
+        "estimatedUsd": null
+      }
+    ]
+  },
+  "escrow": {
+    "iterations": 40,
+    "faultsInjected": 40,
+    "creates": 40,
+    "releases": 20,
+    "cancellations": 20,
+    "invariantViolations": 0
+  },
+  "scope": "Single payer writer; independent fresh stores per iteration, retained across crash; four escrow timeout/restart/downtime probes every 20 iterations",
+  "resourcePhases": {
+    "imports-ready": 212391128,
+    "corpus-ready": 270922216,
+    "api-ready": 285080176,
+    "ask-complete": 346244312,
+    "before-audit": 350062264,
+    "after-audit": 358795584,
+    "after-leak-check": 361007496
+  },
+  "windows": [
+    {
+      "endIteration": 50,
+      "samples": 50,
+      "elapsedMs": 70519,
+      "p95Ms": 2233.481292000004,
+      "childRssP50Bytes": 287862720,
+      "childRssMaxBytes": 356421272,
+      "parentRssBytes": 19057304,
+      "maxHandles": 35,
+      "byFault": {
+        "kill-before-sign": 3,
+        "kill-after-sign": 2,
+        "kill-after-submit": 3,
+        "kill-after-validation": 1,
+        "submit-timeout-before": 5,
+        "submit-timeout-after": 3,
+        "duplicate-submit": 4,
+        "publisher-down": 3,
+        "publisher-slow": 2,
+        "engine-restart": 2,
+        "identical-intents": 3,
+        "sdk-retry": 1,
+        "mcp-retry": 4,
+        "hire-replay": 2,
+        "refund-replay": 5,
+        "sse-drop": 1,
+        "caps": 1,
+        "decision-down": 2,
+        "provider-down": 3
+      }
+    },
+    {
+      "endIteration": 100,
+      "samples": 50,
+      "elapsedMs": 146156,
+      "p95Ms": 2217.258541999996,
+      "childRssP50Bytes": 285109992,
+      "childRssMaxBytes": 359762288,
+      "parentRssBytes": 19958736,
+      "maxHandles": 35,
+      "byFault": {
+        "kill-before-sign": 1,
+        "kill-after-sign": 2,
+        "kill-after-submit": 2,
+        "kill-after-validation": 6,
+        "submit-timeout-before": 1,
+        "submit-timeout-after": 4,
+        "duplicate-submit": 0,
+        "publisher-down": 6,
+        "publisher-slow": 2,
+        "engine-restart": 5,
+        "identical-intents": 5,
+        "sdk-retry": 2,
+        "mcp-retry": 0,
+        "hire-replay": 0,
+        "refund-replay": 3,
+        "sse-drop": 2,
+        "caps": 3,
+        "decision-down": 5,
+        "provider-down": 1
+      }
+    },
+    {
+      "endIteration": 150,
+      "samples": 50,
+      "elapsedMs": 214707,
+      "p95Ms": 2002.8616659999825,
+      "childRssP50Bytes": 287043664,
+      "childRssMaxBytes": 361007496,
+      "parentRssBytes": 21794032,
+      "maxHandles": 35,
+      "byFault": {
+        "kill-before-sign": 3,
+        "kill-after-sign": 3,
+        "kill-after-submit": 3,
+        "kill-after-validation": 3,
+        "submit-timeout-before": 1,
+        "submit-timeout-after": 5,
+        "duplicate-submit": 4,
+        "publisher-down": 2,
+        "publisher-slow": 2,
+        "engine-restart": 2,
+        "identical-intents": 2,
+        "sdk-retry": 4,
+        "mcp-retry": 4,
+        "hire-replay": 0,
+        "refund-replay": 1,
+        "sse-drop": 4,
+        "caps": 2,
+        "decision-down": 2,
+        "provider-down": 3
+      }
+    },
+    {
+      "endIteration": 200,
+      "samples": 50,
+      "elapsedMs": 286899,
+      "p95Ms": 2338.693333000003,
+      "childRssP50Bytes": 288026968,
+      "childRssMaxBytes": 357812688,
+      "parentRssBytes": 22629688,
+      "maxHandles": 35,
+      "byFault": {
+        "kill-before-sign": 3,
+        "kill-after-sign": 1,
+        "kill-after-submit": 5,
+        "kill-after-validation": 3,
+        "submit-timeout-before": 2,
+        "submit-timeout-after": 2,
+        "duplicate-submit": 3,
+        "publisher-down": 3,
+        "publisher-slow": 2,
+        "engine-restart": 2,
+        "identical-intents": 2,
+        "sdk-retry": 2,
+        "mcp-retry": 3,
+        "hire-replay": 4,
+        "refund-replay": 3,
+        "sse-drop": 1,
+        "caps": 3,
+        "decision-down": 1,
+        "provider-down": 5
+      }
+    }
+  ],
+  "failures": [],
+  "attempts": 200
+}
