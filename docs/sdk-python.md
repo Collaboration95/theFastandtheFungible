@@ -86,3 +86,13 @@ See [release artifact evidence](evidence/round2-d/README.md).
 Federated runtime references carry `source` version 1: origin, signed seller public key, profileId, resourceId and version. `shared/source-identity.ts` supplies the canonical tuple and citation key. TS, Python and MCP preserve that identity; wallet reputation crosses hosts. Receipt bundles dispatch v1/v2 explicitly. Historical missing origins remain unresolved; invoices, signed manifests, blobs, audit entries and intent IDs are unchanged. New obligations save endpoint context before signing; removal prevents new admission while recovery uses the saved endpoint. No engine bearer, delivery token or payment signature is forwarded across origins.
 
 Offline reproduction: `node --import tsx scripts/demo-multi-origin.ts --fixture --output scratch/multi-origin.json`. Evidence and migration handoff: `docs/evidence/round2-f/README.md`. The proof is synthetic, uses simulated payments and an explicit fixture judging/citation rubric, and does not establish adoption or live model quality.
+
+## Kill switch
+
+`client.pause(reason='Unexpected spending')` pauses spending durably and immediately. A scoped bearer pauses only
+its own agent; an operator bearer pauses the wallet. Returns `{paused: true,
+scope: "agent" | "wallet", agentId?: string}`. Repeated pause is safe. The optional
+reason is at most 240 characters, excludes control characters, and is stored in
+the audit trail. No client resume method exists: resume remains operator-only.
+In-flight unsigned purchases cannot sign; signed obligations reconcile normally
+without releasing their reservations. Cached desktop preferences cannot resume it.

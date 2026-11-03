@@ -31,6 +31,13 @@ export function walletRouter(context: ApiContext) {
     try { res.json(await ledgerCache.view) } catch { ledgerCache = undefined; res.status(503).json({ error: 'Ledger view unavailable.' }) }
   })
   router.get('/api/wallet/status', (_req, res) => res.json({ ...store.walletStatus(), agents: store.agentKeys.list().map(key => store.agentStatus(key.id)) }))
+  router.post('/api/spending/pause', (req, res) => {
+    const { reason } = z.object({ reason: z.string().trim().max(240).refine(value => [...value].every(char => char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127)).optional() }).strict().parse(req.body)
+    const agent = res.locals.agent
+    if (agent) store.setAgentPaused(agent.id, true, false, reason)
+    else store.setPaused(true, { surface: 'operator', principal: 'api-token', reason })
+    res.json({ paused: true, scope: agent ? 'agent' : 'wallet', ...(agent ? { agentId: agent.id } : {}) })
+  })
   router.post('/api/wallet/pause', (req, res) => {
     store.setPaused(z.object({ paused: z.boolean() }).strict().parse(req.body).paused, { surface: 'operator', principal: 'api-token' })
     res.json(store.walletStatus())

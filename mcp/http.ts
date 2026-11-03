@@ -12,7 +12,7 @@ export async function startMcpHttp({ apiUrl, store, port = 0 }: { apiUrl: string
     if (req.url !== '/mcp') return deny(404)
     const match = /^Bearer (\S+)$/.exec(req.headers.authorization ?? '')
     const agent = match && store.agentKeys.authenticate(match[1])
-    if (!agent || agent.paused) return deny(401)
+    if (!agent) return deny(401)
     if (req.method !== 'POST') return deny(405)
     store.recordMcpCall(agent.id)
     const server = createMcpServer(apiUrl, match![1], { allowRemoteHire: false })

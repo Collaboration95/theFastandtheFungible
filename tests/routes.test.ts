@@ -14,7 +14,7 @@ it.each([false, true])('preserves every pre-#285 route and adds wallet controls,
   const api = await createApiApp({ dbPath: ':memory:' })
   try {
     const app = api.app as Express & { router: { stack: Layer[] } }
-    expect(routeTable(app.router.stack).sort()).toEqual([...(faults ? before : before.filter(([, path]) => path !== '/api/demo/faults')), ['GET', '/api/health'], ['GET', '/api/metrics'], ['GET', '/api/wallet/status'], ['POST', '/api/wallet/pause'], ['POST', '/v1/ask'],
+    expect(routeTable(app.router.stack).sort()).toEqual([...(faults ? before : before.filter(([, path]) => path !== '/api/demo/faults')), ['GET', '/api/health'], ['GET', '/api/metrics'], ['GET', '/api/wallet/status'], ['POST', '/api/wallet/pause'], ['POST', '/api/spending/pause'], ['POST', '/v1/ask'],
       ['GET', '/api/audit/receipts.csv'], ['GET', '/api/audit/receipts.jsonl'], ['GET', '/api/audit/verify'], ['POST', '/api/verify'], ['POST', '/api/providers/test'], ['GET', '/runs/:id/receipts.json'], ['GET', '/runs/:id/report.json']].sort())
   } finally { await api.close(); vi.unstubAllEnvs() }
 })

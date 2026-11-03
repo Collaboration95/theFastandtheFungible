@@ -1,3 +1,4 @@
+import { errorEnvelope } from '../shared/contracts/errors.js'
 import type { Store } from './store.js'
 import { timingSafeEqual } from 'node:crypto'
 import type { RequestHandler } from 'express'
@@ -31,13 +32,13 @@ export function admissionGuard(config: Config, store?: Store): RequestHandler {
     const privateAgentData = hasAgents && (path.startsWith('/runs/') || path.startsWith('/api/runs') || path === '/api/wallet/status')
     const protectedRoute = !['GET', 'HEAD', 'OPTIONS'].includes(req.method) || path.startsWith('/api/mcp/')
       || path.startsWith('/api/audit/') || privateAgentData || path === '/api/metrics' || (path === '/api/health' && req.query.deep === '1')
-    const tokenOnly = path === '/api/wallet/pause'
+    const tokenOnly = path === '/api/wallet/pause' || path === '/api/spending/pause'
     const supplied = req.get('Authorization')?.match(/^Bearer (.+)$/i)?.[1]
     const valid = Boolean(expected && supplied && Buffer.byteLength(expected) === Buffer.byteLength(supplied)
       && timingSafeEqual(Buffer.from(expected), Buffer.from(supplied)))
     const agent = !valid && supplied ? store?.agentKeys.authenticate(supplied) : undefined
     if (agent) {
-      if (agent.paused) { res.status(403).json({ error: 'Agent spending is paused.' }); return }
+      if (agent.paused && path !== '/api/spending/pause' && path !== '/api/mcp/status') { res.status(403).json({ ...errorEnvelope('paused', 403), error: 'Agent spending is paused.' }); return }
       res.locals.agent = agent
       // An agent can only use research endpoints and its own runs. No operator controls or wallet-wide export.
       const run = path.match(/^\/(?:api\/mcp\/)?runs\/([^/]+)(?:\/(?:events|stop|retry-delivery|receipts\.json))?$/)
@@ -45,16 +46,16 @@ export function admissionGuard(config: Config, store?: Store): RequestHandler {
         let id: string
         try { id = decodeURIComponent(run[1]) } catch { res.sendStatus(400); return }
         if (store?.runPrincipal(id)?.principal !== agent.id) { res.status(404).json({ error: 'Run not found.' }); return }
-      } else if (!['/runs', '/api/mcp/runs', '/api/mcp/status', '/api/mcp/search', '/api/scope', '/v1/ask'].includes(path)) {
-        res.status(403).json({ error: 'Operator token required.' }); return
+      } else if (!['/api/spending/pause', '/runs', '/api/mcp/runs', '/api/mcp/status', '/api/mcp/search', '/api/scope', '/v1/ask'].includes(path)) {
+        res.status(403).json({ ...errorEnvelope('unauthorized', 403), error: 'Operator token required.' }); return
       }
       next(); return
     }
     // A supplied bad/revoked credential never falls back to anonymous loopback authority.
-    if (supplied && !valid) { res.status(401).json({ error: 'Invalid bearer token.' }); return }
+    if (supplied && !valid) { res.status(401).json({ ...errorEnvelope('unauthorized', 401), error: 'Invalid bearer token.' }); return }
     if (!protectedRoute) { next(); return }
     if (!valid && (expected || hasAgents || tokenOnly || !loopback(host) || !loopback(req.socket.remoteAddress?.replace(/^::ffff:/, '') ?? ''))) {
-      res.status(401).json({ error: 'A valid RA_API_TOKEN bearer token is required.' }); return
+      res.status(401).json({ ...errorEnvelope('unauthorized', 401), error: 'A valid RA_API_TOKEN bearer token is required.' }); return
     }
     next()
   }

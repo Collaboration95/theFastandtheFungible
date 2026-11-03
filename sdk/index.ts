@@ -153,6 +153,8 @@ export function createClient(options: ClientOptions) {
   })
   return {
     walletStatus,
+    /** Reduce caller spending authority; only an operator can resume. */
+    pause: (opts: { reason?: string } = {}) => json('/api/spending/pause', z.object({ paused: z.literal(true), scope: z.enum(['agent', 'wallet']), agentId: z.string().optional() }), { method: 'POST', body: JSON.stringify(opts) }),
     /** Offline verification of exported JSON or a local JSON path (Node). */
     verify: (answerOrPath: unknown, opts: import('./verify.js').VerifyOptions = {}) => safe(async () => {
       const { verifyAnswer } = await import('./verify.js')
