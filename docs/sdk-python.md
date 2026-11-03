@@ -101,3 +101,29 @@ Receipt contribution v3 exposes exact claim/passage use with semantic assessment
 labelled not independently verified. See [receipt contribution contract](contracts/CONTRIBUTION.md)
 and [offline fixture evidence](evidence/round2-g/README.md). Python callers can use
 `Client.receipts(run_id)`; the existing offline verifier accepts v1/v2/v3.
+
+## Verify receipts without Node
+
+The installed wheel verifies v1, v2 and v3 offline, without a repository, Node,
+network access, API token or wallet. Runtime has no external dependencies;
+MIT-licensed pure-Python ecdsa and six are vendored for real Ed25519/secp256k1
+signature verification. Signatures are never delegated or silently skipped.
+
+```sh
+python -m researchagent verify receipts.json --json
+```
+
+Exit codes: 0 valid, 1 invalid, 2 usage/unreadable JSON. Python API:
+
+```python
+from researchagent.verify import verify
+result = verify('receipts.json', expect_head=independently_saved_head)
+assert result['ok']
+```
+
+`Client.verify(export)` also uses Python by default. Supplying `repo_dir=...`
+explicitly retains the old Node wrapper. The verifier does not contact Testnet;
+ledger checks are labelled SKIP. An independent audit head detects rewritten
+chains; a self-contained export alone cannot. Structural contribution evidence
+does not certify semantic truth. See [receipt spec](receipt-spec.md) and
+[conformance evidence](evidence/round2-k/README.md).

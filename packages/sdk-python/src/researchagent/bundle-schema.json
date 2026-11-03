@@ -1,0 +1,2201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "anyOf": [
+        {
+          "type": "number",
+          "const": 1
+        },
+        {
+          "type": "number",
+          "const": 2
+        },
+        {
+          "type": "number",
+          "const": 3
+        }
+      ]
+    },
+    "identityVersion": {
+      "anyOf": [
+        {
+          "type": "number",
+          "const": 1
+        },
+        {
+          "type": "number",
+          "const": 2
+        }
+      ]
+    },
+    "contributions": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "const": "structural-v1"
+        },
+        "semanticStatus": {
+          "type": "string",
+          "const": "not independently verified"
+        },
+        "purchases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "intentId": {
+                "type": "string"
+              },
+              "sourceKey": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "grossMinor": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "refundMinor": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "netMinor": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "refundStatus": {
+                "type": "string"
+              },
+              "assessment": {
+                "type": "string",
+                "const": "not assessed"
+              },
+              "structuralUse": {
+                "type": "string",
+                "enum": [
+                  "cited",
+                  "none"
+                ]
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "answerVersion": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "claimId": {
+                      "type": "string"
+                    },
+                    "claim": {
+                      "type": "string"
+                    },
+                    "citation": {
+                      "type": "string"
+                    },
+                    "spanId": {
+                      "type": "string"
+                    },
+                    "passage": {
+                      "type": "string"
+                    },
+                    "manifestRoot": {
+                      "type": "string"
+                    },
+                    "grantIntentId": {
+                      "type": "string"
+                    },
+                    "retained": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "answerVersion",
+                    "claimId",
+                    "claim",
+                    "citation",
+                    "spanId",
+                    "passage",
+                    "manifestRoot",
+                    "grantIntentId",
+                    "retained"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "intentId",
+              "sourceKey",
+              "status",
+              "grossMinor",
+              "refundMinor",
+              "netMinor",
+              "refundStatus",
+              "assessment",
+              "structuralUse",
+              "links"
+            ]
+          }
+        }
+      },
+      "required": [
+        "version",
+        "semanticStatus",
+        "purchases"
+      ]
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^r[1-5]$"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "gap": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ]
+      }
+    },
+    "runId": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "answers": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "conclusion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "stance": {
+                  "type": "string",
+                  "enum": [
+                    "SUPPORTS",
+                    "CHALLENGES",
+                    "UNCERTAIN"
+                  ]
+                },
+                "citations": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "object",
+                        "properties": {
+                          "schemaVersion": {
+                            "type": "number",
+                            "const": 1
+                          },
+                          "origin": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "sellerKey": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "profileId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "resourceId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "version": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "schemaVersion",
+                          "origin",
+                          "sellerKey",
+                          "profileId",
+                          "resourceId",
+                          "version"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "resourceId": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "string"
+                      },
+                      "spanId": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "resourceId",
+                      "version",
+                      "spanId"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "text",
+                "stance",
+                "citations"
+              ]
+            }
+          },
+          "openGaps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "text"
+              ]
+            }
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "deepseek",
+              "groq",
+              "openai-compatible",
+              "fixture"
+            ]
+          },
+          "model": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "conclusion",
+          "claims",
+          "openGaps",
+          "version",
+          "provider",
+          "model"
+        ]
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "origin": {
+                "type": "string",
+                "format": "uri"
+              },
+              "sellerKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profileId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "resourceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "origin",
+              "sellerKey",
+              "profileId",
+              "resourceId",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "profileId": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1
+          },
+          "spans": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "text"
+              ]
+            }
+          },
+          "verification": {
+            "type": "object",
+            "properties": {
+              "manifest": {
+                "type": "object",
+                "properties": {
+                  "schemaVersion": {
+                    "type": "number",
+                    "const": 2
+                  },
+                  "publisherSlug": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "articleId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "version": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "wallet": {
+                    "type": "string",
+                    "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+                  },
+                  "pubKey": {
+                    "type": "string",
+                    "pattern": "^[0-9A-F]{66}$"
+                  },
+                  "priceMinor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "leaves": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  },
+                  "root": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "claims": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "dated-figure",
+                            "named-source",
+                            "numeric-series"
+                          ]
+                        },
+                        "leaf": {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        "covers": {
+                          "type": "object",
+                          "properties": {
+                            "entity": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 48,
+                              "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                            },
+                            "measure": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 48,
+                              "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                            },
+                            "period": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 48,
+                              "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                            },
+                            "comparison": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 48,
+                              "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                            }
+                          },
+                          "required": [
+                            "entity",
+                            "measure"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "leaf"
+                      ]
+                    }
+                  },
+                  "wordCount": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "publishedAt": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "relevance": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "sig": {
+                    "type": "string",
+                    "pattern": "^[0-9A-F]+$"
+                  }
+                },
+                "required": [
+                  "publisherSlug",
+                  "articleId",
+                  "version",
+                  "wallet",
+                  "pubKey",
+                  "priceMinor",
+                  "leaves",
+                  "root",
+                  "claims",
+                  "wordCount",
+                  "publishedAt",
+                  "relevance",
+                  "sig"
+                ]
+              },
+              "salts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "manifest",
+              "salts"
+            ]
+          }
+        },
+        "required": [
+          "profileId",
+          "resourceId",
+          "version",
+          "title",
+          "publisher",
+          "body",
+          "spans"
+        ]
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "origin": {
+                "type": "string",
+                "format": "uri"
+              },
+              "sellerKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profileId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "resourceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "origin",
+              "sellerKey",
+              "profileId",
+              "resourceId",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "profileId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "resourceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "publisher": {
+            "type": "string",
+            "minLength": 1
+          },
+          "preview": {
+            "type": "string",
+            "minLength": 1
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "const": "SGD"
+              }
+            },
+            "required": [
+              "amountMinor",
+              "currency"
+            ]
+          },
+          "wallet": {
+            "type": "string",
+            "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+          },
+          "family": {
+            "type": "string",
+            "minLength": 1
+          },
+          "derivedFrom": {
+            "type": "string"
+          },
+          "facets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "authority": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PAID"
+            ]
+          },
+          "verification": {
+            "type": "string",
+            "const": "unverified writer"
+          },
+          "license": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "attribution"
+            ]
+          },
+          "publisherSlug": {
+            "type": "string"
+          },
+          "writerSlug": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "relevance": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "reputation": {
+            "type": "object",
+            "properties": {
+              "H": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "C": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "T": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "quarantined",
+                  "delisted"
+                ]
+              }
+            },
+            "required": [
+              "H",
+              "C",
+              "T",
+              "status"
+            ]
+          },
+          "manifest": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 2
+              },
+              "publisherSlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "articleId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "wallet": {
+                "type": "string",
+                "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+              },
+              "pubKey": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{66}$"
+              },
+              "priceMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "leaves": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "root": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "claims": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "dated-figure",
+                        "named-source",
+                        "numeric-series"
+                      ]
+                    },
+                    "leaf": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "covers": {
+                      "type": "object",
+                      "properties": {
+                        "entity": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "measure": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "period": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "comparison": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        }
+                      },
+                      "required": [
+                        "entity",
+                        "measure"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "leaf"
+                  ]
+                }
+              },
+              "wordCount": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "relevance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "sig": {
+                "type": "string",
+                "pattern": "^[0-9A-F]+$"
+              }
+            },
+            "required": [
+              "publisherSlug",
+              "articleId",
+              "version",
+              "wallet",
+              "pubKey",
+              "priceMinor",
+              "leaves",
+              "root",
+              "claims",
+              "wordCount",
+              "publishedAt",
+              "relevance",
+              "sig"
+            ]
+          }
+        },
+        "required": [
+          "profileId",
+          "resourceId",
+          "version",
+          "title",
+          "publisher",
+          "preview",
+          "price",
+          "family",
+          "facets",
+          "authority",
+          "tier",
+          "license"
+        ]
+      }
+    },
+    "intents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "origin": {
+                "type": "string",
+                "format": "uri"
+              },
+              "sellerKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profileId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "resourceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "origin",
+              "sellerKey",
+              "profileId",
+              "resourceId",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "escrow": {
+            "type": "object",
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "const": "escrow-v1"
+              },
+              "policy": {
+                "type": "string",
+                "const": "escrow-policy-v1"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "PREPARED",
+                  "LOCKED",
+                  "VERIFIED_FOR_RELEASE",
+                  "CANCEL_DUE",
+                  "RELEASED",
+                  "CANCELLED"
+                ]
+              },
+              "owner": {
+                "type": "string"
+              },
+              "cancelAfter": {
+                "type": "number"
+              },
+              "createSequence": {
+                "type": "number"
+              },
+              "createHash": {
+                "type": "string"
+              },
+              "finishHash": {
+                "type": "string"
+              },
+              "cancelHash": {
+                "type": "string"
+              },
+              "proofOk": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "scheme",
+              "policy",
+              "state",
+              "owner",
+              "cancelAfter"
+            ]
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          },
+          "profileId": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DECIDED",
+              "QUOTED",
+              "RESERVED",
+              "SUBMITTING",
+              "SETTLED",
+              "DELIVERY_PENDING",
+              "VERIFIED",
+              "SKIPPED",
+              "FAILED_NOT_SETTLED",
+              "DELIVERY_FAILED",
+              "CLAIM_FAILED",
+              "CHALLENGED",
+              "REFUNDED",
+              "CHALLENGE_REJECTED",
+              "CHALLENGE_REFUSED"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "submittingAt": {
+            "type": "string"
+          },
+          "settledAt": {
+            "type": "string"
+          },
+          "deliveryAttempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "nextDeliveryAt": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "object",
+                "properties": {
+                  "schemaVersion": {
+                    "type": "number",
+                    "const": 1
+                  },
+                  "origin": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "sellerKey": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "profileId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "version": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "schemaVersion",
+                  "origin",
+                  "sellerKey",
+                  "profileId",
+                  "resourceId",
+                  "version"
+                ],
+                "additionalProperties": false
+              },
+              "profileId": {
+                "type": "string"
+              },
+              "resourceId": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              },
+              "runId": {
+                "type": "string"
+              },
+              "intentId": {
+                "type": "string"
+              },
+              "quoteId": {
+                "type": "string"
+              },
+              "quoteHash": {
+                "type": "string"
+              },
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "const": "SGD"
+              },
+              "expiresAt": {
+                "type": "string"
+              },
+              "contentDigest": {
+                "type": "string"
+              },
+              "payment": {
+                "type": "object",
+                "properties": {
+                  "rail": {
+                    "type": "string",
+                    "enum": [
+                      "simulated",
+                      "xrpl-testnet"
+                    ]
+                  },
+                  "network": {
+                    "type": "string",
+                    "const": "xrpl:1"
+                  },
+                  "asset": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "XRP"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "currency": {
+                            "type": "string",
+                            "const": "524C555344000000000000000000000000000000"
+                          },
+                          "issuer": {
+                            "type": "string",
+                            "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+                          },
+                          "label": {
+                            "type": "string",
+                            "enum": [
+                              "RLUSD (Testnet)",
+                              "RLUSD Testnet",
+                              "test USD (substitute for RLUSD)"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "currency",
+                          "issuer",
+                          "label"
+                        ]
+                      }
+                    ]
+                  },
+                  "payTo": {
+                    "type": "string",
+                    "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+                  },
+                  "amountDrops": {
+                    "type": "string",
+                    "pattern": "^(?:[1-9]\\d*(?:\\.\\d{1,6})?|0\\.\\d{1,6})$"
+                  },
+                  "invoiceId": {
+                    "type": "string",
+                    "pattern": "^[0-9A-F]{64}$"
+                  }
+                },
+                "required": [
+                  "rail",
+                  "network",
+                  "asset",
+                  "payTo",
+                  "amountDrops",
+                  "invoiceId"
+                ]
+              }
+            },
+            "required": [
+              "profileId",
+              "resourceId",
+              "version",
+              "runId",
+              "intentId",
+              "quoteId",
+              "quoteHash",
+              "amountMinor",
+              "currency",
+              "expiresAt",
+              "contentDigest"
+            ]
+          },
+          "paidPath": {
+            "type": "string"
+          },
+          "receiptId": {
+            "type": "string"
+          },
+          "txHash": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "failedClaimIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "refundCandidate": {
+            "type": "object",
+            "properties": {
+              "txHash": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{64}$"
+              },
+              "observedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "txHash",
+              "observedAt"
+            ]
+          },
+          "refund": {
+            "type": "object",
+            "properties": {
+              "txHash": {
+                "type": "string"
+              },
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "txHash",
+              "amountMinor"
+            ]
+          }
+        },
+        "required": [
+          "intentId",
+          "runId",
+          "profileId",
+          "resourceId",
+          "version",
+          "amountMinor",
+          "status"
+        ]
+      }
+    },
+    "grants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "origin": {
+                "type": "string",
+                "format": "uri"
+              },
+              "sellerKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profileId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "resourceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "origin",
+              "sellerKey",
+              "profileId",
+              "resourceId",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "runId": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "contentDigest": {
+            "type": "string"
+          },
+          "grantedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "runId",
+          "resourceId",
+          "version",
+          "intentId",
+          "contentDigest",
+          "grantedAt"
+        ]
+      }
+    },
+    "receipts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "origin": {
+                "type": "string",
+                "format": "uri"
+              },
+              "sellerKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profileId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "resourceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "origin",
+              "sellerKey",
+              "profileId",
+              "resourceId",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "escrow": {
+            "type": "object",
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "const": "escrow-v1"
+              },
+              "policy": {
+                "type": "string",
+                "const": "escrow-policy-v1"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "PREPARED",
+                  "LOCKED",
+                  "VERIFIED_FOR_RELEASE",
+                  "CANCEL_DUE",
+                  "RELEASED",
+                  "CANCELLED"
+                ]
+              },
+              "owner": {
+                "type": "string"
+              },
+              "cancelAfter": {
+                "type": "number"
+              },
+              "createSequence": {
+                "type": "number"
+              },
+              "createHash": {
+                "type": "string"
+              },
+              "finishHash": {
+                "type": "string"
+              },
+              "cancelHash": {
+                "type": "string"
+              },
+              "proofOk": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "scheme",
+              "policy",
+              "state",
+              "owner",
+              "cancelAfter"
+            ]
+          },
+          "receiptId": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "currency": {
+            "type": "string",
+            "const": "SGD"
+          },
+          "settledAt": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "enum": [
+              "SIMULATED SGD · no real funds",
+              "XRPL TESTNET · no real value"
+            ]
+          },
+          "xrpl": {
+            "type": "object",
+            "properties": {
+              "txHash": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{64}$"
+              },
+              "ledgerIndex": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "payer": {
+                "type": "string"
+              },
+              "payTo": {
+                "type": "string"
+              },
+              "amountDrops": {
+                "type": "string"
+              },
+              "asset": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": "XRP"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "const": "524C555344000000000000000000000000000000"
+                      },
+                      "issuer": {
+                        "type": "string",
+                        "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+                      },
+                      "label": {
+                        "type": "string",
+                        "enum": [
+                          "RLUSD (Testnet)",
+                          "RLUSD Testnet",
+                          "test USD (substitute for RLUSD)"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "issuer",
+                      "label"
+                    ]
+                  }
+                ]
+              },
+              "deliveredAmount": {},
+              "explorerUrl": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "txHash",
+              "ledgerIndex",
+              "payer",
+              "payTo",
+              "amountDrops",
+              "explorerUrl"
+            ]
+          }
+        },
+        "required": [
+          "receiptId",
+          "intentId",
+          "runId",
+          "resourceId",
+          "version",
+          "amountMinor",
+          "currency",
+          "settledAt",
+          "label"
+        ]
+      }
+    },
+    "payments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "XRP"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "const": "524C555344000000000000000000000000000000"
+                  },
+                  "issuer": {
+                    "type": "string",
+                    "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+                  },
+                  "label": {
+                    "type": "string",
+                    "enum": [
+                      "RLUSD (Testnet)",
+                      "RLUSD Testnet",
+                      "test USD (substitute for RLUSD)"
+                    ]
+                  }
+                },
+                "required": [
+                  "currency",
+                  "issuer",
+                  "label"
+                ]
+              }
+            ]
+          },
+          "deliveredAmount": {},
+          "escrowTerms": {
+            "type": "object",
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "const": "escrow-v1"
+              },
+              "network": {
+                "type": "string",
+                "const": "xrpl:1"
+              },
+              "asset": {
+                "type": "string",
+                "const": "XRP"
+              },
+              "quoteId": {
+                "type": "string"
+              },
+              "intentId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "publisherSlug": {
+                "type": "string"
+              },
+              "articleId": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              },
+              "manifestRoot": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "string",
+                "pattern": "^[1-9]\\d*$"
+              },
+              "payer": {
+                "type": "string"
+              },
+              "payTo": {
+                "type": "string"
+              },
+              "condition": {
+                "type": "string",
+                "pattern": "^A0258020[0-9A-F]{64}810120$"
+              },
+              "cancelAfter": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "scheme",
+              "network",
+              "asset",
+              "quoteId",
+              "intentId",
+              "publisherSlug",
+              "articleId",
+              "version",
+              "manifestRoot",
+              "amount",
+              "payer",
+              "payTo",
+              "condition",
+              "cancelAfter"
+            ]
+          },
+          "escrowCreateHash": {
+            "type": "string"
+          },
+          "escrowCreateSequence": {
+            "type": "number"
+          },
+          "escrowState": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "purchase",
+              "inbound",
+              "royalty",
+              "change"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "network": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string"
+          },
+          "principal": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "type": "string"
+          },
+          "writer": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "payee": {
+            "type": "string"
+          },
+          "payer": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": ""
+              }
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "amountDrops": {
+            "type": "string"
+          },
+          "txHash": {
+            "type": "string"
+          },
+          "invoiceId": {
+            "type": "string"
+          },
+          "ledgerIndex": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": ""
+              }
+            ]
+          },
+          "explorerUrl": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "refundTxHash": {
+            "type": "string"
+          },
+          "refundAmountMinor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": ""
+              }
+            ]
+          },
+          "refundExplorerUrl": {
+            "type": "string"
+          },
+          "reservedAt": {
+            "type": "string"
+          },
+          "settledAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "network",
+          "runId",
+          "intentId",
+          "surface",
+          "principal",
+          "policyVersion",
+          "writer",
+          "resourceId",
+          "version",
+          "payee",
+          "payer",
+          "amountMinor",
+          "currency",
+          "amountDrops",
+          "txHash",
+          "invoiceId",
+          "ledgerIndex",
+          "explorerUrl",
+          "status",
+          "refundTxHash",
+          "refundAmountMinor",
+          "refundExplorerUrl",
+          "reservedAt",
+          "settledAt"
+        ]
+      }
+    },
+    "proofs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "origin": {
+                "type": "string",
+                "format": "uri"
+              },
+              "sellerKey": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profileId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "resourceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "origin",
+              "sellerKey",
+              "profileId",
+              "resourceId",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "manifest": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 2
+              },
+              "publisherSlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "articleId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "wallet": {
+                "type": "string",
+                "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+              },
+              "pubKey": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{66}$"
+              },
+              "priceMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "leaves": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "root": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "claims": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "dated-figure",
+                        "named-source",
+                        "numeric-series"
+                      ]
+                    },
+                    "leaf": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "covers": {
+                      "type": "object",
+                      "properties": {
+                        "entity": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "measure": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "period": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "comparison": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        }
+                      },
+                      "required": [
+                        "entity",
+                        "measure"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "leaf"
+                  ]
+                }
+              },
+              "wordCount": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "relevance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "sig": {
+                "type": "string",
+                "pattern": "^[0-9A-F]+$"
+              }
+            },
+            "required": [
+              "publisherSlug",
+              "articleId",
+              "version",
+              "wallet",
+              "pubKey",
+              "priceMinor",
+              "leaves",
+              "root",
+              "claims",
+              "wordCount",
+              "publishedAt",
+              "relevance",
+              "sig"
+            ]
+          },
+          "salts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "intentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "resourceId",
+          "version",
+          "manifest",
+          "salts"
+        ]
+      }
+    },
+    "audit": {
+      "type": "object",
+      "properties": {
+        "anchor": {
+          "type": "object",
+          "properties": {
+            "seq": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "hash": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "seq",
+            "hash"
+          ]
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "seq": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "at": {
+                    "type": "string"
+                  },
+                  "prevHash": {
+                    "type": "string"
+                  },
+                  "hash": {
+                    "type": "string"
+                  },
+                  "runId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "intentId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "surface": {
+                    "type": "string"
+                  },
+                  "principal": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "data": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "seq",
+                  "at",
+                  "prevHash",
+                  "hash",
+                  "runId",
+                  "intentId",
+                  "surface",
+                  "principal",
+                  "kind",
+                  "data"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "seq": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "prevHash": {
+                    "type": "string"
+                  },
+                  "hash": {
+                    "type": "string"
+                  },
+                  "commitment": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "seq",
+                  "prevHash",
+                  "hash",
+                  "commitment"
+                ]
+              }
+            ]
+          }
+        },
+        "head": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "anchor",
+        "entries",
+        "head"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "runId",
+    "label",
+    "answers",
+    "sources",
+    "candidates",
+    "intents",
+    "grants",
+    "receipts",
+    "payments",
+    "proofs",
+    "audit"
+  ]
+}

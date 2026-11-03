@@ -188,8 +188,11 @@ class Client:
         status = self._request('/api/mcp/status')
         return {**status, 'remainingMinor': max(0, status['dailyMinor'] - status['spentMinor'] - status['reservedMinor'])}
 
-    def verify(self, export: dict[str, Any] | str | Path, *, repo_dir: str | Path) -> dict[str, Any]:
-        """Run the repository's offline verifier; requires Node and npm dependencies."""
+    def verify(self, export: dict[str, Any] | str | Path, *, repo_dir: str | Path | None = None) -> dict[str, Any]:
+        """Verify offline in Python; explicit repo_dir selects the legacy Node wrapper."""
+        if repo_dir is None:
+            from .verify import verify
+            return verify(export)
         try:
             with tempfile.TemporaryDirectory(prefix='researchagent-verify-') as directory:
                 path = Path(export).resolve() if isinstance(export, (str, Path)) else Path(directory) / 'export.json'
