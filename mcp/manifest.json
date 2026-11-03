@@ -1,0 +1,58 @@
+{
+  "manifest_version": "0.3",
+  "name": "researchagent",
+  "version": "0.7.0",
+  "display_name": "ResearchAgent (simulated by default)",
+  "description": "Cited expertise with operator caps. Fictional corpus and SIMULATED payments by default; no keys needed.",
+  "author": {
+    "name": "Collaboration95"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "mcp/extension.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/mcp/extension.mjs"
+      ],
+      "env": {
+        "MCP_MAX_BUDGET_MINOR": "${user_config.question_cap}",
+        "MCP_DAILY_CAP_MINOR": "${user_config.daily_cap}",
+        "RA_LIVE": "${user_config.live}",
+        "XRPL_PAYER_SEED": "${user_config.payer_seed}",
+        "RA_DATA_DIR": "${HOME}/.researchagent/mcp"
+      }
+    }
+  },
+  "user_config": {
+    "question_cap": {
+      "type": "number",
+      "title": "Per-question cap (SGD cents)",
+      "description": "Operator authorization; requested budgets are clamped.",
+      "default": 0,
+      "min": 0,
+      "max": 500
+    },
+    "daily_cap": {
+      "type": "number",
+      "title": "Daily cap (SGD cents, UTC)",
+      "description": "Gross daily spend; refunds do not restore authority.",
+      "default": 0,
+      "min": 0,
+      "max": 100000
+    },
+    "live": {
+      "type": "boolean",
+      "title": "Enable live providers / XRPL Testnet",
+      "description": "Default false: fixture research and simulated settlement. Provider keys require separate operator setup.",
+      "default": false
+    },
+    "payer_seed": {
+      "type": "string",
+      "title": "Optional XRPL Testnet payer seed",
+      "description": "Stored by Claude in OS secure storage; never saved in plain configuration. Unused in fixture mode.",
+      "sensitive": true,
+      "required": false
+    }
+  }
+}

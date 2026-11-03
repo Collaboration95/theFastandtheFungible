@@ -77,7 +77,7 @@ MCP_MAX_BUDGET_MINOR = "200"
 MCP_DAILY_CAP_MINOR = "500"
 ```
 
-The four tools are `search_expertise`, `ask_expert`, `get_run` and `wallet_status`.
+[One-click Claude Desktop extension and all client configs](docs/mcp.md#one-click-claude-desktop-extension). Tools: `search_expertise`, `ask_expert`, `get_run`, `wallet_status`, `verify_answer` and `hire`.
 Configured caps default to zero; the calling model cannot raise them. [MCP reference](docs/mcp.md) · [TypeScript SDK](docs/sdk.md) · [Python example](examples/python/ask.py).
 
 Native XRP interop with the XRPL AI Starter Kit’s t54 client and server: [compatibility and pinned versions](docs/x402-xrpl.md#starter-kit-compatibility) · [Testnet evidence](docs/evidence/starter-kit-interop.md).

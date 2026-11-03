@@ -39,6 +39,13 @@ jobs:
         with:
           name: researchagent-arm64-dmg
           path: ${{ runner.temp }}/assets
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:mcpb
+      - run: cp dist/ResearchAgent.mcpb dist/server.json "$RUNNER_TEMP/assets/"
       - name: Describe the unsigned download
         run: |
           printf '\n\nApple Silicon Mac app attached. Unsigned: move to Applications, then right-click → Open (Privacy & Security → Open Anyway if blocked). See desktop/SIGNING.md.\n' >> "$RUNNER_TEMP/notes.md"
