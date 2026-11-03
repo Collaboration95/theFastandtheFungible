@@ -122,6 +122,7 @@ Node ≥ 22.13 and Make. No keys needed.
 git clone https://github.com/Collaboration95/theFastandtheFungible && cd theFastandtheFungible
 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci
 make run                                   # web on :5100; `make run OFFSET=100` shifts every port
+make testnet                               # fixture models, faucet wallets, real XRP Testnet; no keys
 ```
 
 Open <http://127.0.0.1:5100>. Fixture providers and simulated payments work offline.

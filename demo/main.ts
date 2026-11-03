@@ -12,6 +12,7 @@ const scenario = initial.searchParams.get('scenario')
 if (scenario) { active = recordings.find(r => r === modules[`./traces/${scenario}.json`]) ?? active }
 const visited = new Map<string, Recording>()
 const pinned = new Set<string>()
+const showLabel = () => { document.querySelector('.demo-banner > span')!.textContent = active.run.labels.settlement.includes('TESTNET') ? 'Recorded on XRPL Testnet · no real value' : 'Replay of a recorded run · fictional writers · simulated payments' }
 const history = () => [...visited.values()].map(({ run }) => ({ runId: run.runId, question: run.question, phase: run.phase, stopped: false, budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, at: run.events[0].at, pinned: pinned.has(run.runId) }))
 // No request escapes this entry: only committed recordings and in-memory navigation.
 window.fetch = async (input, init) => {
@@ -22,7 +23,7 @@ window.fetch = async (input, init) => {
   else if (path === '/api/scope' || path === '/runs') {
     const recording = recordings.find(item => item.run.question === body.question && !item.run.labels.settlement.includes('TESTNET'))
     if (!recording) return Response.json({ error: 'Choose one of the three recorded questions.' }, { status: 400 })
-    active = recording
+    active = recording; showLabel()
     if (path === '/api/scope') value = { ...recording.scope, questions: [] }
     else { visited.set(active.run.runId, active); value = active.run }
   } else if (path === '/api/reputation') value = active.reputation
@@ -35,15 +36,14 @@ window.fetch = async (input, init) => {
     value = history()
   } else if (path.startsWith('/runs/')) {
     const item = recordings.find(item => item.run.runId === path.split('/')[2])
-    if (item) { active = item; value = item.run }
+    if (item) { active = item; showLabel(); value = item.run }
   } else value = active.cards[path]
   return value === undefined ? Response.json({}, { status: 404 }) : Response.json(value)
 }
 await import('../src/main')
 
-const banner = document.querySelector('.demo-banner > span')!
 const testnet = active.run.labels.settlement.includes('TESTNET')
-banner.textContent = testnet ? 'Recorded on XRPL Testnet · no real value' : 'Replay of a recorded run · fictional writers · simulated payments'
+showLabel()
 const controls = document.createElement('nav')
 controls.setAttribute('aria-label', 'Recorded scenarios')
 for (const [label, scenario] of [['Testnet UC3','testnet'],['Simulated UC1','UC1'],['Simulated UC2','UC2'],['Simulated UC3','UC3']]) {

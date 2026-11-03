@@ -18,7 +18,9 @@ The Fab Floor. Refunded content remains quarantined. No escrow refund is claimed
 Each transaction was independently fetched as validated tesSUCCESS with destination,
 InvoiceID and delivered amount retained in `transactions.json`. The refund invoice
 binds the first purchase hash. Capture: `demo/traces/UC3-testnet.json`, with source
-SHA and timestamp. Wallet seeds remain ignored, under scratch, mode 0600.
+SHA and timestamp. The capture SHA identifies the #359 base; capture ran with
+the uncommitted Lane P2 implementation in this worktree, subsequently committed
+in this PR. It is not a claim that the base alone contains the launcher. Wallet seeds remain ignored, under scratch, mode 0600.
 
 Replay defaults to Recorded on XRPL Testnet · no real value with Pause/Resume;
 simulated UC1–UC3 remain secondary scenarios. Ledger verification reuses the
@@ -32,4 +34,4 @@ Verification commands: `npm run check:fast`, `npm run build:demo`,
 provenance checks cover the new recording as well as all simulated recordings.
 No gate or threshold was loosened. Ledger row assertions increase from 13 to 16.
 
-Final replay JS+JSON assets: **1,874,607 bytes** (<2,000,000). Browser: 1/1 demo and 4/4 ledger checks pass; Python: 205/205 pass.
+Final replay JS+JSON assets: **1,874,689 bytes** (<2,000,000). Browser: 1/1 demo and 4/4 ledger checks pass; Python: 205/205 pass.
