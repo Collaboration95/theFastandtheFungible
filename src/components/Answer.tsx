@@ -20,7 +20,13 @@ export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): Answe
   return claims.length === parsed.data.claims.length ? parsed.data : { ...parsed.data, claims, conclusion: 'Some claims were withheld because their evidence could not be verified.', openGaps: [] }
 }
 /** Every validated answer, oldest first. */
-export const validatedAnswers = (run: RunSnapshot) => [...run.answers].sort((a, b) => a.version - b.version).map(item => getValidatedAnswer(run, item)).filter((item): item is AnswerData => !!item)
+export function validatedAnswers(run: RunSnapshot): AnswerData[] {
+  const draft = run.events.find(event => event.type === 'FREE_DRAFT')?.data?.answer
+  const parsed = AnswerSchema.safeParse(draft)
+  const answers = run.answers.length ? run.answers : parsed.success ? [parsed.data] : []
+  return [...answers].sort((a, b) => a.version - b.version)
+    .map(item => getValidatedAnswer(run, item)).filter((item): item is AnswerData => !!item)
+}
 
 /** One citation number per passage for the whole run, so v2 keeps v1's numbers (the PDF should match). */
 export function citationNumbers(answers: AnswerData[]): Map<string, number> {
@@ -44,11 +50,14 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   const lead = leadFinding(run.question, answer.claims)
   const added = answer.claims.filter(c => !baseline?.claims.some(b => b.text === c.text))
   const dropped = baseline?.claims.filter(c => !answer.claims.some(b => b.text === c.text)) ?? []
+  const hasPaidEvidence = answer.claims.some(claim => claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID'))
+  const draft = run.phase !== 'DONE' && !hasPaidEvidence
   const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, answer.claims.filter(c => c.stance === stance)])
   return <>
     <section className="ra-verdict" aria-label="Research answer">
-      <div className="ra-answer-heading"><h2 className="ra-caption">{run.phase !== 'DONE' ? 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>
+      <div className="ra-answer-heading"><h2 className="ra-caption">{draft ? 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>
       {lead.length ? <p className="ra-vtext">{lead.map(item => <span key={item.text}>{item.text}{cites(item.claim)}{' '}</span>)}</p> : <p>No concise finding could be selected from the verified evidence.</p>}
+      {hasPaidEvidence && <details className="ra-answer-update"><summary>Updated with paid evidence</summary><p>{added.length} added claims, {dropped.length} removed. Only verified passages are included.</p><button type="button" className="ra-link" onClick={onCompare}>See what changed after the purchase</button></details>}
       {answer.openGaps.length > 0 && <details className="ra-answer-context"><summary>Still unanswered ({answer.openGaps.length})</summary><ul>{answer.openGaps.map(gap => <li key={gap.text}>{gap.text}</li>)}</ul></details>}
     </section>
     {!compare && <RequestedFacts run={run} version={answer.version} />}

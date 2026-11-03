@@ -12,9 +12,9 @@ export const isTerminal = (run?: RunSnapshot) => !!run && (run.stopped || TERMIN
 export const runEvents = (run: RunSnapshot) => run.events.filter(event => event.runId === run.runId).sort((a, b) => a.id - b.id)
 
 // Time on screen after each event, in ms at 1×.
-const DWELL: Record<string, number> = { CLARIFY: 1200, PLAN: 1800, MANIFEST_DROPPED: 900, PROOF: 1600, CHALLENGE: 1500, REFUND: 1900, REPUTATION: 2100, SEARCH: 1900, FOLLOW_UP: 1900, READ_FREE: 1900, ANSWER: 3400, DECIDE: 4600, BUY: 1300, PURCHASE: 900, XRPL: 900, GRANT: 2300, READ_PAID: 500, FAILED: 1500 }
+const DWELL: Record<string, number> = { CLARIFY: 100, PLAN: 150, MANIFEST_DROPPED: 100, SEARCH: 150, READ_FREE: 150, ANSWER: 100, FREE_DRAFT: 150, ANSWER_READY: 150, FOLLOW_UP: 100, DECIDE: 350, BUY: 150, PURCHASE: 100, XRPL: 100, PROOF: 700, CHALLENGE: 500, REFUND: 1000, REPUTATION: 100, GRANT: 500, READ_PAID: 100, FAILED: 500 }
 export function dwell(event: TraceEvent): number {
-  if (event.type === 'WIRE') return Number(event.data?.status) === 402 ? 1700 : 900
+  if (event.type === 'WIRE') return 0
   return DWELL[event.type] ?? 0
 }
 
@@ -58,14 +58,15 @@ export function staged(run: RunSnapshot, cursor: number): RunSnapshot {
   const intents = run.intents.filter(item => status.has(item.intentId)).map(item => ({ ...item, status: status.get(item.intentId)! }))
   const paid = intents.filter(isPaid)
   const verified = new Set(intents.filter(item => item.status === 'VERIFIED').map(item => item.intentId))
-  const answers = [...run.answers].sort((a, b) => a.version - b.version).slice(0, count('ANSWER'))
+  const ready = all.some(event => event.type === 'ANSWER_READY') ? count('ANSWER_READY') : count('ANSWER')
+  const answers = [...run.answers].sort((a, b) => a.version - b.version).slice(0, ready)
   // What the focused follow-up search added (#210) appears once its result event has happened.
   const added = new Set(count('FOLLOW_UP') >= 2 ? [] : (run.checkpoint.followUp as { added?: string[] } | undefined)?.added ?? [])
   const early = (item: { resourceId: string; version: string }) => added.has(`${item.resourceId}@${item.version}`)
   return {
     ...run, phase, stopped: false, error: undefined, reportStatus: 'NONE', events,
     candidates: count('SEARCH') ? run.candidates.filter(item => !early(item)) : [],
-    contents: count('READ_FREE') ? run.contents.filter(item => !early(item)) : [],
+    contents: count('READ_FREE') ? run.contents.filter(item => !early(item) && (run.candidates.some(candidate => candidate.tier === 'FREE' && candidate.resourceId === item.resourceId && candidate.version === item.version) || run.grants.some(grant => verified.has(grant.intentId) && grant.resourceId === item.resourceId && grant.version === item.version))) : [],
     answers, impact: answers.length > 1 ? run.impact : undefined,
     decisions: run.decisions.slice(0, count('DECIDE')), round: Math.min(run.round, count('DECIDE')),
     intents,

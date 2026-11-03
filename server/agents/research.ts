@@ -274,6 +274,11 @@ openGaps: compare the question with what your cited claims establish, and name a
  * onToken emits a fixed progress marker, never unvalidated model text. */
 /** Traced as a chain: the generation (if any), citation validation and the impact class. */
 export type WriteAnswerInput = { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; requirements?: string[]; onToken?: (delta: string) => void }
+/** A fast extract from free, exact passages. Never invokes a model or uses a paid preview. */
+export function freeDraft(input: WriteAnswerInput): Answer {
+  const contents = usableContents(input.contents).filter(content => input.candidates.some(candidate => candidate.tier === 'FREE' && candidate.profileId === content.profileId && candidate.resourceId === content.resourceId && candidate.version === content.version))
+  return validateAnswer(fixture(input.question, contents, input.candidates, 1, undefined, input.focus, input.requirements), contents)
+}
 export function writeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer; impact?: Impact }> {
   return startActiveObservation('write-answer', async observation => {
     observation.update({ input: { question: input.question, version: input.version, evidence: input.contents.map(c => c.resourceId) } })

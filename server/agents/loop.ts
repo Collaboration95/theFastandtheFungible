@@ -10,7 +10,7 @@ import type { Answer, ContentEnvelope, Coverage, CoverageStatus, FollowUp, Publi
 import { decide, decisionFailureStatus, DecisionUnavailableError, FixtureDecisionProvider, publicSources } from './decision.js'
 import type { ProofOutcome, Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
-import { followUpSearch, hitsByPublisher, retrieve, sanitizeGaps, usableContents, writeAnswer, type Retrieved } from './research.js'
+import { freeDraft, followUpSearch, hitsByPublisher, retrieve, sanitizeGaps, usableContents, writeAnswer, type Retrieved } from './research.js'
 import { resolveCitation, validateClaims } from './citations.js'
 import { fixtureSupports, followUpQuery, INSTRUCTION, STATUS_RANK, type CoverageEvidence } from './requirements.js'
 import type { Plan } from '../../shared/contracts/index.js'
@@ -116,6 +116,15 @@ export class RunLoop {
     const conditional = Boolean(options.keepIfImproves && requirements)
     // A conditional re-answer announces itself only once it is kept, so the ANSWER events match the stored versions.
     if (!conditional) this.trace(runId, 'ANSWER', previous ? 'Re-answering with verified evidence.' : 'Writing the free answer.', { answerVersion: (previous?.version ?? 0) + 1, beforeVersion: previous?.version ?? null, ...(run.checkpoint.intentId ? { intentId: run.checkpoint.intentId } : {}) })
+    if (!previous && !run.events.some(event => event.type === 'FREE_DRAFT')) {
+      const draft = freeDraft({ question: run.question, contents: this.accessible(run), candidates: run.candidates, version: 1, focus: this.focus(run), requirements: requirements?.map(r => r.text) })
+      if (draft.claims.length && !this.stopped(runId)) {
+        const elapsedMs = Date.now() - (this.started.get(runId) ?? Date.now())
+        scoreTrace('time-to-first-answer-s', elapsedMs / 1000, 'ask → validated free draft')
+        this.store.appendEvent(runId, { type: 'FREE_DRAFT', label: 'Draft ready · free sources only', data: { answer: draft, elapsedMs, provider: draft.provider, model: draft.model } })
+      }
+    }
+    const compositionStarted = Date.now()
     let lastProgressAt = -Infinity
     const onToken = (_unvalidatedDelta: string) => {
       const now = Date.now()
@@ -136,8 +145,9 @@ export class RunLoop {
       this.trace(runId, 'ANSWER', 'Re-answering with free evidence from the focused search.')
     }
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
+    this.store.appendEvent(runId, { type: 'ANSWER_READY', label: previous ? 'Answer updated with verified evidence.' : 'Free answer checked.', data: { answerVersion: answer.version, durationMs: Date.now() - compositionStarted } })
     const started = this.started.get(runId)
-    if (!previous && started) scoreTrace('time-to-first-answer-s', (Date.now() - started) / 1000, 'ask → validated cited answer v1')
+    if (!previous && started && !this.store.getRun(runId).events.some(event => event.type === 'FREE_DRAFT')) scoreTrace('time-to-first-answer-s', (Date.now() - started) / 1000, 'ask → validated cited answer v1')
     const latest = this.store.getRun(runId)
     this.store.updateRun(runId, { labels: { ...latest.labels, research: `${providerLabels[answer.provider]} · ${answer.model}` }, checkpoint: { ...latest.checkpoint, answerVersion: answer.version, ...(latest.checkpoint.intentId ? { answeredIntentId: latest.checkpoint.intentId } : {}) } })
     if (requirements) this.saveCoverage(runId, coverage ?? await this.assessCoverage(runId, answer))
