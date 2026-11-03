@@ -46,3 +46,10 @@ including exact SHA, timestamps, wall time and job durations. Hosted RSS is not
 reported by Actions and is not inferred. The 339 s target is an optimization
 target, not permission to remove gates. docs/running.md is deferred because
 Lane A owns it; CONTRIBUTING.md documents the commands and gate equivalence.
+
+Final local coverage collection: 794/794 tests, 103 files, 73.51 s on the
+shared host. Payments: 1458/1710 (85.2632%) → 1486/1732 (85.7968%);
+SDK: 324/357 → 334/363. Other component floors are unchanged. Baseline
+configuration/contract tests were uncommitted, explicitly marked dirty in JSON.
+Final source/test SHA is in coverage-final.json; later evidence-only commits
+do not change product code or test execution.
