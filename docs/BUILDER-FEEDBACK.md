@@ -1,3 +1,71 @@
+# Ranked XRPL / x402 builder feedback
+
+Re-ranked 2026-11-04 from dated committed evidence. No new payment or mainnet experiment. Original entries and dates are retained below.
+
+## 1. Issuer permission blocks RLUSD escrow
+
+- Date / class: 2026-11-03; Observed flags + document-derived refusal.
+- Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
+- Evidence / reproduction: [record](evidence/rlusd.md); Issuer Flags 2174353408 lacked AllowTrustLineLocking on 2026-11-03; predicted tecNO_PERMISSION was never submitted.
+- Workaround: Use official RLUSD exact with cooperative refund; refuse token escrow.
+- Suggested fix: Publish network AND issuer preflight, with dated flags.
+- Severity: High.
+- Mainnet consequence: Amendment enablement alone cannot authorize token escrow; mainnet issuer permission unmeasured.
+
+## 2. Exact issued amount must mean delivered amount
+
+- Date / class: 2026-11-03; Code-derived; adversarial fixture proof.
+- Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
+- Evidence / reproduction: [record](evidence/rlusd.md); Amount/DeliverMax alone cannot prove exact delivered value; wrong issuer and partial payment fixtures are rejected.
+- Workaround: Reject partial/conversion fields; compare validated delivered_amount currency, issuer and exact decimal.
+- Suggested fix: Publish negative issued-asset conformance vectors.
+- Severity: High.
+- Mainnet consequence: Underpayment acceptance is an integrity risk on mainnet; no live attack observed.
+
+## 3. Settled invoice consumption obstructs recovery
+
+- Date / class: 2026-11-03; Code-derived; reproduced offline.
+- Pinned package/source: x402-xrpl 0.3.4; npm source commit and hosted facilitator revision unknown.
+- Evidence / reproduction: [record](evidence/starter-kit-interop.md); Pinned t54 middleware consumes the invoice; a repeated signed payment can be refused while delivery recovery is needed.
+- Workaround: Retain the same signed blob; ResearchAgent supports same-blob redelivery.
+- Suggested fix: Persist settlement-to-delivery mapping with idempotent replay.
+- Severity: Medium.
+- Mainnet consequence: New signing after ambiguity risks a second charge; none observed here.
+
+## 4. Header-only v2 challenge is not retried
+
+- Date / class: 2026-11-03; Observed offline and exploratory Testnet.
+- Pinned package/source: x402-xrpl 0.3.4; npm source commit and hosted facilitator revision unknown.
+- Evidence / reproduction: [record](evidence/starter-kit-interop.md); x402Fetch returned unpaid 402 when challenge was only PAYMENT-REQUIRED.
+- Workaround: Mirror the challenge into JSON.
+- Suggested fix: Read v2 header first and report unsupported challenge layouts.
+- Severity: Medium.
+- Mainnet consequence: Valid header-only sellers become unreachable; no mainnet incident observed.
+
+## 5. Escrow expiry does not return funds automatically
+
+- Date / class: 2026-11-03; Observed Testnet.
+- Pinned package/source: Committed escrow-273.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
+- Evidence / reproduction: [record](evidence/escrow-273.md); Failed-proof escrow stayed locked through 120-second deadline; explicit EscrowCancel returned 29988 of 30000 drops after fee.
+- Workaround: Durable CANCEL_DUE with ledger-time ticks and terminal fee headroom.
+- Suggested fix: Document expiration versus validated cancellation and reserve liquidity.
+- Severity: Medium.
+- Mainnet consequence: Recovery availability and liquidity matter before real-money use; mainnet untested.
+
+## 6. Official RLUSD funding requires authenticated access
+
+- Date / class: 2026-11-03; Observed Testnet HTTP.
+- Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
+- Evidence / reproduction: [record](evidence/rlusd.md); Official mint endpoint returned 401 despite activated account and trust line; CLI faucet only discovers token funding.
+- Workaround: Historical bounded native Testnet DEX acquisition; separate provisioning from purchases.
+- Suggested fix: Document authenticated native XRPL faucet access and typed asset results.
+- Severity: Medium.
+- Mainnet consequence: No mainnet API or FX inference; onboarding/redemption remain separate.
+
+## Appendix: original dated incidents and tooling chronology
+
+Original wording below is historical, including any relative freshness wording. #342 diagnostics distinguish the observed 606-second host sleep from inferred runtime risk; see evidence/soak-nov4.md. It is not a new ledger incident.
+
 # Builder feedback: six weeks of XRPL integration
 
 A living record for the SFF judges. **35 catalogued items plus dated tooling incidents: 16 implementation findings and 4 live escrow spike findings below,
