@@ -157,6 +157,7 @@ If #312 (UX part 2) merges before 11 Nov, re-record scenes 2 and 3 on the new
   ```sh
   npm run audit:verify -- --testnet                         # hash chain + read-only Testnet lookups
   npm run gate:audit -- --db data/hire-demo-live/app.db     # the five gates on the hire run
+  npm run verify:answer -- docs/evidence/verify-278/report.pdf --testnet # signed citations + payment/refund proofs
   npm run verify                                            # lint, types, the test suites, build (speed up 8×)
   ```
 - **On screen:** `RESULT PASS`, `0 violations`, the test summary, then the
