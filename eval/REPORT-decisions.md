@@ -527,3 +527,103 @@ integrated validation is recorded in the PR. No test, leak check, gate audit,
 raw decision threshold or spend cap was loosened. The source command detector's
 word-boundary correction and bounded extra requested claims are explicit
 behavior changes, not claims that production synthesis has been measured.
+
+## 9. Numbers v7: wafer-domain veto, identifiers, pitch headline (3 Nov 2026)
+
+**Pitch: 80.05% of gross spend bought a requested fact used in the final cited
+answer (95% source-cluster CI 63.16–92.00%).** Numerator S$16.25: verified,
+non-refunded purchases adding a bank-supported requested fact that survives in
+the final answer. Denominator S$20.30: all gross purchase cost. This is a cost
+share, not the percentage of facts or questions answered. LIVE decision and
+coverage, fixture planner/writer, keyword search, synthetic corpus and
+**SIMULATED benchmark payments**. Separate real-Testnet evidence is below.
+
+### Diagnosis and minimal repairs
+
+The complete historical #320 inventory is `docs/evidence/waste-320.json`, with
+its evidence limits in `waste-320.md`: **20 adjacent/incomplete purchases,
+S$9.65; four extraction failures, S$1.15; zero broken-proof or provenance-only
+failures**. All 24 purchases passed proof, with zero refunds. Source passages
+plus recorded empty gains establish extraction failures; the compact historical
+artifact does not retain full answer text, so these are not reconstructed traces.
+
+Two general repairs, tested using dev Q09/Q13/Q35 and arbitrary synthetic
+identifiers (N8/N9), with no held-out identifiers/needles in implementation:
+
+- Signed wafer economics must offer semiconductor scope. Renewable-energy price
+  changes cannot pass just because the model scores them highly. Coarse menus
+  can omit price while establishing Kestrel/TSMC/wafer context; those remain
+  eligible. Missing, forged and unsigned menus remain unknown. Existing subject,
+  year, budget, cap, trust and threshold checks remain in place.
+- Passage ranking retains mixed letter/digit identifiers of any length, instead
+  of dropping short keys. A digit embedded in an identifier alone is not a
+  numerical finding. No citation, coverage or access rule changes; only supplied
+  accessible passages are ranked. One-charge and spending authority unchanged.
+
+### Final historical comparison
+
+| Metric | #320 after (95% CI) | V7 final (95% CI) |
+|---|---:|---:|
+| **Pitch: gross spend buying a final-used fact** | **59.32% [31.60, 88.82]** | **80.05% [63.16, 92.00]** |
+| Wasted gross spend | 40.68% [11.18, 68.40] | 19.95% [8.00, 36.84] |
+| Wasted net spend | 40.68% [11.18, 68.40] | 19.95% [8.00, 36.84] |
+| First-purchase F1 (flow) | 0.526 [0.349, 0.667] | 0.545 [0.361, 0.689] |
+| Selection F1 (sweep) | 0.660 [0.484, 0.800] | 0.688 [0.507, 0.812] |
+| Supported-fact uplift | 35.87 pts [22.11, 49.50] | 38.04 pts [24.00, 51.14] |
+
+Gross/net waste change **−20.73 pts [−47.51, 0.00]**; headline change
+**+20.73 pts [0.00, 47.51]**. Flow change +0.0191 [0.0000, 0.0589]; sweep
++0.0275 [0.0000, 0.0769]; uplift +2.17 pts [0.00, 6.82]. The point estimate is
+below 25%; **the CI crosses 25% and the paired change CI includes zero**.
+There is no statistically established below-target population rate or strict
+improvement. Twenty source clusters, 2,000 replicates, seed 700, same CI code.
+
+S$26.55 → S$20.30 gross purchases; S$10.80 → S$4.05 wasted; S$15.75 → S$16.25
+final-used cost; no refunds in either benchmark. Wasted purchase count 24 → 13.
+Free-supported facts 13 → 13; final-supported facts 46 → 48 of 92. The model
+still misses many purchases/facts; neither F1 nor fact recall is the headline.
+
+This is **historical #320 versus one fresh final run**, not a concurrent pair.
+The user explicitly requested classifying the old held-out errors; that exposure
+makes this a **reused question holdout**, not independent unseen-test evidence.
+No threshold fitting, label/menu/source changes or held-out iteration occurred.
+The candidate was frozen before live dev and the single final held-out run;
+no quality code changed afterwards. Dev measured 19.31% gross waste, flow F1
+0.513, uplift 22.64 pts; only four dev topic clusters, not a narrow confidence
+claim. Existing historical reports and same-input comparison guards are retained.
+
+Final run `2026-11-03T03:47:11.448Z`, base HEAD `1e279c8` with dirty candidate
+source fully pinned by frozen input hash
+`7b5f6b4f7a244de769b5ef7c7d61c22c2388022c8e42cb0097ddd110e769b0e9`.
+Data/config fingerprints match #320; policy and extraction fingerprints differ.
+`node --import tsx scripts/report-numbers-v7.ts <final-report.json>` verifies
+those constraints and reproduces `numbers-v7-results.json` without calls.
+Intervals condition on synthetic sources and observed draws, not provider
+variability, human labels, production traffic or unseen-corpus generalization.
+
+### Live product and verification evidence
+
+`docs/evidence/numbers-v7-testnet.md` and `.json` retain independently validated
+Testnet hashes. UC2: NotFT purchased, final live coverage 3/3. UC3: AlphaLeak
+proof failed, 0.03 XRP refund confirmed, then The Fab Floor verified, coverage
+2/3. Live DeepSeek planner/writer and Luna decisions/coverage, keyword search,
+synthetic articles; no fixture answers. Scope made a successful provider call,
+but its returned label was not retained in this first run. Gross buyer payments
+0.16 XRP, net 0.13 XRP, 48 drops total fees. No real money or cloud resources.
+These two sanity runs support product settlement, not an on-chain estimate of
+the benchmark headline or complete UC3 acceptance.
+
+Benchmark audit **0 violations / 10 API runs / 646 wire observations**; live
+Testnet audit **0 / 2 / 64 search observations**, valid 25-entry money chain.
+Independent final gate audit passes. All live trials (dev, final heldout,
+Testnet decision and research) total **US$0.3389854 / US$4**, 699 requests,
+zero estimated-usage calls; dated harness rates, not invoices, research cache
+discounts ignored. `numbers-v7-spend.json` includes the complete ledger.
+No failed paid trials or quality reruns omitted; no cross-run cache replay.
+
+`OFFSET=700 npm run check:fast`: 691 tests pass; four e2e browser tests pass.
+Bank/corpus and leak checks unchanged, all pass. Frozen dev fixture repeat with
+`--check --compare` passes, every quality delta zero, zero provider calls.
+README generator check, source-boundary, secret scan and diff whitespace checks
+pass. No tests, leak thresholds, gate audits, score thresholds or spending caps
+loosened. Ship-pr review step 4 skipped as requested; final CI gates the merge.
