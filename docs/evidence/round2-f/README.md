@@ -1,5 +1,9 @@
 # Lane F handoff to G
 
+> What this proves: Lane F handoff to G.
+> Scope: Independent local origins with simulated settlement.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Identity schema **1**; receipt bundles **2** for federation and **1** for unchanged singleton runs. Canonical helper: `shared/source-identity.ts` (`sourceKey`, `sameSource`, `citationIdentity`, `sourceBinding`). New keys are JSON tuples of `[approved origin, seller public key, profileId, resourceId, version]`; citations append spanId structurally. Legacy keys keep their original v1 semantics. Do not build a competing identity helper.
 
 Migration rules are in `identity-migration.json`. No stored historical data is rewritten. A missing historical origin is unresolved. A historical obligation cannot be routed through a multi-origin config by guessing. Saved new endpoint context survives removal/reordering, for recovery only; it does not grant new-purchase permission. Seller-wallet reputation remains global across hosts.

@@ -1,5 +1,9 @@
 # Lane J UX polish: before/after, 4 November 2026
 
+> What this proves: Lane J UX polish: before/after, 4 November 2026.
+> Scope: Local UX and accessibility evidence.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Presentation only. No IPC, Keychain, validation, engine, contract or policy change.
 Screenshots use the Round 2 G receipt fixtures (synthetic, simulated) in a fixture
 wrapper, and the real `desktop/*.html` pages with a stubbed `window.desktop`

@@ -1,5 +1,9 @@
 # Required fast verification — 4 November 2026
 
+> What this proves: Required fast verification — 4 November 2026.
+> Scope: Local tests and CI contract evidence.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Offline synthetic providers, throwaway signing keys, simulated settlement and
 isolated ledgers only. No live provider, Testnet, mainnet or real-money calls.
 

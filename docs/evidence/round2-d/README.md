@@ -1,5 +1,9 @@
 # Lane D: local artifact and browser acceptance
 
+> What this proves: Lane D: local artifact and browser acceptance.
+> Scope: Local package and release admission evidence.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 4 November 2026. Fixture providers, fictional corpus, simulated settlement only.
 No registry publication, release/tag, signing, live provider or Testnet action.
 

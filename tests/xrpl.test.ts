@@ -109,7 +109,7 @@ describe('XRPL Testnet settlement rail', () => {
     expect(run.spentMinor).toBe(PAID.priceMinor)
     expect(run.receipts[0]).toMatchObject({ label: 'XRPL TESTNET · no real value', xrpl: { txHash: hash, payTo: GRID_WALLET, amountDrops: DROPS, payer: s.wallet.classicAddress, explorerUrl: `https://testnet.xrpl.org/transactions/${hash}` } })
     expect(run.intents[0].txHash).toBe(hash)
-    expect(run.events.filter(e => e.type === 'XRPL').map(e => e.label).join(' ')).toMatch(/Signed 0\.06 XRP.*Validated in ledger.*Publisher verified/)
+    expect(run.events.filter(e => e.type === 'XRPL').map(e => e.label).join(' ')).toMatch(/Signed payment · S\$0\.60 ≈ 0\.06 XRP \(Testnet rate\).*Validated in ledger.*Publisher verified/)
     expect(JSON.stringify(run)).not.toContain(s.wallet.seed!)
   })
 

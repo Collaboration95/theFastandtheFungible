@@ -1,5 +1,9 @@
 # What your money bought
 
+> What this proves: What your money bought.
+> Scope: Synthetic paid claim-to-passage contributions.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Local synthetic extractive evidence, 4 November 2026. Based on merged Lane F
 c0450fa6e4ebd83b6e9105ede7d824e9ae2bb1f4. No provider or ledger requests,
 Testnet transactions, real money, new royalties or human semantic acceptance.

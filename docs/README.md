@@ -63,6 +63,10 @@ Start with the [judging criteria](JUDGING-CRITERIA.md) and the [SFF push tracker
 | [round2-i](evidence/round2-i/README.md) | Agent kill switch across SDKs and MCP |
 | [round2-j](evidence/round2-j/README.md) | UX polish before and after |
 | [round2-k](evidence/round2-k/README.md) | Python receipt verifier; 177 conformance cases, 100% agreement |
+| [round2-m](evidence/round2-m/README.md) | Indexed retained-history accounting with exact oracle equivalence |
+| [round2-m2](evidence/round2-m2/README.md) | Retained-history follow-up profiling and measurements |
+| [round2-n](evidence/round2-n/README.md) | Accepted writer Credentials on Testnet; advisory identity only |
+| [round2-p1](evidence/round2-p1/README.md) | 13/13 live transaction checks and seven runnable feedback repros |
 | [soak-nov4](evidence/soak-nov4.md) | Real-SIGKILL soak, host-sleep diagnosis, 30-minute verification |
 
 **Earlier evidence**

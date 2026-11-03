@@ -168,7 +168,7 @@ export class PurchaseManager {
     if (!submission) {
       const paid = await this.payer.pay(terms, signed => this.store.recordSubmission(intent.intentId, signed), signed => this.send(intent, signed))
       submission = paid.submission
-      this.ledgerEvent(intent.runId, `Signed ${terms.asset === 'XRP' ? xrp(terms.amountDrops) + ' XRP' : terms.amountDrops + ' ' + terms.asset.label} → ${terms.payTo} · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator${terms.rail === 'simulated' ? ' · SIMULATED' : ''}`, { intentId: intent.intentId, txHash: submission.txHash, amountDrops: terms.amountDrops, payTo: terms.payTo, ...(terms.rail === 'xrpl-testnet' ? { explorerUrl: explorer(submission.txHash) } : {}) })
+      this.ledgerEvent(intent.runId, `${terms.rail === 'simulated' ? 'SIMULATED · no ledger transaction · ' : 'Signed payment · ' }S$${(intent.quote!.amountMinor / 100).toFixed(2)} ≈ ${terms.asset === 'XRP' ? xrp(terms.amountDrops) + ' XRP' : terms.amountDrops + ' ' + terms.asset.label} (Testnet rate) → ${terms.payTo} · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator`, { intentId: intent.intentId, txHash: submission.txHash, amountDrops: terms.amountDrops, payTo: terms.payTo, ...(terms.rail === 'xrpl-testnet' ? { explorerUrl: explorer(submission.txHash) } : {}) })
       result = await paid.sent
     } else result = await this.send(intent, submission)
     await this.settleFrom(intent, submission, result)

@@ -1,0 +1,37 @@
+[
+  {
+    "script": "01-issuer-permission.mjs",
+    "elapsedMs": 47,
+    "output": "Recorded issuer flags lack AllowTrustLineLocking; tecNO_PERMISSION is document-derived, never submitted."
+  },
+  {
+    "script": "02-delivered-amount.mjs",
+    "elapsedMs": 48,
+    "output": "Offline adversarial fixture: Amount alone accepts underdelivery; delivered_amount rejects it."
+  },
+  {
+    "script": "03-invoice-consumption.mjs",
+    "elapsedMs": 50,
+    "output": "Pinned 0.3.4 default store loses consumed requirements: no settlement/delivery replay record. Offline store reproduction, no signing."
+  },
+  {
+    "script": "04-header-only.mjs",
+    "elapsedMs": 146,
+    "output": "Pinned 0.3.4 returns unpaid 402 for header-only v2 challenge; mocked transport, no wallet."
+  },
+  {
+    "script": "05-expiry-cancel.mjs",
+    "elapsedMs": 52,
+    "output": "Historical evidence replay: explicit EscrowCancel after 120 s returns principal minus fee. No fresh expiry or payment experiment."
+  },
+  {
+    "script": "06-funding-auth.mjs",
+    "elapsedMs": 65,
+    "output": "Historical evidence replay: official mint denied unauthenticated request (401). Current access policy unmeasured; no funding request sent."
+  },
+  {
+    "script": "07-endpoint-history.mjs",
+    "elapsedMs": 10250,
+    "output": "read-only Testnet; 13/13 validated"
+  }
+]

@@ -25,9 +25,9 @@ function htmlArtifact(out) {
   const rows = JSON.parse(out).rows.map(r => {
     const a = r.deliveredAmount ?? r.amountDrops
     const amount = typeof a === 'object' ? `${a.value} RLUSD · issuer ${a.issuer}` : a ? `${a} drops` : 'Principal amount not recorded in this evidence'
-    return `<tr><td>${escape(r.group)}: ${escape(r.operation ?? r.kind)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.group === 'Testnet, credential' ? 'main' : 'ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
+    return `<tr><td>${escape(r.group)}: ${escape(r.operation ?? r.kind)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/f3902008b4be14d60f154fa6db3ba5c1dbe65943/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
   }).join('')
-  return read('site/ledger/index.html').replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
+  return read('site/ledger/index.html').replace(/<caption>.*?<\/caption>/, `<caption>${JSON.parse(out).rows.length} curated transactions · snapshot ${JSON.parse(out).snapshotDate}</caption>`).replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const out = artifact()

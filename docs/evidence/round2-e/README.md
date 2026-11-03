@@ -1,5 +1,9 @@
 # Lane E evidence · 4 November 2026
 
+> What this proves: Lane E evidence · 4 November 2026.
+> Scope: Historical Testnet records, no real value; current checks are in round2-p1.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Nine curated historical Testnet rows: three official RLUSD purchase/refund,
 four XRP escrow create/finish/cancel, two native XRP interop purchases.
 No provisioning DEX/TrustSet or royalty row is attributed as a purchase.

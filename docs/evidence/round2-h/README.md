@@ -1,5 +1,9 @@
 # Lane H1: same-engine baseline on a shared host
 
+> What this proves: Lane H1: same-engine baseline on a shared host.
+> Scope: Shared-host baseline, not final acceptance.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 This is a BASELINE with fixture inference and simulated payments on a shared development Mac. It is not the final finals workload, release-artifact proof, packaged DMG acceptance or v1.0.0 candidate. Burst admission at limit 4 remains pending C1; `--burst` fails explicitly until that interface exists.
 
 Run from a clean checkout with dependencies installed:

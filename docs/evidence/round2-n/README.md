@@ -1,5 +1,9 @@
 # Lane N — verified writer identity via XRPL Credentials
 
+> What this proves: Lane N — verified writer identity via XRPL Credentials.
+> Scope: Historical real Testnet Credentials with synthetic writer names.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 LIVE TESTNET, no real value. Executed 4 Nov 2026 Singapore (3 Nov UTC).
 Existing `.env` payer issuer and three existing publisher wallets were reused;
 no faucet funding, wallet creation, live LLMs or real money. Credential fees total
