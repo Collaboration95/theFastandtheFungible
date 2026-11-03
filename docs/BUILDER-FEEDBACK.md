@@ -637,3 +637,13 @@ from signed reservations. Evidence: `tests/purchase.test.ts`.
 Exact source matching also prevents collided local IDs from mislabelling report
 citations or measuring one writer’s calibration against another’s delivery;
 offline regressions cover both (`tests/report.test.ts`, `tests/reputation.test.ts`).
+
+### 2026-11-04 — Receipt amount animation during axe inspection
+
+Observed local tooling friction, Lane G on Lane F c0450fa6. An axe inspection
+during the receipt amount fade-in measured transient insufficient contrast.
+Workaround/fix: remove receipt entrance/amount animation; static money and refund
+states remain readable. Evidence: `docs/evidence/round2-g/accessibility.json` and
+`scripts/contribution-screenshots.ts`. Suggested fix: inspect static final state
+and avoid ornamental money transitions. Severity: low tooling/UX; mainnet impact:
+none observed, no ledger or provider calls in this inspection.

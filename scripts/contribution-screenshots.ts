@@ -15,7 +15,7 @@ try {
   await page.goto(`http://127.0.0.1:${(vite.httpServer!.address() as {port:number}).port}/scratch/lane-g-proof.html#${name}`)
   await page.reload();await page.getByRole('dialog',{name:'Receipt',exact:true}).waitFor()
   const detail=page.locator('section[aria-label="What your money bought"] details').first()
-  if(await detail.count()) await detail.locator(':scope > summary').click()
+  if(await detail.count()) { await detail.locator(':scope > summary').focus(); await page.keyboard.press('Enter'); if(!await detail.getAttribute('open').then(v => v !== null)) throw new Error('Keyboard disclosure failed') }
   const violations=(await new AxeBuilder({page}).analyze()).violations.filter(v=>['serious','critical'].includes(v.impact??''))
   if(violations.length) throw new Error(JSON.stringify(violations))
   await page.screenshot({path:`docs/evidence/round2-g/${name}.png`,fullPage:true})

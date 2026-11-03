@@ -61,3 +61,13 @@ text: the existing audit does not commit answer bodies. Structural recomputation
 checks consistency against the exported answers; it cannot establish that an
 operator did not rewrite both answers and contribution metadata, or certify truth.
 No hard gate, threshold, benchmark, price or royalty policy was loosened.
+
+Local validation: 937 TypeScript tests, 80 targeted tests, 18 Python tests,
+four requested Playwright tests, all three receipt axe checks and 20 chaos
+iterations passed (zero invariant violations, double charges or stuck reservations).
+Existing lint warnings were unchanged. The final commit hook reruns check:fast;
+hosted CI status and exact PR head are reported in the PR handoff.
+
+Node 22 coverage component ratchets and the clean SDK ESM/declaration package
+consumer pass with unchanged floors. Receipt state tests include unconfirmed and
+confirmed royalty rows, unavailable exports, recorded refunds and removed claims.

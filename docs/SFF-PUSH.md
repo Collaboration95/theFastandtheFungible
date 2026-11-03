@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 4 Nov: Lane G explains exact paid claim/passage use in receipt v3, preserves v1/v2 offline verification and rejects ten tamper classes; 30 fixture links, semantic assessment explicitly unavailable, unchanged scorecard arithmetic and accessible receipt screenshots. [Evidence](evidence/round2-g/README.md).
 - 4 Nov: Lane C1 adds guarded one-key compatible research/UNCALIBRATED advisory decisions, local bearer connection testing, cooperative Stop and default-four active work (100 asks: 4 admitted/96 overloaded); HTTP/TS/Python/MCP synthetic citation matrix passes. [Engine evidence](evidence/round2-c1/README.md).
 - 4 Nov: Lane C2 keeps Mac Settings/recovery available before credentials and engine boot, preserves durable wallet pause, adds presence-only BYOK controls and explicit unsigned builds; 13 native fixture recovery cases and arm64 artifact hash in [C2 evidence](evidence/round2-c2/README.md).
 - 4 Nov: Lane A projects retained history (3,000 × 60: 34.4 s → 313 ms hydration, 5.3–10.8 ms selection/reconcile), bounds streams, adds safe client errors and durable late-refund recovery; engine-wide cap and cooperative Stop remain deferred. [Local synthetic evidence](evidence/round2-a/README.md).

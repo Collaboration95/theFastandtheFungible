@@ -118,7 +118,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
 }
 
 export function verificationText(result: VerificationResult): string {
-  const groups = ['manifest ', 'passages ', 'citation ', 'grant ', 'receipt ', 'refund ', 'audit chain', 'testnet ']
+  const groups = ['contributions', 'manifest ', 'passages ', 'citation ', 'grant ', 'receipt ', 'refund ', 'audit chain', 'testnet ']
   const lines = [`VERIFY ${result.runId ?? 'report'}`]
   for (const prefix of groups) {
     const checks = result.checks.filter(c => c.check.startsWith(prefix))
