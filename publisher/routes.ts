@@ -63,7 +63,7 @@ export function toSearchHit(article: Article, relevance: number, searchMode: Sea
 export function createPublisherApp(config: PublisherConfig = {}) {
   const app = express()
   const env = config.env ?? process.env
-  const assetFor = (slug: string): Asset => env[`XRPL_PUBLISHER_${slug.toUpperCase().replace(/-/g, '_')}_CURRENCY`] === 'RLUSD' ? AssetSchema.parse({ currency: RLUSD_CURRENCY, issuer: env.XRPL_RLUSD_ISSUER || RLUSD_TESTNET_ISSUER, label: !env.XRPL_RLUSD_ISSUER || env.XRPL_RLUSD_ISSUER === RLUSD_TESTNET_ISSUER ? 'RLUSD Testnet' : 'test USD (substitute for RLUSD)' }) : 'XRP'
+  const assetFor = (slug: string): Asset => env[`XRPL_PUBLISHER_${slug.toUpperCase().replace(/-/g, '_')}_CURRENCY`] === 'RLUSD' ? AssetSchema.parse({ currency: RLUSD_CURRENCY, issuer: env.XRPL_RLUSD_ISSUER || RLUSD_TESTNET_ISSUER, label: !env.XRPL_RLUSD_ISSUER || env.XRPL_RLUSD_ISSUER === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : 'test USD (substitute for RLUSD)' }) : 'XRP'
   const escrowEnabled = (slug: string) => rail === 'xrpl-testnet' && assetFor(slug) === 'XRP' && (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug)
   const secret = config.secret ?? process.env.PUBLISHER_SECRET
   const faults = config.faults ?? process.env.PUBLISHER_FAULTS === '1'

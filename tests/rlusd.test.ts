@@ -7,9 +7,10 @@ import { Store } from '../server/store.js'
 import { PurchaseManager } from '../server/purchases.js'
 import { PublisherClient } from '../server/publisher-client.js'
 import { RLUSD_CURRENCY, RLUSD_TESTNET_ISSUER, ledgerAmount } from '../shared/contracts/asset.js'
+import { challenge } from '../server/challenges.js'
 import { verifyPayment } from '../shared/xrpl.js'
 import { alphaLeakCorpus } from './fixtures/corpus-mini/index.js'
-import { candidateFrom, honestArticle } from './fixtures/pay-path.js'
+import { candidateFrom, honestArticle, alphaLeakArticle } from './fixtures/pay-path.js'
 import { hireLedger } from './fixtures/hire-ledger.js'
 import { payAndFetch } from '../sdk/x402.js'
 import { decodeHeader } from '../shared/x402.js'
@@ -19,12 +20,12 @@ import { PublisherJournal } from '../publisher/journal.js'
 import { verifyAnswer } from '../sdk/verify.js'
 import { receiptBundle } from '../server/receipt-bundle.js'
 import { verifyOnTestnet } from '../server/audit.js'
-const asset = { currency: RLUSD_CURRENCY, issuer: RLUSD_TESTNET_ISSUER, label: 'RLUSD Testnet' as const } as const
+const asset = { currency: RLUSD_CURRENCY, issuer: RLUSD_TESTNET_ISSUER, label: 'RLUSD (Testnet)' as const } as const
 const clean: (() => unknown)[] = []
 afterEach(async () => { for (const fn of clean.splice(0).reverse()) await fn(); vi.unstubAllEnvs() })
 async function setup() {
   vi.stubEnv('SEARCH_EMBEDDINGS', 'off')
-  const chain = hireLedger(), payer = Wallet.generate(), writer = Wallet.generate()
+  const chain = hireLedger(), payer = Wallet.generate(), writer = Wallet.generate(), alpha = Wallet.generate()
   const state = { missing: false, balance: '100000000', owners: 1, tokenBalance: '10', frozen: false }
   const request = chain.ledger.request.bind(chain.ledger)
   chain.ledger.request = async r => {
@@ -36,12 +37,12 @@ async function setup() {
   const lineRequest = chain.ledger.request.bind(chain.ledger)
   chain.ledger.request = async r => {
     const result = await lineRequest(r)
-    if (r.command === 'account_lines' && r.account === writer.classicAddress && result.result.lines.length) result.result.lines[0].balance = '0'
+    if (r.command === 'account_lines' && [writer.classicAddress, alpha.classicAddress].includes(String(r.account)) && result.result.lines.length) result.result.lines[0].balance = '0'
     return result
   }
   const app = createPublisherApp({ writers: alphaLeakCorpus, journal: ':memory:', rail: 'xrpl-testnet', ledger: chain.ledger, env: {
-    XRPL_PUBLISHER_LOAD_FACTOR_SEED: writer.seed, XRPL_PUBLISHER_ALPHALEAK_SEED: Wallet.generate().seed,
-    XRPL_PUBLISHER_LOAD_FACTOR_CURRENCY: 'RLUSD',
+    XRPL_PUBLISHER_LOAD_FACTOR_SEED: writer.seed, XRPL_PUBLISHER_ALPHALEAK_SEED: alpha.seed,
+    XRPL_PUBLISHER_LOAD_FACTOR_CURRENCY: 'RLUSD', XRPL_PUBLISHER_ALPHALEAK_CURRENCY: 'RLUSD',
   } })
   await app.locals.ready
   clean.push(() => app.locals.journal.close())
@@ -62,7 +63,7 @@ it('policy buys issued currency, verifies proof before access, replays once, exp
   expect(s.store.getRun(run.runId).receipts[0].xrpl).toMatchObject({ asset, amountDrops: '0.60', deliveredAmount: ledgerAmount('0.6', asset) })
   expect(s.store.auditEntries().find(e => e.kind === 'settle')?.data).toMatchObject({ asset, deliveredAmount: ledgerAmount('0.6', asset) })
   const rows = s.store.receiptRows(); expect(rows[0].asset).toEqual(asset)
-  expect((await verifyOnTestnet(rows, s.chain.ledger))[0]).toMatchObject({ status: 'ok', detail: expect.stringContaining('RLUSD Testnet') })
+  expect((await verifyOnTestnet(rows, s.chain.ledger))[0]).toMatchObject({ status: 'ok', detail: expect.stringContaining('RLUSD (Testnet)') })
   s.store.updateRun(run.runId, { candidates: [candidate] })
   const content = s.store.getRun(run.runId).contents[0]
   s.store.addAnswer(run.runId, { conclusion: 'Verified issued payment.', claims: [{ id: 'issued', text: content.spans[0].text, stance: 'SUPPORTS', citations: [{ resourceId: content.resourceId, version: content.version, spanId: content.spans[0].id }] }], openGaps: [], version: 1, provider: 'fixture', model: 'extractive-fixture' })
@@ -117,4 +118,20 @@ it('screens the issuer as well as the writer before signing', async () => {
   const intent = await s.manager.purchase({ runId: run.runId, intentId: 'issuer-denied', candidate })
   expect(intent.status).toBe('FAILED_NOT_SETTLED'); expect(s.chain.submits).toBe(0)
   expect(s.store.auditEntries().find(e => e.kind === 'refusal')?.data).toMatchObject({ listedAddress: asset.issuer, listReason: 'issuer test entry' })
+})
+
+it('refunds a failed claim in issuer-bound RLUSD and replays purchase and challenge without a second charge', async () => {
+  const s = await setup(), candidate = await candidateFrom(s.url, alphaLeakArticle)
+  const run = s.store.createRun('SYNTHETIC failed claim', 100)
+  const request = { runId: run.runId, intentId: 'rlusd-refund', candidate }
+  expect((await s.manager.purchase(request)).status).toBe('CLAIM_FAILED')
+  const result = await challenge(s.manager, request.intentId, { pollMs: 1, timeoutMs: 1000 })
+  expect(result.status).toBe('REFUNDED')
+  const refund = s.chain.txs.get(result.refund!.txHash)!
+  expect(refund.Amount).toEqual(ledgerAmount('0.3', asset))
+  expect(await verifyPayment(s.chain.ledger, result.refund!.txHash, { rail: 'xrpl-testnet', network: 'xrpl:1', asset, payTo: s.payer.classicAddress, amountDrops: '0.30', invoiceId: result.txHash! })).toMatchObject({ state: 'ok' })
+  const count = s.chain.submits
+  expect((await s.manager.purchase(request)).txHash).toBe(result.txHash)
+  expect((await challenge(s.manager, request.intentId)).refund).toEqual(result.refund)
+  expect(s.chain.submits).toBe(count)
 })

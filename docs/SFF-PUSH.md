@@ -11,6 +11,8 @@ add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
 - 3 Nov: One-click MCPB extension, release asset, registry metadata and five-client install reference; fixture archive smoke validates caps. Publication remains #265.
+- 3 Nov: Official RLUSD (Testnet) pays writers end to end: supplied-payer UC2 0.90, UC3 0.30 fully refunded, both receipt verifiers pass; faucet 401 bypassed with bounded Testnet DEX provisioning. [Evidence](evidence/rlusd.md).
+
 - 3 Nov: Mac wallet Streamable HTTP MCP, per-agent Keychain connections and allowance controls, receipt verifier and inbound hire tools; one policy-selected Testnet purchase (90,000 drops + 12 fee), [evidence](evidence/app-mcp-http.md).
 3 Nov: SDK v1 adds typed streaming asks, offline verification, explicit journaled Testnet pay/hire, ESM declarations and three CI fixture examples. npm publication remains #265.
 

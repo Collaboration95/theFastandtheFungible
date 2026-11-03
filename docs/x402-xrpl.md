@@ -496,3 +496,18 @@ validated tesSUCCESS, InvoiceID and one-charge journal checks remain in force.
 The t54 merchant consumes invoices, so a second request may refuse delivery;
 our SDK retains the original signed blob and does not authorize a replacement.
 See [executable proof and live receipts](evidence/starter-kit-interop.md).
+
+## Official RLUSD live proof · 3 Nov 2026
+
+[UC2 purchase and UC3 refund](evidence/rlusd.md) now use Ripple's official
+Testnet issuer, provisioned through a bounded native Testnet DEX exchange after
+the CLI directed us to the official faucet and that faucet returned 401.
+New official-issuer quotes display **RLUSD (Testnet)**; the stand-in remains
+**test USD (substitute for RLUSD)**. Legacy official `RLUSD Testnet` labels
+remain readable for historical receipt verification. UI receipts and ledger
+rows show issued token units; XRP received totals exclude issued receipts.
+
+No payment authority, invoice idempotency, partial-payment rejection or
+delivered_amount validation changed. SGD budget units and fixed demo
+conversion remain. Official issuer AllowTrustLineLocking is unset, so
+RLUSD escrow remains refused; UC3 proves a cooperative refund only.

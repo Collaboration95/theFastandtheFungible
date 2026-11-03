@@ -21,7 +21,7 @@ export function walletRouter(context: ApiContext) {
     }
     const wallet = async (role: 'buyer' | 'publisher', name: string, address: string) => {
       const mine = receipts.filter(r => (role === 'buyer' ? r.xrpl!.payer : r.xrpl!.payTo) === address)
-      return { role, name, address, balanceDrops: await balance(address), receivedDrops: String(role === 'buyer' ? 0 : Math.max(0, mine.reduce((sum, r) => sum + Number(r.xrpl!.amountDrops) - refundedDrops(r.intentId), 0))), payments: mine.length }
+      return { role, name, address, balanceDrops: await balance(address), receivedDrops: String(role === 'buyer' ? 0 : Math.max(0, mine.filter(r => !r.xrpl!.asset || r.xrpl!.asset === 'XRP').reduce((sum, r) => sum + Number(r.xrpl!.amountDrops) - refundedDrops(r.intentId), 0))), payments: mine.length }
     }
     return LedgerViewSchema.parse({ rail: 'xrpl-testnet', network: 'xrpl:1', accountExplorer: 'https://testnet.xrpl.org/accounts', updatedAt: new Date().toISOString(),
       wallets: await Promise.all([wallet('buyer', 'ResearchAgent (buyer)', payer.address), ...publishers.map(([address, name]) => wallet('publisher', name, address))]) })
