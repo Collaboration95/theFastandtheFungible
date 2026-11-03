@@ -31,10 +31,10 @@ async function run(live) {
   await writeFile(join(data, 'desktop.json'), JSON.stringify({ live, paused: false, maxMinor: 100, dailyMinor: 100, walletDailyMinor: 100, backend: 'local' }))
   console.log(live ? 'Launching packaged Testnet acceptance' : 'Launching packaged fixture/crash acceptance')
   const start = performance.now()
-  const app = await electron.launch({ executablePath, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_DATA: data, RA_DESKTOP_KEYCHAIN_SERVICE: service, RA_DESKTOP_ACCEPT_TESTNET: live ? '1' : '0', RA_DESKTOP_CRASH_TEST: live ? '0' : '1' }, timeout: 60000 })
+  const app = await electron.launch({ executablePath, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_DATA: data, RA_DESKTOP_KEYCHAIN_SERVICE: service, RA_DESKTOP_ACCEPT_TESTNET: live ? '1' : '0', RA_DESKTOP_CRASH_TEST: live ? '0' : '1' }, timeout: 180000 })
   let store, client
   try {
-    const page = await app.firstWindow()
+    const page = await app.firstWindow({ timeout: 180000 })
     await expect(page.getByRole('textbox').first()).toBeVisible({ timeout: 60000 })
     console.log('Packaged UI interactive')
     const coldStartMs = Math.round(performance.now() - start)
@@ -108,8 +108,8 @@ try {
   await writeFile('docs/evidence/app-acceptance.md', `# Packaged app acceptance\n\nFresh process and isolated user data; filesystem cache not flushed. Test Keychain service only. Fictional corpus; fixture research/decisions. Live row is XRPL Testnet value only, paid by the packaged utility engine from the seed read through the app Keychain path. Fixture crash kills the utility process after durable signing, before delayed delivery; recovery must retain the identical submission and one receipt/grant. Agent creation uses Settings IPC and the HTTP MCP SDK client uses its Keychain bearer. No owner Keychain entries touched.\n\nCommand: OFFSET=1100 make app-accept\n\n\`\`\`json\n${JSON.stringify(evidence, null, 2)}\n\`\`\`\n`)
   console.log(JSON.stringify({ bytes: evidence.bytes, results: results.map(({ coldStartMs, txHash, crashRecovered }) => ({ coldStartMs, txHash, crashRecovered })) }))
 } finally {
-  execFileSync('hdiutil', ['detach', mount], { stdio: 'ignore' })
   for (const account of accounts) {
     try { execFileSync('/usr/bin/security', ['delete-generic-password', '-s', service, '-a', account], { stdio: 'ignore' }) } catch { /* Missing item is harmless. */ }
   }
+  execFileSync('hdiutil', ['detach', mount], { stdio: 'ignore' })
 }

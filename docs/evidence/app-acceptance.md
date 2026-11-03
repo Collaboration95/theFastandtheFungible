@@ -1,3 +1,89 @@
+# Final combined-source validation
+
+After SDK PR #333 merged, the lane rebased cleanly onto 7888293. The final runtime
+adds a 120-second x64 engine startup allowance for slow Rosetta startup (arm64
+retains 30 seconds). Both DMGs were rebuilt from that combined source and tested
+again without any further Testnet payments. The arm64 fixture test passed the
+same Settings IPC / SDK HTTP / engine-kill / identical-submission / single-grant /
+idempotent-replay assertions. x64 passed launch-only validation and clean shutdown.
+Full x64 MCP/payment acceptance and native Intel timing remain unverified.
+
+| Final DMG | Bytes | MiB | Fresh process to visible UI |
+|---|---:|---:|---:|
+| arm64 | 136675004 | 130.34 | 3.280 s fixture/crash test |
+| x64 | 140779355 | 134.26 | 62.922 s under Rosetta |
+
+One sample each with empty data; filesystem cache not flushed. Both unsigned.
+The single Testnet payment below belongs to the earlier DMG built against #334
+(source 5de9c36, before rebasing #333). Its exact artifact hash and ledger result
+are retained as historical packaged Keychain evidence; a new live payment on the
+rebuilt SDK-integrated DMG is not claimed. Payment policy and Keychain seed paths
+are unchanged by #333; final integration is fixture-tested. A later Rosetta probe hit the harness's 30-second first-window wait. The harness
+now permits 180 seconds and the x64 engine permits 120 seconds; the final probe
+passed with the timing above. The logged failure establishes a harness timeout,
+not a separately confirmed engine-timeout root cause.
+
+Combined-source `OFFSET=1100 npm run check:fast`: 727 tests, 93 files, 20 chaos
+iterations, zero invariant violations/double charges. `npm run test:sdk:package`:
+ESM and declarations passed (68,507 bytes, 59 files). Signing preparation was
+checked with absent secrets (clean unsigned skip) and a partial fixture config
+(fails closed). No Developer ID secrets or Apple notarisation run were available.
+
+## Final arm64 fixture evidence
+
+```json
+{
+  "sha256": "865353eba79ed451068d4ff8430e5e489808b526ede4315713008520f76d1b49",
+  "at": "2026-11-03T05:30:08.231Z",
+  "executablePath": "/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-dmg-LWz22p/ResearchAgent.app/Contents/MacOS/ResearchAgent",
+  "dmg": "/Users/speedpowermac/.t3/worktrees/tftf/t3-52df585a/desktop/out/ResearchAgent-0.7.0-arm64.dmg",
+  "bytes": 136675004,
+  "results": [
+    {
+      "live": false,
+      "data": "/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-accept-dgACSh",
+      "coldStartMs": 3280,
+      "arch": "arm64",
+      "runId": "84498bf3-84b7-4536-b0be-1523e7072db9",
+      "spentMinor": 90,
+      "labels": {
+        "research": "fixture \u00b7 extractive-fixture",
+        "decision": "fixture \u00b7 metadata-fixture",
+        "publisher": "local",
+        "settlement": "SIMULATED SGD \u00b7 no real funds",
+        "search": "keyword only (embeddings unavailable)",
+        "plan": "fixture \u00b7 scope-fixture"
+      },
+      "crashRecovered": true,
+      "sameSubmission": true
+    }
+  ]
+}
+```
+
+## Final x64 launch evidence
+
+```json
+{
+  "sha256": "92c6cb2d61fbc4ee389ff596209d9ce65dba5bf9ad4a5db657cda1a07c6ff3f7",
+  "at": "2026-11-03T05:30:18.910Z",
+  "executablePath": "/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-dmg-smlgMg/ResearchAgent.app/Contents/MacOS/ResearchAgent",
+  "dmg": "/Users/speedpowermac/.t3/worktrees/tftf/t3-52df585a/desktop/out/ResearchAgent-0.7.0-x64.dmg",
+  "bytes": 140779355,
+  "results": [
+    {
+      "live": false,
+      "data": "/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-accept-LZILBi",
+      "coldStartMs": 62922,
+      "arch": "x64",
+      "launchOnly": true
+    }
+  ]
+}
+```
+
+---
+
 # Packaged Mac app acceptance — 3 November 2026
 
 Both unsigned DMGs were built locally with OFFSET=1100 and mounted read-only.

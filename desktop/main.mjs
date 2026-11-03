@@ -34,7 +34,7 @@ async function startLocalEngine() {
   const target = utilityProcess.fork(join(root, 'desktop', 'engine-host.mjs'), [], { env: localEnv, cwd: root, stdio: 'ignore', serviceName: 'ResearchAgent Engine' })
   child = target
   engine = await new Promise((done, fail) => {
-    const timer = setTimeout(() => { target.kill(); fail(new Error('Engine boot timed out')) }, 30_000)
+    const timer = setTimeout(() => { target.kill(); fail(new Error('Engine boot timed out')) }, process.arch === 'x64' ? 120_000 : 30_000)
     target.once('message', value => { clearTimeout(timer); done(value) })
     target.once('exit', () => { clearTimeout(timer); fail(new Error('Engine exited')) })
   })
