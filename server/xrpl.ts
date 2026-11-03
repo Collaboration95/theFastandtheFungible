@@ -21,6 +21,8 @@ export class XrplPayer {
   private queue: Promise<unknown> = Promise.resolve()
   private pending: Submission[] = []
   readonly lockWaitMs: number[] = []
+  private escrowFeeHolds: () => number = () => 0
+  holdEscrowFees(hold: () => number) { this.escrowFeeHolds = hold }
   private balanceLoading?: Promise<void>
   private balanceCache?: { at: number; value: BalanceSnapshot; committed: number }
   readonly address?: string
@@ -86,6 +88,8 @@ export class XrplPayer {
       const lastLedgerSequence = Number(current.result.ledger_current_index) + 20
       await beforeSign?.()
       const signed = this.wallet.sign({ ...tx, Account: this.address!, Sequence: Number(account.result.account_data.Sequence), Fee: String(cost), LastLedgerSequence: lastLedgerSequence } as Transaction)
+      // Until the next validated refresh, a direct payment must see this new principal/reserve too.
+      this.balanceCache!.committed += principal + FEE_CAP_DROPS + (tx.TransactionType === 'EscrowCreate' ? increment : 0)
       return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
     }, persist, send)
   }
@@ -125,7 +129,7 @@ export class XrplPayer {
     if (!this.wallet) throw new Error('XRPL payer seed is not configured')
     if (this.wallet.classicAddress === simulatedPayerWallet().classicAddress) throw new Error('The SIMULATED test payer is refused on the XRPL Testnet')
     const balance = await this.balance()
-    if (balance.availableDrops < Number(terms.amountDrops) + FEE_CAP_DROPS) throw new BeforeSignError('Payer balance below reserve; nothing was charged')
+    if (balance.availableDrops < Number(terms.amountDrops) + FEE_CAP_DROPS + this.escrowFeeHolds()) throw new BeforeSignError('Payer balance below reserve; nothing was charged')
     const account = this.wallet.classicAddress
     const [info, current, fee] = await Promise.all([
       this.ledger.request({ command: 'account_info', account, ledger_index: 'current' }),

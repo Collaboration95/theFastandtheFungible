@@ -30,6 +30,7 @@ export class PurchaseManager {
   /** No payer = the SIMULATED rail (deterministic test-only signer, labelled). */
   constructor(readonly store: Store, readonly client: PublisherClient, payer?: Payer) {
     this.payer = payer ?? new SimulatedPayer()
+    if (this.payer instanceof XrplPayer) this.payer.holdEscrowFees(() => store.listIntents('SUBMITTING').filter(i => i.escrow).length * 2000)
     if (this.payer instanceof XrplPayer) this.payer.restorePending([...store.listIntents('SUBMITTING').flatMap(i => store.getSubmission(i.intentId) ?? []), ...store.escrowOutbox().filter(s => store.getIntent(s.intentId)?.status === 'SUBMITTING')])
   }
   async drain() { await Promise.allSettled(this.active.values()) }

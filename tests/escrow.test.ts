@@ -263,6 +263,31 @@ describe('escrow-v1 hybrid', () => {
     expect(direct.status).toBe('VERIFIED')
     expect([...s.c.txs.values()].map(t => t.tx_json.TransactionType)).toEqual(['Payment'])
   })
+  it('holds terminal fees for every open escrow and shares the liquidity deduction with direct payments', async () => {
+    const s = await setup({ broken: true })
+    s.c.state.balance = 1466011 // One drop below two reserve increments, two principals, both fee holds.
+    const first = await s.buy()
+    expect(first.escrow?.state).toBe('CANCEL_DUE')
+    s.store.resetReputation()
+    const secondRun = s.store.createRun('Second authorized test run', 200)
+    const second = await s.manager.purchase({ runId: secondRun.runId, candidate: s.candidate, intentId: 'second', escrow: true })
+    expect(second.status).toBe('FAILED_NOT_SETTLED')
+    expect(s.c.txs.size).toBe(1)
+    // A direct payment also retains the 2,000-drop terminal fee hold, even after a fresh balance read.
+    s.c.state.balance = 1200000 + s.candidate.price.amountMinor * 1000 + 3999
+    s.restart()
+    const direct = await s.manager.purchase({ runId: secondRun.runId, candidate: s.candidate, intentId: 'direct-held', escrow: false })
+    expect(direct.status).toBe('FAILED_NOT_SETTLED')
+    expect(s.c.txs.size).toBe(1)
+    const cached = await setup({ broken: true })
+    cached.c.state.balance = 1235999
+    await cached.buy()
+    cached.store.resetReputation()
+    const freshRun = cached.store.createRun('Direct payment during the balance cache window', 200)
+    const cachedDirect = await cached.manager.purchase({ runId: freshRun.runId, candidate: cached.candidate, intentId: 'cached-direct', escrow: false })
+    expect(cachedDirect.status).toBe('FAILED_NOT_SETTLED')
+    expect(cached.c.txs.size).toBe(1)
+  })
   it('keeps direct payment the default and refuses unsupported escrow without paid fallback', async () => {
     const s = await setup({ opted: false })
     expect((await s.buy()).status).toBe('SKIPPED')
