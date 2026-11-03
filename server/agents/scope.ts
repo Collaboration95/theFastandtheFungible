@@ -112,12 +112,12 @@ export function freezeRequirements(question: string, plan: Plan | undefined, ans
 }
 
 /** POST /api/scope. `clarify: 'never'` skips the questions. Any model failure falls back to the labelled fixture. */
-export async function scope(question: string, options: { clarify?: 'never' } = {}): Promise<ScopeResult> {
+export async function scope(question: string, options: { clarify?: 'never'; signal?: AbortSignal } = {}): Promise<ScopeResult> {
   let result: Scope = fixtureScope(question)
   let label = fixtureLabel
   if (isLlmConfigured()) {
     try {
-      const output = await streamJson(SCOPE_PROMPT, { question }, undefined, 'scope')
+      const output = await streamJson(SCOPE_PROMPT, { question }, undefined, 'scope', options.signal)
       const chat = z.object({ route: z.literal('chat'), reply: ChatReplySchema.shape.reply }).safeParse(output)
       if (chat.success) {
         // A chat question is answered directly: no clarify questions, and the UI never starts a run from it.
@@ -135,9 +135,9 @@ export async function scope(question: string, options: { clarify?: 'never' } = {
 }
 
 /** Builds the plan from the question plus the clarify answers. */
-export async function plan(question: string, answers: Record<string, string> = {}): Promise<Plan & { label: string }> {
+export async function plan(question: string, answers: Record<string, string> = {}, signal?: AbortSignal): Promise<Plan & { label: string }> {
   if (isLlmConfigured()) {
-    try { return { ...safePlan(await streamJson(PLAN_PROMPT, { question, answers }, undefined, 'plan'), question), label: liveLabel() } } catch { /* fixture below */ }
+    try { return { ...safePlan(await streamJson(PLAN_PROMPT, { question, answers }, undefined, 'plan', signal), question), label: liveLabel() } } catch { /* fixture below */ }
   }
   return { ...fixturePlan(question, answers), label: fixtureLabel }
 }

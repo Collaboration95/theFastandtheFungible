@@ -30,11 +30,12 @@ export function reportsRouter(context: ApiContext) {
     if (!run.answers.length) return res.status(409).json({ error: 'Wait for a validated answer before requesting a report.' })
     let job = reportJobs.get(runId)
     if (!job) {
+      const release = context.work.acquire()
       store.updateRun(runId, { reportStatus: 'GENERATING' })
       store.appendEvent(runId, { type: 'REPORT', label: 'Rendering a cited report with persisted decisions and receipts.' })
       const done = progress(runId, 'Report generation is in progress; validated passages and receipts are preserved.')
       let rendered: { format: string; findings: number; provider: string } | undefined
-      const render = () => buildReport(run).then(report => startActiveObservation('render-report', async observation => {
+      const render = () => buildReport(run, context.loop.signal(runId)).then(report => startActiveObservation('render-report', async observation => {
         const verification = receiptBundle(store, runId)
         const exported = { report, verification }
         await mkdir(reportDir, { recursive: true })
@@ -59,7 +60,7 @@ export function reportsRouter(context: ApiContext) {
         store.updateRun(runId, { reportStatus: result.format })
         store.appendEvent(runId, { type: 'REPORT', label: result.format === 'PDF' ? 'PDF report ready.' : 'Chromium unavailable; HTML print fallback ready.' })
         return result
-      }).catch(error => { store.updateRun(runId, { reportStatus: 'FAILED' }); throw error }).finally(() => { done(); reportJobs.delete(runId) })
+      }).catch(error => { store.updateRun(runId, { reportStatus: 'FAILED' }); throw error }).finally(() => { context.loop.releaseSignal(runId); release(); done(); reportJobs.delete(runId) })
       reportJobs.set(runId, job)
     }
     const result = await job

@@ -80,7 +80,17 @@ export class RunLoop {
     return values.length ? values.join(', ') : undefined
   }
   private stopped(runId: string) { return this.store.getRun(runId).stopped }
+  private readonly controllers = new Map<string, AbortController>()
+  releaseSignal(runId: string) { if (!this.active.has(runId)) this.controllers.delete(runId) }
+  abortProviders() { for (const c of this.controllers.values()) c.abort() }
+  signal(runId: string): AbortSignal {
+    let c = this.controllers.get(runId)
+    if (!c) { c = new AbortController(); this.controllers.set(runId, c) }
+    if (this.stopped(runId)) c.abort()
+    return c.signal
+  }
   stop(runId: string): void {
+    this.controllers.get(runId)?.abort()
     this.store.updateRun(runId, { stopped: true })
     this.trace(runId, 'STOPPED', 'Stopped; no new purchases will start.', { stopReason: 'stopped' })
   }
@@ -117,7 +127,7 @@ export class RunLoop {
     // A conditional re-answer announces itself only once it is kept, so the ANSWER events match the stored versions.
     if (!conditional) this.trace(runId, 'ANSWER', previous ? 'Re-answering with verified evidence.' : 'Writing the free answer.', { answerVersion: (previous?.version ?? 0) + 1, beforeVersion: previous?.version ?? null, ...(run.checkpoint.intentId ? { intentId: run.checkpoint.intentId } : {}) })
     if (!previous && !run.events.some(event => event.type === 'FREE_DRAFT')) {
-      const draft = freeDraft({ question: run.question, contents: this.accessible(run), candidates: run.candidates, version: 1, focus: this.focus(run), requirements: requirements?.map(r => r.text) })
+      const draft = freeDraft({ signal: this.signal(runId), question: run.question, contents: this.accessible(run), candidates: run.candidates, version: 1, focus: this.focus(run), requirements: requirements?.map(r => r.text) })
       if (draft.claims.length && !this.stopped(runId)) {
         const elapsedMs = Date.now() - (this.started.get(runId) ?? Date.now())
         scoreTrace('time-to-first-answer-s', elapsedMs / 1000, 'ask → validated free draft')
@@ -132,7 +142,7 @@ export class RunLoop {
       lastProgressAt = now
       this.progress(runId)
     }
-    const result = await (this.options.writeAnswer ?? writeAnswer)({ question: run.question, contents: this.accessible(run), candidates: run.candidates.map(candidate => PublicCandidateSchema.parse(candidate)), version: (previous?.version ?? 0) + 1, onToken, ...(this.focus(run) ? { focus: this.focus(run) } : {}), ...(requirements ? { requirements: requirements.map(r => r.text) } : {}), ...(previous ? { previous: structuredClone(previous) } : {}) })
+    const result = await (this.options.writeAnswer ?? writeAnswer)({ signal: this.signal(runId), question: run.question, contents: this.accessible(run), candidates: run.candidates.map(candidate => PublicCandidateSchema.parse(candidate)), version: (previous?.version ?? 0) + 1, onToken, ...(this.focus(run) ? { focus: this.focus(run) } : {}), ...(requirements ? { requirements: requirements.map(r => r.text) } : {}), ...(previous ? { previous: structuredClone(previous) } : {}) })
     const answer = AnswerSchema.parse(result.answer)
     if (answer.version !== (previous?.version ?? 0) + 1) throw new Error('Answer version mismatch')
     let coverage: Coverage | undefined
@@ -180,7 +190,7 @@ export class RunLoop {
     })
   }
   /** One multi-question request to the decision model per evidence state; any failure is `unknown`, labelled, never complete. */
-  private async judgeCoverage(question: string, requirements: Requirement[], evidence: CoverageEvidence[]): Promise<{ statuses: Record<string, CoverageStatus>; judge: string; error?: string }> {
+  private async judgeCoverage(question: string, requirements: Requirement[], evidence: CoverageEvidence[], signal?: AbortSignal): Promise<{ statuses: Record<string, CoverageStatus>; judge: string; error?: string }> {
     const provider = this.options.provider ?? new FixtureDecisionProvider()
     const judge = decisionLabel({ provider: provider.name, model: provider.model })
     const all = (status: CoverageStatus) => Object.fromEntries(requirements.map(r => [r.id, status]))
@@ -188,7 +198,7 @@ export class RunLoop {
     if (!evidence.length) return { statuses: all('missing'), judge }
     if (!provider.judgeCoverage) return { statuses: all('unknown'), judge, error: 'coverage not supported' }
     try {
-      const raw = await provider.judgeCoverage({ question, requirements: requirements.map(r => ({ id: r.id, text: r.text })), evidence })
+      const raw = await provider.judgeCoverage({ signal, question, requirements: requirements.map(r => ({ id: r.id, text: r.text })), evidence })
       return { statuses: Object.fromEntries(requirements.map(r => [r.id, (COVERAGE_STATUSES as readonly unknown[]).includes(raw?.[r.id]) ? raw[r.id] : 'unknown'])), judge }
     } catch (error) { return { statuses: all('unknown'), judge, error: decisionFailureStatus(error) } }
   }
@@ -202,7 +212,7 @@ export class RunLoop {
     const contents = this.accessible(run)
     const claims = validateClaims(answer.claims, contents)
     const evidence = this.evidence(contents, claims.flatMap(c => c.citations))
-    const { statuses, judge, error } = await this.judgeCoverage(run.question, requirements, evidence)
+    const { statuses, judge, error } = await this.judgeCoverage(run.question, requirements, evidence, this.signal(runId))
     const fixture = (this.options.provider ?? { name: 'fixture' }).name === 'fixture'
     return CoverageSchema.parse({ answerVersion: answer.version, judge, entries: requirements.map(r => {
       const status = statuses[r.id] ?? 'unknown'
@@ -273,7 +283,7 @@ export class RunLoop {
     // Does a new free passage answer an open fact? One coverage request over the new passages only.
     const open = this.openRequirements(latest)
     const fresh = this.evidence(this.accessible(latest), usableContents(contents).flatMap(c => c.spans.map(s => ({ resourceId: c.resourceId, version: c.version, spanId: s.id }))))
-    const check = open.length && fresh.length ? await this.judgeCoverage(latest.question, open, fresh) : undefined
+    const check = open.length && fresh.length ? await this.judgeCoverage(latest.question, open, fresh, this.signal(runId)) : undefined
     const current = (id: string) => coverage?.entries.find(e => e.requirementId === id)?.status ?? 'unknown'
     const helped = check ? open.filter(r => STATUS_RANK[check.statuses[r.id] ?? 'unknown'] > STATUS_RANK[current(r.id)]).map(r => r.id) : []
     save({ status: 'done', ...(found.search ? { searchMode: found.search } : {}), unavailable: found.unavailable ?? [], added: added.map(identity), freeRead: contents.length, paidFound, helped })
@@ -402,9 +412,10 @@ export class RunLoop {
         const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => content.resourceId === candidate.resourceId && content.version === candidate.version)))
         let decision: Awaited<ReturnType<typeof decide>>
         try {
-          decision = await decide({ question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, accessibleEvidence: contents, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
+          decision = await decide({ signal: this.signal(runId), question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, accessibleEvidence: contents, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
         } catch (error) {
           if (!(error instanceof DecisionUnavailableError)) throw error
+          if (this.signal(runId).aborted) { this.trace(runId, 'STOPPED', 'Provider work cancelled after Stop.'); return }
           this.failDecision(runId, error)
           return
         }

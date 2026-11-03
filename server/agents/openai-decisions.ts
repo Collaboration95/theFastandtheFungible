@@ -1,3 +1,4 @@
+import { pause } from './provider-retry.js'
 import { reportModelUsage } from '../telemetry.js'
 import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
@@ -230,7 +231,7 @@ export class OpenAIDecisionsProvider implements DecisionProvider {
         if (error instanceof DecisionsUnavailableError && !(error as { retry?: boolean }).retry && !['timeout', 'invalid response'].includes(error.status)) throw error
         status = error instanceof DecisionsUnavailableError ? error.status : error instanceof z.ZodError ? 'invalid response' : 'transport failure'
         // A rate limit (not exhausted credit) gets a short pause before the one retry.
-        if (attempt === 0 && status === 'HTTP 429') await new Promise(resolve => setTimeout(resolve, 1000))
+        if (attempt === 0 && status === 'HTTP 429') await pause(1000, signal)
       } finally { clearTimeout(timer); signal?.removeEventListener('abort', abandon) }
     }
     throw new DecisionsUnavailableError(status)

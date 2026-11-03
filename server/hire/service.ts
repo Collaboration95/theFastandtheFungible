@@ -32,13 +32,13 @@ export function hireService(context: ApiContext) {
     let run = store.getRun(runId)
     if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) {
       await context.launch(runId, async () => {
-        const planned = await planSearch(hire.question)
+        const planned = await planSearch(hire.question, {}, loop.signal(runId))
         const frozen = freezeRequirements(hire.question, planned)
         const { label, requirements: _texts, requirementsKey: _key, ...plan } = planned
         store.updateRun(runId, { labels: { ...run.labels, plan: label }, checkpoint: { ...run.checkpoint, plan, requirements: frozen.requirements, requirementsBy: frozen.source === 'plan' ? label : 'fixture · scope-fixture' } })
         store.appendEvent(runId, { type: 'PLAN', label: `Hire research plan (${label})`, data: { plan } })
         await loop.start(runId)
-      })
+      }, () => undefined)
     }
     run = store.getRun(runId)
     const savedAddresses = hires.get(hire.key)!.writerAddresses
@@ -93,6 +93,8 @@ export function hireService(context: ApiContext) {
     return result
   }
   router.post('/v1/ask', async (req, res) => {
+    const release = context.work.acquire()
+    try {
     if (!payer?.address || !facilitator) return res.status(503).json({ error: 'Hire requires XRPL Testnet settlement' })
     const input = Input.parse(req.body)
     const callerKey = z.string().min(1).max(200).parse(req.get('Idempotency-Key'))
@@ -151,6 +153,7 @@ export function hireService(context: ApiContext) {
       active.set(key, pending)
     }
     return res.json(await pending)
+    } finally { release() }
   })
   return { router, close: () => { hires.close(); journal.close() }, drain: () => Promise.allSettled(active.values()) }
 }

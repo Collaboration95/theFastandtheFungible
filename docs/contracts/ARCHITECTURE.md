@@ -133,3 +133,16 @@ The API returns a full money chain; see `docs/x402-xrpl.md` and
 Operational selection uses SQL predicates over run metadata and indexed intent/event lookup. Metrics project model-usage metadata without hydrating premium bodies and retain O(n) all-run output. Recovery sweeps coalesce answer/refund work while payment obligations remain independent per intent, preserving progress when one publisher blocks.
 
 Refund candidates are durable before validation waits. Retention keeps unresolved candidates and their original binding. Read-only bounded rechecks permit CHALLENGE_REFUSED → REFUNDED only for the stored candidate after exact ledger verification; the outcome and refund audit append remain write-once. Gross spending authority is unchanged. SSE disconnects on byte pressure and clients recover terminal state through the durable run endpoint. Engine-wide admission and cooperative provider cancellation remain deferred.
+
+### Compatible providers and active work (Lane C1)
+
+The compatible research adapter and UNCALIBRATED generic JSON judge have distinct
+provider identities. The latter is advisory: deterministic policy forbids its
+purchases independently of scores/calibration. Compatible credentials travel only
+to a reviewed HTTPS origin with a pinned checked address, or explicit numeric
+loopback; redirects are refused. See `docs/byok.md` for the exact C2 env and
+connection-test contract. One default-four pool admits inference work before
+planning; durable retries bypass refusal and signed-obligation reconciliation
+remains independent per intent. Run Stop/drain signals compose with provider
+deadlines and cancel discovery, streaming and backoff without releasing signed
+reservations.

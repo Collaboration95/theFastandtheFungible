@@ -1,3 +1,4 @@
+import type { ActiveWork } from '../agents/active-work.js'
 import type { Response } from 'express'
 import type { ModeLabels } from '../../shared/contracts/run.js'
 import type { Store } from '../store.js'
@@ -9,10 +10,11 @@ import type { XrplPayer } from '../xrpl.js'
 
 /** The engine owns these services; surface routers only register existing handlers. */
 export type ApiContext = {
+  work: ActiveWork;
   store: Store; client: PublisherClient; purchases: PurchaseManager; loop: RunLoop
   reputation: Reputation; payer?: XrplPayer; labels: ModeLabels
   mcpPolicy: { maxMinor: number; dailyMinor: number }; publisherUrl: string
-  launch: (runId: string, job: () => Promise<void>) => Promise<void>
+  launch: (runId: string, job: () => Promise<void>, release?: () => void) => Promise<void>
   progress: (runId: string, label: string) => () => void
   streams: Map<string, Set<Response>>; onStreamEmpty?: (runId: string) => void; reportDir: string
   reportJobs: Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>
