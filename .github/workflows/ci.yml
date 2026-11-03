@@ -11,77 +11,116 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  DOTENV_CONFIG_PATH: .playwright/no-env
+  LANGFUSE_ENABLED: '0'
+  LLM_PROVIDER: fixture
+  DECISION_PROVIDER: fixture
+  SETTLEMENT_RAIL: simulated
+  SEARCH_EMBEDDINGS: 'off'
+  ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+
 jobs:
-  # Always report check: workflow-level paths-ignore would strand a required check.
-  check:
+  changes:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    outputs:
+      full: ${{ steps.detect.outputs.full }}
     steps:
       - uses: actions/checkout@v4
-      - name: Detect changes
-        id: changes
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - id: detect
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        shell: bash
-        run: |
-          # Missing history (including a new branch) must take the full check path.
-          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
-            echo 'python_sdk=true' >> "$GITHUB_OUTPUT"
-            echo 'run_checks=true' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          fi
-          # Compare the full PR against its base, or the entire pushed range.
-          # Include both sides of renames so moving code into docs cannot bypass CI.
-          git diff --no-renames --name-only -z "$BASE_SHA" HEAD > "$RUNNER_TEMP/ci-changed-files"
-          if git diff --name-only "$BASE_SHA" HEAD -- packages/sdk-python/ | read -r _; then
-            echo 'python_sdk=true' >> "$GITHUB_OUTPUT"
-          fi
-          run_checks=false
-          while IFS= read -r -d '' file; do
-            case "$file" in
-              # Code, corpus, test inputs and config always keep the full suite,
-              # even if a changed file happens to be Markdown or an image.
-              src/*|server/*|shared/*|publisher/*|data/*|tests/*|scripts/*|eval/*|docker/*|.github/workflows/*)
-                run_checks=true; break ;;
-              *.md|*.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico)
-                ;;
-              *) run_checks=true; break ;;
-            esac
-          done < "$RUNNER_TEMP/ci-changed-files"
-          echo "run_checks=$run_checks" >> "$GITHUB_OUTPUT"
-      - name: Documentation-only change
-        if: steps.changes.outputs.run_checks == 'false'
-        run: echo 'Documentation/images only; installation and code checks skipped.' >> "$GITHUB_STEP_SUMMARY"
-      - name: Set up Node
-        if: steps.changes.outputs.run_checks == 'true'
-        uses: actions/setup-node@v4
+        run: node scripts/ci-contract.mjs detect
+
+  verify:
+    needs: changes
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Install dependencies
-        if: steps.changes.outputs.run_checks == 'true'
-        env:
-          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
-        run: npm ci
-      - name: Check code and hard gates
-        if: steps.changes.outputs.run_checks == 'true'
-        run: npm run check:fast
-      - name: Build SDK and inspect package
-        if: steps.changes.outputs.run_checks == 'true'
-        run: npm run test:sdk:package
-      - name: Check generated README assets
-        if: steps.changes.outputs.run_checks == 'true'
-        run: npm run readme:check
-      - name: Set up Python for SDK changes
-        if: steps.changes.outputs.python_sdk == 'true'
-        uses: actions/setup-python@v5
+      - run: npm ci
+      - run: npm run hygiene && npm run lint && npm run typecheck
+      - run: npx vitest run --coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-summary
+          path: coverage/coverage-summary.json
+          retention-days: 7
+      - run: node scripts/check-coverage.mjs
+      - run: npm run test:sdk:package
+      - run: npm run readme:check
+
+  chaos:
+    needs: changes
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run chaos:smoke
+
+  browser:
+    needs: changes
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/e2e.spec.ts tests/a11y.spec.ts
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-diagnostics
+          path: test-results/
+          retention-days: 7
+
+  python:
+    needs: changes
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: Test Python SDK against synthetic engine
-        if: steps.changes.outputs.python_sdk == 'true'
-        run: |
-          python -m pip install pytest
-          python -m pytest packages/sdk-python
+      - run: python -m pip install pytest
+      - run: python -m pytest packages/sdk-python
+
+  check:
+    if: always()
+    needs: [changes, verify, chaos, browser, python]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - env:
+          CI_NEEDS: ${{ toJSON(needs) }}
+        run: node scripts/ci-contract.mjs aggregate

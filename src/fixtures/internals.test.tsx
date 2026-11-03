@@ -184,7 +184,7 @@ describe('run command adapter', () => {
     await expect(createReport('abcd-1234')).rejects.toThrow('Unsafe report URL')
   })
 
-  it('handles both SSE event names, invalid data and complete idempotent listener cleanup', () => {
+  it('handles both SSE event names, invalid data and complete idempotent listener cleanup', async () => {
     class FakeSource extends EventTarget {
       static instance: FakeSource
       close = vi.fn()
@@ -196,19 +196,20 @@ describe('run command adapter', () => {
     const unsubscribe = streamRun('a/b', { onSnapshot, onEvent, onError })
     const source = FakeSource.instance
     expect(source.url).toBe('/runs/a%2Fb/events')
-    source.dispatchEvent(new MessageEvent('snapshot', { data: JSON.stringify(exampleRun) }))
-    source.dispatchEvent(new MessageEvent('trace', { data: JSON.stringify(offlineZeroBudgetRun.events[0]) }))
-    expect(onSnapshot).toHaveBeenCalledWith(exampleRun)
-    expect(onEvent).toHaveBeenCalledWith(offlineZeroBudgetRun.events[0])
+    source.dispatchEvent(new MessageEvent('snapshot', { data: JSON.stringify({ ...exampleRun, runId: 'a/b' }) }))
+    source.dispatchEvent(new MessageEvent('trace', { data: JSON.stringify({ ...offlineZeroBudgetRun.events[0], runId: 'a/b' }) }))
+    expect(onSnapshot).toHaveBeenCalledWith({ ...exampleRun, runId: 'a/b' })
+    expect(onEvent).toHaveBeenCalledWith({ ...offlineZeroBudgetRun.events[0], runId: 'a/b' })
     source.dispatchEvent(new MessageEvent('snapshot', { data: JSON.stringify({ runId: 'bad' }) }))
     source.dispatchEvent(new MessageEvent('trace', { data: 'invalid json' }))
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
     source.dispatchEvent(new Event('error'))
-    expect(onError).toHaveBeenCalledTimes(3)
+    await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(3))
     unsubscribe()
     unsubscribe()
     expect(source.close).toHaveBeenCalledTimes(1)
     expect(source.removeEventListener.mock.calls.map(call => call[0])).toEqual(['snapshot', 'trace', 'error'])
-    source.dispatchEvent(new MessageEvent('snapshot', { data: JSON.stringify(exampleRun) }))
+    source.dispatchEvent(new MessageEvent('snapshot', { data: JSON.stringify({ ...exampleRun, runId: 'a/b' }) }))
     expect(onSnapshot).toHaveBeenCalledTimes(1)
   })
 })
