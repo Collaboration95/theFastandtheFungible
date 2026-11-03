@@ -297,3 +297,17 @@ describe('escrow-v1 hybrid', () => {
     expect([...s.c.txs.values()].map(t => t.tx_json.TransactionType)).toEqual(['Payment'])
   })
 })
+
+it.each([false, true])('exports a verifiable escrow finish/cancel bundle (cancel: %s)', async broken => {
+  const { receiptBundle } = await import('../server/receipt-bundle.js')
+  const { verifyAnswer } = await import('../sdk/verify.js')
+  const s = await setup({ broken })
+  s.store.updateRun(s.run.runId, { candidates: [s.candidate] })
+  await s.buy()
+  if (broken) { s.c.state.now += 180; await s.manager.reconcile() }
+  const run = s.store.getRun(s.run.runId)
+  s.store.addAnswer(run.runId, { conclusion: broken ? 'No verified evidence.' : 'Verified escrow delivery.', claims: broken ? [] : [{ id: 'escrow', text: run.contents[0].spans[0].text, stance: 'SUPPORTS', citations: [{ resourceId: run.contents[0].resourceId, version: run.contents[0].version, spanId: run.contents[0].spans[0].id }] }], openGaps: [], version: 1, provider: 'fixture', model: 'extractive-fixture' })
+  const result = await verifyAnswer(receiptBundle(s.store, run.runId), { testnet: true, ledger: s.c.ledger })
+  expect(result.checks.filter(c => c.status === 'FAIL')).toEqual([])
+  expect(result.ok).toBe(true)
+})

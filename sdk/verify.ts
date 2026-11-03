@@ -31,20 +31,20 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     chainOk &&= ok; seq = e.seq; prev = e.hash
   }
   add('audit chain', chainOk && b.audit.entries.length > 0 && prev === b.audit.head && (!options.expectHead || prev === options.expectHead), `${b.audit.entries.length} links; head ${b.audit.head}`)
-  checks.push({ check: 'audit anchor', status: options.expectHead ? 'PASS' : 'SKIP', detail: options.expectHead ? 'Compared to independently supplied head' : 'Self-contained chain only; use --expect-head to detect a rewritten/truncated export. Other runs are opaque hash commitments.' })
+  checks.push({ check: 'audit anchor', status: options.expectHead ? (prev === options.expectHead ? 'PASS' : 'FAIL') : 'SKIP', detail: options.expectHead ? 'Compared to independently supplied head' : 'Self-contained chain only; use --expect-head to detect a rewritten/truncated export. Other runs are opaque hash commitments.' })
   const sourceOk = new Map<string, boolean>()
   for (const s of b.sources) {
     const proofs = b.proofs.filter(p => key(p) === key(s)), p = proofs[0]
     const candidates = b.candidates.filter(c => key(c) === key(s)), candidate = candidates[0]
-    const bound = proofs.length === 1 && candidates.length === 1 && p.manifest.articleId === s.resourceId && p.manifest.version === s.version && p.manifest.publisherSlug === s.profileId && candidate.profileId === s.profileId && (!candidate.wallet || candidate.wallet === p.manifest.wallet)
+    const bound = proofs.length === 1 && candidates.length === 1 && p.manifest.articleId === s.resourceId && p.manifest.version === s.version && p.manifest.publisherSlug === s.profileId && candidate.profileId === s.profileId && (candidate.tier === 'PAID' ? p.manifest.priceMinor > 0 : p.manifest.priceMinor === 0) && (!candidate.wallet || candidate.wallet === p.manifest.wallet)
     const signed = Boolean(bound && verifyManifestSignature(p.manifest))
     add(`manifest ${key(s)}`, signed, signed ? `Writer key derives to ${p.manifest.wallet}; identity unverified` : 'Missing, ambiguous or invalid writer signature/identity')
     const hashOk = Boolean(bound && verifyDelivery(s.body, s.spans, p.salts, p.manifest).ok && p.salts.length === s.spans.length && unique(s.spans.map(x => x.id)))
     add(`passages ${key(s)}`, hashOk, hashOk ? 'Delivered passages match signed leaves and root' : 'Delivered passages differ from signed manifest or proof is missing')
-    sourceOk.set(key(s), signed && hashOk)
+    sourceOk.set(key(s), signed)
     if (candidate?.tier === 'PAID') {
       const intent = b.intents.find(i => i.intentId === p?.intentId), grant = b.grants.find(g => g.intentId === p?.intentId), payment = b.payments.find(r => r.intentId === p?.intentId)
-      add(`grant ${key(s)}`, Boolean(intent?.status === 'VERIFIED' && grant?.runId === b.runId && grant.contentDigest === p?.manifest.root && key(grant) === key(s) && intent.profileId === s.profileId && payment?.payee === p?.manifest.wallet), 'Paid source requires verified grant, matching manifest and writer receipt')
+      add(`grant ${key(s)}`, Boolean(intent?.status === 'VERIFIED' && grant?.runId === b.runId && grant.contentDigest === p?.manifest.root && key(grant) === key(s) && intent.profileId === s.profileId && payment?.payee === p?.manifest.wallet && p.manifest.priceMinor === intent.amountMinor && entries.some(e => e.kind === 'proof' && e.intentId === intent.intentId && e.data.verified === true && (intent.escrow ? e.data.scheme === 'escrow-v1' : e.data.contentDigest === p.manifest.root))), 'Paid source requires verified grant, matching manifest and writer receipt')
     }
   }
   const claimSets = b.answers.map(a => ({ name: `answer v${a.version}`, claims: a.claims }))
@@ -56,19 +56,30 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   for (const group of claimSets) for (const claim of group.claims) for (const ref of claim.citations) {
     const s = b.sources.find(s => key(s) === key(ref)), p = b.proofs.find(p => key(p) === key(ref)), index = s?.spans.findIndex(span => span.id === ref.spanId) ?? -1
     const exact = index >= 0 && !!s && !!p && s.body.includes(s.spans[index].text) && leafHash(p.salts[index], index, ref.spanId, s.spans[index].text) === p.manifest.leaves[index] && manifestRoot(p.manifest.leaves) === p.manifest.root
-    add(`citation ${group.name}/${claim.id} ${key(ref)}#${ref.spanId}`, exact && sourceOk.get(key(ref)) === true, exact ? 'Exact delivered passage, signed hash' : 'Exact citation passage missing or hash mismatch')
+    add(`citation ${group.name}/${claim.id} ${key(ref)}#${ref.spanId}`, exact && sourceOk.get(key(ref)) === true, !exact ? 'Exact citation passage missing or hash mismatch' : sourceOk.get(key(ref)) ? 'Exact delivered passage, signed hash' : 'Source signature invalid or missing')
   }
   for (const intent of b.intents.filter(i => i.receiptId || i.refund || i.status === 'VERIFIED')) {
     const rows = b.payments.filter(p => p.intentId === intent.intentId), row = rows[0], receipt = b.receipts.find(r => r.intentId === intent.intentId), terms = intent.quote?.payment
     const settle = entries.find(e => e.kind === 'settle' && e.intentId === intent.intentId && e.runId === b.runId)
     const refund = entries.find(e => e.kind === 'refund' && e.intentId === intent.intentId && e.runId === b.runId)
     const quoteOk = !!terms && row?.invoiceId === terms.invoiceId && intent.quote?.quoteHash === terms.invoiceId && (intent.escrow || ledgerInvoiceId(intent.quote!.quoteId) === terms.invoiceId)
-    let invoiceOk = Boolean(intent.escrow)
+    let invoiceOk = Boolean(intent.escrow && row?.escrowTerms && canonical(row.escrowTerms) === intent.quote?.quoteId && row.escrowState === intent.escrow.state && row.escrowTerms.manifestRoot === intent.quote?.contentDigest && row.escrowTerms.amount === amountFor(intent.amountMinor) && row.escrowTerms.payer === row.payer)
     if (!intent.escrow) try { const invoice = JSON.parse(intent.quote!.quoteId); invoiceOk = invoice.articleId === intent.resourceId && invoice.version === intent.version && invoice.payTo === row?.payee && invoice.amount === row?.amountDrops && invoice.manifestRoot === intent.quote!.contentDigest && canonical(invoice.asset ?? 'XRP') === canonical(row?.asset ?? 'XRP') } catch { /* invalid binding */ }
-    add(`receipt ${intent.intentId}`, Boolean(rows.length === 1 && receipt && row.runId === b.runId && row.writer === intent.profileId && row.resourceId === intent.resourceId && row.version === intent.version && row.amountMinor === intent.amountMinor && receipt.amountMinor === intent.amountMinor && row.label === receipt.label && row.status === intent.status && row.txHash === (receipt.xrpl?.txHash ?? intent.txHash) && row.amountDrops === (intent.escrow?.state === 'CANCELLED' ? '0' : amountFor(intent.amountMinor, terms?.asset)) && row.payee === terms?.payTo && canonical(row.asset) === canonical(terms?.asset) && quoteOk && invoiceOk && settle?.data.txHash === row.txHash && settle.data.amountMinor === row.amountMinor && settle.data.payTo === row.payee && (intent.escrow || entries.some(e => e.kind === 'sign' && e.intentId === intent.intentId && e.data.txHash === row.txHash))), 'Quote, amount, asset, writer, invoice and audit settlement agree')
+    const cancelled = intent.escrow?.state === 'CANCELLED'
+    const chargedMinor = cancelled ? 0 : intent.amountMinor
+    const destination = cancelled ? row?.payer : terms?.payTo
+    const receiptOk = rows.length === 1 && receipt && row.runId === b.runId &&
+      row.writer === intent.profileId && row.resourceId === intent.resourceId && row.version === intent.version &&
+      row.amountMinor === chargedMinor && receipt.amountMinor === chargedMinor && row.label === receipt.label &&
+      row.status === intent.status && row.txHash === (receipt.xrpl?.txHash ?? intent.txHash) &&
+      row.amountDrops === (cancelled ? '0' : amountFor(intent.amountMinor, terms?.asset)) &&
+      row.payee === destination && canonical(row.asset) === canonical(terms?.asset) && quoteOk && invoiceOk &&
+      settle?.data.txHash === row.txHash && settle.data.amountMinor === row.amountMinor && settle.data.payTo === terms?.payTo &&
+      (intent.escrow || entries.some(e => e.kind === 'sign' && e.intentId === intent.intentId && e.data.txHash === row.txHash))
+    add(`receipt ${intent.intentId}`, Boolean(receiptOk), 'Quote, amount, asset, writer, invoice and audit settlement agree')
     add(`refund ${intent.intentId}`, Boolean(row && row.refundTxHash === (intent.refund?.txHash ?? '') && row.refundAmountMinor === (intent.refund?.amountMinor ?? '') && (!intent.refund || refund?.data.txHash === intent.refund.txHash && refund.data.amountMinor === intent.refund.amountMinor && refund.data.originalTxHash === row.txHash)), intent.refund ? 'Recorded refund matches audit; ledger confirmation requires --testnet' : 'No refund recorded')
   }
-  add('receipt coverage', b.receipts.length === b.payments.filter(p => p.kind === 'purchase').length && b.receipts.every(r => b.intents.some(i => i.intentId === r.intentId)) && entries.filter(e => e.kind === 'settle' || e.kind === 'refund').every(e => b.payments.some(p => p.intentId === e.intentId)), 'Every charge/refund has its payment row; no omitted audit settlements')
+  add('receipt coverage', b.receipts.length === b.payments.filter(p => p.kind === 'purchase').length && b.receipts.every(r => b.intents.some(i => i.intentId === r.intentId)) && entries.filter(e => e.kind === 'settle' || e.kind === 'refund').every(e => b.payments.some(p => p.intentId === e.intentId && (e.kind === 'refund' ? p.refundTxHash === e.data.txHash : p.txHash === e.data.txHash))), 'Every charge/refund has its payment row; no omitted audit settlements')
   if (options.testnet) {
     const owned = options.ledger ? undefined : testnetLedger(testnetUrl())
     try {
@@ -81,7 +92,15 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
 }
 
 export function verificationText(result: VerificationResult): string {
-  return [...result.checks.map(c => `${c.status.padEnd(4)} ${c.check}: ${c.detail}`), `RESULT ${result.ok ? 'PASS' : 'FAIL'}`].join('\n')
+  const groups = ['manifest ', 'passages ', 'citation ', 'grant ', 'receipt ', 'refund ', 'audit chain', 'testnet ']
+  const lines = [`VERIFY ${result.runId ?? 'report'}`]
+  for (const prefix of groups) {
+    const checks = result.checks.filter(c => c.check.startsWith(prefix))
+    if (checks.length) lines.push(`${checks.some(c => c.status === 'FAIL') ? 'FAIL' : checks.every(c => c.status === 'SKIP') ? 'SKIP' : 'PASS'} ${prefix.trim().toUpperCase().padEnd(10)} ${checks.filter(c => c.status === 'PASS').length}/${checks.length}`)
+  }
+  for (const c of result.checks.filter(c => c.status !== 'PASS')) lines.push(`${c.status.padEnd(4)} ${c.check}: ${c.detail}`)
+  lines.push(`RESULT ${result.ok ? 'PASS' : 'FAIL'}`)
+  return lines.join('\n')
 }
 export { ReceiptBundleSchema, sha256 }
 export type { ReceiptBundle }

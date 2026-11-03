@@ -90,3 +90,35 @@ spend/reservation, seven-day gross spend and rails. Revocation takes effect at t
 next HTTP request and the next unsigned purchase gate; already signed intents
 reconcile once. The operator token remains admin-only. See the
 [CLI and connection runbook](RUNBOOK.md#one-wallet-many-agent-allowances-280).
+
+## Verify an exported answer (#278)
+
+```ts
+import { createClient, verifyAnswer } from '../sdk/index.js'
+const client = createClient({ baseUrl, token })
+const bundle = await client.receipts(runId) // own run for an agent key
+const offline = await verifyAnswer(bundle)
+const onLedger = await verifyAnswer(bundle, { testnet: true, expectHead })
+```
+
+`verifyAnswer()` is a Node API. It accepts a receipt bundle or the JSON report
+wrapper, returns `{ ok, runId, checks: [{ check, status, detail }] }`, and never
+loads keys or a database. Offline is the default; `testnet: true` performs only
+public Testnet lookups using the same verifier as `audit:verify`. The optional
+`ledger` adapter supports deterministic local verification tests.
+
+`GET /runs/:id/receipts.json` exports a versioned bundle; `GET
+/runs/:id/report.json` returns the generated report wrapper or the current answer
+bundle before PDF generation. PDF creation writes the report's bundled evidence
+as a sidecar and embeds it in the PDF. `POST /api/verify` accepts bundle/report
+JSON (8 MiB limit); `?testnet=1` enables read-only ledger checks and `?expectHead=`
+pins a separately obtained chain head. The endpoint follows operator auth;
+agent keys may fetch only their own receipts. No verification UI was added.
+
+`npm run verify -- <receipts.json|report.json|report.pdf> [--testnet]
+[--expect-head HASH] [--json]` prints a plain check summary and exits 0 on success,
+1 on failed evidence, 2 on unreadable/legacy input or invalid arguments. Ledger
+checks skipped offline are labelled. SIMULATED receipts cannot pass full Testnet
+verification. The former full repository command is preserved as
+`npm run check:full`. Proof limits and recorded tamper example:
+[evidence](evidence/verify-278.md).

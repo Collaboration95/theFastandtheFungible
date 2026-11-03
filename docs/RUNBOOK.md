@@ -253,3 +253,21 @@ finish under their existing reservation, even after the agent is revoked. Wallet
 pause still applies. An already open SSE connection may finish its own run; it
 cannot admit another run. Export attribution stays the original agent key id.
 See [Testnet evidence](evidence/agents-280.md).
+
+## Automatic answer handoff and portable verification (#314 / #278)
+
+After reconciliation verifies a failed research run's checkpoint intent, the
+engine automatically re-answers from accessible grants and marks DONE. It uses
+the exclusive answer path, never a new decision or purchase. Stopped/done and
+hire runs remain final; exhausted, unverified deliveries remain FAILED. Restart
+also resumes an interrupted recovery answer without spending. Recovery phase
+changes have hash-chained audit entries. If a source stays unavailable, restore
+the publisher and use the existing same-blob retry after automatic retries end.
+
+Export `/runs/<id>/receipts.json` or create a PDF with the normal report endpoint.
+Anyone holding that export can run `npm run verify -- <report>`, offline, without
+your credentials. Add `--testnet` for public read-only payment/refund lookups.
+A PASS offline is evidence integrity only; it explicitly skips ledger checks.
+Keep an independently recorded audit head and supply `--expect-head` when needed.
+See [SDK/API instructions](sdk.md#verify-an-exported-answer-278) and the
+[real Testnet UC3 and tamper demonstration](evidence/verify-278.md).

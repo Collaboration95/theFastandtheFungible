@@ -134,7 +134,7 @@ export async function createApiApp(options: ApiOptions = {}) {
       if (stopping) return
       for (const run of store.listRuns()) {
         const id = run.checkpoint.intentId
-        if (store.isHireRun(run.runId) || run.stopped || run.phase !== 'FAILED' || !id || run.checkpoint.answeredIntentId === id) continue
+        if (store.isHireRun(run.runId) || run.stopped || run.phase !== 'FAILED' || !id || run.checkpoint.answeredIntentId === id && run.checkpoint.recoveryIntentId !== id) continue
         if (!run.intents.some(i => i.intentId === id && i.status === 'VERIFIED')) continue
         await launch(run.runId, () => loop.recoverAnswer(run.runId, id))
       }

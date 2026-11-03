@@ -26,6 +26,8 @@ submission pack (description, deck, video script, pitch, Q&A).
 
 ## Reference
 
+- [Verify any answer](sdk.md#verify-an-exported-answer-278): offline signatures/citations and read-only Testnet payments/refunds; [UC3 recovery and tamper evidence](evidence/verify-278.md).
+
 - [Builder feedback](BUILDER-FEEDBACK.md): living implementation log, Top 5, mainnet checklist and September submissions.
 - [MCP server](mcp.md): connect Claude Code or Codex, the four tools, caps and idempotency.
 - [Running it](running.md): every make target, the demo keys, Docker.

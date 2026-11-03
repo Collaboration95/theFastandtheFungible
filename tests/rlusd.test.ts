@@ -16,6 +16,8 @@ import { decodeHeader } from '../shared/x402.js'
 import { signFor } from './fixtures/x402-payer.js'
 import { Facilitator, requirementsFor } from '../publisher/facilitator.js'
 import { PublisherJournal } from '../publisher/journal.js'
+import { verifyAnswer } from '../sdk/verify.js'
+import { receiptBundle } from '../server/receipt-bundle.js'
 import { verifyOnTestnet } from '../server/audit.js'
 const asset = { currency: RLUSD_CURRENCY, issuer: RLUSD_TESTNET_ISSUER, label: 'RLUSD Testnet' as const } as const
 const clean: (() => unknown)[] = []
@@ -61,6 +63,11 @@ it('policy buys issued currency, verifies proof before access, replays once, exp
   expect(s.store.auditEntries().find(e => e.kind === 'settle')?.data).toMatchObject({ asset, deliveredAmount: ledgerAmount('0.6', asset) })
   const rows = s.store.receiptRows(); expect(rows[0].asset).toEqual(asset)
   expect((await verifyOnTestnet(rows, s.chain.ledger))[0]).toMatchObject({ status: 'ok', detail: expect.stringContaining('RLUSD Testnet') })
+  s.store.updateRun(run.runId, { candidates: [candidate] })
+  const content = s.store.getRun(run.runId).contents[0]
+  s.store.addAnswer(run.runId, { conclusion: 'Verified issued payment.', claims: [{ id: 'issued', text: content.spans[0].text, stance: 'SUPPORTS', citations: [{ resourceId: content.resourceId, version: content.version, spanId: content.spans[0].id }] }], openGaps: [], version: 1, provider: 'fixture', model: 'extractive-fixture' })
+  const verified = await verifyAnswer(receiptBundle(s.store, run.runId), { testnet: true, ledger: s.chain.ledger })
+  expect(verified.checks.filter(c => c.status === 'FAIL')).toEqual([])
   const paid = await payAndFetch(`${s.url}${candidate.url}`, { wallet: s.payer, ledger: s.chain.ledger, maxDrops: '1', issued: { asset, maxAmount: '0.60' } })
   expect(paid.payment.asset).toEqual(asset); expect(paid.response.ok).toBe(true)
 })

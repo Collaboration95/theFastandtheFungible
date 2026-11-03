@@ -313,16 +313,11 @@ export async function verifyOnTestnet(rows: ReceiptRow[], ledger: Ledger): Promi
     if (row.refundTxHash) {
       const refund = { intentId: row.intentId, txHash: row.refundTxHash, kind: 'refund' as const }
       try {
-        const found = await lookupTx(ledger, row.refundTxHash)
-        if (found.state !== 'validated') out.push({ ...refund, status: 'pending', detail: 'refund not found as a validated transaction on this node' })
-        else {
-          const { tx, meta } = found
-          const wrong = tx.TransactionType !== 'Payment' ? 'not a Payment' : meta.TransactionResult !== 'tesSUCCESS' ? `ledger result ${String(meta.TransactionResult)}`
-            : tx.Account !== row.payee ? 'refund was not sent by the payee' : tx.Destination !== row.payer ? 'refund was not sent to the payer'
-              : !matchesAmount(meta.delivered_amount, amountFor(Number(row.refundAmountMinor), row.asset || 'XRP'), row.asset || 'XRP') ? 'refund amount differs from the recorded refund'
-                : String(tx.InvoiceID ?? '').toUpperCase() !== row.txHash.toUpperCase() ? 'refund InvoiceID is not the original payment hash' : undefined
-          out.push(wrong ? { ...refund, status: 'mismatch', detail: wrong } : { ...refund, status: 'ok', detail: `ledger ${found.ledgerIndex} · ${row.refundAmountMinor} minor back to ${row.payer}` })
-        }
+        const found = await verifyPayment(ledger, row.refundTxHash, { rail: 'xrpl-testnet', network: 'xrpl:1', asset: row.asset || 'XRP', payTo: row.payer, amountDrops: amountFor(Number(row.refundAmountMinor), row.asset || 'XRP'), invoiceId: row.txHash.toUpperCase() })
+        if (found.state === 'pending') out.push({ ...refund, status: 'pending', detail: 'refund not found as a validated transaction on this node' })
+        else if (found.state === 'invalid') out.push({ ...refund, status: 'mismatch', detail: found.reason === 'wrong destination' ? 'refund was not sent to the payer' : found.reason })
+        else if (found.proof.payer !== row.payee) out.push({ ...refund, status: 'mismatch', detail: 'refund was not sent by the payee' })
+        else out.push({ ...refund, status: 'ok', detail: `ledger ${found.proof.ledgerIndex} · ${row.refundAmountMinor} minor back to ${row.payer}` })
       } catch (error) { out.push({ ...refund, status: 'error', detail: `lookup failed: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}` }) }
     }
     return out
