@@ -37,6 +37,25 @@ describe('fact menu (#260)', () => {
     expect(satisfiesFactCover('Kestrels gross margins 55%', { entity: 'Kestrel', measure: 'gross margin' })).toBe(false)
   })
 
+  it('caps writer-controlled decision fields and rejects a menu borrowed from another article', async () => {
+    const world = await loadWorld()
+    const article = world.corpus.articles.find(a => a.articleId === 'notft-inside-boj-september-hike')!
+    const candidate = candidateOf(world, article)
+    expect(signedFactMenu(candidate).length).toBeGreaterThan(0)
+    expect(signedFactMenu({ ...candidate, resourceId: 'another-article' })).toEqual([])
+    expect(signedFactMenu({ ...candidate, version: 'another-version' })).toEqual([])
+    expect(signedFactMenu({ ...candidate, tier: 'FREE' })).toEqual([])
+    const projected = clefCandidate({ ...candidate, title: 'a\n'.repeat(1000), facets: Array(100).fill('x'.repeat(1000)), derivedFrom: 'x'.repeat(1000) })
+    expect(projected.title).toHaveLength(240)
+    expect(projected.title).not.toContain('\n')
+    expect(projected.tags).toHaveLength(12)
+    expect(projected.tags.every(t => t.length === 48)).toBe(true)
+    expect(projected.derivedFrom).toHaveLength(120)
+    const keys = simulatedKeys(article.publisherSlug)
+    const menu = signManifest({ ...candidate.manifest!, claims: Array.from({ length: 100 }, (_, i) => ({ ...candidate.manifest!.claims[0], covers: { entity: 'Kestrel', measure: 'capacity', comparison: `case ${String.fromCharCode(65 + i % 26)}` } })) }, keys.privateKey)
+    expect(signedFactMenu({ ...candidate, manifest: menu })).toHaveLength(8)
+  })
+
   it('signs every corpus claim menu, exposes only bounded promises, and leaks no values or eight-word run', async () => {
     const world = await loadWorld()
     const journal = new PublisherJournal(':memory:')
