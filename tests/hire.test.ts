@@ -1,7 +1,8 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import { Wallet } from 'xrpl'
 import type { AddressInfo } from 'node:net'
 import { loadWriterCorpus } from '../publisher/corpus.js'
@@ -18,6 +19,7 @@ import { USE_CASES } from './scenarios/use-cases.js'
 import { auditRuns, readRuns } from '../scripts/gate-audit.js'
 import { auditHireRecords } from '../server/hire/audit.js'
 import { royaltyPlan } from '../server/hire/policy.js'
+import { verifyOnTestnet } from '../server/audit.js'
 
 const clean: (() => unknown)[] = []
 afterEach(async () => { for (const fn of clean.splice(0).reverse()) await fn(); vi.unstubAllEnvs() })
@@ -70,9 +72,29 @@ it('settles one caller intent, buys, pays every cited writer including free, ret
   const replay = await payAndFetch(s.url, { ...s.opts, fetch: (url, init) => fetch(String(url).replace(new URL(s.url).origin, `http://127.0.0.1:${(server.address() as AddressInfo).port}`), init) })
   expect(await replay.response.json()).toEqual(result)
   expect(s.chain.submits).toBe(submits)
+  // #288: the inbound payment, the purchase, every royalty and the change are in the hash chain exactly once, despite the concurrent call, replay and restart.
+  const store = s.api.store, payouts = result.moneyChain.payments as { kind: string; txHash: string; amountDrops: string; payTo: string }[]
+  expect(store.auditVerify()).toMatchObject({ ok: true, failures: [], coverage: { inbound: 1, payouts: payouts.length, receipts: 1 } })
+  const kinds = store.auditEntries().map(e => e.kind)
+  expect(kinds.filter(k => k === 'inbound')).toHaveLength(1)
+  expect(kinds.filter(k => k === 'payout-reserve')).toHaveLength(1)
+  expect(kinds.filter(k => k === 'payout-sign')).toHaveLength(payouts.length)
+  expect(kinds.filter(k => k === 'payout-settle')).toHaveLength(payouts.length)
+  expect(store.auditEntries().find(e => e.kind === 'admission')).toMatchObject({ surface: 'x402', principal: result.moneyChain.inbound.payer, data: { hireReserveMinor: 20, requestedMinor: 200, admittedMinor: 200 } })
+  const rows = store.receiptRows()
+  expect(rows.map(r => r.kind).sort()).toEqual(['change', 'inbound', 'purchase', ...royalties.map(() => 'royalty')].sort())
+  expect(rows.find(r => r.kind === 'inbound')).toMatchObject({ txHash: result.moneyChain.inbound.txHash, amountDrops: result.moneyChain.inbound.amountDrops, payer: result.moneyChain.inbound.payer, payee: result.moneyChain.inbound.payTo })
+  for (const p of payouts) expect(rows.find(r => r.txHash === p.txHash)).toMatchObject({ kind: p.kind, amountDrops: p.amountDrops, payee: p.payTo, status: 'CONFIRMED', amountMinor: '' })
+  // The same rows re-check against the (fake) ledger: destination, delivered amount and InvoiceID of all of them.
+  // (The synthetic ledger reports a moving ledger index per lookup, so the index comparison is left out here.)
+  expect((await verifyOnTestnet(rows.map(r => ({ ...r, ledgerIndex: '' as const })), s.chain.ledger)).map(c => c.status)).toEqual(rows.map(() => 'ok'))
   expect(auditHireRecords([run], [{ ...hires[0], result: { ...result, moneyChain: { ...result.moneyChain, royaltyDrops: '1' } } }])).toMatchObject([{ rule: 'money_chain_reconciliation' }])
   const bad = structuredClone(result); bad.moneyChain.payments.find((p: { kind: string }) => p.kind === 'royalty').payTo = Wallet.generate().classicAddress
   expect(auditHireRecords([run], [{ ...hires[0], result: bad }]).some(v => v.rule === 'royalty_policy')).toBe(true)
+  // Rewriting a payout amount in the money table no longer matches the signed entry in the chain.
+  const raw = new DatabaseSync(s.options.dbPath), tampered = (payouts[0] as unknown as { id: string }).id
+  raw.prepare('UPDATE policy_payments SET json=replace(json, ?, ?) WHERE id=?').run(`"amountDrops":"${payouts[0].amountDrops}"`, '"amountDrops":"1"', tampered); raw.close()
+  expect(store.auditVerify().failures.map(f => f.reason)).toEqual([expect.stringContaining('differs from its payout-sign entry')])
 }, 30_000)
 
 it('refuses unauthenticated calls, paused/capped admission, changed requests and a second blob on a paid invoice', async () => {
@@ -141,4 +163,19 @@ it('recovers a payout timeout with the original signed blob and pays a generic a
   })
   expect(generic.response.ok).toBe(true)
   expect((await generic.response.json()).articleId).toBe(article.articleId)
+}, 30_000)
+
+it('refuses a payout to a denylisted payee before signing it, and the audit log keeps the listed reason (#288)', async () => {
+  const s = await setup()
+  const list = join(mkdtempSync(join(tmpdir(), 'hire-deny-')), 'deny.json'); clean.push(() => rmSync(join(list, '..'), { recursive: true, force: true }))
+  writeFileSync(list, JSON.stringify([{ address: s.caller.classicAddress, reason: 'Operator list: test entry' }]))
+  vi.stubEnv('PAYEE_DENYLIST_FILE', list)
+  const response = (await payAndFetch(s.url, s.opts)).response
+  expect(response.status).toBe(500)
+  const store = s.api.store, entries = store.auditEntries()
+  expect(entries.find(e => e.kind === 'refusal' && e.data.stage === 'payout')).toMatchObject({ surface: 'x402', data: { paymentKind: 'change', payTo: s.caller.classicAddress, listReason: 'Operator list: test entry', reason: 'Payee is on the operator denylist; nothing was charged' } })
+  expect(entries.filter(e => e.kind === 'inbound')).toHaveLength(1)
+  expect(entries.some(e => e.kind === 'payout-sign')).toBe(false)
+  expect(store.listRuns().flatMap(run => store.policyPayments(run.runId)).every(p => !p.submission)).toBe(true)
+  expect(store.auditVerify().ok).toBe(true)
 }, 30_000)

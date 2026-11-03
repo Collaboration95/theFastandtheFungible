@@ -10,7 +10,7 @@ import { verifyPayment } from '../../shared/xrpl.js'
 import { presentRun } from '../../sdk/present.js'
 import type { ApiContext } from '../api/context.js'
 import { admit } from '../spend-policy.js'
-import { payeeRefusal } from '../payee-screening.js'
+import { screenPayee } from '../payee-screening.js'
 import { freezeRequirements, plan as planSearch } from '../agents/scope.js'
 import { SERVICE_FEE_MINOR, royaltyPlan, changePlan } from './policy.js'
 import { HireJournal, type Hire } from './journal.js'
@@ -49,8 +49,11 @@ export function hireService(context: ApiContext) {
     store.reservePolicyPayments(runId, [...royalties, ...change])
     for (const payment of store.policyPayments(runId)) {
       if (payment.confirmedAt) continue
-      const refusal = payeeRefusal(payment.payTo)
-      if (refusal) throw new Error(refusal)
+      const screened = screenPayee(payment.payTo)
+      if (screened) {
+        store.recordAudit({ runId, intentId: payment.id, kind: 'refusal', data: { stage: 'payout', reason: screened.refusal, paymentKind: payment.kind, payTo: payment.payTo, amountDrops: payment.amountDrops, screen: screened.list, listReason: screened.reason ?? null } }, { stage: 'payout', paymentId: payment.id })
+        throw new Error(screened.refusal)
+      }
       const terms = { rail: 'xrpl-testnet' as const, network: 'xrpl:1' as const, asset: 'XRP' as const,
         payTo: payment.payTo, amountDrops: payment.amountDrops, invoiceId: ledgerInvoiceId(payment.id), memo: JSON.stringify({ runId, kind: payment.kind, intentId: payment.id }) }
       const send = async (signed: import('../xrpl.js').Submission) => {
@@ -61,7 +64,7 @@ export function hireService(context: ApiContext) {
         const outcome = await payer!.waitFor(signed)
         const proof = await verifyPayment(payer!.ledger, signed.txHash, terms)
         if (outcome.state !== 'success' || proof.state !== 'ok') throw new Error('Policy payment pending; resend original intent')
-        store.confirmPolicyPayment(runId, payment.id)
+        store.confirmPolicyPayment(runId, payment.id, proof.proof.ledgerIndex)
         store.appendEvent(runId, { type: 'XRPL', label: `${payment.kind} · ${XRPL_LABEL}`, data: { kind: payment.kind, txHash: signed.txHash, amountDrops: payment.amountDrops, payTo: payment.payTo, invoiceId: terms.invoiceId } })
       }
       if (payment.submission) await send(payment.submission)
@@ -125,6 +128,10 @@ export function hireService(context: ApiContext) {
     const settled = await facilitator.settle(decoded, { articleId: key, version: 'hire-v1' })
     res.set('PAYMENT-RESPONSE', encodeHeader('PAYMENT-RESPONSE', paymentResponse(settled)))
     if (!settled.ok) return res.status(402).json({ error: settled.reason, label: XRPL_LABEL })
+    // Written once per settled payment; a request replayed after a crash between settlement and here writes it then.
+    const inbound = settled.settlement
+    store.recordAudit({ runId: hire.runId, intentId: hire.key, kind: 'inbound', surface: 'x402', principal: verified.payer, data: { txHash: verified.txHash, payer: verified.payer, payTo: hire.quote.payTo, amountDrops: hire.quote.amount,
+      invoiceId: hire.quote.ledgerInvoiceId, ledgerIndex: inbound?.ledgerIndex ?? null, settledAt: inbound?.settledAt ?? null, policy: 'hire-v1', budgetMinor: hire.budgetMinor, serviceFeeMinor: SERVICE_FEE_MINOR, label: XRPL_LABEL } }, { txHash: verified.txHash })
     if (hire.result) { store.closeHireReserve(hire.runId!); return res.json(hire.result) }
     let pending = active.get(key)
     if (!pending) {

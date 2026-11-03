@@ -101,7 +101,7 @@ Five gates hold on every run, enforced by tests (`tests/purchase.test.ts`, `gate
 - citations point at delivered passages;
 - anything simulated or substituted is labelled.
 
-Architecture: [contracts/ARCHITECTURE.md](docs/contracts/ARCHITECTURE.md) · [security](docs/contracts/SECURITY.md) · [interactive project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) · [Nov 2026 architecture review](docs/contracts/REVIEW-NOV-2026.md)
+Architecture: [contracts/ARCHITECTURE.md](docs/contracts/ARCHITECTURE.md) · [security](docs/contracts/SECURITY.md) · [interactive project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) · [Nov 2026 architecture review](docs/contracts/REVIEW-NOV-2026.md) · [compliance posture](docs/COMPLIANCE.md) (audit trail, export, what is and isn't claimed)
 
 ## Proof
 
@@ -202,7 +202,7 @@ key for retry. Back up this ignored directory privately. Mainnet is disabled.
 Every new writer is shown as **unverified writer**; an operator denylist at
 `data/payee-denylist.json` (an array of `{ "address": "r…", "reason": "…" }`)
 is checked before wallet funding and before payment signing. This is not KYB
-or a sanctions provider.
+or a sanctions provider ([compliance posture](docs/COMPLIANCE.md)).
 
 To reproduce the end-to-end demo with real retrieval, fixture decisions and
 proof verification:

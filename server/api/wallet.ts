@@ -32,7 +32,7 @@ export function walletRouter(context: ApiContext) {
   })
   router.get('/api/wallet/status', (_req, res) => res.json(store.walletStatus()))
   router.post('/api/wallet/pause', (req, res) => {
-    store.setPaused(z.object({ paused: z.boolean() }).strict().parse(req.body).paused)
+    store.setPaused(z.object({ paused: z.boolean() }).strict().parse(req.body).paused, { surface: 'operator', principal: 'api-token' })
     res.json(store.walletStatus())
   })
   return router

@@ -1,4 +1,5 @@
 import { operationsRouter } from './api/operations.js'
+import { auditRouter } from './api/audit.js'
 import { withModelUsage, logMoneyEvent } from './telemetry.js'
 import { hireService } from './hire/service.js'
 import { admissionGuard } from './admission.js'
@@ -95,6 +96,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const context: ApiContext = { store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, reportDir, reportJobs, progress }
   app.use(walletRouter(context))
   app.use(operationsRouter(context))
+  app.use(auditRouter(context))
   // Trust matrix (D6): public, engine-side, persisted across runs.
   app.get('/api/reputation', (_req, res) => res.json({ publishers: reputation.list() }))
   app.post('/api/reputation/reset', (_req, res) => { reputation.reset(); res.json({ publishers: [] }) })

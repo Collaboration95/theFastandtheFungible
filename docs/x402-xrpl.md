@@ -240,8 +240,12 @@ The visible API money chain reconciles exactly:
 `inbound = gross purchases + royalties + change + retained service fee`.
 `npm run gate:audit -- --db <app.db>` also checks royalty recipients/amounts and
 this identity. This is API/CLI only; the `src/` money-chain view is deferred to
-the queued UX overhaul. Payouts have durable rows and XRPL events; integration
-with the future #288 hash-chained `audit_log` remains with that lane.
+the queued UX overhaul. Payouts have durable rows and XRPL events, and the
+inbound payment, each payout's reserve, signature and confirmation, and any
+denylist refusal are entries in the hash-chained `audit_log` (#288);
+`npm run audit:verify -- --testnet` re-reads them on the ledger and
+`npm run audit:export` lists them as `inbound`, `royalty` and `change` rows
+([COMPLIANCE.md](COMPLIANCE.md)).
 
 ### Generic SDK buyer (any x402-on-XRPL seller)
 

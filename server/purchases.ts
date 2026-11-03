@@ -1,4 +1,4 @@
-import { payeeRefusal } from './payee-screening.js'
+import { screenPayee } from './payee-screening.js'
 import { scoreStep } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
@@ -88,9 +88,11 @@ export class PurchaseManager {
     }
     if (intent.status === 'RESERVED') {
       // Before anything is signed: the rail, the payee, the amount and the invoice binding must all check out.
-      const refusal = this.refusal(intent, candidate, manifest)
+      // The operator denylist runs first and in policy code, before anything can be signed (#288).
+      const screened = [intent.quote?.payment?.payTo, candidate.wallet, manifest?.wallet].flatMap(address => address ? screenPayee(address) ?? [] : [])[0]
+      const refusal = screened?.refusal ?? this.refusal(intent, candidate, manifest)
       if (refusal) {
-        intent = this.store.updateIntent(intentId, { status: 'FAILED_NOT_SETTLED', error: refusal })
+        intent = this.store.updateIntent(intentId, { status: 'FAILED_NOT_SETTLED', error: refusal }, screened ? { screen: screened.list, listedAddress: screened.address, listReason: screened.reason ?? null } : {})
         this.store.appendEvent(runId, { type: 'PURCHASE', label: `FAILED_NOT_SETTLED · ${refusal}`, data: { intentId } })
         return intent
       }
@@ -114,8 +116,6 @@ export class PurchaseManager {
     return intent
   }
   private refusal(intent: PurchaseIntent, candidate: PublicCandidate, manifest?: Manifest): string | undefined {
-    const screened = payeeRefusal(intent.quote?.payment?.payTo ?? candidate.wallet ?? '')
-    if (screened) return screened
     const quote = intent.quote!, terms = quote.payment!
     const bound = invoiceFields(quote.quoteId)
     if (terms.rail !== this.payer.rail) return this.payer.rail === 'xrpl-testnet' ? 'Publisher is not on the XRPL Testnet rail; nothing was charged' : 'Publisher is on the XRPL Testnet but this run is SIMULATED; nothing was charged'

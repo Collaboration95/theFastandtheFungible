@@ -1,7 +1,9 @@
 import { DROPS_PER_MINOR } from '../shared/contracts/index.js'
 import type { ChainPayment } from './hire/policy.js'
 import { spendPolicy, POLICY_VERSION, PAUSED, type Surface } from './spend-policy.js'
-import { clampBudget } from '../mcp/policy.js'
+import { budgetPolicy, clampBudget } from '../mcp/policy.js'
+import { AuditLog, auditEntries, receiptRows, verifyChain, type AuditInput, type DateRange } from './audit.js'
+import { pruneRunData, type PruneOptions } from './retention.js'
 import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import type { Submission } from './xrpl.js'
@@ -28,11 +30,13 @@ function publicMetadata(value: unknown): void {
 }
 
 
-export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string }
+export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string; ledgerIndex?: number }
 
 /** All mutations are synchronous SQLite transactions; no transaction crosses an await. */
 export class Store {
   private readonly db: DatabaseSync
+  /** Hash-chained operator ledger (#288). Entries are written inside the same transactions as the state they describe. */
+  readonly audit: AuditLog
   constructor(readonly path: string = 'data/app.db', private readonly onEvent?: (event: TraceEvent) => void) {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
     this.db = new DatabaseSync(path)
@@ -57,6 +61,16 @@ export class Store {
       CREATE TABLE IF NOT EXISTS grant_salts (intent_id TEXT PRIMARY KEY REFERENCES grants(intent_id), json TEXT NOT NULL);
     `)
     this.db.exec(`INSERT OR IGNORE INTO admissions SELECT key, 'mcp', 'operator', run_id, budget, budget, day, 'mcp-v0' FROM mcp_requests`)
+    AuditLog.ensureSchema(this.db)
+    this.audit = new AuditLog(this.db)
+    this.atomic(() => this.audit.boot(this.policySnapshot()))
+  }
+  /** The caps and policy version in force at boot; a change between boots is itself an audit entry. Invalid config is reported at use, not here. */
+  private policySnapshot(): Record<string, unknown> | undefined {
+    try {
+      const policy = spendPolicy()
+      return { policyVersion: POLICY_VERSION, walletDailyMinor: policy.walletDailyMinor, perPromptMaxMinor: policy.maxMinor, mcp: budgetPolicy(), envPaused: policy.paused }
+    } catch { return undefined }
   }
   private atomic<T>(fn: () => T): T {
     this.db.exec('BEGIN IMMEDIATE')
@@ -117,8 +131,13 @@ export class Store {
   isPaused() {
     return spendPolicy().paused || Boolean(this.db.prepare('SELECT paused FROM wallet_control WHERE id=1').get()?.paused)
   }
-  setPaused(paused: boolean) {
-    this.db.prepare('INSERT INTO wallet_control VALUES (1,?) ON CONFLICT(id) DO UPDATE SET paused=excluded.paused').run(Number(paused))
+  setPaused(paused: boolean, actor: { surface?: string; principal?: string } = {}) {
+    this.atomic(() => {
+      const previous = this.isPaused()
+      this.db.prepare('INSERT INTO wallet_control VALUES (1,?) ON CONFLICT(id) DO UPDATE SET paused=excluded.paused').run(Number(paused))
+      this.audit.append({ kind: 'pause', surface: actor.surface ?? 'operator', principal: actor.principal ?? 'operator',
+        data: { paused, previousEffectivePaused: previous, effectivePaused: this.isPaused(), envPaused: spendPolicy().paused, policyVersion: POLICY_VERSION } })
+    })
   }
   walletStatus(day = new Date().toISOString().slice(0, 10)) {
     return this.atomic(() => ({ ...this.usage(day), dailyMinor: spendPolicy().walletDailyMinor,
@@ -148,6 +167,12 @@ export class Store {
       run.policyVersion = POLICY_VERSION
       this.saveRun(run)
       this.db.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)
+      this.audit.append({ runId: run.runId, kind: 'admission', surface: input.surface, principal: input.principal, data: {
+        requestedMinor: input.requestedMinor, admittedMinor: budget, maxMinor: input.maxMinor, surfaceDailyMinor: input.dailyMinor ?? null, walletDailyMinor: spendPolicy().walletDailyMinor,
+        walletRemainingMinor: remaining, surfaceRemainingMinor: surfaceRemaining, hireReserveMinor: input.reserveMinor ?? 0, paused: this.isPaused(), policyVersion: POLICY_VERSION, day,
+        questionCommitment: this.audit.questionCommitment(run.runId, input.question), labels: input.labels ?? null } })
+      if (budget === 0) this.audit.append({ runId: run.runId, kind: 'refusal', surface: input.surface, principal: input.principal, data: { stage: 'admission', policyVersion: POLICY_VERSION,
+        reason: this.isPaused() ? PAUSED : 'No budget left under the wallet or surface caps; nothing can be spent' } })
       return { run, reused: false }
     })
     return { ...admitted, run: this.getRun(admitted.run.runId) }
@@ -242,7 +267,15 @@ export class Store {
     })
   }
   addDecision(runId: string, decision: DecisionRound): void {
-    this.db.prepare('INSERT INTO decisions VALUES (?,?,?)').run(runId, decision.round, JSON.stringify(DecisionRoundSchema.parse(decision)))
+    const parsed = DecisionRoundSchema.parse(decision)
+    this.atomic(() => {
+      this.db.prepare('INSERT INTO decisions VALUES (?,?,?)').run(runId, parsed.round, JSON.stringify(parsed))
+      const verdicts: Record<string, number> = {}
+      for (const row of parsed.rows) verdicts[row.verdict] = (verdicts[row.verdict] ?? 0) + 1
+      this.audit.append({ runId, kind: 'decision', data: { round: parsed.round, provider: parsed.provider, model: parsed.model, promptVersion: parsed.promptVersion ?? null, threshold: parsed.threshold,
+        calibration: parsed.calibration ? { id: parsed.calibration.id, version: parsed.calibration.version } : null, candidatesJudged: parsed.rows.length, verdicts,
+        selectedResourceId: parsed.selectedResourceId ?? null, fallbackReason: parsed.fallbackReason?.slice(0, 200) ?? null } })
+    })
   }
   addContent(runId: string, input: ContentEnvelope): void {
     const content = ContentEnvelopeSchema.parse(input)
@@ -287,6 +320,10 @@ export class Store {
       else if (intents.some(i => i.profileId === intent.profileId && i.resourceId === intent.resourceId && i.version === intent.version && (reservedStatuses.has(i.status) || chargedStatuses.has(i.status)))) error = 'Resource already purchased or reserved'
       const result: PurchaseIntent = { ...intent, status: error ? 'SKIPPED' : 'RESERVED', createdAt: new Date().toISOString(), error }
       this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId, intent.runId, JSON.stringify(result))
+      const terms = { resourceId: intent.resourceId, version: intent.version, profileId: intent.profileId, amountMinor: intent.amountMinor, payTo: quote.payment?.payTo ?? null, rail: quote.payment?.rail ?? null,
+        runBudgetMinor: run.budgetMinor, perSourceCapMinor: run.perSourceCapMinor, committedMinor: committed, walletDailyMinor: spendPolicy().walletDailyMinor, policyVersion: run.policyVersion ?? POLICY_VERSION }
+      this.audit.append(error ? { runId: intent.runId, intentId: intent.intentId, kind: 'refusal', data: { stage: 'reserve', reason: error, ...terms } }
+        : { runId: intent.runId, intentId: intent.intentId, kind: 'reserve', data: { quoteHash: quote.quoteHash, ...terms } })
       return result
     })
   }
@@ -301,11 +338,17 @@ export class Store {
     return this.atomic(() => {
       const intent = this.getIntent(intentId)
       if (!intent || intent.status !== 'RESERVED') return false
-      if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) { this.saveIntent({ ...intent, status: 'SKIPPED', error: this.isPaused() ? PAUSED : 'Run stopped, wallet capped or quote expired' }); return false }
+      if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) {
+        const reason = this.isPaused() ? PAUSED : 'Run stopped, wallet capped or quote expired'
+        this.saveIntent({ ...intent, status: 'SKIPPED', error: reason })
+        this.audit.append({ runId: intent.runId, intentId, kind: 'refusal', data: { stage: 'submit', reason, amountMinor: intent.amountMinor, payTo: intent.quote?.payment?.payTo ?? null, policyVersion: POLICY_VERSION } })
+        return false
+      }
       this.saveIntent({ ...intent, status: 'SUBMITTING', submittingAt: new Date().toISOString() }); return true
     })
   }
-  updateIntent(intentId: string, patch: Partial<PurchaseIntent>): PurchaseIntent {
+  /** `auditContext` adds non-secret fields (e.g. the denylist reason) to the refusal entry written when the intent is refused. */
+  updateIntent(intentId: string, patch: Partial<PurchaseIntent>, auditContext: Record<string, unknown> = {}): PurchaseIntent {
     return this.atomic(() => {
       const intent = this.getIntent(intentId)
       if (!intent) throw new Error('Intent not found')
@@ -316,7 +359,10 @@ export class Store {
         DELIVERY_PENDING: ['DELIVERY_FAILED'], DELIVERY_FAILED: ['DELIVERY_PENDING'], VERIFIED: [], SKIPPED: [], FAILED_NOT_SETTLED: [],
       }
       if (status !== intent.status && !transitions[intent.status]?.includes(status)) throw new Error('Unsafe intent transition')
-      const next = { ...intent, ...patch }; this.saveIntent(next); return next
+      const next = { ...intent, ...patch }; this.saveIntent(next)
+      if (status !== intent.status && (status === 'SKIPPED' || status === 'FAILED_NOT_SETTLED')) this.audit.append({ runId: intent.runId, intentId, kind: 'refusal', data: {
+        stage: 'purchase', reason: next.error ?? status, status, amountMinor: intent.amountMinor, payTo: intent.quote?.payment?.payTo ?? null, policyVersion: POLICY_VERSION, ...auditContext } })
+      return next
     })
   }
   recordSettlement(intentId: string, input: Receipt, deliveryToken: string): void {
@@ -329,6 +375,9 @@ export class Store {
       if (intent.status !== 'SUBMITTING') throw new Error('Settlement requires submitting reservation')
       this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), deliveryToken)
       this.saveIntent({ ...intent, status: 'SETTLED', settledAt: receipt.settledAt, receiptId: receipt.receiptId, error: undefined })
+      this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: receipt.xrpl?.txHash ?? intent.txHash ?? null, ledgerIndex: receipt.xrpl?.ledgerIndex ?? null,
+        amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl?.amountDrops ?? intent.quote?.payment?.amountDrops ?? null, payTo: intent.quote?.payment?.payTo ?? null, payer: receipt.xrpl?.payer ?? null,
+        label: receipt.label, resourceId: receipt.resourceId, version: receipt.version, profileId: intent.profileId, settledAt: receipt.settledAt, policyVersion: this.rawRun(intent.runId).policyVersion ?? POLICY_VERSION } })
     })
   }
   /** Write-once: the first signed payment for an intent is the only one that may ever be submitted. */
@@ -341,6 +390,8 @@ export class Store {
       if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) throw new Error('Signing authority expired')
       this.db.prepare('INSERT INTO submissions VALUES (?,?,?,?)').run(intentId, signed.txHash, signed.txBlob, signed.lastLedgerSequence)
       this.saveIntent({ ...intent, txHash: signed.txHash })
+      this.audit.append({ runId: intent.runId, intentId, kind: 'sign', data: { txHash: signed.txHash, lastLedgerSequence: signed.lastLedgerSequence, amountMinor: intent.amountMinor,
+        payTo: intent.quote?.payment?.payTo ?? null, rail: intent.quote?.payment?.rail ?? null, walletDailyMinor: spendPolicy().walletDailyMinor, paused: false, policyVersion: this.rawRun(intent.runId).policyVersion ?? POLICY_VERSION } })
       return signed
     })
   }
@@ -354,7 +405,9 @@ export class Store {
       const intent = this.getIntent(intentId)
       if (!intent || intent.status !== 'SUBMITTING' || this.db.prepare('SELECT 1 FROM receipts WHERE intent_id=?').get(intentId)) throw new Error('Only an unsettled submission can fail')
       const next: PurchaseIntent = { ...intent, status: 'FAILED_NOT_SETTLED', error: reason }
-      this.saveIntent(next); return next
+      this.saveIntent(next)
+      this.audit.append({ runId: intent.runId, intentId, kind: 'refusal', data: { stage: 'submission', reason, amountMinor: intent.amountMinor, payTo: intent.quote?.payment?.payTo ?? null, txHash: intent.txHash ?? null, policyVersion: POLICY_VERSION } })
+      return next
     })
   }
   policyPayments(runId: string): PolicyPayment[] {
@@ -370,6 +423,7 @@ export class Store {
         || payments.some(p => !/^[1-9]\d*$/.test(p.amountDrops) || !Number.isSafeInteger(Number(p.amountDrops)))
         || total + run.spentMinor * DROPS_PER_MINOR > (run.budgetMinor + Number(hold.minor)) * DROPS_PER_MINOR) throw new Error('Invalid policy payment reservation')
       for (const payment of payments) this.db.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(payment.id, runId, JSON.stringify(payment))
+      this.audit.append({ runId, kind: 'payout-reserve', data: { policyVersion: 'hire-v1', totalDrops: String(total), payments: payments.map(p => ({ id: p.id, kind: p.kind, payTo: p.payTo, amountDrops: p.amountDrops })) } })
     })
   }
   assertPolicyPaymentAllowed(runId: string) {
@@ -381,15 +435,18 @@ export class Store {
       if (payment.submission) return payment.submission
       if (this.isPaused() || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
       this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, submission }), id)
+      this.audit.append({ runId, intentId: id, kind: 'payout-sign', data: { paymentKind: payment.kind, txHash: submission.txHash, lastLedgerSequence: submission.lastLedgerSequence, payTo: payment.payTo, amountDrops: payment.amountDrops, paused: false, walletDailyMinor: spendPolicy().walletDailyMinor } })
       return submission
     })
   }
-  confirmPolicyPayment(runId: string, id: string) {
+  confirmPolicyPayment(runId: string, id: string, ledgerIndex?: number) {
     this.atomic(() => {
       const payment = this.policyPayments(runId).find(p => p.id === id)!
       if (!payment.submission) throw new Error('No signed policy payment')
       if (payment.confirmedAt) return
-      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, confirmedAt: new Date().toISOString() }), id)
+      const confirmedAt = new Date().toISOString()
+      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, confirmedAt, ...(ledgerIndex === undefined ? {} : { ledgerIndex }) }), id)
+      this.audit.append({ runId, intentId: id, kind: 'payout-settle', data: { paymentKind: payment.kind, txHash: payment.submission.txHash, ledgerIndex: ledgerIndex ?? null, payTo: payment.payTo, amountDrops: payment.amountDrops, confirmedAt } })
     })
   }
   closeHireReserve(runId: string) {
@@ -416,6 +473,7 @@ export class Store {
       if (existing) { if (existing.contentDigest !== root) throw new Error('Grant is immutable'); return }
       this.db.prepare('INSERT INTO grants VALUES (?,?,?)').run(grant.intentId, JSON.stringify(grant), JSON.stringify(content))
       this.db.prepare('INSERT INTO grant_salts VALUES (?,?)').run(grant.intentId, JSON.stringify(proof.salts))
+      this.audit.append({ runId: grant.runId, intentId: grant.intentId, kind: 'deliver', data: { resourceId: grant.resourceId, version: grant.version, contentDigest: root, passageCount: content.spans.length, accessible: false } })
     })
   }
   /** Server-private: the delivered content and salts behind a grant (proof check and challenge only; never in a snapshot). */
@@ -441,7 +499,9 @@ export class Store {
       if (intent.status !== 'DELIVERY_PENDING' || !grant) throw new Error('Proof requires a stored delivery')
       const verified = ok && grant.contentDigest === intent.quote?.contentDigest
       const next: PurchaseIntent = verified ? { ...intent, status: 'VERIFIED', error: undefined } : { ...intent, status: 'CLAIM_FAILED', failedClaimIds, error: 'Proof failed; source quarantined' }
-      this.saveIntent(next); return next
+      this.saveIntent(next)
+      this.audit.append({ runId: intent.runId, intentId, kind: 'proof', data: { verified, status: next.status, resourceId: intent.resourceId, version: intent.version, contentDigest: grant.contentDigest, failedClaimIds: failedClaimIds.slice(0, 20) } })
+      return next
     })
   }
   /** CLAIM_FAILED → CHALLENGED once the challenge is sent; a resend keeps CHALLENGED. */
@@ -450,7 +510,9 @@ export class Store {
       const intent = this.getIntent(intentId)
       if (!intent || !['CLAIM_FAILED', 'CHALLENGED'].includes(intent.status)) throw new Error('Only a failed proof can be challenged')
       const next: PurchaseIntent = { ...intent, status: 'CHALLENGED' }
-      this.saveIntent(next); return next
+      this.saveIntent(next)
+      if (intent.status === 'CLAIM_FAILED') this.audit.append({ runId: intent.runId, intentId, kind: 'challenge', data: { outcome: 'sent', resourceId: intent.resourceId, version: intent.version, failedClaimIds: (intent.failedClaimIds ?? []).slice(0, 20) } })
+      return next
     })
   }
   /** Write-once per intent (gate 3): the first challenge outcome, and at most one refund, are final. */
@@ -462,7 +524,10 @@ export class Store {
       if (intent.status !== 'CHALLENGED') throw new Error('Challenge outcome requires a sent challenge')
       if ((status === 'REFUNDED') !== Boolean(refund) || (refund && refund.amountMinor !== intent.amountMinor)) throw new Error('A refund is exactly the full charge')
       const next: PurchaseIntent = { ...intent, status, ...(refund ? { refund } : {}) }
-      this.saveIntent(next); return next
+      this.saveIntent(next)
+      this.audit.append(refund ? { runId: intent.runId, intentId, kind: 'refund', data: { txHash: refund.txHash, amountMinor: refund.amountMinor, originalTxHash: intent.txHash ?? null, payTo: intent.quote?.payment?.payTo ?? null, resourceId: intent.resourceId, version: intent.version } }
+        : { runId: intent.runId, intentId, kind: 'challenge', data: { outcome: status, resourceId: intent.resourceId, version: intent.version } })
+      return next
     })
   }
   // Engine-side trust per seller of record (D6, D21), across runs; server/reputation.ts owns the math.
@@ -491,5 +556,20 @@ export class Store {
       return next
     })
   }
+  /** For other modules (e.g. hire-the-agent inbound and royalty payments): appends inside its own transaction. */
+  recordAudit(input: AuditInput, once?: Record<string, string>) {
+    return this.atomic(() => {
+      // `once` makes a replayed request idempotent: an entry of this kind with the same data field values is not written twice.
+      if (once && Object.entries(once).every(([field, value]) => this.db.prepare(`SELECT 1 FROM audit_log WHERE kind=? AND json_extract(data, ?)=? LIMIT 1`).get(input.kind, `$.${field}`, value))) return undefined
+      return this.audit.append(input)
+    })
+  }
+  auditVerify(options: { expectHead?: string } = {}) { return verifyChain(this.db, options) }
+  auditEntries(range: DateRange = {}) { return auditEntries(this.db, range) }
+  receiptRows(range: DateRange = {}) { return receiptRows(this.db, range) }
+  /** Deletes premium content, events and run bodies past the window; keeps receipts, intents and every audit row (#288). */
+  prune(options: PruneOptions) { return this.atomic(() => pruneRunData(this.db, this.audit, options)) }
+  /** Reclaim the freed pages so pruned bytes are not left in the file. Cannot run inside a transaction. */
+  compact(): void { this.db.exec('PRAGMA wal_checkpoint(TRUNCATE); VACUUM; PRAGMA wal_checkpoint(TRUNCATE)') }
   close(): void { this.db.close() }
 }

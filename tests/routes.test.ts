@@ -9,11 +9,12 @@ function routeTable(layers: Layer[]): string[][] {
     ? Object.keys(layer.route.methods).flatMap(method => [layer.route!.path].flat().map(path => [method.toUpperCase(), path]))
     : routeTable(layer.handle?.stack ?? []))
 }
-it.each([false, true])('preserves every pre-#285 route and adds wallet controls and hire (fault controls: %s)', async faults => {
+it.each([false, true])('preserves every pre-#285 route and adds wallet controls, hire and the audit export (fault controls: %s)', async faults => {
   vi.stubEnv('PUBLISHER_FAULTS', faults ? '1' : '0')
   const api = await createApiApp({ dbPath: ':memory:' })
   try {
     const app = api.app as Express & { router: { stack: Layer[] } }
-    expect(routeTable(app.router.stack).sort()).toEqual([...(faults ? before : before.filter(([, path]) => path !== '/api/demo/faults')), ['GET', '/api/health'], ['GET', '/api/metrics'], ['GET', '/api/wallet/status'], ['POST', '/api/wallet/pause'], ['POST', '/v1/ask']].sort())
+    expect(routeTable(app.router.stack).sort()).toEqual([...(faults ? before : before.filter(([, path]) => path !== '/api/demo/faults')), ['GET', '/api/health'], ['GET', '/api/metrics'], ['GET', '/api/wallet/status'], ['POST', '/api/wallet/pause'], ['POST', '/v1/ask'],
+      ['GET', '/api/audit/receipts.csv'], ['GET', '/api/audit/receipts.jsonl'], ['GET', '/api/audit/verify']].sort())
   } finally { await api.close(); vi.unstubAllEnvs() }
 })

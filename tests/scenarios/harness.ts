@@ -166,7 +166,7 @@ export async function startScenario(options: { injection?: boolean; audited?: bo
       const response = await fetch(`${base}/__scenario/scoring/${action}`, { method: 'POST', signal: AbortSignal.timeout(10_000) })
       if (!response.ok) throw new Error(`Scoring barrier ${action}: ${response.status}`)
     }
-    return { base, publisher, corpus, observations, scope, logs, ask, until, request, stop, scoring, audits: (): Audit[] => readFileSync(join(dir, 'audit.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line)) }
+    return { base, publisher, corpus, observations, scope, logs, ask, until, request, stop, scoring, db: env.APP_DB, audits: (): Audit[] => readFileSync(join(dir, 'audit.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line)) }
   } catch (error) { await stop(); throw error }
 }
 
