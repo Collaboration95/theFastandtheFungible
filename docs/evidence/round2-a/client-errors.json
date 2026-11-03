@@ -1,0 +1,29 @@
+{
+  "source": "d3893ae9b955efc26e4f6dead4c49522e2c433cb",
+  "mode": "local synthetic fixtures; no live providers, Testnet network or real money",
+  "categories": [
+    "cap_zero",
+    "paused",
+    "budget_exhausted",
+    "overloaded",
+    "deadline",
+    "settlement_pending",
+    "unauthorized",
+    "backend_unavailable"
+  ],
+  "surfaces": [
+    "TypeScript HTTP fixtures",
+    "Python HTTP fixtures",
+    "MCP structured content over in-memory transport and loopback HTTP"
+  ],
+  "result": "passed",
+  "privacy": "upstream message omitted; URL credentials and remote plaintext refused before transport",
+  "requestDeadlineMs": 15000,
+  "streamIdleMs": 30000,
+  "pythonDefaultTotalWaitSeconds": 60,
+  "overloadedAdmissionImplemented": false,
+  "commands": [
+    "npx vitest run tests/client-errors.test.ts",
+    "python3 -m pytest packages/sdk-python"
+  ]
+}

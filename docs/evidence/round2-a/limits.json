@@ -1,0 +1,32 @@
+{
+  "source": "d3893ae9b955efc26e4f6dead4c49522e2c433cb",
+  "mode": "local synthetic fixtures; no live providers, Testnet network or real money",
+  "activeResearchCap": {
+    "implemented": false,
+    "value": null,
+    "reason": "Deferred engine-wide accounting across planning, scope, reports, hire and recovery."
+  },
+  "stopLatencyMs": {
+    "before": null,
+    "after": null,
+    "reason": "Cooperative in-flight provider cancellation deferred; no sub-second claim."
+  },
+  "publisherByteLimits": {
+    "deliveryAndFree": 2097152,
+    "registrySearchChallenge": 262144,
+    "chunkedCancellation": "passed"
+  },
+  "corpus": {
+    "articles": 83,
+    "maximumSerializedSourceArticleBytes": 17221
+  },
+  "sse": {
+    "maximumFrameAndPendingApplicationBytes": 262144,
+    "snapshotIntervalMs": 250,
+    "initialAndTerminalImmediate": true,
+    "oversize": "disconnect; resync durable GET of same run",
+    "disconnectsTested": 1000,
+    "remainingSubscriptionKeys": 0
+  },
+  "command": "npx vitest run tests/runtime-limits.test.ts tests/stream-281.test.ts"
+}
