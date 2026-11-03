@@ -80,7 +80,10 @@ npm run verify:answer -- docs/evidence/rlusd-uc2-receipts.json --testnet --json
 npm run verify:answer -- docs/evidence/rlusd-uc3-receipts.json --testnet --json
 ```
 
-Both verifier commands exited 0, `ok: true`; all checks PASS. Outputs:
+Both verifier commands exited 0, `ok: true`; the optional external audit-anchor
+check was SKIP. Repeated each command with `--expect-head` set to the audit head
+in its corresponding receipt bundle; these pinned runs exited 0 with all checks
+PASS. The anchor values are independently recorded in the run summaries. Outputs:
 [UC2 verification](rlusd-uc2-verification.json), [UC3 verification](rlusd-uc3-verification.json).
 The live harness requires the supplied payer environment variables and retained
 private writer provisioning under `scratch/real-rlusd/writers.private.json`;
