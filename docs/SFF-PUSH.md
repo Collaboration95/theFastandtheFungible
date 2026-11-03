@@ -16,12 +16,12 @@ PR or issue.
 |---|---|---|---|
 | Product | Cleanup: security deps, test safety, dead code, docs truth | #248–#250 | done ([#254](https://github.com/Collaboration95/theFastandtheFungible/pull/254)) |
 | Product | Cheaper CI: docs-only changes skip tests, no duplicate runs | #252 | done |
-| Product | Nightly scorecard + hard-gate audit | #256 | implemented · fixture baseline, 2 Nov; live keys unavailable |
+| Product | Nightly scorecard + hard-gate audit | #256 | local-only · live pre/post-menu and fixture scores, 3 Nov |
 | Product | MCP server: any agent searches and buys within a human-set cap | #255 | done · fixture proof + Claude Code transcript |
 | Product | Feature-a-day run: 9 notable features, one release each, Thu 5 → Fri 13 ([calendar](#feature-a-day-5-13-nov)) | #270, #260, #259, #262, #273–#277; slack #278–#281 | planned · 5–13 Nov |
 | Product | Day 1: the local app done properly (keyboard-first, state model, record mode) | #270 | done · keyboard-first app, unified state and record mode (Lane A) |
 | Product | macOS app (Electron DMG): Keychain seed, signing pipeline ready for the Developer ID | #259 | planned · Sat 7 |
-| Product | Hill-climb: fact menu, then value-of-information buying + nightly refit | #260, #276 | planned · Fri 6, Thu 12 |
+| Product | Hill-climb: fact menu, then value-of-information buying + nightly refit | #260, #276 | #260 shipped · F1 target met, waste target missed; #276 next |
 | Product | Surprise bet 1: proof-or-refund escrow on XRPL | #261 spike, #273 build | spike complete · bounded Testnet hybrid recommended; build Mon 9 |
 | Product | Pay writers in RLUSD on Testnet | #275 | planned · Wed 11 |
 | Product | Surprise bet 2: hire the agent (agent-to-agent x402 with citation royalties) | #274 | planned · Tue 10 |
@@ -41,27 +41,41 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 `eval/REPORT-coverage.md`). From #256, `make scorecard` writes
 `eval/scorecard/history.jsonl`; paste "before → after" here when a number moves.
 
-| Metric | Baseline (9 Oct) | Latest | Target 12 Nov |
-|---|---|---|---|
-| Wasted spend (purchases adding no supported fact) | 39.5% | 36.19% · live, 3 Nov, pre-fact-menu | ≤ 20% |
-| Purchase-selection F1 | 0.24 (flow) / 0.41 (sweep) | 0.235 flow / 0.400 sweep · live, 3 Nov, pre-fact-menu | ≥ 0.5 (flow) |
-| Supported-fact uplift from paying | +9.5 pts | +11.32 pts · live, 3 Nov, pre-fact-menu | ≥ +20 pts |
-| False-complete rate | 1.9% | 1.89% · live, 3 Nov, pre-fact-menu | ≤ 2% |
-| p95 time to first answer | not measured | 132.7 ms (p50 77.9; final p95 3682.2) · live, 3 Nov, pre-fact-menu | set after baseline |
-| Cost per query (model US$ + XRP spent) | not measured | US$0.00236 timed query + 0 XRP drops · live, 3 Nov, pre-fact-menu | set after baseline |
-| Cold start (launch → ready; app and engine) | not measured | 761.5 ms (booted demo; engine/app unmeasured) · live, 3 Nov, pre-fact-menu | < 5 s |
-| MCP e2e pass (fixture stdio) | 0 | 1 | 1 nightly |
-| MCP: question → paid, cited answer from Claude Code | not possible | PASS · fresh fixture session, 23.3 s including retry | passes nightly |
-| Hard-gate violations (`scripts/gate-audit.ts`) | 0 expected, not re-verified | 0 / 10 runs; all six rules · live, 3 Nov, pre-fact-menu | 0, audited nightly |
+| Metric | Live baseline (9 Oct) | live, pre-fact-menu · 3 Nov SGT | live, post-fact-menu · 3 Nov SGT | Target 12 Nov |
+|---|---|---|---|---|
+| Wasted spend (purchases adding no supported fact) | 39.5% | 36.19% | 38.41% (target missed; +2.22 pts vs fresh baseline) | ≤ 20% |
+| Purchase-selection F1 | 0.24 flow / 0.41 sweep | 0.235 flow / 0.400 sweep | 0.600 flow / 0.681 sweep | ≥ 0.5 flow |
+| Supported-fact uplift from paying | +9.5 pts | +11.32 pts | +30.19 pts | ≥ +20 pts |
+| False-complete rate | 1.9% | 1.89% | 1.89% | ≤ 2% |
+| p95 time to first answer | not measured | 132.7 ms (p50 77.9) | 135.5 ms (p50 83.8; final p95 4209.4) | set after baseline |
+| Cost per timed query (model US$ + XRP spent) | not measured | US$0.00236 + 0 XRP drops | US$0.00256 + 0 XRP drops | set after baseline |
+| Cold start (launch → ready; app and engine) | not measured | 761.5 ms (booted demo) | 579.5 ms (booted demo; engine/app unmeasured) | < 5 s |
+| MCP e2e pass (fixture stdio) | 0 | 1 | 1 (separate fixture evidence) | 1 nightly locally |
+| MCP: question → paid, cited answer from Claude Code | not possible | PASS · fixture, 23.3 s including retry | unchanged separate fixture evidence | passes nightly locally |
+| Hard-gate violations (six rules) | 0 expected, not re-verified | 0 / 10 runs | 0 / 10 runs | 0, audited locally |
 
-3 Nov pre-fact-menu baseline: live decision/coverage models; fixture planner and
-writer, keyword search, SIMULATED payments, synthetic demo articles. US$0.1469052
-usage-derived model cost (not an invoice), 296 calls, no actual XRP transferred.
-An earlier attempt stopped on one coverage HTTP 503 and published no score;
-its metered US$0.1233354 also counts toward this task's US$3 limit. The local
-key was explicitly mapped to the evaluation process; keys were never committed.
-October live and November fixture results remain separate history entries.
-Timing is macOS wall clock, not full live-product or XRPL latency.
+The valid pre-menu run at `2026-11-02T16:30:12.474Z` was recovered from the WIP,
+not repeated. Latest post-menu: `2026-11-03T01:38:25.629Z`. **The #260 F1 target
+≥ 0.45 is met; wasted spend ≤ 25% is missed.** Waste improved from October's
+39.5% but regressed from the fresh 36.19% baseline. No threshold or test changed.
+These are live decision/coverage calls over synthetic demo articles, with fixture
+planner/writer, keyword search and **SIMULATED settlement** (zero XRP transferred).
+Flow fact support is the unchanged scripted bank check; false-complete is the
+live coverage-model result. Timing is Mac wall clock, not live-product/XRPL latency.
+
+Fixture before → after: F1 **0.310 / 0.222 → 0.310 / 0.222**, waste
+**67.93% → 67.93%**, uplift **+28.30 → +28.30 pts**, false-complete
+**37.74% → 37.74%** (overlap fixture), **0 → 0 gate violations**. The fixture
+provider does not score fact menus. Same-input `--check --compare` passed with
+zero deterministic quality deltas. Cross-treatment hashes intentionally differ;
+tests prove unchanged bank, prose and coverage snapshots. All history is retained.
+
+Total Lane B live model cost: **US$1.0354309**, including recovered
+failures/probes and completion attempts; latest run **US$0.1164431**, 259 calls.
+Costs are usage-derived estimates at the harness's dated rates, not invoices.
+See `eval/scorecard/lane-b-spend.json` and the dated section in
+`eval/REPORT-decisions.md`. Next: #276 marginal-fact value buying, more precise
+measure/period menus, and a human audit of the bank's scripted fact needles.
 
 ## Plan
 
@@ -223,6 +237,7 @@ Agents add items there and keep working around them.
 
 ## Decisions log
 
+- 3 Nov: #260 reuses #300’s signed manifest-v2 `covers` format; bounded untrusted promises are checked on the bound passage, never treated as coverage. Scorecards run locally; calibration fit accepted but stays off, raw threshold unchanged.
 - 3 Nov: #261 recommends buyer-held hashlock + CancelAfter for opted-in Testnet writers; ledger enforces cancellation, buyer verifies proof; no fair-exchange or RLUSD claim ([spike](spikes/escrow.md), #273).
 
 - 3 Nov: #277 uses the canonical #260 manifest v2 schema and passage-bound menu verifier; carry its shared protocol files until Lane B lands so the publishing command works from a clean clone.
@@ -258,6 +273,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 
 ### Tue 3 Nov
+- Lane B #260: signed corpus fact menus, both decision providers and local scorecards; live F1 0.235 → 0.600, waste 36.19% → 38.41% (25% target missed), zero gate violations; README regenerated, fixture quality unchanged.
 - Published the branded explainers and shared header to Pages, preserving the evolution dataset and branch-only content; added a manual publish script.
 - UI polish: use the brand palette's purse icon in the budget card and correct singular count labels.
 - Lane light #272 (pass 1): startup-style README (hero, Claude Code MCP in one command, local run, how a run works, Testnet proof, fixture-labelled scorecard table generated by `scripts/readme-scorecard.mjs`); MCP and make-target detail moved to [mcp.md](mcp.md) and [running.md](running.md); one header across the explainers pages via `scripts/site-header.mjs` (checked in `npm run hygiene`; slides and notes keep their own presentation chrome). App GIF and Mac download link wait for pass 2.

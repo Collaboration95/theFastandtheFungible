@@ -58,14 +58,14 @@ Run `npx tsx eval/run-eval.mts --chosen` to measure the chosen configuration on
 the checked-in query vectors and current corpus, without provider calls.
 The table above records the 8 Oct study; reruns on the current corpus may differ.
 
-## Nightly scorecard (#256)
+## Local scorecard (#256, #260)
 
 `make scorecard` (or `npm run scorecard`) runs offline with **zero provider
 calls**, then audits a fresh demo store. It writes `eval/scorecard/latest.json`,
 **appends** to committed `eval/scorecard/history.jsonl`, and prints a Markdown
 table. Commit the new line in the daily ship PR; never edit or truncate old
-lines. The fixture workflow runs at **18:00 UTC / 02:00 SGT**, on dispatch, and
-on PRs changing the scorecard. It uploads reports and never pushes commits.
+lines. Run it locally on the owner's Mac; the CI workflow, dispatch trigger and
+nightly schedule were removed in #260.
 
 ```
 make scorecard                         # free fixture baseline
@@ -87,8 +87,9 @@ reserves projected request cost before calls. Live decisions and coverage use
 `gpt-6-luna`; the planner/writer remain extractive fixtures, search is keyword
 only, and payments stay **SIMULATED** (zero real or Testnet funds transferred).
 This is a deliberately substituted decision benchmark, not full live-product
-latency or XRPL performance. No live baseline was obtained on 2 Nov: no local
-`EVAL_*` keys were available; the live command refused before any provider call.
+latency or XRPL performance. The initial #268 fixture delivery had no local
+`EVAL_*` keys. A valid pre-menu LIVE baseline was recorded on 3 Nov SGT and
+preserved in history; #260 adds labelled post-menu results.
 MCP e2e and DMG cold start remain `null` until measured by their owning lanes.
 
 `frozen.json` fingerprints the entire bank, corpus, constructed coverage
