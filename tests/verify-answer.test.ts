@@ -40,6 +40,7 @@ it('names the exact citation for a one-byte passage tamper; refuses amount, cita
     c => { c.payments[0].amountDrops = '1' },
     c => { c.answers.at(-1)!.claims[0].citations[0].spanId = 'missing' },
     c => { c.proofs[0].manifest.sig = 'AA' },
+    c => { const refunded = c.intents.find(i => i.refund)!; c.candidates.find(c => c.resourceId === refunded.resourceId)!.manifest!.sig = 'AA' },
     c => { c.grants = [] },
     c => { c.payments.find(p => p.refundTxHash)!.refundTxHash = '' },
     c => { const e = c.audit.entries.find(e => !('commitment' in e))!; e.hash = '0'.repeat(64) },

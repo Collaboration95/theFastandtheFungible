@@ -65,6 +65,11 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     const quoteOk = !!terms && row?.invoiceId === terms.invoiceId && intent.quote?.quoteHash === terms.invoiceId && (intent.escrow || ledgerInvoiceId(intent.quote!.quoteId) === terms.invoiceId)
     let invoiceOk = Boolean(intent.escrow && row?.escrowTerms && canonical(row.escrowTerms) === intent.quote?.quoteId && row.escrowState === intent.escrow.state && row.escrowTerms.manifestRoot === intent.quote?.contentDigest && row.escrowTerms.amount === amountFor(intent.amountMinor) && row.escrowTerms.payer === row.payer)
     if (!intent.escrow) try { const invoice = JSON.parse(intent.quote!.quoteId); invoiceOk = invoice.articleId === intent.resourceId && invoice.version === intent.version && invoice.payTo === row?.payee && invoice.amount === row?.amountDrops && invoice.manifestRoot === intent.quote!.contentDigest && canonical(invoice.asset ?? 'XRP') === canonical(row?.asset ?? 'XRP') } catch { /* invalid binding */ }
+    const candidate = b.candidates.find(c => key(c) === key(intent) && c.profileId === intent.profileId)
+    const manifest = candidate?.manifest
+    const writerOk = candidate?.tier === 'PAID' && manifest && verifyManifestSignature(manifest) &&
+      manifest.articleId === intent.resourceId && manifest.version === intent.version && manifest.publisherSlug === intent.profileId &&
+      manifest.wallet === terms?.payTo && manifest.root === intent.quote?.contentDigest && manifest.priceMinor === intent.amountMinor
     const cancelled = intent.escrow?.state === 'CANCELLED'
     const chargedMinor = cancelled ? 0 : intent.amountMinor
     const destination = cancelled ? row?.payer : terms?.payTo
@@ -73,7 +78,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
       row.amountMinor === chargedMinor && receipt.amountMinor === chargedMinor && row.label === receipt.label &&
       row.status === intent.status && row.txHash === (receipt.xrpl?.txHash ?? intent.txHash) &&
       row.amountDrops === (cancelled ? '0' : amountFor(intent.amountMinor, terms?.asset)) &&
-      row.payee === destination && canonical(row.asset) === canonical(terms?.asset) && quoteOk && invoiceOk &&
+      row.payee === destination && writerOk && canonical(row.asset) === canonical(terms?.asset) && quoteOk && invoiceOk &&
       settle?.data.txHash === row.txHash && settle.data.amountMinor === row.amountMinor && settle.data.payTo === terms?.payTo &&
       (intent.escrow || entries.some(e => e.kind === 'sign' && e.intentId === intent.intentId && e.data.txHash === row.txHash))
     add(`receipt ${intent.intentId}`, Boolean(receiptOk), 'Quote, amount, asset, writer, invoice and audit settlement agree')
