@@ -7,29 +7,34 @@ import { join } from 'node:path'
 const root = join(import.meta.dirname, '..')
 const s = JSON.parse(readFileSync(join(root, 'eval/scorecard/latest.json'), 'utf8'))
 const date = s.at.slice(0, 10)
-const mode = s.mode.toLowerCase() === 'live' ? 'LIVE decision + coverage; fixture research; simulated payments' : 'fixture'
+const mode = s.mode.toLowerCase() === 'live' ? 'LIVE decision; fixture research + scripted coverage; simulated payments' : 'fixture'
 const tag = `${mode}${s.split && s.split !== 'all' ? ` · ${s.split === 'heldout' ? 'held-out' : s.split} (${s.counts.questions} questions)` : ''} · ${date}`
 const pct = (n) => n == null ? 'unmeasured' : `${n.toFixed(1)}%`
 const ci = (key, digits = 1, suffix = '') => { const c = s.confidenceIntervals?.intervals?.[key]; return c && c.low != null ? ` [95% CI ${c.low.toFixed(digits)}–${c.high.toFixed(digits)}${suffix}]` : '' }
 const ms = (n) => n == null ? 'unmeasured' : `${Math.round(n)} ms`
 const rows = [
-  ['**Pitch: gross spend buying a fact used in final answer**', pct(s.quality.usedSpendPct) + ci('usedSpendPct', 1, '%')],
 
   ['Hard-gate audit violations', `${s.audit.total} across ${s.audit.runs} runs, ${s.audit.observations} observations`],
   ['Supported-fact uplift from paying', `+${s.quality.supportedFactUpliftPts.toFixed(1)} pts${ci('supportedFactUpliftPts', 1, ' pts')}`],
   ['Purchase-selection F1 (flow / sweep)', `${s.quality.selectionF1Flow.toFixed(2)}${ci('selectionF1Flow', 2)} / ${s.quality.selectionF1Sweep.toFixed(2)}${ci('selectionF1Sweep', 2)}`],
-  ['Wasted gross spend', pct(s.quality.wastedSpendPct) + ci('wastedSpendPct', 1, '%')],
-  ['Wasted net spend (after confirmed refunds)', pct(s.quality.netWastedSpendPct) + ci('netWastedSpendPct', 1, '%')],
+  ...(s.quality.wastedSpendPct != null && s.confidenceIntervals?.intervals?.wastedSpendPct ? [['Wasted gross spend', pct(s.quality.wastedSpendPct) + ci('wastedSpendPct', 1, '%')]] : []),
+  ...(s.quality.netWastedSpendPct != null && s.confidenceIntervals?.intervals?.netWastedSpendPct ? [['Wasted net spend (after confirmed refunds)', pct(s.quality.netWastedSpendPct) + ci('netWastedSpendPct', 1, '%')]] : []),
   ['p50 / p95 time to first answer', `${ms(s.timing.p50FirstAnswerMs)} / ${ms(s.timing.p95FirstAnswerMs)}`],
   ['Cold start (demo API + publisher)', ms(s.timing.coldStartMs)],
-  ['Model cost per query', s.cost.modelUsd === 0 ? 'US$0 (no provider calls)' : `US$${s.cost.latencyModelUsdPerQuery}`],
+  ['Model cost per query', s.cost.modelUsd === 0 ? 'US$0 (no provider calls)' : `US$${s.cost.latencyModelUsdPerQuery.toFixed(4)}`],
 ]
 const table = [
   '| Metric | Latest | Mode · date |',
   '|---|---|---|',
   ...rows.map(([m, v]) => `| ${m} | ${v} | ${tag} |`),
 ].join('\n')
-const block = `<!-- scorecard:start -->\n${table}\n\nPitch definition: gross cost of verified purchases adding a requested, bank-supported fact retained in the final cited answer, divided by all gross purchase cost. 95% CIs resample source clusters; fixed synthetic corpus and observed model draws. Reused question holdout; historical failures were inspected. Two separate [live Testnet sanity runs](docs/evidence/numbers-v7-testnet.md) verify the settlement path, not this percentage.\n<!-- scorecard:end -->`
+const block = `<!-- scorecard:start -->\n${table}\n\nWaste is purchase cost without a requested, bank-supported fact retained in the final cited answer. 95% CIs resample source clusters, conditional on the fixed synthetic corpus and observed model draws. Reused question holdout; historical failures were inspected. The claim is under audit for overfit. [Separate Testnet sanity runs](docs/evidence/numbers-v7-testnet.md) verify settlement, not this percentage.\n<!-- scorecard:end -->`
+
+const badgePath = join(root, 'docs/media/scorecard.svg')
+const badge = `<svg xmlns="http://www.w3.org/2000/svg" width="340" height="24" role="img" aria-label="Scorecard: ${s.audit.total} audit violations, ${date}"><rect width="340" height="24" rx="3" fill="#FBF8F2"/><text x="10" y="16" font-family="system-ui,sans-serif" font-size="12" fill="#24211E">Scorecard · ${s.audit.total} audit violations · ${date}</text></svg>\n`
+if (process.argv.includes('--check')) {
+  if (readFileSync(badgePath, 'utf8') !== badge) throw new Error('Scorecard badge is stale')
+} else writeFileSync(badgePath, badge)
 
 const path = join(root, 'README.md')
 const md = readFileSync(path, 'utf8')

@@ -2,19 +2,16 @@
 // Writes the same self-contained header block (markup + scoped CSS) between
 // <!-- site-header:start --> and <!-- site-header:end --> right after <body> on each page.
 // --check exits 1 if any page is out of date (used by repo-hygiene). Offline, no dependencies.
-// slides/ and notes/ are full-viewport presentation tools with their own chrome, so they are skipped.
-import { readFileSync, writeFileSync } from 'node:fs'
+// Presentation tools reserve 52 px for the same header.
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
-const PAGES = [
-  { file: 'index.html', key: 'home' },
-  { file: 'talk/index.html', key: 'talk', note: '<kbd>→</kbd> next <kbd>←</kbd> back <kbd>R</kbd> replay <kbd>P</kbd> pause' },
-  { file: 'project-map/index.html', key: 'map' },
-  { file: 'evolution/index.html', key: 'build' },
-  { file: 'reports/kit-11-evaluation/index.html', key: 'none', note: 'Kit 11 evaluation · 22 Oct 2026 · draft' },
-  { file: 'reports/airwallex-before-after/index.html', key: 'none', note: 'Airwallex before / after' },
-]
+// Discover every page, including future verify pages, instead of silently skipping new routes.
+const siteRoot = join(import.meta.dirname, '..', 'site')
+const keys = { 'index.html': 'home', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build' }
+const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html')).map(file => ({ file, key: keys[file] ?? 'none' }))
+
 const NAV = [
   ['home', '', 'Explainers'],
   ['talk', 'talk/', 'Walkthrough'],
@@ -25,9 +22,10 @@ const NAV = [
 const START = '<!-- site-header:start -->'
 const END = '<!-- site-header:end -->'
 
-const CSS = `.ra-hdr{position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
+const CSS = `@font-face{font-family:Geist;src:url("__UP__brand/geist-latin-wght-normal.woff2")}
+.ra-hdr{box-sizing:border-box;height:52px;position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
 .ra-hdr *{box-sizing:border-box}
-.ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:52px;display:flex;align-items:center;gap:20px}
+.ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:51px;display:flex;align-items:center;gap:20px}
 .ra-hdr a{color:inherit;text-decoration:none}
 .ra-hdr-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em;flex:none}
 .ra-hdr-brand svg{width:22px;height:22px;display:block}
@@ -52,14 +50,14 @@ function block(page) {
   const depth = page.file.split('/').length - 1
   const up = '../'.repeat(depth)
   const nav = NAV.map(([key, href, label]) =>
-    `<a href="${up}${href}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
+    `<a href="${up}${href || 'index.html'}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
   const note = page.note ? `<span class="ra-hdr-note">${page.note}</span>` : ''
   return `${START}
-<style>${CSS}</style>
+<style>${CSS.replaceAll('__UP__', up)}</style>
 <div class="ra-hdr" role="banner"><div class="ra-hdr-in">
-<a class="ra-hdr-brand" href="${up}" aria-label="ResearchAgent explainers">${MARK}<span>ResearchAgent</span></a>
+<a class="ra-hdr-brand" href="${up}index.html" aria-label="ResearchAgent explainers">${MARK}<span>ResearchAgent</span></a>
 <nav aria-label="Explainers">${nav}</nav>
-<div class="ra-hdr-end">${note}<a class="ra-hdr-gh" href="${REPO}#readme">README</a><a href="${REPO}">GitHub ↗</a></div>
+<div class="ra-hdr-end">${note}<a class="ra-hdr-gh" href="${REPO}#readme">README</a><a href="${REPO}/releases">Releases</a></div>
 </div></div>
 ${END}`
 }
@@ -78,6 +76,10 @@ for (const page of PAGES) {
     const m = html.match(/<body[^>]*>/)
     if (!m) throw new Error(`${page.file}: no <body>`)
     next = html.slice(0, m.index + m[0].length) + '\n' + wanted + html.slice(m.index + m[0].length)
+  }
+  // Brand metadata is checked for every discovered page.
+  for (const token of ['brand/favicon.svg', 'property="og:image"', 'property="og:url"']) {
+    if (!next.includes(token)) throw new Error(`${page.file}: missing ${token}; update brand metadata`)
   }
   if (next === html) continue
   stale++
