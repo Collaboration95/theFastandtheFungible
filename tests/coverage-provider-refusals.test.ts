@@ -76,6 +76,13 @@ it('separate compatible decision credentials do not silently use the research id
   expect(compatibleProfile(true)).toEqual({ baseUrl: 'http://127.0.0.1:2', model: 'decision', apiKey: 'synthetic-decision' })
 })
 
+it('an absent configured identity fails closed before transport', async () => {
+  for (const key of ['LLM_BASE_URL', 'LLM_MODEL', 'LLM_API_KEY', 'DECISION_BASE_URL', 'DECISION_MODEL', 'DECISION_API_KEY']) vi.stubEnv(key, '')
+  const profile = compatibleProfile(true)
+  expect(profile).toEqual({ baseUrl: '', model: '', apiKey: '' })
+  await expect(compatibleJson(profile, {})).rejects.toThrow('Provider profile incomplete')
+})
+
 it('paid-relevance transport quotes only supplied granted spans and refuses invalid probability', async () => {
   let noul = .6
   const transport = vi.fn<typeof fetch>(async () => Response.json({ success: true, result: { answers: { addresses_gap: { type: 'noul', noul } } } }))

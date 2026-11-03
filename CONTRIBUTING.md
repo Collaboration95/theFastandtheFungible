@@ -50,11 +50,6 @@ Friction with XRPL, x402 or the Starter Kit is useful to the ecosystem. Open a
 
 Tests use ephemeral ports. Don't bind 5100, 8788 or 8790; the demo owns them.
 
-## Licence
-
-Code and the fictional demo corpus are [MIT](LICENSE). The writers and articles are
-synthetic and labelled so.
-
 CI preserves local `check:fast`: the `verify` job runs hygiene, lint, typecheck
 and the full Vitest suite once with V8 coverage; `chaos` runs the unchanged
 `chaos:smoke` matrix in parallel (20 episodes and four escrow probes).
@@ -82,3 +77,8 @@ required CI checks. Run Python locally with
 The always-reporting `check` aggregate requires success from every full-code
 job; failure, cancellation, missing output or unexpected skipping refuses
 admission. Workflow trigger and failure-injection contracts run in Vitest.
+
+## Licence
+
+Code and the fictional demo corpus are [MIT](LICENSE). The writers and articles are
+synthetic and labelled so.
