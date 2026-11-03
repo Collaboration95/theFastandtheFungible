@@ -39,8 +39,9 @@ export function hireService(context: ApiContext) {
       })
     }
     run = store.getRun(runId)
-    const registry = await context.client.registry()
-    const addresses = Object.fromEntries(registry.filter(p => p.wallet).map(p => [p.slug, p.wallet!]))
+    const savedAddresses = hires.get(hire.key)!.writerAddresses
+    const registry = savedAddresses ? [] : await context.client.registry()
+    const addresses = hires.patch(hire.key, { writerAddresses: savedAddresses ?? Object.fromEntries(registry.filter(p => p.wallet).map(p => [p.slug, p.wallet!])) }).writerAddresses!
     const royalties = royaltyPlan(run, addresses)
     const change = changePlan(run, hire.budgetMinor, principal)
     store.reservePolicyPayments(runId, [...royalties, ...change])
@@ -93,6 +94,7 @@ export function hireService(context: ApiContext) {
       journal.saveQuote(quote)
       hire = hires.save({ ...input, key, quote })
     }
+    if (!hire.result && hire.quote.payTo !== payer.address) return res.status(409).json({ error: 'Hire receiving wallet changed; original intent requires reconciliation' })
     if (hire.question !== input.question || hire.budgetMinor !== input.budgetMinor) return res.status(409).json({ error: 'Idempotency key belongs to another request' })
     const signature = req.get('PAYMENT-SIGNATURE')
     if (!signature) return res.status(402).set('PAYMENT-REQUIRED', encodeHeader('PAYMENT-REQUIRED', { x402Version: 2,
@@ -114,10 +116,14 @@ export function hireService(context: ApiContext) {
       }
     }
     if (store.getRun(hire.runId!).budgetMinor !== input.budgetMinor) return res.status(409).json({ error: 'Hire admission refused' })
+    if (!journal.settlementByTx(verified.txHash)) {
+      const wallet = store.walletStatus()
+      if (wallet.paused || wallet.spentMinor + wallet.reservedMinor > wallet.dailyMinor) return res.status(409).json({ error: 'Hire admission paused or capped; nothing submitted' })
+    }
     const settled = await facilitator.settle(decoded, { articleId: key, version: 'hire-v1' })
     res.set('PAYMENT-RESPONSE', encodeHeader('PAYMENT-RESPONSE', paymentResponse(settled)))
     if (!settled.ok) return res.status(402).json({ error: settled.reason, label: XRPL_LABEL })
-    if (hire.result) return res.json(hire.result)
+    if (hire.result) { store.closeHireReserve(hire.runId!); return res.json(hire.result) }
     let pending = active.get(key)
     if (!pending) {
       pending = finish(hire, verified.payer).finally(() => active.delete(key))

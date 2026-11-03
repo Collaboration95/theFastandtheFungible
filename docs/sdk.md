@@ -65,3 +65,19 @@ empty-string precedence and legacy DeepSeek/Groq key remains supported.
 Call-time reads use this same parser so isolated engine workers and explicit
 test environments stay independent. Publisher configuration remains separate
 at this seam. Token/Host startup validation happens before an API listener.
+
+## Pay an x402 seller or hire a remote agent
+
+`sdk/x402.ts` exports `payAndFetch(url, { wallet, maxDrops, journal, ... })`
+for any x402 v2 exact/XRP seller on XRPL Testnet. It verifies terms before
+signing and settlement against the ledger. Use `openPaymentJournal` from
+`sdk/x402-journal.ts` for durable retry; a timeout must reuse the same signed
+intent. GET buys an article; POST can hire ResearchAgent at `/v1/ask`.
+See [the example and full policy](x402-xrpl.md#generic-sdk-buyer-any-x402-on-xrpl-seller).
+
+`createHireClient` from `sdk/hire.ts` wraps hired questions. MCP registers
+`hire_researcher` only when the operator configures a remote URL, caller wallet
+and maximum payment (see the protocol doc). The caller chooses a tier and a
+stable idempotency key; the remote engine chooses purchases and royalties.
+[Live proof](evidence/hire-274.md): a separate faucet caller paid an answer,
+one purchase, paid/free citation royalties and change, with five validated hashes.

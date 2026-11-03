@@ -2,7 +2,7 @@
 import { Wallet, decode } from 'xrpl'
 import { decodeHeader, encodeHeader, ledgerInvoiceId } from '../shared/x402.js'
 import { signPayment, testnetLedger, verifyPayment, simulatedPayerWallet, type Ledger } from '../shared/xrpl.js'
-import type { Submission } from '../server/xrpl.js'
+type Submission = Awaited<ReturnType<typeof signPayment>>
 
 export type PaymentAttempt = { signature: string; submission: Submission; payTo: string; amountDrops: string; invoiceId: string }
 export type PaymentJournal = { load(key: string): PaymentAttempt | undefined; save(key: string, value: PaymentAttempt): PaymentAttempt }

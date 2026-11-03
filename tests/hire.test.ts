@@ -115,3 +115,30 @@ it('rejects Mainnet, overspend and resource substitution before signing', async 
   const royalty = royaltyPlan(run as never, { a: 'A', b: 'B', c: 'C' })
   expect(royalty.map(p => p.amountDrops)).toEqual(['1667', '1667', '1666'])
 })
+
+it('recovers a payout timeout with the original signed blob and pays a generic article seller', async () => {
+  const s = await setup()
+  const request = s.chain.ledger.request.bind(s.chain.ledger)
+  let dropped = false
+  s.chain.ledger.request = async r => {
+    const response = await request(r)
+    // The fake ledger applied it but the submit response was lost, after durable signing.
+    if (r.command === 'submit' && s.chain.txs.size === 3 && !dropped) { dropped = true; throw new Error('Ambiguous payout timeout') }
+    return response
+  }
+  const first = await payAndFetch(s.url, s.opts)
+  expect(first.response.status).toBe(500)
+  expect(s.api.store.walletStatus().reservedMinor).toBeGreaterThan(0)
+  const paid = await payAndFetch(s.url, s.opts)
+  const result = await paid.response.json()
+  expect(result.phase).toBe('DONE')
+  expect(s.chain.txs.size).toBe(5)
+  expect(s.chain.submits).toBe(5)
+  expect(s.api.store.walletStatus().reservedMinor).toBe(0)
+  const article = s.corpus.articles.find(a => a.tier === 'PAID')!
+  const generic = await payAndFetch(`${s.options.publisherUrl}/w/${article.publisherSlug}/articles/${article.articleId}`, {
+    wallet: s.caller, ledger: s.chain.ledger, maxDrops: '100000', idempotencyKey: 'generic-article', journal: s.opts.journal,
+  })
+  expect(generic.response.ok).toBe(true)
+  expect((await generic.response.json()).articleId).toBe(article.articleId)
+}, 30_000)
