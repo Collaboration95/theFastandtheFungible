@@ -707,3 +707,18 @@ CLI tooling. Severity: medium release/tooling blocker, no runtime impact.
 Mainnet impact: none observed; these operations and evidence are Testnet only.
 
 - 2026-11-04 — Observed tooling friction: GitGuardian incident #39528977 classified the public XRPL CredentialType as a generic secret in PR #357 (`docs/evidence/round2-n/transactions.json`). Workaround: store public UTF-8 text, derive wire hex, squash PR history. Suggested fix: recognize public XRPL CredentialType context. Severity: CI blocker; mainnet impact: none, representation only.
+
+### 4 Nov 2026 · observed: first-touch public faucet fan-out
+
+- Evidence: `docs/evidence/round2-p2/README.md`; cold `make testnet ARGS=--capture`.
+- Incident: concurrent public faucet funding for buyer plus seven fixture writers
+  failed provisioning; the launcher selected visibly labelled SIMULATED fallback.
+  Raw faucet bodies were discarded because they can contain wallet secrets; an
+  exact HTTP status was not retained, so rate limiting is suspected, not proven.
+- Workaround: one faucet-funded buyer provisions writers with Testnet XRP; cache
+  the private wallets with mode 0600. Successful cold first validated product hash:
+  60.005 s, including sequential writer funding.
+- Suggested fix: document per-IP faucet limits and support a bounded batch funding
+  route or retry-after response for demos with multiple actors.
+- Severity: medium for onboarding. Mainnet impact: none directly (no faucet);
+  provisioning latency must not be mistaken for product settlement latency.

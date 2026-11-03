@@ -17,7 +17,9 @@ export function artifact() {
   }
   const credentials = JSON.parse(read('docs/evidence/round2-n/transactions.json')).transactions
   for (const row of credentials) if (!/^[A-F0-9]{64}$/.test(row.hash) || !Number.isInteger(row.ledgerIndex) || typeof row.credentialTypeText !== 'string' || !/^(?:[A-F0-9]{2}){1,64}$/.test(Buffer.from(row.credentialTypeText, 'utf8').toString('hex').toUpperCase())) throw Error('Invalid credential evidence')
-  rows.push(...credentials)
+  const p2 = JSON.parse(read('docs/evidence/round2-p2/transactions.json')).transactions
+  for (const row of p2) if (!/^[A-F0-9]{64}$/.test(row.hash) || !Number.isInteger(row.ledgerIndex) || row.source !== 'docs/evidence/round2-p2/transactions.json') throw Error('Invalid P2 evidence')
+  rows.push(...credentials, ...p2)
   return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-04', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
 }
 function htmlArtifact(out) {

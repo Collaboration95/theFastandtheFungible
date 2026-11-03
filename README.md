@@ -88,7 +88,7 @@ That is stdio from this checkout, with S$2 per question and S$5 per UTC day in f
 
 **Mac app** ([guide](desktop/README.md)). Download the DMG from [Releases](https://github.com/Collaboration95/theFastandtheFungible/releases/latest) (Apple Silicon and Intel, **unsigned**: right-click → Open). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
 
-**Browser replay.** The [`/demo/`](https://collaboration95.github.io/theFastandtheFungible/demo/) page runs the real UI on recorded UC1–UC3 fixture traces, including the UC3 refund. No backend, no keys.
+**Browser replay.** The [`/demo/`](https://collaboration95.github.io/theFastandtheFungible/demo/) page autoplays UC3: Recorded on XRPL Testnet · no real value, including a validated refund and re-buy. Fixture models and fictional writers; simulated UC1–UC3 remain available. No backend, no keys.
 
 **Writers.** Turn a Markdown folder into a searchable, payable writer ([publishing guide](docs/publishing.md), [compliance posture](docs/COMPLIANCE.md)):
 

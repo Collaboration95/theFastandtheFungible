@@ -67,7 +67,7 @@ export async function refresh(rows, Socket = WebSocket, update = () => {}) {
     }
   }))
 }
-if (typeof document !== 'undefined') {
+if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   const data = await (await fetch('transactions.json')).json()
   const cells = new Map()
   document.querySelector('#rows').replaceChildren()
