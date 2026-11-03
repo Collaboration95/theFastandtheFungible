@@ -4,10 +4,13 @@ import { mkdtempSync, copyFileSync, mkdirSync, writeFileSync, readFileSync, rmSy
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
+// Strip GIT_* (set by git hooks) so fixture git never touches the real repo.
+const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')))
+
 it('backfills the exact old commit without changing HEAD, package versions or existing tags', () => {
   const dir = mkdtempSync(join(tmpdir(), 'release-'))
-  const git = (...args: string[]) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' }).trim()
-  const run = (...args: string[]) => execFileSync(process.execPath, ['scripts/release.mjs', '2', 'Fact menu', ...args], { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: dir, encoding: 'utf8', env }).trim()
+  const run = (...args: string[]) => execFileSync(process.execPath, ['scripts/release.mjs', '2', 'Fact menu', ...args], { cwd: dir, encoding: 'utf8', stdio: 'pipe', env })
   try {
     git('init', '-q', '-b', 'main'); git('config','user.email','fixture@example.invalid'); git('config','user.name','Fixture')
     mkdirSync(join(dir,'scripts')); mkdirSync(join(dir,'docs'))
@@ -17,7 +20,7 @@ it('backfills the exact old commit without changing HEAD, package versions or ex
     git('add','.'); git('commit','-qm','fact menu (#304)'); const old = git('rev-parse','HEAD')
     git('tag','v0.2.0'); git('commit','--allow-empty','-qm','Mac app (#303)'); git('tag','v0.4.0')
     const head = git('rev-parse','HEAD'), tags = git('show-ref','--tags')
-    execFileSync('git',['init','--bare','-q',join(dir,'remote.git')]); git('remote','add','origin',join(dir,'remote.git')); git('push','-q','origin','main','--tags')
+    execFileSync('git',['init','--bare','-q',join(dir,'remote.git')],{ env }); git('remote','add','origin',join(dir,'remote.git')); git('push','-q','origin','main','--tags')
     writeFileSync(join(dir,'.gitignore'),'remote.git/\n'); git('add','.gitignore'); git('commit','-qm','ignore fixture remote'); git('push','-q','origin','main')
     const current = git('rev-parse','HEAD')
     expect(run('--at',old,'--notes-file','notes.md','--dry-run')).toContain('Historical measurements')
