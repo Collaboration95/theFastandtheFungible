@@ -180,6 +180,10 @@ class Client:
     def pause(self, *, reason: str | None = None) -> PauseState:
         return self._request('/api/spending/pause', {} if reason is None else {'reason': reason})
 
+    def receipts(self, run_id: str) -> dict[str, Any]:
+        """Portable receipt evidence, including v3 structural contributions."""
+        return self._request('/runs/' + quote(run_id, safe='') + '/receipts.json')
+
     def wallet_status(self) -> dict[str, Any]:
         status = self._request('/api/mcp/status')
         return {**status, 'remainingMinor': max(0, status['dailyMinor'] - status['spentMinor'] - status['reservedMinor'])}

@@ -1,3 +1,4 @@
+import { contributions } from '../shared/contribution.js'
 import { sourceKey, sourceBinding } from '../shared/source-identity.js'
 import { ReceiptBundleSchema, type ReceiptBundle } from '../shared/contracts/receipts.js'
 import { ReportSchema } from '../shared/contracts/report.js'
@@ -22,7 +23,13 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   const parsed = ReceiptBundleSchema.safeParse(raw)
   if (!parsed.success) return { ok: false, checks: [{ check: 'bundle', status: 'FAIL', detail: `Invalid or legacy bundle at ${parsed.error.issues[0]?.path.join('.')}. Export receipts.json with this version.` }] }
   const b = parsed.data
-  if (b.schemaVersion === 1) {
+  if (b.schemaVersion === 3) {
+    add('contribution dispatch', !!b.identityVersion && !!b.contributions, 'v3 requires explicit identity semantics and structural contribution evidence')
+    let recomputed: unknown = null
+    try { recomputed = contributions(b) } catch { /* Missing intent fails closed. */ }
+    add('contributions', recomputed !== null && canonical(b.contributions ?? null) === canonical(recomputed), 'Recomputed claim/version/citation/passage/grant/retention and gross/refund/net links; semantics not independently verified')
+  } else add('legacy dispatch', !b.contributions && !b.identityVersion, 'v1/v2 retain original semantics; contribution extensions require v3')
+  if ((b.identityVersion ?? b.schemaVersion) === 1) {
     if ([...b.sources, ...b.candidates, ...b.intents, ...b.grants, ...b.receipts, ...b.intents.flatMap(i => i.quote ?? []), ...b.proofs, ...b.answers.flatMap(a => a.claims.flatMap(c => c.citations))].some(s => s.source)) return { ok: false, checks: [{ check: 'version', status: 'FAIL', detail: 'v1 cannot carry routing identities' }] }
     checks.push({ check: 'historical origin', status: 'SKIP', detail: 'v1 origin unresolved; original singleton semantics' })
   } else {
