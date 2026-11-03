@@ -30,7 +30,7 @@ PR or issue.
 | Repo | Front door: settings, topics, community files, hygiene check, a release per feature day | #269 | done · social preview upload on #265 |
 | Repo | Brand kit: wordmark, mark, favicon, app icon, social preview, naming audit | #271 | done · reproducible exports + app/site source integration |
 | Repo | README overhaul + one header across the explainers site | #272 | pass 1 done (3 Nov) · app GIF, Mac download link, final numbers in pass 2 (Wed 11) |
-| Submission | Short description · demo video · pitch deck · public repo | plan only | planned · 8–11 Nov |
+| Submission | Short description · demo video · pitch deck · public repo | [pack](submission/README.md) | description, deck PDF, video script, pitch and Q&A drafted 3 Nov; video recording on #265 (target Wed 11 Nov) |
 | Builder feedback | [Living log from building + mainnet-readiness checklist](BUILDER-FEEDBACK.md) | #257 | done (15 implementation findings + 15 historical submissions) |
 | Story | Daily posts (two on weekends, [post calendar](#post-calendar)) + SFF chapter on the [evolution page](https://collaboration95.github.io/theFastandtheFungible/evolution/) | #257 | daily log ready; SFF chapter publishes after main merge |
 | Presentation | 2-minute pitch, rehearsed | plan only | planned · 14–18 Nov |
@@ -318,6 +318,7 @@ Agents add items there and keep working around them.
 
 ## Decisions log
 
+- 3 Nov: Submission pack lives in `docs/submission/` (link-checked by hygiene). The deck is HTML exported to PDF by Playwright on the UX-DIRECTION ink/paper system, one slide per criterion, with every number sourced on the slide. The video and pitch label each scene Testnet, simulated or fixture, and the Claude Code scene does not claim the Testnet purchase (an SDK stdio client made it). Why: judges pre-assess the PDF and video, and overclaiming costs more than it gains.
 - 3 Nov: #280 agent keys are hashed principals in the existing admission/purchase ledger, managed by CLI while #311 owns UI; scoped pause/revoke blocks unsigned work and preserves signed-intent recovery.
 - 3 Nov: Numbers v6 preserves gross waste, adds confirmed-refund net waste and final-used spend with source-cluster CIs; fix requested-passage selection and the “buying … now” false positive, plus deterministic fact-key/scope vetoes. No heldout retuning or spending-authority change; gross/net 52.87% → 40.68%, target still missed.
 
@@ -364,6 +365,7 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
+- 3 Nov: Submission pack ([docs/submission](submission/README.md)): 50/150/300-word descriptions, a 10-slide deck built from code with its PDF export (`node docs/submission/deck/export.mjs`), a 2:45 demo-video script with commands and existing release clips, a 2-minute pitch (282 words) with a 3-minute variant, and 10 judge Q&A answers. Recording is with the owner on #265.
 - 3 Nov: Lane C #280 one wallet/many agents: private-file token creation, per-agent caps/pause/revoke, shared policy accounting and principal exports; two MCP clients + SDK spent 0.18 Testnet XRP + 24 drops fees, zero gate violations ([evidence](evidence/agents-280.md)).
 - 3 Nov: Lane B Numbers v6: gross/net heldout waste 52.87% → 40.68% (paired 95% CI −28.57 to −1.23 pts); used spend 47.13% → 59.32%. Two extraction and four fact-scope regressions, README/scorecard definitions and CIs; 0 audit violations, US$0.4412058 models, simulated payments.
 
