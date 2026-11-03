@@ -30,3 +30,16 @@
   coverage-summary artifacts for failed admission.
 - Severity: low (verification portability).
 - Mainnet impact: none observed; offline fixture checks only.
+
+- Class: observed fixture consumer regression after #345, 2026-11-04.
+- Evidence: PR run 41693484395; three browser scenarios timed out at
+  "Searching" while all three durable runs were DONE. Their base snapshots
+  measured 266655, 266655 and 281277 bytes, above the 262144-byte SSE cap.
+- Workaround: user-authorized src/api.ts recovery reads the same durable run
+  on stream error/stall; concurrent reads cannot overwrite newer event/money
+  state. No new admission, purchase or idempotency identity is created.
+- Suggested fix: require real-browser oversized-terminal coverage for changes
+  to stream bounds and keep durable GET recovery as a consumer contract.
+- Severity: high for browser completion/receipt visibility.
+- Mainnet impact: potential stale status display (code-derived); only offline
+  simulated fixtures observed, no mainnet or Testnet call performed.

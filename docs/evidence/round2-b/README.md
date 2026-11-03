@@ -47,7 +47,7 @@ reported by Actions and is not inferred. The 339 s target is an optimization
 target, not permission to remove gates. docs/running.md is deferred because
 Lane A owns it; CONTRIBUTING.md documents the commands and gate equivalence.
 
-Final integrated local coverage collection: 835/835 tests, 109 files, 45.57 s
+Final integrated local coverage collection: 841/841 tests, 110 files, 61.33 s
 on Node 22.23.4, macOS arm64. Integration includes main
 21b2a1edfae98e7ab9b63a34943372331c94ba70 (Lanes A/E); the baseline remains ec97bfd.
 Payments: 1458/1710 → 1551/1802 branches; all component ratios pass their
@@ -69,3 +69,13 @@ were added; no floor was lowered. Final local collection now uses Node
 22.23.4 to match CI's major. Baseline remains the original Node 26 ratios.
 Worker jobs have a 15-minute execution bound (old monolithic job: 10 minutes)
 for fresh browser/coverage/package setup; assertions and floors are unchanged.
+
+The browser job on 41693484395 exposed the #345 SSE consumer regression:
+three scenarios stalled despite DONE rows larger than the 256 KiB stream cap.
+The user explicitly authorized a narrow src/api.ts repair. It uses only the
+existing GET for the same run, with one read in flight, event/revision and
+gross charge/refund/receipt guards, a five-second stall probe, and abort on
+unsubscribe. No admission or idempotency identity is created. Six unit recovery
+cases and an eighth required browser case exercise stale reads, stalled/closed
+streams and oversized terminal recovery through reload with one admission and
+identical receipts/spend. Server and SDK runtime files were not edited.
