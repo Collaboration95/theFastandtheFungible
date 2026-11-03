@@ -1,3 +1,4 @@
+import { reportModelUsage } from '../telemetry.js'
 import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
 import { FactCoverSchema, type FactCover } from '../../shared/contracts/manifest.js'
@@ -185,6 +186,7 @@ export class ClefDecisionProvider implements DecisionProvider {
       generation.update({ model: this.model, input: { state, questions }, metadata })
       try {
         const payload = await this.callModel(state, questions, validate, signal) as { result?: { answers?: unknown; usage?: { input_tokens?: number; output_tokens?: number } } }
+        reportModelUsage(payload.result?.usage?.input_tokens, payload.result?.usage?.output_tokens)
         generation.update({ output: payload.result?.answers, usageDetails: { input: payload.result?.usage?.input_tokens ?? 0, output: payload.result?.usage?.output_tokens ?? 0 } })
         return payload
       } catch (error) { generation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'Clef failed' }); throw error }

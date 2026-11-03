@@ -19,14 +19,14 @@ try {
   parentPort.postMessage({ apiUrl: `http://127.0.0.1:${server.address().port}`, publisherUrl })
 } catch (error) {
   if (server) await closeServer(server)
-  api?.close()
+  await api?.close()
   await closeServer(publisher)
   throw error
 }
 parentPort.once('message', async () => {
   await api.drain()
   await closeServer(server)
-  api.close()
+  await api.close()
   await closeServer(publisher)
   parentPort.close()
 })

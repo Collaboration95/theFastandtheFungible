@@ -14,6 +14,11 @@ it('boots two isolated fixture engines on ephemeral ports and closes every liste
       expect([5100, 8788, 8790]).not.toContain(Number(new URL(url).port))
       expect((await fetch(`${url}/health`)).ok).toBe(true)
     }
+    for (const engine of engines) {
+      expect((await fetch(engine.apiUrl + '/api/metrics')).status).toBe(401)
+      const metrics = await (await fetch(engine.apiUrl + '/api/metrics', { headers: { Authorization: `Bearer ${engine.apiToken}` } })).json()
+      expect(metrics).toMatchObject({ schema: 'operations-v1', rail: 'simulated' })
+    }
     const health = await (await fetch(`${engines[0].apiUrl}/health`)).json()
     expect(health.labels.research).toContain('fixture')
     expect(health.labels.settlement).toContain('SIMULATED')

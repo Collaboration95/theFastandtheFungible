@@ -270,7 +270,7 @@ export class Store {
       else if (run.budgetMinor === 0 || intent.amountMinor > run.perSourceCapMinor || committed + intent.amountMinor > run.budgetMinor) error = 'Budget or per-source cap exceeded'
       else if (Date.parse(quote.expiresAt) <= Date.now() || !Number.isFinite(Date.parse(quote.expiresAt))) error = 'Quote expired'
       else if (intents.some(i => i.profileId === intent.profileId && i.resourceId === intent.resourceId && i.version === intent.version && (reservedStatuses.has(i.status) || chargedStatuses.has(i.status)))) error = 'Resource already purchased or reserved'
-      const result: PurchaseIntent = { ...intent, status: error ? 'SKIPPED' : 'RESERVED', error }
+      const result: PurchaseIntent = { ...intent, status: error ? 'SKIPPED' : 'RESERVED', createdAt: new Date().toISOString(), error }
       this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId, intent.runId, JSON.stringify(result))
       return result
     })
@@ -287,7 +287,7 @@ export class Store {
       const intent = this.getIntent(intentId)
       if (!intent || intent.status !== 'RESERVED') return false
       if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) { this.saveIntent({ ...intent, status: 'SKIPPED', error: this.isPaused() ? PAUSED : 'Run stopped, wallet capped or quote expired' }); return false }
-      this.saveIntent({ ...intent, status: 'SUBMITTING' }); return true
+      this.saveIntent({ ...intent, status: 'SUBMITTING', submittingAt: new Date().toISOString() }); return true
     })
   }
   updateIntent(intentId: string, patch: Partial<PurchaseIntent>): PurchaseIntent {
@@ -313,7 +313,7 @@ export class Store {
       if (existing) { if (existing.receiptId !== receipt.receiptId) throw new Error('Settlement receipt mismatch'); return }
       if (intent.status !== 'SUBMITTING') throw new Error('Settlement requires submitting reservation')
       this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), deliveryToken)
-      this.saveIntent({ ...intent, status: 'SETTLED', receiptId: receipt.receiptId, error: undefined })
+      this.saveIntent({ ...intent, status: 'SETTLED', settledAt: receipt.settledAt, receiptId: receipt.receiptId, error: undefined })
     })
   }
   /** Write-once: the first signed payment for an intent is the only one that may ever be submitted. */
@@ -323,6 +323,7 @@ export class Store {
       if (existing) return existing
       const intent = this.getIntent(intentId)
       if (intent?.status !== 'SUBMITTING') throw new Error('Payment submission requires a submitting reservation')
+      if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) throw new Error('Signing authority expired')
       this.db.prepare('INSERT INTO submissions VALUES (?,?,?,?)').run(intentId, signed.txHash, signed.txBlob, signed.lastLedgerSequence)
       this.saveIntent({ ...intent, txHash: signed.txHash })
       return signed
@@ -418,5 +419,23 @@ export class Store {
     this.db.prepare('INSERT INTO publisher_reputation VALUES (?,?) ON CONFLICT(wallet) DO UPDATE SET json=excluded.json').run(parsed.wallet, JSON.stringify(parsed))
   }
   resetReputation(): void { this.db.exec('DELETE FROM publisher_reputation') }
+  /** Probe an actual write transaction without changing operator state. */
+  checkWritable(): void {
+    this.atomic(() => { this.db.prepare('INSERT OR IGNORE INTO wallet_control VALUES (1,0)').run(); this.db.prepare('UPDATE wallet_control SET paused=paused WHERE id=1').run() })
+  }
+  spendBySurface() {
+    const day = new Date().toISOString().slice(0, 10)
+    return Object.fromEntries((['web', 'mcp', 'x402', 'agent'] as const).map(surface => [surface, this.usage(day, surface)]))
+  }
+  claimDeliveryRetry(intentId: string, now = Date.now()): PurchaseIntent | undefined {
+    return this.atomic(() => {
+      const intent = this.getIntent(intentId)
+      if (!intent || intent.status !== 'DELIVERY_FAILED' || (intent.deliveryAttempts ?? 0) >= 3 || Date.parse(intent.nextDeliveryAt ?? '') > now) return undefined
+      const attempt = (intent.deliveryAttempts ?? 0) + 1
+      const next = { ...intent, deliveryAttempts: attempt, nextDeliveryAt: new Date(now + 15000 * 2 ** (attempt - 1)).toISOString() }
+      this.saveIntent(next)
+      return next
+    })
+  }
   close(): void { this.db.close() }
 }

@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
+import type { Store } from './store.js'
 import { loadConfig } from './config.js'
 // Langfuse Cloud tracing (OpenTelemetry). Off unless LANGFUSE_ENABLED=1 and both keys are set;
 // without a started SDK every @langfuse/tracing call below is a cheap no-op.
@@ -116,4 +118,24 @@ export async function activeTraceUrl(): Promise<string | undefined> {
   const c = scorer()
   if (!c || !traceId) return undefined
   try { return await c.getTraceUrl(traceId) } catch { return undefined }
+}
+
+const modelUsage = new AsyncLocalStorage<(usage: Record<string, unknown>) => void>()
+export function withModelUsage<T>(report: (usage: Record<string, unknown>) => void, fn: () => Promise<T>) { return modelUsage.run(report, fn) }
+export function reportModelFallback() { modelUsage.getStore()?.({ fallback: true }) }
+/** Rates are operator supplied, USD per million tokens. Unknown costs remain null. */
+export function reportModelUsage(inputTokens: number | undefined, outputTokens: number | undefined) {
+  if (inputTokens === undefined && outputTokens === undefined) return
+  const config = loadConfig()
+  const input = config.MODEL_INPUT_USD_PER_MILLION, output = config.MODEL_OUTPUT_USD_PER_MILLION
+  modelUsage.getStore()?.({ inputTokens: inputTokens ?? 0, outputTokens: outputTokens ?? 0,
+    estimatedUsd: input !== undefined && input !== '' && output !== undefined && output !== '' ? ((inputTokens ?? 0) * Number(input) + (outputTokens ?? 0) * Number(output)) / 1_000_000 : null })
+}
+/** Dedicated JSON lines on stderr keep MCP stdout valid. Only allowlisted money metadata. */
+export function logMoneyEvent(event: TraceEvent, store: Store) {
+  if (loadConfig().LOG_FORMAT !== 'json' || !['PURCHASE', 'XRPL', 'GRANT'].includes(event.type)) return
+  const intentId = typeof event.data?.intentId === 'string' ? event.data.intentId : undefined
+  const intent = intentId ? store.getIntent(intentId) : undefined
+  console.error(maskSecrets(JSON.stringify({ event: 'money', runId: event.runId, intentId, status: intent?.status,
+    txHash: intent?.txHash, latencyMs: intent?.submittingAt ? Date.now() - Date.parse(intent.submittingAt) : null })))
 }

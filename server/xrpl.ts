@@ -1,3 +1,4 @@
+import { bounded } from './dependencies.js'
 import { loadConfig } from './config.js'
 import { Wallet, decode } from 'xrpl'
 import type { PaymentRequirement } from '../shared/contracts/index.js'
@@ -11,10 +12,17 @@ export type PaymentOutcome =
   | { state: 'expired' }
   | { state: 'pending' }
 
+export class BeforeSignError extends Error {}
+export const FEE_CAP_DROPS = 2000
+
 /** Buyer wallet. The seed stays inside this object: never logged, traced or sent to a model. */
 export class XrplPayer {
   readonly rail = 'xrpl-testnet' as const
   private queue: Promise<unknown> = Promise.resolve()
+  private pending: Submission[] = []
+  readonly lockWaitMs: number[] = []
+  private balanceLoading?: Promise<void>
+  private balanceCache?: { at: number; value: BalanceSnapshot; committed: number }
   readonly address?: string
   constructor(readonly ledger: Ledger, private readonly wallet?: Wallet, private readonly timing = { pollMs: 1000, timeoutMs: 120_000 }) {
     this.address = wallet?.classicAddress
@@ -30,24 +38,66 @@ export class XrplPayer {
     return undefined
   }
   /**
-   * Sign → persist → send under one lock, so two payments never share an account Sequence. `send`
-   * hands the blob to the publisher's facilitator, which submits it (x402 v2, D7).
-   * ponytail: one global lock per payer; per-account queues if several payers ever exist.
+   * Serialize signing until the previous sequence is ledger-proven consumed or expired.
+   * Delivery never owns the lock. An unresolved sequence refuses new signing after a bounded
+   * ledger wait, rather than guessing a sequence or waiting for a slow writer's 60 s HTTP reply.
    */
   pay<T>(terms: PaymentRequirement, persist: (signed: Submission) => Submission, send: (submission: Submission) => Promise<T>): Promise<{ submission: Submission; sent: Promise<T> }> {
+    const started = Date.now()
     const run = this.queue.then(async () => {
+      for (const previous of this.pending) {
+        const outcome = await this.waitForSequence(previous)
+        if (outcome.state === 'pending') throw new BeforeSignError('Previous payer sequence unresolved; retry after reconciliation; nothing was charged')
+      }
+      this.pending = []
+      this.lockWaitMs.push(Date.now() - started)
+      if (this.lockWaitMs.length > 1024) this.lockWaitMs.shift()
       const submission = persist(await this.sign(terms))
+      this.pending.push(submission)
       const sent = send(submission)
-      // Hold the lock until the facilitator answered, so the next Sequence is read after this one applied.
-      await sent.catch(() => undefined)
+      void sent.catch(() => undefined)
       return { submission, sent }
     })
     this.queue = run.catch(() => undefined)
     return run
   }
+  restorePending(submissions: Submission[]) { this.pending.push(...submissions) }
+  private async waitForSequence(submission: Submission): Promise<PaymentOutcome> {
+    const deadline = Date.now() + Math.min(5000, this.timing.timeoutMs)
+    do {
+      const result = await bounded(this.status(submission), Math.max(1, deadline - Date.now())).catch((): PaymentOutcome => ({ state: 'pending' }))
+      if (result.state !== 'pending') return result
+      if (Date.now() >= deadline) break
+      await new Promise(resolve => setTimeout(resolve, this.timing.pollMs))
+    } while (Date.now() < deadline)
+    return { state: 'pending' }
+  }
+  async balance(): Promise<BalanceSnapshot> {
+    if (!this.address) throw new BeforeSignError('XRPL payer is not configured; nothing was charged')
+    if (!this.balanceCache || Date.now() - this.balanceCache.at >= 5000) {
+      this.balanceLoading ??= (async () => {
+        const [account, server] = await Promise.all([
+          this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'validated' }),
+          this.ledger.request({ command: 'server_info' }),
+        ])
+        const validated = server.result.info.validated_ledger
+        const balanceDrops = Number(account.result.account_data.Balance)
+        const reserveDrops = Math.ceil((Number(validated.reserve_base_xrp) + Number(account.result.account_data.OwnerCount) * Number(validated.reserve_inc_xrp)) * 1_000_000)
+        const ledgerAgeSeconds = Number(validated.age)
+        if (![balanceDrops, reserveDrops, ledgerAgeSeconds].every(n => Number.isFinite(n) && n >= 0)) throw new Error('Ledger balance or reserve unavailable')
+        this.balanceCache = { at: Date.now(), committed: 0, value: { balanceDrops, reserveDrops, availableDrops: balanceDrops - reserveDrops, ledgerAgeSeconds } }
+      })().finally(() => { this.balanceLoading = undefined })
+      await this.balanceLoading
+    }
+    const cache = this.balanceCache!
+    return { ...cache.value, availableDrops: cache.value.availableDrops - cache.committed,
+      ledgerAgeSeconds: cache.value.ledgerAgeSeconds + (Date.now() - cache.at) / 1000 }
+  }
   private async sign(terms: PaymentRequirement): Promise<Submission> {
     if (!this.wallet) throw new Error('XRPL payer seed is not configured')
     if (this.wallet.classicAddress === simulatedPayerWallet().classicAddress) throw new Error('The SIMULATED test payer is refused on the XRPL Testnet')
+    const balance = await this.balance()
+    if (balance.availableDrops < Number(terms.amountDrops) + FEE_CAP_DROPS) throw new BeforeSignError('Payer balance below reserve; nothing was charged')
     const account = this.wallet.classicAddress
     const [info, current, fee] = await Promise.all([
       this.ledger.request({ command: 'account_info', account, ledger_index: 'current' }),
@@ -58,8 +108,9 @@ export class XrplPayer {
     const signed = this.wallet.sign({
       TransactionType: 'Payment', Account: account, Destination: terms.payTo, Amount: terms.amountDrops, InvoiceID: terms.invoiceId,
       // Fee capped so a fee spike never drains the wallet; LastLedgerSequence makes expiry provable.
-      Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(2000, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), LastLedgerSequence: lastLedgerSequence,
+      Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(FEE_CAP_DROPS, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), LastLedgerSequence: lastLedgerSequence,
     })
+    this.balanceCache!.committed += Number(terms.amountDrops) + FEE_CAP_DROPS
     return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
   }
   async status(submission: Submission): Promise<PaymentOutcome> {
@@ -82,7 +133,7 @@ export class XrplPayer {
   async waitFor(submission: Submission): Promise<PaymentOutcome> {
     const deadline = Date.now() + this.timing.timeoutMs
     for (;;) {
-      const outcome = await this.status(submission).catch((): PaymentOutcome => ({ state: 'pending' }))
+      const outcome = await bounded(this.status(submission), Math.max(1, deadline - Date.now())).catch((): PaymentOutcome => ({ state: 'pending' }))
       if (outcome.state !== 'pending' || Date.now() > deadline) return outcome
       await new Promise(resolve => setTimeout(resolve, this.timing.pollMs))
     }
@@ -105,3 +156,4 @@ export class SimulatedPayer {
   }
 }
 export type Payer = XrplPayer | SimulatedPayer
+export type BalanceSnapshot = { balanceDrops: number; reserveDrops: number; availableDrops: number; ledgerAgeSeconds: number }

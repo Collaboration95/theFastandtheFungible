@@ -76,7 +76,8 @@ export async function measureLatency(dir: string, questions: Question[], world: 
         observations.push({ kind: 'search hit', raw: await r.text(), runId: initial.runId, grants: [] })
       }
     }
-    return { coldStartMs, boot: 'booted demo API + publisher (fresh child process; module load included)', samples, observations, dbPath: resolve(dir, 'api.db') }
+    const operations = await (await fetch(base + '/api/metrics', { signal: AbortSignal.timeout(5000) })).json()
+    return { operations, coldStartMs, boot: 'booted demo API + publisher (fresh child process; module load included)', samples, observations, dbPath: resolve(dir, 'api.db') }
   } finally {
     if (child.exitCode === null) { const exited = once(child, 'exit'); child.kill('SIGTERM'); const timer = setTimeout(() => child.kill('SIGKILL'), 3000); await exited; clearTimeout(timer) }
   }

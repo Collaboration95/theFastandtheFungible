@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { AddressInfo } from 'node:net'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Wallet, decode, hashes } from 'xrpl'
 import { createPublisherApp } from '../publisher/routes.js'
 import { Store } from '../server/store.js'
@@ -24,13 +24,14 @@ import { PublicCandidateSchema, type PublicCandidate } from '../shared/contracts
 
 /** In-memory Testnet: applies submitted blobs, validates them (or not), and answers tx lookups. */
 function fakeLedger() {
-  const state = { ledger: 100, submits: 0, validate: true, record: true, sequenceUsedElsewhere: 0, result: 'tesSUCCESS', delivered: undefined as string | undefined }
+  const state = { balance: '100000000', owners: 0, ledgerAge: 1, ledger: 100, submits: 0, validate: true, record: true, sequenceUsedElsewhere: 0, result: 'tesSUCCESS', delivered: undefined as string | undefined }
   const txs = new Map<string, { tx_json: Record<string, unknown>; meta: Record<string, unknown>; validated: boolean; ledger_index: number }>()
   const ledger: Ledger = {
     async request(r) {
       switch (r.command) {
-        case 'account_info': return { result: { account_data: { Sequence: 7 + txs.size + state.sequenceUsedElsewhere, Balance: '100000000', OwnerCount: 0 } } }
+        case 'account_info': return { result: { account_data: { Sequence: 7 + txs.size + state.sequenceUsedElsewhere, Balance: state.balance, OwnerCount: state.owners } } }
         case 'ledger_current': return { result: { ledger_current_index: state.ledger } }
+        case 'server_info': return { result: { info: { validated_ledger: { age: state.ledgerAge, reserve_base_xrp: 1, reserve_inc_xrp: 0.2 } } } }
         case 'fee': return { result: { drops: { open_ledger_fee: '10' } } }
         case 'ledger': return { result: { ledger_index: state.ledger } }
         case 'submit': {
@@ -289,4 +290,118 @@ describe('XRPL Testnet settlement rail', () => {
     expect(() => testnetUrl('wss://xrplcluster.com')).toThrow(/Testnet/)
     expect(() => testnetUrl('wss://s1.ripple.com')).toThrow(/Testnet/)
   })
+})
+
+
+describe('live payment operations (#287)', () => {
+  it('refuses low balance before signing, with no submission row or charge', async () => {
+    const s = await setup()
+    s.chain.state.balance = '1001000'
+    const intent = await buy(s, new PurchaseManager(s.store, s.client, s.payer))
+    expect(intent).toMatchObject({ status: 'FAILED_NOT_SETTLED', error: 'Payer balance below reserve; nothing was charged' })
+    expect(s.store.getSubmission(intent.intentId)).toBeUndefined()
+    expect(s.chain.state.submits).toBe(0)
+    expect(s.store.getRun(s.run.runId).reservedMinor).toBe(0)
+  })
+
+  it.each(['before-submit', 'submit-timeout', 'confirmed-not-recorded'])('recovers %s in live ticks with one persisted signature and one charge', async fault => {
+    const s = await setup()
+    const manager = new PurchaseManager(s.store, s.client, s.payer)
+    const original = s.client.paidGet.bind(s.client)
+    let inject = true
+    s.client.paidGet = async (path, signature, observer) => {
+      if (signature && inject) {
+        inject = false
+        if (fault !== 'before-submit') await original(path, signature, observer)
+        throw new Error('Injected crash/timeout after persist')
+      }
+      return original(path, signature, observer)
+    }
+    const pending = await buy(s, manager)
+    const blob = s.store.getSubmission(pending.intentId)!
+    expect(pending.status).toBe('SUBMITTING')
+    expect(s.store.getRun(s.run.runId).receipts).toHaveLength(0)
+    await manager.reconcile()
+    await manager.reconcile()
+    expect(s.store.getIntent(pending.intentId)?.status).toBe('VERIFIED')
+    expect(s.store.getSubmission(pending.intentId)).toEqual(blob)
+    expect(s.chain.txs.size).toBe(1)
+    expect(s.chain.state.submits).toBe(1)
+    expect(s.store.getRun(s.run.runId)).toMatchObject({ spentMinor: PAID.priceMinor, reservedMinor: 0 })
+    expect(s.store.getRun(s.run.runId).receipts).toHaveLength(1)
+  })
+
+  it('records a ledger-confirmed payment while the publisher is down, preserving the charge', async () => {
+    const s = await setup()
+    const original = s.client.paidGet.bind(s.client)
+    s.client.paidGet = async (path, signature, observer) => {
+      const result = await original(path, signature, observer)
+      if (signature) throw new Error('Lost receipt')
+      return result
+    }
+    const manager = new PurchaseManager(s.store, s.client, s.payer)
+    const pending = await buy(s, manager)
+    s.client.paidGet = async () => { throw new Error('Publisher down') }
+    await manager.reconcile()
+    expect(s.store.getIntent(pending.intentId)?.status).toBe('DELIVERY_FAILED')
+    expect(s.store.getRun(s.run.runId)).toMatchObject({ spentMinor: PAID.priceMinor, reservedMinor: 0 })
+    expect(s.store.getRun(s.run.runId).receipts).toHaveLength(1)
+    expect(s.chain.state.submits).toBe(1)
+  })
+
+  it('releases the payer sequence before a slow writer delivers, and fails unresolved sequences without signing', async () => {
+    const s = await setup()
+    // Obtain a valid immutable invoice through the normal purchase path first.
+    await buy(s, new PurchaseManager(s.store, s.client, s.payer))
+    const terms = s.store.getIntent('intent-1')!.quote!.payment!
+    let release!: () => void
+    const delivery = new Promise<void>(resolve => { release = resolve })
+    const signed: import('../server/xrpl.js').Submission[] = []
+    const persist = (blob: import('../server/xrpl.js').Submission) => { signed.push(blob); return blob }
+    const first = await s.payer.pay(terms, persist, async blob => {
+      await s.chain.ledger.request({ command: 'submit', tx_blob: blob.txBlob })
+      await delivery
+    })
+    const second = await s.payer.pay(terms, persist, async blob => { await s.chain.ledger.request({ command: 'submit', tx_blob: blob.txBlob }) })
+    expect(signed).toHaveLength(2) // The first HTTP delivery is still blocked.
+    expect((decode(signed[1].txBlob) as { Sequence: number }).Sequence).toBe((decode(signed[0].txBlob) as { Sequence: number }).Sequence + 1)
+    release(); await first.sent; await second.sent
+    s.chain.state.record = false
+    const pending = await s.payer.pay(terms, persist, async () => {})
+    await pending.sent
+    const count = signed.length
+    await expect(s.payer.pay(terms, persist, async () => {})).rejects.toThrow('Previous payer sequence unresolved')
+    expect(signed).toHaveLength(count)
+  })
+
+  it('deep health reports a stale ledger and guards metrics and dependency detail with #301 auth', async () => {
+    const s = await setup()
+    s.chain.state.ledgerAge = 90
+    vi.stubEnv('RA_API_TOKEN', 'ops-test-token-287')
+    const api = await createApiApp({ dbPath: ':memory:', publisherUrl: s.baseUrl, payer: s.payer })
+    const server = api.app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve))
+    cleanup.push(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await api.close(); vi.unstubAllEnvs() })
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+    expect((await fetch(base + '/health')).status).toBe(200)
+    for (const path of ['/api/metrics', '/api/health?deep=1']) expect((await fetch(base + path)).status).toBe(401)
+    const headers = { Authorization: 'Bearer ops-test-token-287' }
+    const health = await (await fetch(base + '/api/health?deep=1', { headers })).json()
+    expect(health).toMatchObject({ status: 'degraded', database: 'ok', publisher: 'ok', ledger: { ledgerAgeSeconds: expect.any(Number) } })
+    expect(health.reasons).toContain('Validated ledger is stale (>30 s)')
+    const metric = await (await fetch(base + '/api/metrics', { headers })).json()
+    expect(metric).toMatchObject({ schema: 'operations-v1', reconcileBacklog: { count: 0 }, spendTodayBySurface: { mcp: { spentMinor: 0 } } })
+    expect(JSON.stringify([health, metric])).not.toContain(s.wallet.seed!)
+    expect(JSON.stringify([health, metric])).not.toContain('ops-test-token-287')
+  })
+})
+
+it('uses live owner reserves and caches the balance conservatively for five seconds', async () => {
+  const s = await setup()
+  s.chain.state.balance = '3000000'; s.chain.state.owners = 5
+  expect(await s.payer.balance()).toMatchObject({ balanceDrops: 3000000, reserveDrops: 2000000, availableDrops: 1000000 })
+  s.chain.state.balance = '1001000'
+  expect((await s.payer.balance()).balanceDrops).toBe(3000000)
+  const now = Date.now
+  Date.now = () => now() + 5001
+  try { expect((await s.payer.balance()).balanceDrops).toBe(1001000) } finally { Date.now = now }
 })

@@ -10,7 +10,8 @@ import { PROVEN_STATUSES, type Store } from './store.js'
 import { checkProof } from './proofs.js'
 import { recordStep } from './telemetry.js'
 import { PublisherClient, PublisherHttpError, type WireObserver } from './publisher-client.js'
-import { SimulatedPayer, XrplPayer, type Payer, type Submission } from './xrpl.js'
+import { BeforeSignError, SimulatedPayer, XrplPayer, type Payer, type Submission } from './xrpl.js'
+import { verifyPayment } from '../shared/xrpl.js'
 
 const xrp = (drops: string) => (Number(drops) / 1_000_000).toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
 const explorer = (txHash: string) => `${XRPL_EXPLORER}/${txHash}`
@@ -26,7 +27,11 @@ export class PurchaseManager {
   private readonly delivered = new Map<string, unknown>()
   readonly payer: Payer
   /** No payer = the SIMULATED rail (deterministic test-only signer, labelled). */
-  constructor(readonly store: Store, readonly client: PublisherClient, payer?: Payer) { this.payer = payer ?? new SimulatedPayer() }
+  constructor(readonly store: Store, readonly client: PublisherClient, payer?: Payer) {
+    this.payer = payer ?? new SimulatedPayer()
+    if (this.payer instanceof XrplPayer) this.payer.restorePending(store.listIntents('SUBMITTING').flatMap(i => store.getSubmission(i.intentId) ?? []))
+  }
+  async drain() { await Promise.allSettled(this.active.values()) }
   private ledgerEvent(runId: string, label: string, data: Record<string, unknown>): void {
     this.store.appendEvent(runId, { type: 'XRPL', label, data })
   }
@@ -91,7 +96,12 @@ export class PurchaseManager {
       }
     }
     if (intent.status === 'RESERVED' && this.store.claimSubmitting(intentId)) {
-      try { await this.payAndSettle(this.store.getIntent(intentId)!) } catch {
+      try { await this.payAndSettle(this.store.getIntent(intentId)!) } catch (error) {
+        if (!this.store.getSubmission(intentId)) {
+          const failed = this.store.failSubmission(intentId, error instanceof BeforeSignError ? error.message : 'Payment could not be signed; nothing was charged')
+          this.store.appendEvent(runId, { type: 'PURCHASE', label: failed.error!, data: { intentId, status: failed.status } })
+          return failed
+        }
         // Every exception after signing is ambiguous, including HTTP errors and
         // malformed responses. A possible charge is never refunded locally.
         intent = this.store.updateIntent(intentId, { error: 'Settlement outcome unknown; reconciliation required' })
@@ -158,9 +168,8 @@ export class PurchaseManager {
         ledgerIndex = outcome.ledgerIndex
         this.ledgerEvent(intent.runId, `Validated in ledger ${ledgerIndex} · tesSUCCESS`, { intentId: intent.intentId, txHash: submission.txHash, ledgerIndex, explorerUrl: explorer(submission.txHash) })
       }
-      const xrpl = ledgerIndex === undefined ? undefined : { txHash: submission.txHash, ledgerIndex, payer: this.payer.address!, payTo: terms.payTo, amountDrops: terms.amountDrops, explorerUrl: explorer(submission.txHash) }
-      this.store.recordSettlement(intent.intentId, { receiptId: `x402-${submission.txHash}`, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, amountMinor: intent.amountMinor, currency: 'SGD', settledAt: new Date().toISOString(), label: xrpl ? XRPL_LABEL : SIMULATED_LABEL, ...(xrpl ? { xrpl } : {}) }, submission.txHash)
-      this.ledgerEvent(intent.runId, `Publisher ${xrpl ? 'verified the payment on the ledger' : 'settled the SIMULATED payment'} and issued a receipt`, { intentId: intent.intentId, txHash: submission.txHash })
+      this.recordConfirmed(intent, submission, ledgerIndex)
+      this.ledgerEvent(intent.runId, `Publisher ${ledgerIndex !== undefined ? 'verified the payment on the ledger' : 'settled the SIMULATED payment'} and issued a receipt`, { intentId: intent.intentId, txHash: submission.txHash })
       // A failed delivery in the paying exchange surfaces as DELIVERY_FAILED; retryDelivery resends the blob.
       this.delivered.set(intent.intentId, result.status === 200 ? result.delivery : DELIVERY_FAILED)
       return
@@ -176,6 +185,11 @@ export class PurchaseManager {
       if (await this.releaseIfLedgerProvesNoCharge(intent, submission)) return
     }
     throw new Error('Settlement outcome unknown')
+  }
+  private recordConfirmed(intent: PurchaseIntent, submission: Submission, ledgerIndex?: number) {
+    const terms = intent.quote!.payment!
+    const xrpl = ledgerIndex === undefined ? undefined : { txHash: submission.txHash, ledgerIndex, payer: this.payer.address!, payTo: terms.payTo, amountDrops: terms.amountDrops, explorerUrl: explorer(submission.txHash) }
+    this.store.recordSettlement(intent.intentId, { receiptId: `x402-${submission.txHash}`, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, amountMinor: intent.amountMinor, currency: 'SGD', settledAt: new Date().toISOString(), label: xrpl ? XRPL_LABEL : SIMULATED_LABEL, ...(xrpl ? { xrpl } : {}) }, submission.txHash)
   }
   /** XRPL: only the ledger can prove that a signed payment never applied (failed, or expired past LastLedgerSequence). */
   private async releaseIfLedgerProvesNoCharge(intent: PurchaseIntent, submission: Submission): Promise<boolean> {
@@ -228,21 +242,36 @@ export class PurchaseManager {
       return this.deliver(intent)
     })
   }
-  /** Restart: the stored blob, never a new signature, decides an interrupted purchase. */
+  /** Boot and live ticks reuse only the persisted blob. Active operations are never interrupted. */
   async reconcile(): Promise<void> {
-    for (const intent of this.store.listIntents('SUBMITTING')) {
-      await this.once(intent.intentId, async () => {
+    await Promise.all(this.store.listIntents('SUBMITTING').filter(i => !this.active.has(i.intentId)).map(intent =>
+      this.once(intent.intentId, async () => {
+        if (this.store.getIntent(intent.intentId)?.status !== 'SUBMITTING') return this.store.getIntent(intent.intentId)!
+        this.store.appendEvent(intent.runId, { type: 'PURCHASE', label: 'Reconcile · SUBMITTING · same signed payment', data: { intentId: intent.intentId } })
         const submission = this.store.getSubmission(intent.intentId)
         try {
           // Nothing persisted means nothing was ever signed or sent (the blob is stored before it leaves).
           if (!submission) return this.store.failSubmission(intent.intentId, 'No payment was signed before the restart; nothing was charged')
           if (intent.quote?.payment?.rail === 'xrpl-testnet' && await this.releaseIfLedgerProvesNoCharge(intent, submission)) return this.store.getIntent(intent.intentId)!
+          if (intent.quote?.payment?.rail === 'xrpl-testnet') {
+            const proof = await verifyPayment(this.ledgerPayer().ledger, submission.txHash, intent.quote.payment)
+            if (proof.state === 'ok') {
+              this.recordConfirmed(intent, submission, proof.proof.ledgerIndex)
+              return this.deliver(this.store.getIntent(intent.intentId)!)
+            }
+            if (proof.state === 'invalid') throw new Error('Ledger proof does not match the invoice')
+          }
           await this.settleFrom(intent, submission, await this.send(intent, submission))
           const settled = this.store.getIntent(intent.intentId)!
           return settled.status === 'SETTLED' ? this.deliver(settled) : settled
         } catch { return this.store.updateIntent(intent.intentId, { error: 'Payment awaiting ledger or publisher; reconciliation required' }) }
-      })
-    }
+      })))
+    await Promise.all(this.store.listIntents().filter(i => ['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED'].includes(i.status) && !this.active.has(i.intentId)).map(intent => this.once(intent.intentId, async () => {
+      const claimed = intent.status === 'DELIVERY_FAILED' ? this.store.claimDeliveryRetry(intent.intentId) : intent
+      if (!claimed) return intent
+      this.store.appendEvent(intent.runId, { type: 'PURCHASE', label: `Reconcile · delivery retry ${claimed.deliveryAttempts ?? 0}/3`, data: { intentId: intent.intentId, attempt: claimed.deliveryAttempts ?? 0 } })
+      return this.deliver(claimed)
+    })))
   }
 }
 

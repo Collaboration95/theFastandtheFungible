@@ -1,3 +1,5 @@
+import { operationsRouter } from './api/operations.js'
+import { withModelUsage, logMoneyEvent } from './telemetry.js'
 import { admissionGuard } from './admission.js'
 import { loadConfig } from './config.js'
 import type { ApiContext } from './api/context.js'
@@ -24,7 +26,7 @@ import { type DecisionProvider } from './agents/decision.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 
 /** `observe`: the trust check's relevance re-measure (#205); defaults to Workers AI embeddings when SEARCH_EMBEDDINGS=live. */
-export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver }
+export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number }
 export async function createApiApp(options: ApiOptions = {}) {
   const config = loadConfig()
   const mcpPolicy = budgetPolicy(config)
@@ -42,7 +44,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     }
   }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
-  const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event) } catch { /* telemetry never blocks the run */ } publish(event) })
+  const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
   const client = new PublisherClient({ baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
   // XRPL Testnet settlement needs both the rail flag and a payer seed; otherwise simulated, labelled.
   const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
@@ -73,7 +75,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   }
   const launch = (runId: string, job: () => Promise<void>) => {
     const done = progress(runId, 'Working with accessible evidence; spending policy remains enforced.')
-    const task = job().catch(() => {
+    const task = withModelUsage(usage => store.appendEvent(runId, { type: usage.fallback ? 'MODEL_FALLBACK' : 'MODEL_USAGE', label: usage.fallback ? 'LLM fallback · labelled fixture' : 'Provider-reported usage', data: usage }), job).catch(() => {
       store.updateRun(runId, { phase: 'FAILED', error: 'Run interrupted; start a new ask or retry a settled delivery.' })
     }).finally(() => {
       done()
@@ -90,6 +92,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
   const context: ApiContext = { store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, reportDir, reportJobs, progress }
   app.use(walletRouter(context))
+  app.use(operationsRouter(context))
   // Trust matrix (D6): public, engine-side, persisted across runs.
   app.get('/api/reputation', (_req, res) => res.json({ publishers: reputation.list() }))
   app.post('/api/reputation/reset', (_req, res) => { reputation.reset(); res.json({ publishers: [] }) })
@@ -112,8 +115,33 @@ export async function createApiApp(options: ApiOptions = {}) {
     res.status(notFound ? 404 : error instanceof z.ZodError ? 400 : 500).json({ error: notFound ? 'Run not found.' : error instanceof z.ZodError ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
   }
   app.use(handleError)
-  await purchases.reconcile()
+  const reconciliationJobs = new Set<Promise<void>>()
+  let stopping = false
+  const reconcileOnce = () => {
+    if (stopping) return Promise.resolve()
+    const task = purchases.reconcile().finally(() => { reconciliationJobs.delete(task) })
+    reconciliationJobs.add(task)
+    return task
+  }
+  await reconcileOnce()
+  const reconcileTimer = setInterval(() => { void reconcileOnce().catch(() => undefined) }, options.reconcileIntervalMs ?? Number(config.RECONCILE_INTERVAL_MS || 15000))
+  reconcileTimer.unref()
+  const stopReconciler = () => { stopping = true; clearInterval(reconcileTimer) }
+  let closing: Promise<void> | undefined
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
   for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => loop.start(run.runId))
-  return { app, store, loop, reputation, drain: async () => { for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) loop.stop(run.runId); await Promise.allSettled(jobs) }, close: () => { timers.forEach(clearInterval); for (const set of streams.values()) for (const res of set) res.end(); store.close(); void (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.() } }
+  const drain = async () => {
+    stopReconciler()
+    for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) loop.stop(run.runId)
+    await Promise.allSettled(reconciliationJobs)
+    await Promise.allSettled(jobs)
+    await purchases.drain()
+  }
+  return { app, store, loop, reputation, purchases, reconcileOnce, drain, close: () => closing ??= (async () => {
+    await drain()
+    timers.forEach(clearInterval)
+    for (const set of streams.values()) for (const res of set) res.end()
+    store.close()
+    await (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.()
+  })() }
 }
