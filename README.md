@@ -29,6 +29,8 @@
 
 <!-- TODO(pass 2; #270 and `make clip` are merged): hero GIF of the local app, a 15–20 s refund scene under 4 MB from `make clip`, committed under docs/media/ -->
 
+[Watch the 20-second refund demo](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v0.6.0/uc3-2026-11-03.mp4) · fictional writers, simulated payments.
+
 ## Mac app
 
 Download the Apple Silicon DMG from [Releases](https://github.com/Collaboration95/theFastandtheFungible/releases),

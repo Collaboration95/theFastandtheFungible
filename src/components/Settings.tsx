@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import BudgetSlider from './BudgetSlider'
+import BudgetPicker from './BudgetPicker'
 
 export interface SettingsProps { universal: boolean; budgetMinor: number; settlement: string; notify: boolean; onBack: () => void; onUniversal: (on: boolean) => void; onBudget: (minor: number) => void; onNotify: (on: boolean) => void }
 
@@ -18,10 +18,10 @@ export default function Settings({ universal, budgetMinor, notify, onBack, onUni
       <h2 id="ra-set-budget">Budget</h2>
       <label className="ra-set-row">
         <input type="checkbox" checked={universal} onChange={event => onUniversal(event.target.checked)} />
-        <span><b>Universal budget per query</b><small>Every question uses this budget. Home hides the slider.</small></span>
+        <span><b>Use the same budget for every question</b><small>Set the maximum each question may spend.</small></span>
       </label>
       <div className="ra-set-slider">
-        <BudgetSlider value={budgetMinor} onChange={onBudget} disabled={!universal} label="Per query" stops />
+        <BudgetPicker value={budgetMinor} onChange={onBudget} disabled={!universal} />
 
       </div>
     </section>

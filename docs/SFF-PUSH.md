@@ -356,6 +356,7 @@ Agents add items there and keep working around them.
 
 - 3 Nov: Submission pack lives in `docs/submission/` (link-checked by hygiene). The deck is HTML exported to PDF by Playwright on the UX-DIRECTION ink/paper system, one slide per criterion, with every number sourced on the slide. The video and pitch label each scene Testnet, simulated or fixture, and the Claude Code scene does not claim the Testnet purchase (an SDK stdio client made it). Why: judges pre-assess the PDF and video, and overclaiming costs more than it gains.
 - 3 Nov: Numbers v7 uses final-used gross spend as the pitch headline, preserving gross/net waste and every gate. Diagnose #320, add wafer-domain rejection and short identifier ranking; dev/synthetic checks then one final reused-heldout run. Point waste 19.95% meets <25%, CI 8.00–36.84% does not establish a below-target population rate. Separate live Testnet sanity evidence never stands in for benchmark confidence.
+- 3 Nov (#312): screen and PDF share a question-aware selector over validated claim sentences; no uncited conclusion becomes the lead. Extracts say Lead finding. Report claims are concise extracts, with every cited passage printed once. Keep gross budget authority and gate-5 disclosures unchanged.
 
 - 3 Nov: #280 agent keys are hashed principals in the existing admission/purchase ledger, managed by CLI while #311 owns UI; scoped pause/revoke blocks unsigned work and preserves signed-intent recovery.
 - 3 Nov: Numbers v6 preserves gross waste, adds confirmed-refund net waste and final-used spend with source-cluster CIs; fix requested-passage selection and the “buying … now” false positive, plus deterministic fact-key/scope vetoes. No heldout retuning or spending-authority change; gross/net 52.87% → 40.68%, target still missed.
@@ -429,6 +430,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 
 ### Tue 3 Nov
+- UX lane #312: answer and claims, article-specific Activity, supporting tables/palette/settings, mobile Spend sheet and neutral site. UC3 PDF 50 → 4 pages on the same v0.5.0 snapshot; citation-backed dated lead replaces the author introduction. Rebased onto Lane B #320; UI makes no spending-policy change.
 - UX lane #311: shell, environment popover, plan, payments/verification/refund, net Spend and receipt sheets; four allowed keyframes, no in-app cast/odometer. Recovery state clarified; #312 retains answer/supporting-screen/PDF/site work.
 - Lane B #276: value-of-information veto, conservative signed-menu duplicate checks, keyed receipt refit and exact intent/answer labels; held-out waste 39.39% → 35.48% (target missed), flow F1 0.588 → 0.625, uplift +15.38 pts unchanged; dev waste 51.79% → 44.19%, flow F1 0.308 → 0.296. Zero gate violations; scorecard/README refreshed.
 - Lane B #260: signed corpus fact menus, both decision providers and local scorecards; live F1 0.235 → 0.419, waste 36.19% → 47.19% (both targets missed), zero gate violations; README regenerated, fixture quality unchanged.

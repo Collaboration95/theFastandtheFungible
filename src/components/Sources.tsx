@@ -1,8 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- Shared access boundary for W2 drawer wiring. */
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ContentEnvelope, PublicCandidate, RunSnapshot } from '../../shared/contracts/index.js'
 import { money, plainVerdict } from '../format'
-import WriterChip from './WriterChip'
 
 const drawerAccess = new WeakMap<ContentEnvelope, string>()
 const identity = (candidate: PublicCandidate) => JSON.stringify([candidate.profileId, candidate.resourceId, candidate.version])
@@ -27,7 +26,7 @@ export function canDisplayPassage(candidate: PublicCandidate, content: ContentEn
     (candidate.tier === 'FREE' || drawerAccess.get(content) === identity(candidate))
 }
 
-const QUARANTINED: Partial<Record<string, string>> = { CLAIM_FAILED: 'quarantined', CHALLENGED: 'challenged', REFUNDED: 'refunded', CHALLENGE_REJECTED: 'writer disputes', CHALLENGE_REFUSED: 'refused · delisted' }
+const QUARANTINED: Partial<Record<string, string>> = { CLAIM_FAILED: 'not used', CHALLENGED: 'refund requested', REFUNDED: 'refunded', CHALLENGE_REJECTED: 'writer disputes', CHALLENGE_REFUSED: 'refused · delisted' }
 type CardState = { label: string; tone: string; bought?: boolean }
 function cardState(run: RunSnapshot, candidate: PublicCandidate): CardState {
   const price = money(candidate.price.amountMinor)
@@ -35,7 +34,7 @@ function cardState(run: RunSnapshot, candidate: PublicCandidate): CardState {
   const intent = run.intents.find(item => item.runId === run.runId && item.resourceId === candidate.resourceId && item.version === candidate.version)
   if (intent?.status === 'VERIFIED') return { label: `bought ${money(intent.amountMinor)}`, tone: 'bought', bought: true }
   if (intent?.status === 'DELIVERY_FAILED') return { label: 'paid · not delivered', tone: 'fail' }
-  if (intent && QUARANTINED[intent.status]) return { label: `proof failed · ${QUARANTINED[intent.status]}`, tone: 'fail' }
+  if (intent && QUARANTINED[intent.status]) return { label: `Promise broken · ${QUARANTINED[intent.status]}`, tone: 'fail' }
   if (intent && intent.status !== 'SKIPPED' && intent.status !== 'FAILED_NOT_SETTLED') return { label: 'buying…', tone: 'buying' }
   const row = run.decisions[0]?.rows.find(item => item.candidate.resourceId === candidate.resourceId && item.candidate.version === candidate.version)
   if (row) {
@@ -51,31 +50,10 @@ export interface SourcesProps { run: RunSnapshot; onOpen?: (candidate: PublicCan
 /** T5: sources in one line (counts, the sources that matter named); View all opens the cards. */
 export default function Sources({ run, onOpen }: SourcesProps) {
   const [all, setAll] = useState(false)
-  const cards = run.candidates.map(candidate => ({ candidate, state: cardState(run, candidate) })).sort((a, b) => RANK[a.state.tone] - RANK[b.state.tone])
-  const read = cards.filter(card => card.state.tone === 'read').length
-  const skipped = cards.filter(card => ['cap', 'skip'].includes(card.state.tone)).length
-  const named = cards.filter(card => ['bought', 'buying', 'fail', 'would'].includes(card.state.tone))
-  const open = (candidate: PublicCandidate) => onOpen?.(candidate)
-  return <section className="ra-strip" aria-label="Sources">
-    {run.candidates.length === 0
-      ? <div className="ra-pills"><b>Sources</b><span className="ra-count">Searching…</span></div>
-      : <div className="ra-pills"><b>{cards.length} {cards.length === 1 ? 'source' : 'sources'}</b>
-        <span className="ra-count"><span><em>{read}</em> read</span>{skipped > 0 && <span><em>{skipped}</em> not bought</span>}</span>
-        {named.map(({ candidate, state }) => <button key={identity(candidate)} type="button" className={`ra-pill st-${state.tone}`} disabled={!onOpen} onClick={() => open(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`}><span className="ra-mono" aria-hidden="true">{initials(candidate.publisher)}</span>{candidate.publisher}<em>{state.bought ? '✓ ' : ''}{state.label}</em></button>)}
-        {/* Gate 5: only a keyword-only search needs saying; hybrid is the quiet default. */}
-
-        <button type="button" className="ra-link ra-viewall" onClick={() => setAll(!all)} aria-expanded={all}>{all ? 'Hide' : 'View all'}</button>
-        </div>}
-    {all && <ul className="ra-cards is-all">
-      {cards.map(({ candidate, state }, index) => <li key={identity(candidate)} style={{ '--i': index } as CSSProperties}>
-        <button type="button" className={`ra-card${state.bought ? ' is-bought' : ''}`} disabled={!onOpen} onClick={() => open(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`}>
-          <span className="ra-card-top"><span className="ra-mono" aria-hidden="true">{initials(candidate.publisher)}</span><span className="ra-card-p">{candidate.publisher}</span></span>
-          <span className="ra-card-t">{candidate.title}</span>
-          <span className={`ra-card-s st-${state.tone}`}>{state.tone === 'read' || state.bought ? '✓ ' : ''}{state.label}</span>
-        </button>
-        <WriterChip candidate={candidate} variant="card" />
-      </li>)}
-    </ul>}
+  const dialog = useRef<HTMLDialogElement>(null)
+  useEffect(() => { if (all) dialog.current?.showModal(); else dialog.current?.close() }, [all])
+  const cards = run.candidates.map(candidate => ({ candidate, state: cardState(run, candidate) })).sort((a,b) => RANK[a.state.tone] - RANK[b.state.tone])
+  return <section className="ra-strip" aria-label="Sources"><div className="ra-source-summary">{cards.length} sources · {run.contents.length} read · {run.intents.filter(i => i.status === 'VERIFIED').length} bought <button type="button" className="ra-link" onClick={() => setAll(true)}>View all</button></div>
+    <dialog ref={dialog} className="ra-receipt-sheet ra-sources-sheet" aria-label="All sources" onCancel={event => { event.preventDefault(); setAll(false) }}><header><h2>Sources</h2><button type="button" className="ra-btn" onClick={() => setAll(false)} aria-label="Close sources">×</button></header><table><thead><tr><th>Article</th><th>Writer / access</th></tr></thead><tbody>{cards.map(({ candidate, state }) => <tr key={identity(candidate)}><td><button type="button" className="ra-link" onClick={() => { setAll(false); onOpen?.(candidate) }}>{candidate.title}</button></td><td>{candidate.publisher}<br />{state.label}</td></tr>)}</tbody></table></dialog>
   </section>
 }
-const initials = (name: string) => name.split(/\s+/).filter(word => /^[A-Z]/.test(word)).slice(0, 2).map(word => word[0]).join('') || name.slice(0, 2).toUpperCase()

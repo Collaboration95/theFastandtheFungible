@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { realpathSync } from 'node:fs'
 import react from '@vitejs/plugin-react'
 const offset = Number(process.env.DEMO_PORT_OFFSET || 0)
 const api = `http://127.0.0.1:${process.env.PORT || 8788 + offset}`
@@ -41,7 +42,7 @@ export default defineConfig({
     allowedHosts: clientHosts,
     host: process.env.RA_CLIENT_LAN === '1' ? '0.0.0.0' : '127.0.0.1',
     port: 5100 + offset,
-    fs: { deny: ['.env', '.env.*', '**/data/**', '**/.playwright/**', '**/.git/**', '**/.lane-a/**', '**/clips/**'] },
+    fs: { allow: ['.', realpathSync('node_modules')], deny: ['.env', '.env.*', '**/data/**', '**/.playwright/**', '**/.git/**', '**/.lane-a/**', '**/clips/**'] },
     proxy,
   },
   preview: { host: '127.0.0.1', allowedHosts: clientHosts, proxy },

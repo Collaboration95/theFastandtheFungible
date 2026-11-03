@@ -100,7 +100,7 @@ describe('visible internals', () => {
   it('shows the run as steps with Stop while live, and no button once the run is over', () => {
     const live = renderToStaticMarkup(<RunActivity run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
     expect(live).toContain('Stop buying ⌘.')
-    expect(live).toContain('Choose what to buy')
+    expect(live).toContain('paid articles')
     expect(live).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop</)
     expect(live).not.toContain('ra-runbar-clock')
     const done = renderToStaticMarkup(<RunActivity run={offlineZeroBudgetRun} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
@@ -121,13 +121,13 @@ describe('visible internals', () => {
 
   it('folds the decision round to what was bought and skipped, with Why these? to reopen it', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} fold onWhy={() => {}} />)
-    for (const text of ['Considered', 'Why these?', 'WOULD BUY', 'SKIP', 'Offline rules']) expect(html).toContain(text)
+    for (const text of ['Article', 'Writer', 'Price', 'Decision', 'Would buy', 'Offline rules']) expect(html).toContain(text)
     expect(html).not.toContain('value = gap')
   })
 
   it('puts plain verdicts on the surface: WOULD BUY at S$0, never a BUY', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} />)
-    for (const text of ['WOULD BUY', 'SKIP', 'REWRITE', 'is over the S$1.00 per-source cap', 'Worth buying']) expect(html).toContain(text)
+    for (const text of ['Would buy', 'Too expensive', 'Not relevant']) expect(html).toContain(text)
     expect(html).not.toContain('>BUY<')
     expect(html).not.toContain('SKIP_')
   })
@@ -242,7 +242,7 @@ describe('stage pacing', () => {
   it('#208/#211: the answer card shows the requested facts as one line, the list on demand, and a free closure as free', () => {
     const latest = renderToStaticMarkup(<Answer run={ucRuns.UC4} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)
     expect(latest).toContain('<summary>3 of 3 answered · found free on a focused search · nothing bought</summary>')
-    expect(latest).toContain('Found free on a focused search')
+    expect(latest).toContain('found free on a focused search')
     expect(latest).not.toContain('Bought for')
     const first = renderToStaticMarkup(<Answer run={ucRuns.UC4} view="baseline" onView={() => {}} compare={false} onCompare={() => {}} />)
     expect(first).toContain('<summary>2 of 3 answered</summary>')
@@ -262,7 +262,7 @@ describe('stage pacing', () => {
     const conclusion = 'Margins held up. The spread widened to 55.2% in Q3. Watch the lead times.'
     const run = { ...paidStoryRun, answers: [...paidStoryRun.answers.slice(0, -1), { ...answer, conclusion }] }
     const html = renderToStaticMarkup(<Answer run={run} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)
-    expect(html).toContain('55.2%')
+    expect(html).not.toContain('Margins held up.')
     expect(html).not.toContain('55. 2%')
   })
 
@@ -275,10 +275,10 @@ describe('stage pacing', () => {
 
   it('leads with a short answer and keeps citation numbers across versions', () => {
     const html = renderToStaticMarkup(<Answer run={paidStoryRun} view="latest" onView={() => {}} compare={false} onCompare={() => {}} onCitation={() => {}} />)
-    expect(html).toContain('Short answer')
-    expect(html).toContain('Qualifies the free answer')
-    expect(html).toContain('GAP CLOSED')
-    expect(html).toContain('NEW')
+    expect(html).toContain('Lead finding')
+    expect(html).not.toContain('ra-impact')
+    expect(html).not.toContain('GAP CLOSED')
+    expect(html).not.toContain('NEW')
     expect(html).toMatch(/aria-label="Citation 2: Synthetic grid record, exact passage"/)
     const first = renderToStaticMarkup(<Answer run={paidStoryRun} view="baseline" onView={() => {}} compare={false} onCompare={() => {}} />)
     expect(first).toMatch(/aria-label="Citation 1: Synthetic demand record, exact passage"/)

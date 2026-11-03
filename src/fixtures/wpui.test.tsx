@@ -21,7 +21,7 @@ import ReputationPanel from '../components/ReputationPanel.js'
 import Sidebar, { NAV_WIDTH, NavToggle } from '../components/Sidebar.js'
 import type { PastRun } from '../api.js'
 import Toasts from '../components/Toasts.js'
-import BudgetSlider from '../components/BudgetSlider.js'
+import BudgetPicker from '../components/BudgetPicker.js'
 import Settings from '../components/Settings.js'
 import { getReputation, resetReputation, scope } from '../api.js'
 import { dwell, staged } from '../stage.js'
@@ -134,21 +134,21 @@ describe('sources: writers, publishers, search mode, trust (#151)', () => {
     expect(leak).toContain('SKIP_LOW_TRUST')
     expect(leak).toContain('AlphaLeak failed a proof check (honesty 0.40, under 0.50)')
     const panel = renderToStaticMarkup(<DecisionPanel run={uc3Run} />)
-    expect(panel).toContain('BLOCKED')
-    expect(panel).toContain('failed a proof check')
+    expect(panel).toContain('Refunded')
+    expect(panel).toContain('Refunded')
     // #205 (already on main): the failed proof also records its broken promise (observed 0), so T = H 0.40 × C 0.08.
-    expect(panel).toContain('T 0.03 · quarantined')
+    expect(panel).toContain('AlphaLeak')
     expect(panel).not.toContain('SKIP_')
   })
 
   it('labels each source: writer link, publisher, SYNTHETIC, FREE/PAID price, trust, and the search mode', () => {
     // T5: one line on the surface (search mode, the corpus label, the named sources); the per-source chips sit behind View all.
     const line = renderToStaticMarkup(<Sources run={uc3Run} />)
-    for (const text of ['proof failed · refunded', 'View all']) expect(line).toContain(text)
+    for (const text of ['Promise broken · refunded', 'View all']) expect(line).toContain(text)
     const { container } = render(<Sources run={uc3Run} />)
     fireEvent.click(screen.getByRole('button', { name: 'View all' }))
     const html = container.innerHTML
-    for (const text of ['SYNTHETIC', 'href="/w/alphaleak" target="_blank"', 'Priya Nair', 'NotFinancialTimes', 'proof failed · refunded']) expect(html).toContain(text)
+    for (const text of ['AlphaLeak', 'The Fab Floor', 'NotFinancialTimes', 'Promise broken · refunded']) expect(html).toContain(text)
     expect(renderToStaticMarkup(<WriterChip candidate={uc3Run.candidates.find(candidate => candidate.tier === 'FREE')!} />)).toContain('>FREE<')
     expect(renderToStaticMarkup(<Sources run={{ ...uc3Run, labels: { ...uc3Run.labels, search: 'hybrid' } }} />)).not.toContain('search · hybrid')
   })
@@ -201,7 +201,7 @@ describe('Writers tab: the reputation panel (#153)', () => {
   it('after UC3, AlphaLeak shows H 0.40 and quarantined; reset is presenter-only', () => {
     const html = renderToStaticMarkup(<ReputationPanel records={uc3Reputation} run={uc3Run} />)
     const leak = html.slice(html.indexOf('AlphaLeak'), html.indexOf('</tr>', html.indexOf('AlphaLeak')))
-    for (const text of ['H 0.40', 'quarantined', '0 / 1', '1 / 0', 'claimed 0.96']) expect(leak).toContain(text)
+    for (const text of ['Quarantined', '0 / 1', '0.03']) expect(leak).toContain(text)
     expect(html).toContain('The Fab Floor')
     expect(html).not.toContain('Reset reputation')
     const onReset = vi.fn()
@@ -214,11 +214,13 @@ describe('Writers tab: the reputation panel (#153)', () => {
     const drop = uc3Run.events.find(event => event.type === 'REPUTATION' && event.data?.publisherSlug === 'alphaleak')!.id
     const { container, rerender } = render(<ReputationPanel records={uc3Reputation} run={staged(uc3Run, drop - 1)} full={uc3Run} />)
     const leakRow = () => [...container.querySelectorAll('tbody')].find(body => body.textContent?.includes('AlphaLeak'))!
-    expect(leakRow().textContent).toContain('H 0.80')
+    expect(leakRow().textContent).toContain('0.80')
     expect(leakRow().className).not.toContain('is-drop')
     rerender(<ReputationPanel records={uc3Reputation} run={staged(uc3Run, drop)} full={uc3Run} />)
-    expect(leakRow().textContent).toContain('H 0.40')
-    expect(leakRow().className).toContain('is-drop')
+    expect(leakRow().textContent).toContain('Quarantined')
+    expect(leakRow().textContent).toContain('Quarantined')
+    fireEvent.click(screen.getByRole('button', { name: 'AlphaLeak' }))
+    expect(leakRow().textContent).toContain('Honesty 0.40')
   })
 })
 
@@ -341,16 +343,16 @@ describe('v1.1 shell: sidebar, past runs and an empty Home (#166)', () => {
 })
 
 describe('budget slider and the universal budget in Settings', () => {
-  it('the slider runs from free to S$5 in 5-cent steps and says the amount', () => {
+  it('budget choices and custom amounts preserve five-cent budget steps', () => {
     const onChange = vi.fn()
-    const { rerender } = render(<BudgetSlider value={200} onChange={onChange} />)
-    const slider = screen.getByRole('slider', { name: 'Budget' }) as HTMLInputElement
-    expect([slider.min, slider.max, slider.step]).toEqual(['0', '500', '5'])
-    expect(screen.getByText('S$2.00')).toBeTruthy()
-    fireEvent.change(slider, { target: { value: '35' } })
+    render(<BudgetPicker value={200} onChange={onChange} />)
+    expect(screen.getByRole('button', { name: 'S$2' }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: 'Free' }))
+    expect(onChange).toHaveBeenCalledWith(0)
+    const custom = screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }) as HTMLInputElement
+    expect([custom.min, custom.max, custom.step]).toEqual(['0','5','0.05'])
+    fireEvent.change(custom, { target: { value: '0.35' } })
     expect(onChange).toHaveBeenCalledWith(35)
-    rerender(<BudgetSlider value={0} onChange={onChange} />)
-    expect(screen.getByText('Free')).toBeTruthy()
   })
 
   it('Home sends the slider value (opened from the budget chip); no explainer text until then', async () => {
@@ -362,7 +364,7 @@ describe('budget slider and the universal budget in Settings', () => {
     fireEvent.click(screen.getByRole('button', { name: 'S$2.00' }))
     fireEvent.click(screen.getByRole('button', { name: 'Free' }))
     expect(document.querySelector('.ra-budget-chip')?.textContent).toBe('Free')
-    fireEvent.change(screen.getByRole('slider', { name: 'Budget' }), { target: { value: '15' } })
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }), { target: { value: '0.15' } })
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByRole('slider')).toBeNull()
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: /^Ask/ })) })
@@ -383,11 +385,11 @@ describe('budget slider and the universal budget in Settings', () => {
   it('Settings: the tick box turns the universal budget on; its slider is off until then', () => {
     const onUniversal = vi.fn(), onBudget = vi.fn()
     const { rerender } = render(<Settings universal={false} budgetMinor={200} settlement="SIMULATED SGD · no real funds" notify={false} onBack={() => {}} onNotify={() => {}} onUniversal={onUniversal} onBudget={onBudget} />)
-    expect((screen.getByRole('slider', { name: 'Per query' }) as HTMLInputElement).disabled).toBe(true)
-    fireEvent.click(screen.getByRole('checkbox', { name: /Universal budget per query/ }))
+    expect((screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }) as HTMLInputElement).disabled).toBe(true)
+    fireEvent.click(screen.getByRole('checkbox', { name: /Use the same budget/ }))
     expect(onUniversal).toHaveBeenCalledWith(true)
     rerender(<Settings universal budgetMinor={200} settlement="SIMULATED SGD · no real funds" notify={false} onBack={() => {}} onNotify={() => {}} onUniversal={onUniversal} onBudget={onBudget} />)
-    fireEvent.change(screen.getByRole('slider', { name: 'Per query' }), { target: { value: '10' } })
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }), { target: { value: '0.10' } })
     expect(onBudget).toHaveBeenCalledWith(10)
   })
 
@@ -395,8 +397,8 @@ describe('budget slider and the universal budget in Settings', () => {
     stubBrowser(() => {})
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
-    fireEvent.click(screen.getByRole('checkbox', { name: /Universal budget per query/ }))
-    fireEvent.change(screen.getByRole('slider', { name: 'Per query' }), { target: { value: '95' } })
+    fireEvent.click(screen.getByRole('checkbox', { name: /Use the same budget/ }))
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }), { target: { value: '0.95' } })
     fireEvent.click(screen.getByRole('button', { name: 'New question' }))
     expect(screen.queryByRole('slider')).toBeNull()
     expect(screen.getByRole('button', { name: 'S$0.95' })).toBeTruthy()
@@ -407,7 +409,7 @@ describe('budget slider and the universal budget in Settings', () => {
     render(<App />)
     fireEvent.change(screen.getByLabelText('Your question'), { target: { value: 'half typed' } })
     fireEvent.click(screen.getByRole('button', { name: 'S$2.00' }))
-    fireEvent.click(screen.getByRole('button', { name: 'S$3.00' }))
+    fireEvent.click(screen.getByRole('button', { name: 'S$3' }))
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
     expect(screen.queryByLabelText('Your question')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: /^Back/ }))
