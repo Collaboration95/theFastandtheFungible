@@ -743,3 +743,5 @@ Mainnet impact: none observed; these operations and evidence are Testnet only.
 - **Code-derived limit:** a writer can sign and reveal a key for bad content;
   exported fraud evidence supports the existing reputation/challenge path,
   without a new automatic recovery-of-money promise.
+
+- 2026-11-04 — Observed release tooling failure: CI run 41740868918 printed all consumer results (MCP npx 28.399 s) then timed out at 180 s. Evidence: PR #364. Workaround/fix: own consumer process groups, terminate grandchildren, close pipes, assert groups empty; suggested upstream SDK improvement: process-tree cleanup for stdio npm launchers. Severity: release blocker; mainnet impact: none observed, fixture-only tooling.
