@@ -528,3 +528,5 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 · Lane P2: `make testnet` isolates faucet wallets (0600); cold first validated hash 60.005 s. `/demo/` autoplays recorded XRP Testnet UC3 pay → failed proof → refund → re-buy with Pause, explorer/live checks; 1,874,689-byte JS+JSON, labelled simulated fallback. Evidence: `docs/evidence/round2-p2/README.md`.
 
 - 2026-11-04 — Lane R: opt-in XRP key-reveal escrow makes XRPL the delivery channel; four validated Testnet transactions, two offline verifiers, pre-grant quarantine and three actual SIGKILL recovery boundaries. Evidence: `docs/evidence/round2-r/`.
+
+- 2026-11-04 — Lane Z (Reachability): standalone MCP npm tarball, clean npx/SDK consumers, post-tag install snippets and labelled local zero-clone timing evidence; registries remain unpublished.
