@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "researchagent"
+version = "1.0.0"
+readme = "README.md"
+description = "Typed, standard-library ResearchAgent client"
+requires-python = ">=3.10"
+license = "MIT"
+
+[tool.setuptools.package-data]
+researchagent = ["py.typed"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

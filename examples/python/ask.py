@@ -1,28 +1,12 @@
-"""stdlib-only caller. The backend operator configures caps; fixtures are simulated."""
-import json
+"""Install packages/sdk-python first; backend operator sets spending caps."""
 import os
-import time
-import urllib.request
+from researchagent import Client
 
-base = os.environ.get('RA_BACKEND_URL', 'http://127.0.0.1:9388')
-headers = {'Content-Type': 'application/json'}
-if os.environ.get('RA_API_TOKEN'):
-    headers['Authorization'] = 'Bearer ' + os.environ['RA_API_TOKEN']
-
-
-def request(path, body=None):
-    data = None if body is None else json.dumps(body).encode()
-    with urllib.request.urlopen(urllib.request.Request(base + path, data, headers), timeout=15) as response:
-        return json.load(response)
-
-
-run = request('/api/mcp/runs', {
-    'question': 'How does Kestrel benefit from the TSMC deal (pricing & margins)?',
-    'budget_sgd': 1, 'idempotency_key': 'python-quickstart-1', 'clarify': 'never',
-})
-while run['phase'] not in ('DONE', 'STOPPED', 'FAILED'):
-    time.sleep(0.25)
-    run = request('/api/mcp/runs/' + run['runId'])
-print(run['answers'][-1] if run['answers'] else None)
-print([r['xrpl']['txHash'] for r in run['receipts'] if r.get('xrpl')])
-print(run['labels'], 'SYNTHETIC · fictional writers and articles')
+client = Client(os.environ.get('RA_URL', 'http://127.0.0.1:10488'), os.environ.get('RA_API_TOKEN'))
+task = client.ask('How does Kestrel benefit from the TSMC deal (pricing & margins)?',
+                  budget=1, idempotency_key='python-quickstart-1')
+for event in task.events:
+    print(event['type'], event['label'])
+result = task.result()
+print(result['answer'], result['citations'], result['receipts'])
+print('clamped:', result['clamped'], result['labels'])
