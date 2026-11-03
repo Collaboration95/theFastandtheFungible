@@ -1,5 +1,10 @@
 const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('desktop', Object.freeze({
+  recover: operation => ipcRenderer.invoke(`recovery:${operation}`),
+  presence: account => ipcRenderer.invoke('desktop:presence', account),
+  deleteSecret: account => ipcRenderer.invoke('desktop:delete', account),
+  test: () => ipcRenderer.invoke('desktop:test'),
+  pause: paused => ipcRenderer.invoke('desktop:pause', paused),
   agents: () => ipcRenderer.invoke('desktop:agents'),
   agentCreate: (name, max, daily) => ipcRenderer.invoke('desktop:agent-create', name, max, daily),
   agentControl: (id, operation) => ipcRenderer.invoke('desktop:agent-control', id, operation),

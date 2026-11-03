@@ -5,9 +5,10 @@ const action = async work => {
 }
 void action(async () => {
   const state = await window.desktop.state()
-  for (const key of ['live', 'paused']) byId(key).checked = state[key]
+  for (const key of ['live', 'sameKeyDecisions']) byId(key).checked = state[key]
   for (const key of ['maxMinor', 'dailyMinor', 'walletDailyMinor']) byId(key).value = state[key]
-  byId('paused').checked = state.wallet?.wallet?.paused ?? state.paused
+  byId('resume').disabled = state.emergencyPaused
+  for (const key of ['provider', 'baseUrl', 'model']) byId(key).value = state[key]
   byId('backend').value = state.backend
   byId('remoteUrl').value = state.remoteUrl
   byId('walletDailyMinor').disabled = state.backend === 'remote'
@@ -17,7 +18,7 @@ void action(async () => {
 byId('credentials').onsubmit = event => {
   event.preventDefault()
   const value = byId('value').value; byId('value').value = ''
-  void action(async () => { await window.desktop.secret(byId('account').value, value); status('Saved in macOS Keychain.') })
+  void action(async () => { const result = await window.desktop.secret(byId('account').value, value); showPresence(result); status(result.saved ? 'Saved in macOS Keychain. Engine restarting.' : 'Keychain write failed. Presence refreshed.') })
 }
 byId('wallets').onclick = () => void action(async () => {
   byId('wallets').disabled = true; status('Funding Testnet wallets. This can take a minute…')
@@ -25,7 +26,7 @@ byId('wallets').onclick = () => void action(async () => {
   finally { byId('wallets').disabled = false }
 })
 byId('mcp').onclick = () => void action(async () => { byId('command').textContent = await window.desktop.mcp(); status('MCP setup copied.') })
-byId('apply').onclick = () => void action(() => window.desktop.save({ backend: byId('backend').value, remoteUrl: byId('remoteUrl').value, walletDailyMinor: Number(byId('walletDailyMinor').value), live: byId('live').checked, paused: byId('paused').checked, maxMinor: Number(byId('maxMinor').value), dailyMinor: Number(byId('dailyMinor').value) }))
+byId('apply').onclick = () => void action(() => window.desktop.save({ backend: byId('backend').value, remoteUrl: byId('remoteUrl').value, walletDailyMinor: Number(byId('walletDailyMinor').value), live: byId('live').checked, provider: byId('provider').value, baseUrl: byId('baseUrl').value, model: byId('model').value, sameKeyDecisions: byId('sameKeyDecisions').checked, maxMinor: Number(byId('maxMinor').value), dailyMinor: Number(byId('dailyMinor').value) }))
 
 async function renderAgents() {
   const state = await window.desktop.agents()
@@ -54,3 +55,13 @@ async function renderAgents() {
 }
 void action(renderAgents)
 setInterval(() => { if (!document.hidden && !byId('agents').contains(document.activeElement)) void action(renderAgents) }, 10000)
+
+const showPresence = result => { byId('keyPresence').textContent = !result.available ? 'Keychain unavailable; presence unknown' : result.present ? 'Key present' : 'Key absent' }
+byId('presence').onclick = () => void action(async () => showPresence(await window.desktop.presence(byId('account').value)))
+byId('delete').onclick = () => void action(async () => { const result = await window.desktop.deleteSecret(byId('account').value); showPresence(result); status(result.deleted ? 'Selected credential deleted. Wallet seeds are preserved.' : 'Keychain delete failed. Presence refreshed.') })
+byId('test').onclick = () => void action(async () => {
+  byId('testResult').textContent = 'Testing…'
+  const result = await window.desktop.test()
+  byId('testResult').textContent = result.ok ? `Connected · ${result.latencyMs ?? 'unavailable'} ms · input tokens ${result.inputTokens ?? 'unavailable'} · output tokens ${result.outputTokens ?? 'unavailable'} · cost ${typeof result.costUsd === 'number' ? '$' + result.costUsd : 'unavailable'}` : result.error?.message || 'Connection test failed'
+})
+for (const operation of ['pause', 'resume']) byId(operation).onclick = () => void action(async () => { await window.desktop.pause(operation === 'pause'); status(operation === 'pause' ? 'Wallet paused durably.' : 'Wallet resumed explicitly.') })

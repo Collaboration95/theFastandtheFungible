@@ -2,7 +2,7 @@
 
 Apple Silicon or Intel, macOS 13 or later. Open the DMG, drag **ResearchAgent** to
 **Applications**, then open it. Unsigned first-launch instructions and the
-automatic Developer ID pipeline are in [SIGNING.md](SIGNING.md).
+explicit owner-only Developer ID mode are in [SIGNING.md](SIGNING.md).
 
 The first run is the offline judge demo: no `.env`, keys, Keychain prompt or
 network required. All payments say **SIMULATED**; writers/articles are synthetic.
@@ -17,7 +17,7 @@ also remains available. Desktop Settings opens with ⌘,.
 
 Desktop Settings can create/faucet-fund Testnet buyer and fictional publisher
 wallets, save DeepSeek/OpenAI/Cloudflare credentials to the Keychain, select live
-mode, set MCP per-call/daily caps, and pause new requests. Apply restarts the app
+mode, set MCP per-call/daily caps, and pause new requests. Apply restarts the engine
 and stops active work. The browser's per-question budget remains its authorization;
 MCP caps are enforced by the engine. The wallet-wide gross daily cap and durable pause apply across web/MCP/SDK (#286).
 Remote HTTPS mode skips the local engine, shows its host in the header and uses the API token saved in Keychain. Its operator configures the publisher, Host allowlist and wallet/MCP limits; the app does not raise remote caps. Save the token before applying a remote URL.
@@ -163,3 +163,44 @@ Architecture measurements and exact validation scope are in
 [packaged acceptance](../docs/evidence/app-acceptance.md). Use `--launch-only`
 with `desktop/accept.mjs` to measure startup without purchases. `gh` must be on
 the app's PATH (Finder launches may have a smaller PATH than a terminal).
+
+## Recoverable startup and provider settings
+
+The hardened static recovery page, Settings, native menu, IPC and app protocol
+register before Keychain access or engine boot. Credential/configuration failures
+stay in recovery. Engine crashes retry at most five times with exponential
+backoff; Retry starts a new bounded sequence. Open Settings works while boot is
+pending. Open offline demo never reads Keychain, disables legacy MCP credential
+loading and uses the separate fixture store. Live SQLite data and uncertain
+intents are preserved. No reset or credential-error process exit is used.
+
+Settings supports DeepSeek, OpenAI and OpenAI-compatible research profiles with
+base URL, model and an optional compatible decision judge. Compatibility is
+restricted to the documented HTTPS hosts or numeric loopback development HTTP;
+engine endpoint validation still applies. Profile validation makes no request.
+Keys have presence-only save/replace/exact-account delete controls. Wallet seeds
+cannot be deleted here. Failed native operations refresh presence, including
+an unknown state when Keychain access is unavailable. Profile/key changes restart
+the supervised engine. Test connection uses its saved environment key and the
+loopback bearer-protected `/api/providers/test`; missing engine/endpoint is shown
+as unavailable. Missing cost/usage remains unavailable, including null cost.
+
+Pause wallet and Resume wallet are explicit actions. Boot, reconnect and profile
+saves never write the durable pause. The inherited emergency `SPENDING_PAUSED=1`
+is immutable for the app process and prevents Resume. Cached pause preferences
+have no spending authority.
+
+Fixture-only packaged recovery acceptance (no live credentials in environment):
+
+```sh
+RA_DESKTOP_KEYCHAIN_SERVICE=ResearchAgent-Accept-c2 node desktop/smoke.mjs --fixture-only --recovery --app "$PWD/desktop/out/mac-arm64/ResearchAgent.app" --output "$PWD/docs/evidence/round2-c2/recovery.json"
+```
+
+The harness refuses production service names and credential/network rail inputs.
+Credential/outage faults are explicitly injected before native credential/network
+access; unit tests cover actual credential/configuration decisions with synthetic
+readers and mocked native Keychain commands. This is not evidence of real
+Keychain incidents or real-provider success. It also runs a native fixture answer,
+checks Settings during a five-second failure, tests unauthorized main-renderer
+IPC and checks durable pause across engine restart/app relaunch. It preserves its
+isolated temporary stores for investigation.

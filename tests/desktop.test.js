@@ -29,7 +29,7 @@ describe('desktop boundary', () => {
     expect(() => settings({ ...input, maxMinor: 501 })).toThrow()
     expect(() => settings({ ...input, dailyMinor: -1 })).toThrow()
     const env = engineEnv({ userData: '/tmp/test', preferences: input })
-    expect(env.MCP_MAX_BUDGET_MINOR).toBe('0')
+    expect(env.MCP_MAX_BUDGET_MINOR).toBe('200') // Cached pause cannot control durable wallet authority.
   })
   it('keeps secret reads and wallet generation in main; no seed in preload or persistence code', () => {
     const preload = readFileSync('desktop/preload.cjs', 'utf8')

@@ -1,3 +1,7 @@
+if (process.argv.includes('--recovery')) {
+  await import('./recovery-smoke.mjs')
+  process.exit(0)
+}
 import { _electron as electron, expect } from '@playwright/test'
 import { mkdtemp, mkdir, readFile, writeFile, rm, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'

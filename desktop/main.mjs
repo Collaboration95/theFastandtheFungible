@@ -1,12 +1,13 @@
 import { Store } from '../server/store.js'
 import { startMcpHttp } from '../mcp/http.js'
-import { app, BrowserWindow, Menu, protocol, session, ipcMain, utilityProcess, dialog, shell, clipboard } from 'electron'
+import { app, BrowserWindow, Menu, protocol, session, ipcMain, utilityProcess, shell, clipboard } from 'electron'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { join, extname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ORIGIN, CSP, defaults, settings, trustedSender, engineEnv, SECRET_ACCOUNTS, remoteOrigin } from './policy.mjs'
-import { readSecret, writeSecret } from './keychain.mjs'
-import { backendRequest } from './backend.mjs'
+import { bootSecrets } from './recovery.mjs'
+import { readSecret, writeSecret, secretPresence, deleteSecret } from './keychain.mjs'
+import { backendRequest, testProvider } from './backend.mjs'
 import { loadConfig } from '../server/config.js'
 import { createClient } from '../sdk/index.js'
 import { Client, Wallet } from 'xrpl'
@@ -22,41 +23,53 @@ app.setName('ResearchAgent')
 let mcpHttp, agentStore
 let engine, child, mainWindow, preferencesWindow, quitting = false
 let preferences = { ...defaults }
-let coldStartMs
+let coldStartMs, configError = false
 let engineStatus = 'starting', restartAttempts = 0, restartTimer
-let localEnv
+let localEnv, recovering = false, connectRequested = false, bootSequence = 0
+const emergencyPaused = process.env.SPENDING_PAUSED === '1'
 function status(value) {
   engineStatus = value
   mainWindow?.setTitle(`ResearchAgent · ${value}`)
 }
-async function startLocalEngine() {
+async function startLocalEngine(sequence = bootSequence) {
+  if (quitting || sequence !== bootSequence) return
   status(restartAttempts ? 'reconnecting' : 'starting')
   const target = utilityProcess.fork(join(root, 'desktop', 'engine-host.mjs'), [], { env: localEnv, cwd: root, stdio: 'ignore', serviceName: 'ResearchAgent Engine' })
   child = target
-  engine = await new Promise((done, fail) => {
+  const startedEngine = await new Promise((done, fail) => {
     const timer = setTimeout(() => { target.kill(); fail(new Error('Engine boot timed out')) }, process.arch === 'x64' ? 120_000 : 30_000)
     target.once('message', value => { clearTimeout(timer); done(value) })
     target.once('exit', () => { clearTimeout(timer); fail(new Error('Engine exited')) })
   })
+  if (quitting || sequence !== bootSequence) { target.kill(); return }
+  engine = startedEngine
   // Keep the operator bearer stable for already enabled stdio clients across utility restarts.
   localEnv.RA_API_TOKEN = engine.apiToken
-  if (quitting) { target.kill(); return }
-  await backendRequest(engine, '/api/wallet/pause', { method: 'POST', body: JSON.stringify({ paused: preferences.paused }) })
-  agentStore = new Store(join(userData, preferences.live ? 'testnet' : 'fixture', 'app.db'))
-  mcpHttp = await startMcpHttp({ apiUrl: engine.apiUrl, store: agentStore, port: process.env.RA_DESKTOP_KEYCHAIN_SERVICE ? 0 : 9689 })
+  if (quitting || sequence !== bootSequence) { target.kill(); return }
+  const store = new Store(join(userData, preferences.live ? 'testnet' : 'fixture', 'app.db'))
+  let listener
+  try { listener = await startMcpHttp({ apiUrl: engine.apiUrl, store, port: process.env.RA_DESKTOP_KEYCHAIN_SERVICE ? Number(process.env.RA_DESKTOP_TEST_MCP_PORT || 0) : 9689 }) }
+  catch (error) { store.close(); throw error }
+  if (quitting || sequence !== bootSequence) { await listener.close(); store.close(); target.kill(); return }
+  agentStore = store; mcpHttp = listener
+  target.once('exit', () => { if (!quitting && child === target) { child = undefined; void restartEngine(sequence) } })
   await writeFile(join(userData, 'engine.json'), JSON.stringify({ apiUrl: engine.apiUrl, remote: false, pid: target.pid }), { mode: 0o600 })
   status('ready')
-  target.once('exit', () => { if (!quitting && child === target) { child = undefined; void restartEngine() } })
+  if (mainWindow && !quitting) await mainWindow.loadURL(`${ORIGIN}/?pace=real`)
 }
-async function restartEngine() {
+async function restartEngine(sequence = bootSequence) {
+  if (quitting || sequence !== bootSequence) return
   status('reconnecting')
   await mcpHttp?.close(); mcpHttp = undefined
   agentStore?.close(); agentStore = undefined
-  if (quitting) return
+  if (quitting || recovering || sequence !== bootSequence) return
+  if (restartAttempts >= 5) { await showRecovery(); return }
   const delay = Math.min(30_000, 500 * 2 ** Math.min(restartAttempts++, 6))
-  restartTimer = setTimeout(() => { void startLocalEngine().catch(async () => {
+  restartTimer = setTimeout(() => { void startLocalEngine(sequence).catch(async () => {
+    if (quitting || sequence !== bootSequence) return
     const target = child; child = undefined; target?.kill()
-    await restartEngine()
+    await showRecovery()
+    await restartEngine(sequence)
   }) }, delay)
 }
 const userData = app.getPath('userData')
@@ -75,34 +88,7 @@ async function stopEngine() {
 async function boot() {
   await app.whenReady()
   await mkdir(userData, { recursive: true })
-  try { preferences = settings(JSON.parse(await readFile(join(userData, 'desktop.json'), 'utf8'))) } catch { /* First launch uses offline fixtures. */ }
-  const secrets = {}
-  if (preferences.backend === 'local' && preferences.live) {
-    for (const name of [...SECRET_ACCOUNTS, 'xrpl-payer']) secrets[name] = await readSecret(name)
-    const roster = JSON.parse(await readFile(join(root, 'desktop', 'wallets.json'), 'utf8'))
-    for (const name of roster) secrets[name] = await readSecret(name)
-    if (!secrets['xrpl-payer'] || !secrets.deepseek || (!secrets.openai && !secrets.cloudflare)) throw new Error('Live credentials incomplete')
-  }
-  if (preferences.backend === 'remote') {
-    const apiToken = await readSecret('api-token')
-    if (!apiToken) throw new Error('Backend token missing')
-    engine = { apiUrl: remoteOrigin(preferences.remoteUrl), publisherUrl: preferences.remoteUrl, apiToken }
-    try {
-      await createClient({ baseUrl: engine.apiUrl, token: apiToken }).wallet()
-      const health = await (await backendRequest(engine, '/health')).json()
-      engine.publisherUrl = remoteOrigin(health.publisherUrl)
-    } catch { /* The UI shows backend unavailable; native Settings stays usable for recovery. */ }
-  } else {
-    if (preferences.mcpEnabled) secrets['local-api-token'] = await readSecret('local-api-token')
-    localEnv = loadConfig({ ...engineEnv({ userData, preferences, secrets }), RA_LIVE: preferences.live ? '1' : '0' })
-    if (process.env.RA_DESKTOP_ACCEPT_TESTNET === '1' && process.env.RA_DESKTOP_KEYCHAIN_SERVICE?.startsWith('ResearchAgent-Accept-')) {
-      localEnv.RA_ACCEPT_TESTNET = '1'
-    }
-    if (!preferences.live && process.env.RA_DESKTOP_KEYCHAIN_SERVICE?.startsWith('ResearchAgent-Accept-')) localEnv.RA_DESKTOP_CRASH_TEST = process.env.RA_DESKTOP_CRASH_TEST || '0'
-    await startLocalEngine()
-  }
-  // Connection metadata is public. The MCP adapter reads credentials from Keychain only.
-  if (preferences.backend === 'remote') await writeFile(join(userData, 'engine.json'), JSON.stringify({ apiUrl: engine.apiUrl, remote: true }), { mode: 0o600 })
+  try { preferences = settings(JSON.parse(await readFile(join(userData, 'desktop.json'), 'utf8'))) } catch (error) { configError = error.code !== 'ENOENT' }
   session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))
   session.defaultSession.setPermissionCheckHandler(() => false)
   session.defaultSession.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !details.url.startsWith(`${ORIGIN}/`) }))
@@ -117,7 +103,7 @@ async function boot() {
         return new Response(response.body, { status: response.status, headers: { ...Object.fromEntries(response.headers), ...headers } })
       } catch { return new Response('Local engine unavailable', { status: 503, headers }) }
     }
-    const pathname = url.pathname === '/preferences' ? '/desktop/preferences.html' : url.pathname === '/desktop/preferences.js' || url.pathname === '/desktop/preferences.css' ? url.pathname : url.pathname === '/' ? '/ui/index.html' : `/ui${url.pathname}`
+    const pathname = url.pathname === '/recovery' ? '/desktop/recovery.html' : url.pathname === '/preferences' ? '/desktop/preferences.html' : url.pathname === '/desktop/preferences.js' || url.pathname === '/desktop/preferences.css' || url.pathname === '/desktop/recovery.js' ? url.pathname : url.pathname === '/' ? '/ui/index.html' : `/ui${url.pathname}`
     const file = resolve(root, `.${decodeURIComponent(pathname)}`)
     if (!file.startsWith(root + sep) || !['.html', '.js', '.css', '.svg', '.png', '.ico', '.woff2', '.webmanifest'].includes(extname(file))) return new Response(null, { status: 403 })
     try {
@@ -128,31 +114,39 @@ async function boot() {
     } catch { return new Response(null, { status: 404 }) }
   })
   const secureHandler = (name, handler) => ipcMain.handle(name, async (event, ...args) => {
-    if (!trustedSender(event) || event.sender !== preferencesWindow?.webContents) throw new Error('Forbidden')
+    if (!trustedSender(event) || event.sender !== preferencesWindow?.webContents || new URL(event.senderFrame.url).pathname !== '/preferences') throw new Error('Forbidden')
     try { return await handler(...args) } catch { throw new Error('Desktop action failed; check settings and Keychain access') }
   })
-  secureHandler('desktop:state', async () => ({ ...preferences, engineStatus, remoteEnabled: true, coldStartMs,
-    wallet: await createClient({ baseUrl: engine.apiUrl, token: engine.apiToken }).wallet().catch(() => undefined), versions: engine.versions }))
+  secureHandler('desktop:state', async () => ({ ...preferences, engineStatus, restartAttempts, remoteEnabled: true, coldStartMs,
+    emergencyPaused, wallet: engine ? await createClient({ baseUrl: engine.apiUrl, token: engine.apiToken }).wallet().catch(() => undefined) : undefined, versions: engine?.versions }))
   secureHandler('desktop:save', async input => {
     const next = settings({ ...preferences, ...input })
-    if (next.backend === 'remote') {
-      const token = await readSecret('api-token')
-      if (!token) throw new Error('Backend token required')
-      await createClient({ baseUrl: next.remoteUrl, token }).wallet()
-      const response = await backendRequest({ apiUrl: next.remoteUrl, apiToken: token }, '/api/wallet/pause', { method: 'POST', body: JSON.stringify({ paused: next.paused }) })
-      if (!response.ok) throw new Error('Remote pause rejected')
-    } else if (next.live) {
-      if (!await readSecret('xrpl-payer') || !await readSecret('deepseek') || (!await readSecret('openai') && !await readSecret('cloudflare'))) throw new Error('Live credentials incomplete')
-    }
-    preferences = next
-    await writeFile(join(userData, 'desktop.json'), JSON.stringify(preferences), { mode: 0o600 })
-    app.relaunch(); app.quit()
+    await writeFile(join(userData, 'desktop.json'), JSON.stringify(next), { mode: 0o600 })
+    preferences = next; configError = false
+    await connectEngine()
+  })
+  secureHandler('desktop:pause', async paused => {
+    if (typeof paused !== 'boolean' || (!paused && emergencyPaused) || !engine) throw new Error('Pause unavailable')
+    const response = await backendRequest(engine, '/api/wallet/pause', { method: 'POST', body: JSON.stringify({ paused }) })
+    if (!response.ok) throw new Error('Pause rejected')
+    return { paused }
+  })
+  secureHandler('desktop:presence', account => secretPresence(account))
+  secureHandler('desktop:delete', async account => {
+    if (!SECRET_ACCOUNTS.includes(account)) throw new Error('Invalid account')
+    try { const presence = await deleteSecret(account); void connectEngine(); return { ...presence, deleted: true } }
+    catch { return { ...await secretPresence(account), deleted: false } }
   })
   secureHandler('desktop:secret', async (account, value) => {
     if (!SECRET_ACCOUNTS.includes(account) || typeof value !== 'string' || value.length > 4096 || !value.trim()) throw new Error('Invalid credential')
-    await writeSecret(account, value.trim()); return { saved: true }
+    try { await writeSecret(account, value.trim()) }
+    catch { return { ...await secretPresence(account), saved: false } }
+    void connectEngine()
+    return { saved: true, present: true, available: true }
   })
+  secureHandler('desktop:test', () => testProvider(engineStatus === 'ready' ? engine : undefined, preferences))
   secureHandler('desktop:wallets', async () => {
+    if (process.env.RA_DESKTOP_RECOVERY_TEST === '1') throw new Error('Fixture-only acceptance')
     const client = new Client(testnetUrl(TESTNET_WSS))
     await client.connect()
     try {
@@ -207,6 +201,17 @@ async function boot() {
     const command = `claude mcp add researchagent -- node '${join(root, 'desktop', 'mcp.mjs').replaceAll("'", "'\\''")}' '${userData.replaceAll("'", "'\\''")}'`
     clipboard.writeText(command); return command
   })
+  for (const operation of ['settings', 'offline', 'retry']) ipcMain.handle(`recovery:${operation}`, async event => {
+    if (!trustedSender(event) || event.sender !== mainWindow?.webContents || new URL(event.senderFrame.url).pathname !== '/recovery') throw new Error('Forbidden')
+    if (operation === 'settings') return openPreferences()
+    if (operation === 'offline') {
+      if (process.env.RA_DESKTOP_RECOVERY_TEST === '1' && process.env.RA_DESKTOP_KEYCHAIN_SERVICE?.startsWith('ResearchAgent-Accept-')) delete process.env.RA_DESKTOP_RECOVERY_FAULT
+      configError = false
+      preferences = settings({ ...preferences, live: false, backend: 'local', mcpEnabled: false })
+      await writeFile(join(userData, 'desktop.json'), JSON.stringify(preferences), { mode: 0o600 })
+    }
+    if (operation !== 'settings') void connectEngine()
+  })
   const shortcut = (label, accelerator, key, code) => ({ label, accelerator, click: () => mainWindow?.webContents.sendInputEvent({ type: 'keyDown', keyCode: key, modifiers: ['meta'], ...(code ? { code } : {}) }) })
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'ResearchAgent', submenu: [{ role: 'about' }, { label: 'Check for Updates…', click: () => void checkUpdates() }, { label: 'Desktop Settings…', accelerator: 'Cmd+,', click: openPreferences }, { type: 'separator' }, { role: 'hide' }, { role: 'quit' }] },
@@ -218,19 +223,66 @@ async function boot() {
     { label: 'Run', submenu: [shortcut('Submit / Go Now', 'Cmd+Return', 'Return'), shortcut('Stop Buying', 'Cmd+.', '.')] }, { role: 'windowMenu' },
   ]))
   mainWindow = makeWindow({ width: 1280, height: 828 })
-  await mainWindow.loadURL(`${ORIGIN}/?pace=real${preferences.backend === 'remote' ? `&desktopBackend=${encodeURIComponent(new URL(engine.apiUrl).host)}` : ''}`)
+  await mainWindow.loadURL(`${ORIGIN}/recovery`)
   mainWindow.show()
   if (!process.env.RA_DESKTOP_KEYCHAIN_SERVICE) { const timer = setTimeout(() => void checkUpdates({ quiet: true }), 10000); timer.unref() }
   coldStartMs = Math.round(performance.now() - started)
-  console.log(`ResearchAgent ready in ${coldStartMs} ms · ${preferences.backend === 'remote' ? 'REMOTE' : preferences.live ? 'XRPL TESTNET' : 'SIMULATED'} · Electron ${process.versions.electron} · Node ${process.versions.node}`)
+  console.log(`ResearchAgent shell ready in ${coldStartMs} ms · ${preferences.backend === 'remote' ? 'REMOTE' : preferences.live ? 'XRPL TESTNET' : 'SIMULATED'} · Electron ${process.versions.electron} · Node ${process.versions.node}`)
   app.on('second-instance', () => { mainWindow?.show(); mainWindow?.focus() })
   app.on('activate', () => mainWindow?.show())
   app.on('window-all-closed', () => app.quit())
   app.on('before-quit', event => {
     if (quitting) return
-    event.preventDefault(); quitting = true
+    event.preventDefault(); quitting = true; bootSequence++
     void stopEngine().finally(() => app.quit())
   })
+  void connectEngine()
+}
+async function showRecovery() {
+  status('recovery')
+  engine = undefined
+  if (mainWindow && !quitting) await mainWindow.loadURL(`${ORIGIN}/recovery`).catch(() => {})
+}
+async function connectEngine() {
+  if (quitting) return
+  if (recovering) { connectRequested = true; return }
+  recovering = true; bootSequence++
+  try {
+    await stopEngine()
+    engine = undefined; restartAttempts = 0
+    status('starting')
+    if (configError) throw new Error('Invalid desktop configuration')
+    const roster = preferences.live ? JSON.parse(await readFile(join(root, 'desktop', 'wallets.json'), 'utf8')) : []
+    const acceptance = process.env.RA_DESKTOP_KEYCHAIN_SERVICE?.startsWith('ResearchAgent-Accept-') && process.env.RA_DESKTOP_RECOVERY_TEST === '1'
+    if (acceptance && process.env.RA_DESKTOP_RECOVERY_FAULT) {
+      if (process.env.RA_DESKTOP_RECOVERY_FAULT === 'boot-timeout') await new Promise(done => setTimeout(done, 5000))
+      throw new Error('Injected fixture-only boot failure')
+    }
+    // Acceptance fault launches must never enter live rails or read production credentials.
+    if (acceptance && (preferences.live || preferences.backend === 'remote')) throw new Error('Fixture-only acceptance')
+    const secrets = await bootSecrets(preferences, readSecret, roster)
+    if (quitting) return
+    if (preferences.backend === 'remote') {
+      engine = { apiUrl: remoteOrigin(preferences.remoteUrl), publisherUrl: preferences.remoteUrl, apiToken: secrets['api-token'] }
+      const response = await backendRequest(engine, '/health')
+      if (!response.ok) throw new Error('Remote unavailable')
+      engine.publisherUrl = remoteOrigin((await response.json()).publisherUrl)
+      await writeFile(join(userData, 'engine.json'), JSON.stringify({ apiUrl: engine.apiUrl, remote: true }), { mode: 0o600 })
+      status('ready')
+      await mainWindow.loadURL(`${ORIGIN}/?pace=real`)
+    } else {
+      localEnv = loadConfig({ ...engineEnv({ userData, preferences, secrets }), RA_LIVE: preferences.live ? '1' : '0' })
+      if (!acceptance && process.env.RA_DESKTOP_ACCEPT_TESTNET === '1' && process.env.RA_DESKTOP_KEYCHAIN_SERVICE?.startsWith('ResearchAgent-Accept-')) localEnv.RA_ACCEPT_TESTNET = '1'
+      if (!preferences.live && process.env.RA_DESKTOP_KEYCHAIN_SERVICE?.startsWith('ResearchAgent-Accept-')) {
+        localEnv.RA_DESKTOP_CRASH_TEST = process.env.RA_DESKTOP_CRASH_TEST || '0'
+      }
+      recovering = false
+      await restartEngine()
+    }
+  } catch {
+    await stopEngine()
+    await showRecovery()
+  } finally { recovering = false; if (connectRequested && !quitting) { connectRequested = false; void connectEngine() } }
 }
 function makeWindow(options) {
   const window = new BrowserWindow({ ...options, show: false, title: 'ResearchAgent', backgroundColor: '#FBF8F2',
@@ -254,7 +306,4 @@ function openPreferences() {
   void preferencesWindow.loadURL(`${ORIGIN}/preferences`).then(() => preferencesWindow.show())
 }
 if (!app.requestSingleInstanceLock()) app.quit()
-else void boot().catch(async () => {
-  dialog.showErrorBox('ResearchAgent could not start', 'The local engine could not start. Quit and reopen; desktop data stays in Application Support/ResearchAgent. No credentials are logged.')
-  await stopEngine(); app.exit(1)
-})
+else void boot().catch(() => { void showRecovery() })
