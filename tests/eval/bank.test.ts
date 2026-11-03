@@ -8,10 +8,12 @@ const bank = loadBank()
 const articles = loadArticles()
 
 describe('question bank (#203)', () => {
-  it('is versioned, has at least 40 questions, and records a generator from a different vendor than the judged models', () => {
-    expect(bank.version).toBe(1)
+  it('is versioned, has at least 40 questions, and records honest author provenance, including same-vendor additions', () => {
+    expect(bank.version).toBe(2)
     expect(bank.questions.length).toBeGreaterThanOrEqual(40)
-    expect(bank.generator.vendor).toBe('Anthropic')
+    expect(bank.generator.vendor).toBe('Anthropic + OpenAI')
+    expect(bank.generator.vendorDiffersFromJudged).toBe(false)
+    expect(loadBank('eval/questions/bank.v1.json').generator.vendorDiffersFromJudged).toBe(true)
     for (const judged of bank.generator.judgedModels) expect(judged).not.toMatch(/anthropic|claude/i)
     expect(bank.humanReview.sample.every(id => bank.questions.some(q => q.id === id))).toBe(true)
   })

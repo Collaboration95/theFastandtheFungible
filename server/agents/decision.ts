@@ -1,3 +1,4 @@
+import { scopeContradiction } from './scope-policy.js'
 import { activeValueFit, marginalValue } from './value-policy.js'
 import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
@@ -263,6 +264,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     else if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || rewrite) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
     else if (!open) { verdict = 'SKIP_NO_GAP'; reason = NO_GAP_NOT_CALLED }
     else if (gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
+    else if (process.env.DECISION_SCOPE_POLICY !== 'off' && input.requirement && scopeContradiction(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Public source scope contradicts the requested country; model confidence cannot authorize this purchase.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
     else if (marginal && !marginal.eligible) { verdict = 'SKIP_LOW_VALUE'; reason = `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} < ${marginal.threshold.toFixed(3)} (covered menu entries ${marginal.coveredEntries}/${marginal.menuEntries}).` }

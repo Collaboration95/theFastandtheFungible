@@ -12,6 +12,7 @@ import { loadWorld } from '../decisions/world.js'
 import { auditRuns, readRuns } from '../../scripts/gate-audit.js'
 import { qualityMetrics, timings, deltas, reportDeltas, type Quality } from './metrics.js'
 import { frozenInputs, sha256, SAMPLE } from './frozen.js'
+import { bootstrapQuality } from './uncertainty.js'
 import { measureLatency } from './latency.js'
 
 type Scorecard = { schema: string; at: string; commit: string; inputHash: string; mode: 'fixture' | 'LIVE'; quality: Quality; [key: string]: unknown }
@@ -34,8 +35,9 @@ export async function run() {
   if (!['all', 'dev', 'heldout'].includes(split)) throw new Error('--split is all, dev or heldout')
   const protocol = read('eval/scorecard/receipt-split.json')
   const families: string[] | undefined = split === 'all' ? undefined : protocol[split + 'Families']
-  const ids = loadBank().questions.filter(q => !families || families.includes(q.lane)).map(q => q.id)
-  const policy = process.env.DECISION_VALUE_POLICY === 'off' ? 'baseline' : 'receipt-value/v1'
+  const selectedIds: string[] | undefined = split === 'all' ? undefined : protocol[split + 'Ids']
+  const ids = loadBank().questions.filter(q => selectedIds ? selectedIds.includes(q.id) : !families || families.includes(q.lane)).map(q => q.id)
+  const policy = process.env.DECISION_SCOPE_POLICY === 'off' ? 'receipt-value/v1' : 'receipt-value/v1+scope/v1'
   const inputs = await frozenInputs(), frozen = read('eval/scorecard/frozen.json')
   if (JSON.stringify(inputs) !== JSON.stringify(frozen)) throw new Error('Frozen eval inputs/prompts changed. Version and review a new eval set before comparing scores.')
   const inputHash = sha256(JSON.stringify(inputs))
@@ -93,8 +95,8 @@ export async function run() {
   const quality = qualityMetrics(flow.results, sweep.dataset, coverage.results[arm].metrics.falseComplete)
   const scorecard = { schema: 'tftf.scorecard/v1', at, split, policy, worktreeDirty: Boolean(execFileSync('git', ['status', '--porcelain', '--untracked-files=normal'], { encoding: 'utf8' }).trim()), commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), inputHash, mode: live ? 'LIVE' as const : 'fixture' as const,
     labels: { ...flow.labels, timing: live ? 'LIVE decision; fixture writer/planner; SIMULATED settlement' : 'fixture; measured wall clock', corpus: 'synthetic demo articles', boot: latency.boot },
-    quality, timing: { ...timings(latency.samples), coldStartMs: latency.coldStartMs, node: process.version, platform: process.platform, observations: latency.samples },
-    cost: { providerCalls: calls.length, estimatedUsageCalls: calls.filter(c => c.estimatedUsage).length, inputTokens: calls.reduce((s, c) => s + c.inputTokens, 0), outputTokens: calls.reduce((s, c) => s + c.outputTokens, 0), modelUsd: usd(calls), latencyModelUsdPerQuery: usd(latencyCalls) / sample.length, flowDecisionUsdPerQuery: usd(calls.filter(c => c.phase === 'scorecard-flow')) / bank.questions.length, xrpDropsSpent: measuredRuns.flatMap(r => r.receipts).reduce((s, r) => s + Number(r.xrpl?.amountDrops ?? 0), 0), simulatedMinorSpent: flow.summary.overall.spentMinor, rates: 'eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)' },
+    quality, confidenceIntervals: bootstrapQuality(flow.results, sweep.dataset, bank.questions), timing: { ...timings(latency.samples), coldStartMs: latency.coldStartMs, node: process.version, platform: process.platform, observations: latency.samples },
+    cost: { providerCalls: calls.length, estimatedUsageCalls: calls.filter(c => c.estimatedUsage).length, inputTokens: calls.reduce((s, c) => s + c.inputTokens, 0), outputTokens: calls.reduce((s, c) => s + c.outputTokens, 0), modelUsd: usd(calls), latencyModelUsdPerQuery: usd(latencyCalls) / sample.length, flowDecisionUsdPerQuery: usd(calls.filter(c => c.phase === 'scorecard-flow')) / ids.length, xrpDropsSpent: measuredRuns.flatMap(r => r.receipts).reduce((s, r) => s + Number(r.xrpl?.amountDrops ?? 0), 0), simulatedMinorSpent: flow.summary.overall.spentMinor, rates: 'eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)' },
     audit, external: { mcpE2e: null, dmgColdStartMs: null }, counts: { questions: flow.results.length, coverageSnapshots: coverage.snapshots, requestedFacts: flow.summary.overall.requestedFacts },
   }
   const comparison = baseline ? deltas(quality, baseline.quality) : []
