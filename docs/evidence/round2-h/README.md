@@ -34,7 +34,7 @@ Potential loop-delay cause to inspect in C1: `Store.usage` scans every retained 
 
 ## Completed baseline — 4 November 2026
 
-Engine source: `571bb7802d029c5782a04084dc05dad51aacd7fc` (current main at launch, including #342/#345/#346). Harness SHA-256: `30b6928491b313a87f21d653485d345622d116b93937836141632bd5c68faa09`; implementation commit `c1a74de5` contains that harness. Later integration checks do not turn this baseline into acceptance of newer engine changes.
+Engine source: `571bb7802d029c5782a04084dc05dad51aacd7fc` (current main at launch, including #342/#345/#346). Harness SHA-256: `30b6928491b313a87f21d653485d345622d116b93937836141632bd5c68faa09`; the committed harness has the same digest. Later integration checks do not turn this baseline into acceptance of newer engine changes.
 
 Executed the full documented command with data root `/tmp/h1-baseline-279-v3`, in the background under `caffeinate -dims`, and waited for completion. Duration: **7814439 ms (2 h 10 m 14.439 s)** including seeding and restart cycles. Completed **200 warmups + 2,000 measured asks**, concurrency 1, seed 279, **10,000 × 60 = 600,000 retained historical events**, plus 16 synthetic recovery-selector cases. One process/engine/worker/store identity across all workload asks. **20/20** separate restart cycles closed both owned listeners. Zero failed/censored asks, audit violations, unexplained reservations, blocked network attempts, or sample gaps.
 
