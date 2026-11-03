@@ -128,3 +128,7 @@ refit: ## local receipt labels and dev-only calibration; no network or payments
 .PHONY: soak
 soak: ## deterministic fixture chaos soak (HOURS=12 by default)
 	npm run chaos -- --soak $(or $(HOURS),12)h --seed 279 --output scratch/chaos/soak.json
+
+.PHONY: app-accept
+app-accept: dmg ## packaged fixture crash recovery + one Keychain Testnet purchase
+	node --import tsx desktop/accept.mjs

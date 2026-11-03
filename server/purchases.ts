@@ -149,6 +149,9 @@ export class PurchaseManager {
     })
   }
   private send(intent: PurchaseIntent, submission: Submission): Promise<PaidResult> {
+    if (this.payer.rail === 'simulated' && process.env.RA_DESKTOP_CRASH_TEST === '1') {
+      return new Promise<void>(done => setTimeout(done, 1500)).then(() => this.client.paidGet(intent.paidPath!, this.signatureHeader(intent, submission), this.wire(intent.runId)))
+    }
     return this.client.paidGet(intent.paidPath!, this.signatureHeader(intent, submission), this.wire(intent.runId))
   }
   /** Sign once per intent (blob persisted write-once before it leaves), then the facilitator submits it. */

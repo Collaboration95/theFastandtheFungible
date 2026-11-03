@@ -26,6 +26,9 @@ export async function startMcpHttp({ apiUrl, store, port = 0 }: { apiUrl: string
   http.headersTimeout = 10_000
   await new Promise<void>((done, fail) => { http.once('error', fail); http.listen(port, '127.0.0.1', done) })
   return { url: `http://127.0.0.1:${(http.address() as { port: number }).port}/mcp`, close: async () => {
+    // Engine crashes can leave an active POST without a backend response.
+    // Break those sockets before waiting for the listener to close.
+    http.closeAllConnections()
     await Promise.all([...active].map(s => s.close()))
     await new Promise<void>((done, fail) => http.close(error => error ? fail(error) : done()))
   } }

@@ -12,6 +12,7 @@ permissions:
 jobs:
   desktop:
     uses: ./.github/workflows/desktop.yml
+    secrets: inherit
   publish:
     needs: desktop
     runs-on: ubuntu-latest
@@ -37,7 +38,8 @@ jobs:
           fi
       - uses: actions/download-artifact@v4
         with:
-          name: researchagent-arm64-dmg
+          pattern: researchagent-*-dmg
+          merge-multiple: true
           path: ${{ runner.temp }}/assets
       - uses: actions/setup-node@v4
         with:
@@ -48,7 +50,7 @@ jobs:
       - run: cp dist/ResearchAgent.mcpb dist/server.json "$RUNNER_TEMP/assets/"
       - name: Describe the unsigned download
         run: |
-          printf '\n\nApple Silicon Mac app attached. Unsigned: move to Applications, then right-click → Open (Privacy & Security → Open Anyway if blocked). See desktop/SIGNING.md.\n' >> "$RUNNER_TEMP/notes.md"
+          printf '\n\nApple Silicon and Intel Mac apps attached. Unsigned: move to Applications, then right-click → Open (Privacy & Security → Open Anyway if blocked). See desktop/SIGNING.md.\n' >> "$RUNNER_TEMP/notes.md"
       - name: Create the release
         run: |
           title=$(head -n 1 "$RUNNER_TEMP/notes.md")

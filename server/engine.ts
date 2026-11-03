@@ -12,7 +12,7 @@ export async function startEngine({ apiPort = 0, publisherPort = 0, dataDir, liv
   apiToken = apiToken || config.RA_API_TOKEN || randomBytes(32).toString('hex')
   const env = engineEnvironment({ RA_API_TOKEN: apiToken, HOST: '127.0.0.1', APP_DB: resolve(dataDir, 'app.db'), PUBLISHER_DB: resolve(dataDir, 'publisher.db'), REPORT_DIR: resolve(dataDir, 'reports'),
     PUBLISHER_PORT: String(publisherPort), LANGFUSE_ENABLED: '0', PUBLISHER_FAULTS: '0',
-    LLM_PROVIDER: live ? 'deepseek' : 'fixture', DECISION_PROVIDER: live ? (config.DECISION_PROVIDER === 'openai' ? 'openai' : 'cloudflare') : 'fixture',
+    LLM_PROVIDER: live && process.env.RA_ACCEPT_TESTNET !== '1' ? 'deepseek' : 'fixture', DECISION_PROVIDER: live && process.env.RA_ACCEPT_TESTNET !== '1' ? (config.DECISION_PROVIDER === 'openai' ? 'openai' : 'cloudflare') : 'fixture',
     SEARCH_EMBEDDINGS: live ? (config.SEARCH_EMBEDDINGS ?? 'live') : 'off',
     SETTLEMENT_RAIL: live && config.XRPL_PAYER_SEED ? 'xrpl-testnet' : 'simulated' })
   const worker = new Worker(new URL('./engine-worker.mjs', import.meta.url), { env, execArgv: process.execArgv.filter(arg => !arg.startsWith('--input-type')), workerData: { apiPort }, stdout: true, stderr: true })
