@@ -48,14 +48,15 @@ reported by Actions and is not inferred. The 339 s target is an optimization
 target, not permission to remove gates. docs/running.md is deferred because
 Lane A owns it; CONTRIBUTING.md documents the commands and gate equivalence.
 
-Final integrated local coverage collection: 841/841 tests, 110 files, 61.33 s
+Final integrated local coverage collection: 861/861 tests, 111 files, 45.08 s
 on Node 22.23.4, macOS arm64. Integration includes main
-21b2a1edfae98e7ab9b63a34943372331c94ba70 (Lanes A/E); the baseline remains ec97bfd.
-Payments: 1458/1710 → 1550/1801 branches; all component ratios pass their
+571bb7802d029c5782a04084dc05dad51aacd7fc (Lanes A/E/C2); the baseline remains ec97bfd.
+Payments: 1458/1710 → 1549/1800 branches; all component ratios pass their
 original floors. The payment floor remains 1486/1732, above 85%.
 Baseline configuration/contract tests were uncommitted, marked dirty in JSON.
 Final tested SHA is in coverage-final.json. Later evidence-only commits do not
-change product code or test execution. Component mapping includes A's new files.
+change product code or test execution. Component mapping includes A/C2's new runtime files. C2 recovery tests raise
+desktop branches to 134/175 and lines to 145/882; native acceptance remains separate.
 
 The first hosted run (41690272807) failed the server branch ratchet; browser,
 Python and chaos passed and the required check correctly failed. This is actual
@@ -82,7 +83,8 @@ streams and oversized terminal recovery through reload with one admission and
 identical receipts/spend. Server and SDK runtime files were not edited.
 
 
-Hosted full-code comparison (Actions timestamps, not local estimates):
+Hosted full-code comparison (Actions timestamps, not local estimates; before
+the final C2 rebase; exact tested commits are retained in ci-jobs.json):
 
 | Measurement | Recent main 41686116425 | PR 41695608282 |
 | --- | ---: | ---: |
@@ -112,3 +114,12 @@ denominators differ despite matching Node majors; neither denominator is
 silently substituted. The historical narrower server-payment heuristic was
 551/650 (84.77%); the final local cross-check is 562/659 (85.28%). It is not the
 committed disjoint component grouping and is not rounded into the gate.
+
+Final integration onto C2 main 571bb780 retains the earlier successful hosted
+receipt rather than relabeling it as a run of different source. The final PR
+head must independently pass every hosted gate before merge.
+
+C2-integrated local gate: check:fast passed with 861 tests / 111 files
+(38.22 s unit collection), unchanged 20 chaos episodes / four escrow probes
+(43.166 s, zero violations/double charges). Required Chromium: eight passed
+(19.0 s); Python: 17 passed (4.04 s). These executions used Node 22.23.4.
