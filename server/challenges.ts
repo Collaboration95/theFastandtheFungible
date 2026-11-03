@@ -1,7 +1,7 @@
 // Client side of POST /challenge (#132, D5). On CLAIM_FAILED the buyer reveals the failed claim's
 // passage and salt; the writer re-checks and refunds, rejects, or refuses (a timeout counts as REFUSED).
 // The buyer checks a refund on the ledger itself (verifyPayment, roles swapped). Write-once per intent.
-import { SIMULATED_LABEL, XRPL_EXPLORER, XRPL_LABEL, type PurchaseIntent } from '../shared/contracts/index.js'
+import { SIMULATED_LABEL, XRPL_LABEL, type PurchaseIntent } from '../shared/contracts/index.js'
 import type { Challenge } from '../shared/contracts/publisher.js'
 import { verifyPayment } from '../shared/xrpl.js'
 import type { PurchaseManager } from './purchases.js'
@@ -51,7 +51,6 @@ async function run({ store, client, payer }: PurchaseManager, intentId: string, 
   } catch { /* timeout, HTTP error or malformed answer: REFUSED */ }
   const next = store.recordChallengeOutcome(intentId, status, status === 'REFUNDED' ? { txHash: refundTxHash!, amountMinor: intent.amountMinor } : undefined)
   store.appendEvent(intent.runId, { type: 'CHALLENGE', label: `${next.status}${next.status === 'REFUNDED' ? '' : ` · ${reason}`}`, data: { intentId, status: next.status, label } })
-  if (next.refund) store.appendEvent(intent.runId, { type: 'REFUND', label: `Refunded S$${(next.refund.amountMinor / 100).toFixed(2)} · InvoiceID = original tx · ${label}`, data: { intentId, txHash: next.refund.txHash, amountMinor: next.refund.amountMinor, originalTxHash: intent.txHash, label, ...(testnet ? { explorerUrl: `${XRPL_EXPLORER}/${next.refund.txHash}` } : {}) } })
   return next
 }
 
@@ -77,7 +76,6 @@ export async function reconcileRefunds(purchases: PurchaseManager): Promise<void
     if (!await refundOnLedger(purchases.payer, hash, intent, Date.now() + 1000, 50)) continue
     const before = purchases.store.getIntent(intent.intentId)!
     if (before.status === 'REFUNDED') continue
-    const next = purchases.store.recordChallengeOutcome(intent.intentId, 'REFUNDED', { txHash: hash, amountMinor: intent.amountMinor })
-    if (next.status === 'REFUNDED') purchases.store.appendEvent(intent.runId, { type: 'REFUND', label: `Late refund verified · ${XRPL_LABEL}`, data: { intentId: intent.intentId, txHash: hash, amountMinor: intent.amountMinor, originalTxHash: intent.txHash, label: XRPL_LABEL } })
+    purchases.store.recordChallengeOutcome(intent.intentId, 'REFUNDED', { txHash: hash, amountMinor: intent.amountMinor })
   }
 }

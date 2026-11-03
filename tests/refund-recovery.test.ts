@@ -43,6 +43,12 @@ it.each(['XRP', 'issued'] as const)('retains and validates a late %s refund once
     valid=true;wrong=true;await reconcileRefunds(manager)
     expect(s.getRun(r.runId).refundedMinor).toBe(0)
     wrong=false
+    const append=s.audit.append.bind(s.audit)
+    const fault=vi.spyOn(s.audit,'append').mockImplementation(entry=>{if(entry.kind==='refund') throw new Error('synthetic atomic failure');return append(entry)})
+    await expect(reconcileRefunds(manager)).rejects.toThrow('synthetic atomic failure')
+    expect(s.getIntent('late')!.status).toBe('CHALLENGE_REFUSED')
+    expect(s.getRun(r.runId).events.filter(e=>e.type==='REFUND')).toHaveLength(0)
+    fault.mockRestore()
     await Promise.all([reconcileRefunds(manager),reconcileRefunds(manager)])
     await reconcileRefunds(manager)
     expect(s.getRun(r.runId)).toMatchObject({spentMinor:80,refundedMinor:80})

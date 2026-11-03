@@ -2,7 +2,7 @@ import { AgentKeys, AgentDenied } from './agent-keys.js'
 import { decode } from 'xrpl'
 import type { EscrowRecord, EscrowOperation, EscrowOutbox } from './escrow-state.js'
 import { chmodSync, existsSync } from 'node:fs'
-import { DROPS_PER_MINOR } from '../shared/contracts/index.js'
+import { DROPS_PER_MINOR, SIMULATED_LABEL, XRPL_LABEL, XRPL_EXPLORER } from '../shared/contracts/index.js'
 import type { ChainPayment } from './hire/policy.js'
 import { spendPolicy, POLICY_VERSION, PAUSED, type Surface } from './spend-policy.js'
 import { budgetPolicy, clampBudget } from '../mcp/policy.js'
@@ -740,7 +740,8 @@ export class Store {
   }
   /** Write-once per intent (gate 3): the first challenge outcome, and at most one refund, are final. */
   recordChallengeOutcome(intentId: string, status: 'REFUNDED' | 'CHALLENGE_REJECTED' | 'CHALLENGE_REFUSED', refund?: { txHash: string; amountMinor: number }): PurchaseIntent {
-    return this.atomic(() => {
+    let refundEvent: TraceEvent | undefined
+    const result = this.atomic(() => {
       const intent = this.getIntent(intentId)
       if (!intent) throw new Error('Intent not found')
       const late = intent.status === 'CHALLENGE_REFUSED' && status === 'REFUNDED' && intent.refundCandidate?.txHash === refund?.txHash
@@ -751,8 +752,19 @@ export class Store {
       this.saveIntent(next)
       this.audit.append(refund ? { runId: intent.runId, intentId, kind: 'refund', data: { txHash: refund.txHash, amountMinor: refund.amountMinor, originalTxHash: intent.txHash ?? null, payTo: intent.quote?.payment?.payTo ?? null, resourceId: intent.resourceId, version: intent.version } }
         : { runId: intent.runId, intentId, kind: 'challenge', data: { outcome: status, resourceId: intent.resourceId, version: intent.version } })
+      if (refund) {
+        const testnet = intent.quote?.payment?.rail === 'xrpl-testnet'
+        const label = testnet ? XRPL_LABEL : SIMULATED_LABEL
+        const inserted = this.db.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run(intent.runId, '{}')
+        refundEvent = TraceEventSchema.parse({ id: Number(inserted.lastInsertRowid), runId: intent.runId, at: new Date().toISOString(), type: 'REFUND',
+          label: `Refunded S$${(refund.amountMinor / 100).toFixed(2)} · InvoiceID = original tx · ${label}`,
+          data: { intentId, txHash: refund.txHash, amountMinor: refund.amountMinor, originalTxHash: intent.txHash, label, ...(testnet ? { explorerUrl: `${XRPL_EXPLORER}/${refund.txHash}` } : {}) } })
+        this.db.prepare('UPDATE events SET json=? WHERE id=?').run(JSON.stringify(refundEvent), refundEvent.id)
+      }
       return next
     })
+    if (refundEvent) { try { this.onEvent?.(refundEvent) } catch { /* committed; observers resync */ } }
+    return result
   }
   // Engine-side trust per seller of record (D6, D21), across runs; server/reputation.ts owns the math.
   getReputation(wallet: string): ReputationRecord | undefined { return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation WHERE wallet=?', wallet)[0] }

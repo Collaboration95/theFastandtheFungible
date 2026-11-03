@@ -14,6 +14,7 @@ let store=new Store(path)
 const prototype=store.createRun('SYNTHETIC retained history',0)
 store.close()
 const db=new DatabaseSync(path)
+db.prepare('DELETE FROM runs WHERE id=?').run(prototype.runId)
 db.exec('DROP INDEX events_run_id; DROP INDEX intents_run_id; BEGIN')
 const addRun=db.prepare('INSERT INTO runs VALUES (?,?)'), addEvent=db.prepare('INSERT INTO events(run_id,json) VALUES (?,?)')
 for(let n=0;n<runs;n++){
