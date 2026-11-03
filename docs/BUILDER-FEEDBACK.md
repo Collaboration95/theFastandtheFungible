@@ -427,3 +427,5 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
   bounded, deduplicated observation collectors and explicit child-exit diagnostics.
   Severity: medium local test reliability; mainnet impact: none observed, no
   live ledger was used and no production money bug was confirmed.
+
+- 2026-11-03 · Observed tooling incident: release backfill test inherited Git hook GIT_DIR/GIT_INDEX_FILE and wrote its fixture commit into the caller worktree; hook then failed on an existing tag. Evidence: docs/evidence/stream-281.md and tests/release.test.ts. Workaround: restore caller ref/index, strip inherited GIT_* variables from fixture subprocesses. Suggested fix: isolate Git subprocess environments in temporary-repository tests. Severity: high local tooling; no XRPL/mainnet action or funds affected.
