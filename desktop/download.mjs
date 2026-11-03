@@ -14,7 +14,7 @@ if (!existsSync(join(target, executable))) {
     const asset = `electron-v${version}-darwin-arm64.zip`
     execFileSync('gh', ['release', 'download', `v${version}`, '--repo', 'electron/electron', '--pattern', asset, '--dir', temp], { stdio: 'inherit' })
     execFileSync('gh', ['release', 'download', `v${version}`, '--repo', 'electron/electron', '--pattern', 'SHASUMS256.txt', '--dir', temp], { stdio: 'inherit' })
-    const expected = readFileSync(join(temp, 'SHASUMS256.txt'), 'utf8').split('\n').find(line => line.endsWith(` ${asset}`))?.split(/\s+/)[0]
+    const expected = readFileSync(join(temp, 'SHASUMS256.txt'), 'utf8').split('\n').find(line => line.trim().split(/\s+/)[1]?.replace(/^\*/, '') === asset)?.split(/\s+/)[0]
     if (!expected || createHash('sha256').update(readFileSync(join(temp, asset))).digest('hex') !== expected) throw new Error('Electron checksum mismatch')
     mkdirSync(target, { recursive: true })
     execFileSync('unzip', ['-q', join(temp, asset), '-d', target])

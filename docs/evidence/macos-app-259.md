@@ -59,3 +59,5 @@ Gatekeeper acceptance was inferred. Signing/notarisation is implemented and
 fail-closed when an identity exists; its unexercised owner setup is on #265.
 
 The staged post-#286 smoke also passed UC1–UC3 through the authenticated proxy, direct unauthenticated mutation/MCP rejection (401), and the wallet-wide cap/status controls. Remote HTTPS credential/header validation uses offline transports; no deployed remote service was used.
+
+Installer workflow validation caught and fixed a checksum-manifest parser error: Electron publishes binary-mode `*filename` records. Exact asset-name and SHA-256 verification remain required; no checksum check was bypassed (Actions run 41562353549).
