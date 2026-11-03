@@ -5,6 +5,10 @@ on:
   workflow_call:
   workflow_dispatch:
     inputs:
+      signing_identity:
+        description: 'OWNER ONLY: exact Developer ID Application identity for sign=true'
+        type: string
+        default: ''
       sign:
         description: 'OWNER ONLY: sign and notarise using configured secrets'
         type: boolean
@@ -55,6 +59,7 @@ jobs:
           fi
         env:
           DESKTOP_VERSION: ${{ inputs.version || '' }}
+          CSC_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.signing_identity || '' }}
           OWNER_SIGN: ${{ github.event_name == 'workflow_dispatch' && inputs.sign == true }}
       - uses: actions/upload-artifact@v4
         with:

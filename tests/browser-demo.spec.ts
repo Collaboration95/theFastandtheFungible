@@ -53,6 +53,12 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await page.getByRole('button', { name: 'Start now' }).click()
     await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
     await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ })).toContainText('Verified')
+    await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/`)
+    await page.getByRole('button', { name: /^Bank of Japan decision/ }).click()
+    await page.getByRole('button', { name: /^Ask$/ }).click()
+    await page.getByRole('button', { name: 'Start now' }).click()
+    await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
+    await expect(page.getByText('Replay of a recorded run · fictional writers · simulated payments')).toBeVisible()
     expect(errors).toEqual([])
     expect(requests.every(url => url.startsWith(`http://127.0.0.1:${port}/theFastandtheFungible/`))).toBe(true)
   } finally { python.kill('SIGTERM'); await once(python, 'exit') }
