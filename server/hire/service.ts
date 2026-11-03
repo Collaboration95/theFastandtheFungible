@@ -48,7 +48,11 @@ export function hireService(context: ApiContext) {
     const change = changePlan(run, hire.budgetMinor, principal)
     store.reservePolicyPayments(runId, [...royalties, ...change])
     for (const payment of store.policyPayments(runId)) {
-      if (payment.confirmedAt) continue
+      const refusal = !payment.submission && !payment.cancelledAt && payment.kind === 'royalty' ? screenPayee(payment.payTo) : undefined
+      if (refusal) store.cancelRefusedRoyalty(runId, payment.id, principal, { reason: refusal.refusal, screen: refusal.list, listReason: refusal.reason ?? null })
+    }
+    for (const payment of store.policyPayments(runId)) {
+      if (payment.confirmedAt || payment.cancelledAt) continue
       const screened = screenPayee(payment.payTo)
       if (screened) {
         store.recordAudit({ runId, intentId: payment.id, kind: 'refusal', data: { stage: 'payout', reason: screened.refusal, paymentKind: payment.kind, payTo: payment.payTo, amountDrops: payment.amountDrops, screen: screened.list, listReason: screened.reason ?? null } }, { stage: 'payout', paymentId: payment.id })
@@ -74,13 +78,15 @@ export function hireService(context: ApiContext) {
       }
     }
     const settled = journal.settlementByTx(hashes.hashSignedTx(decodeHeader('PAYMENT-SIGNATURE', hire.signature!).payload.signedTxBlob).toUpperCase())!
-    const payments = store.policyPayments(runId).map(p => ({ id: p.id, kind: p.kind, payTo: p.payTo, amountDrops: p.amountDrops,
+    const payments = store.policyPayments(runId).filter(p => !p.cancelledAt).map(p => ({ id: p.id, kind: p.kind, payTo: p.payTo, amountDrops: p.amountDrops,
       txHash: p.submission!.txHash, explorerUrl: `https://testnet.xrpl.org/transactions/${p.submission!.txHash}`, label: XRPL_LABEL }))
+    const cancelled = store.policyPayments(runId).filter(p => p.cancelledAt)
+    const refundedRoyaltyDrops = cancelled.reduce((s,p) => s + Number(p.amountDrops), 0)
     const royaltyDrops = royalties.reduce((s, p) => s + Number(p.amountDrops), 0)
-    const changeDrops = change.reduce((s, p) => s + Number(p.amountDrops), 0)
+    const changeDrops = change.reduce((s, p) => s + Number(p.amountDrops), 0) + refundedRoyaltyDrops
     const result = { ...presentRun(run, context.publisherUrl), moneyChain: {
       inbound: { txHash: settled.txHash, payer: principal, payTo: payer!.address, amountDrops: hire.quote.amount, explorerUrl: `https://testnet.xrpl.org/transactions/${settled.txHash}`, label: XRPL_LABEL },
-      writerAddresses: addresses, payments, purchaseDrops: String(run.spentMinor * DROPS_PER_MINOR), royaltyDrops: String(royaltyDrops), changeDrops: String(changeDrops),
+      writerAddresses: addresses, cancelledRoyalties: cancelled.map(p => ({ id: p.id, payTo: p.payTo, amountDrops: p.amountDrops, reason: 'operator denylist' })), payments, purchaseDrops: String(run.spentMinor * DROPS_PER_MINOR), royaltyDrops: String(royaltyDrops - refundedRoyaltyDrops), changeDrops: String(changeDrops),
       retainedDrops: String(SERVICE_FEE_MINOR * DROPS_PER_MINOR - royaltyDrops), feePolicy: 'Network fees paid separately by each sender; not deducted from caller change', policy: 'hire-v1 · 25% of fixed S$0.20 fee; equal by distinct cited writer, slug-sorted remainder' } }
     hires.patch(hire.key, { result })
     store.closeHireReserve(runId)

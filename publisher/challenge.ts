@@ -2,6 +2,7 @@
 // it stored. A broken claim earns a refund Payment of the full amount back to the payer, with
 // InvoiceID = the original tx hash, write-once per payment and per intent. The publisher key
 // signs in memory only: never logged or traced.
+import { ledgerAmount, type Asset } from '../shared/contracts/asset.js'
 import { Wallet } from 'xrpl'
 import type { Challenge, ChallengeResult, Rail } from '../shared/contracts/publisher.js'
 import { verifyDelivery } from '../shared/manifest.js'
@@ -14,15 +15,15 @@ export function createChallenges(journal: PublisherJournal, manifests: Manifests
   // ponytail: one refund at a time per process, so parallel challenges never race the account Sequence or the write-once row.
   let queue: Promise<unknown> = Promise.resolve()
 
-  async function refundOnce(entry: PublisherEntry, challenge: Challenge, payer: string, amountDrops: string): Promise<string> {
+  async function refundOnce(entry: PublisherEntry, challenge: Challenge, payer: string, amountDrops: string, asset: Asset = 'XRP'): Promise<string> {
     const run = queue.then(async () => {
       let refund = journal.refundByTx(challenge.txHash)
       if (!refund) {
         const wallet = new Wallet(entry.keys!.publicKey, entry.keys!.privateKey)
-        const signed = await signPayment(wallet, { Destination: payer, Amount: amountDrops, InvoiceID: challenge.txHash }, rail === 'xrpl-testnet' ? ledger : undefined)
+        const signed = await signPayment(wallet, { Destination: payer, Amount: ledgerAmount(amountDrops, asset), InvoiceID: challenge.txHash }, rail === 'xrpl-testnet' ? ledger : undefined)
         refund = journal.saveRefund({ originalTxHash: challenge.txHash, intentId: challenge.intentId, txHash: signed.txHash, txBlob: signed.txBlob })
       }
-      if (rail === 'xrpl-testnet') await submitAndWait(refund.txBlob, refund.txHash, payer, amountDrops, challenge.txHash)
+      if (rail === 'xrpl-testnet') await submitAndWait(refund.txBlob, refund.txHash, payer, amountDrops, challenge.txHash, asset)
       return refund.txHash
     })
     queue = run.catch(() => undefined)
@@ -30,8 +31,8 @@ export function createChallenges(journal: PublisherJournal, manifests: Manifests
   }
 
   /** Same blob, same hash: resubmitting is harmless. Returns once validated, or after the timeout (the buyer checks the ledger itself). */
-  async function submitAndWait(blob: string, txHash: string, payTo: string, amountDrops: string, invoiceId: string) {
-    const terms = { rail: 'xrpl-testnet' as const, network: 'xrpl:1' as const, asset: 'XRP' as const, payTo, amountDrops, invoiceId }
+  async function submitAndWait(blob: string, txHash: string, payTo: string, amountDrops: string, invoiceId: string, asset: Asset) {
+    const terms = { rail: 'xrpl-testnet' as const, network: 'xrpl:1' as const, asset, payTo, amountDrops, invoiceId }
     if ((await verifyPayment(ledger!, txHash, terms)).state === 'ok') return
     try { await ledger!.request({ command: 'submit', tx_blob: blob }) } catch { /* the lookup decides */ }
     const deadline = Date.now() + timing.timeoutMs
@@ -56,6 +57,6 @@ export function createChallenges(journal: PublisherJournal, manifests: Manifests
     const broken = verifyDelivery(article.body, article.passages, manifests.saltsFor(article), manifest).failedClaims.includes(claim.id)
     if (!broken) return { status: 'REJECTED' }
     // Repeated or parallel challenges get the one stored refund back (resubmitted, never re-signed).
-    return { status: 'REFUNDED', refundTxHash: await refundOnce(entry, body, settlement.payer, quote.amount) }
+    return { status: 'REFUNDED', refundTxHash: await refundOnce(entry, body, settlement.payer, quote.amount, quote.asset) }
   }
 }

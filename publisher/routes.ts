@@ -1,3 +1,4 @@
+import { AssetSchema, RLUSD_CURRENCY, RLUSD_TESTNET_ISSUER, amountFor, type Asset } from '../shared/contracts/asset.js'
 import { escrowQuote, lockEscrow, verifyEscrowSignature } from './escrow.js'
 import { localEmbeddingCache } from './local-writers.js'
 import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response } from 'express'
@@ -62,7 +63,8 @@ export function toSearchHit(article: Article, relevance: number, searchMode: Sea
 export function createPublisherApp(config: PublisherConfig = {}) {
   const app = express()
   const env = config.env ?? process.env
-  const escrowEnabled = (slug: string) => rail === 'xrpl-testnet' && (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug)
+  const assetFor = (slug: string): Asset => env[`XRPL_PUBLISHER_${slug.toUpperCase().replace(/-/g, '_')}_CURRENCY`] === 'RLUSD' ? AssetSchema.parse({ currency: RLUSD_CURRENCY, issuer: env.XRPL_RLUSD_ISSUER || RLUSD_TESTNET_ISSUER, label: !env.XRPL_RLUSD_ISSUER || env.XRPL_RLUSD_ISSUER === RLUSD_TESTNET_ISSUER ? 'RLUSD Testnet' : 'test USD (substitute for RLUSD)' }) : 'XRP'
+  const escrowEnabled = (slug: string) => rail === 'xrpl-testnet' && assetFor(slug) === 'XRP' && (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug)
   const secret = config.secret ?? process.env.PUBLISHER_SECRET
   const faults = config.faults ?? process.env.PUBLISHER_FAULTS === '1'
   // The only Bearer secret left guards the fault toggle; payments carry their own signed proof.
@@ -111,12 +113,15 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     const resource = { url: req.originalUrl.split('?')[0], description: label, mimeType: 'application/json' }
     const raw = req.get('PAYMENT-SIGNATURE')
     if (!raw) {
-      const quoteId = randomUUID()
-      const amount = String(item.priceMinor * DROPS_PER_MINOR)
-      const invoiceId = invoiceIdFor({ quoteId, articleId: item.articleId, version: item.version, manifestRoot: root, amount, payTo: item.payTo })
-      const quote = { invoiceId, ledgerInvoiceId: ledgerInvoiceId(invoiceId), quoteId, publisherSlug: item.publisherSlug, articleId: item.articleId, version: item.version, amount, payTo: item.payTo, expiresAt: new Date(Date.now() + MAX_TIMEOUT_SECONDS * 1000).toISOString() }
-      journal.saveQuote(quote)
-      res.status(402).set('PAYMENT-REQUIRED', encodeHeader('PAYMENT-REQUIRED', { x402Version: 2, resource, accepts: [requirementsFor(quote), ...(escrowEnabled(item.publisherSlug) ? [{ ...requirementsFor(quote), scheme: 'escrow-v1' as const, maxTimeoutSeconds: 120, extra: { invoiceId: quote.invoiceId, areFeesSponsored: false as const, quoteEndpoint: `${resource.url}/escrow-quote` } }] : [])] }))
+      const quotes = (assetFor(item.publisherSlug) === 'XRP' ? ['XRP' as const] : [assetFor(item.publisherSlug), 'XRP' as const]).map(asset => {
+        const quoteId = randomUUID(), amount = amountFor(item.priceMinor, asset)
+        const invoiceId = invoiceIdFor({ quoteId, articleId: item.articleId, version: item.version, manifestRoot: root, amount, payTo: item.payTo, asset })
+        const quote = { invoiceId, ledgerInvoiceId: ledgerInvoiceId(invoiceId), quoteId, publisherSlug: item.publisherSlug, articleId: item.articleId, version: item.version, amount, asset, payTo: item.payTo, expiresAt: new Date(Date.now() + MAX_TIMEOUT_SECONDS * 1000).toISOString() }
+        journal.saveQuote(quote)
+        return quote
+      })
+      const quote = quotes[0]
+      res.status(402).set('PAYMENT-REQUIRED', encodeHeader('PAYMENT-REQUIRED', { x402Version: 2, resource, accepts: [...quotes.map(requirementsFor), ...(escrowEnabled(item.publisherSlug) ? [{ ...requirementsFor(quote), scheme: 'escrow-v1' as const, maxTimeoutSeconds: 120, extra: { invoiceId: quote.invoiceId, areFeesSponsored: false as const, quoteEndpoint: `${resource.url}/escrow-quote` } }] : [])] }))
         .json({ error: 'Payment required', label }); return
     }
     let signature: PaymentSignature
@@ -145,7 +150,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     res.json({ status: 'ok', publisher: 'local', settlement: label })
   })
   app.get('/w/:slug/facilitator/supported', (req, res) => {
-    res.json({ kinds: [{ x402Version: 2, scheme: 'exact', network: X402_NETWORK }, ...(escrowEnabled(req.params.slug) ? [{ x402Version: 2, scheme: 'escrow-v1', network: X402_NETWORK }] : [])], extensions: [], signers: {}, label })
+    res.json({ kinds: [{ x402Version: 2, scheme: 'exact', network: X402_NETWORK, assets: assetFor(req.params.slug) === 'XRP' ? ['XRP'] : [assetFor(req.params.slug), 'XRP'] }, ...(escrowEnabled(req.params.slug) ? [{ x402Version: 2, scheme: 'escrow-v1', network: X402_NETWORK }] : [])], extensions: [], signers: {}, label })
   })
   app.post('/w/:slug/facilitator/verify', async (req, res) => {
     const signature = signatureFromBody(req.body)

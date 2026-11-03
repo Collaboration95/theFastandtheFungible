@@ -1,9 +1,10 @@
+import { AssetSchema, ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
 import { EscrowPurchases, escrowSelected } from './escrow.js'
 import { screenPayee } from './payee-screening.js'
 import { scoreStep } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
-import { DROPS_PER_MINOR, SIMULATED_LABEL, XRPL_EXPLORER, XRPL_LABEL, type ContentEnvelope, type PublicCandidate, type PurchaseIntent, type Quote } from '../shared/contracts/index.js'
+import { DROPS_PER_MINOR, SIMULATED_LABEL, XRPL_EXPLORER, XRPL_LABEL, type LedgerProof, type ContentEnvelope, type PublicCandidate, type PurchaseIntent, type Quote } from '../shared/contracts/index.js'
 import type { Manifest } from '../shared/contracts/manifest.js'
 import { verifyManifestSignature } from '../shared/manifest.js'
 import { encodeHeader, invoiceIdFor, ledgerInvoiceId } from '../shared/x402.js'
@@ -86,7 +87,7 @@ export class PurchaseManager {
       const quoteHash = ledgerInvoiceId(invoiceId)
       const quote: Quote = {
         runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version,
-        quoteId: invoiceId, quoteHash, amountMinor: Math.floor(Number(accepted.amount) / DROPS_PER_MINOR), currency: 'SGD',
+        quoteId: invoiceId, quoteHash, amountMinor: accepted.asset === 'XRP' ? Math.floor(Number(accepted.amount) / DROPS_PER_MINOR) : Math.round(Number(accepted.amount) * 100), currency: 'SGD',
         expiresAt: new Date(Date.now() + accepted.maxTimeoutSeconds * 1000).toISOString(), contentDigest: invoiceFields(invoiceId)?.manifestRoot ?? '',
         payment: { rail: first.required.resource.description === XRPL_LABEL ? 'xrpl-testnet' : 'simulated', network: accepted.network, asset: accepted.asset, payTo: accepted.payTo, amountDrops: accepted.amount, invoiceId: quoteHash },
       }
@@ -98,7 +99,7 @@ export class PurchaseManager {
     if (intent.status === 'RESERVED') {
       // Before anything is signed: the rail, the payee, the amount and the invoice binding must all check out.
       // The operator denylist runs first and in policy code, before anything can be signed (#288).
-      const screened = [intent.quote?.payment?.payTo, candidate.wallet, manifest?.wallet].flatMap(address => address ? screenPayee(address) ?? [] : [])[0]
+      const screened = [intent.quote?.payment?.payTo, candidate.wallet, manifest?.wallet, intent.quote?.payment?.asset !== 'XRP' ? intent.quote?.payment?.asset.issuer : undefined].flatMap(address => address ? screenPayee(address) ?? [] : [])[0]
       const refusal = screened?.refusal ?? this.refusal(intent, candidate, manifest)
       if (refusal) {
         intent = this.store.updateIntent(intentId, { status: 'FAILED_NOT_SETTLED', error: refusal }, screened ? { screen: screened.list, listedAddress: screened.address, listReason: screened.reason ?? null } : {})
@@ -134,7 +135,7 @@ export class PurchaseManager {
     const terms_ = XrplPayer.checkTerms(terms, intent.amountMinor, DROPS_PER_MINOR, quote.quoteHash)
     if (terms_) return terms_
     // Recompute invoiceId instead of trusting the publisher: it must bind this article version, amount, payee and root.
-    if (!bound || invoiceIdFor(bound) !== quote.quoteId || bound.articleId !== intent.resourceId || bound.version !== intent.version || bound.amount !== terms.amountDrops || bound.payTo !== terms.payTo) return 'x402 invoiceId does not bind this purchase; nothing was charged'
+    if (!bound || invoiceIdFor(bound) !== quote.quoteId || bound.articleId !== intent.resourceId || bound.version !== intent.version || bound.amount !== terms.amountDrops || bound.payTo !== terms.payTo || !matchesAmount(ledgerAmount(bound.amount, bound.asset), terms.amountDrops, terms.asset)) return 'x402 invoiceId does not bind this purchase; nothing was charged'
     // The root comes from the candidate's verified search manifest, never from the publisher's own 402.
     if (!manifest) return 'No verified manifest for this candidate; nothing was charged'
     if (!verifyManifestSignature(manifest) || manifest.root !== bound.manifestRoot || manifest.articleId !== intent.resourceId || manifest.version !== intent.version || manifest.publisherSlug !== intent.profileId) return 'x402 invoiceId does not bind the signed manifest; nothing was charged'
@@ -159,7 +160,7 @@ export class PurchaseManager {
     if (!submission) {
       const paid = await this.payer.pay(terms, signed => this.store.recordSubmission(intent.intentId, signed), signed => this.send(intent, signed))
       submission = paid.submission
-      this.ledgerEvent(intent.runId, `Signed ${xrp(terms.amountDrops)} XRP → ${terms.payTo} · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator${terms.rail === 'simulated' ? ' · SIMULATED' : ''}`, { intentId: intent.intentId, txHash: submission.txHash, amountDrops: terms.amountDrops, payTo: terms.payTo, ...(terms.rail === 'xrpl-testnet' ? { explorerUrl: explorer(submission.txHash) } : {}) })
+      this.ledgerEvent(intent.runId, `Signed ${terms.asset === 'XRP' ? xrp(terms.amountDrops) + ' XRP' : terms.amountDrops + ' ' + terms.asset.label} → ${terms.payTo} · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator${terms.rail === 'simulated' ? ' · SIMULATED' : ''}`, { intentId: intent.intentId, txHash: submission.txHash, amountDrops: terms.amountDrops, payTo: terms.payTo, ...(terms.rail === 'xrpl-testnet' ? { explorerUrl: explorer(submission.txHash) } : {}) })
       result = await paid.sent
     } else result = await this.send(intent, submission)
     await this.settleFrom(intent, submission, result)
@@ -169,16 +170,19 @@ export class PurchaseManager {
   private async settleFrom(intent: PurchaseIntent, submission: Submission, result: PaidResult): Promise<void> {
     const terms = intent.quote!.payment!
     if (result.response?.success && result.response.transaction === submission.txHash) {
-      let ledgerIndex: number | undefined
+      let proof: LedgerProof | undefined
       if (terms.rail === 'xrpl-testnet') {
         // Never trust the publisher's word: the buyer looks the payment up on the ledger itself.
         const outcome = await this.ledgerPayer().waitFor(submission)
         if (outcome.state !== 'success') throw new Error('Publisher reported a payment the ledger does not show')
-        ledgerIndex = outcome.ledgerIndex
+        const checked = await verifyPayment(this.ledgerPayer().ledger, submission.txHash, terms)
+        if (checked.state !== 'ok' || checked.proof.payer !== this.payer.address) throw new Error('Ledger payment differs from quote')
+        proof = checked.proof
+        const ledgerIndex = proof.ledgerIndex
         this.ledgerEvent(intent.runId, `Validated in ledger ${ledgerIndex} · tesSUCCESS`, { intentId: intent.intentId, txHash: submission.txHash, ledgerIndex, explorerUrl: explorer(submission.txHash) })
       }
-      this.recordConfirmed(intent, submission, ledgerIndex)
-      this.ledgerEvent(intent.runId, `Publisher ${ledgerIndex !== undefined ? 'verified the payment on the ledger' : 'settled the SIMULATED payment'} and issued a receipt`, { intentId: intent.intentId, txHash: submission.txHash })
+      this.recordConfirmed(intent, submission, proof)
+      this.ledgerEvent(intent.runId, `Publisher ${proof !== undefined ? 'verified the payment on the ledger' : 'settled the SIMULATED payment'} and issued a receipt`, { intentId: intent.intentId, txHash: submission.txHash })
       // A failed delivery in the paying exchange surfaces as DELIVERY_FAILED; retryDelivery resends the blob.
       this.delivered.set(intent.intentId, result.status === 200 ? result.delivery : DELIVERY_FAILED)
       return
@@ -195,9 +199,8 @@ export class PurchaseManager {
     }
     throw new Error('Settlement outcome unknown')
   }
-  private recordConfirmed(intent: PurchaseIntent, submission: Submission, ledgerIndex?: number) {
-    const terms = intent.quote!.payment!
-    const xrpl = ledgerIndex === undefined ? undefined : { txHash: submission.txHash, ledgerIndex, payer: this.payer.address!, payTo: terms.payTo, amountDrops: terms.amountDrops, explorerUrl: explorer(submission.txHash) }
+  private recordConfirmed(intent: PurchaseIntent, submission: Submission, proof?: LedgerProof) {
+    const xrpl = proof ? { ...proof, explorerUrl: explorer(submission.txHash) } : undefined
     this.store.recordSettlement(intent.intentId, { receiptId: `x402-${submission.txHash}`, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, amountMinor: intent.amountMinor, currency: 'SGD', settledAt: new Date().toISOString(), label: xrpl ? XRPL_LABEL : SIMULATED_LABEL, ...(xrpl ? { xrpl } : {}) }, submission.txHash)
   }
   /** XRPL: only the ledger can prove that a signed payment never applied (failed, or expired past LastLedgerSequence). */
@@ -266,7 +269,7 @@ export class PurchaseManager {
           if (intent.quote?.payment?.rail === 'xrpl-testnet') {
             const proof = await verifyPayment(this.ledgerPayer().ledger, submission.txHash, intent.quote.payment)
             if (proof.state === 'ok') {
-              this.recordConfirmed(intent, submission, proof.proof.ledgerIndex)
+              this.recordConfirmed(intent, submission, proof.proof)
               return this.deliver(this.store.getIntent(intent.intentId)!)
             }
             if (proof.state === 'invalid') throw new Error('Ledger proof does not match the invoice')
@@ -287,12 +290,12 @@ export class PurchaseManager {
 
 const DELIVERY_FAILED = Symbol('delivery failed')
 type PaidResult = Awaited<ReturnType<PublisherClient['paidGet']>>
-type InvoiceFields = { quoteId: string; articleId: string; version: string; manifestRoot: string; amount: string; payTo: string }
+type InvoiceFields = { asset?: import('../shared/contracts/asset.js').Asset; quoteId: string; articleId: string; version: string; manifestRoot: string; amount: string; payTo: string }
 const DeliverySchema = z.object({ articleId: z.string(), version: z.string(), title: z.string().min(1), publisher: z.string().min(1), body: z.string().min(1), passages: z.array(z.object({ id: z.string().min(1), text: z.string().min(1) })).min(1), salts: z.array(z.string()) })
 function invoiceFields(invoiceId: string): InvoiceFields | undefined {
   try {
     const value = JSON.parse(invoiceId) as Record<string, unknown>
     const keys = ['quoteId', 'articleId', 'version', 'manifestRoot', 'amount', 'payTo'] as const
-    return keys.every(key => typeof value[key] === 'string') ? Object.fromEntries(keys.map(key => [key, value[key]])) as InvoiceFields : undefined
+    return keys.every(key => typeof value[key] === 'string') ? { ...Object.fromEntries(keys.map(key => [key, value[key]])), ...(value.asset ? { asset: AssetSchema.parse(value.asset) } : {}) } as InvoiceFields : undefined
   } catch { return undefined }
 }

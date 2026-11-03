@@ -56,6 +56,13 @@ const offset = Number(process.env.OFFSET || 1300)
 const pub = await listen(publisher, live ? 8790 + offset : 0)
 const token = process.env.RA_API_TOKEN || 'local-fixture-hire-demo'
 process.env.RA_API_TOKEN = token
+if (process.argv.includes('--deny-writer')) {
+  const registry = await (await fetch(`http://127.0.0.1:${pub.address().port}/registry`)).json()
+  const wallet = registry.publishers.find(p => p.slug === 'open-records').wallet
+  if (!wallet) throw new Error('No free writer wallet')
+  process.env.PAYEE_DENYLIST_FILE = resolve(dir, 'deny.json')
+  writeFileSync(process.env.PAYEE_DENYLIST_FILE, JSON.stringify([{ address: wallet, reason: 'Explicit Testnet #310 refusal demonstration' }]))
+}
 const api = await createApiApp({ payer, dbPath: resolve(dir, 'app.db'), publisherUrl: `http://127.0.0.1:${pub.address().port}` })
 const server = await listen(api.app, live ? 8788 + offset : 0)
 const journal = openPaymentJournal(resolve(dir, 'caller.db'))
@@ -79,9 +86,12 @@ try {
     if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS') throw new Error('Unvalidated demo transaction')
     transactions.push({ txHash, from: found.tx.Account, to: found.tx.Destination, amountDrops: found.meta.delivered_amount, feeDrops: found.tx.Fee, invoiceId: found.tx.InvoiceID, memos: found.tx.Memos, ledgerIndex: found.ledgerIndex, explorerUrl: live ? `https://testnet.xrpl.org/transactions/${txHash}` : null })
   }
-  const totalDrops = transactions.reduce((s, t) => s + BigInt(t.amountDrops) + BigInt(t.feeDrops), 0n)
+  const totalDrops = transactions.reduce((s, t) => s + (typeof t.amountDrops === 'string' ? BigInt(t.amountDrops) : 0n) + BigInt(t.feeDrops), 0n)
   if (totalDrops >= 1000000n) throw new Error('Demo exceeded one XRP gross movement plus fees')
-  const evidence = { label: live ? 'XRPL TESTNET · no real value' : 'SIMULATED ledger · no network; hashes are synthetic', research: 'fixture · fictional corpus · extractive answer and metadata decisions', replayIdentical: true, gateAudit: audit, totalDrops: String(totalDrops), faucetFundingExcluded: true, transactions, result }
+  const cancellations = api.store.policyPayments(run.runId).filter(p => p.cancelledAt)
+  if (process.argv.includes('--deny-writer') && (!cancellations.length || api.store.walletStatus().reservedMinor !== 0)) throw new Error('Refusal did not refund and release reservations')
+  if (!api.store.auditVerify().ok) throw new Error('Audit chain failed')
+  const evidence = { cancellations, auditChain: api.store.auditVerify(), wallet: api.store.walletStatus(), label: live ? 'XRPL TESTNET · no real value' : 'SIMULATED ledger · no network; hashes are synthetic', research: 'fixture · fictional corpus · extractive answer and metadata decisions', replayIdentical: true, gateAudit: audit, totalDrops: String(totalDrops), faucetFundingExcluded: true, transactions, result }
   writeFileSync(resolve(dir, 'chain.json'), JSON.stringify(evidence, null, 2))
   console.log(JSON.stringify(evidence, null, 2))
 } finally {

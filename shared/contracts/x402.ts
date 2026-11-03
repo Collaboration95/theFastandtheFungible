@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AssetSchema } from './asset.js'
 
 // x402 v2 (specs/x402-specification-v2.md) with the XRPL exact scheme
 // (specs/schemes/exact/scheme_exact_xrpl.md). XRPL Testnet only: network 'xrpl:1'.
@@ -8,7 +9,7 @@ export const X402_NETWORK = 'xrpl:1'
 export const ResourceInfoSchema = z.object({ url: z.string().min(1), description: z.string().optional(), mimeType: z.string().optional() })
 /** One `accepts[]` entry. `extra.invoiceId` is invoiceIdFor(...) (canonical JSON); the tx InvoiceID is its sha256. */
 export const PaymentRequirementsSchema = z.object({
-  scheme: z.enum(['exact', 'escrow-v1']), network: z.literal(X402_NETWORK), amount: z.string().regex(/^[1-9]\d*$/), asset: z.literal('XRP'),
+  scheme: z.enum(['exact', 'escrow-v1']), network: z.literal(X402_NETWORK), amount: z.string().regex(/^(?:[1-9]\d*(?:\.\d{1,6})?|0\.\d{1,6})$/), asset: AssetSchema,
   payTo: xrplAddress, maxTimeoutSeconds: z.number().int().positive(),
   extra: z.object({ invoiceId: z.string().min(1), areFeesSponsored: z.literal(false), quoteEndpoint: z.string().optional() }),
 })

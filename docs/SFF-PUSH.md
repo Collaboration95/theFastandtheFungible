@@ -266,6 +266,8 @@ Agents add items there and keep working around them.
 
 ## Decisions log
 
+- 3 Nov (#275/#310): preserve SGD budgets and fixed labelled demo FX while adding issuer-bound Testnet payments; use explicitly labelled test USD when the official RLUSD faucet requires authentication. Cancel only unsigned refused royalties and refund the caller atomically; uncertain signatures keep their reservation.
+
 - 3 Nov: UX sledgehammer ([direction](design/UX-DIRECTION.md), #311, #312): one header environment indicator replaces the per-surface SIMULATED/fixture labels, which stay on receipts, refunds, exports and where a model or search is substituted (gate 5 kept, relocated); motion limited to a ten-entry allowlist and #262's money flight is not built (budget-bar and status transitions only); ink-on-paper, Geist-only, seven type sizes, plain copy. Why: 8–10 labels and 30 keyframes per screen read as noise to a UX judge.
 - 3 Nov: #288 audit trail is a hash chain inside the money transactions (`audit_log`), not a separate log; tamper-evident, not signed or notarised, so COMPLIANCE.md says to pin the head. The denylist is a labelled operator hook (fail closed), not sanctions screening; hire-the-agent is documented as receive-and-forward custody, so "we never hold funds" is dropped for that flow.
 - 3 Nov: #288 `data:prune` is an explicit command, default 30 days (long enough to challenge a bad delivery, short enough not to keep paid bodies and questions); it deletes content, never receipts or audit rows.
@@ -302,6 +304,8 @@ Significant product, design and process decisions, newest first. One line each: 
 - 3 Nov: Cloud Run held in reserve; local-first.
 
 ## Changelog
+
+- 3 Nov: Lane C #275/#310 issued-currency quotes, policy/SDK/receipts, trust-line/reserve preflight and partial-payment rejection; unsigned denylisted royalty cancellation and caller refunds with audit coverage. Full UC2 writer received 0.90 test USD; 2,500-drop refused royalty returned, reserve zero ([evidence](evidence/rlusd-275-refund-310.md)). No `src/` changes.
 
 - 3 Nov: UX direction for the redesign: 11-category anti-pattern audit with 29 before-screenshots, labelling and motion policies, screen specs for plan, payment, verification, refund and receipt; build filed as #311 and #312 ([doc](design/UX-DIRECTION.md)).
 - 3 Nov: Lane D #288 hash-chained `audit_log` written in the same transaction as each admission, decision, reserve, sign, settle, deliver, proof, refund, refusal and pause; CSV/JSONL receipt export (`audit:export`, `/api/audit/receipts.*`); `audit:verify [--testnet]` (5 of 5 October Testnet payments re-confirmed read-only); hire-the-agent inbound, royalty and change payments covered too; payee denylist tests and audit reason; `data:prune`; [COMPLIANCE.md](COMPLIANCE.md).

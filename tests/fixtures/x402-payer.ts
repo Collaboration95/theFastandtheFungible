@@ -5,7 +5,7 @@ import { decodeHeader, encodeHeader, ledgerInvoiceId } from '../../shared/x402.j
 import { simulatedLedgerIndex, simulatedPayerWallet } from '../../shared/xrpl.js'
 
 export const required = (response: Response): PaymentRequired => decodeHeader('PAYMENT-REQUIRED', response.headers.get('PAYMENT-REQUIRED'))
-export type Tamper = Partial<{ Amount: string; Destination: string; InvoiceID: string; LastLedgerSequence: number; Sequence: number }>
+export type Tamper = Partial<{ Amount: string | { currency: string; issuer: string; value: string }; Flags: number; Destination: string; InvoiceID: string; LastLedgerSequence: number; Sequence: number }>
 
 export function signFor(accepted: PaymentRequirements, tamper: Tamper = {}, wallet: Wallet = simulatedPayerWallet()) {
   const signed = wallet.sign({

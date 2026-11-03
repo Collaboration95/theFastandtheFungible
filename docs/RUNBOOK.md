@@ -166,3 +166,27 @@ principals and resumes the same intents. It needs the existing funded Testnet
 buyer and Load Factor/AlphaLeak writer seeds. It stops the publisher before
 cancellation and writes only allowlisted public evidence. Preserve recovery
 state until both escrows are closed; the recorded run spent 0.060459 Testnet XRP.
+
+## Testnet issued currency and denylist refunds (#275 / #310)
+
+Run `node --import tsx scripts/wallets.mjs --rlusd` to establish idempotent
+10-unit trust lines for the configured payer and writer seeds. It checks the
+live incremental reserve first. With the official issuer, obtain Testnet tokens
+from Ripple's documented https://tryrlusd.com faucet (authentication was required
+on 3 Nov); setup never claims trust lines mint tokens. The evidence runner below
+provisions its own labelled issuer and mints one test USD per required top-up.
+
+Run `OFFSET=1900 node --import tsx scripts/evidence/rlusd-275.mjs`. It uses
+ports 10690/10688, existing Testnet payer/writer seeds, a faucet-funded stand-in
+issuer and caller, fixture research, a SYNTHETIC article purchase through policy,
+and a denylisted free-writer royalty. Public output is allowlisted in
+`docs/evidence/rlusd-275-refund-310.json`. Preserve ignored `scratch/rlusd-275/`
+(private issuer/caller keys and journals) until reconciliation; repeat runs
+reuse the original purchase and hire payment, never a replacement intent.
+No premium bodies or private state belong in evidence.
+
+Inspect `policy_payments` and the audit cancellation/refund chain for refused
+hires. A cancelled unsigned royalty has one `${royaltyId}:refund` change row;
+the completed run closes its hire reserve only after every remaining payout is
+confirmed. Caller refusal, malformed denylist, pause/caps and already signed
+uncertain payouts require resolution; do not delete their journals to retry.

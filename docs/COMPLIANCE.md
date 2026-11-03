@@ -2,7 +2,7 @@
 
 ResearchAgent is a **Testnet prototype**. It is not a regulated payment service,
 nothing here is legal advice, and no part of it has been reviewed by a regulator
-or a lawyer. Every payment is XRPL Testnet XRP (no value) or a labelled
+or a lawyer. Every payment is XRPL Testnet XRP or an issued test currency (no value), or a labelled
 SIMULATED rail; mainnet is disabled in code. The eight writers and their
 articles are fictional. This page says what the software does today, what it
 does not, and what a mainnet launch would need. Where it says "real" it means
@@ -37,9 +37,10 @@ the funds sit in the ResearchAgent wallet, which is not a segregated escrow
 account; the operator controls the development seed and keeps the retained
 service fee. For that flow the sentence "we never hold funds" is **false**, and
 so is a blanket "non-custodial" claim. Network fees are paid separately by each
-sender. A payout that fails, or is refused by the denylist, stays reserved for
-the operator to resolve; the caller is not refunded automatically, and
-receiving a payment promises no fulfilment during an outage. On mainnet,
+sender. Unsigned denylisted royalties are cancelled and returned to the caller
+with unspent budget (#310); signed or ambiguous failures stay reserved for
+reconciliation. A refused caller refund stays reserved. Receiving a payment
+promises no fulfilment during an outage. On mainnet,
 receiving and forwarding value for third parties is a payment-service question
 (licensing, safeguarding, customer identification, monitoring) that needs legal
 review before it is switched on. The audit log records each inbound payment,
@@ -65,7 +66,7 @@ next to the `purchase` rows.
   `policy` (caps and policy version at each boot, so a cap change is visible),
   `prune`, and a one-off `baseline` when an older database is upgraded. For
   hire-the-agent: `inbound` (the caller's settled payment, payer and invoice),
-  `payout-reserve`, `payout-sign` and `payout-settle` for royalties and change.
+  `payout-reserve`, `payout-sign`, `payout-settle`, and `payout-cancel` for royalties and caller refunds.
 - **Never in it:** premium bytes, passage text, salts, seeds, tokens, signed
   blobs or the question. The writer rejects such keys and secret-shaped values.
 - **Tamper evidence.** `npm run audit:verify` recomputes the chain, checks that
@@ -105,7 +106,7 @@ or `GET /api/audit/receipts.csv|.jsonl` (same bearer token as the other
 operator routes). One row per article charge, plus one per hire-the-agent
 inbound payment and signed royalty or change payout (the `kind` column).
 Columns: kind, run, intent, surface, principal, policy version,
-writer, payee address, payer, SGD minor units and drops, transaction hash,
+writer, payee address, payer, SGD budget minor units, settlement asset, delivered amount and legacy `amountDrops`, transaction hash,
 InvoiceID, ledger index, explorer URL, status, refund transaction, reserved and
 settled times, and a `label`/`network` that says XRPL Testnet or SIMULATED on
 every row. `--log` exports the chain itself.
@@ -148,10 +149,40 @@ activity reporting would be needed on mainnet, and we do not have them.
 
 ## Stablecoin issuer controls
 
-RLUSD (#275) is issued, and an issuer can freeze or claw back. Trust lines, the
-issuer's flags and the reserve they lock are not handled yet; payments today
-are XRP only. Any move to an issued currency needs those checks and a
-statement of who bears a freeze.
+RLUSD direct payments are supported on Testnet alongside XRP (#275). The
+[official Ripple documentation](https://docs.ripple.com/products/stablecoin/developer-resources/rlusd-on-the-xrpl)
+names issuer `rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV`. On 3 Nov its account
+had Flags **2174353408**: DefaultRipple true, RequireAuth false, GlobalFreeze
+false, NoFreeze false, AllowTrustLineClawback true. Freeze and clawback are issuer
+powers; holders bear that risk. These observations are Testnet only.
+
+The documented faucet returned HTTP 401 Authentication required. The live demo
+therefore uses our Testnet issuer `rMfxn8xXFttYg9FZqGSX7chjpb7JmPd9FG`, labelled
+**test USD (substitute for RLUSD)**, with Flags **8388608**: DefaultRipple true,
+RequireAuth/GlobalFreeze/NoFreeze/AllowTrustLineClawback false. This is neither
+Ripple-issued nor backed by dollars. Evidence: `docs/evidence/rlusd-275-refund-310.json`.
+NoFreeze false means the stand-in issuer still has freeze power. There is no
+mainnet approval or stablecoin redemption promise.
+
+Before signing, policy screens both issuer and payee; checks payer and writer
+trust lines, frozen/authorization state, source token balance, destination limit,
+and native XRP fee headroom after the live base plus OwnerCount reserve. Setup
+checks the incremental owner reserve before TrustSet (observed 0.2 XRP per line;
+read live, never assumed). Transfer fees are refused. Exact settlement compares
+currency, issuer and decimal `delivered_amount` without floating point and rejects
+`tfPartialPayment`, paths, SendMax and DeliverMin. Missing/unknown delivery earns
+no receipt. Issued-currency escrow is disabled; native XRP escrow stays opt-in.
+
+#310 now returns refused unsigned royalties to the settled caller using stable
+refund intent IDs. Cancellation, release of the royalty reservation and creation
+of the replacement caller obligation share one SQLite transaction with the audit
+rows. A signed or ambiguous payout cannot be cancelled or reassigned. Pause/caps
+still apply to refunds. If the caller itself is denylisted, or the denylist is
+malformed, caller refunds fail closed and stay reserved for operator resolution.
+Removing a writer from the list never revives a cancelled payout. Refunds do not
+restore research spending authority. The fixed service fee remains retained
+except for its deterministic royalty pool; cancelled royalties are returned,
+not retained. Audit verification checks cancellation-to-refund coverage.
 
 ## Data and retention
 
