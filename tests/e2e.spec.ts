@@ -110,6 +110,8 @@ test('migrates stored stage pace, shows terminal purchases immediately and clear
   expect(await page.evaluate(()=>localStorage.getItem('researchagent.pace'))).toBe('real')
   await expect(page.getByText('Connection lost. Reconnecting…')).toBeVisible()
   await expect(page.getByText('Connection lost. Reconnecting…')).toHaveCount(0)
+  await page.keyboard.press('Meta+k')
+  await expect(page.getByRole('button', {name:/Stop buying/})).toHaveCount(0)
 })
 
 test('keyboard plan cancellation admits zero runs; Go now admits exactly once', async ({ page }) => {

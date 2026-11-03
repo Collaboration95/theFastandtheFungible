@@ -47,3 +47,15 @@ main, and requires a clean merged SHA with successful CI before a new current
 tag. Historical backfill semantics remain tested; no historical tag was changed.
 Unsigned is the reusable workflow default. Only an explicit owner-dispatched
 signing input exposes signing setup. No signing path was executed here.
+
+The first final-head hosted verification (6bad2b6e, run 41703318583) rejected
+publisher branch coverage: 434/535 versus the preserved floor 435/536. Node 26
+local coverage had passed; Node 22 reproduction also exposed the adjacent web
+ratchet after the terminal palette change. Added guide-example parsing and
+unsafe-metadata rejection checks plus explicit replay-terminal Stop and
+pending/refused/rejected refund rendering checks. No floor or gate was lowered.
+
+A local browser rerun under coverage contention exposed a readiness race: Vite
+answered before the API, the first health request was refused, and the initial
+preset stayed disabled. Playwright now waits for the proxied /api/health rather
+than the HTML shell. This strengthens startup admission; no timeout was raised.

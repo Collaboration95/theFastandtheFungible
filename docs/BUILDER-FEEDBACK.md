@@ -589,3 +589,29 @@ from source/document-derived constraints. No mainnet execution.
   history retention/reset boundaries and archival lookup availability explicitly.
   Severity: low (fresh verification unavailable). Mainnet impact: none observed;
   no mainnet request, transaction, signing or funding operation occurred.
+
+### 2026-11-04 · release and tooling admission (Lane D)
+
+Code-derived tooling failure mode, not an XRPL incident: release publishing
+previously depended only on desktop build, could rebuild different MCP bytes,
+and the release helper could push an untested version commit directly to main.
+Evidence: Lane D scripts/release-contract.mjs negative tests and
+`docs/evidence/round2-d/release-contract.json`. Workaround/fix: version PR first;
+same-SHA reusable CI including coverage/browser/Python/installed artifacts, then
+hash-bound receipt admission and reuse of accepted files. Severity: high for
+release provenance; no observed funds loss. Mainnet impact: no rail change;
+prevents distributing unaccepted payment code. Suggested upstream/tooling fix:
+provide artifact admission as a standard release prerequisite.
+
+Observed CI tooling friction in this lane: run 41703318583 at 6bad2b6e rejected
+publisher branches (434/535 vs floor 435/536) under Node 22 despite a local
+Node 26 pass. Workaround: reproduce with the hosted Node version and add
+publishing-guide and truthful-control cases; thresholds remain intact. Suggested
+fix: match local coverage runtime to CI. Severity: low; no direct mainnet effect.
+
+Observed offline browser tooling friction: during concurrent local coverage,
+Vite became ready before the fixture API; the first health request failed and
+the preset stayed disabled (local /tmp/lane-d-e2e-ratchet.log). Workaround/fix:
+wait for proxied /api/health before browser admission. The 13-case rerun passes
+in docs/evidence/round2-d/browser-ready.log. Severity: low; no direct mainnet
+impact. No readiness timeout was raised.

@@ -312,7 +312,7 @@ export default function App() {
     ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: item.question, group: 'Recent runs', run: () => { setTab('run'); void openRun(item.runId) } })),
     { id: 'cmd-record', label: recording ? 'Leave record mode' : 'Record mode', run: () => { const url = new URL(window.location.href); url.search = recording ? '' : '?record=1'; window.location.assign(url) } },
     { id: 'cmd-mcp', label: 'Connect an agent (MCP)', run: () => { void navigator.clipboard.writeText('claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- make mcp').catch(() => setError('Clipboard unavailable. Run: claude mcp add researchagent -- make mcp')) } },
-    { id: 'cmd-stop', label: 'Stop buying', hint: `${modifier}.`, run: () => void stopRun() },
+    ...(run && !isTerminal(run) ? [{ id: 'cmd-stop', label: 'Stop buying', hint: `${modifier}.`, run: () => void stopRun() }] : []),
     { id: 'cmd-ask', label: 'Submit question / Go now', hint: `${modifier}↵`, run: () => { if (pending?.step === 'plan') go(pending.scope.plan); else document.querySelector<HTMLFormElement>('.ra-composer')?.requestSubmit() } },
     { id: 'cmd-focus', label: 'Focus question', hint: '/', run: focusAsk },
     { id: 'cmd-shortcuts', label: 'Keyboard shortcuts', hint: '?', run: () => setPalette('shortcuts') },
