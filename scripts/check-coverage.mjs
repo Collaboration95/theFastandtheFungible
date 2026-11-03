@@ -14,7 +14,7 @@ export function productFiles(root = '.') {
 }
 export function component(path) {
   if (/(?:purchases|challenges|escrow|xrpl|x402|spend-policy|payee-screening|admission|store|agent-keys|issued-currency|asset)\./.test(path) || path.startsWith('server/hire/') || /publisher\/(?:facilitator|journal|refund)/.test(path)) return 'payments'
-  if (path.startsWith('server/agents/') && /(?:llm|clef|openai-decisions|provider-retry)\./.test(path)) return 'providers'
+  if (path.startsWith('server/agents/') && /(?:llm|clef|openai-decisions|provider-retry|compatible|json-decision)\./.test(path)) return 'providers'
   return ({ src: 'web', sdk: 'sdk', mcp: 'mcp', publisher: 'publisher', desktop: 'desktop', shared: 'shared', server: 'server' })[path.split('/')[0]]
 }
 export function summarize(raw, files, root = process.cwd()) {
