@@ -80,3 +80,145 @@ transcript summary under `eval/mcp/` (or prints manual steps if Claude is absent
 A separate [Testnet MCP purchase proof](../eval/mcp/testnet-2026-11-03.md) records validated settlement and retry evidence.
 Run `npx vitest run tests/engine.test.ts tests/mcp-policy.test.ts tests/mcp.e2e.test.ts`
 for offline transport, isolation, cap and restart checks.
+
+
+## One-click Claude Desktop extension
+
+Build with `npm ci && npm run build:mcpb`, then open `dist/ResearchAgent.mcpb`
+in Claude Desktop Settings → Extensions → Install extension (or open the release
+asset). Node 22.13+ is required. Choose per-question and UTC daily caps in SGD
+cents. Defaults are zero; fixture research and SIMULATED payments need no keys.
+The optional payer seed is a sensitive field stored in the OS credential store
+by Claude Desktop, passed only through the child environment. Never paste seeds
+in JSON. Live mode requires explicit opt-in and separate provider configuration.
+Data persists in `~/.researchagent/mcp`; keep it for daily accounting and retries.
+
+Pinned formats: [MCPB manifest 0.3](https://github.com/modelcontextprotocol/mcpb/blob/70fe3b34cd6dff1b3bba046638edc72a6467a4fb/MANIFEST.md),
+validated using @anthropic-ai/mcpb 2.1.2; [official Registry schema 2025-12-11](https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json).
+`server.json` is release metadata, not a claim of publication. The build adds the
+bundle SHA-256 for the owner to publish. No public HTTP service is advertised:
+the app endpoint is private loopback. Registry publishing is tracked in #265.
+
+## Client configuration reference
+
+Replace `/absolute/checkout` with this checkout after `npm ci`. The following
+JSON is shared by Claude Desktop (`claude_desktop_config.json`), Claude Code
+(project `.mcp.json`) and Cursor (`.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "researchagent": {
+      "command": "node",
+      "args": [
+        "--import",
+        "/absolute/checkout/node_modules/tsx/dist/loader.mjs",
+        "/absolute/checkout/mcp/server.ts"
+      ],
+      "env": {
+        "RA_LIVE": "0",
+        "MCP_MAX_BUDGET_MINOR": "200",
+        "MCP_DAILY_CAP_MINOR": "500"
+      }
+    }
+  }
+}
+```
+
+VS Code (`.vscode/mcp.json`), using [the configuration reference](https://code.visualstudio.com/docs/agents/reference/mcp-configuration):
+
+```json
+{
+  "servers": {
+    "researchagent": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "--import",
+        "/absolute/checkout/node_modules/tsx/dist/loader.mjs",
+        "/absolute/checkout/mcp/server.ts"
+      ],
+      "env": {
+        "RA_LIVE": "0",
+        "MCP_MAX_BUDGET_MINOR": "200",
+        "MCP_DAILY_CAP_MINOR": "500"
+      }
+    }
+  }
+}
+```
+
+### App-hosted Streamable HTTP
+
+Keep the Mac app open. Settings → Connect an agent creates a separate revocable
+allowance and bearer for each client. Replace REPLACE_WITH_AGENT_TOKEN below;
+protect the resulting private client configuration. Client-side stdio caps do
+not raise app allowances. The endpoint is `http://127.0.0.1:9689/mcp`, rejects
+browser Origins, and requires a bearer on every request. Use native desktop
+clients, not browser extensions that send Origin headers.
+
+Claude Code (`.mcp.json`) and Cursor (`.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "researchagent": {
+      "type": "http",
+      "url": "http://127.0.0.1:9689/mcp",
+      "headers": {
+        "Authorization": "Bearer REPLACE_WITH_AGENT_TOKEN"
+      }
+    }
+  }
+}
+```
+
+VS Code:
+
+```json
+{
+  "servers": {
+    "researchagent": {
+      "type": "http",
+      "url": "http://127.0.0.1:9689/mcp",
+      "headers": {
+        "Authorization": "Bearer REPLACE_WITH_AGENT_TOKEN"
+      }
+    }
+  }
+}
+```
+
+Claude Desktop uses the stdio bridge for loopback HTTP (Node/npm required):
+
+```json
+{
+  "mcpServers": {
+    "researchagent": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@0.1.38",
+        "http://127.0.0.1:9689/mcp",
+        "--allow-http",
+        "--header",
+        "Authorization: Bearer REPLACE_WITH_AGENT_TOKEN"
+      ]
+    }
+  }
+}
+```
+
+Codex (`~/.codex/config.toml`), export RESEARCHAGENT_TOKEN in the client environment:
+
+```toml
+[mcp_servers.researchagent]
+url = "http://127.0.0.1:9689/mcp"
+bearer_token_env_var = "RESEARCHAGENT_TOKEN"
+```
+
+All transports expose `search_expertise`, `ask_expert`, `get_run`, `wallet_status`,
+`verify_answer` and `hire`. The optional operator-configured `hire_researcher`
+requires separate signing authority and is disabled in the extension.
+These snippets are syntax/contract tested; interactive acceptance in all five
+products is not claimed.
