@@ -341,3 +341,60 @@ product runs with actual XRPL Testnet purchases and a confirmed refund are
 recorded in `docs/evidence/numbers-v7-testnet.md` and `.json`. They support the
 settlement-path claim, not a chain-based estimate of the headline percentage.
 UC3 still leaves one of three live requested facts missing.
+
+### Fresh-set generalisation test (Numbers v8, 3 Nov)
+
+`FRESH-AUDIT.md` classifies every #320/#324 rule. Fixed semiconductor entities,
+short acronyms, the wafer-domain exception and bounded year list were replaced
+before the prospective run. General signature/access/spending/citation rules
+and all old tests/leak thresholds stay intact.
+
+```sh
+node --import tsx scripts/generate-fresh-eval.ts
+node --import tsx scripts/check-corpus.mjs --extra eval/questions/corpus-fresh.v1
+EVAL_BANK_FILE=eval/questions/bank.fresh.v1.json EVAL_FRESH_CORPUS=eval/questions/corpus-fresh.v1 npm run eval:bank
+OFFSET=700 EVAL_BANK_FILE=eval/questions/bank.fresh.v1.json EVAL_FRESH_CORPUS=eval/questions/corpus-fresh.v1 EVAL_FROZEN_FILE=eval/scorecard/frozen-fresh-general.json EVAL_LIVE=1 EVAL_SPEND_CAP_USD=1 npm run scorecard -- --live
+node --import tsx scripts/report-fresh.ts <main-report.json> <generalised-report.json>
+node scripts/readme-scorecard.mjs
+```
+
+Do not rerun to tune this set: it has now been evaluated. The live command is
+for explicitly authorised replication only. Main-policy replication restores
+only `server/agents/scope-policy.ts` and `fact-selection.ts` from #324's merge
+`37374e5` and uses `frozen-fresh-main.json` plus
+`EVAL_POLICY_LABEL=receipt-value/v1+scope/v3+extraction/v3`; restore the generalised
+files afterwards. The freeze guard must pass, including all data and prompts.
+`report-fresh.ts` validates both hashes and shared inputs, permits only those
+two policy-source differences, and reproduces all point estimates and CIs from
+raw or compact reports without model calls. It preserves the older same-input
+comparison guard. The pre-v8 historical freeze is `frozen-pre-fresh.json`.
+
+Fresh evaluation is opt-in; ordinary scorecards/tests use the unchanged demo
+corpus and historical bank. The fresh world combines that corpus with 24 new
+documents. Forty-eight questions span water utilities, maritime logistics,
+fibre networks and food cold chain; 24 source clusters, two questions each,
+32 paid-needed and 16 free-sufficient. The existing deterministic corpus
+assembler, schema, bank verifier and eight-word leak checker are reused.
+Same-vendor Codex labels await human review. The policy/set author is the same
+agent: this is prospective new content without result-driven tuning, not a
+blinded independent benchmark. Repeated prose templates and structured
+single-fact questions limit external validity. Bootstrap CIs omit model-run
+variation and cross-document template correlation. Do not pool the reused
+holdout into the fresh generalisation estimate.
+
+
+The shipping rebase included #322 after the two runs: loop recovery and an
+optional free-manifest argument changed two pinned source files. The evaluated
+fresh receipts stay immutable, so the live freeze guard deliberately rejects
+the integrated tree. Exact live replication also restores `server/agents/loop.ts`
+and `publisher/manifest.ts` from evaluated base `0a97a52`. The added method is
+unused by this experiment and the new optional flag defaults to the old branch
+(static diff inspection only); no post-result live rerun was made. Offline
+result/CI reproduction remains valid on the integrated tree.
+
+
+A later #317 integration also changes the pinned runner to import/report
+optional reliability evidence. Neither live run used that option. Exact live
+replication needs the pre-run `eval/scorecard/run.ts` from the archived Git
+bundle as well; never bypass the fresh freeze guard. Offline metric reproduction
+continues to use the exact committed records and frozen receipts.

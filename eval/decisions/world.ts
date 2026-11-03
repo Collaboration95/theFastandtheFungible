@@ -11,6 +11,8 @@ import { loadWriterCorpus } from '../../publisher/corpus.js'
 import { buildIndex, searchIndex, type PublisherIndex } from '../../publisher/search.js'
 import { reportedRelevance } from '../../publisher/bad-actors.js'
 import { simulatedKeys } from '../../publisher/registry.js'
+import { loadArticles } from '../questions/bank.js'
+import { validateWriterCorpus } from '../../shared/contracts/writers.js'
 import { RETRIEVAL } from '../../server/agents/research.js'
 
 export const WORLD_LABELS = { search: 'keyword only (embeddings unavailable)', settlement: 'SIMULATED · no payment', wallets: 'SIMULATED publisher keys', corpus: 'data/corpus/v2 (synthetic articles)' } as const
@@ -27,7 +29,8 @@ function keysFor(slug: string) {
 
 export type World = { corpus: WriterCorpus; articles: Map<string, Article>; publishers: Map<string, Publisher>; indexes: Map<string, PublisherIndex> }
 export async function loadWorld(corpus?: WriterCorpus): Promise<World> {
-  const c = corpus ?? await loadWriterCorpus(undefined, { allowMini: false })
+  const original = corpus ?? await loadWriterCorpus(undefined, { allowMini: false })
+  const c = !corpus && process.env.EVAL_FRESH_CORPUS ? validateWriterCorpus({ ...original, articles: [...original.articles, ...loadArticles(process.env.EVAL_FRESH_CORPUS).values()] }) : original
   const indexes = new Map<string, PublisherIndex>()
   for (const p of c.publishers) indexes.set(p.slug, await buildIndex(c.articles.filter(a => a.publisherSlug === p.slug)))
   return { corpus: c, articles: new Map(c.articles.map(a => [a.articleId, a])), publishers: new Map(c.publishers.map(p => [p.slug, p])), indexes }

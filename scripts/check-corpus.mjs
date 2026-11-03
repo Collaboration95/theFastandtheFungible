@@ -7,10 +7,11 @@ import { CLAIM_KINDS } from '../shared/manifest.ts'
 
 const readJson = path => JSON.parse(readFileSync(path, 'utf8'))
 
-export function loadCorpus(root) {
+export function loadCorpus(root, extraDir) {
   const roster = readdirSync(join(root, 'data/writers')).filter(f => f.endsWith('.json')).map(f => readJson(join(root, 'data/writers', f)))
   const dir = join(root, 'data/corpus/v2/articles')
   const articles = readdirSync(dir).flatMap(p => readdirSync(join(dir, p)).filter(f => f.endsWith('.json')).map(f => readJson(join(dir, p, f))))
+  if (extraDir) articles.push(...readdirSync(extraDir).flatMap(p => readdirSync(join(extraDir, p)).filter(f => f.endsWith('.json')).map(f => readJson(join(extraDir, p, f)))))
   return { publishers: roster.map(f => f.publisher), writers: roster.flatMap(f => f.writers), articles }
 }
 
@@ -31,9 +32,9 @@ export function goldenFactProblems(facts, articles) {
 }
 
 /** Returns a list of problems; empty means the corpus is good. */
-export function checkCorpus(root) {
+export function checkCorpus(root, extraDir) {
   const bible = readJson(join(root, 'data/corpus/v2/story-bible.json'))
-  const input = loadCorpus(root)
+  const input = loadCorpus(root, extraDir)
   const problems = []
   let corpus
   try { corpus = validateWriterCorpus(input) } catch (error) { return [String(error.message)] }
@@ -95,7 +96,7 @@ export function checkCorpus(root) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const problems = checkCorpus(new URL('..', import.meta.url).pathname)
+  const problems = checkCorpus(new URL('..', import.meta.url).pathname, process.argv.includes('--extra') ? process.argv[process.argv.indexOf('--extra') + 1] : undefined)
   if (problems.length) { console.error(problems.join('\n')); process.exit(1) }
   console.log('corpus ok')
 }

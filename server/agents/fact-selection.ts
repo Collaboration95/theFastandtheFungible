@@ -2,7 +2,7 @@
 import { contentWords, noNewEvidence } from './requirements.js'
 // Process/node identifiers and other mixed letter/digit keys carry more scope
 // than generic words such as "wafer". Keep them even when shorter than 4 chars.
-const words = (text: string) => new Set([...contentWords(text), ...(text.toLowerCase().match(/\b[a-z0-9]+\b/g) ?? []).filter(w => /[a-z]/.test(w) && /\d/.test(w) || ['boj', 'hbm', 'qfn', 'bga', 'fed', 'jgb'].includes(w))])
+const words = (text: string) => new Set([...contentWords(text), ...(text.match(/\b(?:[A-Z]{2,}|[A-Z][a-z]*[A-Z][A-Za-z]*|[a-zA-Z]*\d+[a-zA-Z][a-zA-Z0-9]*|[a-zA-Z]+\d+[a-zA-Z0-9]*)\b/g) ?? []).map(w => w.toLowerCase())])
 /** Rare overlapping words disambiguate e.g. a board vote from market pricing.
  * Tokenize each accessible passage once; no bank labels or premium metadata.
  */

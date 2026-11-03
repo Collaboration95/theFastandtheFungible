@@ -117,23 +117,24 @@ Every gate has regression tests and a corresponding [read-only audit rule](scrip
 ## Numbers
 
 Generated from the [committed scorecard](eval/scorecard/latest.json) by
-[`readme-scorecard.mjs`](scripts/readme-scorecard.mjs). LIVE refers to the decision model;
-research is fixture-based, coverage uses scripted checks, the corpus is synthetic and payments are simulated.
+[`readme-scorecard.mjs`](scripts/readme-scorecard.mjs). LIVE refers to decisions and the separate coverage evaluation;
+research and flow fact scoring are fixtures, the corpus is synthetic and payments are simulated.
 These local measurements are conditional evidence, not a production benchmark.
 
 <!-- scorecard:start -->
 | Metric | Latest | Mode · date |
 |---|---|---|
-| Hard-gate audit violations | 0 across 10 runs, 646 observations | LIVE decision; fixture research + scripted coverage; simulated payments · held-out (92 questions) · 2026-11-03 |
-| Supported-fact uplift from paying | +38.0 pts [95% CI 24.0–51.1 pts] | LIVE decision; fixture research + scripted coverage; simulated payments · held-out (92 questions) · 2026-11-03 |
-| Purchase-selection F1 (flow / sweep) | 0.55 [95% CI 0.36–0.69] / 0.69 [95% CI 0.51–0.81] | LIVE decision; fixture research + scripted coverage; simulated payments · held-out (92 questions) · 2026-11-03 |
-| Wasted gross spend | 20.0% [95% CI 8.0–36.8%] | LIVE decision; fixture research + scripted coverage; simulated payments · held-out (92 questions) · 2026-11-03 |
-| Wasted net spend (after confirmed refunds) | 20.0% [95% CI 8.0–36.8%] | LIVE decision; fixture research + scripted coverage; simulated payments · held-out (92 questions) · 2026-11-03 |
-| p50 / p95 time to first answer | 111 ms / 261 ms | LIVE decision; fixture research + scripted coverage; simulated payments · held-out (92 questions) · 2026-11-03 |
-| Cold start (demo API + publisher) | 1448 ms | LIVE decision; fixture research + scripted coverage; simulated payments · held-out (92 questions) · 2026-11-03 |
-| Model cost per query | US$0.0036 | LIVE decision; fixture research + scripted coverage; simulated payments · held-out (92 questions) · 2026-11-03 |
+| **Pitch: gross spend buying a fact used in final answer** | 93.15% [95% CI 81.25–100.00%] | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
+| Hard-gate audit violations | 0 across 10 runs, 568 observations | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
+| Supported-fact uplift from paying | +66.7 pts [95% CI 45.8–83.3 pts] | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
+| Purchase-selection F1 (flow / sweep) | 0.94 [95% CI 0.80–1.00] / 0.94 [95% CI 0.80–1.00] | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
+| Wasted gross spend | 6.85% [95% CI 0.00–18.75%] | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
+| Wasted net spend (after confirmed refunds) | 6.85% [95% CI 0.00–18.75%] | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
+| p50 / p95 time to first answer | 61 ms / 100 ms | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
+| Cold start (demo API + publisher) | 715 ms | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
+| Model cost per query | US$0.0026 | LIVE decisions + coverage eval; fixture research/flow scoring; simulated payments · fresh (48 questions / 24 new documents) · 2026-11-03 |
 
-Waste is purchase cost without a requested, bank-supported fact retained in the final cited answer. 95% CIs resample source clusters, conditional on the fixed synthetic corpus and observed model draws. Reused question holdout; historical failures were inspected. The claim is under audit for overfit. [Separate Testnet sanity runs](docs/evidence/numbers-v7-testnet.md) verify settlement, not this percentage.
+Pitch definition: gross cost of verified purchases adding a requested, bank-supported fact retained in the final cited answer, divided by all gross purchase cost. 95% CIs resample source clusters; fixed synthetic corpus and observed model draws. Fresh questions and new documents, frozen before one run per policy; no tuning. Same-vendor synthetic labels, human review pending; source templates are correlated. Two separate [live Testnet sanity runs](docs/evidence/numbers-v7-testnet.md) verify the settlement path, not this percentage.
 <!-- scorecard:end -->
 
 [Separate MCP Testnet proof](eval/mcp/testnet-2026-11-03.md) records real Testnet settlement,

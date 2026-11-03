@@ -45,12 +45,13 @@ export async function run() {
   const splitArg = process.argv.indexOf('--split')
   const split = splitArg < 0 ? 'all' : process.argv[splitArg + 1]
   if (!['all', 'dev', 'heldout'].includes(split)) throw new Error('--split is all, dev or heldout')
+  if (process.env.EVAL_BANK_FILE && (split !== 'all' || !process.env.EVAL_FRESH_CORPUS || !process.env.EVAL_FROZEN_FILE)) throw new Error('Fresh bank requires split all, EVAL_FRESH_CORPUS and EVAL_FROZEN_FILE')
   const protocol = read('eval/scorecard/receipt-split.json')
   const families: string[] | undefined = split === 'all' ? undefined : protocol[split + 'Families']
   const selectedIds: string[] | undefined = split === 'all' ? undefined : protocol[split + 'Ids']
   const ids = loadBank().questions.filter(q => selectedIds ? selectedIds.includes(q.id) : !families || families.includes(q.lane)).map(q => q.id)
-  const policy = process.env.DECISION_NUMBERS_POLICY !== 'off' ? 'receipt-value/v1+scope/v3+extraction/v3' : process.env.DECISION_SCOPE_POLICY === 'off' ? 'receipt-value/v1' : 'receipt-value/v1+scope/v1'
-  const inputs = await frozenInputs(), frozen = read('eval/scorecard/frozen.json')
+  const policy = process.env.DECISION_NUMBERS_POLICY !== 'off' ? (process.env.EVAL_POLICY_LABEL ?? 'receipt-value/v1+scope/v4+extraction/v4') : process.env.DECISION_SCOPE_POLICY === 'off' ? 'receipt-value/v1' : 'receipt-value/v1+scope/v1'
+  const inputs = await frozenInputs(), frozen = read(process.env.EVAL_FROZEN_FILE ?? 'eval/scorecard/frozen.json')
   if (JSON.stringify(inputs) !== JSON.stringify(frozen)) throw new Error('Frozen eval inputs/prompts changed. Version and review a new eval set before comparing scores.')
   const inputHash = sha256(JSON.stringify(inputs))
   const previous = history()
@@ -107,7 +108,7 @@ export async function run() {
   const latencyCalls = calls.filter(c => c.phase === 'latency')
   const usd = (records: CallRecord[]) => records.reduce((s, c) => s + c.usd, 0)
   const quality = qualityMetrics(flow.results, sweep.dataset, coverage.results[arm].metrics.falseComplete)
-  const scorecard = { schema: 'tftf.scorecard/v1', at, split, policy, worktreeDirty: Boolean(execFileSync('git', ['status', '--porcelain', '--untracked-files=normal'], { encoding: 'utf8' }).trim()), commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), inputHash, mode: live ? 'LIVE' as const : 'fixture' as const,
+  const scorecard = { schema: 'tftf.scorecard/v1', at, split, policy, ...(process.env.EVAL_BANK_FILE ? { evaluationSet: 'fresh-v1', bankFile: process.env.EVAL_BANK_FILE } : {}), worktreeDirty: Boolean(execFileSync('git', ['status', '--porcelain', '--untracked-files=normal'], { encoding: 'utf8' }).trim()), commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), inputHash, mode: live ? 'LIVE' as const : 'fixture' as const,
     labels: { ...flow.labels, timing: live ? 'LIVE decision; fixture writer/planner; SIMULATED settlement' : 'fixture; measured wall clock', corpus: 'synthetic demo articles', boot: latency.boot },
     quality, confidenceIntervals: bootstrapQuality(flow.results, sweep.dataset, bank.questions), timing: { ...timings(latency.samples), coldStartMs: latency.coldStartMs, node: process.version, platform: process.platform, observations: latency.samples },
     cost: { providerCalls: calls.length, estimatedUsageCalls: calls.filter(c => c.estimatedUsage).length, inputTokens: calls.reduce((s, c) => s + c.inputTokens, 0), outputTokens: calls.reduce((s, c) => s + c.outputTokens, 0), modelUsd: usd(calls), latencyModelUsdPerQuery: sample.length ? usd(latencyCalls) / sample.length : null, flowDecisionUsdPerQuery: usd(calls.filter(c => c.phase === 'scorecard-flow')) / ids.length, xrpDropsSpent: measuredRuns.flatMap(r => r.receipts).reduce((s, r) => s + Number(r.xrpl?.amountDrops ?? 0), 0), simulatedMinorSpent: flow.summary.overall.spentMinor, rates: 'eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)' },
