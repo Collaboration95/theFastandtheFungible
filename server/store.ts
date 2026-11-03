@@ -295,6 +295,7 @@ export class Store {
       }
       // Checkpoints and error strings are trusted orchestration metadata, never delivery payloads.
       this.saveRun({ ...run, ...patch })
+      if (run.phase !== patch.phase && patch.phase && (run.phase === 'FAILED' && patch.phase === 'READ_PAID' || run.checkpoint.recoveryIntentId && patch.phase === 'DONE')) this.audit.append({ runId, intentId: run.checkpoint.intentId, kind: 'recovery', data: { from: run.phase, to: patch.phase, answerVersion: run.checkpoint.answerVersion ?? 0, noNewSpending: true } })
     })
     return this.getRun(runId)
   }

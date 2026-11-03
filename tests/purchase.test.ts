@@ -367,3 +367,46 @@ it('keeps reconciling other intents while one writer blocks delivery across tick
     expect(p.state.charges).toBe(2)
   } finally { release(); await tick }
 })
+
+it.each(['tick', 'restart', 'STOPPED', 'DONE', 'exhausted'] as const)('UC3 recovery handoff: %s preserves one charge and finality', async mode => {
+  const p = await publisher(), path = dbPath()
+  let api = await createApiApp({ dbPath: path, publisherUrl: p.client.options.baseUrl, reconcileIntervalMs: 100000 })
+  cleanup.push(() => api.close())
+  const run = api.store.createRun('What exact grid evidence was delivered?', 200)
+  api.store.updateRun(run.runId, { candidates: [{ ...candidate, manifest: MANIFEST }] })
+  api.store.addAnswer(run.runId, { ...exampleAnswer, claims: [], version: 1 })
+  p.state.failDelivery = true
+  expect((await api.purchases.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'uc3-handoff' })).status).toBe('DELIVERY_FAILED')
+  api.store.updateRun(run.runId, { phase: mode === 'STOPPED' || mode === 'DONE' ? mode : 'FAILED', stopped: mode === 'STOPPED', error: 'Delivery incomplete', checkpoint: { intentId: 'uc3-handoff', nextAction: 'retry-delivery', answerVersion: 1 } })
+  if (mode === 'exhausted') {
+    const original = api.purchases.client.paidGet.bind(api.purchases.client)
+    api.purchases.client.paidGet = async () => { throw new Error('Publisher remains down') }
+    const now = Date.now
+    try { for (let n = 1; n <= 3; n++) { Date.now = () => now() + n * 120000; await api.reconcileOnce() } }
+    finally { Date.now = now; api.purchases.client.paidGet = original }
+  }
+  if (mode === 'restart') {
+    await api.close()
+    api = await createApiApp({ dbPath: path, publisherUrl: p.client.options.baseUrl, reconcileIntervalMs: 100000 })
+  } else await Promise.all([api.reconcileOnce(), api.reconcileOnce()])
+  const result = api.store.getRun(run.runId)
+  expect(p.state.charges).toBe(1)
+  expect(result.receipts).toHaveLength(1)
+  expect(result.spentMinor).toBe(80)
+  if (mode === 'tick' || mode === 'restart') {
+    expect(result.phase).toBe('DONE')
+    expect(result.error).toBeUndefined()
+    expect(result.answers).toHaveLength(2)
+    expect(result.answers[1].claims.some(c => c.citations.some(r => r.spanId === 'paid-span'))).toBe(true)
+    expect(result.checkpoint).toMatchObject({ answeredIntentId: 'uc3-handoff' })
+    expect(result.checkpoint.nextAction).toBeUndefined()
+    expect(api.store.auditEntries().filter(e => e.kind === 'recovery').map(e => e.data.to)).toEqual(['READ_PAID', 'DONE'])
+    await api.reconcileOnce()
+    expect(api.store.getRun(run.runId).answers).toHaveLength(2)
+    expect(api.store.auditVerify().ok).toBe(true)
+  } else {
+    expect(result.phase).toBe(mode === 'exhausted' ? 'FAILED' : mode)
+    expect(result.answers).toHaveLength(1)
+    expect(api.store.auditEntries().some(e => e.kind === 'recovery')).toBe(false)
+  }
+})

@@ -22,7 +22,7 @@ export const ManifestSchema = z.object({
   schemaVersion: z.literal(2).optional(), // absent = legacy v1; version below is the ARTICLE version
   publisherSlug: z.string().min(1), articleId: z.string().min(1), version: z.string().min(1),
   wallet: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), pubKey: z.string().regex(/^[0-9A-F]{66}$/i),
-  priceMinor: z.number().int().positive(), leaves: z.array(hex64).min(1), root: hex64,
+  priceMinor: z.number().int().nonnegative(), leaves: z.array(hex64).min(1), root: hex64,
   claims: z.array(z.object({ id: z.string().min(1), kind: ClaimKindSchema, leaf: hex64, covers: FactCoverSchema.optional() })),
   wordCount: z.number().int().positive(), publishedAt: z.string().min(1), relevance: z.number().min(0).max(1),
   sig: z.string().regex(/^[0-9A-F]+$/i),
@@ -41,7 +41,7 @@ export const SearchHitSchema = z.object({
   publishedAt: z.string().min(1), family: z.string().min(1), derivedFrom: z.string().optional(),
   verification: z.literal('unverified writer').optional(),
   manifest: ManifestSchema.optional(), searchMode: z.enum(['hybrid', 'keyword']),
-}).strict().refine(hit => (hit.tier === 'PAID') === Boolean(hit.manifest), { message: 'a PAID hit needs a manifest; a FREE hit has none' })
+}).strict().refine(hit => (hit.tier === 'PAID') === Boolean(hit.manifest), { message: 'a PAID hit needs a manifest; a FREE hit has none' }).refine(hit => hit.tier !== 'PAID' || (hit.manifest?.priceMinor ?? 0) > 0, { message: 'a PAID search manifest must have a positive price' })
 
 export type ClaimKind = z.infer<typeof ClaimKindSchema>
 export type Manifest = z.infer<typeof ManifestSchema>

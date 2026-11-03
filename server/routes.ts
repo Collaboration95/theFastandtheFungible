@@ -1,3 +1,4 @@
+import { verifyAnswer } from '../sdk/verify.js'
 import { AgentDenied } from './agent-keys.js'
 import { operationsRouter } from './api/operations.js'
 import { auditRouter } from './api/audit.js'
@@ -47,6 +48,9 @@ export async function createApiApp(options: ApiOptions = {}) {
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
   app.use(admissionGuard(config, store))
+  app.post('/api/verify', express.json({ limit: '8mb' }), async (req, res) => {
+    res.json(await verifyAnswer(req.body, { testnet: req.query.testnet === '1', expectHead: typeof req.query.expectHead === 'string' ? req.query.expectHead : undefined }))
+  })
   app.use(express.json({ limit: '16kb' }))
   const client = new PublisherClient({ baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
   // XRPL Testnet settlement needs both the rail flag and a payer seed; otherwise simulated, labelled.
@@ -126,7 +130,15 @@ export async function createApiApp(options: ApiOptions = {}) {
   let stopping = false
   const reconcileOnce = () => {
     if (stopping) return Promise.resolve()
-    const task = purchases.reconcile().finally(() => { reconciliationJobs.delete(task) })
+    const task = purchases.reconcile().then(async () => {
+      if (stopping) return
+      for (const run of store.listRuns()) {
+        const id = run.checkpoint.intentId
+        if (store.isHireRun(run.runId) || run.stopped || run.phase !== 'FAILED' || !id || run.checkpoint.answeredIntentId === id && run.checkpoint.recoveryIntentId !== id) continue
+        if (!run.intents.some(i => i.intentId === id && i.status === 'VERIFIED')) continue
+        await launch(run.runId, () => loop.recoverAnswer(run.runId, id))
+      }
+    }).finally(() => { reconciliationJobs.delete(task) })
     reconciliationJobs.add(task)
     return task
   }
@@ -136,7 +148,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const stopReconciler = () => { stopping = true; clearInterval(reconcileTimer) }
   let closing: Promise<void> | undefined
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
-  for (const run of store.listRuns()) if (!store.isHireRun(run.runId) && !['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => loop.start(run.runId))
+  for (const run of store.listRuns()) if (!store.isHireRun(run.runId) && !['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(run.runId, run.checkpoint.recoveryIntentId) : loop.start(run.runId))
   const drain = async () => {
     stopReconciler()
     for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) loop.stop(run.runId)

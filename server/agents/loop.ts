@@ -433,6 +433,18 @@ export class RunLoop {
       this.trace(runId, 'DONE', stopReason ? `Stopped: ${STOP_LABELS[stopReason]}` : 'Stopped: no eligible purchase, exhausted budget, or three-round limit.')
     })
   }
+  /** Reconciler handoff: the exclusive path can only read an already verified grant. */
+  recoverAnswer(runId: string, intentId: string): Promise<void> {
+    return this.exclusive(runId, async () => {
+      const run = this.store.getRun(runId)
+      if (run.stopped || ['DONE', 'STOPPED'].includes(run.phase) || (run.phase !== 'FAILED' && run.checkpoint.recoveryIntentId !== intentId) || run.checkpoint.intentId !== intentId || !run.intents.some(i => i.intentId === intentId && i.status === 'VERIFIED')) return
+      this.store.updateRun(runId, { phase: 'READ_PAID', error: undefined, checkpoint: { ...run.checkpoint, nextAction: undefined, recoveryIntentId: intentId } })
+      this.store.appendEvent(runId, { type: 'RECOVERY', label: 'Verified delivery recovered; updating answer without spending.', data: { intentId } })
+      this.recordProof(runId, this.store.getIntent(intentId)!)
+      if (run.checkpoint.answeredIntentId !== intentId) await this.answer(runId)
+      this.trace(runId, this.stopped(runId) ? 'STOPPED' : 'DONE', 'Recovered answer saved; no new spending.')
+    })
+  }
   retryDelivery(runId: string, intentId: string): Promise<void> {
     return traceRun('retry-delivery', this.store.getRun(runId), () => this.retry(runId, intentId), () => this.summary(runId))
   }

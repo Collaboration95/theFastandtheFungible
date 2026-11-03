@@ -10,6 +10,17 @@ The eight writers and their content are synthetic. Offline settlement is
 **SIMULATED**; historical live receipts are **XRPL TESTNET · no real value**.
 Neither is evidence of mainnet readiness.
 
+## Observed verification tooling incident · 3 Nov 2026
+
+The #278 UC3 runner created its first run using Store's default SIMULATED label
+while injecting a real Testnet payer; the gate audit refused the inconsistent
+snapshot (`missing_rail_label`). Evidence: `docs/evidence/verify-278.md` and
+`verify-278/summary.json`. Workaround: pass the explicit Testnet mode labels,
+correct the harness metadata and re-export/re-check the same durable run; no
+replacement payment. Suggested fix: require explicit rail labels in standalone
+Testnet harness constructors. Severity: low (local evidence tooling). Mainnet
+impact: none observed; no value funds. This was not a ledger or x402 failure.
+
 ## Observed tooling incident · 3 Nov 2026
 
 Local scorecard evaluation at `5953559`: an initial attempt hit OpenAI Decisions

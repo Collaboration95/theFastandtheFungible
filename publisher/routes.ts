@@ -237,7 +237,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
       await sellPaid(req, res, { ...article, publisher: entry.publisher.name, payTo: entry.publisher.wallet }); return
     }
     const { body, passages, ...meta } = article
-    res.json({ ...meta, label: entry.publisher.synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED · unverified writer', body, passages })
+    res.json({ ...meta, label: entry.publisher.synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED · unverified writer', body, passages, ...(entry.keys ? { verification: { manifest: manifests.manifestFor(entry, article, 1, true), salts: manifests.saltsFor(article) } } : {}) })
   })
   app.post('/w/:slug/challenge', async (req, res) => {
     const entry = entryFor(req.params.slug)

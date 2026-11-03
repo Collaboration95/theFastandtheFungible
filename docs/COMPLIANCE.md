@@ -219,3 +219,21 @@ not retained. Audit verification checks cancellation-to-refund coverage.
 - That the denylist is complete, or that a clean `audit:verify` means a payment was lawful or the writer honest.
 - That the fixture-labelled and SIMULATED parts of a run (planner, search mode, decision model, ledger) are live.
 - Anything about mainnet: it is disabled, and the [readiness checklist](BUILDER-FEEDBACK.md#mainnet-readiness-checklist) lists the gaps.
+
+## Per-answer independent verification (#278)
+
+Answer/report JSON and newly generated PDFs contain portable receipt evidence.
+`npm run verify:answer -- <report> [--testnet]` and SDK `verifyAnswer()` recompute writer
+signatures, delivered passage hashes, citation references, grants, quote/receipt
+bindings and the disclosed audit segment. `--testnet` reuses the operator
+verifier for payment and refund destination, exact delivered amount/asset,
+InvoiceID, sender and validation; partial refunds are refused too. Offline
+output explicitly leaves ledger checks unconfirmed. No signer is loaded.
+
+A writer signature is control of a key, not verified personal identity or truth.
+The per-run audit segment contains opaque commitments for other runs and needs
+an independently pinned head to resist a rewritten export. It supplements the
+full operator `audit:verify`; it does not replace money-table coverage. PDF
+attachments are integrity envelopes, not digital signatures. Legacy exports
+without proofs fail with a re-export instruction. See
+[the evidence and precise limits](evidence/verify-278.md).

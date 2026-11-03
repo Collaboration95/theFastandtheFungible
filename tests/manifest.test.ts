@@ -95,3 +95,11 @@ describe('search hit (#113)', () => {
     expect(SearchHitSchema.safeParse({ ...hit(free), url: `https://x.example/w/${free.publisherSlug}/articles/${free.articleId}` }).success).toBe(false)
   })
 })
+
+it('allows zero-price signed FREE delivery proofs while retaining positive-price PAID search manifests', () => {
+  const manifest = signManifest({ ...build(), priceMinor: 0 }, keys.privateKey)
+  expect(ManifestSchema.safeParse(manifest).success).toBe(true)
+  expect(verifyManifestSignature(manifest)).toBe(true)
+  const hit = { publisherSlug: article.publisherSlug, writerSlug: article.writerSlug, articleId: article.articleId, version: article.version, url: `/w/${article.publisherSlug}/articles/${article.articleId}`, title: article.title, abstract: article.abstract, tags: article.tags, tier: 'PAID', priceMinor: 0, relevance: 1, publishedAt: article.publishedAt, family: article.family, manifest, searchMode: 'keyword' }
+  expect(SearchHitSchema.safeParse(hit).success).toBe(false)
+})

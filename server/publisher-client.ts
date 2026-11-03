@@ -3,6 +3,7 @@ import { loadConfig } from './config.js'
 import { z } from 'zod'
 import { SearchHitSchema, type SearchHit } from '../shared/contracts/manifest.js'
 import { PassageSchema } from '../shared/contracts/writers.js'
+import { ManifestSchema } from '../shared/contracts/manifest.js'
 import { ContentEnvelopeSchema, type ContentEnvelope, type PublicCandidate } from '../shared/contracts/index.js'
 import type { PaymentRequired, PaymentResponse } from '../shared/contracts/x402.js'
 import { decodeHeader } from '../shared/x402.js'
@@ -90,10 +91,10 @@ export class PublisherClient {
     if (hit.tier !== 'FREE') throw new Error('Only FREE articles are read without a grant')
     const article = FreeArticleSchema.parse(await this.getJson(hit.url))
     if (article.articleId !== hit.articleId || article.version !== hit.version || article.publisherSlug !== hit.publisherSlug || article.passages.some(p => !article.body.includes(p.text))) throw new Error('Publisher article identity or passages invalid')
-    return ContentEnvelopeSchema.parse({ profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.heading ? { label: p.heading } : {}) })) })
+    return ContentEnvelopeSchema.parse({ profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, verification: article.verification, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.heading ? { label: p.heading } : {}) })) })
   }
 }
 const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), verification: z.literal('unverified writer').optional() })
 const RegistrySchema = z.object({ publishers: z.array(RegistryPublisherSchema) })
-const FreeArticleSchema = z.object({ publisherSlug: z.string(), articleId: z.string(), version: z.string(), title: z.string().min(1), tier: z.literal('FREE'), body: z.string().min(1), passages: z.array(PassageSchema).min(1) })
+const FreeArticleSchema = z.object({ publisherSlug: z.string(), articleId: z.string(), version: z.string(), title: z.string().min(1), tier: z.literal('FREE'), verification: z.object({ manifest: ManifestSchema, salts: z.array(z.string()) }).optional(), body: z.string().min(1), passages: z.array(PassageSchema).min(1) })
 export type RegistryPublisher = z.infer<typeof RegistryPublisherSchema>

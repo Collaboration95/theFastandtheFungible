@@ -29,6 +29,7 @@ export const PublicCandidateSchema = z.object({
 export const ContentEnvelopeSchema = z.object({
   profileId: z.string(), resourceId: z.string(), version: z.string(), title: z.string(), publisher: z.string(),
   body: z.string().min(1), spans: z.array(SpanSchema).min(1),
+  verification: z.object({ manifest: ManifestSchema, salts: z.array(z.string()) }).optional(),
 })
 export type ReputationSummary = z.infer<typeof ReputationSummarySchema>
 export type PublicCandidate = z.infer<typeof PublicCandidateSchema>
