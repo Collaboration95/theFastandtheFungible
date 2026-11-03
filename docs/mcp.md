@@ -1,5 +1,8 @@
 # Use ResearchAgent from Claude Code, Codex or any MCP client
 
+Install status: registries are not yet published. Run `node scripts/install-snippets.mjs --tag v1.0.0` after the owner publishes that release for asset install commands. Local tarballs are built with `make release-artifacts`; MCP includes `researchagent-mcp-1.0.0.tgz` with an npx bin. npm does not support a native git-subdirectory install.
+
+
 The full reference for the local stdio MCP server (`mcp/server.ts`, shipped in #255). The README has the short version.
 
 After `npm ci` in this checkout, add the local stdio server with one command.

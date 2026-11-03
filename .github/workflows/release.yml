@@ -56,6 +56,7 @@ jobs:
         run: node scripts/admit-release.mjs
         env:
           ACCEPTANCE_RESULT: ${{ needs.acceptance.result }}
+      # Includes the accepted researchagent-mcp npm tarball and its manifest hash.
       - run: cp dist/release/* "$RUNNER_TEMP/assets/"
       - name: Stable unsigned DMG aliases with manifest hashes
         run: node scripts/desktop-release-assets.mjs "$RUNNER_TEMP/assets"

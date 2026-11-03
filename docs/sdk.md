@@ -1,5 +1,8 @@
 # ResearchAgent SDK v1
 
+Install status: registries are not yet published. Run `node scripts/install-snippets.mjs --tag v1.0.0` after the owner publishes that release for asset install commands. Local tarballs are built with `make release-artifacts`; MCP includes `researchagent-mcp-1.0.0.tgz` with an npx bin. npm does not support a native git-subdirectory install.
+
+
 Node 22.13+ ESM, with TypeScript declarations. Build with `npm run build:sdk`,
 then `cd packages/sdk && npm pack`. Install the tarball in another project.
 Import `createClient` and `ResearchAgentError` from `@researchagent/sdk`;

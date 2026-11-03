@@ -1,0 +1,80 @@
+{
+  "sourceSha": "d1bdc0f8c41596049319e4810f6f0ec09885f460",
+  "manifestSha256": "78c7d2967930e2a981892b29ec8ae892075fc54176d27a5eb8417b79b94e9f1b",
+  "mode": "fixture providers; simulated settlement",
+  "runtime": {
+    "node": "v26.3.1",
+    "python": "Python 3.14.7"
+  },
+  "verifiers": {
+    "receiptSha256": "ed9838ff7e0cee807b8542c16a2953d7be3bfd0c07bf51fd0208eee8ff45b78f",
+    "typescript": {
+      "command": "npm run verify:answer -- accepted-receipt.json --json",
+      "pass": true
+    },
+    "python": {
+      "command": "python -m researchagent verify accepted-receipt.json --json",
+      "installation": "exact wheel in clean venv",
+      "pass": true
+    }
+  },
+  "consumers": [
+    {
+      "kind": "tgz",
+      "sha256": "af471870afdda3f8bfb3f84152f252cb123d56983856760ec153e5bb8669ce6c",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "timing": "TypeScript",
+      "seconds": 1.0236079999999999
+    },
+    {
+      "kind": "wheel",
+      "sha256": "f732e69d8e40c9933d5352aa8572aa10d74a3d626343ebd2679756dbb234ba4f",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "timing": "Python",
+      "seconds": 1.844542125
+    },
+    {
+      "kind": "sdist",
+      "sha256": "3483e2d74e80ba4ad459ce7bd2560e5efb6ebfd1d07634a69248b59ba4233ace",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "kind": "mcpb",
+      "sha256": "2c6f1c77ca2775f09b119f62161a1685733a1dba918b8f33d7b22f2e7db8e274",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "kind": "mcp-tgz",
+      "sha256": "0600a52acb19f4b3a1f68cd3e5725ff1e7dc0b3c88c68c2b63b15edc9270aea6",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "timing": "MCP npx",
+      "seconds": 13.587416959
+    }
+  ]
+}
