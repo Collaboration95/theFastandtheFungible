@@ -65,4 +65,4 @@ up-to-date main checkout run `python3 scripts/site-publish.py`; it fetches
 worktree, commits and pushes. It leaves branch-only files and `evolution/data.js`
 untouched, including the evolution refresh tools. Reconcile any reported conflict
 before retrying. Removed source files are not deleted from the deploy branch.
-Slides and notes keep their presentation chrome instead of the shared header.
+Slides and notes reserve room for the shared header while retaining presentation controls.
