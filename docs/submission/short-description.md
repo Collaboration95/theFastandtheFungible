@@ -73,7 +73,7 @@ code.
 | Claim | Label | Source |
 |---|---|---|
 | x402 payments, escrow, hire, test USD, agent allowances | XRPL Testnet, real validated transactions; fixture research | [evidence](../evidence/) |
-| "0 violations across 10 runs" | Live decision/coverage models, simulated payments, held-out bank, 3 Nov | [README scorecard](../../README.md#proof) |
+| "0 violations across 10 runs" | Live decision/coverage models, fixture research, simulated payments; 48 fresh questions, 568 observations, 3 Nov | [README scorecard](../../README.md#proof) |
 | "under 19 seconds" | 18.90 s, one Testnet run, synthetic starter content | [publish-site-277](../evidence/publish-site-277.md) |
 | "five tagged releases", "more than 40 PRs" | v0.1.0–v0.5.0; 40 merged 2–3 Nov SGT | `gh release list`, `gh pr list --state merged` |
 | "35 items" | 20 findings from building plus 15 September research submissions | [BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md) |

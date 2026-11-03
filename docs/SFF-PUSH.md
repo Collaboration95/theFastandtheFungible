@@ -425,6 +425,7 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
+- 3 Nov: Pitch materials moved to the audited fresh-set headline (93.15% [81.25–100.00], 48 questions): slide 7 and PDF, 2-minute pitch with speaker-note caveats, Q&A (waste answer replaced, new overfitting answer from the rule audit), gate-audit and model-cost figures aligned to the fresh scorecard. 80.05% and 52.9% → 40.7% kept only as labelled history.
 - 3 Nov: Lane B generalisation audit: four fresh domains, one LIVE run per policy, used spend 90.07% → 93.15%, paired CI touches zero; waste 6.85% [0.00–18.75], uplift +66.67 pts [45.83–83.33], zero gate violations, US$0.1800611 models. README/SFF tables and #321 slide-7 source note updated; simulated payments, no `src/` or deck HTML edits.
 
 - 3 Nov: Submission pack ([docs/submission](submission/README.md)): 50/150/300-word descriptions, a 10-slide deck built from code with its PDF export (`node docs/submission/deck/export.mjs`), a 2:45 demo-video script with commands and existing release clips, a 2-minute pitch (282 words) with a 3-minute variant, and 10 judge Q&A answers. Recording is with the owner on #265.
