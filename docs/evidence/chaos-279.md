@@ -91,3 +91,24 @@ was attempted and refused an inherited frozen-source mismatch in
 expected hash predates #273. [Hash evidence](chaos-279-scorecard-freeze.json).
 The frozen gate and quality baseline were left unchanged; no new quality score
 is claimed. This does not affect `check:fast`, build or the chaos assertions.
+
+## Interrupted integrated experiment and harness repair
+
+The first integrated attempt stopped after 248 completed main iterations and
+52 escrow probes (13m 35s), at concurrent UC3 retries. The worker exited without
+assertion output. The [failed summary](chaos-279-interrupted-soak.json) is retained;
+its conservative violation counter includes this unclassified process failure.
+It is not a completed clean soak or evidence of a confirmed money violation.
+The original harness did not record whether the 45 s watchdog or an external
+process kill caused the stop; that distinction cannot be recovered.
+
+A replay completed in 20.62 s with 1.53 GB peak RSS. Duplicate SSE observations
+from eight identical retry streams inflated audit work. The harness now hashes
+kind/run/raw snapshot/grant context and audits identical observations once,
+while preserving every distinct observation. A regression proves this property;
+the concurrent UC3 case is now in every initial fault matrix. After the repair
+and rebase, the same replay completed in 4.84 s with 735 MB peak RSS. These are
+single diagnostic replays across a rebase, not a controlled performance result.
+The watchdog stays **45 s**. New failure diagnostics record exit code, signal,
+watchdog status and elapsed time. No invariant, leak threshold or test was loosened.
+A fresh integrated 30-minute soak follows the repair.

@@ -128,6 +128,7 @@ export async function run() {
   appendFileSync(historyFile, text + '\n')
   console.log(`\n| Metric | ${scorecard.mode} · ${scorecard.commit.slice(0, 8)} |\n|---|---:|`)
   for (const [key, value] of Object.entries({ ...quality, ...timings(latency.samples), coldStartMs: latency.coldStartMs, providerCalls: calls.length, modelUsd: usd(calls), modelUsdPerQuery: sample.length ? usd(latencyCalls) / sample.length : null, xrpDropsSpent: 0, hardGateViolations: audit.total })) console.log(`| ${{ wastedSpendPct: 'Wasted gross spend (%)', netWastedSpendPct: 'Wasted net spend after confirmed refunds (%)', usedSpendPct: 'Gross spend buying a final-used fact (%)' }[key] ?? key} | ${value === null ? 'null' : value} |`)
+  if (reliability) for (const key of ['chaosPassRatePct','doubleCharges','soakP95DriftMs'] as const) console.log(`| ${key} | ${reliability[key] ?? 'null'} |`)
   if (reference && baseline) console.log('Deltas: ' + JSON.stringify(reportDeltas(scorecard, baseline)))
   console.log(`History appended; raw evidence: ${local}`)
 }

@@ -19,9 +19,10 @@ import { createClient } from '../../sdk/index.js'
 import { payAndFetch } from '../../sdk/x402.js'
 import { openPaymentJournal } from '../../sdk/x402-journal.js'
 import { auditRuns, readRuns } from '../gate-audit.js'
-import { assertNoLeaks, type Observation } from '../../tests/scenarios/harness.js'
+import { assertNoLeaks } from '../../tests/scenarios/harness.js'
 import { USE_CASES, type UseCaseId } from '../../tests/scenarios/use-cases.js'
 import type { HireAuditRecord } from '../../server/hire/audit.js'
+import { snapshotCollector } from './observations.js'
 import { fixtureLedger } from './ledger.js'
 
 const [dir, fault, uc, seed] = process.argv.slice(2)
@@ -86,7 +87,7 @@ const api = await createApiApp({ dbPath: join(dir, 'app.db'), reportDir: join(di
   ...(fault === 'decision-down' ? { provider: { name: 'openai', model: 'unavailable-fixture', async judgeCoverage() { inject('decision-down'); throw new Error('Injected unavailable decision model') }, async judgeRound() { inject('decision-down'); throw new Error('Injected unavailable decision model') }, async judgeCandidate() { throw new Error('Injected unavailable decision model') } } } : {}) })
 const apiServer = api.app.listen(0, '127.0.0.1'); await once(apiServer, 'listening')
 const baseUrl = `http://127.0.0.1:${(apiServer.address() as AddressInfo).port}`
-const observations: Observation[] = []
+const collector = snapshotCollector(), observations = collector.observations
 let streams = 0
 const sdk = createClient({ baseUrl, token: 'chaos-fixture-token', fetch: async (url, init) => {
   const response = await fetch(url, init)
@@ -102,7 +103,7 @@ const sdk = createClient({ baseUrl, token: 'chaos-fixture-token', fetch: async (
         if (!frame.startsWith('event: snapshot')) continue
         const raw = frame.split('\n').find(l => l.startsWith('data: '))!.slice(6)
         const run = JSON.parse(raw)
-        observations.push({ kind: 'SSE', raw, runId: run.runId, grants: run.grants.filter((g: { intentId: string }) => run.intents.some((i: { intentId: string; status: string }) => i.intentId === g.intentId && i.status === 'VERIFIED')) })
+        collector.add({ kind: 'SSE', raw, runId: run.runId, grants: run.grants.filter((g: { intentId: string }) => run.intents.some((i: { intentId: string; status: string }) => i.intentId === g.intentId && i.status === 'VERIFIED')) })
       }
       controller.enqueue(chunk)
     } })), { headers: response.headers })

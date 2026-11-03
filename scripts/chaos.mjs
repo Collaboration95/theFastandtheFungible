@@ -27,7 +27,7 @@ export async function chaos({ runs = 500, seed = 279, soakMs = 0, output = 'scra
     for (let n = 0; soakMs ? Date.now()-started < soakMs : n < runs; n++) {
       // Cover the complete fault matrix before drawing additional seeded faults.
       const fault = n < FAULTS.length ? FAULTS[n] : FAULTS[Math.floor(rng()*FAULTS.length)]
-      const uc = ['refund-replay'].includes(fault) ? 'UC3' : ['kill-before-sign','kill-after-sign','kill-after-submit','kill-after-validation','submit-timeout-before','submit-timeout-after','duplicate-submit','publisher-down','publisher-slow','hire-replay','decision-down','provider-down','caps'].includes(fault) ? 'UC2' : `UC${1+Math.floor(rng()*4)}`
+      const uc = ['refund-replay','identical-intents'].includes(fault) ? 'UC3' : ['kill-before-sign','kill-after-sign','kill-after-submit','kill-after-validation','submit-timeout-before','submit-timeout-after','duplicate-submit','publisher-down','publisher-slow','hire-replay','decision-down','provider-down','caps'].includes(fault) ? 'UC2' : `UC${1+Math.floor(rng()*4)}`
       if (n % 20 === 0 && existsSync('server/escrow.ts')) {
         const output = execFileSync(process.execPath,['--import','tsx','scripts/chaos/escrow.ts',String(seed+n)],{env:childEnv(work),encoding:'utf8',timeout:45000,maxBuffer:65536})
         const escrow = JSON.parse(output.trim().split('\n').at(-1))
@@ -41,12 +41,12 @@ export async function chaos({ runs = 500, seed = 279, soakMs = 0, output = 'scra
             const child = spawn(process.execPath, ['--import','tsx','scripts/chaos/worker.ts',dir,fault,uc,String(seed+n)], {
               cwd: fileURLToPath(new URL('..',import.meta.url)), stdio: ['ignore','pipe','pipe'],
               env: childEnv(work) })
-            let tail = ''; child.stdout.on('data', () => {}); child.stderr.on('data', c => { tail = (tail+c).slice(-4000) })
-            const timer = setTimeout(() => child.kill('SIGKILL'), 45_000)
-            child.once('error', fail); child.once('exit', (code, signal) => { clearTimeout(timer); done({ code, signal, tail }) })
+            let tail = '', timedOut = false; const launched = Date.now(); child.stdout.on('data', () => {}); child.stderr.on('data', c => { tail = (tail+c).slice(-4000) })
+            const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL') }, 45_000)
+            child.once('error', fail); child.once('exit', (code, signal) => { clearTimeout(timer); done({ code, signal, tail, timedOut, elapsedMs: Date.now()-launched }) })
           })
           if (code.signal === 'SIGKILL' && restart === 0 && ['kill-before-sign','kill-after-sign','kill-after-submit','kill-after-validation','engine-restart'].includes(fault)) { summary.processKills++; continue }
-          if (code.code !== 0) throw new Error(`iteration ${n} ${fault}/${uc}: ${code.tail}`)
+          if (code.code !== 0) throw new Error(`iteration ${n} ${fault}/${uc}: exit=${code.code} signal=${code.signal} watchdog=${code.timedOut} elapsedMs=${code.elapsedMs} ${code.tail}`)
           break
         }
         const r = JSON.parse(readFileSync(join(dir,'result.json'),'utf8'))

@@ -43,3 +43,13 @@ it('reliability-only CLI cannot bypass a quality check or enable live calls', ()
     }
   } finally {rmSync(dir,{recursive:true,force:true})}
 },10000)
+
+import { snapshotCollector } from '../scripts/chaos/observations.js'
+it('audits identical retry snapshots once while preserving every distinct observation', () => {
+  const c=snapshotCollector(), a={kind:'SSE',runId:'a',raw:'{"phase":"BUY"}',grants:[]}
+  for(let n=0;n<8;n++) c.add({...a})
+  c.add({...a,raw:'{"phase":"VERIFIED"}'})
+  c.add({...a,runId:'b'})
+  c.add({...a,kind:'public metadata'})
+  expect(c.observations).toEqual([a,{...a,raw:'{"phase":"VERIFIED"}'},{...a,runId:'b'},{...a,kind:'public metadata'}])
+})
