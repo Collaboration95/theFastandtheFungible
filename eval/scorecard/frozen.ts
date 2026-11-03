@@ -9,7 +9,7 @@ export const sha256 = (value: string) => createHash('sha256').update(value).dige
 export async function frozenInputs() {
   const bank = loadBank(), world = await loadWorld()
   const snapshots = await buildSnapshots(world, bank)
-  const prompts = ['server/agents/clef.ts', 'shared/fact-menu.ts', 'publisher/manifest.ts', 'shared/manifest.ts', 'eval/decisions/world.ts', 'server/agents/openai-decisions.ts', 'eval/decisions/providers/decisions.ts', 'eval/coverage/arms.ts', 'server/agents/research.ts', 'server/agents/scope.ts', 'server/agents/requirements.ts']
+  const prompts = ['server/agents/decision.ts', 'server/agents/untrusted.ts', 'server/agents/clef.ts', 'shared/fact-menu.ts', 'publisher/manifest.ts', 'shared/manifest.ts', 'eval/decisions/world.ts', 'server/agents/openai-decisions.ts', 'eval/decisions/providers/decisions.ts', 'eval/coverage/arms.ts', 'server/agents/research.ts', 'server/agents/scope.ts', 'server/agents/requirements.ts']
   return { version: 'sff-scorecard/v2-fact-menu', bank: sha256(JSON.stringify(bank)), corpus: sha256(JSON.stringify(world.corpus)), corpusContent: sha256(JSON.stringify({ ...world.corpus, articles: world.corpus.articles.map(({ factMenu: _menu, ...article }) => article) })), snapshots: sha256(JSON.stringify(snapshots)),
     promptSources: Object.fromEntries(prompts.map(p => [p, sha256(readFileSync(p, 'utf8'))])),
     split: 'all 48 bank questions; all 116 coverage snapshots; no training or threshold fitting', order: bank.questions.map(q => q.id), latencySample: SAMPLE,

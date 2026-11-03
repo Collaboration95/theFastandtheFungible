@@ -73,7 +73,9 @@ it.each(['openai', 'cloudflare'] as const)('%s wire state caps all writer string
   for (const state of states) {
     expect(state).not.toHaveProperty('conclusion')
     const projected = (state.candidates as Record<string, unknown>[] | undefined)?.[0] ?? state.candidate as Record<string, unknown>
-    expect(Object.keys(projected).sort()).toEqual(['abstract', 'authority', 'dataPolicy', 'derivedFrom', 'family', 'publisher', 'relevance', 'resourceId', 'tags', 'tier', 'title'].filter(k => k !== 'relevance' || injection.relevance !== undefined).sort())
+    expect(Object.keys(projected).sort()).toEqual(['abstract', 'authority', 'dataPolicy', 'derivedFrom', 'family', 'publisher', 'relevance', 'resourceId', 'tags', 'tier', 'title', 'untrustedSignedFactMenu'].filter(k => k !== 'relevance' || injection.relevance !== undefined).sort())
+    expect(projected.untrustedSignedFactMenu).toEqual([]) // unsigned injected metadata cannot author a signed promise
+    for (const key of ['manifest', 'wallet', 'sig', 'leaves', 'body']) expect(projected).not.toHaveProperty(key)
     expect(String(projected.resourceId).length).toBeLessThanOrEqual(160)
     expect(String(projected.abstract).length).toBeLessThanOrEqual(1200)
   }

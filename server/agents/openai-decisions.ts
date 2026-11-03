@@ -74,7 +74,7 @@ export type GapWording = 'plain' | 'evidence'
 export const GAP_WORDINGS: Record<GapWording, string> = { plain: clefQuestions.round.gap_material.instructions, evidence: EVIDENCE.round.gap_material }
 export const decisionsGapWording = (configured: unknown = loadConfig().DECISIONS_GAP_WORDING): GapWording => configured === 'evidence' ? 'evidence' : 'plain'
 /** Wording + option order + topology. Bump it whenever any of the three changes; it is recorded on every round. */
-export const decisionsPromptVersion = (gap: GapWording, wording: CandidateWording = 'evidence') => `batch-${wording}/v2-fact-menu+gap-${gap} · originality original,rewrite,overlap · credibility 0,1,2`
+export const decisionsPromptVersion = (gap: GapWording, wording: CandidateWording = 'evidence') => `batch-${wording}/v3-fact-menu+gap-${gap} · originality original,rewrite,overlap · credibility 0,1,2`
 /** The default version: evidence candidate wording, plain gap wording. */
 export const DECISIONS_PROMPT_VERSION = decisionsPromptVersion('plain', 'evidence')
 /**
