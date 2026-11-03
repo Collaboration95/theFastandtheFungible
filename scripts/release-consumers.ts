@@ -32,8 +32,13 @@ try {
   const store = new Store(join(dir, 'engine/app.db'))
   try {
     const [a,b] = JSON.parse(await run(process.execPath, ['consumer.mjs'])); check('tgz',a,b,store)
+    const receiptPath=join(root,'accepted-receipt.json')
+    const receiptResponse=await fetch(engine.apiUrl+`/runs/${encodeURIComponent(a.run_id)}/receipts.json`,{headers:{Authorization:'Bearer '+engine.apiToken}})
+    assert(receiptResponse.ok);writeFileSync(receiptPath,JSON.stringify(await receiptResponse.json(),null,2)+'\n')
+    execFileSync('npm',['run','verify:answer','--',receiptPath,'--json'],{stdio:'inherit',env:process.env})
     await run('python3', ['-m','venv',join(dir,'venv')]); const python = join(dir,'venv/bin/python')
     await run(python, ['-m','pip','install','--no-deps',file('wheel')])
+    console.log(await run(python,['-m','researchagent','verify',join(root,'accepted-receipt.json'),'--json']))
     writeFileSync(join(dir,'consumer.py'), `import json\nfrom researchagent import Client\nc=Client(${JSON.stringify(engine.apiUrl)}, token=${JSON.stringify(engine.apiToken)})\na=c.ask(${JSON.stringify(question)},budget=999,idempotency_key='wheel').result()\nb=c.ask(${JSON.stringify(question)},budget=999,idempotency_key='wheel').result()\nassert c.verify(c.receipts(a['run_id']))['ok']\nprint(json.dumps([a,b]))\n`)
     const [pa,pb] = JSON.parse(await run(python, ['consumer.py'])); check('wheel',pa,pb,store)
   } finally { store.close() }
