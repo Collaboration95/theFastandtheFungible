@@ -31,7 +31,10 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
   const tx = decode(blob), hash = hashes.hashSignedTx(blob).toUpperCase()
   if (escrowInvoice(terms) !== invoice || terms.articleId !== articleId || terms.version !== version || !safeSignature(blob) || !matchesCreate(tx, terms)) throw new Error('Escrow create does not match signed quote')
   const existing = journal.escrowGrant(hash)
-  if (existing) return { hash, payer: terms.payer, grant: existing }
+  if (existing) {
+    if (await ledgerTime(ledger) >= terms.cancelAfter) throw new Error('Conditional grant expired')
+    return { hash, payer: terms.payer, grant: existing }
+  }
   let found = await lookupTx(ledger, hash)
   if (found.state !== 'validated') {
     const now = await ledgerTime(ledger)

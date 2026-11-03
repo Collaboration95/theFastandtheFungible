@@ -27,6 +27,7 @@ function chain() {
       case 'ledger': return { result: { ledger_index: state.index, ledger: { close_time: state.now } } }
       case 'ledger_current': return { result: { ledger_current_index: state.index } }
       case 'fee': return { result: { drops: { open_ledger_fee: '12' } } }
+      case 'account_tx': return { result: { transactions: [...txs].map(([hash, row]) => ({ ...row, hash })) } }
       case 'ledger_entry': return { result: { node: objects.get((r.escrow as { seq: number }).seq) } }
       case 'tx': {
         const found = txs.get(String(r.transaction))
@@ -208,6 +209,34 @@ describe('escrow-v1 hybrid', () => {
     expect(s.store.escrowOutbox(i.intentId)).toHaveLength(1)
     s.c.state.now += 16; await s.manager.reconcile()
     expect(s.store.getIntent(i.intentId)?.escrow?.state).toBe('CANCELLED')
+  })
+  it('recovers a finish relayed by another account without signing cancel or another principal', async () => {
+    const s = await setup()
+    const persist = s.store.recordEscrowSubmission.bind(s.store)
+    vi.spyOn(s.store, 'recordEscrowSubmission').mockImplementation((id, op, signed) => {
+      const row = persist(id, op, signed)
+      if (op === 'finish') s.c.state.submitEnabled = false
+      return row
+    })
+    const i = await s.buy()
+    const finish = decode(s.store.escrowOutbox(i.intentId).find(t => t.operation === 'finish')!.txBlob)
+    const relayWallet = Wallet.generate()
+    const relay = relayWallet.sign({ TransactionType: 'EscrowFinish', Account: relayWallet.classicAddress, Owner: finish.Owner as string, OfferSequence: Number(finish.OfferSequence), Condition: finish.Condition as string, Fulfillment: finish.Fulfillment as string, Sequence: 1, Fee: '423', LastLedgerSequence: 200 })
+    s.c.state.submitEnabled = true
+    await s.c.ledger.request({ command: 'submit', tx_blob: relay.tx_blob })
+    s.restart(); await s.manager.reconcile()
+    expect(s.store.getIntent(i.intentId)?.escrow).toMatchObject({ state: 'RELEASED', finishHash: relay.hash })
+    expect(s.store.getRun(s.run.runId).contents).toHaveLength(1)
+    expect([...s.c.txs.values()].map(t => t.tx_json.TransactionType)).toEqual(['EscrowCreate', 'EscrowFinish'])
+  })
+  it('keeps missing-object recovery pending when terminal history is unavailable', async () => {
+    const s = await setup({ broken: true })
+    const i = await s.buy()
+    s.c.objects.clear(); s.c.state.now = i.escrow!.cancelAfter + 1
+    await s.manager.reconcile()
+    expect(s.store.getIntent(i.intentId)?.status).toBe('SUBMITTING')
+    expect(s.store.getRun(s.run.runId).reservedMinor).toBe(i.amountMinor)
+    expect(s.c.txs.size).toBe(1)
   })
   it('checks 0.2 XRP owner reserve plus principal and both fees before any signature', async () => {
     const s = await setup()

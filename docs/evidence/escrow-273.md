@@ -53,5 +53,6 @@ Offline `tests/escrow.test.ts` covers concurrent duplicate calls, restart after
 create, an escaped finish after Stop, Stop before finish, expired finish then
 same-object cancellation, proof quarantine and the 15 s finish margin, altered
 signed quote terms, owner reserve plus fee headroom, cancelled-budget reuse,
-unsupported-writer refusal and direct-path preservation. The gate audit rejects
+unsupported-writer refusal, direct-path preservation, relayed terminal recovery
+and missing-history reservations. The gate audit rejects
 an escrow finish without its persisted verified proof. No gates were loosened.

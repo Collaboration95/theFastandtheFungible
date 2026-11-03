@@ -370,7 +370,10 @@ operations share the payer queue. A restart looks up and resubmits the same
 create; no timeout authorizes another principal. Expired/failed terminal
 signatures may be archived and replaced **only after ledger proof**, referencing
 the same object. An unresolved escaped finish is reconciled before cancellation.
-A Stop cannot undo a submitted finish. The live reconciler cancels due objects
+A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by
+another account, recovery checks the validated object and paginated account
+history, then confirms the winning terminal hash. Missing object/history alone
+never means refunded. The live reconciler cancels due objects
 without writer connectivity; expiry itself does not return funds.
 
 LOCKED principal stays `reservedMinor`; only RELEASED becomes spent. A
@@ -384,3 +387,5 @@ headroom. After creation, refreshed validated balance already excludes principal
 it is not deducted twice.
 
 Evidence: [product Testnet finish and cancel](evidence/escrow-273.md).
+
+Recovery RPC references: [ledger_entry](https://xrpl.org/docs/references/http-websocket-apis/public-api-methods/ledger-methods/ledger_entry), [account_tx](https://xrpl.org/docs/references/http-websocket-apis/public-api-methods/account-methods/account_tx).

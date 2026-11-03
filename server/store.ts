@@ -459,11 +459,11 @@ export class Store {
       return next
     })
   }
-  completeEscrow(intentId: string, terminal: 'finish' | 'cancel', ledgerIndex: number): void {
+  completeEscrow(intentId: string, terminal: 'finish' | 'cancel', ledgerIndex: number, observedHash?: string): void {
     this.atomic(() => {
       const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!
       if (['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return
-      const tx = this.escrowOutbox(intentId).find(r => r.operation === terminal)
+      const tx = observedHash ? { txHash: observedHash } : this.escrowOutbox(intentId).find(r => r.operation === terminal)
       if (!tx || terminal === 'finish' && !e.publicStatus.proofOk) throw new Error('Terminal escrow proof missing')
       e.publicStatus = { ...e.publicStatus, state: terminal === 'finish' ? 'RELEASED' : 'CANCELLED', [terminal + 'Hash']: tx.txHash }
       const settledAt = new Date().toISOString(), terms = e.quote.terms

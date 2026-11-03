@@ -59,9 +59,47 @@ export class EscrowPurchases {
     const e = this.store.getEscrow(intent.intentId)!
     this.store.appendEvent(intent.runId, { type: `ESCROW_${op.toUpperCase()}`, label: `Escrow ${op} validated`, data: { intentId: intent.intentId, txHash: hash, ledgerIndex, owner: e.publicStatus.owner, createSequence: e.publicStatus.createSequence, result: 'tesSUCCESS', scheme: 'escrow-v1' } })
   }
+  /** A revealed fulfillment can be relayed by another account. Object absence alone proves no winner. */
+  private async reconcileObject(intent: PurchaseIntent): Promise<boolean> {
+    const e = this.store.getEscrow(intent.intentId)!, t = e.quote.terms
+    let object
+    try {
+      object = (await this.payer.ledger.request({ command: 'ledger_entry', escrow: { owner: t.payer, seq: e.publicStatus.createSequence }, ledger_index: 'validated' })).result.node
+    } catch (error) {
+      if (!['entryNotFound', 'objectNotFound'].includes((error as { data?: { error?: string } }).data?.error ?? '')) throw error
+    }
+    if (object) {
+      if (object.Account !== t.payer || object.Destination !== t.payTo || object.Amount !== t.amount || object.Condition !== t.condition || object.CancelAfter !== t.cancelAfter) throw new Error('Escrow object differs from quote')
+      return false
+    }
+    const create = await lookupTx(this.payer.ledger, e.publicStatus.createHash!)
+    if (create.state !== 'validated') throw new Error('Escrow history unavailable')
+    let marker: unknown
+    // Bounded recovery scan. Incomplete history is pending, never a presumed refund.
+    for (let page = 0; page < 4; page++) {
+      const { result } = await this.payer.ledger.request({ command: 'account_tx', api_version: 2, account: t.payer, ledger_index_min: create.ledgerIndex, ledger_index_max: -1, binary: false, forward: false, limit: 100, ...(marker ? { marker } : {}) })
+      for (const entry of result.transactions ?? []) {
+        const hash = entry.hash ?? entry.tx_json?.hash ?? entry.tx?.hash
+        const tx = entry.tx_json ?? entry.tx
+        if (!hash || tx?.Owner !== t.payer || Number(tx?.OfferSequence) !== e.publicStatus.createSequence || !['EscrowFinish', 'EscrowCancel'].includes(tx?.TransactionType)) continue
+        const found = await lookupTx(this.payer.ledger, hash)
+        if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS' || found.tx.Owner !== t.payer || Number(found.tx.OfferSequence) !== e.publicStatus.createSequence) continue
+        const op = found.tx.TransactionType === 'EscrowFinish' ? 'finish' : found.tx.TransactionType === 'EscrowCancel' ? 'cancel' : undefined
+        if (!op || op === 'finish' && (found.tx.Condition !== t.condition || found.tx.Fulfillment !== fulfillmentFor(e.secret))) continue
+        this.store.completeEscrow(intent.intentId, op, found.ledgerIndex, hash)
+        this.event(intent, op, hash, found.ledgerIndex)
+        if (op === 'finish') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'Proof verified and relayed escrow release validated', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
+        return true
+      }
+      marker = result.marker
+      if (!marker) break
+    }
+    throw new Error('Escrow object absent; validated terminal history required')
+  }
   /** Re-submit only the persisted blob. Expired terminal signatures can be replaced for the SAME object. */
   private async terminal(intent: PurchaseIntent, op: 'finish' | 'cancel') {
     const e = this.store.getEscrow(intent.intentId)!
+    if (await this.reconcileObject(intent)) return
     let tx = this.store.escrowOutbox(intent.intentId).find(t => t.operation === op)
     if (tx) {
       const status = await this.payer.status(tx)
