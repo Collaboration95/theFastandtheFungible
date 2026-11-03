@@ -517,3 +517,4 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 — Lane N PR #357: implementation and live Testnet proof complete; GitGuardian incident 39528977 falsely flags the public credential type in 12 evidence locations. Merge awaits classification tracked in pinned #265; no scanner gate was loosened.
 
 - 2026-11-04: Lane N credential evidence stores public type text and derives XRPL hex at runtime; scanner history repaired without ignores or gate changes.
+- 2026-11-04 — Lane M2: exact-byte bounded validation caches and research/decision yields reduce worst worker interval p99 205.914 → 28.623 ms; all five integrated 600-ask soak gates pass, 200-run SIGKILL chaos has zero violations/double charges; no thresholds loosened (docs/evidence/round2-m2/README.md).

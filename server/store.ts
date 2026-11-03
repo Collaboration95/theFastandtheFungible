@@ -1,3 +1,4 @@
+import { ExactCache } from './exact-cache.js'
 import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
 import { AgentKeys, AgentDenied } from './agent-keys.js'
 import { decode } from 'xrpl'
@@ -47,6 +48,7 @@ export class Store {
     this.db.exec('CREATE TABLE IF NOT EXISTS mcp_calls (agent_id TEXT PRIMARY KEY, at TEXT NOT NULL)')
     return this.db.prepare('SELECT at FROM mcp_calls WHERE agent_id=?').get(id)?.at ?? null
   }
+  private readonly validatedRuns = new ExactCache<string>(32)
   private readonly db: DatabaseSync
   /** Hash-chained operator ledger (#288). Entries are written inside the same transactions as the state they describe. */
   readonly audit: AuditLog
@@ -122,7 +124,12 @@ export class Store {
   private rawRun(runId: string): RunSnapshot {
     const row = this.db.prepare('SELECT json FROM runs WHERE id=?').get(runId)
     if (!row) throw new Error('Run not found')
-    return RunSnapshotSchema.parse(JSON.parse(row.json as string))
+    const bytes = row.json as string
+    const cached = this.validatedRuns.get(bytes)
+    if (cached !== undefined) return JSON.parse(cached) as RunSnapshot
+    const run = RunSnapshotSchema.parse(JSON.parse(bytes))
+    this.validatedRuns.set(bytes, JSON.stringify(run))
+    return run
   }
   private saveRun(run: RunSnapshot): void {
     this.db.prepare('UPDATE runs SET json=? WHERE id=?').run(JSON.stringify(RunSnapshotSchema.parse(run)), run.runId)

@@ -1,3 +1,4 @@
+import { setImmediate as yieldToLoop } from 'node:timers/promises'
 import { sourceKey } from '../../shared/source-identity.js'
 import { factMenuMismatch, scopeContradiction } from './scope-policy.js'
 import { activeValueFit, marginalValue } from './value-policy.js'
@@ -244,7 +245,9 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const acquired = new Set([...input.readSources.map(source => source.source ? sourceKey(source) : source.resourceId), ...(input.boughtResourceIds ?? [])])
   const valueFit = provider.name === 'compatible' ? undefined : activeValueFit(provider)
   const useValuePolicy = input.requirement && input.accessibleEvidence !== undefined && process.env.DECISION_VALUE_POLICY !== 'off'
-  const rows = candidates.map((candidate, index) => {
+  const rows: DecisionRound['rows'] = []
+  for (const [index, candidate] of candidates.entries()) {
+    if (index % 4 === 0) await yieldToLoop()
     const judgment = judgments[index]
     // Trust can only lower value (T ∈ [0, 1]); it never touches the budget or the cap.
     const reputation = input.reputation && candidate.wallet ? input.reputation[candidate.wallet] ?? NEWCOMER : undefined
@@ -272,8 +275,8 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     else if (process.env.DECISION_NUMBERS_POLICY !== 'off' && input.requirement && factMenuMismatch(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Signed fact menu does not offer the requested fact key and entity/period scope.' }
     else if (marginal && !marginal.eligible) { verdict = 'SKIP_LOW_VALUE'; reason = `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} < ${marginal.threshold.toFixed(3)} (covered menu entries ${marginal.coveredEntries}/${marginal.menuEntries}).` }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }
-    return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}), ...(marginal ? { marginalValue: { ...marginal, ...(valueFit ? { fitVersion: valueFit.version } : {}) }, reason: verdict === 'BUY' ? `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} >= ${marginal.threshold.toFixed(3)}; spending policy clears.` : reason } : {}) }
-  })
+    rows.push({ candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}), ...(marginal ? { marginalValue: { ...marginal, ...(valueFit ? { fitVersion: valueFit.version } : {}) }, reason: verdict === 'BUY' ? `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} >= ${marginal.threshold.toFixed(3)}; spending policy clears.` : reason } : {}) })
+  }
   // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
   const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
   return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), ...(calibrator ? { calibration: roundCalibration(calibrator) } : {}), threshold, rows, ...(selected ? { selectedSourceKey: sourceKey(selected.candidate), selectedResourceId: selected.candidate.resourceId } : {}) })

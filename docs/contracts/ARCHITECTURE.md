@@ -155,3 +155,23 @@ reservations.
 Federated runtime references carry `source` version 1: origin, signed seller public key, profileId, resourceId and version. `shared/source-identity.ts` supplies the canonical tuple and citation key. TS, Python and MCP preserve that identity; wallet reputation crosses hosts. Receipt bundles dispatch v1/v2 explicitly. Historical missing origins remain unresolved; invoices, signed manifests, blobs, audit entries and intent IDs are unchanged. New obligations save endpoint context before signing; removal prevents new admission while recovery uses the saved endpoint. No engine bearer, delivery token or payment signature is forwarded across origins.
 
 Offline reproduction: `node --import tsx scripts/demo-multi-origin.ts --fixture --output scratch/multi-origin.json`. Evidence and migration handoff: `docs/evidence/round2-f/README.md`. The proof is synthetic, uses simulated payments and an explicit fixture judging/citation rubric, and does not establish adoption or live model quality.
+
+## Engine validation reuse (4 Nov 2026, Lane M2)
+
+The engine reuses manifest signature verdicts for exact canonical manifest bytes
+(including signature, wallet and public key). The bounded LRU stores immutable
+boolean results; misses execute the unchanged verifier. Registry/payee bindings
+are checked by the caller on every use. There is no signer worker or change to
+payment ordering, outbox persistence, settlement or recovery.
+
+Store reads still fetch authoritative SQLite JSON inside the original transaction.
+A per-store LRU (32 entries, 8 MiB string storage) reuses complete RunSnapshot
+validation only for identical persisted JSON bytes. Values are serialized strings;
+every hit returns a fresh JSON parse. Writes and assembled snapshots still execute
+the complete original schema. SQLite rows, transactions and persistence format are
+unchanged; a rollback or external edit cannot turn stale cache entries into authority.
+
+The asynchronous research loop yields between content additions, answer processing
+and decision rounds so immediately resolved fixture promises do not monopolize the
+worker. No yield crosses a SQLite transaction, signing persistence or the synchronous
+Stop-check-to-purchase handoff. Calibration starts in the existing order.
