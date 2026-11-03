@@ -36,15 +36,15 @@ Node ≥ 22.13 and Make. Three commands, no keys needed:
 ```sh
 git clone https://github.com/Collaboration95/theFastandtheFungible && cd theFastandtheFungible
 make setup
-OFFSET=400 make run
+make run
 ```
 
-Open <http://127.0.0.1:5500>. Fixture providers and simulated payments work offline.
+Open <http://127.0.0.1:5100>. Fixture providers and simulated payments work offline.
 For live providers, add the keys described in `.env.example` to your ignored `.env`, then:
 
 ```sh
-OFFSET=400 make doctor
-OFFSET=400 make live
+make doctor
+make live
 ```
 
 Live model calls can incur provider fees. Settlement uses XRPL Testnet when a payer seed is configured;
@@ -165,7 +165,7 @@ Turn a Markdown folder into a searchable writer with signed manifests and x402 d
 
 ```sh
 cp -R examples/writer-starter my-notes
-OFFSET=400 npm run publish:site -- ./my-notes --rail simulated
+npm run publish:site -- ./my-notes --rail simulated
 ```
 
 For Testnet funding, schema, privacy and the recorded proof, see the [publishing guide](docs/publishing.md).
