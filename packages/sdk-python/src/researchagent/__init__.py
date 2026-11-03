@@ -78,7 +78,8 @@ def _present(run: dict[str, Any]) -> AskResult:
             if candidate is None or (candidate['tier'] != 'FREE' and grant is None):
                 raise BackendError('backend_unavailable')
             citations.append({**citation, 'claimId': claim['id'], 'untrusted': True,
-                              'writer': content['publisher'], 'grantIntentId': grant['intentId'] if grant else None,
+                              'writer': content['publisher'], 'writerVerification': candidate.get('verification') if isinstance(candidate.get('verification'), dict) else {'status': 'unverified'},
+                              'credentialNotice': 'unsigned advisory; requires online check', 'grantIntentId': grant['intentId'] if grant else None,
                               'passage': next(s['text'] for s in content['spans'] if s['id'] == citation['spanId'])})
     return AskResult(run_id=run['runId'], phase=run['phase'], answer=answer, citations=citations,
                      receipts=run['receipts'], labels=run['labels'], budgetMinor=run['budgetMinor'],

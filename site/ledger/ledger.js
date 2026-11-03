@@ -1,3 +1,4 @@
+export const credentialTypeHex = text => Array.from(new TextEncoder().encode(text), byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase()
 export function classify(row, body) {
   const r = body?.result
   if (!r || r.error) return 'Historical; missing or reset history'
@@ -8,7 +9,9 @@ export function classify(row, body) {
   if (String(t.Fee) !== row.feeDrops) return 'Historical; fee mismatch'
   if (row.invoiceId && t.InvoiceID !== row.invoiceId) return 'Historical; binding mismatch'
   if (row.from && (t.Account !== row.from || t.Destination !== row.to || t.InvoiceID !== row.invoiceId)) return 'Historical; binding mismatch'
-  if (row.group === 'escrow') {
+  if (row.group === 'Testnet, credential') {
+    if (t.TransactionType !== row.operation || t.CredentialType !== credentialTypeHex(row.credentialTypeText) || (row.operation === 'CredentialCreate' ? t.Account !== row.issuer || t.Subject !== row.subject : t.Account !== row.subject || t.Issuer !== row.issuer)) return 'Historical; credential mismatch'
+  } else if (row.group === 'escrow') {
     const type = { create: 'EscrowCreate', finish: 'EscrowFinish', cancel: 'EscrowCancel' }[row.operation]
     if (t.TransactionType !== type || (row.operation === 'create' ? t.Account !== row.owner || t.Sequence !== row.createSequence || t.Amount !== row.amountDrops : t.Owner !== row.owner || t.OfferSequence !== row.createSequence)) return 'Historical; escrow mismatch'
   } else {

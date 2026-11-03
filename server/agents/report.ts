@@ -87,7 +87,7 @@ export async function buildReport(input: RunSnapshot, signal?: AbortSignal): Pro
     firstVersion: first?.version, finalVersion: final?.version,
     labels: run.labels,
     refunds: run.intents.filter(i => i.runId === run.runId && i.refund).map(i => ({ ...(i.source ? {source:i.source} : {}), intentId: i.intentId, resourceId: i.resourceId, version: i.version, ...i.refund! })),
-    access: { runId: run.runId, candidates: run.candidates, grants: run.grants },
+    access: { runId: run.runId, candidates: run.candidates.map(candidate => ({ ...candidate, verification: undefined })), grants: run.grants },
     ...(facts ? { facts: { line: facts.line, facts: facts.facts.map(f => ({ text: f.text, status: f.status })) } } : {}),
   })
 }

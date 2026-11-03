@@ -537,3 +537,11 @@ Primary documentation checked 2026-11-04: [t54 scheme](https://xrpl-x402.t54.ai/
 Federated runtime references carry `source` version 1: origin, signed seller public key, profileId, resourceId and version. `shared/source-identity.ts` supplies the canonical tuple and citation key. TS, Python and MCP preserve that identity; wallet reputation crosses hosts. Receipt bundles dispatch v1/v2 explicitly. Historical missing origins remain unresolved; invoices, signed manifests, blobs, audit entries and intent IDs are unchanged. New obligations save endpoint context before signing; removal prevents new admission while recovery uses the saved endpoint. No engine bearer, delivery token or payment signature is forwarded across origins.
 
 Offline reproduction: `node --import tsx scripts/demo-multi-origin.ts --fixture --output scratch/multi-origin.json`. Evidence and migration handoff: `docs/evidence/round2-f/README.md`. The proof is synthetic, uses simulated payments and an explicit fixture judging/citation rubric, and does not establish adoption or live model quality.
+
+## Writer identity credentials
+
+An operator-trusted issuer can issue an XRPL Credential to the writer's seller
+wallet; the writer accepts it with CredentialAccept. The engine checks accepted,
+unexpired credentials read-only on validated Testnet ledgers. Identity is not
+truth and does not change x402 payment policy, trust weights or price. See
+[operator setup and issuer runbook](writer-verification.md).

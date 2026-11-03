@@ -1,3 +1,4 @@
+import { WriterVerificationSchema } from '../writer-verification.js'
 import { SourceIdentitySchema } from '../source-identity.js'
 import { z } from 'zod'
 import { ManifestSchema } from './manifest.js'
@@ -17,7 +18,7 @@ export const PublicCandidateSchema = z.object({
   price: PriceSchema, wallet: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/).optional(), family: z.string().min(1), derivedFrom: z.string().optional(),
   // Free-form tags (D10). Legacy field name kept so the current corpus loads; Article.tags maps here.
   facets: z.array(z.string()), authority: z.number().min(0).max(2), tier: z.enum(['FREE', 'PAID']),
-  verification: z.literal('unverified writer').optional(),
+  verification: WriterVerificationSchema.optional(),
   license: z.object({ kind: z.string(), attribution: z.string() }),
   publisherSlug: z.string().optional(), writerSlug: z.string().optional(),
   /** Agent-facing, root-relative endpoint (`/w/<slug>/articles/<id>`), as on SearchHit. */

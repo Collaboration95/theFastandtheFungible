@@ -1,3 +1,4 @@
+import { WriterVerification } from './WriterVerification.js'
 /* eslint-disable react-refresh/only-export-components -- The publisher-card hook lives next to the chip that uses it. */
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
@@ -37,7 +38,7 @@ export default function WriterChip({ candidate, reputation, variant = 'full' }: 
   const trust = <TrustChip reputation={reputation ?? candidate.reputation} quiet={variant !== 'full'} />
   if (variant === 'row') return trust
   const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer's site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
-  const verification = candidate.verification && <span className="ra-chip">{candidate.verification}</span>
+  const verification = <WriterVerification value={candidate.verification} />
   const synthetic = candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>
   if (variant === 'card') return <span className="ra-writer">{writer !== candidate.publisher && link}{synthetic}{verification}{trust}</span>
   return <span className="ra-writer">

@@ -39,12 +39,12 @@ describe('Markdown folder → paid writer (#277)', () => {
     const site = await publish()
     expect(site.seconds).toBeLessThan(60)
     const registry = await site.client.registry()
-    expect(registry).toMatchObject([{ slug: 'test-writer', verification: 'unverified writer' }])
+    expect(registry).toMatchObject([{ slug: 'test-writer', verification: { status: 'unverified' } }])
     const corpus = (await loadLocalWriters(site.root))[0]
     expect(corpus.articles).toHaveLength(3)
     const retrieved = await retrieve(site.client, 'Malaysia colocation firm supply solar energy')
     const candidate = retrieved.candidates.find(c => c.tier === 'PAID')!
-    expect(candidate.verification).toBe('unverified writer')
+    expect(candidate.verification).toEqual({ status: 'unverified' })
     expect(verifyManifestSignature(candidate.manifest!)).toBe(true)
     expect(candidate.manifest!.schemaVersion).toBe(2)
     expect(candidate.manifest!.claims.some(c => c.covers)).toBe(true)
@@ -102,7 +102,7 @@ describe('Markdown folder → paid writer (#277)', () => {
     const site = await publishSite({ folder, slug: 'real-author', root: join(root, 'writers'), port: 0, rail: 'simulated', env: {}, log: () => {} })
     cleanup.push(() => new Promise<void>(done => { site.server.closeAllConnections(); site.server.close(() => done()) }))
     const client = new PublisherClient({ baseUrl: site.baseUrl })
-    expect((await client.registry())[0]).toMatchObject({ synthetic: false, verification: 'unverified writer' })
+    expect((await client.registry())[0]).toMatchObject({ synthetic: false, verification: { status: 'unverified' } })
     const candidate = (await retrieve(client, 'solar electricity')).candidates[0]
     expect(candidate.license.kind).toBe('AUTHOR SUPPLIED')
     const html = await (await fetch(site.baseUrl + '/w/real-author/')).text()

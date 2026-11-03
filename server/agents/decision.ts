@@ -52,7 +52,7 @@ export function decisionModel(provider: 'cloudflare' | 'openai' = 'cloudflare', 
   return configured && cloudflareModel ? configured : CLEF_DECISION_MODEL
 }
 export const publicCandidate = (input: unknown): PublicCandidate => {
-  const c = PublicCandidateSchema.omit({ manifest: true, wallet: true, url: true }).parse(input)
+  const c = PublicCandidateSchema.omit({ manifest: true, wallet: true, url: true, verification: true }).parse(input)
   // Retain structured public signing metadata for local menu verification across
   // policy/provider projections. clefCandidate never sends the manifest or wallet.
   const signing = PublicCandidateSchema.pick({ manifest: true, wallet: true }).safeParse(input)
