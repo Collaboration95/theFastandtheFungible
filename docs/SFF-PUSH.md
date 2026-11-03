@@ -255,7 +255,7 @@ Agents add items there and keep working around them.
 
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
 
-- 3 Nov: Mac app wraps the Day 1 UI with a main-process protocol proxy, isolated utility-process engine and Keychain custody; remote mode remains gated because #286 was unmerged at the final rebase. Package real files because utilityProcess needs a real cwd; Developer ID auto-sign/notarise is ready, unsigned until #265. Tag releases build once before attaching their own DMG (#259).
+- 3 Nov: Mac app wraps the Day 1 UI with a main-process protocol proxy, isolated utility-process engine and Keychain custody; final rebase included #286, so remote HTTPS mode uses Keychain tokens, bearer forwarding and shared wallet controls. Package real files because utilityProcess needs a real cwd; Developer ID auto-sign/notarise is ready, unsigned until #265. Tag releases build once before attaching their own DMG (#259).
 
 - 3 Nov: Logo direction chosen: open index, because source boundaries and a route to evidence read at 16 px on the cast’s 24-unit grid; Ink/Paper with sparse Salmon layout accents. Explainers source moves into `site/` for one reviewable app/site identity kit (#271).
 - 3 Nov: Added a 4th lane (Architecture) for #285–#288 because #286 auth must land before the Mac app #259 and hire-the-agent #274.

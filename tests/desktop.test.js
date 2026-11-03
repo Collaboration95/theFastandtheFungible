@@ -1,6 +1,7 @@
+import { backendRequest } from '../desktop/backend.mjs'
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { CSP, engineEnv, settings, localRequest, trustedSender } from '../desktop/policy.mjs'
+import { CSP, engineEnv, settings, localRequest, trustedSender, remoteOrigin } from '../desktop/policy.mjs'
 
 describe('desktop boundary', () => {
   it('isolates fixture mode from inherited provider credentials and network overrides', () => {
@@ -40,5 +41,26 @@ describe('desktop boundary', () => {
     expect(keychain).toContain("['-i']")
     expect(keychain).toContain("stdio: ['pipe', 'ignore', 'ignore']")
     expect(keychain).not.toMatch(/writeFile|console\./)
+  })
+})
+
+describe('authenticated desktop transport', () => {
+  it('forwards auth from main to the API and stream, never to the publisher', async () => {
+    const seen = []
+    const transport = async (url, init) => { seen.push({ url: url.href, ...init }); return new Response('{}') }
+    const engine = { apiUrl: 'https://backend.example', publisherUrl: 'https://writer.example', apiToken: 'synthetic-token' }
+    await backendRequest(engine, '/runs/id/events', {}, transport)
+    await backendRequest(engine, '/runs', { method: 'POST', body: '{}' }, transport)
+    await backendRequest(engine, '/w/example', {}, transport)
+    expect(seen[0].headers.Authorization).toBe('Bearer synthetic-token')
+    expect(seen[1].headers.Authorization).toBe('Bearer synthetic-token')
+    expect(seen[0].redirect).toBe('error')
+    expect(seen[2].url).toBe('https://writer.example/w/example')
+    expect(seen[2].headers).not.toHaveProperty('Authorization')
+    expect(seen.every(item => !item.url.includes('synthetic-token'))).toBe(true)
+  })
+  it('accepts HTTPS origins and refuses credential URLs, paths and insecure remote hosts', () => {
+    expect(remoteOrigin('https://backend.example/')).toBe('https://backend.example')
+    for (const value of ['http://backend.example', 'https://user:secret@backend.example', 'https://backend.example/path', 'https://backend.example/?token=secret']) expect(() => remoteOrigin(value)).toThrow()
   })
 })

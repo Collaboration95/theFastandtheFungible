@@ -40,9 +40,7 @@ The desktop app never loads the clone's `.env`. Offline fixture mode needs no
 credentials and makes no provider/ledger calls. The bundled Node engine runs in
 an Electron utility process (with its existing isolated worker); both API and
 publisher listen on random `127.0.0.1` ports. The desktop API checks Host and
-rejects foreign Origin requests. This is local, single-user isolation, not API
-authentication against other programs running as the same macOS user. Remote
-engine/publisher settings remain disabled until #286 provides token auth.
+rejects foreign Origin requests. The embedded engine also requires its generated bearer token on protected routes (#286). Main injects that token into native API/SSE requests; it never enters the research renderer, URLs or connection JSON. Remote HTTPS mode requires the operator token saved in Keychain and enforces the same contract; backend credentials are never forwarded to its publisher.
 
 Windows load only bundled `app://researchagent` content. Context isolation,
 renderer sandboxing, no Node integration, strict script/connect CSP, denied
@@ -66,8 +64,7 @@ There is no arbitrary seed import: seeds contain no network identifier.
 Wallet creation funds only Testnet and ledger endpoints are restricted to
 `*.rippletest.net`. Fixture and Testnet stores are separate. Non-secret preferences,
 SQLite stores, granted evidence and receipts live in Application Support.
-MCP caps and the desktop pause are implemented; a wallet-wide shared cap/pause is
-#286. Unsigned local installation and offline smoke do not prove live settlement,
+MCP caps and the shared wallet-wide gross daily cap/pause use #286 policy. A local token is persisted in Keychain only when the operator enables its external MCP adapter. Unsigned local installation and offline smoke do not prove live settlement,
 Developer ID signing, notarisation or a human usability judgment.
 - Publisher keys are needed at runtime to sign manifests and refunds. They are
   server-only, and never logged, traced, persisted in run data, or sent to a

@@ -24,7 +24,7 @@ for (const folder of ['server', 'publisher', 'shared', 'mcp', 'sdk', 'eval/decis
   }
 }
 await mkdir(join(stage, 'desktop'), { recursive: true })
-for (const name of ['main.mjs', 'policy.mjs', 'keychain.mjs', 'engine-host.mjs', 'preload.cjs', 'preferences.html', 'preferences.js', 'preferences.css', 'mcp.mjs']) await cp(`desktop/${name}`, join(stage, 'desktop', name))
+for (const name of ['main.mjs', 'backend.mjs', 'policy.mjs', 'keychain.mjs', 'engine-host.mjs', 'preload.cjs', 'preferences.html', 'preferences.js', 'preferences.css', 'mcp.mjs']) await cp(`desktop/${name}`, join(stage, 'desktop', name))
 // Compile the shared worker, retaining its startup, auth and shutdown contract.
 // The desktop adds only its local Host/Origin and pause boundary.
 let worker = await readFile('server/engine-worker.mjs', 'utf8')
@@ -33,8 +33,7 @@ worker = worker.replace('register()', '').replace(/\.ts(['"])/g, '.js$1')
 const listener = "api.app.listen(workerData.apiPort, '127.0.0.1')"
 if (!worker.includes(listener)) throw new Error('Shared worker listener changed; review desktop boundary')
 worker = worker.replace(listener, `createServer((req, res) => {
-    if (!localRequest(req, req.socket.localPort) ||
-        (process.env.RA_PAUSED === '1' && !['GET', 'HEAD'].includes(req.method))) {
+    if (!localRequest(req, req.socket.localPort)) {
       res.writeHead(403); res.end(); return
     }
     api.app(req, res)

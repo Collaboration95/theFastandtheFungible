@@ -1,8 +1,7 @@
 # Installed macOS app · #259 · 3 Nov 2026
 
 Reachability proof, Apple Silicon / macOS 26.6. Build source `c2b24b2`, based on
-`a4e27d3` (main). Final source rebase found #286 unmerged; remote backend and
-publisher selection therefore remain disabled. This is a single-user local app.
+`a4e27d3` (main). The final rebase included #286; authenticated HTTPS remote mode and shared wallet controls are wired. This is a single-user local app.
 
 - DMG: `ResearchAgent-0.4.0-arm64.dmg`, **136,647,266 bytes** / **130.32 MiB**.
 - SHA-256: `a360e4cd66c5e34bad36c0a0b8b095b9cff9d909d1711920ce36af540f4e8f15`.
@@ -18,8 +17,8 @@ publisher selection therefore remain disabled. This is a single-user local app.
 
 `DESKTOP_VERSION=0.4.0 OFFSET=900 make dmg`; mount read-only with `hdiutil`, copy
 ResearchAgent.app into `/Applications`, eject, then `OFFSET=900 make desktop-smoke`.
-Two local DMG builds total: the first failed installed startup and was deleted;
-the second is the measured artifact. The fixed package uses real files because
+Two local DMG builds total (before the parallel #286 merge): the first failed installed startup and was deleted;
+the second established installed operation. After #286 merged at the final fetch, the manual macOS workflow builds the updated artifact to avoid a third local DMG build. The fixed package uses real files because
 ASAR is not a real working directory for utilityProcess. The worker is compiled
 from the shared engine source, retaining startup and shutdown semantics.
 
@@ -39,7 +38,7 @@ No actual seed/provider credential was used in this smoke. A separate disposable
 synthetic Keychain generic password was written over stdin, read back and deleted.
 The custody/runtime limits are in desktop/README.md and contracts/SECURITY.md.
 
-`npm run check:fast` passed after the source rebase: 546 tests, 67 files.
+`npm run check:fast` passed after the source rebase: 568 tests, 70 files after the auth fold-in.
 No gate, leak threshold or test was loosened. The corpus-path expectation was
 corrected from 404 to the stricter 403. Report URL tests now use a real URL-shaped
 location and also reject a foreign app origin.
@@ -58,3 +57,5 @@ this does not claim an OS network sandbox. No live Testnet settlement, provider
 success, human usability acceptance, Developer ID signing, notarisation or
 Gatekeeper acceptance was inferred. Signing/notarisation is implemented and
 fail-closed when an identity exists; its unexercised owner setup is on #265.
+
+The staged post-#286 smoke also passed UC1–UC3 through the authenticated proxy, direct unauthenticated mutation/MCP rejection (401), and the wallet-wide cap/status controls. Remote HTTPS credential/header validation uses offline transports; no deployed remote service was used.

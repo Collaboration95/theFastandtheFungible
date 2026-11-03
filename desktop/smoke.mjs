@@ -42,6 +42,8 @@ try {
     req.on('error', fail); req.end()
   })
   expect(rebindingStatus).toBe(403)
+  expect((await fetch(`${apiUrl}/api/mcp/status`)).status).toBe(401)
+  expect((await fetch(`${apiUrl}/runs`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).status).toBe(401)
   expect((await fetch(`${apiUrl}/runs`, { method: 'POST', headers: { Origin: 'https://attacker.example' }, body: '{}' })).status).toBe(403)
   // No provider inputs are passed. This verifies fixture operation; it does not claim an OS network sandbox.
   const cases = [/^Bank of Japan decision/, /^Kestrel–TSMC outlook/, /^Malaysia packaging lead times/]
@@ -76,6 +78,9 @@ try {
   await expect(preferences.getByRole('heading', { name: 'Desktop settings' })).toBeVisible()
   const safeState = await preferences.evaluate(() => window.desktop.state())
   expect(JSON.stringify(safeState)).not.toContain(canary)
+  expect(safeState.wallet.wallet.dailyMinor).toBe(2000)
+  expect(safeState.wallet.wallet.paused).toBe(false)
+  expect(safeState).not.toHaveProperty('apiToken')
   await preferences.close()
   for (const entry of await readdir(data, { recursive: true, withFileTypes: true })) {
     if (entry.isFile()) expect((await readFile(join(entry.parentPath, entry.name))).includes(Buffer.from(canary))).toBe(false)

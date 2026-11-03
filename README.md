@@ -36,7 +36,7 @@ drag ResearchAgent to Applications, and open it. The unsigned build may need
 Finder → right-click → Open (or Privacy & Security → Open Anyway). The default
 judge mode works offline without keys and visibly labels payments SIMULATED.
 Use ⌘K for commands and ⌘, for desktop settings, Testnet wallet creation and
-Keychain provider credentials. Remote backends are disabled pending #286 auth.
+Keychain provider credentials. Remote HTTPS backends use an API token stored in Keychain.
 Seeds are encrypted in the macOS Keychain at rest and present in engine memory
 while signing. [Desktop guide](desktop/README.md) · [Build/signing](desktop/SIGNING.md).
 From source: `OFFSET=900 make app` or `OFFSET=900 make dmg`.

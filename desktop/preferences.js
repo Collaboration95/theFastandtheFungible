@@ -6,8 +6,13 @@ const action = async work => {
 void action(async () => {
   const state = await window.desktop.state()
   for (const key of ['live', 'paused']) byId(key).checked = state[key]
-  for (const key of ['maxMinor', 'dailyMinor']) byId(key).value = state[key]
-  status(`Ready · ${state.wallet.labels.settlement} · cold start ${state.coldStartMs} ms`)
+  for (const key of ['maxMinor', 'dailyMinor', 'walletDailyMinor']) byId(key).value = state[key]
+  byId('paused').checked = state.wallet?.wallet?.paused ?? state.paused
+  byId('backend').value = state.backend
+  byId('remoteUrl').value = state.remoteUrl
+  byId('walletDailyMinor').disabled = state.backend === 'remote'
+  byId('walletStatus').textContent = state.wallet?.wallet ? `Wallet cap S$${(state.wallet.wallet.dailyMinor / 100).toFixed(2)} · gross spent S$${(state.wallet.wallet.spentMinor / 100).toFixed(2)} · ${state.wallet.wallet.paused ? 'paused' : 'active'}` : 'Backend unavailable; choose Local engine to recover.'
+  status(`Ready · ${state.wallet?.labels.settlement ?? 'backend unavailable'} · cold start ${state.coldStartMs} ms`)
 })
 byId('credentials').onsubmit = event => {
   event.preventDefault()
@@ -20,4 +25,4 @@ byId('wallets').onclick = () => void action(async () => {
   finally { byId('wallets').disabled = false }
 })
 byId('mcp').onclick = () => void action(async () => { byId('command').textContent = await window.desktop.mcp(); status('MCP setup copied.') })
-byId('apply').onclick = () => void action(() => window.desktop.save({ live: byId('live').checked, paused: byId('paused').checked, maxMinor: Number(byId('maxMinor').value), dailyMinor: Number(byId('dailyMinor').value) }))
+byId('apply').onclick = () => void action(() => window.desktop.save({ backend: byId('backend').value, remoteUrl: byId('remoteUrl').value, walletDailyMinor: Number(byId('walletDailyMinor').value), live: byId('live').checked, paused: byId('paused').checked, maxMinor: Number(byId('maxMinor').value), dailyMinor: Number(byId('dailyMinor').value) }))

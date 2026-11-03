@@ -19,12 +19,11 @@ Desktop Settings can create/faucet-fund Testnet buyer and fictional publisher
 wallets, save DeepSeek/OpenAI/Cloudflare credentials to the Keychain, select live
 mode, set MCP per-call/daily caps, and pause new requests. Apply restarts the app
 and stops active work. The browser's per-question budget remains its authorization;
-MCP caps are enforced by the engine. Shared wallet-wide caps/pause are #286.
-Remote backends and remote publishers remain disabled pending #286 authentication.
-Token storage is reserved for that integration.
+MCP caps are enforced by the engine. The wallet-wide gross daily cap and durable pause apply across web/MCP/SDK (#286).
+Remote HTTPS mode skips the local engine, shows its host in the header and uses the API token saved in Keychain. Its operator configures the publisher, Host allowlist and wallet/MCP limits; the app does not raise remote caps. Save the token before applying a remote URL.
 The SDK currently covers MCP tools; this app reuses Day 1's validated UI API module
 through a main-process protocol proxy, and uses the SDK for desktop wallet status
-and the packaged MCP adapter. It adds no second UI fetch implementation.
+and the packaged MCP adapter. Local generated API tokens stay in main memory; copying the MCP command explicitly persists that token in Keychain so the adapter can reconnect after restart. Offline startup otherwise needs no Keychain access. It adds no second UI fetch implementation.
 
 Keys live at rest in macOS **generic passwords**, service `ResearchAgent`:
 buyer account `xrpl-payer`, per-writer accounts `XRPL_PUBLISHER_<SLUG>_SEED`,
