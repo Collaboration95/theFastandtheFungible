@@ -18,12 +18,11 @@ def compact(v):
     if isinstance(v, list):
         return "[" + ",".join(map(compact, v)) + "]"
     if isinstance(v, (int, float)) and not isinstance(v, bool):
+        v = float(v)  # JSON numbers have ECMAScript binary64 semantics.
         if not math.isfinite(v):
             raise ValueError("Non-finite number")
         if v == 0:
             return "0"
-        if int(v) == v and abs(v) < 1e21:
-            return str(int(v))
         s = repr(v).lower()
         if "e" in s:
             mant, exp = s.split("e")
@@ -35,8 +34,13 @@ def compact(v):
             return (
                 mant.removesuffix(".0") + "e" + ("+" if n >= 0 else "-") + str(abs(n))
             )
-        return s
-    return json.dumps(v, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+        return s.removesuffix(".0")
+    if isinstance(v, str):
+        v = v.encode("utf-16-le", "surrogatepass").decode("utf-16-le", "surrogatepass")
+    encoded = json.dumps(v, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+    return re.sub(
+        r"[\ud800-\udfff]", lambda m: "\\u" + format(ord(m[0]), "04x"), encoded
+    )
 
 
 def canonical(v):
@@ -55,7 +59,11 @@ def canonical(v):
 
 
 def sha(s):
-    return hashlib.sha256(s.encode("utf-8", "surrogatepass")).hexdigest()
+    return hashlib.sha256(
+        s.encode("utf-16-le", "surrogatepass")
+        .decode("utf-16-le", "replace")
+        .encode("utf-8")
+    ).hexdigest()
 
 
 def leaf(salt, index, span, text):
@@ -144,19 +152,26 @@ def schema(v, s):
         ):
             raise ValueError("bounds")
     if t == "string":
-        if not isinstance(v, str) or not s.get("minLength", 0) <= len(v) <= s.get(
-            "maxLength", math.inf
-        ):
+        if not isinstance(v, str) or not s.get("minLength", 0) <= len(v.encode("utf-16-le", "surrogatepass")) // 2 <= s.get("maxLength", math.inf):
             raise ValueError("string")
         pattern = s.get("pattern")
         if pattern:
             if "\\p{L}" in pattern:
-                if len(v.split()) > 6 or any(not (c.isalpha() or c in " -") for c in v):
+                phrases = re.split("[ -]", v)
+                if not 1 <= len(phrases) <= 6 or not all(p and all(c.isalpha() for c in p) for p in phrases):
                     raise ValueError("phrase")
             elif not re.search(pattern, v):
                 raise ValueError("pattern")
-        if s.get("format") == "uri" and not urlsplit(v).scheme:
-            raise ValueError("url")
+        if s.get("format") == "uri":
+            url = urlsplit(v)
+            if not url.scheme or not (url.netloc or url.path):
+                raise ValueError("url")
+            if url.scheme in ("http", "https", "ftp", "ws", "wss"):
+                if not url.hostname or any(
+                    c.isspace() or c in "<>^`{}|" for c in url.hostname
+                ):
+                    raise ValueError("url")
+                _ = url.port  # Reject malformed or out-of-range ports.
     if t == "boolean" and type(v) != bool:
         raise ValueError("boolean")
     if t == "null" and v is not None:
@@ -819,6 +834,7 @@ def verify(export, *, expect_head=None):
         )
     except (
         ValueError,
+        OverflowError,
         KeyError,
         TypeError,
         IndexError,

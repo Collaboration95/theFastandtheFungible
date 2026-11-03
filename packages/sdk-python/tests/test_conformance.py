@@ -34,6 +34,20 @@ def test_conformance(case, monkeypatch):
 
 
 def test_canonical():
+    from researchagent.verify import schema
+
+    for invalid in ("http:", "http://", "https://bad host/"):
+        with pytest.raises(ValueError):
+            schema(invalid, {"type": "string", "format": "uri"})
+    for invalid in (" leading", "two--words", "trailing "):
+        with pytest.raises(ValueError):
+            schema(invalid, {"type": "string", "pattern": r"^[\p{L}]+(?:[ -][\p{L}]+){0,5}$"})
+    with pytest.raises(ValueError):
+        schema("𐐀" * 25, {"type": "string", "maxLength": 48})
+    assert canonical(1000000000000000100) == "1000000000000000100"
+    assert canonical("\ud800") == '"\\ud800"'
+    assert canonical(10**21) == "1e+21"
+    assert canonical(9007199254740993) == "9007199254740992"
     assert (
         canonical({"z": 1.0, "a": ["é", 1e-7, 1e-6, 1e21]})
         == '{"a":["é",1e-7,0.000001,1e+21],"z":1}'

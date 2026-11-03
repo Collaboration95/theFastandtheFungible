@@ -57,5 +57,8 @@ for (const fixture of fixtures) {
   }
 }
 for (const fixture of ['verify-278/tampered.json','verify-278/before.json']) cases.push({name:fixture,fixture:`docs/evidence/${fixture}`,expected:false,mutations:[]})
+cases.push({name:'verify-278/report-golden',fixture:'docs/evidence/verify-278/report.json',expected:true,mutations:[]})
+cases.push({name:'verify-278/report-source',fixture:'docs/evidence/verify-278/report.json',expected:false,mutations:[{path:['report','sources',0,'body'],value:'tampered report body'}]})
+cases.push({name:'verify-278/report-citation',fixture:'docs/evidence/verify-278/report.json',expected:false,mutations:[{path:['report','findings',0,'citations',0,'spanId'],value:'missing-span'}]})
 writeFileSync('tests/fixtures/receipt-conformance/manifest.json', JSON.stringify({version:1,cases},null,2)+'\n')
 for (const [name,schema] of Object.entries({bundle:ReceiptBundleSchema,report:ReportSchema})) writeFileSync(`packages/sdk-python/src/researchagent/${name}-schema.json`,JSON.stringify(z.toJSONSchema(schema,{io:'input'}),null,2)+'\n')

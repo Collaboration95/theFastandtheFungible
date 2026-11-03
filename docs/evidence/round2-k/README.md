@@ -4,23 +4,23 @@ LOCAL offline evidence, 4 November 2026, based on main #350 (472ac268).
 No live providers, Testnet queries/transactions, real funds or semantic assessment.
 
 Both runners consume `tests/fixtures/receipt-conformance/manifest.json` with explicit
-expected verdicts and declarative field mutations. Nine goldens: original verify-278,
+expected verdicts and declarative field mutations. Ten goldens: original verify-278 bundle and report wrapper,
 round2-f v1/v2, round2-g useful/redundant/refunded v3, both historical RLUSD exports,
 and a locally signed secp256k1 free-source fixture. Historical Testnet labels are
 preserved; this verification did not look up their ledger transactions.
 
 | Receipt version | Golden | Invalid | Total |
 |---|---:|---:|---:|
-| v1 | 5 | 69 | 74 |
+| v1 | 6 | 71 | 77 |
 | v2 | 1 | 17 | 18 |
 | v3 | 3 | 78 | 81 |
 | Legacy unsupported report | 0 | 1 | 1 |
-| Total | 9 | 165 | 174 |
+| Total | 10 | 167 | 177 |
 
-Agreement: **174/174, 100%**, each also matches the manifest expected verdict.
+Agreement: **177/177, 100%**, each also matches the manifest expected verdict.
 `results.json` records exact counts and Python timing. TS fixture execution was
-2.02 seconds locally (175 tests including schema drift guard); Python whole SDK
-suite was 9.26 seconds (202 tests). These are local timings, not performance SLAs.
+2.05 seconds locally (178 tests including schema drift guard); Python whole SDK
+suite was 9.78 seconds (205 tests). These are local timings, not performance SLAs.
 
 Mutations cover origin, signing key/signature, manifest, passage/salt, signed claim,
 receipt version, grant, amount, retention/citation and audit links/hashes/head.

@@ -42,12 +42,12 @@ ResearchAgentError exposes code and HTTP status; UnauthorizedError,
 InvalidRequestError, BackendError and VerificationError are typed subclasses.
 Response bodies and low-level errors are not echoed.
 
-verify(export, repo_dir='/path/to/checkout') accepts a JSON object or local
-JSON/PDF path and shells without a shell to npm run verify:answer -- FILE --json.
-There is no engine verify endpoint. This requires the ResearchAgent checkout,
-Node and npm ci; it is not standalone Python cryptographic verification. It runs
-offline, returns ok=false for tampering, and raises VerificationError for IO or
-invocation failure. Self-contained hashes do not prove independent authenticity.
+`Client.verify(export)` independently verifies a JSON object or JSON path in
+Python. See **Verify receipts without Node** below. Explicitly supplying
+`repo_dir='/path/to/checkout'` selects the legacy Node wrapper, which also accepts
+PDF exports and requires Node and `npm ci`; invocation failures raise
+VerificationError. There is no engine verify endpoint. Self-contained hashes
+do not prove independent authenticity.
 
 Tests use the real local engine with synthetic providers, simulated settlement,
 and ephemeral ports; no live providers or ledger submission:
@@ -72,10 +72,10 @@ bytes and SHA-256; `consumer-results.json` records acceptance separately.
 The npm consumer installs declared dependencies normally in a temporary project;
 the wheel uses a new venv; MCP starts from the extracted MCPB. Each asks twice
 with the same key and checks delivered citations, one receipt/intent and caps.
-No registry publication is performed. Python offline verification still invokes
-the repository verifier and requires its Node dependencies; wheel installation
-alone does not supply that verifier. Minimum supported Node is 22.13 and Python
-3.10; hosted artifact acceptance uses those runtimes.
+No registry publication is performed. The installed Python wheel now independently
+verifies its exported receipts as part of the clean consumer check. Minimum
+supported Node for the engine/legacy wrapper is 22.13; Python is 3.10. Hosted
+artifact acceptance uses those runtimes.
 
 See [release artifact evidence](evidence/round2-d/README.md).
 

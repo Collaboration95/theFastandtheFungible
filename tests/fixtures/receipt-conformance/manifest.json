@@ -11579,6 +11579,46 @@
       "fixture": "docs/evidence/verify-278/before.json",
       "expected": false,
       "mutations": []
+    },
+    {
+      "name": "verify-278/report-golden",
+      "fixture": "docs/evidence/verify-278/report.json",
+      "expected": true,
+      "mutations": []
+    },
+    {
+      "name": "verify-278/report-source",
+      "fixture": "docs/evidence/verify-278/report.json",
+      "expected": false,
+      "mutations": [
+        {
+          "path": [
+            "report",
+            "sources",
+            0,
+            "body"
+          ],
+          "value": "tampered report body"
+        }
+      ]
+    },
+    {
+      "name": "verify-278/report-citation",
+      "fixture": "docs/evidence/verify-278/report.json",
+      "expected": false,
+      "mutations": [
+        {
+          "path": [
+            "report",
+            "findings",
+            0,
+            "citations",
+            0,
+            "spanId"
+          ],
+          "value": "missing-span"
+        }
+      ]
     }
   ]
 }
