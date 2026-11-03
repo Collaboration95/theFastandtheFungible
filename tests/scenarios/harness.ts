@@ -204,8 +204,9 @@ function leakIndex(corpus: WriterCorpus): LeakIndex {
 
 export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus) {
   const { paid, markers } = leakIndex(corpus)
-  const raws = new Map<Observation, Set<string>>()
   for (const observation of observations) {
+    // Release this large token set before inspecting the next growing SSE snapshot.
+    let seen: Set<string> | undefined
     const granted = paid.filter(a => observation.grants.some(g => g.runId === observation.runId && g.resourceId === a.articleId && g.version === a.version))
     const grantedRuns = new Set(granted.flatMap(a => runsOf(a.body)))
     for (const article of paid) {
@@ -215,8 +216,7 @@ export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus)
         if (granted.some(g => g.body.includes(marker))) continue
         if (observation.raw.includes(marker) || observation.raw.includes(JSON.stringify(marker).slice(1, -1))) throw new Error(`${observation.kind} leaked ${article.articleId} before its run/version grant: ${marker.slice(0, 60)}`)
       }
-      if (!raws.has(observation)) raws.set(observation, new Set(runsOf(observation.raw)))
-      const seen = raws.get(observation)!
+      seen ??= new Set(runsOf(observation.raw))
       for (const run of seen) if (runs.has(run) && !grantedRuns.has(run)) throw new Error(`${observation.kind} leaked ${article.articleId} before its run/version grant: ${run}`)
     }
   }

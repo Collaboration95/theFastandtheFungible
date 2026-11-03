@@ -26,6 +26,13 @@ import { snapshotCollector } from './observations.js'
 import { fixtureLedger } from './ledger.js'
 
 const [dir, fault, uc, seed] = process.argv.slice(2)
+const phaseMetrics: { phase: string; rss: number; heapUsed: number; handles: number }[] = []
+function phase(name: string) {
+  const { rss, heapUsed } = process.memoryUsage()
+  const row = { phase: name, rss, heapUsed, handles: process.getActiveResourcesInfo().length }
+  phaseMetrics.push(row); writeFileSync(join(dir, 'phase.json'), JSON.stringify(phaseMetrics)); console.error(JSON.stringify(row))
+}
+phase('imports-ready')
 const marker = join(dir, 'fault.json')
 const state: { fired: boolean; count: number } = existsSync(marker) ? JSON.parse(readFileSync(marker, 'utf8')) : { fired: false, count: 0 }
 function inject(name: string) {
@@ -56,7 +63,7 @@ const buyerLedger = { async request(r: Record<string, unknown>) {
   if (r.command === 'tx' && result.result.validated) kill('kill-after-validation')
   return result
 } }
-const corpus = await loadWriterCorpus()
+const corpus = await loadWriterCorpus(); phase('corpus-ready')
 const env = Object.fromEntries(corpus.publishers.map(p => [seedEnvName(p.slug), wallet(p.slug).seed]))
 const pub = createPublisherApp({ writers: corpus, rail: 'xrpl-testnet', ledger: chain.ledger, journal: join(dir, 'publisher.db'), env,
   facilitatorTiming: { pollMs: 1, timeoutMs: 80 } })
@@ -73,7 +80,7 @@ const proxy = createServer(async (req, res) => {
     }
     const chunks: Buffer[] = []; for await (const c of req) chunks.push(Buffer.from(c))
     const headers = { ...req.headers }; delete headers.host; delete headers.connection; delete headers['content-length']
-    const response = await fetch(origin + req.url, { method: req.method, headers: headers as Record<string, string>,
+    const response = await fetch(origin + req.url, { signal: AbortSignal.timeout(5000), method: req.method, headers: headers as Record<string, string>,
       ...(['GET', 'HEAD'].includes(req.method!) ? {} : { body: Buffer.concat(chunks) }) })
     res.writeHead(response.status, Object.fromEntries([...response.headers].filter(([k]) => !['content-encoding','transfer-encoding','content-length','connection'].includes(k))))
     res.end(Buffer.from(await response.arrayBuffer()))
@@ -85,6 +92,7 @@ if (fault === 'provider-down') Object.assign(process.env, { LLM_PROVIDER: 'deeps
 const payer = new XrplPayer(buyerLedger, wallet('buyer'), { pollMs: 1, timeoutMs: 100 })
 const api = await createApiApp({ dbPath: join(dir, 'app.db'), reportDir: join(dir, 'reports'), publisherUrl, payer, reconcileIntervalMs: 20,
   ...(fault === 'decision-down' ? { provider: { name: 'openai', model: 'unavailable-fixture', async judgeCoverage() { inject('decision-down'); throw new Error('Injected unavailable decision model') }, async judgeRound() { inject('decision-down'); throw new Error('Injected unavailable decision model') }, async judgeCandidate() { throw new Error('Injected unavailable decision model') } } } : {}) })
+phase('api-ready')
 const apiServer = api.app.listen(0, '127.0.0.1'); await once(apiServer, 'listening')
 const baseUrl = `http://127.0.0.1:${(apiServer.address() as AddressInfo).port}`
 const collector = snapshotCollector(), observations = collector.observations
@@ -157,6 +165,7 @@ try {
       inject(fault)
     }
   }
+  phase('ask-complete')
   // Exercise the running reconciler, then explicit recovery; never clear a reservation by hand.
   let stuckReservations = 0
   for (let tick = 0; tick < 6; tick++) {
@@ -174,10 +183,11 @@ try {
   for (const r of runs) for (const content of r.contents) {
     if (corpus.articles.some(a => a.articleId === content.resourceId && a.tier === 'PAID')) assert(r.grants.some(g => g.resourceId === content.resourceId && r.intents.some(i => i.intentId === g.intentId && i.status === 'VERIFIED')))
   }
-  const metricsResponse = await fetch(baseUrl + '/api/metrics', { headers: { Authorization: 'Bearer chaos-fixture-token' } })
+  const metricsResponse = await fetch(baseUrl + '/api/metrics', { signal: AbortSignal.timeout(5000), headers: { Authorization: 'Bearer chaos-fixture-token' } })
   assert.equal(metricsResponse.status, 200)
   const metrics = await metricsResponse.json()
   assert.equal(metrics.reconcileBacklog.count, 0, 'Reservations/delivery backlog held after recovery: '+JSON.stringify(api.store.listIntents().map(i => ({status:i.status,error:i.error}))))
+  phase('before-audit')
   const audit = auditRuns(readRuns(join(dir, 'app.db')), corpus, observations,
     hireResult ? [{ runId: hireResult.run_id, budgetMinor: 200, result: hireResult }] : [])
   assert.equal(audit.total, 0, JSON.stringify(audit.violations))
@@ -198,16 +208,19 @@ try {
     assert(runs.some(r => r.receipts.some(receipt => receipt.xrpl?.txHash === payment.hash)
       || api.store.policyPayments(r.runId).some(p => p.submission?.txHash === payment.hash)), 'Unaccounted confirmed buyer payment')
   }
+  phase('after-audit')
   assertNoLeaks(observations, corpus)
+  phase('after-leak-check')
   assert(api.store.walletStatus().spentMinor + api.store.walletStatus().reservedMinor <= 1000)
   const held = Object.values(metrics.spendTodayBySurface as Record<string,{reservedMinor:number}>).reduce((n,s) => n+s.reservedMinor,0)
   assert.equal(held,0,'Wallet authority held after run end')
   const result = { fault, useCase: uc, faultsInjected: state.count, payments, refunds, streams, stuckReservations,
     reservationsHeld: held, violations: audit.total, metrics,
+    phaseMetrics, observationBytes: observations.reduce((n, o) => n+Buffer.byteLength(o.raw), 0), observations: observations.length,
     rss: process.memoryUsage().rss, handles: process.getActiveResourcesInfo().length }
   writeFileSync(join(dir, 'result.json'), JSON.stringify(result))
 } finally {
-  await api.close()
+  phase('closing'); await api.close()
   for (const s of [apiServer, proxy, pubServer]) { s.closeAllConnections(); await new Promise<void>(done => s.close(() => done())) }
   pub.locals.journal.close(); chain.close()
 }
