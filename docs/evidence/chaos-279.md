@@ -93,8 +93,10 @@ targets exactly `7807ce311f0bb3ae3807eb476436c7c6ba009f52`. The script's `--at`
 path changes no package version or HEAD and pushes only the new annotated tag.
 The tag date follows the original commit. The old workflow published it, then
 Latest was explicitly restored to v0.4.0. Verified release order at publication:
-v0.4.0 → v0.3.0 → v0.2.0 → v0.1.0. A final read after the newer Day 4 release
-confirmed v0.5.0 remains Latest and the older releases keep that relative order. Existing tag objects were unchanged.
+v0.4.0 → v0.3.0 → v0.2.0 → v0.1.0. A later read after the Day 4 release
+confirmed the newer release remained Latest and the older releases kept that
+relative order; the metadata timestamps this observation. Subsequent feature-day
+releases do not change the backfilled tag or its relative position. Existing tag objects were unchanged.
 [Release metadata](release-day2.json) records the target, order, Latest and tag
 identities. Notes retain F1 0.235→0.419, uplift +11.3→+17.0 pts and the wasted
 spend regression 36.2%→47.2%, with #276 identified as the then-pending fix.
@@ -112,7 +114,12 @@ fixture `scorecard --check`, with optional historical reliability rows, then
 zero gate violations, no quality regression. [Bounded result](chaos-279-scorecard.json).
 The reliability rows describe the supplied baseline experiments, not the current
 quality run or a live availability estimate. Quality inputs and thresholds were
-left unchanged by this lane.
+left unchanged by this lane. A later heldout fixture comparison after upstream
+#324 completed its audit with zero violations and refused comparison because
+that new policy/freeze has no matching heldout fixture baseline (dev fixture and
+heldout LIVE rows exist). [Refusal evidence](chaos-279-heldout-baseline.json).
+This is not a passed current heldout quality check; the historical source-pinned
+pass above remains distinct. No baseline was invented and no comparison was bypassed.
 
 ## Interrupted integrated experiment and harness repair
 
