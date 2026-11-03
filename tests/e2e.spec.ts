@@ -62,3 +62,29 @@ for (const width of [1280, 390]) {
     }
   })
 }
+
+test('a terminal snapshot above the SSE limit recovers the same browser run without another admission (#345)', async ({ page }) => {
+  let admissions = 0
+  page.on('request', request => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/runs') admissions++
+  })
+  await page.goto('/?pace=real')
+  await ask(page, /^Kestrel–TSMC outlook/)
+  await page.getByRole('button', { name: 'pricing & margins' }).click()
+  await page.getByRole('button', { name: 'Start now' }).click()
+  await finished(page)
+  const id = new URL(page.url()).searchParams.get('run')!
+  const response = await page.request.get('/runs/' + encodeURIComponent(id))
+  const bytes = await response.body()
+  expect(bytes.byteLength).toBeGreaterThan(256 * 1024)
+  const terminal = JSON.parse(bytes.toString())
+  expect(terminal.phase).toBe('DONE')
+  await page.reload()
+  await finished(page)
+  expect(new URL(page.url()).searchParams.get('run')).toBe(id)
+  expect(admissions).toBe(1)
+  const again = await (await page.request.get('/runs/' + encodeURIComponent(id))).json()
+  expect(again.receipts).toEqual(terminal.receipts)
+  expect(again.spentMinor).toBe(terminal.spentMinor)
+  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought')
+})
