@@ -35,3 +35,5 @@ Primary sources accessed 2026-11-04:
 These specify semantics, not current network/issuer capabilities. Facilitator
 build revision and issued-codec execution remain unknown. Upstream drafts are
 prepared only; no issue or comment was posted externally.
+
+Final local checks: 749 unit tests; 5 ledger unit tests; 3 ledger browser tests; 20 chaos-smoke episodes with zero invariant violations. Manual browser check retained nine rows with JavaScript disabled and reached download/refresh via actual Tab events. A single actual browser read-only refresh reached the API and retained historical/missing status; this is not fresh transaction verification or general browser-availability proof.

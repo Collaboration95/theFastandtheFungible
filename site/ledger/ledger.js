@@ -44,7 +44,7 @@ if (typeof document !== 'undefined') {
   document.querySelector('#rows').replaceChildren()
   for (const row of data.rows) {
     const tr = document.createElement('tr')
-    const amount = row.deliveredAmount ?? row.amountDrops ?? 'not transferred by this operation'
+    const amount = row.deliveredAmount ?? row.amountDrops ?? 'principal amount not recorded in this evidence'
     for (const text of [`${row.group}: ${row.operation ?? row.kind} · ${row.date}`, `${typeof amount === 'object' ? amount.value + ' RLUSD · issuer ' + amount.issuer : amount + (row.deliveredAmount || row.amountDrops ? ' drops' : '')} · fee ${row.feeDrops} drops`]) { const td = document.createElement('td'); td.textContent = text; tr.append(td) }
     const source = document.createElement('td'); const a = document.createElement('a'); a.href = 'https://github.com/Collaboration95/theFastandtheFungible/blob/ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c/' + row.source; a.textContent = `Ledger ${row.ledgerIndex} · committed source`; source.append(a); tr.append(source)
     const td = document.createElement('td'); const link = document.createElement('a'); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.textContent = row.hash; const state = document.createElement('span'); state.className='state'; state.textContent='Historical; not freshly verified'; td.append(link,state); cells.set(row.hash,state); tr.append(td); document.querySelector('#rows').append(tr)

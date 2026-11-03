@@ -495,3 +495,5 @@ Significant product, design and process decisions, newest first. One line each: 
 - Judging criteria and PR template: every PR opens with the criterion it serves (#251).
 - Filed the cleanup as #248–#250 (one PR). Started the CI-cost work. Started planning the next feature set.
 - Closed stale draft PRs #245, #246. Cloud Run kept in reserve (code at `ce77f59`).
+
+- 2026-11-04: Lane E ranks six XRPL/x402 findings, pins capability profiles, and adds a generated nine-row historical TESTNET ledger with bounded read-only refresh; fixture/browser/axe checks pass. Public tx lookup returned txnNotFound, so no fresh verification or deployment is claimed.

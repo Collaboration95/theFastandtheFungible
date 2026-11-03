@@ -574,3 +574,18 @@ from source/document-derived constraints. No mainnet execution.
 | Code-derived, covered by render regression · 2026-11-03 | Ledger UI treated issued decimal amountDrops as XRP drops; wallet receivedDrops aggregate mixed assets. | Render official RLUSD label and decimal token units; restrict XRP aggregate to native receipts. | Include asset-tagged amounts throughout sample UIs and never divide token values by 1e6. | Medium | Same representation error is possible on mainnet; no live mainnet incident claimed. |
 
 - **4 Nov 2026 — observed local fixture tooling incident (no Testnet/mainnet transaction):** the 12-hour soak on `eae85ed` stopped on a watchdog at iteration 3031; host power logs establish a matching 606-second clamshell sleep. Stdout was discarded and no stack was retained. Evidence: `docs/evidence/soak-nov4-run1.json` and `docs/evidence/soak-nov4-host-sleep.json`, analysis: `docs/evidence/soak-nov4.md`. Workaround/fix: bounded LLM awaits and nonblocking cancellation, sequential leak-audit token sets, preloaded sanitized diagnostics and continue-on-violation watchdogs. Suggested tooling fix: always preserve bounded child output and phase/resource samples. Severity: high for soak reliability; mainnet impact: no observed mainnet incident, model timeout availability risk is code-derived, fixture audit allocation is test-only.
+
+## 4 Nov 2026 — historical transaction lookup unavailable
+
+- **Observed, read-only Testnet API; low verification friction:** the fixed
+  xrpl-labs Testnet endpoint returned HTTP 200 / txnNotFound for committed RLUSD
+  purchase 1F2449A4660747066E99A89CEA5B49276D266F35820789042A8694EDB1DA23AF.
+  Evidence: `docs/evidence/round2-e/rpc-attempt.json`; source baseline
+  ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c. Reproduction: one API-v2 `tx` lookup
+  by that hash, no account query. The page's browser refresh also retained its
+  historical/missing status for the same hash. This does not establish a reset
+  cause or an invalid original payment. Workaround: retain dated committed
+  receipts, source links and offline verification. Suggested fix: document
+  history retention/reset boundaries and archival lookup availability explicitly.
+  Severity: low (fresh verification unavailable). Mainnet impact: none observed;
+  no mainnet request, transaction, signing or funding operation occurred.
