@@ -1,0 +1,21 @@
+{
+  "sourceIdentityVersion": 1,
+  "receiptBundleVersions": [
+    1,
+    2
+  ],
+  "canonicalHelper": "shared/source-identity.ts:sourceKey",
+  "tuple": [
+    "origin",
+    "sellerKey",
+    "profileId",
+    "resourceId",
+    "version"
+  ],
+  "citation": "JSON tuple of sourceKey and spanId",
+  "sellerKey": "signed manifest public key; free results bind on verified free read",
+  "legacy": "Missing source remains unresolved and retains original singleton semantics. No old entries, invoices, intent IDs, manifests or blobs are rewritten. New federation never guesses an origin for historical obligations.",
+  "recovery": "Endpoint context is saved with the reservation, before signing. Removal disables new purchase admission; existing obligations retain the saved numeric loopback endpoint.",
+  "trust": "Reputation remains keyed by seller wallet across origins.",
+  "receiptDispatch": "v1 rejects source extensions, preserves legacy semantics and labels origin unresolved; v2 requires matching source fields and audited reservation context."
+}

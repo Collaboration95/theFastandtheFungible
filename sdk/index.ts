@@ -1,3 +1,4 @@
+import { SourceIdentitySchema } from '../shared/source-identity.js'
 import { ReceiptBundleSchema } from '../shared/contracts/receipts.js'
 export { verifyAnswer, verificationText } from './verify.js'
 export type { ReceiptBundle, VerificationResult, VerifyOptions } from './verify.js'
@@ -26,7 +27,7 @@ const StatusSchema = z.object({
 const SearchSchema = z.object({
   labels: ModeLabelsSchema, corpusLabel: z.string(), unavailable: z.array(z.string()),
   hits: z.array(z.object({ untrusted: z.literal(true), title: z.string(), writer: z.string(), tier: z.enum(['FREE', 'PAID']),
-    priceMinor: z.number(), abstract: z.string(), relevance: z.number(), url: z.url() })),
+    source: SourceIdentitySchema.optional(), priceMinor: z.number(), abstract: z.string(), relevance: z.number(), url: z.url() })),
 })
 export type SearchResult = z.infer<typeof SearchSchema>
 export type AskOptions = {

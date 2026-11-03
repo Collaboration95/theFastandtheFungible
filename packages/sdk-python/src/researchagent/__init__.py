@@ -59,14 +59,14 @@ def _present(run: dict[str, Any]) -> AskResult:
     citations = []
     for claim in (answer or {}).get('claims', []):
         for citation in claim['citations']:
-            content = next((c for c in run['contents'] if c['resourceId'] == citation['resourceId']
+            content = next((c for c in run['contents'] if c.get('source') == citation.get('source') and c['resourceId'] == citation['resourceId']
                             and c['version'] == citation['version']
                             and any(s['id'] == citation['spanId'] for s in c['spans'])), None)
             if content is None:
                 raise BackendError('backend_unavailable')
-            candidate = next((c for c in run['candidates'] if c['resourceId'] == content['resourceId']
+            candidate = next((c for c in run['candidates'] if c.get('source') == content.get('source') and c['resourceId'] == content['resourceId']
                               and c['version'] == content['version'] and c['profileId'] == content['profileId']), None)
-            grant = next((g for g in run['grants'] if g['resourceId'] == content['resourceId']
+            grant = next((g for g in run['grants'] if g.get('source') == content.get('source') and g['resourceId'] == content['resourceId']
                           and g['version'] == content['version'] and any(i['intentId'] == g['intentId']
                           and i['status'] == 'VERIFIED' for i in run['intents'])), None)
             if candidate is None or (candidate['tier'] != 'FREE' and grant is None):

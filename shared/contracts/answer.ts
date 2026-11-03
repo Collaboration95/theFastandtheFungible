@@ -1,8 +1,9 @@
+import { SourceIdentitySchema } from '../source-identity.js'
 import { z } from 'zod'
 export const LlmProviderSchema = z.enum(['deepseek', 'groq', 'openai-compatible', 'fixture'])
 /** Visible provider names for labels (gate ⑤). */
 export const providerLabels: Record<z.infer<typeof LlmProviderSchema>, string> = { 'openai-compatible': 'OpenAI-compatible', deepseek: 'DeepSeek', groq: 'Groq', fixture: 'fixture' }
-export const CitationSchema = z.object({ resourceId: z.string(), version: z.string(), spanId: z.string() })
+export const CitationSchema = z.object({ source: SourceIdentitySchema.optional(), resourceId: z.string(), version: z.string(), spanId: z.string() })
 export const ClaimSchema = z.object({ id: z.string(), text: z.string().min(1), stance: z.enum(['SUPPORTS', 'CHALLENGES', 'UNCERTAIN']), citations: z.array(CitationSchema).min(1) })
 /** A free-text gap (D10): what is missing, never what to buy. */
 export const GapSchema = z.object({ text: z.string().min(1).max(160), tags: z.array(z.string()).optional() })

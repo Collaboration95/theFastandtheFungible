@@ -1,3 +1,4 @@
+import { sourceKey, sameSource, type SourceRef } from '../shared/source-identity.js'
 /* eslint-disable react-refresh/only-export-components -- Small shared helpers next to the logo mark. */
 import { brandPath, brandFavicons } from './assets/brand/identity'
 import { RLUSD_TESTNET_ISSUER, type Asset } from '../shared/contracts/asset.js'
@@ -7,8 +8,8 @@ export const settlementAssetLabel = (asset?: Asset) => !asset || asset === 'XRP'
 
 export const money = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 export const shortHash = (hash: string) => hash.length > 14 ? `${hash.slice(0, 6)}…${hash.slice(-5)}` : hash
-export const candidateOf = (run: RunSnapshot, ref: { resourceId: string; version: string }) => run.candidates.find(item => item.resourceId === ref.resourceId && item.version === ref.version)
-export const citationKey = (citation: Citation) => `${citation.resourceId}|${citation.version}|${citation.spanId}`
+export const candidateOf = (run: RunSnapshot, ref: SourceRef) => run.candidates.find(item => sameSource(item, ref))
+export const citationKey = (citation: Citation) => JSON.stringify([sourceKey(citation), citation.spanId])
 /** First sentence of a conclusion: the short answer. */
 export const leadSentence = (text: string) => text.match(/^.*?[.!?](?=\s+[A-Z]|$)/s)?.[0] ?? text
 
@@ -19,7 +20,8 @@ export function plainVerdict(row: DecisionRow, run: RunSnapshot): { stamp: strin
   if (row.verdict === 'SKIP_OVER_CAP') return { stamp: 'SKIP', tone: 'cap', why: `${price} is over the ${money(run.perSourceCapMinor)} per-source cap` }
   if (row.verdict === 'SKIP_OVER_BUDGET') return row.wouldBuy ? { stamp: 'WOULD BUY', tone: 'would', why: run.budgetMinor === 0 ? `Would buy with a budget of ${price} or more` : 'Would buy, but too little budget is left' } : { stamp: 'SKIP', tone: 'skip', why: 'Costs more than the budget left' }
   if (row.verdict === 'SKIP_REWRITE') {
-    const source = row.candidate.derivedFrom ? run.candidates.find(item => item.resourceId === row.candidate.derivedFrom) : undefined
+    const matches = row.candidate.derivedFrom ? run.candidates.filter(item => item.resourceId === row.candidate.derivedFrom) : []
+    const source = new Set(matches.map(sourceKey)).size === 1 ? matches[0] : undefined
     return { stamp: 'REWRITE', tone: 'skip', why: source ? `A rewrite of ${source.publisher}` : 'A rewrite of evidence it already has' }
   }
   if (row.verdict === 'SKIP_LOW_TRUST') {

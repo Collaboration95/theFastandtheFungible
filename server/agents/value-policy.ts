@@ -1,5 +1,6 @@
 // #276: models estimate; this pure rule can only reject/rank, never submit a payment.
 import type { ContentEnvelope, PublicCandidate } from '../../shared/contracts/index.js'
+import { sameSource } from '../../shared/source-identity.js'
 import { noNewEvidence } from './requirements.js'
 import { signedFactMenu } from './clef.js'
 import { satisfiesFactCover } from '../../shared/fact-menu.js'
@@ -32,7 +33,7 @@ export function activeValueFit(key: { name: string; model: string; promptVersion
 export function marginalValue(input: { candidate: PublicCandidate; evidence: ContentEnvelope[]; probability: number; trust: number; model?: CalibrationModel; minFactsPerDollar?: number }) {
   const menu = signedFactMenu(input.candidate)
   const covered = menu.filter(f => input.evidence.some(c =>
-    (c.resourceId === input.candidate.resourceId && c.version === input.candidate.version) ||
+    sameSource(c,input.candidate) ||
     Boolean((f.period || f.comparison) && c.spans.some(span => span.text.split(/(?<=[.!?])\s+/).some(text => !noNewEvidence.test(text)
       && !/not (?:disclosed|available|published)|no (?:dated|independent|confirmed)/i.test(text)
       && /\b(?!20\d{2}\b)\d+(?:[.,]\d+)?\b/.test(text) && !/\b(?:no|not|without)\b/i.test(text) && satisfiesFactCover(text, f)))))).length

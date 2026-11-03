@@ -615,3 +615,25 @@ the preset stayed disabled (local /tmp/lane-d-e2e-ratchet.log). Workaround/fix:
 wait for proxied /api/health before browser admission. The 13-case rerun passes
 in docs/evidence/round2-d/browser-ready.log. Severity: low; no direct mainnet
 impact. No readiness timeout was raised.
+
+## 4 Nov 2026 — x402 publisher-origin identity
+
+- **Code-derived failure mode, reproduced with offline simulated fixtures:**
+  independent publishers can reuse article/version/span IDs and the same XRPL
+  wallet. Local IDs or wallet identity alone therefore cannot select an HTTP
+  delivery endpoint or a cited writer's royalty recipient. Evidence:
+  `docs/evidence/round2-f/origins.json`, `tests/source-identity.test.ts` and
+  `tests/hire-source-identity.test.ts`. Workaround: persist the approved origin,
+  signer key and complete source identity before signing; retain that endpoint
+  for same-blob recovery and fail closed on unresolved recipients. Suggested
+  tooling fix: include origin-qualified routing context in client journals and
+  examples without changing signed x402 bytes. Severity: high for federated
+  attribution and credential routing. Mainnet impact: code-derived risk only;
+  no live provider, Testnet or mainnet operation was performed for this proof.
+
+Unsigned escrow and budget refusals also retain their source-qualified audit
+context; offline receipt verification distinguishes these uncharged outcomes
+from signed reservations. Evidence: `tests/purchase.test.ts`.
+Exact source matching also prevents collided local IDs from mislabelling report
+citations or measuring one writer’s calibration against another’s delivery;
+offline regressions cover both (`tests/report.test.ts`, `tests/reputation.test.ts`).

@@ -1,6 +1,8 @@
+import { sameSource } from '../../shared/source-identity.js'
 import type { Answer, Citation, Claim, ContentEnvelope } from '../../shared/contracts/index.js'
 export function resolveCitation(citation: Citation, contents: ContentEnvelope[]) {
-  const content = contents.find(c => c.resourceId === citation.resourceId && c.version === citation.version)
+  const matches = contents.filter(c => sameSource(c, citation))
+  const content = matches.length === 1 ? matches[0] : undefined
   return content?.spans.find(s => s.id === citation.spanId && s.text.length > 0 && content.body.includes(s.text))
 }
 

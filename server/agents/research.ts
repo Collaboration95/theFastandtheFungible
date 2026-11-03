@@ -1,3 +1,4 @@
+import { sourceKey, sameSource } from '../../shared/source-identity.js'
 import { LEGACY_SOURCE_INSTRUCTION } from './untrusted.js'
 import { requestedPassageScores } from './fact-selection.js'
 import { reportModelFallback } from '../telemetry.js'
@@ -32,7 +33,7 @@ const KIND_AUTHORITY = { records: 2, masthead: 1.5, independent: 1 } as const
 export type DroppedHit = { publisherSlug: string; resourceId: string; reason: string }
 export type Retrieved = { candidates: PublicCandidate[]; contents: ContentEnvelope[]; hits: SearchHit[]; dropped: DroppedHit[]; search?: ModeLabels['search']; unavailable: string[] }
 
-const hitKey = (hit: Pick<SearchHit, 'articleId' | 'version'>) => `${hit.articleId}@${hit.version}`
+const hitKey = (hit: Pick<SearchHit, 'articleId' | 'version' | 'source'>) => sourceKey({ ...hit, resourceId: hit.articleId })
 /**
  * Reciprocal-rank fusion over per-publisher, per-sub-query result lists. Price-blind:
  * only list positions count. Ties break on a hash of (query, article id, version) (#204):
@@ -49,7 +50,7 @@ export function fuse(lists: SearchHit[][], query = '', k = RETRIEVAL.rrfK): Sear
   // Sorting the ranks makes the float sum independent of list order.
   const score = (ranks: number[]) => [...ranks].sort((a, b) => a - b).reduce((sum, rank) => sum + 1 / (k + rank), 0)
   return [...fused.values()].map(e => ({ hit: e.hit, score: score(e.ranks) }))
-    .sort((a, b) => b.score - a.score || compareTieBreak(query, { id: a.hit.articleId, version: a.hit.version }, { id: b.hit.articleId, version: b.hit.version })).map(e => e.hit)
+    .sort((a, b) => b.score - a.score || compareTieBreak(query, { id: a.hit.source ? hitKey(a.hit) : a.hit.articleId, version: a.hit.version }, { id: b.hit.source ? hitKey(b.hit) : b.hit.articleId, version: b.hit.version })).map(e => e.hit)
 }
 /** Same family or derivedFrom: both rows stay; a rewrite without derivedFrom is marked with the family's earliest original. */
 export function markRewrites(hits: SearchHit[]): SearchHit[] {
@@ -73,7 +74,7 @@ export function manifestProblem(hit: SearchHit, wallet: string | undefined): str
   return undefined
 }
 const toCandidate = (hit: SearchHit, publisher: RegistryPublisher): PublicCandidate => PublicCandidateSchema.parse({
-  profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: hit.title, publisher: publisher.name, preview: hit.abstract,
+  source: hit.source, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: hit.title, publisher: publisher.name, preview: hit.abstract,
   price: { amountMinor: hit.priceMinor, currency: 'SGD' }, ...(hit.manifest ? { wallet: hit.manifest.wallet, manifest: hit.manifest } : {}), family: hit.family, ...(hit.derivedFrom ? { derivedFrom: hit.derivedFrom } : {}),
   facets: hit.tags, authority: KIND_AUTHORITY[publisher.kind], tier: hit.tier, verification: hit.verification, license: { kind: publisher.synthetic === false ? 'AUTHOR SUPPLIED' : 'SYNTHETIC', attribution: publisher.name },
   publisherSlug: hit.publisherSlug, writerSlug: hit.writerSlug, url: hit.url, relevance: hit.relevance,
@@ -89,7 +90,8 @@ export function retrieve(client: PublisherClient, question: string, plan?: Plan)
   }), 'retriever')
 }
 async function retrieveSources(client: PublisherClient, question: string, plan?: Plan): Promise<Retrieved> {
-  const publishers = await client.registry().catch(() => [])
+  if (typeof client.origins === 'function' && !client.options?.deadline) return federation(client, c => retrieveSources(c, question, plan), question)
+  const publishers = await client.registry().catch(error => { if (client.options?.deadline) throw error; return [] })
   const queries = plan?.subqueries.length ? plan.subqueries : [question.slice(0, 300)]
   const jobs = publishers.flatMap(publisher => queries.map(q => ({ publisher, q })))
   const settled = await Promise.allSettled(jobs.map(job => client.searchPublisher(job.publisher.slug, job.q, RETRIEVAL.perPublisherK, RETRIEVAL.searchTimeoutMs)))
@@ -118,7 +120,7 @@ async function retrieveSources(client: PublisherClient, question: string, plan?:
 /** The focused follow-up search's bounds (#210): one query per run, at most this many new paid hits join the judging pool. */
 export const FOLLOW_UP = { paidToAdd: 4, maxK: 10 }
 export type FollowUpRetrieved = Retrieved
-const identity = (c: { resourceId: string; version: string }) => `${c.resourceId}@${c.version}`
+const identity = sourceKey
 /**
  * One focused federated search for an unresolved requirement (#210), traced as the follow-up-search retriever.
  * Exclusions stay client-side and per publisher: each publisher is asked for k = min(10, 5 + its known hits), and
@@ -126,14 +128,15 @@ const identity = (c: { resourceId: string; version: string }) => `${c.resourceId
  * never learns what was read from a competitor. Returns only NEW candidates (never mutating known ones): the new
  * free hits that were read, and at most four new paid hits, ranked price-blind.
  */
-export function followUpSearch(client: PublisherClient, query: string, known: Pick<PublicCandidate, 'resourceId' | 'version' | 'profileId' | 'publisherSlug'>[]): Promise<FollowUpRetrieved> {
+export function followUpSearch(client: PublisherClient, query: string, known: Pick<PublicCandidate, 'resourceId' | 'version' | 'profileId' | 'publisherSlug' | 'source'>[]): Promise<FollowUpRetrieved> {
   return traceStep('follow-up-search', { query, known: known.length }, () => followUp(client, query, known), result => ({
     searchMode: result.search, perPublisher: hitsByPublisher(result.hits), unavailable: result.unavailable, dropped: result.dropped,
     candidates: result.candidates.map(c => ({ resourceId: c.resourceId, profile: c.profileId, tier: c.tier })), readFree: result.contents.map(c => c.resourceId),
   }), 'retriever')
 }
-async function followUp(client: PublisherClient, query: string, known: Pick<PublicCandidate, 'resourceId' | 'version' | 'profileId' | 'publisherSlug'>[]): Promise<FollowUpRetrieved> {
-  const publishers = await client.registry().catch(() => [])
+async function followUp(client: PublisherClient, query: string, known: Pick<PublicCandidate, 'resourceId' | 'version' | 'profileId' | 'publisherSlug' | 'source'>[]): Promise<FollowUpRetrieved> {
+  if (typeof client.origins === 'function' && !client.options?.deadline) return federation(client, c => followUp(c, query, known), query)
+  const publishers = await client.registry().catch(error => { if (client.options?.deadline) throw error; return [] })
   const knownBy = (slug: string) => new Set(known.filter(c => (c.publisherSlug ?? c.profileId) === slug).map(identity))
   const settled = await Promise.allSettled(publishers.map(p => client.searchPublisher(p.slug, query, Math.min(FOLLOW_UP.maxK, RETRIEVAL.perPublisherK + knownBy(p.slug).size), RETRIEVAL.searchTimeoutMs)))
   const dropped: DroppedHit[] = []
@@ -143,7 +146,7 @@ async function followUp(client: PublisherClient, query: string, known: Pick<Publ
     if (result.status === 'rejected') { unavailable.add(publisher.slug); return [] }
     const excluded = knownBy(publisher.slug)
     return result.value.filter(hit => {
-      if (excluded.has(identity({ resourceId: hit.articleId, version: hit.version }))) return false
+      if (excluded.has(identity({ source: hit.source, resourceId: hit.articleId, version: hit.version }))) return false
       const problem = manifestProblem(hit, publisher.wallet)
       if (problem && !dropped.some(d => d.resourceId === hit.articleId)) dropped.push({ publisherSlug: hit.publisherSlug, resourceId: hit.articleId, reason: problem })
       return !problem
@@ -151,14 +154,14 @@ async function followUp(client: PublisherClient, query: string, known: Pick<Publ
   })
   // A hit another publisher's list already registered (same id and version) is known too.
   const all = new Set(known.map(identity))
-  const hits = markRewrites(fuse(lists, query)).filter(h => !all.has(identity({ resourceId: h.articleId, version: h.version })))
+  const hits = markRewrites(fuse(lists, query)).filter(h => !all.has(identity({ source: h.source, resourceId: h.articleId, version: h.version })))
   const bySlug = new Map(publishers.map(p => [p.slug, p]))
   const free = hits.filter(h => h.tier === 'FREE').slice(0, RETRIEVAL.freeReads)
   const paid = hits.filter(h => h.tier === 'PAID').slice(0, FOLLOW_UP.paidToAdd)
   const reads = await Promise.allSettled(free.map(h => client.readFree(h, bySlug.get(h.publisherSlug)!.name)))
   const contents = reads.flatMap(r => r.status === 'fulfilled' ? [r.value] : [])
   // Register only what was read or may be judged: a free hit whose read failed adds nothing.
-  const kept = hits.filter(h => paid.includes(h) || contents.some(c => c.resourceId === h.articleId && c.version === h.version && c.profileId === h.publisherSlug))
+  const kept = hits.filter(h => paid.includes(h) || contents.some(c => sameSource(c, {source:h.source,resourceId:h.articleId,version:h.version})))
   // Gate 5: any publisher answering in keyword mode makes the follow-up keyword-only, even when nothing new was kept.
   const returned = settled.flatMap(r => r.status === 'fulfilled' ? r.value : [])
   const search = !returned.length ? undefined : returned.some(h => h.searchMode === 'keyword') ? SEARCH_LABELS[1] : SEARCH_LABELS[0]
@@ -169,12 +172,12 @@ async function followUp(client: PublisherClient, query: string, known: Pick<Publ
 const instruction = INSTRUCTION
 export const usableContents = (contents: ContentEnvelope[]) => contents.map(c => ({ ...c, spans: c.spans.filter(s => !(process.env.DECISION_NUMBERS_POLICY === 'off' ? LEGACY_SOURCE_INSTRUCTION : instruction).test(s.text) && c.body.includes(s.text)) }))
 function priorContents(contents: ContentEnvelope[], candidates: PublicCandidate[], previous: Answer) {
-  return contents.filter(c => candidates.some(m => m.resourceId === c.resourceId && m.version === c.version && m.tier === 'FREE')
-    || previous.claims.some(p => p.citations.some(ref => ref.resourceId === c.resourceId && ref.version === c.version)))
+  return contents.filter(c => candidates.some(m => sameSource(m, c) && m.tier === 'FREE')
+    || previous.claims.some(p => p.citations.some(ref => sameSource(ref, c))))
 }
 /** Evidence that counts toward closing a gap: free spans, plus granted spans that are not repeats of free text. */
 function substantive(contents: ContentEnvelope[], candidates: PublicCandidate[]) {
-  const isFree = (c: ContentEnvelope) => candidates.some(m => m.resourceId === c.resourceId && m.version === c.version && m.tier === 'FREE')
+  const isFree = (c: ContentEnvelope) => candidates.some(m => sameSource(m, c) && m.tier === 'FREE')
   const freeEvidence = new Set(contents.filter(isFree).flatMap(c => c.spans.map(s => s.text)))
   return contents.map(c => ({ content: c, spans: c.spans.filter(s => !noNewEvidence.test(s.text) && (isFree(c) || !freeEvidence.has(s.text))) }))
 }
@@ -183,7 +186,7 @@ function gaps(question: string, contents: ContentEnvelope[], candidates: PublicC
   const rules = FIXTURE_GAP_RULES.filter(rule => rule.cue.test(question))
   if (rules.length) return rules.filter(rule => !evidence.some(e => e.spans.some(s => rule.answered(s.text, focus)))).map(rule => ({ text: ruleGap(rule, focus) }))
   // No rule: tags the found sources carry that no accessible evidence covers yet.
-  const covered = new Set(evidence.filter(e => e.spans.length).flatMap(e => candidates.find(c => c.resourceId === e.content.resourceId && c.version === e.content.version)?.facets ?? []))
+  const covered = new Set(evidence.filter(e => e.spans.length).flatMap(e => candidates.find(c => sameSource(c,e.content))?.facets ?? []))
   return [...new Set(candidates.flatMap(c => c.facets))].filter(tag => !covered.has(tag)).map(tag => ({ text: `No accessible evidence on ${tag.replace(/-/g, ' ')}.`, tags: [tag] }))
 }
 /** LLM gaps are untrusted text: ≤ 160 chars, no instructions, and never naming a source to buy (gate 2). */
@@ -205,14 +208,14 @@ function stance(text: string): Claim['stance'] {
 function fixture(question: string, contents: ContentEnvelope[], candidates: PublicCandidate[], version: number, previous?: Answer, focus?: string, requirements: string[] = []): Answer {
   const priorEvidence = new Set((previous ? priorContents(contents, candidates, previous) : []).flatMap(c => c.spans.map(s => s.text)))
   const evidence = contents.flatMap(c => c.spans.map(s => {
-    const metadata = candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
+    const metadata = candidates.find(m => sameSource(m, c))
     const tags = metadata?.facets ?? []
-    const newlySupplied = previous && !previous.claims.some(claim => claim.citations.some(ref => ref.resourceId === c.resourceId && ref.version === c.version))
+    const newlySupplied = previous && !previous.claims.some(claim => claim.citations.some(ref => sameSource(ref, c)))
     const fresh = newlySupplied && !noNewEvidence.test(s.text) && !priorEvidence.has(s.text)
     const score = (fresh ? 100 : 0) + (metadata?.authority ?? 0) * 5 + (/only\b|\d+.*\bof\b.*\d+|slip|delay|ahead of schedule/i.test(s.text) ? 3 : 0)
     return { tags, score, claim: {
-      id: `evidence-${JSON.stringify([c.resourceId, c.version, s.id])}`, text: s.text, stance: stance(s.text),
-      citations: [{ resourceId: c.resourceId, version: c.version, spanId: s.id }],
+      id: `evidence-${JSON.stringify(c.source ? [sourceKey(c), s.id] : [c.resourceId, c.version, s.id])}`, text: s.text, stance: stance(s.text),
+      citations: [{ source: c.source, resourceId: c.resourceId, version: c.version, spanId: s.id }],
     } as Claim }
   })).sort((a, b) => b.score - a.score)
   // Prioritise new evidence, then keep one claim per tag so the summary stays broad.
@@ -276,7 +279,7 @@ openGaps: compare the question with what your cited claims establish, and name a
 export type WriteAnswerInput = { signal?: AbortSignal; question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; requirements?: string[]; onToken?: (delta: string) => void }
 /** A fast extract from free, exact passages. Never invokes a model or uses a paid preview. */
 export function freeDraft(input: WriteAnswerInput): Answer {
-  const contents = usableContents(input.contents).filter(content => input.candidates.some(candidate => candidate.tier === 'FREE' && candidate.profileId === content.profileId && candidate.resourceId === content.resourceId && candidate.version === content.version))
+  const contents = usableContents(input.contents).filter(content => input.candidates.some(candidate => candidate.tier === 'FREE' && candidate.profileId === content.profileId && sameSource(candidate, content)))
   return validateAnswer(fixture(input.question, contents, input.candidates, 1, undefined, input.focus, input.requirements), contents)
 }
 export function writeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer; impact?: Impact }> {
@@ -297,7 +300,7 @@ async function composeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer;
   if (isLlmConfigured() && contents.some(c => c.spans.length)) {
     try {
       const result = await streamJson(ANSWER_PROMPT, { question: input.question, evidence: contents.map(c => {
-        const metadata = input.candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
+        const metadata = input.candidates.find(m => sameSource(m, c))
         return { resourceId: c.resourceId, version: c.version, spans: c.spans, tags: metadata?.facets ?? [], authority: metadata?.authority ?? 0 }
       }), previousOpenGaps: input.previous?.openGaps ?? [], ...(input.focus ? { focus: input.focus } : {}), ...(input.requirements?.length ? { requestedFacts: input.requirements } : {}) }, () => input.onToken?.('Generating cited answer…'), 'generate-answer', input.signal)
       const openGaps = sanitizeGaps((result as { openGaps?: unknown } | null)?.openGaps, input.candidates)
@@ -336,4 +339,13 @@ export function compareAnswers(previous: Answer, answer: Answer, contents: Conte
     else if (closesGap) classification = 'STRENGTHENS'
   }
   return { classification, explanation: classification === 'UNCHANGED' ? 'No new material evidence changes the answer.' : `New cited evidence ${classification.toLowerCase()} the previous answer.`, claimChanges: changes }
+}
+
+async function federation(client: PublisherClient, run: (c: PublisherClient) => Promise<Retrieved>, query: string): Promise<Retrieved> {
+  const origins = client.origins()
+  const results = await Promise.allSettled(origins.map(run))
+  const good = results.flatMap(r => r.status === 'fulfilled' ? [r.value] : [])
+  const ranked = fuse(good.map(r => r.hits), query).slice(0,50)
+  const rank = new Map(ranked.map((h,i)=>[hitKey(h),i]))
+  return { candidates: good.flatMap(r => r.candidates).sort((a,b)=>(rank.get(sourceKey(a)) ?? 50)-(rank.get(sourceKey(b)) ?? 50)).slice(0, 50), contents: good.flatMap(r => r.contents), hits: ranked, dropped: good.flatMap(r => r.dropped), unavailable: results.flatMap((r,i) => r.status === 'rejected' ? [origins[i].origin] : r.value.unavailable), search: good.find(r => r.search)?.search }
 }

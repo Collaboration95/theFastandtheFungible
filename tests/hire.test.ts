@@ -241,3 +241,24 @@ it('scopes hired callers to agent keys, counts fees beneath caps and attributes 
   const revoked = await fetch(s.url, { method: 'POST', headers: { ...opts.headers, 'Idempotency-Key': 'new' }, body: s.body })
   expect(revoked.status).toBe(401)
 })
+
+it('resolves federated hire recipients through the approved roster and canonical identities', async () => {
+  const s=await setup()
+  s.api.purchases.client.options.baseUrls=[s.options.publisherUrl]
+  const response=await payAndFetch(s.url,s.opts)
+  const result=await response.response.json()
+  expect(result.phase).toBe('DONE')
+  expect(result.citations.every((c:{source?:unknown})=>!!c.source)).toBe(true)
+  expect(Object.keys(result.moneyChain.writerAddresses).every(k=>k.startsWith('['))).toBe(true)
+  expect(result.moneyChain.payments.filter((p:{kind:string})=>p.kind === 'royalty').reduce((n:number,p:{amountDrops:string})=>n+Number(p.amountDrops),0)).toBe(5000)
+  expect(auditRuns([s.api.store.getRun(result.run_id)],s.corpus,[],[{runId:result.run_id,budgetMinor:200,result}]).total).toBe(0)
+})
+it('labels an unresolved royalty recipient and authorizes no royalty payout', async()=>{
+  const s=await setup(), start=s.api.loop.start.bind(s.api.loop)
+  vi.spyOn(s.api.loop,'start').mockImplementation(async id=>{await start(id);vi.spyOn(s.api.purchases.client,'registry').mockResolvedValue([])})
+  const response=await payAndFetch(s.url,s.opts)
+  expect(response.response.ok).toBe(false)
+  const run=s.api.store.getRun(s.api.store.listRuns()[0].runId)
+  expect(run.events.some(e=>e.type === 'ROYALTY_UNRESOLVED')).toBe(true)
+  expect(s.api.store.policyPayments(run.runId).filter(p=>p.kind === 'royalty')).toEqual([])
+})

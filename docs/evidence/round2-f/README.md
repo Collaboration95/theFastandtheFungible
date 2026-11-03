@@ -1,0 +1,25 @@
+# Lane F handoff to G
+
+Identity schema **1**; receipt bundles **2** for federation and **1** for unchanged singleton runs. Canonical helper: `shared/source-identity.ts` (`sourceKey`, `sameSource`, `citationIdentity`, `sourceBinding`). New keys are JSON tuples of `[approved origin, seller public key, profileId, resourceId, version]`; citations append spanId structurally. Legacy keys keep their original v1 semantics. Do not build a competing identity helper.
+
+Migration rules are in `identity-migration.json`. No stored historical data is rewritten. A missing historical origin is unresolved. A historical obligation cannot be routed through a multi-origin config by guessing. Saved new endpoint context survives removal/reordering, for recovery only; it does not grant new-purchase permission. Seller-wallet reputation remains global across hosts.
+
+The merged SHA is the merge commit of this single Lane F PR, obtainable without ambiguity after merge with `gh pr view guru/lane-f-multi-origin --repo Collaboration95/theFastandtheFungible --json mergeCommit`. A commit cannot embed its own final squash SHA; G must pin that returned SHA before editing. The implementation head and merged SHA are also reported in the final handoff. Explicit PUBLISHER_URLS (including one element) opts into source identities; legacy PUBLISHER_URL retains its v1 behavior. Mixed unresolved legacy and federated run sources fail closed; begin a new run.
+
+Three numeric-loopback origins: existing roster and two separately published Markdown writers with independent data/journal roots. Both published fixtures deliberately share writer/article/version/span IDs and the same simulated signer wallet. They retain distinct routing tuples, reservations, grants, exact citations, UI source rows and exported proofs. Ten simultaneous retries per intent plus restart produce two receipts total, one per intent. A separate lost-response recovery regression removes the origin before reopening the store and verifies the saved endpoint recovers with one charge.
+
+`origins.json` records actual automated publishing elapsed time and dead/hung origin timings on this local host. Onboarding excludes human authoring, install, reading and clone time. The disconnected case is a closed socket; the hung case exhausts the two-second deadline. These are local measurements, not a network SLA.
+
+`01-published.png` shows the existing publisher UI. `02-found.png`, `03-cited.png` and `04-paid.png` show the existing Sources, Answer and ReceiptSheet components in a labelled fixture wrapper. The rubric explicitly selects both independently granted passages; it is not a live model/adoption result. Reproduce with `node --import tsx scripts/proof-multi-origin.ts` after the demo. All listeners use ephemeral ports.
+
+`receipt-v1.json` is an unchanged valid historical golden from verify-278. `receipt-v2.json` is the new self-contained fixture export. Both verify offline; pre-receipt legacy reports remain rejected. A self-contained audit chain needs an independently supplied head to detect wholesale rewriting.
+
+Deferred: public HTTPS remote federation/DNS admission, public discovery services, identity verification, live providers, live Testnet trials, real-user onboarding and contribution scoring (G). No root scripts, package manifests, CI configuration or Lane D controls changed. Identity-only edits to src/stage.ts and src/runState.ts were explicitly authorized.
+
+Final integrated verification: 925 TypeScript tests and 18 Python SDK tests pass, including historical v1 verification, source collisions, hire recipient routing and separate purchase statuses. Full check:fast includes 20 chaos iterations with zero invariant violations, zero double charges and zero stuck reservations. Node 22.13 component coverage ratchets pass unchanged after integrating Lane D #332; D controls and browser-demo links are preserved. Endpoint attacks cover 15 concrete vectors (10 origins, four paths and a redirect), plus five exported-proof origin tamper vectors. No gate or threshold was loosened.
+
+Hire identity handoff: `sourceWriterKey` groups a distinct cited writer by profile and signer across host moves, while `sourceKey` resolves each recipient against the approved bounded roster. The hire-v1 pool, equal split and lexicographic writer ordering remain unchanged; ambiguous/unresolved identities emit ROYALTY_UNRESOLVED and authorize no payout. C1's active-work handoff is retained. These two hire seam edits were explicitly authorized.
+
+Implementation head before the final report/handoff commit: `14b4608248e74a3df7f718e24acb0f3dcb969700`. The final merge commit is resolved by the PR metadata command above; no self-referential SHA is invented.
+
+Report export uses the same canonical source and citation helpers for access, payments, citations and origin-qualified article links; refund projections preserve source identity. Reputation calibration and the existing receipt-value policy compare exact source identities, with collided-ID regressions; wallet trust and all formulas, thresholds and amounts remain unchanged. These identity-only seams were explicitly authorized.

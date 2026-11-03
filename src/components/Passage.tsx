@@ -1,3 +1,4 @@
+import { sameSource } from '../../shared/source-identity.js'
 import { useEffect, useId, useRef } from 'react'
 import type { Citation, ContentEnvelope, PublicCandidate } from '../../shared/contracts/index.js'
 import { articleUrl } from '../../shared/contracts/manifest.js'
@@ -18,7 +19,7 @@ export default function Passage({ candidate, content, citation, onClose }: Passa
     return () => { element?.close(); if (previous?.isConnected) previous.focus() }
   }, [open])
   const accessible = candidate && content && canDisplayPassage(candidate, content) ? content : undefined
-  const span = citation && accessible && citation.resourceId === accessible.resourceId && citation.version === accessible.version ? accessible.spans.find(item => item.id === citation.spanId && item.text.length > 0 && accessible.body.includes(item.text)) : undefined
+  const span = citation && accessible && sameSource(citation, accessible) ? accessible.spans.find(item => item.id === citation.spanId && item.text.length > 0 && accessible.body.includes(item.text)) : undefined
   const offset = accessible && span ? accessible.body.indexOf(span.text) : -1
   useEffect(() => { if (span) mark.current?.scrollIntoView({ block: 'center' }) }, [span])
   if (!candidate) return null
@@ -29,6 +30,6 @@ export default function Passage({ candidate, content, citation, onClose }: Passa
       <p className="ra-dr-chips"><span className="ra-chip">{candidate.publisher}</span><span id={`${id}-access`} className={`ra-chip${accessible && candidate.tier === 'PAID' ? ' is-pen' : ''}`}>{accessible ? candidate.tier === 'PAID' ? 'Purchased' : 'Free' : candidate.tier === 'PAID' ? `Locked · S$${(candidate.price.amountMinor / 100).toFixed(2)} to read` : 'Public preview only'}</span></p>
     </header>
     <div className="ra-dr-b">{accessible ? <>{citation && !span && <p className="ra-err" role="status">Couldn’t verify this citation.</p>}<div className="ra-passage-body">{span && offset >= 0 ? <>{accessible.body.slice(0, offset)}<mark ref={mark}>{span.text}</mark>{accessible.body.slice(offset + span.text.length)}</> : accessible.body}</div></> : <><p>{candidate.preview}</p><p className="ra-locked">{candidate.tier === 'PAID' ? `Locked · S$${(candidate.price.amountMinor / 100).toFixed(2)} to read` : 'Not read yet.'}</p></>}</div>
-    <footer className="ra-dr-f"><span>{candidate.license.kind} · {candidate.license.attribution}</span>{candidate.tier === 'FREE' && candidate.publisherSlug && <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : articleUrl(candidate.publisherSlug, candidate.resourceId, citation?.spanId)} target="_blank" rel="noopener">open on the writer's site</a>}</footer>
+    <footer className="ra-dr-f"><span>{candidate.license.kind} · {candidate.license.attribution}</span>{candidate.tier === 'FREE' && candidate.publisherSlug && <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source ? new URL(articleUrl(candidate.publisherSlug, candidate.resourceId, citation?.spanId), candidate.source.origin).href : articleUrl(candidate.publisherSlug, candidate.resourceId, citation?.spanId)} target="_blank" rel="noopener">open on the writer's site</a>}</footer>
   </dialog>
 }

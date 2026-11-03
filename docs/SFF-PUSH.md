@@ -502,3 +502,5 @@ Significant product, design and process decisions, newest first. One line each: 
 - 3 Nov: Browser replay at `/demo/` uses the real app and recorded UC1–UC3 fixture event traces, including UC3 refund; no backend or keys.
 
 - 2026-11-04: Lane D bundles #332 static UC1–UC3 replay, clean tgz/wheel/MCPB consumers (eight cited passages, one intent/receipt each), same-SHA release admission and actual-state controls; local fixture evidence and owner upload packet: docs/evidence/round2-d/.
+
+- 2026-11-04 — Lane F: three pinned local writer origins in one search; canonical source identity v1 through policy, grants, citations, reports, receipts, calibration and hire recipients; v1 verification retained. Abortable bounded discovery and source-qualified unsigned refusals; offline collision/restart/dead-origin proof and screenshots: docs/evidence/round2-f/. Public remote federation deferred.

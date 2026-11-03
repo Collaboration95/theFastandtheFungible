@@ -1,3 +1,4 @@
+import { sourceKey, sourceBinding } from '../shared/source-identity.js'
 import { ReceiptBundleSchema, type ReceiptBundle } from '../shared/contracts/receipts.js'
 import { ReportSchema } from '../shared/contracts/report.js'
 import { canonical, entryHash, GENESIS_HASH, verifyOnTestnet, verifyEscrowEvents, type AuditEntry } from '../server/audit.js'
@@ -10,7 +11,7 @@ import { ledgerInvoiceId } from '../shared/x402.js'
 export type VerificationCheck = { check: string; status: 'PASS' | 'FAIL' | 'SKIP'; detail: string }
 export type VerificationResult = { ok: boolean; runId?: string; checks: VerificationCheck[] }
 export type VerifyOptions = { testnet?: boolean; expectHead?: string; ledger?: Ledger }
-const key = (s: { resourceId: string; version: string }) => `${s.resourceId}@${s.version}`
+const key = sourceKey
 /** No backend, database, signer or provider required. Network is opt-in and read-only. */
 export async function verifyAnswer(input: unknown, options: VerifyOptions = {}): Promise<VerificationResult> {
   const checks: VerificationCheck[] = []
@@ -21,6 +22,19 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   const parsed = ReceiptBundleSchema.safeParse(raw)
   if (!parsed.success) return { ok: false, checks: [{ check: 'bundle', status: 'FAIL', detail: `Invalid or legacy bundle at ${parsed.error.issues[0]?.path.join('.')}. Export receipts.json with this version.` }] }
   const b = parsed.data
+  if (b.schemaVersion === 1) {
+    if ([...b.sources, ...b.candidates, ...b.intents, ...b.grants, ...b.receipts, ...b.intents.flatMap(i => i.quote ?? []), ...b.proofs, ...b.answers.flatMap(a => a.claims.flatMap(c => c.citations))].some(s => s.source)) return { ok: false, checks: [{ check: 'version', status: 'FAIL', detail: 'v1 cannot carry routing identities' }] }
+    checks.push({ check: 'historical origin', status: 'SKIP', detail: 'v1 origin unresolved; original singleton semantics' })
+  } else {
+    add('source binding', [...b.sources, ...b.candidates, ...b.intents, ...b.grants, ...b.receipts, ...b.intents.flatMap(i => i.quote ?? []), ...b.proofs, ...b.answers.flatMap(a => a.claims.flatMap(c => c.citations))].every(s => !!s.source && sourceBinding(s)), 'v2 references require complete matching identity')
+    for (const i of b.intents) {
+      const reserved = entriesForOrigin(b, i.intentId, key(i)) && !!i.quote && key(i.quote) === key(i)
+      const refused = i.status === 'SKIPPED' && !i.txHash && !i.receiptId && !i.escrow && (!i.quote || key(i.quote) === key(i)) &&
+        ![...b.payments, ...b.receipts, ...b.grants].some(r => r.intentId === i.intentId) &&
+        !b.audit.entries.some(e => !('commitment' in e) && e.intentId === i.intentId && ['sign','escrow-sign','settle','ESCROW_CREATE'].includes(e.kind)) && entriesForOrigin(b, i.intentId, key(i), 'refusal')
+      add(`origin reservation ${i.intentId}`, reserved || refused, 'Saved endpoint context matches pre-sign reservation or unsigned, uncharged refusal')
+    }
+  }
   const unique = (items: string[]) => new Set(items).size === items.length
   add('identities', unique(b.sources.map(key)) && unique(b.proofs.map(key)) && unique(b.intents.map(i => i.intentId)) && unique(b.payments.map(p => p.intentId)), 'Unambiguous source, proof and intent identities')
   const entries = b.audit.entries.filter((e): e is AuditEntry => !('commitment' in e))
@@ -36,11 +50,11 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   for (const s of b.sources) {
     const proofs = b.proofs.filter(p => key(p) === key(s)), p = proofs[0]
     const candidates = b.candidates.filter(c => key(c) === key(s)), candidate = candidates[0]
-    const bound = proofs.length === 1 && candidates.length === 1 && p.manifest.articleId === s.resourceId && p.manifest.version === s.version && p.manifest.publisherSlug === s.profileId && candidate.profileId === s.profileId && (candidate.tier === 'PAID' ? p.manifest.priceMinor > 0 : p.manifest.priceMinor === 0) && (!candidate.wallet || candidate.wallet === p.manifest.wallet)
+    const bound = proofs.length === 1 && candidates.length === 1 && p.manifest.articleId === s.resourceId && p.manifest.version === s.version && p.manifest.publisherSlug === s.profileId && (!s.source || s.source.sellerKey === p.manifest.pubKey) && candidate.profileId === s.profileId && (candidate.tier === 'PAID' ? p.manifest.priceMinor > 0 : p.manifest.priceMinor === 0) && (!candidate.wallet || candidate.wallet === p.manifest.wallet)
     const signed = Boolean(bound && verifyManifestSignature(p.manifest))
     add(`manifest ${key(s)}`, signed, signed ? `Writer key derives to ${p.manifest.wallet}; identity unverified` : 'Missing, ambiguous or invalid writer signature/identity')
     const hashOk = Boolean(bound && verifyDelivery(s.body, s.spans, p.salts, p.manifest).ok && p.salts.length === s.spans.length && unique(s.spans.map(x => x.id)))
-    add(`passages ${key(s)}`, hashOk, hashOk ? 'Delivered passages match signed leaves and root' : 'Delivered passages differ from signed manifest or proof is missing')
+    add(`passages ${key(s)}`, hashOk, hashOk ? 'Delivered passages match signed leaves and root' : `Delivered passages differ from signed manifest or proof is missing: ${s.resourceId}@${s.version}`)
     sourceOk.set(key(s), signed)
     if (candidate?.tier === 'PAID') {
       const intent = b.intents.find(i => i.intentId === p?.intentId), grant = b.grants.find(g => g.intentId === p?.intentId), payment = b.payments.find(r => r.intentId === p?.intentId)
@@ -56,7 +70,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   for (const group of claimSets) for (const claim of group.claims) for (const ref of claim.citations) {
     const s = b.sources.find(s => key(s) === key(ref)), p = b.proofs.find(p => key(p) === key(ref)), index = s?.spans.findIndex(span => span.id === ref.spanId) ?? -1
     const exact = index >= 0 && !!s && !!p && s.body.includes(s.spans[index].text) && leafHash(p.salts[index], index, ref.spanId, s.spans[index].text) === p.manifest.leaves[index] && manifestRoot(p.manifest.leaves) === p.manifest.root
-    add(`citation ${group.name}/${claim.id} ${key(ref)}#${ref.spanId}`, exact && sourceOk.get(key(ref)) === true, !exact ? 'Exact citation passage missing or hash mismatch' : sourceOk.get(key(ref)) ? 'Exact delivered passage, signed hash' : 'Source signature invalid or missing')
+    add(`citation ${group.name}/${claim.id} ${ref.source ? key(ref) : `${ref.resourceId}@${ref.version}`}#${ref.spanId}`, exact && sourceOk.get(key(ref)) === true, !exact ? 'Exact citation passage missing or hash mismatch' : sourceOk.get(key(ref)) ? 'Exact delivered passage, signed hash' : 'Source signature invalid or missing')
   }
   for (const intent of b.intents.filter(i => i.receiptId || i.refund || i.status === 'VERIFIED')) {
     const rows = b.payments.filter(p => p.intentId === intent.intentId), row = rows[0], receipt = b.receipts.find(r => r.intentId === intent.intentId), terms = intent.quote?.payment
@@ -73,7 +87,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     const cancelled = intent.escrow?.state === 'CANCELLED'
     const chargedMinor = cancelled ? 0 : intent.amountMinor
     const destination = cancelled ? row?.payer : terms?.payTo
-    const receiptOk = rows.length === 1 && receipt && row.runId === b.runId &&
+    const receiptOk = rows.length === 1 && receipt && (!intent.source || key(receipt) === key(intent)) && row.runId === b.runId &&
       row.writer === intent.profileId && row.resourceId === intent.resourceId && row.version === intent.version &&
       row.amountMinor === chargedMinor && receipt.amountMinor === chargedMinor && row.label === receipt.label &&
       row.status === intent.status && row.txHash === (receipt.xrpl?.txHash ?? intent.txHash) &&
@@ -109,3 +123,7 @@ export function verificationText(result: VerificationResult): string {
 }
 export { ReceiptBundleSchema, sha256 }
 export type { ReceiptBundle }
+
+function entriesForOrigin(b: ReceiptBundle, intentId: string, identity: string, kind = 'reserve'): boolean {
+  return b.audit.entries.some(e => !('commitment' in e) && e.kind === kind && e.intentId === intentId && e.data.source && sourceKey({ source: e.data.source as NonNullable<ReceiptBundle['sources'][number]['source']>, resourceId: String(e.data.resourceId), version: String(e.data.version) }) === identity)
+}

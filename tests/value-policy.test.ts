@@ -96,3 +96,11 @@ describe('receipt learning', () => {
     expect(receiptTarget({ ...base, reanswer: { ...base.reanswer, determinable: false } })).toBeNull()
   })
 })
+
+it('does not veto another origin solely because its article and version IDs collide',async()=>{
+  const {candidate,content}=await example()
+  const source={schemaVersion:1 as const,origin:'http://127.0.0.1:1234',sellerKey:candidate.manifest!.pubKey,profileId:candidate.profileId,resourceId:candidate.resourceId,version:candidate.version}
+  const scoped={...candidate,source}, unrelated={...content,source:{...source,origin:'http://127.0.0.1:1235'},body:'Unrelated evidence.',spans:[{id:'p1',text:'Unrelated evidence.'}]}
+  expect(marginalValue({candidate:scoped,evidence:[unrelated],probability:1,trust:1})).toMatchObject({novelty:1,eligible:true})
+  expect(marginalValue({candidate:scoped,evidence:[{...unrelated,source}],probability:1,trust:1})).toMatchObject({novelty:0,eligible:false})
+})

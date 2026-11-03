@@ -528,3 +528,12 @@ Machine-readable source: [capabilities.json](evidence/round2-e/capabilities.json
 HTTP x402 v2 on xrpl:1; upstream interop client/server SDK 0.3.4. Hosted facilitator build unknown. ResearchAgent versions are source-defined by the linked evidence, not a guessed deployed release. XRP escrow is buyer-controlled, not fair exchange. Credentials do not prove fact truth. AP2, MPT, Credentials, DID, channels and Batch are not implemented by this lane.
 
 Primary documentation checked 2026-11-04: [t54 scheme](https://xrpl-x402.t54.ai/docs/xrpl-scheme), [Ripple RLUSD](https://docs.ripple.com/products/stablecoin/developer-resources/rlusd-on-the-xrpl), [XRPL escrow](https://xrpl.org/docs/concepts/payment-types/escrow), [known amendments](https://xrpl.org/resources/known-amendments). These describe protocol semantics, not freshly measured network or issuer flags. Original Batch was disabled and replaced; a Loading amendment cell proves no network capability.
+
+
+### Independent local origins (Lane F)
+
+`PUBLISHER_URLS=http://127.0.0.1:<port>,http://127.0.0.1:<port>,http://127.0.0.1:<port>` admits at most three operator-configured numeric loopback origins. `PUBLISHER_URL` retains singleton compatibility. This is the labelled pinned-local-origin finals topology; public remote federation is deferred. Discovery/search has one two-second deadline per origin, four HTTP slots, 50 writers/origin and 50 returned hits/query, with healthy partial results.
+
+Federated runtime references carry `source` version 1: origin, signed seller public key, profileId, resourceId and version. `shared/source-identity.ts` supplies the canonical tuple and citation key. TS, Python and MCP preserve that identity; wallet reputation crosses hosts. Receipt bundles dispatch v1/v2 explicitly. Historical missing origins remain unresolved; invoices, signed manifests, blobs, audit entries and intent IDs are unchanged. New obligations save endpoint context before signing; removal prevents new admission while recovery uses the saved endpoint. No engine bearer, delivery token or payment signature is forwarded across origins.
+
+Offline reproduction: `node --import tsx scripts/demo-multi-origin.ts --fixture --output scratch/multi-origin.json`. Evidence and migration handoff: `docs/evidence/round2-f/README.md`. The proof is synthetic, uses simulated payments and an explicit fixture judging/citation rubric, and does not establish adoption or live model quality.

@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
+import { sourceKey, sameSource } from '../../shared/source-identity.js'
 import { factsSummary } from '../../shared/coverage.js'
 import { dirname, extname } from 'node:path'
 import { chromium } from '@playwright/test'
@@ -15,13 +16,13 @@ const disclaimer = (settlement: string) => `Synthetic demonstration: companies, 
 function assertAccess(run: Pick<RunSnapshot, 'runId' | 'candidates' | 'contents' | 'grants'>): void {
   const keys = new Set<string>()
   for (const content of run.contents) {
-    const key = JSON.stringify([content.resourceId, content.version])
-    const candidates = run.candidates.filter(c => c.resourceId === content.resourceId && c.version === content.version)
+    const key = sourceKey(content)
+    const candidates = run.candidates.filter(c => sameSource(c,content))
     if (keys.has(key) || candidates.length !== 1 || candidates[0].profileId !== content.profileId) {
       throw new Error('Report source access is ambiguous or unknown')
     }
     keys.add(key)
-    if (candidates[0].tier === 'PAID' && !run.grants.some(g => g.runId === run.runId && g.resourceId === content.resourceId && g.version === content.version && g.contentDigest.length > 0)) {
+    if (candidates[0].tier === 'PAID' && !run.grants.some(g => g.runId === run.runId && sameSource(g,content) && g.contentDigest.length > 0)) {
       throw new Error('Report source requires a matching delivery grant')
     }
     const spanIds = new Set<string>()
@@ -40,7 +41,7 @@ function validClaims(claims: Claim[], contents: ContentEnvelope[]): Claim[] {
 export async function buildReport(input: RunSnapshot, signal?: AbortSignal): Promise<Report> {
   const run = RunSnapshotSchema.parse(input)
   // Quarantine (#131): a grant whose proof failed is audit only, never source access for the report.
-  run.grants = run.grants.filter(g => run.intents.some(i => i.intentId === g.intentId && i.status === 'VERIFIED'))
+  run.grants = run.grants.filter(g => run.intents.some(i => i.intentId === g.intentId && sameSource(i,g) && i.status === 'VERIFIED'))
   assertAccess(run) // Before any content can enter a provider request.
   const answers = [...run.answers].sort((a, b) => a.version - b.version)
   const first = answers[0]
@@ -85,7 +86,7 @@ export async function buildReport(input: RunSnapshot, signal?: AbortSignal): Pro
     firstAnswer, finalAnswer, firstFindings, finalFindings,
     firstVersion: first?.version, finalVersion: final?.version,
     labels: run.labels,
-    refunds: run.intents.filter(i => i.runId === run.runId && i.refund).map(i => ({ intentId: i.intentId, resourceId: i.resourceId, version: i.version, ...i.refund! })),
+    refunds: run.intents.filter(i => i.runId === run.runId && i.refund).map(i => ({ ...(i.source ? {source:i.source} : {}), intentId: i.intentId, resourceId: i.resourceId, version: i.version, ...i.refund! })),
     access: { runId: run.runId, candidates: run.candidates, grants: run.grants },
     ...(facts ? { facts: { line: facts.line, facts: facts.facts.map(f => ({ text: f.text, status: f.status })) } } : {}),
   })

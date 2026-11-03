@@ -35,7 +35,7 @@ import { type DecisionProvider } from './agents/decision.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 
 /** `observe`: the trust check's relevance re-measure (#205); defaults to Workers AI embeddings when SEARCH_EMBEDDINGS=live. */
-export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number }
+export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; publisherUrls?: string[]; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number }
 export async function createApiApp(options: ApiOptions = {}) {
   const config = loadConfig()
   if (config.SETTLEMENT_RAIL === 'xrpl-testnet' && !options.payer && !config.XRPL_PAYER_SEED) throw new Error('Testnet requires wallet configuration')
@@ -82,7 +82,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     res.json(await verifyAnswer(req.body, { testnet: req.query.testnet === '1', expectHead: typeof req.query.expectHead === 'string' ? req.query.expectHead : undefined }))
   })
   app.use(express.json({ limit: '16kb' }))
-  const client = new PublisherClient({ baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
+  const client = new PublisherClient({ baseUrls: options.publisherUrls ?? (!options.publisherUrl && config.PUBLISHER_URLS ? config.PUBLISHER_URLS.split(',').map(s => s.trim()) : undefined), baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
   // Requested Testnet never silently falls back to simulated settlement.
   const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
   const purchases = new PurchaseManager(store, client, payer)

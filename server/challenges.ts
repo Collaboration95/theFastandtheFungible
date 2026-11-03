@@ -40,7 +40,7 @@ async function run({ store, client, payer }: PurchaseManager, intentId: string, 
   let status: 'REFUNDED' | 'CHALLENGE_REJECTED' | 'CHALLENGE_REFUSED' = 'CHALLENGE_REFUSED', reason = 'refused or timed out'
   let refundTxHash: string | undefined
   try {
-    const result = await client.challenge(intent.profileId, body, timeoutMs, wire)
+    const result = await client.forSource(intent.source, true).challenge(intent.profileId, body, timeoutMs, wire)
     if (result.status === 'REJECTED') { status = 'CHALLENGE_REJECTED'; reason = 'the writer says the claim holds' }
     else if (result.status === 'REFUNDED' && result.refundTxHash) {
       refundTxHash = result.refundTxHash

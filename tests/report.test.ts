@@ -195,3 +195,27 @@ describe('citation deep links (#147)', () => {
     expect(page).toContain(`id="${href.split('#')[1]}"`)
   })
 })
+
+it('keeps collided sources, receipts and article origins distinct in report/PDF rendering',async()=>{
+  const {ReceiptBundleSchema}=await import('../shared/contracts/receipts.js')
+  const {sameSource}=await import('../shared/source-identity.js')
+  const b=ReceiptBundleSchema.parse(JSON.parse(await readFile('docs/evidence/round2-f/receipt-v2.json','utf8')))
+  const snapshot={...exampleRun,runId:b.runId,candidates:b.candidates,contents:b.sources,answers:b.answers,intents:b.intents,grants:b.grants,receipts:b.receipts}
+  const report=await buildReport(snapshot), html=reportHtml(report)
+  const collided=report.sources.filter(s=>s.profileId === 'collision')
+  expect(collided).toHaveLength(2);expect(html.match(/class="excerpt"/g)).toHaveLength(2)
+  for(const source of collided){
+    const candidate=report.access!.candidates.find(c=>sameSource(c,source))!, receipt=report.receipts.find(r=>sameSource(r,source))!
+    expect(html).toContain(`href="${source.source!.origin}/w/${candidate.publisherSlug}/blog/${source.resourceId}"`)
+    const excerpt=html.split('class="excerpt"').slice(1).find(part=>part.includes(source.publisher))!
+    expect(excerpt).toContain(`Receipt IDs: ${receipt.receiptId}`)
+    expect(excerpt).not.toContain(report.receipts.find(r=>!sameSource(r,source))!.receiptId)
+  }
+  vi.mocked(chromium.launch).mockRejectedValueOnce(new Error('offline fixture renderer'))
+  const result=await renderReport(report,join(directory,'collision.pdf'))
+  expect(result.format).toBe('HTML');expect(await readFile(result.path,'utf8')).toBe(html)
+  const missing={...snapshot,grants:snapshot.grants.filter(g=>!sameSource(g,collided[1]))}
+  await expect(buildReport(missing)).rejects.toThrow('matching delivery grant')
+  const grafted={...snapshot,grants:snapshot.grants.map(g=>sameSource(g,collided[1]) ? {...g,intentId:snapshot.grants.find(x=>sameSource(x,collided[0]))!.intentId} : g)}
+  await expect(buildReport(grafted)).rejects.toThrow('matching delivery grant')
+})

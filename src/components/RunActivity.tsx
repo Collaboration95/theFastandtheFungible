@@ -1,3 +1,4 @@
+import { sameSource, sourceKey } from '../../shared/source-identity.js'
 import { useEffect, useState } from 'react'
 import type { RunSnapshot } from '../../shared/contracts'
 import { candidateOf, money } from '../format'
@@ -19,15 +20,15 @@ export default function RunActivity({ run, actualTerminal, onStop, stopping, onS
     <details key={run.runId} className="ra-activity-details" open={!done}><summary>Activity</summary><ol className="ra-activity-list">{activity.map((row, index, rows) => {
       const next = rows[index + 1]?.event?.at
       const seconds = row.event && next ? Math.max(0, (Date.parse(next) - Date.parse(row.event.at)) / 1000).toFixed(1) : undefined
-      const intent = run.intents.find(i => i.intentId === row.event?.data?.intentId || i.resourceId === row.event?.data?.resourceId)
+      const intent = run.intents.find(i => row.event?.data?.intentId ? i.intentId === row.event.data.intentId : !i.source && i.resourceId === row.event?.data?.resourceId)
       const purchaseIndex = rows.slice(0, index + 1).filter(r => r.kind === 'buy').length - 1
       const paid = intent ?? run.intents[purchaseIndex]
       const source = paid && candidateOf(run, paid)
       const name = source?.publisher ?? 'the article'
       const roundIndex = rows.slice(0,index + 1).filter(r => r.kind === 'decide').length - 1
       const round = run.decisions[roundIndex]
-      const chosen = round?.rows.find(r => r.verdict === 'BUY')?.candidate.publisher
-      const title = row.kind === 'answer' ? 'Drafted an answer from free sources' : row.kind === 'rewrite' ? 'Updated the answer with verified evidence' : row.kind === 'buy' ? `${paid && run.receipts.some(r => r.intentId === paid.intentId) ? 'Paid' : 'Paying'} ${name} ${paid ? money(paid.amountMinor) : ''}` : row.kind === 'refund' ? `${intent?.status === 'REFUNDED' ? 'Refunded' : intent?.status === 'CHALLENGE_REFUSED' ? 'Refund refused for' : intent?.status === 'CHALLENGE_REJECTED' ? 'Refund rejected for' : 'Refund pending for'} ${name}` : row.kind === 'proof' ? row.state === 'todo' ? 'Check the article against the writer’s promises' : `Checked ${name} against the writer’s promises` : row.kind === 'decide' ? chosen ? `Selected ${chosen} from ${round.rows.length} paid articles` : `Considered ${round?.rows.length ?? 0} paid articles; none selected` : row.kind === 'search' ? `Searched writers · ${run.candidates.length} sources` : row.kind === 'read' ? `Read ${run.contents.filter(c => run.candidates.some(s => s.resourceId === c.resourceId && s.tier === 'FREE')).length} free sources` : row.title
+      const chosen = round?.rows.find(r => round.selectedSourceKey ? sourceKey(r.candidate) === round.selectedSourceKey : r.verdict === 'BUY')?.candidate.publisher
+      const title = row.kind === 'answer' ? 'Drafted an answer from free sources' : row.kind === 'rewrite' ? 'Updated the answer with verified evidence' : row.kind === 'buy' ? `${paid && run.receipts.some(r => r.intentId === paid.intentId) ? 'Paid' : 'Paying'} ${name} ${paid ? money(paid.amountMinor) : ''}` : row.kind === 'refund' ? `${intent?.status === 'REFUNDED' ? 'Refunded' : intent?.status === 'CHALLENGE_REFUSED' ? 'Refund refused for' : intent?.status === 'CHALLENGE_REJECTED' ? 'Refund rejected for' : 'Refund pending for'} ${name}` : row.kind === 'proof' ? row.state === 'todo' ? 'Check the article against the writer’s promises' : `Checked ${name} against the writer’s promises` : row.kind === 'decide' ? chosen ? `Selected ${chosen} from ${round.rows.length} paid articles` : `Considered ${round?.rows.length ?? 0} paid articles; none selected` : row.kind === 'search' ? `Searched writers · ${run.candidates.length} sources` : row.kind === 'read' ? `Read ${run.contents.filter(c => run.candidates.some(s => sameSource(s,c) && s.tier === 'FREE')).length} free sources` : row.title
 
       return <li key={row.key}><span>{row.state === 'now' ? '○' : '✓'} {title}</span><small>{seconds && `${seconds} s`}</small></li>
     })}</ol></details>

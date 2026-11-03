@@ -1,3 +1,4 @@
+import { SourceIdentitySchema } from '../source-identity.js'
 import { EscrowStatusSchema } from './escrow.js'
 import { z } from 'zod'
 import { AssetSchema } from './asset.js'
@@ -14,14 +15,14 @@ const hash256 = z.string().regex(/^[0-9A-F]{64}$/)
 // `rail` is 'simulated' for the fixture rail (#130): same signed-blob checks, a local signer, no network.
 export const PaymentRequirementSchema = z.object({ rail: RailSchema, network: z.literal('xrpl:1'), asset: AssetSchema, payTo: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), amountDrops: z.string().regex(/^(?:[1-9]\d*(?:\.\d{1,6})?|0\.\d{1,6})$/), invoiceId: hash256 })
 export const LedgerProofSchema = z.object({ txHash: hash256, ledgerIndex: z.number().int().positive(), payer: z.string(), payTo: z.string(), amountDrops: z.string(), asset: AssetSchema.optional(), deliveredAmount: z.unknown().optional() })
-export const QuoteRequestSchema = z.object({ profileId: z.string(), resourceId: z.string(), version: z.string(), runId: z.string(), intentId: z.string() })
+export const QuoteRequestSchema = z.object({ source: SourceIdentitySchema.optional(), profileId: z.string(), resourceId: z.string(), version: z.string(), runId: z.string(), intentId: z.string() })
 /**
  * Kept for the x402 v2 flow, derived from PAYMENT-REQUIRED (#115): quoteId = the
  * invoiceId (canonical JSON), quoteHash = sha256(invoiceId) (the on-ledger
  * InvoiceID), contentDigest = the manifest root, expiresAt = now + maxTimeoutSeconds.
  */
 export const QuoteSchema = QuoteRequestSchema.extend({ quoteId: z.string(), quoteHash: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), expiresAt: z.string(), contentDigest: z.string(), payment: PaymentRequirementSchema.optional() })
-export const ReceiptSchema = z.object({ escrow: EscrowStatusSchema.optional(), receiptId: z.string(), intentId: z.string(), runId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), settledAt: z.string(), label: SettlementLabelSchema, xrpl: LedgerProofSchema.extend({ explorerUrl: z.string() }).optional() })
+export const ReceiptSchema = z.object({ source: SourceIdentitySchema.optional(), escrow: EscrowStatusSchema.optional(), receiptId: z.string(), intentId: z.string(), runId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), settledAt: z.string(), label: SettlementLabelSchema, xrpl: LedgerProofSchema.extend({ explorerUrl: z.string() }).optional() })
 export type QuoteRequest = z.infer<typeof QuoteRequestSchema>
 export type Quote = z.infer<typeof QuoteSchema>
 export type Receipt = z.infer<typeof ReceiptSchema>

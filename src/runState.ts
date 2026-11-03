@@ -1,3 +1,4 @@
+import { sameSource } from '../shared/source-identity.js'
 import { XRPL_LABEL, type PurchaseIntent, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
 import { candidateOf, money } from './format'
 import { isTerminal, runEvents } from './stage'
@@ -32,7 +33,7 @@ export function deriveRunState(run?: RunSnapshot, pending?: 'clarify' | 'plan') 
     : run.phase === 'READ_PAID' || last?.type === 'PROOF' || purchases.some(item => item.phase === 'delivered') ? 'verifying'
     : run.phase === 'BUY' ? 'buying' : run.phase === 'DECIDE' ? 'deciding' : run.phase === 'ANSWER' ? 'writing' : 'searching'
   const inFlight = purchases.filter(item => ['submitted', 'validated', 'delivered'].includes(item.phase))
-  const paidUnused = purchases.filter(item => item.receipt && !run?.answers.some(answer => answer.claims.some(claim => claim.citations.some(cite => cite.resourceId === item.intent.resourceId && cite.version === item.intent.version))))
+  const paidUnused = purchases.filter(item => item.receipt && !run?.answers.some(answer => answer.claims.some(claim => claim.citations.some(cite => sameSource(cite, item.intent)))))
   const stopMessage = inFlight.length ? 'No new purchases. A purchase already in flight may still settle.' : paidUnused.length ? 'No new purchases. An earlier payment completed; its source is not used in this answer.' : 'No new purchases will start. Earlier payments remain recorded.'
   const rows = run ? tapeRows(run) : []
   const now = rows.find(row => row.state === 'now' && !QUIET.has(row.kind)) ?? [...rows].reverse().find(row => row.state !== 'todo' && !QUIET.has(row.kind))

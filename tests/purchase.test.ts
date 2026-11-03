@@ -410,3 +410,39 @@ it.each(['tick', 'restart', 'STOPPED', 'DONE', 'exhausted'] as const)('UC3 recov
     expect(api.store.auditEntries().some(e => e.kind === 'recovery')).toBe(false)
   }
 })
+
+it('recovers a saved multi-origin obligation after endpoint removal without redirecting its signature', async () => {
+  const path = dbPath(); const s = store(path); const run = s.createRun('q', 200); const p = await publisher()
+  const source = { schemaVersion: 1 as const, origin: p.client.origin, sellerKey: MANIFEST.pubKey, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version }
+  const c = { ...candidate, source, manifest: MANIFEST }
+  const client = new PublisherClient({ baseUrls: [p.client.origin, 'http://127.0.0.1:1'] })
+  await expect(new PurchaseManager(s,client).purchase({runId:run.runId,candidate:{...c,source:{...source,sellerKey:'wrong'}},intentId:'wrong-key'})).rejects.toThrow('identity')
+  expect(p.state.charges).toBe(0)
+  p.state.loseSettlementResponse = true
+  const first = await new PurchaseManager(s, client).purchase({ runId: run.runId, candidate: c, intentId: 'saved-endpoint' })
+  expect(first.status).toBe('SUBMITTING'); expect(p.state.charges).toBe(1)
+  // A second Store models process restart; the original handle remains idle.
+
+  const restarted = store(path)
+  const manager = new PurchaseManager(restarted, new PublisherClient({ baseUrls: ['http://127.0.0.1:1'] }))
+  await manager.reconcile()
+  expect(restarted.getIntent('saved-endpoint')?.status).toBe('VERIFIED'); expect(p.state.charges).toBe(1)
+  expect(restarted.getRun(run.runId).contents[0].source).toEqual(source)
+  await expect(manager.purchase({ runId: run.runId, candidate: { ...c, source: { ...source, origin: 'http://127.0.0.1:2' } }, intentId: 'saved-endpoint' })).rejects.toThrow('identity')
+})
+
+it.each(['escrow','budget'])('keeps source-qualified unsigned %s refusals verifiable without authorizing a charge',async kind=>{
+  const { receiptBundle }=await import('../server/receipt-bundle.js')
+  const { verifyAnswer }=await import('../sdk/verify.js')
+  const s=store(), run=s.createRun('q',kind === 'budget' ? 0 : 200), p=await publisher()
+  const source={schemaVersion:1 as const,origin:p.client.origin,sellerKey:KEYS.publicKey,profileId:candidate.profileId,resourceId:candidate.resourceId,version:candidate.version}
+  const scoped={...candidate,source,manifest:MANIFEST}
+  s.updateRun(run.runId,{candidates:[scoped]})
+  const intent=await new PurchaseManager(s,p.client).purchase({runId:run.runId,candidate:scoped,intentId:'refused',escrow:kind === 'escrow'})
+  expect(intent.status).toBe('SKIPPED');expect(intent.source).toEqual(source);expect(p.state.charges).toBe(0)
+  s.addAnswer(run.runId,{...exampleAnswer,conclusion:'No paid evidence was acquired.',claims:[]})
+  const bundle=receiptBundle(s,run.runId)
+  expect(bundle.schemaVersion).toBe(2);expect((await verifyAnswer(bundle)).ok).toBe(true)
+  const changed=structuredClone(bundle);changed.intents[0].source!.origin='http://127.0.0.1:2'
+  expect((await verifyAnswer(changed)).ok).toBe(false)
+})

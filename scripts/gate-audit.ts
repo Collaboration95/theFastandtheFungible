@@ -1,3 +1,4 @@
+import { sameSource, sourceKey, type SourceRef } from '../shared/source-identity.js'
 import { auditEntries } from '../server/audit.js'
 import { auditAgentAuthority } from '../server/agent-audit.js'
 import { auditHireRecords, type HireAuditRecord } from '../server/hire/audit.js'
@@ -19,11 +20,12 @@ export function auditRuns(runs: RunSnapshot[], corpus: WriterCorpus, observation
   const violations: Violation[] = []
   const add = (rule: Rule, runId: string, evidence: string) => violations.push({ rule, runId, evidence })
   for (const run of runs) {
-    const verified = run.grants.filter(g => g.runId === run.runId && run.intents.some(i => i.intentId === g.intentId && i.runId === run.runId && i.status === 'VERIFIED' && (!i.escrow || i.escrow.state === 'RELEASED') && i.resourceId === g.resourceId && i.version === g.version))
-    const free = (resourceId: string, version: string) => !corpus.articles.some(a => a.articleId === resourceId && a.version === version && a.tier === 'PAID') && run.candidates.some(c => c.resourceId === resourceId && c.version === version && c.tier === 'FREE')
+    const verified = run.grants.filter(g => g.runId === run.runId && run.intents.some(i => i.intentId === g.intentId && i.runId === run.runId && i.status === 'VERIFIED' && (!i.escrow || i.escrow.state === 'RELEASED') && sameSource(i, g)))
+    const free = (ref: SourceRef) => ref.source ? run.candidates.some(c => sameSource(c,ref) && c.tier === 'FREE') : legacyFree(ref.resourceId,ref.version)
+    const legacyFree = (resourceId: string, version: string) => !corpus.articles.some(a => a.articleId === resourceId && a.version === version && a.tier === 'PAID') && run.candidates.some(c => c.resourceId === resourceId && c.version === version && c.tier === 'FREE')
     for (const answer of run.answers) for (const claim of answer.claims) for (const c of claim.citations) {
-      const accessible = run.contents.find(x => x.resourceId === c.resourceId && x.version === c.version && x.spans.some(s => s.id === c.spanId && x.body.includes(s.text)))
-      if (!accessible || !free(c.resourceId, c.version) && !verified.some(g => g.resourceId === c.resourceId && g.version === c.version)) add('citation_without_verified_grant', run.runId, `answer v${answer.version}, resource ${c.resourceId}@${c.version}`)
+      const accessible = run.contents.find(x => sameSource(x, c) && x.spans.some(s => s.id === c.spanId && x.body.includes(s.text)))
+      if (!accessible || !free(c) && !verified.some(g => sameSource(g, c))) add('citation_without_verified_grant', run.runId, `answer v${answer.version}, resource ${c.resourceId}@${c.version}`)
     }
     for (const intent of run.intents) {
       const e = intent.escrow
@@ -36,7 +38,7 @@ export function auditRuns(runs: RunSnapshot[], corpus: WriterCorpus, observation
       const eventHashes = run.events.filter(e => e.type === 'XRPL' && e.data?.intentId === intent.intentId && /issued a receipt/.test(e.label)).map(e => String(e.data?.txHash))
       if (new Set([...receiptHashes, ...eventHashes]).size > 1 || receipts.length > 1) add('duplicate_settlement', run.runId, intent.intentId)
       const purchaseEvents = run.events.filter(e => e.type === 'PURCHASE' && e.data?.intentId === intent.intentId)
-      const decision = run.decisions.find(d => d.selectedResourceId === intent.resourceId && d.rows.some(r => r.candidate.resourceId === intent.resourceId && r.candidate.version === intent.version && r.verdict === 'BUY') && intent.intentId === `${run.runId}:${d.round}:${intent.resourceId}:${intent.version}`)
+      const decision = run.decisions.find(d => (intent.source ? d.selectedSourceKey === sourceKey(intent) : d.selectedResourceId === intent.resourceId) && d.rows.some(r => sameSource(r.candidate, intent) && r.verdict === 'BUY') && intent.intentId === (intent.source ? JSON.stringify([run.runId,d.round,sourceKey(intent)]) : `${run.runId}:${d.round}:${intent.resourceId}:${intent.version}`))
       // Legacy BUY/DECIDE traces have no intentId: bind them by the persisted round and event order.
       const decides = run.events.filter(e => e.type === 'DECIDE')
       const decide = decision && decides[decision.round - 1], next = decision && decides[decision.round]
@@ -53,7 +55,7 @@ export function auditRuns(runs: RunSnapshot[], corpus: WriterCorpus, observation
       try { snapshot = JSON.parse(observation.raw) } catch { continue }
       if (!Array.isArray(snapshot.answers) || !Array.isArray(snapshot.intents) || !Array.isArray(snapshot.grants)) continue
       for (const answer of snapshot.answers) for (const claim of answer.claims) for (const c of claim.citations) {
-        if (!free(c.resourceId, c.version) && !snapshot.grants.some(g => g.runId === run.runId && g.resourceId === c.resourceId && g.version === c.version && snapshot.intents.some(i => i.intentId === g.intentId && i.status === 'VERIFIED'))) add('citation_without_verified_grant', run.runId, `SSE answer v${answer.version}, resource ${c.resourceId}@${c.version}`)
+        if (!free(c) && !snapshot.grants.some(g => g.runId === run.runId && sameSource(g, c) && snapshot.intents.some(i => i.intentId === g.intentId && i.status === 'VERIFIED'))) add('citation_without_verified_grant', run.runId, `SSE answer v${answer.version}, resource ${c.resourceId}@${c.version}`)
       }
     }
     const gross = run.intents.filter(i => charged.has(i.status)).reduce((s, i) => s + i.amountMinor, 0)

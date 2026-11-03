@@ -1,3 +1,4 @@
+import { SourceIdentitySchema } from '../source-identity.js'
 import { z } from 'zod'
 
 /** Noun phrases only: bounded, no digits, prices, markup, control characters or prose fields. */
@@ -33,7 +34,7 @@ export const ManifestSchema = z.object({
  * (gate 1); FREE passages come only from the read endpoint. `url` is the
  * root-relative agent endpoint; the human page URL comes from articleUrl() (#147).
  */
-export const SearchHitSchema = z.object({
+export const SearchHitSchema = z.object({ source: SourceIdentitySchema.optional(),
   publisherSlug: z.string().min(1), writerSlug: z.string().min(1), articleId: z.string().min(1), version: z.string().min(1),
   url: z.string().regex(/^\/w\/[a-z0-9-]+\/articles\/[A-Za-z0-9._-]+$/),
   title: z.string().min(1), abstract: z.string().min(1).max(220), tags: z.array(z.string()),
