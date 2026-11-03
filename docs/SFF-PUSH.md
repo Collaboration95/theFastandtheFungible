@@ -228,7 +228,7 @@ applies to the app, README, logo, site and the cast (#258).
 
 | # | Feature | Criterion | Post angle | Issue |
 |---|---|---|---|---|
-| F10 | **Verify any answer:** receipt bundle + `npm run verify` + browser verifier | Technical depth | don't trust our agent, verify it · all-green table, then one red after a byte flips | #278 |
+| F10 | **Verify any answer:** receipt bundle + `npm run verify:answer` (API/CLI/SDK; UI separate) | Technical depth | don't trust our agent, verify it · all-green table, then one red after a byte flips | #278 |
 | F11 | **Chaos test + 12 h soak** | Feasibility | 500 injected failures, 0 double charges | #279 |
 | F12 | **One wallet, many agents:** per-agent keys and allowances | Reachability · Technical depth | give each AI agent its own allowance; revoke in a click | #280 |
 | F13 | **Answers in seconds:** stream the free draft, upgrade with paid evidence | Feasibility | p95 time to first answer N s → N s | #281 |
@@ -407,7 +407,7 @@ Significant product, design and process decisions, newest first. One line each: 
 
 - 3 Nov: Submission pack ([docs/submission](submission/README.md)): 50/150/300-word descriptions, a 10-slide deck built from code with its PDF export (`node docs/submission/deck/export.mjs`), a 2:45 demo-video script with commands and existing release clips, a 2-minute pitch (282 words) with a 3-minute variant, and 10 judge Q&A answers. Recording is with the owner on #265.
 - 3 Nov: Lane B Numbers v7: waste 40.68% → 19.95%, headline used spend 59.32% → 80.05% [63.16–92.00]; classify all 24 #320 wasted purchases, minimal scope/tokenizer fixes, all CIs and limits retained. Live UC2 purchase plus UC3 failed proof/refund/replacement, four validated Testnet txs, zero audit violations, US$0.3389854 models.
-- 3 Nov: Lane C #314/#278 automatic verified-delivery → answer recovery, versioned answer/report receipt bundles, API/SDK and `npm run verify` offline + read-only Testnet; UC3 FAILED → DONE with two receipts, one on-ledger refund, zero gate violations and an exact-citation tamper failure ([evidence](evidence/verify-278.md)). No `src/` edits.
+- 3 Nov: Lane C #314/#278 automatic verified-delivery → answer recovery, versioned answer/report receipt bundles, API/SDK and `npm run verify:answer` offline + read-only Testnet; UC3 FAILED → DONE with two receipts, one on-ledger refund, zero gate violations and an exact-citation tamper failure ([evidence](evidence/verify-278.md)). No `src/` edits.
 
 - 3 Nov: Lane C #280 one wallet/many agents: private-file token creation, per-agent caps/pause/revoke, shared policy accounting and principal exports; two MCP clients + SDK spent 0.18 Testnet XRP + 24 drops fees, zero gate violations ([evidence](evidence/agents-280.md)).
 - 3 Nov: Lane B Numbers v6: gross/net heldout waste 52.87% → 40.68% (paired 95% CI −28.57 to −1.23 pts); used spend 47.13% → 59.32%. Two extraction and four fact-scope regressions, README/scorecard definitions and CIs; 0 audit violations, US$0.4412058 models, simulated payments.

@@ -265,7 +265,7 @@ changes have hash-chained audit entries. If a source stays unavailable, restore
 the publisher and use the existing same-blob retry after automatic retries end.
 
 Export `/runs/<id>/receipts.json` or create a PDF with the normal report endpoint.
-Anyone holding that export can run `npm run verify -- <report>`, offline, without
+Anyone holding that export can run `npm run verify:answer -- <report>`, offline, without
 your credentials. Add `--testnet` for public read-only payment/refund lookups.
 A PASS offline is evidence integrity only; it explicitly skips ledger checks.
 Keep an independently recorded audit head and supply `--expect-head` when needed.

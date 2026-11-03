@@ -6,9 +6,9 @@ refund. The HTTP delivery fault was injected locally after the second payment
 validated. No live model calls or new dependencies.
 
 ```sh
-npm run verify -- docs/evidence/verify-278/report.pdf --testnet
-npm run verify -- docs/evidence/verify-278/report.json
-npm run verify -- docs/evidence/verify-278/tampered.json
+npm run verify:answer -- docs/evidence/verify-278/report.pdf --testnet
+npm run verify:answer -- docs/evidence/verify-278/report.json
+npm run verify:answer -- docs/evidence/verify-278/tampered.json
 ```
 
 The first two exit 0; the tampered copy exits 1. JSON/receipts/PDF all carry the

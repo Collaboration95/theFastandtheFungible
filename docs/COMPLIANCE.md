@@ -223,7 +223,7 @@ not retained. Audit verification checks cancellation-to-refund coverage.
 ## Per-answer independent verification (#278)
 
 Answer/report JSON and newly generated PDFs contain portable receipt evidence.
-`npm run verify -- <report> [--testnet]` and SDK `verifyAnswer()` recompute writer
+`npm run verify:answer -- <report> [--testnet]` and SDK `verifyAnswer()` recompute writer
 signatures, delivered passage hashes, citation references, grants, quote/receipt
 bindings and the disclosed audit segment. `--testnet` reuses the operator
 verifier for payment and refund destination, exact delivered amount/asset,

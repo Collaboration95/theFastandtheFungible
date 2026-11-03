@@ -21,7 +21,7 @@
     "hygiene": "npm run check:naming && node scripts/repo-hygiene.mjs && node scripts/site-header.mjs --check",
     "release": "node scripts/release.mjs",
     "check:fast": "npm run hygiene && npm run lint && npm run typecheck && npm run test:unit",
-    "verify": "tsx scripts/verify-answer.ts",
+    "verify": "npm run lint && npm run typecheck && npm run testing && npm run build",
     "preview": "vite preview",
     "prepare": "husky",
     "demo": "node scripts/demo.mjs",
@@ -45,7 +45,7 @@
     "publish:site": "node --import tsx scripts/publish-site.ts",
     "calibration:refit": "tsx scripts/refit-receipt-value.ts",
     "agents": "tsx scripts/agents.ts",
-    "check:full": "npm run lint && npm run typecheck && npm run testing && npm run build"
+    "verify:answer": "tsx scripts/verify-answer.ts"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

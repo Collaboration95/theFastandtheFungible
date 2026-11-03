@@ -115,10 +115,9 @@ JSON (8 MiB limit); `?testnet=1` enables read-only ledger checks and `?expectHea
 pins a separately obtained chain head. The endpoint follows operator auth;
 agent keys may fetch only their own receipts. No verification UI was added.
 
-`npm run verify -- <receipts.json|report.json|report.pdf> [--testnet]
+`npm run verify:answer -- <receipts.json|report.json|report.pdf> [--testnet]
 [--expect-head HASH] [--json]` prints a plain check summary and exits 0 on success,
 1 on failed evidence, 2 on unreadable/legacy input or invalid arguments. Ledger
 checks skipped offline are labelled. SIMULATED receipts cannot pass full Testnet
-verification. The former full repository command is preserved as
-`npm run check:full`. Proof limits and recorded tamper example:
+verification. The existing full repository command remains `npm run verify`. Proof limits and recorded tamper example:
 [evidence](evidence/verify-278.md).
