@@ -65,6 +65,9 @@ jobs:
       - name: Check code and hard gates
         if: steps.changes.outputs.run_checks == 'true'
         run: npm run check:fast
+      - name: Build SDK and inspect package
+        if: steps.changes.outputs.run_checks == 'true'
+        run: npm run test:sdk:package
       - name: Check generated README assets
         if: steps.changes.outputs.run_checks == 'true'
         run: npm run readme:check

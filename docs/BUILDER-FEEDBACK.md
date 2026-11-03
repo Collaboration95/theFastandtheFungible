@@ -10,6 +10,15 @@ The eight writers and their content are synthetic. Offline settlement is
 **SIMULATED**; historical live receipts are **XRPL TESTNET · no real value**.
 Neither is evidence of mainnet readiness.
 
+## Observed SDK packaging tooling · 3 Nov 2026
+
+The first SDK-lane npm ci failed with ENOTEMPTY while removing an Electron
+transitive dependency; a retry completed without dependency changes. Evidence:
+SDK v1 lane check output and `scripts/check-sdk-package.mjs` for the subsequent
+clean tarball check. Workaround: retry installation. Suggested fix: make npm ci
+cleanup tolerate transient nonempty dependency directories. Severity: low;
+mainnet impact: none observed. This was local npm tooling, not XRPL or x402.
+
 ## Observed verification tooling incident · 3 Nov 2026
 
 The #278 UC3 runner created its first run using Store's default SIMULATED label

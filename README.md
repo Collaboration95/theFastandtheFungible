@@ -183,3 +183,5 @@ New writers are unverified; this is not KYB or a sanctions service. [Compliance 
 
 Mainnet, durable hosted storage and licensing remain future work. The October Cloud Run demo was removed after the talk.
 `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
+
+[SDK v1 API and examples](docs/sdk.md).

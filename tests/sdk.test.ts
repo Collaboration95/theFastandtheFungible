@@ -8,9 +8,9 @@ import { Store } from '../server/store.js'
 import { USE_CASES } from './scenarios/use-cases.js'
 
 afterEach(() => vi.unstubAllEnvs())
-it('exports only ask/read methods, never a purchase command', () => {
+it('exposes explicit SDK methods without internal settlement commands', () => {
   expect(Object.keys(createClient({ baseUrl: 'http://localhost' })).sort())
-    .toEqual(['ask', 'getRun', 'receipts', 'search', 'wallet', 'watch'])
+    .toEqual(['ask', 'getRun', 'hire', 'pay', 'receipts', 'search', 'verify', 'wallet', 'walletStatus', 'watch'])
 })
 it('follows a fixture ask to cited, granted delivery and reuses the intent', async () => {
   vi.stubEnv('MCP_MAX_BUDGET_MINOR', '200')

@@ -3,10 +3,10 @@ export { verifyAnswer, verificationText } from './verify.js'
 export type { ReceiptBundle, VerificationResult, VerifyOptions } from './verify.js'
 import { z } from 'zod'
 import { ModeLabelsSchema, RunSnapshotSchema, type RunSnapshot, type TraceEvent } from '../shared/contracts/run.js'
-import { presentRun } from './present.js'
+import { presentRun, type PresentedRun } from './present.js'
 export type { PresentedRun } from './present.js'
 
-export type ErrorCode = 'unauthorized' | 'not_found' | 'invalid' | 'backend_unavailable'
+export type ErrorCode = 'unauthorized' | 'not_found' | 'invalid' | 'backend_unavailable' | 'cancelled' | 'payment_failed' | 'verification_failed'
 export class ResearchAgentError extends Error {
   constructor(readonly code: ErrorCode) {
     super(`ResearchAgent: ${code}`)
@@ -28,14 +28,22 @@ const SearchSchema = z.object({
 })
 export type SearchResult = z.infer<typeof SearchSchema>
 export type AskOptions = {
-  budgetSgd: number; escrow?: boolean; idempotencyKey?: string; signal?: AbortSignal
+  /** Requested SGD, clamped by server policy. */
+  budget?: number; budgetSgd?: number; escrow?: boolean; idempotencyKey?: string; signal?: AbortSignal
   /** MCP keeps its existing bounded wait. By default SDK callers follow to a terminal phase. */
   waitMs?: number
 }
 const terminal = (run: RunSnapshot) => ['DONE', 'STOPPED', 'FAILED'].includes(run.phase)
 
-/** Authority remains in backend policy. This client has no purchase or settlement command. */
-export function createClient(options: { baseUrl: string; token?: string; fetch?: typeof fetch }) {
+export type ClientOptions = { baseUrl: string; token?: string; fetch?: typeof fetch;
+  /** Explicit operator signing authority. Required for pay and hire; never inferred from a seed. */
+  payment?: Omit<import('./x402.js').PayOptions, 'method' | 'body' | 'headers' | 'idempotencyKey'> & { journal: import('./x402.js').PaymentJournal }
+}
+export type AskResult = PresentedRun & { requestedBudgetMinor: number; clamped: boolean; humanMaxBudgetMinor: number; humanDailyCapMinor: number; receipts: RunSnapshot['receipts'] }
+export type AskTask = Promise<AskResult> & { events: AsyncIterable<TraceEvent> }
+
+/** Policy owns admission and spending. Direct x402 requires separate explicit operator authority. */
+export function createClient(options: ClientOptions) {
   const transport = options.fetch ?? globalThis.fetch
   const token = options.token ?? (typeof process !== 'undefined' ? process.env.RA_API_TOKEN : undefined)
   const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
@@ -52,7 +60,7 @@ export function createClient(options: { baseUrl: string; token?: string; fetch?:
       }
       return response
     } catch (error) {
-      if (init.signal?.aborted) throw init.signal.reason
+      if (init.signal?.aborted) throw new ResearchAgentError('cancelled')
       if (error instanceof ResearchAgentError) throw error
       throw new ResearchAgentError('backend_unavailable')
     }
@@ -122,41 +130,96 @@ export function createClient(options: { baseUrl: string; token?: string; fetch?:
       await pause(signal)
     }
   }
+  const safe = async <T>(action: () => Promise<T>, code: ErrorCode = 'backend_unavailable'): Promise<T> => {
+    try { return await action() } catch (error) {
+      if (error instanceof ResearchAgentError) throw error
+      throw new ResearchAgentError(code)
+    }
+  }
+  const walletStatus = () => safe(async () => {
+    const { publisherUrl: _publisherUrl, ...mode } = await status()
+    return { ...mode, day: new Date().toISOString().slice(0, 10),
+      remainingMinor: Math.max(0, mode.dailyMinor - mode.spentMinor - mode.reservedMinor) }
+  })
   return {
+    walletStatus,
+    /** Offline verification of exported JSON or a local JSON path (Node). */
+    verify: (answerOrPath: unknown, opts: import('./verify.js').VerifyOptions = {}) => safe(async () => {
+      const { verifyAnswer } = await import('./verify.js')
+      const input = typeof answerOrPath === 'string' ? JSON.parse(await (await import('node:fs/promises')).readFile(answerOrPath, 'utf8')) : answerOrPath
+      return verifyAnswer(input, opts)
+    }, 'verification_failed'),
+    /** Buy a generic x402 exact resource on XRPL Testnet. Reuse the intent key and durable journal. */
+    pay: (url: string, opts: Pick<import('./x402.js').PayOptions, 'idempotencyKey' | 'method' | 'body' | 'headers'> = {}) => safe(async () => {
+      if (!options.payment) throw new ResearchAgentError('invalid')
+      const { payAndFetch } = await import('./x402.js')
+      return payAndFetch(url, { ...options.payment, ...opts })
+    }, 'payment_failed'),
+    /** Hire the remote baseUrl with explicit operator signing authority. */
+    hire: (question: string, input: { budgetMinor: 100 | 200 | 500; idempotencyKey: string }) => safe(async () => {
+      if (!options.payment) throw new ResearchAgentError('invalid')
+      const { createHireClient } = await import('./hire.js')
+      return createHireClient({ ...options.payment, baseUrl: options.baseUrl, token }).hire(question, input)
+    }, 'payment_failed'),
     search: (query: string, opts: { k?: number } = {}) => json(`/api/mcp/search?${new URLSearchParams({ query, k: String(opts.k ?? 10) })}`, SearchSchema),
-    async ask(question: string, opts: AskOptions) {
-      opts.signal?.throwIfAborted()
-      const mode = await status(opts.signal)
-      let run = await json('/api/mcp/runs', RunSnapshotSchema, { method: 'POST', signal: opts.signal,
-        body: JSON.stringify({ question, budget_sgd: opts.budgetSgd, idempotency_key: opts.idempotencyKey, clarify: 'never', escrow: opts.escrow }) })
-      if (!terminal(run)) {
-        const wait = opts.waitMs === undefined ? undefined : AbortSignal.timeout(opts.waitMs)
-        const signal = wait ? (opts.signal ? AbortSignal.any([wait, opts.signal]) : wait) : opts.signal
-        try { for await (const next of follow(run.runId, signal)) run = next }
-        catch (error) { opts.signal?.throwIfAborted(); if (!wait?.aborted) throw error }
+    ask(question: string, opts: AskOptions): AskTask {
+      const events: TraceEvent[] = []
+      const seen = new Set<number>()
+      let finished = false
+      const waiters = new Set<() => void>()
+      const emit = (run: RunSnapshot) => {
+        for (const event of run.events) if (!seen.has(event.id)) { seen.add(event.id); events.push(event) }
+        for (const wake of waiters) wake(); waiters.clear()
       }
-      const requestedMinor = Math.floor(opts.budgetSgd * 100 + 1e-7)
-      return { ...presentRun(run, mode.publisherUrl), requestedBudgetMinor: requestedMinor,
-        clamped: run.budgetMinor < requestedMinor, humanMaxBudgetMinor: mode.maxMinor, humanDailyCapMinor: mode.dailyMinor }
+      const result = safe(async () => {
+        if (opts.signal?.aborted) throw new ResearchAgentError('cancelled')
+        const budget = opts.budget ?? opts.budgetSgd
+        if (budget === undefined || !Number.isFinite(budget) || budget < 0 || budget > Number.MAX_SAFE_INTEGER / 100) throw new ResearchAgentError('invalid')
+        const mode = await status(opts.signal)
+        let run = await json('/api/mcp/runs', RunSnapshotSchema, { method: 'POST', signal: opts.signal,
+          body: JSON.stringify({ question, budget_sgd: budget, idempotency_key: opts.idempotencyKey, clarify: 'never', escrow: opts.escrow }) })
+        emit(run)
+        if (!terminal(run)) {
+          const wait = opts.waitMs === undefined ? undefined : AbortSignal.timeout(opts.waitMs)
+          const signal = wait ? (opts.signal ? AbortSignal.any([wait, opts.signal]) : wait) : opts.signal
+          try { for await (const next of follow(run.runId, signal)) { run = next; emit(run) } }
+          catch (error) { if (opts.signal?.aborted) throw new ResearchAgentError('cancelled'); if (!wait?.aborted) throw error }
+        }
+        const requestedMinor = Math.floor(budget * 100 + 1e-7)
+        return { ...presentRun(run, mode.publisherUrl), requestedBudgetMinor: requestedMinor,
+          clamped: run.budgetMinor < requestedMinor, humanMaxBudgetMinor: mode.maxMinor, humanDailyCapMinor: mode.dailyMinor, receipts: run.receipts }
+      }).finally(() => { finished = true; for (const wake of waiters) wake(); waiters.clear() })
+      // A stream-only consumer observes rejection through the iterator.
+      void result.catch(() => undefined)
+      // Consumers may stream while awaiting the same task. Admission happens exactly once.
+      return Object.assign(result, { events: { async *[Symbol.asyncIterator]() {
+        let cursor = 0
+        while (true) {
+          while (cursor < events.length) yield events[cursor++]
+          if (finished) break
+          await new Promise<void>(resolve => { waiters.add(resolve) })
+        }
+        await result // propagate typed failure to stream consumers too
+      } } })
     },
     receipts: (id: string) => json(`/runs/${encodeURIComponent(id)}/receipts.json`, ReceiptBundleSchema),
     async getRun(id: string) {
-      const mode = await status()
-      return presentRun(await snapshot(id), mode.publisherUrl)
+      return safe(async () => { const mode = await status(); return presentRun(await snapshot(id), mode.publisherUrl) })
     },
     async *watch(id: string, opts: { signal?: AbortSignal } = {}): AsyncGenerator<TraceEvent> {
-      // Verify MCP ownership before opening the legacy stream.
-      await snapshot(id, opts.signal)
-      const seen = new Set<number>()
-      for await (const run of follow(id, opts.signal)) {
-        for (const event of run.events) if (!seen.has(event.id)) { seen.add(event.id); yield event }
+      try {
+        // Verify MCP ownership before opening the legacy stream.
+        await snapshot(id, opts.signal)
+        const seen = new Set<number>()
+        for await (const run of follow(id, opts.signal)) {
+          for (const event of run.events) if (!seen.has(event.id)) { seen.add(event.id); yield event }
+        }
+      } catch (error) {
+        if (error instanceof ResearchAgentError) throw error
+        throw new ResearchAgentError(opts.signal?.aborted ? 'cancelled' : 'backend_unavailable')
       }
     },
-    async wallet() {
-      const { publisherUrl: _publisherUrl, ...mode } = await status()
-      return { ...mode, day: new Date().toISOString().slice(0, 10),
-        remainingMinor: Math.max(0, mode.dailyMinor - mode.spentMinor - mode.reservedMinor) }
-    },
+    wallet: walletStatus,
   }
 }
 export type ResearchAgentClient = ReturnType<typeof createClient>
