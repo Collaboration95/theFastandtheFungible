@@ -1,3 +1,4 @@
+import { loadLocalWriters } from './local-writers.js'
 import { existsSync } from 'node:fs'
 import { readdir, readFile } from 'node:fs/promises'
 import { validateWriterCorpus, type WriterCorpus } from '../shared/contracts/writers.js'
@@ -35,7 +36,9 @@ export async function loadWriterCorpus(root = dataDirectory, options: { allowMin
     // Until #120 commits the articles, the full roster is served with no articles.
     if (!articles.length && options.allowMini === false) throw new Error('No v2 articles under data/corpus/v2/')
     if (!articles.length) console.warn('Writer articles not generated yet (#120); serving the roster with no articles')
-    return validateWriterCorpus({ publishers, writers, articles })
+    const local = root === dataDirectory ? await loadLocalWriters() : []
+    return validateWriterCorpus({ publishers: [...publishers, ...local.flatMap(c => c.publishers)],
+      writers: [...writers, ...local.flatMap(c => c.writers)], articles: [...articles, ...local.flatMap(c => c.articles)] })
   }
   if (options.allowMini === false || !existsSync(miniCorpusFile)) throw new Error('No writer roster in data/writers/')
   console.warn('Writer corpus not generated yet; serving the mini corpus (SYNTHETIC test fixture)')

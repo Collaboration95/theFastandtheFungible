@@ -88,7 +88,7 @@ export class PublisherClient {
     return ContentEnvelopeSchema.parse({ profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.heading ? { label: p.heading } : {}) })) })
   }
 }
-const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional() })
+const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), verification: z.literal('unverified writer').optional() })
 const RegistrySchema = z.object({ publishers: z.array(RegistryPublisherSchema) })
 const FreeArticleSchema = z.object({ publisherSlug: z.string(), articleId: z.string(), version: z.string(), title: z.string().min(1), tier: z.literal('FREE'), body: z.string().min(1), passages: z.array(PassageSchema).min(1) })
 export type RegistryPublisher = z.infer<typeof RegistryPublisherSchema>

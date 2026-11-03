@@ -3,6 +3,7 @@
 import { createHash } from 'node:crypto'
 import { deriveAddress, sign, verify } from 'ripple-keypairs'
 import type { ClaimKind, Manifest } from './contracts/manifest.js'
+import { satisfiesFactCover } from './fact-menu.js'
 import { countWords } from './contracts/writers.js'
 
 export const MANIFEST_DOMAIN = 'researchagent-manifest-v1:'
@@ -28,7 +29,7 @@ export const manifestRoot = (leaves: string[]) => sha256(leaves.join(''))
 /** Hex of the domain prefix + canonical JSON without `sig`. The 'rese…' prefix can never be an XRPL signing payload ('STX\0', 'SMT\0', …). */
 export function manifestMessage(manifest: Omit<Manifest, 'sig'> & { sig?: string }): string {
   const { sig: _sig, ...unsigned } = manifest
-  return Buffer.from(MANIFEST_DOMAIN + canonicalJson(unsigned), 'utf8').toString('hex').toUpperCase()
+  return Buffer.from((manifest.schemaVersion === 2 ? 'researchagent-manifest-v2:' : MANIFEST_DOMAIN) + canonicalJson(unsigned), 'utf8').toString('hex').toUpperCase()
 }
 export const signManifest = (unsigned: Omit<Manifest, 'sig'>, privateKey: string): Manifest => ({ ...unsigned, sig: sign(manifestMessage(unsigned), privateKey) })
 
@@ -65,7 +66,7 @@ export function verifyDelivery(body: string, passages: DeliveredPassage[], salts
   const wordCountOk = countWords(body) === manifest.wordCount
   const failedClaims = manifest.claims.filter(claim => {
     const index = leaves.indexOf(claim.leaf)
-    return index < 0 || !CLAIM_KINDS[claim.kind](passages[index].text)
+    return index < 0 || !CLAIM_KINDS[claim.kind](passages[index].text) || Boolean(claim.covers && !satisfiesFactCover(passages[index].text, claim.covers))
   }).map(claim => claim.id)
   return { ok: rootOk && wordCountOk && failedClaims.length === 0, rootOk, wordCountOk, failedClaims }
 }

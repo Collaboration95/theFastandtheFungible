@@ -18,12 +18,21 @@ export function testnetUrl(url = process.env.XRPL_RPC_URL || TESTNET_WSS): strin
 /** One lazily connected client per process, reconnected after a drop. */
 export function testnetLedger(url = testnetUrl()): Ledger & { close(): Promise<void> } {
   let client: Client | undefined
+  let connecting: Promise<void> | undefined
   return {
     async request(request) {
-      if (!client?.isConnected()) { client = new Client(url); await client.connect() }
-      return client.request(request as never) as never
+      if (!client?.isConnected()) {
+        // Signing asks for account, fee and ledger concurrently. Share the connection
+        // attempt, or each request can orphan a WebSocket that close() cannot reach.
+        if (!connecting) {
+          client = new Client(url)
+          connecting = client.connect().finally(() => { connecting = undefined })
+        }
+        await connecting
+      }
+      return client!.request(request as never) as never
     },
-    async close() { await client?.disconnect() },
+    async close() { await connecting?.catch(() => undefined); await client?.disconnect() },
   }
 }
 

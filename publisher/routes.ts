@@ -1,3 +1,4 @@
+import { localEmbeddingCache } from './local-writers.js'
 import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response } from 'express'
 import { randomUUID, timingSafeEqual } from 'node:crypto'
 import { PaymentSignatureSchema, X402_NETWORK, type PaymentSignature } from '../shared/contracts/x402.js'
@@ -73,7 +74,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   // Live only: one warm-up call at startup, so the first question doesn't lose hybrid search to a cold-start timeout.
   if (!config.embedder && embedder) void embedder('warm-up').catch(() => undefined)
   const writersReady = Promise.resolve(config.writers ?? loadWriterCorpus())
-    .then(corpus => buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? loadEmbeddingCache() }))
+    .then(corpus => buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? localEmbeddingCache(loadEmbeddingCache()) }))
     .then(built => { registry = built })
   void writersReady.catch(() => {})
   app.locals.writersReady = writersReady
@@ -155,13 +156,13 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   app.get('/registry', (_req, res) => {
     res.json({ publishers: [...registry.values()].map(({ publisher }) => ({
       slug: publisher.slug, name: publisher.name, kind: publisher.kind, domain: publisher.domain, wallet: publisher.wallet,
-      synthetic: publisher.synthetic, endpoints: endpointsFor(publisher.slug),
+      synthetic: publisher.synthetic, verification: publisher.verification, endpoints: endpointsFor(publisher.slug),
     })) })
   })
   app.get('/w/:slug/.well-known/agent-publisher.json', (req, res) => {
     const { publisher, writers, keys } = entryFor(req.params.slug)
     res.json({
-      ...publisher, label: 'SYNTHETIC', keyLabel: keys?.simulated ? SIMULATED_KEY_LABEL : undefined,
+      ...publisher, label: publisher.synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED · unverified writer', keyLabel: keys?.simulated ? SIMULATED_KEY_LABEL : undefined,
       writers: writers.map(w => ({ slug: w.slug, name: w.name, bio: w.bio })), endpoints: endpointsFor(publisher.slug),
     })
   })
@@ -177,7 +178,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     res.json(ranked.map(r => {
       const article = byId.get(r.articleId)!
       const relevance = reportedRelevance(entry.publisher.slug, r.relevance)
-      return toSearchHit(article, relevance, mode, manifests.manifestFor(entry, article, relevance))
+      return { ...toSearchHit(article, relevance, mode, manifests.manifestFor(entry, article, relevance)), ...(entry.publisher.verification ? { verification: entry.publisher.verification } : {}) }
     }))
   })
   app.get('/w/:slug/articles/:id', async (req, res) => {
@@ -189,7 +190,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
       await sellPaid(req, res, { ...article, publisher: entry.publisher.name, payTo: entry.publisher.wallet }); return
     }
     const { body, passages, ...meta } = article
-    res.json({ ...meta, label: 'SYNTHETIC', body, passages })
+    res.json({ ...meta, label: entry.publisher.synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED · unverified writer', body, passages })
   })
   app.post('/w/:slug/challenge', async (req, res) => {
     const entry = entryFor(req.params.slug)

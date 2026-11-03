@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { FactCoverSchema } from './manifest.js'
 
 const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 const xrplAddress = z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/)
@@ -11,8 +12,8 @@ export const PublisherSchema = z.object({
   slug, name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']),
   domain: z.string().min(1), wallet: xrplAddress.optional(), pubKey: z.string().regex(/^[0-9A-F]{66}$/i).optional(),
   prices: z.record(z.string(), z.number().int().nonnegative()), licence: z.string().min(1),
-  accent: z.string().min(1), heroQuote: z.string().min(1), bio: z.string().min(1), synthetic: z.literal(true),
-})
+  accent: z.string().min(1), heroQuote: z.string().min(1), bio: z.string().min(1), synthetic: z.boolean(), verification: z.literal('unverified writer').optional(),
+}).refine(p => p.synthetic || p.verification === 'unverified writer', { message: 'Author-supplied writers must be labelled unverified writer' })
 /** For an independent writer, writer = publisher (same slug). */
 export const WriterSchema = z.object({ slug, name: z.string().min(1), publisherSlug: slug, bio: z.string().min(1), voice: z.string().min(1) })
 export const PassageSchema = z.object({ id: z.string().regex(/^[A-Za-z0-9._-]+$/), heading: z.string().optional(), text: z.string().min(1) })
@@ -21,6 +22,7 @@ export const ArticleSchema = z.object({
   articleId: z.string().regex(/^[A-Za-z0-9._-]+$/), version: z.string().min(1), publisherSlug: slug, writerSlug: slug,
   title: z.string().min(1), publishedAt: z.string().min(1), tier: z.enum(['FREE', 'PAID']), priceMinor: z.number().int().nonnegative(),
   abstract: z.string().min(1).max(220), tags: z.array(z.string().min(1)), family: z.string().min(1), derivedFrom: z.string().optional(),
+  factMenu: z.record(z.string(), FactCoverSchema).optional(),
   body: z.string().min(1), passages: z.array(PassageSchema).min(4),
 })
 export type Publisher = z.infer<typeof PublisherSchema>

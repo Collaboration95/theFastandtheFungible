@@ -35,10 +35,11 @@ is built and covered by the gate suite.
 - Publisher keys are needed at runtime to sign manifests and refunds. They are
   server-only, and never logged, traced, persisted in run data, or sent to a
   model.
-- Writers and articles are original synthetic content attributed to fictional
+- Built-in writers and articles are original synthetic content attributed to fictional
   writers and labelled SYNTHETIC. Draft questions name real institutions with
   invented facts (O3). No real article body is scraped, bypassed, or
   redistributed.
+- Locally published writers are labelled unverified (no KYB on Testnet). Author-supplied content is distinguished from SYNTHETIC starter content. Publisher keys are stored in an ignored, mode-0600 `.env.writer` beside the private corpus. An operator denylist is checked before funding a new wallet and before purchase signing; it is not sanctions screening.
 - Persistence is SQLite (`node:sqlite`): `data/app.db` and the publisher journal.
   It is local demo storage, not multi-user production storage; deployers should
   add authentication, encryption, retention, rate limits, and a managed
