@@ -187,3 +187,5 @@ Mainnet, durable hosted storage and licensing remain future work. The October Cl
 `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
 
 [SDK v1 API and examples](docs/sdk.md).
+
+Python builders: see the [Python SDK](docs/sdk-python.md) for typed asks, event iteration, receipts and offline verification.
