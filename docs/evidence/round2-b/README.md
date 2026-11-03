@@ -1,143 +1,130 @@
 # Required fast verification — 4 November 2026
 
-Local evidence uses synthetic providers, generated throwaway signing keys,
-simulated settlement and in-memory ledgers. No live provider or Testnet calls.
-Integration baseline: ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c.
-Node v26.3.1, macOS arm64, three Vitest workers, shared host.
-The first fresh collection retained 744/744 tests in 100 files (47.13 s).
-After adding coverage/CI contract tests and completing runtime .mjs inclusion,
-the ratchet baseline retained 770/770 tests in 102 files (50.84 s).
-Payment negative-path tests were added after that baseline.
+Offline synthetic providers, throwaway signing keys, simulated settlement and
+isolated ledgers only. No live provider, Testnet, mainnet or real-money calls.
 
-coverage-baseline.json and coverage-final.json contain raw covered/total branch
-and line counts; component-map.json assigns every included path once. Payments
-includes the store, admission, agent keys, hire, x402, XRPL, escrow, asset and
-issued-currency paths. Other publisher/server financial integration paths remain
-included under their owning component. No financial file is excluded.
-coverage-floors.json preserves exact baseline line and branch ratios and raises
-the payment branch floor to the achieved result (always at least 85%).
-New files are discovered from disk; a missing report entry fails admission.
+The integration includes A/E/C1/C2 at main
+4df971aa7899b8fa9c54c4f007687280db6acb35. Baseline source is
+ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c. Original collection retained all
+744 tests / 100 files (47.13 s). Runtime-inclusive ratchet baseline, after
+coverage/CI contract tests but before payment refusals: 770 / 102 (50.84 s).
+Baseline runner: macOS arm64, Node 26.3.1, three Vitest workers. Baseline JSON
+marks its uncommitted collection configuration/contract tests as dirty.
 
-V8 includes unexecuted product .ts/.tsx/.mjs files, excluding declaration files,
-tests, desktop build tooling and generated dist/out. Unexecuted files can have
-synthetic branch denominators. Python, browser, native Electron, child processes
+coverage-baseline.json and coverage-final.json record local raw counts;
+coverage-hosted.json records the uploaded V8 summary from this PR's own
+successful run 41699047504, head 65ccf5e5a608486077c51252a767bc7ef7741c31.
+Local final: 876 tests / 116 files, 47.14 s, Node 22.23.4 on macOS arm64.
+Hosted final uses ubuntu-latest / Node 22. Runner variation can change V8 branch
+denominators; local counts are retained, not replaced by hosted estimates.
+
+| Component | Branches: reproduced baseline → hosted final | Lines: reproduced baseline → hosted final |
+| --- | --- | --- |
+| desktop | 38/63 (60.32%) → 134/174 (77.01%) | 58/673 (8.62%) → 145/882 (16.44%) |
+| mcp | 30/42 (71.43%) → 35/47 (74.47%) | 72/141 (51.06%) → 76/143 (53.15%) |
+| publisher | 435/536 (81.16%) → 435/536 (81.16%) | 761/810 (93.95%) → 761/810 (93.95%) |
+| payments | 1458/1710 (85.26%) → 1556/1805 (86.20%) | 2179/2206 (98.78%) → 2251/2278 (98.81%) |
+| sdk | 324/357 (90.76%) → 362/390 (92.82%) | 308/342 (90.06%) → 316/350 (90.29%) |
+| server | 2087/2400 (86.96%) → 2204/2523 (87.36%) | 2499/2655 (94.12%) → 2627/2781 (94.46%) |
+| providers | 379/417 (90.89%) → 484/529 (91.49%) | 527/534 (98.69%) → 622/627 (99.20%) |
+| shared | 191/205 (93.17%) → 194/208 (93.27%) | 426/426 (100.00%) → 431/431 (100.00%) |
+| web | 1101/1392 (79.09%) → 1158/1445 (80.14%) | 1503/1777 (84.58%) → 1540/1814 (84.90%) |
+
+component-map.json assigns all 170 product paths once. Payments includes store,
+admission, agent keys, hire, x402, XRPL, escrow, assets, issued currency, and
+publisher facilitator/journal/refund. Other financial integration paths remain
+covered under their owning server/publisher component; none are excluded.
+C1 compatible/json-decision modules belong to providers. Floors are exact
+covered/total ratios, compared without rounding; every original floor is
+retained. Payment branch floor is raised to 1486/1732 (85.80%) and independently
+must be ≥85%. Missing product files and a one-branch loss fail contract fixtures.
+The historical narrower server-payment heuristic was 551/650 (84.77%); the
+current local cross-check is 562/659 (85.28%). It is not rounded into the gate
+or substituted for the committed disjoint grouping.
+
+V8 includes unexecuted product .ts/.tsx/.mjs files. Exclusions: declarations,
+tests, desktop build tooling and generated dist/out. Unexecuted-file branch
+denominators can be synthetic. Python, browser, native Electron, child processes
 and installed-app execution are not merged into V8. Desktop percentages are
-diagnostic only: native launch/recovery/Keychain acceptance is a separate
-release requirement, not established by this lane.
+diagnostic; native launch/recovery/Keychain acceptance is a separate release
+requirement and is not established by this lane.
 
-Local check:fast remains unchanged, including chaos:smoke. CI verify runs the
-same hygiene/lint/typecheck/unit collection once with coverage, followed by
-coverage admission, SDK package and generated README checks. Chaos runs its
-unchanged 20 episodes plus four escrow probes in a separate parallel job.
-Chromium e2e/a11y and Python SDK jobs are required for every full-code change.
-All four results feed the always-reporting required check. Only intentional
-docs-only skips are accepted. Unknown bases fall back to full verification.
-The workflow's actual detector/evaluator is imported by failure-injection tests.
+Local check:fast is unchanged, including chaos:smoke. CI verify runs its
+non-chaos equivalent: hygiene/lint/typecheck and the full Vitest suite once
+with coverage, followed by coverage admission, SDK package and README checks.
+Chaos runs the unchanged 20 episodes and four escrow probes in a parallel job.
+Chromium e2e.spec.ts/a11y.spec.ts and Python run on every full-code change.
+Foundation/perf/ux/ux2 remain runnable; only the first two browser specs are
+initially required. Browser config clears inherited provider/seed credentials,
+never activates .env, disables traces and retains fixture failure screenshots
+and error context for seven days. No repository protection/security settings
+were changed. Workers are bounded to three; job timeout is 15 minutes versus
+the old serial job's ten, disclosed in the PR. No assertion or floor was lowered.
 
-Only e2e.spec.ts and a11y.spec.ts are initially required; foundation/perf/ux/ux2
-remain runnable. Browser config clears inherited keys/tokens/seeds/secrets and
-does not activate .env; screenshot/error-context diagnostics use fixture data,
-with traces disabled to avoid recording headers. The initial seven required browser tests
-passed locally (16.0 s), including zero serious/critical axe findings; the initial
-five Python tests passed (3.61 s). The final hosted run passed eight browser
-tests (51.1 s) and all 17 current Python tests (6.26 s).
+Always-reporting check requires changes and all four worker results. Failed,
+cancelled, missing and unexpectedly skipped jobs refuse admission. Only detected
+docs-only skips are admitted; unknown bases/fetch/diff failures run full checks.
+Both sides of renames are examined. Workflow contracts import the actual CLI
+helpers and inject each required job's failure; the aggregate command exits
+nonzero for each. Shared-only, Python-only and docs-only triggers are covered.
 
-ci-jobs.json records a recent successful main run and this PR's own hosted run,
-including exact SHA, timestamps, wall time and job durations. Hosted RSS is not
-reported by Actions and is not inferred. The 339 s target is an optimization
-target, not permission to remove gates. docs/running.md is deferred because
-Lane A owns it; CONTRIBUTING.md documents the commands and gate equivalence.
+Hosted comparison uses gh run list / gh run view timestamps and job records in
+ci-jobs.json. Latest comparable main run 41697524722 at the integration
+SHA took 278 s wall; its serial check took 274 s, omitted browser
+and skipped Python. This PR took 249 s wall (target ≤339 s).
+Wall means createdAt → updatedAt, including scheduling. Single observations,
+not p95 or isolated causal proof: the PR adds coverage, browser, Python,
+negative-path tests and consumer recovery to the main verification workload.
 
-Final integrated local coverage collection: 876/876 tests, 116 files, 47.14 s
-on Node 22.23.4, macOS arm64. Integration includes main
-4df971aa7899b8fa9c54c4f007687280db6acb35 (Lanes A/E/C1/C2); the baseline remains ec97bfd.
-Payments: 1458/1710 → 1557/1806 branches; all component ratios pass their
-original floors. The payment floor remains 1486/1732, above 85%.
-Baseline configuration/contract tests were uncommitted, marked dirty in JSON.
-Final tested SHA is in coverage-final.json. Later evidence-only commits do not
-change product code or test execution. Component mapping includes A/C1/C2's new runtime files. C2 recovery tests raise
-desktop branches to 134/175 and lines to 145/882; native acceptance remains separate.
+| PR job | Duration | Result |
+| --- | ---: | --- |
+| changes | 11 s | success |
+| python | 38 s | success |
+| chaos | 112 s | success |
+| verify | 207 s | success |
+| browser | 84 s | success |
+| check | 20 s | success |
 
-The first hosted run (41690272807) failed the server branch ratchet; browser,
-Python and chaos passed and the required check correctly failed. This is actual
-hosted fail-closed evidence, in addition to injected contract cases. Floors
-were retained; publisher refusal/telemetry-isolation tests were added. Coverage
-summary artifacts now expose raw counts even on admission failures.
+All six jobs ran and reported success. Whole-job RSS is unavailable and is not
+inferred. Maximum reported per-iteration chaos child RSS:
+323825664 → 318672896 bytes. These are fresh-child metrics,
+not retained-engine soak memory. Both runs retained 20 episodes / four escrow
+probes with zero double charges or invariant violations. No OOM was observed.
+The older successful 350 → 291 s observation is retained under
+historicalComparisons rather than relabeled as this final integration.
 
-The second hosted run (41691867205) passed all unit tests but refused the web
-branch ratio on Node 22. Compared with local Node 26, App.tsx had two extra
-uncovered V8 branches. Private-mode and unconnected environment-label tests
-were added; no floor was lowered. Final local collection now uses Node
-22.23.4 to match CI's major. Baseline remains the original Node 26 ratios.
-Worker jobs have a 15-minute execution bound (old monolithic job: 10 minutes)
-for fresh browser/coverage/package setup; assertions and floors are unchanged.
+Actual fail-closed receipts are retained in ci-jobs.json: run 41690272807
+refused the server ratchet; 41691867205 refused web coverage on hosted Node 22
+versus local Node 26; 41693484395 failed three browser scenarios after #345.
+Each required aggregate failed. Floors remained unchanged. Refusal/environment
+label cases fixed the first two; final local verification matches Node 22.
+The C1 integration initially refused 455/507 provider branches. Eight additional
+B-owned fixture/transport tests preserve its original floor by covering failed,
+malformed, oversized, absent/aborted identity and invalid-relevance paths, public
+metadata projection and separate credentials. No server or SDK runtime edits.
 
-The browser job on 41693484395 exposed the #345 SSE consumer regression:
-three scenarios stalled despite DONE rows larger than the 256 KiB stream cap.
-The user explicitly authorized a narrow src/api.ts repair. It uses only the
-existing GET for the same run, with one read in flight, event/revision and
-gross charge/refund/receipt guards, a five-second stall probe, and abort on
-unsubscribe. No admission or idempotency identity is created. Six unit recovery
-cases and an eighth required browser case exercise stale reads, stalled/closed
-streams and oversized terminal recovery through reload with one admission and
-identical receipts/spend. Server and SDK runtime files were not edited.
+The browser failure exposed a #345 consumer regression: durable DONE snapshots
+of 266655, 266655 and 281277 bytes exceeded the 262144-byte SSE cap, leaving
+Searching visible. Explicit user scope approval allowed src/api.ts recovery.
+On stream error or five-second snapshot stall it GETs only the existing run ID,
+serializes reads, ignores stale event/revision/money/receipt state and aborts on
+unsubscribe. It never admits another run or creates an idempotency identity.
+Six unit recovery tests cover races/identity/cleanup; the eighth required
+browser test completes an oversized terminal state and reloads the same run
+with exactly one admission and unchanged receipts/spend. The existing stream
+adapter test now uses matching run identities and waits for a failed recovery
+read before its error callback; no prior assertion was removed.
 
+Final integrated local check:fast: 876 tests / 116 files (43.95 s), unchanged
+20 chaos episodes / four escrow probes (44.499 s), zero double charges or
+invariant violations. Chromium: eight passed (19.1 s), zero serious/critical
+axe findings. Python: 17 passed (2.59 s). Clean npm ci, SDK package inspection
+and generated README checks passed. The local coverage SHA is recorded in
+coverage-final.json; its dirty flag reflects the previous report artifact only.
+Later evidence-only commits do not change product, test or runner execution.
 
-Hosted full-code comparison (Actions timestamps, not local estimates; before
-the final C2 rebase; exact tested commits are retained in ci-jobs.json):
-
-| Measurement | Recent main 41686116425 | PR 41695608282 |
-| --- | ---: | ---: |
-| Wall, createdAt → updatedAt | 350 s | 291 s |
-| Old serial check | 346 s | — |
-| changes | — | 34 s |
-| verify | — | 223 s |
-| chaos | part of check | 117 s |
-| browser | absent | 124 s |
-| python | skipped | 50 s |
-| aggregate check | — | 23 s |
-
-The PR meets the ≤339 s target: 59 s faster than this main observation (16.9%).
-All six jobs ran and reported success, with 841 passing tests / 110 files in the
-single V8 collection (147.38 s). Both runs retained 20 chaos episodes and four
-escrow probes, with zero double charges or invariant violations. Maximum
-per-iteration chaos child RSS was 1000103936 → 472854528 bytes; whole-job RSS
-is unavailable. These are separate fresh-child runs, not retained-engine soak
-or p95 claims. Main excluded browser and skipped Python. A/E integration and
-shared hosted-runner variability mean this comparison does not isolate the
-causal effect of splitting jobs.
-
-coverage-hosted.json records raw component counts from that PR run's uploaded
-coverage-summary artifact. Hosted payments are 1547/1798 (86.04%); all original
-line/branch floors and the higher payment floor pass. Local/hosted V8 branch
-denominators differ despite matching Node majors; neither denominator is
-silently substituted. The historical narrower server-payment heuristic was
-551/650 (84.77%); the final local cross-check is 562/659 (85.28%). It is not the
-committed disjoint component grouping and is not rounded into the gate.
-
-Final integration onto C2 main 571bb780 retains the earlier successful hosted
-receipt rather than relabeling it as a run of different source. The final PR
-head must independently pass every hosted gate before merge.
-
-C2-integrated local gate: check:fast passed with 861 tests / 111 files
-(38.22 s unit collection), unchanged 20 chaos episodes / four escrow probes
-(43.166 s, zero violations/double charges). Required Chromium: eight passed
-(19.0 s); Python: 17 passed (4.04 s). These executions used Node 22.23.4.
-
-
-C1 integration adds compatible/json-decision to the provider component rather
-than hiding their counts under server. The first integrated collection refused
-455/507 provider branches against the existing exact floor. Eight B-owned
-fixture/transport tests cover malformed, oversized and failed responses, absent
-or aborted identities, separate credentials, public candidate projection and
-invalid paid-relevance probabilities. Final providers: 483/528 branches,
-622/627 lines; original floors remain unchanged. No server/SDK runtime edits.
-The latest comparable main run is 41697524722 at integration SHA 4df971aa:
-278 s wall, 274 s serial check. Final hosted admission will be compared with it;
-the older 350 → 291 s observation above is retained as historical evidence.
-
-Final A/E/C1/C2-integrated local gate passed: 876 tests / 116 files
-(43.95 s unit collection), unchanged 20 chaos episodes / four escrow probes
-(44.499 s), zero double charges and invariant violations. Chromium: eight
-passed (19.1 s); Python: 17 passed (2.59 s). Coverage source matches the recorded
-SHA; its dirty flag is the preceding report artifact only, not runtime changes.
+CONTRIBUTING documents commands/equivalence. docs/running.md is deferred under
+the ownership override. Tooling friction with required fields is kept in the
+B-owned feedback-fragment.md; docs/BUILDER-FEEDBACK.md remains E-owned. The
+single dated SFF line is added last after a fresh rebase. Final PR-head hosted
+admission is checked independently before squash merge.
