@@ -1,6 +1,6 @@
 // node --import tsx scripts/hire-demo.mjs [--live]. Testnet only; never prints seeds.
 import 'dotenv/config'
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { Client, Wallet } from 'xrpl'
 import { createPublisherApp } from '../publisher/routes.ts'
@@ -16,7 +16,8 @@ import { USE_CASES } from '../tests/scenarios/use-cases.ts'
 import { auditRuns } from './gate-audit.ts'
 
 const live = process.argv.includes('--live')
-const dir = resolve(process.env.HIRE_DEMO_DIR || (live ? 'data/hire-demo-live' : 'data/hire-demo-fixture'))
+const disposableFixture = !live && !process.env.HIRE_DEMO_DIR
+const dir = resolve(process.env.HIRE_DEMO_DIR || (live ? 'data/hire-demo-live' : mkdtempSync('data/hire-demo-fixture-')))
 mkdirSync(dir, { recursive: true, mode: 0o700 })
 const walletFile = resolve(dir, 'caller.private.json')
 let caller
@@ -88,4 +89,5 @@ try {
   server.closeAllConnections(); pub.closeAllConnections()
   await Promise.all([new Promise(done => server.close(done)), new Promise(done => pub.close(done))])
   await api.drain(); api.close(); publisher.locals.journal.close(); await ledger.close?.()
+  if (disposableFixture) rmSync(dir, { recursive: true, force: true })
 }

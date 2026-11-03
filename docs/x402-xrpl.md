@@ -288,7 +288,8 @@ ledger/fixture run on ephemeral ports. For the real chain use
 faucet caller wallet, existing writer wallets, a fixture-labelled research
 answer and genuine Testnet settlement; API/publisher ports are 10088/10090.
 Private state stays under `data/hire-demo-live`; only `chain.json` is public
-receipt data. Fixture state uses a separate directory. Replay uses the same
+receipt data. Default fixture state uses a fresh temporary directory and is cleaned
+after each run; an explicitly configured fixture directory must be fresh. Replay uses the same
 key and journal; the script verifies every hash and refuses a gross movement
 plus network-fee total of 1 XRP or more. Faucet funding is excluded from that
 spend figure. No real money or cloud resources are involved.
