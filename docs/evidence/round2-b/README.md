@@ -1,0 +1,48 @@
+# Required fast verification — 4 November 2026
+
+Local evidence uses synthetic providers, generated throwaway signing keys,
+simulated settlement and in-memory ledgers. No live provider or Testnet calls.
+Integration baseline: ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c.
+Node v26.3.1, macOS arm64, three Vitest workers, shared host.
+The first fresh collection retained 744/744 tests in 100 files (47.13 s).
+After adding coverage/CI contract tests and completing runtime .mjs inclusion,
+the ratchet baseline retained 770/770 tests in 102 files (50.84 s).
+Payment negative-path tests were added after that baseline.
+
+coverage-baseline.json and coverage-final.json contain raw covered/total branch
+and line counts; component-map.json assigns every included path once. Payments
+includes the store, admission, agent keys, hire, x402, XRPL, escrow, asset and
+issued-currency paths. Other publisher/server financial integration paths remain
+included under their owning component. No financial file is excluded.
+coverage-floors.json preserves exact baseline line and branch ratios and raises
+the payment branch floor to the achieved result (always at least 85%).
+New files are discovered from disk; a missing report entry fails admission.
+
+V8 includes unexecuted product .ts/.tsx/.mjs files, excluding declaration files,
+tests, desktop build tooling and generated dist/out. Unexecuted files can have
+synthetic branch denominators. Python, browser, native Electron, child processes
+and installed-app execution are not merged into V8. Desktop percentages are
+diagnostic only: native launch/recovery/Keychain acceptance is a separate
+release requirement, not established by this lane.
+
+Local check:fast remains unchanged, including chaos:smoke. CI verify runs the
+same hygiene/lint/typecheck/unit collection once with coverage, followed by
+coverage admission, SDK package and generated README checks. Chaos runs its
+unchanged 20 episodes plus four escrow probes in a separate parallel job.
+Chromium e2e/a11y and Python SDK jobs are required for every full-code change.
+All four results feed the always-reporting required check. Only intentional
+docs-only skips are accepted. Unknown bases fall back to full verification.
+The workflow's actual detector/evaluator is imported by failure-injection tests.
+
+Only e2e.spec.ts and a11y.spec.ts are initially required; foundation/perf/ux/ux2
+remain runnable. Browser config clears inherited keys/tokens/seeds/secrets and
+does not activate .env; screenshot/error-context diagnostics use fixture data,
+with traces disabled to avoid recording headers. Seven required browser tests
+passed locally (16.0 s), including zero serious/critical axe findings; all five
+Python tests passed (3.61 s).
+
+ci-jobs.json records a recent successful main run and this PR's own hosted run,
+including exact SHA, timestamps, wall time and job durations. Hosted RSS is not
+reported by Actions and is not inferred. The 339 s target is an optimization
+target, not permission to remove gates. docs/running.md is deferred because
+Lane A owns it; CONTRIBUTING.md documents the commands and gate equivalence.
