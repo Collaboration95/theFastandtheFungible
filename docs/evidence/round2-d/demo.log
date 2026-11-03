@@ -1,0 +1,56 @@
+
+> research-agent@0.8.0 test:demo
+> npm run build:demo && playwright test --config playwright.demo.config.ts
+
+
+> research-agent@0.8.0 build:demo
+> vite build --config vite.demo.config.ts --mode browser-demo
+
+vite v7.3.6 building client environment for browser-demo...
+transforming...
+node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 190 modules transformed.
+rendering chunks...
+computing gzip size...
+../site/demo/index.html                                                     1.51 kB │ gzip:   0.75 kB
+../site/demo/assets/geist-mono-symbols2-wght-normal-CO5SzqOn.woff2          5.81 kB
+../site/demo/assets/geist-mono-cyrillic-ext-wght-normal-X_5orZeX.woff2      6.18 kB
+../site/demo/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2           7.42 kB
+../site/demo/assets/geist-mono-vietnamese-wght-normal-DadHysG0.woff2        7.70 kB
+../site/demo/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2             8.00 kB
+../site/demo/assets/geist-mono-cyrillic-wght-normal-DiZS0aHC.woff2         12.94 kB
+../site/demo/assets/geist-mono-latin-ext-wght-normal-Bwz-egvJ.woff2        14.70 kB
+../site/demo/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2              15.08 kB
+../site/demo/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2             16.51 kB
+../site/demo/assets/geist-mono-latin-wght-normal-XN7g48iV.woff2            23.13 kB
+../site/demo/assets/geist-latin-wght-normal-BgDaEnEv.woff2                 29.40 kB
+../site/demo/assets/index-ZhSXPI-W.css                                      0.74 kB │ gzip:   0.43 kB
+../site/demo/assets/main-xrYxcSUv.css                                      55.54 kB │ gzip:  11.07 kB
+../site/demo/assets/receipts-CTeuwn7C.js                                  107.69 kB │ gzip:  31.07 kB
+../site/demo/assets/main-D0vp3tlZ.js                                      298.08 kB │ gzip:  93.64 kB
+../site/demo/assets/index-CE7SkeOR.js                                   1,007.09 kB │ gzip: 244.04 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 817ms
+
+Running 1 test using 1 worker
+
+(node:32613) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser-demo.spec.ts:6:1 › static Pages UC3: draft, verified upgrade, refund, receipt, citation and Writers (15.9s)
+
+  1 passed (16.3s)

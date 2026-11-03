@@ -1,0 +1,494 @@
+
+ RUN  v3.2.4 /Users/speedpowermac/.t3/worktrees/tftf/t3-6ac59017
+      Coverage enabled with v8
+
+Publisher listening on port 62818 · SIMULATED SGD · no real funds
+ ✓ tests/mcp.e2e.test.ts (2 tests) 8627ms
+   ✓ stdio search → policy buy → cited answer; cap, daily cap, retry and restart hold  7666ms
+   ✓ remote backend enforces its own human caps, independent of the caller environment  960ms
+ ✓ tests/mcp-bundle.test.ts (1 test) 9193ms
+   ✓ ships a validated extension that lists tools and clamps user-config caps over stdio  9192ms
+ ✓ tests/scenarios/scenarios.test.ts (12 tests) 12606ms
+   ✓ UC1–UC4 scenarios: separate API and publisher processes > UC1: free sources suffice: a cited answer, no gap, S$0 spent despite S$2 authorised  450ms
+   ✓ UC1–UC4 scenarios: separate API and publisher processes > UC4: a focused free search finds the missing fact: 3 of 3 answered, nothing bought, the paid deep-dive only a skip row (#211)  694ms
+   ✓ UC1–UC4 scenarios: separate API and publisher processes > UC2: one clarifying question; the chosen angle buys NotFT once, the rewrite and the over-cap decoy are rejected  807ms
+   ✓ UC1–UC4 scenarios: separate API and publisher processes > S$0: spends nothing but marks the expected article as would-buy  753ms
+   ✓ UC1–UC4 scenarios: separate API and publisher processes > an instruction in a free article changes no verdict, purchase, budget or cap  1896ms
+   ✓ UC3: a bad actor is caught, refunded and quarantined > AlphaLeak is bought → CLAIM_FAILED → REFUNDED once → H 0.80→0.40 quarantined → round 2 buys The Fab Floor; a re-ask shows SKIP_LOW_TRUST  1558ms
+   ✓ leak gate and Stop: audited Clef and LLM requests > every API/SSE snapshot, Clef and LLM request respects run/version grants  2061ms
+   ✓ leak gate and Stop: audited Clef and LLM requests > Stop during scoring prevents any purchase and preserves the free answer  886ms
+ ✓ tests/hire.test.ts (8 tests) 6622ms
+   ✓ settles one caller intent, buys, pays every cited writer including free, returns change; replay and restart do not pay again  1133ms
+   ✓ refuses unauthenticated calls, paused/capped admission, changed requests and a second blob on a paid invoice  871ms
+   ✓ recovers a payout timeout with the original signed blob and pays a generic article seller  873ms
+   ✓ refuses a payout to a denylisted payee before signing it, and the audit log keeps the listed reason (#288)  752ms
+   ✓ refunds unspent purchase after denylist refusal; replay/restart never charge again (#310)  1080ms
+   ✓ refunds unspent royalty after denylist refusal; replay/restart never charge again (#310)  887ms
+   ✓ scopes hired callers to agent keys, counts fees beneath caps and attributes every money row  793ms
+ ✓ tests/search-leak.test.ts (11 tests) 8628ms
+   ✓ search leak gate (#124) > no search response shares 8 consecutive words with any paid body  8417ms
+ ✓ tests/ledger-artifact.test.ts (5 tests) 5093ms
+   ✓ aborts each slow request at five seconds  5003ms
+ ✓ tests/audit-scenarios.test.ts (5 tests) 3861ms
+   ✓ audit trail over fixture UC2 + UC3 (#288) > npm run audit:verify passes on the run, and fails at the edited seq after one audit row is changed  508ms
+   ✓ audit trail over fixture UC2 + UC3 (#288) > npm run audit:export prints the same CSV as the API, and can export the chain  681ms
+   ✓ audit trail over fixture UC2 + UC3 (#288) > npm run data:prune removes content but the chain and receipts survive  474ms
+ ✓ tests/site-leak.test.ts (2 tests) 2984ms
+   ✓ site leak gate (#146) > the paid page shows abstract and badge, and no HTML page leaks a paid body  2982ms
+Publisher listening on port 63488 · SIMULATED SGD · no real funds
+ ✓ tests/verify-answer.test.ts (8 tests) 4554ms
+   ✓ verifies all signed citations and the audit chain offline for UC2  569ms
+   ✓ verifies all signed citations and the audit chain offline for UC3  572ms
+   ✓ names the exact citation for a one-byte passage tamper; refuses amount, citation, signature, grant, refund and audit edits  774ms
+   ✓ pins an external audit head, treats simulated transactions as unverified on Testnet and rejects legacy reports  467ms
+   ✓ exports via API and SDK without exposing signed blobs or quarantined delivery  561ms
+   ✓ authorizes receipt exports for the owning agent and conceals other runs  465ms
+   ✓ CLI verifies the recorded JSON and PDF offline, rejects the exact citation tamper and detects PDF byte edits  1037ms
+ ✓ tests/corpus-v2.test.ts (7 tests) 2700ms
+   ✓ committed v2 corpus (#120) > passes the self-check: schema, golden facts, claims, planted AlphaLeak claim, abstracts  669ms
+   ✓ committed v2 corpus (#120) > catches a missing golden fact and a leaking paid abstract  673ms
+   ✓ golden facts (#198) > fails check-corpus on a contradiction planted in a golden-path article  637ms
+   ✓ golden facts (#198) > fails check-corpus when a FREE body repeats 8+ words of a PAID body  674ms
+ ✓ tests/sdk-v1.test.ts (3 tests) 2583ms
+   ✓ streams checked answers, clamps budgets, charges once, verifies exports and runs all examples on ephemeral fixtures  2580ms
+ ✓ tests/chaos.test.ts (4 tests) 1490ms
+   ✓ reliability-only CLI cannot bypass a quality check or enable live calls  1446ms
+ ✓ tests/eval/calibration-fit.test.ts (8 tests) 2235ms
+   ✓ the production decision provider in the harness (#212) > sends the provider’s exact request body through the opt-in transport  336ms
+   ✓ the requested-fact flow and the calibration sweep (#207, #221) > sweep: one round per requested fact, exact call count, labels from the bank  1451ms
+Publisher listening on port 63587 · SIMULATED SGD · no real funds
+ ✓ tests/eval/decisions-harness.test.ts (10 tests) 3473ms
+   ✓ real-corpus scenarios (#212) > builds one scenario per bank question, with dev and test splits and in-domain labels  1106ms
+   ✓ real-corpus scenarios (#212) > evaluates the fixture arm through the real policy and summarizes it  1055ms
+   ✓ real-corpus scenarios (#212) > lets budget and cap bind under a maximally positive judgment  1063ms
+Publisher listening on port 63606 · SIMULATED SGD · no real funds
+ ✓ tests/sdk.test.ts (8 tests) 1393ms
+   ✓ follows a fixture ask to cited, granted delivery and reuses the intent  1390ms
+ ✓ tests/mcp-http.test.ts (1 test) 1160ms
+   ✓ SDK HTTP ask, principal caps, strict policy boundary, verification, isolation and immediate revocation  1160ms
+ ✓ tests/xrpl.test.ts (23 tests) 1453ms
+ ✓ tests/byok.test.ts (2 tests) 1841ms
+   ✓ one synthetic key produces cited compatible answers through HTTP, TS, Python and MCP  1836ms
+ ✓ tests/decision-loop.test.ts (33 tests) 1913ms
+   ✓ fixture-mode use cases, end to end (#142) > UC1: free sources suffice: no gap, no purchase, S$0  317ms
+   ✓ fixture-mode use cases, end to end (#142) > UC2: the chosen angle drives the gap; NotFT is bought once and changes the answer  372ms
+   ✓ fixture-mode use cases, end to end (#142) > UC3: AlphaLeak bought → CLAIM_FAILED → REFUNDED → round 2 buys The Fab Floor; a re-ask shows SKIP_LOW_TRUST  563ms
+ ✓ tests/fact-menu.test.ts (6 tests) 1727ms
+   ✓ fact menu (#260) > preserves the pre-menu bank, prose and constructed coverage snapshots  534ms
+   ✓ fact menu (#260) > signs every corpus claim menu, exposes only bounded promises, and leaks no values or eight-word run  891ms
+ ✓ tests/publisher.test.ts (7 tests) 972ms
+   ✓ publisher HTTP protocol > settles once across real publisher processes sharing a journal, and survives a restart  788ms
+ ✓ tests/chaos-watchdog.test.js (1 test) 1052ms
+   ✓ captures both pipes, requests a diagnostic, kills a stall and permits the next child  1052ms
+ ✓ tests/escrow.test.ts (17 tests) 1108ms
+ ✓ tests/audit.test.ts (31 tests) 1006ms
+ ✓ tests/agent-keys.test.ts (6 tests) 1065ms
+   ✓ stores only SHA-256, masks keys even in free text, and creates a private credential file once via CLI  423ms
+   ✓ serialises per-agent and wallet caps across four concurrent OS processes  434ms
+ ✓ tests/release.test.ts (1 test) 824ms
+   ✓ backfills the exact old commit without changing HEAD, package versions or existing tags  824ms
+ ✓ tests/purchase.test.ts (37 tests) 678ms
+ ✓ tests/stream-281.test.ts (3 tests) 1073ms
+   ✓ UC3 SSE never emits paid passage bytes before a verified grant, and never emits refunded passages  1019ms
+Publisher listening on port 64119 · SIMULATED SGD · no real funds
+Publisher listening on port 64120 · SIMULATED SGD · no real funds
+ ✓ tests/publish-site.test.ts (8 tests) 751ms
+   ✓ Markdown folder → paid writer (#277) > the repo bin starts on an ephemeral port and exits cleanly on SIGTERM  331ms
+ ✓ tests/engine.test.ts (1 test) 564ms
+   ✓ boots two isolated fixture engines on ephemeral ports and closes every listener  563ms
+ ✓ tests/numbers-pipeline.test.ts (8 tests) 1049ms
+ ✓ tests/stop-propagation.test.ts (2 tests) 599ms
+   ✓ cancels a stalled provider through run Stop below 1s; preserves reservations  562ms
+ ✓ tests/eval/coverage.test.ts (7 tests) 1033ms
+ ✓ tests/generate-corpus.test.ts (7 tests) 447ms
+ ✓ tests/rlusd.test.ts (9 tests) 366ms
+ ✓ tests/value-policy.test.ts (8 tests) 678ms
+ ✓ tests/numbers-identifiers.test.ts (4 tests) 563ms
+ ✓ tests/challenge.test.ts (6 tests) 326ms
+ ✓ tests/eval/offline-eval.test.ts (3 tests) 443ms
+ ✓ tests/proofs.test.ts (5 tests) 300ms
+ ✓ tests/active-work-cap.test.ts (1 test) 371ms
+   ✓ bounds 100 concurrent admissions before planning; retries bypass saturation  371ms
+stderr | tests/publisher-registry.test.ts > writer corpus loader (#122) > falls back to the mini corpus while the roster or the v2 articles are missing
+Writer corpus not generated yet; serving the mini corpus (SYNTHETIC test fixture)
+
+ ✓ tests/publisher-registry.test.ts (10 tests) 364ms
+ ✓ tests/facilitator.test.ts (10 tests) 318ms
+ ✓ tests/ci-contract.test.ts (31 tests) 257ms
+ ✓ src/streamDraft.test.tsx (2 tests) 320ms
+   ✓ every UC3 replay prefix withholds paid passages and citations until its grant; refunds never become claims  311ms
+ ✓ tests/plan.test.ts (3 tests) 306ms
+ ✓ tests/gate-audit.test.ts (14 tests) 240ms
+ ✓ tests/runtime-limits.test.ts (3 tests) 297ms
+ ✓ tests/reputation.test.ts (6 tests) 233ms
+ ✓ tests/retrieval.test.ts (6 tests) 243ms
+ ✓ tests/openai-decisions.test.ts (14 tests) 314ms
+ ✓ tests/injection.test.ts (12 tests) 202ms
+ ✓ tests/site.test.ts (9 tests) 213ms
+ ✓ tests/byok-security.test.ts (2 tests) 283ms
+ ✓ tests/report.test.ts (19 tests) 220ms
+ ✓ tests/manifest-publisher.test.ts (5 tests) 173ms
+ ✓ tests/search.test.ts (17 tests) 281ms
+ ✓ tests/scope-policy.test.ts (1 test) 226ms
+ ✓ tests/fresh-policy.test.ts (2 tests) 262ms
+ ✓ tests/starter-kit-interop.test.ts (1 test) 143ms
+ ✓ tests/admission.test.ts (6 tests) 123ms
+ ✓ src/fixtures/internals.test.tsx (21 tests) 111ms
+ ✓ tests/alphaleak.test.ts (3 tests) 137ms
+ ✓ tests/browser-demo.test.ts (4 tests) 104ms
+ ✓ tests/publisher-x402.test.ts (3 tests) 120ms
+ ✓ tests/decision.test.ts (20 tests) 97ms
+ ✓ tests/eval/search-eval.test.ts (1 test) 133ms
+ ✓ tests/scope.test.ts (8 tests) 130ms
+ ✓ tests/client-admission.test.ts (1 test) 84ms
+ ✓ tests/live-reliability-audit.test.ts (1 test) 80ms
+ ✓ tests/calibration.test.ts (8 tests) 62ms
+ ✓ tests/history-bounds.test.ts (2 tests) 90ms
+ ✓ tests/refund-recovery.test.ts (2 tests) 75ms
+ ✓ tests/research-agent.test.ts (14 tests) 112ms
+ ✓ tests/client-errors.test.ts (13 tests) 60ms
+ ✓ tests/operations.test.ts (3 tests) 88ms
+ ✓ tests/fixtures/live-client.test.ts (10 tests) 61ms
+ ✓ tests/decision-calibration.test.ts (4 tests) 57ms
+ ✓ tests/coverage-payments.test.ts (33 tests) 58ms
+ ✓ tests/contracts.test.ts (14 tests) 39ms
+ ✓ tests/routes.test.ts (2 tests) 45ms
+ ✓ tests/mcp-policy.test.ts (4 tests) 34ms
+ ✓ tests/coverage-provider-refusals.test.ts (8 tests) 41ms
+ ✓ tests/eval/labels-export.test.ts (3 tests) 31ms
+ ✓ tests/wallets.test.ts (3 tests) 36ms
+ ✓ tests/eval/bank.test.ts (6 tests) 32ms
+ ✓ tests/provider-deadline.test.ts (3 tests) 38ms
+ ✓ tests/requested-facts.test.ts (12 tests) 31ms
+ ✓ tests/decision-uc.test.ts (5 tests) 32ms
+ ✓ src/runState.test.tsx (10 tests) 26ms
+stderr | tests/chaos-continuation.test.js > counts a watchdog on an expected-kill fault as a violation, saves context and continues
+Error: Watchdog violation: iteration=0 fault=kill-before-sign/UC2 seed=279 stage=worker elapsedMs=45001 report=/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/chaos-continuation-bbmwhQ/summary.json.watchdog-0.json last child output
+
+stdout | tests/chaos-continuation.test.js > counts a watchdog on an expected-kill fault as a violation, saves context and continues
+{"schema":"chaos-v1","label":"SYNTHETIC fixture ledger; real SIGKILL; production API/SDK/MCP/publisher; no Testnet, providers or real value","seed":279,"testedCommit":"02bdd39a2b490ae54da927907959e0012aaede3b","worktreeDirty":false,"startedAt":"2026-11-03T19:20:01.476Z","durationMs":23,"iterations":1,"faultsInjected":1,"processKills":0,"payments":0,"refunds":0,"recovered":0,"failedCleanly":1,"doubleCharges":0,"invariantViolations":1,"stuckReservations":0,"reservationsHeld":0,"byFault":{"kill-after-sign":1},"byUseCase":{"UC2":1},"maxRssBytes":123,"maxHandles":2,"latencyMs":{"firstWindowP95":0.5166250000000048,"lastWindowP95":0.5166250000000048,"p95DriftMs":0},"lastMetrics":{},"escrow":{"iterations":0,"faultsInjected":null,"creates":null,"releases":null,"cancellations":null,"invariantViolations":null},"scope":"Single payer writer; independent fresh stores per iteration, retained across crash; four escrow timeout/restart/downtime probes every 20 iterations","resourcePhases":{},"windows":[{"endIteration":2,"samples":1,"elapsedMs":23,"p95Ms":0.5166250000000048,"childRssP50Bytes":123,"childRssMaxBytes":123,"parentRssBytes":39998336,"maxHandles":2,"byFault":{"kill-before-sign":0,"kill-after-sign":1,"kill-after-submit":0,"kill-after-validation":0,"submit-timeout-before":0,"submit-timeout-after":0,"duplicate-submit":0,"publisher-down":0,"publisher-slow":0,"engine-restart":0,"identical-intents":0,"sdk-retry":0,"mcp-retry":0,"hire-replay":0,"refund-replay":0,"sse-drop":0,"caps":0,"decision-down":0,"provider-down":0}}],"failures":[{"iteration":0,"fault":"kill-before-sign","useCase":"UC2","error":"Error: Watchdog violation: iteration=0 fault=kill-before-sign/UC2 seed=279 stage=worker elapsedMs=45001 report=/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/chaos-continuation-bbmwhQ/summary.json.watchdog-0.json last child output"}],"attempts":2,"failure":"Error: Watchdog violation: iteration=0 fault=kill-before-sign/UC2 seed=279 stage=worker elapsedMs=45001 report=/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/chaos-continuation-bbmwhQ/summary.json.watchdog-0.json last child output"}
+
+ ✓ tests/chaos-continuation.test.js (1 test) 28ms
+ ✓ tests/telemetry.test.ts (7 tests) 20ms
+ ✓ tests/manifest.test.ts (11 tests) 25ms
+ ✓ tests/desktop-recovery.test.ts (20 tests) 25ms
+ ✓ tests/clef-transport.test.ts (6 tests) 17ms
+ ✓ tests/decision-uc3-price.test.ts (4 tests) 15ms
+ ✓ tests/stream-recovery.test.ts (6 tests) 15ms
+ ✓ tests/demo-ports.test.js (1 test) 9ms
+ ✓ tests/publisher-startup.test.ts (3 tests) 9ms
+ ✓ tests/writers.test.ts (9 tests) 11ms
+ ✓ src/leadFinding.test.tsx (4 tests) 6ms
+ ✓ tests/telemetry-off.test.ts (1 test) 5ms
+ ✓ tests/x402.test.ts (4 tests) 8ms
+ ✓ tests/cf-probe.test.ts (4 tests) 4ms
+ ✓ tests/live-smoke.test.ts (10 tests) 6ms
+ ✓ tests/config.test.ts (2 tests) 4ms
+ ✓ tests/release-artifacts.test.ts (1 test) 5ms
+ ✓ tests/desktop.test.js (6 tests) 4ms
+ ✓ tests/scorecard.test.ts (5 tests) 2ms
+ ✓ tests/stage-checks.test.ts (11 tests) 4ms
+ ✓ src/design.test.tsx (1 test) 2ms
+ ✓ tests/eval/uncertainty.test.ts (1 test) 5ms
+ ✓ tests/provider-retry.test.ts (2 tests) 3ms
+ ✓ tests/coverage-contract.test.ts (3 tests) 2ms
+ ✓ tests/xrpl-connection.test.ts (1 test) 1ms
+(node:38001) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/coverage-environment.test.tsx (3 tests) 52ms
+(node:37998) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37997) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/fixtures/chat.test.tsx (6 tests) 313ms
+ ✓ src/fixtures/wpui.test.tsx (27 tests) 569ms
+
+ Test Files  118 passed (118)
+      Tests  885 passed (885)
+   Start at  03:19:15
+   Duration  49.43s (transform 1.28s, setup 0ms, collect 17.14s, tests 107.64s, environment 440ms, prepare 3.90s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   86.79 |    85.42 |    87.7 |   86.79 |                   
+ desktop           |   16.43 |    76.57 |      60 |   16.43 |                   
+  accept.mjs       |       0 |        0 |       0 |       0 | 1-120             
+  backend.mjs      |     100 |       88 |     100 |     100 | 17-20             
+  ci-signing.mjs   |       0 |        0 |       0 |       0 | 1-28              
+  download.mjs     |       0 |        0 |       0 |       0 | 1-42              
+  engine-host.mjs  |       0 |        0 |       0 |       0 | 1-8               
+  keychain.mjs     |   95.23 |       75 |     100 |   95.23 | 15-16             
+  main.mjs         |       0 |        0 |       0 |       0 | 1-309             
+  mcp.mjs          |       0 |        0 |       0 |       0 | 1-14              
+  policy.mjs       |     100 |    80.58 |     100 |     100 | ...28,42,44-50,72 
+  ...ery-smoke.mjs |       0 |        0 |       0 |       0 | 1-94              
+  recovery.mjs     |     100 |    78.57 |      50 |     100 | 11-12             
+  smoke.mjs        |       0 |        0 |       0 |       0 | 1-105             
+  updates.mjs      |       0 |        0 |       0 |       0 | 1-18              
+ mcp               |   53.14 |    74.46 |   72.72 |   53.14 |                   
+  extension.mjs    |       0 |        0 |       0 |       0 | 1-6               
+  http.ts          |   96.66 |    86.36 |     100 |   96.66 | 23                
+  policy.ts        |     100 |      100 |     100 |     100 |                   
+  server.ts        |       0 |        0 |       0 |       0 | 1-43              
+  tools.ts         |   66.66 |    63.15 |      75 |   66.66 | 26,37-41,45-57    
+ publisher         |    94.3 |     80.6 |   96.29 |    94.3 |                   
+  bad-actors.ts    |     100 |    85.71 |     100 |     100 | 11,21             
+  challenge.ts     |   91.48 |       70 |     100 |   91.48 | 42-45             
+  corpus.ts        |     100 |    78.12 |     100 |     100 | 17-18,33,37-38,43 
+  escrow.ts        |      75 |       25 |     100 |      75 | 35-37,40-49       
+  facilitator.ts   |     100 |    79.26 |     100 |     100 | ...0-83,94-96,110 
+  journal.ts       |   97.84 |    88.88 |   94.44 |   97.84 | 13-14             
+  local-writers.ts |   85.71 |    76.92 |     100 |   85.71 | 29-32             
+  manifest.ts      |     100 |    96.42 |     100 |     100 | 32                
+  registry.ts      |     100 |    96.96 |     100 |     100 | 41                
+  routes.ts        |   93.33 |    79.72 |     100 |   93.33 | 159-165,172-179   
+  search.ts        |   95.19 |    84.61 |   93.75 |   95.19 | 116-121           
+  server.ts        |    92.3 |    58.82 |      50 |    92.3 | 26-27             
+ ...her/publishing |   89.72 |    74.78 |     100 |   89.72 |                   
+  fact-menu.ts     |     100 |      100 |     100 |     100 |                   
+  markdown.ts      |   98.59 |    76.92 |     100 |   98.59 | 68                
+  publish.ts       |   81.81 |    62.26 |     100 |   81.81 | ...59,73-80,88,96 
+ publisher/site    |     100 |    89.28 |     100 |     100 |                   
+  css.ts           |     100 |      100 |     100 |     100 |                   
+  router.ts        |     100 |    89.28 |     100 |     100 | 40,50,53-57,60,62 
+ sdk               |   91.66 |    89.72 |   88.57 |   91.66 |                   
+  hire.ts          |   16.66 |      100 |       0 |   16.66 | 13-22             
+  index.ts         |   95.07 |     89.3 |    90.9 |   95.07 | ...69-172,227-229 
+  present.ts       |     100 |      100 |     100 |     100 |                   
+  verify.ts        |    86.4 |    92.09 |      80 |    86.4 | 52-55,100-109     
+  x402-journal.ts  |     100 |      100 |     100 |     100 |                   
+  x402.ts          |     100 |    77.92 |     100 |     100 | ...43-45,52,60-66 
+ server            |   96.67 |    84.35 |   96.52 |   96.67 |                   
+  admission.ts     |     100 |    90.32 |     100 |     100 | 22-25,40,46,56    
+  agent-audit.ts   |   90.47 |    80.76 |     100 |   90.47 | 19-20             
+  agent-keys.ts    |     100 |    89.47 |     100 |     100 | 23,44             
+  audit.ts         |     100 |    81.19 |     100 |     100 | ...40-341,362-363 
+  body-limit.ts    |     100 |     87.5 |     100 |     100 | 4                 
+  challenges.ts    |   95.58 |    92.72 |     100 |   95.58 | 67-69             
+  config.ts        |     100 |      100 |     100 |     100 |                   
+  dependencies.ts  |     100 |      100 |     100 |     100 |                   
+  ...ne-worker.mjs |       0 |        0 |       0 |       0 | 1-32              
+  engine.ts        |     100 |    46.66 |     100 |     100 | 15-17,29          
+  escrow-state.ts  |       0 |        0 |       0 |       0 |                   
+  escrow.ts        |   98.88 |    81.81 |     100 |   98.88 | 69-70             
+  index.ts         |       0 |        0 |       0 |       0 | 1-14              
+  metrics.ts       |     100 |    73.33 |     100 |     100 | 5,9,15            
+  ...-screening.ts |     100 |     90.9 |     100 |     100 | 22                
+  proofs.ts        |   94.11 |    70.58 |     100 |   94.11 | 17                
+  ...her-client.ts |     100 |    80.28 |     100 |     100 | ...51,65,76,88,92 
+  purchases.ts     |   99.26 |    87.82 |     100 |   99.26 | 153-154           
+  ...ipt-bundle.ts |     100 |       80 |     100 |     100 | 8,16-20           
+  ...t-template.ts |     100 |    83.63 |     100 |     100 | ...17,21,31,36-41 
+  reputation.ts    |     100 |    95.87 |     100 |     100 | 133-134,137,148   
+  retention.ts     |   93.44 |    86.11 |      75 |   93.44 | 76-79             
+  routes.ts        |   92.85 |    67.27 |     100 |   92.85 | ...09,120,149-156 
+  spend-policy.ts  |     100 |      100 |     100 |     100 |                   
+  store.ts         |   99.73 |    87.77 |   97.77 |   99.73 | 405-406           
+  telemetry.ts     |   90.09 |    71.95 |    90.9 |   90.09 | ...,61,99-100,121 
+  xrpl.ts          |   98.24 |    87.38 |   82.35 |   98.24 | 36-38             
+ server/agents     |   99.49 |    92.41 |   98.08 |   99.49 |                   
+  active-work.ts   |     100 |      100 |     100 |     100 |                   
+  calibration.ts   |     100 |       88 |     100 |     100 | 43,53,68          
+  citations.ts     |     100 |      100 |     100 |     100 |                   
+  clef.ts          |     100 |    95.65 |     100 |     100 | ...30,132,146,196 
+  compatible.ts    |     100 |    93.65 |   83.33 |     100 | 16,30,35          
+  decision.ts      |     100 |    93.06 |     100 |     100 | ...99,207,227,267 
+  ...-selection.ts |     100 |      100 |     100 |     100 |                   
+  json-decision.ts |     100 |    85.71 |     100 |     100 | 15                
+  llm.ts           |    98.3 |     82.5 |     100 |    98.3 | 139-140           
+  loop.ts          |   98.76 |    90.16 |     100 |   98.76 | 152-154,322-323   
+  ...-decisions.ts |    98.6 |     92.1 |   93.75 |    98.6 | 283-285           
+  ...ider-retry.ts |     100 |      100 |      80 |     100 |                   
+  report.ts        |     100 |    85.29 |     100 |     100 | ...,96-98,114-117 
+  requirements.ts  |     100 |    91.34 |     100 |     100 | ...87,101,125,139 
+  research.ts      |     100 |     96.3 |     100 |     100 | ...91,194,294,302 
+  scope-policy.ts  |     100 |    94.73 |     100 |     100 | 37,44,47          
+  scope.ts         |     100 |    97.26 |     100 |     100 | 97,99             
+  tie-break.ts     |     100 |       75 |     100 |     100 | 17                
+  untrusted.ts     |     100 |      100 |     100 |     100 |                   
+  value-policy.ts  |     100 |    96.29 |     100 |     100 | 21                
+ server/api        |   76.14 |    78.67 |    87.5 |   76.14 |                   
+  audit.ts         |   57.89 |      100 |      50 |   57.89 | 11-20             
+  context.ts       |       0 |        0 |       0 |       0 |                   
+  mcp.ts           |    82.6 |       75 |     100 |    82.6 | 19-22             
+  operations.ts    |     100 |    68.18 |     100 |     100 | 25-27,30-31,35    
+  providers.ts     |     100 |    46.15 |     100 |     100 | 12-17,20-21       
+  reports.ts       |   32.87 |      100 |     100 |   32.87 | 20-25,28-67,70-74 
+  runs.ts          |   88.17 |     88.4 |     100 |   88.17 | 24-27,32-38       
+  wallet.ts        |   97.14 |    73.33 |      80 |   97.14 | 20                
+ server/hire       |     100 |    82.91 |     100 |     100 |                   
+  audit.ts         |     100 |    82.85 |     100 |     100 | 13,17-20,35-38    
+  journal.ts       |     100 |      100 |     100 |     100 |                   
+  policy.ts        |     100 |    63.15 |     100 |     100 | 10-14,17,23-26    
+  service.ts       |     100 |    84.44 |     100 |     100 | ...37-140,144,148 
+ shared            |     100 |     93.3 |     100 |     100 |                   
+  coverage.ts      |     100 |    91.17 |     100 |     100 | 13-14,23          
+  escrow.ts        |     100 |       85 |     100 |     100 | 14,25,36          
+  fact-menu.ts     |     100 |      100 |     100 |     100 |                   
+  ...d-currency.ts |     100 |      100 |     100 |     100 |                   
+  lead-finding.ts  |     100 |    97.67 |     100 |     100 | 4                 
+  manifest.ts      |     100 |    95.65 |     100 |     100 | 14,20             
+  x402.ts          |     100 |      100 |     100 |     100 |                   
+  xrpl.ts          |     100 |    82.69 |     100 |     100 | ...0,73-74,77,103 
+ shared/contracts  |     100 |    89.28 |     100 |     100 |                   
+  answer.ts        |     100 |      100 |     100 |     100 |                   
+  asset.ts         |     100 |    95.45 |     100 |     100 | 14                
+  corpus.ts        |     100 |      100 |     100 |     100 |                   
+  decision.ts      |     100 |      100 |     100 |     100 |                   
+  errors.ts        |     100 |      100 |     100 |     100 |                   
+  escrow.ts        |     100 |      100 |     100 |     100 |                   
+  examples.ts      |     100 |      100 |     100 |     100 |                   
+  index.ts         |     100 |      100 |     100 |     100 |                   
+  ledger.ts        |     100 |      100 |     100 |     100 |                   
+  manifest.ts      |     100 |      100 |     100 |     100 |                   
+  publisher.ts     |     100 |      100 |     100 |     100 |                   
+  receipts.ts      |     100 |      100 |     100 |     100 |                   
+  report.ts        |     100 |      100 |     100 |     100 |                   
+  run.ts           |     100 |      100 |     100 |     100 |                   
+  writers.ts       |     100 |    82.22 |     100 |     100 | ...59,73-74,78,83 
+  x402.ts          |     100 |      100 |     100 |     100 |                   
+ src               |   88.16 |    78.55 |      52 |   88.16 |                   
+  App.tsx          |   81.72 |    59.42 |   26.02 |   81.72 | ...00-302,337-338 
+  api.ts           |   97.45 |    97.36 |    87.5 |   97.45 | 16-18             
+  format.tsx       |     100 |    62.06 |   88.88 |     100 | ...23,26-27,29-30 
+  main.tsx         |       0 |        0 |       0 |       0 | 1-10              
+  runState.ts      |   95.32 |    89.82 |   85.71 |   95.32 | 59-63             
+  shortcuts.ts     |     100 |        0 |     100 |     100 | 2                 
+  stage.ts         |     100 |    91.39 |     100 |     100 | 17-18,43,47,56,74 
+  useDismiss.ts    |     100 |      100 |     100 |     100 |                   
+ src/assets/brand  |     100 |      100 |     100 |     100 |                   
+  identity.ts      |     100 |      100 |     100 |     100 |                   
+ src/components    |    83.8 |    79.51 |   72.86 |    83.8 |                   
+  Activity.tsx     |     100 |    28.57 |     100 |     100 | 7-10,17           
+  Answer.tsx       |     100 |    82.43 |   85.71 |     100 | ...52,55-59,64-65 
+  Ask.tsx          |     100 |       75 |   85.71 |     100 | 42,47-54,59,62,68 
+  BudgetPicker.tsx |     100 |      100 |     100 |     100 |                   
+  ...etPopover.tsx |     100 |      100 |     100 |     100 |                   
+  Cast.tsx         |       0 |      100 |     100 |       0 | 2-26              
+  ChatThread.tsx   |     100 |       85 |   83.33 |     100 | 27,31,46          
+  ClarifyChips.tsx |     100 |    85.71 |   66.66 |     100 | 19                
+  ...ndPalette.tsx |    4.76 |      100 |       0 |    4.76 | 4-24              
+  ...sionPanel.tsx |     100 |      100 |     100 |     100 |                   
+  ...sionTable.tsx |     100 |    88.23 |     100 |     100 | 27,42             
+  EnvIndicator.tsx |     100 |      100 |     100 |     100 |                   
+  Layout.tsx       |     100 |    66.66 |     100 |     100 | 10                
+  Ledger.tsx       |   64.91 |       65 |     100 |   64.91 | 20-31,49-50,53-59 
+  MobileSpend.tsx  |     100 |      100 |      25 |     100 |                   
+  ModelLabels.tsx  |   83.33 |    68.29 |     100 |   83.33 | 8-11              
+  Notice.tsx       |       0 |      100 |       0 |       0 | 2-4               
+  Passage.tsx      |    9.37 |      100 |       0 |    9.37 | 6-34              
+  PaymentRow.tsx   |     100 |    55.26 |   33.33 |     100 | 11,14-24          
+  PendingTime.tsx  |   14.28 |      100 |       0 |   14.28 | 2-7               
+  PlanSheet.tsx    |     100 |    86.11 |   85.71 |     100 | 29,41,48,55       
+  Presenter.tsx    |   73.52 |    71.42 |   66.66 |   73.52 | 12-19,26          
+  ReceiptSheet.tsx |   14.28 |      100 |       0 |   14.28 | 6-23              
+  ReportButton.tsx |      85 |    33.33 |   33.33 |      85 | 15-17             
+  ...tionPanel.tsx |     100 |    71.69 |     100 |     100 | ...21,25,31-35,44 
+  RunActivity.tsx  |     100 |    89.18 |     100 |     100 | 14,18,30          
+  Settings.tsx     |     100 |      100 |      75 |     100 |                   
+  ShowWork.tsx     |   21.05 |      100 |       0 |   21.05 | 14-43             
+  Sidebar.tsx      |     100 |    84.84 |   60.86 |     100 | ...46,50-51,56,65 
+  Sources.tsx      |   89.13 |    85.29 |   55.55 |   89.13 | 25-27,45-46       
+  SpendPanel.tsx   |     100 |    81.81 |     100 |     100 | 8,12              
+  Toasts.tsx       |     100 |    33.33 |      50 |     100 | 12-15             
+  Verification.tsx |     100 |    70.37 |     100 |     100 | 9-12,18-20        
+  Wire.tsx         |   96.36 |    84.21 |     100 |   96.36 | 28-29             
+  WriterChip.tsx   |     100 |    71.42 |     100 |     100 | 24,28,35,38-42,46 
+ src/fixtures      |    83.8 |      100 |     100 |    83.8 |                   
+  generate-uc.ts   |       0 |      100 |     100 |       0 | 4-23              
+  run.ts           |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------
+{
+  "desktop": {
+    "branches": {
+      "covered": 134,
+      "total": 175
+    },
+    "lines": {
+      "covered": 145,
+      "total": 882
+    }
+  },
+  "mcp": {
+    "branches": {
+      "covered": 35,
+      "total": 47
+    },
+    "lines": {
+      "covered": 76,
+      "total": 143
+    }
+  },
+  "publisher": {
+    "branches": {
+      "covered": 435,
+      "total": 536
+    },
+    "lines": {
+      "covered": 761,
+      "total": 810
+    }
+  },
+  "payments": {
+    "branches": {
+      "covered": 1552,
+      "total": 1801
+    },
+    "lines": {
+      "covered": 2251,
+      "total": 2278
+    }
+  },
+  "sdk": {
+    "branches": {
+      "covered": 359,
+      "total": 390
+    },
+    "lines": {
+      "covered": 316,
+      "total": 350
+    }
+  },
+  "server": {
+    "branches": {
+      "covered": 2199,
+      "total": 2517
+    },
+    "lines": {
+      "covered": 2626,
+      "total": 2781
+    }
+  },
+  "providers": {
+    "branches": {
+      "covered": 479,
+      "total": 524
+    },
+    "lines": {
+      "covered": 622,
+      "total": 627
+    }
+  },
+  "shared": {
+    "branches": {
+      "covered": 194,
+      "total": 208
+    },
+    "lines": {
+      "covered": 431,
+      "total": 431
+    }
+  },
+  "web": {
+    "branches": {
+      "covered": 1167,
+      "total": 1474
+    },
+    "lines": {
+      "covered": 1556,
+      "total": 1818
+    }
+  }
+}

@@ -49,8 +49,9 @@ const range = previous ? [`${previous}..${target}`] : [`--since=${FIRST_RELEASE_
 const prs = git('log', '--first-parent', '--format=- %s', ...range).split('\n').filter((l) => /\(#\d+\)$/.test(l))
 
 const visual = ['png', 'jpg', 'gif'].map((e) => `docs/releases/day-${day}.${e}`).find(existsSync)
-const notes = notesFile ? `Day ${day} · ${title}\n\n${readFileSync(notesFile, 'utf8').trim()}` : [
-  `Day ${day} · ${title}`,
+const releaseLabel = explicitVersion ? title : `Day ${day} · ${title}`
+const notes = notesFile ? `${releaseLabel}\n\n${readFileSync(notesFile, 'utf8').trim()}` : [
+  releaseLabel,
   visual && `![Day ${day}](https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/${tag}/${visual})`,
   section && `## What shipped\n\n${section}`,
   prs.length && `## Merged since ${previous ?? 'the start of the push'}\n\n${prs.join('\n')}`,
