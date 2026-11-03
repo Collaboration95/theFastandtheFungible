@@ -31,3 +31,25 @@ The comparator tests use a known constant series and a hand-solvable 1 MiB/ask l
 Results are recorded below after the run completes.
 
 Potential loop-delay cause to inspect in C1: `Store.usage` scans every retained run and validates its JSON, queries intents/receipts and policy state per run, and is called repeatedly by `walletStatus`, `mcpStatus`, admission and reservation. This is a source-derived hypothesis, not profiler attribution. History selector projections from #345 do not remove these wallet accounting scans. H1 does not change this code or any threshold. Per-interval heap samples can separate retained worker heap from process RSS; without access to the private `Worker` object returned internally by `startEngine`, this run does not claim a worker heap-snapshot diff.
+
+## Completed baseline — 4 November 2026
+
+Engine source: `571bb7802d029c5782a04084dc05dad51aacd7fc` (current main at launch, including #342/#345/#346). Harness SHA-256: `30b6928491b313a87f21d653485d345622d116b93937836141632bd5c68faa09`; implementation commit `c1a74de5` contains that harness. Later integration checks do not turn this baseline into acceptance of newer engine changes.
+
+Executed the full documented command with data root `/tmp/h1-baseline-279-v3`, in the background under `caffeinate -dims`, and waited for completion. Duration: **7814439 ms (2 h 10 m 14.439 s)** including seeding and restart cycles. Completed **200 warmups + 2,000 measured asks**, concurrency 1, seed 279, **10,000 × 60 = 600,000 retained historical events**, plus 16 synthetic recovery-selector cases. One process/engine/worker/store identity across all workload asks. **20/20** separate restart cycles closed both owned listeners. Zero failed/censored asks, audit violations, unexplained reservations, blocked network attempts, or sample gaps.
+
+| Proposed gate | Observed | Result |
+|---|---:|---|
+| RSS slope ≤5 MiB/100 asks | 1.611979 MiB/100 asks | PASS |
+| Final-100 median ≤first-100 median +100 MiB | 474.835 → 482.069 MiB (+7.234) | PASS |
+| Sampled process RSS ≤1.5 GiB | 547.132 MiB | PASS |
+| Worker loop p99 <50 ms | 4261.413 ms, worst interval p99 | MISS |
+| Matched-window p95 increase ≤max(20%,250 ms) | 2618.852 → 6777.544 ms; +4158.691 ms vs 523.770 ms allowed | MISS |
+
+**Evidence is valid; proposed performance acceptance fails.** No threshold was loosened and no engine repair is included. The CLI exits 1 for the two performance misses.
+
+Environment: darwin 25.6.0, 10 logical CPUs, Node v26.3.1. One-minute shared-host load ranged 1.25–38.45; initial load [25.103515625, 15.72998046875, 16.26416015625]. All 7795 samples remain in the compact JSON (whitespace only removed). No sampled maximum is called a lifetime peak.
+
+Observed defect: responsiveness and latency degrade for this retained-history workload. Suspected component is `server/store.ts` at the tested source: `usage` (line 130 onward), invoked by wallet/MCP status (205–209), admission (225) and reservation (456). It synchronously parses retained run bodies and performs per-run queries; increasing retained completed workload is consistent with increasing cost. This is source-derived diagnosis, not a CPU profile or proof that shared load had no effect. C1 owns the fix and rerun. No retained-memory defect was established, and no worker heap-snapshot diff was obtained; `startEngine` exposes no Worker diagnostic handle.
+
+Final SVG inspection checks axes (elapsed seconds, MiB and ms), mode labels, separate phase timestamps, full bounds and sample-gap legend. Final fast verification and hosted CI are reported in the PR. Burst at limit 4 and all H2 artifact/release acceptance remain pending.
