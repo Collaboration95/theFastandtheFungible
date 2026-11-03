@@ -30,11 +30,15 @@ const artifact=(p)=>({file:p,bytes:statSync(p).size,sha256:digest(p)})
 try {
   if(platform()!=='darwin'||arch()!=='arm64')throw Error('Full unsigned arm64 acceptance requires an Apple Silicon Mac')
   const ts=new Date().toISOString().replace(/[^0-9]/g,'')
-  const soak=resolve('scratch/finals-soak-279.json');mkdirSync('scratch',{recursive:true})
+  const soak=join(out,'soak-same-engine.json');mkdirSync('scratch',{recursive:true})
   await run('soak','caffeinate',['-dims','node','scripts/soak-same-engine.mjs','--runs',quick?'200':'2000','--warmup',quick?'20':'200','--concurrency','1','--seed','279','--history-runs','10000','--events-per-run','60','--data-dir','scratch/finals-soak-279-'+ts,'--output',soak,'--burst'])
-  if(existsSync(soak)){const r=JSON.parse(readFileSync(soak));report.soak={file:soak,sha256:digest(soak),source:r.source,summary:r.summary,burst:r.burst,restarts:r.restarts.length}};
+  await step('soak-evidence',async()=>{const r=JSON.parse(readFileSync(soak));report.soak={file:soak,sha256:digest(soak),source:r.source,summary:r.summary,burst:r.burst,restarts:r.restarts.length}})
   await run('render','node',['scripts/render-soak.mjs',soak,join(out,'soak-same-engine.svg')],{},existsSync(soak)?[]:['soak'])
   await run('artifacts','make',['release-artifacts'])
+  await step('artifact-preservation',async()=>{
+    report.artifacts=JSON.parse(readFileSync('dist/release/manifest.json')).artifacts
+    cpSync('dist/release',join(out,'release'),{recursive:true})
+  },['artifacts'])
   await run('consumers','node',['scripts/check-release-consumers.mjs','--manifest','dist/release/manifest.json'],{},['artifacts'])
   await step('artifact-evidence',async()=>{
   report.artifacts=JSON.parse(readFileSync('dist/release/manifest.json')).artifacts;save()
@@ -79,7 +83,5 @@ try {
   report.pass=report.gates.every(r=>r.pass);if(!report.pass)process.exitCode=1
 } catch(error) {report.error=error.message;process.exitCode=1}
 finally {
-  const soak='scratch/finals-soak-279.json'
-  if(existsSync(soak))if(existsSync(soak)){const r=JSON.parse(readFileSync(soak));report.soak={file:soak,sha256:digest(soak),source:r.source,summary:r.summary,burst:r.burst,restarts:r.restarts.length}}
   report.finishedAt=new Date().toISOString();save();cpSync(out,destination,{recursive:true});if(existsSync(join(out,'release')))cpSync(join(out,'release'),'dist/release',{recursive:true});console.log(JSON.stringify({pass:report.pass,error:report.error,output:join(destination,'acceptance.json')}))
 }
