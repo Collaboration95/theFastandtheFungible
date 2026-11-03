@@ -5,7 +5,8 @@ export default function CommandPalette({ commands, onClose, sheet = false }: { c
   const dialog = useRef<HTMLDialogElement>(null)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(0)
-  const list = commands.filter(command => (command.label + ' ' + command.id.replace('cmd-', '')).toLowerCase().includes(query.toLowerCase().replace(/ ·$/, '')))
+  const grouped = [...commands].sort((a,b) => ['Actions','Examples','Recent runs'].indexOf(a.group ?? 'Actions') - ['Actions','Examples','Recent runs'].indexOf(b.group ?? 'Actions'))
+  const list = grouped.filter(command => (command.label + ' ' + command.id.replace('cmd-', '')).toLowerCase().includes(query.toLowerCase().replace(/ ·$/, '')))
   useEffect(() => { const element = dialog.current; element?.showModal(); element?.querySelector('input')?.focus(); return () => element?.close() }, [])
   const choose = (command?: Command) => { if (command) { dialog.current?.close(); onClose(); requestAnimationFrame(() => command.run()) } }
   return <dialog ref={dialog} className="ra-command" aria-label={sheet ? 'Keyboard shortcuts' : 'Command palette'} onCancel={event => { event.preventDefault(); onClose() }} onClick={event => { if (event.target === dialog.current) onClose() }} onKeyDown={event => {

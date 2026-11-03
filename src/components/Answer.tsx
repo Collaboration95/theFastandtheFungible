@@ -53,7 +53,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
     </section>
     {!compare && <RequestedFacts run={run} version={answer.version} />}
     {compare && <button type="button" className="ra-link" onClick={onCompare}>Back to answer</button>}
-    <section className="ra-claims" aria-label={compare ? 'What changed after the purchase' : 'Claims'}>{groups.map(([name, items]) => items.length ? <div className="ra-group" key={name}><h3>{name} ({items.length})</h3><ul>{items.map(claim => <li key={claim.id} className="ra-claim"><p>{claim.text}{cites(claim)}</p></li>)}</ul></div> : null)}{compare && !added.length && !dropped.length && <p>The cited claims are unchanged.</p>}</section>
+    <section className="ra-claims" aria-label={compare ? 'What changed after the purchase' : 'Claims'}>{groups.map(([name, items]) => items.length ? <div className="ra-group" key={name}><h3>{name} ({items.length})</h3><ul>{items.map(claim => <li key={claim.id} className="ra-claim"><p>{leadFinding(run.question, [claim])[0]?.text ?? claim.text}{cites(claim)}</p></li>)}</ul></div> : null)}{compare && !added.length && !dropped.length && <p>The cited claims are unchanged.</p>}</section>
   </>
 }
 

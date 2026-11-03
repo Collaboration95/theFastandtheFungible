@@ -65,21 +65,6 @@ a { color: var(--ink); text-underline-offset: 3px; }
 .ra-composer:focus-within { border-color: var(--ink); }
 .ra-comp-row { display: flex; align-items: center; gap: 16px; padding-top: 12px; border-top: 1px solid var(--rule); }
 .ra-comp-row > .ra-ask { margin-left: auto; }
-/* Budget slider: S$0 to S$5 in 5-cent steps. A notched track (ticks at Free, 0.50, 1, 2, 5), a grab handle, and the fill up to it. */
-  --reach: calc(var(--th) / 2 + (100% - var(--th)) * var(--p)); --dot: rgba(15, 18, 34, .3);
-  --track: var(--paper);
-  flex: 1; min-width: 0; height: calc(var(--h) + 4px); margin: 0; background: none; appearance: none; -webkit-appearance: none; cursor: grab;
-}
-  background: var(--paper) center / 100% 12px no-repeat, #fff;
-  box-shadow: none; }
-  background: var(--paper) center / 100% 12px no-repeat, #fff;
-  box-shadow: none; }
-/* With quick picks (the popover and Settings): a big readout above the track and the stops labelled under it. */
-.ra-stops { grid-area: stops; position: relative; height: 30px; }
-.ra-stops button { position: absolute; left: calc(var(--th) / 2 + (100% - var(--th)) * var(--at)); top: 0; transform: translateX(-50%); padding: 2px 4px; border: 0; background: none; font: 500 12px var(--f-ui); color: var(--muted); text-align: center; border-radius: 6px; }
-.ra-stops button:hover:not(:disabled) { color: var(--ink); }
-.ra-stops button.is-on { color: var(--ink); font-weight: 600; }
-.ra-stops small { display: block; font: 500 12px var(--f-ui); letter-spacing: .04em; text-transform: none; color: var(--faint); }
 /* Home: the budget chip opens a popover above the composer. */
 .ra-budget { position: relative; }
 .ra-budget-chip { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px 0 10px; border: 1px solid var(--rule-2); border-radius: 6px; background: var(--sheet); font: 600 13px var(--f-ui); color: var(--ink);  }
@@ -91,18 +76,6 @@ a { color: var(--ink); text-underline-offset: 3px; }
 .ra-pop { position: absolute; left: -24px; top: calc(100% + 22px); z-index: 30; width: 420px; padding: 12px 22px 6px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); transform-origin: 64px 0;
   box-shadow: none;  }
 
-/* Odometer digits: a strip of 0-9 slid by the digit; the window shows one. */
-.ra-roll-d { display: inline-block; height: 1.15em; overflow: hidden; vertical-align: top; }
-.ra-roll-d > span { display: flex; flex-direction: column;  transform: translateY(calc(var(--d) * -1.15em)); }
-.ra-roll-d i { display: block; height: 1.15em; line-height: 1.15em; font-style: normal; }
-.ra-roll { line-height: 1.15em; }
-/* The yellow "i" on the money (gate 5): what is simulated or testnet, one click away. */
-.ra-info { position: relative; display: inline-flex; vertical-align: middle; }
-.ra-info-pop { position: absolute; left: -8px; z-index: 30; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 230px; padding: 12px 16px; border: 1px solid #E6D36A; border-radius: 6px; background: #FFFCEB; font-size: 13px; line-height: 1.4; color: #4A3D00; white-space: normal;  box-shadow: none; }
-.ra-info-pop[hidden] { display: none; }
-.ra-info-pop.is-up { bottom: calc(100% + 10px); transform-origin: 16px 100%; }
-.ra-info-pop.is-down { top: calc(100% + 10px); transform-origin: 16px 0; }
-.ra-info-pop b { font-size: 14px; }
 .ra-back { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 18px -8px; padding: 6px 10px 6px 6px; border: 0; border-radius: 6px; background: none; font-weight: 600; color: var(--ink-2);  }
 .ra-back:hover { background: var(--mist); }
 .ra-back svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -598,7 +571,7 @@ summary { cursor: pointer; }
 .ra-row-n small { display: block; margin-top: 3px; color: var(--muted); }
 .ra-decision-details { font-size: 12px; color: var(--muted); }
 .ra-decision-details > summary { padding: 10px 0; }
-.ra-command { width: min(580px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--rule-2); border-radius: 6px; background: var(--sheet); color: var(--ink); box-shadow: none; }
+.ra-command { width: min(560px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--rule-2); border-radius: 6px; background: var(--sheet); color: var(--ink); box-shadow: none; }
 .ra-command header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; }
 .ra-command h2 { font-size: 14px; }
 .ra-command input { display: block; width: calc(100% - 40px); margin: 0 20px 12px; height: 40px; padding: 8px; border: 1px solid var(--rule-2); border-radius: 6px; background: var(--sheet); color: var(--ink); font: inherit; }
@@ -772,3 +745,6 @@ html[data-record=true] .ra-env { display: block; }
 .ra-command input { margin-top: 16px; height: 44px; }.ra-command-group { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; }.ra-rep th,.ra-rep td { white-space: normal; font-size: 13px; padding: 8px; }.ra-error-text { color: var(--bad); }
 .ra-mobile-spend > button { min-height: 44px; text-align: left; }.ra-mobile-spend-sheet .ra-spend { border: 0; }
 @media (max-width: 779px) { .ra-passage,.ra-mobile-spend-sheet { inset: auto 0 0; margin: 0; width: 100%; height: auto; max-height: 88dvh; border-radius: 10px 10px 0 0; }.ra-mobile-spend-sheet { overflow: auto; }.ra-mobile-spend-sheet header { display: flex; justify-content: space-between; align-items: center; }.ra-cite { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }.ra-why-table { font-size: 12px; }.ra-why-table td,.ra-why-table th { padding: 8px 4px; }.ra-rep .ra-link { min-height: 44px; }.ra-export { position: static; }.ra-export > div { right: 16px; }.ra-command-trigger kbd { font-size: 0; }.ra-command-trigger kbd::after { content: '⌕'; font-size: 20px; } }
+/* Streaming additions must not scroll the reader by changing the browser's anchor. */
+.ra-ws { overflow-anchor: none; }
+.ra-answer-heading { min-height: 32px; }

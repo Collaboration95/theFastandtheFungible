@@ -22,7 +22,7 @@ function rows(records: ReputationRecord[], run?: RunSnapshot, full?: RunSnapshot
   }).sort((a, b) => a.score.T - b.score.T)
 }
 
-const runCount = (row: Row, count?: number) => row.articles || count || '—'
+const runCount = (row: Row) => row.articles || '—'
 
 function PublisherRow({ row }: { row: Row }) {
   const card = usePublisherCard(row.slug)
@@ -31,7 +31,7 @@ function PublisherRow({ row }: { row: Row }) {
   const writers = [...new Set([...row.writers, ...(card?.writers.map(writer => writer.slug) ?? [])])]
   return <tbody><tr>
     <th scope="row"><button type="button" className="ra-link" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{card?.name ?? row.name}</button></th>
-    <td>{runCount(row, undefined)}</td><td>{score.T.toFixed(2)}</td><td>{record ? `${record.passes} / ${record.fails}` : '0 / 0'}</td><td className={score.status === 'delisted' ? 'ra-error-text' : undefined}>{score.status === 'active' ? 'Active' : score.status === 'delisted' ? 'Delisted' : 'Quarantined'}</td>
+    <td>{runCount(row)}</td><td>{score.T.toFixed(2)}</td><td>{record ? `${record.passes} / ${record.fails}` : '0 / 0'}</td><td className={score.status === 'delisted' ? 'ra-error-text' : undefined}>{score.status === 'active' ? 'Active' : score.status === 'delisted' ? 'Delisted' : 'Quarantined'}</td>
   </tr>{expanded && <tr><td colSpan={5}><p>Honesty {score.H.toFixed(2)} · Coverage {score.C.toFixed(2)} · Refunds {record?.refunds ?? 0} · Refusals {record?.refusals ?? 0}</p><p>Bylines: {writers.map(slug => writerName(slug, card)).join(', ') || 'Not listed'}</p><a href={`/w/${row.slug}`} target="_blank" rel="noreferrer">Visit writer’s site ↗</a></td></tr>}</tbody>
 }
 
@@ -42,7 +42,7 @@ export default function ReputationPanel({ records, run, full, presenter = false,
     <div className="ra-panel-h"><h2>Writers</h2>{presenter && onReset && <button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button>}</div>
     <p className="ra-note">All writers and articles are fictional.</p>
     {list.length === 0 ? <p>No history yet.</p> : <div className="ra-table-scroll"><table>
-      <thead><tr><th scope="col">Writer</th><th scope="col">Articles</th><th scope="col">Trust</th><th scope="col">Checked / failed</th><th scope="col">Status</th></tr></thead>
+      <thead><tr><th scope="col">Writer</th><th scope="col" title="Articles found in this run">Articles</th><th scope="col">Trust</th><th scope="col">Checked / failed</th><th scope="col">Status</th></tr></thead>
       {list.map(row => <PublisherRow key={row.slug} row={row} />)}
     </table></div>}
   </section>

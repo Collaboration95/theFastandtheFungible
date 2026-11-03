@@ -8,3 +8,5 @@ The two views are Run (⌘1) and Writers (⌘2). Use Ctrl on other systems. ⌘K
 
 UX-1 keeps the environment control visible in every take. The driver selects
 `Start now`; keyboard shortcuts and fixture-only isolation are unchanged.
+
+UX-2 (#312): examples display their question names; the palette still accepts `UC2 ·` / `UC3 ·` as search aliases for existing clip drivers. `Start now`, Control+Enter and the Answer ready title are unchanged. Export now owns PDF and the answer comparison. Record mode retains the environment indicator.
