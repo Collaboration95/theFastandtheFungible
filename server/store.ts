@@ -1,3 +1,4 @@
+import { AgentKeys, AgentDenied } from './agent-keys.js'
 import { decode } from 'xrpl'
 import type { EscrowRecord, EscrowOperation, EscrowOutbox } from './escrow-state.js'
 import { chmodSync, existsSync } from 'node:fs'
@@ -40,6 +41,7 @@ export class Store {
   private readonly db: DatabaseSync
   /** Hash-chained operator ledger (#288). Entries are written inside the same transactions as the state they describe. */
   readonly audit: AuditLog
+  readonly agentKeys: AgentKeys
   constructor(readonly path: string = 'data/app.db', private readonly onEvent?: (event: TraceEvent) => void) {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
     this.db = new DatabaseSync(path)
@@ -73,6 +75,7 @@ export class Store {
     this.db.exec(`UPDATE escrows SET owner=json_extract(json, '$.publicStatus.owner'), create_sequence=json_extract(json, '$.publicStatus.createSequence') WHERE owner IS NULL;
       CREATE UNIQUE INDEX IF NOT EXISTS escrow_object_identity ON escrows(owner, create_sequence);`)
     this.db.exec(`INSERT OR IGNORE INTO admissions SELECT key, 'mcp', 'operator', run_id, budget, budget, day, 'mcp-v0' FROM mcp_requests`)
+    this.agentKeys = new AgentKeys(this.db)
     AuditLog.ensureSchema(this.db)
     this.audit = new AuditLog(this.db)
     this.atomic(() => this.audit.boot(this.policySnapshot()))
@@ -114,12 +117,13 @@ export class Store {
     return this.getRun(this.insertRun(question, budgetMinor, labels).runId)
   }
   /** Gross charges by receipt day; unfinished budgets and uncertain submissions carry across midnight. */
-  private usage(day: string, surface?: Surface, excludeRun?: string) {
+  private usage(day: string, surface?: Surface, excludeRun?: string, principal?: string) {
     let spentMinor = 0, reservedMinor = 0
-    const admissions = new Map(this.db.prepare('SELECT run_id, surface FROM admissions').all().map(row => [row.run_id as string, row.surface]))
+    const admissions = new Map(this.db.prepare('SELECT run_id, surface, principal FROM admissions').all().map(row => [row.run_id as string, row]))
     for (const row of this.db.prepare('SELECT id FROM runs').all()) {
       const id = row.id as string
-      if (surface && admissions.get(id) !== surface) continue
+      if (surface && admissions.get(id)?.surface !== surface) continue
+      if (principal && admissions.get(id)?.principal !== principal) continue
       const run = this.rawRun(id)
       const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', id)
       const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', id)
@@ -141,6 +145,42 @@ export class Store {
     }
     return { spentMinor, reservedMinor }
   }
+  addAgent(input: { name: string; maxMinor: number; dailyMinor: number }) {
+    return this.atomic(() => {
+      const created = this.agentKeys.add(input)
+      const { token: _token, ...key } = created
+      this.audit.append({ kind: 'agent-create', surface: 'agent', principal: key.id, data: key })
+      return created
+    })
+  }
+  /** Same durable pause path as the wallet, scoped to a principal. Revocation is permanent. */
+  setAgentPaused(id: string, paused: boolean, revoke = false) {
+    return this.atomic(() => {
+      const key = this.agentKeys.control(id, paused, revoke)
+      this.audit.append({ kind: 'pause', surface: 'agent', principal: id, data: { paused: key.paused, revoked: key.revoked, policyVersion: POLICY_VERSION } })
+      return key
+    })
+  }
+  runPrincipal(runId: string) { return this.db.prepare('SELECT surface, principal FROM admissions WHERE run_id=?').get(runId) as { surface: Surface; principal: string } | undefined }
+  private runAgent(runId: string) {
+    const identity = this.runPrincipal(runId)
+    return identity?.surface === 'agent' ? this.agentKeys.get(identity.principal) : undefined
+  }
+  private principalPaused(runId: string) {
+    const identity = this.runPrincipal(runId), key = this.runAgent(runId)
+    return identity?.surface === 'agent' && (!key || key.paused || key.revoked)
+  }
+  agentStatus(id: string, day = new Date().toISOString().slice(0, 10)) {
+    return this.atomic(() => {
+      const key = this.agentKeys.get(id)
+      if (!key) throw new AgentDenied('Agent key not found')
+      const from = new Date(`${day}T00:00:00Z`); from.setUTCDate(from.getUTCDate() - 6)
+      const receipts = receiptRows(this.db, { from: from.toISOString().slice(0, 10), to: day }).filter(r => r.principal === id && r.kind !== 'inbound')
+      return { ...key, maxMinor: Math.min(key.maxMinor, spendPolicy().maxMinor), dailyMinor: Math.min(key.dailyMinor, spendPolicy().walletDailyMinor),
+        ...this.usage(day, undefined, undefined, id), spent7DaysMinor: receipts.reduce((s, r) => s + (typeof r.amountMinor === 'number' ? r.amountMinor : Number(r.amountDrops) / DROPS_PER_MINOR), 0),
+        rails: [...new Set(receipts.map(r => r.label))] }
+    })
+  }
   isPaused() {
     return spendPolicy().paused || Boolean(this.db.prepare('SELECT paused FROM wallet_control WHERE id=1').get()?.paused)
   }
@@ -158,11 +198,13 @@ export class Store {
   }
   mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.usage(day, 'mcp')) }
   isHireRun(runId: string) { return !!this.db.prepare('SELECT run_id FROM hire_reserves WHERE run_id=?').get(runId) }
-  isMcpRun(runId: string) { return !!this.db.prepare("SELECT key FROM admissions WHERE run_id=? AND surface='mcp'").get(runId) }
+  isMcpRun(runId: string) { return !!this.db.prepare("SELECT key FROM admissions WHERE run_id=? AND surface IN ('mcp','agent')").get(runId) }
   /** Key insertion, wallet/surface reservation and run creation commit before async work. */
   admit(input: { surface: Surface; principal: string; question: string; requestedMinor: number;
     idempotencyKey: string; maxMinor: number; dailyMinor?: number; labels?: ModeLabels; reserveMinor?: number }, day = new Date().toISOString().slice(0, 10)) {
     const admitted = this.atomic(() => {
+      const agent = input.surface === 'agent' ? this.agentKeys.get(input.principal) : undefined
+      if (input.surface === 'agent' && (!agent || agent.revoked || agent.paused)) throw new AgentDenied('Agent paused or revoked')
       const old = this.db.prepare('SELECT run_id FROM admissions WHERE surface=? AND principal=? AND key=?').get(input.surface, input.principal, input.idempotencyKey)
       if (old) {
         const run = this.rawRun(old.run_id as string)
@@ -170,18 +212,19 @@ export class Store {
         return { run, reused: true }
       }
       if (![input.requestedMinor, input.maxMinor, input.dailyMinor ?? 0, input.reserveMinor ?? 0].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('Invalid spending limits')
-      const wallet = this.usage(day), surface = this.usage(day, input.surface)
+      const wallet = this.usage(day), surface = this.usage(day, agent ? undefined : input.surface, undefined, agent?.id)
       const remaining = Math.max(0, spendPolicy().walletDailyMinor - wallet.spentMinor - wallet.reservedMinor)
-      const surfaceRemaining = input.dailyMinor === undefined ? remaining : Math.max(0, input.dailyMinor - surface.spentMinor - surface.reservedMinor)
-      const budget = this.isPaused() ? 0 : clampBudget(input.requestedMinor, input.maxMinor, Math.max(0, Math.min(remaining, surfaceRemaining) - (input.reserveMinor ?? 0)))
+      const dailyMinor = agent?.dailyMinor ?? input.dailyMinor
+      const surfaceRemaining = dailyMinor === undefined ? remaining : Math.max(0, dailyMinor - surface.spentMinor - surface.reservedMinor)
+      const budget = this.isPaused() ? 0 : clampBudget(input.requestedMinor, Math.max(0, Math.min(input.maxMinor, agent ? agent.maxMinor - (input.reserveMinor ?? 0) : input.maxMinor)), Math.max(0, Math.min(remaining, surfaceRemaining) - (input.reserveMinor ?? 0)))
       const run = this.insertRun(input.question, budget, input.labels)
-      if (input.reserveMinor && (this.isPaused() || remaining < input.reserveMinor)) throw new Error('Wallet cannot reserve hire fee')
+      if (input.reserveMinor && (this.isPaused() || Math.min(remaining, surfaceRemaining, agent?.maxMinor ?? Infinity) < input.reserveMinor)) throw new Error('Wallet cannot reserve hire fee')
       if (input.reserveMinor) this.db.prepare('INSERT INTO hire_reserves (run_id, minor) VALUES (?,?)').run(run.runId, input.reserveMinor)
       run.policyVersion = POLICY_VERSION
       this.saveRun(run)
       this.db.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)
       this.audit.append({ runId: run.runId, kind: 'admission', surface: input.surface, principal: input.principal, data: {
-        requestedMinor: input.requestedMinor, admittedMinor: budget, maxMinor: input.maxMinor, surfaceDailyMinor: input.dailyMinor ?? null, walletDailyMinor: spendPolicy().walletDailyMinor,
+        requestedMinor: input.requestedMinor, admittedMinor: budget, maxMinor: input.maxMinor, surfaceDailyMinor: dailyMinor ?? null, agentMaxMinor: agent?.maxMinor ?? null, walletDailyMinor: spendPolicy().walletDailyMinor,
         walletRemainingMinor: remaining, surfaceRemainingMinor: surfaceRemaining, hireReserveMinor: input.reserveMinor ?? 0, paused: this.isPaused(), policyVersion: POLICY_VERSION, day,
         questionCommitment: this.audit.questionCommitment(run.runId, input.question), labels: input.labels ?? null } })
       if (budget === 0) this.audit.append({ runId: run.runId, kind: 'refusal', surface: input.surface, principal: input.principal, data: { stage: 'admission', policyVersion: POLICY_VERSION,
@@ -335,7 +378,7 @@ export class Store {
       const committed = intents.filter(i => reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED').reduce((sum, i) => sum + i.amountMinor, 0)
       let error: string | undefined
       if (quote.amountMinor !== intent.amountMinor) error = 'Quoted price differs from evaluated price'
-      else if (this.isPaused()) error = PAUSED
+      else if (this.isPaused() || this.principalPaused(run.runId)) error = PAUSED
       else if (!this.walletAllows(run, intent.amountMinor)) error = 'Wallet daily cap exceeded'
       else if (run.stopped) error = 'Run stopped'
       else if (run.budgetMinor === 0 || intent.amountMinor > run.perSourceCapMinor || committed + intent.amountMinor > run.budgetMinor) error = 'Budget or per-source cap exceeded'
@@ -354,14 +397,18 @@ export class Store {
     const usage = this.usage(new Date().toISOString().slice(0, 10), undefined, run.runId)
     const own = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', run.runId)
       .filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
-    return usage.spentMinor + usage.reservedMinor + own + this.policyPayments(run.runId).filter(p => !p.confirmedAt && !p.cancelledAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0) + amount <= spendPolicy().walletDailyMinor
+    const policyReserved = this.policyPayments(run.runId).filter(p => !p.confirmedAt && !p.cancelledAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
+    const key = this.runAgent(run.runId)
+    const agentUsage = key && this.usage(new Date().toISOString().slice(0, 10), undefined, run.runId, key.id)
+    return usage.spentMinor + usage.reservedMinor + own + policyReserved + amount <= spendPolicy().walletDailyMinor
+      && (!agentUsage || agentUsage.spentMinor + agentUsage.reservedMinor + own + policyReserved + amount <= key!.dailyMinor)
   }
   /** CAS prevents independent managers/processes from submitting the same intent. */
   claimSubmitting(intentId: string): boolean {
     return this.atomic(() => {
       const intent = this.getIntent(intentId)
       if (!intent || intent.status !== 'RESERVED') return false
-      if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) {
+      if (this.isPaused() || this.principalPaused(intent.runId) || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) {
         const reason = this.isPaused() ? PAUSED : 'Run stopped, wallet capped or quote expired'
         this.saveIntent({ ...intent, status: 'SKIPPED', error: reason })
         this.audit.append({ runId: intent.runId, intentId, kind: 'refusal', data: { stage: 'submit', reason, amountMinor: intent.amountMinor, payTo: intent.quote?.payment?.payTo ?? null, policyVersion: POLICY_VERSION } })
@@ -433,8 +480,8 @@ export class Store {
       if (old) return old
       const intent = this.getIntent(intentId)!, e = this.getEscrow(intentId)!
       if (!e || intent.status !== 'SUBMITTING') throw new Error('Escrow reservation unavailable')
-      if (operation === 'create' && (this.isPaused() || this.rawRun(intent.runId).stopped || !this.walletAllows(this.rawRun(intent.runId), 0) || Date.parse(intent.quote!.expiresAt) <= Date.now())) throw new Error('Signing authority expired')
-      if (operation === 'finish' && (e.publicStatus.state !== 'VERIFIED_FOR_RELEASE' || !e.publicStatus.proofOk || this.rawRun(intent.runId).stopped || this.isPaused())) throw new Error('Finish requires a verified proof and active run')
+      if (operation === 'create' && (this.isPaused() || this.principalPaused(intent.runId) || this.rawRun(intent.runId).stopped || !this.walletAllows(this.rawRun(intent.runId), 0) || Date.parse(intent.quote!.expiresAt) <= Date.now())) throw new Error('Signing authority expired')
+      if (operation === 'finish' && (e.publicStatus.state !== 'VERIFIED_FOR_RELEASE' || !e.publicStatus.proofOk || this.rawRun(intent.runId).stopped || this.isPaused() || this.principalPaused(intent.runId))) throw new Error('Finish requires a verified proof and active run')
       if (operation === 'cancel' && !['LOCKED', 'VERIFIED_FOR_RELEASE', 'CANCEL_DUE'].includes(e.publicStatus.state)) throw new Error('Cancel requires a locked escrow')
       const row = { ...signed, operation, intentId }
       this.db.prepare('INSERT INTO escrow_outbox VALUES (?,?,?,?)').run(intentId, operation, signed.txHash, JSON.stringify(row))
@@ -489,7 +536,7 @@ export class Store {
       const intent = this.getIntent(intentId)
       if (this.getEscrow(intentId)) throw new Error('Intent uses escrow')
       if (intent?.status !== 'SUBMITTING') throw new Error('Payment submission requires a submitting reservation')
-      if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) throw new Error('Signing authority expired')
+      if (this.isPaused() || this.principalPaused(intent.runId) || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) throw new Error('Signing authority expired')
       this.db.prepare('INSERT INTO submissions VALUES (?,?,?,?)').run(intentId, signed.txHash, signed.txBlob, signed.lastLedgerSequence)
       this.saveIntent({ ...intent, txHash: signed.txHash })
       this.audit.append({ runId: intent.runId, intentId, kind: 'sign', data: { txHash: signed.txHash, lastLedgerSequence: signed.lastLedgerSequence, amountMinor: intent.amountMinor,

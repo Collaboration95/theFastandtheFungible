@@ -15,6 +15,7 @@ const StatusSchema = z.object({
   labels: ModeLabelsSchema, corpusLabel: z.string(), publisherUrl: z.url(),
   maxMinor: z.number(), dailyMinor: z.number(), spentMinor: z.number(), reservedMinor: z.number(),
   paused: z.boolean().optional(), wallet: z.object({ dailyMinor: z.number(), spentMinor: z.number(), reservedMinor: z.number(), paused: z.boolean(), label: z.string(), policyVersion: z.string() }).optional(),
+  agent: z.object({ id: z.string(), name: z.string(), maxMinor: z.number(), dailyMinor: z.number(), spentMinor: z.number(), reservedMinor: z.number(), spent7DaysMinor: z.number(), paused: z.boolean(), revoked: z.boolean(), rails: z.array(z.string()) }).optional(),
   rail: z.string(), payerAddress: z.string().nullable(),
 })
 const SearchSchema = z.object({

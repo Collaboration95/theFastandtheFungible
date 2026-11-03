@@ -95,7 +95,9 @@ export function hireService(context: ApiContext) {
   router.post('/v1/ask', async (req, res) => {
     if (!payer?.address || !facilitator) return res.status(503).json({ error: 'Hire requires XRPL Testnet settlement' })
     const input = Input.parse(req.body)
-    const key = z.string().min(1).max(200).parse(req.get('Idempotency-Key'))
+    const callerKey = z.string().min(1).max(200).parse(req.get('Idempotency-Key'))
+    const agentId: string | undefined = res.locals.agent?.id
+    const key = agentId ? `${agentId}:${callerKey}` : callerKey
     let hire = hires.get(key)
     if (!hire) {
       const quoteId = randomUUID()
@@ -116,7 +118,7 @@ export function hireService(context: ApiContext) {
     if (!verified.ok || verified.quote.ledgerInvoiceId !== hire.quote.ledgerInvoiceId) return res.status(402).json({ error: 'Payment does not match hire invoice' })
     hire = hires.patch(key, { signature }) // first blob wins even if settlement is ambiguous
     if (!hire.runId) {
-      const admitted = admit(store, { surface: 'x402', principal: verified.payer, question: input.question,
+      const admitted = admit(store, { surface: agentId ? 'agent' : 'x402', principal: agentId ?? verified.payer, question: input.question,
         requestedMinor: input.budgetMinor, idempotencyKey: hire.quote.invoiceId, maxMinor: 500, reserveMinor: SERVICE_FEE_MINOR, labels: context.labels })
       hire = hires.patch(key, { runId: admitted.run.runId })
       // Never accept money that could not fit in the already-reserved operator cap.
@@ -128,6 +130,10 @@ export function hireService(context: ApiContext) {
     }
     if (store.getRun(hire.runId!).budgetMinor !== input.budgetMinor) return res.status(409).json({ error: 'Hire admission refused' })
     if (!journal.settlementByTx(verified.txHash)) {
+      if (agentId) {
+        const agent = store.agentStatus(agentId)
+        if (agent.paused || agent.revoked || agent.spentMinor + agent.reservedMinor > agent.dailyMinor) return res.status(409).json({ error: 'Agent admission paused or capped; nothing submitted' })
+      }
       const wallet = store.walletStatus()
       if (wallet.paused || wallet.spentMinor + wallet.reservedMinor > wallet.dailyMinor) return res.status(409).json({ error: 'Hire admission paused or capped; nothing submitted' })
     }
@@ -136,7 +142,7 @@ export function hireService(context: ApiContext) {
     if (!settled.ok) return res.status(402).json({ error: settled.reason, label: XRPL_LABEL })
     // Written once per settled payment; a request replayed after a crash between settlement and here writes it then.
     const inbound = settled.settlement
-    store.recordAudit({ runId: hire.runId, intentId: hire.key, kind: 'inbound', surface: 'x402', principal: verified.payer, data: { txHash: verified.txHash, payer: verified.payer, payTo: hire.quote.payTo, amountDrops: hire.quote.amount,
+    store.recordAudit({ runId: hire.runId, intentId: hire.key, kind: 'inbound', surface: agentId ? 'agent' : 'x402', principal: agentId ?? verified.payer, data: { txHash: verified.txHash, payer: verified.payer, payTo: hire.quote.payTo, amountDrops: hire.quote.amount,
       invoiceId: hire.quote.ledgerInvoiceId, ledgerIndex: inbound?.ledgerIndex ?? null, settledAt: inbound?.settledAt ?? null, policy: 'hire-v1', budgetMinor: hire.budgetMinor, serviceFeeMinor: SERVICE_FEE_MINOR, label: XRPL_LABEL } }, { txHash: verified.txHash })
     if (hire.result) { store.closeHireReserve(hire.runId!); return res.json(hire.result) }
     let pending = active.get(key)

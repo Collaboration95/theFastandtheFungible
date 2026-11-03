@@ -190,3 +190,66 @@ hires. A cancelled unsigned royalty has one `${royaltyId}:refund` change row;
 the completed run closes its hire reserve only after every remaining payout is
 confirmed. Caller refusal, malformed denylist, pause/caps and already signed
 uncertain payouts require resolution; do not delete their journals to retry.
+
+## One wallet, many agent allowances (#280)
+
+Keep one engine and payer journal. Register agents in that engine's `APP_DB`:
+
+```sh
+umask 077
+mkdir -p data/agent-tokens
+npm run agents -- add --db data/app.db --name 'Claude Code' --max-minor 100 --daily-minor 300 --token-file data/agent-tokens/claude.key
+npm run agents -- add --db data/app.db --name 'SDK worker' --max-minor 200 --daily-minor 500 --token-file data/agent-tokens/sdk.key
+npm run agents -- list --db data/app.db
+npm run agents -- pause AGENT_ID --db data/app.db
+npm run agents -- pause AGENT_ID --resume --db data/app.db
+npm run agents -- revoke AGENT_ID --db data/app.db
+npm run audit:export -- --db data/app.db --principal AGENT_ID --format csv --out agent-receipts.csv
+```
+
+Caps are integer SGD cents, clamp to 5-cent budget steps and fit beneath the
+wallet's configured daily cap and S$5/run maximum. They are allowances, not
+prepaid balances: the wallet cap can further clamp a run. Unfinished budgets
+remain reserved across midnight/restart; refunds never restore gross authority.
+The hire fee and outbound royalty/change obligations count within the same
+agent allowance. `list` reports today's spend/reservations, seven UTC days of
+gross outbound spend, rail labels and durable pause/revocation state.
+
+`add` writes the key once into a **new mode-0600 file**, never stdout/stderr;
+it refuses to overwrite a file. Move it to the client's secret store. The server
+persists only SHA-256 digests and compares fixed-length digests in constant time.
+`RA_API_TOKEN` on the engine remains the operator/admin credential: never give it
+to an agent. CLI operations require local database access, which is operator
+access. Revocation cannot be undone; issue a new key. No engine restart is needed.
+
+Connect every client to the **same existing API** with `RA_BACKEND_URL`; pass its
+own key as the client's `RA_API_TOKEN`. For Claude Code, use a private-file wrapper (shell tracing must be off):
+
+```sh
+claude mcp add researchagent -e RA_BACKEND_URL=http://127.0.0.1:10788 -- sh -c 'export RA_API_TOKEN="$(cat "$1/data/agent-tokens/claude.key")"; exec node --import "$1/node_modules/tsx/dist/loader.mjs" "$1/mcp/server.ts"' -- "$PWD"
+```
+
+For any MCP client, use that command/args and the same two environment fields in
+its private MCP configuration. Never put a raw key in command arguments, shared
+config, a screenshot or a post. SDK callers pass
+`createClient({ baseUrl, token: agentKey })`; hired callers use
+`createHireClient({ baseUrl, token: agentKey, ...paymentConfig })`. The server
+ignores client-supplied identities/caps. Agent keys select their configured
+allowance instead of the legacy operator MCP caps (which still default to zero).
+
+Agent credentials can access only their own run, stop/retry/stream, research
+admission, search and status; operator pause, exports, metrics and resets require
+the admin token. A revoked/invalid key never falls back to anonymous loopback.
+Registering the first agent disables tokenless local spending; retain an operator
+`RA_API_TOKEN` for administration. Existing operator and empty-registry local
+fixture access remain compatible. `/api/wallet/status` includes `agents` with
+allowances and today/seven-day usage; SDK `wallet().agent` reports the caller's
+allowance. The UI for these fields is tracked in #311.
+
+Pause/revoke stops new admissions, reservations and unsigned signatures through
+the principal pause path. An already signed intent still reconciles and delivers
+once; pending escrows can cancel/refund. Already owed hire change/royalties can
+finish under their existing reservation, even after the agent is revoked. Wallet
+pause still applies. An already open SSE connection may finish its own run; it
+cannot admit another run. Export attribution stays the original agent key id.
+See [Testnet evidence](evidence/agents-280.md).

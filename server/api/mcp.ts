@@ -12,7 +12,8 @@ export function mcpRouter(context: ApiContext) {
     res.json(store.getRun(String(req.params.id)))
   })
   router.get('/api/mcp/status', async (_req, res) => {
-    res.json({ labels, corpusLabel: 'SYNTHETIC · fictional writers and articles', publisherUrl, ...mcpPolicy, ...store.mcpStatus(), wallet: store.walletStatus(), paused: store.isPaused(), rail: payer ? 'xrpl-testnet' : 'simulated', payerAddress: payer?.address ?? null })
+    const agent = res.locals.agent ? store.agentStatus(res.locals.agent.id) : undefined
+    res.json({ labels, corpusLabel: 'SYNTHETIC · fictional writers and articles', publisherUrl, ...mcpPolicy, ...store.mcpStatus(), ...(agent ? { ...agent, agent } : {}), wallet: store.walletStatus(), paused: store.isPaused() || Boolean(agent?.paused), rail: payer ? 'xrpl-testnet' : 'simulated', payerAddress: payer?.address ?? null })
   })
   router.get('/api/mcp/search', async (req, res) => {
     const { query, k } = z.object({ query: z.string().trim().min(1).max(2000), k: z.coerce.number().int().min(1).max(50).default(10) }).parse(req.query)

@@ -81,3 +81,12 @@ and maximum payment (see the protocol doc). The caller chooses a tier and a
 stable idempotency key; the remote engine chooses purchases and royalties.
 [Live proof](evidence/hire-274.md): a separate faucet caller paid an answer,
 one purchase, paid/free citation royalties and change, with five validated hashes.
+
+
+For one shared wallet with distinct agent allowances, create keys using
+`npm run agents -- add` against the engine database and pass each key as `token`.
+`wallet().agent` contains the caller's id/name, per-call/daily caps, today's gross
+spend/reservation, seven-day gross spend and rails. Revocation takes effect at the
+next HTTP request and the next unsigned purchase gate; already signed intents
+reconcile once. The operator token remains admin-only. See the
+[CLI and connection runbook](RUNBOOK.md#one-wallet-many-agent-allowances-280).

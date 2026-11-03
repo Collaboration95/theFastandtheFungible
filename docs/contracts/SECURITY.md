@@ -194,3 +194,34 @@ expiry can choose cancellation. The ledger enforces cancellation after expiry;
 it does not enforce proof validity or protect writers from buyer refusal. Writer
 opt-in accepts that limitation. Exact Payment remains the default. See
 [protocol](../x402-xrpl.md) and [dated evidence](../evidence/escrow-273.md).
+
+
+### Agent principals (#280)
+
+`server/agent-keys.ts` stores identity, SHA-256 digest and per-call/daily caps only;
+there is no agent balance table. `Store.admit` uses `surface: agent` and the key id
+as principal, then derives gross spending and reservations from the same
+admissions/intents/receipts/payouts used by the wallet cap. SQLite `BEGIN IMMEDIATE`
+serialises admission across processes. Operator MCP caps still govern operator
+requests; agent keys use their own configured caps beneath wallet authority.
+
+The HTTP guard recognizes agent digests with fixed-length constant-time comparison,
+restricts routes and run ownership, and rejects invalid/revoked keys without
+anonymous fallback. Admission rechecks the principal within its transaction;
+reserve/CAS/sign/escrow-create recheck durable pause/revoke. Already signed blobs
+remain write-once and may reconcile after revoke; an unsigned escrow finish is
+blocked and cancellation remains possible. Owed hire payouts finish under their
+original reserve. Inbound x402 payer identity is separate from the API principal;
+caller invoice idempotency is namespaced by agent. The service fee counts within
+agent per-call authority, and all outbound obligations count within daily caps.
+
+`npm run agents` is a local operator command. Creation writes the raw key once to
+a new 0600 file. No server response, list, audit row or log exposes it; telemetry
+masks the `ra_agent_` format. An agent may ask with its key but cannot change caps,
+unpause/revoke, operate another run or use admin exports/metrics. The operator
+`RA_API_TOKEN` retains admin access; empty-registry anonymous loopback fixtures
+remain compatible, and registering an agent disables anonymous spending.
+Today/seven-day spend and rail labels are read-only data for #311's UI; CLI
+controls and filtered receipt exports are available now. Agent authority history
+is checked by `gate:audit` from `agent-create`, admission, pause, reserve and sign
+rows, in addition to the existing hash-chain and one-charge checks.

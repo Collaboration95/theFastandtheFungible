@@ -1,3 +1,4 @@
+import { AgentDenied } from './agent-keys.js'
 import { operationsRouter } from './api/operations.js'
 import { auditRouter } from './api/audit.js'
 import { withModelUsage, logMoneyEvent } from './telemetry.js'
@@ -35,8 +36,6 @@ export async function createApiApp(options: ApiOptions = {}) {
   const jobs = new Set<Promise<void>>()
   const app = express()
   app.disable('x-powered-by')
-  app.use(admissionGuard(config))
-  app.use(express.json({ limit: '16kb' }))
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next() })
   const streams = new Map<string, Set<Response>>()
   const publish = (event: TraceEvent) => {
@@ -47,6 +46,8 @@ export async function createApiApp(options: ApiOptions = {}) {
   }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
+  app.use(admissionGuard(config, store))
+  app.use(express.json({ limit: '16kb' }))
   const client = new PublisherClient({ baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
   // XRPL Testnet settlement needs both the rail flag and a payer seed; otherwise simulated, labelled.
   const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
@@ -118,7 +119,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   app.use(reportsRouter(context))
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const notFound = error instanceof Error && error.message === 'Run not found'
-    res.status(notFound ? 404 : error instanceof z.ZodError ? 400 : 500).json({ error: notFound ? 'Run not found.' : error instanceof z.ZodError ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
+    res.status(error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500).json({ error: notFound ? 'Run not found.' : error instanceof z.ZodError ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
   }
   app.use(handleError)
   const reconciliationJobs = new Set<Promise<void>>()
