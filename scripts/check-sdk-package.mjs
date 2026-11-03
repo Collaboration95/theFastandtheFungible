@@ -26,7 +26,9 @@ const task: AskTask = c.ask('q', {budget:1,idempotencyKey:'key'});
 const result: AskResult = await task;
 const verification: VerificationResult = await c.verify({});
 const clamped: boolean = result.clamped;
-void [verification,clamped,task.events,c.walletStatus(),c.getRun('id'),c.hire('q',{budgetMinor:100,idempotencyKey:'key'}),c.pay('https://example.test')];
+const hired = await c.hire('q',{budgetMinor:100,idempotencyKey:'key'});
+const royalty: string = hired.moneyChain.royaltyDrops;
+void [royalty,verification,clamped,task.events,c.walletStatus(),c.getRun('id'),c.hire('q',{budgetMinor:100,idempotencyKey:'key'}),c.pay('https://example.test')];
 // @ts-expect-error: budget must be numeric SGD
 c.ask('q',{budget:'1'});
 // @ts-expect-error: unknown methods must not be exposed

@@ -4,6 +4,7 @@ export type { ReceiptBundle, VerificationResult, VerifyOptions } from './verify.
 import { z } from 'zod'
 import { ModeLabelsSchema, RunSnapshotSchema, type RunSnapshot, type TraceEvent } from '../shared/contracts/run.js'
 import { presentRun, type PresentedRun } from './present.js'
+export type { HireResult } from './hire.js'
 export type { PresentedRun } from './present.js'
 
 export type ErrorCode = 'unauthorized' | 'not_found' | 'invalid' | 'backend_unavailable' | 'cancelled' | 'payment_failed' | 'verification_failed'

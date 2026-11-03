@@ -71,7 +71,9 @@ repository's `npm run verify:answer` command.
 ### `hire`
 
 `hire(question, { budgetMinor: 100 | 200 | 500, idempotencyKey })` calls the
-baseUrl's /v1/ask x402 service, with its fixed S$0.20 fee and returned money chain.
+baseUrl's /v1/ask x402 service, with its fixed S$0.20 fee. The typed HireResult
+includes the presented run and moneyChain (inbound, payments, writer addresses,
+royalties and caller change).
 Requires explicit operator payment options (below). Reuse the key on uncertainty.
 
 ### `pay`
