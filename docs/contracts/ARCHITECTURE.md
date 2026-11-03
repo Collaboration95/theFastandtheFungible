@@ -155,3 +155,18 @@ reservations.
 Federated runtime references carry `source` version 1: origin, signed seller public key, profileId, resourceId and version. `shared/source-identity.ts` supplies the canonical tuple and citation key. TS, Python and MCP preserve that identity; wallet reputation crosses hosts. Receipt bundles dispatch v1/v2 explicitly. Historical missing origins remain unresolved; invoices, signed manifests, blobs, audit entries and intent IDs are unchanged. New obligations save endpoint context before signing; removal prevents new admission while recovery uses the saved endpoint. No engine bearer, delivery token or payment signature is forwarded across origins.
 
 Offline reproduction: `node --import tsx scripts/demo-multi-origin.ts --fixture --output scratch/multi-origin.json`. Evidence and migration handoff: `docs/evidence/round2-f/README.md`. The proof is synthetic, uses simulated payments and an explicit fixture judging/citation rubric, and does not establish adoption or live model quality.
+
+## Engine validation reuse (4 Nov 2026, Lane M2)
+
+The engine reuses manifest signature verdicts for exact canonical manifest bytes
+(including signature, wallet and public key). The bounded LRU stores immutable
+boolean results; misses execute the unchanged verifier. Registry/payee bindings
+are checked by the caller on every use. There is no signer worker or change to
+payment ordering, outbox persistence, settlement or recovery.
+
+Store reads still fetch authoritative SQLite JSON inside the original transaction.
+RunSnapshot fields use their original Zod schemas; bounded per-store reuse avoids
+validating unchanged JSON fields. Entries contain strings and hits return fresh
+JSON values. Non-round-trippable values bypass reuse. The RunSnapshot schema has
+no cross-field refinements. SQLite rows, transactions and persistence format are
+unchanged; no cached state can survive a rollback as spending authority.

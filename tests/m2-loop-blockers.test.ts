@@ -38,6 +38,9 @@ describe('exact verification reuse', () => {
     try {
       const run = store.createRun('fixture', 100), validator = new RunValidator()
       expect(validator.parse(run)).toEqual(RunSnapshotSchema.parse(run))
+      expect(validator.parse({ ...run, error: undefined })).toEqual(RunSnapshotSchema.parse({ ...run, error: undefined }))
+      const withSpecial = { ...run, checkpoint: { extra: Number.NaN } }
+      expect(validator.parse(withSpecial)).toEqual(RunSnapshotSchema.parse(withSpecial))
       const first = validator.parse(run); first.checkpoint.extra = 'caller mutation'
       expect(validator.parse(run)).toEqual(RunSnapshotSchema.parse(run))
       for (const patch of [{ budgetMinor: -1 }, { stopped: 'no' }, { candidates: [{ bad: true }] }]) {

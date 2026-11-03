@@ -14,7 +14,7 @@ export class RunValidator {
       const value = run[key as keyof RunSnapshot]
       const json = JSON.stringify(value)
       // Optional undefined must go through Zod too, without conflating it with null.
-      if (json === undefined) { const parsed = schema.parse(value); if (parsed !== undefined) result[key] = parsed; continue }
+      if (json === undefined) { const parsed = schema.parse(value); if (parsed !== undefined || key in run) result[key] = parsed; continue }
       if (!isDeepStrictEqual(value, JSON.parse(json))) { result[key] = schema.parse(value); continue }
       const cacheKey = JSON.stringify([key, json])
       const cached = this.cache.get(cacheKey)
