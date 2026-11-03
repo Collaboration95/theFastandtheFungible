@@ -6,9 +6,10 @@ import { createHash, randomBytes } from 'node:crypto'
 import type { DatabaseSync } from 'node:sqlite'
 import { DROPS_PER_MINOR, PurchaseIntentSchema, ReceiptSchema, XRPL_EXPLORER, XRPL_LABEL, type PurchaseIntent, type Receipt } from '../shared/contracts/index.js'
 import { lookupTx, verifyPayment, type Ledger } from '../shared/xrpl.js'
+import { ledgerInvoiceId } from '../shared/x402.js'
 
 export const GENESIS_HASH = '0'.repeat(64)
-export const AUDIT_KINDS = ['baseline', 'policy', 'admission', 'decision', 'reserve', 'sign', 'settle', 'deliver', 'proof', 'challenge', 'refund', 'refusal', 'pause', 'prune'] as const
+export const AUDIT_KINDS = ['baseline', 'policy', 'admission', 'decision', 'reserve', 'sign', 'settle', 'deliver', 'proof', 'challenge', 'refund', 'refusal', 'pause', 'prune', 'inbound', 'payout-reserve', 'payout-sign', 'payout-settle'] as const
 export type AuditKind = typeof AUDIT_KINDS[number] | (string & {})
 export type AuditEntry = { seq: number; at: string; prevHash: string; hash: string; runId: string | null; intentId: string | null; surface: string; principal: string; kind: string; data: Record<string, unknown> }
 export type AuditInput = { kind: AuditKind; data: Record<string, unknown>; runId?: string; intentId?: string; surface?: string; principal?: string; at?: string }
@@ -39,6 +40,7 @@ export function assertSafe(value: unknown, path = 'data'): void {
 }
 
 type Row = Record<string, unknown>
+const hasTable = (db: DatabaseSync, name: string) => !!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name)
 const toEntry = (row: Row): AuditEntry => ({ seq: Number(row.seq), at: String(row.at), prevHash: String(row.prev_hash), hash: String(row.hash), runId: (row.run_id as string | null) ?? null,
   intentId: (row.intent_id as string | null) ?? null, surface: String(row.surface), principal: String(row.principal), kind: String(row.kind), data: JSON.parse(String(row.data)) as Record<string, unknown> })
 
@@ -79,6 +81,8 @@ export class AuditLog {
   boot(policy: Record<string, unknown> | undefined): void {
     if (!this.db.prepare('SELECT 1 FROM audit_log LIMIT 1').get()) {
       const ids = (this.db.prepare('SELECT id FROM intents ORDER BY rowid').all() as { id: string }[]).map(row => row.id)
+      if (hasTable(this.db, 'policy_payments')) ids.push(...(this.db.prepare('SELECT id FROM policy_payments ORDER BY id').all() as { id: string }[]).map(row => row.id))
+      if (hasTable(this.db, 'x402_settlements')) ids.push(...(this.db.prepare('SELECT tx_hash FROM x402_settlements ORDER BY tx_hash').all() as { tx_hash: string }[]).map(row => row.tx_hash))
       this.append({ kind: 'baseline', data: { note: 'Intents that existed before the audit log; their history is not covered.', preexistingIntentIds: ids } })
     }
     if (!policy) return
@@ -87,13 +91,12 @@ export class AuditLog {
   }
 }
 
-export type ChainResult = { ok: boolean; entries: number; head: { seq: number; hash: string } | null; failures: { seq?: number; reason: string }[]; coverage: { receipts: number; signed: number; refunds: number } }
-const hasTable = (db: DatabaseSync, name: string) => !!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name)
+export type ChainResult = { ok: boolean; entries: number; head: { seq: number; hash: string } | null; failures: { seq?: number; reason: string }[]; coverage: { receipts: number; signed: number; refunds: number; payouts: number; inbound: number } }
 
 /** Recompute the chain and cross-check it against the money tables. Read-only. `expectHead` pins the tip to defeat tail truncation. */
 export function verifyChain(db: DatabaseSync, options: { expectHead?: string } = {}): ChainResult {
   const failures: ChainResult['failures'] = []
-  const result: ChainResult = { ok: false, entries: 0, head: null, failures, coverage: { receipts: 0, signed: 0, refunds: 0 } }
+  const result: ChainResult = { ok: false, entries: 0, head: null, failures, coverage: { receipts: 0, signed: 0, refunds: 0, payouts: 0, inbound: 0 } }
   if (!hasTable(db, 'audit_log')) { failures.push({ reason: 'audit_log table is missing (a database from before #288: open it once with this version, e.g. `npm run data:prune -- --dry-run`, to pin its baseline)' }); return result }
   const rows = db.prepare('SELECT * FROM audit_log ORDER BY seq').all() as Row[]
   const entries: AuditEntry[] = []
@@ -147,6 +150,28 @@ function checkCoverage(db: DatabaseSync, entries: AuditEntry[], result: ChainRes
     if (!entry) flag(`signed payment for intent ${id} has no sign entry`)
     else if (entry.data.txHash !== row.tx_hash) flag(`signed payment for intent ${id} differs from its sign entry`, entry.seq)
   }
+  // Hire-the-agent (#274): outbound royalty and change payments, and every inbound payment that was settled.
+  if (hasTable(db, 'policy_payments')) {
+    const payoutSigns = by('payout-sign'), payoutSettles = by('payout-settle')
+    for (const row of db.prepare('SELECT json FROM policy_payments ORDER BY id').all() as Row[]) {
+      const payment = JSON.parse(String(row.json)) as { id: string; payTo: string; amountDrops: string; submission?: { txHash: string }; confirmedAt?: string }
+      if (baseline.has(payment.id) || !payment.submission) continue
+      result.coverage.payouts++
+      const sign = payoutSigns.get(payment.id), settle = payoutSettles.get(payment.id)
+      if (!sign) flag(`payout ${payment.id} was signed but has no payout-sign entry`)
+      else if (sign.data.txHash !== payment.submission.txHash || sign.data.payTo !== payment.payTo || sign.data.amountDrops !== payment.amountDrops) flag(`payout ${payment.id} differs from its payout-sign entry (tx, payee or amount)`, sign.seq)
+      if (payment.confirmedAt && !settle) flag(`payout ${payment.id} is confirmed but has no payout-settle entry`)
+    }
+  }
+  if (hasTable(db, 'x402_settlements')) {
+    const inbound = new Set(entries.filter(e => e.kind === 'inbound').map(e => String(e.data.txHash)))
+    for (const row of db.prepare('SELECT tx_hash FROM x402_settlements ORDER BY tx_hash').all() as Row[]) {
+      const tx = String(row.tx_hash)
+      if (baseline.has(tx)) continue
+      result.coverage.inbound++
+      if (!inbound.has(tx)) flag(`inbound payment ${tx} was settled but has no inbound entry (replaying the same request writes it)`)
+    }
+  }
   for (const row of db.prepare('SELECT json FROM intents').all() as Row[]) {
     const intent = PurchaseIntentSchema.parse(JSON.parse(String(row.json)))
     if (!intent.refund || baseline.has(intent.intentId)) continue
@@ -176,26 +201,30 @@ export function auditEntries(db: DatabaseSync, range: DateRange = {}): AuditEntr
   return (db.prepare('SELECT * FROM audit_log ORDER BY seq').all() as Row[]).map(toEntry).filter(e => inRange(e.at, bounds))
 }
 
+/** `purchase` = the operator paid a writer for an article; `inbound`, `royalty` and `change` are the hire-the-agent flow (#274). */
 export type ReceiptRow = {
-  label: string; network: string; runId: string; intentId: string; surface: string; principal: string; policyVersion: string; writer: string; resourceId: string; version: string
-  payee: string; payer: string; amountMinor: number; currency: string; amountDrops: string; txHash: string; invoiceId: string; ledgerIndex: number | ''; explorerUrl: string
+  kind: 'purchase' | 'inbound' | 'royalty' | 'change'; label: string; network: string; runId: string; intentId: string; surface: string; principal: string; policyVersion: string; writer: string; resourceId: string; version: string
+  payee: string; payer: string; amountMinor: number | ''; currency: string; amountDrops: string; txHash: string; invoiceId: string; ledgerIndex: number | ''; explorerUrl: string
   status: string; refundTxHash: string; refundAmountMinor: number | ''; refundExplorerUrl: string; reservedAt: string; settledAt: string
 }
-export const RECEIPT_COLUMNS: (keyof ReceiptRow)[] = ['label', 'network', 'runId', 'intentId', 'surface', 'principal', 'policyVersion', 'writer', 'resourceId', 'version', 'payee', 'payer', 'amountMinor', 'currency', 'amountDrops', 'txHash', 'invoiceId', 'ledgerIndex', 'explorerUrl', 'status', 'refundTxHash', 'refundAmountMinor', 'refundExplorerUrl', 'reservedAt', 'settledAt']
+export const RECEIPT_COLUMNS: (keyof ReceiptRow)[] = ['kind', 'label', 'network', 'runId', 'intentId', 'surface', 'principal', 'policyVersion', 'writer', 'resourceId', 'version', 'payee', 'payer', 'amountMinor', 'currency', 'amountDrops', 'txHash', 'invoiceId', 'ledgerIndex', 'explorerUrl', 'status', 'refundTxHash', 'refundAmountMinor', 'refundExplorerUrl', 'reservedAt', 'settledAt']
 const explorer = (tx: string) => `${XRPL_EXPLORER}/${tx}`
 
-/** One row per charge (a receipt exists), straight from the money tables. Every row says which rail it was on. */
+/**
+ * One row per charge (a receipt exists), straight from the money tables, plus one row per hire-the-agent inbound
+ * payment (from its audit entry) and per signed royalty or change payout. Every row says which rail it was on.
+ */
 export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow[] {
   const bounds = parseRange(range)
   const admissions = new Map((db.prepare('SELECT run_id, surface, principal, policy_version FROM admissions').all() as Row[]).map(r => [String(r.run_id), r]))
-  return (db.prepare('SELECT r.json AS receipt, i.json AS intent FROM receipts r JOIN intents i ON i.id=r.intent_id ORDER BY r.rowid').all() as Row[]).flatMap(row => {
+  const purchases = (db.prepare('SELECT r.json AS receipt, i.json AS intent FROM receipts r JOIN intents i ON i.id=r.intent_id ORDER BY r.rowid').all() as Row[]).flatMap(row => {
     const receipt: Receipt = ReceiptSchema.parse(JSON.parse(String(row.receipt))), intent: PurchaseIntent = PurchaseIntentSchema.parse(JSON.parse(String(row.intent)))
     if (!inRange(receipt.settledAt, bounds)) return []
     const admission = admissions.get(receipt.runId), terms = intent.quote?.payment
     const testnet = receipt.label === XRPL_LABEL
     const txHash = receipt.xrpl?.txHash ?? intent.txHash ?? ''
     return [{
-      label: receipt.label, network: testnet ? 'XRPL Testnet (xrpl:1), no real value' : 'SIMULATED rail, no real funds', runId: receipt.runId, intentId: receipt.intentId,
+      kind: 'purchase', label: receipt.label, network: testnet ? 'XRPL Testnet (xrpl:1), no real value' : 'SIMULATED rail, no real funds', runId: receipt.runId, intentId: receipt.intentId,
       surface: String(admission?.surface ?? 'unattributed'), principal: String(admission?.principal ?? 'unattributed'), policyVersion: String(admission?.policy_version ?? ''),
       writer: intent.profileId, resourceId: receipt.resourceId, version: receipt.version, payee: receipt.xrpl?.payTo ?? terms?.payTo ?? '', payer: receipt.xrpl?.payer ?? '',
       amountMinor: receipt.amountMinor, currency: receipt.currency, amountDrops: receipt.xrpl?.amountDrops ?? terms?.amountDrops ?? String(receipt.amountMinor * DROPS_PER_MINOR),
@@ -204,6 +233,23 @@ export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow
       reservedAt: intent.createdAt ?? '', settledAt: receipt.settledAt,
     } satisfies ReceiptRow]
   })
+  const hire = (kind: ReceiptRow['kind'], runId: string, intentId: string, f: Partial<ReceiptRow>): ReceiptRow[] => {
+    const admission = admissions.get(runId)
+    const row: ReceiptRow = { kind, label: XRPL_LABEL, network: 'XRPL Testnet (xrpl:1), no real value', runId, intentId, surface: String(admission?.surface ?? 'unattributed'), principal: String(admission?.principal ?? 'unattributed'),
+      policyVersion: String(admission?.policy_version ?? ''), writer: '', resourceId: '', version: '', payee: '', payer: '', amountMinor: '', currency: 'SGD', amountDrops: '0', txHash: '', invoiceId: '', ledgerIndex: '', explorerUrl: '',
+      status: '', refundTxHash: '', refundAmountMinor: '', refundExplorerUrl: '', reservedAt: '', settledAt: '', ...f }
+    return inRange(row.settledAt, bounds) ? [row] : []
+  }
+  const inbound = auditEntries(db).filter(e => e.kind === 'inbound' && e.runId).flatMap(e => hire('inbound', e.runId!, String(e.data.txHash), {
+    payee: String(e.data.payTo), payer: String(e.data.payer), amountDrops: String(e.data.amountDrops), amountMinor: Number(e.data.amountDrops) / DROPS_PER_MINOR, txHash: String(e.data.txHash),
+    invoiceId: String(e.data.invoiceId), ledgerIndex: typeof e.data.ledgerIndex === 'number' ? e.data.ledgerIndex : '', explorerUrl: explorer(String(e.data.txHash)), status: 'SETTLED', settledAt: String(e.data.settledAt ?? e.at) }))
+  const payouts = !hasTable(db, 'policy_payments') ? [] : (db.prepare('SELECT run_id, json FROM policy_payments ORDER BY run_id, id').all() as Row[]).flatMap(row => {
+    const p = JSON.parse(String(row.json)) as { id: string; kind: 'royalty' | 'change'; payTo: string; amountDrops: string; submission?: { txHash: string }; confirmedAt?: string; ledgerIndex?: number }
+    if (!p.submission) return []
+    return hire(p.kind, String(row.run_id), p.id, { writer: p.kind === 'royalty' ? p.id.split(':royalty:')[1] ?? '' : '', payee: p.payTo, amountDrops: p.amountDrops, amountMinor: '',
+      txHash: p.submission.txHash, invoiceId: ledgerInvoiceId(p.id), ledgerIndex: p.ledgerIndex ?? '', explorerUrl: explorer(p.submission.txHash), status: p.confirmedAt ? 'CONFIRMED' : 'SIGNED_UNCONFIRMED', settledAt: p.confirmedAt ?? '' })
+  })
+  return [...purchases, ...inbound, ...payouts]
 }
 
 /** RFC 4180 quoting, plus a leading apostrophe on cells a spreadsheet would execute (writer-controlled text is untrusted). */

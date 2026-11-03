@@ -42,7 +42,7 @@ describe('audit trail over fixture UC2 + UC3 (#288)', () => {
     for (const run of [uc2, uc3]) {
       const mine = rows.filter(r => r.runId === run.runId)
       expect(mine.map(r => r.intentId).sort()).toEqual(run.receipts.map(r => r.intentId).sort())
-      expect(mine.reduce((n, r) => n + r.amountMinor, 0)).toBe(run.spentMinor)
+      expect(mine.reduce((n, r) => n + Number(r.amountMinor), 0)).toBe(run.spentMinor)
       for (const row of mine) {
         const intent = run.intents.find(i => i.intentId === row.intentId)!, receipt = run.receipts.find(r => r.intentId === row.intentId)!
         expect(row).toMatchObject({ label: SIMULATED_LABEL, surface: 'web', policyVersion: 'wallet-v1', amountMinor: receipt.amountMinor, amountDrops: String(receipt.amountMinor * 1000), txHash: intent.txHash, status: intent.status, settledAt: receipt.settledAt })

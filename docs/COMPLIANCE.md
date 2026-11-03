@@ -18,7 +18,7 @@ implemented and tested in this repository, not approved by anyone.
 | Audit trail | A hash-chained, append-only `audit_log` of who or what authorised or refused each spend, under which policy, caps, model and version. See below. | `server/audit.ts` | `npm run audit:verify` |
 | Receipt export | One row per charge as CSV or JSONL, labelled Testnet or SIMULATED. | `scripts/audit-export.ts`, `GET /api/audit/receipts.csv` | row-for-row against run snapshots in `tests/audit-scenarios.test.ts` |
 | On-ledger check | `audit:verify --testnet` looks every receipt up on a public Testnet node (destination, delivered amount, InvoiceID, and the refund). Read-only; no key is loaded. | `shared/xrpl.ts` | below |
-| Payee denylist | An operator-edited list of XRPL addresses that policy code refuses to pay, checked before anything is signed. | `server/payee-screening.ts` | `tests/audit.test.ts` |
+| Payee denylist | An operator-edited list of XRPL addresses that policy code refuses to pay, checked before anything is signed (article purchases and hire payouts). | `server/payee-screening.ts` | `tests/audit.test.ts` |
 | Retention | `npm run data:prune` deletes premium bodies, salts, events, answers and question text from old finished runs, and keeps receipts and the chain. | `server/retention.ts` | `tests/audit.test.ts` |
 
 ## Custody: what "we never hold funds" means
@@ -29,17 +29,23 @@ else's funds, so this flow is non-custodial towards writers and callers. The
 operator does hold the payer key (see Key custody) and the signed-payment
 journal; that is the operator's own money.
 
-**Hire the agent (#274).** A caller pays ResearchAgent over x402; ResearchAgent
-spends part of that on articles, pays the writers it cited, and returns the
-change. That is **receive-and-forward custody**: for the time between the
-caller's payment and the payouts, the funds sit in the ResearchAgent wallet,
-which is not a segregated escrow account, and the operator controls it and keeps
-the service fee. For that flow the sentence "we never hold funds" is **false**,
-and so is a blanket "non-custodial" claim. On mainnet, receiving and forwarding
-value for third parties is a payment-service question (licensing, safeguarding,
-customer identification) that needs legal review before it is switched on. The
-audit log records each inbound, outbound and royalty payment of that flow the
-same way as a purchase.
+**Hire the agent (#274, Testnet).** A caller pays ResearchAgent over x402;
+ResearchAgent spends part of that on articles, pays the writers it cited
+(royalties, including free writers), and returns the change. That is
+**receive-and-forward custody**: between the caller's payment and the payouts,
+the funds sit in the ResearchAgent wallet, which is not a segregated escrow
+account; the operator controls the development seed and keeps the retained
+service fee. For that flow the sentence "we never hold funds" is **false**, and
+so is a blanket "non-custodial" claim. Network fees are paid separately by each
+sender. A payout that fails, or is refused by the denylist, stays reserved for
+the operator to resolve; the caller is not refunded automatically, and
+receiving a payment promises no fulfilment during an outage. On mainnet,
+receiving and forwarding value for third parties is a payment-service question
+(licensing, safeguarding, customer identification, monitoring) that needs legal
+review before it is switched on. The audit log records each inbound payment,
+each royalty and change payout (reserve, signature, confirmation) and any
+refusal, and the export lists them as `inbound`, `royalty` and `change` rows
+next to the `purchase` rows.
 
 ## Audit trail
 
@@ -57,7 +63,9 @@ same way as a purchase.
   amount, payee), `deliver` (content digest only), `proof`, `challenge`,
   `refund`, `refusal` (with the reason, including a denylist hit), `pause`,
   `policy` (caps and policy version at each boot, so a cap change is visible),
-  `prune`, and a one-off `baseline` when an older database is upgraded.
+  `prune`, and a one-off `baseline` when an older database is upgraded. For
+  hire-the-agent: `inbound` (the caller's settled payment, payer and invoice),
+  `payout-reserve`, `payout-sign` and `payout-settle` for royalties and change.
 - **Never in it:** premium bytes, passage text, salts, seeds, tokens, signed
   blobs or the question. The writer rejects such keys and secret-shaped values.
 - **Tamper evidence.** `npm run audit:verify` recomputes the chain, checks that
@@ -94,7 +102,9 @@ the older intents; their history is not covered.
 
 **Export.** `npm run audit:export -- --format csv|jsonl [--from 2026-11-01 --to 2026-11-30] [--out file]`
 or `GET /api/audit/receipts.csv|.jsonl` (same bearer token as the other
-operator routes). Columns: run, intent, surface, principal, policy version,
+operator routes). One row per article charge, plus one per hire-the-agent
+inbound payment and signed royalty or change payout (the `kind` column).
+Columns: kind, run, intent, surface, principal, policy version,
 writer, payee address, payer, SGD minor units and drops, transaction hash,
 InvoiceID, ledger index, explorer URL, status, refund transaction, reserved and
 settled times, and a `label`/`network` that says XRPL Testnet or SIMULATED on

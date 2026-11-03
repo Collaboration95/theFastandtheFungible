@@ -30,7 +30,7 @@ function publicMetadata(value: unknown): void {
 }
 
 
-export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string }
+export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string; ledgerIndex?: number }
 
 /** All mutations are synchronous SQLite transactions; no transaction crosses an await. */
 export class Store {
@@ -169,7 +169,7 @@ export class Store {
       this.db.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)
       this.audit.append({ runId: run.runId, kind: 'admission', surface: input.surface, principal: input.principal, data: {
         requestedMinor: input.requestedMinor, admittedMinor: budget, maxMinor: input.maxMinor, surfaceDailyMinor: input.dailyMinor ?? null, walletDailyMinor: spendPolicy().walletDailyMinor,
-        walletRemainingMinor: remaining, surfaceRemainingMinor: surfaceRemaining, paused: this.isPaused(), policyVersion: POLICY_VERSION, day,
+        walletRemainingMinor: remaining, surfaceRemainingMinor: surfaceRemaining, hireReserveMinor: input.reserveMinor ?? 0, paused: this.isPaused(), policyVersion: POLICY_VERSION, day,
         questionCommitment: this.audit.questionCommitment(run.runId, input.question), labels: input.labels ?? null } })
       if (budget === 0) this.audit.append({ runId: run.runId, kind: 'refusal', surface: input.surface, principal: input.principal, data: { stage: 'admission', policyVersion: POLICY_VERSION,
         reason: this.isPaused() ? PAUSED : 'No budget left under the wallet or surface caps; nothing can be spent' } })
@@ -423,6 +423,7 @@ export class Store {
         || payments.some(p => !/^[1-9]\d*$/.test(p.amountDrops) || !Number.isSafeInteger(Number(p.amountDrops)))
         || total + run.spentMinor * DROPS_PER_MINOR > (run.budgetMinor + Number(hold.minor)) * DROPS_PER_MINOR) throw new Error('Invalid policy payment reservation')
       for (const payment of payments) this.db.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(payment.id, runId, JSON.stringify(payment))
+      this.audit.append({ runId, kind: 'payout-reserve', data: { policyVersion: 'hire-v1', totalDrops: String(total), payments: payments.map(p => ({ id: p.id, kind: p.kind, payTo: p.payTo, amountDrops: p.amountDrops })) } })
     })
   }
   assertPolicyPaymentAllowed(runId: string) {
@@ -434,15 +435,18 @@ export class Store {
       if (payment.submission) return payment.submission
       if (this.isPaused() || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
       this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, submission }), id)
+      this.audit.append({ runId, intentId: id, kind: 'payout-sign', data: { paymentKind: payment.kind, txHash: submission.txHash, lastLedgerSequence: submission.lastLedgerSequence, payTo: payment.payTo, amountDrops: payment.amountDrops, paused: false, walletDailyMinor: spendPolicy().walletDailyMinor } })
       return submission
     })
   }
-  confirmPolicyPayment(runId: string, id: string) {
+  confirmPolicyPayment(runId: string, id: string, ledgerIndex?: number) {
     this.atomic(() => {
       const payment = this.policyPayments(runId).find(p => p.id === id)!
       if (!payment.submission) throw new Error('No signed policy payment')
       if (payment.confirmedAt) return
-      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, confirmedAt: new Date().toISOString() }), id)
+      const confirmedAt = new Date().toISOString()
+      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, confirmedAt, ...(ledgerIndex === undefined ? {} : { ledgerIndex }) }), id)
+      this.audit.append({ runId, intentId: id, kind: 'payout-settle', data: { paymentKind: payment.kind, txHash: payment.submission.txHash, ledgerIndex: ledgerIndex ?? null, payTo: payment.payTo, amountDrops: payment.amountDrops, confirmedAt } })
     })
   }
   closeHireReserve(runId: string) {
@@ -553,7 +557,13 @@ export class Store {
     })
   }
   /** For other modules (e.g. hire-the-agent inbound and royalty payments): appends inside its own transaction. */
-  recordAudit(input: AuditInput) { return this.atomic(() => this.audit.append(input)) }
+  recordAudit(input: AuditInput, once?: Record<string, string>) {
+    return this.atomic(() => {
+      // `once` makes a replayed request idempotent: an entry of this kind with the same data field values is not written twice.
+      if (once && Object.entries(once).every(([field, value]) => this.db.prepare(`SELECT 1 FROM audit_log WHERE kind=? AND json_extract(data, ?)=? LIMIT 1`).get(input.kind, `$.${field}`, value))) return undefined
+      return this.audit.append(input)
+    })
+  }
   auditVerify(options: { expectHead?: string } = {}) { return verifyChain(this.db, options) }
   auditEntries(range: DateRange = {}) { return auditEntries(this.db, range) }
   receiptRows(range: DateRange = {}) { return receiptRows(this.db, range) }

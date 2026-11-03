@@ -23,7 +23,7 @@ const ok = chain.ok && !bad.length
 if (values.json) console.log(JSON.stringify({ ok, chain, testnet: values.testnet ? checks : 'not checked' }, null, 2))
 else {
   console.log(`AUDIT CHAIN   ${chain.ok ? 'OK  ' : 'FAIL'} ${chain.entries} entries${chain.head ? `, head #${chain.head.seq} ${chain.head.hash}` : ''}`)
-  console.log(`COVERAGE      ${chain.coverage.receipts} receipts, ${chain.coverage.signed} signed payments, ${chain.coverage.refunds} refunds matched to their audit entries`)
+  console.log(`COVERAGE      ${chain.coverage.receipts} receipts, ${chain.coverage.signed} signed payments, ${chain.coverage.refunds} refunds${chain.coverage.payouts || chain.coverage.inbound ? `, ${chain.coverage.inbound} inbound and ${chain.coverage.payouts} royalty/change payments` : ''} matched to their audit entries`)
   for (const f of chain.failures) console.log(`  FAIL ${f.seq ? `at seq ${f.seq}: ` : ''}${f.reason}`)
   if (!values.testnet) console.log(`TESTNET       not checked (${rows.length} receipt${rows.length === 1 ? '' : 's'}); add --testnet to look each transaction up on the public Testnet`)
   else {

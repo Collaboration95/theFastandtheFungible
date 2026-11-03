@@ -185,7 +185,7 @@ describe('receipt export (#288)', () => {
     const rows = h.store.receiptRows()
     const run = h.store.getRun(h.run.runId)
     expect(rows).toHaveLength(run.receipts.length)
-    expect(rows.reduce((n, r) => n + r.amountMinor, 0)).toBe(run.spentMinor)
+    expect(rows.reduce((n, r) => n + Number(r.amountMinor), 0)).toBe(run.spentMinor)
     for (const row of rows) {
       const receipt = run.receipts.find(r => r.intentId === row.intentId)!, intent = run.intents.find(i => i.intentId === row.intentId)!
       expect(row).toMatchObject({ runId: run.runId, intentId: intent.intentId, surface: 'web', principal: 'operator', policyVersion: 'wallet-v1', writer: intent.profileId, resourceId: intent.resourceId,
