@@ -78,8 +78,9 @@ npm run gate:audit -- --db /path/to/api.db --observations /path/to/observations.
 ```
 
 Live requires **both** `--live` and `EVAL_LIVE=1` (`make … LIVE=1` supplies both),
-and **only** `EVAL_OPENAI_API_KEY`, from the shell or `EVAL_ENV_FILE`. It never
-uses demo credentials. The runner prints call bounds and an estimated cost
+and prefers `EVAL_OPENAI_API_KEY` from the shell or `EVAL_ENV_FILE`. For the
+owner's local run it explicitly falls back to `OPENAI_API_KEY` in the shell or
+local `.env`; no wallet seeds or unrelated `.env` settings are loaded. The runner prints call bounds and an estimated cost
 before enabling network access; `EVAL_SPEND_CAP_USD` defaults to **US$1**, and
 must be positive and at most US$1 for this scorecard. The inherited transport
 reserves projected request cost before calls. Live decisions and coverage use
@@ -148,3 +149,18 @@ Raw stores, observations and full reports live under ignored
 `eval/scorecard/out/<date>-<mode>/`; only summaries/history are committed. Failed
 runs never become baselines. The six zeroes describe the generated ten-query
 store and captured surfaces, not unobserved production traffic.
+
+
+The owner removed the CI scorecard workflow on 3 Nov: run it locally on the Mac.
+`frozen-pre-fact-menu.json` preserves the v1 experiment. The fact-menu treatment
+uses a new v2 fingerprint and adds `corpusContent`, calculated with only the new
+metadata removed. Its bank, corpusContent and coverage snapshot hashes must match
+the v1 bank/corpus/snapshots before comparing treatments. Prompt and metadata
+hashes intentionally differ; `--compare` still refuses different full hashes.
+No regression gate or threshold was loosened. History records both versions;
+treatment comparisons are explicitly labelled in REPORT-decisions.md.
+
+Transient provider 5xx/transport failures receive one bounded retry. Every
+attempt has a separate cached record and counts toward the same spend cap;
+401/403/404 access errors stop immediately. A run with failed or unparsed
+judgments still cannot publish a baseline.

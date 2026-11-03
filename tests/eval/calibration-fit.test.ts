@@ -34,6 +34,19 @@ describe('the production decision provider in the harness (#212)', () => {
     expect(clef).toBeInstanceOf(ClefDecisionProvider)
     expect(clef).toMatchObject({ name: 'cloudflare', model: '@cf/cloudflare/clef-flash', arm: 'flash' })
   })
+  it('uses one separately metered fresh inference for a refused cached answer', async () => {
+    let calls = 0
+    setTransport(async () => ++calls === 1
+      ? Response.json({ answers: [{ type: 'refusal', name: 'addresses_gap' }] })
+      : Response.json({ answers: [{ type: 'predicate', name: 'addresses_gap', probability: 0.6 }] }))
+    const fetch = harnessFetch('luna', 'retry-test')
+    const init = { body: JSON.stringify({ input: 'refusal-test', questions: [] }) }
+    const response = await fetch('', init)
+    expect((await response.json()).answers[0].probability).toBe(0.6)
+    expect(calls).toBe(2)
+    await fetch('', init)
+    expect(calls).toBe(2) // both cached attempts replay offline
+  })
   it('sends the provider’s exact request body through the opt-in transport', async () => {
     const bodies: unknown[] = []
     setTransport((async (_url: string, init: RequestInit) => { bodies.push(JSON.parse(String(init.body))); return countingFetch().fetch('', init) }) as typeof fetch)

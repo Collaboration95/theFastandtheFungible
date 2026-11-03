@@ -10,6 +10,23 @@ The eight writers and their content are synthetic. Offline settlement is
 **SIMULATED**; historical live receipts are **XRPL TESTNET · no real value**.
 Neither is evidence of mainnet readiness.
 
+## Observed tooling incident · 3 Nov 2026
+
+Local scorecard evaluation at `5953559`: an initial attempt hit OpenAI Decisions
+HTTP 503 ("Decision inference is unavailable") on one coverage request and
+correctly refused to publish a baseline. Evidence:
+`eval/scorecard/out/2026-11-02T16-27-35.998Z-live/requests.jsonl` and `cost.json`
+(local ignored artifacts; US$0.1233354 including all calls). Workaround: one
+bounded transient retry, with both attempts cached/metered; the next complete
+run published the pre-menu baseline in `eval/scorecard/history.jsonl`.
+Suggested tooling fix: retain per-phase progress and retry transient inference
+errors without discarding successful calls. Severity: low for local evaluation;
+mainnet impact: none observed (all settlement SIMULATED). This was a model/tooling
+incident, not an XRPL, x402, Starter Kit or Testnet failure. Signing the menu with
+existing XRPL keys required no new wallet/API operation; no signing friction
+was observed. The local `.env` key also needs an explicit evaluation mapping;
+`make scorecard LIVE=1` now handles that without loading wallet seeds.
+
 ## Top five: what we would fix first
 
 1. **Ship a TypeScript payment recovery example, not just a successful payment.**

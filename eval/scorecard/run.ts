@@ -63,7 +63,12 @@ export async function run() {
   const sweep = await sweepBank({ provider: live ? productionProvider({ phase: 'scorecard-sweep' }) : undefined })
   const arm = live ? 'luna' : 'fixture'
   const coverage = await runCoverage([arm])
-  if (flow.results.some(r => r.error || r.stop === 'decision-unavailable' || r.rounds.some(x => x.fallback)) || sweep.questions.some(q => q.facts.some(f => f.error)) || coverage.results[arm].metrics.errors || coverage.results[arm].metrics.unparsed) throw new Error('Evaluation has failed rounds or unparsed judgments; no baseline published')
+  if (flow.results.some(r => r.error || r.stop === 'decision-unavailable' || r.rounds.some(x => x.fallback)) || sweep.questions.some(q => q.facts.some(f => f.error)) || coverage.results[arm].metrics.errors || coverage.results[arm].metrics.unparsed) {
+    const failureFile = join(dir, 'failed-evaluation.json')
+    writeFileSync(failureFile, JSON.stringify({ inputHash, flow, sweep, coverage }, null, 2) + '\n')
+    assertNoSecrets([failureFile])
+    throw new Error(`Evaluation has failed rounds or unparsed judgments; no baseline published. Details: ${failureFile}`)
+  }
   const world = await loadWorld(), bank = loadBank()
   const sample = SAMPLE.map(id => { const q = bank.questions.find(q => q.id === id); if (!q) throw new Error(`Missing frozen sample ${id}`); return q })
   console.log('Measuring 10 API queries and cold start on ephemeral ports…')

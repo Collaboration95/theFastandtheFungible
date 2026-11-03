@@ -1,16 +1,26 @@
+import { readFileSync } from 'node:fs'
+import { frozenInputs } from '../eval/scorecard/frozen.js'
 import { describe, expect, it } from 'vitest'
 import { FactCoverSchema } from '../shared/contracts/manifest.js'
 import { deriveFactMenu, satisfiesFactCover } from '../shared/fact-menu.js'
 import { sharesRun } from '../shared/contracts/writers.js'
 import { signManifest, verifyDelivery, verifyManifestSignature } from '../shared/manifest.js'
 import { loadWorld, candidateOf, proofPasses } from '../eval/decisions/world.js'
-import { signedFactMenu, clefCandidate, clefQuestions } from '../server/agents/clef.js'
+import { FACT_MENU_NOTICE, signedFactMenu, clefCandidate, clefQuestions } from '../server/agents/clef.js'
 import { simulatedKeys } from '../publisher/registry.js'
 import { createManifests } from '../publisher/manifest.js'
 import { PublisherJournal } from '../publisher/journal.js'
 import { EVIDENCE } from '../server/agents/openai-decisions.js'
 
 describe('fact menu (#260)', () => {
+  it('preserves the pre-menu bank, prose and constructed coverage snapshots', async () => {
+    const before = JSON.parse(readFileSync('eval/scorecard/frozen-pre-fact-menu.json', 'utf8'))
+    const after = await frozenInputs()
+    expect(after.bank).toBe(before.bank)
+    expect(after.corpusContent).toBe(before.corpus)
+    expect(after.snapshots).toBe(before.snapshots)
+  })
+
   it('rejects answer digits, markup, control characters, unbounded text and unknown fields', () => {
     const valid = { entity: 'Kestrel', measure: 'gross margin', period: 'twenty twenty seven' }
     expect(FactCoverSchema.parse(valid)).toEqual(valid)
@@ -88,7 +98,8 @@ describe('fact menu (#260)', () => {
       expect(verifyManifestSignature(legacy)).toBe(true)
       expect(verifyDelivery(article.body, article.passages, manifests.saltsFor(article), legacy).ok).toBe(true)
     } finally { journal.close() }
-    expect(EVIDENCE.candidate.addresses_gap).toContain('not proof')
-    expect(clefQuestions.candidate.addresses_gap.instructions).toContain('not proof')
+    expect(FACT_MENU_NOTICE).toContain('not proof')
+    expect(EVIDENCE.candidate.addresses_gap).toContain('public metadata')
+    expect(clefQuestions.candidate.addresses_gap.instructions).toContain('public metadata')
   })
 })

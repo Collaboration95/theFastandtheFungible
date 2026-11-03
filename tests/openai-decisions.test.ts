@@ -46,7 +46,7 @@ describe('OpenAI Decisions provider (#214)', () => {
     const [body] = d.bodies
     expect(body.model).toBe('gpt-6-luna')
     const state = JSON.parse(body.input)
-    expect(Object.keys(state)).toEqual(['question', 'conclusion', 'dataPolicy', 'gap', 'readSources', 'candidates'])
+    expect(Object.keys(state)).toEqual(['question', 'conclusion', 'dataPolicy', 'gap', 'readSources', 'candidates', 'menuNotice'])
     expect(state.candidates.map((c: { resourceId: string }) => c.resourceId)).toEqual(['a', 'b'])
     // The same Zod-stripped public projection Clef sees: no body, spans, price, wallet, url or manifest.
     for (const forbidden of ['PAID_CANARY', 'price', 'amountMinor', 'wallet', 'url', 'manifest', 'spans']) expect(body.input).not.toContain(forbidden)

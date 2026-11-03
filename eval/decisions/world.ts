@@ -19,6 +19,11 @@ const KIND_AUTHORITY = { records: 2, masthead: 1.5, independent: 1 } as const
 
 const journal = new PublisherJournal(':memory:')
 const manifests = createManifests(journal)
+const publisherKeys = new Map<string, ReturnType<typeof simulatedKeys>>()
+function keysFor(slug: string) {
+  if (!publisherKeys.has(slug)) publisherKeys.set(slug, simulatedKeys(slug))
+  return publisherKeys.get(slug)!
+}
 
 export type World = { corpus: WriterCorpus; articles: Map<string, Article>; publishers: Map<string, Publisher>; indexes: Map<string, PublisherIndex> }
 export async function loadWorld(corpus?: WriterCorpus): Promise<World> {
@@ -31,12 +36,12 @@ export async function loadWorld(corpus?: WriterCorpus): Promise<World> {
 /** The public search-hit view of an article: what the decision step may see (no body, no passages). */
 export function candidateOf(world: World, article: Article, relevance?: number): PublicCandidate {
   const publisher = world.publishers.get(article.publisherSlug)!
-  const keys = simulatedKeys(article.publisherSlug)
+  const keys = keysFor(article.publisherSlug)
   const manifest = manifests.manifestFor({ publisher: { ...publisher, wallet: keys.wallet, pubKey: keys.publicKey }, keys }, article, reportedRelevance(article.publisherSlug, relevance ?? 0))
   return PublicCandidateSchema.parse({
     profileId: article.publisherSlug, resourceId: article.articleId, version: article.version, title: article.title, publisher: publisher.name, preview: article.abstract,
     ...(manifest ? { manifest } : {}),
-    price: { amountMinor: article.priceMinor, currency: 'SGD' }, ...(article.tier === 'PAID' ? { wallet: simulatedKeys(article.publisherSlug).wallet } : {}),
+    price: { amountMinor: article.priceMinor, currency: 'SGD' }, ...(article.tier === 'PAID' ? { wallet: keysFor(article.publisherSlug).wallet } : {}),
     family: article.family, ...(article.derivedFrom ? { derivedFrom: article.derivedFrom } : {}), facets: article.tags, authority: KIND_AUTHORITY[publisher.kind], tier: article.tier,
     license: { kind: 'SYNTHETIC', attribution: publisher.name }, publisherSlug: article.publisherSlug, writerSlug: article.writerSlug,
     url: `/w/${article.publisherSlug}/articles/${article.articleId}`, ...(relevance === undefined ? {} : { relevance: reportedRelevance(article.publisherSlug, relevance) }),
@@ -69,7 +74,7 @@ export async function retrieveOffline(world: World, queries: string[]): Promise<
 
 /** verifyDelivery's claim check on the delivered passages: a failed planted claim is a failed proof (D4). */
 export function proofPasses(article: Article): boolean {
-  const keys = simulatedKeys(article.publisherSlug)
+  const keys = keysFor(article.publisherSlug)
   const publisher = { slug: article.publisherSlug, wallet: keys.wallet, pubKey: keys.publicKey }
   const manifest = manifests.manifestFor({ publisher, keys }, article, 0)
   return Boolean(manifest && verifyDelivery(article.body, article.passages, manifests.saltsFor(article), manifest).ok)
