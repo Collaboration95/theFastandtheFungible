@@ -501,3 +501,4 @@ Significant product, design and process decisions, newest first. One line each: 
 
 - 2026-11-04: Lane E ranks six XRPL/x402 findings, pins capability profiles, and adds a generated nine-row historical TESTNET ledger with bounded read-only refresh; fixture/browser/axe checks pass. Public tx lookup returned txnNotFound, so no fresh verification or deployment is claimed.
 
+- 2026-11-04: Lane B adds exact component coverage ratchets (payments ≥85%), required Chromium/Python admission and parallel unchanged chaos; aggregate check rejects failed, cancelled or unexpected skipped gates; same-run GET recovery fixes the #345 oversized-SSE browser regression. Evidence: docs/evidence/round2-b/.
