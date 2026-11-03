@@ -38,7 +38,7 @@ export async function run() {
   const families: string[] | undefined = split === 'all' ? undefined : protocol[split + 'Families']
   const selectedIds: string[] | undefined = split === 'all' ? undefined : protocol[split + 'Ids']
   const ids = loadBank().questions.filter(q => selectedIds ? selectedIds.includes(q.id) : !families || families.includes(q.lane)).map(q => q.id)
-  const policy = process.env.DECISION_NUMBERS_POLICY !== 'off' ? 'receipt-value/v1+scope/v2+extraction/v2' : process.env.DECISION_SCOPE_POLICY === 'off' ? 'receipt-value/v1' : 'receipt-value/v1+scope/v1'
+  const policy = process.env.DECISION_NUMBERS_POLICY !== 'off' ? 'receipt-value/v1+scope/v3+extraction/v3' : process.env.DECISION_SCOPE_POLICY === 'off' ? 'receipt-value/v1' : 'receipt-value/v1+scope/v1'
   const inputs = await frozenInputs(), frozen = read('eval/scorecard/frozen.json')
   if (JSON.stringify(inputs) !== JSON.stringify(frozen)) throw new Error('Frozen eval inputs/prompts changed. Version and review a new eval set before comparing scores.')
   const inputHash = sha256(JSON.stringify(inputs))

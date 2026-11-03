@@ -301,3 +301,43 @@ requirement, five requirements) before the final citation validation. Ordinary
 actual purchase instructions remain filtered. LIVE decision/coverage results
 still use a fixture writer, synthetic corpus, keyword search and simulated
 payments; they do not establish live DeepSeek synthesis or XRPL performance.
+
+
+### Numbers v7: pitch headline and one final reused-heldout run (3 Nov)
+
+The primary pitch metric is **gross spend buying a fact used in the final answer**
+(`usedSpendPct`), with the exact definition above: numerator is the gross cost
+of verified, non-refunded purchases whose gained requested facts survive the
+final cited answer; denominator is all gross purchase cost, including waste.
+It is a cost share, not the share of individual facts, purchases or questions.
+Do not advertise it as measured customer ROI or a production success rate.
+
+`frozen-pre-numbers-v7.json` preserves #320's candidate. V7 keeps the bank,
+corpus, menus, coverage snapshots, split, bootstrap, thresholds and metric
+implementation unchanged. The old held-out purchase inventory was explicitly
+inspected at the user's request; this is now a **reused question holdout**, not
+an independent unseen-test experiment. Development used the 48 dev questions
+and synthetic identifier tests. V7 was frozen before live dev and its single
+final held-out evaluation, with no post-result quality changes.
+
+```sh
+OFFSET=700 EVAL_LIVE=1 EVAL_SPEND_CAP_USD=1 npm run scorecard -- --live --split dev
+OFFSET=700 EVAL_LIVE=1 EVAL_SPEND_CAP_USD=1 npm run scorecard -- --live --split heldout
+node --import tsx scripts/report-numbers-v7.ts <final-heldout-report.json>
+node scripts/readme-scorecard.mjs
+```
+
+The comparison script pairs the committed historical #320 after-run with the
+single new final run; it refuses changed data/configuration hashes and wrong
+run fingerprints. It deliberately labels the historical, non-concurrent
+comparison. The older same-input `report-numbers.ts` guard stays unchanged.
+Source-cluster intervals describe these observed draws on fixed synthetic
+sources, not provider variability, unseen documents, human-validated labels or
+causal component effects. All secondary metrics remain visible in the report.
+
+The headline remains a LIVE decision/coverage benchmark with fixture research,
+keyword search and **SIMULATED payments**. Separate live DeepSeek + Luna UC2/UC3
+product runs with actual XRPL Testnet purchases and a confirmed refund are
+recorded in `docs/evidence/numbers-v7-testnet.md` and `.json`. They support the
+settlement-path claim, not a chain-based estimate of the headline percentage.
+UC3 still leaves one of three live requested facts missing.

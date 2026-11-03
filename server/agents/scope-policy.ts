@@ -25,6 +25,10 @@ export function scopeContradiction(requirement: string, candidate: PublicCandida
 // Unknown keys/unsigned menus retain the existing model estimate. A known key
 // needs a compatible entry; broad topic proximity cannot stand in for its scope.
 const factKeys = [
+  // Wafer economics must at least promise semiconductor scope. Coarse menus
+  // may select margin/prepayment rather than price; do not call that absence
+  // a contradiction when the title or signed entity establishes the domain.
+  { need: /\bwafer\b.*\b(?:prices?|pricing|costs?|quote)\b|\b(?:prices?|pricing|costs?|quote)\b.*\bwafer\b/i, offer: /\bwafers?\b|\bfoundr(?:y|ies)\b|\bTSMC\b|\bKestrel\b|\bsemiconductors?\b/i },
   { need: /\bcapex\b|capital (?:expenditure|spending)/i, offer: /\bcapex\b|investment|\bcost(?:s|ing)?\b|capital (?:expenditure|spending)/i },
   { need: /\bcapacity\b/i, offer: /\bcapacity\b/i },
   { need: /\blead[- ]times?\b/i, offer: /\blead[- ]times?\b|\ballocation\b/i },
@@ -47,7 +51,7 @@ export function factMenuMismatch(requirement: string, candidate: PublicCandidate
   const yearWords: Record<string, string> = { '2023': 'twenty twenty three', '2024': 'twenty twenty four', '2025': 'twenty twenty five', '2026': 'twenty twenty six', '2027': 'twenty twenty seven', '2028': 'twenty twenty eight', '2029': 'twenty twenty nine', '2030': 'twenty thirty' }
   return !menu.some(f => {
     const scope = `${candidate.title} ${f.entity}`
-    return key.offer.test(`${f.measure} ${candidate.title}`)
+    return key.offer.test(`${f.entity} ${f.measure} ${candidate.title}`)
       && (!requested.length || requested.some(s => mentionsMenuPhrase(scope, s)))
       && (!dated || Boolean(f.period && (!year || mentionsMenuPhrase(f.period, yearWords[year]))))
   })

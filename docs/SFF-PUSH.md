@@ -42,6 +42,42 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 `eval/scorecard/history.jsonl`; paste "before → after" here when a number moves.
 
 
+Numbers v7 pitch · **80.05% of gross spend bought a requested fact retained in
+the final cited answer [95% CI 63.16–92.00%]**. LIVE decisions/coverage;
+fixture planner/writer, synthetic corpus, keyword search, SIMULATED payments.
+Reused frozen question holdout: 92 questions / 20 source clusters, 3 Nov.
+
+| Metric | Historical #320 after (95% CI) | Single V7 final (95% CI) |
+|---|---:|---:|
+| **Pitch: gross spend buying a final-used fact** | **59.32% [31.60, 88.82]** | **80.05% [63.16, 92.00]** |
+| Wasted gross spend | 40.68% [11.18, 68.40] | 19.95% [8.00, 36.84] |
+| Wasted net spend (no refunds in either benchmark) | 40.68% [11.18, 68.40] | 19.95% [8.00, 36.84] |
+| First-purchase F1 (flow) | 0.526 [0.349, 0.667] | 0.545 [0.361, 0.689] |
+| Selection F1 (sweep) | 0.660 [0.484, 0.800] | 0.688 [0.507, 0.812] |
+| Supported-fact uplift | 35.87 pts [22.11, 49.50] | 38.04 pts [24.00, 51.14] |
+
+Definition: S$16.25 gross cost of verified, non-refunded purchases adding a
+bank-supported requested fact surviving in the final answer / S$20.30 all gross
+purchase cost. A cost share, not the percentage of facts answered. Source-cluster
+bootstrap, 2,000 draws, seed 700, conditional on fixed synthetic sources and
+observed model draws. Historical errors were inspected; no unseen-test claim.
+Dev/synthetic iteration only, then freeze and one final held-out run.
+
+Waste change **−20.73 pts [−47.51, 0.00]**. Point estimate meets <25%, but its CI
+crosses 25% and paired change includes zero. No strict improvement or below-target
+population claim. Full definitions, secondary metrics and reproducible historical
+comparison: `eval/REPORT-decisions.md` §9 and `eval/scorecard/numbers-v7-results.json`.
+
+Separate [live Testnet UC2/UC3 sanity runs](evidence/numbers-v7-testnet.md): live
+DeepSeek planner/writer and Luna decisions; actual three purchases and one
+confirmed refund, all validated, gross 0.16 XRP, net 0.13 XRP, 48 drops fees.
+UC2 3/3 supported; UC3 2/3, one fact still missing. These runs support the
+settlement path, not the benchmark percentage. Benchmark audit 0/10 runs/646
+observations; Testnet audit 0/2/64 search observations. Total models US$0.3389854
+at dated harness rates, not an invoice. Nothing loosened; no `src/` changes.
+
+Historical Numbers v6 result (preserved):
+
 Numbers v6 headline · LIVE, frozen 92 heldout questions / 20 source clusters, 3 Nov:
 
 | Metric | Before (95% CI) | After (95% CI) |
@@ -319,6 +355,8 @@ Agents add items there and keep working around them.
 ## Decisions log
 
 - 3 Nov: Submission pack lives in `docs/submission/` (link-checked by hygiene). The deck is HTML exported to PDF by Playwright on the UX-DIRECTION ink/paper system, one slide per criterion, with every number sourced on the slide. The video and pitch label each scene Testnet, simulated or fixture, and the Claude Code scene does not claim the Testnet purchase (an SDK stdio client made it). Why: judges pre-assess the PDF and video, and overclaiming costs more than it gains.
+- 3 Nov: Numbers v7 uses final-used gross spend as the pitch headline, preserving gross/net waste and every gate. Diagnose #320, add wafer-domain rejection and short identifier ranking; dev/synthetic checks then one final reused-heldout run. Point waste 19.95% meets <25%, CI 8.00–36.84% does not establish a below-target population rate. Separate live Testnet sanity evidence never stands in for benchmark confidence.
+
 - 3 Nov: #280 agent keys are hashed principals in the existing admission/purchase ledger, managed by CLI while #311 owns UI; scoped pause/revoke blocks unsigned work and preserves signed-intent recovery.
 - 3 Nov: Numbers v6 preserves gross waste, adds confirmed-refund net waste and final-used spend with source-cluster CIs; fix requested-passage selection and the “buying … now” false positive, plus deterministic fact-key/scope vetoes. No heldout retuning or spending-authority change; gross/net 52.87% → 40.68%, target still missed.
 
@@ -366,6 +404,8 @@ Significant product, design and process decisions, newest first. One line each: 
 ## Changelog
 
 - 3 Nov: Submission pack ([docs/submission](submission/README.md)): 50/150/300-word descriptions, a 10-slide deck built from code with its PDF export (`node docs/submission/deck/export.mjs`), a 2:45 demo-video script with commands and existing release clips, a 2-minute pitch (282 words) with a 3-minute variant, and 10 judge Q&A answers. Recording is with the owner on #265.
+- 3 Nov: Lane B Numbers v7: waste 40.68% → 19.95%, headline used spend 59.32% → 80.05% [63.16–92.00]; classify all 24 #320 wasted purchases, minimal scope/tokenizer fixes, all CIs and limits retained. Live UC2 purchase plus UC3 failed proof/refund/replacement, four validated Testnet txs, zero audit violations, US$0.3389854 models.
+
 - 3 Nov: Lane C #280 one wallet/many agents: private-file token creation, per-agent caps/pause/revoke, shared policy accounting and principal exports; two MCP clients + SDK spent 0.18 Testnet XRP + 24 drops fees, zero gate violations ([evidence](evidence/agents-280.md)).
 - 3 Nov: Lane B Numbers v6: gross/net heldout waste 52.87% → 40.68% (paired 95% CI −28.57 to −1.23 pts); used spend 47.13% → 59.32%. Two extraction and four fact-scope regressions, README/scorecard definitions and CIs; 0 audit violations, US$0.4412058 models, simulated payments.
 

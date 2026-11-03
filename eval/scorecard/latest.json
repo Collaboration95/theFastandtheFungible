@@ -1,11 +1,11 @@
 {
   "schema": "tftf.scorecard/v1",
-  "at": "2026-11-03T03:27:11.020Z",
+  "at": "2026-11-03T03:47:11.448Z",
   "split": "heldout",
-  "policy": "receipt-value/v1+scope/v2+extraction/v2",
+  "policy": "receipt-value/v1+scope/v3+extraction/v3",
   "worktreeDirty": true,
-  "commit": "b3ca4f75640fb8aa8de6ac046f0cf19937d97356",
-  "inputHash": "b0b5bb4016e2c1c4444c06a65a0b3f0a66b37de4fe9536a1ff19d62544edc2ed",
+  "commit": "1e279c85963f3ed56414a6c4fe5d798cdca73f62",
+  "inputHash": "7b5f6b4f7a244de769b5ef7c7d61c22c2388022c8e42cb0097ddd110e769b0e9",
   "mode": "LIVE",
   "labels": {
     "search": "keyword only (embeddings unavailable)",
@@ -19,12 +19,12 @@
     "boot": "booted demo API + publisher (fresh child process; module load included)"
   },
   "quality": {
-    "wastedSpendPct": 40.67796610169491,
-    "netWastedSpendPct": 40.67796610169491,
-    "usedSpendPct": 59.32203389830509,
-    "selectionF1Flow": 0.5263157894736842,
-    "selectionF1Sweep": 0.66,
-    "supportedFactUpliftPts": 35.869565217391305,
+    "wastedSpendPct": 19.950738916256157,
+    "netWastedSpendPct": 19.950738916256157,
+    "usedSpendPct": 80.04926108374384,
+    "selectionF1Flow": 0.5454545454545454,
+    "selectionF1Sweep": 0.6875,
+    "supportedFactUpliftPts": 38.04347826086956,
     "falseCompleteRate": 0
   },
   "confidenceIntervals": {
@@ -35,123 +35,123 @@
     "questions": 92,
     "intervals": {
       "wastedSpendPct": {
-        "low": 11.177644710578843,
-        "high": 68.39887640449439,
+        "low": 8,
+        "high": 36.8421052631579,
         "validReplicates": 2000
       },
       "netWastedSpendPct": {
-        "low": 11.177644710578843,
-        "high": 68.39887640449439,
+        "low": 8,
+        "high": 36.8421052631579,
         "validReplicates": 2000
       },
       "usedSpendPct": {
-        "low": 31.60112359550562,
-        "high": 88.82235528942115,
+        "low": 63.1578947368421,
+        "high": 92,
         "validReplicates": 2000
       },
       "selectionF1Flow": {
-        "low": 0.3486238532110092,
-        "high": 0.6666666666666666,
+        "low": 0.3614457831325301,
+        "high": 0.6885245901639344,
         "validReplicates": 2000
       },
       "selectionF1Sweep": {
-        "low": 0.4838709677419355,
-        "high": 0.8,
+        "low": 0.5074626865671642,
+        "high": 0.8118811881188119,
         "validReplicates": 2000
       },
       "supportedFactUpliftPts": {
-        "low": 22.105263157894736,
-        "high": 49.504950495049506,
+        "low": 24,
+        "high": 51.13636363636363,
         "validReplicates": 2000
       }
     }
   },
   "timing": {
     "samples": 10,
-    "p50FirstAnswerMs": 64.0022084999946,
-    "p95FirstAnswerMs": 92.76741494999729,
-    "p95FinalAnswerMs": 5559.789416849992,
-    "coldStartMs": 545.6375000000116,
+    "p50FirstAnswerMs": 110.67118699999992,
+    "p95FirstAnswerMs": 260.9454500000122,
+    "p95FinalAnswerMs": 4637.165951599984,
+    "coldStartMs": 1447.7006669999973,
     "node": "v26.3.1",
     "platform": "darwin",
     "observations": [
       {
         "questionId": "Q49",
-        "runId": "29d5abbd-3165-4650-be4e-fc6c91645ab6",
-        "firstMs": 112.56345899999724,
-        "finalMs": 2331.602666999999
+        "runId": "f18d8a1b-f8ef-4f0d-8ed4-0412f608324d",
+        "firstMs": 317.1983750000072,
+        "finalMs": 2715.940917
       },
       {
         "questionId": "Q50",
-        "runId": "2ef03f0f-cebe-478d-917b-c2945edc7d5e",
-        "firstMs": 62.25533300000825,
-        "finalMs": 2277.305208000005
+        "runId": "5b896e8c-ee9a-462c-ae9d-f22a066e5f82",
+        "firstMs": 192.19187500001863,
+        "finalMs": 2772.8609580000048
       },
       {
         "questionId": "Q51",
-        "runId": "2ba51867-394b-4160-9c46-79e64f42486b",
-        "firstMs": 64.27116699999897,
-        "finalMs": 2600.561625000002
+        "runId": "4aaa296a-5d23-4ebb-8e6e-26c96b45414d",
+        "firstMs": 131.51608299999498,
+        "finalMs": 2317.117666999984
       },
       {
         "questionId": "Q52",
-        "runId": "1ffaad9b-b1f9-49d4-8c37-ca21e83f67ae",
-        "firstMs": 65.95595900001354,
-        "finalMs": 5238.236499999999
+        "runId": "4d2cc10e-574c-44ae-a947-d7b292ff3fda",
+        "firstMs": 90.24424999998882,
+        "finalMs": 5338.214332999982
       },
       {
         "questionId": "Q53",
-        "runId": "65f5ee16-e1f9-4b6a-8e6b-ac715440ee7b",
-        "firstMs": 60.023207999998704,
-        "finalMs": 5822.878166999988
+        "runId": "5771d637-0f7c-41fa-af31-1651d8edce25",
+        "firstMs": 106.16408300001058,
+        "finalMs": 2336.9797919999983
       },
       {
         "questionId": "Q54",
-        "runId": "afa0d238-a87c-4ce6-aaeb-0f15d0b5fed1",
-        "firstMs": 65.04666599998018,
-        "finalMs": 3243.387832999986
+        "runId": "7a4f6541-1b8a-46e2-bb6c-9baa75c8bd95",
+        "firstMs": 115.17829099998926,
+        "finalMs": 2379.7430830000085
       },
       {
         "questionId": "Q55",
-        "runId": "5b0bc22f-feb3-438a-8b9f-2aca5fd4b991",
-        "firstMs": 63.17629199998919,
-        "finalMs": 1979.8936669999966
+        "runId": "83950945-61cb-4f3e-9a29-1094cead0bd2",
+        "firstMs": 186.0246670000197,
+        "finalMs": 1944.4366670000018
       },
       {
         "questionId": "Q56",
-        "runId": "f5a76761-28b8-4120-a111-2cf486388e8c",
-        "firstMs": 63.73324999999022,
-        "finalMs": 3615.0495419999934
+        "runId": "e9ce68ff-4bce-44da-a66f-2cf63c0033a9",
+        "firstMs": 81.12949999998091,
+        "finalMs": 2291.332624999981
       },
       {
         "questionId": "Q57",
-        "runId": "597e97b3-0bf4-44fd-965c-ac55d7b3e5ab",
-        "firstMs": 58.41004200000316,
-        "finalMs": 1784.1627089999965
+        "runId": "0a5799aa-5492-4227-98eb-d14d07599c10",
+        "firstMs": 72.89008300000569,
+        "finalMs": 1722.9320000000007
       },
       {
         "questionId": "Q58",
-        "runId": "32a83931-8365-436b-b5e5-59a07197b490",
-        "firstMs": 68.57224999999744,
-        "finalMs": 3661.4134170000034
+        "runId": "85947009-8186-4cfa-9a01-284d4d45b45b",
+        "firstMs": 74.63058299999102,
+        "finalMs": 3780.32904099999
       }
     ]
   },
   "cost": {
-    "providerCalls": 463,
+    "providerCalls": 435,
     "estimatedUsageCalls": 0,
-    "inputTokens": 2133551,
+    "inputTokens": 1934899,
     "outputTokens": 0,
-    "modelUsd": 0.21335509999999985,
-    "latencyModelUsdPerQuery": 0.004304159999999999,
-    "flowDecisionUsdPerQuery": 0.0015284108695652187,
+    "modelUsd": 0.1934898999999999,
+    "latencyModelUsdPerQuery": 0.0036008399999999997,
+    "flowDecisionUsdPerQuery": 0.0013889326086956536,
     "xrpDropsSpent": 0,
-    "simulatedMinorSpent": 2655,
+    "simulatedMinorSpent": 2030,
     "rates": "eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)"
   },
   "audit": {
     "runs": 10,
-    "observations": 728,
+    "observations": 646,
     "violations": [],
     "total": 0,
     "byRule": {
@@ -163,7 +163,8 @@
       "missing_rail_label": 0,
       "royalty_policy": 0,
       "money_chain_reconciliation": 0,
-      "escrow_finish_without_verified_proof": 0
+      "escrow_finish_without_verified_proof": 0,
+      "agent_authority": 0
     }
   },
   "external": {
