@@ -98,7 +98,7 @@ mcp: ## stdio MCP server; fixture providers and simulated settlement, human caps
 mcp-live: ## stdio MCP server; live providers and XRPL Testnet when a payer seed is configured
 	@RA_LIVE=1 node --import tsx mcp/server.ts
 .PHONY: scorecard
-scorecard: ## nightly numbers + hard-gate audit (LIVE=1 opts in to evaluation calls; <= US$1)
+scorecard: ## local numbers + hard-gate audit (LIVE=1 opts in to evaluation calls; <= US$1)
 	$(if $(filter 1,$(LIVE)),EVAL_LIVE=1 )npm run scorecard -- $(if $(filter 1,$(LIVE)),--live) $(ARGS)
 
 .PHONY: record clip

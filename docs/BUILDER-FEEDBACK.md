@@ -10,6 +10,23 @@ The eight writers and their content are synthetic. Offline settlement is
 **SIMULATED**; historical live receipts are **XRPL TESTNET · no real value**.
 Neither is evidence of mainnet readiness.
 
+## Observed tooling incident · 3 Nov 2026
+
+Local scorecard evaluation at `5953559`: an initial attempt hit OpenAI Decisions
+HTTP 503 ("Decision inference is unavailable") on one coverage request and
+correctly refused to publish a baseline. Evidence:
+`eval/scorecard/out/2026-11-02T16-27-35.998Z-live/requests.jsonl` and `cost.json`
+(local ignored artifacts; US$0.1233354 including all calls). Workaround: one
+bounded transient retry, with both attempts cached/metered; the next complete
+run published the pre-menu baseline in `eval/scorecard/history.jsonl`.
+Suggested tooling fix: retain per-phase progress and retry transient inference
+errors without discarding successful calls. Severity: low for local evaluation;
+mainnet impact: none observed (all settlement SIMULATED). This was a model/tooling
+incident, not an XRPL, x402, Starter Kit or Testnet failure. Signing the menu with
+existing XRPL keys required no new wallet/API operation; no signing friction
+was observed. The local `.env` key also needs an explicit evaluation mapping;
+`make scorecard LIVE=1` now handles that without loading wallet seeds.
+
 ## Top five: what we would fix first
 
 1. **Ship a TypeScript payment recovery example, not just a successful payment.**
@@ -202,3 +219,16 @@ The XRPL faucet documentation warns that testnet balances and ledger history may
 #### 15. Endpoint transport and network identity
 
 The XRPL agent materials use a WebSocket endpoint on port 51233 for the wallet flow and an HTTP JSON-RPC endpoint on port 51234 for the x402 payer, but do not explain why the transports and ports differ or how to health-check that they refer to the same network. A builder can copy the wrong endpoint into an otherwise correct payment flow and get opaque connection or ledger-state errors. The quickstarts should show a network-identity check and a small endpoint matrix for WebSocket, JSON-RPC, Testnet, and Mainnet.
+
+## Observed evaluation tooling incident · 3 Nov 2026 (completion)
+
+At `f0951d4`, the local Decisions sweep refused one candidate judgment for Q02;
+`eval/scorecard/out/2026-11-03T01-30-59.942Z-live/failed-evaluation.json` and its
+meter record US$0.0879638, with no published scorecard. Short, single-predicate
+wording with contextual matching guidance in the state completed successfully;
+refusal still fails the round, and no scores/tests were substituted. Suggested
+fix: expose a structured refusal reason to distinguish ambiguous predicates
+from access/inference errors. Severity low for local eval; no observed mainnet
+impact, all settlement SIMULATED. This is model/tooling friction, not an XRPL
+incident. Total attempts, including the interrupted run, are itemized in
+`eval/scorecard/lane-b-spend.json`.

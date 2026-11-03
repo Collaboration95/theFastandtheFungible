@@ -158,3 +158,32 @@ exists. Do not add them merely to make the architecture look sophisticated.
 - [Unlimit BaaS payments](https://www.baas.unlimit.com/payments/)
 - [Unlimit developer portal](https://www.baas.unlimit.com/dev-portal/)
 
+
+### Signed fact menu (manifest v2, #260)
+
+Paid search hits include `claims[].covers: { entity, measure, period?, comparison? }`:
+what the bound passage answers, never the answer value. Each field is at most
+48 characters / six words, letters/spaces/hyphens only; no digits, prices,
+markup, control characters or extra fields. Period years are spelled out.
+`schemaVersion: 2` selects the `researchagent-manifest-v2:` signing domain;
+legacy manifests without that field and without `covers` retain v1 signatures
+and kind-only checks. Article versions and body roots are unchanged.
+
+The synthetic corpus's authoring helper uses a fixed noun vocabulary over the
+story's passages, without model calls or evaluation-bank access. Run
+`node --import tsx scripts/generate-fact-menu.ts` to regenerate existing menus;
+`generate-corpus.mjs` also adds them to newly assembled paid articles. AlphaLeak's
+story-bible claim intentionally promises a missing entity and period.
+
+Both decision providers receive at most eight distinct, schema-validated menu
+entries from a verified signature, labelled `untrustedSignedFactMenu`. They
+receive no leaves, salts, signature, wallet or private prose. A signed promise
+can justify considering a buy, never coverage or payment authorization.
+Candidate text and tags are capped; the requested-fact batch omits the
+source-influenced conclusion. The broader injection pack belongs to #286.
+
+After delivery, the **same bound passage** must contain the entity and measure,
+match any declared period/comparison, and satisfy the existing claim-kind value
+pattern. This is a lexical check, not proof of semantic truth or relevance.
+Wrong promises follow the existing CLAIM_FAILED → quarantine → challenge/refund
+path. No test, leak threshold or spending rule was relaxed.

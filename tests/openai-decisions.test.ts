@@ -5,6 +5,7 @@ import type { DecideInput } from '../server/agents/decision.js'
 import { candidateQuestions, chunkCandidates, DECISIONS_PROMPT_VERSION, DECISIONS_URL, decisionsPromptVersion, EVIDENCE, GAP_WORDINGS, PRODUCTION, OpenAIDecisionsProvider, parseDecisionsAnswers, type DecisionsQuestion } from '../server/agents/openai-decisions.js'
 import { exampleCandidate } from '../shared/contracts/examples.js'
 import { decisionLabel, type PublicCandidate } from '../shared/contracts/index.js'
+import { loadWorld, candidateOf } from '../eval/decisions/world.js'
 import { clefQuestions } from '../server/agents/clef.js'
 
 const paid = (resourceId: string, price = 80, extra: Partial<PublicCandidate> = {}): PublicCandidate => ({ ...exampleCandidate, resourceId, title: `Evidence ${resourceId}`, family: resourceId, tier: 'PAID', preview: 'Interviews with grid planners and energisation queue data.', facets: ['grid-energisation'], price: { amountMinor: price, currency: 'SGD' }, ...extra })
@@ -45,7 +46,7 @@ describe('OpenAI Decisions provider (#214)', () => {
     const [body] = d.bodies
     expect(body.model).toBe('gpt-6-luna')
     const state = JSON.parse(body.input)
-    expect(Object.keys(state)).toEqual(['question', 'conclusion', 'dataPolicy', 'gap', 'readSources', 'candidates'])
+    expect(Object.keys(state)).toEqual(['question', 'conclusion', 'dataPolicy', 'gap', 'readSources', 'candidates', 'menuNotice'])
     expect(state.candidates.map((c: { resourceId: string }) => c.resourceId)).toEqual(['a', 'b'])
     // The same Zod-stripped public projection Clef sees: no body, spans, price, wallet, url or manifest.
     for (const forbidden of ['PAID_CANARY', 'price', 'amountMinor', 'wallet', 'url', 'manifest', 'spans']) expect(body.input).not.toContain(forbidden)
@@ -58,10 +59,27 @@ describe('OpenAI Decisions provider (#214)', () => {
     expect(round).toMatchObject({ provider: 'openai', model: 'gpt-6-luna', promptVersion: DECISIONS_PROMPT_VERSION, threshold: 0.2, selectedResourceId: 'b' })
     expect(decisionLabel(round)).toBe('OpenAI Decisions · gpt-6-luna')
   })
+  it('sends only signed structured menu promises and omits the conclusion on requested facts', async () => {
+    const world = await loadWorld()
+    const article = world.corpus.articles.find(a => a.articleId === 'notft-kestrel-tsmc-deal-margins')!
+    const candidate = candidateOf(world, article)
+    const d = decisions()
+    await d.provider().judgeBatch({ question: 'What is the gross margin?', conclusion: 'UNTRUSTED_CONCLUSION', gap: 'gross margin', readSources: [], candidates: [candidate], skipGapMaterial: true })
+    const state = JSON.parse(d.bodies[0].input)
+    expect(state).not.toHaveProperty('conclusion')
+    expect(state.candidates[0].untrustedSignedFactMenu).toContainEqual(expect.objectContaining({ entity: 'Kestrel Semiconductor', measure: 'gross margin' }))
+    for (const forbidden of ['UNTRUSTED_CONCLUSION', article.passages[0].text, '55.2%', '58.5%', '"manifest":', '"leaf":']) expect(d.bodies[0].input).not.toContain(forbidden)
+    // The policy also projects candidates before calling the provider. Preserve
+    // the signed promise through both layers, while keeping signing bytes local.
+    await decide(input({ provider: d.provider(), candidates: [candidate], requirement: true }))
+    const policyState = JSON.parse(d.bodies[1].input)
+    expect(policyState.candidates[0].untrustedSignedFactMenu).toEqual(state.candidates[0].untrustedSignedFactMenu)
+    for (const forbidden of ['"manifest":', '"wallet":', '"sig":', '"leaves":']) expect(d.bodies[1].input).not.toContain(forbidden)
+  })
   it('switches the gap_material wording with DECISIONS_GAP_WORDING (default plain) and records it in the version', async () => {
     expect(GAP_WORDINGS.plain).toBe('The open gap is part of what the question asks.')
     expect(DECISIONS_PROMPT_VERSION).toBe(decisionsPromptVersion('plain'))
-    expect(DECISIONS_PROMPT_VERSION).toMatch(/^batch-evidence\/v1\+gap-plain /)
+    expect(DECISIONS_PROMPT_VERSION).toMatch(/^batch-evidence\/v3-fact-menu\+gap-plain /)
     for (const [env, wording] of [[undefined, 'plain'], ['plain', 'plain'], ['bogus', 'plain'], ['evidence', 'evidence']] as const) {
       if (env !== undefined) vi.stubEnv('DECISIONS_GAP_WORDING', env)
       const d = decisions()
@@ -92,7 +110,7 @@ describe('OpenAI Decisions provider (#214)', () => {
       { name: 'c0_originality', type: 'choice', instructions: `Evaluate only candidates[0]. ${EVIDENCE.candidate.originality}`, choices: EVIDENCE.originality },
       { name: 'c0_credibility', type: 'score', instructions: `Evaluate only candidates[0]. ${EVIDENCE.candidate.credibility}`, levels: EVIDENCE.credibility },
     ])
-    expect(round.promptVersion).toMatch(/^batch-evidence\/v1\+gap-plain /)
+    expect(round.promptVersion).toMatch(/^batch-evidence\/v3-fact-menu\+gap-plain /)
     // production: the Clef wording mapped noul → predicate, criteria → choices by value / levels 0–2, pinned order.
     vi.stubEnv('DECISIONS_WORDING', 'production')
     vi.stubEnv('DECISIONS_GAP_WORDING', 'evidence')
@@ -108,7 +126,7 @@ describe('OpenAI Decisions provider (#214)', () => {
         { label: '0', description: c.credibility.criteria[0] }, { label: '1', description: c.credibility.criteria[1] }, { label: '2', description: c.credibility.criteria[2] }] },
     ])
     expect(round.promptVersion).toBe(decisionsPromptVersion('evidence', 'production'))
-    expect(round.promptVersion).toMatch(/^batch-production\/v1\+gap-evidence /)
+    expect(round.promptVersion).toMatch(/^batch-production\/v3-fact-menu\+gap-evidence /)
     // Paid relevance and the per-candidate path follow the same switch.
     d = decisions()
     const provider = d.provider()

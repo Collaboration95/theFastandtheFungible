@@ -24,7 +24,13 @@ const PLACEHOLDER = 'eval-transport-adds-the-EVAL-credential'
 export function harnessFetch(arm: Arm, phase: string): typeof fetch {
   return (async (_url: string | URL | Request, init?: RequestInit) => {
     const body = JSON.parse(String(init?.body ?? '{}')) as { questions?: unknown }
-    const record = await request(arm, body, { phase, kind: 'production' })
+    let record = await request(arm, body, { phase, kind: 'production' })
+    // A refusal is not a score. Give the provider's existing retry path a fresh,
+    // separately metered response instead of replaying the same refused cache entry.
+    const answers = (record.response as { answers?: { type?: string }[] } | null)?.answers
+    if (record.status === 200 && answers?.some(a => a.type === 'refusal')) {
+      record = await request(arm, body, { phase, kind: 'production', ordinal: 'refusal-retry' })
+    }
     // A transport failure (status 0) looks like a 503 to the provider, which retries once and then fails the round (#197).
     return new Response(JSON.stringify(record.response ?? {}), { status: record.status || 503, headers: { 'Content-Type': 'application/json' } })
   }) as typeof fetch

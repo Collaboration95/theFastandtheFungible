@@ -7,7 +7,7 @@ import { join } from 'node:path'
 const root = join(import.meta.dirname, '..')
 const s = JSON.parse(readFileSync(join(root, 'eval/scorecard/latest.json'), 'utf8'))
 const date = s.at.slice(0, 10)
-const mode = s.mode === 'live' ? 'LIVE' : 'fixture'
+const mode = s.mode.toLowerCase() === 'live' ? 'LIVE decision + coverage; fixture research; simulated payments' : 'fixture'
 const tag = `${mode} · ${date}`
 const pct = (n) => `${n.toFixed(1)}%`
 const ms = (n) => `${Math.round(n)} ms`

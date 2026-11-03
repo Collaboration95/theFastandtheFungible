@@ -95,18 +95,18 @@ Architecture: [contracts/ARCHITECTURE.md](docs/contracts/ARCHITECTURE.md) · [se
 **A real Testnet purchase, from an MCP client.** On 3 Nov 2026 a stdio MCP client asked UC2's question with a S$2 cap and an idempotency key. One purchase was verified and settled for 0.09 Testnet XRP in 22.8 s, all 8 returned citations matched delivered passages, and a retry with the same key returned the same run with no second charge.
 [Transaction `D65FDA44…2FC9F9`](https://testnet.xrpl.org/transactions/D65FDA447AAC788BA7451615FCB6BDD62960AB066DC5A0BB150980B9E32FC9F9) (validated `tesSUCCESS`, ledger 22015773) · [full write-up](eval/mcp/testnet-2026-11-03.md). Testnet XRP has no value, and the writer and corpus are fictional.
 
-**Scorecard.** From `make scorecard` (`eval/scorecard/latest.json`). The numbers below are a **fixture baseline** (keyword search, simulated settlement, synthetic corpus); no live run has been done yet because the evaluation keys were unavailable. They are our starting point for the hill-climb, not a result: the targets and the October live baseline are in the [tracker](docs/SFF-PUSH.md#hill-climb-scorecard).
+**Scorecard.** From `make scorecard` (`eval/scorecard/latest.json`), run locally on the owner's Mac. LIVE means real decision and coverage model calls on the synthetic corpus; the planner/writer are fixtures, search is keyword-only, and payments are simulated (zero XRP transferred). Flow quality uses the bank's scripted fact check. Before/after results and fixture scores are in the [tracker](docs/SFF-PUSH.md#hill-climb-scorecard).
 
 <!-- scorecard:start -->
 | Metric | Latest | Mode · date |
 |---|---|---|
-| Hard-gate violations (six-rule audit) | 0 across 10 runs, 343 observations | fixture · 2026-11-02 |
-| Supported-fact uplift from paying | +28.3 pts | fixture · 2026-11-02 |
-| Purchase-selection F1 (flow / sweep) | 0.31 / 0.22 | fixture · 2026-11-02 |
-| Wasted spend | 67.9% | fixture · 2026-11-02 |
-| p50 / p95 time to first answer | 83 ms / 162 ms | fixture · 2026-11-02 |
-| Cold start (demo API + publisher) | 668 ms | fixture · 2026-11-02 |
-| Model cost per query | US$0 (no provider calls) | fixture · 2026-11-02 |
+| Hard-gate violations (six-rule audit) | 0 across 10 runs, 379 observations | LIVE decision + coverage; fixture research; simulated payments · 2026-11-03 |
+| Supported-fact uplift from paying | +17.0 pts | LIVE decision + coverage; fixture research; simulated payments · 2026-11-03 |
+| Purchase-selection F1 (flow / sweep) | 0.42 / 0.51 | LIVE decision + coverage; fixture research; simulated payments · 2026-11-03 |
+| Wasted spend | 47.2% | LIVE decision + coverage; fixture research; simulated payments · 2026-11-03 |
+| p50 / p95 time to first answer | 73 ms / 131 ms | LIVE decision + coverage; fixture research; simulated payments · 2026-11-03 |
+| Cold start (demo API + publisher) | 534 ms | LIVE decision + coverage; fixture research; simulated payments · 2026-11-03 |
+| Model cost per query | US$0.0025373699999999993 | LIVE decision + coverage; fixture research; simulated payments · 2026-11-03 |
 <!-- scorecard:end -->
 
 **Builder feedback.** [15 implementation findings, a mainnet-readiness checklist and 15 earlier submissions](docs/BUILDER-FEEDBACK.md) on XRPL, x402 and the Starter Kit, each with evidence, our workaround and the suggested upstream fix. Mainnet is not enabled.

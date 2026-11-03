@@ -50,7 +50,10 @@ export function decisionModel(provider: 'cloudflare' | 'openai' = 'cloudflare', 
 }
 export const publicCandidate = (input: unknown): PublicCandidate => {
   const c = PublicCandidateSchema.omit({ manifest: true, wallet: true, url: true }).parse(input)
-  return { ...c, profileId: quotedText(c.profileId, 160) || '[omitted]',
+  // Retain structured public signing metadata for local menu verification across
+  // policy/provider projections. clefCandidate never sends the manifest or wallet.
+  const signing = PublicCandidateSchema.pick({ manifest: true, wallet: true }).safeParse(input)
+  return { ...c, ...(signing.success ? signing.data : {}), profileId: quotedText(c.profileId, 160) || '[omitted]',
     resourceId: quotedText(c.resourceId, 160) || '[omitted]', version: quotedText(c.version, 80) || '[omitted]',
     ...(c.derivedFrom ? { derivedFrom: quotedText(c.derivedFrom, 160) } : {}),
     ...(c.publisherSlug ? { publisherSlug: quotedText(c.publisherSlug, 160) } : {}),

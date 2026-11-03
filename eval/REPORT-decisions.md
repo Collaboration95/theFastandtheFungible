@@ -125,3 +125,101 @@ Sample: 593 rows, 34 open-fact decisions; addresses-gap 30 positive of 584 label
 - The raw-threshold band for UC3 under live values: not mapped beyond the #214 smokes.
 - No non-inferiority margin was preregistered; the switch used #214's preregistered rule.
 - One run only. The transport cache returns the same answer for an identical request, so a repeat needs a fresh `EVAL_OUT`.
+
+## 5. Signed fact menu (#260), 3 November 2026 SGT
+
+**LIVE decision/coverage models; synthetic product corpus; fixture planner/writer,
+keyword search, SIMULATED settlement (zero XRP transferred).** Flow support uses
+the unchanged scripted bank needles. This is not full-product/XRPL performance
+or a held-out test: the same 48-question bank was used during wording development.
+
+The interrupted run already recorded a valid **live, pre-fact-menu** baseline at
+`2026-11-02T16:30:12.474Z` (3 Nov SGT), 296 calls, US$0.1469052. Its raw report,
+meter and frozen input hash were inspected: no failed rounds, zero gate violations.
+It was preserved, not repeated. Final after: **`2026-11-03T01:49:48.288Z`**, prompt
+`batch-evidence/v3-fact-menu+gap-plain`, 260 calls, US$0.1180476. Both rows record
+`worktreeDirty: true`; frozen source/content hashes identify the evaluated
+implementation including uncommitted edits. History is append-only.
+
+| Metric | 9 Oct LIVE reference | 3 Nov LIVE pre-menu | 3 Nov LIVE integrated post-menu |
+|---|---:|---:|---:|
+| First-purchase F1 (flow) | 0.24 | 0.235 | **0.419** |
+| Selection F1 (sweep) | 0.414 | 0.400 | **0.513** |
+| Wasted gross spend | 39.5% | 36.19% | **47.19%** |
+| Supported-fact uplift | +9.5 pts | +11.32 pts | **+16.98 pts** |
+| False-complete (live coverage model) | 1.9% | 1.89% | **1.89%** |
+| Flow citation validity | 100% | 100% | **100%** |
+| Six-rule audit violations (ten API runs) | not measured here | 0 | **0** |
+
+**Both targets missed: F1 ≥ 0.45; wasted spend ≤ 25%.** Waste regressed 11.00
+percentage points from the fresh baseline and is worse than October. This does
+not satisfy the issue's original no-regression acceptance condition; the explicit
+lane request to merge and report missed targets governs this delivery. No test,
+regression rule, bank label, raw 0.20 threshold or leak threshold was loosened.
+Flow supported facts rose from 20 free to 29 after paying (of 53). Simulated gross
+spend S$8.90, waste S$4.20, refunds S$0.90. Refunds never restore spending authority
+or erase gross waste. UC1 still buys nothing and UC3 still quarantines/refunds the
+lying menu in fixture scenarios; those tests are not live XRPL settlement proof.
+
+Fixture before → after: F1 **0.310/0.222 → 0.310/0.222**, waste
+**67.93% → 67.93%**, uplift **+28.30 → +28.30 pts**, overlap-fixture false-complete
+**37.74% → 37.74%**, zero provider calls and gate violations. The fixture provider
+ignores menus. `make scorecard ARGS='--check --compare 2026-11-03'` passed:
+
+```text
+quality.wastedSpendPct         67.93388429752066 → 67.93388429752066  delta 0
+quality.selectionF1Flow         0.3103448275862069 → 0.3103448275862069 delta 0
+quality.selectionF1Sweep        0.2222222222222222 → 0.2222222222222222 delta 0
+quality.supportedFactUpliftPts  28.30188679245283 → 28.30188679245283  delta 0
+quality.falseCompleteRate       0.37735849056603776 → 0.37735849056603776 delta 0
+```
+
+Full hashes intentionally differ across treatments. `--compare` still refuses
+cross-hash comparisons. `frozen-pre-fact-menu.json` preserves v1;
+`tests/fact-menu.test.ts` proves unchanged bank, prose (remove only `factMenu`)
+and constructed coverage snapshots. New fingerprints include the decision and
+shared input-sanitizer sources. The integrated result includes #301's input
+hardening; it cannot isolate the effect of fact menus alone.
+
+**Implementation.** Rebased onto #300's publisher and #301's security work; one
+manifest-v2 `claims[].covers` format, signing domain and bound-passage checker.
+All 63 paid corpus articles have deterministic metadata from fixed noun vocabulary
+over synthetic story passages, without bank access or exposed values. Both providers
+receive at most eight schema-checked, signed promises bound to publisher, wallet,
+article and version. Each field: six words / 48 characters, no digits, markup or
+controls. The shared `untrusted.ts` sanitizer filters instruction-like menu phrases
+and caps other metadata; requested-fact input omits the source-influenced conclusion.
+Structured signing metadata survives local policy/provider projections, while the
+model wire contains no full manifest, signature, wallet, leaves or private prose.
+The strict injection-test allowlist adds only the new menu field and explicitly
+asserts empty menus for unsigned malicious candidates; all existing checks remain.
+Proofs check the same bound passage, kind, entity, measure and optional period/comparison;
+broken promises use the unchanged quarantine/challenge/refund path. This is a lexical
+promise check, not proof of semantic truth.
+
+**Calibration.** Final 593 live-sweep rows are in
+`eval/decisions/datasets/luna-fact-menu-sweep-2026-11-03.jsonl`. Ran
+`npm run calibration:fit -- --data <that file> --report-dir eval/decisions/reports/fact-menu`.
+The script **rejected** the fit: calibrated purchase F1 **0.488 < raw 0.513**.
+The report is committed; no final calibrator was written. Calibration stays OFF,
+raw threshold 0.20 unchanged. Earlier accepted v2 trial fits were not installed.
+
+**Attempts and cost.** Total task model cost **US$1.2739735**, including all
+recovered runs, failures, and probes; see `eval/scorecard/lane-b-spend.json`.
+A refused Q02 sweep judgment cost US$0.0879638 and published no baseline. Earlier
+complete v2 trials reached F1 0.600–0.680, but are not the shipped integrated result.
+The first post-#301 trial measured F1 0.326, waste 49.46%; menu presence on the wire
+was verified. Final v3 clarifies that untrusted instructions are ignored, while a
+signed promise can still inform expected relevance; originality is judged separately.
+This improved that trial's F1 to 0.419, but missed both targets. Refusals still fail
+closed; no fixture score is substituted. Each scorecard caps calls at US$1; total
+stayed below US$3. All prices are usage-derived at dated harness rates, not invoices.
+README is regenerated from the final LIVE row with fixture/simulation labels.
+
+**Next to move the numbers.** #276 should estimate marginal supported-fact gain,
+not just first-purchase selection. Eleven purchases across eight questions added
+no bank-supported fact. Q37 picked the wrong measurement; Q44/Q48 still found broad
+Penang lead-time promises attractive. More precise measures/periods and a held-out
+check of the hardened provenance prompts are needed. Q07 bought the expected
+article yet added no scripted support: audit that exact needle/coverage contract
+before changing gold labels. Never relax tests to remove inconvenient questions.

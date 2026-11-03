@@ -29,10 +29,23 @@ describe('the production decision provider in the harness (#212)', () => {
     expect(openai).toBeInstanceOf(OpenAIDecisionsProvider)
     expect(openai).toMatchObject({ name: 'openai', model: 'gpt-6-luna', arm: 'luna', promptVersion: new OpenAIDecisionsProvider().promptVersion })
     vi.stubEnv('DECISIONS_WORDING', 'production')
-    expect(productionProvider({ env: { DECISION_PROVIDER: 'openai' } }).promptVersion).toMatch(/^batch-production\/v1/)
+    expect(productionProvider({ env: { DECISION_PROVIDER: 'openai' } }).promptVersion).toMatch(/^batch-production\/v3-fact-menu/)
     const clef = productionProvider({ env: { DECISION_PROVIDER: 'cloudflare' }, fetch: countingFetch().fetch })
     expect(clef).toBeInstanceOf(ClefDecisionProvider)
     expect(clef).toMatchObject({ name: 'cloudflare', model: '@cf/cloudflare/clef-flash', arm: 'flash' })
+  })
+  it('uses one separately metered fresh inference for a refused cached answer', async () => {
+    let calls = 0
+    setTransport(async () => ++calls === 1
+      ? Response.json({ answers: [{ type: 'refusal', name: 'addresses_gap' }] })
+      : Response.json({ answers: [{ type: 'predicate', name: 'addresses_gap', probability: 0.6 }] }))
+    const fetch = harnessFetch('luna', 'retry-test')
+    const init = { body: JSON.stringify({ input: 'refusal-test', questions: [] }) }
+    const response = await fetch('', init)
+    expect((await response.json()).answers[0].probability).toBe(0.6)
+    expect(calls).toBe(2)
+    await fetch('', init)
+    expect(calls).toBe(2) // both cached attempts replay offline
   })
   it('sends the provider’s exact request body through the opt-in transport', async () => {
     const bodies: unknown[] = []
@@ -64,7 +77,7 @@ describe('the requested-fact flow and the calibration sweep (#207, #221)', () =>
     expect(dataset.length).toBeGreaterThan(0)
     for (const row of dataset) {
       expect(row).toMatchObject({ schema: DATASET_SCHEMA, mode: 'flow', provider: 'openai', model: 'gpt-6-luna', gapMaterial: 1 })
-      expect(row.promptVersion).toMatch(/^batch-evidence\/v1\+gap-plain/)
+      expect(row.promptVersion).toMatch(/^batch-evidence\/v3-fact-menu\+gap-plain/)
     }
     // No gap_material question is ever sent for a requested fact.
     expect(stub.calls.length).toBeGreaterThan(0)
