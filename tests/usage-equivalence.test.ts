@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { DatabaseSync } from 'node:sqlite'
 import { Store } from '../server/store.js'
 import type { Surface } from '../server/spend-policy.js'
@@ -69,6 +69,8 @@ it('keeps admission and reservation decisions identical through pause, revoke, m
     restarted.recordSettlement('payment', { receiptId: 'receipt', intentId: 'payment', runId: run.runId, resourceId: 'article', version: 'v1', amountMinor: 90, currency: 'SGD', settledAt: '2026-11-02T00:00:01Z', label: 'SIMULATED SGD · no real funds' }, 'synthetic')
     restarted.updateRun(run.runId, { phase: 'DONE' })
     out.push(restarted.admit({ ...input, idempotencyKey: 'two' }, '2026-11-02').run.budgetMinor)
+    const status = restarted.agentStatus(a.id, '2026-11-02')
+    out.push({ spentMinor: status.spentMinor, reservedMinor: status.reservedMinor, spent7DaysMinor: status.spent7DaysMinor, rails: status.rails })
     restarted.setAgentPaused(a.id, true)
     try { restarted.admit({ ...input, idempotencyKey: 'paused' }) } catch (e) { out.push((e as Error).message) }
     restarted.setAgentPaused(a.id, true, true)
@@ -93,3 +95,18 @@ it('matches the oracle under four concurrent reserving OS processes', async () =
   }
   expect(totals).toEqual([500, 500])
 }, 15000)
+
+it('reopens a WAL after process death between reservation and settlement with exactly the oracle authority', () => {
+  const outputs = [false, true].map(oracle => {
+    const s = fixture(oracle)
+    const child = spawnSync(process.execPath, ['--import', 'tsx', 'tests/fixtures/usage-crash.mjs', s.path, String(oracle)], { env: { ...process.env, LANGFUSE_ENABLED: '0' } })
+    expect(child.signal).toBe('SIGKILL')
+    const reopened = new Store(s.path); cleanup.push(() => reopened.close()); if (oracle) access(reopened).usage = legacyUsage
+    const intent = reopened.getIntent('crash-payment')!
+    expect(intent.status).toBe('SUBMITTING')
+    const before = reopened.walletStatus()
+    reopened.recordSettlement(intent.intentId, { receiptId: 'receipt', intentId: intent.intentId, runId: intent.runId, resourceId: 'article', version: 'v1', amountMinor: 90, currency: 'SGD', settledAt: new Date().toISOString(), label: 'SIMULATED SGD · no real funds' }, 'synthetic')
+    return [before, reopened.walletStatus()]
+  })
+  expect(outputs[0]).toEqual(outputs[1])
+})

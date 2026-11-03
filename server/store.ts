@@ -145,7 +145,7 @@ export class Store {
     // UNION deduplicates candidate IDs; primary-key order preserves the oracle's JS addition order
     // (policy drops may be fractional minor units). Only hydrate contributing source rows.
     const candidates = this.db.prepare(`WITH relevant(id) AS (
-      SELECT id FROM runs WHERE json_extract(json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
+      SELECT id FROM runs INDEXED BY usage_active_runs WHERE json_extract(json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
       UNION SELECT run_id FROM hire_reserves WHERE closed=0
       UNION SELECT run_id FROM intents WHERE json_extract(json,'$.status') IN ('RESERVED','SUBMITTING')
       UNION SELECT i.run_id FROM intents i LEFT JOIN receipts r ON r.intent_id=i.id
@@ -154,12 +154,12 @@ export class Store {
       UNION SELECT run_id FROM intents WHERE json_extract(json,'$.escrow.state')='CANCELLED' AND substr(json_extract(json,'$.createdAt'),1,10)=?
       UNION SELECT run_id FROM policy_payments WHERE substr(json_extract(json,'$.confirmedAt'),1,10)=?
       UNION SELECT run_id FROM policy_payments WHERE NOT coalesce(json_extract(json,'$.confirmedAt'),'') AND NOT coalesce(json_extract(json,'$.cancelledAt'),'')
-    ) SELECT r.id FROM relevant v JOIN runs r ON r.id=v.id LEFT JOIN admissions a ON a.run_id=r.id
+    ) SELECT r.id, json_extract(r.json,'$.phase') AS phase, json_extract(r.json,'$.budgetMinor') AS budgetMinor FROM relevant v JOIN runs r ON r.id=v.id LEFT JOIN admissions a ON a.run_id=r.id
       WHERE (? IS NULL OR a.surface=?) AND (? IS NULL OR a.principal=?) ORDER BY r.id`)
       .all(day, day, day, surface ?? null, surface ?? null, principal ?? null, principal ?? null)
     for (const row of candidates) {
       const id = row.id as string
-      const run = this.rawRun(id)
+      const run = { phase: String(row.phase), budgetMinor: Number(row.budgetMinor) }
       const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', id)
       const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', id)
       const charged = intents.filter(i => chargedStatuses.has(i.status))
@@ -304,7 +304,7 @@ export class Store {
   }
   /** Operational selectors never hydrate retained bodies or event arrays. */
   runnableRunIds(includeHire = false): string[] {
-    return this.db.prepare(`SELECT id FROM runs r WHERE json_extract(r.json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
+    return this.db.prepare(`SELECT id FROM runs r INDEXED BY usage_active_runs WHERE json_extract(r.json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
       ${includeHire ? '' : 'AND NOT EXISTS (SELECT 1 FROM hire_reserves h WHERE h.run_id=r.id)'} ORDER BY r.rowid`).all().map(r => String(r.id))
   }
   recoverableRunIds(): string[] {
