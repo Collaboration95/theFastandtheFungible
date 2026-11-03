@@ -1,9 +1,11 @@
 # Builder feedback: six weeks of XRPL integration
 
-A living record for the SFF judges. **31 items: 16 implementation findings below,
-plus the 15 September research submissions in the appendix.** This is a source
-and history audit recorded on **2 Nov 2026**, not a fresh live-network test.
-The dates in the log are audit dates; the commit column dates the original work.
+A living record for the SFF judges. **35 items: 16 implementation findings and 4 live escrow spike findings below,
+plus the 15 September research submissions in the appendix.** The original
+source and history audit was recorded on **2 Nov 2026**; dated additions below
+identify live-network observations separately.
+The original log dates are audit dates; the evidence column dates the original work.
+The four B17–B20 entries are fresh Testnet observations from 3 Nov 2026.
 The eight writers and their content are synthetic. Offline settlement is
 **SIMULATED**; historical live receipts are **XRPL TESTNET · no real value**.
 Neither is evidence of mainnet readiness.
@@ -44,7 +46,7 @@ Neither is evidence of mainnet readiness.
    tests/alphaleak.test.ts tests/xrpl.test.ts`. These are synthetic adversarial
    cases, not claims about real publishers. `docs/FINAL-PUSH.md` D5 explicitly
    records the limitation. Suggested fix: describe cooperative refunds and
-   arbitration separately. Escrow (#261) remains a planned investigation.
+   arbitration separately. The standalone #261 spike now demonstrates cancellation; product integration remains #273.
 
 5. **Treat pricing units as a deployment blocker.** S$ minor units map to XRP
    drops at a fixed demonstration rate, not a market quote. See
@@ -64,6 +66,10 @@ no faucet, live models or Testnet funds are required.
 
 | ID · recorded | Area | What happened / evidence | Our workaround (path) | Suggested upstream fix | Severity | Mainnet impact |
 |---|---|---|---|---|---|---|
+| B17 · 2026-11-03 | XRPL escrow | Observed wrong preimage → `tecCRYPTOCONDITION_ERROR`; the ledger did not evaluate article content. Code-derived fairness limit: buyer secret permits withholding payment after reading. Evidence: [spike and tx links](spikes/escrow.md), [raw observations](spikes/escrow-testnet.json). | Keep secret in buyer signing state until the shared proof passes; label buyer-controlled release and publisher opt-in. | Add an article-delivery example distinguishing hashlock enforcement from fair exchange and oracle trust. | high | Native hashlock alone cannot enforce semantic correctness or honest buyers on any network. |
+| B18 · 2026-11-03 | XRPL escrow timing | Observed early cancel and expired finish both validated `tecNO_PERMISSION`; neither failure restored principal. Explicit later cancel returned it, 54.871 s after create submission including probes. Evidence: [timings and hashes](spikes/escrow-testnet.json). | Compare validated ledger close time with CancelAfter, leave finish margin, reconcile and submit cancellation explicitly. | Include expiry cleanup, Stop/restart and fee-consuming negative cases in escrow tutorials. | high | Expiry is eligibility, not an automatic refund; abandoned objects retain liquidity/reserve. |
+| B19 · 2026-11-03 | XRPL fees and reserve | Observed 12-drop create/cancel, 423-drop conditional finish via xrpl.js 4.7.0; OwnerCount 0→1→0 at 0.2 XRP increment. Base-fee examples alone understate the signing fee/liquidity needed. Evidence: [balances, RPC settings and tx fees](spikes/escrow-testnet.json). | Live reserve-aware balance check plus terminal fee headroom and 2,000-drop per-tx cap. | Show SDK fee cushion/encoded fulfillment size and reserve lifecycle beside minimum-fee formulas. | medium | Micropayment capacity is limited by concurrent object reserve, not just principal or burned fees. |
+| B20 · 2026-11-03 | XRPL capability / x402 | Observed feature RPC: TokenEscrow and fixTokenEscrowV1 enabled; retired Escrow false although XRP create/finish/cancel succeeded. Static exact facilitator requires Payment, and EscrowCreate has no InvoiceID. Evidence: [live RPC snapshot](spikes/escrow-testnet.json), `publisher/facilitator.ts:verify`, [protocol references](spikes/escrow.md). | Probe operations, check issuer flags separately; propose a separate escrow-v1 scheme and invoice memo rather than substituting EscrowCreate into exact. | Provide network-specific capability/issuer checks and an explicit locked-versus-settled extension contract. | high | Amendment enabled does not prove RLUSD support; exact compatibility must not be claimed for escrow. |
 | B16 · 2026-11-03 | XRPL tooling | Observed: #277 Testnet demo settled successfully but the Node process retained sockets after cleanup. Code-derived cause: parallel account/fee/ledger requests could create three clients before any connected, retaining only the last. Evidence: `docs/evidence/publish-site-277.md`, `tests/xrpl-connection.test.ts`. | `shared/xrpl.ts`: share one in-flight connection promise; close waits for it. No second payment was made. | Document sharing a connecting client in concurrent RPC examples; this is our wrapper bug, not an XRPL ledger defect. | medium | Resource lifetime issue on any rail; no payment correctness change. |
 | B17 · 2026-11-03 | tooling | Observed restart recovery: #286 WIP `99f8545` remained attached to an abandoned clean worktree, so the requested branch checkout failed as already in use. | Verified the old checkout was clean, detached it at the WIP, then rebased the recovered branch in the active worktree. | Agent restart handoff should retain checkout ownership and give an explicit recovery action. | medium | No ledger incident or Testnet call; production recovery must preserve the durable payment DB, not just Git state. |
 | B18 · 2026-11-03 | tooling | Observed #286 CI run `41561017423`: testing Vite's denylist against an absent `.env` returned the SPA fallback (200), while the local operator file returned 403. | `tests/client-admission.test.ts` now creates its own synthetic credential file and asserts 403 plus no canary bytes. | Security test examples should create their fixtures and test response bytes, rather than depend on developer secrets being present. | medium | Test portability failure; no credential disclosure observed, and no mainnet calls. |
