@@ -7,7 +7,7 @@ import { ManifestSchema } from './manifest.js'
 import { GrantSchema, PurchaseIntentSchema } from './ledger.js'
 import { ReceiptSchema } from './publisher.js'
 import { AssetSchema } from './asset.js'
-import { EscrowTermsSchema } from './escrow.js'
+import { EscrowQuoteSchema, EscrowTermsSchema } from './escrow.js'
 
 export const AuditProofEntrySchema = z.object({ seq: z.number().int().positive(), at: z.string(), prevHash: z.string(), hash: z.string(), runId: z.string().nullable(), intentId: z.string().nullable(), surface: z.string(), principal: z.string(), kind: z.string(), data: z.record(z.string(), z.unknown()) })
 export const ReceiptRowSchema = z.object({
@@ -20,7 +20,7 @@ export const ReceiptBundleSchema = z.object({
   schemaVersion: z.union([z.literal(1), z.literal(2), z.literal(3)]), identityVersion: z.union([z.literal(1), z.literal(2)]).optional(), contributions: ContributionsSchema.optional(), requirements: z.array(RequirementSchema).optional(), runId: z.string(), label: z.string(),
   answers: z.array(AnswerSchema).min(1), sources: z.array(ContentEnvelopeSchema), candidates: z.array(PublicCandidateSchema),
   intents: z.array(PurchaseIntentSchema), grants: z.array(GrantSchema), receipts: z.array(ReceiptSchema), payments: z.array(ReceiptRowSchema),
-  proofs: z.array(z.object({ source: SourceIdentitySchema.optional(), resourceId: z.string(), version: z.string(), manifest: ManifestSchema, salts: z.array(z.string()), intentId: z.string().optional() })),
+  proofs: z.array(z.object({ source: SourceIdentitySchema.optional(), resourceId: z.string(), version: z.string(), manifest: ManifestSchema, salts: z.array(z.string()), intentId: z.string().optional(), keyReveal: z.object({ quote: EscrowQuoteSchema, key: z.string().regex(/^[A-F0-9]{64}$/), finishHash: z.string(), ledgerIndex: z.number().int().positive(), createHash: z.string() }).optional() })),
   audit: z.object({ anchor: z.object({ seq: z.number().int().nonnegative(), hash: z.string() }), entries: z.array(z.union([AuditProofEntrySchema, z.object({ seq: z.number().int().positive(), prevHash: z.string(), hash: z.string(), commitment: z.literal(true) })])), head: z.string() }),
 })
 export type ReceiptBundle = z.infer<typeof ReceiptBundleSchema>

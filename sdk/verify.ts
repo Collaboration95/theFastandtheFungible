@@ -1,3 +1,4 @@
+import { decryptDelivery } from '../shared/key-reveal.js'
 import { contributions } from '../shared/contribution.js'
 import { sourceKey, sourceBinding } from '../shared/source-identity.js'
 import { ReceiptBundleSchema, type ReceiptBundle } from '../shared/contracts/receipts.js'
@@ -59,6 +60,16 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     const proofs = b.proofs.filter(p => key(p) === key(s)), p = proofs[0]
     const candidates = b.candidates.filter(c => key(c) === key(s)), candidate = candidates[0]
     const bound = proofs.length === 1 && candidates.length === 1 && p.manifest.articleId === s.resourceId && p.manifest.version === s.version && p.manifest.publisherSlug === s.profileId && (!s.source || s.source.sellerKey === p.manifest.pubKey) && candidate.profileId === s.profileId && (candidate.tier === 'PAID' ? p.manifest.priceMinor > 0 : p.manifest.priceMinor === 0) && (!candidate.wallet || candidate.wallet === p.manifest.wallet)
+    if (p?.keyReveal) {
+      let ok = false
+      try {
+        const r = p.keyReveal, t = r.quote.terms
+        const d = decryptDelivery(r.quote, r.key) as { body: string; passages: { id: string; text: string }[]; salts: string[]; articleId: string; version: string }
+        const intent = b.intents.find(i => i.intentId === p.intentId)
+        ok = d.body === s.body && canonical(d.passages.map(({id,text}) => ({id,text}))) === canonical(s.spans.map(({id,text}) => ({id,text}))) && canonical(d.salts) === canonical(p.salts) && d.articleId === s.resourceId && d.version === s.version && t.manifestRoot === p.manifest.root && r.quote.pubKey === p.manifest.pubKey && t.intentId === p.intentId && intent?.escrow?.mode === 'key-reveal' && r.createHash === intent.escrow.createHash && r.finishHash === intent.escrow.finishHash && r.ledgerIndex === intent.escrow.revealLedger && canonical(t) === intent.quote?.quoteId
+      } catch { /* A malformed key or envelope fails closed. */ }
+      add(`key reveal ${key(s)}`, ok, 'Writer signature, key/Condition, authenticated decryption, ciphertext/plaintext commitments and passage binding')
+    } else if (b.intents.some(i => i.intentId === p?.intentId && i.escrow?.mode === 'key-reveal')) add(`key reveal ${key(s)}`, false, 'Missing reveal evidence')
     const signed = Boolean(bound && verifyManifestSignature(p.manifest))
     add(`manifest ${key(s)}`, signed, signed ? `Writer key derives to ${p.manifest.wallet}; identity unverified` : 'Missing, ambiguous or invalid writer signature/identity')
     const hashOk = Boolean(bound && verifyDelivery(s.body, s.spans, p.salts, p.manifest).ok && p.salts.length === s.spans.length && unique(s.spans.map(x => x.id)))

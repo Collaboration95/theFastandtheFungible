@@ -11619,6 +11619,112 @@
           "value": "missing-span"
         }
       ]
+    },
+    {
+      "name": "key-reveal/golden",
+      "fixture": "tests/fixtures/receipt-conformance/key-reveal.json",
+      "expected": true,
+      "mutations": []
+    },
+    {
+      "name": "key-reveal/key",
+      "fixture": "tests/fixtures/receipt-conformance/key-reveal.json",
+      "expected": false,
+      "mutations": [
+        {
+          "path": [
+            "proofs",
+            0,
+            "keyReveal",
+            "key"
+          ],
+          "value": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ]
+    },
+    {
+      "name": "key-reveal/condition",
+      "fixture": "tests/fixtures/receipt-conformance/key-reveal.json",
+      "expected": false,
+      "mutations": [
+        {
+          "path": [
+            "proofs",
+            0,
+            "keyReveal",
+            "quote",
+            "terms",
+            "condition"
+          ],
+          "value": "A02580200000000000000000000000000000000000000000000000000000000000000000810120"
+        }
+      ]
+    },
+    {
+      "name": "key-reveal/ciphertext",
+      "fixture": "tests/fixtures/receipt-conformance/key-reveal.json",
+      "expected": false,
+      "mutations": [
+        {
+          "path": [
+            "proofs",
+            0,
+            "keyReveal",
+            "quote",
+            "ciphertext"
+          ],
+          "value": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ]
+    },
+    {
+      "name": "key-reveal/manifest",
+      "fixture": "tests/fixtures/receipt-conformance/key-reveal.json",
+      "expected": false,
+      "mutations": [
+        {
+          "path": [
+            "proofs",
+            0,
+            "manifest",
+            "root"
+          ],
+          "value": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ]
+    },
+    {
+      "name": "key-reveal/ledger",
+      "fixture": "tests/fixtures/receipt-conformance/key-reveal.json",
+      "expected": false,
+      "mutations": [
+        {
+          "path": [
+            "proofs",
+            0,
+            "keyReveal",
+            "ledgerIndex"
+          ],
+          "value": 99
+        }
+      ]
+    },
+    {
+      "name": "key-reveal/signature",
+      "fixture": "tests/fixtures/receipt-conformance/key-reveal.json",
+      "expected": false,
+      "mutations": [
+        {
+          "path": [
+            "proofs",
+            0,
+            "keyReveal",
+            "quote",
+            "sig"
+          ],
+          "value": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ]
     }
   ]
 }

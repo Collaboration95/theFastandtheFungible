@@ -1,5 +1,5 @@
 import { AssetSchema, RLUSD_CURRENCY, RLUSD_TESTNET_ISSUER, amountFor, type Asset } from '../shared/contracts/asset.js'
-import { escrowQuote, lockEscrow, verifyEscrowSignature } from './escrow.js'
+import { escrowQuote, revealEscrow, lockEscrow, verifyEscrowSignature } from './escrow.js'
 import { localEmbeddingCache } from './local-writers.js'
 import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response } from 'express'
 import { randomUUID, timingSafeEqual } from 'node:crypto'
@@ -130,7 +130,11 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     if (signature.accepted.scheme === 'escrow-v1') {
       if (!escrowEnabled(item.publisherSlug)) throw new PublisherError(400, 'Writer has not opted into buyer refusal risk')
       try {
-        verifyEscrowSignature(signature, journal)
+        const quote = verifyEscrowSignature(signature, journal)
+        if (quote.terms.keyReveal) {
+          const entry = entryFor(item.publisherSlug)
+          res.json(await revealEscrow(quote, signature.payload.signedTxBlob, entry.keys!, ledger!, journal)); return
+        }
         const locked = await lockEscrow(signature.payload.signedTxBlob, signature.accepted.extra.invoiceId, item.articleId, item.version, ledger!, journal, config.facilitatorTiming)
         res.set('PAYMENT-RESPONSE', encodeHeader('PAYMENT-RESPONSE', { success: false, escrowState: 'LOCKED', payer: locked.payer, transaction: locked.hash, network: X402_NETWORK }))
         res.json({ grant: locked.grant, publisherSlug: item.publisherSlug, articleId: item.articleId, version: item.version, title: item.title, publisher: item.publisher, body: item.body, passages: item.passages, salts, label })
@@ -226,7 +230,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     if (!article) throw new PublisherError(404, 'Paid article not found')
     const manifest = manifests.manifestFor(entry, article, 1)!
     try {
-      res.json(await escrowQuote(req.body, { publisherSlug: req.params.slug, articleId: article.articleId, version: article.version, manifestRoot: manifest.root, amount: String(article.priceMinor * DROPS_PER_MINOR), payTo: entry.publisher.wallet! }, entry.keys, ledger!, journal))
+      res.json(await escrowQuote(req.body, { publisherSlug: req.params.slug, articleId: article.articleId, version: article.version, manifestRoot: manifest.root, amount: String(article.priceMinor * DROPS_PER_MINOR), payTo: entry.publisher.wallet! }, entry.keys, ledger!, journal, env.ESCROW_MODE === 'key-reveal' ? { articleId: article.articleId, version: article.version, title: article.title, publisher: entry.publisher.name, body: article.body, passages: article.passages, salts: manifests.saltsFor(article) } : undefined))
     } catch { throw new PublisherError(400, 'Invalid escrow quote request') }
   })
   app.get('/w/:slug/articles/:id', async (req, res) => {

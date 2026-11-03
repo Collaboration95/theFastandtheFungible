@@ -722,3 +722,24 @@ Mainnet impact: none observed; these operations and evidence are Testnet only.
   route or retry-after response for demos with multiple actors.
 - Severity: medium for onboarding. Mainnet impact: none directly (no faucet);
   provisioning latency must not be mistaken for product settlement latency.
+## 2026-11-04 · Key reveal as a delivery channel (Lane R)
+
+- **Observed:** successful writer-signed key-reveal EscrowFinish costs 423 drops
+  for the 36-byte encoded fulfillment of a 32-byte AES key; create/cancel cost 12
+  each. Full 60,000-drop no-show principal returns only after explicit cancellation.
+- **Evidence:** `docs/evidence/round2-r/transactions.json` (four validated hashes),
+  `happy-receipt.json`, `no-show-receipt.json`; protocol `docs/key-reveal-escrow.md`.
+- **Workaround:** buyer persists ciphertext/quote before its create; writer persists
+  K and signed finish before submit; buyer reads only a validated fulfillment.
+  Use XRP, a 120-second ledger deadline, terminal fee headroom and a 2,000-drop cap.
+- **Suggested fix:** Starter Kit documentation should include writer-owned key
+  delivery, serialized fulfillment-size fee arithmetic and explicit cancellation,
+  alongside buyer-owned proof-policy examples. Distinguish cryptographic delivery
+  from semantic correctness and offline evidence from online finality.
+- **Severity:** medium (fees/liquidity), high if a hashlock is presented as a truth oracle.
+- **Mainnet impact:** the fee/reserve pattern matters for micropayments, but no
+  mainnet execution or issuer permission was measured here. The prior observed
+  RLUSD issuer-flag block still applies; no new RLUSD escrow attempt was made.
+- **Code-derived limit:** a writer can sign and reveal a key for bad content;
+  exported fraud evidence supports the existing reputation/challenge path,
+  without a new automatic recovery-of-money promise.

@@ -204,7 +204,7 @@ def refinements(v, recurse=True):
                 refinements(x)
 
 
-def signed(m):
+def signed(m, message_override=None):
     try:
         pub = bytes.fromhex(m["pubKey"])
         sig = bytes.fromhex(m["sig"])
@@ -229,6 +229,8 @@ def signed(m):
             )
             + canonical({k: v for k, v in m.items() if k != "sig"})
         ).encode()
+        if message_override is not None:
+            message = message_override
         if pub[0] == 0xED:
             vk = VerifyingKey.from_string(pub[1:], curve=Ed25519)
             # Match ripple-keypairs' noble zip215=false: canonical points,
@@ -423,6 +425,23 @@ def verify(export, *, expect_head=None):
             export.get("verification", export),
             json.loads(Path(__file__).with_name("bundle-schema.json").read_text()),
         )
+        for p in b['proofs']:
+            reveal = p.get('keyReveal')
+            intent = next((i for i in b['intents'] if i['intentId'] == p.get('intentId')), {})
+            if reveal:
+                from ._aes_gcm import decrypt
+                q, k = reveal['quote'], bytes.fromhex(reveal['key'])
+                t = q['terms']
+                c = t['keyReveal']
+                ct = bytes.fromhex(q['ciphertext'])
+                signature = signed(dict(pubKey=q['pubKey'], sig=q['sig'], wallet=t['payTo']), ('researchagent/escrow-quote-v1:' + canonical(t)).encode())
+                data = decrypt(k, bytes.fromhex(c['iv']), ct, bytes.fromhex(c['tag']))
+                d = json.loads(data)
+                source = next(x for x in b['sources'] if key(x) == key(p))
+                e = intent.get('escrow', {})
+                add('key reveal ' + key(p), signature and t['condition'] == 'A0258020' + hashlib.sha256(k).hexdigest().upper() + '810120' and hashlib.sha256(ct).hexdigest() == c['ciphertextHash'] and hashlib.sha256(data).hexdigest() == c['plaintextHash'] and d['body'] == source['body'] and [{k: x[k] for k in ('id', 'text')} for x in d['passages']] == [{k: x[k] for k in ('id', 'text')} for x in source['spans']] and d['salts'] == p['salts'] and d['articleId'] == source['resourceId'] and d['version'] == source['version'] and t['manifestRoot'] == p['manifest']['root'] and q['pubKey'] == p['manifest']['pubKey'] and t['intentId'] == p['intentId'] and e.get('mode') == 'key-reveal' and reveal['createHash'] == e.get('createHash') and reveal['finishHash'] == e.get('finishHash') and reveal['ledgerIndex'] == e.get('revealLedger') and canonical(t) == intent.get('quote', {}).get('quoteId'))
+            elif intent.get('escrow', {}).get('mode') == 'key-reveal':
+                add('key reveal missing', False)
         if b["schemaVersion"] == 3:
             add(
                 "contribution dispatch",

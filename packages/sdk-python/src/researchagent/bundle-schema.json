@@ -1073,6 +1073,15 @@
                   "CANCELLED"
                 ]
               },
+              "mode": {
+                "type": "string",
+                "const": "key-reveal"
+              },
+              "revealLedger": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
               "owner": {
                 "type": "string"
               },
@@ -1522,6 +1531,15 @@
                   "CANCELLED"
                 ]
               },
+              "mode": {
+                "type": "string",
+                "const": "key-reveal"
+              },
+              "revealLedger": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
               "owner": {
                 "type": "string"
               },
@@ -1712,6 +1730,33 @@
           "escrowTerms": {
             "type": "object",
             "properties": {
+              "keyReveal": {
+                "type": "object",
+                "properties": {
+                  "ciphertextHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "plaintextHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "iv": {
+                    "type": "string",
+                    "pattern": "^[A-F0-9]{24}$"
+                  },
+                  "tag": {
+                    "type": "string",
+                    "pattern": "^[A-F0-9]{32}$"
+                  }
+                },
+                "required": [
+                  "ciphertextHash",
+                  "plaintextHash",
+                  "iv",
+                  "tag"
+                ]
+              },
               "scheme": {
                 "type": "string",
                 "const": "escrow-v1"
@@ -2128,6 +2173,152 @@
           },
           "intentId": {
             "type": "string"
+          },
+          "keyReveal": {
+            "type": "object",
+            "properties": {
+              "quote": {
+                "type": "object",
+                "properties": {
+                  "ciphertext": {
+                    "type": "string",
+                    "pattern": "^[A-F0-9]+$"
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "keyReveal": {
+                        "type": "object",
+                        "properties": {
+                          "ciphertextHash": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "plaintextHash": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "iv": {
+                            "type": "string",
+                            "pattern": "^[A-F0-9]{24}$"
+                          },
+                          "tag": {
+                            "type": "string",
+                            "pattern": "^[A-F0-9]{32}$"
+                          }
+                        },
+                        "required": [
+                          "ciphertextHash",
+                          "plaintextHash",
+                          "iv",
+                          "tag"
+                        ]
+                      },
+                      "scheme": {
+                        "type": "string",
+                        "const": "escrow-v1"
+                      },
+                      "network": {
+                        "type": "string",
+                        "const": "xrpl:1"
+                      },
+                      "asset": {
+                        "type": "string",
+                        "const": "XRP"
+                      },
+                      "quoteId": {
+                        "type": "string"
+                      },
+                      "intentId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "publisherSlug": {
+                        "type": "string"
+                      },
+                      "articleId": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "string"
+                      },
+                      "manifestRoot": {
+                        "type": "string"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^[1-9]\\d*$"
+                      },
+                      "payer": {
+                        "type": "string"
+                      },
+                      "payTo": {
+                        "type": "string"
+                      },
+                      "condition": {
+                        "type": "string",
+                        "pattern": "^A0258020[0-9A-F]{64}810120$"
+                      },
+                      "cancelAfter": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "scheme",
+                      "network",
+                      "asset",
+                      "quoteId",
+                      "intentId",
+                      "publisherSlug",
+                      "articleId",
+                      "version",
+                      "manifestRoot",
+                      "amount",
+                      "payer",
+                      "payTo",
+                      "condition",
+                      "cancelAfter"
+                    ]
+                  },
+                  "pubKey": {
+                    "type": "string"
+                  },
+                  "sig": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "terms",
+                  "pubKey",
+                  "sig"
+                ]
+              },
+              "key": {
+                "type": "string",
+                "pattern": "^[A-F0-9]{64}$"
+              },
+              "finishHash": {
+                "type": "string"
+              },
+              "ledgerIndex": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "createHash": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "quote",
+              "key",
+              "finishHash",
+              "ledgerIndex",
+              "createHash"
+            ]
           }
         },
         "required": [

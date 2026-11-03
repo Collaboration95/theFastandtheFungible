@@ -1,3 +1,4 @@
+import { keyRevealLabel } from '../format'
 import { useEffect, useRef, useState } from 'react'
 import { XRPL_LABEL, type LedgerView, type RunSnapshot } from '../../shared/contracts/index.js'
 import { settlementAssetLabel } from '../format'
@@ -42,6 +43,7 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
       {payments.map(receipt => <li key={receipt.receiptId}>
         <span className="ra-ledger-flow"><span>{nameOf(receipt.xrpl!.payer)}</span><span aria-hidden="true"> → </span><strong>{nameOf(receipt.xrpl!.payTo)}</strong></span>
         <span>S${(receipt.amountMinor / 100).toFixed(2)} = {receipt.xrpl!.asset && receipt.xrpl!.asset !== 'XRP' ? `${receipt.xrpl!.amountDrops} ${settlementAssetLabel(receipt.xrpl!.asset)}` : xrp(receipt.xrpl!.amountDrops)} · ledger {receipt.xrpl!.ledgerIndex}</span>
+        {receipt.escrow?.mode === 'key-reveal' && <span>{keyRevealLabel(receipt.escrow)}</span>}
         <a href={receipt.xrpl!.explorerUrl} target="_blank" rel="noreferrer">tx {receipt.xrpl!.txHash.slice(0, 10)}… on the explorer</a>
       </li>)}
     </ol>}

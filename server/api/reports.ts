@@ -13,6 +13,12 @@ import { scoreTrace, traceRun } from '../telemetry.js'
 export function reportsRouter(context: ApiContext) {
   const router = Router()
   const { store, reportDir, reportJobs, progress } = context
+  router.get('/runs/:id/intents/:intentId/key-reveal-proof.json', (req, res) => {
+    const intent = store.getIntent(String(req.params.intentId))
+    if (!intent || intent.runId !== String(req.params.id)) return res.status(404).json({ error: 'Intent not found' })
+    if (intent.escrow?.mode !== 'key-reveal' || intent.escrow.state !== 'RELEASED') return res.status(409).json({ error: 'Validated key reveal required' })
+    res.json(store.keyRevealEvidence(intent.intentId))
+  })
   router.get('/runs/:id/receipts.json', (req, res) => {
     res.json(receiptBundle(store, String(req.params.id)))
   })
