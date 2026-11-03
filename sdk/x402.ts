@@ -41,14 +41,15 @@ export async function payAndFetch(url: string, options: PayOptions) {
       await first.body?.cancel()
       const terms = options.issued ? required.accepts.find(t => JSON.stringify(t.asset) === JSON.stringify(options.issued!.asset)) : required.accepts.find(t => t.asset === 'XRP')
       if (!terms) throw new Error('Requested asset unavailable')
+      if (terms.extra.crossCurrency || terms.extra.areFeesSponsored) throw new Error('Unsupported x402 payment extension')
       if (terms.scheme !== 'exact') throw new Error('Use the ResearchAgent escrow purchase service for escrow-v1')
       if (new URL(required.resource.url, url).href !== resource.href || (terms.asset === 'XRP' ? BigInt(terms.amount) > BigInt(options.maxDrops) : decimalUnits(terms.amount)! > (decimalUnits(options.issued!.maxAmount) ?? -1n)) || terms.maxTimeoutSeconds > 300) throw new Error('x402 terms exceed resource or spending authority')
       for (const address of [terms.payTo, ...(terms.asset === 'XRP' ? [] : [terms.asset.issuer])]) { const refusal = screenPayee(address); if (refusal) throw new Error(refusal.refusal) }
       if (terms.asset !== 'XRP') await checkIssuedPayment(ledger, options.wallet.classicAddress, terms.payTo, terms.amount, terms.asset)
       const invoiceId = ledgerInvoiceId(terms.extra.invoiceId)
-      const submission = await signPayment(options.wallet, { Destination: terms.payTo, Amount: ledgerAmount(terms.amount, terms.asset), InvoiceID: invoiceId }, ledger)
+      const submission = await signPayment(options.wallet, { Destination: terms.payTo, Amount: ledgerAmount(terms.amount, terms.asset), InvoiceID: invoiceId, ...(terms.extra.sourceTag === undefined ? {} : { SourceTag: terms.extra.sourceTag }), ...(terms.extra.destinationTag === undefined ? {} : { DestinationTag: terms.extra.destinationTag }) }, ledger)
       attempt = journal.save(key, { submission, payTo: terms.payTo, amountDrops: terms.amount, asset: terms.asset, invoiceId,
-        signature: encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: terms, payload: { signedTxBlob: submission.txBlob } }) })
+        signature: encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: terms, payload: { signedTxBlob: submission.txBlob, invoiceId: terms.extra.invoiceId } }) })
     }
     if ((attempt.asset ?? 'XRP') === 'XRP' ? BigInt(attempt.amountDrops) > BigInt(options.maxDrops) : !options.issued || JSON.stringify(options.issued.asset) !== JSON.stringify(attempt.asset) || decimalUnits(attempt.amountDrops)! > (decimalUnits(options.issued.maxAmount) ?? -1n)) throw new Error('Stored payment exceeds authority')
     headers.set('PAYMENT-SIGNATURE', attempt.signature)

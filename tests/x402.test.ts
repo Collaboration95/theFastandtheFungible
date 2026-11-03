@@ -38,3 +38,14 @@ describe('x402 v2 header codec (#114)', () => {
     expect(ledgerInvoiceId(invoiceIdFor(reordered))).toBe(ledgerInvoiceId(invoiceIdFor(invoice)))
   })
 })
+
+it('preserves t54 terms without a private fees flag and refuses malformed tags', () => {
+  const extra = { invoiceId: 't54-invoice', sourceTag: 804681468, destinationTag: 7, facilitator: 't54' }
+  const challenge = { ...required, accepts: [{ ...accepted, extra }] }
+  const wire = Buffer.from(JSON.stringify(challenge)).toString('base64')
+  expect(decodeHeader('PAYMENT-REQUIRED', wire).accepts[0].extra).toEqual(extra)
+  for (const tag of [-1, 4294967296, 1.5, '7']) {
+    const bad = Buffer.from(JSON.stringify({ ...challenge, accepts: [{ ...accepted, extra: { ...extra, sourceTag: tag } }] })).toString('base64')
+    expect(() => decodeHeader('PAYMENT-REQUIRED', bad)).toThrow()
+  }
+})

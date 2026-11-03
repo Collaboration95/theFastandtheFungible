@@ -80,6 +80,8 @@ MCP_DAILY_CAP_MINOR = "500"
 The four tools are `search_expertise`, `ask_expert`, `get_run` and `wallet_status`.
 Configured caps default to zero; the calling model cannot raise them. [MCP reference](docs/mcp.md) · [TypeScript SDK](docs/sdk.md) · [Python example](examples/python/ask.py).
 
+Native XRP interop with the XRPL AI Starter Kit’s t54 client and server: [compatibility and pinned versions](docs/x402-xrpl.md#starter-kit-compatibility) · [Testnet evidence](docs/evidence/starter-kit-interop.md).
+
 ## Mac app
 
 [Download the Apple Silicon DMG](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v0.6.0/ResearchAgent-0.6.0-arm64.dmg),
