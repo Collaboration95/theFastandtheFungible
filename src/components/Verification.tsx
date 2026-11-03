@@ -13,8 +13,9 @@ export default function Verification({ run, intent }: { run: RunSnapshot; intent
   const claims = candidateOf(run, intent)?.manifest?.claims ?? []
   const failures = proof?.data?.failedClaimIds as string[] | undefined
   return <details className="ra-verification" open={open} onToggle={e => setOpen(e.currentTarget.open)}><summary>Checked against the writer's promises</summary><ul>{claims.map(claim => {
-    const bad = failures?.includes(claim.id) ?? (failed && !proof)
+    const unverified = failed && (!proof || (proof.data?.ok === false && !failures?.length))
+    const bad = unverified || failures?.includes(claim.id)
     const name = claim.covers ? [claim.covers.entity, claim.covers.measure, claim.covers.period, claim.covers.comparison].filter(Boolean).join(' ') : claim.id.replace(/-/g, ' ')
-    return <li key={claim.id} className={bad ? 'is-bad' : ''}><span>{bad ? '✕' : '✓'} {name}</span><small>{bad ? 'Not found. The article did not contain this.' : 'Found in the checked passage'}</small></li>
+    return <li key={claim.id} className={bad ? 'is-bad' : ''}><span>{bad ? '✕' : '✓'} {name}</span><small>{bad ? unverified ? 'Could not verify this promise.' : 'Not found. The article did not contain this.' : 'Found in the checked passage'}</small></li>
   })}</ul>{!claims.length && <p>{failed ? 'A promise was broken. This article is not used.' : 'Article integrity verified.'}</p>}</details>
 }

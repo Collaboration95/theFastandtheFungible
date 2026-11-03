@@ -62,6 +62,7 @@ it('shows Recovering when delivery verifies but a failed run still needs its ans
   run.error = 'Delivery incomplete. Retry delivery to verify and re-answer.'
   run.checkpoint = { ...run.checkpoint, nextAction: 'retry-delivery' }
   expect(deriveRunState(run).phase).toBe('recovering')
+  expect(deriveRunState({ ...ucRuns.UC3, phase: 'FAILED', checkpoint: { ...ucRuns.UC3.checkpoint, nextAction: 'retry-delivery', intentId: ucRuns.UC3.intents[0].intentId } }).phase).toBe('failed')
   expect(deriveRunState({ ...run, stopped: true }).phase).toBe('stopped')
   expect(deriveRunState({ ...run, checkpoint: { ...run.checkpoint, nextAction: 'ask' } }).phase).toBe('failed')
 })
