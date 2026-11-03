@@ -15,24 +15,24 @@
 <style>
 :root {
   color-scheme: light;
-  --paper: #F6F7F9; --sheet: #FFFFFF; --rule: #D9DDE6;
-  --ink: #0F1222; --ink-2: #2B3046; --muted: #555B70; --pen: #2F45FF; --pen-wash: #ECEEFF;
+  --paper: #FBF8F2; --sheet: #FFFFFF; --rule: #D9DDE6;
+  --ink: #24211E; --ink-2: #24211E; --muted: #655D55; --pen: #24211E; --pen-wash: #ECEEFF;
   --f-ui: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --f-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --t: min(2.9vw, 4.8vh); /* the start size; fit() shrinks it until every card fits */
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); font-family: var(--f-ui); -webkit-font-smoothing: antialiased; overflow: hidden; }
-main { height: 100%; padding: 1.6vh 1.4vw 4.2vh; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1.4vh 1.1vw; }
+main { height: calc(100% - 52px); padding: 1.6vh 1.4vw 4.2vh; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1.4vh 1.1vw; }
 .card { background: var(--sheet); border: 2px solid var(--rule); border-radius: 14px; padding: 2.2vh 1.6vw; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 .card.empty { visibility: hidden; }
 .top { display: flex; align-items: flex-start; gap: 1vw; }
-.title { flex: 1; font: 600 calc(var(--t) * .62)/1.25 var(--f-mono); color: var(--muted); letter-spacing: .01em; }
-.num { font: 700 calc(var(--t) * 1.5)/.9 var(--f-mono); color: var(--pen); }
+.title { flex: 1; font: 600 calc(var(--t) * .62)/1.25 var(--f-ui); color: var(--muted); letter-spacing: 0; }
+.num { font: 700 calc(var(--t) * 1.5)/.9 var(--f-ui); color: var(--pen); }
 .say { margin: 2vh 0 0; font: 500 var(--t)/1.36 var(--f-ui); color: var(--ink); text-wrap: pretty; }
-.cue { margin-top: auto; padding-top: 1.4vh; font: 600 calc(var(--t) * .62)/1.3 var(--f-mono); color: var(--pen); }
+.cue { margin-top: auto; padding-top: 1.4vh; font: 600 calc(var(--t) * .62)/1.3 var(--f-ui); color: var(--pen); }
 .cue span { background: var(--pen-wash); border-radius: 6px; padding: .3em .55em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-footer { position: fixed; left: 1.4vw; right: 1.4vw; bottom: 1vh; display: flex; justify-content: space-between; font: 500 calc(var(--t) * .5) var(--f-mono); color: var(--muted); }
+footer { position: fixed; left: 1.4vw; right: 1.4vw; bottom: 1vh; display: flex; justify-content: space-between; font: 500 calc(var(--t) * .5) var(--f-ui); color: var(--muted); }
 </style>
 <!-- brand:start -->
 <meta name="description" content="The thinking behind the system.">
@@ -56,6 +56,33 @@ footer { position: fixed; left: 1.4vw; right: 1.4vw; bottom: 1vh; display: flex;
 <!-- brand:end -->
 </head>
 <body>
+<!-- site-header:start -->
+<style>@font-face{font-family:Geist;src:url("../brand/geist-latin-wght-normal.woff2")}
+.ra-hdr{box-sizing:border-box;height:52px;position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
+.ra-hdr *{box-sizing:border-box}
+.ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:51px;display:flex;align-items:center;gap:20px}
+.ra-hdr a{color:inherit;text-decoration:none}
+.ra-hdr-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em;flex:none}
+.ra-hdr-brand svg{width:22px;height:22px;display:block}
+.ra-hdr nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.ra-hdr nav::-webkit-scrollbar{display:none}
+.ra-hdr nav a{padding:8px 10px;border-radius:6px;color:#655D55;white-space:nowrap}
+.ra-hdr nav a:hover{color:#24211E;background:rgba(36,33,30,.06)}
+.ra-hdr nav a[aria-current=page]{color:#24211E;box-shadow:inset 0 -2px 0 #24211E;border-radius:0}
+.ra-hdr-end{display:flex;align-items:center;gap:14px;flex:none;color:#655D55;font-size:13px}
+.ra-hdr-end a:hover{color:#24211E}
+.ra-hdr-note{font-family:Geist,system-ui,sans-serif;font-size:12px;color:#655D55;white-space:nowrap}
+.ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
+.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+@media(max-width:860px){.ra-hdr-note{display:none}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}}
+@media print{.ra-hdr{display:none}}</style>
+<div class="ra-hdr" role="banner"><div class="ra-hdr-in">
+<a class="ra-hdr-brand" href="../index.html" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
+<nav aria-label="Explainers"><a href="../index.html">Explainers</a><a href="../talk/">Walkthrough</a><a href="../slides/">Slides</a><a href="../project-map/">Project map</a><a href="../evolution/">Build log</a></nav>
+<div class="ra-hdr-end"><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
+</div></div>
+<!-- site-header:end -->
 <main id="grid" aria-live="polite"></main>
 <footer><span id="pos"></span><span>→ next four · ← back</span></footer>
 <script>
