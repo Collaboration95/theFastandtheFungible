@@ -173,7 +173,11 @@ export async function startScenario(options: { injection?: boolean; audited?: bo
 const RUN = 8 // the search leak gate's run length
 /** Lower-cased words of raw text; JSON escapes (\n, \", …) count as separators. */
 const words = (text: string) => text.toLowerCase().replace(/\\[nrt"\\/]/g, ' ').match(/[\p{L}\p{N}]+/gu) ?? []
-const runsOf = (text: string) => { const w = words(text); return Array.from({ length: Math.max(0, w.length - RUN + 1) }, (_, i) => w.slice(i, i + RUN).join(' ')) }
+function* wordRuns(text: string) {
+  const w = words(text)
+  for (let i = 0; i + RUN <= w.length; i++) yield w.slice(i, i + RUN).join(' ')
+}
+const runsOf = (text: string) => [...wordRuns(text)]
 
 /**
  * Raw text, not a schema-sanitized copy. Every PAID article contributes markers: its canary, every
@@ -216,7 +220,7 @@ export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus)
         if (granted.some(g => g.body.includes(marker))) continue
         if (observation.raw.includes(marker) || observation.raw.includes(JSON.stringify(marker).slice(1, -1))) throw new Error(`${observation.kind} leaked ${article.articleId} before its run/version grant: ${marker.slice(0, 60)}`)
       }
-      seen ??= new Set(runsOf(observation.raw))
+      seen ??= new Set(wordRuns(observation.raw))
       for (const run of seen) if (runs.has(run) && !grantedRuns.has(run)) throw new Error(`${observation.kind} leaked ${article.articleId} before its run/version grant: ${run}`)
     }
   }
