@@ -85,3 +85,61 @@ Tests cover an independently calculated short ramp, unchanged median/max/loop
 gates, full-run CLI and comparator bypass rejection, replay of the actual
 historical +77.366 miss, and quick-versus-full acceptance eligibility. Product,
 verification-cache and other lane-owned files are unchanged.
+
+Validation: targeted 16/16 tests and `npm run check:fast` pass, including
+1,184 tests in 136 files and the 20-run chaos smoke (zero invariant violations,
+double charges or stuck reservations). Fresh rebase before the final dated tracker
+commit picked up Lane R key-reveal escrow changes (#363); this does not relabel the earlier
+clean-main soak as a measurement of that later source. Final commit checks and
+PR CI validate the integrated reporting change.
+
+## Fresh-main integration after #363
+
+The fresh rebase picked up main `b5e991c0` (#363), so a second full workload
+was run rather than assuming engine equivalence. `soak-s-integrated.json` retains
+all rows and samples. Runtime source is `bec87e1bf429fac31867dbb8bec6b02e6dad8759`
+(the rebased reporting change atop that main); the later `5891bdd8` commit during
+the run changed only documentation. The first roughly 60 seconds overlapped
+Lane S's final commit check:fast, including chaos smoke; there were no Lane S
+tests afterward. This context applies only to the second run. The same command,
+background `caffeinate -dims` and shell wait were used, with data directory
+`scratch/s-soak-integrated-20261104` and output `scratch/s-soak-integrated.json`.
+
+| Unchanged full gate | Integrated result | Verdict |
+|---|---:|---|
+| RSS slope ≤5 MiB/100 asks | −0.643762 | PASS |
+| Median RSS growth ≤100 MiB | −4.017937 | PASS |
+| Sampled RSS ≤1,536 MiB | 966.616165 | PASS |
+| Worst measured worker interval p99 <50 ms | 78.708735 ms | FAIL |
+| Matched-window p95 drift ≤250 ms | +1.854125 ms | PASS |
+
+All 200 warmups / 2,000 measured asks and 20 clean restarts complete with one
+identity and zero failed asks, audits, gaps or unexplained reservations. Memory
+verdict is unchanged. Overall soak `pass:false`, exit 1, correctly preserves the
+independent loop gate failure; this is not final acceptance.
+
+Two measured loop intervals exceed 50 ms. The worst is: at 244.802 s / 1,458 completions,
+loop p99 78.708735 ms, observed GC maximum 71.354292 ms (14 entries, 83.114832 ms
+total; minor, major and incremental kinds), host load 8.839 / 7.062 / 6.667.
+This is GC-associated: a single observed pause is large enough to explain most
+of the loop delay. Asynchronous observer batches prevent proving exact temporal
+causation; scheduler contention may contribute. The interval is long after
+Lane S's local checks ended. It does not demonstrate >50 ms of engine work.
+
+A cache footprint reduction was considered and rejected here: both caches are
+already byte-bounded to 8 MiB and retain only serialized bytes/primitive verdicts;
+there is no measured cache-retention regression. Arbitrary downsizing could add
+signature verification work without fixing scheduler/collection pauses. No
+verification or gate was weakened. Monday's quiet-host full acceptance must
+still meet the unchanged loop gate. Both the passing original run and this miss
+are retained; neither is selected to erase the other.
+
+The second interval at 324.074 s / 1,919 completions records p99 54.919167 ms,
+maximum observed GC pause only 0.935208 ms (19 minor entries, 11.469793 ms total),
+load 10.406 / 8.089 / 7.096 and sample gap 1,023.981 ms. A single long GC pause
+is not supported as its cause. Host contention is plausible on the loaded
+10-CPU host; engine work versus scheduler delay cannot be separated by the
+retained interval aggregates. Its attribution remains explicitly unresolved
+between those two causes, requiring quiet-host comparison or scheduler/CPU
+profiling, not an invented causal label. The unchanged gate still fails.
+Measured one-minute load in this integrated run ranges 5.595–12.054.

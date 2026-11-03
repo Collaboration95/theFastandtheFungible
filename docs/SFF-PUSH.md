@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 4 Nov: Lane S full 2,000-ask soaks reject sustained memory growth (RSS slopes −1.899 / −0.644 MiB/100 asks); post-#363 loop miss 78.709 ms is GC-associated and retained for Monday. Quick slope is diagnostic only; no full threshold changed. [Evidence](evidence/round2-s/README.md).
 - 4 Nov: Lane H2 REHEARSAL completes exact artifact consumers/verifiers, unsigned arm64 recovery, x64 build, browser/Python/coverage and 200-run chaos; full loop 64.389 ms and integrated quick RSS-slope misses remain recorded for Mon 9 Nov quiet-host acceptance. No threshold changed. [#360](https://github.com/Collaboration95/theFastandtheFungible/pull/360).
 - 4 Nov: Lane H2 full rehearsal records 2,000 asks, burst peak four and 20 clean restarts; four performance gates pass but loop p99 misses at 64.389 ms (<50 ms required). Final artifact acceptance stops; no threshold changed. [Blocked evidence and runner](evidence/round2-h2/README.md).
 - 4 Nov: Lane H1 shared-host baseline: 2,000 asks after 200 warmups on 10,000 × 60 history; 20 clean restart cycles, zero audit violations; memory gates pass, loop-delay/latency gates miss honestly. [Measurements and SVG](evidence/round2-h/README.md); C1 repair and final H2 acceptance remain pending.
