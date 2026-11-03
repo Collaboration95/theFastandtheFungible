@@ -47,12 +47,14 @@ reported by Actions and is not inferred. The 339 s target is an optimization
 target, not permission to remove gates. docs/running.md is deferred because
 Lane A owns it; CONTRIBUTING.md documents the commands and gate equivalence.
 
-Final local coverage collection: 807/807 tests, 103 files, 75.23 s on the
-shared host. Payments: 1458/1710 (85.2632%) → 1496/1738 (86.0759%);
-SDK: 324/357 → 334/363; server: 2087/2400 → 2097/2403. Other component floors are unchanged. The payment floor remains 1486/1732, above 85%. Baseline
-configuration/contract tests were uncommitted, explicitly marked dirty in JSON.
-Final source/test SHA is in coverage-final.json; later evidence-only commits
-do not change product code or test execution.
+Final integrated local coverage collection: 835/835 tests, 109 files, 45.57 s
+on Node 22.23.4, macOS arm64. Integration includes main
+21b2a1edfae98e7ab9b63a34943372331c94ba70 (Lanes A/E); the baseline remains ec97bfd.
+Payments: 1458/1710 → 1551/1802 branches; all component ratios pass their
+original floors. The payment floor remains 1486/1732, above 85%.
+Baseline configuration/contract tests were uncommitted, marked dirty in JSON.
+Final tested SHA is in coverage-final.json. Later evidence-only commits do not
+change product code or test execution. Component mapping includes A's new files.
 
 The first hosted run (41690272807) failed the server branch ratchet; browser,
 Python and chaos passed and the required check correctly failed. This is actual
