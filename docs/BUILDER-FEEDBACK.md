@@ -647,3 +647,5 @@ states remain readable. Evidence: `docs/evidence/round2-g/accessibility.json` an
 `scripts/contribution-screenshots.ts`. Suggested fix: inspect static final state
 and avoid ornamental money transitions. Severity: low tooling/UX; mainnet impact:
 none observed, no ledger or provider calls in this inspection.
+
+- 2026-11-04 — Observed local SDK packaging friction (Lane K, docs/evidence/round2-k/README.md): a clean wheel without site packages exposed a remaining absolute six.moves import masked by the development environment. Workaround: relocate every vendored import; extend the existing clean-wheel consumer to run independent receipt verification. Suggested tooling fix: exercise optional SDK capabilities from installed artifacts with --no-deps, not just source imports. Severity: low, caught before release; no ledger interaction or mainnet impact observed, but an uncorrected package would block offline verification on a clean installation.

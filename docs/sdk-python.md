@@ -42,12 +42,12 @@ ResearchAgentError exposes code and HTTP status; UnauthorizedError,
 InvalidRequestError, BackendError and VerificationError are typed subclasses.
 Response bodies and low-level errors are not echoed.
 
-verify(export, repo_dir='/path/to/checkout') accepts a JSON object or local
-JSON/PDF path and shells without a shell to npm run verify:answer -- FILE --json.
-There is no engine verify endpoint. This requires the ResearchAgent checkout,
-Node and npm ci; it is not standalone Python cryptographic verification. It runs
-offline, returns ok=false for tampering, and raises VerificationError for IO or
-invocation failure. Self-contained hashes do not prove independent authenticity.
+`Client.verify(export)` independently verifies a JSON object or JSON path in
+Python. See **Verify receipts without Node** below. Explicitly supplying
+`repo_dir='/path/to/checkout'` selects the legacy Node wrapper, which also accepts
+PDF exports and requires Node and `npm ci`; invocation failures raise
+VerificationError. There is no engine verify endpoint. Self-contained hashes
+do not prove independent authenticity.
 
 Tests use the real local engine with synthetic providers, simulated settlement,
 and ephemeral ports; no live providers or ledger submission:
@@ -72,10 +72,10 @@ bytes and SHA-256; `consumer-results.json` records acceptance separately.
 The npm consumer installs declared dependencies normally in a temporary project;
 the wheel uses a new venv; MCP starts from the extracted MCPB. Each asks twice
 with the same key and checks delivered citations, one receipt/intent and caps.
-No registry publication is performed. Python offline verification still invokes
-the repository verifier and requires its Node dependencies; wheel installation
-alone does not supply that verifier. Minimum supported Node is 22.13 and Python
-3.10; hosted artifact acceptance uses those runtimes.
+No registry publication is performed. The installed Python wheel now independently
+verifies its exported receipts as part of the clean consumer check. Minimum
+supported Node for the engine/legacy wrapper is 22.13; Python is 3.10. Hosted
+artifact acceptance uses those runtimes.
 
 See [release artifact evidence](evidence/round2-d/README.md).
 
@@ -101,3 +101,29 @@ Receipt contribution v3 exposes exact claim/passage use with semantic assessment
 labelled not independently verified. See [receipt contribution contract](contracts/CONTRIBUTION.md)
 and [offline fixture evidence](evidence/round2-g/README.md). Python callers can use
 `Client.receipts(run_id)`; the existing offline verifier accepts v1/v2/v3.
+
+## Verify receipts without Node
+
+The installed wheel verifies v1, v2 and v3 offline, without a repository, Node,
+network access, API token or wallet. Runtime has no external dependencies;
+MIT-licensed pure-Python ecdsa and six are vendored for real Ed25519/secp256k1
+signature verification. Signatures are never delegated or silently skipped.
+
+```sh
+python -m researchagent verify receipts.json --json
+```
+
+Exit codes: 0 valid, 1 invalid, 2 usage/unreadable JSON. Python API:
+
+```python
+from researchagent.verify import verify
+result = verify('receipts.json', expect_head=independently_saved_head)
+assert result['ok']
+```
+
+`Client.verify(export)` also uses Python by default. Supplying `repo_dir=...`
+explicitly retains the old Node wrapper. The verifier does not contact Testnet;
+ledger checks are labelled SKIP. An independent audit head detects rewritten
+chains; a self-contained export alone cannot. Structural contribution evidence
+does not certify semantic truth. See [receipt spec](receipt-spec.md) and
+[conformance evidence](evidence/round2-k/README.md).

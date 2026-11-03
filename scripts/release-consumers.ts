@@ -34,7 +34,7 @@ try {
     const [a,b] = JSON.parse(await run(process.execPath, ['consumer.mjs'])); check('tgz',a,b,store)
     await run('python3', ['-m','venv',join(dir,'venv')]); const python = join(dir,'venv/bin/python')
     await run(python, ['-m','pip','install','--no-deps',file('wheel')])
-    writeFileSync(join(dir,'consumer.py'), `import json\nfrom researchagent import Client\nc=Client(${JSON.stringify(engine.apiUrl)}, token=${JSON.stringify(engine.apiToken)})\na=c.ask(${JSON.stringify(question)},budget=999,idempotency_key='wheel').result()\nb=c.ask(${JSON.stringify(question)},budget=999,idempotency_key='wheel').result()\nprint(json.dumps([a,b]))\n`)
+    writeFileSync(join(dir,'consumer.py'), `import json\nfrom researchagent import Client\nc=Client(${JSON.stringify(engine.apiUrl)}, token=${JSON.stringify(engine.apiToken)})\na=c.ask(${JSON.stringify(question)},budget=999,idempotency_key='wheel').result()\nb=c.ask(${JSON.stringify(question)},budget=999,idempotency_key='wheel').result()\nassert c.verify(c.receipts(a['run_id']))['ok']\nprint(json.dumps([a,b]))\n`)
     const [pa,pb] = JSON.parse(await run(python, ['consumer.py'])); check('wheel',pa,pb,store)
   } finally { store.close() }
 } finally { await engine.close() }
