@@ -328,9 +328,13 @@ To append explicitly historical reliability rows to a scorecard without changing
 its frozen quality comparisons:
 
 ```sh
-npm run scorecard -- --chaos-evidence docs/evidence/chaos-279-500.json --soak-evidence docs/evidence/chaos-279-integrated-soak.json
+npm run scorecard -- --reliability-only --chaos-evidence docs/evidence/chaos-279-500.json --soak-evidence docs/evidence/chaos-279-integrated-soak.json
 ```
 
 The optional rows are `chaosPassRatePct`, `doubleCharges`, and `soakP95DriftMs`;
 the output retains the evidence paths and tested commits. No evidence arguments
 means no reliability observation, rather than an invented zero.
+
+`--reliability-only` displays observations without running quality evaluation;
+it refuses `--check`, `--live`, `--compare` and `--plan`. Normal scorecard execution
+retains every frozen-input check.

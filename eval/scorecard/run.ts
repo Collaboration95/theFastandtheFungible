@@ -26,6 +26,13 @@ export async function run() {
   const chaosAt = process.argv.indexOf('--chaos-evidence'), soakAt = process.argv.indexOf('--soak-evidence')
   if (soakAt >= 0 && chaosAt < 0) throw new Error('--soak-evidence requires --chaos-evidence')
   const reliability = chaosAt < 0 ? null : readReliability(process.argv[chaosAt+1], soakAt < 0 ? undefined : process.argv[soakAt+1])
+  if (process.argv.includes('--reliability-only')) {
+    if (!reliability || ['--check','--live','--compare','--plan'].some(flag => process.argv.includes(flag))) throw new Error('--reliability-only requires evidence and cannot run or bypass quality checks')
+    console.log(JSON.stringify({ reliability, quality: 'not evaluated' },null,2))
+    console.log('| Historical fixture reliability | Observation |\n|---|---:|')
+    for (const key of ['chaosPassRatePct','doubleCharges','soakP95DriftMs'] as const) console.log(`| ${key} | ${reliability[key] ?? 'null'} |`)
+    return
+  }
   const realFetch = globalThis.fetch
   const live = process.argv.includes('--live'), planOnly = process.argv.includes('--plan')
   if (!live) globalThis.fetch = (async (url, init) => {

@@ -11,7 +11,9 @@ path. No existing test or gate was loosened; no `src/` file was changed.
 Runtime source: `74a3d0101c67dc8f61591b601cb244f5935f5230`, based on main
 `ef4b5b490d272c8c03886b8e812da8c9d4719a97`, before the audit, marginal-fact
 policy and escrow integrations. The commits were rebased later; the immutable
-source SHA above records what these experiments actually executed.
+source SHA above records what these experiments actually executed. The identical
+three harness files survive the rebase in `f6b8c6b`; production code for these
+baseline runs is the earlier main release, not the rebased tree.
 
 | Experiment | Seed | Duration | Iterations / fault episodes | SIGKILLs | Confirmed purchases | Refunds | Invariant violations |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -78,3 +80,14 @@ v0.4.0 → v0.3.0 → v0.2.0 → v0.1.0. Existing tag objects were unchanged.
 [Release metadata](release-day2.json) records the target, order, Latest and tag
 identities. Notes retain F1 0.235→0.419, uplift +11.3→+17.0 pts and the wasted
 spend regression 36.2%→47.2%, with #276 identified as the then-pending fix.
+
+## Scorecard integration limitation
+
+The reliability-only CLI prints the recorded pass rate, double charges and p95
+drift, including evidence paths and tested commits. Its regression test proves
+that it rejects quality-check/live/comparison flags. A full `scorecard --check`
+was attempted and refused an inherited frozen-source mismatch in
+`server/agents/loop.ts`: the actual hash equals `origin/main`, while the frozen
+expected hash predates #273. [Hash evidence](chaos-279-scorecard-freeze.json).
+The frozen gate and quality baseline were left unchanged; no new quality score
+is claimed. This does not affect `check:fast`, build or the chaos assertions.

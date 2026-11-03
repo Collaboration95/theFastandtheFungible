@@ -399,3 +399,13 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
   release automation should compare version tags and set Latest explicitly;
   the updated workflow does this. Severity: low release navigation friction;
   mainnet impact: none; no ledger or wallet operation was involved.
+
+- **Observed evaluation tooling friction after integration:** full
+  `scorecard --check` refuses the frozen `server/agents/loop.ts` hash after the
+  merged escrow path adds its purchase flag. The actual hash equals main;
+  evidence: `docs/evidence/chaos-279-scorecard-freeze.json`. Workaround: preserve
+  the quality gate and display independently labelled historical reliability
+  with `--reliability-only` (cannot combine with quality/live flags). Suggested
+  fix: review/version frozen inputs whenever integrated runtime source changes;
+  retain prior quality history. Severity: low (quality comparison blocked);
+  mainnet impact: none; no ledger or model call occurred in the refused run.

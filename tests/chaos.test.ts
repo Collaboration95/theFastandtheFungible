@@ -29,3 +29,17 @@ it('reports historical chaos separately from quality and refuses malformed evide
   expect(reliabilityMetrics(evidence).soakP95DriftMs).toBeNull()
   for (const bad of [{iterations:0},{doubleCharges:-1},{schema:'other'},{durationMs:0},{label:'live'}]) expect(() => reliabilityMetrics({...evidence,...bad})).toThrow('Invalid fixture chaos evidence')
 })
+
+import { execFileSync } from 'node:child_process'
+import { writeFileSync } from 'node:fs'
+it('reliability-only CLI cannot bypass a quality check or enable live calls', () => {
+  const dir=mkdtempSync(join(tmpdir(),'chaos-report-')), file=join(dir,'evidence.json')
+  writeFileSync(file,JSON.stringify({schema:'chaos-v1',label:'SYNTHETIC',iterations:20,invariantViolations:0,doubleCharges:0,durationMs:1,latencyMs:{p95DriftMs:0}}))
+  const args=['--import','tsx','eval/scorecard/run.ts','--reliability-only','--chaos-evidence',file]
+  try {
+    expect(execFileSync(process.execPath,args,{encoding:'utf8'})).toContain('"quality": "not evaluated"')
+    for(const flag of ['--check','--live','--compare','--plan']) {
+      expect(() => execFileSync(process.execPath,[...args,flag],{stdio:'pipe'})).toThrow()
+    }
+  } finally {rmSync(dir,{recursive:true,force:true})}
+},10000)

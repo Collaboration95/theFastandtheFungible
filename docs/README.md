@@ -28,6 +28,8 @@ submission pack (description, deck, video script, pitch, Q&A).
 
 - [Verify any answer](sdk.md#verify-an-exported-answer-278): offline signatures/citations and read-only Testnet payments/refunds; [UC3 recovery and tamper evidence](evidence/verify-278.md).
 
+- [Operations](RUNBOOK.md) and [payment chaos evidence](evidence/chaos-279.md): seeded faults, crash recovery, fixture soak and their measured limits.
+
 - [Builder feedback](BUILDER-FEEDBACK.md): living implementation log, Top 5, mainnet checklist and September submissions.
 - [MCP server](mcp.md): connect Claude Code or Codex, the four tools, caps and idempotency.
 - [Running it](running.md): every make target, the demo keys, Docker.
