@@ -48,14 +48,14 @@ reported by Actions and is not inferred. The 339 s target is an optimization
 target, not permission to remove gates. docs/running.md is deferred because
 Lane A owns it; CONTRIBUTING.md documents the commands and gate equivalence.
 
-Final integrated local coverage collection: 861/861 tests, 111 files, 45.08 s
+Final integrated local coverage collection: 876/876 tests, 116 files, 47.14 s
 on Node 22.23.4, macOS arm64. Integration includes main
-571bb7802d029c5782a04084dc05dad51aacd7fc (Lanes A/E/C2); the baseline remains ec97bfd.
-Payments: 1458/1710 → 1549/1800 branches; all component ratios pass their
+4df971aa7899b8fa9c54c4f007687280db6acb35 (Lanes A/E/C1/C2); the baseline remains ec97bfd.
+Payments: 1458/1710 → 1557/1806 branches; all component ratios pass their
 original floors. The payment floor remains 1486/1732, above 85%.
 Baseline configuration/contract tests were uncommitted, marked dirty in JSON.
 Final tested SHA is in coverage-final.json. Later evidence-only commits do not
-change product code or test execution. Component mapping includes A/C2's new runtime files. C2 recovery tests raise
+change product code or test execution. Component mapping includes A/C1/C2's new runtime files. C2 recovery tests raise
 desktop branches to 134/175 and lines to 145/882; native acceptance remains separate.
 
 The first hosted run (41690272807) failed the server branch ratchet; browser,
@@ -123,3 +123,21 @@ C2-integrated local gate: check:fast passed with 861 tests / 111 files
 (38.22 s unit collection), unchanged 20 chaos episodes / four escrow probes
 (43.166 s, zero violations/double charges). Required Chromium: eight passed
 (19.0 s); Python: 17 passed (4.04 s). These executions used Node 22.23.4.
+
+
+C1 integration adds compatible/json-decision to the provider component rather
+than hiding their counts under server. The first integrated collection refused
+455/507 provider branches against the existing exact floor. Eight B-owned
+fixture/transport tests cover malformed, oversized and failed responses, absent
+or aborted identities, separate credentials, public candidate projection and
+invalid paid-relevance probabilities. Final providers: 483/528 branches,
+622/627 lines; original floors remain unchanged. No server/SDK runtime edits.
+The latest comparable main run is 41697524722 at integration SHA 4df971aa:
+278 s wall, 274 s serial check. Final hosted admission will be compared with it;
+the older 350 → 291 s observation above is retained as historical evidence.
+
+Final A/E/C1/C2-integrated local gate passed: 876 tests / 116 files
+(43.95 s unit collection), unchanged 20 chaos episodes / four escrow probes
+(44.499 s), zero double charges and invariant violations. Chromium: eight
+passed (19.1 s); Python: 17 passed (2.59 s). Coverage source matches the recorded
+SHA; its dirty flag is the preceding report artifact only, not runtime changes.
