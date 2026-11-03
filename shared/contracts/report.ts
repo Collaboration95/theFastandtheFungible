@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { SourceIdentitySchema } from '../source-identity.js'
 import { ClaimSchema, CoverageStatusSchema, ImpactSchema, LlmProviderSchema } from './answer.js'
 import { DecisionRoundSchema } from './decision.js'
 import { ReceiptSchema } from './publisher.js'
@@ -21,7 +22,7 @@ export const ReportSchema = z.object({
   firstVersion: z.number().int().positive().optional(), finalVersion: z.number().int().positive().optional(),
   labels: ModeLabelsSchema.optional(),
   /** Writer refunds after a failed proof (#132, #142), from the persisted intents. */
-  refunds: z.array(z.object({ intentId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), txHash: z.string() })).optional(),
+  refunds: z.array(z.object({ source: SourceIdentitySchema.optional(), intentId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), txHash: z.string() })).optional(),
   /** Requested facts (#208, #209): the checklist line and the per-fact statuses of the final answer. */
   facts: z.object({ line: z.string(), facts: z.array(z.object({ text: z.string(), status: CoverageStatusSchema })) }).optional(),
   access: z.object({ runId: z.string(), candidates: z.array(PublicCandidateSchema), grants: z.array(GrantSchema) }).optional(),

@@ -1,11 +1,14 @@
 import { once } from 'node:events'
-import { expect, it } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import { verifyAnswer } from '../sdk/verify.js'
 import { demoMultiOrigin } from '../scripts/demo-multi-origin.js'
+afterEach(()=>vi.unstubAllEnvs())
 it('publishes three origins and keeps collided paid sources separate through restart, grants, citations and receipts', async () => {
+  vi.stubEnv('SETTLEMENT_RAIL','xrpl-testnet');vi.stubEnv('XRPL_PAYER_SEED','invalid-fixture-seed');vi.stubEnv('RA_API_TOKEN','fixture-inherited-token');vi.stubEnv('LANGFUSE_ENABLED','1')
   const r = await demoMultiOrigin()
   expect(r.originsFound).toBe(3); expect(r.mcpOrigins).toBe(3); expect(r.receipts).toBe(2); expect(r.grants).toBe(2); expect(r.sameWallet).toBe(true)
   expect(r.citations).toHaveLength(2); expect(r.healthyOrigins).toBe(2); expect(r.deadMs).toBeLessThan(2500); expect(r.verification.ok).toBe(true); expect(r.gateAudit.total).toBe(0)
+  expect(process.env.SETTLEMENT_RAIL).toBe('simulated');expect(process.env.XRPL_PAYER_SEED).toBeUndefined();expect(process.env.RA_API_TOKEN).toBeUndefined();expect(process.env.LANGFUSE_ENABLED).toBe('0')
   for (const part of ['sources','grants','receipts','intents','proofs'] as const) {
     const copy=structuredClone(r.bundle); const item=copy[part].find(s=>s.source?.profileId === 'collision')!; item.source!.origin='http://127.0.0.1:2'
     expect((await verifyAnswer(copy)).ok).toBe(false)

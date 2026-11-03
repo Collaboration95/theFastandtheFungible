@@ -630,3 +630,10 @@ impact. No readiness timeout was raised.
   examples without changing signed x402 bytes. Severity: high for federated
   attribution and credential routing. Mainnet impact: code-derived risk only;
   no live provider, Testnet or mainnet operation was performed for this proof.
+
+Unsigned escrow and budget refusals also retain their source-qualified audit
+context; offline receipt verification distinguishes these uncharged outcomes
+from signed reservations. Evidence: `tests/purchase.test.ts`.
+Exact source matching also prevents collided local IDs from mislabelling report
+citations or measuring one writer’s calibration against another’s delivery;
+offline regressions cover both (`tests/report.test.ts`, `tests/reputation.test.ts`).

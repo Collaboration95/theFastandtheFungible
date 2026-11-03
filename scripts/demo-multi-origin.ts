@@ -22,7 +22,8 @@ import { sourceKey } from '../shared/source-identity.js'
 import { presentRun } from '../sdk/present.js'
 
 export async function demoMultiOrigin() {
-  process.env.LLM_PROVIDER = 'fixture'; process.env.DECISION_PROVIDER = 'fixture'; process.env.SEARCH_EMBEDDINGS = 'off'
+  for (const name of Object.keys(process.env)) if (/(?:API_KEY|TOKEN|SEED|SECRET)$/.test(name)) delete process.env[name]
+  Object.assign(process.env,{LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SEARCH_EMBEDDINGS:'off',SETTLEMENT_RAIL:'simulated',LANGFUSE_ENABLED:'0'})
   const root = await mkdtemp(join(tmpdir(), 'ra-multi-origin-'))
   const folder = join(root, 'markdown'); await mkdir(folder)
   await writeFile(join(folder, 'evidence.md'), '---\ntitle: Capacity evidence\nabstract: Independent capacity analysis\ntier: PAID\nprice: 0.50\ntags: capacity\nsynthetic: true\n---\nOnly 240 of the 600 MW has confirmed energisation slots before 2028.\n\nSubstation works have slipped fourteen months.\n\nThe remaining capacity depends on new transmission infrastructure.\n\nAn independent engineering assessment identifies the critical commissioning constraints.\n' + ('The synthetic engineering scenario records planning assumptions and commissioning dependencies for comparison across independent reports. '.repeat(40)))

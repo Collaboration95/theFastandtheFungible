@@ -6,8 +6,8 @@ import { applyCalibration, applyProof, newRecord, Reputation, REPUTATION, type P
 import { Store } from '../server/store.js'
 import { decide, type DecideInput } from '../server/agents/decision.js'
 import { createApiApp } from '../server/routes.js'
-import { exampleCandidate } from '../shared/contracts/examples.js'
-import type { PublicCandidate } from '../shared/contracts/index.js'
+import { exampleCandidate, exampleContent } from '../shared/contracts/examples.js'
+import { SEARCH_LABELS, type PublicCandidate } from '../shared/contracts/index.js'
 
 const W = { alpha: 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp', beta: 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe' }
 const cleanups: (() => void)[] = []
@@ -104,4 +104,20 @@ describe('decision × reputation (#140)', () => {
     }
     expect(REPUTATION.quarantineBelowH).toBe(0.5)
   })
+})
+
+it('calibrates the correct collided delivery and seller wallet, requiring that source grant',async()=>{
+  const store=new Store(':memory:');cleanups.push(()=>store.close())
+  const base=store.createRun('q',200), source={schemaVersion:1 as const,origin:'http://127.0.0.1:1234',sellerKey:'key-A',profileId:exampleCandidate.profileId,resourceId:exampleCandidate.resourceId,version:exampleCandidate.version}
+  const a={...exampleCandidate,source,tier:'PAID' as const,wallet:W.alpha,relevance:0.1},b={...a,source:{...source,origin:'http://127.0.0.1:1235',sellerKey:'key-B'},wallet:W.beta,relevance:0.9}
+  const contents=[a,b].map((c,i)=>({...exampleContent,source:c.source,body:`Delivery ${i}`,spans:[{id:'p1',text:`Delivery ${i}`}]}))
+  const intents=[a,b].map((c,i)=>({source:c.source,runId:base.runId,intentId:`intent-${i}`,profileId:c.profileId,resourceId:c.resourceId,version:c.version,amountMinor:c.price.amountMinor,status:'VERIFIED' as const}))
+  const grants=intents.map(i=>({...i,contentDigest:'verified',grantedAt:'2026-11-04'}))
+  const run={...base,labels:{...base.labels,search:SEARCH_LABELS[0]},candidates:[a,b],contents,intents,grants}
+  const seen:string[]=[], reputation=new Reputation(store,{observe:async ({text})=>{seen.push(text);return 0.9}})
+  expect((await reputation.calibrate({run:{...run,grants:[grants[0]]},intentId:intents[1].intentId})).status).toBe('SKIPPED')
+  expect(seen).toHaveLength(0)
+  const result=await reputation.calibrate({run,intentId:intents[1].intentId})
+  expect(result.status).toBe('RECORDED');if(result.status === 'RECORDED') expect(result.record.wallet).toBe(W.beta)
+  expect(seen[0]).toContain('Delivery 1');expect(seen[0]).not.toContain('Delivery 0');expect(store.getReputation(W.alpha)).toBeUndefined()
 })

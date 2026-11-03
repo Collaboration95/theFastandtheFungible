@@ -2,6 +2,7 @@
 // keyed by the seller of record, the publisher wallet (D21). Trust only lowers
 // value; it never touches the budget or the per-source cap (gate 2).
 import { PlanSchema, SEARCH_LABELS } from '../shared/contracts/index.js'
+import { sameSource } from '../shared/source-identity.js'
 import type { ContentEnvelope, PublicCandidate, ReputationRecord, ReputationSummary, RunSnapshot } from '../shared/contracts/index.js'
 import { cosine, cosineRelevance, normaliseQuery, SEARCH_TUNING } from '../publisher/search.js'
 import type { Store } from './store.js'
@@ -126,9 +127,9 @@ export class Reputation {
     const { run } = input
     const intent = run.intents.find(i => i.intentId === input.intentId && i.runId === run.runId)
     if (!intent || intent.status !== 'VERIFIED') return { status: 'SKIPPED', reason: 'No verified delivery.' }
-    const grant = run.grants.find(g => g.intentId === intent.intentId && g.runId === run.runId && g.resourceId === intent.resourceId && g.version === intent.version)
-    const content = run.contents.find(c => c.resourceId === intent.resourceId && c.version === intent.version)
-    const candidate = run.candidates.find(c => c.resourceId === intent.resourceId && c.version === intent.version && c.tier === 'PAID')
+    const grant = run.grants.find(g => g.intentId === intent.intentId && g.runId === run.runId && sameSource(g,intent))
+    const content = run.contents.find(c => sameSource(c,intent))
+    const candidate = run.candidates.find(c => sameSource(c,intent) && c.tier === 'PAID')
     if (!grant || !content) return { status: 'SKIPPED', reason: 'No grant for this delivery.' }
     const claimed = candidate?.manifest?.relevance ?? candidate?.relevance
     if (!candidate?.wallet || claimed === undefined) return { status: 'SKIPPED', reason: 'No wallet or claimed relevance.' }
