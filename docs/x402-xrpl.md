@@ -297,3 +297,90 @@ after each run; an explicitly configured fixture directory must be fresh. Replay
 key and journal; the script verifies every hash and refuses a gross movement
 plus network-fee total of 1 XRP or more. Faucet funding is excluded from that
 spend figure. No real money or cloud resources are involved.
+
+## Opted-in `escrow-v1` extension (#273, 3 Nov 2026)
+
+This ResearchAgent extension is XRP on **Testnet only**. It is buyer-verified
+release and ledger-enforced cancellation. The ledger checks a hashlock and time;
+it does not verify article claims. Writers accept the risk that a dishonest
+buyer reads and refuses payment. `exact` remains the default.
+
+Writer operator: set `ESCROW_WRITERS=load-factor,alphaleak` on the publisher.
+The same buyer setting opts those writers into `escrow-policy-v1`. Alternatively,
+POST `/runs` with `escrow: true`, or use
+`client.ask(question, {budgetSgd: 2, escrow: true})`. A run's explicit `false`
+disables the buyer default. Publisher opt-in is always required. Quarantined or
+delisted writers are excluded first; opted-in newcomers (`passes === 0`) or
+writers with `T < 0.8` use escrow. Established writers use `exact`. Unsupported
+escrow is SKIPPED without a paid fallback. Budget and plan confirmation remain
+the spending authorization; no per-purchase confirmation is added.
+
+The opted-in writer advertises `escrow-v1` alongside `exact`. Its initial 402
+advertises `extra.quoteEndpoint`: those are discovery terms, not a signable
+escrow quote. Buyer policy generates a fresh 32-byte secret, then POSTs
+`{payer, intentId, condition, cancelAfter}` to the article's `/escrow-quote`.
+The signed response binds network, asset, payer/payee, amount, article/version,
+manifest root, intent nonce, condition and deadline. The buyer checks that
+signature against the signed search manifest and evaluated price before signing.
+`CancelAfter` is validated ledger time +120 s; no new finish within the final
+15 s (rechecked inside the payer queue). A 2,000-drop per-transaction fee ceiling
+applies. The generic exact `sdk/x402.payAndFetch` refuses escrow; the backend
+policy service owns the article proof and secret.
+
+```mermaid
+sequenceDiagram
+  participant B as Buyer policy and durable journal
+  participant W as Opted-in writer
+  participant L as XRPL Testnet
+  B->>W: Buyer condition and deadline; request bound signed quote
+  W-->>B: Signed escrow-v1 terms
+  B->>B: Reserve budget; persist secret and create blob
+  B->>L: EscrowCreate (typed canonical invoice memo)
+  L-->>B: Validated LOCKED
+  B->>W: Same signed create blob
+  W->>W: Verify quote, validated tx and exact escrow object; persist conditional grant
+  W-->>B: LOCKED grant and quarantined delivery
+  B->>B: Verify manifest and delivery
+  alt Proof passes with deadline margin
+    B->>B: Persist VERIFIED_FOR_RELEASE and finish blob
+    B->>L: EscrowFinish (reveal secret)
+    L-->>B: Validated RELEASED; grant becomes accessible
+  else Failed or missing proof, Stop, pause or expiry
+    B->>L: EscrowCancel after ledger CancelAfter
+    L-->>B: Validated CANCELLED; principal returned
+  end
+```
+
+`EscrowCreate` has no InvoiceID. Its only memo uses
+`MemoType = HEX("researchagent/escrow-v1")` and
+`MemoData = HEX(UTF8(canonical signed terms))`. The facilitator validates the
+whole memo, signature, account, amount, destination, condition, deadline,
+LastLedgerSequence and fee. `/facilitator/verify` checks binding;
+`/facilitator/settle` and paid GET confirm the validated create and object,
+then journal a conditional exact-version grant. Response `success: false,
+escrowState: "LOCKED"` explicitly distinguishes locked funds from settlement.
+Only the private proof worker receives these bytes. A passed proof alone never
+makes them accessible: a validated finish is also required. Direct-payment
+challenge/refund logic does not apply to escrow cancellation.
+
+Buyer SQLite stores a separate escrow row and `(intent, operation)` outbox,
+with UNIQUE intent/invoice, transaction hash and `(owner, create Sequence)`.
+The existing direct-payment submissions table is untouched. All three
+operations share the payer queue. A restart looks up and resubmits the same
+create; no timeout authorizes another principal. Expired/failed terminal
+signatures may be archived and replaced **only after ledger proof**, referencing
+the same object. An unresolved escaped finish is reconciled before cancellation.
+A Stop cannot undo a submitted finish. The live reconciler cancels due objects
+without writer connectivity; expiry itself does not return funds.
+
+LOCKED principal stays `reservedMinor`; only RELEASED becomes spent. A
+CANCELLED receipt records zero spent principal and the cancel hash, rather than
+inventing a refund Payment. Cancelled authority cannot be reused inside the run
+or wallet day. Public API/SDK intents and receipts carry `escrow.state`, owner,
+create Sequence, deadline, transaction hashes and `proofOk`; no secret or blob.
+`src/` is unchanged. The balance check includes live base + OwnerCount reserve,
+one extra owner increment (currently 0.2 XRP), principal and create/terminal fee
+headroom. After creation, refreshed validated balance already excludes principal;
+it is not deducted twice.
+
+Evidence: [product Testnet finish and cancel](evidence/escrow-273.md).

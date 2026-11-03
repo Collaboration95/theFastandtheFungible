@@ -37,6 +37,7 @@ export async function payAndFetch(url: string, options: PayOptions) {
       const required = decodeHeader('PAYMENT-REQUIRED', first.headers.get('PAYMENT-REQUIRED'))
       await first.body?.cancel()
       const terms = required.accepts[0] // codec rejects Mainnet, non-XRP and non-exact schemes
+      if (terms.scheme !== 'exact') throw new Error('Use the ResearchAgent escrow purchase service for escrow-v1')
       if (new URL(required.resource.url, url).href !== resource.href || BigInt(terms.amount) > BigInt(options.maxDrops) || terms.maxTimeoutSeconds > 300) throw new Error('x402 terms exceed resource or spending authority')
       const invoiceId = ledgerInvoiceId(terms.extra.invoiceId)
       const submission = await signPayment(options.wallet, { Destination: terms.payTo, Amount: terms.amount, InvoiceID: invoiceId }, ledger)

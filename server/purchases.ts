@@ -1,3 +1,4 @@
+import { EscrowPurchases, escrowSelected } from './escrow.js'
 import { screenPayee } from './payee-screening.js'
 import { scoreStep } from './telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
@@ -17,7 +18,7 @@ const xrp = (drops: string) => (Number(drops) / 1_000_000).toFixed(6).replace(/0
 const explorer = (txHash: string) => `${XRPL_EXPLORER}/${txHash}`
 
 /** `manifest` is the candidate's verified signed manifest from search; without one nothing is signed. */
-type Purchase = { runId: string; candidate: PublicCandidate; intentId: string; manifest?: Manifest }
+type Purchase = { runId: string; candidate: PublicCandidate; intentId: string; manifest?: Manifest; escrow?: boolean }
 
 /** Trusted policy-only service: never expose purchase as a browser/LLM command. */
 export class PurchaseManager {
@@ -29,7 +30,7 @@ export class PurchaseManager {
   /** No payer = the SIMULATED rail (deterministic test-only signer, labelled). */
   constructor(readonly store: Store, readonly client: PublisherClient, payer?: Payer) {
     this.payer = payer ?? new SimulatedPayer()
-    if (this.payer instanceof XrplPayer) this.payer.restorePending(store.listIntents('SUBMITTING').flatMap(i => store.getSubmission(i.intentId) ?? []))
+    if (this.payer instanceof XrplPayer) this.payer.restorePending([...store.listIntents('SUBMITTING').flatMap(i => store.getSubmission(i.intentId) ?? []), ...store.escrowOutbox().filter(s => store.getIntent(s.intentId)?.status === 'SUBMITTING')])
   }
   async drain() { await Promise.allSettled(this.active.values()) }
   private ledgerEvent(runId: string, label: string, data: Record<string, unknown>): void {
@@ -56,12 +57,19 @@ export class PurchaseManager {
     try {
       return await startActiveObservation('buy-source', async observation => {
         observation.update({ input: { resourceId: input.candidate.resourceId, publisher: input.candidate.profileId, priceMinor: input.candidate.price.amountMinor, intentId: input.intentId } })
-        const intent = await this.once(input.intentId, () => this.buy(input))
+        const intent = await this.once(input.intentId, () => this.policyPurchase(input))
         scoreStep('purchase-outcome', intent.status, intent.error)
         observation.update({ output: { status: intent.status, txHash: intent.txHash, receiptId: intent.receiptId, error: intent.error }, ...(intent.status === 'VERIFIED' ? {} : { level: 'WARNING' as const, statusMessage: intent.error ?? intent.status }) })
         return intent
       }, { asType: 'tool' })
     } finally { this.identities.delete(input.intentId) }
+  }
+  private policyPurchase(input: Purchase): Promise<PurchaseIntent> {
+    const existing = this.store.getIntent(input.intentId)
+    const escrow = existing?.escrow || !existing && escrowSelected(this.store, input.runId, input.candidate, input.escrow)
+    if (!escrow) return this.buy(input)
+    if (!(this.payer instanceof XrplPayer)) return Promise.resolve(this.store.skipEscrow({ intentId: input.intentId, runId: input.runId, profileId: input.candidate.profileId, resourceId: input.candidate.resourceId, version: input.candidate.version, amountMinor: input.candidate.price.amountMinor, status: 'SKIPPED' }, 'Escrow requires the XRPL Testnet rail; no fallback'))
+    return new EscrowPurchases(this.store, this.client, this.payer).purchase(input.runId, { ...input.candidate, manifest: input.manifest ?? input.candidate.manifest }, input.intentId)
   }
   private async buy({ runId, candidate, intentId, manifest = candidate.manifest }: Purchase): Promise<PurchaseIntent> {
     let intent = this.store.getIntent(intentId)
@@ -248,6 +256,7 @@ export class PurchaseManager {
       this.once(intent.intentId, async () => {
         if (this.store.getIntent(intent.intentId)?.status !== 'SUBMITTING') return this.store.getIntent(intent.intentId)!
         this.store.appendEvent(intent.runId, { type: 'PURCHASE', label: 'Reconcile · SUBMITTING · same signed payment', data: { intentId: intent.intentId } })
+        if (this.store.getEscrow(intent.intentId) && this.payer instanceof XrplPayer) return new EscrowPurchases(this.store, this.client, this.payer).advance(intent.intentId)
         const submission = this.store.getSubmission(intent.intentId)
         try {
           // Nothing persisted means nothing was ever signed or sent (the blob is stored before it leaves).

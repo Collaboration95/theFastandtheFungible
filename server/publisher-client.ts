@@ -1,3 +1,4 @@
+import { EscrowQuoteSchema } from '../shared/contracts/escrow.js'
 import { loadConfig } from './config.js'
 import { z } from 'zod'
 import { SearchHitSchema, type SearchHit } from '../shared/contracts/manifest.js'
@@ -51,6 +52,10 @@ export class PublisherClient {
       status: response.status, required: response.status === 402 ? header('PAYMENT-REQUIRED') : undefined, response: header('PAYMENT-RESPONSE'),
       delivery: response.status === 200 ? JSON.parse(text) as unknown : undefined,
     }
+  }
+  async escrowQuote(path: string, request: { payer: string; intentId: string; condition: string; cancelAfter: number }) {
+    const result = await this.request('POST', `${path}/escrow-quote`, request)
+    return EscrowQuoteSchema.parse(JSON.parse(result.bytes.toString('utf8')))
   }
   /** POST /w/:slug/challenge (#132). Any non-200, timeout or malformed answer throws: the caller records REFUSED. */
   async challenge(slug: string, challenge: Challenge, timeoutMs: number, observer?: WireObserver): Promise<ChallengeResult> {

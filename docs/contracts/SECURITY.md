@@ -180,3 +180,17 @@ and an all-BUY live-provider stub. It asserts capped/structured inputs, no
 conclusion, unchanged honest selection, deterministic budget/per-source/wallet
 refusals, one receipt across concurrent retries, refund gross accounting, midnight reservations, and pause before submission.
 These are offline simulations and provider stubs, not live-injection evidence.
+
+### Escrow secret and access boundary (#273)
+
+Opted-in `escrow-v1` is Testnet XRP only. The buyer generates a fresh random
+32-byte secret per intent and stores it in private SQLite before create signing.
+The database and sidecars are 0600; operate it in a private data directory.
+Neither writer, model, browser, event trace nor receipt receives the secret.
+Only a persisted deterministic proof pass permits a new finish signature; only
+a validated finish permits accessible content/citations. The signed fulfillment
+becomes public at submission, so an escaped finish is reconciled before Stop or
+expiry can choose cancellation. The ledger enforces cancellation after expiry;
+it does not enforce proof validity or protect writers from buyer refusal. Writer
+opt-in accepts that limitation. Exact Payment remains the default. See
+[protocol](../x402-xrpl.md) and [dated evidence](../evidence/escrow-273.md).

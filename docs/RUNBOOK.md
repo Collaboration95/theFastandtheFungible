@@ -143,3 +143,26 @@ charge. `drain()` stops ticks and waits for active reconciliation and jobs;
 
 References: [XRPL reserve fields](https://xrpl.org/docs/references/http-websocket-apis/public-api-methods/server-info-methods/server_info),
 [reliable submission](https://xrpl.org/docs/concepts/transactions/reliable-transaction-submission).
+
+## Escrow recovery (`escrow-v1`, opted-in Testnet only)
+
+See [the protocol and opt-in settings](x402-xrpl.md#opted-in-escrow-v1-extension-273-3-nov-2026).
+Inspect `intents[].escrow` on the existing run API/SDK. `SUBMITTING` with LOCKED,
+VERIFIED_FOR_RELEASE or CANCEL_DUE reserves principal and has no accessible paid
+content. Reconciliation runs on the normal tick. Stop/pause prevents a new
+finish, but an already signed finish may still release; let the hash reconcile.
+The buyer submits explicit cancellation after validated ledger time passes
+CancelAfter. Writer downtime does not block cancellation. Keep the buyer signer,
+private database (0600) and its WAL/SHM, and leave the reconciler running.
+Backups must include escrow rows, private secrets, outbox and retired attempts.
+Never delete a create to retry a purchase; never copy recovery state to evidence.
+A missing history entry with a consumed sequence stays unresolved. Restore node
+history/connectivity rather than guessing that the money returned.
+
+Run the bounded SYNTHETIC mini-corpus demonstration serially with
+`OFFSET=1600 node --import tsx scripts/evidence/escrow-273.ts`. It loads the
+ignored `.env`, persists state under ignored `scratch/escrow-273/`, caps the two
+principals and resumes the same intents. It needs the existing funded Testnet
+buyer and Load Factor/AlphaLeak writer seeds. It stops the publisher before
+cancellation and writes only allowlisted public evidence. Preserve recovery
+state until both escrows are closed; the recorded run spent 0.060459 Testnet XRP.

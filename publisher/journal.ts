@@ -1,3 +1,5 @@
+import type { EscrowQuote } from '../shared/contracts/escrow.js'
+import { escrowInvoice } from '../shared/escrow.js'
 import { createHash, randomBytes } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
@@ -21,6 +23,8 @@ export class PublisherJournal {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
     this.db = new DatabaseSync(path)
     this.db.exec(`PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;
+      CREATE TABLE IF NOT EXISTS escrow_quotes (invoice TEXT PRIMARY KEY, json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS escrow_grants (tx_hash TEXT PRIMARY KEY, invoice TEXT UNIQUE NOT NULL, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS x402_quotes (ledger_invoice_id TEXT PRIMARY KEY, quote_json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS x402_settlements (
         tx_hash TEXT PRIMARY KEY, ledger_invoice_id TEXT UNIQUE NOT NULL REFERENCES x402_quotes(ledger_invoice_id), settlement_json TEXT NOT NULL
@@ -38,6 +42,19 @@ export class PublisherJournal {
       const rows = this.db.prepare('SELECT salt FROM salts WHERE article_key = ? AND idx < ? ORDER BY idx').all(articleKey, count) as { salt: string }[]
       return rows.map(row => row.salt)
     })
+  }
+  saveEscrowQuote(q: EscrowQuote) { this.db.prepare('INSERT INTO escrow_quotes VALUES (?,?)').run(escrowInvoice(q.terms), JSON.stringify(q)) }
+  escrowQuote(invoice: string): EscrowQuote | undefined {
+    const row = this.db.prepare('SELECT json FROM escrow_quotes WHERE invoice=?').get(invoice)
+    return row && JSON.parse(String(row.json))
+  }
+  escrowGrant(hash: string): Record<string, unknown> | undefined {
+    const row = this.db.prepare('SELECT json FROM escrow_grants WHERE tx_hash=?').get(hash)
+    return row && JSON.parse(String(row.json))
+  }
+  saveEscrowGrant(hash: string, invoice: string, grant: unknown) {
+    this.db.prepare('INSERT OR IGNORE INTO escrow_grants VALUES (?,?,?)').run(hash, invoice, JSON.stringify(grant))
+    if (!this.escrowGrant(hash)) throw new PublisherError(409, 'Escrow invoice already locked')
   }
   close(): void { this.db.close() }
   private transaction<T>(operation: () => T): T {

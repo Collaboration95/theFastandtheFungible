@@ -9,6 +9,7 @@ import type { Store } from './store.js'
 export function checkProof(store: Store, intentId: string): PurchaseIntent {
   const intent = store.getIntent(intentId)
   if (!intent) throw new Error('Intent not found')
+  if (intent.escrow) return intent // Escrow proof never grants access before validated finish.
   if (intent.status !== 'DELIVERY_PENDING') return intent
   const delivery = store.getDelivery(intentId), manifest = store.getManifest(intentId)
   const check = delivery && manifest

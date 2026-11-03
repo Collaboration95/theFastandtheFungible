@@ -1,6 +1,6 @@
 import { bounded } from './dependencies.js'
 import { loadConfig } from './config.js'
-import { Wallet, decode } from 'xrpl'
+import { Wallet, decode, type Transaction } from 'xrpl'
 import type { PaymentRequirement } from '../shared/contracts/index.js'
 import { lookupTx, simulatedLedgerIndex, simulatedPayerWallet, testnetLedger, validatedLedgerIndex, type Ledger } from '../shared/xrpl.js'
 
@@ -43,6 +43,9 @@ export class XrplPayer {
    * ledger wait, rather than guessing a sequence or waiting for a slow writer's 60 s HTTP reply.
    */
   pay<T>(terms: PaymentRequirement & { memo?: string }, persist: (signed: Submission) => Submission, send: (submission: Submission) => Promise<T>): Promise<{ submission: Submission; sent: Promise<T> }> {
+    return this.queued(() => this.sign(terms), persist, send)
+  }
+  private queued<T>(sign: () => Promise<Submission>, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>) {
     const started = Date.now()
     const run = this.queue.then(async () => {
       for (const previous of this.pending) {
@@ -52,7 +55,7 @@ export class XrplPayer {
       this.pending = []
       this.lockWaitMs.push(Date.now() - started)
       if (this.lockWaitMs.length > 1024) this.lockWaitMs.shift()
-      const submission = persist(await this.sign(terms))
+      const submission = persist(await sign())
       this.pending.push(submission)
       const sent = send(submission)
       void sent.catch(() => undefined)
@@ -60,6 +63,31 @@ export class XrplPayer {
     })
     this.queue = run.catch(() => undefined)
     return run
+  }
+  escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0) {
+    return this.queued(async () => {
+      if (!this.wallet || this.address === simulatedPayerWallet().classicAddress) throw new BeforeSignError('Testnet signer unavailable')
+      const info = await this.ledger.request({ command: 'server_info' })
+      if (info.result.info.network_id !== 1) throw new BeforeSignError('Escrow is Testnet only')
+      // Fresh validated balance already reflects locked principal and owner count. Do not deduct it twice.
+      this.balanceCache = undefined
+      const balance = await this.balance()
+      const increment = Math.ceil(Number(info.result.info.validated_ledger.reserve_inc_xrp) * 1_000_000)
+      if (!Number.isSafeInteger(increment) || increment < 200000) throw new BeforeSignError('Escrow reserve unavailable')
+      const needed = reservedTerminalFees() + principal + FEE_CAP_DROPS + (tx.TransactionType === 'EscrowCreate' ? increment + FEE_CAP_DROPS : 0)
+      if (balance.availableDrops < needed) throw new BeforeSignError('Payer balance below escrow reserve; nothing was charged')
+      const [account, current, fee] = await Promise.all([
+        this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'current' }),
+        this.ledger.request({ command: 'ledger_current' }), this.ledger.request({ command: 'fee' }),
+      ])
+      const base = Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12))
+      const cost = Math.ceil(base * (tx.TransactionType === 'EscrowFinish' ? 35.25 : 1))
+      if (!Number.isSafeInteger(cost) || cost > FEE_CAP_DROPS) throw new BeforeSignError('Escrow fee exceeds policy ceiling')
+      const lastLedgerSequence = Number(current.result.ledger_current_index) + 20
+      await beforeSign?.()
+      const signed = this.wallet.sign({ ...tx, Account: this.address!, Sequence: Number(account.result.account_data.Sequence), Fee: String(cost), LastLedgerSequence: lastLedgerSequence } as Transaction)
+      return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
+    }, persist, send)
   }
   restorePending(submissions: Submission[]) { this.pending.push(...submissions) }
   private async waitForSequence(submission: Submission): Promise<PaymentOutcome> {

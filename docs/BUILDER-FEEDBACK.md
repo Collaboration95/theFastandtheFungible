@@ -301,3 +301,32 @@ incident. Total attempts, including the interrupted run, are itemized in
   starter-kit fix: register public royalty addresses for free writers too.
   Severity: low setup friction; mainnet impact: verified recipient ownership
   and receive-and-forward licensing need separate review, not a Testnet claim.
+
+## Observed escrow integration · 3 Nov 2026 (#273)
+
+Evidence: [product-path Testnet observations](evidence/escrow-273.md) and
+[allowlisted transaction metadata](evidence/escrow-273.json), implementing the
+[GO spike](spikes/escrow.md). These are fresh Testnet observations with synthetic
+articles, not mainnet measurements or Starter Kit compatibility results.
+
+- **Observed: cancellation needs an explicit transaction.** The failed-proof
+  30,000-drop object remained locked through the 120 s deadline; buyer recovery
+  submitted EscrowCancel with the writer offline. Net return was 29,988 drops
+  after its 12-drop fee. Workaround: durable CANCEL_DUE plus ledger-time ticks.
+  Suggested upstream fix: a recovery example that retains escrow identity until
+  terminal validation, clearly explaining expiry versus actual return.
+  Severity: medium operational risk. Mainnet impact: the same lifecycle must be
+  handled before any real-money enablement; mainnet was not tested.
+- **Observed: liquidity dwarfs a small purchase.** Both cases had OwnerCount
+  0→1→0 and needed 0.2 XRP additional reserve, besides 0.06/0.03 XRP principal.
+  Workaround: fresh reserve-aware balance checks and held terminal fee headroom
+  for every outstanding escrow. Suggested upstream fix: wallet/Starter Kit
+  preflight showing locked principal, owner reserve and terminal fees separately.
+  Severity: medium usability risk. Mainnet liquidity impact is code-derived,
+  not a measured mainnet result.
+- **Code-derived: exact x402 cannot represent LOCKED delivery.** Native escrow
+  is not Payment and has no InvoiceID. Workaround: explicit `escrow-v1`, a
+  domain-typed canonical invoice memo, signed bound quotes and conditional grants;
+  exact remains default. Suggested upstream fix: document an extension interface
+  for lock/proof/release receipts rather than treating lock as settlement.
+  Severity: medium interoperability risk. Mainnet interoperability is untested.

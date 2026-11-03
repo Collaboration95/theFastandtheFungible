@@ -30,7 +30,7 @@ export class Facilitator {
     let tx: Tx, txHash: string
     try { tx = decode(signature.payload.signedTxBlob) as Tx; txHash = hashes.hashSignedTx(signature.payload.signedTxBlob).toUpperCase() } catch { return { ok: false, reason: 'signed blob does not decode' } }
     const quote = tx.InvoiceID ? this.journal.quoteByInvoice(tx.InvoiceID) : undefined
-    const reason = tx.TransactionType !== 'Payment' ? 'not a Payment'
+    const reason = signature.accepted.scheme !== 'exact' ? 'unsupported scheme' : tx.TransactionType !== 'Payment' ? 'not a Payment'
       : !quote ? 'InvoiceID matches no quote'
         : expect && (quote.articleId !== expect.articleId || quote.version !== expect.version) ? 'InvoiceID belongs to another article'
           : ledgerInvoiceId(quote.invoiceId) !== String(tx.InvoiceID).toUpperCase() ? 'InvoiceID does not match the quote'

@@ -8,7 +8,7 @@ import { SIMULATED_LABEL, XRPL_LABEL, type RunSnapshot } from '../shared/contrac
 import type { WriterCorpus } from '../shared/contracts/writers.js'
 import { assertNoLeaks, type Observation } from '../tests/scenarios/harness.js'
 
-export const RULES = ['citation_without_verified_grant', 'duplicate_settlement', 'over_budget', 'purchase_without_policy', 'premium_leak', 'missing_rail_label', 'royalty_policy', 'money_chain_reconciliation'] as const
+export const RULES = ['citation_without_verified_grant', 'duplicate_settlement', 'over_budget', 'purchase_without_policy', 'premium_leak', 'missing_rail_label', 'royalty_policy', 'money_chain_reconciliation', 'escrow_finish_without_verified_proof'] as const
 export type Rule = typeof RULES[number]
 export type Violation = { rule: Rule; runId: string; evidence: string }
 const charged = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
@@ -17,13 +17,17 @@ export function auditRuns(runs: RunSnapshot[], corpus: WriterCorpus, observation
   const violations: Violation[] = []
   const add = (rule: Rule, runId: string, evidence: string) => violations.push({ rule, runId, evidence })
   for (const run of runs) {
-    const verified = run.grants.filter(g => g.runId === run.runId && run.intents.some(i => i.intentId === g.intentId && i.runId === run.runId && i.status === 'VERIFIED' && i.resourceId === g.resourceId && i.version === g.version))
+    const verified = run.grants.filter(g => g.runId === run.runId && run.intents.some(i => i.intentId === g.intentId && i.runId === run.runId && i.status === 'VERIFIED' && (!i.escrow || i.escrow.state === 'RELEASED') && i.resourceId === g.resourceId && i.version === g.version))
     const free = (resourceId: string, version: string) => !corpus.articles.some(a => a.articleId === resourceId && a.version === version && a.tier === 'PAID') && run.candidates.some(c => c.resourceId === resourceId && c.version === version && c.tier === 'FREE')
     for (const answer of run.answers) for (const claim of answer.claims) for (const c of claim.citations) {
       const accessible = run.contents.find(x => x.resourceId === c.resourceId && x.version === c.version && x.spans.some(s => s.id === c.spanId && x.body.includes(s.text)))
       if (!accessible || !free(c.resourceId, c.version) && !verified.some(g => g.resourceId === c.resourceId && g.version === c.version)) add('citation_without_verified_grant', run.runId, `answer v${answer.version}, resource ${c.resourceId}@${c.version}`)
     }
     for (const intent of run.intents) {
+      const e = intent.escrow
+      const finished = e?.finishHash || e?.state === 'RELEASED' || run.events.some(v => v.type === 'ESCROW_FINISH' && v.data?.intentId === intent.intentId)
+      if (e && (finished && e.proofOk !== true || intent.status === 'VERIFIED' && e.state !== 'RELEASED')) add('escrow_finish_without_verified_proof', run.runId, intent.intentId)
+
       const receipts = run.receipts.filter(r => r.intentId === intent.intentId)
       // Repeated observations of the SAME receipt/transaction are retries, not new charges.
       const receiptHashes = receipts.map(r => r.xrpl?.txHash ?? r.receiptId.replace(/^x402-/, ''))
