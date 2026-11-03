@@ -9,7 +9,7 @@ import { decide, type DecisionProvider } from '../server/agents/decision.js'
 import { candidateOf, contentOf, loadWorld } from '../eval/decisions/world.js'
 import { signedFactMenu } from '../server/agents/clef.js'
 import { fitReceiptValue } from '../eval/decisions/fit-calibration.js'
-import { receiptTarget } from '../scripts/refit-receipt-value.js'
+import { receiptTarget, refit } from '../scripts/refit-receipt-value.js'
 import type { LabelRow } from '../scripts/export-decision-labels.js'
 afterEach(() => vi.unstubAllEnvs())
 
@@ -77,6 +77,14 @@ describe('receipt learning', () => {
     const fit = fitReceiptValue(rows)
     expect(fit.accepted).toBe(true)
     expect(fit.receiptFilter.fp).toBe(0)
+  })
+  it('refuses a held-out report before it can fit or write a map', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'receipt-heldout-'))
+    try {
+      const file = join(dir, 'heldout.json')
+      writeFileSync(file, JSON.stringify({ scorecard: { split: 'heldout' } }))
+      expect(() => refit({ flowReport: file, out: join(dir, 'map.json') })).toThrow('dev reports only')
+    } finally { rmSync(dir, { recursive: true }) }
   })
   it('never learns a positive from unresolved delivery, citation alone or uncharged intent', () => {
     const base = { charged: true, status: 'VERIFIED', reanswer: { determinable: true, gainedSupportedFact: true, citesPurchased: true } } as LabelRow

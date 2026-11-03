@@ -8,11 +8,11 @@ const root = join(import.meta.dirname, '..')
 const s = JSON.parse(readFileSync(join(root, 'eval/scorecard/latest.json'), 'utf8'))
 const date = s.at.slice(0, 10)
 const mode = s.mode.toLowerCase() === 'live' ? 'LIVE decision + coverage; fixture research; simulated payments' : 'fixture'
-const tag = `${mode} · ${date}`
+const tag = `${mode}${s.split && s.split !== 'all' ? ` · ${s.split === 'heldout' ? 'held-out' : s.split} (${s.counts.questions} questions)` : ''} · ${date}`
 const pct = (n) => `${n.toFixed(1)}%`
 const ms = (n) => `${Math.round(n)} ms`
 const rows = [
-  ['Hard-gate violations (six-rule audit)', `${s.audit.total} across ${s.audit.runs} runs, ${s.audit.observations} observations`],
+  ['Hard-gate audit violations', `${s.audit.total} across ${s.audit.runs} runs, ${s.audit.observations} observations`],
   ['Supported-fact uplift from paying', `+${s.quality.supportedFactUpliftPts.toFixed(1)} pts`],
   ['Purchase-selection F1 (flow / sweep)', `${s.quality.selectionF1Flow.toFixed(2)} / ${s.quality.selectionF1Sweep.toFixed(2)}`],
   ['Wasted spend', pct(s.quality.wastedSpendPct)],

@@ -223,3 +223,126 @@ Penang lead-time promises attractive. More precise measures/periods and a held-o
 check of the hardened provenance prompts are needed. Q07 bought the expected
 article yet added no scripted support: audit that exact needle/coverage contract
 before changing gold labels. Never relax tests to remove inconvenient questions.
+
+## 6. Receipt value buying (#276), 3 November 2026 SGT
+
+**Waste target missed.** Headline is the prospectively held-out rates/power
+families, 24 questions / 26 requested facts / 55 coverage snapshots. Dev is
+semis/packaging, 24 questions / 27 facts / 61 snapshots. The split was committed
+before tuning (`receipt-split.json`, originally `46ff943`, rebased to `3a22e1e`).
+Earlier PRs used the full bank, so this is held out only within this task, not
+historically unseen data. No held-out labels or results were used for tuning.
+
+| Metric | Held-out LIVE before → after (headline) | Dev LIVE before → after |
+|---|---:|---:|
+| Wasted gross spend | 39.39% → **35.48%** | 51.79% → 44.19% |
+| First-purchase F1 (flow) | 0.588 → **0.625** | 0.308 → 0.296 |
+| Selection F1 (sweep) | 0.714 → **0.667** | 0.400 → 0.320 |
+| Supported-fact uplift | +15.38 pts → **+15.38 pts** | +18.52 pts → +25.93 pts |
+| False-complete | 5.26% → **5.26%** | 0.00% → 0.00% |
+
+The held-out flow F1 ≥0.42 and uplift ≥+15 pts targets pass; waste <25% fails.
+The issue's older waste ≤20%, flow F1 ≥0.5 and false-complete ≤2% contract also
+fails on waste and false-complete. The sweep F1 regressed on both splits, and dev
+flow F1 regressed slightly. The explicit instruction to merge and report misses
+governs delivery; this is **not** a successful optimization or a no-regression
+acceptance claim. No tests, leak checks, raw 0.20 gate, or audit rules were relaxed.
+
+Secondary whole-bank aggregation of the two disjoint splits: gross waste
+**47.19% → 40.54%**, flow F1 **0.419 → 0.419**, and uplift **+16.98 → +20.75 pts**.
+This is not held-out evidence. The held-out false-complete rate is 1/19 missing
+facts = 5.26%, not the full bank's 1/53 = 1.89%; the underlying coverage prompts
+and snapshots did not change. Flow citation validity is 100% on both splits.
+After-purchase support: held-out 12 → 16 of 26; dev 8 → 15 of 27. Gross simulated
+spend: held-out S$3.30 → S$3.10, waste S$1.30 → S$1.10; dev S$5.60 → S$4.30,
+waste S$2.90 → S$1.90. Refunds remain gross waste and do not restore authority.
+
+**What changed.** Deterministic policy requires P(adds the open fact) × seller
+trust × novelty / price ≥ **0.5 expected facts/S$**, in addition to every existing
+raw-value, rewrite, trust, cap, budget and reservation guard. At most one fact is
+valued per round: menus cannot inflate value by listing many promises. The original
+value/S$ ranking and neutral hash tie-break remain. A signed menu fully covered
+by accessible evidence vetoes a redundant purchase. Cross-source lexical matches
+require a specific period or comparison and an affirmative quantitative sentence;
+absence statements and broad topic overlap never count. This is a conservative
+lexical veto, not semantic proof of duplicate measurements or a coverage grant.
+Only the free/verified-grant accessor supplies evidence locally; no new premium
+content goes to pre-purchase model requests. The model still only scores.
+
+The existing decision-table reason text exposes expected facts/S$ and its threshold;
+structured decision rows also retain probability, novelty and fit version. No
+`src/` change. Live provenance wording is v4: shared entities/events are not
+proof of derivation, and independent analyst estimates can add new evidence to
+a public filing. `DECISION_VALUE_POLICY=off` restores both old policy and v3
+wording for the baseline. This before/after measures their combined effect,
+not the isolated causal effect of learning or duplicate suppression.
+
+**Learning evidence and its limits.** `make refit` / `npm run calibration:refit`
+uses the read-only store exporter and the shared math in `fit-calibration.ts`.
+Settled VERIFIED+cited+supported gain is positive; refunds and VERIFIED uncited/no
+gain are negative; unresolved/indeterminate outcomes are excluded. ANSWER events
+now bind each intent to exact before/after versions so a kept free follow-up is
+not mislabelled as paid uplift. Keyed maps fail closed to raw probabilities on a
+provider/model/prompt mismatch; rejected refits never replace the active file.
+
+The initial v3 dev fit (13 receipts) was rejected: OOF receipt F1 0.429 < 0.556.
+The v4 dev trial provided 11 simulated receipts across 10 questions (6 gains,
+5 negatives). Grouped dev Brier: identity **0.2197**, Platt **0.2582**, isotonic
+**0.2714**. The accepted v1 artifact therefore keeps **identity** probabilities
+and a dev-selected **0.5** utility threshold; receipt-filter F1 stays 0.706.
+No statistical calibration gain was demonstrated. These labels are from live
+model decisions on synthetic articles, a fixture writer and scripted support,
+not real customer outcomes. They are conditional on historical purchases; the
+threshold is tuned on dev OOF predictions and optimistic within dev. Reproduce
+from `eval/decisions/datasets/receipt-value-v4-dev.json`; both rejected/accepted
+reports are committed. Refitting is a local command, not an installed schedule.
+
+**What worked / did not.** The combined policy/prompt treatment reduced held-out
+waste by 3.91 points, improved first-purchase F1, and retained all four marginal
+supported facts. It did not reach 25% waste. Cheap wrong measurements and broad
+menus still attract purchases; a price-aware cutoff alone cannot repair relevance.
+The more aggressive first trial hit 55% dev waste and lost support. An early
+lexical veto falsely treated “no customer lead times” as covered by unrelated
+capacity figures in the same paragraph; the unchanged UC3 scenario exposed it.
+Fixing that bug restored the required refund story but worsened the attractive
+35.14% dev trial to the shipped 44.19%. Those trials are retained in append-only
+history and are not the headline. Stronger receipt calibration was rejected or
+lost to identity. More precise measurement/period promises and independent
+support labels remain necessary; no held-out retuning was performed.
+
+**Evidence and validation.** Final held-out baseline `2026-11-03T02:16:12.411Z`;
+final held-out after `2026-11-03T02:17:24.180Z`; integrated dev after
+`2026-11-03T02:18:55.229Z`. Frozen v4 hashes pin source, bank, prose,
+menus and constructed snapshots. Rebased onto #305/#306 before held-out calls;
+source fingerprints match the integrated candidate. Full comparison data is in
+`eval/scorecard/receipt-value-results.json`. `latest.json` publishes the declared
+held-out headline; later dev/fixture validation remains in history. Cross-treatment
+`--compare` still refuses incompatible policy/input hashes. After-treatment fixture
+`--check` is a same-treatment repeatability check, not a no-regression claim versus
+old policy. Fixture differences are recorded below.
+
+- `OFFSET=700 npm run check:fast`: hygiene/lint/typecheck and the full suite pass;
+  UC1 no-buy, UC3 refund/quarantine, injection, idempotency, leak and recovery gates
+  retained. Only exact prompt-version expectations changed for v4.
+- `OFFSET=700 npm run test:e2e`: production build and all four browser tests pass,
+  including UC2 proof/purchase and UC3 refund/quarantine, ephemeral ports.
+- Final integrated dev+held-out API audit: **zero violations / 10 runs / 464 wire
+  observations**. Independent `gate:audit` of the held-out raw store and its wire
+  observations also reports zero; audit code is unchanged in this PR.
+- **Total task model cost US$0.5753331**, every metered dev trial,
+  held-out baseline/final and integrated verification included. Per-run cap US$1;
+  task cap US$4. Usage-derived estimates at dated transport rates, not invoices.
+  Itemized in `eval/scorecard/receipt-value-spend.json`.
+
+All LIVE labels mean **decision and coverage models only**. Corpus is synthetic;
+planner/writer are extractive fixtures; search is keyword; payments SIMULATED;
+**zero XRP transferred**. Timing is local Mac wall clock, not full product or XRPL
+latency. No cloud resources, real-money payments or credential output.
+
+Fixture, full 48-question bank, same integrated source: waste **67.93% → 65.60%**,
+flow F1 **0.310 → 0.308**, sweep F1 **0.222 → 0.235**, uplift **+28.30 → +22.64 pts**,
+false-complete **37.74% → 37.74%**, zero calls and audit violations. Fixture uplift
+regresses 20%; this is reported, not hidden by changing labels or a threshold.
+The same-treatment `--check --compare 2026-11-03T02:18:54` repeat passes with all
+quality deltas zero; the first attempt used hyphens instead of timestamp colons
+and was rejected before making calls. No comparison rule was changed.

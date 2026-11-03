@@ -23,3 +23,9 @@ it('compares timing and cost aggregates while skipping raw sample identifiers', 
   const d = reportDeltas({ timing: { p95FirstAnswerMs: 200, observations: [{ firstMs: 10 }] }, cost: { modelUsd: 0.2 } }, { timing: { p95FirstAnswerMs: 100 }, cost: { modelUsd: 0.1 } })
   expect(d).toEqual([{ metric: 'timing.p95FirstAnswerMs', before: 100, after: 200, delta: 100 }, { metric: 'cost.modelUsd', before: 0.1, after: 0.2, delta: 0.1 }])
 })
+
+it('scores the actual policy pick without resurrecting a high-scoring vetoed candidate', () => {
+  const row = { questionId: 'Q1', factId: 'f', round: 1, factOpen: true, threshold: 0.2, value: 0.9, priceMinor: 50, originality: { original: 1, rewrite: 0, overlap: 0 }, labels: { buy: 1 }, verdict: 'SKIP_LOW_VALUE', selected: false } as import('../eval/decisions/dataset.js').DatasetRow
+  expect(qualityMetrics([], [row], null).selectionF1Sweep).toBe(0)
+  expect(qualityMetrics([], [{ ...row, verdict: 'BUY', selected: true }], null).selectionF1Sweep).toBe(1)
+})
