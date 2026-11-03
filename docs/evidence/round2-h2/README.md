@@ -41,3 +41,22 @@ The committed report names the source actually tested. After merge, rerun the
 same runner on main's resulting SHA and retain dist/final plus dist/release as
 release evidence rather than trying to create a self-referential evidence commit.
 Owner actions remain in pinned #265; owner-final.md is the prepared command packet.
+
+## Retained preliminary run
+
+`preliminary-soak-279.json` records source bc804a3 and the first full workload:
+2,000 measured asks after 200 warmups, 20/20 clean restarts, zero audit violations,
+failed asks or sample gaps. All five performance gates passed: RSS slope 0.346
+MiB/100 asks, median change −0.531 MiB, sampled max 993.485 MiB, loop 31.556 ms,
+and p95 drift +0.692 ms (250 ms allowed). It is **not overall acceptance**.
+
+Its burst assertion incorrectly equated cumulative admissions with simultaneous
+active work: 6 admitted / 94 overloaded / 6 idempotent retries failed an assumed
+4-total assertion. Planning releases a work lease on completion, so arrivals may
+reuse slots during the burst. That result cannot establish a cap violation.
+The subsequent harness records actual acquire/release counts in the same engine
+worker via the diagnostic preload, requiring peak four, drained zero, all 100
+responses accounted for, typed overloads and every admitted retry idempotent.
+No product code or limit changed. Tests reject peak five, undrained work, missing
+responses and a non-idempotent retry. The ordinary stalled-planner regression
+still requires exactly 4 admissions / 96 overloaded responses.

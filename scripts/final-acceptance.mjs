@@ -1,18 +1,19 @@
 /** Local fixture rehearsal. No dotenv, publication, signing, or release mutation. */
 import { spawn, execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync, readlinkSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync, readlinkSync, cpSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { createHash, randomUUID } from 'node:crypto'
 import { hostname, platform, release, arch, cpus, loadavg } from 'node:os'
 const quick=process.argv.includes('--quick')
 if(process.argv.slice(2).some(a=>a!=='--quick')) throw Error('Usage: node scripts/final-acceptance.mjs [--quick]')
-const out=resolve('dist/final');mkdirSync(out,{recursive:true})
+const out=resolve('scratch/final-acceptance-'+new Date().toISOString().replace(/[^0-9]/g,''));mkdirSync(out,{recursive:true})
+const destination=resolve('dist/final')
 const digest=p=>createHash('sha256').update(readFileSync(p)).digest('hex')
 const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
 Object.assign(env,{DOTENV_CONFIG_PATH:'.no-final-env',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',LANGFUSE_ENABLED:'0',SEARCH_EMBEDDINGS:'off',CSC_IDENTITY_AUTO_DISCOVERY:'false'})
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim()
 const report={schema:1,mode:quick?'quick fixture rehearsal':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
-const save=()=>writeFileSync(join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n')
+const save=()=>{writeFileSync(join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');mkdirSync(destination,{recursive:true});cpSync(join(out,'acceptance.json'),join(destination,'acceptance.json'))}
 async function run(name,cmd,args,extra={}) {
   const row={name,command:[cmd,...args],startedAt:new Date().toISOString(),pass:false};report.gates.push(row);save()
   const log=join(out,name+'.log')
@@ -31,7 +32,7 @@ try {
   await run('artifacts','make',['release-artifacts'])
   await run('consumers','node',['scripts/check-release-consumers.mjs','--manifest','dist/release/manifest.json'])
   report.artifacts=JSON.parse(readFileSync('dist/release/manifest.json')).artifacts;save()
-  report.consumers=JSON.parse(readFileSync('dist/release/consumer-results.json'));report.verifiers=report.consumers.verifiers;save()
+  report.consumers=JSON.parse(readFileSync('dist/release/consumer-results.json'));report.verifiers=report.consumers.verifiers;cpSync('dist/release',join(out,'release'),{recursive:true});save()
   await run('desktop-download-arm64','node',['desktop/download.mjs'],{DESKTOP_ARCH:'arm64'})
   await run('desktop-arm64','node',['desktop/build.mjs','--dmg','--unsigned'],{DESKTOP_ARCH:'arm64'})
   report.dmgs=readdirSync('desktop/out').filter(f=>f.endsWith('.dmg')).map(f=>artifact(join('desktop/out',f)));save()
@@ -72,5 +73,5 @@ try {
 finally {
   const soak='scratch/finals-soak-279.json'
   if(existsSync(soak)){const r=JSON.parse(readFileSync(soak));report.soak={file:soak,sha256:digest(soak),source:r.source,summary:r.summary,burst:r.burst,restarts:r.restarts.length}}
-  report.finishedAt=new Date().toISOString();save();console.log(JSON.stringify({pass:report.pass,error:report.error,output:join(out,'acceptance.json')}))
+  report.finishedAt=new Date().toISOString();save();cpSync(out,destination,{recursive:true});if(existsSync(join(out,'release')))cpSync(join(out,'release'),'dist/release',{recursive:true});console.log(JSON.stringify({pass:report.pass,error:report.error,output:join(destination,'acceptance.json')}))
 }
