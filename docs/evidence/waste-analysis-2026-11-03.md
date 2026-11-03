@@ -13,7 +13,7 @@ Gross cost includes refunds. These are not customer purchases.
 | **Total** | **10** | **3.95** | All final wasted purchases classified, with no label edits. |
 
 `waste-purchases.json` inventories all 21 wasted purchase observations in the
-four canonical before/after reports, including IDs, rounds, prices, proof
+four canonical before/after reports, plus all 48 wasted observations across the nine recovered LIVE trials, including IDs, rounds, prices, proof
 outcomes, primary causes and explanations. Repeated purchases across runs are
 separate observations, not repeated charges within an intent. No within-run
 duplicate purchase was found. No free-coverage miss was established in these

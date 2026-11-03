@@ -9,13 +9,14 @@ const s = JSON.parse(readFileSync(join(root, 'eval/scorecard/latest.json'), 'utf
 const date = s.at.slice(0, 10)
 const mode = s.mode.toLowerCase() === 'live' ? 'LIVE decision + coverage; fixture research; simulated payments' : 'fixture'
 const tag = `${mode}${s.split && s.split !== 'all' ? ` · ${s.split === 'heldout' ? 'held-out' : s.split} (${s.counts.questions} questions)` : ''} · ${date}`
-const pct = (n) => `${n.toFixed(1)}%`
-const ms = (n) => `${Math.round(n)} ms`
+const pct = (n) => n == null ? 'unmeasured' : `${n.toFixed(1)}%`
+const ci = (key, digits = 1, suffix = '') => { const c = s.confidenceIntervals?.intervals?.[key]; return c && c.low != null ? ` [95% CI ${c.low.toFixed(digits)}–${c.high.toFixed(digits)}${suffix}]` : '' }
+const ms = (n) => n == null ? 'unmeasured' : `${Math.round(n)} ms`
 const rows = [
   ['Hard-gate audit violations', `${s.audit.total} across ${s.audit.runs} runs, ${s.audit.observations} observations`],
-  ['Supported-fact uplift from paying', `+${s.quality.supportedFactUpliftPts.toFixed(1)} pts`],
-  ['Purchase-selection F1 (flow / sweep)', `${s.quality.selectionF1Flow.toFixed(2)} / ${s.quality.selectionF1Sweep.toFixed(2)}`],
-  ['Wasted spend', pct(s.quality.wastedSpendPct)],
+  ['Supported-fact uplift from paying', `+${s.quality.supportedFactUpliftPts.toFixed(1)} pts${ci('supportedFactUpliftPts', 1, ' pts')}`],
+  ['Purchase-selection F1 (flow / sweep)', `${s.quality.selectionF1Flow.toFixed(2)}${ci('selectionF1Flow', 2)} / ${s.quality.selectionF1Sweep.toFixed(2)}${ci('selectionF1Sweep', 2)}`],
+  ['Wasted spend', pct(s.quality.wastedSpendPct) + ci('wastedSpendPct', 1, '%')],
   ['p50 / p95 time to first answer', `${ms(s.timing.p50FirstAnswerMs)} / ${ms(s.timing.p95FirstAnswerMs)}`],
   ['Cold start (demo API + publisher)', ms(s.timing.coldStartMs)],
   ['Model cost per query', s.cost.modelUsd === 0 ? 'US$0 (no provider calls)' : `US$${s.cost.latencyModelUsdPerQuery}`],
