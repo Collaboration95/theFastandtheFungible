@@ -38,7 +38,13 @@ question and topic family (for grouped CV), and three labels (1, 0 or null for u
 and `buy` (open fact, PAID listed source, original; the avoid list is 0). Datasets are always collected on raw
 scores: the harness clears `DECISION_CALIBRATION` unless `--calibration on`.
 
-## Question bank (`eval/questions/bank.v1.json`)
+## Historical question bank (`eval/questions/bank.v1.json`)
+
+Current default is v2: 140 questions, with all 48 historical questions dev and
+92 new heldout facts grouped into 20 source articles. See `eval/README.md` for
+provenance, source clustering, regeneration and confidence intervals. The v2
+additions are Codex-authored (same vendor as Luna), with human review pending.
+The unchanged v1 description follows.
 
 - 48 questions over `data/corpus/v2`, with 53 requested facts. 10 are UC1–UC3
   variants and 8 are hard cases.

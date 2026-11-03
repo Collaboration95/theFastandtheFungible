@@ -1,11 +1,11 @@
 {
   "schema": "tftf.scorecard/v1",
-  "at": "2026-11-03T02:17:24.180Z",
+  "at": "2026-11-03T03:02:40.926Z",
   "split": "heldout",
-  "policy": "receipt-value/v1",
+  "policy": "receipt-value/v1+scope/v1",
   "worktreeDirty": true,
-  "commit": "084707122bb7a414136e1878e21538e8e92f9b75",
-  "inputHash": "d80e943714ab444fb4bca98e3e25fe22342ecd76480d824e3f2e5dba9440af48",
+  "commit": "18a538ebe11e6ffcba1702e1f2675306b0215129",
+  "inputHash": "0133fcce57685bc266940bec4fd733a36fbd7565a3e3fba0d554820801a36e18",
   "mode": "LIVE",
   "labels": {
     "search": "keyword only (embeddings unavailable)",
@@ -19,68 +19,127 @@
     "boot": "booted demo API + publisher (fresh child process; module load included)"
   },
   "quality": {
-    "wastedSpendPct": 35.483870967741936,
-    "selectionF1Flow": 0.625,
-    "selectionF1Sweep": 0.6666666666666666,
-    "supportedFactUpliftPts": 15.384615384615385,
-    "falseCompleteRate": 0.05263157894736842
+    "wastedSpendPct": 52.87162162162162,
+    "selectionF1Flow": 0.5299145299145299,
+    "selectionF1Sweep": 0.6601941747572816,
+    "supportedFactUpliftPts": 32.608695652173914,
+    "falseCompleteRate": 0
+  },
+  "confidenceIntervals": {
+    "method": "source-family cluster percentile bootstrap, 95%; conditional on fixed corpus and model draws",
+    "seed": 700,
+    "repeats": 2000,
+    "clusters": 20,
+    "questions": 92,
+    "intervals": {
+      "wastedSpendPct": {
+        "low": 28.30188679245283,
+        "high": 73.30552659019813,
+        "validReplicates": 2000
+      },
+      "selectionF1Flow": {
+        "low": 0.3469387755102041,
+        "high": 0.6730769230769231,
+        "validReplicates": 2000
+      },
+      "selectionF1Sweep": {
+        "low": 0.4788732394366197,
+        "high": 0.7956989247311828,
+        "validReplicates": 2000
+      },
+      "supportedFactUpliftPts": {
+        "low": 20.987654320987655,
+        "high": 44.87179487179487,
+        "validReplicates": 2000
+      }
+    }
   },
   "timing": {
-    "samples": 5,
-    "p50FirstAnswerMs": 64.40208300000086,
-    "p95FirstAnswerMs": 129.75397439999796,
-    "p95FinalAnswerMs": 1965.2123669999987,
-    "coldStartMs": 521.2161669999987,
+    "samples": 10,
+    "p50FirstAnswerMs": 65.84872950000863,
+    "p95FirstAnswerMs": 113.3635373500044,
+    "p95FinalAnswerMs": 4939.243864250004,
+    "coldStartMs": 685.2157909999951,
     "node": "v26.3.1",
     "platform": "darwin",
     "observations": [
       {
-        "questionId": "Q01",
-        "runId": "cd36d1ad-4c2c-4cc3-9b8f-d895dc983b73",
-        "firstMs": 145.8554159999985,
-        "finalMs": 521.668875000003
+        "questionId": "Q49",
+        "runId": "b1f655f9-1322-4ff7-a5e1-403598034cb7",
+        "firstMs": 148.45337500001187,
+        "finalMs": 2326.016083000024
       },
       {
-        "questionId": "Q23",
-        "runId": "7f321494-1350-4c66-8973-29c64545293c",
-        "firstMs": 59.75258299999405,
-        "finalMs": 372.0382079999981
+        "questionId": "Q50",
+        "runId": "72d1878d-a533-4318-b169-8cc586a0f0c6",
+        "firstMs": 61.006500000017695,
+        "finalMs": 2245.3563330000034
       },
       {
-        "questionId": "Q27",
-        "runId": "4f67a81f-3a61-4d16-941c-9d6021c5b4b7",
-        "firstMs": 65.3482079999958,
-        "finalMs": 479.4540829999969
+        "questionId": "Q51",
+        "runId": "ffa4a614-e9f1-4052-a537-221c62ac55e8",
+        "firstMs": 66.59799999999814,
+        "finalMs": 2657.717417000007
       },
       {
-        "questionId": "Q31",
-        "runId": "39b8a587-0ee3-4749-8a25-b10141f7a0f8",
-        "firstMs": 64.40208300000086,
-        "finalMs": 1905.9606669999994
+        "questionId": "Q52",
+        "runId": "ba43fe69-09bf-4f74-afc3-fcc669879d87",
+        "firstMs": 70.47595799999544,
+        "finalMs": 4637.544457999989
       },
       {
-        "questionId": "Q42",
-        "runId": "4204e673-7055-41ca-8728-44fc06183a73",
-        "firstMs": 56.85025000000314,
-        "finalMs": 1980.0252919999984
+        "questionId": "Q53",
+        "runId": "6d2f8e61-54e8-427b-ae77-51481369edc5",
+        "firstMs": 60.28158300000359,
+        "finalMs": 5186.088833000016
+      },
+      {
+        "questionId": "Q54",
+        "runId": "beeb4949-7768-4820-b1c6-06cc74d6f5cc",
+        "firstMs": 67.93183300000965,
+        "finalMs": 3427.596333000023
+      },
+      {
+        "questionId": "Q55",
+        "runId": "dae78f26-f0a2-4eeb-9e59-94241a42ba65",
+        "firstMs": 63.52462499999092,
+        "finalMs": 1708.9599999999919
+      },
+      {
+        "questionId": "Q56",
+        "runId": "0b981814-3b37-4c8d-9bf0-8b692f7a035d",
+        "firstMs": 65.09945900001912,
+        "finalMs": 3098.8697090000205
+      },
+      {
+        "questionId": "Q57",
+        "runId": "6a993f0a-82e3-43fd-bc13-8bdccd44b4d5",
+        "firstMs": 55.87575000000652,
+        "finalMs": 1535.5557079999999
+      },
+      {
+        "questionId": "Q58",
+        "runId": "8d23e735-1ff3-4371-abf4-092aa9da4f1f",
+        "firstMs": 67.62066600000253,
+        "finalMs": 4015.1929999999993
       }
     ]
   },
   "cost": {
-    "providerCalls": 109,
+    "providerCalls": 483,
     "estimatedUsageCalls": 0,
-    "inputTokens": 504903,
+    "inputTokens": 2277745,
     "outputTokens": 0,
-    "modelUsd": 0.050490300000000016,
-    "latencyModelUsdPerQuery": 0.0013299200000000003,
-    "flowDecisionUsdPerQuery": 0.0004745166666666667,
+    "modelUsd": 0.22777449999999985,
+    "latencyModelUsdPerQuery": 0.004296539999999999,
+    "flowDecisionUsdPerQuery": 0.0017753184782608716,
     "xrpDropsSpent": 0,
-    "simulatedMinorSpent": 310,
+    "simulatedMinorSpent": 2960,
     "rates": "eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)"
   },
   "audit": {
-    "runs": 5,
-    "observations": 153,
+    "runs": 10,
+    "observations": 728,
     "violations": [],
     "total": 0,
     "byRule": {
@@ -91,7 +150,8 @@
       "premium_leak": 0,
       "missing_rail_label": 0,
       "royalty_policy": 0,
-      "money_chain_reconciliation": 0
+      "money_chain_reconciliation": 0,
+      "escrow_finish_without_verified_proof": 0
     }
   },
   "external": {
@@ -99,8 +159,8 @@
     "dmgColdStartMs": null
   },
   "counts": {
-    "questions": 24,
-    "coverageSnapshots": 55,
-    "requestedFacts": 26
+    "questions": 92,
+    "coverageSnapshots": 193,
+    "requestedFacts": 92
   }
 }

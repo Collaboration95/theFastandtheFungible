@@ -42,7 +42,26 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 `eval/scorecard/history.jsonl`; paste "before → after" here when a number moves.
 
 
-#276 headline · LIVE, prospectively held-out rates/power (24 questions), 3 Nov:
+Numbers headline · LIVE, 92 new heldout questions / 20 source clusters, 3 Nov:
+
+| Metric | Before (95% CI) | After (95% CI) |
+|---|---:|---:|
+| Wasted gross spend | 52.87% [28.30, 73.31] | 52.87% [28.30, 73.31] |
+| First-purchase F1 (flow) | 0.530 [0.347, 0.673] | 0.530 [0.347, 0.673] |
+| Selection F1 (sweep) | 0.660 [0.479, 0.796] | 0.660 [0.479, 0.796] |
+| Supported-fact uplift | 32.61 pts [20.99, 44.87] | 32.61 pts [20.99, 44.87] |
+
+**No measured improvement; waste target missed.** Paired delta CIs are [0, 0]
+conditional on these model draws. The bank is now 140 questions: 48 historical
+dev + 92 prospective heldout. All earlier work saw the old full bank; source
+documents were visible previously. CIs resample sources, not question paraphrases,
+and remain wide. The policy only vetoes explicit wrong-country substitutions;
+no heldout tuning. LIVE decision/coverage, synthetic corpus, fixture research,
+SIMULATED payments, zero XRP. Final gate audit: 0 / 10 runs / 728 observations.
+Total model spend US$0.8681326 of US$5. Full limitations and root-cause inventory:
+`eval/REPORT-decisions.md` §7 and `docs/evidence/waste-analysis-2026-11-03.md`.
+
+Historical #276 headline · LIVE, prospectively held-out rates/power (24 questions), 3 Nov:
 
 | Metric | Held-out LIVE before → after (headline) | Dev LIVE before → after |
 |---|---:|---:|
@@ -269,6 +288,8 @@ Agents add items there and keep working around them.
 - 3 Nov (#275/#310): preserve SGD budgets and fixed labelled demo FX while adding issuer-bound Testnet payments; use explicitly labelled test USD when the official RLUSD faucet requires authentication. Cancel only unsigned refused royalties and refund the caller atomically; uncertain signatures keep their reservation.
 
 - 3 Nov: UX sledgehammer ([direction](design/UX-DIRECTION.md), #311, #312): one header environment indicator replaces the per-surface SIMULATED/fixture labels, which stay on receipts, refunds, exports and where a model or search is substituted (gate 5 kept, relocated); motion limited to a ten-entry allowlist and #262's money flight is not built (budget-bar and status transitions only); ink-on-paper, Geist-only, seven type sizes, plain copy. Why: 8–10 labels and 30 keyframes per screen read as noise to a UX judge.
+- 3 Nov: Numbers v5 freezes 48 historical dev + 92 new heldout questions (20 source groups) before the policy pair. Cluster-bootstrap CIs, same-vendor author disclosure, and no heldout tuning; the flat 52.87% waste result and wide interval stay visible.
+
 - 3 Nov: #288 audit trail is a hash chain inside the money transactions (`audit_log`), not a separate log; tamper-evident, not signed or notarised, so COMPLIANCE.md says to pin the head. The denylist is a labelled operator hook (fail closed), not sanctions screening; hire-the-agent is documented as receive-and-forward custody, so "we never hold funds" is dropped for that flow.
 - 3 Nov: #288 `data:prune` is an explicit command, default 30 days (long enough to challenge a bad delivery, short enough not to keep paid bodies and questions); it deletes content, never receipts or audit rows.
 - 3 Nov (#276): freeze semis/packaging dev vs rates/power heldout before tuning; marginal expected-facts/S$ is deterministic policy, not model spending authority. Accept receipt fits only by grouped dev rules; identity wins this run. Publish the failed 25% waste target and sweep/dev regressions; no held-out retuning or test loosening.
@@ -308,6 +329,8 @@ Significant product, design and process decisions, newest first. One line each: 
 - 3 Nov: Lane C #275/#310 issued-currency quotes, policy/SDK/receipts, trust-line/reserve preflight and partial-payment rejection; unsigned denylisted royalty cancellation and caller refunds with audit coverage. Full UC2 writer received 0.90 test USD; 2,500-drop refused royalty returned, reserve zero ([evidence](evidence/rlusd-275-refund-310.md)). No `src/` changes.
 
 - 3 Nov: UX direction for the redesign: 11-category anti-pattern audit with 29 before-screenshots, labelling and motion policies, screen specs for plan, payment, verification, refund and receipt; build filed as #311 and #312 ([doc](design/UX-DIRECTION.md)).
+- Lane B Numbers: classify all 10 final wasted purchases in four categories; 140-question bank, source-cluster CIs and explicit country-scope veto. New heldout waste 52.87% → 52.87% [28.30, 73.31], target missed; no quality gain. Zero final audit violations; US$0.8681326 live models; simulated payments.
+
 - 3 Nov: Lane D #288 hash-chained `audit_log` written in the same transaction as each admission, decision, reserve, sign, settle, deliver, proof, refund, refusal and pause; CSV/JSONL receipt export (`audit:export`, `/api/audit/receipts.*`); `audit:verify [--testnet]` (5 of 5 October Testnet payments re-confirmed read-only); hire-the-agent inbound, royalty and change payments covered too; payee denylist tests and audit reason; `data:prune`; [COMPLIANCE.md](COMPLIANCE.md).
 - 3 Nov: Lane C #273 escrow-v1 integrated with the payer queue and durable reconciler; SYNTHETIC product-path Testnet finish 12.107 s, failed-proof cancel 129.448 s with writer offline, 459 drops fees; #288 hash-chain events and escrow-aware audit:verify; [evidence](evidence/escrow-273.md).
 

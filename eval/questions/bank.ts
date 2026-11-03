@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
 
-export const BANK_FILE = fileURLToPath(new URL('./bank.v1.json', import.meta.url))
+export const BANK_FILE = fileURLToPath(new URL('./bank.v2.json', import.meta.url))
 const ARTICLES_DIR = fileURLToPath(new URL('../../data/corpus/v2/articles/', import.meta.url))
 
 /** `need` is the requested fact as frozen text (no answer in it): what a judge or gap sees. `text` is the planted answer. */
@@ -25,7 +25,7 @@ export const QuestionSchema = z.object({
 })
 export const BankSchema = z.object({
   version: z.number().int().positive(), corpus: z.string(), builtAt: z.string(), label: z.string(),
-  generator: z.object({ author: z.string(), vendor: z.string(), judgedModels: z.array(z.string()), vendorDiffersFromJudged: z.literal(true), method: z.array(z.string()) }),
+  generator: z.object({ author: z.string(), vendor: z.string(), judgedModels: z.array(z.string()), vendorDiffersFromJudged: z.boolean(), method: z.array(z.string()) }),
   humanReview: z.object({ status: z.enum(['pending', 'partial', 'done']), sample: z.array(z.string()), instructions: z.string() }),
   corpusSensitivity: z.record(z.string(), z.string()),
   questions: z.array(QuestionSchema).min(40),

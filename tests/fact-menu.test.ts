@@ -15,7 +15,7 @@ import { EVIDENCE } from '../server/agents/openai-decisions.js'
 describe('fact menu (#260)', () => {
   it('preserves the pre-menu bank, prose and constructed coverage snapshots', async () => {
     const before = JSON.parse(readFileSync('eval/scorecard/frozen-pre-fact-menu.json', 'utf8'))
-    const after = await frozenInputs()
+    const after = await frozenInputs('eval/questions/bank.v1.json')
     expect(after.bank).toBe(before.bank)
     expect(after.corpusContent).toBe(before.corpus)
     expect(after.snapshots).toBe(before.snapshots)
