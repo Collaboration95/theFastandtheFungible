@@ -46,7 +46,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const files = productFiles()
   const groups = summarize(JSON.parse(readFileSync('coverage/coverage-summary.json', 'utf8')), files)
   const evidence = 'docs/evidence/round2-b/'
-  const report = { sha: execFileSync('git', ['rev-parse', 'HEAD']).toString().trim(), runner: process.platform + '/' + process.arch + ' ' + process.version, components: groups }
+  const report = { sha: execFileSync('git', ['rev-parse', 'HEAD']).toString().trim(), worktreeDirty: Boolean(execFileSync('git', ['status', '--porcelain']).toString().trim()), runner: process.platform + '/' + process.arch + ' ' + process.version, components: groups }
   if (process.argv.includes('--baseline')) {
     writeFileSync(evidence + 'coverage-baseline.json', JSON.stringify(report, null, 2) + '\n')
     writeFileSync(evidence + 'component-map.json', JSON.stringify(Object.fromEntries(files.map(path => [path, component(path)])), null, 2) + '\n')

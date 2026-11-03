@@ -51,3 +51,27 @@ describe('issued payment refusal before signing (synthetic ledger)', () => {
     expect(XrplPayer.checkTerms({ ...terms, invoiceId: 'CD' }, 1, 1000, 'AB')).toContain('InvoiceID')
   })
 })
+
+// A receipt consumer must refuse citations without delivery/grant provenance.
+import { presentRun } from '../sdk/present.js'
+import { Store } from '../server/store.js'
+import type { RunSnapshot } from '../shared/contracts/run.js'
+it.each(['missing passage', 'missing candidate', 'paid without grant'])('refuses %s in the SDK presentation', fault => {
+  const store = new Store(':memory:')
+  try {
+    const run = store.getRun(store.createRun('fixture', 100).runId)
+    const citation = { resourceId: 'paid', version: 'v1', spanId: 's1' }
+    run.answers = [{ claims: [{ id: 'claim', citations: [citation] }] }] as RunSnapshot['answers']
+    if (fault !== 'missing passage') run.contents = [{ resourceId: 'paid', version: 'v1', profileId: 'writer', publisher: 'Fixture', spans: [{ id: 's1', text: 'fixture evidence' }] }] as RunSnapshot['contents']
+    if (fault === 'paid without grant') run.candidates = [{ resourceId: 'paid', version: 'v1', profileId: 'writer', tier: 'PAID' }] as RunSnapshot['candidates']
+    expect(() => presentRun(run, 'http://localhost')).toThrow(/Citation has no/)
+  } finally { store.close() }
+})
+it('keeps a refused purchase visible without inventing a receipt or explorer link', () => {
+  const store = new Store(':memory:')
+  try {
+    const run = store.getRun(store.createRun('fixture', 100).runId)
+    run.intents = [{ intentId: 'denied', profileId: 'writer', resourceId: 'paid', amountMinor: 10, status: 'FAILED_NOT_SETTLED' }] as RunSnapshot['intents']
+    expect(presentRun(run, 'http://localhost').purchases[0]).toMatchObject({ writer: 'writer', txHash: null, explorerUrl: null, settlementAmount: null, verified: false })
+  } finally { store.close() }
+})
