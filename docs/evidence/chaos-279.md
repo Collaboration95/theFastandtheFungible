@@ -35,7 +35,7 @@ latencies are in `latencyMs`. The baseline soak drift was **+3223 ms**, and the
 separate pass drift **+7918 ms**. Local test/build and competing chaos load
 varied during these runs; this mixes fresh process startup, fault selection and
 host contention. It is neither live ledger latency nor evidence of single-engine
-memory stability. Maximum child RSS was 1.37–1.38 GB (decimal), maximum active
+memory stability. Maximum sampled child RSS at iteration end was 1.37–1.38 GB (decimal), maximum active
 resources 105–107. Stores were removed each iteration; summary/log files stayed
 small and contain no wallet seeds, signed blobs or premium bodies.
 
@@ -55,7 +55,7 @@ retain ledger/publisher state over Store/manager restart and assert one principa
 one terminal operation, one receipt, no open object or reserved authority, and no
 accessible pending/failed-proof bytes. Their policy BUY is controlled synthetic
 input; the main UC scenarios execute the actual policy loop. Escrow restart is
-not a separate process-kill claim. Maximum main child RSS was **922 MB** (decimal),
+not a separate process-kill claim. Maximum sampled main child RSS at iteration end was **922 MB** (decimal),
 maximum active resources **105**, first/last 100-iteration p95 drift **−1217 ms**.
 This is a mixed-fault recovery measurement, not a production performance claim.
 
@@ -63,8 +63,12 @@ The two completed 30-minute soaks total **1179 main fault episodes in one hour**
 with the separate 500-iteration pass, **1679 main episodes and 423 SIGKILLs**.
 The 124 escrow probes are additional, not hidden in the main count. All three
 completed experiments passed. The interrupted experiment below remains separate.
-These are historical source-pinned runs: later main changes (#319/#320) are
-covered by the final rebased CI smoke, not retroactively by these hour-long runs.
+These are historical source-pinned runs: later main changes (#319/#320/#324)
+are covered by the final rebased CI smoke, not retroactively by these hour-long
+runs. The first post-soak rebase passed 692 tests in 85 files, build and 20 main
+chaos iterations plus four escrow probes ([check evidence](chaos-279-integration-check.json)).
+An initial calibration-sweep timeout (existing 5 s limit, alongside a build)
+passed on an unchanged gate retry; no timeout was raised.
 
 ## Reproduce and limits
 
