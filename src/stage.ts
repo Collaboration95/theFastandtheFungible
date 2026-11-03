@@ -1,3 +1,4 @@
+import { sameSource, sourceKey } from '../shared/source-identity.js'
 import { IntentStatusSchema, type PurchaseIntent, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
 
 /* Stage pacing. A fixture run finishes in under 100 ms, so the screen replays the
@@ -62,11 +63,11 @@ export function staged(run: RunSnapshot, cursor: number): RunSnapshot {
   const answers = [...run.answers].sort((a, b) => a.version - b.version).slice(0, ready)
   // What the focused follow-up search added (#210) appears once its result event has happened.
   const added = new Set(count('FOLLOW_UP') >= 2 ? [] : (run.checkpoint.followUp as { added?: string[] } | undefined)?.added ?? [])
-  const early = (item: { resourceId: string; version: string }) => added.has(`${item.resourceId}@${item.version}`)
+  const early = (item: { resourceId: string; version: string }) => added.has(sourceKey(item))
   return {
     ...run, phase, stopped: false, error: undefined, reportStatus: 'NONE', events,
     candidates: count('SEARCH') ? run.candidates.filter(item => !early(item)) : [],
-    contents: count('READ_FREE') ? run.contents.filter(item => !early(item) && (run.candidates.some(candidate => candidate.tier === 'FREE' && candidate.resourceId === item.resourceId && candidate.version === item.version) || run.grants.some(grant => verified.has(grant.intentId) && grant.resourceId === item.resourceId && grant.version === item.version))) : [],
+    contents: count('READ_FREE') ? run.contents.filter(item => !early(item) && (run.candidates.some(candidate => candidate.tier === 'FREE' && sameSource(candidate, item)) || run.grants.some(grant => verified.has(grant.intentId) && sameSource(grant, item)))) : [],
     answers, impact: answers.length > 1 ? run.impact : undefined,
     decisions: run.decisions.slice(0, count('DECIDE')), round: Math.min(run.round, count('DECIDE')),
     intents,

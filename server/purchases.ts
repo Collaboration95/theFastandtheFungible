@@ -1,3 +1,4 @@
+import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
 import { AssetSchema, ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
 import { EscrowPurchases, escrowSelected } from './escrow.js'
 import { screenPayee } from './payee-screening.js'
@@ -49,11 +50,14 @@ export class PurchaseManager {
     return pending
   }
   async purchase(input: Purchase): Promise<PurchaseIntent> {
-    const identity = JSON.stringify([input.runId, input.candidate.profileId, input.candidate.resourceId, input.candidate.version, input.candidate.price.amountMinor])
+    const boundManifest = input.manifest ?? input.candidate.manifest
+    if (input.candidate.source && boundManifest && input.candidate.source.sellerKey !== boundManifest.pubKey) throw new Error('Source seller key identity mismatch')
+    if (!sourceBinding(input.candidate)) throw new Error('Source identity mismatch')
+    const identity = JSON.stringify([input.runId, sourceKey(input.candidate), input.candidate.profileId, input.candidate.resourceId, input.candidate.version, input.candidate.price.amountMinor])
     const activeIdentity = this.identities.get(input.intentId)
     if (activeIdentity && activeIdentity !== identity) throw new Error('Intent identity mismatch')
     const existing = this.store.getIntent(input.intentId)
-    if (existing && (existing.runId !== input.runId || existing.profileId !== input.candidate.profileId || existing.resourceId !== input.candidate.resourceId || existing.version !== input.candidate.version || existing.amountMinor !== input.candidate.price.amountMinor)) throw new Error('Intent identity mismatch')
+    if (existing && (!sameSource(existing, input.candidate) || existing.runId !== input.runId || existing.profileId !== input.candidate.profileId || existing.resourceId !== input.candidate.resourceId || existing.version !== input.candidate.version || existing.amountMinor !== input.candidate.price.amountMinor)) throw new Error('Intent identity mismatch')
     this.identities.set(input.intentId, identity)
     // Traced as a tool: the 402 / quote / XRPL / verify / grant events nest under it.
     try {
@@ -79,19 +83,19 @@ export class PurchaseManager {
       if (candidate.tier !== 'PAID') throw new Error('Purchase requires paid public candidate')
       // The unpaid GET is visible as 402 and carries the x402 v2 terms in PAYMENT-REQUIRED, never a body.
       const paidPath = PublisherClient.paidPath(candidate)
-      const first = await this.client.paidGet(paidPath, undefined, this.wire(runId))
+      const first = await this.client.forSource(candidate.source).paidGet(paidPath, undefined, this.wire(runId))
       if (first.status === 200) throw new Error('Paid content did not require payment')
       if (first.status !== 402 || !first.required) throw new PublisherHttpError(first.status)
       const accepted = first.required.accepts[0]
       const invoiceId = accepted.extra.invoiceId
       const quoteHash = ledgerInvoiceId(invoiceId)
       const quote: Quote = {
-        runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version,
+        source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version,
         quoteId: invoiceId, quoteHash, amountMinor: accepted.asset === 'XRP' ? Math.floor(Number(accepted.amount) / DROPS_PER_MINOR) : Math.round(Number(accepted.amount) * 100), currency: 'SGD',
         expiresAt: new Date(Date.now() + accepted.maxTimeoutSeconds * 1000).toISOString(), contentDigest: invoiceFields(invoiceId)?.manifestRoot ?? '',
         payment: { rail: first.required.resource.description === XRPL_LABEL ? 'xrpl-testnet' : 'simulated', network: accepted.network, asset: accepted.asset, payTo: accepted.payTo, amountDrops: accepted.amount, invoiceId: quoteHash },
       }
-      intent = this.store.reserveIntent({ runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, quote, paidPath, status: 'QUOTED' })
+      intent = this.store.reserveIntent({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, quote, paidPath, status: 'QUOTED' })
       this.store.appendEvent(runId, { type: 'PURCHASE', label: intent.status, data: { intentId, status: intent.status } })
       // The proof check after delivery runs against exactly this manifest (#131).
       if (intent.status === 'RESERVED' && manifest) this.store.recordManifest(intentId, manifest)
@@ -137,6 +141,7 @@ export class PurchaseManager {
     // Recompute invoiceId instead of trusting the publisher: it must bind this article version, amount, payee and root.
     if (!bound || invoiceIdFor(bound) !== quote.quoteId || bound.articleId !== intent.resourceId || bound.version !== intent.version || bound.amount !== terms.amountDrops || bound.payTo !== terms.payTo || !matchesAmount(ledgerAmount(bound.amount, bound.asset), terms.amountDrops, terms.asset)) return 'x402 invoiceId does not bind this purchase; nothing was charged'
     // The root comes from the candidate's verified search manifest, never from the publisher's own 402.
+    if (candidate.source && (!manifest || candidate.source.sellerKey !== manifest.pubKey)) return 'Source seller key differs from signed manifest'
     if (!manifest) return 'No verified manifest for this candidate; nothing was charged'
     if (!verifyManifestSignature(manifest) || manifest.root !== bound.manifestRoot || manifest.articleId !== intent.resourceId || manifest.version !== intent.version || manifest.publisherSlug !== intent.profileId) return 'x402 invoiceId does not bind the signed manifest; nothing was charged'
     return undefined
@@ -150,9 +155,9 @@ export class PurchaseManager {
   }
   private send(intent: PurchaseIntent, submission: Submission): Promise<PaidResult> {
     if (this.payer.rail === 'simulated' && process.env.RA_DESKTOP_CRASH_TEST === '1') {
-      return new Promise<void>(done => setTimeout(done, 1500)).then(() => this.client.paidGet(intent.paidPath!, this.signatureHeader(intent, submission), this.wire(intent.runId)))
+      return new Promise<void>(done => setTimeout(done, 1500)).then(() => this.client.forSource(intent.source, true).paidGet(intent.paidPath!, this.signatureHeader(intent, submission), this.wire(intent.runId)))
     }
-    return this.client.paidGet(intent.paidPath!, this.signatureHeader(intent, submission), this.wire(intent.runId))
+    return this.client.forSource(intent.source, true).paidGet(intent.paidPath!, this.signatureHeader(intent, submission), this.wire(intent.runId))
   }
   /** Sign once per intent (blob persisted write-once before it leaves), then the facilitator submits it. */
   private async payAndSettle(intent: PurchaseIntent): Promise<void> {
@@ -204,7 +209,7 @@ export class PurchaseManager {
   }
   private recordConfirmed(intent: PurchaseIntent, submission: Submission, proof?: LedgerProof) {
     const xrpl = proof ? { ...proof, explorerUrl: explorer(submission.txHash) } : undefined
-    this.store.recordSettlement(intent.intentId, { receiptId: `x402-${submission.txHash}`, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, amountMinor: intent.amountMinor, currency: 'SGD', settledAt: new Date().toISOString(), label: xrpl ? XRPL_LABEL : SIMULATED_LABEL, ...(xrpl ? { xrpl } : {}) }, submission.txHash)
+    this.store.recordSettlement(intent.intentId, { receiptId: `x402-${submission.txHash}`, intentId: intent.intentId, source: intent.source, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, amountMinor: intent.amountMinor, currency: 'SGD', settledAt: new Date().toISOString(), label: xrpl ? XRPL_LABEL : SIMULATED_LABEL, ...(xrpl ? { xrpl } : {}) }, submission.txHash)
   }
   /** XRPL: only the ledger can prove that a signed payment never applied (failed, or expired past LastLedgerSequence). */
   private async releaseIfLedgerProvesNoCharge(intent: PurchaseIntent, submission: Submission): Promise<boolean> {
@@ -236,8 +241,8 @@ export class PurchaseManager {
       }
       const paid = DeliverySchema.parse(delivery)
       if (paid.articleId !== intent.resourceId || paid.version !== intent.version) throw new Error('Delivery identity mismatch')
-      const content: ContentEnvelope = { profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: paid.title, publisher: paid.publisher, body: paid.body, spans: paid.passages }
-      this.store.addGrant({ runId: intent.runId, resourceId: intent.resourceId, version: intent.version, intentId: intent.intentId, contentDigest: intent.quote!.contentDigest, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: paid.salts })
+      const content: ContentEnvelope = { source: intent.source, profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: paid.title, publisher: paid.publisher, body: paid.body, spans: paid.passages }
+      this.store.addGrant({ source: intent.source, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, intentId: intent.intentId, contentDigest: intent.quote!.contentDigest, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: paid.salts })
       // Only the proof check makes the grant accessible; a failure quarantines it (never cited).
       const proof = checkProof(this.store, intent.intentId)
       recordStep('proof-check', { intentId: intent.intentId, resourceId: intent.resourceId }, { status: proof.status, failedClaimIds: proof.failedClaimIds ?? [] })

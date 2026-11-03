@@ -1,3 +1,4 @@
+import { SourceIdentitySchema } from '../source-identity.js'
 import { z } from 'zod'
 import { ManifestSchema } from './manifest.js'
 export const PriceSchema = z.object({ amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD') })
@@ -5,13 +6,12 @@ export const SpanSchema = z.object({ id: z.string().min(1), text: z.string().min
 /** Engine-side trust view of a seller of record (D6, D21); see ReputationRecordSchema in decision.ts. */
 export const ReputationSummarySchema = z.object({ H: z.number().min(0).max(1), C: z.number().min(0).max(1), T: z.number().min(0).max(1), status: z.enum(['active', 'quarantined', 'delisted']) })
 /**
- * Identity mapping (W0, #115; decided once so #130, #131, #138 and #142 agree):
- * on candidates, intents, grants and contents, `profileId` = publisher slug and
- * `resourceId` = article id (globally unique); `version` is unchanged. The new
- * fields below are additive, so `server/store.ts` keeps its storage keys.
+ * profileId and resourceId stay publisher-local and signed bytes are unchanged.
+ * Federated sources carry canonical routing identity in `source` version 1.
+ * Missing source is historical singleton identity, never guessed from new config.
  */
 export const PublicCandidateSchema = z.object({
-  profileId: z.string().min(1), resourceId: z.string().min(1), version: z.string().min(1),
+  source: SourceIdentitySchema.optional(), profileId: z.string().min(1), resourceId: z.string().min(1), version: z.string().min(1),
   title: z.string().min(1), publisher: z.string().min(1), preview: z.string().min(1),
   // A paid publisher's public XRPL Testnet address: where its readers pay (#98 phase 2).
   price: PriceSchema, wallet: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/).optional(), family: z.string().min(1), derivedFrom: z.string().optional(),
@@ -27,11 +27,11 @@ export const PublicCandidateSchema = z.object({
   manifest: ManifestSchema.optional(),
 })
 export const ContentEnvelopeSchema = z.object({
-  profileId: z.string(), resourceId: z.string(), version: z.string(), title: z.string(), publisher: z.string(),
+  source: SourceIdentitySchema.optional(), profileId: z.string(), resourceId: z.string(), version: z.string(), title: z.string(), publisher: z.string(),
   body: z.string().min(1), spans: z.array(SpanSchema).min(1),
   verification: z.object({ manifest: ManifestSchema, salts: z.array(z.string()) }).optional(),
 })
 export type ReputationSummary = z.infer<typeof ReputationSummarySchema>
 export type PublicCandidate = z.infer<typeof PublicCandidateSchema>
-export type PublicSourceRef = Pick<PublicCandidate, 'resourceId' | 'version' | 'title' | 'publisher' | 'family' | 'facets'>
+export type PublicSourceRef = Pick<PublicCandidate, 'source' | 'resourceId' | 'version' | 'title' | 'publisher' | 'family' | 'facets'>
 export type ContentEnvelope = z.infer<typeof ContentEnvelopeSchema>

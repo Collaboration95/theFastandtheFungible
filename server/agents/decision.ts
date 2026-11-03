@@ -1,3 +1,4 @@
+import { sourceKey } from '../../shared/source-identity.js'
 import { factMenuMismatch, scopeContradiction } from './scope-policy.js'
 import { activeValueFit, marginalValue } from './value-policy.js'
 import { quotedText } from './untrusted.js'
@@ -35,7 +36,7 @@ export interface DecisionProvider {
   judgeCoverage?(input: CoverageInput & Signal): Promise<Record<string, CoverageStatus>>
 }
 export type CoverageInput = { question: string; requirements: Pick<Requirement, 'id' | 'text'>[]; evidence: CoverageEvidence[] }
-const SourceRefSchema = PublicCandidateSchema.pick({ resourceId: true, version: true, title: true, publisher: true, family: true, facets: true })
+const SourceRefSchema = PublicCandidateSchema.pick({ source: true, resourceId: true, version: true, title: true, publisher: true, family: true, facets: true })
 // W3-LIVE: both matched tables selected the grid report; retain flash for latency.
 // Flash grid value reached 0.1743 while the live supplier maximum was 0.0508.
 // Use 0.15 for flash; fixture stays 0.20 and larger Clef stays 0.35.
@@ -240,7 +241,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // Its threshold is on the calibrated scale; an explicit threshold still wins, and BUY_THRESHOLD (raw scale) never applies to it.
   const calibrator = open && provider.name !== 'compatible' ? activeCalibrator(provider) : undefined
   const threshold = calibrator && input.threshold === undefined ? calibrator.buyThreshold : buyThreshold(provider.model, input.threshold)
-  const acquired = new Set([...input.readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
+  const acquired = new Set([...input.readSources.map(source => source.source ? sourceKey(source) : source.resourceId), ...(input.boughtResourceIds ?? [])])
   const valueFit = provider.name === 'compatible' ? undefined : activeValueFit(provider)
   const useValuePolicy = input.requirement && input.accessibleEvidence !== undefined && process.env.DECISION_VALUE_POLICY !== 'off'
   const rows = candidates.map((candidate, index) => {
@@ -262,7 +263,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     // A rewrite is labelled as one even when no gap is open (story bible UC1).
     if (provider.name === 'compatible') { verdict = 'SKIP_LOW_VALUE'; reason = 'UNCALIBRATED generic judge: purchases disabled.' }
     else if (reputation && reputation.status !== 'active') { verdict = 'SKIP_LOW_TRUST'; reason = `Publisher ${reputation.status}: never bought or cited.` }
-    else if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || rewrite) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
+    else if (acquired.has(candidate.source ? sourceKey(candidate) : candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || rewrite) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
     else if (!open) { verdict = 'SKIP_NO_GAP'; reason = NO_GAP_NOT_CALLED }
     else if (gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
     else if (process.env.DECISION_SCOPE_POLICY !== 'off' && input.requirement && scopeContradiction(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Public source scope contradicts the requested country; model confidence cannot authorize this purchase.' }
@@ -274,6 +275,6 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}), ...(marginal ? { marginalValue: { ...marginal, ...(valueFit ? { fitVersion: valueFit.version } : {}) }, reason: verdict === 'BUY' ? `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} >= ${marginal.threshold.toFixed(3)}; spending policy clears.` : reason } : {}) }
   })
   // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
-  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.resourceId, version: b.candidate.version }))[0]
-  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), ...(calibrator ? { calibration: roundCalibration(calibrator) } : {}), threshold, rows, ...(selected ? { selectedResourceId: selected.candidate.resourceId } : {}) })
+  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
+  return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), ...(calibrator ? { calibration: roundCalibration(calibrator) } : {}), threshold, rows, ...(selected ? { selectedSourceKey: sourceKey(selected.candidate), selectedResourceId: selected.candidate.resourceId } : {}) })
 }

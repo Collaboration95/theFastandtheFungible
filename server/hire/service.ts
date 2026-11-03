@@ -1,3 +1,5 @@
+import { sourceKey } from '../../shared/source-identity.js'
+import { deriveAddress } from 'ripple-keypairs'
 import { Router } from 'express'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
@@ -42,9 +44,30 @@ export function hireService(context: ApiContext) {
     }
     run = store.getRun(runId)
     const savedAddresses = hires.get(hire.key)!.writerAddresses
-    const registry = savedAddresses ? [] : await context.client.registry()
-    const addresses = hires.patch(hire.key, { writerAddresses: savedAddresses ?? Object.fromEntries(registry.filter(p => p.wallet).map(p => [p.slug, p.wallet!])) }).writerAddresses!
-    const royalties = royaltyPlan(run, addresses)
+    const addresses = savedAddresses ?? await (async () => {
+      const origins=context.client.origins()
+      const discovered=await Promise.allSettled(origins.map(async origin => ({origin:origin.origin,writers:await origin.registry()})))
+      const roster=discovered.flatMap(r=>r.status === 'fulfilled' ? [r.value] : [])
+      const resolved: Record<string,string>={}
+      for (const candidate of run.candidates) {
+        if (!candidate.source) {
+          if (origins.length === 1 && !origins[0].options.federated) {
+            const writer=roster[0]?.writers.find(w=>w.slug === candidate.profileId)
+            if(writer?.wallet) resolved[candidate.profileId]=writer.wallet
+          }
+          continue
+        }
+        const writer=roster.find(r=>r.origin === candidate.source!.origin)?.writers.find(w=>w.slug === candidate.profileId)
+        try { if (writer?.wallet && deriveAddress(candidate.source.sellerKey) === writer.wallet) resolved[sourceKey(candidate)]=writer.wallet } catch { /* unresolved signing key pays nobody */ }
+      }
+      return hires.patch(hire.key,{writerAddresses:resolved}).writerAddresses!
+    })()
+    let royalties
+    try { royalties=royaltyPlan(run,addresses) }
+    catch {
+      store.appendEvent(runId,{type:'ROYALTY_UNRESOLVED',label:'Unresolved writer identity; no royalty payment authorized'})
+      throw new Error('Unresolved writer identity; no royalty payment authorized')
+    }
     const change = changePlan(run, hire.budgetMinor, principal)
     store.reservePolicyPayments(runId, [...royalties, ...change])
     for (const payment of store.policyPayments(runId)) {

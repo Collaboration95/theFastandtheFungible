@@ -1,3 +1,4 @@
+import { sameSource } from '../../shared/source-identity.js'
 /* eslint-disable react-refresh/only-export-components -- Shared validation for impact/report components. */
 import type { ReactNode } from 'react'
 import { AnswerSchema, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
@@ -10,7 +11,7 @@ export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): Answe
   const parsed = AnswerSchema.safeParse(answer)
   if (!parsed.success) return undefined
   const claims = parsed.data.claims.filter(claim => claim.citations.every(citation => {
-    const candidate = run.candidates.find(item => item.resourceId === citation.resourceId && item.version === citation.version)
+    const candidate = run.candidates.find(item => sameSource(item, citation))
     const content = candidate && getAccessibleContent(run, candidate)
     const span = content?.spans.find(item => item.id === citation.spanId)
     return !!span && !!content?.body.includes(span.text)

@@ -1,3 +1,4 @@
+import { sourceKey, sameSource, citationIdentity } from '../../shared/source-identity.js'
 import { loadConfig } from '../config.js'
 import { activeTraceUrl, scoreTrace, traceRun } from '../telemetry.js'
 import type { Store } from '../store.js'
@@ -28,7 +29,7 @@ export function coverageImproves(next: Coverage['entries'], current?: Coverage['
   const [a, b] = score(next), [c, d] = score(current)
   return a > c || (a === c && b > d)
 }
-const identity = (c: { resourceId: string; version: string }) => `${c.resourceId}@${c.version}`
+const identity = sourceKey
 /**
  * A proof's end state as reputation evidence (D5); anything else is not an outcome yet. Read only after a
  * challenge was attempted, so CLAIM_FAILED means it could not be challenged (root mismatch, no re-checkable
@@ -60,7 +61,7 @@ export class RunLoop {
     const run = this.store.getRun(runId)
     const recorded = Array.isArray(run.checkpoint.trustRecorded) ? run.checkpoint.trustRecorded as string[] : []
     const outcome = OUTCOME[intent.status]
-    const candidate = run.candidates.find(c => c.resourceId === intent.resourceId && c.version === intent.version && c.tier === 'PAID')
+    const candidate = run.candidates.find(c => sameSource(c, intent) && c.tier === 'PAID')
     if (!outcome || recorded.includes(intent.intentId) || !candidate?.wallet || !this.options.reputation?.recordProof) return
     try {
       // The signed promise goes along: a failed proof records it as broken (observed 0, #205).
@@ -108,8 +109,8 @@ export class RunLoop {
   }
   private accessible(run: RunSnapshot): ContentEnvelope[] {
     return run.contents.map(content => {
-      const free = run.candidates.some(candidate => candidate.tier === 'FREE' && candidate.resourceId === content.resourceId && candidate.version === content.version && candidate.profileId === content.profileId)
-      const granted = run.grants.some(grant => grant.runId === run.runId && grant.resourceId === content.resourceId && grant.version === content.version && run.intents.some(intent => intent.intentId === grant.intentId && intent.runId === run.runId && intent.status === 'VERIFIED' && intent.resourceId === content.resourceId && intent.version === content.version))
+      const free = run.candidates.some(candidate => candidate.tier === 'FREE' && sameSource(candidate, content) && candidate.profileId === content.profileId)
+      const granted = run.grants.some(grant => grant.runId === run.runId && sameSource(grant, content) && run.intents.some(intent => intent.intentId === grant.intentId && intent.runId === run.runId && intent.status === 'VERIFIED' && sameSource(intent, content)))
       if (!free && !granted) throw new Error('Content lacks an accessible grant')
       return structuredClone(content)
     })
@@ -182,7 +183,7 @@ export class RunLoop {
   private evidence(contents: ContentEnvelope[], refs: { resourceId: string; version: string; spanId: string }[]): CoverageEvidence[] {
     const seen = new Set<string>()
     return refs.flatMap(ref => {
-      const key = `${ref.resourceId}@${ref.version}#${ref.spanId}`
+      const key = citationIdentity(ref)
       const span = resolveCitation(ref, contents)
       if (!span || seen.has(key) || INSTRUCTION.test(span.text)) return []
       seen.add(key)
@@ -282,7 +283,7 @@ export class RunLoop {
     const paidFound = added.filter(c => c.tier === 'PAID').length
     // Does a new free passage answer an open fact? One coverage request over the new passages only.
     const open = this.openRequirements(latest)
-    const fresh = this.evidence(this.accessible(latest), usableContents(contents).flatMap(c => c.spans.map(s => ({ resourceId: c.resourceId, version: c.version, spanId: s.id }))))
+    const fresh = this.evidence(this.accessible(latest), usableContents(contents).flatMap(c => c.spans.map(s => ({ source: c.source, resourceId: c.resourceId, version: c.version, spanId: s.id }))))
     const check = open.length && fresh.length ? await this.judgeCoverage(latest.question, open, fresh, this.signal(runId)) : undefined
     const current = (id: string) => coverage?.entries.find(e => e.requirementId === id)?.status ?? 'unknown'
     const helped = check ? open.filter(r => STATUS_RANK[check.statuses[r.id] ?? 'unknown'] > STATUS_RANK[current(r.id)]).map(r => r.id) : []
@@ -364,7 +365,7 @@ export class RunLoop {
           this.store.appendEvent(runId, { type: 'SEARCH', label: `${retrieved.hits.length} hits from ${Object.keys(perPublisher).length} writers · ${retrieved.search ?? 'no results'}${retrieved.unavailable?.length ? ` · unavailable: ${retrieved.unavailable.join(', ')}` : ''}`, data: { perPublisher, searchMode: retrieved.search ?? null, unavailable: retrieved.unavailable ?? [], dropped: retrieved.dropped?.length ?? 0 } })
         }
         const candidates = retrieved.candidates.map(candidate => PublicCandidateSchema.parse(candidate))
-        if (retrieved.contents.some(content => !candidates.some(candidate => candidate.tier === 'FREE' && candidate.resourceId === content.resourceId && candidate.version === content.version && candidate.profileId === content.profileId))) throw new Error('Retrieval returned ungranted paid content')
+        if (retrieved.contents.some(content => !candidates.some(candidate => candidate.tier === 'FREE' && sameSource(candidate, content) && candidate.profileId === content.profileId))) throw new Error('Retrieval returned ungranted paid content')
         this.store.updateRun(runId, { candidates })
         for (const content of retrieved.contents) this.store.addContent(runId, structuredClone(content))
         await this.answer(runId)
@@ -409,10 +410,10 @@ export class RunLoop {
         this.store.updateRun(runId, { round })
         this.trace(runId, 'DECIDE', 'Scoring public previews and applying spending policy.')
         const contents = this.accessible(run)
-        const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => content.resourceId === candidate.resourceId && content.version === candidate.version)))
+        const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => sameSource(content, candidate))))
         let decision: Awaited<ReturnType<typeof decide>>
         try {
-          decision = await decide({ signal: this.signal(runId), question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, accessibleEvidence: contents, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
+          decision = await decide({ signal: this.signal(runId), question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, accessibleEvidence: contents, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.source ? sourceKey(intent) : intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
         } catch (error) {
           if (!(error instanceof DecisionUnavailableError)) throw error
           if (this.signal(runId).aborted) { this.trace(runId, 'STOPPED', 'Provider work cancelled after Stop.'); return }
@@ -429,8 +430,8 @@ export class RunLoop {
           stopReason = !legacyGap?.text.trim() ? 'complete' : decision.rows.some(r => r.verdict === 'SKIP_OVER_BUDGET') ? 'budget-exhausted' : 'no-eligible-purchase'
           break
         }
-        const candidate = decision.rows.find(row => row.candidate.resourceId === decision.selectedResourceId)!.candidate
-        const intentId = `${runId}:${round}:${candidate.resourceId}:${candidate.version}`
+        const candidate = decision.rows.find(row => decision.selectedSourceKey ? sourceKey(row.candidate) === decision.selectedSourceKey : row.candidate.resourceId === decision.selectedResourceId)!.candidate
+        const intentId = candidate.source ? JSON.stringify([runId, round, sourceKey(candidate)]) : `${runId}:${round}:${candidate.resourceId}:${candidate.version}`
         this.trace(runId, 'BUY', 'Policy selected one purchase within budget.', { intentId })
         // No await between the Stop gate and handing off to the transactional ledger.
         if (this.stopped(runId)) return

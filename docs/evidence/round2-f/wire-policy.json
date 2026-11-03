@@ -1,0 +1,14 @@
+{
+  "topology": "pinned-local-origin; public remote federation deferred",
+  "origins": 3,
+  "concurrentHttpRequests": 4,
+  "discoveryDeadlineMs": 2000,
+  "writersPerOrigin": 50,
+  "hitsPerQuery": 50,
+  "registrySearchChallengeCapBytes": 262144,
+  "deliveryCapBytes": 2097152,
+  "endpointPolicy": "Reuse #347 validateProviderUrl, narrow to numeric 127.0.0.1 or ::1 origin, no DNS. Fetch redirects error.",
+  "credentials": "Engine bearer is never sent. Signature stays on saved source endpoint. Delivery token is never sent across origins. Absolute, protocol-relative, encoded slash and backslash article URLs rejected before network.",
+  "adversarialTests": "tests/source-identity.test.ts (19 tests) plus tests/purchase.test.ts saved-endpoint recovery and multi-origin/UI collision regressions",
+  "evidenceClass": "offline fixtures only; no Testnet or live providers"
+}

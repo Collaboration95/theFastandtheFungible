@@ -24,7 +24,7 @@ export const decisionLabel = (round: { provider: DecisionProviderName; model: st
  * `gapMaterialSource` (#208): 'requirement' when the gap is a frozen requested fact, which is part of the question by
  * construction, so gapMaterial is 1 and the model is not asked; 'model' (or absent, older runs) when the model scored it.
  */
-export const DecisionRoundSchema = z.object({ round: z.number().int().positive(), gap: z.string(), gapMaterial: z.number().min(0).max(1), gapMaterialSource: z.enum(['model', 'requirement']).optional(), provider: DecisionProviderSchema, model: z.string(), promptVersion: z.string().optional(), calibration: RoundCalibrationSchema.optional(), threshold: z.number().min(0).max(1), rows: z.array(DecisionRowSchema), selectedResourceId: z.string().optional(), fallbackReason: z.string().optional() })
+export const DecisionRoundSchema = z.object({ round: z.number().int().positive(), gap: z.string(), gapMaterial: z.number().min(0).max(1), gapMaterialSource: z.enum(['model', 'requirement']).optional(), provider: DecisionProviderSchema, model: z.string(), promptVersion: z.string().optional(), calibration: RoundCalibrationSchema.optional(), threshold: z.number().min(0).max(1), rows: z.array(DecisionRowSchema), selectedSourceKey: z.string().optional(), selectedResourceId: z.string().optional(), fallbackReason: z.string().optional() })
 export type CandidateJudgment = z.infer<typeof CandidateJudgmentSchema>
 export type DecisionRow = z.infer<typeof DecisionRowSchema>
 export type DecisionRound = z.infer<typeof DecisionRoundSchema>

@@ -1,3 +1,4 @@
+import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
 import { AgentKeys, AgentDenied } from './agent-keys.js'
 import { decode } from 'xrpl'
 import type { EscrowRecord, EscrowOperation, EscrowOutbox } from './escrow-state.js'
@@ -23,8 +24,8 @@ const chargedStatuses = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED
 /** Proof checked (D4/D5): delivery is over, whatever the verdict. */
 export const PROVEN_STATUSES = new Set(['VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
 const CHALLENGE_OUTCOMES = new Set(['REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
-type ResourceIdentity = Pick<ContentEnvelope, 'profileId' | 'resourceId' | 'version'>
-const sameResource = (a: ResourceIdentity, b: ResourceIdentity) => a.profileId === b.profileId && a.resourceId === b.resourceId && a.version === b.version
+type ResourceIdentity = Pick<ContentEnvelope, 'profileId' | 'resourceId' | 'version' | 'source'>
+const sameResource = (a: ResourceIdentity, b: ResourceIdentity) => a.profileId === b.profileId && sameSource(a, b)
 function publicMetadata(value: unknown): void {
   if (Array.isArray(value)) { value.forEach(publicMetadata); return }
   if (value && typeof value === 'object') for (const [key, child] of Object.entries(value)) {
@@ -344,7 +345,8 @@ export class Store {
       const run = this.rawRun(runId)
       if (run.stopped && patch.stopped === false) throw new Error('A stopped run cannot resume spending')
       if (patch.candidates) {
-        const identities = patch.candidates.map(c => JSON.stringify([c.profileId, c.resourceId, c.version]))
+        if (patch.candidates.some(c => c.source) && patch.candidates.some(c => !c.source)) throw new Error('Cannot mix unresolved legacy sources with federated identities; start a new run')
+        const identities = patch.candidates.map(c => sourceKey(c))
         if (new Set(identities).size !== identities.length) throw new Error('Duplicate candidate identity')
         // Metadata already registered for an identity cannot be relabelled FREE.
         for (const c of patch.candidates) {
@@ -376,7 +378,7 @@ export class Store {
     const answer = AnswerSchema.parse(input)
     const run = this.getRun(runId)
     for (const claim of answer.claims) for (const citation of claim.citations) {
-      if (!run.contents.some(c => c.resourceId === citation.resourceId && c.version === citation.version && c.spans.some(s => s.id === citation.spanId && c.body.includes(s.text)))) throw new Error('Answer cites inaccessible content')
+      if (!run.contents.some(c => sameSource(c, citation) && c.spans.some(s => s.id === citation.spanId && c.body.includes(s.text)))) throw new Error('Answer cites inaccessible content')
     }
     this.atomic(() => {
       this.db.prepare('INSERT INTO answers VALUES (?,?,?)').run(runId, answer.version, JSON.stringify(answer))
@@ -391,7 +393,7 @@ export class Store {
       for (const row of parsed.rows) verdicts[row.verdict] = (verdicts[row.verdict] ?? 0) + 1
       this.audit.append({ runId, kind: 'decision', data: { round: parsed.round, provider: parsed.provider, model: parsed.model, promptVersion: parsed.promptVersion ?? null, threshold: parsed.threshold,
         calibration: parsed.calibration ? { id: parsed.calibration.id, version: parsed.calibration.version } : null, candidatesJudged: parsed.rows.length, verdicts,
-        selectedResourceId: parsed.selectedResourceId ?? null, fallbackReason: parsed.fallbackReason?.slice(0, 200) ?? null } })
+        selectedSourceKey: parsed.selectedSourceKey ?? null, selectedResourceId: parsed.selectedResourceId ?? null, fallbackReason: parsed.fallbackReason?.slice(0, 200) ?? null } })
     })
   }
   addContent(runId: string, input: ContentEnvelope): void {
@@ -429,15 +431,16 @@ export class Store {
   }
   reserveIntent(input: PurchaseIntent): PurchaseIntent {
     const intent = PurchaseIntentSchema.parse(input)
+    if (!sourceBinding(intent)) throw new Error('Source identity mismatch')
     return this.atomic(() => {
       const existing = this.getIntent(intent.intentId)
       if (existing) {
-        if (['runId', 'profileId', 'resourceId', 'version', 'amountMinor'].some(key => existing[key as keyof PurchaseIntent] !== intent[key as keyof PurchaseIntent])) throw new Error('Intent identity mismatch')
+        if (!sameSource(existing, intent) || ['runId', 'profileId', 'resourceId', 'version', 'amountMinor'].some(key => existing[key as keyof PurchaseIntent] !== intent[key as keyof PurchaseIntent])) throw new Error('Intent identity mismatch')
         return existing
       }
       const run = this.rawRun(intent.runId)
       const quote = intent.quote
-      if (!quote || quote.intentId !== intent.intentId || quote.runId !== intent.runId || quote.profileId !== intent.profileId || quote.resourceId !== intent.resourceId || quote.version !== intent.version) throw new Error('Quote identity mismatch')
+      if (!quote || !sameSource(quote, intent) || quote.intentId !== intent.intentId || quote.runId !== intent.runId || quote.profileId !== intent.profileId || quote.resourceId !== intent.resourceId || quote.version !== intent.version) throw new Error('Quote identity mismatch')
       const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', intent.runId)
       const committed = intents.filter(i => reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED').reduce((sum, i) => sum + i.amountMinor, 0)
       let error: string | undefined
@@ -447,10 +450,10 @@ export class Store {
       else if (run.stopped) error = 'Run stopped'
       else if (run.budgetMinor === 0 || intent.amountMinor > run.perSourceCapMinor || committed + intent.amountMinor > run.budgetMinor) error = 'Budget or per-source cap exceeded'
       else if (Date.parse(quote.expiresAt) <= Date.now() || !Number.isFinite(Date.parse(quote.expiresAt))) error = 'Quote expired'
-      else if (intents.some(i => i.profileId === intent.profileId && i.resourceId === intent.resourceId && i.version === intent.version && (reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED'))) error = 'Resource already purchased or reserved'
+      else if (intents.some(i => i.profileId === intent.profileId && sameSource(i, intent) && (reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED'))) error = 'Resource already purchased or reserved'
       const result: PurchaseIntent = { ...intent, status: error ? 'SKIPPED' : 'RESERVED', createdAt: new Date().toISOString(), error }
       this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId, intent.runId, JSON.stringify(result))
-      const terms = { resourceId: intent.resourceId, version: intent.version, profileId: intent.profileId, amountMinor: intent.amountMinor, payTo: quote.payment?.payTo ?? null, rail: quote.payment?.rail ?? null,
+      const terms = { source: intent.source ?? null, resourceId: intent.resourceId, version: intent.version, profileId: intent.profileId, amountMinor: intent.amountMinor, payTo: quote.payment?.payTo ?? null, rail: quote.payment?.rail ?? null,
         runBudgetMinor: run.budgetMinor, perSourceCapMinor: run.perSourceCapMinor, committedMinor: committed, walletDailyMinor: spendPolicy().walletDailyMinor, policyVersion: run.policyVersion ?? POLICY_VERSION }
       this.audit.append(error ? { runId: intent.runId, intentId: intent.intentId, kind: 'refusal', data: { stage: 'reserve', reason: error, ...terms } }
         : { runId: intent.runId, intentId: intent.intentId, kind: 'reserve', data: { quoteHash: quote.quoteHash, ...terms } })
@@ -503,7 +506,7 @@ export class Store {
     const receipt = ReceiptSchema.parse(input)
     this.atomic(() => {
       const intent = this.getIntent(intentId)
-      if (!intent || !deliveryToken || receipt.intentId !== intentId || receipt.runId !== intent.runId || receipt.resourceId !== intent.resourceId || receipt.version !== intent.version || receipt.amountMinor !== intent.amountMinor) throw new Error('Settlement identity mismatch')
+      if (!intent || !sameSource(intent, receipt) || !deliveryToken || receipt.intentId !== intentId || receipt.runId !== intent.runId || receipt.resourceId !== intent.resourceId || receipt.version !== intent.version || receipt.amountMinor !== intent.amountMinor) throw new Error('Settlement identity mismatch')
       const existing = this.rows<Receipt>('SELECT json FROM receipts WHERE intent_id=?', intentId)[0]
       if (existing) { if (existing.receiptId !== receipt.receiptId) throw new Error('Settlement receipt mismatch'); return }
       if (intent.status !== 'SUBMITTING') throw new Error('Settlement requires submitting reservation')
@@ -582,7 +585,7 @@ export class Store {
       if (!tx || terminal === 'finish' && !e.publicStatus.proofOk) throw new Error('Terminal escrow proof missing')
       e.publicStatus = { ...e.publicStatus, state: terminal === 'finish' ? 'RELEASED' : 'CANCELLED', [terminal + 'Hash']: tx.txHash }
       const settledAt = new Date().toISOString(), terms = e.quote.terms
-      const receipt = ReceiptSchema.parse({ receiptId: `escrow-${tx.txHash}`, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version,
+      const receipt = ReceiptSchema.parse({ source: intent.source, receiptId: `escrow-${tx.txHash}`, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version,
         amountMinor: terminal === 'finish' ? intent.amountMinor : 0, currency: 'SGD', settledAt, label: 'XRPL TESTNET · no real value', escrow: e.publicStatus,
         xrpl: { txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
       this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
@@ -696,7 +699,7 @@ export class Store {
     if (JSON.stringify(parsed) !== JSON.stringify(content) || proof.salts.length !== content.spans.length || content.spans.some(s => !content.body.includes(s.text)) || new Set(content.spans.map(s => s.id)).size !== content.spans.length) throw new Error('Delivery verification failed')
     this.atomic(() => {
       const intent = this.getIntent(grant.intentId)
-      if (!intent || !(chargedStatuses.has(intent.status) || intent.status === 'SUBMITTING' && intent.escrow?.state === 'LOCKED') || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version) throw new Error('Grant does not match settled quote')
+      if (!intent || !sameSource(intent, grant) || !sameSource(intent, content) || !(chargedStatuses.has(intent.status) || intent.status === 'SUBMITTING' && intent.escrow?.state === 'LOCKED') || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version) throw new Error('Grant does not match settled quote')
       const existing = this.rows<Grant>('SELECT json FROM grants WHERE intent_id=?', grant.intentId)[0]
       if (existing) { if (existing.contentDigest !== root) throw new Error('Grant is immutable'); return }
       this.db.prepare('INSERT INTO grants VALUES (?,?,?)').run(grant.intentId, JSON.stringify(grant), JSON.stringify(content))

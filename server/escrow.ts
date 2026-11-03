@@ -25,17 +25,17 @@ export class EscrowPurchases {
     if (!this.store.getIntent(intentId)) {
       const manifest = candidate.manifest, rep = candidate.wallet ? this.store.getReputation(candidate.wallet) : undefined
       if (candidate.tier !== 'PAID' || !manifest || !verifyManifestSignature(manifest) || manifest.articleId !== candidate.resourceId || manifest.version !== candidate.version || manifest.publisherSlug !== candidate.profileId || manifest.priceMinor !== candidate.price.amountMinor || manifest.wallet !== candidate.wallet || payeeRefusal(candidate.wallet ?? '')) throw new Error('Escrow candidate is ineligible')
-      if (rep && rep.status !== 'active') return this.store.skipEscrow({ runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'SKIPPED' }, 'Writer quarantined or delisted')
+      if (rep && rep.status !== 'active') return this.store.skipEscrow({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'SKIPPED' }, 'Writer quarantined or delisted')
       const hashlock = newHashlock(), cancelAfter = await ledgerTime(this.payer.ledger) + 120
       const paidPath = PublisherClient.paidPath(candidate)
       let quote
-      try { quote = EscrowQuoteSchema.parse(await this.client.escrowQuote(paidPath, { payer: this.payer.address!, intentId, condition: hashlock.condition, cancelAfter })) }
-      catch { return this.store.skipEscrow({ runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'SKIPPED' }, 'Writer escrow unavailable; no paid fallback') }
+      try { quote = EscrowQuoteSchema.parse(await this.client.forSource(candidate.source).escrowQuote(paidPath, { payer: this.payer.address!, intentId, condition: hashlock.condition, cancelAfter })) }
+      catch { return this.store.skipEscrow({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'SKIPPED' }, 'Writer escrow unavailable; no paid fallback') }
       const t = quote.terms
       if (!verifyEscrowQuote(quote) || t.network !== 'xrpl:1' || t.asset !== 'XRP' || t.payer !== this.payer.address || t.payTo !== candidate.wallet || t.intentId !== intentId || t.condition !== hashlock.condition || t.cancelAfter !== cancelAfter || t.articleId !== candidate.resourceId || t.version !== candidate.version || t.publisherSlug !== candidate.profileId || t.manifestRoot !== manifest.root || t.amount !== String(candidate.price.amountMinor * DROPS_PER_MINOR)) throw new Error('Escrow quote binding rejected')
       const invoice = escrowInvoice(t)
-      const intent = this.store.reserveIntent({ runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'QUOTED', paidPath,
-        quote: { runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, quoteId: invoice, quoteHash: ledgerInvoiceId(invoice), amountMinor: candidate.price.amountMinor, currency: 'SGD', contentDigest: manifest.root, expiresAt: new Date(Date.now() + 60000).toISOString(), payment: { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', amountDrops: t.amount, payTo: t.payTo, invoiceId: ledgerInvoiceId(invoice) } } })
+      const intent = this.store.reserveIntent({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'QUOTED', paidPath,
+        quote: { source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, quoteId: invoice, quoteHash: ledgerInvoiceId(invoice), amountMinor: candidate.price.amountMinor, currency: 'SGD', contentDigest: manifest.root, expiresAt: new Date(Date.now() + 60000).toISOString(), payment: { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', amountDrops: t.amount, payTo: t.payTo, invoiceId: ledgerInvoiceId(invoice) } } })
       if (intent.status !== 'RESERVED') return intent
       this.store.recordManifest(intentId, manifest)
       if (!this.store.claimSubmitting(intentId)) return this.store.getIntent(intentId)!
@@ -163,12 +163,12 @@ export class EscrowPurchases {
       if (this.store.getRun(intent.runId).stopped || this.store.isPaused() || now >= e.publicStatus.cancelAfter - 15) e = this.store.escrowTransition(intentId, { state: 'CANCEL_DUE' })
       if (e.publicStatus.state === 'LOCKED') {
         try {
-          const result = await this.client.paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: 'XRP', amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
+          const result = await this.client.forSource(intent.source, true).paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: 'XRP', amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
           if (result.status !== 200 || result.response?.escrowState !== 'LOCKED' || result.response.transaction !== create.txHash || result.response.success) throw new Error('Conditional grant missing')
           const d = Delivery.parse(result.delivery)
           if (d.grant.state !== 'LOCKED' || d.grant.createHash !== create.txHash || d.grant.manifestRoot !== e.quote.terms.manifestRoot || d.grant.articleId !== intent.resourceId || d.grant.version !== intent.version || d.articleId !== intent.resourceId || d.version !== intent.version) throw new Error('Grant identity mismatch')
-          const content = { profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: d.title, publisher: d.publisher, body: d.body, spans: d.passages }
-          this.store.addGrant({ intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, contentDigest: e.quote.terms.manifestRoot, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: d.salts })
+          const content = { source: intent.source, profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: d.title, publisher: d.publisher, body: d.body, spans: d.passages }
+          this.store.addGrant({ source: intent.source, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, contentDigest: e.quote.terms.manifestRoot, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: d.salts })
           const m = this.store.getManifest(intentId)!
           const proof = verifyManifestSignature(m) && m.root === e.quote.terms.manifestRoot && verifyDelivery(d.body, d.passages, d.salts, m).ok
           e = this.store.escrowTransition(intentId, { state: proof ? 'VERIFIED_FOR_RELEASE' : 'CANCEL_DUE', proofOk: proof })
