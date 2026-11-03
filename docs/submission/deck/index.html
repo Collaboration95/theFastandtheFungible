@@ -170,7 +170,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
       </ol>
     </div>
     <div>
-      <div class="big">0 violations<small>Read-only gate audit (six rules): 10 runs, 728 observations, held-out evaluation, 3 Nov 2026. Enforced in CI by 687 tests in 83 files.</small></div>
+      <div class="big">0 violations<small>Read-only gate audit (six rules): 10 runs, 568 observations, fresh-set evaluation (48 questions), 3 Nov 2026. Enforced in CI by 687 tests in 83 files.</small></div>
     </div>
   </div>
   <div class="src"><span>README · How a run works · scripts/gate-audit.ts · tests/purchase.test.ts · CI on main at 1e279c8, 3 Nov 2026</span><span class="n">2 / 10</span></div>
@@ -270,15 +270,15 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
   <div class="crit">Feasibility · 20%</div>
   <h1>Cheap enough per question, and it recovers from failure</h1>
   <div class="tiles">
-    <div class="tile"><b>US$0.0043</b><span>model cost per question</span><em>Live decision and coverage models, 92 held-out questions, 3 Nov</em></div>
+    <div class="tile"><b>US$0.0026</b><span>model cost per question</span><em>Live decision and coverage models, 48 fresh questions, 3 Nov</em></div>
     <div class="tile"><b>12 drops</b><span>network fee per payment</span><em>0.000012 Testnet XRP; escrow finish costs 423 drops</em></div>
     <div class="tile"><b>22.8 s</b><span>MCP question → paid, cited answer</span><em>Real Testnet settlement, fixture research</em></div>
     <div class="tile"><b>6.24 ms</b><span>queued payment p95, was 307.91 ms</span><em>Synthetic: 300 ms writer delay, same signer</em></div>
     <div class="tile"><b>15 s</b><span>reconciler cycle for in-flight payments</span><em>Durable journal; health and metrics; runbook</em></div>
     <div class="tile"><b>546 ms</b><span>cold start, demo API and publisher</span><em>Mac app installed: 2.07 s to interactive</em></div>
   </div>
-  <p class="honest"><b>Where it still falls short:</b> held-out wasted spend fell from 52.87% to <b>40.68%</b> (95% CI 11.2–68.4%) but misses our 25% target. Evaluation runs use live decision models on a synthetic corpus with simulated payments; we publish the miss with its interval.</p>
-  <div class="src"><span>README scorecard (eval/scorecard/latest.json) · evidence/payment-ops-287.md · evidence/escrow-273.md · docs/RUNBOOK.md · docs/SFF-PUSH.md hill-climb</span><span class="n">7 / 10</span></div>
+  <p class="honest"><b>Does it buy the right things?</b> On 48 fresh synthetic questions, <b>93.15%</b> of gross article spend bought a requested fact retained in the final cited answer (95% CI 81.25–100.00%); wasted spend was 6.85% (0.00–18.75%). Live decision models, fixture research, simulated payments. The paired gain over the previous policy (+3.08 pts, 0.00–9.43) is not significant, and the labels are same-vendor and await human review. The earlier 80.05% was a reused holdout and is historical.</p>
+  <div class="src"><span>Source: eval/scorecard/fresh-results.json · eval/FRESH-AUDIT.md · README scorecard (eval/scorecard/latest.json) · evidence/payment-ops-287.md · evidence/escrow-273.md · docs/RUNBOOK.md · docs/SFF-PUSH.md hill-climb</span><span class="n">7 / 10</span></div>
 </section>
 
 <!-- 8 · UX -->

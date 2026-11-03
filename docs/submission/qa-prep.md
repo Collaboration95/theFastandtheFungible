@@ -1,6 +1,6 @@
 # Judge Q&A prep
 
-Ten likely questions, each with a short answer to say aloud (about 20 seconds)
+Eleven likely questions, each with a short answer to say aloud (about 20 seconds)
 and the facts behind it. Numbers are as of 3 Nov 2026; check the
 [tracker](../SFF-PUSH.md) on 17 Nov for anything newer.
 
@@ -40,14 +40,14 @@ article viable. There's no contract to deploy or audit."
 
 ## 4. What are the unit economics?
 
-**Say:** "Model cost is about four-tenths of a US cent per question, and the
+**Say:** "Model cost is about a quarter of a US cent per question, and the
 network fee is 12 drops per payment. Article prices are set by writers, around
 S$0.10 to S$0.90 in our corpus, and capped at S$1 per source. In hire mode the
 caller pays the research budget plus a fixed 20-cent service fee, a quarter of
 which goes to cited writers as royalties. The real cost driver is buying the
 wrong article, which is why we measure wasted spend."
 
-**Behind it:** US$0.0043/query (README scorecard, LIVE models, 3 Nov). Hire split: [hire-274](../evidence/hire-274.md). The SGD↔drops rate is a fixed, labelled demo rate, not an FX claim.
+**Behind it:** US$0.0026/query (README scorecard, LIVE models, 48 fresh questions, 3 Nov). Hire split: [hire-274](../evidence/hire-274.md). The SGD↔drops rate is a fixed, labelled demo rate, not an FX claim.
 
 ## 5. What's real and what's simulated?
 
@@ -68,7 +68,7 @@ and what happens when it's wrong. The LLM never holds spending authority; only
 policy code inside a human budget can pay. We verify what was delivered and
 refund broken promises, enforced by escrow. And we built a business model on
 top: agents hire agents, and citations pay writers. We also measure purchase
-quality on held-out questions and publish the misses."
+quality on questions we froze in advance and publish the caveats."
 
 ## 7. Can the LLM be tricked into spending, for example by prompt injection?
 
@@ -77,19 +77,20 @@ one. The SDK and MCP tools have no purchase method. Policy code checks the
 budget, the S$1 per-source cap, the daily wallet cap and the per-agent
 allowance. Model inputs are capped and treated as untrusted, and we ship an
 adversarial injection test pack. The read-only gate audit found zero violations
-in 10 runs and 728 observations."
+in 10 runs and 568 observations on the fresh-question evaluation."
 
 **Behind it:** #286, `tests/purchase.test.ts` gate cases, `scripts/gate-audit.ts`.
 
 ## 8. Does it actually buy the right things?
 
-**Say:** "Better, but not good enough yet, and we publish that. On 92 held-out
-questions, wasted spend fell from 52.9% to 40.7%. The confidence interval is
-wide, and we missed our 25% target. We classified every wasted purchase into
-four causes; the biggest is buying an adjacent fact, like the right figure for
-the wrong country. Signed fact menus from writers are our main lever."
+**Say:** "On 48 fresh synthetic questions, 93% of what we spent on articles
+bought a fact that was in the final cited answer. The 95% interval is 81 to
+100%, so it's wide. This runs live decision models on a fixture corpus with
+simulated payments. We also can't claim it beat our previous policy: that gain
+is 3 points, and its interval includes zero. The failures we know of are two
+wrong-operator purchases and three free facts it missed."
 
-**Behind it:** [waste analysis](../evidence/waste-analysis-2026-11-03.md). LIVE decision and coverage models, synthetic corpus, simulated payments.
+**Behind it:** On 48 fresh synthetic questions, 93.15% of gross article spend bought a requested fact retained in the final cited answer (95% CI 81.25–100.00%); waste 6.85% [0.00–18.75]. Paired gain over the previous policy +3.08 pts [0.00–9.43]. [Full report](../../eval/REPORT-decisions.md), `eval/scorecard/fresh-results.json`. Labels are from the same vendor as the decision model and await human review; questions follow templates; the set is four domains. Don't say "93% of facts" or "production". The older 80.05% (reused holdout) and 52.9% → 40.7% are historical; don't quote them as current.
 
 ## 9. What happens if a payment times out or the server crashes mid-payment?
 
@@ -111,6 +112,19 @@ Code and any MCP client, a TypeScript SDK and a Mac app. We haven't run
 customer pilots yet; that's next."
 
 **Behind it:** [mcp.md](../mcp.md), [sdk.md](../sdk.md), [publish-site-277](../evidence/publish-site-277.md). No traction claims: there are no real users or pilots yet.
+
+## 11. Isn't this overfit to your own test set?
+
+**Say:** "We worried about that, so we audited it. Our earlier 80% number came
+from a holdout we had looked at too many times, so we stopped using it. We
+reviewed every rule we'd added in our last two changes. One rule was a veto for wafer
+questions only, and we removed it. We replaced the other benchmark-specific
+word lists with rules that read the question itself. Then we froze 48 new
+questions and the policy before running anything, and ran each policy once.
+That gave 93%. It's still a narrow test: the same agent wrote the policy and
+the questions, and they follow templates. It does not rule out overfitting."
+
+**Behind it:** [rule audit](../../eval/FRESH-AUDIT.md), PR #327. Removed: the wafer-domain veto. Generalised: the semiconductor subject and acronym lists, the 2023–2030 year bounds and the domain synonyms. Frozen: 48 questions over 24 new documents and two policy fingerprints before any model run; one live run per policy, no tuning after either result. Remaining limits: same-agent authorship, same-vendor labels pending human review, an inherited country vocabulary, and a paired gain of +3.08 pts [0.00–9.43].
 
 ## Curveballs
 

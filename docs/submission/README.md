@@ -65,9 +65,9 @@ are descriptive. Fresh paired policy change **+3.08 pts [0.00–9.43]** in used
 spend does not establish strict improvement. Avoid “93% of facts”, “customer
 ROI”, “production success”, “overfitting ruled out” or measured live-writer claims.
 
-Deck owner: update slide 7/pitch and export the PDF from these sources after the
-numbers PR merges. This lane changes this source note only; it does not edit the
-deck HTML or silently overwrite the pitch manuscript.
+Done (3 Nov): slide 7, the 2-minute pitch and the judge Q&A now use the fresh
+result, and the PDF is re-exported. The 80.05% and the 52.9% → 40.7% figures
+appear only as labelled historical comparisons.
 
 
 Evaluation candidate was frozen before shipping rebases; #322's later recovery/
