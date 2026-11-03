@@ -7,14 +7,15 @@ import { createHash, randomUUID } from 'node:crypto'
 import { hostname, platform, release, arch, cpus, loadavg } from 'node:os'
 const quick=process.argv.includes('--quick')
 const failFast=process.argv.includes('--fail-fast')
-if(process.argv.slice(2).some(a=>!['--quick','--fail-fast'].includes(a))) throw Error('Usage: node scripts/final-acceptance.mjs [--quick] [--fail-fast]')
+const skipSoak=process.argv.includes('--skip-soak')
+if(process.argv.slice(2).some(a=>!['--quick','--fail-fast','--skip-soak'].includes(a))) throw Error('Usage: node scripts/final-acceptance.mjs [--quick] [--fail-fast] [--skip-soak]')
 const out=resolve('scratch/final-acceptance-'+new Date().toISOString().replace(/[^0-9]/g,''));mkdirSync(out,{recursive:true})
 const destination=resolve('dist/final')
 const digest=p=>createHash('sha256').update(readFileSync(p)).digest('hex')
 const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
 Object.assign(env,{DOTENV_CONFIG_PATH:'.no-final-env',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',LANGFUSE_ENABLED:'0',SEARCH_EMBEDDINGS:'off',CSC_IDENTITY_AUTO_DISCOVERY:'false'})
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim()
-const report={schema:1,mode:quick?'quick fixture rehearsal':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
+const report={schema:1,mode:skipSoak?'fixture rehearsal; soak explicitly skipped':quick?'quick fixture rehearsal':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
 const save=()=>{writeFileSync(join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');mkdirSync(destination,{recursive:true});cpSync(join(out,'acceptance.json'),join(destination,'acceptance.json'))}
 const step=createStepRunner(report,save,failFast)
 async function run(name,cmd,args,extra={},dependencies=[]) {
@@ -31,9 +32,10 @@ try {
   if(platform()!=='darwin'||arch()!=='arm64')throw Error('Full unsigned arm64 acceptance requires an Apple Silicon Mac')
   const ts=new Date().toISOString().replace(/[^0-9]/g,'')
   const soak=join(out,'soak-same-engine.json');mkdirSync('scratch',{recursive:true})
-  await run('soak','caffeinate',['-dims','node','scripts/soak-same-engine.mjs','--runs',quick?'200':'2000','--warmup',quick?'20':'200','--concurrency','1','--seed','279','--history-runs','10000','--events-per-run','60','--data-dir','scratch/finals-soak-279-'+ts,'--output',soak,'--burst'])
-  await step('soak-evidence',async()=>{const r=JSON.parse(readFileSync(soak));report.soak={file:soak,sha256:digest(soak),source:r.source,summary:r.summary,burst:r.burst,restarts:r.restarts.length}})
-  await run('render','node',['scripts/render-soak.mjs',soak,join(out,'soak-same-engine.svg')],{},existsSync(soak)?[]:['soak'])
+  if(skipSoak){report.gates.push({name:'soak',pass:false,status:'skipped (requested)'});save()}
+  else await run('soak','caffeinate',['-dims','node','scripts/soak-same-engine.mjs','--runs',quick?'200':'2000','--warmup',quick?'20':'200','--concurrency','1','--seed','279','--history-runs','10000','--events-per-run','60','--data-dir','scratch/finals-soak-279-'+ts,'--output',soak,'--burst'])
+  await step('soak-evidence',async()=>{const r=JSON.parse(readFileSync(soak));report.soak={file:soak,sha256:digest(soak),source:r.source,summary:r.summary,burst:r.burst,restarts:r.restarts.length}},skipSoak?['soak']:[])
+  await run('render','node',['scripts/render-soak.mjs',soak,join(out,'soak-same-engine.svg')],{},['soak-evidence'])
   await run('artifacts','make',['release-artifacts'])
   await step('artifact-preservation',async()=>{
     report.artifacts=JSON.parse(readFileSync('dist/release/manifest.json')).artifacts
