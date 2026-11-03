@@ -8,3 +8,9 @@ return async function step(name, action, dependencies=[]) {
   finally{row.finishedAt=new Date().toISOString();save()}
 }
 }
+
+// A successful quick rehearsal cannot establish full acceptance.
+export function acceptanceOutcome(gates, quick) {
+  const checksPass=gates.every(row=>row.pass)
+  return {checksPass,acceptanceEligible:!quick,pass:checksPass&&!quick}
+}

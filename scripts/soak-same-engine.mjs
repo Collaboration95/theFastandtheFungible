@@ -32,9 +32,12 @@ export function compare(report) {
   const loopP99=Math.max(...samples.map(s=>s.worker?.loopP99Ms??Infinity))
   const gaps=report.samples.filter(s=>s.gapMs>2500 || s.hostSleepMs>1500)
   const gates={rssSlope:{value:slope,limit:5,pass:Number.isFinite(slope)&&slope<=5}, rssMedian:{value:final-warm,limit:100,pass:final-warm<=100}, rssMax:{value:maxRss,limit:1536,pass:maxRss<=1536}, loopP99:{value:loopP99,limit:50,pass:loopP99<50}, latencyP95:{value:p95last-p95first,limit:Math.max(.2*p95first,250),pass:p95last-p95first<=Math.max(.2*p95first,250)}}
+  // Explicit opt-in for short diagnostic runs; never suppress a full-run gate.
+  const diagnosticSlope=report.options.diagnosticSlope===true && report.options.runs<2000
+  if(diagnosticSlope)Object.assign(gates.rssSlope,{gating:false,note:'Short-window diagnostic only; full 2000-ask slope remains required'})
   const identities=new Set(report.asks.map(r=>`${r.pid}/${r.engineId}/${r.workerId}/${r.storeId}`))
   const valid=good.length===report.options.runs && good.length>=200 && identities.size===1 && !gaps.length && !report.failures.length && samples.length>=60 && samples.every(s=>s.worker) && report.restarts.length===20 && report.restarts.every(r=>r.closed) && report.auditViolations===0
-  return { gates, valid, pass:valid&&Object.values(gates).every(g=>g.pass)&&(!report.options.burst||report.burst?.pass===true), completed:good.length, failed:rows.length-good.length, warmMedianMiB:warm, finalMedianMiB:final, firstP95Ms:p95first, lastP95Ms:p95last, sampleGaps:gaps.length, identityCount:identities.size, loopMethod:'maximum of worker one-second histogram p99s, 10 ms resolution' }
+  return { gates, valid, pass:valid&&Object.values(gates).every(g=>g.gating===false||g.pass)&&(!report.options.burst||report.burst?.pass===true), acceptanceEligible:!diagnosticSlope&&report.options.runs>=2000, completed:good.length, failed:rows.length-good.length, warmMedianMiB:warm, finalMedianMiB:final, firstP95Ms:p95first, lastP95Ms:p95last, sampleGaps:gaps.length, identityCount:identities.size, loopMethod:'maximum of worker one-second histogram p99s, 10 ms resolution' }
 }
 
 // Loaded with --import in both host and engine worker, before any engine module.
@@ -81,9 +84,10 @@ export async function installGuard() {
 export function options(args) {
   const o={runs:2000,warmup:200,concurrency:1,seed:279,historyRuns:10000,eventsPerRun:60,timeoutMs:120000,burst:false}
   const names={'runs':'runs','warmup':'warmup','concurrency':'concurrency','seed':'seed','history-runs':'historyRuns','events-per-run':'eventsPerRun','data-dir':'dataDir','output':'output','timeout-ms':'timeoutMs','cpu-prof-dir':'cpuProfDir'}
-  for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output','cpuProfDir'].includes(key)?args[++i]:Number(args[++i])}
+  for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--diagnostic-slope'){o.diagnosticSlope=true;continue}if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output','cpuProfDir'].includes(key)?args[++i]:Number(args[++i])}
   for(const key of ['runs','warmup','concurrency','seed','historyRuns','eventsPerRun','timeoutMs'])if(!Number.isSafeInteger(o[key])||o[key]<0)throw Error('Invalid '+key)
   if(!o.runs||!o.concurrency||!o.timeoutMs||!o.dataDir||!o.output)throw Error('Positive counts, --data-dir and --output required')
+  if(o.diagnosticSlope&&o.runs>=2000)throw Error('Diagnostic slope is only allowed below 2000 asks; full-run gate is mandatory')
   return o
 }
 async function run(o) {

@@ -1,4 +1,4 @@
-import { createStepRunner } from './final-acceptance-steps.mjs'
+import { createStepRunner, acceptanceOutcome } from './final-acceptance-steps.mjs'
 /** Local fixture rehearsal. No dotenv, publication, signing, or release mutation. */
 import { spawn, execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync, readlinkSync, cpSync } from 'node:fs'
@@ -15,7 +15,7 @@ const digest=p=>createHash('sha256').update(readFileSync(p)).digest('hex')
 const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
 Object.assign(env,{DOTENV_CONFIG_PATH:'.no-final-env',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',LANGFUSE_ENABLED:'0',SEARCH_EMBEDDINGS:'off',CSC_IDENTITY_AUTO_DISCOVERY:'false'})
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim()
-const report={schema:1,mode:skipSoak?'fixture rehearsal; soak explicitly skipped':quick?'quick fixture rehearsal':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
+const report={schema:1,acceptanceEligible:!quick&&!skipSoak,mode:skipSoak?'fixture rehearsal; soak explicitly skipped':quick?'quick fixture rehearsal; RSS slope diagnostic only; not full acceptance':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
 const save=()=>{writeFileSync(join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');mkdirSync(destination,{recursive:true});cpSync(join(out,'acceptance.json'),join(destination,'acceptance.json'))}
 const step=createStepRunner(report,save,failFast)
 async function run(name,cmd,args,extra={},dependencies=[]) {
@@ -33,7 +33,7 @@ try {
   const ts=new Date().toISOString().replace(/[^0-9]/g,'')
   const soak=join(out,'soak-same-engine.json');mkdirSync('scratch',{recursive:true})
   if(skipSoak){report.gates.push({name:'soak',pass:false,status:'skipped (requested)'});save()}
-  else await run('soak','caffeinate',['-dims','node','scripts/soak-same-engine.mjs','--runs',quick?'200':'2000','--warmup',quick?'20':'200','--concurrency','1','--seed','279','--history-runs','10000','--events-per-run','60','--data-dir','scratch/finals-soak-279-'+ts,'--output',soak,'--burst'])
+  else await run('soak','caffeinate',['-dims','node','scripts/soak-same-engine.mjs','--runs',quick?'200':'2000','--warmup',quick?'20':'200','--concurrency','1','--seed','279','--history-runs','10000','--events-per-run','60','--data-dir','scratch/finals-soak-279-'+ts,'--output',soak,'--burst',...(quick?['--diagnostic-slope']:[])])
   await step('soak-evidence',async()=>{const r=JSON.parse(readFileSync(soak));report.soak={file:soak,sha256:digest(soak),source:r.source,summary:r.summary,burst:r.burst,restarts:r.restarts.length}},skipSoak?['soak']:[])
   await run('render','node',['scripts/render-soak.mjs',soak,join(out,'soak-same-engine.svg')],{},['soak-evidence'])
   await run('artifacts','make',['release-artifacts'])
@@ -82,8 +82,8 @@ try {
   await run('coverage','npx',['vitest','run','--coverage'])
   await run('coverage-gate','node',['scripts/check-coverage.mjs'],{},['coverage'])
   await run('chaos','npm',['run','chaos','--','--runs','200','--seed','279'])
-  report.pass=report.gates.every(r=>r.pass);if(!report.pass)process.exitCode=1
+  Object.assign(report,acceptanceOutcome(report.gates,quick||skipSoak));if(!report.checksPass)process.exitCode=1
 } catch(error) {report.error=error.message;process.exitCode=1}
 finally {
-  report.finishedAt=new Date().toISOString();save();cpSync(out,destination,{recursive:true});if(existsSync(join(out,'release')))cpSync(join(out,'release'),'dist/release',{recursive:true});console.log(JSON.stringify({pass:report.pass,error:report.error,output:join(destination,'acceptance.json')}))
+  report.finishedAt=new Date().toISOString();save();cpSync(out,destination,{recursive:true});if(existsSync(join(out,'release')))cpSync(join(out,'release'),'dist/release',{recursive:true});console.log(JSON.stringify({pass:report.pass,checksPass:report.checksPass,acceptanceEligible:report.acceptanceEligible,error:report.error,output:join(destination,'acceptance.json')}))
 }
