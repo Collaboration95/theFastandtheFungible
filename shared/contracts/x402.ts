@@ -11,12 +11,12 @@ export const ResourceInfoSchema = z.object({ url: z.string().min(1), description
 export const PaymentRequirementsSchema = z.object({
   scheme: z.enum(['exact', 'escrow-v1']), network: z.literal(X402_NETWORK), amount: z.string().regex(/^(?:[1-9]\d*(?:\.\d{1,6})?|0\.\d{1,6})$/), asset: AssetSchema,
   payTo: xrplAddress, maxTimeoutSeconds: z.number().int().positive(),
-  extra: z.object({ invoiceId: z.string().min(1), areFeesSponsored: z.literal(false), quoteEndpoint: z.string().optional() }),
+  extra: z.object({ invoiceId: z.string().min(1), areFeesSponsored: z.literal(false).optional(), sourceTag: z.number().int().min(0).max(4294967295).optional(), destinationTag: z.number().int().min(0).max(4294967295).optional(), quoteEndpoint: z.string().optional() }).passthrough(),
 })
 /** `PAYMENT-REQUIRED` header, sent with HTTP 402. */
 export const PaymentRequiredSchema = z.object({ x402Version: z.literal(2), resource: ResourceInfoSchema, accepts: z.array(PaymentRequirementsSchema).min(1), error: z.string().optional() })
 /** `PAYMENT-SIGNATURE` header: the buyer's signed XRPL Payment, hex encoded. */
-export const PaymentSignatureSchema = z.object({ x402Version: z.literal(2), resource: ResourceInfoSchema.optional(), accepted: PaymentRequirementsSchema, payload: z.object({ signedTxBlob: z.string().regex(/^[0-9A-F]+$/i) }) })
+export const PaymentSignatureSchema = z.object({ x402Version: z.literal(2), resource: ResourceInfoSchema.optional(), accepted: PaymentRequirementsSchema, payload: z.object({ signedTxBlob: z.string().regex(/^[0-9A-F]+$/i), invoiceId: z.string().min(1).optional() }) })
 /** `PAYMENT-RESPONSE` header (spec SettlementResponse). `transaction` is '' when settlement failed. */
 export const PaymentResponseSchema = z.object({ success: z.boolean(), escrowState: z.literal('LOCKED').optional(), errorReason: z.string().optional(), payer: xrplAddress.optional(), transaction: z.union([z.literal(''), z.string().regex(/^[0-9A-F]{64}$/)]), network: z.literal(X402_NETWORK) })
 

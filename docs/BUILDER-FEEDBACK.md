@@ -460,3 +460,18 @@ validator; Groq short Retry-After values were inflated to 60 seconds; embedding
 errors were immediately evicted and could fan out again. The prompt and recovery
 fixes retain labelled substitutions and all five gates. Fault tests establish
 retry/cooldown behavior; they are not live Groq quota measurements.
+
+## Starter Kit interoperability · 3 Nov 2026
+
+Evidence for all entries: `docs/evidence/starter-kit-interop.md`,
+`scripts/interop/starter-kit.ts`, `tests/starter-kit-interop.test.ts`, and
+`tests/x402.test.ts`; exact package/source pins in `docs/x402-xrpl.md`.
+
+| Class / date | Friction and evidence | Workaround | Suggested fix | Severity | Mainnet impact |
+| --- | --- | --- | --- | --- | --- |
+| Observed · 2026-11-03 | t54 Express 0.3.4 returns HTTP 400 missing_invoiceId when only accepted.extra.invoiceId is sent. | Also send payload.invoiceId; retain signed InvoiceID binding. | Document both fields in the scheme example, or derive the duplicate field from accepted terms. | Medium | Otherwise valid clients cannot purchase; no mainnet incident observed. |
+| Observed · 2026-11-03 | x402Fetch returns the unpaid 402 without retry when challenge exists only in PAYMENT-REQUIRED; reproduced offline and in exploratory Testnet direction B. | Publisher mirrors the header challenge into JSON. | Read the v2 header first; surface a diagnostic rather than silently returning the challenge. | Medium | Header-only v2 servers cannot sell to this client; no mainnet incident observed. |
+| Observed · 2026-11-03 | Our required areFeesSponsored field and stripping of source/destination tags prevented matching upstream terms; tested against real middleware. | Optional false-only fees flag, preserve extras, validate/sign uint32 tags. | Publish cross-implementation conformance vectors for accepted terms and tags. | Medium | Lost destination tags can misroute credit; no mainnet incident observed. |
+| Observed · 2026-11-03 | npm x402-xrpl 0.3.4 metadata omits repository/gitHead; hosted /supported has no deployed revision. | Pin exact tarball/integrity; label source/deployment commits unknown. | Publish source repository, release commit and facilitator build revision. | Low | Supply-chain reproducibility gap, not a payment incident. |
+| Code-derived, reproduced offline · 2026-11-03 | t54 middleware consumes invoices after settlement; replay is refused even though delivery recovery may be needed. | Our SDK journal retains the original blob and refuses replacement signing; publisher supports same-blob redelivery. | Retain a settled receipt/delivery mapping for idempotent recovery. | Medium | Integrators who re-sign after an ambiguous response could double-pay; none observed here. |
+| Code-derived · 2026-11-03 | t54 issued assets are currency strings plus extra.issuer; ResearchAgent uses typed asset objects. t54 memo-only mode also omits our required InvoiceID. | Scope proof to native XRP and upstream default both binding; reject unsupported forms. | Document explicit asset/binding profiles and shared negative vectors. | Medium | Unsupported profiles must fail closed; no mainnet execution. |

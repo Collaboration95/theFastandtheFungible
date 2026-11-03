@@ -121,8 +121,9 @@ export function createPublisherApp(config: PublisherConfig = {}) {
         return quote
       })
       const quote = quotes[0]
-      res.status(402).set('PAYMENT-REQUIRED', encodeHeader('PAYMENT-REQUIRED', { x402Version: 2, resource, accepts: [...quotes.map(requirementsFor), ...(escrowEnabled(item.publisherSlug) ? [{ ...requirementsFor(quote), scheme: 'escrow-v1' as const, maxTimeoutSeconds: 120, extra: { invoiceId: quote.invoiceId, areFeesSponsored: false as const, quoteEndpoint: `${resource.url}/escrow-quote` } }] : [])] }))
-        .json({ error: 'Payment required', label }); return
+      const required = { x402Version: 2 as const, resource, accepts: [...quotes.map(requirementsFor), ...(escrowEnabled(item.publisherSlug) ? [{ ...requirementsFor(quote), scheme: 'escrow-v1' as const, maxTimeoutSeconds: 120, extra: { invoiceId: quote.invoiceId, areFeesSponsored: false as const, quoteEndpoint: `${resource.url}/escrow-quote` } }] : [])] }
+      res.status(402).set('PAYMENT-REQUIRED', encodeHeader('PAYMENT-REQUIRED', required))
+        .json({ ...required, error: 'Payment required', label }); return
     }
     let signature: PaymentSignature
     try { signature = decodeHeader('PAYMENT-SIGNATURE', raw) } catch { throw new PublisherError(400, 'Invalid PAYMENT-SIGNATURE header') }

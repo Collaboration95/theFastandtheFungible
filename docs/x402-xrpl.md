@@ -439,3 +439,60 @@ payouts remain reserved. `payout-cancel` and replacement `payout-reserve` rows a
 atomic with the change; signatures/settlement use the original audit flow.
 The caller may itself be denied, in which case policy holds funds rather than
 bypassing the screen. See COMPLIANCE.md and the public evidence JSON.
+
+## Starter Kit compatibility
+
+Researched 3 Nov 2026. Ripple's [Phase 1 Starter Kit announcement](https://ripple.com/insights/xrpl-ai-starter-kit/)
+is a curated collection, not a single installable repository. Its payment
+integration is t54's [XRPL exact scheme](https://xrpl-x402.t54.ai/docs/xrpl-scheme).
+The executable interop target is npm **x402-xrpl 0.3.4**, pinned exactly as a
+**devDependency** so tests run the real upstream client and Express middleware;
+production adapters require no new runtime dependency. npm publishes no
+repository or gitHead for this artifact: no SDK source commit is claimed.
+The lockfile pins its tarball and SHA-512 integrity.
+
+Public source snapshots inspected through authenticated gh:
+
+- `XRPLF/xrpl-dev-portal` at `41478c9faea94103646998e6f59fca3a27cd99ce`:
+  `.claude/skills/xrpl-skills/xrpl-agent-wallet` and `xrpl-payments`, the actual
+  skill paths linked by Ripple. These are skills, not an x402 SDK.
+- `t54-labs/rlusd-cli` **@rlusd/cli 0.2.0** at
+  `155ab72076c9cb455a6c6c2d46254768e941193b`: wallet/faucet/transaction tooling
+  and `src/services/x402-fetch.ts`; declares x402-xrpl ^0.1.1.
+- `t54-labs/rlusd-skills` at `0166aff93a62b22949009562ee2916570f7c784e`:
+  skills/docs backed by the separate CLI runtime.
+- `t54-labs/monid-x402-xrpl` **0.1.0** at
+  `3eba1346710985c9c9373852eff71b3de7046fb3`: public Python gateway,
+  pins Python x402-xrpl 0.3.4. Inspected, not executed in this proof.
+- `t54-labs/payments-mcp` package **@coinbase/payments-mcp 1.0.5** at
+  `dddbf890d6d81d79ca4007c7dee7316687ebbbed`: a separate payments MCP project;
+  not evidence that Ripple's documentation MCP is a wallet service.
+- Ripple links the [Context7 XRPL docs MCP](https://context7.com/websites/xrpl).
+  This is hosted documentation retrieval, with no release/commit pinned by the
+  announcement; no MCP execution or wallet compatibility is claimed here.
+
+The [Express example](https://xrpl-x402.t54.ai/docs/merchant-guides/express)
+uses `requirePayment`; the [client example](https://xrpl-x402.t54.ai/docs/client-guides/typescript)
+uses `x402Fetch`. Our harness executes these exported implementations. Both use
+v2 PAYMENT-REQUIRED / PAYMENT-SIGNATURE / PAYMENT-RESPONSE, `exact`, `xrpl:1`,
+XRP integer drops and signedTxBlob. The adapter preserves validated uint32 source
+and destination tags, permits absent `areFeesSponsored` (true remains refused),
+and sends `payload.invoiceId` as well as `accepted.extra.invoiceId`. Unknown
+extra fields are preserved for upstream term equality; crossCurrency is refused.
+Our publisher mirrors its header challenge into the 402 JSON body because t54
+x402Fetch reads that body. Neither response contains premium bytes.
+
+Both sign SHA-256(invoiceId) into InvoiceID. t54 defaults to both memo and
+InvoiceID binding; memo-only clients are deliberately refused by our publisher.
+No memo-only fallback weakens quote/resource binding. Issued-currency wire
+formats differ (t54 currency string + extra.issuer versus our asset object):
+**this compatibility claim covers native XRP only**, not RLUSD, upto or escrow.
+Our SDK retains its 300-second timeout cap; examples use 60 seconds.
+
+Spending remains an explicit bounded SDK operation with a journal, or the
+existing deterministic ResearchAgent purchase policy. No model tool, policy
+bypass or new purchase route is added. Exact amount, delivered_amount,
+validated tesSUCCESS, InvoiceID and one-charge journal checks remain in force.
+The t54 merchant consumes invoices, so a second request may refuse delivery;
+our SDK retains the original signed blob and does not authorize a replacement.
+See [executable proof and live receipts](evidence/starter-kit-interop.md).

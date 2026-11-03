@@ -92,7 +92,7 @@ export const simulatedLedgerIndex = (now = Date.now()) => Math.floor(now / 4000)
  * capped fee, LastLedgerSequence = current + 20. Without one (SIMULATED rail): no network, the simulated
  * ledger clock. The caller persists the blob write-once before submitting it.
  */
-export async function signPayment(wallet: Wallet, payment: { Destination: string; Amount: string | { currency: string; issuer: string; value: string }; InvoiceID: string }, ledger?: Ledger): Promise<{ txHash: string; txBlob: string; lastLedgerSequence: number }> {
+export async function signPayment(wallet: Wallet, payment: { Destination: string; Amount: string | { currency: string; issuer: string; value: string }; InvoiceID: string; SourceTag?: number; DestinationTag?: number }, ledger?: Ledger): Promise<{ txHash: string; txBlob: string; lastLedgerSequence: number }> {
   let fields = { Sequence: 1, Fee: '12', LastLedgerSequence: simulatedLedgerIndex() + 20 }
   if (ledger) {
     const [info, current, fee] = await Promise.all([
