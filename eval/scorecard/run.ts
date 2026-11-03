@@ -1,3 +1,4 @@
+import { readReliability } from './chaos.js'
 import dotenv from 'dotenv'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
@@ -22,6 +23,9 @@ export function history(): Scorecard[] { return existsSync(historyFile) ? readFi
 const read = (file: string) => JSON.parse(readFileSync(file, 'utf8'))
 
 export async function run() {
+  const chaosAt = process.argv.indexOf('--chaos-evidence'), soakAt = process.argv.indexOf('--soak-evidence')
+  if (soakAt >= 0 && chaosAt < 0) throw new Error('--soak-evidence requires --chaos-evidence')
+  const reliability = chaosAt < 0 ? null : readReliability(process.argv[chaosAt+1], soakAt < 0 ? undefined : process.argv[soakAt+1])
   const realFetch = globalThis.fetch
   const live = process.argv.includes('--live'), planOnly = process.argv.includes('--plan')
   if (!live) globalThis.fetch = (async (url, init) => {
@@ -100,7 +104,7 @@ export async function run() {
     labels: { ...flow.labels, timing: live ? 'LIVE decision; fixture writer/planner; SIMULATED settlement' : 'fixture; measured wall clock', corpus: 'synthetic demo articles', boot: latency.boot },
     quality, confidenceIntervals: bootstrapQuality(flow.results, sweep.dataset, bank.questions), timing: { ...timings(latency.samples), coldStartMs: latency.coldStartMs, node: process.version, platform: process.platform, observations: latency.samples },
     cost: { providerCalls: calls.length, estimatedUsageCalls: calls.filter(c => c.estimatedUsage).length, inputTokens: calls.reduce((s, c) => s + c.inputTokens, 0), outputTokens: calls.reduce((s, c) => s + c.outputTokens, 0), modelUsd: usd(calls), latencyModelUsdPerQuery: sample.length ? usd(latencyCalls) / sample.length : null, flowDecisionUsdPerQuery: usd(calls.filter(c => c.phase === 'scorecard-flow')) / ids.length, xrpDropsSpent: measuredRuns.flatMap(r => r.receipts).reduce((s, r) => s + Number(r.xrpl?.amountDrops ?? 0), 0), simulatedMinorSpent: flow.summary.overall.spentMinor, rates: 'eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)' },
-    audit, external: { mcpE2e: null, dmgColdStartMs: null }, counts: { questions: flow.results.length, coverageSnapshots: coverage.snapshots, requestedFacts: flow.summary.overall.requestedFacts },
+    audit, external: { reliability, mcpE2e: null, dmgColdStartMs: null }, counts: { questions: flow.results.length, coverageSnapshots: coverage.snapshots, requestedFacts: flow.summary.overall.requestedFacts },
   }
   const comparison = baseline ? deltas(quality, baseline.quality) : []
   const local = join(dir, 'report.json')

@@ -198,9 +198,11 @@ try {
       || api.store.policyPayments(r.runId).some(p => p.submission?.txHash === payment.hash)), 'Unaccounted confirmed buyer payment')
   }
   assertNoLeaks(observations, corpus)
-  assert(api.store.walletStatus().spentMinor <= 1000)
+  assert(api.store.walletStatus().spentMinor + api.store.walletStatus().reservedMinor <= 1000)
+  const held = Object.values(metrics.spendTodayBySurface as Record<string,{reservedMinor:number}>).reduce((n,s) => n+s.reservedMinor,0)
+  assert.equal(held,0,'Wallet authority held after run end')
   const result = { fault, useCase: uc, faultsInjected: state.count, payments, refunds, streams, stuckReservations,
-    reservationsHeld: runs.reduce((n, r) => n + r.reservedMinor, 0), violations: audit.total, metrics,
+    reservationsHeld: held, violations: audit.total, metrics,
     rss: process.memoryUsage().rss, handles: process.getActiveResourcesInfo().length }
   writeFileSync(join(dir, 'result.json'), JSON.stringify(result))
 } finally {

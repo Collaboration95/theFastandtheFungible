@@ -20,3 +20,12 @@ it('fixture ledger retains confirmed hashes across crashes and rejects a competi
     await expect(chain.ledger.request({command:'tx',transaction:second.hash})).rejects.toThrow('txnNotFound')
   } finally { chain.close(); rmSync(dir,{recursive:true,force:true}) }
 })
+
+import { reliabilityMetrics } from '../eval/scorecard/chaos.js'
+it('reports historical chaos separately from quality and refuses malformed evidence', () => {
+  const evidence = {schema:'chaos-v1',label:'SYNTHETIC fixture',iterations:500,invariantViolations:0,doubleCharges:0,durationMs:1800000,latencyMs:{p95DriftMs:12},testedCommit:'fixture-commit'}
+  expect(reliabilityMetrics(evidence,evidence)).toMatchObject({chaosPassRatePct:100,doubleCharges:0,soakP95DriftMs:12,soakCommit:'fixture-commit'})
+  expect(reliabilityMetrics({...evidence,invariantViolations:1}).chaosPassRatePct).toBeLessThan(100)
+  expect(reliabilityMetrics(evidence).soakP95DriftMs).toBeNull()
+  for (const bad of [{iterations:0},{doubleCharges:-1},{schema:'other'},{durationMs:0},{label:'live'}]) expect(() => reliabilityMetrics({...evidence,...bad})).toThrow('Invalid fixture chaos evidence')
+})

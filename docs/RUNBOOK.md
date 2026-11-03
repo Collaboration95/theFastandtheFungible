@@ -314,4 +314,23 @@ memory leakage in a single continuously running engine. Temp stores are removed
 after every iteration and on normal failure; hard-killing the parent may leave
 one `ra-chaos-*` directory in the OS temp directory. The 12 h command is provided;
 only the duration recorded in `docs/evidence/chaos-279.md` has been executed.
-Escrow coverage is conditional on #273 having merged at the final rebase.
+Escrow coverage below is enabled once #273 is present.
+
+After #273, each 20-iteration block also runs four escrow probes against a
+separate synthetic ledger: ambiguous create/finish/cancel submissions and a
+publisher unavailable after lock. They recreate the manager and buyer Store,
+retain ledger/publisher state, replay concurrent purchases and assert one create,
+one terminal operation, one receipt and no open object or reserved principal.
+These additional probes use a controlled policy BUY, distinct from the full
+API/SDK/UC1–UC4 scenarios. Counts appear separately under `escrow` in the summary.
+
+To append explicitly historical reliability rows to a scorecard without changing
+its frozen quality comparisons:
+
+```sh
+npm run scorecard -- --chaos-evidence docs/evidence/chaos-279-500.json --soak-evidence docs/evidence/chaos-279-integrated-soak.json
+```
+
+The optional rows are `chaosPassRatePct`, `doubleCharges`, and `soakP95DriftMs`;
+the output retains the evidence paths and tested commits. No evidence arguments
+means no reliability observation, rather than an invented zero.

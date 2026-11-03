@@ -1,6 +1,7 @@
 // One tagged release per feature day (#269). Day N is v0.(N+1).0: Day 0 is v0.1.0, Day 9 is v0.10.0.
 // Run from a clean checkout whose HEAD is origin/main (main itself, or a worktree on a detached/spare branch):
 //   node scripts/release.mjs <day> "<title>" [--date YYYY-MM-DD] [--dry-run] [--push]
+// Historical backfill: add --at <sha> --notes-file <path>; tag only, no package bump or HEAD push.
 // What it does: bumps package.json (and the lockfile's root entry), commits that, and creates an annotated tag
 // whose message is the release notes. The tag's push triggers .github/workflows/release.yml, which publishes the
 // GitHub release from the tag message. Without --push it only prints the push command; --dry-run prints the notes
