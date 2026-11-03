@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "mode": "full fixture workload on a declared local host",
+  "sourceSha": "38446e5d223a98ace432eaac2651427875647501",
+  "sourceTree": "544baacdf72c437471b4a11b13baa92b3163625e",
+  "worktreeDirty": false,
+  "runnerSha256": "db7dd1f9fa7d20f556bf1dd21d486c1aa03a55a8af2d6ae48a582490df29a2c6",
+  "timestamp": "2026-11-03T22:36:22.469Z",
+  "host": {
+    "hostname": "MacBook-Pro-7.local",
+    "platform": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "cpus": 10,
+    "node": "v26.3.1",
+    "load": [
+      4.24658203125,
+      3.1875,
+      2.67041015625
+    ]
+  },
+  "gates": [
+    {
+      "name": "soak",
+      "command": [
+        "caffeinate",
+        "-dims",
+        "node",
+        "scripts/soak-same-engine.mjs",
+        "--runs",
+        "2000",
+        "--warmup",
+        "200",
+        "--concurrency",
+        "1",
+        "--seed",
+        "279",
+        "--history-runs",
+        "10000",
+        "--events-per-run",
+        "60",
+        "--data-dir",
+        "scratch/finals-soak-279-20261103223622469",
+        "--output",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-5065e7b6/scratch/finals-soak-279.json",
+        "--burst"
+      ],
+      "startedAt": "2026-11-03T22:36:22.470Z",
+      "pass": false,
+      "exitCode": 1,
+      "finishedAt": "2026-11-03T22:43:58.415Z",
+      "logSha256": "bdfb9c60e9dcb4add7436a15a7da7eb7de84573efb390a815c391fa69888762b"
+    }
+  ],
+  "artifacts": [],
+  "dmgs": [],
+  "pass": false,
+  "error": "soak failed; see /Users/speedpowermac/.t3/worktrees/tftf/t3-5065e7b6/scratch/final-acceptance-20261103223622452/soak.log",
+  "soak": {
+    "file": "scratch/finals-soak-279.json",
+    "sha256": "30dc834965f9e532b2f89bc4051fa659927d3cd1c27ac29fc8140bff208a490c",
+    "source": "38446e5d223a98ace432eaac2651427875647501",
+    "summary": {
+      "gates": {
+        "rssSlope": {
+          "value": -0.9810175999689837,
+          "limit": 5,
+          "pass": true
+        },
+        "rssMedian": {
+          "value": -35.00267791748047,
+          "limit": 100,
+          "pass": true
+        },
+        "rssMax": {
+          "value": 961.0594482421875,
+          "limit": 1536,
+          "pass": true
+        },
+        "loopP99": {
+          "value": 64.389119,
+          "limit": 50,
+          "pass": false
+        },
+        "latencyP95": {
+          "value": -130.2362079999948,
+          "limit": 250,
+          "pass": true
+        }
+      },
+      "valid": true,
+      "pass": false,
+      "completed": 2000,
+      "failed": 0,
+      "warmMedianMiB": 752.1278457641602,
+      "finalMedianMiB": 717.1251678466797,
+      "firstP95Ms": 363.00508300000365,
+      "lastP95Ms": 232.76887500000885,
+      "sampleGaps": 0,
+      "identityCount": 1,
+      "loopMethod": "maximum of worker one-second histogram p99s, 10 ms resolution"
+    },
+    "burst": {
+      "requested": true,
+      "limit": 4,
+      "submitted": 100,
+      "admitted": 4,
+      "overloaded": 96,
+      "idempotentRetries": 4,
+      "peak": 4,
+      "activeAfterDrain": 0,
+      "pass": true
+    },
+    "restarts": 20
+  },
+  "finishedAt": "2026-11-03T22:43:58.419Z"
+}

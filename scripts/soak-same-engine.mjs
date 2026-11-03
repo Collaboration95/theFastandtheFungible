@@ -4,7 +4,7 @@ import { writeFileSync, readFileSync, mkdirSync, existsSync, statSync } from 'no
 import { resolve, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { randomUUID, createHash } from 'node:crypto'
-import { performance, monitorEventLoopDelay } from 'node:perf_hooks'
+import { performance, monitorEventLoopDelay, PerformanceObserver } from 'node:perf_hooks'
 import { BroadcastChannel, isMainThread, threadId, workerData } from 'node:worker_threads'
 import { loadavg, cpus, platform, release } from 'node:os'
 import net from 'node:net'
@@ -18,6 +18,7 @@ export async function deadline(promise, ms) {
   try { return await Promise.race([promise, new Promise((_,reject)=> { timer=setTimeout(()=>reject(new Error('timeout')),ms) })]) }
   finally { clearTimeout(timer) }
 }
+export function burstPass(b) {return b.peak===4&&b.activeAfterDrain===0&&b.admitted+b.overloaded===100&&b.overloaded>0&&b.idempotentRetries===b.admitted}
 export function compare(report) {
   const rows = report.asks.filter(r=>r.stage==='measured'), good = rows.filter(r=>r.ok)
   const first=good.slice(0,100), last=good.slice(-100)
@@ -33,11 +34,11 @@ export function compare(report) {
   const gates={rssSlope:{value:slope,limit:5,pass:Number.isFinite(slope)&&slope<=5}, rssMedian:{value:final-warm,limit:100,pass:final-warm<=100}, rssMax:{value:maxRss,limit:1536,pass:maxRss<=1536}, loopP99:{value:loopP99,limit:50,pass:loopP99<50}, latencyP95:{value:p95last-p95first,limit:Math.max(.2*p95first,250),pass:p95last-p95first<=Math.max(.2*p95first,250)}}
   const identities=new Set(report.asks.map(r=>`${r.pid}/${r.engineId}/${r.workerId}/${r.storeId}`))
   const valid=good.length===report.options.runs && good.length>=200 && identities.size===1 && !gaps.length && !report.failures.length && samples.length>=60 && samples.every(s=>s.worker) && report.restarts.length===20 && report.restarts.every(r=>r.closed) && report.auditViolations===0
-  return { gates, valid, pass:valid&&Object.values(gates).every(g=>g.pass), completed:good.length, failed:rows.length-good.length, warmMedianMiB:warm, finalMedianMiB:final, firstP95Ms:p95first, lastP95Ms:p95last, sampleGaps:gaps.length, identityCount:identities.size, loopMethod:'maximum of worker one-second histogram p99s, 10 ms resolution' }
+  return { gates, valid, pass:valid&&Object.values(gates).every(g=>g.pass)&&(!report.options.burst||report.burst?.pass===true), completed:good.length, failed:rows.length-good.length, warmMedianMiB:warm, finalMedianMiB:final, firstP95Ms:p95first, lastP95Ms:p95last, sampleGaps:gaps.length, identityCount:identities.size, loopMethod:'maximum of worker one-second histogram p99s, 10 ms resolution' }
 }
 
 // Loaded with --import in both host and engine worker, before any engine module.
-export function installGuard() {
+export async function installGuard() {
   const channel=new BroadcastChannel('same-engine-soak-'+process.env.SOAK_ID)
   const original=net.Socket.prototype.connect
   net.Socket.prototype.connect=function(...args) {
@@ -54,9 +55,25 @@ export function installGuard() {
   }
   syncBuiltinESMExports()
   if (!isMainThread && workerData?.apiPort !== undefined) {
+    const {register}=await import('tsx/esm/api');register()
+    const {ActiveWork}=await import('../server/agents/active-work.ts')
+    const acquire=ActiveWork.prototype.acquire
+    let burst=false
+    channel.onmessage=({data})=>{if(data.burstStart) {burst=true;channel.postMessage({burstReady:true})}}
+    ActiveWork.prototype.acquire=function(...args) {
+      const release=acquire.apply(this,args)
+      if(burst)channel.postMessage({burstActive:this.active})
+      return ()=>{release();if(burst)channel.postMessage({burstActive:this.active})}
+    }
     const histogram=monitorEventLoopDelay({resolution:10}); histogram.enable()
+    let gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{}}
+    const observer=new PerformanceObserver(list=>{for(const entry of list.getEntries()){
+      gc.count++;gc.totalPauseMs+=entry.duration;gc.maxPauseMs=Math.max(gc.maxPauseMs,entry.duration)
+      const kind=String(entry.detail.kind);gc.kinds[kind]=(gc.kinds[kind]||0)+1
+    }})
+    observer.observe({entryTypes:['gc']})
     const engineId=randomUUID()
-    const timer=setInterval(()=> {channel.postMessage({worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,handles:process.getActiveResourcesInfo().length,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset()},1000)
+    const timer=setInterval(()=> {channel.postMessage({worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,handles:process.getActiveResourcesInfo().length,gc,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset();gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{}}},1000)
     timer.unref()
     channel.unref()
   } else channel.unref()
@@ -67,7 +84,6 @@ export function options(args) {
   for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output','cpuProfDir'].includes(key)?args[++i]:Number(args[++i])}
   for(const key of ['runs','warmup','concurrency','seed','historyRuns','eventsPerRun','timeoutMs'])if(!Number.isSafeInteger(o[key])||o[key]<0)throw Error('Invalid '+key)
   if(!o.runs||!o.concurrency||!o.timeoutMs||!o.dataDir||!o.output)throw Error('Positive counts, --data-dir and --output required')
-  if(o.burst)throw Error('100-request burst at limit 4 pending C1 engine-wide admission cap; flag reserved')
   return o
 }
 async function run(o) {
@@ -82,7 +98,7 @@ async function run(o) {
   if(existsSync(o.dataDir))throw Error('Data root must be fresh')
   mkdirSync(o.dataDir,{recursive:true});mkdirSync(resolve(o.output,'..'),{recursive:true})
   const start=Date.now(), storeId=randomUUID(), dbPath=join(o.dataDir,'app.db')
-  const r={schema:'same-engine-soak-v1',label:'BASELINE · SHARED HOST · SYNTHETIC fixtures / SIMULATED rail · not finals acceptance', options:o,harnessSha256:createHash('sha256').update(readFileSync(fileURLToPath(import.meta.url))).digest('hex'),source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),host:{platform:platform(),release:release(),cpus:cpus().length,node:process.version,load:loadavg()},startedAt:new Date().toISOString(),storeId,pid:process.pid,samples:[],asks:[],restarts:[],failures:[],auditViolations:0,burst:'PENDING C1',seedCases:[]}
+  const r={schema:'same-engine-soak-v1',label:'BASELINE · SHARED HOST · SYNTHETIC fixtures / SIMULATED rail · not finals acceptance', options:o,harnessSha256:createHash('sha256').update(readFileSync(fileURLToPath(import.meta.url))).digest('hex'),source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),host:{platform:platform(),release:release(),cpus:cpus().length,node:process.version,load:loadavg()},startedAt:new Date().toISOString(),storeId,pid:process.pid,samples:[],asks:[],restarts:[],failures:[],auditViolations:0,burst:{requested:o.burst,pass:false},seedCases:[]}
   const save=()=>writeFileSync(o.output,JSON.stringify(r,null,2)+'\n')
   const store=new Store(dbPath)
   // Store creates validated run records; historical event insertion is batched per run.
@@ -105,9 +121,10 @@ async function run(o) {
     r.selectorsBeforeBoot={runnable:store.runnableRunIds(),recoverable:store.recoverableRunIds()}
   } finally {store.close()}
   r.seedDurationMs=Date.now()-start;save()
+  let burstReady=false,burstPeak=0,burstActive=0
   let worker, engine, stage='startup', completed=0, lastWall=Date.now(), lastMono=performance.now()
   const channel=new BroadcastChannel('same-engine-soak-'+process.env.SOAK_ID)
-  channel.onmessage=({data})=> {if(data.blocked)r.failures.push('non-loopback request');if(data.worker)worker=data}
+  channel.onmessage=({data})=> {if(data.burstReady)burstReady=true;if(data.burstActive!==undefined){burstActive=data.burstActive;burstPeak=Math.max(burstPeak,burstActive)};if(data.blocked)r.failures.push('non-loopback request');if(data.worker)worker=data}
   const bytes=path=>existsSync(path)?statSync(path).size:0
   const sample=()=>{const wall=Date.now(),mono=performance.now();r.samples.push({at:wall,elapsedMs:wall-start,stage,completed,rss:process.memoryUsage().rss,hostHeap:process.memoryUsage().heapUsed,hostHandles:process.getActiveResourcesInfo().length,worker,dbBytes:bytes(dbPath),walBytes:bytes(dbPath+'-wal'),load:loadavg(),gapMs:mono-lastMono,hostSleepMs:Math.max(0,(wall-lastWall)-(mono-lastMono))});lastWall=wall;lastMono=mono}
   const timer=setInterval(sample,1000)
@@ -120,6 +137,22 @@ async function run(o) {
       try{const result=await sdk.ask(USE_CASES[uc].question+(uc==='UC2'?' (pricing & margins)':''),{budgetSgd:2,idempotencyKey:`soak-${s}-${index}`,signal:AbortSignal.timeout(o.timeoutMs)});const snapshot=await(await fetch(engine.apiUrl+'/api/mcp/runs/'+result.run_id,{headers:{Authorization:'Bearer '+engine.apiToken}})).json();const audit=auditRuns([snapshot],corpus);r.auditViolations+=audit.total;row={ok:result.phase==='DONE',runId:result.run_id,phase:result.phase,reservedMinor:snapshot.reservedMinor};if(snapshot.reservedMinor)r.failures.push('unexplained reservation '+result.run_id)}catch(error){row={ok:false,error:error.message};r.failures.push('ask failed '+index)}
       r.asks.push({...identity,...row,index,uc,stage:s,ms:performance.now()-t,rss:process.memoryUsage().rss});if(s==='measured')completed++;save()}
     for(const [s,count] of [['warmup',o.warmup],['measured',o.runs]]){stage=s;const began=Date.now();for(let i=0;i<count;i+=o.concurrency)await Promise.all(Array.from({length:Math.min(o.concurrency,count-i)},(_,j)=>ask(i+j,s)));if(s==='measured'&&Date.now()-began<61000)await new Promise(done=>setTimeout(done,61000-(Date.now()-began)))}
+    if(o.burst) {
+      stage='burst'
+      channel.postMessage({burstStart:true});await deadline((async()=>{while(!burstReady)await new Promise(done=>setTimeout(done,10))})(),o.timeoutMs)
+      const headers={Authorization:'Bearer '+engine.apiToken,'Content-Type':'application/json'}
+      const post=(path,body,key)=>fetch(engine.apiUrl+path,{method:'POST',headers:{...headers,...(key?{'Idempotency-Key':key}:{})},body:JSON.stringify(body),signal:AbortSignal.timeout(o.timeoutMs)})
+      const responses=await Promise.all(Array.from({length:100},(_,i)=>post('/runs',{question:`Admission burst ${i}?`,budgetMinor:0},`burst-${i}`)))
+      const admitted=[],refused=[];let retries=0
+      for(let i=0;i<responses.length;i++) {
+        const response=responses[i],body=await response.json()
+        if(response.status===201) {admitted.push(body.runId);const retry=await post('/runs',{question:`Admission burst ${i}?`,budgetMinor:0},`burst-${i}`);if(retry.status===200&&(await retry.json()).runId===body.runId)retries++}
+        else if(response.status===503&&body.code==='overloaded'&&body.retryable===true)refused.push(i)
+      }
+      for(const id of admitted) {const stopped=await post(`/runs/${id}/stop`,{});if(!stopped.ok)throw Error('Burst stop failed')}
+      await deadline((async()=>{while(burstActive)await new Promise(done=>setTimeout(done,10))})(),o.timeoutMs)
+      r.burst={requested:true,limit:4,submitted:100,admitted:admitted.length,overloaded:refused.length,idempotentRetries:retries,peak:burstPeak,activeAfterDrain:burstActive,pass:burstPass({peak:burstPeak,activeAfterDrain:burstActive,admitted:admitted.length,overloaded:refused.length,idempotentRetries:retries})};save()
+    }
     stage='restart';await close(engine);engine=undefined
     for(let i=0;i<20;i++){const t=performance.now();engine=await boot();const identity={engineId:worker.engineId,workerId:worker.workerId};await close(engine);engine=undefined;r.restarts.push({cycle:i+1,...identity,ms:performance.now()-t,closed:true});save()}
   } catch(error){r.failures.push(error.message)}
@@ -132,7 +165,7 @@ if(process.argv[1]&&resolve(process.argv[1])===self){
   if(process.argv.includes('--internal'))process.exitCode=await run(o)
   else {
     const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
-    Object.assign(env,{SOAK_ID:randomUUID(),LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0',RECONCILE_INTERVAL_MS:'1000',MCP_DAILY_CAP_MINOR:'100000000',WALLET_DAILY_CAP_MINOR:'100000000',NODE_OPTIONS:`--import=data:text/javascript,${encodeURIComponent(`import {installGuard} from ${JSON.stringify(pathToFileURL(self).href)};installGuard()` )}`})
+    Object.assign(env,{SOAK_ID:randomUUID(),ACTIVE_WORK_LIMIT:'4',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0',RECONCILE_INTERVAL_MS:'1000',MCP_DAILY_CAP_MINOR:'100000000',WALLET_DAILY_CAP_MINOR:'100000000',NODE_OPTIONS:`--import=data:text/javascript,${encodeURIComponent(`import {installGuard} from ${JSON.stringify(pathToFileURL(self).href)};await installGuard()` )}`})
     const child=spawn(process.execPath,[...(o.cpuProfDir ? ['--cpu-prof', '--cpu-prof-dir='+resolve(o.cpuProfDir)] : []),self,...process.argv.slice(2),'--internal'],{env,stdio:'inherit'})
     child.on('exit',code=>{process.exitCode=code??1})
   }

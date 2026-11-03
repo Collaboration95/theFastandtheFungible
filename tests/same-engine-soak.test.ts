@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 // @ts-expect-error manual JavaScript harness is intentionally independent of the application build
-import { compare, deadline, options } from '../scripts/soak-same-engine.mjs'
+import { compare, deadline, options, burstPass } from '../scripts/soak-same-engine.mjs'
 function evidence() {
   return { options:{runs:200},asks:Array.from({length:200},(_,index)=>({index,stage:'measured',ok:true,rss:200*1048576,ms:index<100?100:200,pid:1,engineId:'one',workerId:4,storeId:'db'})),samples:Array.from({length:61},()=>({stage:'measured',rss:200*1048576,gapMs:1000,hostSleepMs:0,worker:{loopP99Ms:12}})),restarts:Array.from({length:20},()=>({closed:true})),failures:[] as string[],auditViolations:0 }
 }
@@ -30,4 +30,20 @@ it('preserves string profile-directory flags without changing default invocation
   expect(options(args).cpuProfDir).toBeUndefined()
   expect(options([...args, '--cpu-prof-dir', '/tmp/profiles']).cpuProfDir).toBe('/tmp/profiles')
   expect(options(args).runs).toBe(6)
+})
+
+it('accepts the implemented burst flag and rejects failed or absent burst evidence',()=>{
+  expect(options(['--burst','--data-dir','/tmp/fresh','--output','/tmp/report']).burst).toBe(true)
+  const r={...evidence(),options:{runs:200,burst:true},burst:{pass:false}}
+  expect(compare(r).pass).toBe(false)
+  r.burst.pass=true;expect(compare(r).pass).toBe(true)
+})
+
+it('checks concurrent leases rather than cumulative admissions, retaining the cap of four',()=>{
+  const burst={peak:4,activeAfterDrain:0,admitted:6,overloaded:94,idempotentRetries:6}
+  expect(burstPass(burst)).toBe(true)
+  expect(burstPass({...burst,peak:5})).toBe(false)
+  expect(burstPass({...burst,activeAfterDrain:1})).toBe(false)
+  expect(burstPass({...burst,idempotentRetries:5})).toBe(false)
+  expect(burstPass({...burst,overloaded:93})).toBe(false)
 })

@@ -10,12 +10,17 @@ Every number below keeps the scope label of the evidence it comes from
 Packages are built and consumer-tested but **not published** to npm, PyPI or
 the MCP Registry; that is an owner step tracked in #265.
 
-## Unreleased (1.0.0 candidate)
+## 1.0.0 (candidate)
 
 Merged on `main` after [v0.8.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.8.0)
-(PRs #332 and #341–#352, merged 3 Nov 2026 UTC).
+(PRs #332 and #341–#358).
 
 ### Added
+
+- Same-engine fixture workload harness and retained shared-host baseline misses.
+  [#353](https://github.com/Collaboration95/theFastandtheFungible/pull/353)
+- Writer identity verification using native XRPL Credentials.
+  [#357](https://github.com/Collaboration95/theFastandtheFungible/pull/357)
 
 - Python SDK: typed, standard-library client with `ask`, event iteration,
   receipts, `get_run` and `wallet_status`. [#341](https://github.com/Collaboration95/theFastandtheFungible/pull/341)
@@ -45,6 +50,16 @@ Merged on `main` after [v0.8.0](https://github.com/Collaboration95/theFastandthe
   no network). TypeScript and Python agree on 177 of 177 conformance cases. [#352](https://github.com/Collaboration95/theFastandtheFungible/pull/352)
 
 ### Changed
+
+- README and docs front door organized by audience, with a candidate changelog.
+  [#354](https://github.com/Collaboration95/theFastandtheFungible/pull/354)
+- Link the live historical Testnet ledger page from the docs.
+  [#355](https://github.com/Collaboration95/theFastandtheFungible/pull/355)
+- Remove retained-history accounting scans while preserving exact spending
+  equivalence. [#356](https://github.com/Collaboration95/theFastandtheFungible/pull/356)
+- Bound engine verification work and split synchronous research batches.
+  Quiet-host 600-ask fixture loop p99: 28.6 ms; this is scoped rehearsal evidence.
+  [#358](https://github.com/Collaboration95/theFastandtheFungible/pull/358)
 
 - CI is a job graph (`changes` → `verify`, `chaos`, `browser`, `python`,
   `artifacts` → `check`). Per-component coverage floors are exact ratios that
