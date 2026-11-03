@@ -25,7 +25,7 @@ PR or issue.
 | Product | Surprise bet 1: proof-or-refund escrow on XRPL | #261 spike, #273 build | planned · Mon 9 |
 | Product | Pay writers in RLUSD on Testnet | #275 | planned · Wed 11 |
 | Product | Surprise bet 2: hire the agent (agent-to-agent x402 with citation royalties) | #274 | planned · Tue 10 |
-| Product | Publish in one command: a Markdown folder becomes a paid writer | #277 | planned · Fri 13 |
+| Product | Publish in one command: a Markdown folder becomes a paid writer | #277 | implemented · 18.90 s Testnet paid read, 3 Nov |
 | UI/UX | The cast (restrained, on one grid with the brand) + motion: the money visibly moves | #258, #262 | cast v1 done (#258); motion planned Sun 8 (#262) |
 | Repo | Front door: settings, topics, community files, hygiene check, a release per feature day | #269 | done · social preview upload on #265 |
 | Repo | Brand kit: wordmark, mark, favicon, app icon, social preview, naming audit | #271 | done · reproducible exports + app/site source integration |
@@ -219,6 +219,8 @@ Agents add items there and keep working around them.
 
 ## Decisions log
 
+- 3 Nov: #277 uses the canonical #260 manifest v2 schema and passage-bound menu verifier; carry its shared protocol files until Lane B lands so the publishing command works from a clean clone.
+
 - 3 Nov: #277 publishes locally with a private `.env.writer`, deterministic public topics, unverified identity and the operator payee denylist; npm distribution stays an owner choice on #265.
 
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
@@ -239,7 +241,7 @@ Significant product, design and process decisions, newest first. One line each: 
 ## Changelog
 
 - 2026-11-03: Reused test search indexes and optimized leak-oracle comparisons to shorten hard-gate runs without changing coverage.
-- 3 Nov: #277 Markdown publishing command, three starter articles, signed x402 writer and local registration; Testnet folder → verified paid read **19.30 s**, one **0.01 XRP** payment ([proof](evidence/publish-site-277.md)).
+- 3 Nov: #277 Markdown publishing command, three starter articles, signed x402 writer and local registration; Testnet folder → verified paid read **18.90 s**, one **0.01 XRP** payment ([proof](evidence/publish-site-277.md)).
 
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 

@@ -22,8 +22,8 @@ export async function candidateFrom(base: string, article = alphaLeakArticle): P
   return { ...exampleCandidate, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: hit.title, family: hit.articleId, url: hit.url, wallet: hit.manifest!.wallet, manifest: hit.manifest, tier: 'PAID', price: { amountMinor: hit.priceMinor, currency: 'SGD' } }
 }
 
-export async function payPath(options: { refuseChallenges?: boolean; storePath?: string } = {}) {
-  const app = createPublisherApp({ journal: ':memory:', rail: 'simulated', writers: alphaLeakCorpus, env: {}, refuseChallenges: options.refuseChallenges })
+export async function payPath(options: { refuseChallenges?: boolean; storePath?: string; writers?: typeof alphaLeakCorpus } = {}) {
+  const app = createPublisherApp({ journal: ':memory:', rail: 'simulated', writers: options.writers ?? alphaLeakCorpus, env: {}, refuseChallenges: options.refuseChallenges })
   await app.locals.ready; await app.locals.writersReady
   const server = app.listen(0, '127.0.0.1'); await once(server, 'listening')
   const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`

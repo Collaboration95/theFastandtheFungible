@@ -5,12 +5,12 @@ pay. This run used **synthetic starter content**, the **fixture extractive write
 and **fixture metadata decision model**, with **real XRPL Testnet settlement**.
 No live research/decision model is claimed. No mainnet funds or cloud resources.
 
-- Folder → searchable/payable writer, including new-wallet faucet funding: **9.16 s**.
-- Folder → verified paid read: **19.30 s** (payer readiness checked before timing).
+- Folder → searchable/payable writer, including new-wallet faucet funding: **7.23 s**.
+- Folder → verified paid read: **18.90 s** (payer readiness checked before timing).
 - One intent, one receipt, one proof-verified grant, **10,000 drops = 0.01 Testnet XRP**.
-- Validated `tesSUCCESS` in ledger **22016229**, destination
-  `r3qSDtFPYsWLiGkNa22C8grJN72M37cUbc`, delivered amount `10000`.
-- Transaction: [E44DF6D66C0027C64C5C1C4746F6175BD95F33F1B6CF2A6F1ACDCA8B079B3AD5](https://testnet.xrpl.org/transactions/E44DF6D66C0027C64C5C1C4746F6175BD95F33F1B6CF2A6F1ACDCA8B079B3AD5).
+- Validated `tesSUCCESS` in ledger **22025285**, destination
+  `r4fGf3dfENteD9KgS3r8rbY9WywcAiDRt5`, delivered amount `10000`.
+- Transaction: [ED26E003037BC6BD3F1E580F3C5E019F30E170535C9E034F45DFE1EB08F15FA5](https://testnet.xrpl.org/transactions/ED26E003037BC6BD3F1E580F3C5E019F30E170535C9E034F45DFE1EB08F15FA5).
 - Public receipt and exact citation references: `publish-site-277.json`.
 - Retried network access was read-only transaction lookup, not another purchase.
 
@@ -22,30 +22,36 @@ below as comments. The actual CLI is separately exercised by the fixture test:
 $ node --import tsx scripts/publish-demo.ts --testnet
 # Recipe: cp -R examples/writer-starter scratch/publish-demo-testnet
 # Recipe: OFFSET=800 npm run publish:site -- scratch/publish-demo-testnet
-Wallet r3qSDtFPYsWLiGkNa22C8grJN72M37cUbc · XRPL TESTNET · key saved privately
+Wallet r4fGf3dfENteD9KgS3r8rbY9WywcAiDRt5 · XRPL TESTNET · key saved privately
 Search: keyword · live embeddings off (SEARCH_EMBEDDINGS=live enables hybrid)
 Published 3 articles · unverified writer · SYNTHETIC
 Site http://127.0.0.1:9590/w/publish-demo-testnet/
-Folder → searchable, payable writer: 9.16 s
+Folder → searchable, payable writer: 7.23 s
 Fixture policy: BUY publish-demo-testnet-1-capacity
 Budget: S$0.10 · spent: S$0.10 · VERIFIED · 1 receipt · 1 grant
-XRPL TESTNET · 10000 drops · ledger 22016229
-Tx E44DF6D66C0027C64C5C1C4746F6175BD95F33F1B6CF2A6F1ACDCA8B079B3AD5
-Folder → paid read: 19.30 s
+XRPL TESTNET · 10000 drops · ledger 22025285
+Tx ED26E003037BC6BD3F1E580F3C5E019F30E170535C9E034F45DFE1EB08F15FA5
+Folder → paid read: 18.90 s
 ```
 
 LinkedIn angle: the supply side of agent commerce can fit in one command:
 Markdown, a signed manifest and a Testnet wallet. A fixture agent found the new
-writer and paid for proof-verified evidence in 19.30 seconds. Public topic labels
+writer and paid for proof-verified evidence in 18.90 seconds. Public topic labels
 help it decide; the full article stays behind x402.
 
-Cleanup observation: the first demo process retained WebSockets after the verified
-read. It was terminated after persisting its receipt, without another purchase.
-The concurrent-connect race in our `testnetLedger` wrapper is fixed and covered
-by `tests/xrpl-connection.test.ts`; a subsequent read-only lookup exited cleanly.
+The resumed run exercised the final v2 signed fact-menu path and exited cleanly.
+A separate read-only transaction lookup verified validated `tesSUCCESS`, destination
+and delivered amount; it did not submit another payment. This run spent 0.01 Testnet
+XRP (plus the network fee), below the 0.1 XRP cap. The previous run also spent
+0.01 Testnet XRP; total across both runs is 0.02 XRP plus network fees.
 
-The timed Testnet read preceded the #260 v2 integration. After integration,
-an **offline** check loaded that same paid body and its stored salts, signed a
-v2 manifest with **six menu claims**, and verified the root, word count and all
-menu promises. No extra payment or network call was used for that check.
-The CLI + fixture policy tests cover the final v2 path end to end.
+The command used to reproduce the resumed run was:
+
+```sh
+OFFSET=800 LOCAL_WRITERS_DIR=scratch/published-final-277 node --import tsx scripts/publish-demo.ts --testnet
+```
+
+The buyer wallet was ready before timing. Writer faucet funding, folder copy,
+indexing, registration, fixture policy, settlement and proof verification were
+inside the 18.90-second interval. Search was keyword; optional live embeddings
+were disabled. No paid model API calls were made.

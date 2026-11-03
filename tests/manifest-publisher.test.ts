@@ -6,7 +6,8 @@ import { join } from 'node:path'
 import { miniCorpus } from './fixtures/corpus-mini/index.js'
 import { createPublisherApp } from '../publisher/routes.js'
 import { PublisherJournal } from '../publisher/journal.js'
-import type { Manifests } from '../publisher/manifest.js'
+import { createManifests, type Manifests } from '../publisher/manifest.js'
+import { simulatedKeys } from '../publisher/registry.js'
 import { SearchHitSchema } from '../shared/contracts/manifest.js'
 import type { WriterCorpus } from '../shared/contracts/writers.js'
 import { verifyDelivery, verifyManifestSignature } from '../shared/manifest.js'
@@ -49,6 +50,28 @@ describe('publisher manifests (#125)', () => {
     expect(b.manifest!.leaves).toEqual(a.manifest!.leaves)
     expect(verifyManifestSignature(b.manifest!)).toBe(true)
     expect(verifyManifestSignature({ ...b.manifest!, relevance: a.manifest!.relevance === b.manifest!.relevance ? 0.01 : a.manifest!.relevance })).toBe(false)
+  })
+
+  it('caches identical signatures without sharing mutations and invalidates changed menu metadata', () => {
+    const journal = new PublisherJournal(':memory:')
+    try {
+      const manifests = createManifests(journal)
+      const article = structuredClone(miniCorpus.articles.find(a => a.tier === 'PAID')!)
+      const keys = simulatedKeys(article.publisherSlug)
+      const entry = { publisher: { slug: article.publisherSlug, wallet: keys.wallet, pubKey: keys.publicKey }, keys }
+      const before = manifests.manifestFor(entry, article, 0.5)!
+      const firstSig = before.sig
+      before.claims[0].id = 'caller mutation'
+      const replay = manifests.manifestFor(entry, article, 0.5)!
+      expect(replay.sig).toBe(firstSig)
+      expect(replay.claims[0].id).not.toBe('caller mutation')
+      article.factMenu = Object.fromEntries(article.passages.map(p => [p.id, { entity: 'WrongCo', measure: 'revenue' }]))
+      const changed = manifests.manifestFor(entry, article, 0.5)!
+      expect(changed.root).toBe(replay.root)
+      expect(changed.sig).not.toBe(replay.sig)
+      expect(changed.claims[0].covers).toEqual({ entity: 'WrongCo', measure: 'revenue' })
+      expect(verifyManifestSignature(changed)).toBe(true)
+    } finally { journal.close() }
   })
 
   it('persists salts in publisher.db, so a restart signs the same root', async () => {

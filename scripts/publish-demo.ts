@@ -31,8 +31,8 @@ if (testnet) {
 }
 const started = performance.now()
 await cp('examples/writer-starter', folder, { recursive: true })
-console.log(`$ cp -R examples/writer-starter scratch/${slug}`)
-console.log(`$ OFFSET=800 npm run publish:site -- scratch/${slug}${testnet ? '' : ' --rail simulated'}`)
+console.log(`# Recipe: cp -R examples/writer-starter scratch/${slug}`)
+console.log(`# Recipe: OFFSET=800 npm run publish:site -- scratch/${slug}${testnet ? '' : ' --rail simulated'}`)
 const site = await publishSite({ folder, slug, root, rail: testnet ? 'xrpl-testnet' : 'simulated', port: 9590 })
 const store = new Store(resolve(site.dir, 'demo-buyer.db'))
 const ledger = testnet ? testnetLedger() : undefined

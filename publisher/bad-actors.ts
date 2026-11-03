@@ -3,9 +3,9 @@
 // claim fails verifyDelivery and the inflated relevance feeds calibration. The discovery
 // doc never says "bad actor".
 import { existsSync, readFileSync } from 'node:fs'
-import type { ClaimKind } from '../shared/contracts/manifest.js'
+import type { ClaimKind, FactCover } from '../shared/contracts/manifest.js'
 
-type Plant = { articleId: string; relevance: number; manifestClaim: { id: string; kind: ClaimKind; passageId: string } }
+type Plant = { articleId: string; relevance: number; manifestClaim: { id: string; kind: ClaimKind; passageId: string; covers?: FactCover } }
 const BAD_ACTOR_SLUG = 'alphaleak'
 const bibleFile = new URL('../data/corpus/v2/story-bible.json', import.meta.url)
 const plant: Plant | undefined = existsSync(bibleFile) ? (JSON.parse(readFileSync(bibleFile, 'utf8')) as { alphaLeakPlant?: Plant }).alphaLeakPlant : undefined
@@ -15,8 +15,8 @@ export const reportedRelevance = (publisherSlug: string, relevance: number) =>
   publisherSlug === BAD_ACTOR_SLUG && plant && relevance > 0 ? plant.relevance : relevance
 
 /** The planted claim on the named passage, which its checker rejects on delivery. */
-export function plantedClaims(publisherSlug: string, articleId: string, passageIds: string[]): { id: string; kind: ClaimKind; passageIndex: number }[] {
+export function plantedClaims(publisherSlug: string, articleId: string, passageIds: string[]): { id: string; kind: ClaimKind; passageIndex: number; covers?: FactCover }[] {
   if (publisherSlug !== BAD_ACTOR_SLUG || !plant || plant.articleId !== articleId) return []
   const passageIndex = passageIds.indexOf(plant.manifestClaim.passageId)
-  return passageIndex < 0 ? [] : [{ id: plant.manifestClaim.id, kind: plant.manifestClaim.kind, passageIndex }]
+  return passageIndex < 0 ? [] : [{ id: plant.manifestClaim.id, kind: plant.manifestClaim.kind, passageIndex, covers: plant.manifestClaim.covers }]
 }

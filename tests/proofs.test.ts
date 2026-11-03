@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import { challenge } from '../server/challenges.js'
 import { RunLoop } from '../server/agents/loop.js'
 import { retrieve } from '../server/agents/research.js'
 import type { DecisionProvider } from '../server/agents/decision.js'
@@ -40,6 +41,20 @@ describe('proof check after delivery and quarantine (#131)', () => {
     expect(content.body).toBe(honestArticle.body)
     const span = content.spans[0]
     expect(() => h.store.addAnswer(run.runId, answer(1, [{ id: 'c1', text: 'cited', stance: 'SUPPORTS', citations: [{ resourceId: content.resourceId, version: content.version, spanId: span.id }] }]))).not.toThrow()
+  })
+
+  it('a correctly hashed article with a lying menu is quarantined and refunded through the same challenge path', async () => {
+    const writers = structuredClone(alphaLeakCorpus)
+    const article = writers.articles.find(a => a.articleId === honestArticle.articleId)!
+    article.factMenu = Object.fromEntries(article.passages.map(p => [p.id, { entity: 'WrongCo', measure: 'revenue' }]))
+    const h = await setup({ writers })
+    const run = h.store.createRun('question', 200)
+    const intent = await h.manager.purchase({ runId: run.runId, candidate: await h.candidate(article), intentId: 'menu-liar' })
+    expect(intent.status).toBe('CLAIM_FAILED')
+    expect(h.store.getRun(run.runId).contents).toEqual([])
+    expect(h.store.getRun(run.runId).events.find(e => e.type === 'PROOF')?.data).toMatchObject({ rootOk: true, wordCountOk: true, ok: false })
+    expect((await challenge(h.manager, 'menu-liar')).status).toBe('REFUNDED')
+    expect(h.store.getRun(run.runId).contents).toEqual([])
   })
 
   it('gate-4: an AlphaLeak delivery is CLAIM_FAILED, kept for audit, quarantined from contents and citations', async () => {
