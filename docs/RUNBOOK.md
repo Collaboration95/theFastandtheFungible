@@ -271,3 +271,47 @@ A PASS offline is evidence integrity only; it explicitly skips ledger checks.
 Keep an independently recorded audit head and supply `--expect-head` when needed.
 See [SDK/API instructions](sdk.md#verify-an-exported-answer-278) and the
 [real Testnet UC3 and tamper demonstration](evidence/verify-278.md).
+
+## Seeded chaos and fixture soak (#279)
+
+```sh
+npm run chaos -- --runs 500 --seed 279
+npm run chaos -- --soak 12h --seed 279 --output scratch/chaos/soak-12h.json
+# Equivalent convenience target:
+make soak HOURS=12
+```
+
+`check:fast` includes a deterministic 20-iteration smoke. The first iterations
+cover every fault, then the seed picks additional faults and UC1–UC4 scenarios.
+Every iteration uses production API, policy, SDK, publisher and reconciliation
+with an isolated **synthetic durable ledger**. No live provider, dotenv or
+Testnet connection is loaded; generated fixture signing keys have no value.
+`OFFSET=1700` is set in the child environment; all listeners use ephemeral ports.
+MCP retries use real MCP tools over in-memory JSON-RPC transport; stdio remains
+covered by the existing end-to-end suite.
+
+The parent sends payment processes through actual SIGKILL boundaries before
+signing, after durable signing/before submit, after ledger apply, and after
+buyer validation/before receipt record. Each killed process restarts against
+the same buyer, publisher and ledger SQLite stores. A fifth scenario restarts
+a completed engine. Submit failures before/after apply, duplicate submits,
+publisher 503/slow responses, broken SSE, provider and decision outages,
+concurrent identical asks, SDK/MCP retries, hire inbound replays, refund
+replays and capped concurrent admissions exercise the existing seams.
+
+The live timer runs at 20 ms in this harness; explicit `reconcileOnce()` ticks
+also run before assertions. Production keeps its existing 15 s default. The
+summary reads `/api/metrics`, audits persisted runs and observed SSE snapshots,
+compares actual synthetic ledger charges to receipts, and checks grants,
+refunds, per-prompt/source/wallet caps and unknown buyer payments. A fault that
+was not exercised fails the iteration. SUBMITTING still held after three
+explicit recovery ticks counts as stuck; any remaining backlog fails the run.
+
+Output is an atomically replaced, bounded JSON summary, not a raw trace. First
+and last 100 iteration latencies give p95 drift; maximum child RSS and active
+resource counts are recorded. These measure repeated process recovery, not
+memory leakage in a single continuously running engine. Temp stores are removed
+after every iteration and on normal failure; hard-killing the parent may leave
+one `ra-chaos-*` directory in the OS temp directory. The 12 h command is provided;
+only the duration recorded in `docs/evidence/chaos-279.md` has been executed.
+Escrow coverage is conditional on #273 having merged at the final rebase.

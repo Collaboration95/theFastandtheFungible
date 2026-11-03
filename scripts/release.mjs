@@ -15,10 +15,11 @@ const flag = (name) => { const i = argv.indexOf(name); if (i < 0) return null; c
 const has = (name) => { const i = argv.indexOf(name); if (i < 0) return false; argv.splice(i, 1); return true }
 const dryRun = has('--dry-run'), push = has('--push')
 const dateArg = flag('--date')
+const at = flag('--at'), notesFile = flag('--notes-file')
 const [dayArg, title] = argv
 const day = Number(dayArg)
 if (!Number.isInteger(day) || day < 0 || !title) {
-  console.error('usage: node scripts/release.mjs <day> "<title>" [--date YYYY-MM-DD] [--dry-run] [--push]')
+  console.error('usage: node scripts/release.mjs <day> "<title>" [--date YYYY-MM-DD] [--at <sha> --notes-file <path>] [--dry-run] [--push]')
   process.exit(2)
 }
 const version = `0.${day + 1}.0`
@@ -33,10 +34,13 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const heading = `### ${WEEKDAYS[SECTION_DATE.getDay()]} ${SECTION_DATE.getDate()} ${MONTHS[SECTION_DATE.getMonth()]}`
 
 if (git('tag', '-l', tag)) { console.error(`${tag} already exists`); process.exit(1) }
+if (at && !notesFile) throw new Error('Historical releases require explicit --notes-file (never today\'s changelog)')
+const target = at ? git('rev-parse', '--verify', `${at}^{commit}`) : 'HEAD'
 if (!dryRun) {
   if (git('status', '--porcelain')) { console.error('working tree is not clean'); process.exit(1) }
   git('fetch', '-q', 'origin', 'main')
-  if (git('rev-parse', 'HEAD') !== git('rev-parse', 'origin/main')) { console.error('HEAD is not at origin/main; rebase or pull first'); process.exit(1) }
+  if (at) git('merge-base', '--is-ancestor', target, 'origin/main')
+  else if (git('rev-parse', 'HEAD') !== git('rev-parse', 'origin/main')) { console.error('HEAD is not at origin/main; rebase or pull first'); process.exit(1) }
 }
 
 const changelog = readFileSync('docs/SFF-PUSH.md', 'utf8').split('\n')
@@ -47,12 +51,12 @@ if (start >= 0) {
   section = changelog.slice(start + 1, end < 0 ? undefined : end).join('\n').trim()
 }
 
-const previous = git('tag', '-l', 'v*', '--sort=-v:refname').split('\n').filter(Boolean)[0]
-const range = previous ? [`${previous}..HEAD`] : [`--since=${FIRST_RELEASE_SINCE}`]
+const previous = git('tag', '--merged', target, '-l', 'v*', '--sort=-v:refname').split('\n').filter(Boolean)[0]
+const range = previous ? [`${previous}..${target}`] : [`--since=${FIRST_RELEASE_SINCE}`, target]
 const prs = git('log', '--first-parent', '--format=- %s', ...range).split('\n').filter((l) => /\(#\d+\)$/.test(l))
 
 const visual = ['png', 'jpg', 'gif'].map((e) => `docs/releases/day-${day}.${e}`).find(existsSync)
-const notes = [
+const notes = notesFile ? `Day ${day} · ${title}\n\n${readFileSync(notesFile, 'utf8').trim()}` : [
   `Day ${day} · ${title}`,
   visual && `![Day ${day}](https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/${tag}/${visual})`,
   section && `## What shipped\n\n${section}`,
@@ -62,7 +66,7 @@ const notes = [
 if (dryRun) { console.log(`${tag}\n\n${notes}`); process.exit(0) }
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
-if (pkg.version !== version) {
+if (!at && pkg.version !== version) {
   const bump = (file, edit) => writeFileSync(file, edit(readFileSync(file, 'utf8')))
   // Replace only the first two version fields (root package.json "version"; lockfile top and packages[""] entries).
   bump('package.json', (s) => s.replace(/"version": "[^"]+"/, `"version": "${version}"`))
@@ -74,11 +78,13 @@ if (pkg.version !== version) {
   git('commit', '-q', '-m', `chore(release): ${tag} Day ${day} · ${title}`)
 }
 // verbatim: the default cleanup would strip every line that starts with "#" (the notes' headings).
-git('tag', '-a', '--cleanup=verbatim', tag, '-m', notes)
-console.log(`Created ${tag} at ${git('rev-parse', '--short', 'HEAD')}.`)
+// Historical tag dates follow the feature commit so chronological tag views retain Day order.
+if (at) process.env.GIT_COMMITTER_DATE = git('show', '-s', '--format=%cI', target)
+git('tag', '-a', '--cleanup=verbatim', tag, target, '-m', notes)
+console.log(`Created ${tag} at ${git('rev-parse', '--short', target)}.`)
 if (push) {
-  git('push', 'origin', 'HEAD:main', tag)
-  console.log(`Pushed HEAD to main and ${tag}; the release workflow publishes it.`)
+  git('push', 'origin', ...(at ? [tag] : ['HEAD:main', tag]))
+  console.log(`Pushed ${at ? tag : `HEAD to main and ${tag}`}; the release workflow publishes it.`)
 } else {
-  console.log(`Publish with: git push origin HEAD:main ${tag}`)
+  console.log(`Publish with: git push origin ${at ? '' : 'HEAD:main '}${tag}`)
 }

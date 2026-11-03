@@ -124,3 +124,7 @@ clip: ## keyboard-driven fixture clip; UC=UC2 VIEWPORT=1280x800 (or 1920x1080, 1
 .PHONY: refit
 refit: ## local receipt labels and dev-only calibration; no network or payments
 	npm run calibration:refit -- $(ARGS)
+
+.PHONY: soak
+soak: ## deterministic fixture chaos soak (HOURS=12 by default)
+	npm run chaos -- --soak $(or $(HOURS),12)h --seed 279 --output scratch/chaos/soak.json
