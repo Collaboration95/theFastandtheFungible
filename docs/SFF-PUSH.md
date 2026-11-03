@@ -266,6 +266,7 @@ Agents add items there and keep working around them.
 
 ## Decisions log
 
+- 3 Nov: UX sledgehammer ([direction](design/UX-DIRECTION.md), #311, #312): one header environment indicator replaces the per-surface SIMULATED/fixture labels, which stay on receipts, refunds, exports and where a model or search is substituted (gate 5 kept, relocated); motion limited to a ten-entry allowlist and #262's money flight is not built (budget-bar and status transitions only); ink-on-paper, Geist-only, seven type sizes, plain copy. Why: 8–10 labels and 30 keyframes per screen read as noise to a UX judge.
 - 3 Nov: #288 audit trail is a hash chain inside the money transactions (`audit_log`), not a separate log; tamper-evident, not signed or notarised, so COMPLIANCE.md says to pin the head. The denylist is a labelled operator hook (fail closed), not sanctions screening; hire-the-agent is documented as receive-and-forward custody, so "we never hold funds" is dropped for that flow.
 - 3 Nov: #288 `data:prune` is an explicit command, default 30 days (long enough to challenge a bad delivery, short enough not to keep paid bodies and questions); it deletes content, never receipts or audit rows.
 - 3 Nov (#276): freeze semis/packaging dev vs rates/power heldout before tuning; marginal expected-facts/S$ is deterministic policy, not model spending authority. Accept receipt fits only by grouped dev rules; identity wins this run. Publish the failed 25% waste target and sweep/dev regressions; no held-out retuning or test loosening.
@@ -302,6 +303,7 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
+- 3 Nov: UX direction for the redesign: 11-category anti-pattern audit with 29 before-screenshots, labelling and motion policies, screen specs for plan, payment, verification, refund and receipt; build filed as #311 and #312 ([doc](design/UX-DIRECTION.md)).
 - 3 Nov: Lane D #288 hash-chained `audit_log` written in the same transaction as each admission, decision, reserve, sign, settle, deliver, proof, refund, refusal and pause; CSV/JSONL receipt export (`audit:export`, `/api/audit/receipts.*`); `audit:verify [--testnet]` (5 of 5 October Testnet payments re-confirmed read-only); hire-the-agent inbound, royalty and change payments covered too; payee denylist tests and audit reason; `data:prune`; [COMPLIANCE.md](COMPLIANCE.md).
 - 3 Nov: Lane C #273 escrow-v1 integrated with the payer queue and durable reconciler; SYNTHETIC product-path Testnet finish 12.107 s, failed-proof cancel 129.448 s with writer offline, 459 drops fees; #288 hash-chain events and escrow-aware audit:verify; [evidence](evidence/escrow-273.md).
 

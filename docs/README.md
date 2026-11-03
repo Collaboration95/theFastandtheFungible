@@ -16,6 +16,8 @@ Ripple-track criteria.
   run. Its [Nov 2026 review](contracts/REVIEW-NOV-2026.md) ranks the seams
   for the SFF push (#285–#288).
 - [Design](contracts/DESIGN.md): visual system, layout and content rules.
+  The current direction is [UX direction](design/UX-DIRECTION.md): anti-pattern
+  audit, labelling and motion policies, screen specs and the cut list.
 - [Security](contracts/SECURITY.md): secrets, access, settlement, manifests and
   refunds.
 - [Compliance posture](COMPLIANCE.md): custody, audit trail and export,

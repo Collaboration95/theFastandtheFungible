@@ -1,5 +1,11 @@
 # ResearchAgent design context
 
+> **Direction of 3 Nov 2026:** the redesign spec in
+> [docs/design/UX-DIRECTION.md](../design/UX-DIRECTION.md) (one environment
+> label, a seven-size Geist-only type scale, ink-on-paper colour, a motion
+> allowlist, plain copy) supersedes the visual, motion and labelling sections
+> below where they disagree. The build is tracked in #311 and #312.
+
 ResearchAgent is a calm deep-research workspace for someone who wants to turn a
 broad question into a defensible, evidence-backed answer. The product surface
 is a tool, not a presentation: ask first, choose the allowed evidence universe,
