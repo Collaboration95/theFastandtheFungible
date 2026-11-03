@@ -37,21 +37,34 @@ varied during these runs; this mixes fresh process startup, fault selection and
 host contention. It is neither live ledger latency nor evidence of single-engine
 memory stability. Maximum child RSS was 1.37–1.38 GB (decimal), maximum active
 resources 105–107. Stores were removed each iteration; summary/log files stayed
-small and contain no seeds, signed blobs or premium bodies.
+small and contain no wallet seeds, signed blobs or premium bodies.
 
-## Integrated tree
+## Integrated soak and escrow
 
-After rebasing onto merged #273, #276 and #288, lint/typecheck and **661 tests in
-79 files** passed. A 20-iteration integrated smoke passed with zero violations;
-four additional escrow probes applied four creates, two releases and two
-cancellations. Escrow probes preserve ledger/publisher state over Store/manager
-restart and assert one principal, one terminal operation and one receipt, no
-open object, no reserved authority and no accessible pending/failed-proof bytes.
-Their policy BUY is controlled synthetic input; the main UC scenarios execute
-the actual policy loop.
+After integrating #273, #276 and #288 and repairing the harness observation
+collector, a second **30m 0.4s** soak passed on runtime source
+`362a4f137ed8937450b687cb7c53d56a8076d608` (seed 2279):
 
-A second 30-minute integrated soak is in progress on runtime commit
-`d05a340` (seed 2279). Final results will be appended before merging.
+- **609 main iterations / fault episodes**, **149 actual SIGKILLs**;
+- **769 confirmed purchases, 97 refunds**;
+- **124 additional escrow probes**: 124 creates, 62 releases, 62 cancellations;
+- **0 double charges, 0 invariant violations, 0 stuck reservations, 0 held reservations**.
+
+[Raw integrated summary](chaos-279-integrated-soak.json). The escrow probes
+retain ledger/publisher state over Store/manager restart and assert one principal,
+one terminal operation, one receipt, no open object or reserved authority, and no
+accessible pending/failed-proof bytes. Their policy BUY is controlled synthetic
+input; the main UC scenarios execute the actual policy loop. Escrow restart is
+not a separate process-kill claim. Maximum main child RSS was **922 MB** (decimal),
+maximum active resources **105**, first/last 100-iteration p95 drift **−1217 ms**.
+This is a mixed-fault recovery measurement, not a production performance claim.
+
+The two completed 30-minute soaks total **1179 main fault episodes in one hour**;
+with the separate 500-iteration pass, **1679 main episodes and 423 SIGKILLs**.
+The 124 escrow probes are additional, not hidden in the main count. All three
+completed experiments passed. The interrupted experiment below remains separate.
+These are historical source-pinned runs: later main changes (#319/#320) are
+covered by the final rebased CI smoke, not retroactively by these hour-long runs.
 
 ## Reproduce and limits
 
@@ -75,22 +88,27 @@ purchase drain fixed the harness. No production test was weakened.
 targets exactly `7807ce311f0bb3ae3807eb476436c7c6ba009f52`. The script's `--at`
 path changes no package version or HEAD and pushes only the new annotated tag.
 The tag date follows the original commit. The old workflow published it, then
-Latest was explicitly restored to v0.4.0. Verified release order:
-v0.4.0 → v0.3.0 → v0.2.0 → v0.1.0. Existing tag objects were unchanged.
+Latest was explicitly restored to v0.4.0. Verified release order at publication:
+v0.4.0 → v0.3.0 → v0.2.0 → v0.1.0. A final read after the newer Day 4 release
+confirmed v0.5.0 remains Latest and the older releases keep that relative order. Existing tag objects were unchanged.
 [Release metadata](release-day2.json) records the target, order, Latest and tag
 identities. Notes retain F1 0.235→0.419, uplift +11.3→+17.0 pts and the wasted
 spend regression 36.2%→47.2%, with #276 identified as the then-pending fix.
 
-## Scorecard integration limitation
+## Scorecard integration
 
-The reliability-only CLI prints the recorded pass rate, double charges and p95
+The reliability-only CLI prints recorded pass rate, double charges and p95
 drift, including evidence paths and tested commits. Its regression test proves
-that it rejects quality-check/live/comparison flags. A full `scorecard --check`
-was attempted and refused an inherited frozen-source mismatch in
-`server/agents/loop.ts`: the actual hash equals `origin/main`, while the frozen
-expected hash predates #273. [Hash evidence](chaos-279-scorecard-freeze.json).
-The frozen gate and quality baseline were left unchanged; no new quality score
-is claimed. This does not affect `check:fast`, build or the chaos assertions.
+that it rejects quality-check/live/comparison flags. An initial full
+`scorecard --check` refused an inherited frozen-source mismatch after escrow;
+[hash evidence](chaos-279-scorecard-freeze.json) retains that historical result.
+The upstream v5 freeze resolved it without loosening the gate. The full heldout
+fixture `scorecard --check`, with optional historical reliability rows, then
+**passed** on source `362a4f1`: zero provider/model calls, zero Testnet cost,
+zero gate violations, no quality regression. [Bounded result](chaos-279-scorecard.json).
+The reliability rows describe the supplied baseline experiments, not the current
+quality run or a live availability estimate. Quality inputs and thresholds were
+left unchanged by this lane.
 
 ## Interrupted integrated experiment and harness repair
 
@@ -111,4 +129,4 @@ and rebase, the same replay completed in 4.84 s with 735 MB peak RSS. These are
 single diagnostic replays across a rebase, not a controlled performance result.
 The watchdog stays **45 s**. New failure diagnostics record exit code, signal,
 watchdog status and elapsed time. No invariant, leak threshold or test was loosened.
-A fresh integrated 30-minute soak follows the repair.
+The fresh integrated 30-minute soak above passed after the repair.

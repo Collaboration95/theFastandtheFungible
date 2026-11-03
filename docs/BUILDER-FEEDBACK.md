@@ -409,3 +409,21 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
   fix: review/version frozen inputs whenever integrated runtime source changes;
   retain prior quality history. Severity: low (quality comparison blocked);
   mainnet impact: none; no ledger or model call occurred in the refused run.
+  Resolved by the upstream v5 freeze; the subsequent full heldout fixture check
+  passed (`docs/evidence/chaos-279-scorecard.json`).
+
+## 3 Nov 2026 — local chaos tooling (#279)
+
+- **Observed local harness interruption; cause partly inferred, not an XRPL incident:**
+  the first integrated soak stopped at iteration 248 after 52 escrow probes,
+  without worker assertion output. The original harness could not distinguish
+  its watchdog from an external kill. Evidence: `docs/evidence/chaos-279-interrupted-soak.json`
+  and `docs/evidence/chaos-279.md`. A successful diagnostic replay reached 1.53 GB
+  RSS; duplicate concurrent SSE snapshots inflated audit work. Workaround:
+  hash identical snapshot/run/grant context and audit each distinct observation;
+  regression preserves every distinct state. Record exit signal/watchdog/elapsed
+  diagnostics; retain the 45 s watchdog and all invariants. The repaired 30-minute
+  soak passed 609 main episodes plus 124 escrow probes. Suggested tooling fix:
+  bounded, deduplicated observation collectors and explicit child-exit diagnostics.
+  Severity: medium local test reliability; mainnet impact: none observed, no
+  live ledger was used and no production money bug was confirmed.

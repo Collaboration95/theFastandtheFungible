@@ -1,0 +1,185 @@
+{
+  "command": "npm run scorecard -- --split heldout --check --chaos-evidence docs/evidence/chaos-279-500.json --soak-evidence docs/evidence/chaos-279-baseline-soak.json",
+  "result": "passed",
+  "scorecard": {
+    "schema": "tftf.scorecard/v1",
+    "at": "2026-11-03T03:31:20.694Z",
+    "split": "heldout",
+    "policy": "receipt-value/v1+scope/v1",
+    "worktreeDirty": false,
+    "commit": "362a4f137ed8937450b687cb7c53d56a8076d608",
+    "inputHash": "0133fcce57685bc266940bec4fd733a36fbd7565a3e3fba0d554820801a36e18",
+    "mode": "fixture",
+    "labels": {
+      "search": "keyword only (embeddings unavailable)",
+      "settlement": "SIMULATED \u00b7 no payment",
+      "wallets": "SIMULATED publisher keys",
+      "corpus": "synthetic demo articles",
+      "research": "fixture \u00b7 extractive-fixture",
+      "decision": "fixture \u00b7 metadata-fixture",
+      "coverage": "scripted needle check (eval)",
+      "timing": "fixture; measured wall clock",
+      "boot": "booted demo API + publisher (fresh child process; module load included)"
+    },
+    "quality": {
+      "wastedSpendPct": 55.05780346820809,
+      "selectionF1Flow": 0.421875,
+      "selectionF1Sweep": 0.40625,
+      "supportedFactUpliftPts": 31.52173913043478,
+      "falseCompleteRate": 0.05
+    },
+    "confidenceIntervals": {
+      "method": "source-family cluster percentile bootstrap, 95%; conditional on fixed corpus and model draws",
+      "seed": 700,
+      "repeats": 2000,
+      "clusters": 20,
+      "questions": 92,
+      "intervals": {
+        "wastedSpendPct": {
+          "low": 42.51968503937008,
+          "high": 71.16564417177914,
+          "validReplicates": 2000
+        },
+        "selectionF1Flow": {
+          "low": 0.21875,
+          "high": 0.6046511627906976,
+          "validReplicates": 2000
+        },
+        "selectionF1Sweep": {
+          "low": 0.20202020202020202,
+          "high": 0.6029411764705882,
+          "validReplicates": 2000
+        },
+        "supportedFactUpliftPts": {
+          "low": 18.9873417721519,
+          "high": 44.680851063829785,
+          "validReplicates": 2000
+        }
+      }
+    },
+    "timing": {
+      "samples": 10,
+      "p50FirstAnswerMs": 87.36770800000068,
+      "p95FirstAnswerMs": 121.21251265000006,
+      "p95FinalAnswerMs": 247.86344999999972,
+      "coldStartMs": 564.8112500000007,
+      "node": "v26.3.1",
+      "platform": "darwin",
+      "observations": [
+        {
+          "questionId": "Q49",
+          "runId": "bcf17e9f-d124-4f7a-b71d-0638495a75eb",
+          "firstMs": 140.84087499999987,
+          "finalMs": 142.64899999999943
+        },
+        {
+          "questionId": "Q50",
+          "runId": "63143fc0-437e-437b-b5fd-0a2dfb49cdf7",
+          "firstMs": 97.22229200000038,
+          "finalMs": 98.9778750000005
+        },
+        {
+          "questionId": "Q51",
+          "runId": "a933c6cc-063a-4418-ae35-6ed124c5ec4c",
+          "firstMs": 92.16333300000042,
+          "finalMs": 93.76616699999977
+        },
+        {
+          "questionId": "Q52",
+          "runId": "f9144315-74c3-4a57-8820-ca6735fd9e0f",
+          "firstMs": 90.34683400000176,
+          "finalMs": 91.23600000000079
+        },
+        {
+          "questionId": "Q53",
+          "runId": "cbca7d5f-215b-4e1a-8315-24dee3217fa9",
+          "firstMs": 84.9351659999993,
+          "finalMs": 85.79779099999905
+        },
+        {
+          "questionId": "Q54",
+          "runId": "00972f6e-9005-438c-85f8-2fcb32ba0801",
+          "firstMs": 88.17170799999985,
+          "finalMs": 89.00374999999985
+        },
+        {
+          "questionId": "Q55",
+          "runId": "f41352a5-01d5-4935-a4fa-c1adcd8c8b21",
+          "firstMs": 81.25812500000029,
+          "finalMs": 81.95700000000033
+        },
+        {
+          "questionId": "Q56",
+          "runId": "b64fc496-0f6d-4d7d-b7c0-ea10be9ff160",
+          "firstMs": 86.5637080000015,
+          "finalMs": 88.25987499999974
+        },
+        {
+          "questionId": "Q57",
+          "runId": "be4c90c4-d589-43fc-a552-be664e1838b2",
+          "firstMs": 76.27966600000036,
+          "finalMs": 76.87433299999975
+        },
+        {
+          "questionId": "Q58",
+          "runId": "fe4b87ed-ee9a-46d4-ae69-ec7499317949",
+          "firstMs": 75.12808399999994,
+          "finalMs": 333.9480000000003
+        }
+      ]
+    },
+    "cost": {
+      "providerCalls": 0,
+      "estimatedUsageCalls": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "modelUsd": 0,
+      "latencyModelUsdPerQuery": 0,
+      "flowDecisionUsdPerQuery": 0,
+      "xrpDropsSpent": 0,
+      "simulatedMinorSpent": 3460,
+      "rates": "eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)"
+    },
+    "audit": {
+      "runs": 10,
+      "observations": 215,
+      "violations": [],
+      "total": 0,
+      "byRule": {
+        "citation_without_verified_grant": 0,
+        "duplicate_settlement": 0,
+        "over_budget": 0,
+        "purchase_without_policy": 0,
+        "premium_leak": 0,
+        "missing_rail_label": 0,
+        "royalty_policy": 0,
+        "money_chain_reconciliation": 0,
+        "escrow_finish_without_verified_proof": 0
+      }
+    },
+    "external": {
+      "reliability": {
+        "label": "Historical SYNTHETIC fault experiments; not Testnet or production reliability",
+        "iterations": 500,
+        "chaosPassRatePct": 100,
+        "doubleCharges": 0,
+        "invariantViolations": 0,
+        "soakDurationMs": 1801053,
+        "soakP95DriftMs": 3223.203459000186,
+        "chaosCommit": "74a3d0101c67dc8f61591b601cb244f5935f5230",
+        "soakCommit": "74a3d0101c67dc8f61591b601cb244f5935f5230",
+        "evidence": {
+          "chaos": "docs/evidence/chaos-279-500.json",
+          "soak": "docs/evidence/chaos-279-baseline-soak.json"
+        }
+      },
+      "mcpE2e": null,
+      "dmgColdStartMs": null
+    },
+    "counts": {
+      "questions": 92,
+      "coverageSnapshots": 193,
+      "requestedFacts": 92
+    }
+  }
+}
