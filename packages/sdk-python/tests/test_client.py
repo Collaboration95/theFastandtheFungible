@@ -61,3 +61,12 @@ def test_verify(client):
     assert client.verify(export, repo_dir=ROOT)['ok']
     export['sources'][0]['spans'][0]['text'] += 'TAMPER'
     assert not client.verify(export, repo_dir=ROOT)['ok']
+
+
+def test_z_pause_blocks_purchase(client):
+    assert client.pause(reason='Python kill switch') == {'paused': True, 'scope': 'wallet'}
+    assert client.pause()['paused']
+    result = client.ask(QUESTION, budget=2, idempotency_key='after-pause').result()
+    assert result['budgetMinor'] == 0
+    assert result['receipts'] == []
+    assert result['clampReason'] == 'paused'

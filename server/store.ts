@@ -165,10 +165,10 @@ export class Store {
     })
   }
   /** Same durable pause path as the wallet, scoped to a principal. Revocation is permanent. */
-  setAgentPaused(id: string, paused: boolean, revoke = false) {
+  setAgentPaused(id: string, paused: boolean, revoke = false, reason?: string) {
     return this.atomic(() => {
       const key = this.agentKeys.control(id, paused, revoke)
-      this.audit.append({ kind: 'pause', surface: 'agent', principal: id, data: { paused: key.paused, revoked: key.revoked, policyVersion: POLICY_VERSION } })
+      this.audit.append({ kind: 'pause', surface: 'agent', principal: id, data: { paused: key.paused, revoked: key.revoked, ...(reason ? { reason } : {}), policyVersion: POLICY_VERSION } })
       return key
     })
   }
@@ -195,12 +195,12 @@ export class Store {
   isPaused() {
     return spendPolicy().paused || Boolean(this.db.prepare('SELECT paused FROM wallet_control WHERE id=1').get()?.paused)
   }
-  setPaused(paused: boolean, actor: { surface?: string; principal?: string } = {}) {
+  setPaused(paused: boolean, actor: { surface?: string; principal?: string; reason?: string } = {}) {
     this.atomic(() => {
       const previous = this.isPaused()
       this.db.prepare('INSERT INTO wallet_control VALUES (1,?) ON CONFLICT(id) DO UPDATE SET paused=excluded.paused').run(Number(paused))
       this.audit.append({ kind: 'pause', surface: actor.surface ?? 'operator', principal: actor.principal ?? 'operator',
-        data: { paused, previousEffectivePaused: previous, effectivePaused: this.isPaused(), envPaused: spendPolicy().paused, policyVersion: POLICY_VERSION } })
+        data: { paused, ...(actor.reason ? { reason: actor.reason } : {}), previousEffectivePaused: previous, effectivePaused: this.isPaused(), envPaused: spendPolicy().paused, policyVersion: POLICY_VERSION } })
     })
   }
   walletStatus(day = new Date().toISOString().slice(0, 10)) {
@@ -657,14 +657,14 @@ export class Store {
     })
   }
   assertPolicyPaymentAllowed(runId: string) {
-    if (this.isPaused() || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
+    if (this.isPaused() || this.principalPaused(runId) || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
   }
   recordPolicySubmission(runId: string, id: string, submission: Submission) {
     return this.atomic(() => {
       const payment = this.policyPayments(runId).find(p => p.id === id)!
       if (payment.cancelledAt) throw new Error('Policy payment cancelled')
       if (payment.submission) return payment.submission
-      if (this.isPaused() || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
+      if (this.isPaused() || this.principalPaused(runId) || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
       this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, submission }), id)
       this.audit.append({ runId, intentId: id, kind: 'payout-sign', data: { paymentKind: payment.kind, txHash: submission.txHash, lastLedgerSequence: submission.lastLedgerSequence, payTo: payment.payTo, amountDrops: payment.amountDrops, paused: false, walletDailyMinor: spendPolicy().walletDailyMinor } })
       return submission

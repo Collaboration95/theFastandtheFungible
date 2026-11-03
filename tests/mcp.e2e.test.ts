@@ -29,7 +29,7 @@ it('stdio search → policy buy → cited answer; cap, daily cap, retry and rest
   const env = { RA_DATA_DIR: dir, MCP_MAX_BUDGET_MINOR: '200', MCP_DAILY_CAP_MINOR: '200' }
   let client = await connect(env)
   try {
-    expect((await client.listTools()).tools.map(t => t.name).sort()).toEqual(['ask_expert', 'get_run', 'hire', 'search_expertise', 'verify_answer', 'wallet_status'])
+    expect((await client.listTools()).tools.map(t => t.name).sort()).toEqual(['ask_expert', 'get_run', 'hire', 'pause_spending', 'search_expertise', 'verify_answer', 'wallet_status'])
     const search = await call(client, 'search_expertise', { query: USE_CASES.UC2.question })
     const corpus = await loadWriterCorpus()
     assertNoLeaks([{ kind: 'MCP stdio search', raw: JSON.stringify(search), grants: [] }], corpus)

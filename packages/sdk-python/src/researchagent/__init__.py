@@ -49,6 +49,12 @@ class AskResult(TypedDict):
     clamped: bool
 
 
+class PauseState(TypedDict, total=False):
+    paused: bool
+    scope: str
+    agentId: str
+
+
 class _NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
@@ -169,6 +175,9 @@ class Client:
 
     def get_run(self, run_id: str) -> AskResult:
         return _present(self._request('/api/mcp/runs/' + quote(run_id, safe='')))
+
+    def pause(self, *, reason: str | None = None) -> PauseState:
+        return self._request('/api/spending/pause', {} if reason is None else {'reason': reason})
 
     def wallet_status(self) -> dict[str, Any]:
         status = self._request('/api/mcp/status')
