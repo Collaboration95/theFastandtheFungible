@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "profiles": [
+    {
+      "date": "2026-11-03",
+      "transport": "HTTP x402 v2",
+      "network": "xrpl:1",
+      "clientVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "serverVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "facilitatorVersionKnown": false,
+      "facilitatorVersion": null,
+      "name": "native interop",
+      "scheme": "exact",
+      "asset": {
+        "currency": "XRP",
+        "issuer": null
+      },
+      "binding": "InvoiceID + memo (upstream default both)",
+      "issuerPermissions": "not applicable",
+      "evidenceClass": "observed Testnet",
+      "evidence": "docs/evidence/starter-kit-interop.md",
+      "upstreamSDKVersion": "0.3.4",
+      "sourceBaseline": "ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c"
+    },
+    {
+      "date": "2026-11-03",
+      "transport": "HTTP x402 v2",
+      "network": "xrpl:1",
+      "clientVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "serverVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "facilitatorVersionKnown": false,
+      "facilitatorVersion": null,
+      "name": "official RLUSD",
+      "scheme": "exact",
+      "asset": {
+        "currency": "524C555344000000000000000000000000000000",
+        "issuer": "rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV"
+      },
+      "binding": "InvoiceID",
+      "issuerPermissions": "exact payments observed; escrow permission absent on observation date",
+      "evidenceClass": "observed Testnet exact/refund",
+      "evidence": "docs/evidence/rlusd.md",
+      "upstreamSDKVersion": null,
+      "sourceBaseline": "ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c"
+    },
+    {
+      "date": "2026-11-03",
+      "transport": "HTTP x402 v2",
+      "network": "xrpl:1",
+      "clientVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "serverVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "facilitatorVersionKnown": false,
+      "facilitatorVersion": null,
+      "name": "XRP escrow",
+      "scheme": "escrow-v1",
+      "asset": {
+        "currency": "XRP",
+        "issuer": null
+      },
+      "binding": "domain-typed invoice memo; escrow-policy-v1",
+      "issuerPermissions": "not applicable",
+      "evidenceClass": "observed Testnet; buyer controlled",
+      "evidence": "docs/evidence/escrow-273.md",
+      "upstreamSDKVersion": null,
+      "sourceBaseline": "ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c"
+    },
+    {
+      "date": "2026-11-03",
+      "transport": "HTTP x402 v2",
+      "network": "xrpl:1",
+      "clientVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "serverVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "facilitatorVersionKnown": false,
+      "facilitatorVersion": null,
+      "name": "RLUSD escrow",
+      "scheme": "escrow-v1",
+      "asset": {
+        "currency": "RLUSD",
+        "issuer": "rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV"
+      },
+      "binding": "unexecuted",
+      "issuerPermissions": "AllowTrustLineLocking absent on 2026-11-03",
+      "evidenceClass": "not executed; dated flags + docs",
+      "evidence": "docs/evidence/rlusd.md",
+      "upstreamSDKVersion": null,
+      "sourceBaseline": "ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c"
+    },
+    {
+      "date": "2026-11-03",
+      "transport": "HTTP x402 v2",
+      "network": "xrpl:1",
+      "clientVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "serverVersion": "ResearchAgent source ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c",
+      "facilitatorVersionKnown": false,
+      "facilitatorVersion": null,
+      "name": "t54 issued codec",
+      "scheme": "exact",
+      "asset": {
+        "currency": "issued string + extra.issuer",
+        "issuer": "unknown"
+      },
+      "binding": "memo-only unsupported by ResearchAgent",
+      "issuerPermissions": "unknown",
+      "evidenceClass": "code-derived; execution unproven",
+      "evidence": "docs/evidence/starter-kit-interop.md",
+      "upstreamSDKVersion": "0.3.4",
+      "sourceBaseline": "ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c"
+    }
+  ]
+}

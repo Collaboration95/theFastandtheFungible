@@ -511,3 +511,20 @@ No payment authority, invoice idempotency, partial-payment rejection or
 delivered_amount validation changed. SGD budget units and fixed demo
 conversion remain. Official issuer AllowTrustLineLocking is unset, so
 RLUSD escrow remains refused; UC3 proves a cooperative refund only.
+
+
+## Dated capability profiles (Lane E)
+
+Machine-readable source: [capabilities.json](evidence/round2-e/capabilities.json). Unknown versions remain null. All observations are Testnet, 2026-11-03; no mainnet acceptance.
+
+| Profile | Scheme / binding | Asset / issuer | Class / permission | Evidence |
+|---|---|---|---|---|
+| native interop | exact / InvoiceID + memo (upstream default both) | XRP / None | observed Testnet; not applicable | [starter-kit-interop.md](evidence/starter-kit-interop.md) |
+| official RLUSD | exact / InvoiceID | 524C555344000000000000000000000000000000 / rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV | observed Testnet exact/refund; exact payments observed; escrow permission absent on observation date | [rlusd.md](evidence/rlusd.md) |
+| XRP escrow | escrow-v1 / domain-typed invoice memo; escrow-policy-v1 | XRP / None | observed Testnet; buyer controlled; not applicable | [escrow-273.md](evidence/escrow-273.md) |
+| RLUSD escrow | escrow-v1 / unexecuted | RLUSD / rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV | not executed; dated flags + docs; AllowTrustLineLocking absent on 2026-11-03 | [rlusd.md](evidence/rlusd.md) |
+| t54 issued codec | exact / memo-only unsupported by ResearchAgent | issued string + extra.issuer / unknown | code-derived; execution unproven; unknown | [starter-kit-interop.md](evidence/starter-kit-interop.md) |
+
+HTTP x402 v2 on xrpl:1; upstream interop client/server SDK 0.3.4. Hosted facilitator build unknown. ResearchAgent versions are source-defined by the linked evidence, not a guessed deployed release. XRP escrow is buyer-controlled, not fair exchange. Credentials do not prove fact truth. AP2, MPT, Credentials, DID, channels and Batch are not implemented by this lane.
+
+Primary documentation checked 2026-11-04: [t54 scheme](https://xrpl-x402.t54.ai/docs/xrpl-scheme), [Ripple RLUSD](https://docs.ripple.com/products/stablecoin/developer-resources/rlusd-on-the-xrpl), [XRPL escrow](https://xrpl.org/docs/concepts/payment-types/escrow), [known amendments](https://xrpl.org/resources/known-amendments). These describe protocol semantics, not freshly measured network or issuer flags. Original Batch was disabled and replaced; a Loading amendment cell proves no network capability.
