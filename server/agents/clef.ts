@@ -84,12 +84,16 @@ export const clefQuestions = {
  */
 const bounded = (s: string, max: number) => quotedText(s.replace(/\p{Cc}/gu, ' '), max)
 /** Signature proves the author's promise, never its truth. Schema projects out unknown fields. */
-export function signedFactMenu(c: PublicCandidate) {
+export function verifiedMenuManifest(c: PublicCandidate): boolean {
   const m = c.manifest
-  if (c.tier !== 'PAID' || !m || m.schemaVersion !== 2
+  return !(c.tier !== 'PAID' || !m || m.schemaVersion !== 2
     || m.articleId !== c.resourceId || m.version !== c.version
     || m.publisherSlug !== c.publisherSlug || m.wallet !== c.wallet
-    || !verifyManifestSignature(m)) return []
+    || !verifyManifestSignature(m))
+}
+export function signedFactMenu(c: PublicCandidate) {
+  if (!verifiedMenuManifest(c)) return []
+  const m = c.manifest!
   const unique = new Map<string, FactCover>()
   for (const claim of m.claims.slice(0, 64)) {
     const parsed = FactCoverSchema.safeParse(claim.covers)

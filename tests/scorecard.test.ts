@@ -13,7 +13,7 @@ it('interpolates wall-clock percentiles and preserves missing observations', () 
   expect(timings([]).p95FirstAnswerMs).toBeNull()
 })
 it('gates only quality worsening strictly over 10%, including a zero baseline', () => {
-  const baseline: Quality = { wastedSpendPct: 10, selectionF1Flow: 0.5, selectionF1Sweep: 0.5, supportedFactUpliftPts: 10, falseCompleteRate: 0 }
+  const baseline: Quality = { wastedSpendPct: 10, netWastedSpendPct: 10, usedSpendPct: 50, selectionF1Flow: 0.5, selectionF1Sweep: 0.5, supportedFactUpliftPts: 10, falseCompleteRate: 0 }
   expect(deltas({ ...baseline, wastedSpendPct: 11, selectionF1Flow: 0.45 }, baseline).every(d => !d.regression)).toBe(true)
   expect(deltas({ ...baseline, wastedSpendPct: 11.01, selectionF1Sweep: 0.44, falseCompleteRate: 0.001 }, baseline).filter(d => d.regression).map(d => d.metric)).toEqual(['wastedSpendPct', 'selectionF1Sweep', 'falseCompleteRate'])
   expect(deltas({ ...baseline, wastedSpendPct: 1, selectionF1Flow: 1 }, baseline).every(d => !d.regression)).toBe(true)

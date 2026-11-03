@@ -1,4 +1,4 @@
-import { scopeContradiction } from './scope-policy.js'
+import { factMenuMismatch, scopeContradiction } from './scope-policy.js'
 import { activeValueFit, marginalValue } from './value-policy.js'
 import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
@@ -267,6 +267,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     else if (process.env.DECISION_SCOPE_POLICY !== 'off' && input.requirement && scopeContradiction(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Public source scope contradicts the requested country; model confidence cannot authorize this purchase.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
+    else if (process.env.DECISION_NUMBERS_POLICY !== 'off' && input.requirement && factMenuMismatch(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Signed fact menu does not offer the requested fact key and entity/period scope.' }
     else if (marginal && !marginal.eligible) { verdict = 'SKIP_LOW_VALUE'; reason = `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} < ${marginal.threshold.toFixed(3)} (covered menu entries ${marginal.coveredEntries}/${marginal.menuEntries}).` }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }
     return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}), ...(marginal ? { marginalValue: { ...marginal, ...(valueFit ? { fitVersion: valueFit.version } : {}) }, reason: verdict === 'BUY' ? `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} >= ${marginal.threshold.toFixed(3)}; spending policy clears.` : reason } : {}) }

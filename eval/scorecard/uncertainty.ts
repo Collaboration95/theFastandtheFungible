@@ -3,7 +3,7 @@ import type { Question } from '../questions/bank.js'
 import type { QuestionResult } from '../decisions/offline.js'
 import type { DatasetRow } from '../decisions/dataset.js'
 import { qualityMetrics, type Quality } from './metrics.js'
-const metrics = ['wastedSpendPct', 'selectionF1Flow', 'selectionF1Sweep', 'supportedFactUpliftPts'] as const
+const metrics = ['wastedSpendPct', 'netWastedSpendPct', 'usedSpendPct', 'selectionF1Flow', 'selectionF1Sweep', 'supportedFactUpliftPts'] as const
 export function bootstrapQuality(results: QuestionResult[], sweep: DatasetRow[], questions: Question[], other?: { results: QuestionResult[]; sweep: DatasetRow[] }, repeats = 2000) {
   const groups = new Map<string, string[]>()
   for (const r of results) {
