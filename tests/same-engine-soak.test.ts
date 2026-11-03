@@ -31,3 +31,10 @@ it('preserves string profile-directory flags without changing default invocation
   expect(options([...args, '--cpu-prof-dir', '/tmp/profiles']).cpuProfDir).toBe('/tmp/profiles')
   expect(options(args).runs).toBe(6)
 })
+
+it('accepts the implemented burst flag and rejects failed or absent burst evidence',()=>{
+  expect(options(['--burst','--data-dir','/tmp/fresh','--output','/tmp/report']).burst).toBe(true)
+  const r={...evidence(),options:{runs:200,burst:true},burst:{pass:false}}
+  expect(compare(r).pass).toBe(false)
+  r.burst.pass=true;expect(compare(r).pass).toBe(true)
+})

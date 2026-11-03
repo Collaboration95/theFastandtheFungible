@@ -10,7 +10,7 @@ Every number below keeps the scope label of the evidence it comes from
 Packages are built and consumer-tested but **not published** to npm, PyPI or
 the MCP Registry; that is an owner step tracked in #265.
 
-## Unreleased (1.0.0 candidate)
+## 1.0.0 (candidate)
 
 Merged on `main` after [v0.8.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.8.0)
 (PRs #332 and #341–#352, merged 3 Nov 2026 UTC).
