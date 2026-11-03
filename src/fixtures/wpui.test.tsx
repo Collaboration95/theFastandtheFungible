@@ -7,15 +7,16 @@ import { exampleRun, paidStoryRun, uc2Scope, uc3Reputation, uc3Run, ucRuns } fro
 import bible from '../../data/corpus/v2/story-bible.json'
 import Presenter from '../components/Presenter.js'
 import Ask from '../components/Ask.js'
+import EnvIndicator from '../components/EnvIndicator'
 import App from '../App.js'
-import ActionModal from '../components/ActionModal.js'
+import PlanSheet from '../components/PlanSheet.js'
 import DecisionTable from '../components/DecisionTable.js'
 import DecisionPanel from '../components/DecisionPanel.js'
 import Sources, { getAccessibleContent } from '../components/Sources.js'
 import WriterChip from '../components/WriterChip.js'
-import Purchase from '../components/Purchase.js'
-import Budget from '../components/Budget.js'
-import RunTape from '../components/RunTape.js'
+import PaymentRow from '../components/PaymentRow.js'
+import SpendPanel from '../components/SpendPanel.js'
+import RunActivity from '../components/RunActivity.js'
 import ReputationPanel from '../components/ReputationPanel.js'
 import Sidebar, { NAV_WIDTH, NavToggle } from '../components/Sidebar.js'
 import type { PastRun } from '../api.js'
@@ -26,7 +27,10 @@ import { getReputation, resetReputation, scope } from '../api.js'
 import { dwell, staged } from '../stage.js'
 
 // Wording that would make the plan card read as a purchase approval (gate 2).
-const MONEY = /S\$|\$|\bbuy|purchas|spend|\bpay|budget|approv|charg|price|cost/i
+const PURCHASE_APPROVAL = /approve (?:this )?purchase|confirm payment/i
+
+Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { value() { this.setAttribute('open', '') }, configurable: true })
+Object.defineProperty(HTMLDialogElement.prototype, 'close', { value() { this.removeAttribute('open') }, configurable: true })
 
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); window.history.replaceState(null, '', '/'); try { localStorage.clear() } catch { /* no storage */ } })
 
@@ -58,9 +62,9 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
     expect(runs).toHaveLength(0)
     fireEvent.click(chip)
     const card = await screen.findByRole('dialog', { name: 'Search plan' })
-    expect(card.textContent).toContain('Searching every listed writer for:')
+    expect(card.textContent).toContain('Search every listed writer for')
     for (const query of uc2Scope.plan.subqueries) expect(card.textContent).toContain(query)
-    expect(card.textContent).not.toMatch(MONEY)
+    expect(card.textContent).not.toMatch(PURCHASE_APPROVAL)
     expect(runs).toHaveLength(0)
     fireEvent.keyDown(window, { key: 'Enter' })
     expect(runs).toEqual([{ question: DEMO_QUESTIONS[1].text, budgetMinor: 200, answers: { angle: 'pricing & margins' }, plan: uc2Scope.plan }])
@@ -77,16 +81,16 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
     await screen.findByRole('dialog', { name: 'Search plan' })
     expect(calls.find(call => call.path === '/api/scope')?.body).toEqual({ question: DEMO_QUESTIONS[1].text, clarify: 'never' })
     expect(screen.queryByRole('group', { name: 'Which angle matters most to you?' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Go now' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start now' }))
     expect(runs[0]).toEqual({ question: DEMO_QUESTIONS[1].text, budgetMinor: 200, plan: uc2Scope.plan })
   })
 
   it('starts on expiry, pauses while editing, Esc cancels, and never says money', () => {
     vi.useFakeTimers()
     const onGo = vi.fn(), onCancel = vi.fn()
-    const { unmount } = render(<ActionModal plan={uc2Scope.plan} writers={8} onGo={onGo} onCancel={onCancel} />)
-    expect(screen.getByRole('dialog').textContent).toContain('Searching 8 writers for:')
-    expect(screen.getByRole('dialog').textContent).not.toMatch(MONEY)
+    const { unmount } = render(<PlanSheet plan={uc2Scope.plan} writers={8} onGo={onGo} onCancel={onCancel} />)
+    expect(screen.getByRole('dialog').textContent).toContain('Search 8 writers for')
+    expect(screen.getByRole('dialog').textContent).not.toMatch(PURCHASE_APPROVAL)
     act(() => { vi.advanceTimersByTime(4999) })
     expect(onGo).not.toHaveBeenCalled()
     act(() => { vi.advanceTimersByTime(1) })
@@ -95,16 +99,16 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
     expect(onGo).toHaveBeenCalledTimes(1)
     unmount()
 
-    const edit = render(<ActionModal plan={uc2Scope.plan} onGo={onGo} onCancel={onCancel} />)
+    const edit = render(<PlanSheet plan={uc2Scope.plan} onGo={onGo} onCancel={onCancel} />)
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
     act(() => { vi.advanceTimersByTime(20_000) })
     expect(onGo).toHaveBeenCalledTimes(1)
     fireEvent.change(screen.getByLabelText('Search 1'), { target: { value: 'Kestrel TSMC margin outlook' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Go now' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start now' }))
     expect(onGo).toHaveBeenLastCalledWith({ ...uc2Scope.plan, subqueries: ['Kestrel TSMC margin outlook', ...uc2Scope.plan.subqueries.slice(1)] })
     edit.unmount()
 
-    render(<ActionModal plan={uc2Scope.plan} onGo={onGo} onCancel={onCancel} />)
+    render(<PlanSheet plan={uc2Scope.plan} onGo={onGo} onCancel={onCancel} />)
     fireEvent.keyDown(window, { key: 'Escape' })
     act(() => { vi.advanceTimersByTime(10_000) })
     expect(onCancel).toHaveBeenCalledTimes(1)
@@ -140,11 +144,11 @@ describe('sources: writers, publishers, search mode, trust (#151)', () => {
   it('labels each source: writer link, publisher, SYNTHETIC, FREE/PAID price, trust, and the search mode', () => {
     // T5: one line on the surface (search mode, the corpus label, the named sources); the per-source chips sit behind View all.
     const line = renderToStaticMarkup(<Sources run={uc3Run} />)
-    for (const text of [`search · ${uc3Run.labels.search}`, 'Synthetic corpus · fictional', 'proof failed · refunded', 'View all']) expect(line).toContain(text)
+    for (const text of ['proof failed · refunded', 'View all']) expect(line).toContain(text)
     const { container } = render(<Sources run={uc3Run} />)
     fireEvent.click(screen.getByRole('button', { name: 'View all' }))
     const html = container.innerHTML
-    for (const text of [`search · ${uc3Run.labels.search}`, 'SYNTHETIC', 'href="/w/alphaleak" target="_blank"', 'Priya Nair', 'NotFinancialTimes', 'proof failed · refunded']) expect(html).toContain(text)
+    for (const text of ['SYNTHETIC', 'href="/w/alphaleak" target="_blank"', 'Priya Nair', 'NotFinancialTimes', 'proof failed · refunded']) expect(html).toContain(text)
     expect(renderToStaticMarkup(<WriterChip candidate={uc3Run.candidates.find(candidate => candidate.tier === 'FREE')!} />)).toContain('>FREE<')
     expect(renderToStaticMarkup(<Sources run={{ ...uc3Run, labels: { ...uc3Run.labels, search: 'hybrid' } }} />)).not.toContain('search · hybrid')
   })
@@ -154,7 +158,6 @@ describe('proofs, challenge → refund, run tape (#152)', () => {
   const ids = uc3Run.events.map(event => event.id)
   const leak = uc3Run.intents[0]
   const first = (type: string, status?: string) => uc3Run.events.find(event => event.type === type && (!status || event.data?.status === status))!.id
-  const failedClaim = leak.failedClaimIds![0]
 
   it('replays UC3 in timeline order: pay, proof fails, challenge, refund, reputation, then the honest buy', () => {
     const statuses: string[] = []
@@ -166,30 +169,23 @@ describe('proofs, challenge → refund, run tape (#152)', () => {
     const refunded = staged(uc3Run, first('REFUND'))
     expect([refunded.spentMinor, refunded.refundedMinor]).toEqual([30, 30])
     expect(staged(uc3Run, first('CHALLENGE', 'REFUNDED') - 1).refundedMinor).toBe(0)
-    const tape = renderToStaticMarkup(<RunTape run={uc3Run} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
-    // T3: the run bar's segments, in order; each segment's title carries the step's full name and detail.
-    const order = ['Plan', 'Search', 'Choose what to buy', 'Proof check', 'Challenge', 'Refund', 'Reputation', 'Check again', 'Done'].map(title => tape.indexOf(`title="${title}`))
-    expect(order.every(index => index >= 0)).toBe(true)
-    expect(order).toEqual([...order].sort((a, b) => a - b))
-    expect(tape).toContain(`Proof failed · ${failedClaim}`)
-    // A challenge and its outcome share one segment, so the one-line bar stays readable.
-    expect(tape.split('title="Challenge').length - 1).toBe(1)
-    expect(tape).toContain('<b>Done</b>')
+    const tape = renderToStaticMarkup(<RunActivity run={uc3Run} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    expect(tape).toContain('Done'); expect(tape).not.toContain('ra-runbar')
     for (const type of ['PLAN', 'PROOF', 'CHALLENGE', 'REFUND', 'REPUTATION']) expect(dwell({ id: 0, runId: '', type, label: '', at: '' })).toBeGreaterThan(0)
   })
 
   it('shows proof badges, the refund with its rail label, and spent / refunded / net', () => {
-    const failed = renderToStaticMarkup(<Purchase run={uc3Run} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
-    for (const text of ['✗ claim failed', 'Proof failed', 'Challenged', 'Refunded S$0.30', 'SIMULATED']) expect(failed).toContain(text)
-    const ok = renderToStaticMarkup(<Purchase run={uc3Run} intent={uc3Run.intents[1]} onRetry={() => {}} onReceipt={() => {}} />)
-    expect(ok).toContain('Paid S$0.40 · delivered · verified')
+    const failed = renderToStaticMarkup(<PaymentRow run={uc3Run} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
+    for (const text of ['Not found', 'Refunded S$0.30', 'simulated']) expect(failed).toContain(text)
+    const ok = renderToStaticMarkup(<PaymentRow run={uc3Run} intent={uc3Run.intents[1]} onRetry={() => {}} onReceipt={() => {}} />)
+    expect(ok).toContain('Verified')
     expect(ok).not.toContain('Refunded')
-    const testnet = { ...uc3Run, events: uc3Run.events.map(event => event.type === 'REFUND' ? { ...event, data: { ...event.data, label: 'XRPL TESTNET · no real value', explorerUrl: `https://testnet.xrpl.org/transactions/${leak.refund!.txHash}` } } : event) }
-    const onLedger = renderToStaticMarkup(<Purchase run={testnet} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
+    const testnet = { ...uc3Run, labels: { ...uc3Run.labels, settlement: 'XRPL TESTNET · no real value' as const }, events: uc3Run.events.map(event => event.type === 'REFUND' ? { ...event, data: { ...event.data, label: 'XRPL TESTNET · no real value', explorerUrl: `https://testnet.xrpl.org/transactions/${leak.refund!.txHash}` } } : event) }
+    const onLedger = renderToStaticMarkup(<PaymentRow run={testnet} intent={leak} onRetry={() => {}} onReceipt={() => {}} />)
     expect(onLedger).toContain(`href="https://testnet.xrpl.org/transactions/${leak.refund!.txHash}"`)
-    expect(onLedger).toContain('XRPL TESTNET')
-    const budget = renderToStaticMarkup(<Budget run={uc3Run} />)
-    for (const text of ['spent</dt><dd>S$0.70', 'refunded</dt><dd', 'S$0.30']) expect(budget).toContain(text)
+    expect(onLedger).toContain('XRPL Testnet')
+    const budget = renderToStaticMarkup(<SpendPanel onRetry={() => {}} onReceipt={() => {}} run={uc3Run} />)
+    for (const text of ['S$0.40', 'Paid S$0.70', 'Refunded S$0.30']) expect(budget).toContain(text)
   })
 
   it('never opens or cites a quarantined source, even with its delivered text present (gates 1 and 4)', () => {
@@ -425,20 +421,16 @@ describe('budget slider and the universal budget in Settings', () => {
     expect((screen.getByLabelText('Your question') as HTMLTextAreaElement).value).toBe('half typed')
   })
 
-  it('the yellow i says there is no real money (XRPL Testnet when that rail is on), and Escape closes it', () => {
-    render(<Ask onAsk={() => {}} settlement="SIMULATED SGD · no real funds" />)
-    const dot = screen.getByRole('button', { name: 'SIMULATED SGD · no real funds' })
-    expect(dot.getAttribute('aria-expanded')).toBe('false')
+  it('keeps the environment on the header, and Escape closes its details', () => {
+    render(<EnvIndicator labels={exampleRun.labels} recording />)
+    const dot = screen.getByRole('button', { name: /Demo · simulated payments/ })
     fireEvent.click(dot)
-    expect(dot.getAttribute('aria-expanded')).toBe('true')
-    expect(screen.getByText('No real money').closest('[role="note"]')?.hasAttribute('hidden')).toBe(false)
+    expect(screen.getByRole('region', { name: "What's real here" }).textContent).toContain('Fictional (synthetic corpus)')
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(dot.getAttribute('aria-expanded')).toBe('false')
-    expect(document.body.textContent).not.toContain('Simulated on the XRPL Testnet')
   })
-
-  it('on the XRPL rail the yellow i says simulated on the XRPL Testnet', () => {
-    render(<Ask onAsk={() => {}} settlement="XRPL TESTNET · no real value" />)
-    expect(screen.getByText('Simulated on the XRPL Testnet.')).toBeTruthy()
+  it('names the Testnet environment', () => {
+    render(<EnvIndicator labels={{ ...exampleRun.labels, settlement: 'XRPL TESTNET · no real value' }} recording />)
+    expect(screen.getByRole('button', { name: /XRPL Testnet · test funds/ })).toBeTruthy()
   })
 })

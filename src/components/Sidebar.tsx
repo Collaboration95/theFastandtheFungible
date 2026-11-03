@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { modifier } from '../shortcuts'
 import type { PastRun } from '../api'
 
-export const NAV_WIDTH = { min: 200, max: 420, initial: 260 }
+export const NAV_WIDTH = { min: 200, max: 420, initial: 240 }
 const clamp = (width: number) => Math.round(Math.min(NAV_WIDTH.max, Math.max(NAV_WIDTH.min, width)))
 
 export interface SidebarProps {
@@ -49,10 +49,10 @@ export default function Sidebar({ runs, activeId, busy, open, width = NAV_WIDTH.
   </li>
   return <nav className={`ra-nav${open ? '' : ' is-rail'}${drag === undefined ? '' : ' is-resizing'}`} aria-label="Questions" style={open ? { '--nav-w': `${shown}px` } as CSSProperties : undefined}>
     <button type="button" className="ra-newq" onClick={onNew} disabled={busy} title={busy ? 'Finish or stop the run first.' : undefined} aria-label="New question"><span aria-hidden="true">+</span>{open && <>New question<kbd>{modifier}N</kbd></>}</button>
-    <div className="ra-nav-list">{runs.length === 0 && open && <p className="ra-nav-empty">No runs yet.</p>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
+    {open && <div className="ra-nav-list">{runs.length === 0 && open && <p className="ra-nav-empty">No runs yet.</p>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
       {open && <p className="ra-nav-sec">{name}</p>}<ul>{list.map(row)}</ul>
-    </section>)}</div>
-    {onSettings && <button type="button" className={`ra-nav-set${settingsOn ? ' is-on' : ''}`} onClick={onSettings} aria-current={settingsOn ? 'page' : undefined} aria-label="Settings" title={open ? undefined : 'Settings'}>
+    </section>)}</div>}
+    {open && onSettings && <button type="button" className={`ra-nav-set${settingsOn ? ' is-on' : ''}`} onClick={onSettings} aria-current={settingsOn ? 'page' : undefined} aria-label="Settings" title={open ? undefined : 'Settings'}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>{open && 'Settings'}
     </button>}
     {open && onResize && <div className="ra-nav-resize" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" aria-valuemin={NAV_WIDTH.min} aria-valuemax={NAV_WIDTH.max} aria-valuenow={shown} tabIndex={0}

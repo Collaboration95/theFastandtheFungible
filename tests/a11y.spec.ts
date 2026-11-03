@@ -4,7 +4,9 @@ import AxeBuilder from '@axe-core/playwright'
 const serious = async (page: Page) => (await new AxeBuilder({ page }).analyze()).violations.filter(v => ['serious', 'critical'].includes(v.impact ?? ''))
 
 test('ready desk has no serious automated accessibility violations', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
+  await page.locator('.ra-env-pop').evaluateAll(els => Promise.all(els.flatMap(el => el.getAnimations().map(a => a.finished))))
   expect(await serious(page)).toEqual([])
 })
 
@@ -18,9 +20,9 @@ test('clarify chips, plan card, finished UC2 run and Writers tab have no serious
   await expect(page.getByRole('button', { name: 'pricing & margins' })).toBeVisible()
   expect(await serious(page)).toEqual([])
   await page.getByRole('button', { name: 'pricing & margins' }).click()
-  await expect(page.getByRole('button', { name: 'Go now' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Start now' })).toBeVisible()
   expect(await serious(page)).toEqual([])
-  await page.getByRole('button', { name: 'Go now' }).click()
+  await page.getByRole('button', { name: 'Start now' }).click()
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
   expect(await serious(page)).toEqual([])
   await page.getByRole('tab', { name: 'Writers' }).click()

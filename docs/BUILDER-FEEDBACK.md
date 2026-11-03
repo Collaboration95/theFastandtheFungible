@@ -361,3 +361,13 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
   Suggested fix: reference custody flows must distinguish unsigned refusal from
   ambiguous ledger settlement; only unsigned payouts permit automatic cancel.
   Severity: high custody risk. Mainnet still needs policy/legal review.
+
+- 2026-11-03 · Observed local recording startup race (#311): Vite was reachable
+  before `/api/health`; proxy logged ECONNREFUSED and the new disabled composer
+  correctly refused the early clip submit. Evidence: `scripts/record.mjs`
+  readiness fix and `docs/design/UX-1-EVIDENCE.md`; first take failed, later UC3
+  take succeeded. Workaround/fix: wait for API health as well as the page before
+  driving keyboard input. Suggested tooling fix: one shared engine-ready signal
+  for demo and clip drivers. Severity: low, recording only. Mainnet impact: none;
+  no payment was initiated by the failed take. This is local tooling friction,
+  not an observed XRPL/x402 incident.
