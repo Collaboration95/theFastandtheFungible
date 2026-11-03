@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import { DatabaseSync } from 'node:sqlite'
 import { Store } from '../server/store.js'
+import { receiptRows } from '../server/audit.js'
 import type { Surface } from '../server/spend-policy.js'
 import { legacyUsage } from './fixtures/legacy-usage.js'
 
@@ -70,6 +71,8 @@ it('keeps admission and reservation decisions identical through pause, revoke, m
     restarted.recordSettlement('payment', { receiptId: 'receipt', intentId: 'payment', runId: run.runId, resourceId: 'article', version: 'v1', amountMinor: 90, currency: 'SGD', settledAt: '2026-11-02T00:00:01Z', label: 'SIMULATED SGD · no real funds' }, 'synthetic')
     restarted.updateRun(run.runId, { phase: 'DONE' })
     out.push(restarted.admit({ ...input, idempotencyKey: 'two' }, '2026-11-02').run.budgetMinor)
+    const range = { from: '2026-10-27', to: '2026-11-02' }
+    expect(receiptRows(access(restarted).db, { ...range, principal: a.id })).toEqual(receiptRows(access(restarted).db, range).filter(r => r.principal === a.id))
     const status = restarted.agentStatus(a.id, '2026-11-02')
     out.push({ spentMinor: status.spentMinor, reservedMinor: status.reservedMinor, spent7DaysMinor: status.spent7DaysMinor, rails: status.rails })
     restarted.setAgentPaused(a.id, true)

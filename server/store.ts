@@ -100,6 +100,7 @@ export class Store {
     this.db.exec(`INSERT OR IGNORE INTO admissions SELECT key, 'mcp', 'operator', run_id, budget, budget, day, 'mcp-v0' FROM mcp_requests`)
     this.agentKeys = new AgentKeys(this.db)
     AuditLog.ensureSchema(this.db)
+    this.db.exec('CREATE INDEX IF NOT EXISTS usage_admission_principal ON admissions(principal,run_id); CREATE INDEX IF NOT EXISTS usage_audit_kind_run ON audit_log(kind,run_id)')
     this.audit = new AuditLog(this.db)
     this.atomic(() => this.audit.boot(this.policySnapshot()))
   }
@@ -215,7 +216,7 @@ export class Store {
       const key = this.agentKeys.get(id)
       if (!key) throw new AgentDenied('Agent key not found')
       const from = new Date(`${day}T00:00:00Z`); from.setUTCDate(from.getUTCDate() - 6)
-      const receipts = receiptRows(this.db, { from: from.toISOString().slice(0, 10), to: day }).filter(r => r.principal === id && r.kind !== 'inbound')
+      const receipts = receiptRows(this.db, { from: from.toISOString().slice(0, 10), to: day, principal: id }).filter(r => r.principal === id && r.kind !== 'inbound')
       return { ...key, maxMinor: Math.min(key.maxMinor, spendPolicy().maxMinor), dailyMinor: Math.min(key.dailyMinor, spendPolicy().walletDailyMinor),
         ...this.usage(day, undefined, undefined, id), spent7DaysMinor: receipts.reduce((s, r) => s + (typeof r.amountMinor === 'number' ? r.amountMinor : Number(r.amountDrops) / DROPS_PER_MINOR), 0),
         rails: [...new Set(receipts.map(r => r.label))] }
