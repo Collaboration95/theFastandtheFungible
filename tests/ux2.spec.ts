@@ -50,5 +50,8 @@ test('UX-2: UC4, exact lead citation, export, supporting screens and mobile Spen
   await page.screenshot({ path: `${dir}/mobile-spend.jpg`, quality: 70 })
   await page.keyboard.press('Escape')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.getByRole('button', { name: 'Show sidebar' }).click()
+  await page.getByRole('button', { name: 'Writers', exact: true }).click()
+  await expect(page.getByText('All writers and articles are fictional.')).toBeVisible()
   await writeFile(`${dir}/environment.txt`, 'Local Chromium; offline demo; simulated payments; no live providers or Testnet.\n')
 })

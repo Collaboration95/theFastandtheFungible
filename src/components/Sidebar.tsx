@@ -7,7 +7,7 @@ export const NAV_WIDTH = { min: 200, max: 420, initial: 240 }
 const clamp = (width: number) => Math.round(Math.min(NAV_WIDTH.max, Math.max(NAV_WIDTH.min, width)))
 
 export interface SidebarProps {
-  runs: PastRun[]; activeId?: string; busy: boolean; open: boolean; width?: number; settingsOn?: boolean
+  onView?: (view: 'run' | 'writers') => void; runs: PastRun[]; activeId?: string; busy: boolean; open: boolean; width?: number; settingsOn?: boolean
   onResize?: (width: number) => void; onSettings?: () => void; onNew: () => void; onOpenRun: (runId: string) => void; onPin: (runId: string, pinned: boolean) => void; onDelete: (runId: string) => void
 }
 const over = (run: PastRun) => run.stopped || ['DONE', 'FAILED', 'STOPPED'].includes(run.phase)
@@ -22,7 +22,7 @@ export function NavToggle({ open, onToggle }: { open: boolean; onToggle: () => v
 }
 
 /** The left sidebar: New question and past runs. A run's ⋯ menu pins it or removes it from the list (receipts stay in the ledger). Drag its edge to widen it. */
-export default function Sidebar({ runs, activeId, busy, open, width = NAV_WIDTH.initial, settingsOn = false, onResize, onSettings, onNew, onOpenRun, onPin, onDelete }: SidebarProps) {
+export default function Sidebar({ onView, runs, activeId, busy, open, width = NAV_WIDTH.initial, settingsOn = false, onResize, onSettings, onNew, onOpenRun, onPin, onDelete }: SidebarProps) {
   const [menu, setMenu] = useState<{ id: string; confirm: boolean; x: number; y: number }>()
   const [drag, setDrag] = useState<number>()
   const start = useRef({ x: 0, width })
@@ -49,6 +49,7 @@ export default function Sidebar({ runs, activeId, busy, open, width = NAV_WIDTH.
   </li>
   return <nav className={`ra-nav${open ? '' : ' is-rail'}${drag === undefined ? '' : ' is-resizing'}`} aria-label="Questions" style={open ? { '--nav-w': `${shown}px` } as CSSProperties : undefined}>
     <button type="button" className="ra-newq" onClick={onNew} disabled={busy} title={busy ? 'Finish or stop the run first.' : undefined} aria-label="New question"><span aria-hidden="true">+</span>{open && <>New question<kbd>{modifier}N</kbd></>}</button>
+    {open && onView && <div className="ra-mobile-views"><button type="button" className="ra-link" onClick={() => onView('run')}>Run</button><button type="button" className="ra-link" onClick={() => onView('writers')}>Writers</button></div>}
     {open && <div className="ra-nav-list">{runs.length === 0 && open && <p className="ra-nav-empty">No runs yet.</p>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
       {open && <p className="ra-nav-sec">{name}</p>}<ul>{list.map(row)}</ul>
     </section>)}</div>}

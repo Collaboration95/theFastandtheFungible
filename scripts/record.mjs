@@ -33,6 +33,8 @@ if (clip) {
     await expectReady()
     await page.goto(url)
     await page.evaluate(() => document.fonts.ready)
+    // Stills and clips leave the app, so bake in their own environment footer.
+    await page.addStyleTag({ content: 'body::after { content: "Demo data · simulated payments"; position: fixed; bottom: 0; right: 0; z-index: 100; padding: 4px 12px; background: #FBF8F2; color: #655D55; font: 12px Arial,sans-serif; }' })
     const takeStart = Date.now()
     await page.keyboard.press('Control+k')
     await page.getByRole('combobox').fill(`${uc === 'UC4' ? 'New question' : uc + ' ·'}`)
