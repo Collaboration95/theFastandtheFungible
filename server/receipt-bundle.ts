@@ -6,9 +6,11 @@ import { GENESIS_HASH } from './audit.js'
 
 export function receiptBundle(store: Store, runId: string): ReceiptBundle {
   const run = store.getRun(runId)
-  const entries = store.auditEntries(), first = entries.findIndex(e => e.runId === runId)
+  const pinned = store.anchorRows().filter(a => a.runId === runId).at(-1)
+  const entries = store.auditEntries().filter(e => !pinned || e.seq <= pinned.seq), first = entries.findIndex(e => e.runId === runId)
   const anchor = first > 0 ? { seq: entries[first - 1].seq, hash: entries[first - 1].hash } : { seq: 0, hash: GENESIS_HASH }
   return ReceiptBundleSchema.parse({
+    ledgerAnchor: run.ledgerAnchor,
     schemaVersion: run.receipts.length ? 3 : run.candidates.some(c => c.source) ? 2 : 1, identityVersion: run.receipts.length ? (run.candidates.some(c => c.source) ? 2 : 1) : undefined, contributions: run.receipts.length ? contributions({ ...run, sources: run.contents }) : undefined, runId, label: `${run.labels.settlement}; ${run.labels.research}; writer identity unverified`,
     requirements: run.checkpoint.requirements ?? [], answers: run.answers, sources: run.contents, candidates: run.candidates.map(candidate => ({ ...candidate, verification: undefined })), intents: run.intents,
     grants: run.grants.filter(g => run.intents.some(i => i.intentId === g.intentId && i.status === 'VERIFIED')),

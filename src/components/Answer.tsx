@@ -1,3 +1,4 @@
+import AnchorStatus from './AnchorStatus'
 import { sameSource } from '../../shared/source-identity.js'
 /* eslint-disable react-refresh/only-export-components -- Shared validation for impact/report components. */
 import type { ReactNode } from 'react'
@@ -60,6 +61,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
       {lead.length ? <p className="ra-vtext">{lead.map(item => <span key={item.text}>{item.text}{cites(item.claim)}{' '}</span>)}</p> : <p>No concise finding could be selected from the verified evidence.</p>}
       {hasPaidEvidence && <details className="ra-answer-update"><summary>Updated with paid evidence</summary><p>{added.length} added claims, {dropped.length} removed. Only verified passages are included.</p><button type="button" className="ra-link" onClick={onCompare}>See what changed after the purchase</button></details>}
       {answer.openGaps.length > 0 && <details className="ra-answer-context"><summary>Still unanswered ({answer.openGaps.length})</summary><ul>{answer.openGaps.map(gap => <li key={gap.text}>{gap.text}</li>)}</ul></details>}
+      <AnchorStatus run={run} />
     </section>
     {!compare && <RequestedFacts run={run} version={answer.version} />}
     {compare && <button type="button" className="ra-link" onClick={onCompare}>Back to answer</button>}

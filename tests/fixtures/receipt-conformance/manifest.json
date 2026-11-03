@@ -11725,6 +11725,155 @@
           "value": "0000000000000000000000000000000000000000000000000000000000000000"
         }
       ]
+    },
+    {
+      "fixture": "tests/fixtures/receipt-conformance/anchor.json",
+      "mutations": [],
+      "name": "anchor/offline",
+      "expected": true
+    },
+    {
+      "fixture": "tests/fixtures/receipt-conformance/anchor.json",
+      "mutations": [
+        {
+          "path": [
+            "ledgerAnchor",
+            "txHash"
+          ],
+          "value": "bad"
+        }
+      ],
+      "name": "anchor/malformed",
+      "expected": false
+    },
+    {
+      "fixture": "tests/fixtures/receipt-conformance/anchor.json",
+      "mutations": [
+        {
+          "path": [
+            "ledgerAnchor",
+            "head"
+          ],
+          "value": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ],
+      "name": "anchor/head-mismatch",
+      "expected": false
+    },
+    {
+      "fixture": "tests/fixtures/receipt-conformance/anchor.json",
+      "mutations": [
+        {
+          "path": [
+            "answers",
+            0,
+            "conclusion"
+          ],
+          "value": "rewritten"
+        }
+      ],
+      "name": "anchor/answers-rewritten",
+      "expected": false
+    },
+    {
+      "fixture": "tests/fixtures/receipt-conformance/anchor.json",
+      "mutations": [],
+      "name": "anchor/online",
+      "expected": true,
+      "ledgerResponse": {
+        "validated": true,
+        "ledger_index": 123,
+        "meta": {
+          "TransactionResult": "tesSUCCESS"
+        },
+        "Account": "rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe",
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Fee": "12",
+        "TransactionType": "AccountSet",
+        "Memos": [
+          {
+            "Memo": {
+              "MemoType": "72657365617263686167656E742F616E63686F722D7631",
+              "MemoData": "373164626363356330623265666539373733396262326633633236333833623062303232636237303233393661613462333563306163393562393931393939393A62393763626234353134316539393639306439326230656434393638303230353230653738646566366333333761316436373762303162623734373635396566"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fixture": "tests/fixtures/receipt-conformance/anchor.json",
+      "mutations": [],
+      "name": "anchor/memo-mismatch",
+      "expected": false,
+      "ledgerResponse": {
+        "validated": true,
+        "ledger_index": 123,
+        "meta": {
+          "TransactionResult": "tesSUCCESS"
+        },
+        "Account": "rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe",
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Fee": "12",
+        "TransactionType": "AccountSet",
+        "Memos": [
+          {
+            "Memo": {
+              "MemoType": "72657365617263686167656E742F616E63686F722D7631",
+              "MemoData": "00"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fixture": "tests/fixtures/receipt-conformance/anchor.json",
+      "mutations": [],
+      "name": "anchor/unvalidated",
+      "expected": false,
+      "ledgerResponse": {
+        "validated": false,
+        "ledger_index": 123,
+        "meta": {
+          "TransactionResult": "tesSUCCESS"
+        },
+        "Account": "rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe",
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Fee": "12",
+        "TransactionType": "AccountSet",
+        "Memos": [
+          {
+            "Memo": {
+              "MemoType": "72657365617263686167656E742F616E63686F722D7631",
+              "MemoData": "373164626363356330623265666539373733396262326633633236333833623062303232636237303233393661613462333563306163393562393931393939393A62393763626234353134316539393639306439326230656434393638303230353230653738646566366333333761316436373762303162623734373635396566"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fixture": "tests/fixtures/receipt-conformance/anchor.json",
+      "mutations": [],
+      "name": "anchor/account-mismatch",
+      "expected": false,
+      "ledgerResponse": {
+        "validated": true,
+        "ledger_index": 123,
+        "meta": {
+          "TransactionResult": "tesSUCCESS"
+        },
+        "Account": "wrong",
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "Fee": "12",
+        "TransactionType": "AccountSet",
+        "Memos": [
+          {
+            "Memo": {
+              "MemoType": "72657365617263686167656E742F616E63686F722D7631",
+              "MemoData": "373164626363356330623265666539373733396262326633633236333833623062303232636237303233393661613462333563306163393562393931393939393A62393763626234353134316539393639306439326230656434393638303230353230653738646566366333333761316436373762303162623734373635396566"
+            }
+          }
+        ]
+      }
     }
   ]
 }

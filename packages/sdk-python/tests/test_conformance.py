@@ -30,7 +30,7 @@ def test_conformance(case, monkeypatch):
     monkeypatch.setattr(socket, "create_connection", forbidden)
     monkeypatch.setattr(socket, "getaddrinfo", forbidden)
     monkeypatch.setattr(subprocess, "Popen", forbidden)
-    assert verify(b)["ok"] is case["expected"]
+    assert verify(b, ledger="ledgerResponse" in case, ledger_lookup=lambda _: case["ledgerResponse"])["ok"] is case["expected"]
 
 
 def test_canonical():

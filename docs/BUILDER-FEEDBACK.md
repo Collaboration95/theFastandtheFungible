@@ -745,3 +745,9 @@ Mainnet impact: none observed; these operations and evidence are Testnet only.
   without a new automatic recovery-of-money promise.
 
 - 2026-11-04 — Observed release tooling failure: CI run 41740868918 printed all consumer results (MCP npx 28.399 s) then timed out at 180 s. Evidence: PR #364. Workaround/fix: own consumer process groups, terminate grandchildren, close pipes, assert groups empty; suggested upstream SDK improvement: process-tree cleanup for stdio npm launchers. Severity: release blocker; mainnet impact: none observed, fixture-only tooling.
+### 2026-11-04 — transient Testnet provisioning fallback (observed)
+
+- Evidence: `docs/evidence/round2-t/README.md`; the first isolated faucet-wallet launcher returned its generic public network/faucet unavailable error; retry produced the committed anchor in ledger 22048303. Root cause not identified; no claim of faucet rate limiting.
+- Workaround: reuse the ignored scratch wallets and retry the same isolated provisioning path. Both s.altnet and Clio server_info reported Testnet network ID 1.
+- Suggested fix: report a sanitized provisioning stage and retryability in the launcher, without including faucet bodies or wallet material.
+- Severity: low, transient first-touch friction. Mainnet impact: unmeasured; Testnet faucet provisioning does not apply to mainnet. No real-money testing.

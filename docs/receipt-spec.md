@@ -182,3 +182,42 @@ and passage evidence and require matching intent/receipt hashes and ledger index
 Absent evidence for an accessible key-reveal source fails verification. Legacy
 bundles and the original 177 vectors retain their semantics. Offline checks do
 not prove ledger finality. See [protocol and gate interpretation](key-reveal-escrow.md).
+
+## XRPL anchor-v1
+
+With `ANCHOR_RAIL=xrpl-testnet` and the Testnet settlement rail, deterministic
+policy anchors terminal answers. Default is off. SIMULATED exports remain
+unanchored. No model may initiate this transaction. A no-op AccountSet avoids
+XRPL's self-Payment restriction; no settings are supplied. Its single Memo has
+hex UTF-8 MemoType `researchagent/anchor-v1` and MemoData
+`<lowercase audit head>:<lowercase SHA-256(run ID)>`.
+See the [AccountSet reference](https://xrpl.org/docs/references/protocol/transactions/types/accountset).
+
+The final disclosed `answer-anchor` audit entry commits SHA-256 of canonical
+answers JSON. The export freezes at this head; other runs cannot move it. Later
+recovery entries require a new head and anchor. Optional top-level `ledgerAnchor`
+has version `anchor-v1`, network `xrpl:1`, head, runIdHash, account, txHash,
+ledgerIndex and feeDrops. Bundle versions 1–3 and identity semantics stay unchanged;
+old fixtures require no migrations. Never export the signed transaction blob.
+
+The operator explicitly enables this infrastructure fee. It is labelled **anchor
+fee**, capped at 2,000 drops by the buyer signer, and excluded from article
+budget, reservations, purchase ranking and gross/net article spend. It still
+consumes actual Testnet wallet balance. AccountSet transfers no principal. The
+signed blob is durable before submit and all retries reuse its hash, sharing the
+payment sequence queue. Pending anchors reconcile on startup and periodically.
+Expired or failed signatures remain recorded as unavailable; they are never
+silently re-signed, avoiding a second fee for the same head.
+
+`--ledger` performs a read-only WebSocket `tx` lookup at s.altnet, with Clio
+fallback: five seconds and 256 KiB per endpoint, two concurrent requests per
+process. It checks validated tesSUCCESS, transaction hash, expected account,
+ledger index, fee, memo head and run hash, and the answer commitment. An audit
+edit fails even if its stored hash is retained; a recomputed rewrite differs
+from the ledger memo. No keys or server are needed. Without this flag, anchor
+verification is SKIP (requires online check); `--expect-head` retains its existing
+independent pin semantics. Ledger lookup availability is not an offline check.
+The ledger proves the commitment existed, not the truth of research or ownership
+of the self-declared buyer account. An independent recipient should retain the
+transaction hash/account when receiving the export; replacing the entire export
+and anchor reference is outside a self-contained receipt's trust boundary.

@@ -3,6 +3,7 @@ import { prepare } from './testnet-wallets.js'
 const started = Date.now()
 const { env, fallback } = await prepare()
 if (fallback) console.warn('SIMULATED fallback · public Testnet faucet/network unavailable · no ledger transactions')
+if (process.env.ANCHOR_RAIL === 'xrpl-testnet') env.ANCHOR_RAIL = 'xrpl-testnet'
 env.TESTNET_STARTED_AT = String(started)
 const captureOnly = process.argv.includes('--capture')
 const args = captureOnly ? ['--import','tsx','scripts/capture-browser-demo.ts', ...(!fallback?['--testnet']:[])] : ['scripts/demo.mjs']

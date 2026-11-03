@@ -1,3 +1,4 @@
+import { AnswerAnchors } from './anchor.js'
 import { ActiveWork, OverloadedError } from './agents/active-work.js'
 import { providersRouter } from './api/providers.js'
 import { JsonDecisionProvider } from './agents/json-decision.js'
@@ -67,6 +68,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     lastSnapshot.set(runId, Date.now())
     send(runId, `event: snapshot\ndata: ${JSON.stringify(store.getRun(runId))}\n\n`)
   }
+  let anchors: AnswerAnchors | undefined
   const publish = (event: TraceEvent) => {
     if (!streams.get(event.runId)?.size) return
     send(event.runId, `event: trace\ndata: ${JSON.stringify(event)}\n\n`)
@@ -85,6 +87,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const client = new PublisherClient({ baseUrls: options.publisherUrls ?? (!options.publisherUrl && config.PUBLISHER_URLS ? config.PUBLISHER_URLS.split(',').map(s => s.trim()) : undefined), baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
   // Requested Testnet never silently falls back to simulated settlement.
   const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
+  if (config.ANCHOR_RAIL === 'xrpl-testnet' && payer instanceof XrplPayer) anchors = new AnswerAnchors(store, payer)
   const purchases = new PurchaseManager(store, client, payer)
   let provider = options.provider
   // DECISION_PROVIDER=openai: OpenAI Decisions (gpt-6-luna, #214); =cloudflare: Clef (the one-line revert); otherwise the labelled fixture.
@@ -118,7 +121,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     const done = progress(runId, 'Working with accessible evidence; spending policy remains enforced.')
     const task = withModelUsage(usage => store.appendEvent(runId, { type: usage.fallback ? 'MODEL_FALLBACK' : 'MODEL_USAGE', label: usage.fallback ? 'LLM fallback · labelled fixture' : 'Provider-reported usage', data: usage }), job).catch(() => {
       store.updateRun(runId, { phase: 'FAILED', error: 'Run interrupted; start a new ask or retry a settled delivery.' })
-    }).finally(() => {
+    }).finally(async () => {
       activeRuns.delete(runId)
       if (!reportJobs.has(runId)) loop.releaseSignal(runId)
       release()
@@ -129,6 +132,7 @@ export async function createApiApp(options: ApiOptions = {}) {
         store.updateRun(runId, { labels: { ...run.labels, research: 'fixture · extractive-fixture' } })
       }
       store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Latest validated answer and ledger saved.' })
+      await anchors?.ensure(runId).catch(() => undefined)
       jobs.delete(task)
     })
     activeRuns.set(runId, task)
@@ -178,6 +182,7 @@ export async function createApiApp(options: ApiOptions = {}) {
       if (reconciliation) return reconciliation
       reconciliation = (async () => {
         await reconcileRefunds(purchases)
+        await anchors?.reconcile()
         if (stopping) return
         // Existing durable runnable rows are retried on the next sweep when saturated;
         // this creates no new durable queue and never blocks signed reconciliation.
@@ -211,6 +216,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     await Promise.allSettled(reconciliationJobs)
     await Promise.allSettled(jobs)
     await Promise.allSettled(reportJobs.values())
+    await anchors?.drain()
     await purchases.drain()
     await hire.drain()
   }

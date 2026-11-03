@@ -1,3 +1,4 @@
+import AnchorStatus from './AnchorStatus'
 import { WriterVerification } from './WriterVerification.js'
 import { contributions } from '../../shared/contribution'
 import { useEffect, useRef, useState } from 'react'
@@ -83,6 +84,6 @@ export default function ReceiptSheet({ run, receipt, onClose }: { run: RunSnapsh
       </dl>
       {!!use?.links.length && <Claims links={use.links} />}
     </section>
-    {intent && <Verification run={run} intent={intent} />}<footer>{testnet ? 'XRPL Testnet · test funds, no value' : 'Simulated payment · no ledger entry'}</footer>
+    {intent && <Verification run={run} intent={intent} />}<AnchorStatus run={run} /><footer>{testnet ? 'XRPL Testnet · test funds, no value' : 'Simulated payment · no ledger entry'}</footer>
   </dialog>
 }

@@ -2,6 +2,54 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "ledgerAnchor": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "const": "anchor-v1"
+        },
+        "network": {
+          "type": "string",
+          "const": "xrpl:1"
+        },
+        "txHash": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "account": {
+          "type": "string",
+          "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+        },
+        "head": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runIdHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ledgerIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "feeDrops": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$"
+        }
+      },
+      "required": [
+        "version",
+        "network",
+        "txHash",
+        "account",
+        "head",
+        "runIdHash",
+        "ledgerIndex",
+        "feeDrops"
+      ]
+    },
     "schemaVersion": {
       "anyOf": [
         {

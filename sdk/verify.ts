@@ -1,3 +1,4 @@
+import { anchorLookup, checkAnchor } from './anchor.js'
 import { decryptDelivery } from '../shared/key-reveal.js'
 import { contributions } from '../shared/contribution.js'
 import { sourceKey, sourceBinding } from '../shared/source-identity.js'
@@ -12,7 +13,7 @@ import { ledgerInvoiceId } from '../shared/x402.js'
 
 export type VerificationCheck = { check: string; status: 'PASS' | 'FAIL' | 'SKIP'; detail: string }
 export type VerificationResult = { ok: boolean; runId?: string; checks: VerificationCheck[] }
-export type VerifyOptions = { testnet?: boolean; expectHead?: string; ledger?: Ledger }
+export type VerifyOptions = { onlineLedger?: boolean; anchorLookup?: typeof anchorLookup; testnet?: boolean; expectHead?: string; ledger?: Ledger }
 const key = sourceKey
 /** No backend, database, signer or provider required. Network is opt-in and read-only. */
 export async function verifyAnswer(input: unknown, options: VerifyOptions = {}): Promise<VerificationResult> {
@@ -54,7 +55,17 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     chainOk &&= ok; seq = e.seq; prev = e.hash
   }
   add('audit chain', chainOk && b.audit.entries.length > 0 && prev === b.audit.head && (!options.expectHead || prev === options.expectHead), `${b.audit.entries.length} links; head ${b.audit.head}`)
-  checks.push({ check: 'audit anchor', status: options.expectHead ? (prev === options.expectHead ? 'PASS' : 'FAIL') : 'SKIP', detail: options.expectHead ? 'Compared to independently supplied head' : 'Self-contained chain only; use --expect-head to detect a rewritten/truncated export. Other runs are opaque hash commitments.' })
+  if (b.ledgerAnchor) {
+    const commitment = entries.find(e => e.kind === 'answer-anchor' && e.runId === b.runId && e.hash === b.audit.head)
+    add('anchor binding', b.payments.filter(p => p.kind === 'purchase').every(p => p.payer === b.ledgerAnchor!.account) && b.ledgerAnchor.head === prev && b.ledgerAnchor.runIdHash === sha256(b.runId) && commitment?.data.answersHash === sha256(canonical(b.answers)), 'Anchor head, run and answer commitment agree')
+  }
+  if (options.onlineLedger) {
+    try {
+      if (!b.ledgerAnchor) throw Error('No ledger anchor in export')
+      const reason = checkAnchor(b.ledgerAnchor, b.runId, prev, await (options.anchorLookup ?? anchorLookup)(b.ledgerAnchor.txHash))
+      add('audit anchor', chainOk && !reason, reason ?? (chainOk ? `Validated XRPL Testnet ledger ${b.ledgerAnchor.ledgerIndex}` : 'Audit head mismatch'))
+    } catch (e) { add('audit anchor', false, e instanceof Error ? e.message : 'Ledger unavailable') }
+  } else checks.push({ check: 'audit anchor', status: options.expectHead ? (prev === options.expectHead ? 'PASS' : 'FAIL') : 'SKIP', detail: options.expectHead ? 'Compared to independently supplied head' : b.label.includes('SIMULATED') ? 'not anchored (simulated); requires online check' : 'requires online check (--ledger); other runs are opaque commitments' })
   const sourceOk = new Map<string, boolean>()
   for (const s of b.sources) {
     const proofs = b.proofs.filter(p => key(p) === key(s)), p = proofs[0]
@@ -136,7 +147,7 @@ export function verificationText(result: VerificationResult): string {
     const checks = result.checks.filter(c => c.check.startsWith(prefix))
     if (checks.length) lines.push(`${checks.some(c => c.status === 'FAIL') ? 'FAIL' : checks.every(c => c.status === 'SKIP') ? 'SKIP' : 'PASS'} ${prefix.trim().toUpperCase().padEnd(10)} ${checks.filter(c => c.status === 'PASS').length}/${checks.length}`)
   }
-  for (const c of result.checks.filter(c => c.status !== 'PASS')) lines.push(`${c.status.padEnd(4)} ${c.check}: ${c.detail}`)
+  for (const c of result.checks.filter(c => c.status !== 'PASS' || c.check === 'audit anchor')) lines.push(`${c.status.padEnd(4)} ${c.check}: ${c.detail}`)
   lines.push(`RESULT ${result.ok ? 'PASS' : 'FAIL'}`)
   return lines.join('\n')
 }
