@@ -143,7 +143,15 @@ export function createQueryEmbedder(embed: (texts: string[], signal: AbortSignal
     const vector = Promise.race([
       embed([key], signal).then(vectors => vectors[0]),
       new Promise<never>((_, reject) => signal.addEventListener('abort', () => reject(new Error('embedding timeout')), { once: true })),
-    ]).catch(() => { cache.delete(key); return undefined })
+    ]).catch(() => {
+      // Coalesce failures too: one outage must not trigger one call per publisher
+      // or subquery. Retry after a short cooldown, rather than the success TTL.
+      const entry = cache.get(key)
+      if (entry) entry.at = now() - SEARCH_TUNING.queryCacheTtlMs + 1000
+      return undefined
+    })
+    // Bound memory for long-running live engines with many distinct queries.
+    if (cache.size >= 512) cache.delete(cache.keys().next().value!)
     cache.set(key, { at: now(), vector })
     return vector
   }

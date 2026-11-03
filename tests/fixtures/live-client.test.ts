@@ -43,9 +43,9 @@ describe('bounded live client recovery', () => {
       await expect(result).rejects.toThrow('LLM returned 429')
       expect(transport).toHaveBeenCalledTimes(1)
     } else {
-      await vi.advanceTimersByTimeAsync(59999)
+      await vi.advanceTimersByTimeAsync(retrySeconds * 1000 - 1)
       expect(transport).toHaveBeenCalledTimes(1)
-      await vi.advanceTimersByTimeAsync(1)
+      await vi.advanceTimersByTimeAsync(251)
       expect(await result).toEqual({ findings: [] })
       expect(transport).toHaveBeenCalledTimes(2)
     }
@@ -54,4 +54,24 @@ describe('bounded live client recovery', () => {
     expect(request).toContain('accessible')
     expect(request).not.toContain('LONG_BODY_DUPLICATE')
   })
+  it.each([400,401,402,403])('does not retry permanent HTTP %s failures', async status => {
+    vi.stubEnv('LLM_PROVIDER', 'groq'); vi.stubEnv('GROQ_API_KEY', 'mock'); vi.stubEnv('LLM_BASE_URL', '')
+    const transport = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('PRIVATE_ERROR_TEXT', {status}))
+    await expect(streamJson('JSON', {})).rejects.toThrow(`LLM returned ${status}`)
+    expect(transport).toHaveBeenCalledTimes(1)
+  })
+
+  it('jitters one transient retry and does not multiply attempts', async () => {
+    vi.useFakeTimers()
+    vi.stubEnv('LLM_PROVIDER', 'groq'); vi.stubEnv('GROQ_API_KEY', 'mock'); vi.stubEnv('LLM_BASE_URL', '')
+    vi.spyOn(Math, 'random').mockReturnValue(.5)
+    const transport = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('', {status:503})).mockResolvedValueOnce(sse())
+    const result = streamJson('JSON', {})
+    await vi.advanceTimersByTimeAsync(374)
+    expect(transport).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(await result).toEqual({findings:[]})
+    expect(transport).toHaveBeenCalledTimes(2)
+  })
+
 })
