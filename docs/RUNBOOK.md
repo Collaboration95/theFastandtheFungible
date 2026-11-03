@@ -174,7 +174,7 @@ Run `node --import tsx scripts/wallets.mjs --rlusd` to establish idempotent
 live incremental reserve first. With the official issuer, obtain Testnet tokens
 from Ripple's documented https://tryrlusd.com faucet (authentication was required
 on 3 Nov); setup never claims trust lines mint tokens. The evidence runner below
-provisions its own labelled issuer and mints one test USD when necessary.
+provisions its own labelled issuer and mints one test USD per required top-up.
 
 Run `OFFSET=1900 node --import tsx scripts/evidence/rlusd-275.mjs`. It uses
 ports 10690/10688, existing Testnet payer/writer seeds, a faucet-funded stand-in

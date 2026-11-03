@@ -346,7 +346,7 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
 - **Observed: trust lines lock XRP reserve.** Payer and writer each needed a
   trust line; setup reads live reserve (0.2 XRP increment observed), checks extra
   owner reserve and keeps 2,000 drops fee headroom. Purchase checks token balance
-  separately. Writer received 0.6 issued units; fee 12 drops. Suggested fix:
+  separately. Full UC2 writer received 0.9 issued units; fee 12 drops, gate audit zero. Suggested fix:
   quickstarts should show recipient trust lines, limits, token and XRP liquidity.
   Severity: medium. Mainnet impact: production funding/alerts still needed.
 - **Code-derived partial-payment trap, prevented.** Amount/API-v2 DeliverMax is

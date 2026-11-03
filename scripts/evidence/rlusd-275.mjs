@@ -41,7 +41,8 @@ try {
     if (hash) setup.push({ kind: 'trust line', account: wallet.classicAddress, txHash: hash })
   }
   const lines = (await c.request({ command: 'account_lines', account: payer.classicAddress, peer: issuer.classicAddress, ledger_index: 'validated' })).result.lines
-  if (Number(lines.find(l => l.currency === RLUSD_CURRENCY)?.balance ?? 0) < 1) {
+  const completed = existsSync('docs/evidence/rlusd-275-refund-310.json') && JSON.parse(readFileSync('docs/evidence/rlusd-275-refund-310.json')).uc2IssuedPurchase
+  if (!completed && Number(lines.find(l => l.currency === RLUSD_CURRENCY)?.balance ?? 0) < 1) {
     const t = await c.autofill({ TransactionType: 'Payment', Account: issuer.classicAddress, Destination: payer.classicAddress, Amount: { currency: RLUSD_CURRENCY, issuer: issuer.classicAddress, value: '1' } })
     if (Number(t.Fee) > 2000) throw new Error('Fee cap')
     const r = await c.submitAndWait(issuer.sign(t).tx_blob)
@@ -80,6 +81,11 @@ try {
  const after = (await ledger.request({ command: 'account_lines', account: provision.writer, peer: issuer.classicAddress, ledger_index: 'validated' })).result.lines
  purchase = { label: 'test USD (substitute for RLUSD) · SYNTHETIC article · XRPL Testnet', txHash: intent.txHash, ledgerIndex: paid.ledgerIndex, result: paid.meta.TransactionResult, deliveredAmount: paid.meta.delivered_amount, payer: paid.tx.Account, writer: paid.tx.Destination, feeDrops: paid.tx.Fee, writerBalanceBefore: provision.writerBalanceBefore, writerBalanceAfter: after.find(l => l.currency === RLUSD_CURRENCY)?.balance, elapsedMs: Date.now() - start, replayIdentical: true, proofVerified: true, audit: store.auditVerify() }
 } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); app.locals.journal.close(); store.close(); await ledger.close() }
+const previous = existsSync('docs/evidence/rlusd-275-refund-310.json') ? JSON.parse(readFileSync('docs/evidence/rlusd-275-refund-310.json')) : {}
+if (previous.issuedPurchase?.txHash === purchase.txHash) purchase = { ...purchase, elapsedMs: previous.issuedPurchase.elapsedMs, lastReplayMs: purchase.elapsedMs }
 const evidence = { ...provision, ...chain, issuedPurchase: purchase }
 writeFileSync('docs/evidence/rlusd-275-refund-310.json', JSON.stringify(evidence, null, 2))
 console.log(JSON.stringify({ evidence: 'docs/evidence/rlusd-275-refund-310.json', issuer: issuer.classicAddress, hashes: chain.transactions.map(t => t.txHash) }))
+
+const uc2 = spawn(process.execPath, ['--import', 'tsx', 'scripts/evidence/rlusd-uc2-275.mjs'], { stdio: 'inherit', env: { ...process.env, OFFSET: '1900' } })
+if (await new Promise(resolve => uc2.once('exit', resolve))) throw new Error('Full UC2 demo failed')

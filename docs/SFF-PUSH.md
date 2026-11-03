@@ -305,7 +305,7 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
-- 3 Nov: Lane C #275/#310 issued-currency quotes, policy/SDK/receipts, trust-line/reserve preflight and partial-payment rejection; unsigned denylisted royalty cancellation and caller refunds with audit coverage. Testnet writer received 0.60 test USD; 2,500-drop refused royalty returned, reserve zero ([evidence](evidence/rlusd-275-refund-310.md)). No `src/` changes.
+- 3 Nov: Lane C #275/#310 issued-currency quotes, policy/SDK/receipts, trust-line/reserve preflight and partial-payment rejection; unsigned denylisted royalty cancellation and caller refunds with audit coverage. Full UC2 writer received 0.90 test USD; 2,500-drop refused royalty returned, reserve zero ([evidence](evidence/rlusd-275-refund-310.md)). No `src/` changes.
 
 - 3 Nov: UX direction for the redesign: 11-category anti-pattern audit with 29 before-screenshots, labelling and motion policies, screen specs for plan, payment, verification, refund and receipt; build filed as #311 and #312 ([doc](design/UX-DIRECTION.md)).
 - 3 Nov: Lane D #288 hash-chained `audit_log` written in the same transaction as each admission, decision, reserve, sign, settle, deliver, proof, refund, refusal and pause; CSV/JSONL receipt export (`audit:export`, `/api/audit/receipts.*`); `audit:verify [--testnet]` (5 of 5 October Testnet payments re-confirmed read-only); hire-the-agent inbound, royalty and change payments covered too; payee denylist tests and audit reason; `data:prune`; [COMPLIANCE.md](COMPLIANCE.md).
