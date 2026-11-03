@@ -187,3 +187,108 @@ match any declared period/comparison, and satisfy the existing claim-kind value
 pattern. This is a lexical check, not proof of semantic truth or relevance.
 Wrong promises follow the existing CLAIM_FAILED → quarantine → challenge/refund
 path. No test, leak threshold or spending rule was relaxed.
+## Hire an agent: `/v1/ask` (Testnet, #274)
+
+`POST /v1/ask` takes `{ question, budgetMinor: 100 | 200 | 500 }` and a stable
+`Idempotency-Key` header. The #301 Host/Origin/token guard applies unchanged;
+remote callers also need the operator's bearer token. A 402 quotes the research
+budget plus a fixed **20 SGD cents service fee**, using the demo conversion
+**1 SGD cent = 1,000 Testnet drops** (not an exchange-rate claim). The invoice
+binds the exact request, tier, service version and receiving wallet. It expires
+after 60 seconds. An expired unpaid intent needs a new idempotency key.
+
+Before submission, the existing `admit()` reserves the entire budget and fee
+under the wallet-wide daily cap as `surface: x402`, `principal: <signed payer>`.
+No research starts until that invoice is ledger-settled. A clamped admission
+refuses settlement. The budget remains the only purchase authority: the caller
+cannot name purchases or royalty recipients. The run and fee stay reserved
+through pending payout/restart, even after the research phase is DONE.
+
+Settlement policy **hire-v1** is deterministic:
+
+- Purchases keep the normal signed-manifest, proof, per-source and budget gates.
+- **5,000 drops (25% of the 20,000-drop fee)** is split equally across distinct
+  publisher/writer personas in the final validated citation list, including
+  free sources. Multiple passages from one writer count once. Sort slugs in
+  ascending code-point order; each gets `floor(5000 / N)` drops, and the first
+  `5000 mod N` slugs receive one extra drop. Minimum payment: one drop. Over
+  5,000 distinct writers fails closed. With no citations there are no royalties
+  and the entire service fee is retained.
+- Free writers advertise their existing Testnet wallet in `/registry`, even
+  without premium articles. The synthetic `open-records` persona uses the
+  existing `XRPL_PUBLISHER_GRID_OPERATORS_REPORT_ADDRESS` official-records
+  wallet when its own address is absent. Missing addresses fail closed; funds
+  remain reserved rather than silently skipping a cited writer.
+- Change is `(quoted budget cents - gross purchase cents) * 1000`, returned to
+  the settled payer; zero change produces no transaction. Refunds from disputed
+  purchases do not restore spending authority. Each royalty/change Payment has
+  a memo containing the run id, kind and stable intent id; its InvoiceID is the
+  SHA-256 of that intent id. Sender network fees are separate, capped at 2,000
+  drops per transaction, and paid by the sender's wallet; caller change is not
+  reduced by network fees. Caps measure transferred principal, as for purchases.
+- Payment blobs are stored write-once before submission. A timeout keeps the
+  same blob and reservation. Retry the original request and idempotency key;
+  never create a replacement payment for an uncertain outcome. Failed/expired
+  payouts remain reserved for operator reconciliation; there is no automatic
+  replacement signature. Pausing or lowering caps also blocks payout resends.
+- Completed replay returns the exact saved result with all citations, labels,
+  purchases, royalties, change and explorer links. A second signed blob for an
+  already bound invoice is refused before submission. Prepaid hire runs do not
+  auto-start on boot: replay the paid request to resume safely.
+
+The visible API money chain reconciles exactly:
+`inbound = gross purchases + royalties + change + retained service fee`.
+`npm run gate:audit -- --db <app.db>` also checks royalty recipients/amounts and
+this identity. This is API/CLI only; the `src/` money-chain view is deferred to
+the queued UX overhaul. Payouts have durable rows and XRPL events; integration
+with the future #288 hash-chained `audit_log` remains with that lane.
+
+### Generic SDK buyer (any x402-on-XRPL seller)
+
+```ts
+import { Wallet } from 'xrpl'
+import { payAndFetch } from './sdk/x402.js'
+import { openPaymentJournal } from './sdk/x402-journal.js'
+
+const journal = openPaymentJournal('private/caller.db') // private directory
+const { response, receipt, payment } = await payAndFetch(sellerUrl, {
+  wallet: Wallet.fromSeed(process.env.XRPL_CALLER_SEED!),
+  maxDrops: '220000', journal, idempotencyKey: 'my-question-1',
+  method: 'POST', headers: {
+    'Content-Type': 'application/json', Authorization: `Bearer ${process.env.RA_API_TOKEN}`,
+  },
+  body: JSON.stringify({ question: 'What changed in pricing?', budgetMinor: 200 }),
+})
+const answer = await response.json()
+journal.close()
+```
+
+For writer articles use GET without a body. The helper checks x402 v2, exact,
+`xrpl:1`, XRP, resource URL, maximum amount and timeout; binds InvoiceID; signs
+once under a payer queue; persists before retry; then independently verifies
+the receipt hash/payer and validated `tesSUCCESS`/delivered amount on Testnet.
+It refuses Mainnet and the public simulated signing key. All ledger access uses
+the existing Testnet-only connection. It does not verify article manifests or
+content proofs: a research buyer still needs the existing grant/proof layer.
+The default journal survives only in-process; always supply a durable journal
+for a real caller and reuse its wallet, URL, method, body and idempotency key
+on retry. Do not delete uncertain journals. A transport error can mean settled
+but not delivered. An HTTP error with a valid settlement receipt is likewise a
+delivery failure, not permission to pay again.
+
+`createHireClient` in `sdk/hire.ts` wraps this exchange for remote callers.
+MCP's optional `hire_researcher` uses that SDK when the operator supplies
+`RA_HIRE_URL`, `RA_HIRE_TOKEN`, `XRPL_CALLER_SEED` and `RA_HIRE_MAX_DROPS`.
+The calling model cannot select a URL, wallet or cap. The caller journal lives
+under `RA_DATA_DIR` (default `data/mcp`).
+
+Run `node --import tsx scripts/hire-demo.mjs` for an explicitly labelled fake
+ledger/fixture run on ephemeral ports. For the real chain use
+`OFFSET=1300 node --import tsx scripts/hire-demo.mjs --live`. It uses its own
+faucet caller wallet, existing writer wallets, a fixture-labelled research
+answer and genuine Testnet settlement; API/publisher ports are 10088/10090.
+Private state stays under `data/hire-demo-live`; only `chain.json` is public
+receipt data. Fixture state uses a separate directory. Replay uses the same
+key and journal; the script verifies every hash and refuses a gross movement
+plus network-fee total of 1 XRP or more. Faucet funding is excluded from that
+spend figure. No real money or cloud resources are involved.

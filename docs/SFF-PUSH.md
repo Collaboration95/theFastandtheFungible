@@ -240,6 +240,8 @@ Agents add items there and keep working around them.
 ## Decisions log
 
 - 3 Nov: #260 reuses #300’s signed manifest-v2 `covers` format; bounded untrusted promises are checked on the bound passage, never treated as coverage. Scorecards run locally; final calibration fit rejected; stays off, raw threshold unchanged.
+- 3 Nov: #274 hire-v1 receives Testnet funds, reserves budget plus fee through the shared admission, pays a fixed 25% fee royalty equally by distinct cited writer, and returns gross unspent budget; API/SDK/CLI money chain precedes the queued UX work.
+
 - 3 Nov: #261 recommends buyer-held hashlock + CancelAfter for opted-in Testnet writers; ledger enforces cancellation, buyer verifies proof; no fair-exchange or RLUSD claim ([spike](spikes/escrow.md), #273).
 - 3 Nov: #287 retains serialized signing and releases payer sequencing on ledger proof, independent of writer delivery; uncertain sequences refuse new signing after a bounded wait. Live recovery reuses the journal blob every 15 s; no Tickets/local sequence allocator before SFF. Scorecard fingerprint v3 retains all exact hashes and prior history for telemetry-only source changes.
 
@@ -268,6 +270,7 @@ Significant product, design and process decisions, newest first. One line each: 
 ## Changelog
 
 - 3 Nov: Lane D #287 live payment reconciliation, reserve precheck, protected deep health/metrics, JSON money logs and ops runbook; synthetic queued-payment p95 307.91→6.24 ms under 300 ms writer delay; one verified 0.06 XRP Testnet payment ([evidence](evidence/payment-ops-287.md)).
+- 3 Nov: #274 adds x402 hired answers, generic `sdk/x402` buyer, optional remote MCP hire, durable capped royalties/change and a separate caller demo; fixture and live chain evidence in `docs/evidence/hire-274.md`.
 
 - 2026-11-03: #286 shared admission, wallet cap/pause, bearer and rebinding guards, capped decision inputs and adversarial injection pack; native token contract posted on #259.
 - 3 Nov: Lane C #261 standalone Testnet escrow spike: clean release 14.492 s / 435 drops, cancel 54.871 s / 24 normal-path drops, nine validated txs including negative probes; #273 build contract and live builder feedback ([evidence](spikes/escrow.md)).

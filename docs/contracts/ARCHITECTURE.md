@@ -84,7 +84,7 @@ The third writer column is the bad actor; the last is free open records.
  │ own x402     │  │              │  │              │  │              │
  │ facilitator  │  │              │  │              │  │              │
  └──────┬───────┘  └──────────────┘  └──────────────┘  └──────────────┘
-        └──── buyer pays writer directly on XRPL Testnet (we never hold funds)
+        └──── buyer pays writer directly on XRPL Testnet (direct research path; hire receives and forwards Testnet funds)
 ```
 
 Detail: client flow [§5](../FINAL-PUSH.md#5-client-flow-pseudocode), writer
@@ -117,3 +117,13 @@ Folded into feature days: #259, #273, #274 (the `sdk/x402` buyer), #275, #277,
 #278, #279, #280, #281. After SFF: parallel signing (Tickets), Postgres and
 multi-tenant engines, KMS/RegularKey custody, KYB and sanctions providers, a
 Python SDK.
+
+## Hire service (#274)
+
+`server/hire/` adds an x402 seller and deterministic citation payouts beside the
+purchase manager. `POST /v1/ask` uses the shared admission/auth guard and
+`surface: x402` wallet admission. Same-file SQLite hire reservations and payout
+rows keep caps durable across restart. `sdk/x402.ts` is the generic buyer used
+by the outside caller demo; `sdk/hire.ts` supplies the optional remote MCP tool.
+The API returns a full money chain; see `docs/x402-xrpl.md` and
+`docs/COMPLIANCE.md` for rounding, change, custody and recovery.

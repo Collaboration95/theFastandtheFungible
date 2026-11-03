@@ -12,7 +12,7 @@ export type ApiContext = {
   store: Store; client: PublisherClient; purchases: PurchaseManager; loop: RunLoop
   reputation: Reputation; payer?: XrplPayer; labels: ModeLabels
   mcpPolicy: { maxMinor: number; dailyMinor: number }; publisherUrl: string
-  launch: (runId: string, job: () => Promise<void>) => void
+  launch: (runId: string, job: () => Promise<void>) => Promise<void>
   progress: (runId: string, label: string) => () => void
   streams: Map<string, Set<Response>>; reportDir: string
   reportJobs: Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>

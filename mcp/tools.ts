@@ -1,3 +1,8 @@
+import { openPaymentJournal } from '../sdk/x402-journal.js'
+import { mkdirSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { Wallet } from 'xrpl'
+import { createHireClient } from '../sdk/hire.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { createClient } from '../sdk/index.js'
@@ -20,5 +25,20 @@ export function createMcpServer(apiUrl: string, token?: string) {
   server.registerTool('wallet_status', { description: 'Read settlement rail, public payer address, operator per-call and daily caps, gross SGD spend and reserved budgets for the UTC day. Never returns seeds, signing keys or other credentials. No spending.', inputSchema: z.object({}).strict(), annotations: { readOnlyHint: true, openWorldHint: false } }, async () => guarded(async () => {
     return client.wallet()
   }))
+  // Opt-in remote signing authority comes only from the operator environment.
+  if (process.env.RA_HIRE_URL && process.env.XRPL_CALLER_SEED && process.env.RA_HIRE_MAX_DROPS) {
+    const dir = process.env.RA_DATA_DIR || 'data/mcp'
+    mkdirSync(dir, { recursive: true, mode: 0o700 })
+    const journal = openPaymentJournal(resolve(dir, 'hire-caller.db'))
+    const close = server.close.bind(server)
+    server.close = async () => { journal.close(); await close() }
+    const remote = createHireClient({ baseUrl: process.env.RA_HIRE_URL, token: process.env.RA_HIRE_TOKEN,
+      wallet: Wallet.fromSeed(process.env.XRPL_CALLER_SEED), maxDrops: process.env.RA_HIRE_MAX_DROPS, journal })
+    server.registerTool('hire_researcher', {
+      description: 'Hire the operator-configured remote ResearchAgent over XRPL Testnet x402. Returns cited evidence, labels and the payment chain including royalties and change. Budget is SGD cents; a fixed S$0.20 fee is added. The operator limits the total payment. Reuse the same idempotency_key on retry.',
+      inputSchema: z.object({ question: z.string().trim().min(1).max(2000), budget_minor: z.union([z.literal(100), z.literal(200), z.literal(500)]), idempotency_key: z.string().min(1).max(200) }).strict(),
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    }, args => guarded(() => remote.hire(args.question, { budgetMinor: args.budget_minor, idempotencyKey: args.idempotency_key })))
+  }
   return server
 }

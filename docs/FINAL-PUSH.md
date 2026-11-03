@@ -26,7 +26,7 @@ This is the sprint's design record: decisions D1–D24 and the reasons behind th
 - **Three promises:**
   - **Writers:** you are found by relevance, not by who pays. You set your price. Your abstract never gives the article away. You are paid directly in seconds.
   - **Readers:** you never pay for what you can read free, and never for a rewrite. A broken promise is challenged and the writer loses trust.
-  - **The engine (us):** ranking ignores price. We never hold the money. Every writer's trust score is public.
+  - **The engine (us):** ranking ignores price. Direct purchases pay writers; hire requests receive and forward Testnet funds (see docs/COMPLIANCE.md). Every writer's trust score is public.
 - **Talk order:** lead with Clef and calibration, then the trust matrix. "The LLM can't spend" is one sentence in Q&A, because five other talks on the night lead with "don't trust the LLM".
 - **Claim discipline:** we *reduce* the buyer's information problem (Arrow's paradox: you can't judge information before you see it). We do not *solve* it. The ledger cannot enforce refunds; say so if asked.
 
@@ -67,7 +67,7 @@ A question about Japanese bonds produced a DeepSeek answer about Vertex Compute.
  │ own x402     │  │              │  │              │  │              │
  │ facilitator  │  │              │  │              │  │              │
  └──────┬───────┘  └──────────────┘  └──────────────┘  └──────────────┘
-        └──── buyer pays writer directly on XRPL Testnet (we never hold funds)
+        └──── buyer pays writer directly on XRPL Testnet (direct research path; hire receives and forwards Testnet funds)
 ```
 
 ## 4. Decisions

@@ -42,7 +42,7 @@ export class XrplPayer {
    * Delivery never owns the lock. An unresolved sequence refuses new signing after a bounded
    * ledger wait, rather than guessing a sequence or waiting for a slow writer's 60 s HTTP reply.
    */
-  pay<T>(terms: PaymentRequirement, persist: (signed: Submission) => Submission, send: (submission: Submission) => Promise<T>): Promise<{ submission: Submission; sent: Promise<T> }> {
+  pay<T>(terms: PaymentRequirement & { memo?: string }, persist: (signed: Submission) => Submission, send: (submission: Submission) => Promise<T>): Promise<{ submission: Submission; sent: Promise<T> }> {
     const started = Date.now()
     const run = this.queue.then(async () => {
       for (const previous of this.pending) {
@@ -93,7 +93,7 @@ export class XrplPayer {
     return { ...cache.value, availableDrops: cache.value.availableDrops - cache.committed,
       ledgerAgeSeconds: cache.value.ledgerAgeSeconds + (Date.now() - cache.at) / 1000 }
   }
-  private async sign(terms: PaymentRequirement): Promise<Submission> {
+  private async sign(terms: PaymentRequirement & { memo?: string }): Promise<Submission> {
     if (!this.wallet) throw new Error('XRPL payer seed is not configured')
     if (this.wallet.classicAddress === simulatedPayerWallet().classicAddress) throw new Error('The SIMULATED test payer is refused on the XRPL Testnet')
     const balance = await this.balance()
@@ -107,6 +107,7 @@ export class XrplPayer {
     const lastLedgerSequence = Number(current.result.ledger_current_index) + 20
     const signed = this.wallet.sign({
       TransactionType: 'Payment', Account: account, Destination: terms.payTo, Amount: terms.amountDrops, InvoiceID: terms.invoiceId,
+      ...(terms.memo ? { Memos: [{ Memo: { MemoData: Buffer.from(terms.memo).toString('hex').toUpperCase() } }] } : {}),
       // Fee capped so a fee spike never drains the wallet; LastLedgerSequence makes expiry provable.
       Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(FEE_CAP_DROPS, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), LastLedgerSequence: lastLedgerSequence,
     })

@@ -13,6 +13,6 @@ export function spendPolicy(env: NodeJS.ProcessEnv = loadConfig()) {
 }
 /** One authority seam. Future surfaces must supply operator caps, never model-supplied caps. */
 export function admit(store: Store, input: { surface: Surface; principal: string; question: string;
-  requestedMinor: number; idempotencyKey: string; maxMinor: number; dailyMinor?: number; labels?: ModeLabels }) {
+  requestedMinor: number; idempotencyKey: string; maxMinor: number; dailyMinor?: number; labels?: ModeLabels; reserveMinor?: number }) {
   return store.admit(input)
 }
