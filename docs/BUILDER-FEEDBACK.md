@@ -440,3 +440,23 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
 - 2026-11-03 · Observed tooling incident: release backfill test inherited Git hook GIT_DIR/GIT_INDEX_FILE and wrote its fixture commit into the caller worktree; hook then failed on an existing tag. Evidence: docs/evidence/stream-281.md and tests/release.test.ts. Workaround: restore caller ref/index, strip inherited GIT_* variables from fixture subprocesses. Suggested fix: isolate Git subprocess environments in temporary-repository tests. Severity: high local tooling; no XRPL/mainnet action or funds affected.
 
 - 2026-11-03 · Observed tooling friction · `tests/mcp-http.test.ts`: Node fetch did not transmit the overridden Host in the rebinding test, so the request reached MCP content negotiation (406). Workaround: use `node:http.request` for the hostile Host assertion (403). Suggested fix: document forbidden/rewritten header behavior in client test tooling. Severity low; no XRPL mainnet impact.
+
+## Observed Testnet reliability measurement · 3 Nov 2026
+
+Evidence: `docs/evidence/live-reliability.md` and the paired
+`live-reliability-{before,after}.json` files. Real Testnet purchase validation
+contributes several seconds per intent to UC3's sequential purchase/refund/
+replacement path. This is observed wall-clock behavior, not a ledger failure or
+mainnet latency claim. Workaround: publish the validated free-source draft while
+settlement continues and retain the original intent/journal through recovery.
+Suggested tooling improvement: expose settlement percentiles alongside model
+latency, with null for runs that make no purchase. Severity: low (demo latency);
+mainnet impact: unmeasured. No faucet reset, Starter Kit failure, x402 mismatch
+or exhausted Testnet wallet was observed in this experiment.
+
+Code-derived provider/tooling findings (separate from ledger behavior): the
+planner can echo economic vocabulary rejected by its unchanged spending-language
+validator; Groq short Retry-After values were inflated to 60 seconds; embedding
+errors were immediately evicted and could fan out again. The prompt and recovery
+fixes retain labelled substitutions and all five gates. Fault tests establish
+retry/cooldown behavior; they are not live Groq quota measurements.

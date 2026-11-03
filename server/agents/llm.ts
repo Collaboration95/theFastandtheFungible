@@ -1,5 +1,6 @@
 import { reportModelUsage } from '../telemetry.js'
 import { loadConfig } from '../config.js'
+import { retryAfterMs, retryDelayMs } from './provider-retry.js'
 import { startActiveObservation, type LangfuseGeneration } from '@langfuse/tracing'
 import { deepseekPricingWindow } from '../telemetry.js'
 /**
@@ -60,9 +61,8 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
     })
     if (!response.ok) {
       const retryAfter = response.headers.get('retry-after')
-      const seconds = Number(retryAfter)
-      const retryMs = retryAfter && !Number.isFinite(seconds) ? Date.parse(retryAfter) - Date.now() : seconds * 1000
-      throw new LlmHttpError(response.status, Math.max(60000, Number.isFinite(retryMs) ? retryMs : 60000))
+      await response.body?.cancel().catch(() => undefined)
+      throw new LlmHttpError(response.status, retryAfterMs(retryAfter))
     }
     reader = response.body?.getReader()
     if (!reader) throw new Error('LLM returned no stream')
@@ -113,10 +113,14 @@ export async function streamJson(system: string, input: unknown, onToken?: (delt
   for (let attempt = 0; attempt < 2; attempt++) {
     try { return await streamJsonAttempt(name, system, input, onToken) } catch (error) {
       if (attempt === 1 || !isLlmConfigured()) throw error
+      // Authentication, billing and malformed requests cannot heal with a retry.
+      if (error instanceof LlmHttpError && error.status >= 400 && error.status < 500 && error.status !== 429) throw error
       if (error instanceof LlmHttpError && error.status === 429) {
         // A long account cooldown is a labelled fallback, never an early retry.
         if (error.retryMs > 60000) throw error
-        await new Promise(resolve => setTimeout(resolve, error.retryMs))
+        await new Promise(resolve => setTimeout(resolve, retryDelayMs(error.retryMs)))
+      } else if (error instanceof LlmHttpError && error.status >= 500) {
+        await new Promise(resolve => setTimeout(resolve, retryDelayMs(250)))
       }
     }
   }
