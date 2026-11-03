@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { Store } from '../server/store.js'
 import { readFile } from 'node:fs/promises'
 
 // Fixture mode (npm run demo): UC2 and UC3 from the story bible, driven through the browser (#159).
@@ -74,6 +75,10 @@ test('a terminal snapshot above the SSE limit recovers the same browser run with
   await page.getByRole('button', { name: 'Start now' }).click()
   await finished(page)
   const id = new URL(page.url()).searchParams.get('run')!
+  // Make the transport boundary explicit: corpus ranking must not control snapshot size.
+  const store = new Store('.playwright/app.db')
+  try { store.appendEvent(id, { type: 'COVERAGE', label: 'Oversized fixture recovery probe', data: { padding: 'fixture-only '.repeat(24000) } }) }
+  finally { store.close() }
   const response = await page.request.get('/runs/' + encodeURIComponent(id))
   const bytes = await response.body()
   expect(bytes.byteLength).toBeGreaterThan(256 * 1024)

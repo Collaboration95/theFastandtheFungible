@@ -176,8 +176,7 @@ Native XRP interop with the XRPL AI Starter Kit's t54 client and server: [compat
 
 ## Status and honesty
 
-Packages are **built and consumer-tested but not yet published** to npm, PyPI or the MCP Registry (publishing is an owner step, #265). Install from a release artifact or your checkout. The caps below are set by the operator running the engine, default to zero, and a calling model cannot raise them.
-
+Packages are **built and consumer-tested but not yet published** to npm, PyPI or the MCP Registry (publishing is an owner step, #265). Install from a release artifact or your checkout. Operator caps default to zero; a calling model cannot raise them.
 
 - **Testnet only.** No real money, no mainnet. Mainnet readiness is a [checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist), not a claim.
 - **Simulated mode is labelled** on every screen, receipt and MCP result. The writer corpus is fictional and new writers are unverified; this is not KYB or a sanctions service.
