@@ -1,3 +1,4 @@
+import { RunValidator } from './run-validation.js'
 import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
 import { AgentKeys, AgentDenied } from './agent-keys.js'
 import { decode } from 'xrpl'
@@ -47,6 +48,7 @@ export class Store {
     this.db.exec('CREATE TABLE IF NOT EXISTS mcp_calls (agent_id TEXT PRIMARY KEY, at TEXT NOT NULL)')
     return this.db.prepare('SELECT at FROM mcp_calls WHERE agent_id=?').get(id)?.at ?? null
   }
+  private readonly runValidator = new RunValidator()
   private readonly db: DatabaseSync
   /** Hash-chained operator ledger (#288). Entries are written inside the same transactions as the state they describe. */
   readonly audit: AuditLog
@@ -122,10 +124,10 @@ export class Store {
   private rawRun(runId: string): RunSnapshot {
     const row = this.db.prepare('SELECT json FROM runs WHERE id=?').get(runId)
     if (!row) throw new Error('Run not found')
-    return RunSnapshotSchema.parse(JSON.parse(row.json as string))
+    return this.runValidator.parse(JSON.parse(row.json as string))
   }
   private saveRun(run: RunSnapshot): void {
-    this.db.prepare('UPDATE runs SET json=? WHERE id=?').run(JSON.stringify(RunSnapshotSchema.parse(run)), run.runId)
+    this.db.prepare('UPDATE runs SET json=? WHERE id=?').run(JSON.stringify(this.runValidator.parse(run)), run.runId)
   }
   private saveIntent(intent: PurchaseIntent): void {
     this.db.prepare('UPDATE intents SET json=? WHERE id=?').run(JSON.stringify(PurchaseIntentSchema.parse(intent)), intent.intentId)
@@ -305,7 +307,7 @@ export class Store {
       run.spentMinor = run.intents.filter(i => chargedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
       run.reservedMinor = run.intents.filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
       run.refundedMinor = run.intents.reduce((sum, i) => sum + (i.refund?.amountMinor ?? 0), 0)
-      return RunSnapshotSchema.parse(run)
+      return this.runValidator.parse(run)
     })
   }
   /** Operational selectors never hydrate retained bodies or event arrays. */
