@@ -30,7 +30,7 @@ export function walletRouter(context: ApiContext) {
     if (!ledgerCache || Date.now() - ledgerCache.at > 5000) ledgerCache = { at: Date.now(), view: ledgerView() }
     try { res.json(await ledgerCache.view) } catch { ledgerCache = undefined; res.status(503).json({ error: 'Ledger view unavailable.' }) }
   })
-  router.get('/api/wallet/status', (_req, res) => res.json(store.walletStatus()))
+  router.get('/api/wallet/status', (_req, res) => res.json({ ...store.walletStatus(), agents: store.agentKeys.list().map(key => store.agentStatus(key.id)) }))
   router.post('/api/wallet/pause', (req, res) => {
     store.setPaused(z.object({ paused: z.boolean() }).strict().parse(req.body).paused, { surface: 'operator', principal: 'api-token' })
     res.json(store.walletStatus())

@@ -285,6 +285,8 @@ Agents add items there and keep working around them.
 
 ## Decisions log
 
+- 3 Nov: #280 agent keys are hashed principals in the existing admission/purchase ledger, managed by CLI while #311 owns UI; scoped pause/revoke blocks unsigned work and preserves signed-intent recovery.
+
 - 3 Nov (#275/#310): preserve SGD budgets and fixed labelled demo FX while adding issuer-bound Testnet payments; use explicitly labelled test USD when the official RLUSD faucet requires authentication. Cancel only unsigned refused royalties and refund the caller atomically; uncertain signatures keep their reservation.
 
 - 3 Nov: #311 relocates environment labels per UX-DIRECTION §3.2; net cost leads Spend while gross charges continue to consume budget. Keep the mandatory refund rail even though it makes the literal env-word count 2 rather than the spec's conflicting target 1; #314 tracks the confirmed reconciler-to-answer handoff gap.
@@ -327,6 +329,8 @@ Significant product, design and process decisions, newest first. One line each: 
 - 3 Nov: Cloud Run held in reserve; local-first.
 
 ## Changelog
+
+- 3 Nov: Lane C #280 one wallet/many agents: private-file token creation, per-agent caps/pause/revoke, shared policy accounting and principal exports; two MCP clients + SDK spent 0.18 Testnet XRP + 24 drops fees, zero gate violations ([evidence](evidence/agents-280.md)).
 
 - 3 Nov: Lane C #275/#310 issued-currency quotes, policy/SDK/receipts, trust-line/reserve preflight and partial-payment rejection; unsigned denylisted royalty cancellation and caller refunds with audit coverage. Full UC2 writer received 0.90 test USD; 2,500-drop refused royalty returned, reserve zero ([evidence](evidence/rlusd-275-refund-310.md)). No `src/` changes.
 

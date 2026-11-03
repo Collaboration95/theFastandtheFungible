@@ -53,6 +53,10 @@ export async function payAndFetch(url: string, options: PayOptions) {
     if ((attempt.asset ?? 'XRP') === 'XRP' ? BigInt(attempt.amountDrops) > BigInt(options.maxDrops) : !options.issued || JSON.stringify(options.issued.asset) !== JSON.stringify(attempt.asset) || decimalUnits(attempt.amountDrops)! > (decimalUnits(options.issued.maxAmount) ?? -1n)) throw new Error('Stored payment exceeds authority')
     headers.set('PAYMENT-SIGNATURE', attempt.signature)
     const response = await request() // ambiguous failure keeps the same durable blob, never signs again
+    if (!response.ok && !response.headers.get('PAYMENT-RESPONSE')) {
+      await response.body?.cancel()
+      throw new Error(`x402 payment refused (HTTP ${response.status}); retain this intent for recovery`)
+    }
     const receipt = decodeHeader('PAYMENT-RESPONSE', response.headers.get('PAYMENT-RESPONSE'))
     if (!receipt.success || receipt.transaction !== attempt.submission.txHash || receipt.payer !== options.wallet.classicAddress) throw new Error('x402 settlement receipt mismatch; reuse this intent')
     const proof = await verifyPayment(ledger, receipt.transaction, { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', ...attempt })

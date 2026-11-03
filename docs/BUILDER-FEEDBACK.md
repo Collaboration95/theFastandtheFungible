@@ -371,3 +371,5 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
   for demo and clip drivers. Severity: low, recording only. Mainnet impact: none;
   no payment was initiated by the failed take. This is local tooling friction,
   not an observed XRPL/x402 incident.
+
+- **3 Nov 2026, observed in synthetic integration (#280):** x402 `payAndFetch` reported "PAYMENT-RESPONSE header missing" when the service refused an agent's budget before settlement (HTTP 409). Evidence: `tests/hire.test.ts` agent-key/fee-cap case; submit count unchanged. Workaround shipped: classify non-success HTTP refusals explicitly and retain the original signed intent. Suggested fix: buyer tooling should distinguish unpaid policy refusals from malformed settlement receipts without discarding recovery state. Severity: low (diagnostic); mainnet impact: confusing recovery can encourage new intents, so preserving one signed blob matters. The two-agent live Testnet demo itself had no ledger/tooling failure (`docs/evidence/agents-280.md`).

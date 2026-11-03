@@ -13,8 +13,9 @@ implemented and tested in this repository, not approved by anyone.
 | Control | What it does | Where | Verify |
 |---|---|---|---|
 | Spend limits | S$5 per run, S$1 per source, S$20 gross per wallet per UTC day (`WALLET_DAILY_CAP_MINOR`); MCP caps default to zero. Refunds never restore authority. | `server/spend-policy.ts`, [SECURITY](contracts/SECURITY.md#admission-and-operator-controls-286) | `tests/admission.test.ts` |
+| Agent allowances | Per-agent hashed keys, per-call/daily caps under wallet authority, durable pause/revoke, principal attribution and gross spend today/seven days. No separate balance store. | `server/agent-keys.ts`, `server/store.ts`, `npm run agents` | `tests/agent-keys.test.ts`, [Testnet evidence](evidence/agents-280.md) |
 | Pause | `SPENDING_PAUSED=1` or an authenticated `POST /api/wallet/pause` stops new spending. Work already submitted still reconciles; pause never undoes a payment. | `server/store.ts` | audit `pause` entry |
-| Authorization | Only deterministic policy code can start a purchase. The model never holds a key, a cap or a purchase command. API calls need an operator bearer token off loopback. | `server/purchases.ts`, `server/admission.ts` | `npm run gate:audit` |
+| Authorization | Only deterministic policy code can start a purchase. An agent may hold a scoped bearer token, never the payer signing key or a purchase command; operator caps live in policy code. API calls need an operator bearer token off loopback. | `server/purchases.ts`, `server/admission.ts` | `npm run gate:audit` |
 | Audit trail | A hash-chained, append-only `audit_log` of who or what authorised or refused each spend, under which policy, caps, model and version. See below. | `server/audit.ts` | `npm run audit:verify` |
 | Receipt export | One row per charge as CSV or JSONL, labelled Testnet or SIMULATED. | `scripts/audit-export.ts`, `GET /api/audit/receipts.csv` | row-for-row against run snapshots in `tests/audit-scenarios.test.ts` |
 | On-ledger check | `audit:verify --testnet` looks every receipt up on a public Testnet node (destination, delivered amount, InvoiceID, and the refund). Read-only; no key is loaded. | `shared/xrpl.ts` | below |
@@ -109,7 +110,7 @@ Columns: kind, run, intent, surface, principal, policy version,
 writer, payee address, payer, SGD budget minor units, settlement asset, delivered amount and legacy `amountDrops`, transaction hash,
 InvoiceID, ledger index, explorer URL, status, refund transaction, reserved and
 settled times, and a `label`/`network` that says XRPL Testnet or SIMULATED on
-every row. `--log` exports the chain itself.
+every row. `--log` exports the chain itself. `--principal AGENT_ID` filters either export; HTTP receipt exports accept `?principal=AGENT_ID`. Agent tokens cannot export other agents' money records; operator authentication protects exports.
 
 ## Payee screening and sanctions
 

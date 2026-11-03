@@ -20,6 +20,7 @@ export function maskSecrets(data: string, env: NodeJS.ProcessEnv = loadConfig())
     const value = env[name]
     if (value && value.length >= 8) masked = masked.split(value).join(`[${name}]`)
   }
+  masked = masked.replace(/ra_agent_[a-f0-9]{64}/gi, '[REDACTED]')
   return masked.replace(/("?(?:deliveryToken|authorization|x-delivery-token)"?\s*:\s*)"[^"]*"/gi, '$1"[REDACTED]"')
 }
 

@@ -9,7 +9,7 @@ export function auditRouter({ store }: ApiContext) {
   const text = (value: unknown) => typeof value === 'string' ? value : undefined
   router.get(['/api/audit/receipts.csv', '/api/audit/receipts.jsonl'], (req, res) => {
     let rows
-    try { rows = store.receiptRows({ from: text(req.query.from), to: text(req.query.to) }) }
+    try { rows = store.receiptRows({ from: text(req.query.from), to: text(req.query.to), principal: text(req.query.principal) }) }
     catch (error) { res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid range.' }); return }
     const csv = req.path.endsWith('.csv')
     // Every row also carries its own rail label; the header repeats it for tools that only read headers.

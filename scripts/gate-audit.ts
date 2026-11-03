@@ -1,3 +1,5 @@
+import { auditEntries } from '../server/audit.js'
+import { auditAgentAuthority } from '../server/agent-audit.js'
 import { auditHireRecords, type HireAuditRecord } from '../server/hire/audit.js'
 // Read-only audit. Never print evidence bytes, tokens, or private grant payloads.
 import { readFileSync } from 'node:fs'
@@ -8,7 +10,7 @@ import { SIMULATED_LABEL, XRPL_LABEL, type RunSnapshot } from '../shared/contrac
 import type { WriterCorpus } from '../shared/contracts/writers.js'
 import { assertNoLeaks, type Observation } from '../tests/scenarios/harness.js'
 
-export const RULES = ['citation_without_verified_grant', 'duplicate_settlement', 'over_budget', 'purchase_without_policy', 'premium_leak', 'missing_rail_label', 'royalty_policy', 'money_chain_reconciliation', 'escrow_finish_without_verified_proof'] as const
+export const RULES = ['citation_without_verified_grant', 'duplicate_settlement', 'over_budget', 'purchase_without_policy', 'premium_leak', 'missing_rail_label', 'royalty_policy', 'money_chain_reconciliation', 'escrow_finish_without_verified_proof', 'agent_authority'] as const
 export type Rule = typeof RULES[number]
 export type Violation = { rule: Rule; runId: string; evidence: string }
 const charged = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
@@ -97,8 +99,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const db = new DatabaseSync(process.argv[i + 1], { readOnly: true })
   const hasHires = db.prepare("SELECT name FROM sqlite_master WHERE name='hires'").get()
   const hires = hasHires ? db.prepare('SELECT json FROM hires').all().map(r => JSON.parse(String(r.json)) as HireAuditRecord) : []
+  const agentViolations = auditAgentAuthority(auditEntries(db))
   db.close()
   const result = auditRuns(readRuns(process.argv[i + 1]), await loadWriterCorpus(undefined, { allowMini: false }), observations, hires)
+  result.violations.push(...agentViolations)
+  result.total += agentViolations.length
+  result.byRule.agent_authority = agentViolations.length
   console.log(JSON.stringify(result, null, 2))
   if (result.total) process.exitCode = 1
 }

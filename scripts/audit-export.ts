@@ -5,14 +5,14 @@ import { parseArgs } from 'node:util'
 import { DatabaseSync } from 'node:sqlite'
 import { auditEntries, receiptRows, toCsv, toJsonl } from '../server/audit.js'
 
-const { values } = parseArgs({ options: { db: { type: 'string' }, format: { type: 'string', default: 'csv' }, from: { type: 'string' }, to: { type: 'string' }, out: { type: 'string' }, log: { type: 'boolean', default: false } } })
+const { values } = parseArgs({ options: { principal: { type: 'string' }, db: { type: 'string' }, format: { type: 'string', default: 'csv' }, from: { type: 'string' }, to: { type: 'string' }, out: { type: 'string' }, log: { type: 'boolean', default: false } } })
 if (!['csv', 'jsonl'].includes(values.format!)) { console.error('--format must be csv or jsonl'); process.exit(2) }
 const path = values.db ?? process.env.APP_DB ?? 'data/app.db'
 let db: DatabaseSync
 try { db = new DatabaseSync(path, { readOnly: true }) } catch { console.error(`Cannot open ${path} (read-only). Pass --db <path>.`); process.exit(2) }
 try {
-  const range = { from: values.from, to: values.to }
-  const body = values.log ? toJsonl(auditEntries(db, range)) : values.format === 'jsonl' ? toJsonl(receiptRows(db, range)) : toCsv(receiptRows(db, range))
+  const range = { from: values.from, to: values.to, principal: values.principal }
+  const body = values.log ? toJsonl(auditEntries(db, range).filter(row => !values.principal || row.principal === values.principal)) : values.format === 'jsonl' ? toJsonl(receiptRows(db, range)) : toCsv(receiptRows(db, range))
   if (values.out) { writeFileSync(values.out, body); console.error(`Wrote ${values.out} (${values.log ? 'audit chain, JSONL' : values.format}). Rows are labelled XRPL TESTNET or SIMULATED; nothing here is a regulated record.`) }
   else process.stdout.write(body)
 } catch (error) { console.error(error instanceof Error ? error.message : 'Export failed'); process.exit(2) }

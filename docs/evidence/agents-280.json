@@ -1,0 +1,114 @@
+{
+  "label": "XRPL TESTNET · no real value; SYNTHETIC corpus and fixture research/decisions; real stdio MCP clients, SDK and product payment path. No Claude model invoked.",
+  "observedAt": "2026-11-03T03:24:53.138Z",
+  "payer": "rwi1i3TJfZKmLWoAiNkXUBZmdWVGFxBNRQ",
+  "wallet": {
+    "spentMinor": 180,
+    "reservedMinor": 0,
+    "dailyMinor": 600,
+    "paused": false,
+    "label": "Spending enabled",
+    "policyVersion": "wallet-v1"
+  },
+  "agents": [
+    {
+      "id": "4cad9cb4-8880-42d5-a90f-a878fcf6ddbf",
+      "name": "MCP A",
+      "maxMinor": 100,
+      "dailyMinor": 100,
+      "paused": true,
+      "revoked": true,
+      "createdAt": "2026-11-03T03:19:00.851Z",
+      "spentMinor": 90,
+      "reservedMinor": 0,
+      "spent7DaysMinor": 90,
+      "rails": [
+        "XRPL TESTNET · no real value"
+      ]
+    },
+    {
+      "id": "a435e555-8c63-4eec-85ae-d443b0d90dff",
+      "name": "SDK and MCP B",
+      "maxMinor": 200,
+      "dailyMinor": 300,
+      "paused": false,
+      "revoked": false,
+      "createdAt": "2026-11-03T03:19:00.851Z",
+      "spentMinor": 90,
+      "reservedMinor": 0,
+      "spent7DaysMinor": 90,
+      "rails": [
+        "XRPL TESTNET · no real value"
+      ]
+    }
+  ],
+  "transactions": [
+    {
+      "principal": "4cad9cb4-8880-42d5-a90f-a878fcf6ddbf",
+      "hash": "281E67C5ECA6E401DD08FEA881E75D950782F58A3F97ABD4881DBCA6F0F2B4C3",
+      "amountDrops": "90000",
+      "ledgerIndex": 22027168,
+      "result": "tesSUCCESS",
+      "feeDrops": "12"
+    },
+    {
+      "principal": "a435e555-8c63-4eec-85ae-d443b0d90dff",
+      "hash": "14E5B2F51BBDE4B3707413375BC3F913703A52E4808CDB6DAE81A49857812970",
+      "amountDrops": "90000",
+      "ledgerIndex": 22027170,
+      "result": "tesSUCCESS",
+      "feeDrops": "12"
+    }
+  ],
+  "totalPrincipalDrops": 180000,
+  "feeDrops": 24,
+  "demo": {
+    "mcpA": {
+      "runId": "afe625d0-6cb0-43fb-a484-48306c2932b4",
+      "budgetMinor": 100,
+      "spentMinor": 90
+    },
+    "sdkB": {
+      "runId": "1d41ec1a-f21f-4707-ae6d-ee6e0ae25a91",
+      "budgetMinor": 200,
+      "spentMinor": 90
+    },
+    "mcpBRetrySameRun": true,
+    "revokedANewAdmissionBlocked": true
+  },
+  "gateAudit": {
+    "runs": 2,
+    "observations": 0,
+    "violations": [],
+    "total": 0,
+    "byRule": {
+      "citation_without_verified_grant": 0,
+      "duplicate_settlement": 0,
+      "over_budget": 0,
+      "purchase_without_policy": 0,
+      "premium_leak": 0,
+      "missing_rail_label": 0,
+      "royalty_policy": 0,
+      "money_chain_reconciliation": 0,
+      "escrow_finish_without_verified_proof": 0,
+      "agent_authority": 0
+    }
+  },
+  "agentAuthorityViolations": [],
+  "auditChain": {
+    "ok": true,
+    "entries": 22,
+    "head": {
+      "seq": 22,
+      "hash": "278d91e279b0cc59368ad68c10f22ec127a7c32e2145972e954d73f1a263ee15"
+    },
+    "failures": [],
+    "coverage": {
+      "receipts": 2,
+      "signed": 2,
+      "refunds": 0,
+      "payouts": 0,
+      "inbound": 0
+    }
+  }
+}

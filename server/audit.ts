@@ -28,7 +28,7 @@ const entryHash = (seq: number, at: string, prev: string, runId: string | null, 
   sha256(JSON.stringify([seq, at, prev, runId, intentId, surface, principal, kind, data]))
 
 const FORBIDDEN_KEYS = new Set(['body', 'spans', 'contents', 'content', 'passages', 'bytes', 'token', 'deliverytoken', 'seed', 'secret', 'privatekey', 'apikey', 'authorization', 'txblob', 'signedtxblob', 'blob', 'question', 'salt', 'salts'])
-const SEED_LIKE = /(?:^|[^A-Za-z0-9])(?:sEd[1-9A-HJ-NP-Za-km-z]{20,}|s[1-9A-HJ-NP-Za-km-z]{25,33})(?:$|[^A-Za-z0-9])|Bearer\s+\S+/
+const SEED_LIKE = /(?:^|[^A-Za-z0-9])(?:sEd[1-9A-HJ-NP-Za-km-z]{20,}|s[1-9A-HJ-NP-Za-km-z]{25,33})(?:$|[^A-Za-z0-9])|Bearer\s+\S+|ra_agent_[a-f0-9]{64}/
 /** Fail closed: an entry that could carry a secret, premium bytes or the question is never written (the state change rolls back). */
 export function assertSafe(value: unknown, path = 'data'): void {
   if (Array.isArray(value)) { value.forEach((v, i) => assertSafe(v, `${path}[${i}]`)); return }
@@ -213,7 +213,7 @@ function checkCoverage(db: DatabaseSync, entries: AuditEntry[], result: ChainRes
   }
 }
 
-export type DateRange = { from?: string; to?: string }
+export type DateRange = { principal?: string; from?: string; to?: string }
 /** `to` as a bare date is inclusive of that whole day. */
 export function parseRange(range: DateRange): { from?: number; to?: number } {
   const parse = (value: string | undefined, end: boolean) => {
@@ -283,7 +283,7 @@ export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow
     return hire(p.kind, String(row.run_id), p.id, { writer: p.kind === 'royalty' ? p.id.split(':royalty:')[1] ?? '' : '', payee: p.payTo, amountDrops: p.amountDrops, amountMinor: '',
       txHash: p.submission.txHash, invoiceId: ledgerInvoiceId(p.id), ledgerIndex: p.ledgerIndex ?? '', explorerUrl: explorer(p.submission.txHash), status: p.confirmedAt ? 'CONFIRMED' : 'SIGNED_UNCONFIRMED', settledAt: p.confirmedAt ?? '' })
   })
-  return [...purchases, ...inbound, ...payouts]
+  return [...purchases, ...inbound, ...payouts].filter(row => !range.principal || row.principal === range.principal)
 }
 
 /** RFC 4180 quoting, plus a leading apostrophe on cells a spreadsheet would execute (writer-controlled text is untrusted). */

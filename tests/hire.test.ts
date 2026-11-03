@@ -213,3 +213,31 @@ it.each(['purchase', 'royalty'] as const)('refunds unspent %s after denylist ref
   const replay = await payAndFetch(s.url, { ...s.opts, fetch: (url, init) => fetch(String(url).replace(new URL(s.url).origin, `http://127.0.0.1:${(server.address() as AddressInfo).port}`), init) })
   expect(await replay.response.json()).toEqual(result); expect(s.chain.submits).toBe(submits)
 }, 30000)
+
+
+it('scopes hired callers to agent keys, counts fees beneath caps and attributes every money row', async () => {
+  const s = await setup()
+  const a = s.api.store.addAgent({ name: 'Hire A', maxMinor: 220, dailyMinor: 220 })
+  const b = s.api.store.addAgent({ name: 'Hire B', maxMinor: 220, dailyMinor: 220 })
+  const opts = { ...s.opts, headers: { ...s.opts.headers, Authorization: `Bearer ${a.token}` } }
+  const first = await payAndFetch(s.url, opts)
+  const result = await first.response.json()
+  expect(result.phase).toBe('DONE')
+  expect(s.api.store.runPrincipal(result.run_id)).toMatchObject({ surface: 'agent', principal: a.id })
+  const rows = s.api.store.receiptRows({ principal: a.id })
+  expect(rows.map(r => r.kind)).toEqual(expect.arrayContaining(['inbound', 'purchase', 'royalty', 'change']))
+  expect(rows.every(r => r.principal === a.id)).toBe(true)
+  expect(s.api.store.agentStatus(a.id).spentMinor).toBeLessThanOrEqual(220)
+  expect(s.api.store.agentStatus(b.id)).toMatchObject({ spentMinor: 0, reservedMinor: 0 })
+  const quote = await fetch(s.url, { method: 'POST', headers: { ...s.headers, Authorization: `Bearer ${b.token}`, 'Idempotency-Key': 'hire-test' }, body: s.body })
+  expect(quote.status).toBe(402) // same user key, distinct agent-bound invoice
+  const cap = s.api.store.addAgent({ name: 'Too small', maxMinor: 200, dailyMinor: 200 })
+  const before = s.chain.submits
+  let refusalStatus = 0
+  await expect(payAndFetch(s.url, { ...s.opts, idempotencyKey: 'under-cap', headers: { ...s.headers, Authorization: `Bearer ${cap.token}` }, fetch: async (url, init) => { const r = await fetch(url, init); refusalStatus = r.status; return r } })).rejects.toThrow('x402 payment refused (HTTP 409); retain this intent for recovery')
+  expect(refusalStatus).toBe(409)
+  expect(s.chain.submits).toBe(before) // the service fee fits under per-call authority too
+  s.api.store.setAgentPaused(a.id, true, true)
+  const revoked = await fetch(s.url, { method: 'POST', headers: { ...opts.headers, 'Idempotency-Key': 'new' }, body: s.body })
+  expect(revoked.status).toBe(401)
+})
