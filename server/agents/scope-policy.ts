@@ -25,34 +25,42 @@ export function scopeContradiction(requirement: string, candidate: PublicCandida
 // Unknown keys/unsigned menus retain the existing model estimate. A known key
 // needs a compatible entry; broad topic proximity cannot stand in for its scope.
 const factKeys = [
-  // Wafer economics must at least promise semiconductor scope. Coarse menus
-  // may select margin/prepayment rather than price; do not call that absence
-  // a contradiction when the title or signed entity establishes the domain.
-  { need: /\bwafer\b.*\b(?:prices?|pricing|costs?|quote)\b|\b(?:prices?|pricing|costs?|quote)\b.*\bwafer\b/i, offer: /\bwafers?\b|\bfoundr(?:y|ies)\b|\bTSMC\b|\bKestrel\b|\bsemiconductors?\b/i },
   { need: /\bcapex\b|capital (?:expenditure|spending)/i, offer: /\bcapex\b|investment|\bcost(?:s|ing)?\b|capital (?:expenditure|spending)/i },
   { need: /\bcapacity\b/i, offer: /\bcapacity\b/i },
   { need: /\blead[- ]times?\b/i, offer: /\blead[- ]times?\b|\ballocation\b/i },
   { need: /\bissuance\b/i, offer: /\bissuance\b|\bbonds?\b/i },
 ]
-const subjects = ['CoWoS', 'HBM', 'QFN', 'BGA', 'Kestrel', 'TSMC']
+// Proper names/acronyms come from the request, never a corpus entity list.
+// Mixed-case and uppercase technical names outrank ordinary company/place names.
+const questionWords = new Set(['The', 'What', 'Which', 'How', 'When', 'Where', 'Give', 'State', 'Report', 'In', 'For', 'Compare', 'Analysts', 'No', 'Basic', 'Corporate', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])
+function namedSubjects(text: string): string[] {
+  const names = (text.match(/\b[A-Z][A-Za-z]+\b/g) ?? []).filter(w => !questionWords.has(w) && !countries.flat().includes(w))
+  const mixedCase = names.filter(w => /[a-z][A-Z]/.test(w))
+  const technical = mixedCase.length ? mixedCase : names.filter(w => /^[A-Z]{2,}$/.test(w))
+  return technical.length ? technical : names
+}
+const small = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
+const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+const numberWords = (n: number) => n < 20 ? small[n] : tens[Math.floor(n / 10)] + (n % 10 ? ' ' + small[n % 10] : '')
+function periodMatches(period: string, year: string): boolean {
+  const n = Number(year)
+  const words = numberWords(Math.floor(n / 100)) + ' ' + (n % 100 ? numberWords(n % 100) : 'hundred')
+  return mentionsMenuPhrase(period, year) || mentionsMenuPhrase(period, words)
+}
 export function factMenuMismatch(requirement: string, candidate: PublicCandidate): boolean {
   if (!verifiedMenuManifest(candidate)) return false
   const menu = signedFactMenu(candidate)
   const key = factKeys.find(k => k.need.test(requirement))
-  if (!key) return false
-  const named = subjects.filter(s => mentionsMenuPhrase(requirement, s))
-  const specific = named.filter(s => ['CoWoS', 'HBM', 'QFN', 'BGA'].includes(s))
-  const requested = specific.length ? specific : named
-  // Alternatives (QFN and BGA; Kestrel and peers) may be represented by one
-  // subject in today's coarse menus. A menu entry must share at least one;
-  // this is a necessary check, never a claim of complete semantic coverage.
-  const year = requirement.match(/\b20(?:2[3-9]|30)\b/)?.[0]
+  const priced = /\bprices?\b|\bpricing\b|\bcosts?\b|\bquote\b/i.test(requirement)
+  if (!key && !priced) return false
+  const requested = namedSubjects(requirement)
+  // Coarse price menus may promise a different metric for the same entity.
+  // Reject only explicit entity mismatch; no wafer/domain synonyms or writer IDs.
+  if (!key) return requested.length > 0 && menu.length > 0
+    && !requested.some(s => mentionsMenuPhrase(`${candidate.title} ${menu.map(f => f.entity).join(' ')}`, s))
+  const year = requirement.match(/\b(?:19|20|21)\d{2}\b/)?.[0]
   const dated = Boolean(year || /\bwith (?:its|the|a) date\b|\bdated\b/i.test(requirement))
-  const yearWords: Record<string, string> = { '2023': 'twenty twenty three', '2024': 'twenty twenty four', '2025': 'twenty twenty five', '2026': 'twenty twenty six', '2027': 'twenty twenty seven', '2028': 'twenty twenty eight', '2029': 'twenty twenty nine', '2030': 'twenty thirty' }
-  return !menu.some(f => {
-    const scope = `${candidate.title} ${f.entity}`
-    return key.offer.test(`${f.entity} ${f.measure} ${candidate.title}`)
-      && (!requested.length || requested.some(s => mentionsMenuPhrase(scope, s)))
-      && (!dated || Boolean(f.period && (!year || mentionsMenuPhrase(f.period, yearWords[year]))))
-  })
+  return !menu.some(f => key.offer.test(`${f.entity} ${f.measure} ${candidate.title}`)
+    && (!requested.length || requested.some(s => mentionsMenuPhrase(`${candidate.title} ${f.entity}`, s)))
+    && (!dated || Boolean(f.period && (!year || periodMatches(f.period, year)))))
 }

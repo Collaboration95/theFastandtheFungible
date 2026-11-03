@@ -3,14 +3,14 @@ import { once } from 'node:events'
 import { join } from 'node:path'
 import { createPublisherApp } from '../../publisher/routes.js'
 import { createApiApp } from '../../server/routes.js'
-import { loadWriterCorpus } from '../../publisher/corpus.js'
+import { loadWorld } from '../decisions/world.js'
 import { FixtureDecisionProvider } from '../../server/agents/decision.js'
 import { productionProvider } from '../decisions/providers/production.js'
 import { enableLive } from '../decisions/transport.js'
 
 const dir = process.argv[2], live = process.argv.includes('--live')
 if (live) enableLive()
-const publisher = createPublisherApp({ writers: await loadWriterCorpus(undefined, { allowMini: false }), journal: join(dir, 'publisher.db'), secret: 'scorecard-local-fixture', rail: 'simulated', env: {} })
+const publisher = createPublisherApp({ writers: (await loadWorld()).corpus, journal: join(dir, 'publisher.db'), secret: 'scorecard-local-fixture', rail: 'simulated', env: {} })
 await publisher.locals.ready
 const ps = publisher.listen(0, '127.0.0.1')
 await once(ps, 'listening')

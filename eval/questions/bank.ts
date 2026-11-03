@@ -37,12 +37,13 @@ export type Bank = z.infer<typeof BankSchema>
 /** The article fields the bank checks against; everything else in an article file is ignored. */
 export type BankArticle = { articleId: string; version: string; publisherSlug: string; tier: 'FREE' | 'PAID'; priceMinor: number; title: string; derivedFrom?: string; passages: { id: string; text: string }[] }
 
-export const loadBank = (file = BANK_FILE): Bank => BankSchema.parse(JSON.parse(readFileSync(file, 'utf8')))
+export const loadBank = (file = process.env.EVAL_BANK_FILE ?? BANK_FILE): Bank => BankSchema.parse(JSON.parse(readFileSync(file, 'utf8')))
 
 /** Every article under data/corpus/v2/articles, by id. */
 export function loadArticles(dir = ARTICLES_DIR): Map<string, BankArticle> {
   const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter(f => f.endsWith('.json')).sort()
-  return new Map(files.map(f => JSON.parse(readFileSync(join(dir, f), 'utf8')) as BankArticle).map(a => [a.articleId, a]))
+  const extra = dir === ARTICLES_DIR && process.env.EVAL_FRESH_CORPUS ? [...loadArticles(process.env.EVAL_FRESH_CORPUS)] : []
+  return new Map([...extra, ...files.map(f => JSON.parse(readFileSync(join(dir, f), 'utf8')) as BankArticle).map(a => [a.articleId, a] as const)])
 }
 
 /** Tolerant matching: case, dash variants, non-breaking and thin spaces, and runs of whitespace are ignored. */
