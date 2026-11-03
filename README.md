@@ -29,6 +29,19 @@
 
 <!-- TODO(pass 2; #270 and `make clip` are merged): hero GIF of the local app, a 15–20 s refund scene under 4 MB from `make clip`, committed under docs/media/ -->
 
+## Mac app
+
+Download the Apple Silicon DMG from [Releases](https://github.com/Collaboration95/theFastandtheFungible/releases),
+drag ResearchAgent to Applications, and open it. The unsigned build may need
+Finder → right-click → Open (or Privacy & Security → Open Anyway). The default
+judge mode works offline without keys and visibly labels payments SIMULATED.
+Use ⌘K for commands and ⌘, for desktop settings, Testnet wallet creation and
+Keychain provider credentials. Remote backends are disabled pending #286 auth.
+Seeds are encrypted in the macOS Keychain at rest and present in engine memory
+while signing. [Desktop guide](desktop/README.md) · [Build/signing](desktop/SIGNING.md).
+From source: `OFFSET=900 make app` or `OFFSET=900 make dmg`.
+
+
 > The writers and their articles are **fictional**, and payments settle on the **XRPL Testnet**: no real money moves.
 
 ## Try it in Claude Code

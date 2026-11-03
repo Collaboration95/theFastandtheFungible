@@ -1,7 +1,8 @@
 # ResearchAgent security posture
 
 Design: [FINAL-PUSH.md](../FINAL-PUSH.md) (D3–D7, §8–§9). The controls below are built; fixture and stub tests establish bounded behaviour,
-not a claim that live models resist every injection.
+not a claim that live models resist every injection. Desktop implementation and
+live-evidence limits are specified separately below.
 
 - Source text is treated as quoted, untrusted evidence; it is never executed
   as instructions.
@@ -32,6 +33,42 @@ not a claim that live models resist every injection.
 - `XRPL_PAYER_SEED` is server-only and must stay in the ignored local `.env`;
   never copy it into `.env.example`, the client bundle, logs, or persisted run
   data. A receiver secret is not needed to receive a Payment.
+
+## macOS desktop boundary (#259)
+
+The desktop app never loads the clone's `.env`. Offline fixture mode needs no
+credentials and makes no provider/ledger calls. The bundled Node engine runs in
+an Electron utility process (with its existing isolated worker); both API and
+publisher listen on random `127.0.0.1` ports. The desktop API checks Host and
+rejects foreign Origin requests. This is local, single-user isolation, not API
+authentication against other programs running as the same macOS user. Remote
+engine/publisher settings remain disabled until #286 provides token auth.
+
+Windows load only bundled `app://researchagent` content. Context isolation,
+renderer sandboxing, no Node integration, strict script/connect CSP, denied
+permissions/popups and navigation controls constrain the renderer. A main-process
+protocol proxy reuses the existing UI contracts; the typed SDK handles wallet
+status and the packaged MCP adapter. Only the Settings window's top frame may
+invoke the narrow desktop IPC operations. The research renderer receives no
+seeds or provider keys. Paid passages reach it only after engine grants.
+
+Seed records and provider/token credentials are macOS Keychain generic passwords
+under service `ResearchAgent`. `security -i` receives writes over stdin, never
+credential-bearing argv. Credentials are base64-encoded records (not encryption
+by themselves); Keychain supplies encryption at rest. Live startup reads them
+into main memory and passes an allowlisted environment to the utility process
+and worker. Signing objects retain plaintext in memory; JavaScript cannot
+guarantee zeroisation. User-entered provider credentials also briefly exist in
+the dedicated Settings renderer. Nothing promises that the seed never leaves
+Keychain at runtime.
+
+There is no arbitrary seed import: seeds contain no network identifier.
+Wallet creation funds only Testnet and ledger endpoints are restricted to
+`*.rippletest.net`. Fixture and Testnet stores are separate. Non-secret preferences,
+SQLite stores, granted evidence and receipts live in Application Support.
+MCP caps and the desktop pause are implemented; a wallet-wide shared cap/pause is
+#286. Unsigned local installation and offline smoke do not prove live settlement,
+Developer ID signing, notarisation or a human usability judgment.
 - Publisher keys are needed at runtime to sign manifests and refunds. They are
   server-only, and never logged, traced, persisted in run data, or sent to a
   model.

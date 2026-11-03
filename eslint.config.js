@@ -10,6 +10,8 @@ export default tseslint.config(
       '.playwright/**',
       'coverage/**',
       'dist/**',
+      'desktop/dist/**',
+      'desktop/out/**',
       'node_modules/**',
       'playwright-report/**',
       'test-results/**',

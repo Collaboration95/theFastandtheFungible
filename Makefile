@@ -6,6 +6,19 @@ PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$
 DOCTOR := node --import tsx scripts/doctor.mjs
 
 .DEFAULT_GOAL := help
+.PHONY: app dmg desktop-smoke
+app: ## native Mac app, offline fixture default; desktop settings Cmd+,
+	node desktop/download.mjs
+	node desktop/build.mjs
+	node node_modules/electron/cli.js desktop/dist
+
+dmg: ## build Apple Silicon DMG; auto-sign and notarise when Developer ID is available
+	node desktop/download.mjs
+	node desktop/build.mjs --dmg
+
+desktop-smoke: ## installed Mac app: offline UC1-UC3, security, screenshot and cold-start metrics
+	node desktop/smoke.mjs
+
 .PHONY: help setup run live fault reset check verify doctor keys preflight ports kill langfuse-dashboard wallets embeddings docker-build docker-run docker-live docker-down docker-logs corpus smoke
 
 help: ## list targets
