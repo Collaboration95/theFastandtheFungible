@@ -1,4 +1,4 @@
-# Final combined-source validation
+# Packaged validation after SDK integration
 
 After SDK PR #333 merged, the lane rebased cleanly onto 7888293. The final runtime
 adds a 120-second x64 engine startup allowance for slow Rosetta startup (arm64
@@ -264,3 +264,21 @@ been exercised. GitHub CLI must be available on the launched app PATH for checks
   ]
 }
 ```
+
+## Later integration and legacy smoke
+
+Main advanced again with #336 (provider reliability). The lane rebased onto
+`d3c4b36`, resolving only the append conflict in BUILDER-FEEDBACK while retaining
+both entries. The DMG measurements above remain pinned to the SDK-integrated
+runtime before that later rebase; they are not relabelled as #336 artifact tests.
+
+The broader packaged `make desktop-smoke` passed UC1 (0 cents), UC2 (90 cents,
+one grant), UC3 (70 cents net, 30 refunded, two grants), HTML report, Settings,
+renderer isolation, Host/Origin rejection, no secret-canary leakage and listener
+shutdown. Its old selectors needed maintenance: Go now → Start now, uppercase
+SIMULATED → case-insensitive simulated label, removed .ra-odo → exact visible
+budget/remaining text, and opening Export before Download report. No spending,
+refund, grant, isolation or numeric assertion was dropped or weakened.
+
+A scan of both packaged application resource trees (18,538 files) found none
+of the nontrivial credential values from the local .env. No values were logged.

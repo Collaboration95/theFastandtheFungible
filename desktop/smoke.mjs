@@ -53,9 +53,9 @@ try {
     await page.getByRole('button', { name: preset }).click()
     await page.getByRole('button', { name: /^Ask/ }).click()
     if (index === 1) await page.getByRole('button', { name: 'pricing & margins' }).click()
-    await page.getByRole('button', { name: 'Go now' }).click()
+    await page.getByRole('button', { name: 'Start now' }).click()
     await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
-    await expect(page.getByText(/SIMULATED/).first()).toBeVisible()
+    await expect(page.getByText(/simulated/i).first()).toBeVisible()
     const list = await page.evaluate(async () => (await fetch('/api/runs')).json())
     const run = await page.evaluate(async id => (await fetch(`/runs/${id}`)).json(), list[0].runId)
     expect(run.answers.length).toBeGreaterThan(0)
@@ -63,9 +63,10 @@ try {
     if (index === 1) { expect(run.spentMinor).toBeGreaterThan(0); expect(run.grants.length).toBeGreaterThan(0) }
     if (index === 2) { expect(run.refundedMinor).toBeGreaterThan(0); expect(run.intents.some(intent => intent.status === 'REFUNDED')).toBe(true) }
     runs.push({ useCase: `UC${index + 1}`, phase: run.phase, spentMinor: run.spentMinor, refundedMinor: run.refundedMinor, grants: run.grants.length })
-    await expect(page.locator('.ra-odo')).toHaveText(`S$${((run.budgetMinor - run.spentMinor - run.reservedMinor) / 100).toFixed(2)}`)
+    await expect(page.getByRole('complementary', { name: 'Budget and purchases' }).getByText(`S$${(run.budgetMinor / 100).toFixed(2)} budget · S$${((run.budgetMinor - run.spentMinor - run.reservedMinor) / 100).toFixed(2)} left`, { exact: true })).toBeVisible()
     await page.screenshot({ animations: 'disabled', path: `desktop/evidence/uc${index + 1}.png` })
   }
+  await page.getByText('Export ⋯', { exact: true }).click()
   const reportReady = app.waitForEvent('window')
   await page.getByRole('button', { name: /Download report/ }).click()
   const report = await reportReady
