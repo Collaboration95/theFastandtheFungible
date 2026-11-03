@@ -26,7 +26,7 @@ export function admissionGuard(config: Config): RequestHandler {
     const origin = req.get('Origin')
     if (origin && origin !== webOrigin) { res.status(403).json({ error: 'Origin is not allowed.' }); return }
     const path = req.path.toLowerCase().replace(/\/+$/, '')
-    const protectedRoute = !['GET', 'HEAD', 'OPTIONS'].includes(req.method) || path.startsWith('/api/mcp/') || path === '/api/metrics' || (path === '/api/health' && req.query.deep === '1')
+    const protectedRoute = !['GET', 'HEAD', 'OPTIONS'].includes(req.method) || path.startsWith('/api/mcp/') || path.startsWith('/api/audit/') || path === '/api/metrics' || (path === '/api/health' && req.query.deep === '1')
     const tokenOnly = path === '/api/wallet/pause'
     if (!protectedRoute) { next(); return }
     const supplied = req.get('Authorization')?.match(/^Bearer (.+)$/i)?.[1]

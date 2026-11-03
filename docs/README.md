@@ -18,6 +18,8 @@ Ripple-track criteria.
 - [Design](contracts/DESIGN.md): visual system, layout and content rules.
 - [Security](contracts/SECURITY.md): secrets, access, settlement, manifests and
   refunds.
+- [Compliance posture](COMPLIANCE.md): custody, audit trail and export,
+  payee denylist, retention, and what we do not claim.
 
 ## Reference
 

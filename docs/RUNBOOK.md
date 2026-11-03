@@ -107,6 +107,26 @@ then unpause using the pause endpoint with `{"paused":false}`. If an old
 payment is unresolved, retain its original configuration and journal until
 resolved; do not rotate away its reconciliation identity.
 
+## Audit trail, export and retention
+
+`npm run audit:verify` re-checks the hash chain and that every receipt, signed
+payment and refund has its audit entry (read-only; safe while the engine runs).
+Add `--testnet` to look each transaction up on a public Testnet node. Exit 1
+means tampering or a mismatch and names the `seq`; do not prune or restore until
+you know why. Note the printed head hash somewhere the database owner cannot
+write, and pass it back with `--expect-head <hash>` to catch truncation.
+
+`npm run audit:export -- --format csv --from 2026-11-01 --out receipts.csv`
+writes one row per charge; `--log` exports the chain. The same CSV and JSONL are
+at `GET /api/audit/receipts.csv|.jsonl` with the bearer token.
+
+`npm run data:prune -- --older-than 30d --dry-run` shows what would go. Without
+`--dry-run` it deletes premium bodies, salts, events and question text of old
+finished runs and report files, then compacts the database. Take a copy first
+(next section); pruning cannot be undone. A payee denylist is a JSON array of
+`{ "address", "reason" }` in `data/payee-denylist.json`; edits apply to the next
+purchase, and a malformed file blocks all purchases.
+
 ## Restore data from a copy
 
 Pause and drain/stop all API, desktop, MCP and publisher processes before taking
@@ -116,7 +136,8 @@ Restore to a separate directory and configure APP_DB/PUBLISHER_DB/REPORT_DIR
 (or RA_DATA_DIR for MCP). Keep the original intact. Start a single engine,
 inspect deep health and reconciliation, then unpause. Never restore an older
 buyer DB against a newer journal and assume it is safe to spend: compare stored
-hashes with ledger history first. A backup restores state, not a proof of no
+hashes with ledger history first, and run `npm run audit:verify -- --testnet` on
+the restored copy. A backup restores state, not a proof of no
 charge. `drain()` stops ticks and waits for active reconciliation and jobs;
 `close()` also drains purchase work before closing the database/ledger.
 

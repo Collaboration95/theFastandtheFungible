@@ -105,6 +105,27 @@ wallet status (`wallet.paused`) and the web wallet label. Resume uses
 `{"paused":false}` but cannot override the environment switch. Work already
 SUBMITTING still reconciles; pause never claims to undo a payment.
 
+## Audit trail, payee denylist and retention (#288)
+
+`server/audit.ts` keeps an append-only, hash-chained `audit_log` in `app.db`,
+written inside the same `Store` transaction as each admission, decision,
+reservation, signature, settlement, delivery, proof, challenge, refund,
+refusal and pause (and a `policy` entry whenever the caps change between
+boots). Entries hold hashes, ids, figures and reasons, never premium bytes,
+salts, seeds, tokens, signed blobs or the question (stored as a per-run salted
+hash); `assertSafe` rejects such keys and secret-shaped values, and a failed
+append rolls the change back. `npm run audit:verify` recomputes the chain and
+cross-checks the money tables; `--testnet` re-reads each payment and refund on a
+public Testnet node, read-only. Export routes under `/api/audit/` are
+token-guarded like `/api/metrics`.
+
+The payee denylist (`data/payee-denylist.json`) is consulted by
+`PurchaseManager` before any payment is signed; a hit, or an unreadable list,
+refuses with nothing charged. It is an operator denylist, not sanctions screening.
+`npm run data:prune` deletes premium bodies, salts, events and question text of
+old finished runs and keeps receipts and the chain. Limits and the full posture:
+[COMPLIANCE.md](../COMPLIANCE.md).
+
 ## Authentication contract (web, SDK, MCP and native app)
 
 - `RA_API_TOKEN` is a bearer secret. When set, every mutating route (including

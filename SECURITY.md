@@ -29,4 +29,5 @@ Details are in [docs/contracts/SECURITY.md](docs/contracts/SECURITY.md): source 
 is untrusted evidence, the server alone enforces the budget and signs payments, both
 sides restrict ledger access to Testnet, and writer manifests are signed with the
 payee key. Local storage is demo-grade SQLite; add authentication, encryption and a
-managed database before any production use.
+managed database before any production use. What is and isn't compliant, the tamper-evident audit trail and data
+retention are in [docs/COMPLIANCE.md](docs/COMPLIANCE.md).
