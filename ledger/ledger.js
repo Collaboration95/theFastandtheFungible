@@ -67,7 +67,7 @@ export async function refresh(rows, Socket = WebSocket, update = () => {}) {
     }
   }))
 }
-if (typeof document !== 'undefined') {
+if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   const data = await (await fetch('transactions.json')).json()
   const cells = new Map()
   document.querySelector('#rows').replaceChildren()
@@ -75,7 +75,7 @@ if (typeof document !== 'undefined') {
     const tr = document.createElement('tr')
     const amount = row.deliveredAmount ?? row.amountDrops ?? 'principal amount not recorded in this evidence'
     for (const text of [`${row.group}: ${row.operation ?? row.kind} · ${row.date}`, `${typeof amount === 'object' ? amount.value + ' RLUSD · issuer ' + amount.issuer : amount + (row.deliveredAmount || row.amountDrops ? ' drops' : '')} · fee ${row.feeDrops} drops`]) { const td = document.createElement('td'); td.textContent = text; tr.append(td) }
-    const source = document.createElement('td'); const a = document.createElement('a'); a.href = 'https://github.com/Collaboration95/theFastandtheFungible/blob/f3902008b4be14d60f154fa6db3ba5c1dbe65943/' + row.source; a.textContent = `Ledger ${row.ledgerIndex} · committed source`; source.append(a); tr.append(source)
+    const source = document.createElement('td'); const a = document.createElement('a'); a.href = 'https://github.com/Collaboration95/theFastandtheFungible/blob/' + (row.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943') + '/' + row.source; a.textContent = `Ledger ${row.ledgerIndex} · committed source`; source.append(a); tr.append(source)
     const td = document.createElement('td'); const link = document.createElement('a'); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.textContent = row.hash; const state = document.createElement('span'); state.className='state'; state.textContent='Historical; not freshly verified'; td.append(link,state); cells.set(row.hash,state); tr.append(td); document.querySelector('#rows').append(tr)
   }
   document.querySelector('caption').textContent = `${data.rows.length} curated transactions · snapshot ${data.snapshotDate}`
