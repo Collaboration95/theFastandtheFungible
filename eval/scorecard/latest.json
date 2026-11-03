@@ -1,11 +1,11 @@
 {
   "schema": "tftf.scorecard/v1",
-  "at": "2026-11-03T02:17:24.180Z",
+  "at": "2026-11-03T02:52:48.039Z",
   "split": "heldout",
-  "policy": "receipt-value/v1",
+  "policy": "receipt-value/v1+scope/v1",
   "worktreeDirty": true,
-  "commit": "084707122bb7a414136e1878e21538e8e92f9b75",
-  "inputHash": "d80e943714ab444fb4bca98e3e25fe22342ecd76480d824e3f2e5dba9440af48",
+  "commit": "3e3dc65812d9f4bcae748f4e07ff9c87db5954c1",
+  "inputHash": "3fe6e7d414923bed57fbfd6aa08ad2ef2f6fa2e1599e957b9fde7559147c90ac",
   "mode": "LIVE",
   "labels": {
     "search": "keyword only (embeddings unavailable)",
@@ -19,68 +19,127 @@
     "boot": "booted demo API + publisher (fresh child process; module load included)"
   },
   "quality": {
-    "wastedSpendPct": 35.483870967741936,
-    "selectionF1Flow": 0.625,
-    "selectionF1Sweep": 0.6666666666666666,
-    "supportedFactUpliftPts": 15.384615384615385,
-    "falseCompleteRate": 0.05263157894736842
+    "wastedSpendPct": 52.87162162162162,
+    "selectionF1Flow": 0.5299145299145299,
+    "selectionF1Sweep": 0.6601941747572816,
+    "supportedFactUpliftPts": 32.608695652173914,
+    "falseCompleteRate": 0
+  },
+  "confidenceIntervals": {
+    "method": "source-family cluster percentile bootstrap, 95%; conditional on fixed corpus and model draws",
+    "seed": 700,
+    "repeats": 2000,
+    "clusters": 20,
+    "questions": 92,
+    "intervals": {
+      "wastedSpendPct": {
+        "low": 28.30188679245283,
+        "high": 73.30552659019813,
+        "validReplicates": 2000
+      },
+      "selectionF1Flow": {
+        "low": 0.3469387755102041,
+        "high": 0.6730769230769231,
+        "validReplicates": 2000
+      },
+      "selectionF1Sweep": {
+        "low": 0.4788732394366197,
+        "high": 0.7956989247311828,
+        "validReplicates": 2000
+      },
+      "supportedFactUpliftPts": {
+        "low": 20.987654320987655,
+        "high": 44.87179487179487,
+        "validReplicates": 2000
+      }
+    }
   },
   "timing": {
-    "samples": 5,
-    "p50FirstAnswerMs": 64.40208300000086,
-    "p95FirstAnswerMs": 129.75397439999796,
-    "p95FinalAnswerMs": 1965.2123669999987,
-    "coldStartMs": 521.2161669999987,
+    "samples": 10,
+    "p50FirstAnswerMs": 67.25156249999418,
+    "p95FirstAnswerMs": 108.200412349998,
+    "p95FinalAnswerMs": 5330.605560450015,
+    "coldStartMs": 673.1035830000183,
     "node": "v26.3.1",
     "platform": "darwin",
     "observations": [
       {
-        "questionId": "Q01",
-        "runId": "cd36d1ad-4c2c-4cc3-9b8f-d895dc983b73",
-        "firstMs": 145.8554159999985,
-        "finalMs": 521.668875000003
+        "questionId": "Q49",
+        "runId": "41cf9f23-b16d-4b83-bb1e-248b596be125",
+        "firstMs": 136.48174999997718,
+        "finalMs": 2393.3143329999875
       },
       {
-        "questionId": "Q23",
-        "runId": "7f321494-1350-4c66-8973-29c64545293c",
-        "firstMs": 59.75258299999405,
-        "finalMs": 372.0382079999981
+        "questionId": "Q50",
+        "runId": "58f37fc4-be32-44a1-98fc-21588a3e5b6c",
+        "firstMs": 66.49400000000605,
+        "finalMs": 2106.9063750000205
       },
       {
-        "questionId": "Q27",
-        "runId": "4f67a81f-3a61-4d16-941c-9d6021c5b4b7",
-        "firstMs": 65.3482079999958,
-        "finalMs": 479.4540829999969
+        "questionId": "Q51",
+        "runId": "06e35955-a400-466e-ac56-1415aa411847",
+        "firstMs": 67.50454199998057,
+        "finalMs": 2222.2987079999875
       },
       {
-        "questionId": "Q31",
-        "runId": "39b8a587-0ee3-4749-8a25-b10141f7a0f8",
-        "firstMs": 64.40208300000086,
-        "finalMs": 1905.9606669999994
+        "questionId": "Q52",
+        "runId": "8247fd37-7333-4723-a8b3-d83cfbe1e41d",
+        "firstMs": 73.15987500001211,
+        "finalMs": 5159.067458000005
       },
       {
-        "questionId": "Q42",
-        "runId": "4204e673-7055-41ca-8728-44fc06183a73",
-        "firstMs": 56.85025000000314,
-        "finalMs": 1980.0252919999984
+        "questionId": "Q53",
+        "runId": "61a37a46-95bc-4e95-836f-6b7bc61c9103",
+        "firstMs": 73.63433300002362,
+        "finalMs": 5470.954917000025
+      },
+      {
+        "questionId": "Q54",
+        "runId": "81d672cc-f9ba-4d8d-a0ab-2aa2fb2afd46",
+        "firstMs": 66.99858300000778,
+        "finalMs": 3385.377124999999
+      },
+      {
+        "questionId": "Q55",
+        "runId": "f95c5438-00b4-41aa-9145-ded5d6cc0bbf",
+        "firstMs": 66.01020800002152,
+        "finalMs": 1755.308916000009
+      },
+      {
+        "questionId": "Q56",
+        "runId": "1a6c70bf-2ef0-4f13-8b6c-5d48144a3e2d",
+        "firstMs": 65.79208399998606,
+        "finalMs": 3087.623250000004
+      },
+      {
+        "questionId": "Q57",
+        "runId": "88612fc3-c5a2-4895-a46d-ec7e32617ef7",
+        "firstMs": 62.736000000004424,
+        "finalMs": 1680.2265419999894
+      },
+      {
+        "questionId": "Q58",
+        "runId": "6449717e-65f4-4b88-872a-05918c99635b",
+        "firstMs": 71.59912500000792,
+        "finalMs": 3566.589666999993
       }
     ]
   },
   "cost": {
-    "providerCalls": 109,
+    "providerCalls": 483,
     "estimatedUsageCalls": 0,
-    "inputTokens": 504903,
+    "inputTokens": 2277745,
     "outputTokens": 0,
-    "modelUsd": 0.050490300000000016,
-    "latencyModelUsdPerQuery": 0.0013299200000000003,
-    "flowDecisionUsdPerQuery": 0.0004745166666666667,
+    "modelUsd": 0.22777449999999985,
+    "latencyModelUsdPerQuery": 0.004296539999999999,
+    "flowDecisionUsdPerQuery": 0.0017753184782608716,
     "xrpDropsSpent": 0,
-    "simulatedMinorSpent": 310,
+    "simulatedMinorSpent": 2960,
     "rates": "eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)"
   },
   "audit": {
-    "runs": 5,
-    "observations": 153,
+    "runs": 10,
+    "observations": 728,
     "violations": [],
     "total": 0,
     "byRule": {
@@ -99,8 +158,8 @@
     "dmgColdStartMs": null
   },
   "counts": {
-    "questions": 24,
-    "coverageSnapshots": 55,
-    "requestedFacts": 26
+    "questions": 92,
+    "coverageSnapshots": 193,
+    "requestedFacts": 92
   }
 }

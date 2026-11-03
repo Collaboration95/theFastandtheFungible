@@ -348,3 +348,86 @@ regresses 20%; this is reported, not hidden by changing labels or a threshold.
 The same-treatment `--check --compare 2026-11-03T02:18:54` repeat passes with all
 quality deltas zero; the first attempt used hyphens instead of timestamp colons
 and was rejected before making calls. No comparison rule was changed.
+
+## 7. Numbers: error taxonomy, expanded bank and frozen heldout (3 Nov 2026)
+
+The new heldout result is flat. Waste remains above the 25% target.
+
+| Metric | Before (95% CI) | After (95% CI) |
+|---|---:|---:|
+| Wasted gross spend | 52.87% [28.30, 73.31] | 52.87% [28.30, 73.31] |
+| First-purchase F1 (flow) | 0.530 [0.347, 0.673] | 0.530 [0.347, 0.673] |
+| Selection F1 (sweep) | 0.660 [0.479, 0.796] | 0.660 [0.479, 0.796] |
+| Supported-fact uplift | 32.61 pts [20.99, 44.87] | 32.61 pts [20.99, 44.87] |
+
+All four paired change CIs are [0, 0] on these observed model draws. This is
+not proof of a zero population effect: the 92 quality trajectories and picks
+match; the scope veto did not change this sample. Two fresh isolated run
+directories made 900 metered requests in total, including coverage and final
+timing, with no cross-run response replay. Within each run identical requests
+share the existing transport cache; the bootstrap does not treat those as
+independent model repetitions.
+
+The bank grew **48 → 140 questions (53 → 145 facts)**. All 48 historical
+questions are now dev, because earlier work used the old full bank. The new
+heldout has **92 distinct fact questions in 20 source-article clusters**,
+with 193 coverage snapshots. No new article prose, old bank labels, leak
+checks, thresholds or gates changed. New facts are curated from exact existing
+planted passages via `additions.v2.json` and `generate-eval-bank.ts`; human
+review is pending. The additions are OpenAI-authored, the same vendor as Luna.
+This is disclosed in v2 rather than copying the original Anthropic authorship
+and different-vendor claim. Documents were already visible as candidates; only
+these questions are prospective. Do not compare these results directly with
+#307's old 24-question heldout or claim unseen-document generalization.
+
+The intervals are 2,000-replicate, seed-700, 95% percentile bootstrap intervals
+over whole source articles, preserving all their question and sweep rows.
+There are only 20 independent source clusters. The waste interval remains
+wide; more questions did not manufacture narrow confidence. A narrow
+production-quality estimate would need independently authored documents,
+human-reviewed labels and repeated provider draws. We have not achieved that
+precision claim. The reported intervals condition on this synthetic corpus
+and the observed model draws.
+
+The pre-registered candidate adds a deterministic country contradiction veto:
+explicit Singapore requirements cannot buy an explicitly Vietnam-scoped signed
+source on model confidence alone. Unknown or unsigned menus stay unknown;
+comparisons can match any named country. It addresses one subcase of the top
+root-cause category, not every adjacent measure/date/package mismatch. No model
+can grant content access or spend. All-high-score regression tests prove the
+historical Q38 veto while preserving same-country and multi-country cases.
+No threshold fitting, menu changes, writer changes or heldout retuning.
+
+`docs/evidence/waste-analysis-2026-11-03.md` records four root causes across all
+10 final wasted #307 purchases (S$3.95 gross), with a 21-observation canonical
+before/after inventory and all 48 wasted observations in nine recovered live
+trials. Two are extractive-writer failures despite delivered facts; do not hide
+them by relabelling success. #304's original flow store was not recovered; its
+593-row sweep and aggregate history cannot reconstruct selected purchases. The
+#307 Before reports provide an integrated #304-policy baseline, not the
+original #304 run. Running `export-decision-labels.ts` on the recovered final
+API stores found four charged dev intents (three determinable) and zero
+heldout intents; those timing samples are not the full quality flow.
+
+Candidate freeze commit: `d08f674`. Baseline: `2026-11-03T02:48:27.474Z`;
+after: `2026-11-03T02:52:48.039Z`. Same frozen input hash:
+`3fe6e7d414923bed57fbfd6aa08ad2ef2f6fa2e1599e957b9fde7559147c90ac`. The only intermediate harness
+repair supplies timing sample IDs for the entirely new holdout and an exact
+coverage-call forecast. It changes no quality inputs, prompts or labels. The
+baseline has zero timing/API-audit samples; that is unmeasured, not ten clean
+runs. The final has **0 violations / 10 API runs / 728 wire observations**,
+including actual delivery-proof and money-chain rules. Payments stay
+**SIMULATED; zero XRP transferred**. Research is extractive fixture, search is
+keyword, decision and coverage models are LIVE.
+
+Total task spend **US$0.4125836 / US$5**, usage-derived at the transport's dated
+rates, not invoices: `numbers-spend.json` accounts for both runs, including
+timing calls. `numbers-results.json` retains compact scoring inputs, individual
+CIs and paired delta CIs; `scripts/report-numbers.ts` reproduces comparison
+from raw reports without provider calls. Fixture before/after quality is also
+flat; the same-treatment regression check remains intact.
+
+Validation: bank verification and unchanged corpus leak checks pass; 645 unit
+tests and all four browser end-to-end tests pass. The historical menu test still
+checks the exact v1 bank/prose/snapshot hashes; v2 is tested separately with
+honest author provenance. No test or gate has been loosened.

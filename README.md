@@ -113,13 +113,13 @@ Architecture: [contracts/ARCHITECTURE.md](docs/contracts/ARCHITECTURE.md) · [se
 <!-- scorecard:start -->
 | Metric | Latest | Mode · date |
 |---|---|---|
-| Hard-gate audit violations | 0 across 5 runs, 153 observations | LIVE decision + coverage; fixture research; simulated payments · held-out (24 questions) · 2026-11-03 |
-| Supported-fact uplift from paying | +15.4 pts | LIVE decision + coverage; fixture research; simulated payments · held-out (24 questions) · 2026-11-03 |
-| Purchase-selection F1 (flow / sweep) | 0.63 / 0.67 | LIVE decision + coverage; fixture research; simulated payments · held-out (24 questions) · 2026-11-03 |
-| Wasted spend | 35.5% | LIVE decision + coverage; fixture research; simulated payments · held-out (24 questions) · 2026-11-03 |
-| p50 / p95 time to first answer | 64 ms / 130 ms | LIVE decision + coverage; fixture research; simulated payments · held-out (24 questions) · 2026-11-03 |
-| Cold start (demo API + publisher) | 521 ms | LIVE decision + coverage; fixture research; simulated payments · held-out (24 questions) · 2026-11-03 |
-| Model cost per query | US$0.0013299200000000003 | LIVE decision + coverage; fixture research; simulated payments · held-out (24 questions) · 2026-11-03 |
+| Hard-gate audit violations | 0 across 10 runs, 728 observations | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
+| Supported-fact uplift from paying | +32.6 pts [95% CI 21.0–44.9 pts] | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
+| Purchase-selection F1 (flow / sweep) | 0.53 [95% CI 0.35–0.67] / 0.66 [95% CI 0.48–0.80] | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
+| Wasted spend | 52.9% [95% CI 28.3–73.3%] | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
+| p50 / p95 time to first answer | 67 ms / 108 ms | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
+| Cold start (demo API + publisher) | 673 ms | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
+| Model cost per query | US$0.004296539999999999 | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
 <!-- scorecard:end -->
 
 **Builder feedback.** [15 implementation findings, a mainnet-readiness checklist and 15 earlier submissions](docs/BUILDER-FEEDBACK.md) on XRPL, x402 and the Starter Kit, each with evidence, our workaround and the suggested upstream fix. Mainnet is not enabled.

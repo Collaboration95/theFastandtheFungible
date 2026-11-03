@@ -58,7 +58,46 @@ Run `npx tsx eval/run-eval.mts --chosen` to measure the chosen configuration on
 the checked-in query vectors and current corpus, without provider calls.
 The table above records the 8 Oct study; reruns on the current corpus may differ.
 
-## Local scorecard (#256, #260)
+## Current evaluation protocol (Numbers v5, 3 Nov)
+
+`bank.v1.json` remains byte-for-byte historical. `bank.v2.json` has 140 questions
+and 145 requested facts: all 48 old questions are dev; 92 new, distinct planted
+facts are heldout, grouped by 20 source articles. Earlier work saw the old full
+bank and the corpus. This is a prospective question holdout on previously visible
+synthetic documents, not an unseen-corpus generalization test. Source documents
+and some contexts were previously candidates; the new requested facts were not
+used to tune the candidate. Human label review remains pending.
+
+`node --import tsx scripts/generate-eval-bank.ts` rebuilds v2 from the unchanged
+v1 bank and curated `additions.v2.json`. It checks every numeric label against
+its named planted passage. No content or old label changes. Run `npm run eval:bank`
+and `node --import tsx scripts/check-corpus.mjs` for bank and corpus/leak checks.
+The additions were authored by OpenAI Codex, the same vendor as the judged Luna;
+v2 records this explicitly, rather than inheriting v1's different-vendor claim.
+
+`frozen.json` v5 pins the bank, corpus, coverage snapshots, policy/prompt code,
+generator, split and CI implementation. `DECISION_SCOPE_POLICY=off` measures the
+shipped #307 receipt-value baseline; default adds only the public country-scope
+veto. Both keep receipt-value/v1, its identity fit, and every spending gate.
+Freeze candidate and labels before the baseline/after pair; no heldout tuning.
+Run `OFFSET=700 EVAL_LIVE=1 npm run scorecard -- --live --split heldout`.
+
+Every new scorecard has 2,000-replicate, seed-700, 95% percentile bootstrap CIs.
+Resample complete source groups, including all their questions and sweep units;
+re-key duplicate draws so a sweep cannot silently collapse multiplicity. Dev
+uses four historical topic clusters. With only 20 heldout source clusters,
+intervals can remain wide: 92 questions are not 92 independent documents. These
+intervals condition on the fixed corpus and observed model draws, and do not
+measure provider variability, human label error or deployment behavior.
+`report-numbers.ts <before report.json> <after report.json>` reproduces paired
+delta CIs and a compact evidence artifact without provider calls.
+
+Timing uses available historical sample IDs, or the first ten split IDs when
+none match. The first v5 baseline predates that fallback: its quality is valid,
+but API timing/audit sample count is zero, not evidence of ten audited runs.
+The final run must state its actual audit counts. Empty timing cost stays null.
+
+## Local scorecard (#256, #260; historical protocol below)
 
 `make scorecard` (or `npm run scorecard`) runs offline with **zero provider
 calls**, then audits a fresh demo store. It writes `eval/scorecard/latest.json`,
@@ -94,8 +133,8 @@ MCP e2e and DMG cold start remain `null` until measured by their owning lanes.
 
 `frozen.json` fingerprints the entire bank, corpus, constructed coverage
 snapshots and prompt source files, and pins configuration, bank order, and ten
-timing questions (UC1–UC3 plus seven bank items). All 48 questions and all 116
-snapshots are evaluation data: no training, threshold tuning or random split.
+timing questions (UC1–UC3 plus seven bank items). In the historical v1 protocol all 48 questions and all 116
+snapshots were evaluation data: no training, threshold tuning or random split.
 Trust resets per quality question; timing runs share one fresh demo instance,
 as a server would. An input/prompt change fails closed; introduce a reviewed,
 versioned eval set instead of silently replacing the baseline. Each row records
