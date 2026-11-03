@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 4 Nov: Lane H2 full rehearsal records 2,000 asks, burst peak four and 20 clean restarts; four performance gates pass but loop p99 misses at 64.389 ms (<50 ms required). Final artifact acceptance stops; no threshold changed. [Blocked evidence and runner](evidence/round2-h2/README.md).
 - 4 Nov: Lane H1 shared-host baseline: 2,000 asks after 200 warmups on 10,000 × 60 history; 20 clean restart cycles, zero audit violations; memory gates pass, loop-delay/latency gates miss honestly. [Measurements and SVG](evidence/round2-h/README.md); C1 repair and final H2 acceptance remain pending.
 - 4 Nov: Lane G explains exact paid claim/passage use in receipt v3, preserves v1/v2 offline verification and rejects ten tamper classes; 30 fixture links, semantic assessment explicitly unavailable, unchanged scorecard arithmetic and accessible receipt screenshots. [Evidence](evidence/round2-g/README.md).
 - 4 Nov: Lane C1 adds guarded one-key compatible research/UNCALIBRATED advisory decisions, local bearer connection testing, cooperative Stop and default-four active work (100 asks: 4 admitted/96 overloaded); HTTP/TS/Python/MCP synthetic citation matrix passes. [Engine evidence](evidence/round2-c1/README.md).
