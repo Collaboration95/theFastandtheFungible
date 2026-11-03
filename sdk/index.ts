@@ -7,9 +7,10 @@ import { presentRun, type PresentedRun } from './present.js'
 export type { HireResult } from './hire.js'
 export type { PresentedRun } from './present.js'
 
-export type ErrorCode = 'unauthorized' | 'not_found' | 'invalid' | 'backend_unavailable' | 'cancelled' | 'payment_failed' | 'verification_failed'
+export type { ErrorCode } from '../shared/contracts/errors.js'
+import { ErrorEnvelopeSchema, type ErrorCode } from '../shared/contracts/errors.js'
 export class ResearchAgentError extends Error {
-  constructor(readonly code: ErrorCode) {
+  constructor(readonly code: ErrorCode, readonly status?: number, readonly retryable = false, readonly runId?: string) {
     super(`ResearchAgent: ${code}`)
     this.name = 'ResearchAgentError'
   }
@@ -40,22 +41,26 @@ export type ClientOptions = { baseUrl: string; token?: string; fetch?: typeof fe
   /** Explicit operator signing authority. Required for pay and hire; never inferred from a seed. */
   payment?: Omit<import('./x402.js').PayOptions, 'method' | 'body' | 'headers' | 'idempotencyKey'> & { journal: import('./x402.js').PaymentJournal }
 }
-export type AskResult = PresentedRun & { requestedBudgetMinor: number; clamped: boolean; humanMaxBudgetMinor: number; humanDailyCapMinor: number; receipts: RunSnapshot['receipts'] }
+export type AskResult = PresentedRun & { requestedBudgetMinor: number; clamped: boolean; clampReason?: 'paused' | 'cap_zero' | 'budget_exhausted'; humanMaxBudgetMinor: number; humanDailyCapMinor: number; receipts: RunSnapshot['receipts'] }
 export type AskTask = Promise<AskResult> & { events: AsyncIterable<TraceEvent> }
 
 /** Policy owns admission and spending. Direct x402 requires separate explicit operator authority. */
 export function createClient(options: ClientOptions) {
+  const endpoint = new URL(options.baseUrl)
+  if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash || (endpoint.protocol !== 'https:' && !(endpoint.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(endpoint.hostname)))) throw new ResearchAgentError('invalid')
   const transport = options.fetch ?? globalThis.fetch
   const token = options.token ?? (typeof process !== 'undefined' ? process.env.RA_API_TOKEN : undefined)
   const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
   const request = async (path: string, init: RequestInit = {}) => {
+    const bound = AbortSignal.timeout(15_000)
     try {
       const response = await transport(new URL(path, options.baseUrl), {
         ...init, headers: { ...headers, ...init.headers }, redirect: 'error',
-        signal: init.signal ?? AbortSignal.timeout(15_000),
+        signal: init.headers && new Headers(init.headers).get('Accept') === 'text/event-stream' ? init.signal : AbortSignal.any([...(init.signal ? [init.signal] : []), bound]),
       })
       if (!response.ok) {
-        await response.body?.cancel()
+        const parsed = ErrorEnvelopeSchema.safeParse(await response.json().catch(() => null))
+        if (parsed.success && parsed.data.status === response.status) throw new ResearchAgentError(parsed.data.code, response.status, parsed.data.retryable, parsed.data.runId)
         throw new ResearchAgentError(response.status === 401 || response.status === 403 ? 'unauthorized'
           : response.status === 404 ? 'not_found' : response.status >= 400 && response.status < 500 ? 'invalid' : 'backend_unavailable')
       }
@@ -63,6 +68,7 @@ export function createClient(options: ClientOptions) {
     } catch (error) {
       if (init.signal?.aborted) throw new ResearchAgentError('cancelled')
       if (error instanceof ResearchAgentError) throw error
+      if (bound.aborted) throw new ResearchAgentError('deadline', undefined, true)
       throw new ResearchAgentError('backend_unavailable')
     }
   }
@@ -103,6 +109,7 @@ export function createClient(options: ClientOptions) {
         clearTimeout(idle)
         idle = setTimeout(() => controller.abort(), 30_000)
         pending += decoder.decode(value, { stream: true })
+        if (new TextEncoder().encode(pending).byteLength > 256 * 1024) throw new ResearchAgentError('backend_unavailable')
         pending = pending.replace(/\r\n/g, '\n')
         let end: number
         while ((end = pending.indexOf('\n\n')) >= 0) {
@@ -184,11 +191,11 @@ export function createClient(options: ClientOptions) {
           const wait = opts.waitMs === undefined ? undefined : AbortSignal.timeout(opts.waitMs)
           const signal = wait ? (opts.signal ? AbortSignal.any([wait, opts.signal]) : wait) : opts.signal
           try { for await (const next of follow(run.runId, signal)) { run = next; emit(run) } }
-          catch (error) { if (opts.signal?.aborted) throw new ResearchAgentError('cancelled'); if (!wait?.aborted) throw error }
+          catch (error) { if (opts.signal?.aborted) throw new ResearchAgentError('cancelled', undefined, false, run.runId); if (!wait?.aborted) { if (error instanceof ResearchAgentError) throw new ResearchAgentError(error.code, error.status, error.retryable, run.runId); throw new ResearchAgentError('backend_unavailable', undefined, true, run.runId) } }
         }
         const requestedMinor = Math.floor(budget * 100 + 1e-7)
         return { ...presentRun(run, mode.publisherUrl), requestedBudgetMinor: requestedMinor,
-          clamped: run.budgetMinor < requestedMinor, humanMaxBudgetMinor: mode.maxMinor, humanDailyCapMinor: mode.dailyMinor, receipts: run.receipts }
+          clamped: run.budgetMinor < requestedMinor, clampReason: z.enum(['paused','cap_zero','budget_exhausted']).optional().parse(run.checkpoint.budgetReason), humanMaxBudgetMinor: mode.maxMinor, humanDailyCapMinor: mode.dailyMinor, receipts: run.receipts }
       }).finally(() => { finished = true; for (const wake of waiters) wake(); waiters.clear() })
       // A stream-only consumer observes rejection through the iterator.
       void result.catch(() => undefined)

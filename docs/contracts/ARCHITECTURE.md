@@ -127,3 +127,9 @@ rows keep caps durable across restart. `sdk/x402.ts` is the generic buyer used
 by the outside caller demo; `sdk/hire.ts` supplies the optional remote MCP tool.
 The API returns a full money chain; see `docs/x402-xrpl.md` and
 `docs/COMPLIANCE.md` for rounding, change, custody and recovery.
+
+### Retained history and late refund recovery (4 November)
+
+Operational selection uses SQL predicates over run metadata and indexed intent/event lookup. Metrics project model-usage metadata without hydrating premium bodies and retain O(n) all-run output. Recovery sweeps coalesce answer/refund work while payment obligations remain independent per intent, preserving progress when one publisher blocks.
+
+Refund candidates are durable before validation waits. Retention keeps unresolved candidates and their original binding. Read-only bounded rechecks permit CHALLENGE_REFUSED → REFUNDED only for the stored candidate after exact ledger verification; the outcome and refund audit append remain write-once. Gross spending authority is unchanged. SSE disconnects on byte pressure and clients recover terminal state through the durable run endpoint. Engine-wide admission and cooperative provider cancellation remain deferred.

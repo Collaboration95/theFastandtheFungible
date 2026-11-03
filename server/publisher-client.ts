@@ -1,3 +1,4 @@
+import { boundedBody } from './body-limit.js'
 import { EscrowQuoteSchema } from '../shared/contracts/escrow.js'
 import { loadConfig } from './config.js'
 import { z } from 'zod'
@@ -23,7 +24,7 @@ export class PublisherClient {
     const response = await fetch(new URL(path, this.options.baseUrl ?? loadConfig().PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
       method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(this.options.timeoutMs ?? 5000), redirect: 'error',
     })
-    const bytes = Buffer.from(await response.arrayBuffer())
+    const bytes = await boundedBody(response, 256 * 1024)
     // Only status/path leave this boundary. No delivery token, response body, or
     // publisher error text (which could contain premium content) enters a trace.
     const wire = { method, path, status: response.status }
@@ -44,7 +45,7 @@ export class PublisherClient {
     const response = await fetch(new URL(path, this.options.baseUrl ?? loadConfig().PUBLISHER_URL ?? 'http://127.0.0.1:8790'), {
       headers: { Accept: 'application/json', ...(signature ? { 'PAYMENT-SIGNATURE': signature } : {}) }, signal: AbortSignal.timeout(this.options.timeoutMs ?? 60_000), redirect: 'error',
     })
-    const text = await response.text()
+    const text = (await boundedBody(response, 2 * 1024 * 1024)).toString('utf8')
     const wire = { method: 'GET', path, status: response.status }
     observer?.(wire)
     try { this.options.onWire?.(wire) } catch { /* telemetry cannot alter settlement */ }
@@ -68,7 +69,7 @@ export class PublisherClient {
     observer?.(wire)
     try { this.options.onWire?.(wire) } catch { /* telemetry cannot alter a challenge */ }
     if (!response.ok) throw new PublisherHttpError(response.status)
-    return ChallengeResultSchema.parse(await response.json())
+    return ChallengeResultSchema.parse(JSON.parse((await boundedBody(response, 256 * 1024)).toString('utf8')))
   }
   // Federated search (D1, #138): registry, per-publisher search and FREE article reads.
   private async getJson(path: string, timeoutMs?: number): Promise<unknown> {
@@ -76,7 +77,7 @@ export class PublisherClient {
     const wire = { method: 'GET', path, status: response.status }
     try { this.options.onWire?.(wire) } catch { /* telemetry cannot alter retrieval */ }
     if (!response.ok) throw new PublisherHttpError(response.status)
-    return response.json()
+    return JSON.parse((await boundedBody(response, path.includes('/articles/') ? 2 * 1024 * 1024 : 256 * 1024)).toString('utf8'))
   }
   async registry(): Promise<RegistryPublisher[]> {
     return RegistrySchema.parse(await this.getJson('/registry')).publishers

@@ -1,0 +1,20 @@
+# Lane A reliability evidence
+
+Local synthetic fixtures only. No live provider, network ledger, Testnet settlement or real money was used. `history.json` records the host, SQLite version, query plans and five timing samples. Run directly:
+
+```
+node --import tsx scripts/bench-history.ts --runs 3000 --events-per-run 60 --output scratch/history-3000.json
+node --import tsx scripts/bench-history.ts --runs 10000 --events-per-run 60 --migration-only --output scratch/history-10000.json
+```
+
+The before/after hydration measurements use the same populated Store and remove/recreate only the two new indexes. Migration timing is separate. The 10,000-run mode deliberately omits the quadratic baseline hydration. The temporary database is retained outside the repository for inspection; it contains synthetic progress events only.
+
+Startup, drain and answer recovery use SQL selection rather than `listRuns()`. Operational metrics use metadata projections, preserve nearest-rank percentiles and null costs, and still return O(number of runs) usage rows. Payment recovery remains independent per intent so a blocked writer cannot starve other signed obligations. Answer/refund recovery sweeps are single-flight.
+
+`tests/history-bounds.test.ts` compares selectors with the previous predicates on mixed history. `tests/runtime-limits.test.ts` covers chunked body cancellation and 1,000 disconnects. Oversized SSE snapshots close the stream; SDK observers resynchronize through GET of the same run. Terminal state remains durable. Initial and terminal snapshots bypass the 250 ms snapshot throttle. Publisher delivery/free reads allow 2 MiB; registry/search/challenge allow 256 KiB. The checked corpus has 83 articles; largest serialized source article is 17,221 bytes. Fixture integration validates actual delivery envelopes.
+
+`tests/client-errors.test.ts` and Python error tests validate safe categories and plaintext bearer rejection. Budget clamping remains free-first: successful admission includes a checkpoint `budgetReason` when reduced, surfaced as SDK `clampReason`. Typed errors carry retryability and retained run IDs; messages are generated from allowlisted codes rather than upstream messages. Testnet x402 requires an explicit journal even with an injected ledger.
+
+`tests/refund-recovery.test.ts` uses synthetic historical obligations and a fake ledger for XRP and issued currency. It closes/reopens Store, attempts retention, rejects a wrong invoice and wrong sender, then concurrently verifies the exact candidate. Exactly one REFUND event/audit entry is written, refunded totals increment once, gross spend is unchanged, and the signing spy sees zero calls. There is no replacement payment.
+
+Deferred under the lane stop rule: one engine-wide active-work cap (including planning, scope, reports, hire and startup), cooperative Stop propagation to every provider, and a global reconciliation scheduler. No cap of four or sub-second in-flight Stop claim is made. `limits.json` marks these unmeasured. Replacing the existing independent payment reconciler with one global awaited task failed the blocked-writer regression; that change was removed. No test, gate or threshold was loosened. This bundle is not final H workload acceptance.

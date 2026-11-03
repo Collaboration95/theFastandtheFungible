@@ -34,7 +34,7 @@ export function pruneRunData(db: DatabaseSync, audit: AuditLog, options: PruneOp
     const run = JSON.parse(row.json) as { phase: string; question: string }
     if (!TERMINAL_RUN.has(run.phase)) continue
     const intents = (db.prepare('SELECT json FROM intents WHERE run_id=?').all(row.id) as { json: string }[]).map(i => PurchaseIntentSchema.parse(JSON.parse(i.json)))
-    if (intents.some(i => !FINAL.has(i.status))) continue
+    if (intents.some(i => !FINAL.has(i.status) || !!i.refundCandidate && i.status !== 'REFUNDED')) continue
     const lastEvent = db.prepare('SELECT json FROM events WHERE run_id=? ORDER BY id DESC LIMIT 1').get(row.id) as { json: string } | undefined
     const day = (db.prepare('SELECT day FROM admissions WHERE run_id=?').get(row.id) as { day: string } | undefined)?.day
     const stamps = [lastEvent ? (JSON.parse(lastEvent.json) as { at?: string }).at : undefined, ...intents.flatMap(i => [i.createdAt, i.settledAt])]

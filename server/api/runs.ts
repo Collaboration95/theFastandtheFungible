@@ -42,9 +42,13 @@ export function runsRouter(context: ApiContext) {
     res.flushHeaders()
     streams.set(runId, streams.get(runId) ?? new Set())
     streams.get(runId)!.add(res)
-    res.write(`event: snapshot\ndata: ${JSON.stringify(snapshot)}\n\n`)
-    const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 15000)
-    req.on('close', () => { clearInterval(heartbeat); streams.get(runId)?.delete(res) })
+    const frame = `event: snapshot\ndata: ${JSON.stringify(snapshot)}\n\n`
+    if (Buffer.byteLength(frame) > 256 * 1024) { streams.get(runId)!.delete(res); if (!streams.get(runId)!.size) streams.delete(runId); res.end(); return }
+    res.write(frame)
+    const heartbeat = setInterval(() => { if (res.writableEnded || res.destroyed || res.writableLength > 256 * 1024 - 16) res.end(); else res.write(': heartbeat\n\n') }, 15000)
+    const detach = () => { clearInterval(heartbeat); streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) streams.delete(runId) }
+    req.on('close', detach)
+    res.on('error', () => { detach(); res.destroy() })
   })
   return router
 }

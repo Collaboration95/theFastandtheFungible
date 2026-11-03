@@ -9,22 +9,20 @@ type Submission = Awaited<ReturnType<typeof signPayment>>
 
 export type PaymentAttempt = { signature: string; submission: Submission; payTo: string; amountDrops: string; invoiceId: string; asset?: Asset }
 export type PaymentJournal = { load(key: string): PaymentAttempt | undefined; save(key: string, value: PaymentAttempt): PaymentAttempt }
-const attempts = new Map<string, PaymentAttempt>()
-const memoryJournal: PaymentJournal = { load: key => attempts.get(key), save: (key, value) => {
-  const old = attempts.get(key); if (old) return old; attempts.set(key, value); return value
-} }
 const queues = new Map<string, Promise<unknown>>()
 export type PayOptions = { wallet: Wallet; maxDrops: string; issued?: { asset: Exclude<Asset, 'XRP'>; maxAmount: string }; method?: string; body?: string;
-  headers?: HeadersInit; idempotencyKey?: string; journal?: PaymentJournal; ledger?: Ledger; fetch?: typeof fetch }
+  headers?: HeadersInit; idempotencyKey?: string; journal: PaymentJournal; ledger?: Ledger; fetch?: typeof fetch }
 
 /** Persist the returned attempt to retry delivery safely after a process restart. Fees are capped at 2,000 drops. */
 export async function payAndFetch(url: string, options: PayOptions) {
   if (options.wallet.classicAddress === simulatedPayerWallet().classicAddress) throw new Error('SIMULATED signer refused on Testnet')
   if (!/^[1-9]\d*$/.test(options.maxDrops)) throw new Error('maxDrops must be positive integer drops')
   const resource = new URL(url)
+  if (resource.username || resource.password) throw new Error('URL credentials refused')
   if (resource.protocol !== 'https:' && !(resource.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(resource.hostname))) throw new Error('x402 requires HTTPS or loopback HTTP')
   const key = JSON.stringify([options.wallet.classicAddress, url, options.method ?? 'GET', options.body ?? '', options.idempotencyKey ?? ''])
-  const journal = options.journal ?? memoryJournal
+  if (!options.journal) throw new Error('Testnet payment requires an explicit durable journal')
+  const journal = options.journal
   const transport = options.fetch ?? fetch
   const headers = new Headers(options.headers)
   if (options.idempotencyKey) headers.set('Idempotency-Key', options.idempotencyKey)

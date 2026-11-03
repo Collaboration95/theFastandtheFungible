@@ -14,8 +14,9 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 
 class ResearchAgentError(Exception):
-    def __init__(self, code: str, status: int | None = None):
+    def __init__(self, code: str, status: int | None = None, *, retryable: bool = False, run_id: str | None = None):
         self.code, self.status = code, status
+        self.retryable, self.run_id = retryable, run_id
         super().__init__(f"ResearchAgent: {code}")
 
 
@@ -88,7 +89,10 @@ class AskTask:
     @property
     def events(self) -> Iterator[dict[str, Any]]:
         cursor = 0
+        deadline = time.monotonic() + self._client.wait_timeout
         while True:
+            if time.monotonic() >= deadline:
+                raise BackendError("deadline", retryable=True, run_id=self._run["runId"])
             for event in self._run['events']:
                 if event['id'] not in self._seen:
                     self._seen.add(event['id'])
@@ -100,7 +104,11 @@ class AskTask:
             if self._run['phase'] in ('DONE', 'STOPPED', 'FAILED'):
                 return
             time.sleep(0.25)
-            self._run = self._client._request('/api/mcp/runs/' + quote(self._run['runId'], safe=''))
+            try:
+                self._run = self._client._request('/api/mcp/runs/' + quote(self._run['runId'], safe=''), timeout=min(self._client.timeout, max(0.001, deadline - time.monotonic())))
+            except ResearchAgentError as error:
+                error.run_id = self._run['runId']
+                raise
 
     def result(self) -> AskResult:
         for _ in self.events:
@@ -108,31 +116,44 @@ class AskTask:
         result = _present(self._run)
         result['requestedBudgetMinor'] = self._requested
         result['clamped'] = result['budgetMinor'] < self._requested
+        result['clampReason'] = self._run.get('checkpoint', {}).get('budgetReason')
         return result
 
 
 class Client:
-    def __init__(self, base_url: str, token: str | None = None, *, timeout: float = 15):
+    def __init__(self, base_url: str, token: str | None = None, *, timeout: float = 15, wait_timeout: float = 60):
         url = urlsplit(base_url)
         if url.scheme not in ('http', 'https') or not url.hostname or url.username or url.password or url.query or url.fragment:
             raise InvalidRequestError('invalid')
+        if url.scheme == 'http' and url.hostname not in ('localhost', '127.0.0.1', '::1'):
+            raise InvalidRequestError('invalid')
+        if not math.isfinite(wait_timeout) or wait_timeout <= 0:
+            raise InvalidRequestError('invalid')
+        self.wait_timeout = wait_timeout
         self.base_url, self.token, self.timeout = base_url.rstrip('/'), token, timeout
         self._opener = build_opener(_NoRedirect())
 
-    def _request(self, path: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _request(self, path: str, body: dict[str, Any] | None = None, *, timeout: float | None = None) -> dict[str, Any]:
         headers = {'Content-Type': 'application/json'}
         if self.token:
             headers['Authorization'] = 'Bearer ' + self.token
         try:
             request = Request(self.base_url + path, None if body is None else json.dumps(body, allow_nan=False).encode(), headers)
-            with self._opener.open(request, timeout=self.timeout) as response:
+            with self._opener.open(request, timeout=self.timeout if timeout is None else timeout) as response:
                 value = json.load(response)
                 if not isinstance(value, dict):
                     raise ValueError()
                 return value
         except HTTPError as error:
             status = error.code
+            try:
+                envelope = json.load(error)
+            except (ValueError, OSError):
+                envelope = {}
             error.close()
+            codes = {'unauthorized', 'not_found', 'invalid', 'backend_unavailable', 'cancelled', 'payment_failed', 'verification_failed', 'cap_zero', 'paused', 'budget_exhausted', 'overloaded', 'deadline', 'settlement_pending'}
+            if isinstance(envelope, dict) and isinstance(envelope.get('code'), str) and envelope.get('code') in codes and envelope.get('status') == status and isinstance(envelope.get('retryable'), bool):
+                raise ResearchAgentError(envelope['code'], status, retryable=envelope['retryable'], run_id=envelope.get('runId')) from None
             cls = UnauthorizedError if status in (401, 403) else InvalidRequestError if 400 <= status < 500 else BackendError
             code = 'unauthorized' if status in (401, 403) else 'not_found' if status == 404 else 'invalid' if status < 500 else 'backend_unavailable'
             raise cls(code, status) from None

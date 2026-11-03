@@ -44,6 +44,7 @@ async function run({ store, client, payer }: PurchaseManager, intentId: string, 
     if (result.status === 'REJECTED') { status = 'CHALLENGE_REJECTED'; reason = 'the writer says the claim holds' }
     else if (result.status === 'REFUNDED' && result.refundTxHash) {
       refundTxHash = result.refundTxHash
+      store.recordRefundCandidate(intentId, refundTxHash)
       if (!testnet || await refundOnLedger(payer, refundTxHash, intent, Date.now() + timeoutMs, pollMs)) status = 'REFUNDED'
       else reason = 'the refund is not on the ledger'
     }
@@ -59,10 +60,24 @@ async function refundOnLedger(payer: PurchaseManager['payer'], txHash: string, i
   if (!(payer instanceof XrplPayer) || !payer.address) return false
   const terms = { ...intent.quote!.payment!, payTo: payer.address, invoiceId: intent.txHash! }
   for (;;) {
-    const verdict = await verifyPayment(payer.ledger, txHash, terms).catch(() => ({ state: 'pending' as const }))
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const verdict = await Promise.race([verifyPayment(payer.ledger, txHash, terms).catch(() => ({ state: 'pending' as const })), new Promise<{ state: 'pending' }>(resolve => { timer = setTimeout(() => resolve({ state: 'pending' }), Math.max(1, deadline - Date.now())) })]).finally(() => clearTimeout(timer))
     // Only the wallet we paid can refund us: a matching payment from anyone else is not this writer's refund.
     if (verdict.state !== 'pending') return verdict.state === 'ok' && verdict.proof.payer === intent.quote!.payment!.payTo
     if (Date.now() > deadline) return false
     await new Promise(resolve => setTimeout(resolve, pollMs))
+  }
+}
+
+/** Read-only late validation: no publisher call, signing or replacement payment. */
+export async function reconcileRefunds(purchases: PurchaseManager): Promise<void> {
+  for (const intent of purchases.store.pendingRefunds()) {
+    if (intent.quote?.payment?.rail !== 'xrpl-testnet') continue
+    const hash = intent.refundCandidate!.txHash
+    if (!await refundOnLedger(purchases.payer, hash, intent, Date.now() + 1000, 50)) continue
+    const before = purchases.store.getIntent(intent.intentId)!
+    if (before.status === 'REFUNDED') continue
+    const next = purchases.store.recordChallengeOutcome(intent.intentId, 'REFUNDED', { txHash: hash, amountMinor: intent.amountMinor })
+    if (next.status === 'REFUNDED') purchases.store.appendEvent(intent.runId, { type: 'REFUND', label: `Late refund verified · ${XRPL_LABEL}`, data: { intentId: intent.intentId, txHash: hash, amountMinor: intent.amountMinor, originalTxHash: intent.txHash, label: XRPL_LABEL } })
   }
 }
