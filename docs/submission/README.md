@@ -68,3 +68,8 @@ ROI”, “production success”, “overfitting ruled out” or measured live-w
 Deck owner: update slide 7/pitch and export the PDF from these sources after the
 numbers PR merges. This lane changes this source note only; it does not edit the
 deck HTML or silently overwrite the pitch manuscript.
+
+
+Evaluation candidate was frozen before shipping rebases; #322's later recovery/
+export additions were checked locally but not live re-evaluated here. Do not
+label this as a fresh live measurement of the final merged SHA.

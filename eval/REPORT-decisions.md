@@ -738,13 +738,27 @@ The original same-input comparison guard is unchanged. Raw traces, databases,
 wire observations and all provider records are archived outside the worktree
 before cleanup; no `.env` or credentials are archived.
 
-Validation: `OFFSET=700 npm run check:fast` passes **697 tests** after rebasing;
+Validation: `OFFSET=700 npm run check:fast` passes **713 tests** after the final shipping rebase;
 `npm run build` passes. Fresh and historical bank validators, combined corpus
 schema/leak check, README/SFF generator check, metric/CI reproduction, frozen
-fingerprint comparison, source boundary and secret/whitespace checks pass.
+evaluated-fingerprint comparison, source boundary and secret/whitespace checks pass.
 No gate, test, threshold, leak check or metric definition loosened. Step 4 of
 ship-pr skipped as requested; CI green is still required before squash merge.
 
 The README and SFF-PUSH tables are generated from the committed fresh scorecard
 by `node scripts/readme-scorecard.mjs`. `docs/submission/README.md` gives #321's
 deck owner exact slide-7/pitch wording; deck HTML is untouched.
+
+
+Shipping integration note: the final rebase includes #322 (`d6b7bb4`) and #325.
+Two pinned sources differ from the pre-run receipts: `server/agents/loop.ts`
+adds `recoverAnswer`, unused in these successful simulated purchases, and
+`publisher/manifest.ts` adds optional `includeFree=false` with the prior default
+branch preserved. This is static diff inspection, not a fresh merged-head live
+measurement. No result or candidate fingerprint is silently refreshed. The
+ordinary historical `frozen.json` is advanced for integrated-code fixture runs;
+`frozen-fresh-main.json` and `frozen-fresh-general.json` remain the exact evaluated
+receipts. For exact live replication, restore those two upstream files from
+base `0a97a52` as well as the chosen scope/selection candidate. The offline
+compact reproduction needs no checkout changes or provider calls. Full live
+merged-head performance remains unmeasured by this fresh-set experiment.

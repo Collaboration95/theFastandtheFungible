@@ -381,3 +381,13 @@ blinded independent benchmark. Repeated prose templates and structured
 single-fact questions limit external validity. Bootstrap CIs omit model-run
 variation and cross-document template correlation. Do not pool the reused
 holdout into the fresh generalisation estimate.
+
+
+The shipping rebase included #322 after the two runs: loop recovery and an
+optional free-manifest argument changed two pinned source files. The evaluated
+fresh receipts stay immutable, so the live freeze guard deliberately rejects
+the integrated tree. Exact live replication also restores `server/agents/loop.ts`
+and `publisher/manifest.ts` from evaluated base `0a97a52`. The added method is
+unused by this experiment and the new optional flag defaults to the old branch
+(static diff inspection only); no post-result live rerun was made. Offline
+result/CI reproduction remains valid on the integrated tree.
