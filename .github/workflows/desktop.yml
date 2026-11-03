@@ -1,5 +1,7 @@
 name: desktop
 on:
+  push:
+    tags: ['desktop-check-*']
   workflow_call:
   workflow_dispatch:
     inputs:
@@ -23,7 +25,13 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: make dmg
+      - name: Build the requested version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_NAME" == desktop-check-* ]]; then
+            export DESKTOP_VERSION="${GITHUB_REF_NAME#desktop-check-}"
+          fi
+          make dmg
         env:
           DESKTOP_VERSION: ${{ inputs.version || '' }}
       - uses: actions/upload-artifact@v4

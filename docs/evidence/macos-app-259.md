@@ -18,7 +18,7 @@ Reachability proof, Apple Silicon / macOS 26.6. Build source `c2b24b2`, based on
 `DESKTOP_VERSION=0.4.0 OFFSET=900 make dmg`; mount read-only with `hdiutil`, copy
 ResearchAgent.app into `/Applications`, eject, then `OFFSET=900 make desktop-smoke`.
 Two local DMG builds total (before the parallel #286 merge): the first failed installed startup and was deleted;
-the second established installed operation. After #286 merged at the final fetch, the manual macOS workflow builds the updated artifact to avoid a third local DMG build. The fixed package uses real files because
+the second established installed operation. After #286 merged at the final fetch, the tag/manual macOS workflow builds the updated artifact to avoid a third local DMG build. The fixed package uses real files because
 ASAR is not a real working directory for utilityProcess. The worker is compiled
 from the shared engine source, retaining startup and shutdown semantics.
 
