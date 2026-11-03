@@ -1,3 +1,6 @@
+import { decode } from 'xrpl'
+import type { EscrowRecord, EscrowOperation, EscrowOutbox } from './escrow-state.js'
+import { chmodSync, existsSync } from 'node:fs'
 import { DROPS_PER_MINOR } from '../shared/contracts/index.js'
 import type { ChainPayment } from './hire/policy.js'
 import { spendPolicy, POLICY_VERSION, PAUSED, type Surface } from './spend-policy.js'
@@ -55,11 +58,20 @@ export class Store {
       CREATE TABLE IF NOT EXISTS receipts (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, token TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grants (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, content TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS run_meta (run_id TEXT PRIMARY KEY REFERENCES runs(id), pinned INTEGER NOT NULL DEFAULT 0, hidden INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS escrows (intent_id TEXT PRIMARY KEY REFERENCES intents(id), invoice TEXT UNIQUE NOT NULL, json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS escrow_attempts (tx_hash TEXT PRIMARY KEY, json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS escrow_outbox (intent_id TEXT NOT NULL REFERENCES escrows(intent_id), operation TEXT NOT NULL, tx_hash TEXT UNIQUE NOT NULL, json TEXT NOT NULL, PRIMARY KEY(intent_id,operation));
       CREATE TABLE IF NOT EXISTS submissions (intent_id TEXT PRIMARY KEY REFERENCES intents(id), tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL, last_ledger INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS publisher_reputation (wallet TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS manifests (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grant_salts (intent_id TEXT PRIMARY KEY REFERENCES grants(intent_id), json TEXT NOT NULL);
     `)
+    if (path !== ':memory:') for (const file of [path, `${path}-wal`, `${path}-shm`]) if (existsSync(file)) chmodSync(file, 0o600)
+    const escrowColumns = new Set(this.db.prepare('PRAGMA table_info(escrows)').all().map(r => r.name))
+    if (!escrowColumns.has('owner')) this.db.exec('ALTER TABLE escrows ADD COLUMN owner TEXT')
+    if (!escrowColumns.has('create_sequence')) this.db.exec('ALTER TABLE escrows ADD COLUMN create_sequence INTEGER')
+    this.db.exec(`UPDATE escrows SET owner=json_extract(json, '$.publicStatus.owner'), create_sequence=json_extract(json, '$.publicStatus.createSequence') WHERE owner IS NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS escrow_object_identity ON escrows(owner, create_sequence);`)
     this.db.exec(`INSERT OR IGNORE INTO admissions SELECT key, 'mcp', 'operator', run_id, budget, budget, day, 'mcp-v0' FROM mcp_requests`)
     AuditLog.ensureSchema(this.db)
     this.audit = new AuditLog(this.db)
@@ -117,6 +129,7 @@ export class Store {
       const policyReserved = policy.filter(p => !p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
       spentMinor += policy.filter(p => p.confirmedAt?.slice(0, 10) === day).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
       const hold = this.db.prepare('SELECT minor, closed FROM hire_reserves WHERE run_id=?').get(id)
+      spentMinor += intents.filter(i => i.escrow?.state === 'CANCELLED' && i.createdAt?.slice(0, 10) === day).reduce((sum, i) => sum + i.amountMinor, 0)
       const gross = charged.reduce((sum, i) => sum + i.amountMinor, 0) + policySpent
       spentMinor += charged.reduce((sum, i) => {
         const receipt = receipts.find(r => r.intentId === i.intentId)
@@ -193,7 +206,7 @@ export class Store {
       run.events = this.rows('SELECT json FROM events WHERE run_id=? ORDER BY id', runId)
       // Quarantine (#131): only a grant whose proof verified is accessible content; a failed one stays for audit only.
       const paid = this.db.prepare('SELECT g.content, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId)
-        .filter(row => (JSON.parse(row.json as string) as PurchaseIntent).status === 'VERIFIED')
+        .filter(row => (JSON.parse(row.json as string) as PurchaseIntent).status === 'VERIFIED' && (!(JSON.parse(row.json as string) as PurchaseIntent).escrow || (JSON.parse(row.json as string) as PurchaseIntent).escrow?.state === 'RELEASED'))
         .map(row => ContentEnvelopeSchema.parse(JSON.parse(row.content as string)))
       run.contents = [...run.contents.filter(content => run.candidates.some(c => c.tier === 'FREE' && sameResource(c, content))), ...paid]
       run.spentMinor = run.intents.filter(i => chargedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
@@ -297,6 +310,16 @@ export class Store {
     const intents = this.rows<PurchaseIntent>('SELECT json FROM intents ORDER BY rowid')
     return status ? intents.filter(i => i.status === status) : intents
   }
+  skipEscrow(input: PurchaseIntent, reason: string): PurchaseIntent {
+    return this.atomic(() => {
+      const old = this.getIntent(input.intentId)
+      if (old) return old
+      const next = PurchaseIntentSchema.parse({ ...input, status: 'SKIPPED', error: reason, createdAt: new Date().toISOString() })
+      this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(next.intentId, next.runId, JSON.stringify(next))
+      this.audit.append({ runId: next.runId, intentId: next.intentId, kind: 'refusal', data: { scheme: 'escrow-v1', reason, amountMinor: next.amountMinor } })
+      return next
+    })
+  }
   reserveIntent(input: PurchaseIntent): PurchaseIntent {
     const intent = PurchaseIntentSchema.parse(input)
     return this.atomic(() => {
@@ -309,7 +332,7 @@ export class Store {
       const quote = intent.quote
       if (!quote || quote.intentId !== intent.intentId || quote.runId !== intent.runId || quote.profileId !== intent.profileId || quote.resourceId !== intent.resourceId || quote.version !== intent.version) throw new Error('Quote identity mismatch')
       const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', intent.runId)
-      const committed = intents.filter(i => reservedStatuses.has(i.status) || chargedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
+      const committed = intents.filter(i => reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED').reduce((sum, i) => sum + i.amountMinor, 0)
       let error: string | undefined
       if (quote.amountMinor !== intent.amountMinor) error = 'Quoted price differs from evaluated price'
       else if (this.isPaused()) error = PAUSED
@@ -317,7 +340,7 @@ export class Store {
       else if (run.stopped) error = 'Run stopped'
       else if (run.budgetMinor === 0 || intent.amountMinor > run.perSourceCapMinor || committed + intent.amountMinor > run.budgetMinor) error = 'Budget or per-source cap exceeded'
       else if (Date.parse(quote.expiresAt) <= Date.now() || !Number.isFinite(Date.parse(quote.expiresAt))) error = 'Quote expired'
-      else if (intents.some(i => i.profileId === intent.profileId && i.resourceId === intent.resourceId && i.version === intent.version && (reservedStatuses.has(i.status) || chargedStatuses.has(i.status)))) error = 'Resource already purchased or reserved'
+      else if (intents.some(i => i.profileId === intent.profileId && i.resourceId === intent.resourceId && i.version === intent.version && (reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED'))) error = 'Resource already purchased or reserved'
       const result: PurchaseIntent = { ...intent, status: error ? 'SKIPPED' : 'RESERVED', createdAt: new Date().toISOString(), error }
       this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId, intent.runId, JSON.stringify(result))
       const terms = { resourceId: intent.resourceId, version: intent.version, profileId: intent.profileId, amountMinor: intent.amountMinor, payTo: quote.payment?.payTo ?? null, rail: quote.payment?.rail ?? null,
@@ -380,12 +403,91 @@ export class Store {
         label: receipt.label, resourceId: receipt.resourceId, version: receipt.version, profileId: intent.profileId, settledAt: receipt.settledAt, policyVersion: this.rawRun(intent.runId).policyVersion ?? POLICY_VERSION } })
     })
   }
+  getEscrow(intentId: string): EscrowRecord | undefined { return this.rows<EscrowRecord>('SELECT json FROM escrows WHERE intent_id=?', intentId)[0] }
+  escrowOutbox(intentId?: string): EscrowOutbox[] {
+    return intentId ? this.rows('SELECT json FROM escrow_outbox WHERE intent_id=? ORDER BY rowid', intentId) : this.rows('SELECT json FROM escrow_outbox ORDER BY rowid')
+  }
+  prepareEscrow(record: EscrowRecord): EscrowRecord {
+    return this.atomic(() => {
+      const old = this.getEscrow(record.intentId)
+      if (old) return old
+      const intent = this.getIntent(record.intentId)
+      if (intent?.status !== 'SUBMITTING' || this.getSubmission(record.intentId)) throw new Error('Escrow requires an exclusive reservation')
+      this.db.prepare('INSERT INTO escrows (intent_id, invoice, json) VALUES (?,?,?)').run(record.intentId, record.quote.terms.quoteId, JSON.stringify(record))
+      this.saveIntent({ ...intent, escrow: record.publicStatus })
+      return record
+    })
+  }
+  /** Caller must have ledger proof of failure/expiry; principal identity is never replaced. */
+  retireEscrowTerminal(intentId: string, operation: 'finish' | 'cancel') {
+    this.atomic(() => {
+      const row = this.escrowOutbox(intentId).find(t => t.operation === operation)
+      if (!row) return
+      this.db.prepare('INSERT OR IGNORE INTO escrow_attempts VALUES (?,?)').run(row.txHash, JSON.stringify(row))
+      this.db.prepare('DELETE FROM escrow_outbox WHERE intent_id=? AND operation=?').run(intentId, operation)
+    })
+  }
+  recordEscrowSubmission(intentId: string, operation: EscrowOperation, signed: Submission): Submission {
+    return this.atomic(() => {
+      const old = this.escrowOutbox(intentId).find(r => r.operation === operation)
+      if (old) return old
+      const intent = this.getIntent(intentId)!, e = this.getEscrow(intentId)!
+      if (!e || intent.status !== 'SUBMITTING') throw new Error('Escrow reservation unavailable')
+      if (operation === 'create' && (this.isPaused() || this.rawRun(intent.runId).stopped || !this.walletAllows(this.rawRun(intent.runId), 0) || Date.parse(intent.quote!.expiresAt) <= Date.now())) throw new Error('Signing authority expired')
+      if (operation === 'finish' && (e.publicStatus.state !== 'VERIFIED_FOR_RELEASE' || !e.publicStatus.proofOk || this.rawRun(intent.runId).stopped || this.isPaused())) throw new Error('Finish requires a verified proof and active run')
+      if (operation === 'cancel' && !['LOCKED', 'VERIFIED_FOR_RELEASE', 'CANCEL_DUE'].includes(e.publicStatus.state)) throw new Error('Cancel requires a locked escrow')
+      const row = { ...signed, operation, intentId }
+      this.db.prepare('INSERT INTO escrow_outbox VALUES (?,?,?,?)').run(intentId, operation, signed.txHash, JSON.stringify(row))
+      if (operation === 'create') {
+        const tx = decode(signed.txBlob)
+        if (tx.TransactionType !== 'EscrowCreate' || tx.Account !== e.publicStatus.owner) throw new Error('Create identity mismatch')
+        this.db.prepare('UPDATE escrows SET owner=?, create_sequence=? WHERE intent_id=?').run(tx.Account, Number(tx.Sequence), intentId)
+        e.publicStatus.createSequence = Number(tx.Sequence)
+      }
+      e.publicStatus = { ...e.publicStatus, [operation + 'Hash']: signed.txHash }
+      this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
+      this.saveIntent({ ...intent, escrow: e.publicStatus })
+      this.audit.append({ runId: intent.runId, intentId, kind: 'escrow-sign', data: { operation, txHash: signed.txHash, owner: e.publicStatus.owner, createSequence: e.publicStatus.createSequence, lastLedgerSequence: signed.lastLedgerSequence, amountDrops: e.quote.terms.amount, payTo: e.quote.terms.payTo, invoiceHash: intent.quote!.quoteHash, proofOk: e.publicStatus.proofOk ?? false } })
+      return signed
+    })
+  }
+  escrowTransition(intentId: string, patch: Partial<EscrowRecord['publicStatus']>, ledgerIndex?: number): EscrowRecord {
+    return this.atomic(() => {
+      const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!
+      if (['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return e
+      const next = { ...e, publicStatus: { ...e.publicStatus, ...patch } }
+      this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(next), intentId)
+      this.saveIntent({ ...intent, escrow: next.publicStatus })
+      if (patch.state === 'LOCKED' && e.publicStatus.state !== 'LOCKED') this.audit.append({ runId: intent.runId, intentId, kind: 'ESCROW_CREATE', data: { txHash: next.publicStatus.createHash, owner: next.publicStatus.owner, createSequence: next.publicStatus.createSequence, ledgerIndex, result: 'tesSUCCESS', invoiceHash: intent.quote!.quoteHash, amountDrops: e.quote.terms.amount, payTo: e.quote.terms.payTo, cancelAfter: e.quote.terms.cancelAfter } })
+      if (patch.proofOk !== undefined && patch.proofOk !== e.publicStatus.proofOk) this.audit.append({ runId: intent.runId, intentId, kind: 'proof', data: { verified: patch.proofOk, status: next.publicStatus.state, scheme: 'escrow-v1', accessible: false } })
+      return next
+    })
+  }
+  completeEscrow(intentId: string, terminal: 'finish' | 'cancel', ledgerIndex: number, observedHash?: string): void {
+    this.atomic(() => {
+      const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!
+      if (['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return
+      const tx = observedHash ? { txHash: observedHash } : this.escrowOutbox(intentId).find(r => r.operation === terminal)
+      if (!tx || terminal === 'finish' && !e.publicStatus.proofOk) throw new Error('Terminal escrow proof missing')
+      e.publicStatus = { ...e.publicStatus, state: terminal === 'finish' ? 'RELEASED' : 'CANCELLED', [terminal + 'Hash']: tx.txHash }
+      const settledAt = new Date().toISOString(), terms = e.quote.terms
+      const receipt = ReceiptSchema.parse({ receiptId: `escrow-${tx.txHash}`, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version,
+        amountMinor: terminal === 'finish' ? intent.amountMinor : 0, currency: 'SGD', settledAt, label: 'XRPL TESTNET · no real value', escrow: e.publicStatus,
+        xrpl: { txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
+      this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
+      this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
+      this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? 'VERIFIED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
+      this.audit.append({ runId: intent.runId, intentId, kind: terminal === 'finish' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', data: { txHash: tx.txHash, ledgerIndex, owner: terms.payer, createSequence: e.publicStatus.createSequence, createHash: e.publicStatus.createHash, result: 'tesSUCCESS', proofOk: e.publicStatus.proofOk ?? false, amountDrops: terms.amount, payTo: terms.payTo } })
+      this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: tx.txHash, ledgerIndex, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl!.amountDrops, payTo: terms.payTo, payer: terms.payer, label: receipt.label, scheme: 'escrow-v1', state: e.publicStatus.state } })
+    })
+  }
   /** Write-once: the first signed payment for an intent is the only one that may ever be submitted. */
   recordSubmission(intentId: string, signed: Submission): Submission {
     return this.atomic(() => {
       const existing = this.getSubmission(intentId)
       if (existing) return existing
       const intent = this.getIntent(intentId)
+      if (this.getEscrow(intentId)) throw new Error('Intent uses escrow')
       if (intent?.status !== 'SUBMITTING') throw new Error('Payment submission requires a submitting reservation')
       if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) throw new Error('Signing authority expired')
       this.db.prepare('INSERT INTO submissions VALUES (?,?,?,?)').run(intentId, signed.txHash, signed.txBlob, signed.lastLedgerSequence)
@@ -468,7 +570,7 @@ export class Store {
     if (JSON.stringify(parsed) !== JSON.stringify(content) || proof.salts.length !== content.spans.length || content.spans.some(s => !content.body.includes(s.text)) || new Set(content.spans.map(s => s.id)).size !== content.spans.length) throw new Error('Delivery verification failed')
     this.atomic(() => {
       const intent = this.getIntent(grant.intentId)
-      if (!intent || !chargedStatuses.has(intent.status) || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version) throw new Error('Grant does not match settled quote')
+      if (!intent || !(chargedStatuses.has(intent.status) || intent.status === 'SUBMITTING' && intent.escrow?.state === 'LOCKED') || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version) throw new Error('Grant does not match settled quote')
       const existing = this.rows<Grant>('SELECT json FROM grants WHERE intent_id=?', grant.intentId)[0]
       if (existing) { if (existing.contentDigest !== root) throw new Error('Grant is immutable'); return }
       this.db.prepare('INSERT INTO grants VALUES (?,?,?)').run(grant.intentId, JSON.stringify(grant), JSON.stringify(content))

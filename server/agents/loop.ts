@@ -90,7 +90,7 @@ export class RunLoop {
     const promise = Promise.resolve().then(work).catch(() => {
       const run = this.store.getRun(runId)
       const pending = run.intents.find(intent => ['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'SUBMITTING'].includes(intent.status) || intent.status === 'VERIFIED' && run.checkpoint.intentId === intent.intentId && run.checkpoint.answeredIntentId !== intent.intentId)
-      this.store.updateRun(runId, { error: pending ? 'Delivery incomplete. Retry delivery to verify and re-answer.' : 'Run failed. The last good answer is preserved; start a new ask.', checkpoint: { ...run.checkpoint, nextAction: pending ? 'retry-delivery' : 'ask', ...(pending ? { intentId: pending.intentId } : {}) } })
+      this.store.updateRun(runId, { error: pending?.escrow ? 'Escrow awaiting automatic ledger recovery; principal remains reserved until finish or cancel validates.' : pending ? 'Delivery incomplete. Retry delivery to verify and re-answer.' : 'Run failed. The last good answer is preserved; start a new ask.', checkpoint: { ...run.checkpoint, nextAction: pending?.escrow ? undefined : pending ? 'retry-delivery' : 'ask', ...(pending ? { intentId: pending.intentId } : {}) } })
       this.trace(runId, run.stopped ? 'STOPPED' : 'FAILED', 'Run interrupted; last good answer preserved.')
     }).finally(() => { this.active.delete(runId) })
     this.active.set(runId, promise)

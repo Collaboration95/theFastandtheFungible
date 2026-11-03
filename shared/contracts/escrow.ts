@@ -1,0 +1,16 @@
+import { z } from 'zod'
+export const EscrowTermsSchema = z.object({
+  scheme: z.literal('escrow-v1'), network: z.literal('xrpl:1'), asset: z.literal('XRP'),
+  quoteId: z.string(), intentId: z.string().min(1).max(200), publisherSlug: z.string(), articleId: z.string(), version: z.string(),
+  manifestRoot: z.string(), amount: z.string().regex(/^[1-9]\d*$/), payer: z.string(), payTo: z.string(),
+  condition: z.string().regex(/^A0258020[0-9A-F]{64}810120$/), cancelAfter: z.number().int().positive(),
+})
+export const EscrowQuoteSchema = z.object({ terms: EscrowTermsSchema, pubKey: z.string(), sig: z.string() })
+export const EscrowStatusSchema = z.object({ scheme: z.literal('escrow-v1'), policy: z.literal('escrow-policy-v1'),
+  state: z.enum(['PREPARED', 'LOCKED', 'VERIFIED_FOR_RELEASE', 'CANCEL_DUE', 'RELEASED', 'CANCELLED']),
+  owner: z.string(), cancelAfter: z.number(), createSequence: z.number().optional(), createHash: z.string().optional(),
+  finishHash: z.string().optional(), cancelHash: z.string().optional(), proofOk: z.boolean().optional(),
+})
+export type EscrowTerms = z.infer<typeof EscrowTermsSchema>
+export type EscrowQuote = z.infer<typeof EscrowQuoteSchema>
+export type EscrowStatus = z.infer<typeof EscrowStatusSchema>

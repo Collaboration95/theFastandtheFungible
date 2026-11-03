@@ -17,7 +17,7 @@ export const ScopeSchema = z.object({ questions: z.array(z.object({ id: z.string
 /** The per-question budget: S$0 to S$5 in 5-cent steps (articles cost from S$0.05). It is still the only spending authorisation. */
 export const BUDGET = { maxMinor: 500, stepMinor: 5, initialMinor: 200, capMinor: 100 } as const
 /** `answers` maps a scope question id to the chosen option; both are optional (questions can be skipped). */
-export const AskSchema = z.object({ question: z.string().trim().min(1).max(2000), budgetMinor: z.number().int().min(0).max(BUDGET.maxMinor).multipleOf(BUDGET.stepMinor), answers: z.record(z.string(), z.string()).optional(), plan: PlanSchema.optional() })
+export const AskSchema = z.object({ escrow: z.boolean().optional(), question: z.string().trim().min(1).max(2000), budgetMinor: z.number().int().min(0).max(BUDGET.maxMinor).multipleOf(BUDGET.stepMinor), answers: z.record(z.string(), z.string()).optional(), plan: PlanSchema.optional() })
 /** Trace event types added by the final push; `type` stays a string so existing types keep working. */
 export const TRACE_EVENT_TYPES = ['CLARIFY', 'PLAN', 'PROOF', 'CHALLENGE', 'REFUND', 'REPUTATION', 'COVERAGE', 'FOLLOW_UP'] as const
 export const TraceEventSchema = z.object({ id: z.number().int(), runId: z.string(), type: z.string(), label: z.string(), at: z.string(), data: z.record(z.string(), z.unknown()).optional() })

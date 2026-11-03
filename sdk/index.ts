@@ -24,7 +24,7 @@ const SearchSchema = z.object({
 })
 export type SearchResult = z.infer<typeof SearchSchema>
 export type AskOptions = {
-  budgetSgd: number; idempotencyKey?: string; signal?: AbortSignal
+  budgetSgd: number; escrow?: boolean; idempotencyKey?: string; signal?: AbortSignal
   /** MCP keeps its existing bounded wait. By default SDK callers follow to a terminal phase. */
   waitMs?: number
 }
@@ -124,7 +124,7 @@ export function createClient(options: { baseUrl: string; token?: string; fetch?:
       opts.signal?.throwIfAborted()
       const mode = await status(opts.signal)
       let run = await json('/api/mcp/runs', RunSnapshotSchema, { method: 'POST', signal: opts.signal,
-        body: JSON.stringify({ question, budget_sgd: opts.budgetSgd, idempotency_key: opts.idempotencyKey, clarify: 'never' }) })
+        body: JSON.stringify({ question, budget_sgd: opts.budgetSgd, idempotency_key: opts.idempotencyKey, clarify: 'never', escrow: opts.escrow }) })
       if (!terminal(run)) {
         const wait = opts.waitMs === undefined ? undefined : AbortSignal.timeout(opts.waitMs)
         const signal = wait ? (opts.signal ? AbortSignal.any([wait, opts.signal]) : wait) : opts.signal

@@ -55,13 +55,14 @@ export function startRun(context: ApiContext, surface: 'web' | 'mcp' = 'web'): R
   // The budget, not the plan, is the spending authorization (gate 2).
   return (req, res) => {
     const isMcp = surface === 'mcp'
-    const input = AskSchema.parse(isMcp ? { question: req.body.question, budgetMinor: 0 } : req.body)
+    const input = AskSchema.parse(isMcp ? { question: req.body.question, budgetMinor: 0, escrow: req.body.escrow } : req.body)
     const request = isMcp ? z.object({ budget_sgd: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER / 100), idempotency_key: z.string().min(1).max(200).optional() }).parse(req.body) : undefined
     const admitted = admit(store, { surface: isMcp ? 'mcp' : 'web', principal: 'operator',
       question: input.question, requestedMinor: request ? Math.floor(request.budget_sgd * 100 + 1e-7) : input.budgetMinor,
       idempotencyKey: request?.idempotency_key ?? z.string().min(1).max(200).optional().parse(req.get('Idempotency-Key')) ?? randomUUID(),
       maxMinor: isMcp ? mcpPolicy.maxMinor : BUDGET.maxMinor, ...(isMcp ? { dailyMinor: mcpPolicy.dailyMinor } : {}), labels })
-    const run = admitted.run
+    if (!admitted.reused && input.escrow !== undefined) store.updateRun(admitted.run.runId, { checkpoint: { ...admitted.run.checkpoint, escrow: input.escrow } })
+    const run = store.getRun(admitted.run.runId)
     res.status(admitted.reused ? 200 : 201).json(run)
     if (admitted.reused) return
     launch(run.runId, async () => {

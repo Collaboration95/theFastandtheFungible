@@ -1,3 +1,4 @@
+import { EscrowStatusSchema } from './escrow.js'
 import { z } from 'zod'
 /** Settlement rails. Both are labelled; neither moves real value. */
 export const SIMULATED_LABEL = 'SIMULATED SGD · no real funds'
@@ -19,7 +20,7 @@ export const QuoteRequestSchema = z.object({ profileId: z.string(), resourceId: 
  * InvoiceID), contentDigest = the manifest root, expiresAt = now + maxTimeoutSeconds.
  */
 export const QuoteSchema = QuoteRequestSchema.extend({ quoteId: z.string(), quoteHash: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), expiresAt: z.string(), contentDigest: z.string(), payment: PaymentRequirementSchema.optional() })
-export const ReceiptSchema = z.object({ receiptId: z.string(), intentId: z.string(), runId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), settledAt: z.string(), label: SettlementLabelSchema, xrpl: LedgerProofSchema.extend({ explorerUrl: z.string() }).optional() })
+export const ReceiptSchema = z.object({ escrow: EscrowStatusSchema.optional(), receiptId: z.string(), intentId: z.string(), runId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), settledAt: z.string(), label: SettlementLabelSchema, xrpl: LedgerProofSchema.extend({ explorerUrl: z.string() }).optional() })
 export type QuoteRequest = z.infer<typeof QuoteRequestSchema>
 export type Quote = z.infer<typeof QuoteSchema>
 export type Receipt = z.infer<typeof ReceiptSchema>

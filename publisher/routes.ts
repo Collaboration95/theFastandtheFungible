@@ -1,3 +1,4 @@
+import { escrowQuote, lockEscrow, verifyEscrowSignature } from './escrow.js'
 import { localEmbeddingCache } from './local-writers.js'
 import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response } from 'express'
 import { randomUUID, timingSafeEqual } from 'node:crypto'
@@ -34,6 +35,7 @@ export type PublisherConfig = {
   /** XRPL validation polling inside the facilitator (tests shorten it). */
   facilitatorTiming?: { pollMs: number; timeoutMs: number }
   /** Test-only toggle (#132): every challenge is refused (503), to cover the buyer's REFUSED branch. */
+  escrowWriters?: string[]
   refuseChallenges?: boolean
 }
 type PaidItem = { publisherSlug: string; articleId: string; version: string; title: string; publisher: string; priceMinor: number; payTo: string; body: string; passages: { id: string; text: string }[] }
@@ -60,6 +62,7 @@ export function toSearchHit(article: Article, relevance: number, searchMode: Sea
 export function createPublisherApp(config: PublisherConfig = {}) {
   const app = express()
   const env = config.env ?? process.env
+  const escrowEnabled = (slug: string) => rail === 'xrpl-testnet' && (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug)
   const secret = config.secret ?? process.env.PUBLISHER_SECRET
   const faults = config.faults ?? process.env.PUBLISHER_FAULTS === '1'
   // The only Bearer secret left guards the fault toggle; payments carry their own signed proof.
@@ -113,11 +116,21 @@ export function createPublisherApp(config: PublisherConfig = {}) {
       const invoiceId = invoiceIdFor({ quoteId, articleId: item.articleId, version: item.version, manifestRoot: root, amount, payTo: item.payTo })
       const quote = { invoiceId, ledgerInvoiceId: ledgerInvoiceId(invoiceId), quoteId, publisherSlug: item.publisherSlug, articleId: item.articleId, version: item.version, amount, payTo: item.payTo, expiresAt: new Date(Date.now() + MAX_TIMEOUT_SECONDS * 1000).toISOString() }
       journal.saveQuote(quote)
-      res.status(402).set('PAYMENT-REQUIRED', encodeHeader('PAYMENT-REQUIRED', { x402Version: 2, resource, accepts: [requirementsFor(quote)] }))
+      res.status(402).set('PAYMENT-REQUIRED', encodeHeader('PAYMENT-REQUIRED', { x402Version: 2, resource, accepts: [requirementsFor(quote), ...(escrowEnabled(item.publisherSlug) ? [{ ...requirementsFor(quote), scheme: 'escrow-v1' as const, maxTimeoutSeconds: 120, extra: { invoiceId: quote.invoiceId, areFeesSponsored: false as const, quoteEndpoint: `${resource.url}/escrow-quote` } }] : [])] }))
         .json({ error: 'Payment required', label }); return
     }
     let signature: PaymentSignature
     try { signature = decodeHeader('PAYMENT-SIGNATURE', raw) } catch { throw new PublisherError(400, 'Invalid PAYMENT-SIGNATURE header') }
+    if (signature.accepted.scheme === 'escrow-v1') {
+      if (!escrowEnabled(item.publisherSlug)) throw new PublisherError(400, 'Writer has not opted into buyer refusal risk')
+      try {
+        verifyEscrowSignature(signature, journal)
+        const locked = await lockEscrow(signature.payload.signedTxBlob, signature.accepted.extra.invoiceId, item.articleId, item.version, ledger!, journal, config.facilitatorTiming)
+        res.set('PAYMENT-RESPONSE', encodeHeader('PAYMENT-RESPONSE', { success: false, escrowState: 'LOCKED', payer: locked.payer, transaction: locked.hash, network: X402_NETWORK }))
+        res.json({ grant: locked.grant, publisherSlug: item.publisherSlug, articleId: item.articleId, version: item.version, title: item.title, publisher: item.publisher, body: item.body, passages: item.passages, salts, label })
+      } catch { throw new PublisherError(402, 'Escrow lock not proven; retry same intent') }
+      return
+    }
     const settled = await facilitator.settle(signature, item)
     res.set('PAYMENT-RESPONSE', encodeHeader('PAYMENT-RESPONSE', paymentResponse(settled)))
     if (!settled.ok) { res.status(402).json({ error: settled.reason, label }); return }
@@ -131,15 +144,34 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     await writersReady
     res.json({ status: 'ok', publisher: 'local', settlement: label })
   })
-  app.get('/w/:slug/facilitator/supported', (_req, res) => {
-    res.json({ kinds: [{ x402Version: 2, scheme: 'exact', network: X402_NETWORK }], extensions: [], signers: {}, label })
+  app.get('/w/:slug/facilitator/supported', (req, res) => {
+    res.json({ kinds: [{ x402Version: 2, scheme: 'exact', network: X402_NETWORK }, ...(escrowEnabled(req.params.slug) ? [{ x402Version: 2, scheme: 'escrow-v1', network: X402_NETWORK }] : [])], extensions: [], signers: {}, label })
   })
   app.post('/w/:slug/facilitator/verify', async (req, res) => {
-    const verified = await facilitator.verify(signatureFromBody(req.body))
+    const signature = signatureFromBody(req.body)
+    if (signature.accepted.scheme === 'escrow-v1') {
+      try {
+        const q = verifyEscrowSignature(signature, journal)
+        if (!escrowEnabled(req.params.slug) || q.terms.publisherSlug !== req.params.slug) throw new Error()
+        res.json({ isValid: true, payer: q.terms.payer, scheme: 'escrow-v1' })
+      } catch { res.json({ isValid: false, invalidReason: 'Escrow quote binding rejected' }) }
+      return
+    }
+    const verified = await facilitator.verify(signature)
     res.json(verified.ok ? { isValid: true, payer: verified.payer } : { isValid: false, invalidReason: verified.reason })
   })
   app.post('/w/:slug/facilitator/settle', async (req, res) => {
-    res.json(paymentResponse(await facilitator.settle(signatureFromBody(req.body))))
+    const signature = signatureFromBody(req.body)
+    if (signature.accepted.scheme === 'escrow-v1') {
+      try {
+        const q = verifyEscrowSignature(signature, journal)
+        if (!escrowEnabled(req.params.slug) || q.terms.publisherSlug !== req.params.slug) throw new Error()
+        const locked = await lockEscrow(signature.payload.signedTxBlob, signature.accepted.extra.invoiceId, q.terms.articleId, q.terms.version, ledger!, journal, config.facilitatorTiming)
+        res.json({ success: false, escrowState: 'LOCKED', payer: locked.payer, transaction: locked.hash, network: X402_NETWORK })
+      } catch { res.status(402).json({ success: false, errorReason: 'Escrow lock not proven', transaction: '', network: X402_NETWORK }) }
+      return
+    }
+    res.json(paymentResponse(await facilitator.settle(signature)))
   })
   if (faults) app.post('/__faults', authenticate, (req, res) => {
     if (req.body?.failNextDelivery !== true) throw new PublisherError(400, 'Expected failNextDelivery: true')
@@ -180,6 +212,16 @@ export function createPublisherApp(config: PublisherConfig = {}) {
       const relevance = reportedRelevance(entry.publisher.slug, r.relevance)
       return { ...toSearchHit(article, relevance, mode, manifests.manifestFor(entry, article, relevance)), ...(entry.publisher.verification ? { verification: entry.publisher.verification } : {}) }
     }))
+  })
+  app.post('/w/:slug/articles/:id/escrow-quote', async (req, res) => {
+    const entry = entryFor(req.params.slug)
+    if (!escrowEnabled(req.params.slug) || !entry.keys) throw new PublisherError(400, 'Escrow unsupported by writer')
+    const article = entry.articles.find(a => a.articleId === req.params.id && a.tier === 'PAID')
+    if (!article) throw new PublisherError(404, 'Paid article not found')
+    const manifest = manifests.manifestFor(entry, article, 1)!
+    try {
+      res.json(await escrowQuote(req.body, { publisherSlug: req.params.slug, articleId: article.articleId, version: article.version, manifestRoot: manifest.root, amount: String(article.priceMinor * DROPS_PER_MINOR), payTo: entry.publisher.wallet! }, entry.keys, ledger!, journal))
+    } catch { throw new PublisherError(400, 'Invalid escrow quote request') }
   })
   app.get('/w/:slug/articles/:id', async (req, res) => {
     const entry = entryFor(req.params.slug)
