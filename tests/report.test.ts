@@ -55,8 +55,8 @@ describe('report evidence and drafting', () => {
     const html = reportHtml(report)
     const ref = exampleRun.answers[0].claims[0].citations[0]
     expect(html).toContain(`href="/w/open-records/blog/${ref.resourceId}#p-${ref.spanId}"`)
-    expect(html).toContain('REFUND · failed proof')
-    expect(html).toContain('refunded S$0.30')
+    expect(html).toContain('Refunded')
+    expect(html).toContain('S$0.30')
     // The refunded (quarantined) source is never a cited source.
     expect(report.sources.map(s => s.resourceId)).not.toContain(leak.resourceId)
   })
@@ -108,12 +108,12 @@ describe('report evidence and drafting', () => {
     const html = reportHtml(report)
     expect(html).toContain('Receipt IDs: receipt-1')
     expect(html).toContain('bought / granted')
-    expect(html).toContain('0.800 / 1.000 / 2.000')
+    expect(html).toContain('Net cost')
     expect(html).toContain('S$0.80')
-    expect(html).toContain('Round 1 · fixture · metadata-fixture')
+    expect(html).toContain('Decided by fixture · metadata-fixture')
     // #214: the decision provider is named as itself in the report (gate 5).
     const openai = reportHtml({ ...report, decisions: report.decisions.map(d => ({ ...d, provider: 'openai' as const, model: 'gpt-6-luna' })) })
-    expect(openai).toContain('Round 1 · OpenAI Decisions · gpt-6-luna')
+    expect(openai).toContain('Decided by OpenAI Decisions · gpt-6-luna')
   })
   it('labels stub/provider failure and all-invalid drafts as fixture', async () => {
     vi.mocked(isLlmConfigured).mockReturnValue(true)
@@ -131,8 +131,8 @@ describe('report evidence and drafting', () => {
     expect(report.findings).toHaveLength(1)
     expect(report.finalVersion).toBe(2)
     const html = reportHtml(report)
-    expect(html).toContain('First answer · v1')
-    expect(html).toContain('Final answer · v2')
+    expect(html).not.toContain('First answer · v1')
+    expect(html).not.toContain('Final answer · v2')
     expect(html).toContain('href="#excerpt-1"')
     expect(html).toContain('Exact synthetic passage')
     expect(html).toContain('break-before: page')

@@ -12,9 +12,9 @@ test('production preview: initial JS, interactive, input → paint, and full UC2
   const paletteFile = [...files].find(file => file.includes('command-palette'))!
   const paletteJsGzip = gzipSync(await readFile(`dist/${paletteFile}`)).length
   await page.addInitScript(() => {
-    const metrics = { cls: 0, paints: [] as { key: string; ms: number }[] }
+    const metrics = { cls: 0, shifts: [] as unknown[], paints: [] as { key: string; ms: number }[] }
     Object.assign(window, { foundationMetrics: metrics })
-    new PerformanceObserver(list => { for (const entry of list.getEntries()) { const item = entry as PerformanceEntry & { value: number; hadRecentInput: boolean }; if (!item.hadRecentInput) metrics.cls += item.value } }).observe({ type: 'layout-shift', buffered: true })
+    new PerformanceObserver(list => { for (const entry of list.getEntries()) { const item = entry as PerformanceEntry & { value: number; hadRecentInput: boolean }; if (!item.hadRecentInput) { metrics.cls += item.value; metrics.shifts.push({ value: item.value, sources: (item as unknown as { sources: { node?: Element; previousRect: DOMRect; currentRect: DOMRect }[] }).sources.map(s => ({ node: s.node?.className, before: s.previousRect.toJSON(), after: s.currentRect.toJSON() })) }) } } }).observe({ type: 'layout-shift', buffered: true })
     document.addEventListener('keydown', event => {
       if (!(event.ctrlKey || event.metaKey) || !['k', '1', '2'].includes(event.key)) return
       const start = performance.now()
@@ -47,6 +47,7 @@ test('production preview: initial JS, interactive, input → paint, and full UC2
   // Start at the mounted run shell, then include every paced event, not the intentional page navigation.
   await page.evaluate(() => { (window as unknown as { foundationMetrics: { cls: number } }).foundationMetrics.cls = 0 })
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
+  console.log('SHIFT DETAILS', JSON.stringify(await page.evaluate(() => (window as unknown as { foundationMetrics: { shifts: unknown[] } }).foundationMetrics.shifts)))
   const cls = await page.evaluate(() => (window as unknown as { foundationMetrics: { cls: number } }).foundationMetrics.cls)
   const result = { initialJsGzip, paletteJsGzip, interactiveMs, paletteP95Ms: p95('k'), viewSwitchP95Ms: p95('12'), uc2Cls: cls, environment: 'local Chromium, production vite preview, fixture replay, 1280×720' }
   await mkdir('.playwright/evidence', { recursive: true })

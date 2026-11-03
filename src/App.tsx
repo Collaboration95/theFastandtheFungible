@@ -12,6 +12,7 @@ import Settings from './components/Settings'
 import RunActivity from './components/RunActivity'
 import Sources, { getAccessibleContent } from './components/Sources'
 import Answer, { validatedAnswers } from './components/Answer'
+import MobileSpend from './components/MobileSpend'
 import ReportButton from './components/ReportButton'
 import SpendPanel from './components/SpendPanel'
 import DecisionPanel from './components/DecisionPanel'
@@ -303,12 +304,12 @@ export default function App() {
     { id: 'cmd-new', label: 'New question', hint: `${modifier}N`, run: focusAsk },
     { id: 'cmd-run', label: 'Run', hint: `${modifier}1`, run: () => switchView('run') },
     { id: 'cmd-writers', label: 'Writers', hint: `${modifier}2`, run: () => switchView('writers') },
-    ...DEMO_QUESTIONS.slice(0, 3).map(preset => ({ id: `cmd-${preset.id}`, label: `${preset.id} · ${preset.text}`, run: () => { newQuestion(); setDraft(preset.text); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()) } })),
+    ...DEMO_QUESTIONS.slice(0, 3).map(preset => ({ id: `cmd-${preset.id}`, label: preset.text, group: 'Examples', run: () => { newQuestion(); setDraft(preset.text); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()) } })),
     { id: 'cmd-budget', label: 'Set budget', run: () => { newQuestion(); requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.ra-budget-chip')?.click()) } },
-    ...(shown ? [{ id: 'cmd-work', label: 'Show Work', hint: 'W', run: () => { switchView('run'); setWork(true) } }] : []),
-    ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: `Recent · ${item.question}`, run: () => { setTab('run'); void openRun(item.runId) } })),
-    { id: 'cmd-record', label: recording ? 'Leave record mode' : 'Record mode · clean fixture recording', run: () => { const url = new URL(window.location.href); url.search = recording ? '' : '?record=1'; window.location.assign(url) } },
-    { id: 'cmd-mcp', label: 'Copy Claude MCP setup command', run: () => { void navigator.clipboard.writeText('claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- make mcp').catch(() => setError('Clipboard unavailable. Run: claude mcp add researchagent -- make mcp')) } },
+    ...(shown ? [{ id: 'cmd-work', label: 'Show work', hint: 'W', run: () => { switchView('run'); setWork(true) } }] : []),
+    ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: item.question, group: 'Recent runs', run: () => { setTab('run'); void openRun(item.runId) } })),
+    { id: 'cmd-record', label: recording ? 'Leave record mode' : 'Record mode', run: () => { const url = new URL(window.location.href); url.search = recording ? '' : '?record=1'; window.location.assign(url) } },
+    { id: 'cmd-mcp', label: 'Connect an agent (MCP)', run: () => { void navigator.clipboard.writeText('claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- make mcp').catch(() => setError('Clipboard unavailable. Run: claude mcp add researchagent -- make mcp')) } },
     { id: 'cmd-stop', label: 'Stop buying', hint: `${modifier}.`, run: () => void stopRun() },
     { id: 'cmd-ask', label: 'Submit question / Go now', hint: `${modifier}↵`, run: () => { if (pending?.step === 'plan') go(pending.scope.plan); else document.querySelector<HTMLFormElement>('.ra-composer')?.requestSubmit() } },
     { id: 'cmd-focus', label: 'Focus question', hint: '/', run: focusAsk },
@@ -381,7 +382,7 @@ export default function App() {
     <div className="ra-ws">
       <main className="ra-brief">
         <h1 className="ra-q">{shown.question}</h1>
-        <details className="ra-mobile-spend"><summary>Spent {money(shown.spentMinor - (shown.refundedMinor ?? 0))} of {money(shown.budgetMinor)} · {shown.receipts.length} payments ›</summary><SpendPanel run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} /></details>
+        <MobileSpend run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         <RunActivity run={shown} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
         {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}
         {shown.phase === 'FAILED' && model.phase !== 'recovering' && <Notice tone="error">{shown.intents.some(i => i.status === 'DELIVERY_FAILED') ? 'Delivery incomplete. Retry delivery in Payments.' : 'The run could not finish. Start a new question.'}</Notice>}
@@ -391,10 +392,10 @@ export default function App() {
         {shown.labels.search?.startsWith('keyword') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Keyword search only: embeddings were unavailable.</Notice>}
         {shown.intents.filter(i => i.status === 'REFUNDED').map(i => <Notice key={i.intentId}>{candidateOf(shown, i)?.publisher ?? 'The writer'}'s article didn't contain what it promised, so it was refunded and not used.</Notice>)}
         {(error || healthError) && <p className="ra-banner" role="alert">{error || "Can't reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>}
-        {!compare && <details className="ra-source-details"><summary>Sources · {shown.candidates.length} found</summary><Sources run={shown} onOpen={candidate => setPassage({ candidate })} /></details>}
+        {!compare && <Sources run={shown} onOpen={candidate => setPassage({ candidate })} />}
         <Answer run={shown} view={view} onView={setView} compare={compare} onCompare={() => { setView('latest'); setCompare(!compare) }}
           onCitation={citation => { const candidate = candidateOf(shown, citation); if (candidate) setPassage({ candidate, citation }) }}
-          report={finished ? <ReportButton run={shown} onReport={downloadReport} /> : undefined} />
+          report={finished ? <ReportButton run={shown} onReport={downloadReport} onCompare={() => { setView('latest'); setCompare(true) }} /> : undefined} />
       </main>
       <aside className="ra-side" aria-label="Budget and purchases">
         <SpendPanel run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />

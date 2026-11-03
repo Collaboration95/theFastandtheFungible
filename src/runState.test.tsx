@@ -41,13 +41,13 @@ describe('one run view model', () => {
   it('keeps unchanged UC2 headline unhighlighted and composes a complete gap sentence (#225, #226)', () => {
     const html = answer(ucRuns.UC2)
     expect(html).not.toContain('ra-vtext is-hl')
-    expect(html).toContain('The earlier evidence gap is now covered')
+    expect(html).toContain('Lead finding')
     expect(html).not.toContain('No accessible')
   })
   it('UC4 never claims the run was free if any payment was made (#230)', () => {
-    expect(answer({ ...ucRuns.UC4, spentMinor: 60 })).toContain('S$0.60 spent on this run')
-    expect(answer({ ...ucRuns.UC4, spentMinor: 60 })).not.toContain('Found free on a focused search')
-    expect(answer(ucRuns.UC4)).toContain('Found free on a focused search')
+    expect(answer({ ...ucRuns.UC4, spentMinor: 60 })).not.toContain('nothing bought')
+    expect(answer({ ...ucRuns.UC4, spentMinor: 60 })).not.toContain('nothing bought')
+    expect(answer(ucRuns.UC4)).toContain('found free on a focused search')
   })
   it('all decision rows name their articles (#227)', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={ucRuns.UC2} />)

@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { ClaimSchema, ReportSchema, RunSnapshotSchema, type Claim, type ContentEnvelope, type Report, type RunSnapshot } from '../../shared/contracts/index.js'
 import { resolveCitation } from './citations.js'
 import { isLlmConfigured, llmLabel, llmProvider, researchModel, streamJson } from './llm.js'
-import { reportHtml } from '../report-template.js'
+import { reportHtml, reportEnvironment } from '../report-template.js'
 
 const DraftSchema = z.object({ findings: z.array(ClaimSchema).min(1) })
 const disclaimer = (settlement: string) => `Synthetic demonstration: companies, publishers, numbers and exact passages are fictional. ${settlement}.`
@@ -108,7 +108,7 @@ export async function renderReport(input: Report, outputPath: string): Promise<{
     await page.route('**/*', route => route.abort())
     await page.setContent(html, { waitUntil: 'load' })
     await page.emulateMedia({ media: 'print' })
-    await page.pdf({ path: outputPath, format: 'A4', printBackground: true, preferCSSPageSize: true })
+    await page.pdf({ path: outputPath, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: true, headerTemplate: '<span></span>', footerTemplate: `<div style="width:100%;text-align:center;font:10px Arial;color:#655D55">${reportEnvironment(report)} · <span class="pageNumber"></span></div>` })
     return { format: 'PDF', path: outputPath }
   } catch {
     const path = extname(outputPath) ? outputPath.slice(0, -extname(outputPath).length) + '.html' : outputPath + '.html'

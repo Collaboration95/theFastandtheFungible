@@ -64,7 +64,7 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   for (const width of [320,360,390,768,1024,1440]) {
     await page.setViewportSize({ width, height: width < 500 ? 844 : 900 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    if (width === 390) { expect((await page.locator('.ra-q').boundingBox())!.width).toBeLessThanOrEqual(358); await shot('26-mobile-done'); await page.locator('.ra-mobile-spend > summary').click(); await shot('25-mobile-spend'); await page.locator('.ra-mobile-spend > summary').click() }
+    if (width === 390) { expect((await page.locator('.ra-q').boundingBox())!.width).toBeLessThanOrEqual(358); await shot('26-mobile-done'); await page.locator('.ra-mobile-spend > button').click(); await shot('25-mobile-spend'); await page.getByRole('button', { name: 'Close spend' }).click() }
   }
   await page.emulateMedia({ reducedMotion: 'reduce' })
   expect(await page.locator('.ra-net').first().evaluate(el => getComputedStyle(el).animationName)).toBe('none')

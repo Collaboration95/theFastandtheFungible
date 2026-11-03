@@ -28,6 +28,7 @@ export default function ShowWork({ run, configured, onClose }: { run: RunSnapsho
       <button type="button" className="ra-btn" onClick={onClose} aria-label="Close show work">Esc ×</button>
     </div>
     <div className="ra-sheet-b" role="tabpanel" aria-label={tab}>
+      <p className="ra-note">{{ Trace: 'What the agent did, in order.', Wire: 'The requests and responses behind this run.', Policy: 'Why each article was bought or skipped.', Receipts: 'The payment records saved with this run.', Models: 'The providers and substitutions used in this run.', Ledger: 'The transactions on XRPL Testnet.' }[tab]}</p>
       {tab === 'Trace' && <Activity run={run} />}
       {tab === 'Wire' && <Wire run={run} />}
       {tab === 'Policy' && <DecisionTable run={run} />}

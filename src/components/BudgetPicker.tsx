@@ -1,0 +1,3 @@
+export default function BudgetPicker({ value, onChange, disabled = false }: { value: number; onChange: (minor: number) => void; disabled?: boolean }) {
+  return <div className="ra-budget-picker"><div role="group" aria-label="Budget choices">{[0,100,200,300,500].map(amount => <button type="button" key={amount} disabled={disabled} aria-pressed={value === amount} onClick={() => onChange(amount)}>{amount ? `S$${amount / 100}` : 'Free'}</button>)}</div><label>Custom budget (S$)<input type="number" min="0" max="5" step="0.05" disabled={disabled} value={value / 100} onChange={event => { const n = Number(event.target.value); if (Number.isFinite(n) && n >= 0 && n <= 5) onChange(Math.round(n * 20) * 5) }} /></label></div>
+}

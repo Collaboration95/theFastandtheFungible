@@ -19,14 +19,14 @@ test('UC2: clarify chip → plan card → paid purchase with proof ✓ → STREN
   // The plan card confirms the plan before any spending; it is not a purchase approval.
   await page.getByRole('button', { name: 'Start now' }).click()
   await finished(page)
-  await page.locator('.ra-source-details > summary').click()
-  await expect(page.getByRole('button', { name: /NotFinancialTimes: .*bought S\$0\.90/ })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought')
   await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ }).getByText(/Verified/)).toBeVisible()
-  await expect(page.getByText('Strengthens the free answer').first()).toBeVisible()
+  await expect(page.locator('.ra-vtext')).toContainText('55.2%')
   await expect(page.getByRole('button', { name: /MarketPulse.*bought/ })).toHaveCount(0)
 
   const download = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Download report' }).click()
+  await page.getByText('Export ⋯', { exact: true }).click()
+  await page.getByRole('button', { name: 'Download report (PDF)' }).click()
   const file = await (await download).path()
   expect((await readFile(file!)).subarray(0, 5).toString()).toBe('%PDF-')
 
@@ -41,15 +41,15 @@ test('UC3: AlphaLeak bought → proof fails → refunded → quarantined; The Fa
   await ask(page, /^Malaysia packaging lead times/)
   await page.getByRole('button', { name: 'Start now' }).click()
   await finished(page)
-  await page.locator('.ra-source-details > summary').click()
   const leak = page.getByRole('region', { name: /Purchase: AlphaLeak/ })
   await expect(leak.getByText(/Not found/)).toBeVisible()
   await expect(leak.getByText(/Checked against the writer/)).toBeVisible()
   await expect(leak.getByText(/Refunded S\$0.30/).first()).toBeVisible()
-  await expect(page.getByRole('button', { name: /The Fab Floor: .*bought S\$0\.40/ })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Purchase: The Fab Floor' })).toContainText('Verified')
   await page.getByRole('tab', { name: 'Writers' }).click()
   await expect(page.getByText(/quarantined/i).first()).toBeVisible()
-  await expect(page.getByText(/0\.40/).first()).toBeVisible()
+  await page.getByRole('button', { name: 'AlphaLeak' }).click()
+  await expect(page.getByText(/Honesty 0\.40/)).toBeVisible()
 })
 
 for (const width of [1280, 390]) {

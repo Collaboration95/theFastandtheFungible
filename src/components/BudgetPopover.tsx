@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { money } from '../format'
 import { useDismiss } from '../useDismiss'
-import BudgetSlider from './BudgetSlider'
+import BudgetPicker from './BudgetPicker'
 
 /** Home's budget control: a chip that opens a popover with the notched slider and quick picks. */
 export default function BudgetPopover({ value, onChange, disabled = false }: { value: number; onChange: (minor: number) => void; disabled?: boolean }) {
@@ -16,7 +16,7 @@ export default function BudgetPopover({ value, onChange, disabled = false }: { v
       <svg className="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 8l4.5 4.5L14.5 8" /></svg>
     </button>
     {open && <div className="ra-pop" role="dialog" aria-label="Budget">
-      <BudgetSlider value={value} onChange={onChange} stops />
+      <BudgetPicker value={value} onChange={onChange} />
     </div>}
   </div>
 }

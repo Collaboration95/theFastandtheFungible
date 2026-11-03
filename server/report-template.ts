@@ -1,55 +1,46 @@
-import { decisionLabel, providerLabels, type Claim, type Report } from '../shared/contracts/index.js'
+import { decisionLabel, type Claim, type Report } from '../shared/contracts/index.js'
 import { articleUrl } from '../shared/contracts/manifest.js'
 import { resolveCitation } from './agents/citations.js'
-import { FACT_STATUS } from '../shared/coverage.js'
+import { leadFinding } from '../shared/lead-finding.js'
 
 const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 const money = (minor: number) => `S$${(minor / 100).toFixed(2)}`
-const refKey = (resourceId: string, version: string, spanId: string) => JSON.stringify([resourceId, version, spanId])
+const key = (ref: { resourceId: string; version: string; spanId: string }) => JSON.stringify([ref.resourceId, ref.version, ref.spanId])
+export const reportEnvironment = (report: Report) => report.labels?.settlement.includes('TESTNET') ? 'XRPL Testnet · test funds' : 'Demo data · simulated payments'
 
-/** One offline, escaped template for both Chromium PDF and browser printing. */
+/** Offline, escaped print view: two content sections and cited passages exactly once. */
 export function reportHtml(report: Report): string {
-  const references = report.sources.flatMap(source => source.spans.map(span => ({ source, span })))
-  const referenceNumber = (resourceId: string, version: string, spanId: string) => references.findIndex(r => refKey(r.source.resourceId, r.source.version, r.span.id) === refKey(resourceId, version, spanId)) + 1
-  // Citations open the writer's article: a FREE passage at its #p-<passageId> anchor, a PAID one at its abstract page.
-  const writerUrl = (resourceId: string, version: string, spanId?: string) => {
-    const candidate = report.access?.candidates.find(c => c.resourceId === resourceId && c.version === version)
-    if (!candidate?.publisherSlug) return undefined
-    // candidate.url is the x402 agent endpoint for a PAID hit; readers get the blog page.
-    return articleUrl(candidate.publisherSlug, resourceId, candidate.tier === 'FREE' ? spanId : undefined)
-  }
-  const claims = (items: Claim[]) => items.map(claim => `<li><p>${escape(claim.text)} <strong>${escape(claim.stance)}</strong> ${claim.citations.map(ref => {
-    if (!resolveCitation(ref, report.sources)) throw new Error('Unresolved report citation')
-    const n = referenceNumber(ref.resourceId, ref.version, ref.spanId)
-    return `<a href="${escape(writerUrl(ref.resourceId, ref.version, ref.spanId) ?? `#excerpt-${n}`)}">[${n}]</a>`
-  }).join(' ')}</p></li>`).join('')
-  const decisions = report.decisions.map(round => `<h3>Round ${round.round} · ${escape(decisionLabel(round))}</h3><p>Gap: ${escape(round.gap)} · ${round.gapMaterialSource === 'requirement' ? 'requested fact' : `material probability ${round.gapMaterial.toFixed(3)}`} · threshold ${round.threshold.toFixed(3)}</p><table><thead><tr><th>Candidate / price</th><th>Gap / original / credibility</th><th>Value / per S$</th><th>Verdict</th></tr></thead><tbody>${round.rows.map(row => `<tr><td>${escape(row.candidate.title)}<br>${escape(row.candidate.resourceId)} · ${money(row.candidate.price.amountMinor)}</td><td>${row.judgment.addressesGap.toFixed(3)} / ${row.judgment.originality.original.toFixed(3)} / ${row.judgment.credibility.toFixed(3)}</td><td>${row.value.toFixed(3)} / ${row.valuePerDollar.toFixed(3)}</td><td>${escape(row.verdict)}${row.wouldBuy ? ' · would buy' : ''}<br>${escape(row.reason)}</td></tr>`).join('')}</tbody></table>`).join('')
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>${escape(report.title)}</title><style>
-@page { size: A4; margin: 18mm; }
-* { box-sizing: border-box; } body { margin: 0 auto; padding: 28px; max-width: 900px; color: #17212d; background: white; font: 16px/1.55 Georgia, serif; }
-h1,h2,h3,th,.label { font-family: Arial, sans-serif; } h1 { font-size: 30px; line-height: 1.2; } h2 { font-size: 22px; margin-top: 28px; } h3 { font-size: 17px; } p,li,td,blockquote { overflow-wrap: anywhere; white-space: pre-wrap; } .label { border: 1px solid #637184; padding: 10px; font-size: 13px; } table { border-collapse: collapse; width: 100%; font: 12px/1.5 Arial,sans-serif; } th,td { padding: 8px; border: 1px solid #a3afbc; text-align: left; vertical-align: top; } thead { display: table-header-group; } blockquote { border-left: 3px solid #78889c; margin: 12px 0; padding-left: 16px; } a { color: #244a6b; } .excerpt { margin-bottom: 22px; } .print-note { font: 13px Arial,sans-serif; }
-@media print { body { padding: 0; max-width: none; font-size: 11pt; } .appendix { break-before: page; } h1,h2,h3 { break-after: avoid; } tr,.excerpt { break-inside: avoid; } .print-note { display: none; } a { text-decoration: none; } }
-</style></head><body><main>
-<p class="print-note">Print this HTML page or save it as PDF with your browser. The appendix starts on a new printed page.</p>
-<h1>${escape(report.title)}</h1><p>${escape(report.question)}</p>
-<p class="label">${escape(report.disclaimer)}<br>Report: ${escape(providerLabels[report.provider])} · ${escape(report.model)}${report.fallbackReason ? `<br>Fixture fallback: ${escape(report.fallbackReason)}` : ''}<br>Research: ${escape(report.labels?.research ?? 'unspecified')} · Decision: ${escape(report.labels?.decision ?? 'unspecified')} · Publisher: ${escape(report.labels?.publisher ?? 'unspecified')}<br>${escape(report.labels?.settlement ?? 'SIMULATED SGD · no real funds')}</p>
-<p>Budget ${money(report.budgetMinor)} · spent ${money(report.spentMinor)}${report.refunds?.length ? ` · refunded ${money(report.refunds.reduce((sum, r) => sum + r.amountMinor, 0))}` : ''}</p>
-<h2>Executive answer</h2><p>${escape(report.executiveAnswer)}</p>
-${report.facts ? `<p class="label">Requested facts: ${escape(report.facts.line)}<br>${report.facts.facts.map(f => `${escape(FACT_STATUS[f.status])} · ${escape(f.text)}`).join('<br>')}</p>` : ''}
-<h2>Findings</h2><ol>${claims(report.findings)}</ol>
-<h2>What purchases changed</h2><p>${escape(report.purchasesChanged)}</p>${report.impact ? `<p>Impact: <strong>${escape(report.impact.classification)}</strong></p>` : ''}
-<h3>First answer · v${escape(report.firstVersion ?? '—')}</h3><ol>${claims(report.firstFindings ?? [])}</ol>
-<h3>Final answer · v${escape(report.finalVersion ?? '—')}</h3><ol>${claims(report.finalFindings ?? [])}</ol>
-<h2>Open questions</h2>${report.openQuestions.length ? `<ul>${report.openQuestions.map(q => `<li>${escape(q)}</li>`).join('')}</ul>` : '<p>No open questions recorded.</p>'}
-<h2>Method</h2><p>${escape(report.method)}</p>
-<section class="appendix"><h2>Appendix · decisions and receipts</h2><p>Ledger data from the persisted run; the writing model does not create these records.</p><p>value = gapMaterial × addressesGap × P(original) × (0.5 + 0.25 × credibility). Policy code enforces cap, budget and eligibility.</p>${decisions || '<p>No decision rounds recorded.</p>'}
-<h3>Settlement receipts · ${escape(report.labels?.settlement ?? 'SIMULATED SGD · no real funds')}</h3>${report.receipts.length || report.refunds?.length ? `<table><thead><tr><th>Receipt / intent</th><th>Resource / version</th><th>Amount / settled at</th></tr></thead><tbody>${report.receipts.map(r => `<tr><td>${escape(r.receiptId)}<br>${escape(r.intentId)}</td><td>${escape(r.resourceId)} · ${escape(r.version)}</td><td>${money(r.amountMinor)}${r.xrpl ? ` = ${escape(Number(r.xrpl.amountDrops) / 1_000_000)} XRP` : ''}<br>${escape(r.settledAt)}${r.xrpl ? `<br>XRPL tx <a href="${escape(r.xrpl.explorerUrl)}">${escape(r.xrpl.txHash.slice(0, 16))}…</a> · ledger ${r.xrpl.ledgerIndex}<br>${escape(r.xrpl.payer)} → ${escape(r.xrpl.payTo)}` : ''}</td></tr>`).join('')}${(report.refunds ?? []).map(r => `<tr><td>REFUND · failed proof<br>${escape(r.intentId)}</td><td>${escape(r.resourceId)} · ${escape(r.version)}</td><td>−${money(r.amountMinor)} refunded by the writer<br>tx ${escape(r.txHash.slice(0, 16))}…</td></tr>`).join('')}</tbody></table>` : '<p>No settlements recorded.</p>'}${report.refunds?.length ? `<p>Refunded ${money(report.refunds.reduce((sum, r) => sum + r.amountMinor, 0))} · the refunded source is quarantined and never cited.</p>` : ''}
-<h2>Source appendix · exact synthetic passages</h2>${report.sources.map(source => {
-    const candidate = report.access?.candidates.find(c => c.resourceId === source.resourceId && c.version === source.version)
-    const receipts = report.receipts.filter(r => r.resourceId === source.resourceId && r.version === source.version)
-    return `<h3>${escape(source.title)}</h3><p>${escape(source.publisher)} · ${escape(source.resourceId)} · ${escape(source.version)} · ${candidate?.tier === 'PAID' ? 'bought / granted' : 'free'}<br>Receipt IDs: ${escape(receipts.map(r => r.receiptId).join(', ') || 'none')}<br>Attribution: ${escape(candidate?.license.attribution)}</p>${source.spans.map(span => {
-      const n = referenceNumber(source.resourceId, source.version, span.id)
-      return `<div class="excerpt" id="excerpt-${n}"><p>[${n}] Exact synthetic passage · span ${escape(span.id)}${writerUrl(source.resourceId, source.version, span.id) ? ` · <a href="${escape(writerUrl(source.resourceId, source.version, span.id))}">open on the writer's site</a>` : ''}</p><blockquote>${escape(span.text)}</blockquote></div>`
-    }).join('')}`
-  }).join('') || '<p>No accessible sources recorded.</p>'}</section></main></body></html>`
+  const findings = report.finalFindings ?? report.findings
+  const references = new Map<string, { n: number; source: Report['sources'][number]; span: Report['sources'][number]['spans'][number] }>()
+  // Same numbering as the app: first answer then final answer, even for dropped passages.
+  const numbers = new Map<string, number>()
+  for (const claim of [...(report.firstFindings ?? []), ...findings]) for (const ref of claim.citations) if (!numbers.has(key(ref))) numbers.set(key(ref), numbers.size + 1)
+  const cite = (claim: Claim) => claim.citations.map(ref => {
+    const span = resolveCitation(ref, report.sources)
+    const source = report.sources.find(s => s.resourceId === ref.resourceId && s.version === ref.version)
+    if (!span || !source) throw new Error('Unresolved report citation')
+    const n = numbers.get(key(ref))!
+    references.set(key(ref), { n, source, span })
+    return `<a href="#excerpt-${n}"><sup>[${n}]</sup></a>`
+  }).join(' ')
+  const lead = leadFinding(report.question, findings).map(item => `${escape(item.text)} ${cite(item.claim)}`).join(' ')
+  const groups = [['SUPPORTS','Supports'],['CHALLENGES','Disputes'],['UNCERTAIN','Unclear']].map(([stance, name]) => {
+    const items = findings.filter(c => c.stance === stance)
+    return items.length ? `<h3>${name} (${items.length})</h3><ul>${items.map(c => `<li>${escape(c.text)} ${cite(c)}</li>`).join('')}</ul>` : ''
+  }).join('')
+  const refunds = (report.refunds ?? []).reduce((sum,r) => sum + r.amountMinor, 0)
+  const candidate = (id: string, version: string) => report.access?.candidates.find(c => c.resourceId === id && c.version === version)
+  const payments = report.receipts.map(r => {
+    const source = candidate(r.resourceId, r.version)
+    const refund = report.refunds?.find(item => item.intentId === r.intentId)
+    return `<tr><td>${escape(source?.publisher ?? r.resourceId)}<br><small>${escape(source?.title)}</small></td><td>${money(r.amountMinor)}</td><td>${refund ? `Refunded ${money(refund.amountMinor)} · ${reportEnvironment(report)}` : 'Paid'}</td><td>${r.xrpl ? `<a href="${escape(r.xrpl.explorerUrl)}">${escape(r.xrpl.txHash)}</a>` : 'None (simulated)'}</td></tr>`
+  }).join('')
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>${escape(report.title)}</title><style>
+@page { size: A4; margin: 16mm 18mm 20mm; }
+* { box-sizing: border-box; } body { margin: 0; color: #24211E; background: white; font: 14px/1.5 Arial,sans-serif; } main { max-width: 760px; margin: auto; } h1 { font-size: 24px; line-height: 1.25; margin: 8px 0 20px; } h2 { font-size: 20px; margin: 0 0 14px; } h3 { font-size: 14px; margin: 18px 0 8px; } p { margin: 10px 0; } .caption,small { color: #655D55; font-size: 12px; } .lead { font-size: 18px; line-height: 1.5; } table { border-collapse: collapse; width: 100%; font-size: 12px; } td,th { text-align: left; vertical-align: top; border-bottom: 1px solid #E8E2D8; padding: 8px 4px; overflow-wrap: anywhere; } th { font-weight: 600; } .environment { border-left: 2px solid #9A6B20; background: #FBF8F2; padding: 12px; font-size: 12px; } a { color: inherit; } ul { padding-left: 18px; } li { margin: 0 0 12px; } blockquote { margin: 8px 0 20px; padding-left: 12px; border-left: 2px solid #C9BFB2; } .excerpt { margin-bottom: 20px; } .excerpt h3 { margin-bottom: 4px; } .claims { break-before: page; } .appendix { break-before: page; } .footer { color: #655D55; font-size: 11px; margin-top: 20px; } .print-note { font-size: 12px; } @media print { body { font-size: 10pt; } h1,h2,h3 { break-after: avoid; } tr { break-inside: avoid; } .print-note,.footer { display: none; } a { text-decoration: none; } }
+</style></head><body><main><p class="print-note">Print this HTML page or save it as PDF.</p><section><p class="caption">ResearchAgent evidence report</p><h1>${escape(report.question)}</h1><h2>Lead finding</h2><p class="lead">${lead || 'No validated finding is available.'}</p><h3>Spend</h3><table><thead><tr><th>Paid</th><th>Refunded</th><th>Net cost</th><th>Budget</th></tr></thead><tbody><tr><td>${money(report.spentMinor)}</td><td>${money(refunds)}</td><td>${money(Math.max(0,report.spentMinor-refunds))}</td><td>${money(report.budgetMinor)}</td></tr></tbody></table><h3>Payments</h3><table><thead><tr><th>Writer / article</th><th>Amount</th><th>Status</th><th>Transaction</th></tr></thead><tbody>${payments || '<tr><td colspan="4">Answered from free sources. No purchases.</td></tr>'}</tbody></table><p class="environment">${escape(report.disclaimer)}<br>${reportEnvironment(report)}. All writers and articles are fictional.<br>Research: ${escape(report.labels?.research)}. ${report.decisions.map(d => `Decided by ${escape(decisionLabel(d))}`).join('; ')}${report.fallbackReason ? '<br>Written from offline extracts: the model was unavailable.' : ''}</p>${report.facts ? `<p class="caption">Requested facts: ${escape(report.facts.line)}<br>${report.facts.facts.map(f => `${escape(f.status)} · ${escape(f.text)}`).join('<br>')}</p>` : ''}<p class="caption">How to read this: citation numbers link to exact delivered passages in the appendix. Refunds do not restore spending authority.</p></section><section class="claims"><h2>Claims</h2>${groups}${report.openQuestions.length ? `<h3>Still unanswered</h3><ul>${report.openQuestions.map(q => `<li>${escape(q)}</li>`).join('')}</ul>` : ''}</section><section class="appendix"><h2>Appendix · cited passages</h2>${[...references.values()].sort((a,b) => a.n-b.n).map(({ n, source, span }) => {
+    const c = candidate(source.resourceId,source.version)
+    const url = c?.publisherSlug ? articleUrl(c.publisherSlug,source.resourceId,c.tier === 'FREE' ? span.id : undefined) : undefined
+    return `<div class="excerpt" id="excerpt-${n}"><h3>[${n}] ${escape(source.title)}</h3><p class="caption">${escape(source.publisher)} · ${c?.tier === 'PAID' ? 'bought / granted' : 'free'} · ${escape(c?.license.attribution)}<br>Receipt IDs: ${escape(report.receipts.filter(r => r.resourceId === source.resourceId && r.version === source.version).map(r => r.receiptId).join(', ') || 'none')}${url ? ` · <a href="${escape(url)}">Writer’s article</a>` : ''}</p><p class="caption">Exact synthetic passage · ${escape(span.id)}</p><blockquote>${escape(span.text)}</blockquote></div>`
+  }).join('')}</section><p class="footer">${reportEnvironment(report)}</p></main></body></html>`
 }

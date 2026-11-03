@@ -87,3 +87,7 @@ Regenerate with `npm run brand:build`, then `npm run brand:verify`. See
 `design/brand/README.md` for the output map and cast review. `site/` holds the
 explainers source with page-specific OG/Twitter metadata; merging it to main
 is distinct from publishing it to gh-pages.
+
+## Answer and exports (UX-2, #312)
+
+A shared question-aware selector ranks exact sentences from citation-validated claims; it never takes the first sentence of `conclusion`. Extracts are headed Lead finding. The PDF uses the same selector, one claims section and only cited passages, once. Export owns report, changes and copy link. Sources and purchase reasons are plain tables; mobile Spend opens a native modal bottom sheet.

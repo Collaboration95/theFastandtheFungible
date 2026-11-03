@@ -59,3 +59,5 @@ historical. The current sheet shows the revised cast; no historical run data or
 PR titles were rewritten by the naming audit. No tagged releases existed at
 the audit date. Lowercase package identifiers stay compatible; `productName`
 is ResearchAgent. No claim of a spending-quality or latency improvement.
+
+Product UI amendment (UX-2, 3 Nov): Geist Sans carries prices and metadata with tabular numbers. Geist Mono is reserved for hashes, ids, code and Show work. Use the seven-size scale in docs/design/UX-DIRECTION.md.
