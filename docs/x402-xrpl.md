@@ -389,3 +389,11 @@ it is not deducted twice.
 Evidence: [product Testnet finish and cancel](evidence/escrow-273.md).
 
 Recovery RPC references: [ledger_entry](https://xrpl.org/docs/references/http-websocket-apis/public-api-methods/ledger-methods/ledger_entry), [account_tx](https://xrpl.org/docs/references/http-websocket-apis/public-api-methods/account-methods/account_tx).
+
+After #288, escrow signatures and verified proof transitions append to the same
+hash chain inside their SQLite transactions. Validated `ESCROW_CREATE`,
+`ESCROW_FINISH` and `ESCROW_CANCEL` entries carry transaction hashes, parent
+object identity and ledger results. `npm run audit:verify -- --testnet` checks
+both escrow receipt transactions and validated events, including creates still
+awaiting a terminal receipt. CSV/JSONL exports identify escrow state and parent
+create identity; direct Payment verification remains unchanged.

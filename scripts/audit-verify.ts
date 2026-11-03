@@ -3,7 +3,7 @@
 // Exit 0: all checks passed. 1: tampering or a mismatch. 2: could not run (missing database, bad flags).
 import { parseArgs } from 'node:util'
 import { DatabaseSync } from 'node:sqlite'
-import { receiptRows, verifyChain, verifyOnTestnet, type TestnetCheck } from '../server/audit.js'
+import { auditEntries, verifyEscrowEvents, receiptRows, verifyChain, verifyOnTestnet, type TestnetCheck } from '../server/audit.js'
 import { testnetLedger, testnetUrl } from '../shared/xrpl.js'
 
 const { values } = parseArgs({ options: { db: { type: 'string' }, testnet: { type: 'boolean', default: false }, 'expect-head': { type: 'string' }, json: { type: 'boolean', default: false } } })
@@ -15,7 +15,7 @@ const rows = receiptRows(db)
 let checks: TestnetCheck[] = []
 if (values.testnet) {
   const ledger = testnetLedger(testnetUrl())
-  try { checks = await verifyOnTestnet(rows, ledger) } finally { await ledger.close() }
+  try { checks = [...await verifyOnTestnet(rows, ledger), ...await verifyEscrowEvents(auditEntries(db), ledger)] } finally { await ledger.close() }
 }
 db.close()
 const bad = checks.filter(c => c.status !== 'ok' && c.status !== 'skipped')

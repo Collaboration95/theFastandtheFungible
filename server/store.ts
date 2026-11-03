@@ -316,6 +316,7 @@ export class Store {
       if (old) return old
       const next = PurchaseIntentSchema.parse({ ...input, status: 'SKIPPED', error: reason, createdAt: new Date().toISOString() })
       this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(next.intentId, next.runId, JSON.stringify(next))
+      this.audit.append({ runId: next.runId, intentId: next.intentId, kind: 'refusal', data: { scheme: 'escrow-v1', reason, amountMinor: next.amountMinor } })
       return next
     })
   }
@@ -446,16 +447,19 @@ export class Store {
       e.publicStatus = { ...e.publicStatus, [operation + 'Hash']: signed.txHash }
       this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
       this.saveIntent({ ...intent, escrow: e.publicStatus })
+      this.audit.append({ runId: intent.runId, intentId, kind: 'escrow-sign', data: { operation, txHash: signed.txHash, owner: e.publicStatus.owner, createSequence: e.publicStatus.createSequence, lastLedgerSequence: signed.lastLedgerSequence, amountDrops: e.quote.terms.amount, payTo: e.quote.terms.payTo, invoiceHash: intent.quote!.quoteHash, proofOk: e.publicStatus.proofOk ?? false } })
       return signed
     })
   }
-  escrowTransition(intentId: string, patch: Partial<EscrowRecord['publicStatus']>): EscrowRecord {
+  escrowTransition(intentId: string, patch: Partial<EscrowRecord['publicStatus']>, ledgerIndex?: number): EscrowRecord {
     return this.atomic(() => {
       const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!
       if (['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return e
       const next = { ...e, publicStatus: { ...e.publicStatus, ...patch } }
       this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(next), intentId)
       this.saveIntent({ ...intent, escrow: next.publicStatus })
+      if (patch.state === 'LOCKED' && e.publicStatus.state !== 'LOCKED') this.audit.append({ runId: intent.runId, intentId, kind: 'ESCROW_CREATE', data: { txHash: next.publicStatus.createHash, owner: next.publicStatus.owner, createSequence: next.publicStatus.createSequence, ledgerIndex, result: 'tesSUCCESS', invoiceHash: intent.quote!.quoteHash, amountDrops: e.quote.terms.amount, payTo: e.quote.terms.payTo, cancelAfter: e.quote.terms.cancelAfter } })
+      if (patch.proofOk !== undefined && patch.proofOk !== e.publicStatus.proofOk) this.audit.append({ runId: intent.runId, intentId, kind: 'proof', data: { verified: patch.proofOk, status: next.publicStatus.state, scheme: 'escrow-v1', accessible: false } })
       return next
     })
   }
@@ -473,6 +477,8 @@ export class Store {
       this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
       this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
       this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? 'VERIFIED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
+      this.audit.append({ runId: intent.runId, intentId, kind: terminal === 'finish' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', data: { txHash: tx.txHash, ledgerIndex, owner: terms.payer, createSequence: e.publicStatus.createSequence, createHash: e.publicStatus.createHash, result: 'tesSUCCESS', proofOk: e.publicStatus.proofOk ?? false, amountDrops: terms.amount, payTo: terms.payTo } })
+      this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: tx.txHash, ledgerIndex, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl!.amountDrops, payTo: terms.payTo, payer: terms.payer, label: receipt.label, scheme: 'escrow-v1', state: e.publicStatus.state } })
     })
   }
   /** Write-once: the first signed payment for an intent is the only one that may ever be submitted. */

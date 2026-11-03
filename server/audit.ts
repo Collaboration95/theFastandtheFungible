@@ -1,3 +1,5 @@
+import { EscrowTermsSchema, type EscrowTerms } from '../shared/contracts/escrow.js'
+import { matchesCreate } from '../shared/escrow.js'
 // Tamper-evident operator ledger (#288). Every authorisation or refusal of money movement is one row in
 // `audit_log`, hash-chained to the row before it and written inside the same SQLite transaction as the state
 // change it describes (Store.atomic), so a spend cannot exist without its audit row and the reverse.
@@ -9,7 +11,7 @@ import { lookupTx, verifyPayment, type Ledger } from '../shared/xrpl.js'
 import { ledgerInvoiceId } from '../shared/x402.js'
 
 export const GENESIS_HASH = '0'.repeat(64)
-export const AUDIT_KINDS = ['baseline', 'policy', 'admission', 'decision', 'reserve', 'sign', 'settle', 'deliver', 'proof', 'challenge', 'refund', 'refusal', 'pause', 'prune', 'inbound', 'payout-reserve', 'payout-sign', 'payout-settle'] as const
+export const AUDIT_KINDS = ['baseline', 'policy', 'admission', 'decision', 'reserve', 'sign', 'settle', 'deliver', 'proof', 'challenge', 'refund', 'refusal', 'pause', 'prune', 'inbound', 'payout-reserve', 'payout-sign', 'payout-settle', 'escrow-sign', 'ESCROW_CREATE', 'ESCROW_FINISH', 'ESCROW_CANCEL'] as const
 export type AuditKind = typeof AUDIT_KINDS[number] | (string & {})
 export type AuditEntry = { seq: number; at: string; prevHash: string; hash: string; runId: string | null; intentId: string | null; surface: string; principal: string; kind: string; data: Record<string, unknown> }
 export type AuditInput = { kind: AuditKind; data: Record<string, unknown>; runId?: string; intentId?: string; surface?: string; principal?: string; at?: string }
@@ -150,6 +152,27 @@ function checkCoverage(db: DatabaseSync, entries: AuditEntry[], result: ChainRes
     if (!entry) flag(`signed payment for intent ${id} has no sign entry`)
     else if (entry.data.txHash !== row.tx_hash) flag(`signed payment for intent ${id} differs from its sign entry`, entry.seq)
   }
+  if (hasTable(db, 'escrow_outbox')) {
+    const signed = new Map(entries.filter(e => e.kind === 'escrow-sign').map(e => [e.data.txHash, e]))
+    const rows = [...db.prepare('SELECT json FROM escrow_outbox').all(), ...db.prepare('SELECT json FROM escrow_attempts').all()]
+    for (const row of rows) {
+      const tx = JSON.parse(String(row.json)) as { intentId: string; operation: string; txHash: string }
+      if (baseline.has(tx.intentId)) continue
+      const entry = signed.get(tx.txHash)
+      if (!entry || entry.intentId !== tx.intentId || entry.data.operation !== tx.operation) flag(`escrow signature ${tx.txHash} has no matching escrow-sign entry`)
+    }
+    for (const row of db.prepare('SELECT json FROM escrows').all()) {
+      const escrow = JSON.parse(String(row.json)) as { intentId: string; publicStatus: { state: string; createHash?: string; finishHash?: string; cancelHash?: string; proofOk?: boolean } }
+      if (baseline.has(escrow.intentId)) continue
+      const s = escrow.publicStatus
+      if (['LOCKED', 'VERIFIED_FOR_RELEASE', 'CANCEL_DUE', 'RELEASED', 'CANCELLED'].includes(s.state) && !entries.some(e => e.kind === 'ESCROW_CREATE' && e.intentId === escrow.intentId && e.data.txHash === s.createHash)) flag(`escrow ${escrow.intentId} has no validated create entry`)
+      if (s.state === 'RELEASED' || s.state === 'CANCELLED') {
+        const kind = s.state === 'RELEASED' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', hash = s.state === 'RELEASED' ? s.finishHash : s.cancelHash
+        if (!entries.some(e => e.kind === kind && e.intentId === escrow.intentId && e.data.txHash === hash)) flag(`escrow ${escrow.intentId} has no validated terminal entry`)
+        if (s.state === 'RELEASED' && (!s.proofOk || !entries.some(e => e.kind === 'proof' && e.intentId === escrow.intentId && e.data.verified === true))) flag(`escrow ${escrow.intentId} released without verified proof`)
+      }
+    }
+  }
   // Hire-the-agent (#274): outbound royalty and change payments, and every inbound payment that was settled.
   if (hasTable(db, 'policy_payments')) {
     const payoutSigns = by('payout-sign'), payoutSettles = by('payout-settle')
@@ -203,11 +226,12 @@ export function auditEntries(db: DatabaseSync, range: DateRange = {}): AuditEntr
 
 /** `purchase` = the operator paid a writer for an article; `inbound`, `royalty` and `change` are the hire-the-agent flow (#274). */
 export type ReceiptRow = {
+  escrowTerms?: EscrowTerms; escrowCreateHash?: string; escrowCreateSequence?: number; escrowState?: string
   kind: 'purchase' | 'inbound' | 'royalty' | 'change'; label: string; network: string; runId: string; intentId: string; surface: string; principal: string; policyVersion: string; writer: string; resourceId: string; version: string
   payee: string; payer: string; amountMinor: number | ''; currency: string; amountDrops: string; txHash: string; invoiceId: string; ledgerIndex: number | ''; explorerUrl: string
   status: string; refundTxHash: string; refundAmountMinor: number | ''; refundExplorerUrl: string; reservedAt: string; settledAt: string
 }
-export const RECEIPT_COLUMNS: (keyof ReceiptRow)[] = ['kind', 'label', 'network', 'runId', 'intentId', 'surface', 'principal', 'policyVersion', 'writer', 'resourceId', 'version', 'payee', 'payer', 'amountMinor', 'currency', 'amountDrops', 'txHash', 'invoiceId', 'ledgerIndex', 'explorerUrl', 'status', 'refundTxHash', 'refundAmountMinor', 'refundExplorerUrl', 'reservedAt', 'settledAt']
+export const RECEIPT_COLUMNS: (keyof ReceiptRow)[] = ['kind', 'label', 'network', 'runId', 'intentId', 'surface', 'principal', 'policyVersion', 'writer', 'resourceId', 'version', 'payee', 'payer', 'amountMinor', 'currency', 'amountDrops', 'txHash', 'invoiceId', 'ledgerIndex', 'explorerUrl', 'status', 'refundTxHash', 'refundAmountMinor', 'refundExplorerUrl', 'reservedAt', 'settledAt', 'escrowState', 'escrowCreateHash', 'escrowCreateSequence']
 const explorer = (tx: string) => `${XRPL_EXPLORER}/${tx}`
 
 /**
@@ -224,6 +248,7 @@ export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow
     const testnet = receipt.label === XRPL_LABEL
     const txHash = receipt.xrpl?.txHash ?? intent.txHash ?? ''
     return [{
+      ...(intent.escrow ? { escrowTerms: EscrowTermsSchema.parse(JSON.parse(intent.quote!.quoteId)), escrowCreateHash: intent.escrow.createHash, escrowCreateSequence: intent.escrow.createSequence, escrowState: intent.escrow.state } : {}),
       kind: 'purchase', label: receipt.label, network: testnet ? 'XRPL Testnet (xrpl:1), no real value' : 'SIMULATED rail, no real funds', runId: receipt.runId, intentId: receipt.intentId,
       surface: String(admission?.surface ?? 'unattributed'), principal: String(admission?.principal ?? 'unattributed'), policyVersion: String(admission?.policy_version ?? ''),
       writer: intent.profileId, resourceId: receipt.resourceId, version: receipt.version, payee: receipt.xrpl?.payTo ?? terms?.payTo ?? '', payer: receipt.xrpl?.payer ?? '',
@@ -261,12 +286,13 @@ const cell = (value: unknown) => {
 export const toCsv = (rows: ReceiptRow[]) => [RECEIPT_COLUMNS.join(','), ...rows.map(row => RECEIPT_COLUMNS.map(column => cell(row[column])).join(','))].join('\r\n') + '\r\n'
 export const toJsonl = (rows: object[]) => rows.map(row => JSON.stringify(row)).join('\n') + (rows.length ? '\n' : '')
 
-export type TestnetCheck = { intentId: string; txHash: string; kind: 'payment' | 'refund'; status: 'ok' | 'mismatch' | 'pending' | 'error' | 'skipped'; detail: string }
+export type TestnetCheck = { intentId: string; txHash: string; kind: 'payment' | 'refund' | 'escrow-create' | 'escrow-finish' | 'escrow-cancel'; status: 'ok' | 'mismatch' | 'pending' | 'error' | 'skipped'; detail: string }
 /** Read-only lookups against a public Testnet node: destination, delivered amount and InvoiceID of each payment, and each refund. Spends nothing. */
 export async function verifyOnTestnet(rows: ReceiptRow[], ledger: Ledger): Promise<TestnetCheck[]> {
   const check = async (row: ReceiptRow): Promise<TestnetCheck[]> => {
     if (row.label !== XRPL_LABEL) return [{ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'skipped', detail: 'SIMULATED rail: there is no ledger transaction to check' }]
     const out: TestnetCheck[] = []
+    if (row.escrowTerms) return verifyEscrowOnTestnet(row, ledger)
     try {
       const paid = await verifyPayment(ledger, row.txHash, { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', payTo: row.payee, amountDrops: row.amountDrops, invoiceId: row.invoiceId })
       if (paid.state === 'pending') out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'pending', detail: 'not found as a validated transaction on this node' })
@@ -295,4 +321,42 @@ export async function verifyOnTestnet(rows: ReceiptRow[], ledger: Ledger): Promi
   const results: TestnetCheck[][] = []
   for (let i = 0; i < rows.length; i += 4) results.push(...await Promise.all(rows.slice(i, i + 4).map(check)))
   return results.flat()
+}
+
+/** Escrow receipt is not a Payment: verify both the original principal and the winning terminal. */
+async function verifyEscrowOnTestnet(row: ReceiptRow, ledger: Ledger): Promise<TestnetCheck[]> {
+  const t = row.escrowTerms!, out: TestnetCheck[] = []
+  try {
+    const create = await lookupTx(ledger, row.escrowCreateHash!), terminal = await lookupTx(ledger, row.txHash)
+    const op = row.escrowState === 'RELEASED' ? 'finish' : row.escrowState === 'CANCELLED' ? 'cancel' : undefined
+    const createOk = create.state === 'validated' && create.meta.TransactionResult === 'tesSUCCESS' && matchesCreate(create.tx, t) && Number(create.tx.Sequence) === row.escrowCreateSequence
+    out.push({ intentId: row.intentId, txHash: row.escrowCreateHash!, kind: 'escrow-create', status: createOk ? 'ok' : 'mismatch', detail: createOk ? 'validated bound escrow principal' : 'create missing or differs from bound terms' })
+    const terminalOk = op && terminal.state === 'validated' && terminal.meta.TransactionResult === 'tesSUCCESS' && terminal.tx.TransactionType === (op === 'finish' ? 'EscrowFinish' : 'EscrowCancel') && terminal.tx.Owner === t.payer && Number(terminal.tx.OfferSequence) === row.escrowCreateSequence &&
+      (op !== 'finish' || terminal.tx.Condition === t.condition) && row.amountDrops === (op === 'finish' ? t.amount : '0') && (row.ledgerIndex === '' || row.ledgerIndex === terminal.ledgerIndex)
+    out.push({ intentId: row.intentId, txHash: row.txHash, kind: op === 'cancel' ? 'escrow-cancel' : 'escrow-finish', status: terminalOk ? 'ok' : 'mismatch', detail: terminalOk ? 'validated terminal for the same escrow object' : 'terminal missing or differs from receipt' })
+  } catch { out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'escrow-create', status: 'error', detail: 'escrow ledger lookup unavailable' }) }
+  return out
+}
+
+/** Also verify validated escrow events whose terminal receipt does not exist yet. No signer is loaded. */
+export async function verifyEscrowEvents(entries: AuditEntry[], ledger: Ledger): Promise<TestnetCheck[]> {
+  const checks: TestnetCheck[] = []
+  for (const e of entries.filter(e => ['ESCROW_CREATE', 'ESCROW_FINISH', 'ESCROW_CANCEL'].includes(e.kind))) {
+    const kind = e.kind === 'ESCROW_CREATE' ? 'escrow-create' : e.kind === 'ESCROW_FINISH' ? 'escrow-finish' : 'escrow-cancel'
+    const base = { intentId: e.intentId!, txHash: String(e.data.txHash), kind } as const
+    try {
+      const found = await lookupTx(ledger, base.txHash)
+      let ok = found.state === 'validated' && found.meta.TransactionResult === 'tesSUCCESS' && found.ledgerIndex === e.data.ledgerIndex
+      if (ok && found.state === 'validated') {
+        if (kind === 'escrow-create') {
+          const memos = found.tx.Memos as { Memo: { MemoData: string } }[]
+          const invoice = Buffer.from(memos[0].Memo.MemoData, 'hex').toString('utf8')
+          const terms = EscrowTermsSchema.parse(JSON.parse(invoice))
+          ok = matchesCreate(found.tx, terms) && ledgerInvoiceId(invoice) === e.data.invoiceHash && found.tx.Account === e.data.owner && found.tx.Sequence === e.data.createSequence && found.tx.Amount === e.data.amountDrops && found.tx.Destination === e.data.payTo && found.tx.CancelAfter === e.data.cancelAfter
+        } else ok = found.tx.TransactionType === (kind === 'escrow-finish' ? 'EscrowFinish' : 'EscrowCancel') && found.tx.Owner === e.data.owner && found.tx.OfferSequence === e.data.createSequence && (kind !== 'escrow-finish' || e.data.proofOk === true)
+      }
+      checks.push({ ...base, status: ok ? 'ok' : 'mismatch', detail: ok ? 'validated escrow event matches its audit entry' : 'escrow event missing or differs from audit' })
+    } catch { checks.push({ ...base, status: 'error', detail: 'escrow event lookup or binding unavailable' }) }
+  }
+  return checks
 }

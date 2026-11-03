@@ -154,7 +154,7 @@ export class EscrowPurchases {
         if (status.state !== 'success') return this.store.getIntent(intentId)!
         const found = await lookupTx(this.payer.ledger, create.txHash)
         if (found.state !== 'validated' || !matchesCreate(found.tx, e.quote.terms)) throw new Error('Create mismatch')
-        e = this.store.escrowTransition(intentId, { state: 'LOCKED', createHash: create.txHash, createSequence: Number(decode(create.txBlob).Sequence) })
+        e = this.store.escrowTransition(intentId, { state: 'LOCKED', createHash: create.txHash, createSequence: Number(decode(create.txBlob).Sequence) }, status.ledgerIndex)
         this.event(intent, 'create', create.txHash, status.ledgerIndex)
       }
       // Reconcile an escaped finish before considering Stop/expiry/cancellation.

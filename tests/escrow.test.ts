@@ -8,6 +8,7 @@ import { Store } from '../server/store.js'
 import { PurchaseManager } from '../server/purchases.js'
 import { PublisherClient } from '../server/publisher-client.js'
 import { XrplPayer } from '../server/xrpl.js'
+import { verifyOnTestnet, verifyEscrowEvents } from '../server/audit.js'
 import { newRecord } from '../server/reputation.js'
 import { auditRuns } from '../scripts/gate-audit.js'
 import { matchesCreate, escrowMemo, safeSignature } from '../shared/escrow.js'
@@ -84,8 +85,13 @@ describe('escrow-v1 hybrid', () => {
     const r = s.store.getRun(s.run.runId)
     expect(r.spentMinor).toBe(s.candidate.price.amountMinor); expect(r.reservedMinor).toBe(0)
     expect(r.contents).toHaveLength(1); expect(r.receipts).toHaveLength(1)
+    expect(s.store.auditVerify().ok).toBe(true)
+    expect(s.store.auditEntries().filter(e => e.kind.startsWith('ESCROW_')).map(e => e.kind)).toEqual(['ESCROW_CREATE', 'ESCROW_FINISH'])
+    expect((await verifyOnTestnet(s.store.receiptRows(), s.c.ledger)).every(c => c.status === 'ok')).toBe(true)
+    expect((await verifyEscrowEvents(s.store.auditEntries(), s.c.ledger)).every(c => c.status === 'ok')).toBe(true)
     const privateState = s.store.getEscrow(a.intentId)!
     expect(JSON.stringify(r)).not.toContain(privateState.secret)
+    expect(JSON.stringify(s.store.auditEntries())).not.toContain(privateState.secret)
     expect(JSON.stringify(r)).not.toContain(s.wallet.seed!)
     const create = decode(s.store.escrowOutbox(a.intentId)[0].txBlob)
     expect(matchesCreate(create, privateState.quote.terms)).toBe(true)
@@ -111,6 +117,9 @@ describe('escrow-v1 hybrid', () => {
     expect(r.intents[0].escrow?.state).toBe('CANCELLED')
     expect(r.contents).toHaveLength(0); expect(r.spentMinor).toBe(0); expect(r.reservedMinor).toBe(0)
     expect(r.receipts[0]).toMatchObject({ amountMinor: 0, escrow: { state: 'CANCELLED' } })
+    expect(s.store.auditVerify().ok).toBe(true)
+    expect((await verifyOnTestnet(s.store.receiptRows(), s.c.ledger)).every(c => c.status === 'ok')).toBe(true)
+    expect((await verifyEscrowEvents(s.store.auditEntries(), s.c.ledger)).every(c => c.status === 'ok')).toBe(true)
     expect([...s.c.txs.values()].map(t => t.tx_json.TransactionType)).toEqual(['EscrowCreate', 'EscrowCancel'])
     await s.buy(); expect(s.c.txs.size).toBe(2)
   })

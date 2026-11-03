@@ -56,3 +56,12 @@ signed quote terms, owner reserve plus fee headroom, cancelled-budget reuse,
 unsupported-writer refusal, direct-path preservation, relayed terminal recovery
 and missing-history reservations. The gate audit rejects
 an escrow finish without its persisted verified proof. No gates were loosened.
+
+After rebasing onto merged #288, `npm run audit:verify -- --db
+scratch/escrow-273/buyer.db --testnet --json` independently re-confirmed both
+creates, finish and cancel: **4/4 OK**, read-only, no additional spend.
+[Verification output](escrow-273-audit.json). These two intents predate the new
+audit seam: migration pins them as a baseline and does not invent historical
+audit entries (coverage counters are zero). Current hash-chain emission,
+receipt/signature coverage, and on-ledger event checks are exercised by the
+simulated-ledger integration tests for both outcomes.
