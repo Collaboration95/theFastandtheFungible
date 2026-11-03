@@ -44,6 +44,7 @@ it('UC3 SSE never emits paid passage bytes before a verified grant, and never em
   const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`
   const abort = new AbortController()
   const snapshots: RunSnapshot[] = []
+  let freeDraftBeforeGrant = false
   try {
     const response = await fetch(url + '/runs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: DEMO_QUESTIONS[2].text, budgetMinor: 200 }) })
     expect(response.status).toBe(201)
@@ -58,16 +59,28 @@ it('UC3 SSE never emits paid passage bytes before a verified grant, and never em
       let end: number
       while ((end = buffer.indexOf('\n\n')) >= 0) {
         const frame = buffer.slice(0, end); buffer = buffer.slice(end + 2)
+        if (frame.startsWith('event: trace\n')) {
+          const event = JSON.parse(frame.slice(frame.indexOf('data: ') + 6))
+          if (event.type === 'FREE_DRAFT' && !(snapshots.at(-1)?.grants.length)) freeDraftBeforeGrant = true
+          continue
+        }
         if (!frame.startsWith('event: snapshot\n')) continue
         const snapshot = JSON.parse(frame.slice(frame.indexOf('data: ') + 6)) as RunSnapshot
         snapshots.push(snapshot)
         if (snapshot.phase === 'DONE') break outer
       }
     }
-    const final = snapshots.at(-1)!
+    // A bounded SSE stream may close before a large terminal snapshot; resync the same durable run.
+    let final = snapshots.at(-1)!
+    const deadline = Date.now() + 5000
+    while (final.phase !== 'DONE' && Date.now() < deadline) {
+      final = await (await fetch(`${url}/runs/${run.runId}`)).json() as RunSnapshot
+      snapshots.push(final)
+      if (final.phase !== 'DONE') await new Promise(resolve => setTimeout(resolve, 10))
+    }
     expect(final.phase).toBe('DONE')
     expect(final.intents.some(i => i.status === 'REFUNDED')).toBe(true)
-    expect(snapshots.some(s => s.events.some(e => e.type === 'FREE_DRAFT') && !s.grants.length)).toBe(true)
+    expect(freeDraftBeforeGrant).toBe(true)
     const paid = final.contents.filter(c => final.candidates.some(p => p.resourceId === c.resourceId && p.tier === 'PAID'))
     expect(paid.length).toBeGreaterThan(0)
     for (const snapshot of snapshots) {

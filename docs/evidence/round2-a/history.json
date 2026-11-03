@@ -1,0 +1,88 @@
+{
+  "benchmark3000": {
+    "mode": "local synthetic; no providers or ledger",
+    "source": "d3893ae9b955efc26e4f6dead4c49522e2c433cb",
+    "host": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M5",
+      "node": "v26.3.1",
+      "sqlite": "3.53.2"
+    },
+    "runs": 3000,
+    "eventsPerRun": 60,
+    "eventRows": 180000,
+    "fullHydrationMs": {
+      "before": 34372.847792,
+      "after": 313.32929100000183
+    },
+    "indexMigrationMs": 52.587791999998444,
+    "selectionAndNoopReconcileMs": [
+      5.281792000001587,
+      7.60791700000118,
+      8.604832999997598,
+      7.745958999999857,
+      10.81866699999955
+    ],
+    "under500ms": true,
+    "beforePlan": [
+      {
+        "id": 3,
+        "parent": 0,
+        "notused": 216,
+        "detail": "SCAN events"
+      }
+    ],
+    "afterPlan": [
+      {
+        "id": 4,
+        "parent": 0,
+        "notused": 62,
+        "detail": "SEARCH events USING INDEX events_run_id (run_id=?)"
+      }
+    ]
+  },
+  "benchmark10000": {
+    "mode": "local synthetic; no providers or ledger",
+    "source": "d3893ae9b955efc26e4f6dead4c49522e2c433cb",
+    "host": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M5",
+      "node": "v26.3.1",
+      "sqlite": "3.53.2"
+    },
+    "runs": 10000,
+    "eventsPerRun": 60,
+    "eventRows": 600000,
+    "fullHydrationMs": {
+      "before": null,
+      "after": null
+    },
+    "indexMigrationMs": 147.91033300000004,
+    "selectionAndNoopReconcileMs": [
+      20.296499999999924,
+      22.87829099999999,
+      33.650499999999965,
+      25.608624999999847,
+      21.1421670000002
+    ],
+    "under500ms": true,
+    "beforePlan": [
+      {
+        "id": 3,
+        "parent": 0,
+        "notused": 216,
+        "detail": "SCAN events"
+      }
+    ],
+    "afterPlan": [
+      {
+        "id": 4,
+        "parent": 0,
+        "notused": 62,
+        "detail": "SEARCH events USING INDEX events_run_id (run_id=?)"
+      }
+    ]
+  }
+}

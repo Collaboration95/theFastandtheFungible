@@ -282,7 +282,7 @@ export class PurchaseManager {
           return settled.status === 'SETTLED' ? this.deliver(settled) : settled
         } catch { return this.store.updateIntent(intent.intentId, { error: 'Payment awaiting ledger or publisher; reconciliation required' }) }
       })))
-    await Promise.all(this.store.listIntents().filter(i => ['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED'].includes(i.status) && !this.active.has(i.intentId)).map(intent => this.once(intent.intentId, async () => {
+    await Promise.all(this.store.reconciliationIntents().filter(i => !this.active.has(i.intentId)).map(intent => this.once(intent.intentId, async () => {
       const claimed = intent.status === 'DELIVERY_FAILED' ? this.store.claimDeliveryRetry(intent.intentId) : intent
       if (!claimed) return intent
       this.store.appendEvent(intent.runId, { type: 'PURCHASE', label: `Reconcile · delivery retry ${claimed.deliveryAttempts ?? 0}/3`, data: { intentId: intent.intentId, attempt: claimed.deliveryAttempts ?? 0 } })

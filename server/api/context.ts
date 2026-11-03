@@ -14,6 +14,6 @@ export type ApiContext = {
   mcpPolicy: { maxMinor: number; dailyMinor: number }; publisherUrl: string
   launch: (runId: string, job: () => Promise<void>) => Promise<void>
   progress: (runId: string, label: string) => () => void
-  streams: Map<string, Set<Response>>; reportDir: string
+  streams: Map<string, Set<Response>>; onStreamEmpty?: (runId: string) => void; reportDir: string
   reportJobs: Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>
 }

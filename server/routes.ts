@@ -1,3 +1,5 @@
+import { errorEnvelope } from '../shared/contracts/errors.js'
+import { reconcileRefunds } from './challenges.js'
 import { verifyAnswer } from '../sdk/verify.js'
 import { AgentDenied } from './agent-keys.js'
 import { operationsRouter } from './api/operations.js'
@@ -39,11 +41,33 @@ export async function createApiApp(options: ApiOptions = {}) {
   app.disable('x-powered-by')
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next() })
   const streams = new Map<string, Set<Response>>()
-  const publish = (event: TraceEvent) => {
-    for (const res of streams.get(event.runId) ?? []) {
-      res.write(`event: trace\ndata: ${JSON.stringify(event)}\n\n`)
-      res.write(`event: snapshot\ndata: ${JSON.stringify(store.getRun(event.runId))}\n\n`)
+  const snapshotTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  const lastSnapshot = new Map<string, number>()
+  const send = (runId: string, frame: string) => {
+    const bytes = Buffer.byteLength(frame)
+    for (const res of streams.get(runId) ?? []) {
+      // Oversize snapshots close the stream; clients resync via the durable GET endpoint.
+      if (res.writableEnded || res.destroyed || bytes > 256 * 1024 || res.writableLength + bytes > 256 * 1024) {
+        streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }
+        if (!res.writableEnded && !res.destroyed) res.end()
+        continue
+      }
+      res.write(frame)
     }
+  }
+  const snapshot = (runId: string) => {
+    snapshotTimers.delete(runId)
+    if (!streams.get(runId)?.size) { lastSnapshot.delete(runId); return }
+    lastSnapshot.set(runId, Date.now())
+    send(runId, `event: snapshot\ndata: ${JSON.stringify(store.getRun(runId))}\n\n`)
+  }
+  const publish = (event: TraceEvent) => {
+    if (!streams.get(event.runId)?.size) return
+    send(event.runId, `event: trace\ndata: ${JSON.stringify(event)}\n\n`)
+    const terminal = ['DONE','STOPPED','FAILED','SNAPSHOT'].includes(event.type)
+    if (terminal || Date.now() - (lastSnapshot.get(event.runId) ?? 0) >= 250) {
+      clearTimeout(snapshotTimers.get(event.runId)); snapshot(event.runId)
+    } else if (!snapshotTimers.has(event.runId)) snapshotTimers.set(event.runId, setTimeout(() => snapshot(event.runId), 250 - (Date.now() - lastSnapshot.get(event.runId)!)))
   }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
@@ -98,7 +122,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     return task
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
-  const context: ApiContext = { store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, reportDir, reportJobs, progress }
+  const context: ApiContext = { store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
   app.use(walletRouter(context))
   app.use(operationsRouter(context))
   app.use(auditRouter(context))
@@ -123,21 +147,29 @@ export async function createApiApp(options: ApiOptions = {}) {
   app.use(reportsRouter(context))
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const notFound = error instanceof Error && error.message === 'Run not found'
-    res.status(error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500).json({ error: notFound ? 'Run not found.' : error instanceof z.ZodError ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
+    const status = error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500
+    res.status(status).json({ ...errorEnvelope(status === 403 ? 'unauthorized' : notFound ? 'not_found' : status === 400 ? 'invalid' : 'backend_unavailable', status), error: notFound ? 'Run not found.' : status === 400 ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
   }
   app.use(handleError)
   const reconciliationJobs = new Set<Promise<void>>()
   let stopping = false
+  let reconciliation: Promise<void> | undefined
   const reconcileOnce = () => {
     if (stopping) return Promise.resolve()
-    const task = purchases.reconcile().then(async () => {
+    // Payment work is single-flight per intent, so a slow writer cannot starve other obligations.
+    // Coalesce the answer/refund recovery sweep separately from those independent deliveries.
+    const task = purchases.reconcile().then(() => {
       if (stopping) return
-      for (const run of store.listRuns()) {
-        const id = run.checkpoint.intentId
-        if (store.isHireRun(run.runId) || run.stopped || run.phase !== 'FAILED' || !id || run.checkpoint.answeredIntentId === id && run.checkpoint.recoveryIntentId !== id) continue
-        if (!run.intents.some(i => i.intentId === id && i.status === 'VERIFIED')) continue
-        await launch(run.runId, () => loop.recoverAnswer(run.runId, id))
-      }
+      if (reconciliation) return reconciliation
+      reconciliation = (async () => {
+        await reconcileRefunds(purchases)
+        if (stopping) return
+        for (const runId of store.recoverableRunIds()) {
+          const run = store.getRun(runId)
+          await launch(runId, () => loop.recoverAnswer(runId, run.checkpoint.intentId!))
+        }
+      })().finally(() => { reconciliation = undefined })
+      return reconciliation
     }).finally(() => { reconciliationJobs.delete(task) })
     reconciliationJobs.add(task)
     return task
@@ -148,10 +180,10 @@ export async function createApiApp(options: ApiOptions = {}) {
   const stopReconciler = () => { stopping = true; clearInterval(reconcileTimer) }
   let closing: Promise<void> | undefined
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
-  for (const run of store.listRuns()) if (!store.isHireRun(run.runId) && !['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(run.runId, run.checkpoint.recoveryIntentId) : loop.start(run.runId))
+  for (const runId of store.runnableRunIds()) { const run = store.getRun(runId); launch(runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(runId, run.checkpoint.recoveryIntentId) : loop.start(runId)) }
   const drain = async () => {
     stopReconciler()
-    for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) loop.stop(run.runId)
+    for (const runId of store.runnableRunIds(true)) loop.stop(runId)
     await Promise.allSettled(reconciliationJobs)
     await Promise.allSettled(jobs)
     await purchases.drain()
@@ -160,6 +192,8 @@ export async function createApiApp(options: ApiOptions = {}) {
   return { app, store, loop, reputation, purchases, reconcileOnce, drain, close: () => closing ??= (async () => {
     await drain()
     timers.forEach(clearInterval)
+    snapshotTimers.forEach(clearTimeout)
+    snapshotTimers.clear(); lastSnapshot.clear()
     for (const set of streams.values()) for (const res of set) res.end()
     hire.close()
     store.close()

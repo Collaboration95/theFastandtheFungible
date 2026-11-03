@@ -60,3 +60,5 @@ python -m pytest packages/sdk-python
 
 CI runs these tests only for changes under packages/sdk-python/. Publication is
 not performed; owner action is tracked in #265.
+
+Client endpoints require HTTPS or exact loopback HTTP and refuse credentials/redirects. `Client(..., wait_timeout=60)` bounds each event/result observation using monotonic time; each polling request is bounded by the remaining wait and the configured request timeout. On interrupted observation, `ResearchAgentError.run_id` preserves the admitted run. Retrieve that run instead of creating a new identity. Errors expose safe `code`, `status`, `retryable` and `run_id` fields. Clamped asks continue free-first and include `clampReason`.

@@ -222,3 +222,5 @@ All transports expose `search_expertise`, `ask_expert`, `get_run`, `wallet_statu
 requires separate signing authority and is disabled in the extension.
 These snippets are syntax/contract tested; interactive acceptance in all five
 products is not claimed.
+
+Tool errors from the SDK expose validated `code`, `status`, `retryable`, safe `message` and optional `runId` in structured content. A retained run ID is a recovery handle, not authorization to start another purchase. Verify-export and hire HTTP requests are bounded at 15 seconds. Budget clamps continue free-first and expose `clampReason`. Engine-wide overload admission is deferred; `overloaded` is a supported error category rather than a current cap-of-four guarantee.

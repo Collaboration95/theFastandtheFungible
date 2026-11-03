@@ -2,7 +2,7 @@ import { AgentKeys, AgentDenied } from './agent-keys.js'
 import { decode } from 'xrpl'
 import type { EscrowRecord, EscrowOperation, EscrowOutbox } from './escrow-state.js'
 import { chmodSync, existsSync } from 'node:fs'
-import { DROPS_PER_MINOR } from '../shared/contracts/index.js'
+import { DROPS_PER_MINOR, SIMULATED_LABEL, XRPL_LABEL, XRPL_EXPLORER } from '../shared/contracts/index.js'
 import type { ChainPayment } from './hire/policy.js'
 import { spendPolicy, POLICY_VERSION, PAUSED, type Surface } from './spend-policy.js'
 import { budgetPolicy, clampBudget } from '../mcp/policy.js'
@@ -62,9 +62,11 @@ export class Store {
       CREATE TABLE IF NOT EXISTS mcp_requests (key TEXT PRIMARY KEY, question TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, budget INTEGER NOT NULL, day TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL REFERENCES runs(id), json TEXT NOT NULL);
+      CREATE INDEX IF NOT EXISTS events_run_id ON events(run_id,id);
       CREATE TABLE IF NOT EXISTS answers (run_id TEXT NOT NULL REFERENCES runs(id), version INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(run_id,version));
       CREATE TABLE IF NOT EXISTS decisions (run_id TEXT NOT NULL REFERENCES runs(id), round INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(run_id,round));
       CREATE TABLE IF NOT EXISTS intents (id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES runs(id), json TEXT NOT NULL);
+      CREATE INDEX IF NOT EXISTS intents_run_id ON intents(run_id);
       CREATE TABLE IF NOT EXISTS receipts (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, token TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grants (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL, content TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS run_meta (run_id TEXT PRIMARY KEY REFERENCES runs(id), pinned INTEGER NOT NULL DEFAULT 0, hidden INTEGER NOT NULL DEFAULT 0);
@@ -228,6 +230,7 @@ export class Store {
       const run = this.insertRun(input.question, budget, input.labels)
       if (input.reserveMinor && (this.isPaused() || Math.min(remaining, surfaceRemaining, agent?.maxMinor ?? Infinity) < input.reserveMinor)) throw new Error('Wallet cannot reserve hire fee')
       if (input.reserveMinor) this.db.prepare('INSERT INTO hire_reserves (run_id, minor) VALUES (?,?)').run(run.runId, input.reserveMinor)
+      if (budget < input.requestedMinor) run.checkpoint.budgetReason = this.isPaused() ? 'paused' : input.maxMinor === 0 || agent?.maxMinor === 0 ? 'cap_zero' : 'budget_exhausted'
       run.policyVersion = POLICY_VERSION
       this.saveRun(run)
       this.db.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)
@@ -264,6 +267,50 @@ export class Store {
       run.reservedMinor = run.intents.filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
       run.refundedMinor = run.intents.reduce((sum, i) => sum + (i.refund?.amountMinor ?? 0), 0)
       return RunSnapshotSchema.parse(run)
+    })
+  }
+  /** Operational selectors never hydrate retained bodies or event arrays. */
+  runnableRunIds(includeHire = false): string[] {
+    return this.db.prepare(`SELECT id FROM runs r WHERE json_extract(r.json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
+      ${includeHire ? '' : 'AND NOT EXISTS (SELECT 1 FROM hire_reserves h WHERE h.run_id=r.id)'} ORDER BY r.rowid`).all().map(r => String(r.id))
+  }
+  recoverableRunIds(): string[] {
+    return this.db.prepare(`SELECT id FROM runs r WHERE json_extract(r.json,'$.phase')='FAILED'
+      AND NOT json_extract(r.json,'$.stopped') AND NOT EXISTS (SELECT 1 FROM hire_reserves h WHERE h.run_id=r.id)
+      AND json_extract(r.json,'$.checkpoint.intentId') IS NOT NULL AND json_extract(r.json,'$.checkpoint.intentId') != ''
+      AND (json_extract(r.json,'$.checkpoint.answeredIntentId') IS NOT json_extract(r.json,'$.checkpoint.intentId')
+        OR json_extract(r.json,'$.checkpoint.recoveryIntentId')=json_extract(r.json,'$.checkpoint.intentId'))
+      AND EXISTS (SELECT 1 FROM intents i WHERE i.run_id=r.id AND i.id=json_extract(r.json,'$.checkpoint.intentId') AND json_extract(i.json,'$.status')='VERIFIED')
+      ORDER BY r.rowid`).all().map(r => String(r.id))
+  }
+  operationalUsage() {
+    const rows = this.db.prepare(`SELECT run_id, json_extract(json,'$.type') AS type, json_extract(json,'$.data') AS data FROM events
+      WHERE json_extract(json,'$.type') IN ('MODEL_USAGE','MODEL_FALLBACK','DECISION_UNAVAILABLE')`).all()
+    const usage = new Map<string, Record<string, unknown>[]>()
+    let llm = 0, decisionUnavailable = 0
+    for (const row of rows) {
+      if (row.type === 'MODEL_FALLBACK') llm++
+      else if (row.type === 'DECISION_UNAVAILABLE') decisionUnavailable++
+      else { const id = String(row.run_id); const values = usage.get(id) ?? []; values.push(row.data ? JSON.parse(String(row.data)) : {}); usage.set(id, values) }
+    }
+    return { fallbacks: { llm, decisionUnavailable, decision: Number(this.db.prepare(`SELECT count(*) AS n FROM decisions WHERE json_extract(json,'$.fallbackReason') IS NOT NULL AND json_extract(json,'$.fallbackReason') != ''`).get()!.n) },
+      modelUsageByRun: this.db.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => {
+        const values = usage.get(String(row.id)) ?? []
+        return { runId: String(row.id), reportedCalls: values.length,
+          inputTokens: values.length ? values.reduce((n,u) => n + Number(u.inputTokens ?? 0),0) : null,
+          outputTokens: values.length ? values.reduce((n,u) => n + Number(u.outputTokens ?? 0),0) : null,
+          estimatedUsd: values.length && values.every(u => typeof u.estimatedUsd === 'number') ? values.reduce((n,u) => n + Number(u.estimatedUsd),0) : null }
+      }) }
+  }
+  pendingRefunds(limit = 16): PurchaseIntent[] {
+    return this.rows<PurchaseIntent>(`SELECT json FROM intents WHERE json_extract(json,'$.refundCandidate') IS NOT NULL
+      AND json_extract(json,'$.status') IN ('CHALLENGED','CHALLENGE_REFUSED') ORDER BY rowid LIMIT ?`, String(limit))
+  }
+  recordRefundCandidate(intentId: string, txHash: string): void {
+    this.atomic(() => {
+      const intent = this.getIntent(intentId)
+      if (!intent || !['CHALLENGED','CHALLENGE_REFUSED'].includes(intent.status) || intent.refundCandidate) return
+      this.saveIntent({ ...intent, refundCandidate: { txHash, observedAt: new Date().toISOString() } })
     })
   }
   listRuns(): RunSnapshot[] { return this.db.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => this.getRun(row.id as string)) }
@@ -358,9 +405,12 @@ export class Store {
     })
   }
   getIntent(intentId: string): PurchaseIntent | undefined { return this.rows<PurchaseIntent>('SELECT json FROM intents WHERE id=?', intentId)[0] }
+  reconciliationIntents(includeSubmitting = false): PurchaseIntent[] {
+    return this.rows<PurchaseIntent>(`SELECT json FROM intents WHERE json_extract(json,'$.status') IN
+      ('SETTLED','DELIVERY_PENDING','DELIVERY_FAILED'${includeSubmitting ? ",'SUBMITTING'" : ''}) ORDER BY rowid`)
+  }
   listIntents(status?: PurchaseIntent['status']): PurchaseIntent[] {
-    const intents = this.rows<PurchaseIntent>('SELECT json FROM intents ORDER BY rowid')
-    return status ? intents.filter(i => i.status === status) : intents
+    return status ? this.rows<PurchaseIntent>("SELECT json FROM intents WHERE json_extract(json,'$.status')=? ORDER BY rowid", status) : this.rows<PurchaseIntent>('SELECT json FROM intents ORDER BY rowid')
   }
   skipEscrow(input: PurchaseIntent, reason: string): PurchaseIntent {
     return this.atomic(() => {
@@ -690,18 +740,31 @@ export class Store {
   }
   /** Write-once per intent (gate 3): the first challenge outcome, and at most one refund, are final. */
   recordChallengeOutcome(intentId: string, status: 'REFUNDED' | 'CHALLENGE_REJECTED' | 'CHALLENGE_REFUSED', refund?: { txHash: string; amountMinor: number }): PurchaseIntent {
-    return this.atomic(() => {
+    let refundEvent: TraceEvent | undefined
+    const result = this.atomic(() => {
       const intent = this.getIntent(intentId)
       if (!intent) throw new Error('Intent not found')
-      if (CHALLENGE_OUTCOMES.has(intent.status)) return intent
-      if (intent.status !== 'CHALLENGED') throw new Error('Challenge outcome requires a sent challenge')
+      const late = intent.status === 'CHALLENGE_REFUSED' && status === 'REFUNDED' && intent.refundCandidate?.txHash === refund?.txHash
+      if (CHALLENGE_OUTCOMES.has(intent.status) && !late) return intent
+      if (intent.status !== 'CHALLENGED' && !late) throw new Error('Challenge outcome requires a sent challenge')
       if ((status === 'REFUNDED') !== Boolean(refund) || (refund && refund.amountMinor !== intent.amountMinor)) throw new Error('A refund is exactly the full charge')
       const next: PurchaseIntent = { ...intent, status, ...(refund ? { refund } : {}) }
       this.saveIntent(next)
       this.audit.append(refund ? { runId: intent.runId, intentId, kind: 'refund', data: { txHash: refund.txHash, amountMinor: refund.amountMinor, originalTxHash: intent.txHash ?? null, payTo: intent.quote?.payment?.payTo ?? null, resourceId: intent.resourceId, version: intent.version } }
         : { runId: intent.runId, intentId, kind: 'challenge', data: { outcome: status, resourceId: intent.resourceId, version: intent.version } })
+      if (refund) {
+        const testnet = intent.quote?.payment?.rail === 'xrpl-testnet'
+        const label = testnet ? XRPL_LABEL : SIMULATED_LABEL
+        const inserted = this.db.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run(intent.runId, '{}')
+        refundEvent = TraceEventSchema.parse({ id: Number(inserted.lastInsertRowid), runId: intent.runId, at: new Date().toISOString(), type: 'REFUND',
+          label: `Refunded S$${(refund.amountMinor / 100).toFixed(2)} · InvoiceID = original tx · ${label}`,
+          data: { intentId, txHash: refund.txHash, amountMinor: refund.amountMinor, originalTxHash: intent.txHash, label, ...(testnet ? { explorerUrl: `${XRPL_EXPLORER}/${refund.txHash}` } : {}) } })
+        this.db.prepare('UPDATE events SET json=? WHERE id=?').run(JSON.stringify(refundEvent), refundEvent.id)
+      }
       return next
     })
+    if (refundEvent) { try { this.onEvent?.(refundEvent) } catch { /* committed; observers resync */ } }
+    return result
   }
   // Engine-side trust per seller of record (D6, D21), across runs; server/reputation.ts owns the math.
   getReputation(wallet: string): ReputationRecord | undefined { return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation WHERE wallet=?', wallet)[0] }

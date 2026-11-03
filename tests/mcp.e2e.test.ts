@@ -20,7 +20,7 @@ async function connect(env: Record<string, string>) {
 // Tool outputs are a wire contract; JSON parsing here deliberately observes the actual stdio text.
 async function call(client: Client, name: string, args: Record<string, unknown> = {}) {
   const result = await client.callTool({ name, arguments: args })
-  expect(result.isError).not.toBe(true)
+  expect(result.isError, JSON.stringify(result)).not.toBe(true)
   return JSON.parse((result.content as { text: string }[])[0].text)
 }
 

@@ -1,3 +1,7 @@
+import { openPaymentJournal } from '../sdk/x402-journal.js'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import { Wallet } from 'xrpl'
 import type { AddressInfo } from 'node:net'
@@ -69,7 +73,8 @@ it('policy buys issued currency, verifies proof before access, replays once, exp
   s.store.addAnswer(run.runId, { conclusion: 'Verified issued payment.', claims: [{ id: 'issued', text: content.spans[0].text, stance: 'SUPPORTS', citations: [{ resourceId: content.resourceId, version: content.version, spanId: content.spans[0].id }] }], openGaps: [], version: 1, provider: 'fixture', model: 'extractive-fixture' })
   const verified = await verifyAnswer(receiptBundle(s.store, run.runId), { testnet: true, ledger: s.chain.ledger })
   expect(verified.checks.filter(c => c.status === 'FAIL')).toEqual([])
-  const paid = await payAndFetch(`${s.url}${candidate.url}`, { wallet: s.payer, ledger: s.chain.ledger, maxDrops: '1', issued: { asset, maxAmount: '0.60' } })
+  const journal = openPaymentJournal(join(mkdtempSync(join(tmpdir(), 'rlusd-caller-')), 'caller.db')); clean.push(() => journal.close())
+  const paid = await payAndFetch(`${s.url}${candidate.url}`, { journal, wallet: s.payer, ledger: s.chain.ledger, maxDrops: '1', issued: { asset, maxAmount: '0.60' } })
   expect(paid.payment.asset).toEqual(asset); expect(paid.response.ok).toBe(true)
 })
 it.each(['missing', 'reserve', 'balance', 'freeze'] as const)('refuses %s before signing and releases the purchase reservation', async problem => {

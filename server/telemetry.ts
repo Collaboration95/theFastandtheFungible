@@ -9,14 +9,14 @@ import { getActiveTraceId, propagateAttributes, setActiveTraceAsPublic, startAct
 import { LangfuseClient } from '@langfuse/client'
 import type { RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
 
-const SECRET_ENV = ['RA_API_TOKEN','LLM_API_KEY', 'DEEPSEEK_API_KEY', 'GROQ_API_KEY', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_API_TOKEN_2', 'XRPL_PAYER_SEED', 'PUBLISHER_SECRET', 'LANGFUSE_SECRET_KEY']
+const SECRET_ENV = ['OPENAI_API_KEY', 'RA_API_TOKEN','LLM_API_KEY', 'DEEPSEEK_API_KEY', 'GROQ_API_KEY', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_API_TOKEN_2', 'XRPL_PAYER_SEED', 'PUBLISHER_SECRET', 'LANGFUSE_SECRET_KEY']
 /** Every publisher wallet seed (FINAL-PUSH §9: never log or trace a publisher seed). */
 const PUBLISHER_SEED = /^XRPL_PUBLISHER_.+_SEED$/
 
 /** Replaces every configured secret value (and delivery-token-like headers) before export. */
 export function maskSecrets(data: string, env: NodeJS.ProcessEnv = loadConfig()): string {
   let masked = data
-  for (const name of [...SECRET_ENV, ...Object.keys(env).filter(key => PUBLISHER_SEED.test(key))]) {
+  for (const name of [...SECRET_ENV, ...Object.keys(env).filter(key => PUBLISHER_SEED.test(key) || /(?:API_KEY|SECRET_KEY|ACCESS_TOKEN)$/.test(key))]) {
     const value = env[name]
     if (value && value.length >= 8) masked = masked.split(value).join(`[${name}]`)
   }

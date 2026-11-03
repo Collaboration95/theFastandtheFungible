@@ -1,0 +1,25 @@
+{
+  "source": "d3893ae9b955efc26e4f6dead4c49522e2c433cb",
+  "mode": "local synthetic fixtures; no live providers, Testnet network or real money",
+  "cases": 2,
+  "assets": [
+    "XRP",
+    "issued substitute currency"
+  ],
+  "result": "passed",
+  "restartAndRetentionPreserveCandidate": true,
+  "wrongInvoiceAndSenderRemainPending": true,
+  "atomicFailureRollsBackOutcome": true,
+  "refundEventsPerCandidate": 1,
+  "refundAuditEntriesPerCandidate": 1,
+  "replacementSignatures": 0,
+  "grossMinor": {
+    "before": 80,
+    "after": 80
+  },
+  "refundedMinor": {
+    "before": 0,
+    "after": 80
+  },
+  "command": "npx vitest run tests/refund-recovery.test.ts tests/challenge.test.ts tests/rlusd.test.ts"
+}
