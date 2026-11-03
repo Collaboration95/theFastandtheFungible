@@ -13,6 +13,10 @@ test('UX-2: UC4, exact lead citation, export, supporting screens and mobile Spen
   await page.getByRole('button', { name: /^Ask/ }).click()
   await page.getByRole('button', { name: 'Start now' }).click()
   await expect(page).toHaveTitle(/Answer ready/)
+  await expect(page.locator('.ra-activity-details')).not.toHaveAttribute('open', '')
+  await page.locator('.ra-activity-details > summary').click()
+  await expect(page.locator('.ra-activity-details')).toHaveAttribute('open', '')
+  await page.locator('.ra-activity-details > summary').click()
   await expect(page.locator('.ra-vtext')).toContainText('15 August 2026')
   await expect(page.getByRole('region', { name: 'Requested facts' })).toHaveCount(0) // native details, not a redundant landmark
   await expect(page.getByText('3 of 3 answered', { exact: false })).toBeVisible()

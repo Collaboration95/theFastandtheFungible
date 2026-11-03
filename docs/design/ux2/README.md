@@ -9,3 +9,5 @@ Browser checks: UC1–UC4 through scope/plan/completion, citation opens its exac
 One persistent environment indicator; finished UC3 literal labels remain 2 (header + mandatory refund rail), or 6 with the refunded receipt open. Keyframes 4 → 4 (30 before Part 1); infinite animations 1. No snapshots in tests/__snapshots__ changed. JPEGs here are deliberate visual evidence, not golden assertions.
 
 Known presentation limits: Lead finding is a deterministic question-ranked extract, not newly generated prose. Claims keep the engine’s stance classification. Articles in Writers counts articles found in the current run (column tooltip), not an invented full-site total. Site source is aligned; publishing gh-pages remains the separate owner action in issue #312.
+
+Tooling evidence (local, 3 Nov): the first final browser take stopped before tests with `Port 49326 already in use, probably by an earlier demo`. A fresh allocation started and ran the suite. No shared server was killed; the allocator/server handoff remains a possible startup race.
