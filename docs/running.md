@@ -72,3 +72,11 @@ Slides and notes reserve room for the shared header while retaining presentation
 Operational startup/recovery/drain select run IDs in SQLite; they do not hydrate historical snapshots. Metrics remain an all-run O(n) response. SSE snapshots are throttled to 4/s, with initial and terminal snapshots immediate. A stalled stream or snapshot exceeding 256 KiB is disconnected; resynchronize with GET of the existing run. Publisher delivery/free bodies are limited to 2 MiB, and registry/search/challenge bodies to 256 KiB, including chunked responses. Limits are currently fixed constants.
 
 An engine-wide active-work cap and cooperative provider Stop are pending; do not assume a supported concurrency of four or sub-second provider cancellation. Durable signed obligations retain their reservations during Stop/recovery. Late refund candidates are pending until exact ledger verification succeeds; confirmed refunds never replenish gross budget authority. See `docs/evidence/round2-a` for local synthetic evidence and limitations.
+
+### Compatible engine profiles
+
+See [BYOK engine configuration](byok.md) for `LLM_PROVIDER=openai-compatible`,
+`DECISION_PROVIDER=compatible`, the local bearer-protected connection test,
+reviewed endpoint limits, unknown costs, and `ACTIVE_WORK_LIMIT` (default 4).
+One inference key works with explicitly SIMULATED payments; Testnet still needs
+its separate wallet. The UNCALIBRATED generic judge buys nothing.

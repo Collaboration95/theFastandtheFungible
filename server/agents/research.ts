@@ -273,7 +273,7 @@ openGaps: compare the question with what your cited claims establish, and name a
 /** Caller supplies only FREE/verified-grant contents and stores returned versions immutably.
  * onToken emits a fixed progress marker, never unvalidated model text. */
 /** Traced as a chain: the generation (if any), citation validation and the impact class. */
-export type WriteAnswerInput = { question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; requirements?: string[]; onToken?: (delta: string) => void }
+export type WriteAnswerInput = { signal?: AbortSignal; question: string; contents: ContentEnvelope[]; candidates: PublicCandidate[]; version: number; previous?: Answer; focus?: string; requirements?: string[]; onToken?: (delta: string) => void }
 /** A fast extract from free, exact passages. Never invokes a model or uses a paid preview. */
 export function freeDraft(input: WriteAnswerInput): Answer {
   const contents = usableContents(input.contents).filter(content => input.candidates.some(candidate => candidate.tier === 'FREE' && candidate.profileId === content.profileId && candidate.resourceId === content.resourceId && candidate.version === content.version))
@@ -299,7 +299,7 @@ async function composeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer;
       const result = await streamJson(ANSWER_PROMPT, { question: input.question, evidence: contents.map(c => {
         const metadata = input.candidates.find(m => m.resourceId === c.resourceId && m.version === c.version)
         return { resourceId: c.resourceId, version: c.version, spans: c.spans, tags: metadata?.facets ?? [], authority: metadata?.authority ?? 0 }
-      }), previousOpenGaps: input.previous?.openGaps ?? [], ...(input.focus ? { focus: input.focus } : {}), ...(input.requirements?.length ? { requestedFacts: input.requirements } : {}) }, () => input.onToken?.('Generating cited answer…'), 'generate-answer')
+      }), previousOpenGaps: input.previous?.openGaps ?? [], ...(input.focus ? { focus: input.focus } : {}), ...(input.requirements?.length ? { requestedFacts: input.requirements } : {}) }, () => input.onToken?.('Generating cited answer…'), 'generate-answer', input.signal)
       const openGaps = sanitizeGaps((result as { openGaps?: unknown } | null)?.openGaps, input.candidates)
       const parsed = AnswerSchema.parse({ ...(result as object), openGaps, version: input.version, provider: llmProvider(), model: researchModel() })
       const validated = validateAnswer(parsed, contents)

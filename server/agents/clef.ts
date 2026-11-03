@@ -1,3 +1,4 @@
+import { pause as abortablePause, abortable } from './provider-retry.js'
 import { reportModelUsage } from '../telemetry.js'
 import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
@@ -11,7 +12,6 @@ import { COVERAGE_RUBRIC, coverageInstructions, coverageQuestionName, coverageSt
 import { decisionModel, publicCandidate, publicSources } from './decision.js'
 import type { CoverageInput, DecisionProvider } from './decision.js'
 
-const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 export class ClefUnavailableError extends Error {
   constructor(readonly status: string) { super(`Clef unavailable (${status})`) }
 }
@@ -162,7 +162,7 @@ export class ClefDecisionProvider implements DecisionProvider {
         if (signal?.aborted) throw new ClefUnavailableError('abandoned')
         const status = error instanceof ClefHttpError ? `HTTP ${error.status}` : controller.signal.aborted ? 'timeout' : error instanceof z.ZodError ? 'invalid response' : 'transport failure'
         if (attempt === 1 || (error instanceof ClefHttpError && error.status >= 400 && error.status < 500 && error.status !== 429)) throw new ClefUnavailableError(status)
-        if (error instanceof ClefHttpError && error.status === 429) await pause(error.retryMs)
+        if (error instanceof ClefHttpError && error.status === 429) await abortablePause(error.retryMs, signal)
       } finally { clearTimeout(timer); signal?.removeEventListener('abort', abandon) }
     }
     throw new Error('Clef unavailable')
@@ -171,18 +171,18 @@ export class ClefDecisionProvider implements DecisionProvider {
    * Cached once, shared by parallel candidate and round requests. A failed lookup is not cached (#195): the
    * next call retries discovery, so one network blip at boot cannot fail every decision in the session.
    */
-  async resolveAccount(): Promise<string> {
+  async resolveAccount(signal?: AbortSignal): Promise<string> {
     const configured = this.options.accountId ?? loadConfig().CLOUDFLARE_ACCOUNT_ID
     if (configured) return configured
     if (!this.account) {
-      const lookup = this.request('/accounts').then(payload => {
+      const lookup = this.request('/accounts', undefined, undefined, signal).then(payload => {
         const accounts = z.object({ success: z.literal(true), result: z.array(z.object({ id: z.string().min(1) })).length(1) }).parse(payload)
         return accounts.result[0].id
       })
       this.account = lookup
       lookup.catch(() => { if (this.account === lookup) this.account = undefined })
     }
-    return this.account
+    return abortable(this.account, signal)
   }
   /** Each Clef call is a Langfuse generation: public state in, calibrated answers out. */
   private judge(name: string, state: unknown, questions: unknown, validate: (payload: unknown) => unknown, metadata?: Record<string, unknown>, signal?: AbortSignal): Promise<unknown> {
@@ -197,7 +197,7 @@ export class ClefDecisionProvider implements DecisionProvider {
     }, { asType: 'generation' })
   }
   private async callModel(state: unknown, questions: unknown, validate: (payload: unknown) => unknown, signal?: AbortSignal): Promise<unknown> {
-    const account = await this.resolveAccount()
+    const account = await this.resolveAccount(signal)
     return this.request(`/accounts/${encodeURIComponent(account)}/ai/run/${this.model.split('/').map(encodeURIComponent).join('/')}`, { model: this.model.endsWith('/clef') ? 'clef' : 'clef-flash', state, questions }, validate, signal)
   }
   async judgeRound(input: Parameters<DecisionProvider['judgeRound']>[0]) {

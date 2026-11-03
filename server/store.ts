@@ -208,6 +208,11 @@ export class Store {
   }
   mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.usage(day, 'mcp')) }
   isHireRun(runId: string) { return !!this.db.prepare('SELECT run_id FROM hire_reserves WHERE run_id=?').get(runId) }
+  /** Read-only identity lookup for capacity admission; preserves the original durable key. */
+  admissionRun(surface: Surface, principal: string, key: string) {
+    const row = this.db.prepare('SELECT run_id FROM admissions WHERE surface=? AND principal=? AND key=?').get(surface, principal, key) as { run_id: string } | undefined
+    return row ? this.getRun(row.run_id) : undefined
+  }
   isMcpRun(runId: string) { return !!this.db.prepare("SELECT key FROM admissions WHERE run_id=? AND surface IN ('mcp','agent')").get(runId) }
   /** Key insertion, wallet/surface reservation and run creation commit before async work. */
   admit(input: { surface: Surface; principal: string; question: string; requestedMinor: number;

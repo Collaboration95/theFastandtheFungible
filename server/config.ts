@@ -14,14 +14,14 @@ const url = z.string().refine(value => {
 const cap = z.string().regex(/^\d+$/).refine(value => Number.isSafeInteger(Number(value))).optional()
 const ConfigSchema = z.object({
   RA_API_TOKEN: text, RA_ALLOWED_HOSTS: text, RA_WEB_ORIGIN: url, WALLET_DAILY_CAP_MINOR: cap, SPENDING_PAUSED: z.enum(['0', '1']).optional(), LEGACY_GAP: z.enum(['0', '1']).optional(),
-  RECONCILE_INTERVAL_MS: positive, LOG_FORMAT: z.enum(['json', 'human']).optional(), MODEL_INPUT_USD_PER_MILLION: numeric(n => n >= 0), MODEL_OUTPUT_USD_PER_MILLION: numeric(n => n >= 0),
+  ACTIVE_WORK_LIMIT: numeric(n => Number.isInteger(n) && n > 0), RECONCILE_INTERVAL_MS: positive, LOG_FORMAT: z.enum(['json', 'human']).optional(), MODEL_INPUT_USD_PER_MILLION: numeric(n => n >= 0), MODEL_OUTPUT_USD_PER_MILLION: numeric(n => n >= 0),
   PORT: port, HOST: text, APP_DB: text, REPORT_DIR: text,
   PUBLISHER_URL: url, PUBLISHER_SECRET: text, PUBLISHER_FAULTS: text,
   SETTLEMENT_RAIL: text, XRPL_PAYER_SEED: text, XRPL_PAYER_ADDRESS: text, XRPL_RPC_URL: text,
   LLM_PROVIDER: text, LLM_BASE_URL: url, LLM_MODEL: text, LLM_API_KEY: text,
   DEEPSEEK_API_KEY: text, GROQ_API_KEY: text,
   LLM_TIMEOUT_MS: positive, LLM_SYNTHESIS_TIMEOUT_MS: positive,
-  DECISION_PROVIDER: text, DECISION_MODEL: text, CLEF_TIMEOUT_MS: positive, DECISION_TIMEOUT_MS: positive,
+  DECISION_BASE_URL: url, DECISION_API_KEY: text, DECISION_PROVIDER: text, DECISION_MODEL: text, CLEF_TIMEOUT_MS: positive, DECISION_TIMEOUT_MS: positive,
   DECISIONS_MAX_QUESTIONS: numeric(n => Number.isInteger(n) && n >= 4),
   DECISIONS_WORDING: text, DECISIONS_GAP_WORDING: text,
   BUY_THRESHOLD: numeric(n => n >= 0 && n <= 1), DECISION_CALIBRATION: text, DECISION_CALIBRATION_DIR: text,

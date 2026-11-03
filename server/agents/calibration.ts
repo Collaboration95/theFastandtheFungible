@@ -40,7 +40,7 @@ export type CalibratorKey = z.infer<typeof CalibratorKeySchema>
 
 /** Clef sends no prompt version; its key uses this. */
 export const UNVERSIONED = 'unversioned'
-export const calibratorKey = (provider: { name: DecisionProviderName; model: string; promptVersion?: string }): CalibratorKey => ({ provider: provider.name, model: provider.model, promptVersion: provider.promptVersion ?? UNVERSIONED })
+export const calibratorKey = (provider: { name: DecisionProviderName; model: string; promptVersion?: string }): CalibratorKey => ({ provider: provider.name === 'compatible' ? (() => { throw new Error('Compatible provider is uncalibrated') })() : provider.name, model: provider.model, promptVersion: provider.promptVersion ?? UNVERSIONED })
 const sameKey = (a: CalibratorKey, b: CalibratorKey) => a.provider === b.provider && a.model === b.model && a.promptVersion === b.promptVersion
 /** `<provider>-<model>-<prompt hash>.json`: one file per key; a refit bumps `version` inside it. */
 export function calibratorFileName(key: CalibratorKey): string {
@@ -63,7 +63,7 @@ export const calibrationEnabled = (configured: unknown = loadConfig().DECISION_C
  * (provider, model, prompt version). A changed wording or model therefore falls back to raw scores, never a stale map.
  */
 export function activeCalibrator(provider: { name: DecisionProviderName; model: string; promptVersion?: string }, env: NodeJS.ProcessEnv = loadConfig()): Calibrator | undefined {
-  if (!calibrationEnabled(env.DECISION_CALIBRATION)) return undefined
+  if (provider.name === 'compatible' || !calibrationEnabled(env.DECISION_CALIBRATION)) return undefined
   const key = calibratorKey(provider)
   return loadCalibrators(env.DECISION_CALIBRATION_DIR || CALIBRATION_DIR).filter(c => sameKey(c.key, key)).sort((a, b) => b.version - a.version)[0]
 }

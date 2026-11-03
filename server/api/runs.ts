@@ -14,7 +14,8 @@ export function runsRouter(context: ApiContext) {
   router.post('/api/scope', async (req, res) => {
     const input = z.object({ question: AskSchema.shape.question, clarify: z.enum(['never', 'auto']).optional() }).parse(req.body)
     const never = input.clarify === 'never' || req.query.clarify === 'never'
-    res.json(await scope(input.question, never ? { clarify: 'never' } : {}))
+    const release = context.work.acquire()
+    try { res.json(await scope(input.question, { ...(never ? { clarify: 'never' as const } : {}), signal: context.work.signal })) } finally { release() }
   })
   router.post('/runs', startRun(context))
   router.get('/api/runs', (_req, res) => res.json(store.listPastRuns()))
@@ -32,8 +33,9 @@ export function runsRouter(context: ApiContext) {
     const { intentId } = z.object({ intentId: z.string().min(1) }).parse(req.body)
     const intent = store.getIntent(intentId)
     if (!intent || intent.runId !== runId || !['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED'].includes(intent.status)) return res.status(409).json({ error: 'No settled delivery can be retried for this run.' })
+    const release = context.work.acquire()
     res.status(202).json(store.getRun(runId))
-    launch(runId, () => loop.retryDelivery(runId, intentId))
+    launch(runId, () => loop.retryDelivery(runId, intentId), release)
   })
   router.get('/runs/:id/events', (req, res) => {
     const runId = String(req.params.id)
@@ -62,26 +64,33 @@ export function startRun(context: ApiContext, surface: 'web' | 'mcp' = 'web'): R
     const input = AskSchema.parse(isMcp ? { question: req.body.question, budgetMinor: 0, escrow: req.body.escrow } : req.body)
     const request = isMcp ? z.object({ budget_sgd: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER / 100), idempotency_key: z.string().min(1).max(200).optional() }).parse(req.body) : undefined
     const agent = res.locals.agent as { id: string } | undefined
-    const admitted = admit(store, { surface: agent ? 'agent' : isMcp ? 'mcp' : 'web', principal: agent?.id ?? 'operator',
+    const admission = { surface: agent ? 'agent' : isMcp ? 'mcp' : 'web', principal: agent?.id ?? 'operator',
       question: input.question, requestedMinor: request ? Math.floor(request.budget_sgd * 100 + 1e-7) : input.budgetMinor,
       idempotencyKey: request?.idempotency_key ?? z.string().min(1).max(200).optional().parse(req.get('Idempotency-Key')) ?? randomUUID(),
-      maxMinor: agent ? BUDGET.maxMinor : isMcp ? mcpPolicy.maxMinor : BUDGET.maxMinor, ...(isMcp && !agent ? { dailyMinor: mcpPolicy.dailyMinor } : {}), labels })
+      maxMinor: agent ? BUDGET.maxMinor : isMcp ? mcpPolicy.maxMinor : BUDGET.maxMinor, ...(isMcp && !agent ? { dailyMinor: mcpPolicy.dailyMinor } : {}), labels } as const
+    // Read identity before capacity: retries return the original durable run.
+    const old = store.admissionRun(admission.surface, admission.principal, admission.idempotencyKey)
+    if (old) { if (old.question !== input.question) throw new Error('Idempotency conflict'); res.status(200).json(old); return }
+    const release = context.work.acquire()
+    let admitted: ReturnType<typeof admit>
+    try { admitted = admit(store, admission) } catch (error) { release(); throw error }
     if (!admitted.reused && input.escrow !== undefined) store.updateRun(admitted.run.runId, { checkpoint: { ...admitted.run.checkpoint, escrow: input.escrow } })
     const run = store.getRun(admitted.run.runId)
     res.status(admitted.reused ? 200 : 201).json(run)
-    if (admitted.reused) return
+    if (admitted.reused) { release(); return }
     launch(run.runId, async () => {
       // No plan from the UI: the server plans itself, so tests and API users need no UI. A clarify answer re-plans
       // on the server too (#208): the client's plan predates the answer, so the angle would never reach search.
       // The planner label stays visible (gate 5): client, live model, or the fixture fallback.
       const clarified = Object.values(input.answers ?? {}).some(answer => answer.trim())
-      const planned = input.plan && !clarified ? { ...input.plan, label: 'client plan' } : await planSearch(input.question, input.answers)
+      const planned = input.plan && !clarified ? { ...input.plan, label: 'client plan' } : await planSearch(input.question, input.answers, loop.signal(run.runId))
+      if (loop.signal(run.runId).aborted) return
       // Requested facts are frozen here, before any evidence is read (#208). An edited or legacy client plan carries
       // none bound to this question, so the server derives them from the question (and answers) instead.
       let frozen = freezeRequirements(input.question, planned, input.answers)
       let requirementsBy = frozen.source === 'plan' ? planned.label : 'fixture · scope-fixture'
       if (frozen.source === 'fixture' && planned.label === 'client plan') {
-        const replanned = await planSearch(input.question, input.answers)
+        const replanned = await planSearch(input.question, input.answers, loop.signal(run.runId))
         const again = freezeRequirements(input.question, replanned, input.answers)
         if (again.source === 'plan') { frozen = again; requirementsBy = replanned.label }
       }
@@ -90,7 +99,7 @@ export function startRun(context: ApiContext, surface: 'web' | 'mcp' = 'web'): R
       store.updateRun(run.runId, { labels: { ...current.labels, plan: planLabel }, checkpoint: { ...current.checkpoint, plan, requirements: frozen.requirements, requirementsBy, ...(input.answers ? { answers: input.answers } : {}) } })
       if (input.answers && Object.keys(input.answers).length) store.appendEvent(run.runId, { type: 'CLARIFY', label: `Clarified: ${Object.values(input.answers).join(' · ')}`, data: { answers: input.answers } })
       store.appendEvent(run.runId, { type: 'PLAN', label: `Search plan (${planLabel}): ${plan.subqueries.join(' · ')}`, data: { plan, planner: planLabel, requirements: frozen.requirements.map(r => r.text), requirementsBy } })
-      await loop.start(run.runId)
-    })
+      if (!loop.signal(run.runId).aborted) await loop.start(run.runId)
+    }, release)
   }
 }

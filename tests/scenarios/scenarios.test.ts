@@ -243,8 +243,9 @@ describe('leak gate and Stop: audited Clef and LLM requests', () => {
       const stopped = await h.request(`/runs/${id}/stop`, {})
       expect(stopped.phase).toBe('STOPPED')
     } finally { await h.scoring('release') }
-    // A persisted decision proves scoring finished; a Stop response alone could miss a late purchase.
-    const final = await h.until(id, run => run.decisions.length > 0)
+    // Cooperative Stop cancels scoring; wait for the provider handoff to unwind before checking money.
+    const final = await h.until(id, run => run.events.some(e => e.label === 'Provider work cancelled after Stop.'))
+    expect(final.decisions).toHaveLength(0)
     expect(final.stopped).toBe(true)
     expect(final.answers).toHaveLength(1)
     expect(final).toMatchObject({ intents: [], spentMinor: 0, reservedMinor: 0, grants: [] })

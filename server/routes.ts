@@ -1,3 +1,6 @@
+import { ActiveWork, OverloadedError } from './agents/active-work.js'
+import { providersRouter } from './api/providers.js'
+import { JsonDecisionProvider } from './agents/json-decision.js'
 import { errorEnvelope } from '../shared/contracts/errors.js'
 import { reconcileRefunds } from './challenges.js'
 import { verifyAnswer } from '../sdk/verify.js'
@@ -35,8 +38,11 @@ import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number }
 export async function createApiApp(options: ApiOptions = {}) {
   const config = loadConfig()
+  if (config.SETTLEMENT_RAIL === 'xrpl-testnet' && !options.payer && !config.XRPL_PAYER_SEED) throw new Error('Testnet requires wallet configuration')
+  const work = new ActiveWork(Number(config.ACTIVE_WORK_LIMIT || 4))
   const mcpPolicy = budgetPolicy(config)
   const jobs = new Set<Promise<void>>()
+  const activeRuns = new Map<string, Promise<void>>()
   const app = express()
   app.disable('x-powered-by')
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next() })
@@ -77,11 +83,12 @@ export async function createApiApp(options: ApiOptions = {}) {
   })
   app.use(express.json({ limit: '16kb' }))
   const client = new PublisherClient({ baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
-  // XRPL Testnet settlement needs both the rail flag and a payer seed; otherwise simulated, labelled.
+  // Requested Testnet never silently falls back to simulated settlement.
   const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
   const purchases = new PurchaseManager(store, client, payer)
   let provider = options.provider
   // DECISION_PROVIDER=openai: OpenAI Decisions (gpt-6-luna, #214); =cloudflare: Clef (the one-line revert); otherwise the labelled fixture.
+  if (!provider && config.DECISION_PROVIDER === 'compatible') provider = new JsonDecisionProvider()
   if (!provider && config.DECISION_PROVIDER === 'openai') provider = new OpenAIDecisionsProvider({ allowLive: true })
   if (!provider && config.DECISION_PROVIDER === 'cloudflare') {
     const clef = new ClefDecisionProvider({ allowLive: true })
@@ -104,11 +111,17 @@ export async function createApiApp(options: ApiOptions = {}) {
     timers.add(timer)
     return () => { clearInterval(timer); timers.delete(timer) }
   }
-  const launch = (runId: string, job: () => Promise<void>) => {
+  const launch = (runId: string, job: () => Promise<void>, lease?: () => void) => {
+    const existing = activeRuns.get(runId)
+    if (existing) { lease?.(); return existing }
+    const release = lease ?? work.acquire()
     const done = progress(runId, 'Working with accessible evidence; spending policy remains enforced.')
     const task = withModelUsage(usage => store.appendEvent(runId, { type: usage.fallback ? 'MODEL_FALLBACK' : 'MODEL_USAGE', label: usage.fallback ? 'LLM fallback · labelled fixture' : 'Provider-reported usage', data: usage }), job).catch(() => {
       store.updateRun(runId, { phase: 'FAILED', error: 'Run interrupted; start a new ask or retry a settled delivery.' })
     }).finally(() => {
+      activeRuns.delete(runId)
+      if (!reportJobs.has(runId)) loop.releaseSignal(runId)
+      release()
       done()
       const run = store.getRun(runId)
       if (!run.answers.length) {
@@ -118,11 +131,13 @@ export async function createApiApp(options: ApiOptions = {}) {
       store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Latest validated answer and ledger saved.' })
       jobs.delete(task)
     })
+    activeRuns.set(runId, task)
     jobs.add(task)
     return task
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
-  const context: ApiContext = { store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
+  const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
+  app.use(providersRouter(work))
   app.use(walletRouter(context))
   app.use(operationsRouter(context))
   app.use(auditRouter(context))
@@ -147,8 +162,8 @@ export async function createApiApp(options: ApiOptions = {}) {
   app.use(reportsRouter(context))
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const notFound = error instanceof Error && error.message === 'Run not found'
-    const status = error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500
-    res.status(status).json({ ...errorEnvelope(status === 403 ? 'unauthorized' : notFound ? 'not_found' : status === 400 ? 'invalid' : 'backend_unavailable', status), error: notFound ? 'Run not found.' : status === 400 ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
+    const status = error instanceof OverloadedError ? 503 : error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500
+    res.status(status).json({ ...errorEnvelope(error instanceof OverloadedError ? 'overloaded' : status === 403 ? 'unauthorized' : notFound ? 'not_found' : status === 400 ? 'invalid' : 'backend_unavailable', status), error: notFound ? 'Run not found.' : status === 400 ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
   }
   app.use(handleError)
   const reconciliationJobs = new Set<Promise<void>>()
@@ -164,9 +179,16 @@ export async function createApiApp(options: ApiOptions = {}) {
       reconciliation = (async () => {
         await reconcileRefunds(purchases)
         if (stopping) return
+        // Existing durable runnable rows are retried on the next sweep when saturated;
+        // this creates no new durable queue and never blocks signed reconciliation.
+        for (const runId of store.runnableRunIds()) {
+          if (activeRuns.has(runId)) continue
+          try { const run = store.getRun(runId); void launch(runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(runId, run.checkpoint.recoveryIntentId) : loop.start(runId)) } catch (error) { if (!(error instanceof OverloadedError)) throw error }
+        }
         for (const runId of store.recoverableRunIds()) {
+          if (activeRuns.has(runId)) continue
           const run = store.getRun(runId)
-          await launch(runId, () => loop.recoverAnswer(runId, run.checkpoint.intentId!))
+          try { await launch(runId, () => loop.recoverAnswer(runId, run.checkpoint.intentId!)) } catch (error) { if (!(error instanceof OverloadedError)) throw error }
         }
       })().finally(() => { reconciliation = undefined })
       return reconciliation
@@ -180,16 +202,19 @@ export async function createApiApp(options: ApiOptions = {}) {
   const stopReconciler = () => { stopping = true; clearInterval(reconcileTimer) }
   let closing: Promise<void> | undefined
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
-  for (const runId of store.runnableRunIds()) { const run = store.getRun(runId); launch(runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(runId, run.checkpoint.recoveryIntentId) : loop.start(runId)) }
+  for (const runId of store.runnableRunIds()) { const run = store.getRun(runId); try { launch(runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(runId, run.checkpoint.recoveryIntentId) : loop.start(runId)) } catch (error) { if (!(error instanceof OverloadedError)) throw error } }
   const drain = async () => {
     stopReconciler()
+    work.controller.abort()
+    loop.abortProviders()
     for (const runId of store.runnableRunIds(true)) loop.stop(runId)
     await Promise.allSettled(reconciliationJobs)
     await Promise.allSettled(jobs)
+    await Promise.allSettled(reportJobs.values())
     await purchases.drain()
     await hire.drain()
   }
-  return { app, store, loop, reputation, purchases, reconcileOnce, drain, close: () => closing ??= (async () => {
+  return { app, work, store, loop, reputation, purchases, reconcileOnce, drain, close: () => closing ??= (async () => {
     await drain()
     timers.forEach(clearInterval)
     snapshotTimers.forEach(clearTimeout)

@@ -175,7 +175,20 @@ try {
   }
   for (const i of api.store.listIntents()) if (i.status === 'DELIVERY_FAILED') await api.purchases.retryDelivery(i.intentId)
   if (fault === 'caps') {
-    const replies = await Promise.all(Array.from({length: 6}, (_, n) => sdk.ask(question, {budgetSgd: 999, idempotencyKey: `cap-${n}`})))
+    const options = (n: number) => ({ budgetSgd: 999, idempotencyKey: `cap-${n}` })
+    const attempts = await Promise.allSettled(Array.from({length: 6}, (_, n) => sdk.ask(question, options(n))))
+    const replies = []
+    for (const [n, attempt] of attempts.entries()) {
+      if (attempt.status === 'fulfilled') replies.push(attempt.value)
+      else {
+        assert.equal(attempt.reason.code, 'overloaded')
+        assert.equal(attempt.reason.status, 503)
+        assert.equal(attempt.reason.retryable, true)
+        // Retry the refused identity once admitted work has completed; no authority is lost.
+        replies.push(await sdk.ask(question, options(n)))
+      }
+    }
+    assert.equal(replies.length, 6)
     assert(replies.every(r => r.clamped))
     await api.purchases.drain()
   }

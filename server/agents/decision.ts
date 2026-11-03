@@ -238,10 +238,10 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const { gapMaterial, judgments } = open ? await judgeAll(provider, input, candidates, readSources) : { gapMaterial: 0, judgments: candidates.map(() => NOT_JUDGED) }
   // #207: a versioned calibrator for this exact (provider, model, prompt version), only with DECISION_CALIBRATION=on.
   // Its threshold is on the calibrated scale; an explicit threshold still wins, and BUY_THRESHOLD (raw scale) never applies to it.
-  const calibrator = open ? activeCalibrator(provider) : undefined
+  const calibrator = open && provider.name !== 'compatible' ? activeCalibrator(provider) : undefined
   const threshold = calibrator && input.threshold === undefined ? calibrator.buyThreshold : buyThreshold(provider.model, input.threshold)
   const acquired = new Set([...input.readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
-  const valueFit = activeValueFit(provider)
+  const valueFit = provider.name === 'compatible' ? undefined : activeValueFit(provider)
   const useValuePolicy = input.requirement && input.accessibleEvidence !== undefined && process.env.DECISION_VALUE_POLICY !== 'off'
   const rows = candidates.map((candidate, index) => {
     const judgment = judgments[index]
@@ -260,7 +260,8 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     let verdict: DecisionRound['rows'][number]['verdict'] = 'BUY'
     let reason = 'Clears the value threshold and spending policy.'
     // A rewrite is labelled as one even when no gap is open (story bible UC1).
-    if (reputation && reputation.status !== 'active') { verdict = 'SKIP_LOW_TRUST'; reason = `Publisher ${reputation.status}: never bought or cited.` }
+    if (provider.name === 'compatible') { verdict = 'SKIP_LOW_VALUE'; reason = 'UNCALIBRATED generic judge: purchases disabled.' }
+    else if (reputation && reputation.status !== 'active') { verdict = 'SKIP_LOW_TRUST'; reason = `Publisher ${reputation.status}: never bought or cited.` }
     else if (acquired.has(candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || rewrite) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
     else if (!open) { verdict = 'SKIP_NO_GAP'; reason = NO_GAP_NOT_CALLED }
     else if (gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
