@@ -9,11 +9,11 @@ function routeTable(layers: Layer[]): string[][] {
     ? Object.keys(layer.route.methods).flatMap(method => [layer.route!.path].flat().map(path => [method.toUpperCase(), path]))
     : routeTable(layer.handle?.stack ?? []))
 }
-it.each([false, true])('preserves the pre-#285 route table (fault controls: %s)', async faults => {
+it.each([false, true])('preserves every pre-#285 route and adds wallet controls (fault controls: %s)', async faults => {
   vi.stubEnv('PUBLISHER_FAULTS', faults ? '1' : '0')
   const api = await createApiApp({ dbPath: ':memory:' })
   try {
     const app = api.app as Express & { router: { stack: Layer[] } }
-    expect(routeTable(app.router.stack).sort()).toEqual(faults ? before : before.filter(([, path]) => path !== '/api/demo/faults'))
+    expect(routeTable(app.router.stack).sort()).toEqual([...(faults ? before : before.filter(([, path]) => path !== '/api/demo/faults')), ['GET', '/api/wallet/status'], ['POST', '/api/wallet/pause']].sort())
   } finally { api.close(); vi.unstubAllEnvs() }
 })

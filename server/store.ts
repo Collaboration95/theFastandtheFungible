@@ -1,3 +1,4 @@
+import { spendPolicy, POLICY_VERSION, PAUSED, type Surface } from './spend-policy.js'
 import { clampBudget } from '../mcp/policy.js'
 import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
@@ -32,6 +33,8 @@ export class Store {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
     this.db = new DatabaseSync(path)
     this.db.exec(`PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;
+      CREATE TABLE IF NOT EXISTS admissions (key TEXT NOT NULL, surface TEXT NOT NULL, principal TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, requested INTEGER NOT NULL, admitted INTEGER NOT NULL, day TEXT NOT NULL, policy_version TEXT NOT NULL, PRIMARY KEY(surface, principal, key));
+      CREATE TABLE IF NOT EXISTS wallet_control (id INTEGER PRIMARY KEY CHECK(id=1), paused INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS mcp_requests (key TEXT PRIMARY KEY, question TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, budget INTEGER NOT NULL, day TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL REFERENCES runs(id), json TEXT NOT NULL);
@@ -46,6 +49,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS manifests (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grant_salts (intent_id TEXT PRIMARY KEY REFERENCES grants(intent_id), json TEXT NOT NULL);
     `)
+    this.db.exec(`INSERT OR IGNORE INTO admissions SELECT key, 'mcp', 'operator', run_id, budget, budget, day, 'mcp-v0' FROM mcp_requests`)
   }
   private atomic<T>(fn: () => T): T {
     this.db.exec('BEGIN IMMEDIATE')
@@ -76,42 +80,66 @@ export class Store {
   createRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {
     return this.getRun(this.insertRun(question, budgetMinor, labels).runId)
   }
-  /** Gross charges (refunds never replenish authority) plus full budgets of unfinished runs. */
-  private mcpUsage(day: string) {
+  /** Gross charges by receipt day; unfinished budgets and uncertain submissions carry across midnight. */
+  private usage(day: string, surface?: Surface, excludeRun?: string) {
     let spentMinor = 0, reservedMinor = 0
-    for (const row of this.db.prepare('SELECT run_id, budget FROM mcp_requests').all()) {
-      const run = this.rawRun(row.run_id as string)
-      const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', run.runId)
-      const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', run.runId)
+    const admissions = new Map(this.db.prepare('SELECT run_id, surface FROM admissions').all().map(row => [row.run_id as string, row.surface]))
+    for (const row of this.db.prepare('SELECT id FROM runs').all()) {
+      const id = row.id as string
+      if (surface && admissions.get(id) !== surface) continue
+      const run = this.rawRun(id)
+      const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', id)
+      const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', id)
       const charged = intents.filter(i => chargedStatuses.has(i.status))
       const gross = charged.reduce((sum, i) => sum + i.amountMinor, 0)
-      // Receipt dates, not admission dates, own the UTC gross-spend counter. Refunds never replenish it.
       spentMinor += charged.reduce((sum, i) => {
         const receipt = receipts.find(r => r.intentId === i.intentId)
         return sum + (!receipt || receipt.settledAt.slice(0, 10) === day ? i.amountMinor : 0)
       }, 0)
-      // An unfinished or uncertain run reserves everything it could still charge, across midnight/restarts.
-      if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase) || intents.some(i => reservedStatuses.has(i.status))) reservedMinor += Math.max(0, Number(row.budget) - gross)
+      if (id !== excludeRun && (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase) || intents.some(i => reservedStatuses.has(i.status)))) {
+        reservedMinor += Math.max(0, run.budgetMinor - gross)
+      }
     }
     return { spentMinor, reservedMinor }
   }
-  mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.mcpUsage(day)) }
-  isMcpRun(runId: string) { return !!this.db.prepare('SELECT key FROM mcp_requests WHERE run_id=?').get(runId) }
-  /** Key insertion, cap reservation and run creation commit together, before any async work. */
-  createMcpRun(question: string, requestedMinor: number, key: string, policy: { maxMinor: number; dailyMinor: number }, labels?: ModeLabels, day = new Date().toISOString().slice(0, 10)) {
+  isPaused() {
+    return spendPolicy().paused || Boolean(this.db.prepare('SELECT paused FROM wallet_control WHERE id=1').get()?.paused)
+  }
+  setPaused(paused: boolean) {
+    this.db.prepare('INSERT INTO wallet_control VALUES (1,?) ON CONFLICT(id) DO UPDATE SET paused=excluded.paused').run(Number(paused))
+  }
+  walletStatus(day = new Date().toISOString().slice(0, 10)) {
+    return this.atomic(() => ({ ...this.usage(day), dailyMinor: spendPolicy().walletDailyMinor,
+      paused: this.isPaused(), label: this.isPaused() ? PAUSED : 'Spending enabled', policyVersion: POLICY_VERSION }))
+  }
+  mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.usage(day, 'mcp')) }
+  isMcpRun(runId: string) { return !!this.db.prepare("SELECT key FROM admissions WHERE run_id=? AND surface='mcp'").get(runId) }
+  /** Key insertion, wallet/surface reservation and run creation commit before async work. */
+  admit(input: { surface: Surface; principal: string; question: string; requestedMinor: number;
+    idempotencyKey: string; maxMinor: number; dailyMinor?: number; labels?: ModeLabels }, day = new Date().toISOString().slice(0, 10)) {
     const admitted = this.atomic(() => {
-      const old = this.db.prepare('SELECT question, run_id FROM mcp_requests WHERE key=?').get(key)
+      const old = this.db.prepare('SELECT run_id FROM admissions WHERE surface=? AND principal=? AND key=?').get(input.surface, input.principal, input.idempotencyKey)
       if (old) {
-        if (old.question !== question) throw new Error('Idempotency key belongs to a different question')
-        return { run: this.rawRun(old.run_id as string), reused: true }
+        const run = this.rawRun(old.run_id as string)
+        if (run.question !== input.question) throw new Error('Idempotency key belongs to a different question')
+        return { run, reused: true }
       }
-      const usage = this.mcpUsage(day)
-      const budget = clampBudget(requestedMinor, policy.maxMinor, Math.max(0, policy.dailyMinor - usage.spentMinor - usage.reservedMinor))
-      const run = this.insertRun(question, budget, labels)
-      this.db.prepare('INSERT INTO mcp_requests (key, question, run_id, budget, day) VALUES (?,?,?,?,?)').run(key, question, run.runId, budget, day)
+      if (![input.requestedMinor, input.maxMinor, input.dailyMinor ?? 0].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('Invalid spending limits')
+      const wallet = this.usage(day), surface = this.usage(day, input.surface)
+      const remaining = Math.max(0, spendPolicy().walletDailyMinor - wallet.spentMinor - wallet.reservedMinor)
+      const surfaceRemaining = input.dailyMinor === undefined ? remaining : Math.max(0, input.dailyMinor - surface.spentMinor - surface.reservedMinor)
+      const budget = this.isPaused() ? 0 : clampBudget(input.requestedMinor, input.maxMinor, Math.min(remaining, surfaceRemaining))
+      const run = this.insertRun(input.question, budget, input.labels)
+      run.policyVersion = POLICY_VERSION
+      this.saveRun(run)
+      this.db.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)
       return { run, reused: false }
     })
     return { ...admitted, run: this.getRun(admitted.run.runId) }
+  }
+  createMcpRun(question: string, requestedMinor: number, key: string, policy: { maxMinor: number; dailyMinor: number }, labels?: ModeLabels, day = new Date().toISOString().slice(0, 10)) {
+    return this.admit({ surface: 'mcp', principal: 'operator', question, requestedMinor, idempotencyKey: key,
+      maxMinor: policy.maxMinor, dailyMinor: policy.dailyMinor, labels }, day)
   }
   getRun(runId: string): RunSnapshot {
     // A consistent read also makes callbacks observe the committed event and ledger.
@@ -236,6 +264,8 @@ export class Store {
       const committed = intents.filter(i => reservedStatuses.has(i.status) || chargedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
       let error: string | undefined
       if (quote.amountMinor !== intent.amountMinor) error = 'Quoted price differs from evaluated price'
+      else if (this.isPaused()) error = PAUSED
+      else if (!this.walletAllows(run, intent.amountMinor)) error = 'Wallet daily cap exceeded'
       else if (run.stopped) error = 'Run stopped'
       else if (run.budgetMinor === 0 || intent.amountMinor > run.perSourceCapMinor || committed + intent.amountMinor > run.budgetMinor) error = 'Budget or per-source cap exceeded'
       else if (Date.parse(quote.expiresAt) <= Date.now() || !Number.isFinite(Date.parse(quote.expiresAt))) error = 'Quote expired'
@@ -245,12 +275,18 @@ export class Store {
       return result
     })
   }
+  private walletAllows(run: RunSnapshot, amount: number) {
+    const usage = this.usage(new Date().toISOString().slice(0, 10), undefined, run.runId)
+    const own = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', run.runId)
+      .filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
+    return usage.spentMinor + usage.reservedMinor + own + amount <= spendPolicy().walletDailyMinor
+  }
   /** CAS prevents independent managers/processes from submitting the same intent. */
   claimSubmitting(intentId: string): boolean {
     return this.atomic(() => {
       const intent = this.getIntent(intentId)
       if (!intent || intent.status !== 'RESERVED') return false
-      if (this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) { this.saveIntent({ ...intent, status: 'SKIPPED', error: 'Run stopped or quote expired' }); return false }
+      if (this.isPaused() || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) { this.saveIntent({ ...intent, status: 'SKIPPED', error: this.isPaused() ? PAUSED : 'Run stopped, wallet capped or quote expired' }); return false }
       this.saveIntent({ ...intent, status: 'SUBMITTING' }); return true
     })
   }

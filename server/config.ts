@@ -13,6 +13,7 @@ const url = z.string().refine(value => {
 }).optional()
 const cap = z.string().regex(/^\d+$/).refine(value => Number.isSafeInteger(Number(value))).optional()
 const ConfigSchema = z.object({
+  RA_API_TOKEN: text, RA_ALLOWED_HOSTS: text, RA_WEB_ORIGIN: url, WALLET_DAILY_CAP_MINOR: cap, SPENDING_PAUSED: z.enum(['0', '1']).optional(), LEGACY_GAP: z.enum(['0', '1']).optional(),
   PORT: port, HOST: text, APP_DB: text, REPORT_DIR: text,
   PUBLISHER_URL: url, PUBLISHER_SECRET: text, PUBLISHER_FAULTS: text,
   SETTLEMENT_RAIL: text, XRPL_PAYER_SEED: text, XRPL_PAYER_ADDRESS: text, XRPL_RPC_URL: text,

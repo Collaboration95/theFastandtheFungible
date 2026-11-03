@@ -222,8 +222,11 @@ Agents add items there and keep working around them.
 - 3 Nov: #277 uses the canonical #260 manifest v2 schema and passage-bound menu verifier; carry its shared protocol files until Lane B lands so the publishing command works from a clean clone.
 
 - 3 Nov: #277 publishes locally with a private `.env.writer`, deterministic public topics, unverified identity and the operator payee denylist; npm distribution stays an owner choice on #265.
+- 3 Nov: #286 uses one operator bearer token plus exact Host/Origin checks; local launchers generate and privately forward a token so the demo needs no extra setup.
+- 3 Nov: #286 defaults: S$5/run, S$1/source, S$20 gross/wallet/UTC day, MCP caps zero; refunds never restore authority and pause is durable.
 
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
+
 
 - 3 Nov: Logo direction chosen: open index, because source boundaries and a route to evidence read at 16 px on the cast’s 24-unit grid; Ink/Paper with sparse Salmon layout accents. Explainers source moves into `site/` for one reviewable app/site identity kit (#271).
 - 3 Nov: Added a 4th lane (Architecture) for #285–#288 because #286 auth must land before the Mac app #259 and hire-the-agent #274.
@@ -239,6 +242,8 @@ Significant product, design and process decisions, newest first. One line each: 
 - 3 Nov: Cloud Run held in reserve; local-first.
 
 ## Changelog
+
+- 2026-11-03: #286 shared admission, wallet cap/pause, bearer and rebinding guards, capped decision inputs and adversarial injection pack; native token contract posted on #259.
 
 - 2026-11-03: Reused test search indexes and optimized leak-oracle comparisons to shorten hard-gate runs without changing coverage.
 - 3 Nov: #277 Markdown publishing command, three starter articles, signed x402 writer and local registration; Testnet folder → verified paid read **18.90 s**, one **0.01 XRP** payment ([proof](evidence/publish-site-277.md)).

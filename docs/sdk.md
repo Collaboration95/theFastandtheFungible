@@ -44,9 +44,10 @@ hashes and explorer URLs. Paid citation passages are exposed only when their
 delivered content matches a VERIFIED grant. Real Testnet settlement still has
 no real monetary value.
 
-`token` sends `Authorization: Bearer …` on JSON and SSE requests. Authentication
-enforcement, host guards and a wallet-wide spend gate are follow-up #286; this
-refactor does not make today's API safe to expose publicly. Errors use
+`token` sends `Authorization: Bearer …` on JSON and SSE requests and defaults
+to `RA_API_TOKEN` in Node. The backend enforces bearer auth, Host/Origin guards,
+wallet-wide gross daily caps and pause; see [SECURITY](contracts/SECURITY.md)
+for the exact operator and embedded-app contract. Errors use
 `ResearchAgentError.code`: `unauthorized`, `not_found`, `invalid`, or
 `backend_unavailable`. Backend bodies and transport details are not echoed.
 
@@ -63,4 +64,4 @@ variables without values. Every existing variable name, provider fallback,
 empty-string precedence and legacy DeepSeek/Groq key remains supported.
 Call-time reads use this same parser so isolated engine workers and explicit
 test environments stay independent. Publisher configuration remains separate
-in this change. #286 can add token and host validation at this seam.
+at this seam. Token/Host startup validation happens before an API listener.

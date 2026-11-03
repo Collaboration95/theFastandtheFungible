@@ -36,7 +36,7 @@ it('stdio search → policy buy → cited answer; cap, daily cap, retry and rest
     expect(search.hits.length).toBeGreaterThan(0)
     expect(search.labels.settlement).toContain('SIMULATED')
     for (const hit of search.hits) {
-      expect(Object.keys(hit).sort()).toEqual(['abstract', 'priceMinor', 'relevance', 'tier', 'title', 'url', 'writer'])
+      expect(Object.keys(hit).sort()).toEqual(['abstract', 'priceMinor', 'relevance', 'tier', 'title', 'untrusted', 'url', 'writer'])
       expect(hit).not.toHaveProperty('body'); expect(hit).not.toHaveProperty('passages')
     }
     const args = { question: USE_CASES.UC2.question.replace(/\?$/, ' (pricing & margins)?'), budget_sgd: 999, idempotency_key: 'uc2-intent' }
@@ -82,7 +82,7 @@ it('stdio search → policy buy → cited answer; cap, daily cap, retry and rest
 it('remote backend enforces its own human caps, independent of the caller environment', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'mcp-remote-'))
   const engine = await startEngine({ dataDir: dir }) // unset caps default to zero
-  const client = await connect({ RA_BACKEND_URL: engine.apiUrl, MCP_MAX_BUDGET_MINOR: '500', MCP_DAILY_CAP_MINOR: '50000' })
+  const client = await connect({ RA_BACKEND_URL: engine.apiUrl, RA_API_TOKEN: engine.apiToken, MCP_MAX_BUDGET_MINOR: '500', MCP_DAILY_CAP_MINOR: '50000' })
   try {
     const run = await call(client, 'ask_expert', { question: USE_CASES.UC2.question, budget_sgd: 5 })
     expect(run).toMatchObject({ budgetMinor: 0, spentMinor: 0, clamped: true })

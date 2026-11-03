@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { createServer } from 'node:net'
@@ -17,7 +18,7 @@ const offset = Number(process.env.DEMO_PORT_OFFSET || 0)
 const ports = { web: Number(process.env.DEMO_WEB_PORT || 5100 + offset), api: Number(process.env.DEMO_API_PORT || 8788 + offset), pub: Number(process.env.DEMO_PUBLISHER_PORT || 8790 + offset) }
 const localPublisher = `http://127.0.0.1:${ports.pub}`
 const publisherUrl = !process.env.PUBLISHER_URL || /^https?:\/\/(?:localhost|127\.0\.0\.1):8790\/?$/.test(process.env.PUBLISHER_URL) ? localPublisher : process.env.PUBLISHER_URL
-const env = { ...process.env, HOST: '127.0.0.1', PORT: String(ports.api), PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: publisherUrl, PUBLISHER_SECRET: process.env.PUBLISHER_SECRET || 'local-simulated-demo-secret', LLM_PROVIDER: live ? 'deepseek' : 'fixture', // live forces DeepSeek even when .env says groq
+const env = { ...process.env, RA_API_TOKEN: process.env.RA_API_TOKEN || randomBytes(32).toString('hex'), RA_WEB_ORIGIN: `http://127.0.0.1:${ports.web}`, HOST: '127.0.0.1', PORT: String(ports.api), PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: publisherUrl, PUBLISHER_SECRET: process.env.PUBLISHER_SECRET || 'local-simulated-demo-secret', LLM_PROVIDER: live ? 'deepseek' : 'fixture', // live forces DeepSeek even when .env says groq
   // Live search embeds queries with Workers AI (hybrid); fixtures and tests stay keyword-only. SEARCH_EMBEDDINGS=off make live
   // starts keyword-only on purpose (labelled on screen), e.g. when the venue network is blocked.
   SEARCH_EMBEDDINGS: live ? (process.env.SEARCH_EMBEDDINGS === 'off' ? 'off' : 'live') : (process.env.SEARCH_EMBEDDINGS || 'off'),

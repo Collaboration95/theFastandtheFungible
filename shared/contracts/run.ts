@@ -54,6 +54,7 @@ export const RunCheckpointSchema = z.object({
   attempts: z.array(z.object({ requirementId: z.string(), fingerprint: z.string() })).optional(),
 }).catchall(z.unknown())
 export const RunSnapshotSchema = z.object({
+  policyVersion: z.string().optional(),
   runId: z.string(), question: z.string(), budgetMinor: z.number().int().nonnegative(), spentMinor: z.number().int().nonnegative(), reservedMinor: z.number().int().nonnegative(), perSourceCapMinor: z.number().int().nonnegative(),
   /** Derived: sum of intent refunds. spentMinor stays the gross charge. */ refundedMinor: z.number().int().nonnegative().optional(),
   phase: RunPhaseSchema, stopped: z.boolean(), round: z.number().int().nonnegative(),

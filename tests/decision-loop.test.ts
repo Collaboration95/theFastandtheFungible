@@ -60,7 +60,27 @@ function harness(budgetMinor = 200) {
   return { loop, store, purchases, retrieve, writeAnswer, run, published, candidate, content, grant }
 }
 
+it('live runs without frozen requirements do not judge source-derived gaps unless LEGACY_GAP is enabled', async () => {
+  vi.stubEnv('LEGACY_GAP', '0')
+  const h = harness()
+  const provider: DecisionProvider = { name: 'openai', model: 'obedient-stub',
+    judgeRound: vi.fn(async () => ({ gapMaterial: 1 })),
+    judgeCandidate: vi.fn(async () => ({ addressesGap: 1, originality: { original: 1, rewrite: 0, overlap: 0 }, credibility: 2 })) }
+  const loop = new RunLoop(h.store as unknown as Store, {} as PublisherClient, h.purchases as unknown as PurchaseManager,
+    undefined, { provider, retrieve: h.retrieve, writeAnswer: h.writeAnswer })
+  try {
+    await loop.start(h.run.runId)
+    expect(h.run.phase).toBe('DONE')
+    expect(provider.judgeRound).not.toHaveBeenCalled()
+    expect(provider.judgeCandidate).not.toHaveBeenCalled()
+    expect(h.purchases.purchase).not.toHaveBeenCalled()
+  } finally { vi.unstubAllEnvs() }
+})
+
 describe('RunLoop with W0 ledger/research doubles', () => {
+  // These historical W0 doubles have no frozen requirements; opt in to testing legacy live gaps.
+  beforeAll(() => vi.stubEnv('LEGACY_GAP', '1'))
+  afterAll(() => vi.unstubAllEnvs())
   it('runs free answer, decision, one verified purchase, immutable v2, then stops', async () => {
     const h = harness()
     await h.loop.start(h.run.runId)

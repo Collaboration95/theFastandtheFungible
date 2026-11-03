@@ -1,7 +1,7 @@
 # ResearchAgent security posture
 
-Design: [FINAL-PUSH.md](../FINAL-PUSH.md) (D3–D7, §8–§9). Everything below
-is built and covered by the gate suite.
+Design: [FINAL-PUSH.md](../FINAL-PUSH.md) (D3–D7, §8–§9). The controls below are built; fixture and stub tests establish bounded behaviour,
+not a claim that live models resist every injection.
 
 - Source text is treated as quoted, untrusted evidence; it is never executed
   as instructions.
@@ -42,5 +42,86 @@ is built and covered by the gate suite.
 - Locally published writers are labelled unverified (no KYB on Testnet). Author-supplied content is distinguished from SYNTHETIC starter content. Publisher keys are stored in an ignored, mode-0600 `.env.writer` beside the private corpus. An operator denylist is checked before funding a new wallet and before purchase signing; it is not sanctions screening.
 - Persistence is SQLite (`node:sqlite`): `data/app.db` and the publisher journal.
   It is local demo storage, not multi-user production storage; deployers should
-  add authentication, encryption, retention, rate limits, and a managed
+  add encryption, retention, rate limits, and a managed
   database before production use.
+
+
+## Admission and operator controls (#286)
+
+One `server/spend-policy.ts` admission seam covers web `/runs`, MCP and SDK
+(the SDK uses the MCP surface). `Store.admit` atomically records surface,
+principal, idempotency key, requested/admitted budget, UTC day and policy
+version (`wallet-v1`) before launching work. The `admissions` table imports
+old `mcp_requests` rows on boot; changed questions cannot reuse a key. Future
+x402/agent routes must call this seam with operator-owned surface caps.
+
+Defaults are **500 cents per run, 100 per source and 2000 gross per wallet per
+UTC day**, all SGD. `WALLET_DAILY_CAP_MINOR` configures the wallet cap; MCP's
+`MCP_MAX_BUDGET_MINOR` and `MCP_DAILY_CAP_MINOR` still default to zero. Refunds
+never replenish authority. Unfinished budgets and ambiguous SUBMITTING intents
+reserve authority across midnight and restarts; receipt dates own gross spend.
+The wallet is the engine's single payer and durable database: separate stores
+must not be used to operate the same wallet as independent authorities.
+Reservations and the RESERVED → SUBMITTING claim recheck the wallet cap.
+
+`SPENDING_PAUSED=1` or authenticated `POST /api/wallet/pause {"paused":true}`
+blocks reservations with “Spending paused by the operator; nothing was
+charged”. The persisted switch is visible in `/api/wallet/status`, SDK/MCP
+wallet status (`wallet.paused`) and the web wallet label. Resume uses
+`{"paused":false}` but cannot override the environment switch. Work already
+SUBMITTING still reconciles; pause never claims to undo a payment.
+
+## Authentication contract (web, SDK, MCP and native app)
+
+- `RA_API_TOKEN` is a bearer secret. When set, every mutating route (including
+  stop, retry, reset and reports) and every `/api/mcp/*` requires it. Pause
+  always requires a token. Comparison is constant time for equal-length
+  values; telemetry masks the token. Errors never echo credentials.
+- An unconfigured token permits anonymous development only when both the
+  socket and HTTP Host are loopback. Non-loopback `HOST` without a token
+  refuses startup naming `RA_API_TOKEN`. It is not a public anonymous mode.
+- The Host allowlist always includes `localhost`, `127.0.0.1` and `[::1]`.
+  Add exact external hostnames with `RA_ALLOWED_HOSTS` (comma-separated,
+  without scheme or port). Other Hosts return 403 before auth or routing,
+  including DNS rebinding. Forwarded Host/IP headers do not grant authority.
+- If a request has Origin, it must equal `RA_WEB_ORIGIN` (default
+  `http://127.0.0.1:<5100 + DEMO_PORT_OFFSET>`). Native clients omit Origin.
+  There is no permissive CORS or cookie authentication.
+- `make run`, demo, record and clip generate a random local token and pass it
+  through the bundled Vite server-side proxy, without shipping it to browser
+  JavaScript. Vite checks Host/Origin and the socket before attaching it. `dev:client` binds
+  `127.0.0.1`; `RA_CLIENT_LAN=1 npm run dev:client -- --host 0.0.0.0` explicitly
+  enables a trusted LAN proxy. Configure `RA_WEB_ORIGIN` for that web address.
+  This opt-in authorizes clients of that web proxy to use its operator token.
+- Embedded/native: `const engine = await startEngine({dataDir, apiToken?})`
+  returns `{apiUrl, publisherUrl, apiToken, close}`. Token precedence is the
+  option, then `RA_API_TOKEN`, then 32 random bytes encoded as hex. Keep it
+  in the main process / Keychain; pass
+  `createClient({baseUrl: engine.apiUrl, token: engine.apiToken})`. No query
+  tokens. Remote mode reads the operator token from `RA_API_TOKEN`.
+- SDK defaults to `RA_API_TOKEN` in Node when `token` is omitted; JSON and SSE
+  requests carry the header. MCP forwards that token to `RA_BACKEND_URL`,
+  or the embedded engine's generated token. No token is returned by a tool.
+
+## Decision injection posture
+
+Frozen requirements remain the purchase target. The requirement batch omits
+source-derived `conclusion` entirely and skips gap_material. Historical fixture
+scenarios retain legacy gaps; live legacy runs require `LEGACY_GAP=1`.
+Candidate title (200), publisher (120), abstract (1200), family (160), tags
+(16 × 80), identifiers (160; version 80), and license strings (80/200) are capped and spans matching
+`INSTRUCTION` removed. Unknown fields, bodies, wallets, URLs and manifests are
+excluded from the candidate model view. Writer identifiers stay in structured data, never provider question instructions. Read-source metadata is limited to 50 records; coverage references are capped at 400 characters. Coverage/relevance use at most
+100/64 passages of 2000 characters, filtered by the same predicate. The model
+is told that writer fields and passages are quoted, untrusted data. MCP hits,
+run results and citation passages carry `untrusted: true` and tool descriptions
+explain it. Filtering is defence in depth, not a security boundary.
+
+`tests/client-admission.test.ts` checks the bundled proxy and credential-file denial.
+`tests/admission.test.ts` pins Host/Origin/auth, the shared daily cap, migration,
+restart/idempotency and masking. `tests/injection.test.ts` attacks titles,
+abstracts, free-source text and an MCP “S$500” question with the honest fixture
+and an all-BUY live-provider stub. It asserts capped/structured inputs, no
+conclusion, unchanged honest selection, deterministic budget/per-source/wallet
+refusals, one receipt across concurrent retries, refund gross accounting, midnight reservations, and pause before submission.
+These are offline simulations and provider stubs, not live-injection evidence.

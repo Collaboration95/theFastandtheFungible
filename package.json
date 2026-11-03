@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "npm run demo",
-    "dev:client": "vite --host 0.0.0.0 --port 5100 --strictPort",
+    "dev:client": "vite --port 5100 --strictPort",
     "dev:server": "tsx server/index.ts",
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit",
@@ -22,7 +22,7 @@
     "release": "node scripts/release.mjs",
     "check:fast": "npm run hygiene && npm run lint && npm run typecheck && npm run test:unit",
     "verify": "npm run lint && npm run typecheck && npm run testing && npm run build",
-    "preview": "vite preview --host 0.0.0.0",
+    "preview": "vite preview",
     "prepare": "husky",
     "demo": "node scripts/demo.mjs",
     "demo:live": "node scripts/demo.mjs --live",

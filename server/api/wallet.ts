@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { Router } from 'express'
 import type { ApiContext } from './context.js'
 import { DROPS_PER_MINOR, LedgerViewSchema, type LedgerView } from '../../shared/contracts/index.js'
@@ -28,6 +29,11 @@ export function walletRouter(context: ApiContext) {
   router.get('/api/ledger', async (_req, res) => {
     if (!ledgerCache || Date.now() - ledgerCache.at > 5000) ledgerCache = { at: Date.now(), view: ledgerView() }
     try { res.json(await ledgerCache.view) } catch { ledgerCache = undefined; res.status(503).json({ error: 'Ledger view unavailable.' }) }
+  })
+  router.get('/api/wallet/status', (_req, res) => res.json(store.walletStatus()))
+  router.post('/api/wallet/pause', (req, res) => {
+    store.setPaused(z.object({ paused: z.boolean() }).strict().parse(req.body).paused)
+    res.json(store.walletStatus())
   })
   return router
 }
