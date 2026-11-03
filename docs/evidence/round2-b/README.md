@@ -59,3 +59,11 @@ Python and chaos passed and the required check correctly failed. This is actual
 hosted fail-closed evidence, in addition to injected contract cases. Floors
 were retained; publisher refusal/telemetry-isolation tests were added. Coverage
 summary artifacts now expose raw counts even on admission failures.
+
+The second hosted run (41691867205) passed all unit tests but refused the web
+branch ratio on Node 22. Compared with local Node 26, App.tsx had two extra
+uncovered V8 branches. Private-mode and unconnected environment-label tests
+were added; no floor was lowered. Final local collection now uses Node
+22.23.4 to match CI's major. Baseline remains the original Node 26 ratios.
+Worker jobs have a 15-minute execution bound (old monolithic job: 10 minutes)
+for fresh browser/coverage/package setup; assertions and floors are unchanged.

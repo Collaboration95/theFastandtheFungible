@@ -19,3 +19,14 @@
 - Suggested fix: isolate package output per invocation in future build tooling.
 - Severity: low; local verification rerun required.
 - Mainnet impact: none; no settlement or provider call involved.
+
+- Class: observed cross-runtime verification incident, 2026-11-04.
+- Evidence: PR run 41691867205 coverage-summary artifact; App.tsx branch
+  denominator 237 on hosted Node 22 versus 235 on local Node 26, and
+  EnvIndicator.tsx 25 versus 23. Required check correctly refused the ratio drop.
+- Workaround: verify with Node 22 locally; add private-mode/unconnected
+  environment-label cases, preserving every existing floor.
+- Suggested fix: record runtime versions beside V8 denominators and retain
+  coverage-summary artifacts for failed admission.
+- Severity: low (verification portability).
+- Mainnet impact: none observed; offline fixture checks only.
