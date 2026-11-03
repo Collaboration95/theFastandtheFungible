@@ -20,7 +20,8 @@ scratch root, no dotenv, fixed fixture providers, simulated settlement, telemetr
 and embeddings off, and ephemeral test ports. It continues after failed steps, marks the overall result FAIL, skips genuine
 dependents as `skipped (dependency)`, and preserves dist/final/acceptance.json and per-step logs. Host load is sampled
 throughout the workload. `--fail-fast` retains first-failure exit for CI-style
-use. No threshold is changed.
+use. `--skip-soak` explicitly records a requested skip and skips dependent report/render
+steps; it keeps overall acceptance false. No threshold is changed.
 
 The soak retains all completion rows and interval samples so its comparisons and
 SVG can be recomputed. Five performance gates are RSS slope ≤5 MiB/100 asks,
@@ -161,7 +162,7 @@ Cross-built x64 native acceptance remains pending.
 The live-site checks require HTTP 200 for `/demo/` and `/ledger/` through `gh`.
 This replaces the runner's earlier published-byte comparison with the requested
 availability probes: it does not claim deployed bytes equal the local build.
-No numerical threshold, safety gate, coverage floor or product test was changed.
+No numerical threshold, safety gate or coverage floor was changed.
 
 SHA-256 of the tested local bytes:
 
@@ -215,3 +216,82 @@ The source was clean at runner start; docs and harness report-handling edits mad
 during later steps are why nested chaos records a dirty worktree. No product files
 changed during this run. Durable logs and exact release bytes remain in the local
 timestamped scratch root and restored `dist/final` / `dist/release`.
+
+## Final integrated REHEARSAL — 4 November 2026
+
+After #359/#361 merged, source `05a44382` completed a second quick soak:
+200 asks / 20 warmups, RSS slope **77.366358 MiB/100 asks FAIL** (limit 5),
+median +79.224152 MiB PASS, max 957.647301 MiB PASS, loop 25.837567 ms PASS,
+p95 drift −1.547626 ms PASS, burst 4 admitted / 96 refused, 20 clean restarts,
+zero failed asks or audits. `integrated-quick-soak-279.json` retains all samples;
+`integrated-quick-rehearsal.json` shows the failed soak did not prevent later
+independent checks. The short-window growth result remains a miss requiring the
+full Monday workload; it does not establish sustained retention or its cause.
+
+That run also exposed a stale UX test expecting a post-purchase comparison for
+UC4, although its facts are fully covered by free evidence. The minimal test
+repair requires the comparison to be absent for UC4 and adds a separate paid UC2
+comparison/return regression. Both targeted tests and the full 18-test browser
+suite pass; no product code, timeout or threshold changed. The original failed
+browser result is preserved. A subsequent rebase picked up #362; P1's
+builder-feedback file was preserved exactly when resolving the historical H2
+append conflict. No P1/Q-owned file was edited by this continuation.
+
+The final pass is `caffeinate -dims node scripts/final-acceptance.mjs --skip-soak`
+on clean source **`1fcf8a818cc1270ebf5e6ba086bc036c46f9afb2`**. It rebuilds the
+exact artifacts and apps after #362, and records all independent results in
+`landing-rehearsal.json`. Overall `pass:false` and exit 1 are intentional: the
+soak and dependent metadata/render steps were explicitly skipped, so this cannot
+claim full acceptance. Both earlier measured misses remain outstanding.
+The final fresh rebase was up to date; later changes are this evidence and the
+required SFF line only. No source changed during this final pass.
+
+Full browser 18/18, demo 1/1, ledger 4/4; live `/demo/` and `/ledger/` HTTP 200.
+check:fast passes 1,164 tests in 135 files plus its 20-run chaos smoke. Python
+205/205; coverage collection and unchanged coverage gate pass. Unsigned arm64
+recovery passes all 13 cases; x64 builds with **native acceptance pending**.
+
+Final chaos: 200 iterations, 200 faults, 55 process kills, 0 double charges, 0 invariant violations, 0 stuck reservations.
+
+| Final integration step | Result |
+|---|---|
+| soak | skipped (requested) |
+| soak-evidence | skipped (dependency) |
+| render | skipped (dependency) |
+| artifacts | PASS |
+| artifact-preservation | PASS |
+| consumers | PASS |
+| artifact-evidence | PASS |
+| desktop-download-arm64 | PASS |
+| desktop-arm64 | PASS |
+| arm64-evidence | PASS |
+| desktop-recovery | PASS |
+| desktop-download-x64 | PASS |
+| desktop-x64 | PASS |
+| x64-evidence | PASS |
+| browser | PASS |
+| demo-build | PASS |
+| browser-demo | PASS |
+| browser-ledger | PASS |
+| site-demo | PASS |
+| site-ledger | PASS |
+| check-fast | PASS |
+| python | PASS |
+| coverage | PASS |
+| coverage-gate | PASS |
+| chaos | PASS |
+| TypeScript receipt verifier | PASS |
+| Exact-wheel Python receipt verifier | PASS |
+
+| Final local artifact | SHA-256 |
+|---|---|
+| researchagent-sdk-1.0.0.tgz | `0563d841ba417d80f84777a17e2e1bbca24bacba42e2c9569761ed7bfd529714` |
+| researchagent-1.0.0-py3-none-any.whl | `70510cf6c919619a0a5af1d4b6175d5b75ef29c4b711f687dbc07299bbc62a2d` |
+| researchagent-1.0.0.tar.gz | `79216806b875440afbf67a2255c147d12bc31e53db96cef017d5a383e90d99d5` |
+| ResearchAgent.mcpb | `d032a25c076da188f8bc07fb9df15d49cbdd5625b2e0b3a649fbfd1537cec72d` |
+| server.json | `0f3167a7ec76319e7e3a41f52a7bf7c858269638f52fbc8e0e00a853cf30219c` |
+| ResearchAgent-1.0.0-arm64.dmg | `b4df1cb9970b115b78bf72c8329b694bcc313a3d92f993cb38b4a9ad9a1f7d1d` |
+| ResearchAgent-1.0.0-x64.dmg | `fbf38fea38850af63718c267e94e7b271ce4a2d4b438b8db919951bc7b97d0ce` |
+
+Final full acceptance remains scheduled for **Mon 9 Nov on a quiet host, with no
+other lanes running**. No tag, release, publication or signing.
