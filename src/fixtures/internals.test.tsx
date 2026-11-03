@@ -172,12 +172,18 @@ describe('run command adapter', () => {
     const fetch = vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({ error: 'SECRET' }) })
     vi.stubGlobal('fetch', fetch)
     await expect(stop('run')).rejects.toThrow('ResearchAgent request failed (HTTP 500)')
-    vi.stubGlobal('window', { location: { origin: 'http://localhost' } })
+    vi.stubGlobal('window', { location: new URL('http://localhost/') })
     fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ format: 'HTML', url: 'javascript:alert(1)' }) })
     await expect(createReport('run')).rejects.toThrow('Unsafe report URL')
     fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ format: 'PDF', url: '/reports/run.pdf' }) })
     await expect(createReport('run')).resolves.toEqual({ format: 'PDF', url: '/reports/run.pdf' })
     expect(fetch.mock.calls[2][0]).toBe('/runs/run/report')
+    vi.stubGlobal('window', { location: new URL('app://researchagent/') })
+    const report = { format: 'HTML', url: '/runs/abcd-1234/report.html' }
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => report })
+    await expect(createReport('abcd-1234')).resolves.toEqual(report)
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ ...report, url: 'app://attacker/runs/abcd-1234/report.html' }) })
+    await expect(createReport('abcd-1234')).rejects.toThrow('Unsafe report URL')
   })
 
   it('handles both SSE event names, invalid data and complete idempotent listener cleanup', () => {

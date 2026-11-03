@@ -1,0 +1,41 @@
+name: desktop
+on:
+  push:
+    tags: ['desktop-check-*']
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Optional package version for a pre-release validation build'
+        type: string
+        default: ''
+permissions:
+  contents: write
+jobs:
+  dmg:
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Build the requested version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_NAME" == desktop-check-* ]]; then
+            export DESKTOP_VERSION="${GITHUB_REF_NAME#desktop-check-}"
+          fi
+          make dmg
+        env:
+          DESKTOP_VERSION: ${{ inputs.version || '' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: researchagent-arm64-dmg
+          path: desktop/out/*.dmg
+          retention-days: 14
