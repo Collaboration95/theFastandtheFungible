@@ -7,7 +7,7 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   test.setTimeout(180_000)
   await page.request.post('/api/reputation/reset')
   await mkdir(dir, { recursive: true })
-  const shot = async (name: string) => { await page.screenshot({ path: `${dir}/${name}.jpg`, type: 'jpeg', quality: 65 }) }
+  const shot = async (name: string) => { await page.screenshot({ path: `${dir}/${name}.jpg`, type: 'jpeg', quality: 65, animations: 'disabled' }) }
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/?pace=real')
   const env = page.getByRole('button', { name: /Demo · simulated payments/ })
@@ -22,11 +22,11 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
     if (i) await page.keyboard.press('Control+n')
     await page.getByRole('button', { name: presets[i] }).click()
     await page.getByRole('button', { name: /^Ask/ }).click()
-    if (i === 1) { await shot('02-clarify'); await page.getByRole('button', { name: 'pricing & margins' }).click() }
+    if (i === 1) { await expect(page.getByRole('button', { name: 'pricing & margins' })).toBeVisible(); await shot('02-clarify'); await page.getByRole('button', { name: 'pricing & margins' }).click() }
     await expect(page.getByRole('button', { name: 'Start now' })).toBeFocused()
-    if (i === 1) await shot('03-plan-confirm')
+    if (i === 1) { const box = await page.getByRole('dialog', { name: 'Search plan' }).boundingBox(); expect(Math.abs(box!.x + box!.width / 2 - 720)).toBeLessThan(2); await shot('03-plan-confirm') }
     await page.getByRole('button', { name: 'Start now' }).click()
-    if (i === 1) await shot('04-running-search')
+    if (i === 1) { await expect(page.locator('.ra-q')).toBeVisible(); await shot('04-running-search') }
     await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
     await shot(i === 0 ? '22-uc1-done-no-purchase' : i === 1 ? '07-done-uc2' : '12-uc3-done')
     const spend = page.getByRole('region', { name: 'Spend', exact: true }).first()
@@ -54,6 +54,7 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   await expect(receipt).toContainText('None (simulated)')
   await expect(receipt).toContainText('Simulated payment · no ledger entry')
   await expect(receipt).toContainText('Net costS$0.00')
+  await expect(receipt).toContainText('RefundedS$0.30 · simulated')
   labels.receipt = await count()
   await expect(receipt).toHaveCSS('opacity', '1')
   await shot('14-receipt-refunded')
@@ -93,6 +94,8 @@ test('UX-1 stage screenshots and a single actionable scope error', async ({ page
     await page.screenshot({ path: `${dir}/${name}.jpg`, type: 'jpeg', quality: 65, animations: 'disabled' })
   }
   const at = (run: typeof full, predicate: (e: typeof full.events[number]) => boolean) => run.events.find(predicate)!.id
+  shown = staged(uc2, at(uc2, e => e.type === 'SEARCH'))
+  await capture('04-running-search')
   shown = staged(uc2, at(uc2, e => e.type === 'PURCHASE' && e.data?.status === 'RESERVED'))
   await capture('05-running-buying')
   shown = staged(uc2, at(uc2, e => e.type === 'PROOF'))
@@ -109,13 +112,13 @@ test('UX-1 stage screenshots and a single actionable scope error', async ({ page
   await page.getByRole('button', { name: /^Bank of Japan decision/ }).click()
   await page.getByRole('button', { name: /^Ask/ }).click()
   await expect(page.getByRole('alert')).toHaveCount(1)
-  await page.screenshot({ path: `${dir}/20-error-single.jpg`, type: 'jpeg', quality: 65 })
+  await page.screenshot({ path: `${dir}/20-error-single.jpg`, type: 'jpeg', quality: 65, animations: 'disabled' })
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/?pace=real')
-  await page.screenshot({ path: `${dir}/24-mobile-home.jpg`, type: 'jpeg', quality: 65 })
+  await page.screenshot({ path: `${dir}/24-mobile-home.jpg`, type: 'jpeg', quality: 65, animations: 'disabled' })
   await page.goto('/?record=1')
   await page.setViewportSize({ width: 1440, height: 900 })
   await expect(page.locator('.ra-env-trigger')).toBeVisible()
   await expect(page.getByRole('region', { name: "What's real here" })).toHaveCount(0)
-  await page.screenshot({ path: `${dir}/23-record-home.jpg`, type: 'jpeg', quality: 65 })
+  await page.screenshot({ path: `${dir}/23-record-home.jpg`, type: 'jpeg', quality: 65, animations: 'disabled' })
 })

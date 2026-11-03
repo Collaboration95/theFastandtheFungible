@@ -26,8 +26,9 @@ are driven in the production browser. No image or motion implies settlement.
 The specification's literal word-count target conflicts with its required
 refund and receipt text. A completed UC3 has one **persistent indicator**, plus
 the required quiet refund rail: **2** literal environment-word occurrences,
-from 8. The refunded receipt adds `None (simulated)` twice and its footer:
-**5** literal occurrences, from 10. There are **2 environment disclosure
+from 8. The refunded receipt adds its own labelled refund line, `None (simulated)`
+Transaction and Refund tx rows, and its footer:
+**6** literal occurrences, from 10. There are **2 environment disclosure
 surfaces** with the receipt open, plus the mandatory refund rail behind it.
 No required label was removed or hidden to meet the conflicting count.
 The machine measurement is `.playwright/evidence/ux-labels.json`.
@@ -58,12 +59,12 @@ separate research-quality observation H2.
 
 ## Validation
 
-`npm run check:fast`: 660 tests; existing policy/leak checks retained.
+`npm run check:fast`: 672 tests; existing policy/leak checks retained.
 Production Chromium: 13 checks including the two UX evidence cases.
 Performance: initial JS about 126 KB gzip, palette under 1 KB gzip,
 UC2 CLS 0.0139 (limit 0.02 unchanged). `node desktop/build.mjs` stages the
 shared UI successfully; no local DMG rebuilt. `make record OFFSET=1800` was
 opened in Chromium, and both UC2/UC3 clips completed. The committed MP4 is
-about 0.52 MB; the larger raw take remains ignored. Run `UX_CAPTURE=1 npx
+about 0.18 MB; the larger raw take remains ignored. Run `UX_CAPTURE=1 npx
 playwright test tests/ux.spec.ts` to deliberately replace the evidence images;
 normal browser tests write only under `.playwright/evidence/ux1`.
