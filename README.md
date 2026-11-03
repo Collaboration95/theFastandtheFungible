@@ -111,7 +111,7 @@ Every row links to committed evidence. Labels are part of the claim: **synthetic
 | Bounded engine | 3,000-run history load 34,372.8 ms → 313.3 ms (110×). 100 concurrent asks: 4 admitted, 96 typed 503. Stop cancels a stalled provider call in 5.5 ms with no signature after it. | local, synthetic | [round2-a](docs/evidence/round2-a/README.md), [round2-c1](docs/evidence/round2-c1/README.md) |
 | Chaos and soak | Real SIGKILLs, zero double charges: a 30-minute soak ran 615 iterations and 155 kills; v0.7.0 recorded 1,729 episodes and 431 kills. The first long soak ended at a 606 s laptop sleep, which the write-up diagnoses. | fixture | [soak-nov4](docs/evidence/soak-nov4.md), [chaos-279](docs/evidence/chaos-279.md) |
 | A Mac app that recovers | 13 packaged recovery cases pass: missing, locked or corrupt credentials, port conflict, outage and restart. All 13 privileged IPC methods reject the research window. | local, unsigned, fixture | [round2-c2](docs/evidence/round2-c2/README.md) |
-| Testnet ledger page | Nine historical transactions (RLUSD purchases and refund, XRP escrow, native XRP interop), each cross-checked against its committed record. A fresh public lookup returned `txnNotFound`, so there is no new on-chain verification. | Testnet, historical | [round2-e](docs/evidence/round2-e/README.md), [page source](site/ledger/index.html) |
+| Testnet ledger page | Nine historical transactions (RLUSD purchases and refund, XRP escrow, native XRP interop), each cross-checked against its committed record. A fresh public lookup returned `txnNotFound`, so there is no new on-chain verification. | Testnet, historical | [round2-e](docs/evidence/round2-e/README.md), [live page](https://collaboration95.github.io/theFastandtheFungible/ledger/) ([source](site/ledger/index.html)) |
 | Ranked builder feedback | Six XRPL and x402 findings ranked by severity with workaround, suggested fix and mainnet consequence, plus the September submissions. | observed and code-derived, labelled | [BUILDER-FEEDBACK](docs/BUILDER-FEEDBACK.md) |
 
 ## Quick start
@@ -179,7 +179,7 @@ Native XRP interop with the XRPL AI Starter Kit's t54 client and server: [compat
 - **Testnet only.** No real money, no mainnet. Mainnet readiness is a [checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist), not a claim.
 - **Simulated mode is labelled** on every screen, receipt and MCP result. The writer corpus is fictional and new writers are unverified; this is not KYB or a sanctions service.
 - **Not done yet:** publishing to npm, PyPI and the MCP Registry; Apple Developer ID signing and notarisation; public remote federation of writers (only three pinned loopback origins); durable hosted storage; licensing. Owner steps are tracked in #265.
-- **Not shown:** the ledger page is not yet on GitHub Pages, and no number above is a production benchmark.
+- **Not shown:** no number above is a production benchmark. The [ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/) shows historical, committed evidence, not a fresh on-chain lookup.
 - `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
 
 [Documentation](docs/README.md) · [Changelog](CHANGELOG.md) · [Project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) · [Slides](https://collaboration95.github.io/theFastandtheFungible/slides/) · [Build log](https://collaboration95.github.io/theFastandtheFungible/evolution/) · [Builder feedback](docs/BUILDER-FEEDBACK.md) · [Design record](docs/FINAL-PUSH.md) · [MIT license](LICENSE)
