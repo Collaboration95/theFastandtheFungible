@@ -1,7 +1,8 @@
 import { spawn, execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 const exec = promisify(execFile)
-const service = 'ResearchAgent'
+const service = process.env.RA_DESKTOP_KEYCHAIN_SERVICE || 'ResearchAgent'
+if (!/^ResearchAgent(?:-Accept-[a-zA-Z0-9-]+)?$/.test(service)) throw new Error('Invalid Keychain service')
 export async function readSecret(account) {
   try {
     const { stdout } = await exec('/usr/bin/security', ['find-generic-password', '-s', service, '-a', account, '-w'])

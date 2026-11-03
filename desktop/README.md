@@ -1,6 +1,6 @@
 # ResearchAgent for macOS
 
-Apple Silicon, macOS 13 or later. Open the DMG, drag **ResearchAgent** to
+Apple Silicon or Intel, macOS 13 or later. Open the DMG, drag **ResearchAgent** to
 **Applications**, then open it. Unsigned first-launch instructions and the
 automatic Developer ID pipeline are in [SIGNING.md](SIGNING.md).
 
@@ -118,3 +118,48 @@ must be the local engine's database.
 HTTP fixture tests and a single real Testnet purchase are recorded in
 [app-mcp-http evidence](../docs/evidence/app-mcp-http.md). The latter uses the
 local Testnet payer; it is not packaged Keychain acceptance evidence.
+
+## Acceptance and recovery
+
+`OFFSET=1100 make app-accept` builds and mounts the DMG read-only, then launches
+its executable with fresh app data and a disposable `ResearchAgent-Accept-*`
+Keychain service. It creates an agent through Settings IPC, connects the MCP SDK
+HTTP client, kills the fixture engine after durable signing, and checks recovery
+uses the identical submission with exactly one receipt and grant. It then makes
+one small XRPL Testnet purchase using `XRPL_PAYER_SEED` and the publisher seeds
+from the local `.env`, copied to test Keychain items without printing them. No
+live model calls: research/decisions are explicitly fixtures. The harness deletes
+its test Keychain items, preserves isolated journals for investigation, and writes
+`docs/evidence/app-acceptance.md`. Inspect a failed live journal before rerunning;
+rerunning uses new intent authority and can make another Testnet purchase.
+`node --import tsx desktop/accept.mjs --fixture-only` skips Testnet.
+
+An unexpected utility-engine exit shows “reconnecting” in the native window title
+and reconnects after 0.5 s, doubling to a maximum 30 s between attempts. Settings
+exposes engine status. App data and the existing x402 signed-blob journal stay in
+place: recovery reconciles the persisted submission instead of signing again.
+An interrupted HTTP call may fail; reconnect and retry with the same idempotency
+key. Quit cancels pending restarts and drains the current engine.
+
+## Release notifications
+
+The app checks GitHub Releases once ten seconds after launch and offers
+ResearchAgent → Check for Updates. It uses the authenticated `gh` CLI, so update
+checks require `gh` installed and authenticated; an unavailable automatic check
+is quiet. Stable semver releases only, from this repository. It checks metadata
+and offers the release page; it never downloads or installs an update, including
+on quit. This remains safe while unsigned. Signing alone does not enable silent
+updates; that requires a separate reviewed implementation.
+
+## Architectures
+
+`DESKTOP_ARCH=arm64 OFFSET=1100 make dmg` and
+`DESKTOP_ARCH=x64 OFFSET=1100 make dmg` produce separate DMGs with identical
+application sources. This avoids shipping both Chromium architectures to every
+user. The downloader verifies each upstream Electron ZIP checksum through `gh`.
+On Apple Silicon, x64 timing measures Rosetta, not native Intel performance.
+
+Architecture measurements and exact validation scope are in
+[packaged acceptance](../docs/evidence/app-acceptance.md). Use `--launch-only`
+with `desktop/accept.mjs` to measure startup without purchases. `gh` must be on
+the app's PATH (Finder launches may have a smaller PATH than a terminal).

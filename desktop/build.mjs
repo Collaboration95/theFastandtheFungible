@@ -24,7 +24,7 @@ for (const folder of ['server', 'publisher', 'shared', 'mcp', 'sdk', 'eval/decis
   }
 }
 await mkdir(join(stage, 'desktop'), { recursive: true })
-for (const name of ['main.mjs', 'backend.mjs', 'policy.mjs', 'keychain.mjs', 'engine-host.mjs', 'preload.cjs', 'preferences.html', 'preferences.js', 'preferences.css', 'mcp.mjs']) await cp(`desktop/${name}`, join(stage, 'desktop', name))
+for (const name of ['updates.mjs', 'main.mjs', 'backend.mjs', 'policy.mjs', 'keychain.mjs', 'engine-host.mjs', 'preload.cjs', 'preferences.html', 'preferences.js', 'preferences.css', 'mcp.mjs']) await cp(`desktop/${name}`, join(stage, 'desktop', name))
 // Compile the shared worker, retaining its startup, auth and shutdown contract.
 // The desktop adds only its local Host/Origin and pause boundary.
 let worker = await readFile('server/engine-worker.mjs', 'utf8')
@@ -61,9 +61,10 @@ console.log(`Desktop staged · ${version} · offline default · no .env copied`)
 if (!process.argv.includes('--dmg')) process.exit(0)
 if (process.platform !== 'darwin') throw new Error('Build the DMG on macOS')
 const arch = execFileSync('lipo', ['-archs', 'node_modules/electron/dist/Electron.app/Contents/MacOS/Electron'], { encoding: 'utf8' }).trim()
-if (arch !== 'arm64') throw new Error('Apple Silicon Electron required; rerun desktop/download.mjs with a clean electron/dist')
+if (arch !== (process.env.DESKTOP_ARCH === 'x64' ? 'x86_64' : 'arm64')) throw new Error('Apple Silicon Electron required; rerun desktop/download.mjs with a clean electron/dist')
 const identities = execFileSync('/usr/bin/security', ['find-identity', '-v', '-p', 'codesigning'], { encoding: 'utf8' })
 const identity = process.env.CSC_NAME || identities.match(/"(Developer ID Application:[^"]+)"/)?.[1]
+if (process.env.RA_REQUIRE_SIGNING === '1' && !identity) throw new Error('Provisioned signing identity unavailable')
 if (identity && (!identity.startsWith('Developer ID Application:') || !identities.includes(identity))) throw new Error('CSC_NAME is not a valid Keychain identity')
 console.log(identity ? 'Developer ID signing + hardened runtime + ra-notary notarisation + stapling' : 'UNSIGNED BUILD · no Developer ID Application identity in Keychain · signing/notarisation skipped')
 process.env.CUSTOM_DMGBUILD_PATH = resolve('node_modules/.cache/researchagent-dmg/dmgbuild')
@@ -73,7 +74,7 @@ await electronBuild({ publish: 'never', targets: undefined, config: {
   directories: { app: stage, output: resolve('desktop/out'), buildResources: resolve('desktop/build') },
   // A utilityProcess needs a real cwd for the engine's corpus paths; ASAR is virtual.
   files: ['**/*', '!package-lock.json'], asar: false,
-  mac: { target: [{ target: 'dmg', arch: ['arm64'] }], category: 'public.app-category.productivity', icon: resolve('desktop/build/icon.icns'),
+  mac: { target: [{ target: 'dmg', arch: [process.env.DESKTOP_ARCH || 'arm64'] }], category: 'public.app-category.productivity', icon: resolve('desktop/build/icon.icns'),
     identity: identity || null, hardenedRuntime: true, entitlements: resolve('desktop/build/entitlements.mac.plist'), entitlementsInherit: resolve('desktop/build/entitlements.mac.plist'), notarize: false },
   afterSign: async context => {
     if (!identity) return

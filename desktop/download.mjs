@@ -6,12 +6,18 @@ import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 const { devDependencies: { electron: version } } = JSON.parse(readFileSync('package.json'))
 const target = 'node_modules/electron/dist'
+const requestedArch = process.env.DESKTOP_ARCH || 'arm64'
+if (!['arm64', 'x64'].includes(requestedArch)) throw new Error('Invalid desktop architecture')
+if (existsSync(join(target, 'Electron.app/Contents/MacOS/Electron'))) {
+  const actual = execFileSync('lipo', ['-archs', join(target, 'Electron.app/Contents/MacOS/Electron')], { encoding: 'utf8' }).trim()
+  if (actual !== (requestedArch === 'x64' ? 'x86_64' : requestedArch)) rmSync(target, { recursive: true, force: true })
+}
 const executable = 'Electron.app/Contents/MacOS/Electron'
 if (!existsSync(join(target, executable))) {
   if (process.platform !== 'darwin') throw new Error('Desktop packaging requires macOS')
   const temp = mkdtempSync(join(tmpdir(), 'researchagent-electron-'))
   try {
-    const asset = `electron-v${version}-darwin-arm64.zip`
+    const asset = `electron-v${version}-darwin-${requestedArch}.zip`
     execFileSync('gh', ['release', 'download', `v${version}`, '--repo', 'electron/electron', '--pattern', asset, '--dir', temp], { stdio: 'inherit' })
     execFileSync('gh', ['release', 'download', `v${version}`, '--repo', 'electron/electron', '--pattern', 'SHASUMS256.txt', '--dir', temp], { stdio: 'inherit' })
     const expected = readFileSync(join(temp, 'SHASUMS256.txt'), 'utf8').split('\n').find(line => line.trim().split(/\s+/)[1]?.replace(/^\*/, '') === asset)?.split(/\s+/)[0]

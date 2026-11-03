@@ -39,3 +39,14 @@ Electron and the DMG helper are downloaded through authenticated `gh` from their
 upstream release assets. The helper's SHA-256 is pinned to electron-builder's
 published checksum. Build output lives in ignored `desktop/out/`; public releases
 contain a versioned DMG, not source credentials or runtime databases.
+
+Hosted CI also activates signing automatically when all five repository secrets
+exist: `APPLE_CERTIFICATE_BASE64` (PKCS#12), `APPLE_CERTIFICATE_PASSWORD`,
+`APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_SPECIFIC_PASSWORD`. It imports the
+certificate into an ephemeral runner Keychain, stores `ra-notary`, and uses the
+same sign → notarise → staple/validate build path. No secrets means an explicitly
+unsigned build; partial secrets fail closed. Certificate files are deleted after
+import. Secrets are passed via masked CI environment and subprocess argument
+arrays with output suppressed; never enable shell tracing. Runner teardown
+removes the ephemeral Keychain. Actual Apple acceptance still needs signed-build
+evidence once the owner provides the secrets tracked in #265.

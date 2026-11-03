@@ -18,6 +18,8 @@ PR or issue.
 
 - 3 Nov: Starter Kit/t54 native XRP interop in both directions, pinned SDK boundary tests and Testnet proof; [evidence](evidence/starter-kit-interop.md).
 
+- 3 Nov: Packaged Mac hardening: crash recovery through the x402 journal, isolated Keychain Testnet acceptance, notify-only releases and separate Intel/Apple Silicon builds; [evidence](evidence/app-acceptance.md).
+
 ## Deliverables
 
 | Track | Deliverable | Issue | Status |

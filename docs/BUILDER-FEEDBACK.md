@@ -441,6 +441,18 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
 
 - 2026-11-03 · Observed tooling friction · `tests/mcp-http.test.ts`: Node fetch did not transmit the overridden Host in the rebinding test, so the request reached MCP content negotiation (406). Workaround: use `node:http.request` for the hostile Host assertion (403). Suggested fix: document forbidden/rewritten header behavior in client test tooling. Severity low; no XRPL mainnet impact.
 
+### 2026-11-03 — Packaged utility crash left an MCP connection open (observed)
+
+Evidence: `docs/evidence/app-acceptance.md`; isolated DMG fixture crash test killed
+the engine after signed-blob persistence. The first run timed out waiting for a
+restart because an active HTTP POST held listener shutdown open. Workaround/fix:
+close active HTTP sockets before awaiting MCP listener shutdown, then restart with
+bounded backoff against the same x402 journal. Suggested tooling fix: expose a
+bounded abort/drain primitive for embedded MCP HTTP hosts. Severity: medium
+(desktop availability). Mainnet impact: availability/reconciliation delay; the
+persisted payment blob must remain authoritative and must never be re-signed.
+No mainnet transaction was attempted.
+
 ## Observed Testnet reliability measurement · 3 Nov 2026
 
 Evidence: `docs/evidence/live-reliability.md` and the paired

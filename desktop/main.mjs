@@ -12,6 +12,8 @@ import { createClient } from '../sdk/index.js'
 import { Client, Wallet } from 'xrpl'
 import { TESTNET_WSS, testnetUrl } from '../shared/xrpl.js'
 
+import { checkUpdates } from './updates.mjs'
+
 const started = performance.now()
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, corsEnabled: true } }])
@@ -21,8 +23,45 @@ let mcpHttp, agentStore
 let engine, child, mainWindow, preferencesWindow, quitting = false
 let preferences = { ...defaults }
 let coldStartMs
+let engineStatus = 'starting', restartAttempts = 0, restartTimer
+let localEnv
+function status(value) {
+  engineStatus = value
+  mainWindow?.setTitle(`ResearchAgent · ${value}`)
+}
+async function startLocalEngine() {
+  status(restartAttempts ? 'reconnecting' : 'starting')
+  const target = utilityProcess.fork(join(root, 'desktop', 'engine-host.mjs'), [], { env: localEnv, cwd: root, stdio: 'ignore', serviceName: 'ResearchAgent Engine' })
+  child = target
+  engine = await new Promise((done, fail) => {
+    const timer = setTimeout(() => { target.kill(); fail(new Error('Engine boot timed out')) }, process.arch === 'x64' ? 120_000 : 30_000)
+    target.once('message', value => { clearTimeout(timer); done(value) })
+    target.once('exit', () => { clearTimeout(timer); fail(new Error('Engine exited')) })
+  })
+  // Keep the operator bearer stable for already enabled stdio clients across utility restarts.
+  localEnv.RA_API_TOKEN = engine.apiToken
+  if (quitting) { target.kill(); return }
+  await backendRequest(engine, '/api/wallet/pause', { method: 'POST', body: JSON.stringify({ paused: preferences.paused }) })
+  agentStore = new Store(join(userData, preferences.live ? 'testnet' : 'fixture', 'app.db'))
+  mcpHttp = await startMcpHttp({ apiUrl: engine.apiUrl, store: agentStore, port: process.env.RA_DESKTOP_KEYCHAIN_SERVICE ? 0 : 9689 })
+  await writeFile(join(userData, 'engine.json'), JSON.stringify({ apiUrl: engine.apiUrl, remote: false, pid: target.pid }), { mode: 0o600 })
+  status('ready')
+  target.once('exit', () => { if (!quitting && child === target) { child = undefined; void restartEngine() } })
+}
+async function restartEngine() {
+  status('reconnecting')
+  await mcpHttp?.close(); mcpHttp = undefined
+  agentStore?.close(); agentStore = undefined
+  if (quitting) return
+  const delay = Math.min(30_000, 500 * 2 ** Math.min(restartAttempts++, 6))
+  restartTimer = setTimeout(() => { void startLocalEngine().catch(async () => {
+    const target = child; child = undefined; target?.kill()
+    await restartEngine()
+  }) }, delay)
+}
 const userData = app.getPath('userData')
 async function stopEngine() {
+  clearTimeout(restartTimer)
   await mcpHttp?.close(); mcpHttp = undefined
   agentStore?.close(); agentStore = undefined
   if (!child) return
@@ -55,22 +94,15 @@ async function boot() {
     } catch { /* The UI shows backend unavailable; native Settings stays usable for recovery. */ }
   } else {
     if (preferences.mcpEnabled) secrets['local-api-token'] = await readSecret('local-api-token')
-    const env = loadConfig({ ...engineEnv({ userData, preferences, secrets }), RA_LIVE: preferences.live ? '1' : '0' })
-    child = utilityProcess.fork(join(root, 'desktop', 'engine-host.mjs'), [], { env, cwd: root, stdio: 'ignore', serviceName: 'ResearchAgent Engine' })
-    engine = await new Promise((done, fail) => {
-      const timer = setTimeout(() => fail(new Error('Engine boot timed out')), 30_000)
-      child.once('message', value => { clearTimeout(timer); done(value) })
-      child.once('exit', () => { clearTimeout(timer); fail(new Error('Engine exited')) })
-    })
-    await backendRequest(engine, '/api/wallet/pause', { method: 'POST', body: JSON.stringify({ paused: preferences.paused }) })
-    child.on('exit', () => { if (!quitting) { dialog.showErrorBox('Local engine stopped', 'Quit and reopen ResearchAgent to recover.'); app.quit() } })
-  }
-  if (preferences.backend === 'local') {
-    agentStore = new Store(join(userData, preferences.live ? 'testnet' : 'fixture', 'app.db'))
-    mcpHttp = await startMcpHttp({ apiUrl: engine.apiUrl, store: agentStore, port: 9689 })
+    localEnv = loadConfig({ ...engineEnv({ userData, preferences, secrets }), RA_LIVE: preferences.live ? '1' : '0' })
+    if (process.env.RA_DESKTOP_ACCEPT_TESTNET === '1' && process.env.RA_DESKTOP_KEYCHAIN_SERVICE?.startsWith('ResearchAgent-Accept-')) {
+      localEnv.RA_ACCEPT_TESTNET = '1'
+    }
+    if (!preferences.live && process.env.RA_DESKTOP_KEYCHAIN_SERVICE?.startsWith('ResearchAgent-Accept-')) localEnv.RA_DESKTOP_CRASH_TEST = process.env.RA_DESKTOP_CRASH_TEST || '0'
+    await startLocalEngine()
   }
   // Connection metadata is public. The MCP adapter reads credentials from Keychain only.
-  await writeFile(join(userData, 'engine.json'), JSON.stringify({ apiUrl: engine.apiUrl, remote: preferences.backend === 'remote' }), { mode: 0o600 })
+  if (preferences.backend === 'remote') await writeFile(join(userData, 'engine.json'), JSON.stringify({ apiUrl: engine.apiUrl, remote: true }), { mode: 0o600 })
   session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))
   session.defaultSession.setPermissionCheckHandler(() => false)
   session.defaultSession.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !details.url.startsWith(`${ORIGIN}/`) }))
@@ -99,7 +131,7 @@ async function boot() {
     if (!trustedSender(event) || event.sender !== preferencesWindow?.webContents) throw new Error('Forbidden')
     try { return await handler(...args) } catch { throw new Error('Desktop action failed; check settings and Keychain access') }
   })
-  secureHandler('desktop:state', async () => ({ ...preferences, remoteEnabled: true, coldStartMs,
+  secureHandler('desktop:state', async () => ({ ...preferences, engineStatus, remoteEnabled: true, coldStartMs,
     wallet: await createClient({ baseUrl: engine.apiUrl, token: engine.apiToken }).wallet().catch(() => undefined), versions: engine.versions }))
   secureHandler('desktop:save', async input => {
     const next = settings({ ...preferences, ...input })
@@ -177,7 +209,7 @@ async function boot() {
   })
   const shortcut = (label, accelerator, key, code) => ({ label, accelerator, click: () => mainWindow?.webContents.sendInputEvent({ type: 'keyDown', keyCode: key, modifiers: ['meta'], ...(code ? { code } : {}) }) })
   Menu.setApplicationMenu(Menu.buildFromTemplate([
-    { label: 'ResearchAgent', submenu: [{ role: 'about' }, { label: 'Desktop Settings…', accelerator: 'Cmd+,', click: openPreferences }, { type: 'separator' }, { role: 'hide' }, { role: 'quit' }] },
+    { label: 'ResearchAgent', submenu: [{ role: 'about' }, { label: 'Check for Updates…', click: () => void checkUpdates() }, { label: 'Desktop Settings…', accelerator: 'Cmd+,', click: openPreferences }, { type: 'separator' }, { role: 'hide' }, { role: 'quit' }] },
     { label: 'File', submenu: [shortcut('New Question', 'Cmd+N', 'N'), { label: 'Print…', accelerator: 'Cmd+P', click: () => BrowserWindow.getFocusedWindow()?.webContents.print() }, { role: 'close' }] },
     { role: 'editMenu' },
     { label: 'View', submenu: [shortcut('Run', 'Cmd+1', '1'), shortcut('Writers', 'Cmd+2', '2'), shortcut('Command Menu', 'Cmd+K', 'K'),
@@ -188,6 +220,7 @@ async function boot() {
   mainWindow = makeWindow({ width: 1280, height: 828 })
   await mainWindow.loadURL(`${ORIGIN}/?pace=real${preferences.backend === 'remote' ? `&desktopBackend=${encodeURIComponent(new URL(engine.apiUrl).host)}` : ''}`)
   mainWindow.show()
+  if (!process.env.RA_DESKTOP_KEYCHAIN_SERVICE) { const timer = setTimeout(() => void checkUpdates({ quiet: true }), 10000); timer.unref() }
   coldStartMs = Math.round(performance.now() - started)
   console.log(`ResearchAgent ready in ${coldStartMs} ms · ${preferences.backend === 'remote' ? 'REMOTE' : preferences.live ? 'XRPL TESTNET' : 'SIMULATED'} · Electron ${process.versions.electron} · Node ${process.versions.node}`)
   app.on('second-instance', () => { mainWindow?.show(); mainWindow?.focus() })

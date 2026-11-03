@@ -13,9 +13,13 @@ permissions:
   contents: write
 jobs:
   dmg:
+    strategy:
+      matrix:
+        arch: [arm64, x64]
     runs-on: macos-15
     timeout-minutes: 20
     env:
+      DESKTOP_ARCH: ${{ matrix.arch }}
       GH_TOKEN: ${{ github.token }}
       ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
     steps:
@@ -25,6 +29,14 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Prepare Developer ID when secrets exist
+        run: node desktop/ci-signing.mjs
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
       - name: Build the requested version
         shell: bash
         run: |
@@ -36,6 +48,6 @@ jobs:
           DESKTOP_VERSION: ${{ inputs.version || '' }}
       - uses: actions/upload-artifact@v4
         with:
-          name: researchagent-arm64-dmg
+          name: researchagent-${{ matrix.arch }}-dmg
           path: desktop/out/*.dmg
           retention-days: 14
