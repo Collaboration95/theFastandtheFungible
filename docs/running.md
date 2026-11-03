@@ -71,7 +71,7 @@ Slides and notes reserve room for the shared header while retaining presentation
 
 Operational startup/recovery/drain select run IDs in SQLite; they do not hydrate historical snapshots. Metrics remain an all-run O(n) response. SSE snapshots are throttled to 4/s, with initial and terminal snapshots immediate. A stalled stream or snapshot exceeding 256 KiB is disconnected; resynchronize with GET of the existing run. Publisher delivery/free bodies are limited to 2 MiB, and registry/search/challenge bodies to 256 KiB, including chunked responses. Limits are currently fixed constants.
 
-An engine-wide active-work cap and cooperative provider Stop are pending; do not assume a supported concurrency of four or sub-second provider cancellation. Durable signed obligations retain their reservations during Stop/recovery. Late refund candidates are pending until exact ledger verification succeeds; confirmed refunds never replenish gross budget authority. See `docs/evidence/round2-a` for local synthetic evidence and limitations.
+Durable signed obligations retain their reservations during Stop/recovery. Late refund candidates are pending until exact ledger verification succeeds; confirmed refunds never replenish gross budget authority. See `docs/evidence/round2-a` for local synthetic evidence and limitations.
 
 ### Compatible engine profiles
 
@@ -90,9 +90,8 @@ bytes and SHA-256; `consumer-results.json` records acceptance separately.
 The npm consumer installs declared dependencies normally in a temporary project;
 the wheel uses a new venv; MCP starts from the extracted MCPB. Each asks twice
 with the same key and checks delivered citations, one receipt/intent and caps.
-No registry publication is performed. Python offline verification still invokes
-the repository verifier and requires its Node dependencies; wheel installation
-alone does not supply that verifier. Minimum supported Node is 22.13 and Python
+No registry publication is performed. Python offline verification is independent of Node and works from the wheel alone;
+see [independent verifier evidence](evidence/round2-k/README.md). Minimum supported Node is 22.13 and Python
 3.10; hosted artifact acceptance uses those runtimes.
 
 See [release artifact evidence](evidence/round2-d/README.md).

@@ -2,8 +2,8 @@
 import os
 from researchagent import Client
 
-client = Client(os.environ.get('RA_URL', 'http://127.0.0.1:10488'), os.environ.get('RA_API_TOKEN'))
-task = client.ask('How does Kestrel benefit from the TSMC deal (pricing & margins)?',
+client = Client(os.environ.get('RA_URL', 'http://127.0.0.1:8788'), os.environ.get('RA_API_TOKEN'))
+task = client.ask('What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?',
                   budget=1, idempotency_key='python-quickstart-1')
 for event in task.events:
     print(event['type'], event['label'])

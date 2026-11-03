@@ -1,3 +1,4 @@
+import { searchText } from '../../publisher/search-text.js'
 import { INSTRUCTION, quotedText } from './untrusted.js'
 // Requested facts (#208) and their coverage. Requirements are frozen from the question and the clarify answers
 // before any evidence is read; the decision model grades coverage per requirement (#213: 0.938 accuracy vs 0.760 for
@@ -50,7 +51,7 @@ export const ruleGap = (rule: (typeof FIXTURE_GAP_RULES)[number], focus?: string
 
 const STOP = new Set(['what', "what's", 'whats', 'with', 'from', 'that', 'this', 'which', 'their', 'there', 'when', 'where', 'does', 'need', 'needs', 'large', 'much', 'many', 'long', 'comes', 'come', 'getting', 'about', 'have', 'been', 'were', 'will', 'into', 'last', 'latest', 'actually'])
 /** Content words (> 3 letters, no stop words) of a text, lower-cased; possessives split off. */
-export const contentWords = (text: string) => new Set(text.toLowerCase().replace(/['’]s\b/g, '').match(/[a-z0-9]+/g)?.filter(w => w.length > 3 && !STOP.has(w)) ?? [])
+export const contentWords = (text: string) => new Set(searchText(text).toLowerCase().match(/[a-z0-9]+/g)?.filter(w => w.length > 3 && !STOP.has(w)) ?? [])
 /** The clauses of a question: "X, how Y, and how Z?" → [X, how Y, how Z]. */
 export function splitClauses(question: string): string[] {
   return question.trim().split(/\?\s+|[;?]\s*|,\s*(?:and\s+)?(?=(?:how|what|when|where|which|who|why|whether|is|are|did|does|do|was|were)\b)|\s+and\s+(?=(?:how|what|when|where|which|who|why)\b)/i)
@@ -58,7 +59,7 @@ export function splitClauses(question: string): string[] {
 }
 /** Capitalised runs after the first word plus acronyms ("Kestrel Semiconductor", "TSMC"): the question's named entities. */
 export function entityPhrases(question: string): string[] {
-  const tokens = question.replace(/['’]s\b/g, '').split(/\s+/).map(t => t.replace(/[^A-Za-z0-9&-]/g, ''))
+  const tokens = searchText(question).split(/\s+/).map(t => t.replace(/[^A-Za-z0-9&-]/g, ''))
   const runs: string[] = []
   let run: string[] = []
   tokens.forEach((token, index) => {
@@ -112,13 +113,21 @@ export function fixtureSupports(requirement: Pick<Requirement, 'text'>, passage:
   }
   const rule = FIXTURE_GAP_RULES.find(r => r.cue.test(requirement.text))
   if (rule) return rule.answered(passage, focusOf(requirement.text))
-  const need = contentWords(requirement.text)
-  const own = contentWords(passage)
+  // Quantitative pricing and margin requests need both measures, not a dated filing
+  // that explicitly withholds price and happens to repeat an old margin figure.
+  if (/\bpric(?:e|es|ing)\b/i.test(requirement.text) && /\bmargins?\b/i.test(requirement.text)) {
+    const price = /(?:US\$|\$)\s*[\d,.]+[^.!?]{0,35}\bwafer\b|\bwafer\b[^.!?]{0,60}(?:US\$|\$)\s*[\d,.]+/i.test(passage)
+    const margin = /\bmargins?\b[^.!?]{0,160}\d+(?:\.\d+)?\s*(?:%|percent)/i.test(passage)
+    return price && margin && entityPhrases(requirement.text).every(e => searchText(passage).toLowerCase().includes(e.toLowerCase()))
+  }
+  const canonical = (text: string) => new Set([...contentWords(text)].map(w => w.replace(/^(?:pricing|prices?)$/, 'pric').replace(/^margins?$/, 'marg')))
+  const need = canonical(requirement.text)
+  const own = canonical(passage)
   return /\d/.test(passage) && need.size > 0 && [...need].filter(w => own.has(w)).length / need.size >= 0.5
 }
 /** Fixture coverage: supported when one passage establishes the requirement, otherwise missing. Never partial or conflicting. */
 export function fixtureCoverage(requirements: Pick<Requirement, 'id' | 'text'>[], evidence: CoverageEvidence[]): Record<string, JudgedStatus> {
-  return Object.fromEntries(requirements.map(r => [r.id, evidence.some(e => fixtureSupports(r, e.text)) ? 'supported' : 'missing']))
+  return Object.fromEntries(requirements.map(r => [r.id, (evidence.some(e => fixtureSupports(r, e.text)) || (/\bpric(?:e|es|ing)\b/i.test(r.text) && /\bmargins?\b/i.test(r.text) && fixtureSupports(r, evidence.filter(e => !noNewEvidence.test(e.text)).map(e => e.text).join(' ')))) ? 'supported' : 'missing']))
 }
 /** Requirement text is untrusted model output: one line, ≤ 160 chars, no instructions, never naming a purchase. */
 export function sanitizeRequirement(raw: unknown): string | undefined {

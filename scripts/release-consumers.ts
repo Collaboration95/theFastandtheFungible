@@ -14,7 +14,7 @@ const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
 const dir = mkdtempSync(join(tmpdir(), 'ra-consumers-'))
 const file = (kind: string) => join(root, manifest.artifacts.find((a: {kind: string}) => a.kind === kind).file)
 const run = (cmd: string, args: string[]) => new Promise<string>((res, rej) => { const p = spawn(cmd, args, { cwd: dir, env: process.env }); let out = '', err = ''; p.stdout.on('data', c => out += c); p.stderr.on('data', c => err += c); p.on('error', rej); p.on('exit', code => code === 0 ? res(out) : rej(Error(err))) })
-const question = 'How does Kestrel benefit from the TSMC deal (pricing & margins)?'
+const question = 'What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?'
 const results: object[] = []
 const engine = await startEngine({ dataDir: join(dir, 'engine') })
 const check = (kind: string, a: AskResult, b: AskResult, store: Store) => {

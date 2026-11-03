@@ -1,0 +1,21 @@
+{
+  "name": "ResearchAgent \u00b7 fixture \u00b7 SIMULATED SGD",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "containerEnv": {
+    "ELECTRON_SKIP_BINARY_DOWNLOAD": "1",
+    "SETTLEMENT_RAIL": "simulated",
+    "SEARCH_EMBEDDINGS": "off",
+    "LANGFUSE_ENABLED": "0"
+  },
+  "postCreateCommand": "npm ci",
+  "postStartCommand": "nohup node --import tsx .devcontainer/start.ts > /tmp/researchagent-fixture.log 2>&1 &",
+  "forwardPorts": [
+    5100
+  ],
+  "portsAttributes": {
+    "5100": {
+      "label": "ResearchAgent \u00b7 fixture \u00b7 SIMULATED SGD",
+      "onAutoForward": "openBrowser"
+    }
+  }
+}

@@ -7,7 +7,7 @@ import pytest
 from researchagent import Client, UnauthorizedError
 
 ROOT = Path(__file__).resolve().parents[3]
-QUESTION = 'How does Kestrel benefit from the TSMC deal (pricing & margins)?'
+QUESTION = 'What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?'
 
 
 @pytest.fixture(scope='module')

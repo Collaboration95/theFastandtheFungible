@@ -15,14 +15,14 @@ afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals() })
 
 describe('plan and run start (#137)', () => {
   it('fixture: each UC gets its expected generic sub-queries (≤ 120 chars, no user identity)', () => {
-    expect(fixturePlan(uc('UC1')).subqueries).toEqual(['Bank Japan change meeting', '10-year JGB yields react'])
+    expect(fixturePlan(uc('UC1')).subqueries).toEqual(['Bank Japan change meeting', '10 year JGB yields react'])
     expect(fixturePlan(uc('UC2')).subqueries).toEqual(['analyst outlook Kestrel Semiconductor deal TSMC'])
     // The story bible's expected angle pick folds into the plan.
     expect(fixturePlan(uc('UC2'), { angle: 'pricing & margins' })).toEqual({
       restatement: `${uc('UC2')} Focus: pricing & margins.`,
       subqueries: ['analyst outlook Kestrel Semiconductor deal TSMC', 'analyst outlook Kestrel Semiconductor deal TSMC pricing margins'],
     })
-    expect(fixturePlan(uc('UC3')).subqueries).toEqual(['Kestrel Semiconductor advanced-packaging lead times Malaysia shorter'])
+    expect(fixturePlan(uc('UC3')).subqueries).toEqual(['Kestrel Semiconductor advanced packaging lead times Malaysia shorter'])
     const long = fixturePlan(`${'semiconductor '.repeat(20)}?`, { a: 'x', b: 'y', c: 'z' })
     expect(long.subqueries.length).toBeLessThanOrEqual(3)
     expect(long.subqueries.every(q => q.length <= 120)).toBe(true)

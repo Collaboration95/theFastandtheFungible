@@ -1,0 +1,180 @@
+{
+  "schema": "tftf.scorecard/v1",
+  "at": "2026-11-03T22:46:40.657Z",
+  "split": "all",
+  "policy": "receipt-value/v1+scope/v4+extraction/v4",
+  "worktreeDirty": true,
+  "commit": "f3902008b4be14d60f154fa6db3ba5c1dbe65943",
+  "inputHash": "11a3120445455fa5fe0c3b179d38f7eba6a88d6a0e7a04d8345f3e6a272bad87",
+  "mode": "fixture",
+  "labels": {
+    "search": "keyword only (embeddings unavailable)",
+    "settlement": "SIMULATED · no payment",
+    "wallets": "SIMULATED publisher keys",
+    "corpus": "synthetic demo articles",
+    "research": "fixture · extractive-fixture",
+    "decision": "fixture · metadata-fixture",
+    "coverage": "scripted needle check (eval)",
+    "timing": "fixture; measured wall clock",
+    "boot": "booted demo API + publisher (fresh child process; module load included)"
+  },
+  "quality": {
+    "wastedSpendPct": 30.179640718562876,
+    "netWastedSpendPct": 28.641370869033047,
+    "usedSpendPct": 69.82035928143712,
+    "selectionF1Flow": 0.5487804878048781,
+    "selectionF1Sweep": 0.6035502958579881,
+    "supportedFactUpliftPts": 36.55172413793103,
+    "falseCompleteRate": 0.19696969696969696
+  },
+  "confidenceIntervals": {
+    "method": "source-family cluster percentile bootstrap, 95%; conditional on fixed corpus and model draws",
+    "seed": 700,
+    "repeats": 2000,
+    "clusters": 24,
+    "questions": 140,
+    "intervals": {
+      "wastedSpendPct": {
+        "low": 16.36904761904762,
+        "high": 43.37700145560407,
+        "validReplicates": 2000
+      },
+      "netWastedSpendPct": {
+        "low": 15.158924205378973,
+        "high": 41.48936170212766,
+        "validReplicates": 2000
+      },
+      "usedSpendPct": {
+        "low": 56.62299854439593,
+        "high": 83.63095238095238,
+        "validReplicates": 2000
+      },
+      "selectionF1Flow": {
+        "low": 0.3815789473684211,
+        "high": 0.6960352422907489,
+        "validReplicates": 2000
+      },
+      "selectionF1Sweep": {
+        "low": 0.4578313253012048,
+        "high": 0.7472527472527473,
+        "validReplicates": 2000
+      },
+      "supportedFactUpliftPts": {
+        "low": 23.45679012345679,
+        "high": 50.75757575757576,
+        "validReplicates": 2000
+      }
+    }
+  },
+  "timing": {
+    "samples": 10,
+    "p50FirstAnswerMs": 47.304396,
+    "p95FirstAnswerMs": 129.2759685999996,
+    "p95FinalAnswerMs": 225.6364643999995,
+    "coldStartMs": 580.6297080000004,
+    "node": "v26.3.1",
+    "platform": "darwin",
+    "observations": [
+      {
+        "questionId": "Q01",
+        "runId": "968d966b-310f-49ad-b273-0ce9568ca4fb",
+        "firstMs": 150.92649999999958,
+        "finalMs": 177.61641700000018
+      },
+      {
+        "questionId": "Q09",
+        "runId": "a395e769-84ba-457b-8006-9ceae8394ce7",
+        "firstMs": 63.70166599999993,
+        "finalMs": 142.20095800000036
+      },
+      {
+        "questionId": "Q18",
+        "runId": "604c508b-1152-45b7-befd-66406d2793ee",
+        "firstMs": 60.387416999999914,
+        "finalMs": 247.74258299999929
+      },
+      {
+        "questionId": "Q19",
+        "runId": "7bc3f525-6046-422c-9fc2-0231502557f0",
+        "firstMs": 83.84337499999947,
+        "finalMs": 100.9258749999999
+      },
+      {
+        "questionId": "Q23",
+        "runId": "0ec2cb75-6356-46f4-8cc5-f394407631d5",
+        "firstMs": 31.92158399999971,
+        "finalMs": 32.361667000000125
+      },
+      {
+        "questionId": "Q27",
+        "runId": "88eef50b-f9b9-4d7a-9250-b1748eea637d",
+        "firstMs": 31.911041999999725,
+        "finalMs": 49.64300000000003
+      },
+      {
+        "questionId": "Q31",
+        "runId": "b29100bb-c80c-4f84-a6a9-e8e0b68cf0e7",
+        "firstMs": 17.81041699999969,
+        "finalMs": 44.83979199999976
+      },
+      {
+        "questionId": "Q35",
+        "runId": "3c6e4199-e58d-4d81-aaae-a9a6eca0e9b2",
+        "firstMs": 102.81420799999978,
+        "finalMs": 198.6178749999999
+      },
+      {
+        "questionId": "Q42",
+        "runId": "d738181d-1ceb-415a-99ce-8856f38647ff",
+        "firstMs": 34.22137500000008,
+        "finalMs": 49.20141699999931
+      },
+      {
+        "questionId": "Q44",
+        "runId": "3a31e82f-8c09-41cb-9928-95859fea2e8d",
+        "firstMs": 17.493209000000206,
+        "finalMs": 29.49408399999993
+      }
+    ]
+  },
+  "cost": {
+    "providerCalls": 0,
+    "estimatedUsageCalls": 0,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "modelUsd": 0,
+    "latencyModelUsdPerQuery": 0,
+    "flowDecisionUsdPerQuery": 0,
+    "xrpDropsSpent": 0,
+    "simulatedMinorSpent": 4175,
+    "rates": "eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)"
+  },
+  "audit": {
+    "runs": 10,
+    "observations": 242,
+    "violations": [],
+    "total": 0,
+    "byRule": {
+      "citation_without_verified_grant": 0,
+      "duplicate_settlement": 0,
+      "over_budget": 0,
+      "purchase_without_policy": 0,
+      "premium_leak": 0,
+      "missing_rail_label": 0,
+      "royalty_policy": 0,
+      "money_chain_reconciliation": 0,
+      "escrow_finish_without_verified_proof": 0,
+      "agent_authority": 0
+    }
+  },
+  "external": {
+    "reliability": null,
+    "mcpE2e": null,
+    "dmgColdStartMs": null
+  },
+  "counts": {
+    "questions": 140,
+    "coverageSnapshots": 309,
+    "requestedFacts": 145
+  }
+}

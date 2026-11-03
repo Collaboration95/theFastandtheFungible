@@ -234,9 +234,8 @@ bytes and SHA-256; `consumer-results.json` records acceptance separately.
 The npm consumer installs declared dependencies normally in a temporary project;
 the wheel uses a new venv; MCP starts from the extracted MCPB. Each asks twice
 with the same key and checks delivered citations, one receipt/intent and caps.
-No registry publication is performed. Python offline verification still invokes
-the repository verifier and requires its Node dependencies; wheel installation
-alone does not supply that verifier. Minimum supported Node is 22.13 and Python
+No registry publication is performed. Python offline verification is independent of Node and works from the wheel alone;
+see [independent verifier evidence](evidence/round2-k/README.md). Minimum supported Node is 22.13 and Python
 3.10; hosted artifact acceptance uses those runtimes.
 
 See [release artifact evidence](evidence/round2-d/README.md).
