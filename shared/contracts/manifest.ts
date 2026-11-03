@@ -22,7 +22,7 @@ export const ManifestSchema = z.object({
   schemaVersion: z.literal(2).optional(), // absent = legacy v1; version below is the ARTICLE version
   publisherSlug: z.string().min(1), articleId: z.string().min(1), version: z.string().min(1),
   wallet: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), pubKey: z.string().regex(/^[0-9A-F]{66}$/i),
-  priceMinor: z.number().int().positive(), leaves: z.array(hex64).min(1), root: hex64,
+  priceMinor: z.number().int().nonnegative(), leaves: z.array(hex64).min(1), root: hex64,
   claims: z.array(z.object({ id: z.string().min(1), kind: ClaimKindSchema, leaf: hex64, covers: FactCoverSchema.optional() })),
   wordCount: z.number().int().positive(), publishedAt: z.string().min(1), relevance: z.number().min(0).max(1),
   sig: z.string().regex(/^[0-9A-F]+$/i),

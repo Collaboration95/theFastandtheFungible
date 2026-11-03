@@ -10,7 +10,7 @@ import { USE_CASES } from './scenarios/use-cases.js'
 afterEach(() => vi.unstubAllEnvs())
 it('exports only ask/read methods, never a purchase command', () => {
   expect(Object.keys(createClient({ baseUrl: 'http://localhost' })).sort())
-    .toEqual(['ask', 'getRun', 'search', 'wallet', 'watch'])
+    .toEqual(['ask', 'getRun', 'receipts', 'search', 'wallet', 'watch'])
 })
 it('follows a fixture ask to cited, granted delivery and reuses the intent', async () => {
   vi.stubEnv('MCP_MAX_BUDGET_MINOR', '200')

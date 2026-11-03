@@ -41,8 +41,8 @@ export function createManifests(journal: PublisherJournal) {
   }
 
   /** The signed manifest for a PAID hit; undefined for FREE articles or a publisher without keys. */
-  function manifestFor(entry: ManifestPublisher, article: Article, relevance: number): Manifest | undefined {
-    if (article.tier !== 'PAID' || !entry.keys || !entry.publisher.wallet || !entry.publisher.pubKey) return undefined
+  function manifestFor(entry: ManifestPublisher, article: Article, relevance: number, includeFree = false): Manifest | undefined {
+    if (article.tier !== 'PAID' && !includeFree || !entry.keys || !entry.publisher.wallet || !entry.publisher.pubKey) return undefined
     const unsigned = { ...proofs(entry, article), relevance }
     const key = sha256(manifestMessage(unsigned))
     let manifest = signed.get(key)

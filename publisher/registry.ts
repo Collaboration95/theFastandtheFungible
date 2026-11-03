@@ -38,8 +38,11 @@ export function publisherKeys(slug: string, rail: Rail, env: NodeJS.ProcessEnv =
 export async function buildRegistry(corpus: WriterCorpus, options: { rail: Rail; env?: NodeJS.ProcessEnv; embeddings?: EmbeddingCache }): Promise<Map<string, PublisherEntry>> {
   const entries = await Promise.all(corpus.publishers.map(async (publisher): Promise<PublisherEntry> => {
     const articles = corpus.articles.filter(a => a.publisherSlug === publisher.slug)
-    const env = options.env ?? process.env
-    const keys = articles.some(a => a.tier === 'PAID') || env[seedEnvName(publisher.slug)]
+    const env = { ...(options.env ?? process.env) }
+    // Open Records already uses the Grid Operators public wallet; use that same
+    // configured Testnet signer for its free delivery proofs, without a payment.
+    if (publisher.slug === 'open-records' && !env[seedEnvName(publisher.slug)]) env[seedEnvName(publisher.slug)] = env.XRPL_PUBLISHER_GRID_OPERATORS_REPORT_SEED
+    const keys = options.rail === 'simulated' || articles.some(a => a.tier === 'PAID') || env[seedEnvName(publisher.slug)]
       ? publisherKeys(publisher.slug, options.rail, env) : undefined
     return {
       publisher: keys ? { ...publisher, wallet: keys.wallet, pubKey: keys.publicKey }

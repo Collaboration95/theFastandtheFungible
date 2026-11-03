@@ -1,3 +1,6 @@
+import { ReceiptBundleSchema } from '../shared/contracts/receipts.js'
+export { verifyAnswer, verificationText } from './verify.js'
+export type { ReceiptBundle, VerificationResult, VerifyOptions } from './verify.js'
 import { z } from 'zod'
 import { ModeLabelsSchema, RunSnapshotSchema, type RunSnapshot, type TraceEvent } from '../shared/contracts/run.js'
 import { presentRun } from './present.js'
@@ -136,6 +139,7 @@ export function createClient(options: { baseUrl: string; token?: string; fetch?:
       return { ...presentRun(run, mode.publisherUrl), requestedBudgetMinor: requestedMinor,
         clamped: run.budgetMinor < requestedMinor, humanMaxBudgetMinor: mode.maxMinor, humanDailyCapMinor: mode.dailyMinor }
     },
+    receipts: (id: string) => json(`/runs/${encodeURIComponent(id)}/receipts.json`, ReceiptBundleSchema),
     async getRun(id: string) {
       const mode = await status()
       return presentRun(await snapshot(id), mode.publisherUrl)

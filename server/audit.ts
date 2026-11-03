@@ -24,7 +24,7 @@ export function canonical(value: unknown): string {
   if (value && typeof value === 'object') return `{${Object.entries(value as Record<string, unknown>).filter(([, v]) => v !== undefined).sort(([a], [b]) => a < b ? -1 : 1).map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(',')}}`
   return JSON.stringify(value) ?? 'null'
 }
-const entryHash = (seq: number, at: string, prev: string, runId: string | null, intentId: string | null, surface: string, principal: string, kind: string, data: string) =>
+export const entryHash = (seq: number, at: string, prev: string, runId: string | null, intentId: string | null, surface: string, principal: string, kind: string, data: string) =>
   sha256(JSON.stringify([seq, at, prev, runId, intentId, surface, principal, kind, data]))
 
 const FORBIDDEN_KEYS = new Set(['body', 'spans', 'contents', 'content', 'passages', 'bytes', 'token', 'deliverytoken', 'seed', 'secret', 'privatekey', 'apikey', 'authorization', 'txblob', 'signedtxblob', 'blob', 'question', 'salt', 'salts'])
