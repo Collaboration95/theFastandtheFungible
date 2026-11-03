@@ -1,123 +1,115 @@
-# Use ResearchAgent from code
+# ResearchAgent SDK v1
 
-The in-repository TypeScript SDK needs no additional dependency. Start the API
-with your operator configuration, then run `npx tsx examples/sdk-quickstart.ts`.
-The example defaults to the API's `OFFSET=600` port, 9388; set `RA_BACKEND_URL`
-for another address. Operator MCP caps default to zero: set
-`MCP_MAX_BUDGET_MINOR=100 MCP_DAILY_CAP_MINOR=100` on the **backend** to permit
-the S$1 example. These are SGD cents, not XRP drops.
+Node 22.13+ ESM, with TypeScript declarations. Build with `npm run build:sdk`,
+then `cd packages/sdk && npm pack`. Install the tarball in another project.
+Import `createClient` and `ResearchAgentError` from `@researchagent/sdk`;
+import `openPaymentJournal` from `@researchagent/sdk/journal`.
+No npm publication is performed; the owner decides that in #265.
+
+The separate package excludes the private application and desktop assets. It
+reuses the existing zod, xrpl and ripple-keypairs dependencies; no new runtime
+library is introduced. This release is Node-only (SQLite journals and offline
+verification use Node builtins). Three runnable examples live in examples/:
+`npx tsx examples/ask.ts`, `npx tsx examples/verify.ts receipts.json`, and
+`npx tsx examples/pay.ts https://publisher.example/resource`.
+Set RA_URL and RA_API_TOKEN for the engine. Tests run all three against explicit
+local synthetic fixtures on ephemeral ports, without .env or live providers.
 
 ```ts
-import { createClient } from '../sdk/index.js'
-const client = createClient({ baseUrl: 'http://127.0.0.1:9388' })
-const run = await client.ask('What changed in the deal?', {
-  budgetSgd: 1, idempotencyKey: 'deal-question-1',
-})
-console.log(run.answer, run.purchases.map(p => p.txHash), run.labels)
+import { createClient } from '@researchagent/sdk'
+const client = createClient({ baseUrl: 'http://127.0.0.1:6100', token: process.env.RA_API_TOKEN })
+const task = client.ask('How did margins change?', { budget: 2, idempotencyKey: 'deal-1' })
+for await (const event of task.events) console.log(event.type, event.label)
+const run = await task
+console.log(run.answer, run.citations, run.receipts, run.clamped)
 ```
 
-| Method | Result |
-|---|---|
-| `createClient({ baseUrl, token?, fetch? })` | Typed client; injectable Fetch transport |
-| `search(query, { k? })` | Public hits, labels, corpus label, unavailable writers; never bodies |
-| `ask(question, { budgetSgd, idempotencyKey?, signal? })` | Terminal run, cited answer and delivered citation passages, purchases and transaction hashes, labels and budget clamp information |
-| `getRun(runId)` | Same presentation of the current run; does not start work |
-| `watch(runId, { signal? })` | Async iterator of durable trace events, replayed once per event ID, then live events until terminal |
-| `wallet()` | Rail, public payer address, backend caps, gross spend today and reserved/remaining budget |
+## API reference
 
-Only backend policy chooses and pays for articles. The SDK has no purchase
-method. Ask follows the existing SSE snapshots and falls back to read-only
-polling if the stream fails or is unsupported. `AbortSignal` cancels waiting,
-not the already admitted run. Admission is never automatically retried. MCP
-uses the additional `waitMs: 45_000` option to retain its bounded wait; an active
-result can be followed with `getRun` or `watch`.
+Method names below are checked against the public client by a test.
 
-Keep a stable idempotency key for each intended question. Reuse it after a lost
-response to retrieve the same persisted run without a new intent or charge.
-Changing the question under that key fails. Without a key, each ask is a new
-intent. `clamped` means the backend reduced the requested budget to its caps
-or the available daily allowance; refunds do not replenish spending authority.
+### `ask`
 
-Preserve `labels` and `corpusLabel` when displaying results. Fixture providers
-and fictional writers remain labelled; SIMULATED purchases have null transaction
-hashes and explorer URLs. Paid citation passages are exposed only when their
-delivered content matches a VERIFIED grant. Real Testnet settlement still has
-no real monetary value.
+`ask(question, { budget, idempotencyKey?, signal?, waitMs?, escrow? })` returns
+an AskTask: a Promise of AskResult with an independent replayable `.events`
+AsyncIterable. Budget is requested SGD; the server clamps it to operator caps.
+The final result includes requestedBudgetMinor, budgetMinor, clamped,
+humanMaxBudgetMinor, humanDailyCapMinor, answer, citations, receipts, purchases,
+phase and mode labels. `budgetSgd` remains a compatibility alias.
+FREE_DRAFT events contain labelled free-source drafts; ANSWER_READY marks checked
+answers. Drafts are provisional. The iterator yields durable TraceEvents in order,
+then ends with the same success or typed failure as the promise. SSE falls back
+to read-only polling; admission is never automatically retried. A bounded waitMs
+may return an active run; use watch/getRun to continue. Cancellation stops the
+waiter, not an admitted run. Reuse the same idempotency key for retries.
 
-`token` sends `Authorization: Bearer …` on JSON and SSE requests and defaults
-to `RA_API_TOKEN` in Node. The backend enforces bearer auth, Host/Origin guards,
-wallet-wide gross daily caps and pause; see [SECURITY](contracts/SECURITY.md)
-for the exact operator and embedded-app contract. Errors use
-`ResearchAgentError.code`: `unauthorized`, `not_found`, `invalid`, or
-`backend_unavailable`. Backend bodies and transport details are not echoed.
+### `getRun`
 
-`examples/python/ask.py` demonstrates the same capped, idempotent flow with
-Python's stdlib `urllib` and polling. It prints the persisted answer, receipt
-hashes and labels; it is an example, not a Python SDK package. TypeScript is
-in-repo for now; npm publication awaits the owner (#265).
+`getRun(id)` reads a presented run with exact delivered citation passages and
+verified-grant checks. It never starts research or spends.
 
-## Configuration seam
+### `walletStatus`
 
-`server/config.ts` exports `loadConfig(env)` and the `Config` type. API/MCP boot
-and doctor validate numeric settings, ports, URLs and caps here. Errors name
-variables without values. Every existing variable name, provider fallback,
-empty-string precedence and legacy DeepSeek/Groq key remains supported.
-Call-time reads use this same parser so isolated engine workers and explicit
-test environments stay independent. Publisher configuration remains separate
-at this seam. Token/Host startup validation happens before an API listener.
-
-## Pay an x402 seller or hire a remote agent
-
-`sdk/x402.ts` exports `payAndFetch(url, { wallet, maxDrops, journal, ... })`
-for any x402 v2 exact/XRP seller on XRPL Testnet. It verifies terms before
-signing and settlement against the ledger. Use `openPaymentJournal` from
-`sdk/x402-journal.ts` for durable retry; a timeout must reuse the same signed
-intent. GET buys an article; POST can hire ResearchAgent at `/v1/ask`.
-See [the example and full policy](x402-xrpl.md#generic-sdk-buyer-any-x402-on-xrpl-seller).
-
-`createHireClient` from `sdk/hire.ts` wraps hired questions. MCP registers
-`hire_researcher` only when the operator configures a remote URL, caller wallet
-and maximum payment (see the protocol doc). The caller chooses a tier and a
-stable idempotency key; the remote engine chooses purchases and royalties.
-[Live proof](evidence/hire-274.md): a separate faucet caller paid an answer,
-one purchase, paid/free citation royalties and change, with five validated hashes.
-
-
-For one shared wallet with distinct agent allowances, create keys using
-`npm run agents -- add` against the engine database and pass each key as `token`.
-`wallet().agent` contains the caller's id/name, per-call/daily caps, today's gross
-spend/reservation, seven-day gross spend and rails. Revocation takes effect at the
-next HTTP request and the next unsigned purchase gate; already signed intents
-reconcile once. The operator token remains admin-only. See the
-[CLI and connection runbook](RUNBOOK.md#one-wallet-many-agent-allowances-280).
+`walletStatus()` reads operator caps, gross spend, reservations, pause state,
+rail and public payer address, with remainingMinor. Never returns signing keys.
 
 ## Verify an exported answer (#278)
 
-```ts
-import { createClient, verifyAnswer } from '../sdk/index.js'
-const client = createClient({ baseUrl, token })
-const bundle = await client.receipts(runId) // own run for an agent key
-const offline = await verifyAnswer(bundle)
-const onLedger = await verifyAnswer(bundle, { testnet: true, expectHead })
-```
+The verifier checks exact passages, writer signatures, receipts and audit links.
 
-`verifyAnswer()` is a Node API. It accepts a receipt bundle or the JSON report
-wrapper, returns `{ ok, runId, checks: [{ check, status, detail }] }`, and never
-loads keys or a database. Offline is the default; `testnet: true` performs only
-public Testnet lookups using the same verifier as `audit:verify`. The optional
-`ledger` adapter supports deterministic local verification tests.
+### `verify`
 
-`GET /runs/:id/receipts.json` exports a versioned bundle; `GET
-/runs/:id/report.json` returns the generated report wrapper or the current answer
-bundle before PDF generation. PDF creation writes the report's bundled evidence
-as a sidecar and embeds it in the PDF. `POST /api/verify` accepts bundle/report
-JSON (8 MiB limit); `?testnet=1` enables read-only ledger checks and `?expectHead=`
-pins a separately obtained chain head. The endpoint follows operator auth;
-agent keys may fetch only their own receipts. No verification UI was added.
+`verify(answerOrPath, options?)` checks an exported receipt bundle or report
+wrapper, or reads a local JSON path. Returns `{ ok, runId?, checks }`; invalid
+or tampered evidence returns ok=false. Input/IO failures are typed errors.
+Options: expectHead pins an independently supplied audit head; testnet enables
+read-only ledger verification. Offline checks are the default; self-contained
+hashes do not establish independent authenticity. Export with receipts(id), or
+GET /runs/:id/report.json. PDF verification remains available through the
+repository's `npm run verify:answer` command.
 
-`npm run verify:answer -- <receipts.json|report.json|report.pdf> [--testnet]
-[--expect-head HASH] [--json]` prints a plain check summary and exits 0 on success,
-1 on failed evidence, 2 on unreadable/legacy input or invalid arguments. Ledger
-checks skipped offline are labelled. SIMULATED receipts cannot pass full Testnet
-verification. The existing full repository command remains `npm run verify`. Proof limits and recorded tamper example:
-[evidence](evidence/verify-278.md).
+### `hire`
+
+`hire(question, { budgetMinor: 100 | 200 | 500, idempotencyKey })` calls the
+baseUrl's /v1/ask x402 service, with its fixed S$0.20 fee. The typed HireResult
+includes the presented run and moneyChain (inbound, payments, writer addresses,
+royalties and caller change).
+Requires explicit operator payment options (below). Reuse the key on uncertainty.
+
+### `pay`
+
+`pay(url, { idempotencyKey?, method?, body?, headers? }?)` buys any compatible x402
+v2 exact XRP/issued-currency resource on XRPL Testnet. Returns response, receipt,
+and payment proof. Configure `payment: { wallet, maxDrops, journal, issued? }` in
+createClient. Use openPaymentJournal(path) and close it when finished. The journal
+stores signed blobs, never seeds; keep it private and reuse it across restarts.
+An ambiguous delivery reuses the persisted signed transaction, never a new charge.
+Only HTTPS or loopback HTTP is accepted. Authority and fee limits remain enforced;
+Mainnet is refused. The engine token is never forwarded to arbitrary pay URLs.
+The pay example reads XRPL_CALLER_SEED and RA_MAX_DROPS only when explicitly run;
+RA_JOURNAL selects its durable journal file. Fixtures are labelled synthetic.
+
+### `receipts`
+
+`receipts(id)` exports the typed verification bundle.
+
+### `watch`
+
+`watch(id, { signal? }?)` replays/follows durable TraceEvents once per event id.
+
+### `search`
+
+`search(query, { k? }?)` returns untrusted public metadata, never paid passages.
+
+### `wallet`
+
+Compatibility alias for walletStatus.
+
+## Errors and authority
+
+ResearchAgentError has a typed code: unauthorized, not_found, invalid,
+backend_unavailable, cancelled, payment_failed, or verification_failed. Backend
+bodies and low-level errors are not echoed. Verification failure is a result,
+not an exception. Explicit payment authority is separate from a research budget;
+only deterministic server policy can spend on research. No approval per purchase,
+no real-money operation, and all substituted/fixture modes retain their labels.
