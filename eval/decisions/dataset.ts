@@ -23,7 +23,7 @@ export type DatasetRow = {
   resourceId: string; publisherSlug: string; priceMinor: number
   provider: string; model: string; promptVersion: string | null
   addressesGap: number; originality: { original: number; rewrite: number; overlap: number }; credibility: number
-  gapMaterial: number; value: number; verdict: string; threshold: number
+  marginalValue?: DecisionRound['rows'][number]['marginalValue']; selected?: boolean; gapMaterial: number; value: number; verdict: string; threshold: number
   labels: { addressesGap: Label; original: Label; buy: Label }; labelSource: string; unknown: boolean
 }
 
@@ -52,7 +52,7 @@ export function datasetRows(world: World, q: Question, decision: DecisionRound, 
     resourceId: row.candidate.resourceId, publisherSlug: row.candidate.publisherSlug ?? row.candidate.profileId, priceMinor: row.candidate.price.amountMinor,
     provider: decision.provider, model: decision.model, promptVersion: decision.promptVersion ?? null,
     addressesGap: row.judgment.addressesGap, originality: row.judgment.originality, credibility: row.judgment.credibility,
-    gapMaterial: decision.gapMaterial, value: row.value, verdict: row.verdict, threshold: decision.threshold,
+    selected: decision.selectedResourceId === row.candidate.resourceId, ...(row.marginalValue ? { marginalValue: row.marginalValue } : {}), gapMaterial: decision.gapMaterial, value: row.value, verdict: row.verdict, threshold: decision.threshold,
     ...labelCandidate(world, q, context.fact, context.factOpen, row.candidate, context.readSources),
   }))
 }

@@ -120,3 +120,7 @@ record: ## clean fixture recording workspace; OFFSET=300 recommended
 
 clip: ## keyboard-driven fixture clip; UC=UC2 VIEWPORT=1280x800 (or 1920x1080, 1080x1350)
 	UC=$(or $(UC),UC2) VIEWPORT=$(or $(VIEWPORT),1280x800) node --import tsx scripts/record.mjs --clip
+
+.PHONY: refit
+refit: ## local receipt labels and dev-only calibration; no network or payments
+	npm run calibration:refit -- $(ARGS)

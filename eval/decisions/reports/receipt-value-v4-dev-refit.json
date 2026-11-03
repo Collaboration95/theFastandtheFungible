@@ -1,0 +1,28 @@
+{
+  "accepted": true,
+  "reasons": [],
+  "model": {
+    "method": "identity"
+  },
+  "cvBrier": {
+    "identity": 0.21971818181818187,
+    "platt": 0.2581504944455685,
+    "isotonic": 0.2713715957763577
+  },
+  "threshold": 0.5,
+  "receiptFilter": {
+    "f1": 0.7058823529411765,
+    "tp": 6,
+    "fp": 5,
+    "fn": 0,
+    "wastedMinor": 195
+  },
+  "rawReceiptF1": 0.7058823529411765,
+  "note": "Question-grouped dev CV. Threshold chosen on dev OOF predictions; optimistic within dev. Success labels conditional on historical buys; not counterfactual labels for unbought sources. Final topic-heldout flow is the deployment test.",
+  "key": {
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "promptVersion": "batch-evidence/v4-marginal-fact+gap-plain · originality original,rewrite,overlap · credibility 0,1,2"
+  },
+  "labels": "synthetic corpus; fixture writer; live model; scripted supported-fact receipts; SIMULATED payments"
+}

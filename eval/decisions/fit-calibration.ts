@@ -181,3 +181,39 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`  calibrator: ${file ?? 'not written'} · report: ${report}`)
   }
 }
+
+/** Receipt success is a marginal supported fact, never a pre-purchase menu claim. Dev questions only at the caller. */
+export type ReceiptPoint = { questionId: string; p: number; y: 0 | 1; priceMinor: number; trust: number }
+export function fitReceiptValue(points: ReceiptPoint[]) {
+  const selected = chooseCalibration(points.map(r => ({ p: r.p, y: r.y, group: r.questionId, split: 'dev' })))
+  const oof = new Map<number, number>()
+  for (const fold of selected.folds) {
+    const model = fitCalibration(fold.trainIndexes.map(i => points[i]), selected.method)
+    for (const i of fold.testIndexes) oof.set(i, applyCalibration(model, points[i].p))
+  }
+  const metric = (threshold: number) => {
+    let tp = 0, fp = 0, fn = 0, wastedMinor = 0
+    points.forEach((r, i) => {
+      const buy = (oof.get(i) ?? r.p) * r.trust / (Math.max(1, r.priceMinor) / 100) >= threshold
+      if (buy && r.y) tp++
+      else if (buy) { fp++; wastedMinor += r.priceMinor }
+      else if (r.y) fn++
+    })
+    return { f1: 2 * tp + fp + fn ? 2 * tp / (2 * tp + fp + fn) : 0, tp, fp, fn, wastedMinor }
+  }
+  let threshold = 1, best = metric(1)
+  for (const t of [0.5, 0.75, 1, 1.25, 1.5, 2]) {
+    const m = metric(t)
+    if (m.f1 > best.f1 || (m.f1 === best.f1 && m.wastedMinor < best.wastedMinor)) { threshold = t; best = m }
+  }
+  const positives = points.filter(p => p.y).length
+  const rawF1 = positives ? 2 * positives / (points.length + positives) : 0
+  const reasons = [
+    ...(points.length < 10 || positives < 3 || points.length - positives < 3 ? ['need >=10 settled receipts, >=3 positive and negative'] : []),
+    ...(selected.nGroups < 3 ? ['need >=3 independent dev questions'] : []),
+    ...((selected.cvBrier[selected.method] ?? 1) > (selected.cvBrier.identity ?? 0) ? ['held-out-fold Brier regressed'] : []),
+    ...(best.f1 + 1e-12 < rawF1 ? ['held-out-fold receipt F1 regressed'] : []),
+  ]
+  return { accepted: !reasons.length, reasons, model: selected.model, cvBrier: selected.cvBrier, threshold, receiptFilter: best, rawReceiptF1: rawF1,
+    note: 'Question-grouped dev CV. Threshold chosen on dev OOF predictions; optimistic within dev. Success labels conditional on historical buys; not counterfactual labels for unbought sources. Final topic-heldout flow is the deployment test.' }
+}

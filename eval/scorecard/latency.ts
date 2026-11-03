@@ -14,7 +14,7 @@ export async function measureLatency(dir: string, questions: Question[], world: 
   const env: NodeJS.ProcessEnv = { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR,
     ...Object.fromEntries(Object.entries(process.env).filter(([k]) => k.startsWith('EVAL_'))),
     LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'openai', DECISION_MODEL: 'gpt-6-luna', DECISIONS_WORDING: 'evidence', DECISIONS_GAP_WORDING: 'plain', DECISIONS_MAX_QUESTIONS: '25',
-    DECISION_CALIBRATION: '', BUY_THRESHOLD: '', SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' }
+    DECISION_VALUE_POLICY: process.env.DECISION_VALUE_POLICY, DECISION_CALIBRATION: '', BUY_THRESHOLD: '', SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' }
   const started = performance.now()
   const child = spawn(process.execPath, ['--import', 'tsx', 'eval/scorecard/boot.ts', resolve(dir), ...(live ? ['--live'] : [])], { env, stdio: ['ignore', 'pipe', 'pipe'] })
   let output = '', endpoint: { base: string; publisher: string } | undefined

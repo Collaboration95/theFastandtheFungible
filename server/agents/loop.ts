@@ -115,7 +115,7 @@ export class RunLoop {
     const requirements = this.requirements(run)
     const conditional = Boolean(options.keepIfImproves && requirements)
     // A conditional re-answer announces itself only once it is kept, so the ANSWER events match the stored versions.
-    if (!conditional) this.trace(runId, 'ANSWER', previous ? 'Re-answering with verified evidence.' : 'Writing the free answer.')
+    if (!conditional) this.trace(runId, 'ANSWER', previous ? 'Re-answering with verified evidence.' : 'Writing the free answer.', { answerVersion: (previous?.version ?? 0) + 1, beforeVersion: previous?.version ?? null, ...(run.checkpoint.intentId ? { intentId: run.checkpoint.intentId } : {}) })
     let lastProgressAt = -Infinity
     const onToken = (_unvalidatedDelta: string) => {
       const now = Date.now()
@@ -392,7 +392,7 @@ export class RunLoop {
         const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => content.resourceId === candidate.resourceId && content.version === candidate.version)))
         let decision: Awaited<ReturnType<typeof decide>>
         try {
-          decision = await decide({ question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
+          decision = await decide({ question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, accessibleEvidence: contents, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
         } catch (error) {
           if (!(error instanceof DecisionUnavailableError)) throw error
           this.failDecision(runId, error)

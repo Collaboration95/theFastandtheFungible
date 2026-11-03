@@ -10,9 +10,10 @@ import { predict, type CoverageArm, type Prediction } from './arms.js'
 import { coverageMetrics } from './metrics.js'
 import { buildSnapshots, STATUSES } from './snapshots.js'
 
-export async function runCoverage(arms: CoverageArm[], options: { repeats?: number } = {}) {
+export async function runCoverage(arms: CoverageArm[], options: { repeats?: number; ids?: string[] } = {}) {
   const world = await loadWorld()
-  const snapshots = await buildSnapshots(world, loadBank())
+  const bank = loadBank()
+  const snapshots = await buildSnapshots(world, { ...bank, questions: bank.questions.filter(q => !options.ids || options.ids.includes(q.id)) })
   const results: Record<string, { predictions: Prediction[]; metrics: ReturnType<typeof coverageMetrics> }> = {}
   for (const arm of arms) {
     const predictions: Prediction[] = []
