@@ -63,6 +63,19 @@ describe('decision label export (#203)', () => {
     expect(text).not.toContain(PREMIUM)
     expect(text).not.toContain(TOKEN)
   })
+
+  it('binds paid labels to the recorded answer transition after a kept free follow-up', () => {
+    const path = join(dir, 'follow-up.db')
+    seed(path)
+    const db = new DatabaseSync(path)
+    const paid = JSON.parse(db.prepare('SELECT json FROM answers WHERE version=2').get()!.json as string)
+    db.prepare('UPDATE answers SET json=? WHERE version=2').run(JSON.stringify({ ...paid, claims: [] }))
+    db.prepare('INSERT INTO answers VALUES (?,?,?)').run('run-1', 3, JSON.stringify({ ...paid, version: 3 }))
+    const intent = JSON.parse(db.prepare('SELECT json FROM intents WHERE json LIKE ?').get('%VERIFIED%')!.json as string)
+    db.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run('run-1', JSON.stringify({ type: 'ANSWER', data: { intentId: intent.intentId, beforeVersion: 2, answerVersion: 3 } }))
+    db.close()
+    expect(exportLabels(path)[0].reanswer).toMatchObject({ beforeVersion: 2, afterVersion: 3, citesPurchased: true, gainedSupportedFact: true })
+  })
   it('reads only the run, answer, decision, intent and event tables', () => {
     expect(READ_TABLES).toEqual(['runs', 'answers', 'decisions', 'intents', 'events'])
     const source = readFileSync(new URL('../../scripts/export-decision-labels.ts', import.meta.url), 'utf8')

@@ -27,6 +27,23 @@ existing XRPL keys required no new wallet/API operation; no signing friction
 was observed. The local `.env` key also needs an explicit evaluation mapping;
 `make scorecard LIVE=1` now handles that without loading wallet seeds.
 
+## Observed local evaluation tooling · 3 Nov 2026 · #276
+
+The receipt exporter assumed every paid re-answer was answer version `j + 2`.
+A kept free follow-up can shift that mapping and attribute free gain to a paid
+purchase (code-derived failure mode, reproduced by a new store test). Workaround:
+record each intent's before/after answer versions on the ANSWER event and use
+that transition in the read-only export; preserve the legacy follow-up offset.
+Evidence: `tests/eval/labels-export.test.ts`, `scripts/export-decision-labels.ts`.
+Suggested SDK/example fix: make receipt-to-answer transitions explicit rather
+than infer them from answer order. Severity: medium for calibration reliability;
+mainnet impact: no incident observed; bad labels could encourage wasted buying.
+All this task's evaluation payments are SIMULATED. Separately, the UC3 regression
+test caught a local lexical false duplicate: a free paragraph contained capacity
+figures and explicitly no lead times. Sentence-scoped affirmative matching fixes
+that without changing any refund, leak, or spending test. This is local
+application/evaluation tooling evidence, not an XRPL or x402 network failure.
+
 ## Top five: what we would fix first
 
 1. **Ship a TypeScript payment recovery example, not just a successful payment.**

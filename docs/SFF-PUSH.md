@@ -41,6 +41,31 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 `eval/REPORT-coverage.md`). From #256, `make scorecard` writes
 `eval/scorecard/history.jsonl`; paste "before → after" here when a number moves.
 
+
+#276 headline · LIVE, prospectively held-out rates/power (24 questions), 3 Nov:
+
+| Metric | Held-out LIVE before → after (headline) | Dev LIVE before → after |
+|---|---:|---:|
+| Wasted gross spend | 39.39% → **35.48%** | 51.79% → 44.19% |
+| First-purchase F1 (flow) | 0.588 → **0.625** | 0.308 → 0.296 |
+| Selection F1 (sweep) | 0.714 → **0.667** | 0.400 → 0.320 |
+| Supported-fact uplift | +15.38 pts → **+15.38 pts** | +18.52 pts → +25.93 pts |
+| False-complete | 5.26% → **5.26%** | 0.00% → 0.00% |
+
+**Waste target missed (35.48% ≥25%).** Held-out flow F1 and +15-point uplift pass;
+sweep regresses, and dev flow F1 misses. Full-bank secondary waste is 41.36%
+(previous 47.19%), flow F1 0.419 unchanged, uplift +20.75 pts. These subsets must
+not be compared directly with the historical whole-bank columns below. Coverage
+false-complete on holdout is 1/19 (5.26%); whole-bank remains 1/53 (1.89%).
+Live decision/coverage only; synthetic corpus, fixture research, SIMULATED payments,
+zero XRP. Final API gate audit: 0 violations / 10 runs / 464 observations. Receipt
+fit retains identity probabilities (Platt/isotonic lost); dev-selected threshold
+0.5 expected facts/S$. Model spend US$0.5753331 of US$4, including all
+trials. `eval/REPORT-decisions.md` §6 and `receipt-value-results.json` carry exact
+provenance, limitations and trial failures. README publishes the held-out row.
+
+Historical whole-bank #260 table (retained):
+
 | Metric | Live baseline (9 Oct) | live, pre-fact-menu · 3 Nov SGT | live, post-fact-menu + #301 · 3 Nov SGT | Target 12 Nov |
 |---|---|---|---|---|
 | Wasted spend | 39.5% | 36.19% | 47.19% (target missed; +11.00 pts) | ≤ 20% |
@@ -57,7 +82,7 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 Desktop app (separate fixture measurement): installed launch to interactive 2070 ms; DMG 130.27 MiB. This is not part of the live engine benchmark.
 
 The valid pre-menu run at `2026-11-02T16:30:12.474Z` was recovered, not repeated.
-Latest: `2026-11-03T01:49:48.288Z`, prompt v3, after integrating #300 and #301.
+Historical #260 after: `2026-11-03T01:49:48.288Z`, prompt v3, after integrating #300 and #301.
 **Both #260 targets are missed:** F1 ≥ 0.45 and waste ≤ 25%. Waste regressed
 **11.00 percentage points** from the fresh baseline. No threshold or test was
 relaxed. The explicit lane request says to ship and report missed targets;
@@ -243,6 +268,8 @@ Agents add items there and keep working around them.
 
 - 3 Nov: #288 audit trail is a hash chain inside the money transactions (`audit_log`), not a separate log; tamper-evident, not signed or notarised, so COMPLIANCE.md says to pin the head. The denylist is a labelled operator hook (fail closed), not sanctions screening; hire-the-agent is documented as receive-and-forward custody, so "we never hold funds" is dropped for that flow.
 - 3 Nov: #288 `data:prune` is an explicit command, default 30 days (long enough to challenge a bad delivery, short enough not to keep paid bodies and questions); it deletes content, never receipts or audit rows.
+- 3 Nov (#276): freeze semis/packaging dev vs rates/power heldout before tuning; marginal expected-facts/S$ is deterministic policy, not model spending authority. Accept receipt fits only by grouped dev rules; identity wins this run. Publish the failed 25% waste target and sweep/dev regressions; no held-out retuning or test loosening.
+
 - 3 Nov: #260 reuses #300’s signed manifest-v2 `covers` format; bounded untrusted promises are checked on the bound passage, never treated as coverage. Scorecards run locally; final calibration fit rejected; stays off, raw threshold unchanged.
 - 3 Nov: #274 hire-v1 receives Testnet funds, reserves budget plus fee through the shared admission, pays a fixed 25% fee royalty equally by distinct cited writer, and returns gross unspent budget; API/SDK/CLI money chain precedes the queued UX work.
 
@@ -287,6 +314,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 
 ### Tue 3 Nov
+- Lane B #276: value-of-information veto, conservative signed-menu duplicate checks, keyed receipt refit and exact intent/answer labels; held-out waste 39.39% → 35.48% (target missed), flow F1 0.588 → 0.625, uplift +15.38 pts unchanged; dev waste 51.79% → 44.19%, flow F1 0.308 → 0.296. Zero gate violations; scorecard/README refreshed.
 - Lane B #260: signed corpus fact menus, both decision providers and local scorecards; live F1 0.235 → 0.419, waste 36.19% → 47.19% (both targets missed), zero gate violations; README regenerated, fixture quality unchanged.
 - Lane A #259: installed unsigned Apple Silicon DMG, 136,597,522 bytes (130.27 MiB); launch to interactive 2.070 s with fresh fixture data. UC1–UC3, refund, report, Keychain round trip and hardening checks pass; no live payment/signing claim. [Evidence](evidence/macos-app-259.md).
 - Published the branded explainers and shared header to Pages, preserving the evolution dataset and branch-only content; added a manual publish script.

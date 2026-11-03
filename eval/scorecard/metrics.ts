@@ -15,7 +15,16 @@ export function qualityMetrics(results: QuestionResult[], sweep: DatasetRow[], f
   if (thresholds.size > 1) throw new Error('Sweep thresholds differ; cannot compare this scorecard')
   const metrics = purchaseMetrics([...grouped.values()].map(rows => ({ rows })), new Map(sweep.map(r => [r, r.value])), sweep[0]?.threshold ?? 0.2)
   return { wastedSpendPct: spent ? 100 * results.reduce((s, r) => s + r.wastedMinor, 0) / spent : null,
-    selectionF1Flow: buys + expected ? 2 * tp / (buys + expected) : 0, selectionF1Sweep: metrics.f1,
+    selectionF1Flow: buys + expected ? 2 * tp / (buys + expected) : 0, selectionF1Sweep: sweep.some(r => r.selected !== undefined) ? (() => {
+      let tp = 0, fp = 0, fn = 0
+      for (const rows of grouped.values()) {
+        const pick = rows.find(r => r.selected)
+        if (pick?.labels.buy === null) continue
+        if (pick?.labels.buy === 1) tp++
+        else { if (pick) fp++; if (rows.some(r => r.labels.buy === 1)) fn++ }
+      }
+      return 2 * tp + fp + fn ? 2 * tp / (2 * tp + fp + fn) : 0
+    })() : metrics.f1,
     supportedFactUpliftPts: facts ? 100 * results.reduce((s, r) => s + r.final.supported.length - r.free.supported.length, 0) / facts : null, falseCompleteRate }
 }
 export const timings = (samples: { firstMs: number; finalMs: number }[]) => ({ samples: samples.length, p50FirstAnswerMs: percentile(samples.map(s => s.firstMs), 0.5), p95FirstAnswerMs: percentile(samples.map(s => s.firstMs), 0.95), p95FinalAnswerMs: percentile(samples.map(s => s.finalMs), 0.95) })

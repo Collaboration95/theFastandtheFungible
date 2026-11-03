@@ -1,3 +1,4 @@
+import { activeValueFit, marginalValue } from './value-policy.js'
 import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
 import { scoreStep } from '../telemetry.js'
@@ -136,7 +137,9 @@ export type DecideInput = {
   candidates: PublicCandidate[]; readSources: PublicSourceRef[]
   budgetMinor: number; spentMinor: number; reservedMinor: number; perSourceCapMinor: number
   round: number; provider?: DecisionProvider; threshold?: number; boughtResourceIds?: string[]
-  /** Trust by publisher wallet (D6, D21). When given, value × T and quarantined/delisted sellers get SKIP_LOW_TRUST; a wallet with no entry is a newcomer. */
+  /** Only free or verified-granted content, passed locally by the run's grant accessor; never added to provider input. */
+  accessibleEvidence?: ContentEnvelope[]
+  /** Trust by publisher wallet (D6, D21). A wallet with no entry is a newcomer. */
   reputation?: Record<string, ReputationSummary>
   /** Abandons the round from outside (e.g. Stop); the round's own controller also aborts siblings on the first failure (#206). */
   signal?: AbortSignal
@@ -237,6 +240,8 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const calibrator = open ? activeCalibrator(provider) : undefined
   const threshold = calibrator && input.threshold === undefined ? calibrator.buyThreshold : buyThreshold(provider.model, input.threshold)
   const acquired = new Set([...input.readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
+  const valueFit = activeValueFit(provider)
+  const useValuePolicy = input.requirement && input.accessibleEvidence !== undefined && process.env.DECISION_VALUE_POLICY !== 'off'
   const rows = candidates.map((candidate, index) => {
     const judgment = judgments[index]
     // Trust can only lower value (T ∈ [0, 1]); it never touches the budget or the cap.
@@ -244,6 +249,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     const trust = reputation ? Math.min(1, Math.max(0, reputation.T)) : 1
     const calibrated = calibrator ? calibrate(calibrator, judgment) : undefined
     const value = gapMaterial * (calibrated?.addressesGap ?? judgment.addressesGap) * (calibrated?.original ?? judgment.originality.original) * (0.5 + 0.25 * judgment.credibility) * trust
+    const marginal = useValuePolicy ? marginalValue({ candidate, evidence: input.accessibleEvidence!, probability: judgment.addressesGap, trust, model: valueFit?.model, minFactsPerDollar: valueFit?.minFactsPerDollar }) : undefined
     const price = candidate.price.amountMinor
     // A zero-price PAID resource ranks by value, avoiding Infinity in JSON.
     const valuePerDollar = value / (Math.max(price, 1) / 100)
@@ -259,8 +265,9 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     else if (gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
+    else if (marginal && !marginal.eligible) { verdict = 'SKIP_LOW_VALUE'; reason = `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} < ${marginal.threshold.toFixed(3)} (covered menu entries ${marginal.coveredEntries}/${marginal.menuEntries}).` }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }
-    return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}) }
+    return { candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}), ...(marginal ? { marginalValue: { ...marginal, ...(valueFit ? { fitVersion: valueFit.version } : {}) }, reason: verdict === 'BUY' ? `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} >= ${marginal.threshold.toFixed(3)}; spending policy clears.` : reason } : {}) }
   })
   // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
   const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.resourceId, version: b.candidate.version }))[0]

@@ -79,7 +79,7 @@ describe('OpenAI Decisions provider (#214)', () => {
   it('switches the gap_material wording with DECISIONS_GAP_WORDING (default plain) and records it in the version', async () => {
     expect(GAP_WORDINGS.plain).toBe('The open gap is part of what the question asks.')
     expect(DECISIONS_PROMPT_VERSION).toBe(decisionsPromptVersion('plain'))
-    expect(DECISIONS_PROMPT_VERSION).toMatch(/^batch-evidence\/v3-fact-menu\+gap-plain /)
+    expect(DECISIONS_PROMPT_VERSION).toMatch(/^batch-evidence\/v4-marginal-fact\+gap-plain /)
     for (const [env, wording] of [[undefined, 'plain'], ['plain', 'plain'], ['bogus', 'plain'], ['evidence', 'evidence']] as const) {
       if (env !== undefined) vi.stubEnv('DECISIONS_GAP_WORDING', env)
       const d = decisions()
@@ -110,7 +110,7 @@ describe('OpenAI Decisions provider (#214)', () => {
       { name: 'c0_originality', type: 'choice', instructions: `Evaluate only candidates[0]. ${EVIDENCE.candidate.originality}`, choices: EVIDENCE.originality },
       { name: 'c0_credibility', type: 'score', instructions: `Evaluate only candidates[0]. ${EVIDENCE.candidate.credibility}`, levels: EVIDENCE.credibility },
     ])
-    expect(round.promptVersion).toMatch(/^batch-evidence\/v3-fact-menu\+gap-plain /)
+    expect(round.promptVersion).toMatch(/^batch-evidence\/v4-marginal-fact\+gap-plain /)
     // production: the Clef wording mapped noul → predicate, criteria → choices by value / levels 0–2, pinned order.
     vi.stubEnv('DECISIONS_WORDING', 'production')
     vi.stubEnv('DECISIONS_GAP_WORDING', 'evidence')
@@ -126,7 +126,7 @@ describe('OpenAI Decisions provider (#214)', () => {
         { label: '0', description: c.credibility.criteria[0] }, { label: '1', description: c.credibility.criteria[1] }, { label: '2', description: c.credibility.criteria[2] }] },
     ])
     expect(round.promptVersion).toBe(decisionsPromptVersion('evidence', 'production'))
-    expect(round.promptVersion).toMatch(/^batch-production\/v3-fact-menu\+gap-evidence /)
+    expect(round.promptVersion).toMatch(/^batch-production\/v4-marginal-fact\+gap-evidence /)
     // Paid relevance and the per-candidate path follow the same switch.
     d = decisions()
     const provider = d.provider()

@@ -1,114 +1,86 @@
 {
   "schema": "tftf.scorecard/v1",
-  "at": "2026-11-03T02:02:14.155Z",
+  "at": "2026-11-03T02:17:24.180Z",
+  "split": "heldout",
+  "policy": "receipt-value/v1",
   "worktreeDirty": true,
-  "commit": "acaa297af161b9572f915a8c419ec7cb2aa8b41d",
-  "inputHash": "79cd9159f2557f5bc7943747fb7ddd8858e673f561c07cbfd95f7b68cd6eb77d",
-  "mode": "fixture",
+  "commit": "084707122bb7a414136e1878e21538e8e92f9b75",
+  "inputHash": "d80e943714ab444fb4bca98e3e25fe22342ecd76480d824e3f2e5dba9440af48",
+  "mode": "LIVE",
   "labels": {
     "search": "keyword only (embeddings unavailable)",
-    "settlement": "SIMULATED · no payment",
+    "settlement": "SIMULATED \u00b7 no payment",
     "wallets": "SIMULATED publisher keys",
     "corpus": "synthetic demo articles",
-    "research": "fixture · extractive-fixture",
-    "decision": "fixture · metadata-fixture",
+    "research": "fixture \u00b7 extractive-fixture",
+    "decision": "openai \u00b7 gpt-6-luna \u00b7 batch-evidence/v4-marginal-fact+gap-plain \u00b7 originality original,rewrite,overlap \u00b7 credibility 0,1,2",
     "coverage": "scripted needle check (eval)",
-    "timing": "fixture; measured wall clock",
+    "timing": "LIVE decision; fixture writer/planner; SIMULATED settlement",
     "boot": "booted demo API + publisher (fresh child process; module load included)"
   },
   "quality": {
-    "wastedSpendPct": 67.93388429752066,
-    "selectionF1Flow": 0.3103448275862069,
-    "selectionF1Sweep": 0.2222222222222222,
-    "supportedFactUpliftPts": 28.30188679245283,
-    "falseCompleteRate": 0.37735849056603776
+    "wastedSpendPct": 35.483870967741936,
+    "selectionF1Flow": 0.625,
+    "selectionF1Sweep": 0.6666666666666666,
+    "supportedFactUpliftPts": 15.384615384615385,
+    "falseCompleteRate": 0.05263157894736842
   },
   "timing": {
-    "samples": 10,
-    "p50FirstAnswerMs": 82.84922949999964,
-    "p95FirstAnswerMs": 143.32186089999993,
-    "p95FinalAnswerMs": 312.97184565000003,
-    "coldStartMs": 528.777,
+    "samples": 5,
+    "p50FirstAnswerMs": 64.40208300000086,
+    "p95FirstAnswerMs": 129.75397439999796,
+    "p95FinalAnswerMs": 1965.2123669999987,
+    "coldStartMs": 521.2161669999987,
     "node": "v26.3.1",
     "platform": "darwin",
     "observations": [
       {
         "questionId": "Q01",
-        "runId": "eb71ff44-052f-4914-95e8-8d22b5d0d36b",
-        "firstMs": 165.6231670000002,
-        "finalMs": 167.3375000000001
-      },
-      {
-        "questionId": "Q09",
-        "runId": "56471fde-c92b-4df6-a3e6-e0578a340305",
-        "firstMs": 99.05812500000002,
-        "finalMs": 278.4752500000004
-      },
-      {
-        "questionId": "Q18",
-        "runId": "b19b0f1f-b7e8-4600-ac1e-36e02fd1bb37",
-        "firstMs": 66.81408300000021,
-        "finalMs": 341.19633299999987
-      },
-      {
-        "questionId": "Q19",
-        "runId": "ac9e41fe-2abd-4acb-b8c0-cfcee01921ef",
-        "firstMs": 116.06470899999977,
-        "finalMs": 116.73608399999966
+        "runId": "cd36d1ad-4c2c-4cc3-9b8f-d895dc983b73",
+        "firstMs": 145.8554159999985,
+        "finalMs": 521.668875000003
       },
       {
         "questionId": "Q23",
-        "runId": "aeee1ff1-21f4-4cfe-885d-9b315a0ec04e",
-        "firstMs": 75.68162500000017,
-        "finalMs": 76.42962500000021
+        "runId": "7f321494-1350-4c66-8973-29c64545293c",
+        "firstMs": 59.75258299999405,
+        "finalMs": 372.0382079999981
       },
       {
         "questionId": "Q27",
-        "runId": "d281697b-602c-4206-814e-c428908418c0",
-        "firstMs": 84.90570899999966,
-        "finalMs": 85.42895899999985
+        "runId": "4f67a81f-3a61-4d16-941c-9d6021c5b4b7",
+        "firstMs": 65.3482079999958,
+        "finalMs": 479.4540829999969
       },
       {
         "questionId": "Q31",
-        "runId": "6e3f6b26-4a1e-4e5e-9af5-37f49848186a",
-        "firstMs": 74.7023750000003,
-        "finalMs": 255.0349580000002
-      },
-      {
-        "questionId": "Q35",
-        "runId": "8a91cdb3-3b7f-4290-92ae-4430ae586db6",
-        "firstMs": 104.06475,
-        "finalMs": 192.2055419999997
+        "runId": "39b8a587-0ee3-4749-8a25-b10141f7a0f8",
+        "firstMs": 64.40208300000086,
+        "finalMs": 1905.9606669999994
       },
       {
         "questionId": "Q42",
-        "runId": "d805a3ee-bee1-4711-963d-c11e6216950e",
-        "firstMs": 80.79274999999961,
-        "finalMs": 81.5473750000001
-      },
-      {
-        "questionId": "Q44",
-        "runId": "9f713bc8-60cd-4b26-a728-5434a2617076",
-        "firstMs": 67.12937500000044,
-        "finalMs": 231.79375000000073
+        "runId": "4204e673-7055-41ca-8728-44fc06183a73",
+        "firstMs": 56.85025000000314,
+        "finalMs": 1980.0252919999984
       }
     ]
   },
   "cost": {
-    "providerCalls": 0,
+    "providerCalls": 109,
     "estimatedUsageCalls": 0,
-    "inputTokens": 0,
+    "inputTokens": 504903,
     "outputTokens": 0,
-    "modelUsd": 0,
-    "latencyModelUsdPerQuery": 0,
-    "flowDecisionUsdPerQuery": 0,
+    "modelUsd": 0.050490300000000016,
+    "latencyModelUsdPerQuery": 0.0013299200000000003,
+    "flowDecisionUsdPerQuery": 0.0004745166666666667,
     "xrpDropsSpent": 0,
-    "simulatedMinorSpent": 3025,
+    "simulatedMinorSpent": 310,
     "rates": "eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)"
   },
   "audit": {
-    "runs": 10,
-    "observations": 343,
+    "runs": 5,
+    "observations": 153,
     "violations": [],
     "total": 0,
     "byRule": {
@@ -117,7 +89,9 @@
       "over_budget": 0,
       "purchase_without_policy": 0,
       "premium_leak": 0,
-      "missing_rail_label": 0
+      "missing_rail_label": 0,
+      "royalty_policy": 0,
+      "money_chain_reconciliation": 0
     }
   },
   "external": {
@@ -125,8 +99,8 @@
     "dmgColdStartMs": null
   },
   "counts": {
-    "questions": 48,
-    "coverageSnapshots": 116,
-    "requestedFacts": 53
+    "questions": 24,
+    "coverageSnapshots": 55,
+    "requestedFacts": 26
   }
 }

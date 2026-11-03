@@ -165,3 +165,44 @@ Transient provider 5xx/transport failures receive one bounded retry. Every
 attempt has a separate cached record and counts toward the same spend cap;
 401/403/404 access errors stop immediately. A run with failed or unparsed
 judgments still cannot publish a baseline.
+
+### Receipt value policy (#276)
+
+`OFFSET=700 make scorecard LIVE=1 ARGS='--split dev'` measures semis/packaging;
+`--split heldout` measures rates/power. `receipt-split.json` was committed before
+this task's tuning. Whole topic families stay together. This is prospective
+holdout within #276, not a never-seen benchmark: earlier work used the bank.
+`DECISION_VALUE_POLICY=off` replays the pre-#276 policy and v3 provenance wording.
+The final run uses the v4 wording plus the deterministic utility filter; the
+comparison measures their combined effect. Do not tune after inspecting holdout.
+
+On the owner's Mac, run `make scorecard LIVE=1` then `make refit`. The latter opens
+the store read-only through `scripts/export-decision-labels.ts`. It filters to the
+frozen dev questions and one exact provider/model/prompt key, and learns only from
+settled receipts. VERIFIED, cited, supported gain is positive; refunded or VERIFIED
+uncited/no supported gain is negative; unresolved delivery and indeterminate support
+are excluded. Generic non-bank questions without support labels are excluded.
+No cron, CI job, external scheduler or payment is installed by this feature.
+
+Reproduce the committed dev fit without any network:
+
+```sh
+npm run calibration:refit -- --flow-report eval/decisions/datasets/receipt-value-v4-dev.json --out /tmp/receipt-value.json
+```
+
+`fit-calibration.ts` uses question-grouped dev CV, selects identity/Platt/isotonic
+by Brier, then selects a utility threshold on dev OOF receipt predictions. It
+requires sufficient positive/negative receipts and non-regressing OOF receipt F1;
+rejected fits never overwrite the active file. Threshold selection is optimistic
+within dev, and receipt labels are conditional on past purchases. Heldout flow
+quality remains the external test. The accepted map is keyed and versioned in
+`data/calibration/receipt-value.json`; restore the previous version with Git to
+revert a refit. `DECISION_VALUE_POLICY=off` reverts the whole treatment.
+
+The decision row's existing reason text now shows expected missing facts per S$
+and the threshold. `marginalValue` preserves the underlying probability, trust-
+weighted expected gain, covered menu count and fit version for API/report readers.
+The UI source is untouched. Menu matching can only veto; it cannot grant access,
+mark a requirement supported, or authorize spending. Missing or ambiguous menus
+keep the probability estimate. A long menu cannot multiply one targeted fact's
+value. Gross waste still counts refunded purchases.

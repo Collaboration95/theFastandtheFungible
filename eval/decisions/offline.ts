@@ -116,7 +116,7 @@ export async function runQuestion(world: World, q: Question, provider: DecisionP
   const open = () => q.requested.filter(f => !supported().includes(f.id))
   const decideRound = (round: number, gap: string, fact?: Fact) => {
     const readSources = readSourcesOf(s.candidates, s.contents)
-    return decide({ question: q.question, conclusion: s.answers.at(-1)!.conclusion, gap, ...(flow === 'requested' ? { requirement: Boolean(fact) } : {}), candidates: s.candidates, readSources, boughtResourceIds: s.purchases.map(p => p.resourceId), budgetMinor, spentMinor, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor, round, provider, ...(options.threshold === undefined ? {} : { threshold: options.threshold }), reputation: reputationOf(trust) })
+    return decide({ question: q.question, conclusion: s.answers.at(-1)!.conclusion, gap, ...(flow === 'requested' ? { requirement: Boolean(fact) } : {}), candidates: s.candidates, readSources, accessibleEvidence: s.contents, boughtResourceIds: s.purchases.map(p => p.resourceId), budgetMinor, spentMinor, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor, round, provider, ...(options.threshold === undefined ? {} : { threshold: options.threshold }), reputation: reputationOf(trust) })
       .then(decision => { options.dataset?.push(...datasetRows(world, q, decision, { ...(fact ? { fact } : {}), factOpen: true, readSources, mode: 'flow' })); return decision })
   }
   try {
@@ -207,7 +207,7 @@ export async function sweepQuestion(world: World, q: Question, provider: Decisio
     const gap = sanitizeGaps([fact.need], candidates)[0]?.text ?? fact.need
     const paid = candidates.filter(c => c.tier === 'PAID').length
     try {
-      const decision = await decide({ question: q.question, conclusion: answer.conclusion, gap, requirement: true, candidates, readSources, budgetMinor: BUDGET.initialMinor, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor, round: 1, provider })
+      const decision = await decide({ question: q.question, conclusion: answer.conclusion, gap, requirement: true, candidates, readSources, accessibleEvidence: contents, budgetMinor: BUDGET.initialMinor, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor, round: 1, provider })
       dataset.push(...datasetRows(world, q, decision, { fact, factOpen, readSources, mode: 'sweep' }))
       facts.push({ factId: fact.id, candidates: candidates.length, paid, open: factOpen, selected: decision.selectedResourceId ?? null })
     } catch (e) { facts.push({ factId: fact.id, candidates: candidates.length, paid, open: factOpen, selected: null, error: e instanceof Error ? e.message : String(e) }) }

@@ -21,7 +21,7 @@ export type LabelRow = {
   priceMinor: number; status: PurchaseIntent['status']; charged: boolean; refundedMinor: number
   question: string; clarifyAnswers: Record<string, unknown> | null; bankQuestionId: string | null
   modes: { research: string; decision: string; settlement: string; search: string | null }
-  pre: null | { provider: string; model: string; threshold: number; gap: string; gapMaterial: number; fallbackReason: string | null; addressesGap: number; original: number; rewrite: number; overlap: number; credibility: number; trust: number | null; value: number; valuePerDollar: number; verdict: string; claimedRelevance: number | null }
+  pre: null | { provider: string; model: string; promptVersion?: string; threshold: number; gap: string; gapMaterial: number; fallbackReason: string | null; addressesGap: number; original: number; rewrite: number; overlap: number; credibility: number; trust: number | null; value: number; valuePerDollar: number; verdict: string; claimedRelevance: number | null }
   post: { claimedRelevance: number | null; observedRelevance: number | null; calibrationSkipped: string | null }
   proofOutcome: string | null
   reanswer: { beforeVersion: number | null; afterVersion: number | null; citesPurchased: boolean | null; gainedRequestedFacts: string[] | null; gainedSupportedFact: boolean | null; determinable: boolean; method: 'claim-text needles, citing a source article' }
@@ -38,7 +38,8 @@ export function exportLabels(dbPath: string, questions: Question[] = loadBank().
       if (!intents.length) continue
       const answers = rows<Answer>('SELECT json FROM answers WHERE run_id=? ORDER BY version', run.runId)
       const decisions = rows<DecisionRound>('SELECT json FROM decisions WHERE run_id=? ORDER BY round', run.runId)
-      const events = rows<TraceEvent>('SELECT json FROM events WHERE run_id=? ORDER BY id', run.runId).filter(e => e.type === 'REPUTATION')
+      const events = rows<TraceEvent>('SELECT json FROM events WHERE run_id=? ORDER BY id', run.runId)
+      const reputationEvents = events.filter(e => e.type === 'REPUTATION')
       const clarify = run.checkpoint?.answers && typeof run.checkpoint.answers === 'object' ? run.checkpoint.answers as Record<string, unknown> : null
       const bank = matchQuestion(questions, run.question, clarify ?? undefined)
       const verified = intents.filter(i => i.status === 'VERIFIED')
@@ -53,7 +54,7 @@ export function exportLabels(dbPath: string, questions: Question[] = loadBank().
         // Calibration runs once per verified purchase, in order: the k-th calibration event for a publisher is its k-th verified purchase.
         let observed: number | null = null, claimedPost: number | null = null, skipped: string | null = null
         if (intent.status === 'VERIFIED' && slug) {
-          const mine = events.filter(e => (e.data as { publisherSlug?: string } | undefined)?.publisherSlug === slug && (CALIBRATION.test(e.label) || Boolean((e.data as { skipped?: boolean }).skipped)))
+          const mine = reputationEvents.filter(e => (e.data as { publisherSlug?: string } | undefined)?.publisherSlug === slug && (CALIBRATION.test(e.label) || Boolean((e.data as { skipped?: boolean }).skipped)))
           const event = mine[used.get(slug) ?? 0]
           used.set(slug, (used.get(slug) ?? 0) + 1)
           const m = event?.label.match(CALIBRATION)
@@ -61,8 +62,13 @@ export function exportLabels(dbPath: string, questions: Question[] = loadBank().
         }
         // Answers: v1 is the free answer; the j-th verified purchase (in round order) produced version j + 2.
         const j = verified.indexOf(intent)
-        const before = j >= 0 ? answers.find(a => a.version === j + 1) : undefined
-        const after = j >= 0 ? answers.find(a => a.version === j + 2) : undefined
+        const transition = events.find(e => e.type === 'ANSWER' && (e.data as { intentId?: string })?.intentId === intent.intentId)?.data as { beforeVersion?: number; answerVersion?: number } | undefined
+        // Old stores can have a kept free follow-up before the first purchase. Never label that as paid gain.
+        const offset = (run.checkpoint?.followUp as { reanswered?: boolean } | undefined)?.reanswered ? 1 : 0
+        const beforeVersion = transition?.beforeVersion ?? (j >= 0 ? j + 1 + offset : undefined)
+        const afterVersion = transition?.answerVersion ?? (j >= 0 ? j + 2 + offset : undefined)
+        const before = answers.find(a => a.version === beforeVersion)
+        const after = answers.find(a => a.version === afterVersion)
         const determinable = Boolean(bank && before && after)
         const gained = determinable ? supportedByClaimText(after, bank!).filter(id => !supportedByClaimText(before, bank!).includes(id)) : null
         out.push({
@@ -70,7 +76,7 @@ export function exportLabels(dbPath: string, questions: Question[] = loadBank().
           priceMinor: intent.amountMinor, status: intent.status, charged: !UNCHARGED.has(intent.status), refundedMinor: intent.refund?.amountMinor ?? 0,
           question: run.question, clarifyAnswers: clarify, bankQuestionId: bank?.id ?? null,
           modes: { research: run.labels.research, decision: run.labels.decision, settlement: run.labels.settlement, search: run.labels.search ?? null },
-          pre: decision && row ? { provider: decision.provider, model: decision.model, threshold: decision.threshold, gap: decision.gap, gapMaterial: decision.gapMaterial, fallbackReason: decision.fallbackReason ?? null,
+          pre: decision && row ? { provider: decision.provider, model: decision.model, promptVersion: decision.promptVersion, threshold: decision.threshold, gap: decision.gap, gapMaterial: decision.gapMaterial, fallbackReason: decision.fallbackReason ?? null,
             addressesGap: row.judgment.addressesGap, original: row.judgment.originality.original, rewrite: row.judgment.originality.rewrite, overlap: row.judgment.originality.overlap, credibility: row.judgment.credibility,
             trust: row.reputation?.T ?? null, value: row.value, valuePerDollar: row.valuePerDollar, verdict: row.verdict, claimedRelevance: claimed } : null,
           post: { claimedRelevance: claimedPost, observedRelevance: observed, calibrationSkipped: skipped },
