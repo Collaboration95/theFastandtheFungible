@@ -1,0 +1,73 @@
+{
+  "fixtureOnly": true,
+  "nativeArch": "arm64",
+  "listenersAfterQuit": 0,
+  "checkedListenerCount": 5,
+  "cases": [
+    {
+      "case": "fresh-start",
+      "passed": true,
+      "evidence": "native fixture engine and answer; pause across restart"
+    },
+    {
+      "case": "durable-pause-relaunch",
+      "passed": true
+    },
+    {
+      "case": "explicit-offline-switch",
+      "passed": true,
+      "liveStorePreserved": true
+    },
+    {
+      "case": "missing-key",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "deleted-key",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "locked-key",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "denied-key",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "corrupt-key",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "incomplete-config",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "remote-token-absent",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "remote-outage",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "boot-timeout",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    },
+    {
+      "case": "port-conflict",
+      "passed": true,
+      "evidence": "injected native shell recovery; no real Keychain or remote call"
+    }
+  ],
+  "limits": "Faults are injected before credential/network rails. Unit tests separately exercise actual bootSecrets decisions. No live provider, Keychain incident or Testnet acceptance claimed."
+}
