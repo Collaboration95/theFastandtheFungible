@@ -18,7 +18,7 @@ every promise ([§1](../FINAL-PUSH.md#1-what-we-are-building)).
   abstract never gives the article away. You are paid directly in seconds.
 - **Readers:** you never pay for what you can read free, and never for a
   rewrite. A broken promise is challenged and the writer loses trust.
-- **The engine:** ranking ignores price. We never hold the money. Every
+- **The engine:** ranking ignores price. Direct purchases pay writers; hire requests receive and forward Testnet funds (see docs/COMPLIANCE.md). Every
   writer's trust score is public.
 
 Decisions: federated search D1–D3, manifests D4, challenges and refunds D5,

@@ -1,6 +1,6 @@
 # Builder feedback: six weeks of XRPL integration
 
-A living record for the SFF judges. **35 items: 16 implementation findings and 4 live escrow spike findings below,
+A living record for the SFF judges. **35 catalogued items plus dated tooling incidents: 16 implementation findings and 4 live escrow spike findings below,
 plus the 15 September research submissions in the appendix.** The original
 source and history audit was recorded on **2 Nov 2026**; dated additions below
 identify live-network observations separately.
@@ -254,3 +254,28 @@ incident. Total attempts, including the interrupted run, are itemized in
   Suggested fix: expose independent settlement and delivery timing in facilitator
   examples. Severity: informational for this successful check; mainnet latency
   and custody remain unmeasured.
+
+## 3 Nov 2026 · Hire x402 retry and fixture isolation (#274)
+
+- **Observed in local tests/tooling:** reusing a fixture journal for a Testnet
+  run caused a stale signed-payment retry and a missing PAYMENT-RESPONSE header.
+  No second charge was submitted. Evidence: `sdk/x402.ts`,
+  `scripts/hire-demo.mjs`, `tests/hire.test.ts`, `docs/evidence/hire-274.md`.
+  Workaround: separate default private directories for fixture and live; retain
+  uncertain live journals and resend the original signature. Suggested SDK fix:
+  namespace persistent payment state by rail and surface typed settlement versus
+  delivery errors. Severity: medium developer friction; mainnet impact: a caller
+  must never treat delivery failure as permission to pay a new intent.
+- **Code-derived failure mode, prevented for hire:** de-duplicating by tx hash
+  alone cannot stop two different signed blobs paying the same invoice before
+  a unique settlement row is inserted. Workaround: bind each hire invoice to
+  its first signed blob *before* facilitating; test alternate-blob refusal.
+  Suggested facilitator fix: reserve invoice plus signed hash before submitting.
+  Severity: high payment-safety concern; mainnet impact: duplicate-charge risk
+  without invoice-level admission. This is not a claimed live XRPL incident.
+- **Observed roster gap:** the free Open Records persona had no dedicated
+  wallet variable. Reused its existing official-records Testnet wallet via an
+  explicit documented alias; every cited free writer is payable. Suggested
+  starter-kit fix: register public royalty addresses for free writers too.
+  Severity: low setup friction; mainnet impact: verified recipient ownership
+  and receive-and-forward licensing need separate review, not a Testnet claim.

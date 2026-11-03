@@ -38,9 +38,13 @@ export function publisherKeys(slug: string, rail: Rail, env: NodeJS.ProcessEnv =
 export async function buildRegistry(corpus: WriterCorpus, options: { rail: Rail; env?: NodeJS.ProcessEnv; embeddings?: EmbeddingCache }): Promise<Map<string, PublisherEntry>> {
   const entries = await Promise.all(corpus.publishers.map(async (publisher): Promise<PublisherEntry> => {
     const articles = corpus.articles.filter(a => a.publisherSlug === publisher.slug)
-    const keys = articles.some(a => a.tier === 'PAID') ? publisherKeys(publisher.slug, options.rail, options.env) : undefined
+    const env = options.env ?? process.env
+    const keys = articles.some(a => a.tier === 'PAID') || env[seedEnvName(publisher.slug)]
+      ? publisherKeys(publisher.slug, options.rail, env) : undefined
     return {
-      publisher: keys ? { ...publisher, wallet: keys.wallet, pubKey: keys.publicKey } : publisher,
+      publisher: keys ? { ...publisher, wallet: keys.wallet, pubKey: keys.publicKey }
+        : { ...publisher, wallet: env[seedEnvName(publisher.slug).replace(/_SEED$/, '_ADDRESS')]
+          || (publisher.slug === 'open-records' ? env.XRPL_PUBLISHER_GRID_OPERATORS_REPORT_ADDRESS : undefined) },
       writers: corpus.writers.filter(w => w.publisherSlug === publisher.slug),
       articles, keys, index: await buildIndex(articles, options.embeddings),
     }

@@ -1,5 +1,6 @@
 import { operationsRouter } from './api/operations.js'
 import { withModelUsage, logMoneyEvent } from './telemetry.js'
+import { hireService } from './hire/service.js'
 import { admissionGuard } from './admission.js'
 import { loadConfig } from './config.js'
 import type { ApiContext } from './api/context.js'
@@ -88,6 +89,7 @@ export async function createApiApp(options: ApiOptions = {}) {
       jobs.delete(task)
     })
     jobs.add(task)
+    return task
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
   const context: ApiContext = { store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, reportDir, reportJobs, progress }
@@ -107,6 +109,8 @@ export async function createApiApp(options: ApiOptions = {}) {
     if (!response.ok) return res.status(502).json({ error: 'Local publisher fault control is unavailable.' })
     res.json({ failNextDelivery: true, label: 'SIMULATED fault · no real funds' })
   })
+  const hire = hireService(context)
+  app.use(hire.router)
   app.use(runsRouter(context))
   app.use(mcpRouter(context))
   app.use(reportsRouter(context))
@@ -129,18 +133,20 @@ export async function createApiApp(options: ApiOptions = {}) {
   const stopReconciler = () => { stopping = true; clearInterval(reconcileTimer) }
   let closing: Promise<void> | undefined
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
-  for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => loop.start(run.runId))
+  for (const run of store.listRuns()) if (!store.isHireRun(run.runId) && !['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) launch(run.runId, () => loop.start(run.runId))
   const drain = async () => {
     stopReconciler()
     for (const run of store.listRuns()) if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) loop.stop(run.runId)
     await Promise.allSettled(reconciliationJobs)
     await Promise.allSettled(jobs)
     await purchases.drain()
+    await hire.drain()
   }
   return { app, store, loop, reputation, purchases, reconcileOnce, drain, close: () => closing ??= (async () => {
     await drain()
     timers.forEach(clearInterval)
     for (const set of streams.values()) for (const res of set) res.end()
+    hire.close()
     store.close()
     await (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.()
   })() }

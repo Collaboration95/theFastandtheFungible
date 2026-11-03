@@ -1,3 +1,5 @@
+import { DROPS_PER_MINOR } from '../shared/contracts/index.js'
+import type { ChainPayment } from './hire/policy.js'
 import { spendPolicy, POLICY_VERSION, PAUSED, type Surface } from './spend-policy.js'
 import { clampBudget } from '../mcp/policy.js'
 import { randomUUID } from 'node:crypto'
@@ -26,12 +28,17 @@ function publicMetadata(value: unknown): void {
 }
 
 
+export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string }
+
 /** All mutations are synchronous SQLite transactions; no transaction crosses an await. */
 export class Store {
   private readonly db: DatabaseSync
   constructor(readonly path: string = 'data/app.db', private readonly onEvent?: (event: TraceEvent) => void) {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
     this.db = new DatabaseSync(path)
+    this.db.exec(`PRAGMA busy_timeout=5000;
+      CREATE TABLE IF NOT EXISTS hire_reserves (run_id TEXT PRIMARY KEY, minor INTEGER NOT NULL, closed INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS policy_payments (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, json TEXT NOT NULL);`)
     this.db.exec(`PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;
       CREATE TABLE IF NOT EXISTS admissions (key TEXT NOT NULL, surface TEXT NOT NULL, principal TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, requested INTEGER NOT NULL, admitted INTEGER NOT NULL, day TEXT NOT NULL, policy_version TEXT NOT NULL, PRIMARY KEY(surface, principal, key));
       CREATE TABLE IF NOT EXISTS wallet_control (id INTEGER PRIMARY KEY CHECK(id=1), paused INTEGER NOT NULL);
@@ -91,14 +98,19 @@ export class Store {
       const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', id)
       const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', id)
       const charged = intents.filter(i => chargedStatuses.has(i.status))
-      const gross = charged.reduce((sum, i) => sum + i.amountMinor, 0)
+      const policy = this.policyPayments(id)
+      const policySpent = policy.filter(p => p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
+      const policyReserved = policy.filter(p => !p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
+      spentMinor += policy.filter(p => p.confirmedAt?.slice(0, 10) === day).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
+      const hold = this.db.prepare('SELECT minor, closed FROM hire_reserves WHERE run_id=?').get(id)
+      const gross = charged.reduce((sum, i) => sum + i.amountMinor, 0) + policySpent
       spentMinor += charged.reduce((sum, i) => {
         const receipt = receipts.find(r => r.intentId === i.intentId)
         return sum + (!receipt || receipt.settledAt.slice(0, 10) === day ? i.amountMinor : 0)
       }, 0)
-      if (id !== excludeRun && (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase) || intents.some(i => reservedStatuses.has(i.status)))) {
-        reservedMinor += Math.max(0, run.budgetMinor - gross)
-      }
+      if (id !== excludeRun && (hold && !hold.closed || !['DONE', 'STOPPED', 'FAILED'].includes(run.phase) || intents.some(i => reservedStatuses.has(i.status)))) {
+        reservedMinor += Math.max(policyReserved, run.budgetMinor + Number(hold?.minor ?? 0) - gross)
+      } else if (id !== excludeRun) reservedMinor += policyReserved
     }
     return { spentMinor, reservedMinor }
   }
@@ -113,10 +125,11 @@ export class Store {
       paused: this.isPaused(), label: this.isPaused() ? PAUSED : 'Spending enabled', policyVersion: POLICY_VERSION }))
   }
   mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.usage(day, 'mcp')) }
+  isHireRun(runId: string) { return !!this.db.prepare('SELECT run_id FROM hire_reserves WHERE run_id=?').get(runId) }
   isMcpRun(runId: string) { return !!this.db.prepare("SELECT key FROM admissions WHERE run_id=? AND surface='mcp'").get(runId) }
   /** Key insertion, wallet/surface reservation and run creation commit before async work. */
   admit(input: { surface: Surface; principal: string; question: string; requestedMinor: number;
-    idempotencyKey: string; maxMinor: number; dailyMinor?: number; labels?: ModeLabels }, day = new Date().toISOString().slice(0, 10)) {
+    idempotencyKey: string; maxMinor: number; dailyMinor?: number; labels?: ModeLabels; reserveMinor?: number }, day = new Date().toISOString().slice(0, 10)) {
     const admitted = this.atomic(() => {
       const old = this.db.prepare('SELECT run_id FROM admissions WHERE surface=? AND principal=? AND key=?').get(input.surface, input.principal, input.idempotencyKey)
       if (old) {
@@ -124,12 +137,14 @@ export class Store {
         if (run.question !== input.question) throw new Error('Idempotency key belongs to a different question')
         return { run, reused: true }
       }
-      if (![input.requestedMinor, input.maxMinor, input.dailyMinor ?? 0].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('Invalid spending limits')
+      if (![input.requestedMinor, input.maxMinor, input.dailyMinor ?? 0, input.reserveMinor ?? 0].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('Invalid spending limits')
       const wallet = this.usage(day), surface = this.usage(day, input.surface)
       const remaining = Math.max(0, spendPolicy().walletDailyMinor - wallet.spentMinor - wallet.reservedMinor)
       const surfaceRemaining = input.dailyMinor === undefined ? remaining : Math.max(0, input.dailyMinor - surface.spentMinor - surface.reservedMinor)
-      const budget = this.isPaused() ? 0 : clampBudget(input.requestedMinor, input.maxMinor, Math.min(remaining, surfaceRemaining))
+      const budget = this.isPaused() ? 0 : clampBudget(input.requestedMinor, input.maxMinor, Math.max(0, Math.min(remaining, surfaceRemaining) - (input.reserveMinor ?? 0)))
       const run = this.insertRun(input.question, budget, input.labels)
+      if (input.reserveMinor && (this.isPaused() || remaining < input.reserveMinor)) throw new Error('Wallet cannot reserve hire fee')
+      if (input.reserveMinor) this.db.prepare('INSERT INTO hire_reserves (run_id, minor) VALUES (?,?)').run(run.runId, input.reserveMinor)
       run.policyVersion = POLICY_VERSION
       this.saveRun(run)
       this.db.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)
@@ -279,7 +294,7 @@ export class Store {
     const usage = this.usage(new Date().toISOString().slice(0, 10), undefined, run.runId)
     const own = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', run.runId)
       .filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
-    return usage.spentMinor + usage.reservedMinor + own + amount <= spendPolicy().walletDailyMinor
+    return usage.spentMinor + usage.reservedMinor + own + this.policyPayments(run.runId).filter(p => !p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0) + amount <= spendPolicy().walletDailyMinor
   }
   /** CAS prevents independent managers/processes from submitting the same intent. */
   claimSubmitting(intentId: string): boolean {
@@ -341,6 +356,45 @@ export class Store {
       const next: PurchaseIntent = { ...intent, status: 'FAILED_NOT_SETTLED', error: reason }
       this.saveIntent(next); return next
     })
+  }
+  policyPayments(runId: string): PolicyPayment[] {
+    return this.rows<PolicyPayment>('SELECT json FROM policy_payments WHERE run_id=? ORDER BY id', runId)
+  }
+  reservePolicyPayments(runId: string, payments: PolicyPayment[]) {
+    const run = this.getRun(runId)
+    this.atomic(() => {
+      if (this.policyPayments(runId).length) return
+      const hold = this.db.prepare('SELECT minor FROM hire_reserves WHERE run_id=?').get(runId)
+      const total = payments.reduce((sum, p) => sum + Number(p.amountDrops), 0)
+      if (!hold || !['DONE', 'FAILED', 'STOPPED'].includes(run.phase) || run.reservedMinor
+        || payments.some(p => !/^[1-9]\d*$/.test(p.amountDrops) || !Number.isSafeInteger(Number(p.amountDrops)))
+        || total + run.spentMinor * DROPS_PER_MINOR > (run.budgetMinor + Number(hold.minor)) * DROPS_PER_MINOR) throw new Error('Invalid policy payment reservation')
+      for (const payment of payments) this.db.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(payment.id, runId, JSON.stringify(payment))
+    })
+  }
+  assertPolicyPaymentAllowed(runId: string) {
+    if (this.isPaused() || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
+  }
+  recordPolicySubmission(runId: string, id: string, submission: Submission) {
+    return this.atomic(() => {
+      const payment = this.policyPayments(runId).find(p => p.id === id)!
+      if (payment.submission) return payment.submission
+      if (this.isPaused() || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
+      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, submission }), id)
+      return submission
+    })
+  }
+  confirmPolicyPayment(runId: string, id: string) {
+    this.atomic(() => {
+      const payment = this.policyPayments(runId).find(p => p.id === id)!
+      if (!payment.submission) throw new Error('No signed policy payment')
+      if (payment.confirmedAt) return
+      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, confirmedAt: new Date().toISOString() }), id)
+    })
+  }
+  closeHireReserve(runId: string) {
+    if (this.policyPayments(runId).some(p => !p.confirmedAt)) throw new Error('Hire payments pending')
+    this.db.prepare('UPDATE hire_reserves SET closed=1 WHERE run_id=?').run(runId)
   }
   getDeliveryToken(intentId: string): string | undefined { return this.db.prepare('SELECT token FROM receipts WHERE intent_id=?').get(intentId)?.token as string | undefined }
   /**

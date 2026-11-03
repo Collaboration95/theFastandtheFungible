@@ -1,3 +1,4 @@
+import { auditHireRecords, type HireAuditRecord } from '../server/hire/audit.js'
 // Read-only audit. Never print evidence bytes, tokens, or private grant payloads.
 import { readFileSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
@@ -7,12 +8,12 @@ import { SIMULATED_LABEL, XRPL_LABEL, type RunSnapshot } from '../shared/contrac
 import type { WriterCorpus } from '../shared/contracts/writers.js'
 import { assertNoLeaks, type Observation } from '../tests/scenarios/harness.js'
 
-export const RULES = ['citation_without_verified_grant', 'duplicate_settlement', 'over_budget', 'purchase_without_policy', 'premium_leak', 'missing_rail_label'] as const
+export const RULES = ['citation_without_verified_grant', 'duplicate_settlement', 'over_budget', 'purchase_without_policy', 'premium_leak', 'missing_rail_label', 'royalty_policy', 'money_chain_reconciliation'] as const
 export type Rule = typeof RULES[number]
 export type Violation = { rule: Rule; runId: string; evidence: string }
 const charged = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
 
-export function auditRuns(runs: RunSnapshot[], corpus: WriterCorpus, observations: Observation[] = []) {
+export function auditRuns(runs: RunSnapshot[], corpus: WriterCorpus, observations: Observation[] = [], hires: HireAuditRecord[] = []) {
   const violations: Violation[] = []
   const add = (rule: Rule, runId: string, evidence: string) => violations.push({ rule, runId, evidence })
   for (const run of runs) {
@@ -62,6 +63,7 @@ export function auditRuns(runs: RunSnapshot[], corpus: WriterCorpus, observation
     checks.push(...observations.filter(o => o.runId === run.runId).map(o => ({ ...o, grants: o.grants.filter(g => verified.some(v => v.intentId === g.intentId)) })))
     try { assertNoLeaks(checks, corpus) } catch { add('premium_leak', run.runId, 'raw public metadata, persisted events or wire observation') }
   }
+  violations.push(...auditHireRecords(runs, hires).map(v => ({ ...v, rule: v.rule as Rule })))
   return { runs: runs.length, observations: observations.length, violations, total: violations.length, byRule: Object.fromEntries(RULES.map(r => [r, violations.filter(v => v.rule === r).length])) }
 }
 
@@ -88,7 +90,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (i < 0 || !process.argv[i + 1]) throw new Error('Usage: npm run gate:audit -- --db <store>')
   const o = process.argv.indexOf('--observations')
   const observations: Observation[] = o < 0 ? [] : readFileSync(process.argv[o + 1], 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l))
-  const result = auditRuns(readRuns(process.argv[i + 1]), await loadWriterCorpus(undefined, { allowMini: false }), observations)
+  const db = new DatabaseSync(process.argv[i + 1], { readOnly: true })
+  const hasHires = db.prepare("SELECT name FROM sqlite_master WHERE name='hires'").get()
+  const hires = hasHires ? db.prepare('SELECT json FROM hires').all().map(r => JSON.parse(String(r.json)) as HireAuditRecord) : []
+  db.close()
+  const result = auditRuns(readRuns(process.argv[i + 1]), await loadWriterCorpus(undefined, { allowMini: false }), observations, hires)
   console.log(JSON.stringify(result, null, 2))
   if (result.total) process.exitCode = 1
 }
