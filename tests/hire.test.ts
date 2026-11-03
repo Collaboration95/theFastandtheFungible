@@ -15,7 +15,7 @@ import { decodeHeader } from '../shared/x402.js'
 import { hireLedger } from './fixtures/hire-ledger.js'
 import { signFor } from './fixtures/x402-payer.js'
 import { USE_CASES } from './scenarios/use-cases.js'
-import { auditRuns } from '../scripts/gate-audit.js'
+import { auditRuns, readRuns } from '../scripts/gate-audit.js'
 import { auditHireRecords } from '../server/hire/audit.js'
 import { royaltyPlan } from '../server/hire/policy.js'
 
@@ -58,6 +58,7 @@ it('settles one caller intent, buys, pays every cited writer including free, ret
   expect(royalties.length).toBe(new Set(run.contents.filter(c => result.citations.some((x: { resourceId: string }) => x.resourceId === c.resourceId)).map(c => c.profileId)).size)
   const hires = [{ runId: run.runId, budgetMinor: 200, result }]
   expect(auditRuns([run], s.corpus, [], hires).total).toBe(0)
+  expect(auditRuns(readRuns(s.options.dbPath), s.corpus, [], hires).total).toBe(0)
   expect(royalties.reduce((sum: number, p: { amountDrops: string }) => sum + Number(p.amountDrops), 0)).toBe(5000)
   expect(s.api.store.walletStatus()).toMatchObject({ reservedMinor: 0, spentMinor: 205 })
   const submits = s.chain.submits
