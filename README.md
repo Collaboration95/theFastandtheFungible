@@ -117,8 +117,8 @@ Architecture: [contracts/ARCHITECTURE.md](docs/contracts/ARCHITECTURE.md) · [se
 | Supported-fact uplift from paying | +32.6 pts [95% CI 21.0–44.9 pts] | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
 | Purchase-selection F1 (flow / sweep) | 0.53 [95% CI 0.35–0.67] / 0.66 [95% CI 0.48–0.80] | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
 | Wasted spend | 52.9% [95% CI 28.3–73.3%] | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
-| p50 / p95 time to first answer | 67 ms / 108 ms | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
-| Cold start (demo API + publisher) | 673 ms | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
+| p50 / p95 time to first answer | 66 ms / 113 ms | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
+| Cold start (demo API + publisher) | 685 ms | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
 | Model cost per query | US$0.004296539999999999 | LIVE decision + coverage; fixture research; simulated payments · held-out (92 questions) · 2026-11-03 |
 <!-- scorecard:end -->
 

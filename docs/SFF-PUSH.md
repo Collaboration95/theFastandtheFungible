@@ -58,7 +58,7 @@ documents were visible previously. CIs resample sources, not question paraphrase
 and remain wide. The policy only vetoes explicit wrong-country substitutions;
 no heldout tuning. LIVE decision/coverage, synthetic corpus, fixture research,
 SIMULATED payments, zero XRP. Final gate audit: 0 / 10 runs / 728 observations.
-Total model spend US$0.4125836 of US$5. Full limitations and root-cause inventory:
+Total model spend US$0.8681326 of US$5. Full limitations and root-cause inventory:
 `eval/REPORT-decisions.md` §7 and `docs/evidence/waste-analysis-2026-11-03.md`.
 
 Historical #276 headline · LIVE, prospectively held-out rates/power (24 questions), 3 Nov:
@@ -325,7 +325,7 @@ Significant product, design and process decisions, newest first. One line each: 
 ## Changelog
 
 - 3 Nov: UX direction for the redesign: 11-category anti-pattern audit with 29 before-screenshots, labelling and motion policies, screen specs for plan, payment, verification, refund and receipt; build filed as #311 and #312 ([doc](design/UX-DIRECTION.md)).
-- Lane B Numbers: classify all 10 final wasted purchases in four categories; 140-question bank, source-cluster CIs and explicit country-scope veto. New heldout waste 52.87% → 52.87% [28.30, 73.31], target missed; no quality gain. Zero final audit violations; US$0.4125836 live models; simulated payments.
+- Lane B Numbers: classify all 10 final wasted purchases in four categories; 140-question bank, source-cluster CIs and explicit country-scope veto. New heldout waste 52.87% → 52.87% [28.30, 73.31], target missed; no quality gain. Zero final audit violations; US$0.8681326 live models; simulated payments.
 
 - 3 Nov: Lane D #288 hash-chained `audit_log` written in the same transaction as each admission, decision, reserve, sign, settle, deliver, proof, refund, refusal and pause; CSV/JSONL receipt export (`audit:export`, `/api/audit/receipts.*`); `audit:verify [--testnet]` (5 of 5 October Testnet payments re-confirmed read-only); hire-the-agent inbound, royalty and change payments covered too; payee denylist tests and audit reason; `data:prune`; [COMPLIANCE.md](COMPLIANCE.md).
 - 3 Nov: Lane C #273 escrow-v1 integrated with the payer queue and durable reconciler; SYNTHETIC product-path Testnet finish 12.107 s, failed-proof cancel 129.448 s with writer offline, 459 drops fees; #288 hash-chain events and escrow-aware audit:verify; [evidence](evidence/escrow-273.md).

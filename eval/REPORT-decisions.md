@@ -362,9 +362,10 @@ The new heldout result is flat. Waste remains above the 25% target.
 
 All four paired change CIs are [0, 0] on these observed model draws. This is
 not proof of a zero population effect: the 92 quality trajectories and picks
-match; the scope veto did not change this sample. Two fresh isolated run
-directories made 900 metered requests in total, including coverage and final
-timing, with no cross-run response replay. Within each run identical requests
+match; the scope veto did not change this sample. The final pair used two fresh isolated run directories and 966 metered
+requests, including coverage and ten timing queries in each run, with no
+cross-run response replay. An earlier pair is retained in history; all four
+runs used 1,866 metered requests in total. Within each run identical requests
 share the existing transport cache; the bootstrap does not treat those as
 independent model repetitions.
 
@@ -409,25 +410,29 @@ original #304 run. Running `export-decision-labels.ts` on the recovered final
 API stores found four charged dev intents (three determinable) and zero
 heldout intents; those timing samples are not the full quality flow.
 
-Candidate freeze commit: `d08f674`. Baseline: `2026-11-03T02:48:27.474Z`;
-after: `2026-11-03T02:52:48.039Z`. Same frozen input hash:
-`3fe6e7d414923bed57fbfd6aa08ad2ef2f6fa2e1599e957b9fde7559147c90ac`. The only intermediate harness
-repair supplies timing sample IDs for the entirely new holdout and an exact
-coverage-call forecast. It changes no quality inputs, prompts or labels. The
-baseline has zero timing/API-audit samples; that is unmeasured, not ten clean
-runs. The final has **0 violations / 10 API runs / 728 wire observations**,
+Initial candidate freeze: `d08f674` (rebased as `02a090b`). Integrated freeze:
+`18a538e`. Final baseline: `2026-11-03T03:02:38.955Z`; final after:
+`2026-11-03T03:02:40.926Z`. Same frozen input hash:
+`0133fcce57685bc266940bec4fd733a36fbd7565a3e3fba0d554820801a36e18`. A rebase brought in #308's escrow failure-recovery message/next-action change
+in `server/agents/loop.ts`, which changed the source fingerprint. No policy or
+label tuning followed: the entire pair was repeated on the integrated freeze.
+The first pair (02:48/02:52 UTC) remains in history and the ledger, with its
+fingerprint preserved in `frozen-numbers-first-pair.json`. The first baseline
+had zero timing/API-audit samples before the sample-ID fallback was repaired;
+it is superseded as the headline. Both integrated runs measure ten API queries.
+The final after has **0 violations / 10 API runs / 728 wire observations**,
 including actual delivery-proof and money-chain rules. Payments stay
 **SIMULATED; zero XRP transferred**. Research is extractive fixture, search is
 keyword, decision and coverage models are LIVE.
 
-Total task spend **US$0.4125836 / US$5**, usage-derived at the transport's dated
+Total task spend **US$0.8681326 / US$5**, usage-derived at the transport's dated
 rates, not invoices: `numbers-spend.json` accounts for both runs, including
 timing calls. `numbers-results.json` retains compact scoring inputs, individual
 CIs and paired delta CIs; `scripts/report-numbers.ts` reproduces comparison
 from raw reports without provider calls. Fixture before/after quality is also
 flat; the same-treatment regression check remains intact.
 
-Validation: bank verification and unchanged corpus leak checks pass; 645 unit
+Validation: bank verification and unchanged corpus leak checks pass; 660 unit
 tests and all four browser end-to-end tests pass. The historical menu test still
 checks the exact v1 bank/prose/snapshot hashes; v2 is tested separately with
 honest author provenance. No test or gate has been loosened.
