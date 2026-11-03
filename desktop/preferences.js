@@ -1,5 +1,7 @@
 const byId = id => document.getElementById(id)
 const status = text => { byId('status').textContent = text }
+const syncMode = () => { const live = byId('live').checked; const badge = byId('modeBadge'); badge.dataset.state = live ? 'live' : 'offline'; badge.lastElementChild.textContent = live ? 'Live · XRPL Testnet' : 'Offline · SIMULATED' }
+byId('live').onchange = syncMode
 const action = async work => {
   try { await work() } catch { status('Action failed. Check Keychain access, provider setup, or Testnet connectivity. No credentials are logged.') }
 }
@@ -7,6 +9,7 @@ void action(async () => {
   const state = await window.desktop.state()
   for (const key of ['live', 'sameKeyDecisions']) byId(key).checked = state[key]
   for (const key of ['maxMinor', 'dailyMinor', 'walletDailyMinor']) byId(key).value = state[key]
+  syncMode()
   byId('resume').disabled = state.emergencyPaused
   for (const key of ['provider', 'baseUrl', 'model']) byId(key).value = state[key]
   byId('backend').value = state.backend
@@ -38,7 +41,7 @@ async function renderAgents() {
     const max = document.createElement('input'); max.type = 'number'; max.min = '0'; max.max = '500'; max.value = '100'; max.setAttribute('aria-label', `${name} per-call allowance in SGD cents`)
     const daily = document.createElement('input'); daily.type = 'number'; daily.min = '0'; daily.value = '200'; daily.setAttribute('aria-label', `${name} daily allowance in SGD cents`)
     const label = document.createElement('p'); label.textContent = 'New connection · per call / daily (SGD cents)'; panel.append(label, max, daily)
-    const button = (text, work) => { const b = document.createElement('button'); b.textContent = text; b.onclick = () => void action(async () => { b.disabled = true; try { await work(); await renderAgents() } finally { b.disabled = false } }); panel.append(b) }
+    const button = (text, work) => { const b = document.createElement('button'); b.textContent = text; if (text === 'Revoke') b.className = 'danger'; b.onclick = () => void action(async () => { b.disabled = true; try { await work(); await renderAgents() } finally { b.disabled = false } }); panel.append(b) }
     if (state.url) button('Create connection', () => window.desktop.agentCreate(name, Number(max.value), Number(daily.value)))
     for (const agent of state.agents.filter(a => a.name === name)) {
       const row = document.createElement('p')
@@ -56,12 +59,13 @@ async function renderAgents() {
 void action(renderAgents)
 setInterval(() => { if (!document.hidden && !byId('agents').contains(document.activeElement)) void action(renderAgents) }, 10000)
 
-const showPresence = result => { byId('keyPresence').textContent = !result.available ? 'Keychain unavailable; presence unknown' : result.present ? 'Key present' : 'Key absent' }
+const showPresence = result => { const el = byId('keyPresence'); el.dataset.state = !result.available ? 'unknown' : result.present ? 'present' : 'absent'; el.lastElementChild.textContent = !result.available ? 'Keychain unavailable; presence unknown' : result.present ? 'Key present' : 'Key absent' }
 byId('presence').onclick = () => void action(async () => showPresence(await window.desktop.presence(byId('account').value)))
 byId('delete').onclick = () => void action(async () => { const result = await window.desktop.deleteSecret(byId('account').value); showPresence(result); status(result.deleted ? 'Selected credential deleted. Wallet seeds are preserved.' : 'Keychain delete failed. Presence refreshed.') })
 byId('test').onclick = () => void action(async () => {
-  byId('testResult').textContent = 'Testing…'
+  byId('testResult').dataset.state = 'pending'; byId('testResult').textContent = 'Testing…'
   const result = await window.desktop.test()
+  byId('testResult').dataset.state = result.ok ? 'ok' : 'fail'
   byId('testResult').textContent = result.ok ? `Connected · ${result.latencyMs ?? 'unavailable'} ms · input tokens ${result.inputTokens ?? 'unavailable'} · output tokens ${result.outputTokens ?? 'unavailable'} · cost ${typeof result.costUsd === 'number' ? '$' + result.costUsd : 'unavailable'}` : result.error?.message || 'Connection test failed'
 })
 for (const operation of ['pause', 'resume']) byId(operation).onclick = () => void action(async () => { await window.desktop.pause(operation === 'pause'); status(operation === 'pause' ? 'Wallet paused durably.' : 'Wallet resumed explicitly.') })
