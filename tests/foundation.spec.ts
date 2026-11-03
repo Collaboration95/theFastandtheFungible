@@ -81,7 +81,7 @@ test('failure recovery views: labelled fallback, slow Testnet, stopped unused pa
   await page.reload()
   await expect(page.getByText('Recovering', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Resume answer' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Draft · free sources only' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Draft · verified evidence' })).toBeVisible()
   snapshot = { ...snapshot, phase: 'STOPPED', stopped: true, answers: snapshot.answers.slice(0, 1) }
   await page.reload()
   await expect(page.getByText(/An earlier payment completed/).first()).toBeVisible()
