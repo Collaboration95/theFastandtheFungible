@@ -7,14 +7,15 @@
 
 <h3 align="center">Research with a wallet.</h3>
 
-<p align="center">A search engine for agent-readable expertise: answer from free sources, then buy the missing evidence.<br>Writers search their own articles; a decision model judges value; policy code pays within your budget and verifies delivery.</p>
+<p align="center">ResearchAgent answers from free sources, then buys the missing evidence from independent writers over x402 on XRPL, inside a budget you set.</p>
 
 <p align="center">
   <a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Try it in your browser</a> ·
   <a href="https://collaboration95.github.io/theFastandtheFungible/">Explainers</a> ·
   <a href="https://collaboration95.github.io/theFastandtheFungible/talk/">Walkthrough</a> ·
   <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest">Download for Mac</a> ·
-  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a>
+  <a href="docs/README.md">Docs</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
 </p>
 
 <p align="center">
@@ -30,80 +31,12 @@
 Fictional writers and synthetic articles; this clip uses **simulated payments**.
 [Original MP4](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v0.6.0/uc3-2026-11-03.mp4) · [Regenerate the GIF](scripts/readme-media.mjs).
 
-## Quick start
+## What it does
 
-Node ≥ 22.13 and Make. Three commands, no keys needed:
-
-```sh
-git clone https://github.com/Collaboration95/theFastandtheFungible && cd theFastandtheFungible
-make setup
-make run
-```
-
-Open <http://127.0.0.1:5100>. Fixture providers and simulated payments work offline.
-For live providers, add the keys described in `.env.example` to your ignored `.env`, then:
-
-```sh
-make doctor
-make live
-```
-
-Live model calls can incur provider fees. Settlement uses XRPL Testnet when a payer seed is configured;
-otherwise it is labelled simulated. Testnet funds have no real value. [All make targets, Docker and operation](docs/running.md).
-
-## Try it in Claude Code
-
-HTTP option: open Mac **Desktop Settings → Connect an agent → Claude Code**, create an allowance and copy its command (app stays open; per-agent bearer on loopback Streamable HTTP).
-
-From the installed checkout, authorize S$2 per question and S$5 per UTC day in fixture mode:
-
-```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- node --import "$PWD/node_modules/tsx/dist/loader.mjs" "$PWD/mcp/server.ts"
-```
-
-Start a fresh session:
-
-> Search the writers, then ask_expert: What's the analyst outlook on Kestrel Semiconductor's deal with TSMC (pricing & margins)? Request budget_sgd=2 and idempotency_key="first-question".
-> Show the answer, citations, purchases and mode labels; use get_run if it is still running.
-
-For Codex, put this in `~/.codex/config.toml` (replace `/absolute/checkout`):
-
-```toml
-[mcp_servers.researchagent]
-command = "node"
-args = ["--import", "/absolute/checkout/node_modules/tsx/dist/loader.mjs", "/absolute/checkout/mcp/server.ts"]
-tool_timeout_sec = 60
-[mcp_servers.researchagent.env]
-MCP_MAX_BUDGET_MINOR = "200"
-MCP_DAILY_CAP_MINOR = "500"
-```
-
-[One-click Claude Desktop extension and all client configs](docs/mcp.md#one-click-claude-desktop-extension). Tools: `search_expertise`, `ask_expert`, `get_run`, `wallet_status`, `verify_answer` and `hire`.
-Configured caps default to zero; the calling model cannot raise them. [MCP reference](docs/mcp.md) · [TypeScript SDK](docs/sdk.md) · [Python example](examples/python/ask.py).
-
-Native XRP interop with the XRPL AI Starter Kit’s t54 client and server: [compatibility and pinned versions](docs/x402-xrpl.md#starter-kit-compatibility) · [Testnet evidence](docs/evidence/starter-kit-interop.md).
-
-## Mac app
-
-[Download the Apple Silicon DMG](https://github.com/Collaboration95/theFastandtheFungible/releases/latest),
-drag ResearchAgent to Applications, then open it. Until Developer ID signing lands, use
-Finder → right-click → Open, or Privacy & Security → Open Anyway for this unsigned build.
-The default offline demo labels simulated payments. Desktop settings store provider credentials and wallet seeds in macOS Keychain.
-[Desktop guide](desktop/README.md) · [Build and signing](desktop/SIGNING.md).
-
-## How it works
-
-![Seven steps from question to cited answer, with policy owning payment](docs/media/architecture.svg)
-
-1. **Ask.** Set the budget and question; answer or skip up to two clarifying questions.
-2. **Confirm the plan.** A 5 s action modal offers Edit, Cancel and Go now. The budget authorizes spending.
-3. **Search.** Each writer searches their own full text and returns public metadata and a signed manifest.
-4. **Decide.** OpenAI Decisions or Cloudflare Clef-flash judges value, weighted by writer trust.
-5. **Pay.** Deterministic policy code buys over x402 v2 on XRPL Testnet, within the prompt and source caps.
-6. **Verify.** Check the delivered article against the signed promises; challenge broken ones and reduce trust.
-7. **Answer.** DeepSeek writes from delivered evidence, with citations and an exportable report.
-
-[Architecture and trust boundaries](docs/contracts/ARCHITECTURE.md) · [x402, verification and refunds](docs/x402-xrpl.md).
+- **Agents ask.** From Claude Code, Codex, a Python or TypeScript program, or the Mac app, with a budget per question.
+- **A decision model judges** which paid article is worth buying (OpenAI Decisions `gpt-6-luna` or Cloudflare Clef-flash), weighted by writer trust.
+- **Deterministic policy code pays** the writers over x402 on XRPL Testnet, in XRP or RLUSD, within the budget. The model cannot spend.
+- **Every claim has a receipt** you can verify offline: the exact delivered passage, the writer's signature, the payment, and any refund.
 
 ## Hard guarantees
 
@@ -116,6 +49,101 @@ Every gate has regression tests and a corresponding [read-only audit rule](scrip
 | One charge per intent | [Parallel pays and restart cases](tests/purchase.test.ts) | `duplicate_settlement` |
 | Real citations to delivered passages | [Grant and proof cases](tests/purchase.test.ts) | `citation_without_verified_grant` |
 | Simulated or substituted work is labelled | [Rail label regression](tests/gate-audit.test.ts) | `missing_rail_label` |
+
+## Use it from your agent
+
+Packages are **built and consumer-tested but not yet published** to npm, PyPI or the MCP Registry (publishing is an owner step, #265). Install from a release artifact or your checkout. The caps below are set by the operator running the engine, default to zero, and a calling model cannot raise them.
+
+**TypeScript SDK** ([docs](docs/sdk.md)). `make release-artifacts` builds `dist/release/` and tests each file in a clean consumer, then:
+
+```sh
+npm i ./dist/release/researchagent-sdk-1.0.0.tgz   # exports createClient from @researchagent/sdk
+```
+```ts
+import { createClient } from '@researchagent/sdk'
+const client = createClient({ baseUrl: process.env.RA_URL, token: process.env.RA_API_TOKEN })
+const run = await client.ask('What did the Kestrel–TSMC deal do to margins?', { budget: 2, idempotencyKey: 'q-1' })
+console.log(run.answer, run.citations, run.receipts)
+```
+
+**Python SDK** ([docs](docs/sdk-python.md)). Python 3.10+, no runtime dependencies:
+
+```sh
+pip install ./dist/release/researchagent-1.0.0-py3-none-any.whl
+python -m researchagent verify receipts.json --json   # offline, no Node, no network
+```
+```python
+from researchagent import Client
+client = Client('http://127.0.0.1:8788', token='YOUR_TOKEN')   # use the engine's RA_API_TOKEN
+task = client.ask('What changed?', budget=2, idempotency_key='q-1')
+print(task.result()['answer'])
+```
+
+**MCP** ([docs](docs/mcp.md)). Seven tools: `search_expertise`, `ask_expert`, `get_run`, `pause_spending`, `wallet_status`, `verify_answer`, `hire`.
+
+```sh
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- node --import "$PWD/node_modules/tsx/dist/loader.mjs" "$PWD/mcp/server.ts"
+```
+
+That is stdio from this checkout, with S$2 per question and S$5 per UTC day in fixture mode. [HTTP from the Mac app](docs/mcp.md#app-hosted-streamable-http) gives each agent its own revocable allowance. For Claude Desktop, `ResearchAgent.mcpb` is attached to each [release](https://github.com/Collaboration95/theFastandtheFungible/releases/latest); [Codex config and all clients](docs/mcp.md).
+
+**Mac app** ([guide](desktop/README.md)). Download the DMG from [Releases](https://github.com/Collaboration95/theFastandtheFungible/releases/latest) (Apple Silicon and Intel, **unsigned**: right-click → Open). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
+
+**Browser replay.** The [`/demo/`](https://collaboration95.github.io/theFastandtheFungible/demo/) page runs the real UI on recorded UC1–UC3 fixture traces, including the UC3 refund. No backend, no keys.
+
+**Writers.** Turn a Markdown folder into a searchable, payable writer ([publishing guide](docs/publishing.md), [compliance posture](docs/COMPLIANCE.md)):
+
+```sh
+cp -R examples/writer-starter my-notes && npm run publish:site -- ./my-notes --rail simulated
+```
+
+## What's notable
+
+Every row links to committed evidence. Labels are part of the claim: **synthetic** and **fixture** mean fictional corpus and fake providers, **simulated** means no ledger, **local** means one development host, **Testnet** means XRPL Testnet with no real value.
+
+| Capability | Result | Scope | Evidence |
+|---|---|---|---|
+| Independent writers in one search | Three pinned origins; writers with identical writer, article and span IDs stay distinct through policy, grants, citations and receipts. Ten parallel retries per intent plus a restart give one receipt per intent. | local, simulated | [round2-f](docs/evidence/round2-f/README.md) |
+| "What your money bought" | 30 paid claim-to-passage links in three scenarios; each quotes one delivered span, and mutated receipts are rejected. Semantic value is shown as "not assessed". | synthetic | [round2-g](docs/evidence/round2-g/README.md), [contract](docs/contracts/CONTRIBUTION.md) |
+| Two independent receipt verifiers | TypeScript and a Python verifier (own Ed25519 and secp256k1 checks) agree on 177 of 177 conformance cases: 10 goldens and 167 tampered receipts. | local, offline | [round2-k](docs/evidence/round2-k/README.md), [spec](docs/receipt-spec.md) |
+| Agent kill switch | An agent can pause its own spending (or the wallet, with an operator token); only a human can resume. In-flight unsigned purchases cannot sign. | fixture, simulated | [round2-i](docs/evidence/round2-i/README.md) |
+| BYOK | One OpenAI-compatible key runs research and a generic judge. That judge is labelled UNCALIBRATED and policy never lets it buy. Private and metadata addresses are refused before a socket opens. | synthetic providers | [round2-c1](docs/evidence/round2-c1/README.md), [byok.md](docs/byok.md) |
+| Bounded engine | 3,000-run history load 34,372.8 ms → 313.3 ms (110×). 100 concurrent asks: 4 admitted, 96 typed 503. Stop cancels a stalled provider call in 5.5 ms with no signature after it. | local, synthetic | [round2-a](docs/evidence/round2-a/README.md), [round2-c1](docs/evidence/round2-c1/README.md) |
+| Chaos and soak | Real SIGKILLs, zero double charges: a 30-minute soak ran 615 iterations and 155 kills; v0.7.0 recorded 1,729 episodes and 431 kills. The first long soak ended at a 606 s laptop sleep, which the write-up diagnoses. | fixture | [soak-nov4](docs/evidence/soak-nov4.md), [chaos-279](docs/evidence/chaos-279.md) |
+| A Mac app that recovers | 13 packaged recovery cases pass: missing, locked or corrupt credentials, port conflict, outage and restart. All 13 privileged IPC methods reject the research window. | local, unsigned, fixture | [round2-c2](docs/evidence/round2-c2/README.md) |
+| Testnet ledger page | Nine historical transactions (RLUSD purchases and refund, XRP escrow, native XRP interop), each cross-checked against its committed record. A fresh public lookup returned `txnNotFound`, so there is no new on-chain verification. | Testnet, historical | [round2-e](docs/evidence/round2-e/README.md), [page source](site/ledger/index.html) |
+| Ranked builder feedback | Six XRPL and x402 findings ranked by severity with workaround, suggested fix and mainnet consequence, plus the September submissions. | observed and code-derived, labelled | [BUILDER-FEEDBACK](docs/BUILDER-FEEDBACK.md) |
+
+## Quick start
+
+Node ≥ 22.13 and Make. No keys needed.
+
+```sh
+git clone https://github.com/Collaboration95/theFastandtheFungible && cd theFastandtheFungible
+make setup
+make run                                   # web on :5100; `make run OFFSET=100` shifts every port
+```
+
+Open <http://127.0.0.1:5100>. Fixture providers and simulated payments work offline.
+To call the SDKs against it, start it with a token and operator caps (otherwise the token is random and the caps are zero):
+`RA_API_TOKEN=dev-token MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500 make run`, then `RA_URL=http://127.0.0.1:8788 RA_API_TOKEN=dev-token npx tsx examples/ask.ts`, or the same variables with `python examples/python/ask.py` after `pip install ./packages/sdk-python`.
+For live providers, add keys from `.env.example` to your ignored `.env`, run `make doctor`, then `make live`. Live model calls can incur provider fees; settlement uses XRPL Testnet when a payer seed is configured and is otherwise labelled simulated. [All make targets, Docker and operation](docs/running.md).
+
+## Architecture
+
+![Seven steps from question to cited answer, with policy owning payment](docs/media/architecture.svg)
+
+The browser is a view. The API owns retrieval, decisions, budget, payment and synthesis. Each writer searches their own full text and returns a signed manifest; a 5 s plan modal confirms before any spending; the decision model scores value; policy code pays over x402 v2; the delivered article is checked against the signed promises, and broken ones are challenged and refunded. DeepSeek writes the answer only from evidence the run actually holds, with citations. [Architecture and trust boundaries](docs/contracts/ARCHITECTURE.md) · [x402, verification and refunds](docs/x402-xrpl.md) · [Security](docs/contracts/SECURITY.md).
+
+## Engineering
+
+Counts are from a run on 4 Nov 2026 at `main` (`fd5a089b`).
+
+- **Tests.** 1,117 TypeScript tests in 127 files (Vitest, about 40 s) and 205 Python tests; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
+- **Coverage gates.** Nine components each have an exact covered/total floor that may not fall; payments branches must also stay at or above 85% (86.2% in hosted CI). [Method and numbers](docs/evidence/round2-b/README.md).
+- **CI.** `changes` decides whether the full set runs. Then `verify`, `chaos`, `browser`, `python` and `artifacts` run in parallel, and an always-reporting `check` job refuses a failed, cancelled, missing or unexpectedly skipped one ([`ci.yml`](.github/workflows/ci.yml)). Hosted wall time on the integration PR: 249 s.
+- **Release admission.** A tag publishes only if its commit is on `main`, it equals the package version, same-SHA CI passed, and every artifact hash matches the manifest. Each of the SDK tarball, wheel and MCPB must also pass a clean-install consumer: cited passages, one receipt, one intent, an idempotent retry and the cap preserved. The publisher uploads those accepted bytes without rebuilding ([`release-contract.mjs`](scripts/release-contract.mjs), [evidence](docs/evidence/round2-d/README.md)).
+- **Merge gate.** `npm run check:fast` and green CI. [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md).
 
 <a id="proof"></a>
 
@@ -144,49 +172,14 @@ Pitch definition: gross cost of verified purchases adding a requested, bank-supp
 
 [Separate MCP Testnet proof](eval/mcp/testnet-2026-11-03.md) records real Testnet settlement,
 citations matched to delivered passages and an idempotent retry. It does not validate the scorecard's quality estimate.
+Native XRP interop with the XRPL AI Starter Kit's t54 client and server: [compatibility](docs/x402-xrpl.md#starter-kit-compatibility) · [Testnet evidence](docs/evidence/starter-kit-interop.md).
 
-## Completed milestones
+## Status and honesty
 
-These are historical released milestones. Later features below are merged; registry publication and signing status are tracked in #265.
+- **Testnet only.** No real money, no mainnet. Mainnet readiness is a [checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist), not a claim.
+- **Simulated mode is labelled** on every screen, receipt and MCP result. The writer corpus is fictional and new writers are unverified; this is not KYB or a sanctions service.
+- **Not done yet:** publishing to npm, PyPI and the MCP Registry; Apple Developer ID signing and notarisation; public remote federation of writers (only three pinned loopback origins); durable hosted storage; licensing. Owner steps are tracked in #265.
+- **Not shown:** the ledger page is not yet on GitHub Pages, and no number above is a production benchmark.
+- `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
 
-| Release | Shipped |
-|---|---|
-| [v0.1.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.1.0) | MCP server and nightly scorecard |
-| [v0.2.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.2.0) | App redesign |
-| [v0.3.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.3.0) | Public fact menu |
-| [v0.4.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.4.0) | Mac app, DMG and Keychain |
-| [v0.5.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.5.0) | Clear spend, payments and refund UI |
-| [v0.6.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.6.0) | Clearer answers and reports |
-
-On main: [escrow](https://github.com/Collaboration95/theFastandtheFungible/pull/308),
-[hire the agent](https://github.com/Collaboration95/theFastandtheFungible/pull/306),
-[test USD](https://github.com/Collaboration95/theFastandtheFungible/pull/315),
-[audit and compliance](https://github.com/Collaboration95/theFastandtheFungible/pull/309),
-[one wallet, many agents](https://github.com/Collaboration95/theFastandtheFungible/pull/319),
-[verify answers and recover runs](https://github.com/Collaboration95/theFastandtheFungible/pull/322).
-
-## Publish your expertise
-
-Turn a Markdown folder into a searchable writer with signed manifests and x402 delivery:
-
-```sh
-cp -R examples/writer-starter my-notes
-npm run publish:site -- ./my-notes --rail simulated
-```
-
-For Testnet funding, schema, privacy and the recorded proof, see the [publishing guide](docs/publishing.md).
-New writers are unverified; this is not KYB or a sanctions service. [Compliance posture](docs/COMPLIANCE.md).
-
-## More
-
-[Documentation](docs/README.md) · [Project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) ·
-[Slides](https://collaboration95.github.io/theFastandtheFungible/slides/) · [Build log](https://collaboration95.github.io/theFastandtheFungible/evolution/) ·
-[Builder feedback](docs/BUILDER-FEEDBACK.md) · [Design record](docs/FINAL-PUSH.md) ·
-[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [MIT license](LICENSE).
-
-Mainnet, durable hosted storage and licensing remain future work. The October Cloud Run demo was removed after the talk.
-`theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
-
-[SDK v1 API and examples](docs/sdk.md).
-
-Python builders: see the [Python SDK](docs/sdk-python.md) for typed asks, event iteration, receipts and offline verification.
+[Documentation](docs/README.md) · [Changelog](CHANGELOG.md) · [Project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) · [Slides](https://collaboration95.github.io/theFastandtheFungible/slides/) · [Build log](https://collaboration95.github.io/theFastandtheFungible/evolution/) · [Builder feedback](docs/BUILDER-FEEDBACK.md) · [Design record](docs/FINAL-PUSH.md) · [MIT license](LICENSE)
