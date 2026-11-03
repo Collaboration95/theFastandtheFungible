@@ -25,13 +25,14 @@ function seed(s: Store) {
   const statuses = ['RESERVED', 'SUBMITTING', 'SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED', 'FAILED_NOT_SETTLED', 'SKIPPED']
   const ids: string[] = []
   for (let n = 0; n < 104; n++) {
-    const surface = (['web', 'mcp', 'agent', 'x402'] as const)[n % 4], principal = agents[n % 2].id
+    const surface = (['web', 'mcp', 'agent', 'x402'] as const)[n % 4], principal = agents[Math.floor(n / 4) % 2].id
     const run = s.createRun(n % 7 ? 'synthetic' : '[pruned]', 200); ids.push(run.runId)
     s.updateRun(run.runId, { phase: (['DONE', 'STOPPED', 'FAILED', 'SEARCH'] as const)[n % 4] })
     if (n % 9) db.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(String(n), surface, principal, run.runId, 200, 200, '2026-11-01', 'legacy')
     const intentId = `i${n}`, day = `2026-11-0${n % 3 + 1}`
     const intent = { runId: run.runId, intentId, profileId: 'writer', resourceId: `article${n}`, version: 'v1', amountMinor: n % 11, status: statuses[n % statuses.length], createdAt: day+'T00:00:01Z', ...(n % 8 === 0 ? { escrow: { state: 'CANCELLED' } } : {}), ...(n % 13 === 0 ? { refundCandidate: { reason: 'synthetic pending refund' } } : {}) }
     db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intentId, run.runId, JSON.stringify(intent))
+    if (intent.status === 'SUBMITTING') db.prepare('INSERT INTO submissions VALUES (?,?,?,?)').run(intentId, `synthetic-hash-${n}`, 'SYNTHETIC signed blob', 999999)
     if (n % 3) db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify({ intentId, settledAt: day+'T01:00:00Z' }), 'synthetic')
     if (n % 5 === 0) db.prepare('INSERT INTO hire_reserves VALUES (?,?,?)').run(run.runId, 17, n % 2)
     if (n % 6 === 0) for (let k = 0; k < 3; k++) db.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(`p${n}-${k}`, run.runId, JSON.stringify({ id: `p${n}-${k}`, amountDrops: String(10000 + k), kind: k ? 'royalty' : 'hire', ...(k === 0 ? { confirmedAt: day+'T02:00:00Z' } : k === 1 ? { cancelledAt: day } : { submission: { txHash: 'synthetic signed unconfirmed' } }) }))

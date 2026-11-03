@@ -154,20 +154,25 @@ export class Store {
       UNION SELECT run_id FROM intents WHERE json_extract(json,'$.escrow.state')='CANCELLED' AND substr(json_extract(json,'$.createdAt'),1,10)=?
       UNION SELECT run_id FROM policy_payments WHERE substr(json_extract(json,'$.confirmedAt'),1,10)=?
       UNION SELECT run_id FROM policy_payments WHERE NOT coalesce(json_extract(json,'$.confirmedAt'),'') AND NOT coalesce(json_extract(json,'$.cancelledAt'),'')
-    ) SELECT r.id, json_extract(r.json,'$.phase') AS phase, json_extract(r.json,'$.budgetMinor') AS budgetMinor FROM relevant v JOIN runs r ON r.id=v.id LEFT JOIN admissions a ON a.run_id=r.id
+    ) SELECT r.id, json_extract(r.json,'$.phase') AS phase, json_extract(r.json,'$.budgetMinor') AS budgetMinor,
+      (SELECT json_group_array(json(i.json) ORDER BY i.rowid) FROM intents i WHERE i.run_id=r.id) AS intents,
+      (SELECT json_group_array(json(t.json)) FROM receipts t JOIN intents i ON i.id=t.intent_id WHERE i.run_id=r.id) AS receipts,
+      (SELECT json_group_array(json(p.json) ORDER BY p.id) FROM policy_payments p WHERE p.run_id=r.id) AS payments,
+      h.minor AS holdMinor, h.closed AS holdClosed
+      FROM relevant v JOIN runs r ON r.id=v.id LEFT JOIN admissions a ON a.run_id=r.id LEFT JOIN hire_reserves h ON h.run_id=r.id
       WHERE (? IS NULL OR a.surface=?) AND (? IS NULL OR a.principal=?) ORDER BY r.id`)
       .all(day, day, day, surface ?? null, surface ?? null, principal ?? null, principal ?? null)
     for (const row of candidates) {
       const id = row.id as string
       const run = { phase: String(row.phase), budgetMinor: Number(row.budgetMinor) }
-      const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', id)
-      const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', id)
+      const intents = JSON.parse(String(row.intents)) as PurchaseIntent[]
+      const receipts = JSON.parse(String(row.receipts)) as Receipt[]
       const charged = intents.filter(i => chargedStatuses.has(i.status))
-      const policy = this.policyPayments(id)
+      const policy = JSON.parse(String(row.payments)) as PolicyPayment[]
       const policySpent = policy.filter(p => p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
       const policyReserved = policy.filter(p => !p.confirmedAt && !p.cancelledAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
       spentMinor += policy.filter(p => p.confirmedAt?.slice(0, 10) === day).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
-      const hold = this.db.prepare('SELECT minor, closed FROM hire_reserves WHERE run_id=?').get(id)
+      const hold = row.holdMinor === null ? undefined : { minor: Number(row.holdMinor), closed: Number(row.holdClosed) }
       spentMinor += intents.filter(i => i.escrow?.state === 'CANCELLED' && i.createdAt?.slice(0, 10) === day).reduce((sum, i) => sum + i.amountMinor, 0)
       const gross = charged.reduce((sum, i) => sum + i.amountMinor, 0) + policySpent
       spentMinor += charged.reduce((sum, i) => {
