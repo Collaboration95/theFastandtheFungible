@@ -50,11 +50,11 @@ export function runsRouter(context: ApiContext) {
 }
 
 // Both surfaces share the original admission handler and its policy-only launch path.
-export function startRun(context: ApiContext): RequestHandler {
+export function startRun(context: ApiContext, surface: 'web' | 'mcp' = 'web'): RequestHandler {
   const { store, loop, mcpPolicy, labels, launch } = context
   // The budget, not the plan, is the spending authorization (gate 2).
   return (req, res) => {
-    const isMcp = req.path === '/api/mcp/runs'
+    const isMcp = surface === 'mcp'
     const input = AskSchema.parse(isMcp ? { question: req.body.question, budgetMinor: 0 } : req.body)
     const request = isMcp ? z.object({ budget_sgd: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER / 100), idempotency_key: z.string().min(1).max(200).optional() }).parse(req.body) : undefined
     const admitted = admit(store, { surface: isMcp ? 'mcp' : 'web', principal: 'operator',

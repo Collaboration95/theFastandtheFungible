@@ -12,10 +12,11 @@ if (process.env.RA_WEB_ORIGIN) clientHosts.push(new URL(process.env.RA_WEB_ORIGI
 const clientAuthority: import('vite').Connect.NextHandleFunction = (req, res, next) => {
   const host = req.headers.host?.replace(/:\d+$/, '')
   const local = ['127.0.0.1', 'localhost', '[::1]'].includes(host ?? '')
+  const localSocket = ['127.0.0.1', '::1'].includes(req.socket.remoteAddress?.replace(/^::ffff:/, '') ?? '')
   const optedIn = process.env.RA_CLIENT_LAN === '1'
   const origin = req.headers.origin
   const ownOrigin = `http://${req.headers.host}`
-  if ((!local && !(optedIn && clientHosts.includes(host ?? ''))) || (origin && origin !== ownOrigin && origin !== process.env.RA_WEB_ORIGIN)) {
+  if ((!optedIn && !localSocket) || (!local && !(optedIn && clientHosts.includes(host ?? ''))) || (origin && origin !== ownOrigin && origin !== process.env.RA_WEB_ORIGIN)) {
     res.statusCode = 403; res.end('Forbidden'); return
   }
   next()

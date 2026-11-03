@@ -5,7 +5,7 @@ import { startRun } from './runs.js'
 
 export function mcpRouter(context: ApiContext) {
   const router = Router()
-  router.post('/api/mcp/runs', startRun(context))
+  router.post('/api/mcp/runs', startRun(context, 'mcp'))
   const { store, client, payer, labels, publisherUrl, mcpPolicy } = context
   router.get('/api/mcp/runs/:id', (req, res) => {
     if (!store.isMcpRun(String(req.params.id))) return res.status(404).json({ error: 'Run not found.' })

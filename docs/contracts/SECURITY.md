@@ -89,7 +89,7 @@ SUBMITTING still reconciles; pause never claims to undo a payment.
   There is no permissive CORS or cookie authentication.
 - `make run`, demo, record and clip generate a random local token and pass it
   through the bundled Vite server-side proxy, without shipping it to browser
-  JavaScript. Vite checks Host/Origin before attaching it. `dev:client` binds
+  JavaScript. Vite checks Host/Origin and the socket before attaching it. `dev:client` binds
   `127.0.0.1`; `RA_CLIENT_LAN=1 npm run dev:client -- --host 0.0.0.0` explicitly
   enables a trusted LAN proxy. Configure `RA_WEB_ORIGIN` for that web address.
   This opt-in authorizes clients of that web proxy to use its operator token.
@@ -109,18 +109,19 @@ Frozen requirements remain the purchase target. The requirement batch omits
 source-derived `conclusion` entirely and skips gap_material. Historical fixture
 scenarios retain legacy gaps; live legacy runs require `LEGACY_GAP=1`.
 Candidate title (200), publisher (120), abstract (1200), family (160), tags
-(16 × 80), and license strings (80/200) are capped and spans matching
+(16 × 80), identifiers (160; version 80), and license strings (80/200) are capped and spans matching
 `INSTRUCTION` removed. Unknown fields, bodies, wallets, URLs and manifests are
-excluded from the candidate model view. Coverage/relevance use at most
+excluded from the candidate model view. Writer identifiers stay in structured data, never provider question instructions. Read-source metadata is limited to 50 records; coverage references are capped at 400 characters. Coverage/relevance use at most
 100/64 passages of 2000 characters, filtered by the same predicate. The model
 is told that writer fields and passages are quoted, untrusted data. MCP hits,
 run results and citation passages carry `untrusted: true` and tool descriptions
 explain it. Filtering is defence in depth, not a security boundary.
 
+`tests/client-admission.test.ts` checks the bundled proxy and credential-file denial.
 `tests/admission.test.ts` pins Host/Origin/auth, the shared daily cap, migration,
 restart/idempotency and masking. `tests/injection.test.ts` attacks titles,
 abstracts, free-source text and an MCP “S$500” question with the honest fixture
 and an all-BUY live-provider stub. It asserts capped/structured inputs, no
 conclusion, unchanged honest selection, deterministic budget/per-source/wallet
-refusals, one receipt across concurrent retries, and pause before submission.
+refusals, one receipt across concurrent retries, refund gross accounting, midnight reservations, and pause before submission.
 These are offline simulations and provider stubs, not live-injection evidence.

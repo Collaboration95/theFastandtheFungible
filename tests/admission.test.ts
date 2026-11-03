@@ -95,3 +95,27 @@ it('allows tokenless local development only with a local Host and no cross-origi
   expect((await wire(base + '/API/WALLET/PAUSE/', { method: 'POST' })).status).toBe(401)
   expect((await wire(base, { method: 'POST', headers: { Host: 'evil.example' } })).status).toBe(403)
 })
+
+it('MCP aliases cannot bypass the operator surface cap, and web admission shares its wallet', async () => {
+  vi.stubEnv('MCP_MAX_BUDGET_MINOR', '500'); vi.stubEnv('MCP_DAILY_CAP_MINOR', '5000')
+  vi.stubEnv('WALLET_DAILY_CAP_MINOR', '600')
+  vi.stubEnv('RA_API_TOKEN', 'test-token')
+  const api = await createApiApp({ dbPath: ':memory:', publisherUrl: 'http://127.0.0.1:1' })
+  // Hold the admitted budget while testing HTTP routing, without provider work.
+  vi.spyOn(api.loop, 'start').mockResolvedValue(undefined)
+  const server = api.app.listen(0, '127.0.0.1'); await once(server, 'listening')
+  cleanup.push(async () => { await api.drain(); server.closeAllConnections(); await new Promise<void>(done => server.close(() => done())); api.close() })
+  const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+  const headers = { Authorization: 'Bearer test-token', 'Content-Type': 'application/json', 'Idempotency-Key': 'web-key' }
+  const first = await wire(base + '/runs', { method: 'POST', headers, body: JSON.stringify({ question: 'web question', budgetMinor: 500 }) })
+  const run = await first.json()
+  expect(run.budgetMinor).toBe(500)
+  const retry = await wire(base + '/runs', { method: 'POST', headers, body: JSON.stringify({ question: 'web question', budgetMinor: 500 }) })
+  expect(retry.status).toBe(200)
+  expect((await retry.json()).runId).toBe(run.runId)
+  const second = await wire(base + '/API/MCP/RUNS/', { method: 'POST', headers, body: JSON.stringify({ question: 'mcp question', budget_sgd: 500, budgetMinor: 500 }) })
+  expect(second.status).toBe(201)
+  const admitted = await second.json()
+  expect(admitted.budgetMinor).toBeLessThanOrEqual(100)
+  expect(api.store.isMcpRun(admitted.runId)).toBe(true)
+})

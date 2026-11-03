@@ -1,9 +1,12 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { decide, FixtureDecisionProvider, type DecisionProvider, type DecideInput } from '../server/agents/decision.js'
+import { OpenAIDecisionsProvider, candidateQuestions } from '../server/agents/openai-decisions.js'
+import { ClefDecisionProvider } from '../server/agents/clef.js'
 import { coverageState } from '../server/agents/requirements.js'
 import { Store } from '../server/store.js'
 import { admit } from '../server/spend-policy.js'
 import { payPath, honestArticle } from './fixtures/pay-path.js'
+import { challenge } from '../server/challenges.js'
 import { exampleCandidate } from '../shared/contracts/examples.js'
 import type { PurchaseIntent } from '../shared/contracts/index.js'
 
@@ -46,6 +49,35 @@ it('capped structured writer fields reach a worst-case live-provider stub; sourc
   const state = coverageState(base.question, [{ ref: 'free:p1', text: `Grid capacity is 20.\n${malicious}` }])
   expect(state.evidence[0].text).toBe('Grid capacity is 20.')
   expect(state.dataPolicy).toContain('untrusted')
+})
+
+it.each(['openai', 'cloudflare'] as const)('%s wire state caps all writer strings and keeps identifiers out of instructions', async kind => {
+  const states: Record<string, unknown>[] = []
+  const transport = vi.fn<typeof fetch>(async (_url, init) => {
+    const body = JSON.parse(String(init?.body))
+    states.push(typeof body.input === 'string' ? JSON.parse(body.input) : body.state)
+    // Fail closed after capturing the real adapter's wire format; no provider call.
+    return new Response('{}', { status: 503 })
+  })
+  const provider = kind === 'openai' ? new OpenAIDecisionsProvider({ apiKey: 'stub', fetch: transport })
+    : new ClefDecisionProvider({ accountId: 'stub', token: 'stub', fetch: transport })
+  const huge = 'x'.repeat(10_000)
+  const candidate = { ...injection, resourceId: huge, profileId: huge, version: huge, derivedFrom: huge,
+    publisherSlug: huge, writerSlug: huge, publisher: huge, title: huge, preview: huge, family: huge,
+    facets: Array(100).fill(huge), license: { kind: huge, attribution: huge }, body: malicious }
+  await expect(decide({ ...base, provider, candidates: [candidate], readSources: [candidate] })).rejects.toThrow('Decision model unavailable')
+  expect(states.length).toBeGreaterThan(0)
+  const raw = JSON.stringify(states)
+  expect(raw).not.toContain(huge)
+  expect(raw).not.toContain(malicious)
+  for (const state of states) {
+    expect(state).not.toHaveProperty('conclusion')
+    const projected = (state.candidates as Record<string, unknown>[] | undefined)?.[0] ?? state.candidate as Record<string, unknown>
+    expect(Object.keys(projected).sort()).toEqual(['abstract', 'authority', 'dataPolicy', 'derivedFrom', 'family', 'publisher', 'relevance', 'resourceId', 'tags', 'tier', 'title'].filter(k => k !== 'relevance' || injection.relevance !== undefined).sort())
+    expect(String(projected.resourceId).length).toBeLessThanOrEqual(160)
+    expect(String(projected.abstract).length).toBeLessThanOrEqual(1200)
+  }
+  expect(JSON.stringify(candidateQuestions({ index: 0, resourceId: malicious }))).not.toContain(malicious)
 })
 
 it.each([0, 50, 100])('injected all-BUY model cannot exceed budget %i or per-source cap', async budgetMinor => {
@@ -110,4 +142,26 @@ it('wallet limit is checked at reservation too, including unadmitted internal ru
   expect(store.reserveIntent(quoted(a.runId, 'blocked', 80)).status).toBe('SKIPPED')
   store.updateRun(b.runId, { phase: 'DONE' })
   expect(store.reserveIntent(quoted(a.runId, 'allowed', 80)).status).toBe('RESERVED')
+})
+
+it('refunds never restore wallet authority; terminal uncertain payments remain reserved through midnight', async () => {
+  vi.stubEnv('WALLET_DAILY_CAP_MINOR', '100')
+  const h = await payPath(); cleanup.push(h.close)
+  const run = admit(h.store, { surface: 'web', principal: 'operator', question: 'attacked source', requestedMinor: 100,
+    idempotencyKey: 'refund-attack', maxMinor: 500 }).run
+  const candidate = await h.candidate()
+  const intent = await h.manager.purchase({ runId: run.runId, candidate, intentId: 'refund' })
+  expect(intent.status).toBe('CLAIM_FAILED')
+  await challenge(h.manager, 'refund')
+  expect(h.store.getIntent('refund')?.status).toBe('REFUNDED')
+  h.store.updateRun(run.runId, { phase: 'DONE' })
+  expect(h.store.walletStatus().spentMinor).toBe(candidate.price.amountMinor)
+  const next = admit(h.store, { surface: 'mcp', principal: 'operator', question: 'buy after refund', requestedMinor: 500,
+    idempotencyKey: 'after-refund', maxMinor: 500, dailyMinor: 5000 }).run
+  expect(next.budgetMinor + candidate.price.amountMinor).toBeLessThanOrEqual(100)
+  h.store.reserveIntent(quoted(next.runId, 'uncertain', next.budgetMinor))
+  expect(h.store.claimSubmitting('uncertain')).toBe(true)
+  h.store.updateRun(next.runId, { phase: 'STOPPED', stopped: true })
+  const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10)
+  expect(h.store.walletStatus(tomorrow)).toMatchObject({ spentMinor: 0, reservedMinor: next.budgetMinor })
 })

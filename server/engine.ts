@@ -9,7 +9,7 @@ export type EngineOptions = { apiPort?: number; publisherPort?: number; dataDir:
 export async function startEngine({ apiPort = 0, publisherPort = 0, dataDir, live = false, apiToken }: EngineOptions) {
   mkdirSync(dataDir, { recursive: true })
   const config = loadConfig()
-  apiToken ??= config.RA_API_TOKEN || randomBytes(32).toString('hex')
+  apiToken = apiToken || config.RA_API_TOKEN || randomBytes(32).toString('hex')
   const env = engineEnvironment({ RA_API_TOKEN: apiToken, HOST: '127.0.0.1', APP_DB: resolve(dataDir, 'app.db'), PUBLISHER_DB: resolve(dataDir, 'publisher.db'), REPORT_DIR: resolve(dataDir, 'reports'),
     PUBLISHER_PORT: String(publisherPort), LANGFUSE_ENABLED: '0', PUBLISHER_FAULTS: '0',
     LLM_PROVIDER: live ? 'deepseek' : 'fixture', DECISION_PROVIDER: live ? (config.DECISION_PROVIDER === 'openai' ? 'openai' : 'cloudflare') : 'fixture',

@@ -227,6 +227,7 @@ Agents add items there and keep working around them.
 
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
 
+
 - 3 Nov: Logo direction chosen: open index, because source boundaries and a route to evidence read at 16 px on the cast’s 24-unit grid; Ink/Paper with sparse Salmon layout accents. Explainers source moves into `site/` for one reviewable app/site identity kit (#271).
 - 3 Nov: Added a 4th lane (Architecture) for #285–#288 because #286 auth must land before the Mac app #259 and hire-the-agent #274.
 - 3 Nov: SDK: TypeScript in-repo now, Python stdlib example, npm publish pending owner (#265).

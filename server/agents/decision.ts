@@ -50,7 +50,11 @@ export function decisionModel(provider: 'cloudflare' | 'openai' = 'cloudflare', 
 }
 export const publicCandidate = (input: unknown): PublicCandidate => {
   const c = PublicCandidateSchema.omit({ manifest: true, wallet: true, url: true }).parse(input)
-  return { ...c, title: quotedText(c.title, 200) || '[untrusted title omitted]',
+  return { ...c, profileId: quotedText(c.profileId, 160) || '[omitted]',
+    resourceId: quotedText(c.resourceId, 160) || '[omitted]', version: quotedText(c.version, 80) || '[omitted]',
+    ...(c.derivedFrom ? { derivedFrom: quotedText(c.derivedFrom, 160) } : {}),
+    ...(c.publisherSlug ? { publisherSlug: quotedText(c.publisherSlug, 160) } : {}),
+    ...(c.writerSlug ? { writerSlug: quotedText(c.writerSlug, 160) } : {}), title: quotedText(c.title, 200) || '[untrusted title omitted]',
     publisher: quotedText(c.publisher, 120) || '[untrusted publisher omitted]',
     preview: quotedText(c.preview, 1200) || '[untrusted abstract omitted]',
     family: quotedText(c.family, 160) || '[untrusted family omitted]',
@@ -58,7 +62,7 @@ export const publicCandidate = (input: unknown): PublicCandidate => {
     license: { kind: quotedText(c.license.kind, 80), attribution: quotedText(c.license.attribution, 200) } }
 }
 export const publicSources = (input: unknown): PublicSourceRef[] => z.array(SourceRefSchema).parse(input).slice(0, 50).map(s => ({
-  ...s, title: quotedText(s.title, 200) || '[untrusted title omitted]',
+  ...s, resourceId: quotedText(s.resourceId, 160) || '[omitted]', version: quotedText(s.version, 80) || '[omitted]', title: quotedText(s.title, 200) || '[untrusted title omitted]',
   publisher: quotedText(s.publisher, 120) || '[untrusted publisher omitted]',
   family: quotedText(s.family, 160) || '[untrusted family omitted]',
   facets: s.facets.slice(0, 16).map(t => quotedText(t, 80)).filter(Boolean),
@@ -229,7 +233,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // Its threshold is on the calibrated scale; an explicit threshold still wins, and BUY_THRESHOLD (raw scale) never applies to it.
   const calibrator = open ? activeCalibrator(provider) : undefined
   const threshold = calibrator && input.threshold === undefined ? calibrator.buyThreshold : buyThreshold(provider.model, input.threshold)
-  const acquired = new Set([...readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
+  const acquired = new Set([...input.readSources.map(source => source.resourceId), ...(input.boughtResourceIds ?? [])])
   const rows = candidates.map((candidate, index) => {
     const judgment = judgments[index]
     // Trust can only lower value (T ∈ [0, 1]); it never touches the budget or the cap.
