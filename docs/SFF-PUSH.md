@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 4 Nov: Lane C2 keeps Mac Settings/recovery available before credentials and engine boot, preserves durable wallet pause, adds presence-only BYOK controls and explicit unsigned builds; 13 native fixture recovery cases and arm64 artifact hash in [C2 evidence](evidence/round2-c2/README.md).
 - 4 Nov: Lane A projects retained history (3,000 × 60: 34.4 s → 313 ms hydration, 5.3–10.8 ms selection/reconcile), bounds streams, adds safe client errors and durable late-refund recovery; engine-wide cap and cooperative Stop remain deferred. [Local synthetic evidence](evidence/round2-a/README.md).
 - 4 Nov: Fixture soak hardening: clamshell-sleep root cause, bounded provider waits, lower audit retention and watchdog diagnostics; 30-minute fixture soak has 615 successes and zero violations. [Evidence](evidence/soak-nov4.md).
 - 3 Nov: Python SDK adds typed budgeted asks, durable event iteration, receipt verification and a framework-independent tool wrapper; synthetic engine tests run only on package changes. Publication remains #265.
