@@ -10,6 +10,7 @@
 <p align="center">A search engine for agent-readable expertise: answer from free sources, then buy the missing evidence.<br>Writers search their own articles; a decision model judges value; policy code pays within your budget and verifies delivery.</p>
 
 <p align="center">
+  <a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Try it in your browser</a> ·
   <a href="https://collaboration95.github.io/theFastandtheFungible/">Explainers</a> ·
   <a href="https://collaboration95.github.io/theFastandtheFungible/talk/">Walkthrough</a> ·
   <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/download/v0.6.0/ResearchAgent-0.6.0-arm64.dmg">Download for Mac</a> ·

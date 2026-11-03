@@ -52,7 +52,10 @@
     "chaos:smoke": "npm run chaos -- --runs 20 --seed 279",
     "build:sdk": "node scripts/build-sdk.mjs",
     "test:sdk:package": "node scripts/check-sdk-package.mjs",
-    "build:mcpb": "node scripts/build-mcpb.mjs"
+    "build:mcpb": "node scripts/build-mcpb.mjs",
+    "build:demo": "vite build --config vite.demo.config.ts --mode browser-demo",
+    "demo:capture": "tsx scripts/capture-browser-demo.ts",
+    "test:demo": "npm run build:demo && playwright test --config playwright.demo.config.ts"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

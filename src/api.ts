@@ -59,6 +59,7 @@ export function streamRun(runId: string, handlers: {
   onEvent: (event: TraceEvent) => void
   onError?: (error: Error) => void
 }): () => void {
+  if (import.meta.env.MODE === 'browser-demo') return () => {}
   const source = new EventSource(`${runPath(runId)}/events`)
   let closed = false
   let latest: RunSnapshot | undefined

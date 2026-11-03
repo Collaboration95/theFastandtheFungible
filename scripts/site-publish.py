@@ -16,6 +16,7 @@ def digest(data):
 
 if git('status', '--porcelain', '--', 'site'):
     raise SystemExit('site/ has uncommitted changes; commit them first')
+subprocess.run(['npm', 'run', 'build:demo'], cwd=root, check=True)
 git('fetch', 'origin', 'gh-pages')
 files = [p for p in (root / 'site').rglob('*') if p.is_file() and p.relative_to(root / 'site').as_posix() not in ('SOURCE.md', 'evolution/data.js')]
 with tempfile.TemporaryDirectory(prefix='site-publish-') as temp:

@@ -10,9 +10,10 @@ const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 // Discover every page, including future verify pages, instead of silently skipping new routes.
 const siteRoot = join(import.meta.dirname, '..', 'site')
 const keys = { 'index.html': 'home', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build' }
-const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html')).map(file => ({ file, key: keys[file] ?? 'none' }))
+const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html') && !file.startsWith('demo/')).map(file => ({ file, key: keys[file] ?? 'none' }))
 
 const NAV = [
+  ['demo', 'demo/', 'Try it'],
   ['home', '', 'Explainers'],
   ['talk', 'talk/', 'Walkthrough'],
   ['slides', 'slides/', 'Slides'],

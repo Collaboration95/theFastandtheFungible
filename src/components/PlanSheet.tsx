@@ -38,7 +38,7 @@ export default function PlanSheet({ plan, writers, budgetMinor = 200, capMinor =
   }, [editing])
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === 'e' && !(event.target instanceof HTMLInputElement)) { event.preventDefault(); setEditing(true) }
+      if (import.meta.env.MODE !== 'browser-demo' && event.key.toLowerCase() === 'e' && !(event.target instanceof HTMLInputElement)) { event.preventDefault(); setEditing(true) }
       if (event.key === 'Escape') { event.preventDefault(); latest.current.cancel() }
       else if (event.key === 'Enter' && !event.shiftKey && ((event.metaKey || event.ctrlKey) || !(event.target instanceof HTMLButtonElement))) { event.preventDefault(); latest.current.go() }
     }
@@ -56,6 +56,6 @@ export default function PlanSheet({ plan, writers, budgetMinor = 200, capMinor =
     <p>Budget <strong>{money(budgetMinor)}</strong> · up to {money(capMinor)} per article</p>
     <p className="ra-note">Nothing is spent until step 3, and never more than {money(budgetMinor)}.</p>
     <div className="ra-plan-bar" role="timer" aria-label="Starting in 5 seconds"><i /></div>
-    <div className="ra-plan-act">{editing ? <span>Paused while you edit.</span> : <button className="ra-btn" onClick={() => setEditing(true)}>Edit</button>}<button className="ra-btn" onClick={cancel}>Cancel</button><button ref={start} className="ra-btn ra-btn-go" onClick={go}>Start now</button></div>
+    <div className="ra-plan-act">{editing ? <span>Paused while you edit.</span> : <button className="ra-btn" disabled={import.meta.env.MODE === 'browser-demo'} onClick={() => setEditing(true)}>Edit</button>}<button className="ra-btn" onClick={cancel}>Cancel</button><button ref={start} className="ra-btn ra-btn-go" onClick={go}>Start now</button></div>
   </dialog>
 }
