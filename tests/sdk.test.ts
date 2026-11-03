@@ -73,7 +73,7 @@ it.each([[401, 'unauthorized'], [403, 'unauthorized'], [404, 'not_found'], [400,
     expect(init?.headers).toMatchObject({ Authorization: 'Bearer test-token' })
     return new Response('private-backend-detail', { status: Number(status) })
   } })
-  await expect(client.wallet()).rejects.toEqual(new ResearchAgentError(code as ResearchAgentError['code']))
+  await expect(client.wallet()).rejects.toEqual(new ResearchAgentError(code as ResearchAgentError['code'], Number(status), Number(status) >= 500))
 })
 
 it('maps malformed responses and transport failure to a typed error', async () => {

@@ -45,6 +45,7 @@ async function run({ store, client, payer }: PurchaseManager, intentId: string, 
     else if (result.status === 'REFUNDED' && result.refundTxHash) {
       refundTxHash = result.refundTxHash
       store.recordRefundCandidate(intentId, refundTxHash)
+      refundTxHash = store.getIntent(intentId)!.refundCandidate!.txHash
       if (!testnet || await refundOnLedger(payer, refundTxHash, intent, Date.now() + timeoutMs, pollMs)) status = 'REFUNDED'
       else reason = 'the refund is not on the ledger'
     }

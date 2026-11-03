@@ -46,7 +46,8 @@ export type AskTask = Promise<AskResult> & { events: AsyncIterable<TraceEvent> }
 
 /** Policy owns admission and spending. Direct x402 requires separate explicit operator authority. */
 export function createClient(options: ClientOptions) {
-  const endpoint = new URL(options.baseUrl)
+  let endpoint: URL
+  try { endpoint = new URL(options.baseUrl) } catch { throw new ResearchAgentError('invalid') }
   if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash || (endpoint.protocol !== 'https:' && !(endpoint.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(endpoint.hostname)))) throw new ResearchAgentError('invalid')
   const transport = options.fetch ?? globalThis.fetch
   const token = options.token ?? (typeof process !== 'undefined' ? process.env.RA_API_TOKEN : undefined)
@@ -62,7 +63,7 @@ export function createClient(options: ClientOptions) {
         const parsed = ErrorEnvelopeSchema.safeParse(await response.json().catch(() => null))
         if (parsed.success && parsed.data.status === response.status) throw new ResearchAgentError(parsed.data.code, response.status, parsed.data.retryable, parsed.data.runId)
         throw new ResearchAgentError(response.status === 401 || response.status === 403 ? 'unauthorized'
-          : response.status === 404 ? 'not_found' : response.status >= 400 && response.status < 500 ? 'invalid' : 'backend_unavailable')
+          : response.status === 404 ? 'not_found' : response.status >= 400 && response.status < 500 ? 'invalid' : 'backend_unavailable', response.status, response.status >= 500)
       }
       return response
     } catch (error) {

@@ -34,6 +34,7 @@ let start=performance.now();if(!migrationOnly) store.listRuns();const before=mig
 start=performance.now();db.exec('CREATE INDEX events_run_id ON events(run_id,id); CREATE INDEX intents_run_id ON intents(run_id)');const migration=performance.now()-start
 start=performance.now();if(!migrationOnly) store.listRuns();const after=migrationOnly ? null : performance.now()-start
 const afterPlan=plan();store.close();db.close()
+Object.assign(process.env,{LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0'})
 const api=await createApiApp({dbPath:path,publisherUrl:'http://127.0.0.1:1'})
 const samples=[]
 for(let n=0;n<5;n++){start=performance.now();api.store.runnableRunIds();api.store.recoverableRunIds();await api.reconcileOnce();samples.push(performance.now()-start)}

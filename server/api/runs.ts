@@ -46,7 +46,7 @@ export function runsRouter(context: ApiContext) {
     if (Buffer.byteLength(frame) > 256 * 1024) { streams.get(runId)!.delete(res); if (!streams.get(runId)!.size) streams.delete(runId); res.end(); return }
     res.write(frame)
     const heartbeat = setInterval(() => { if (res.writableEnded || res.destroyed || res.writableLength > 256 * 1024 - 16) res.end(); else res.write(': heartbeat\n\n') }, 15000)
-    const detach = () => { clearInterval(heartbeat); streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) streams.delete(runId) }
+    const detach = () => { clearInterval(heartbeat); streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); context.onStreamEmpty?.(runId) } }
     req.on('close', detach)
     res.on('error', () => { detach(); res.destroy() })
   })

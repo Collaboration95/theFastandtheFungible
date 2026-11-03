@@ -48,7 +48,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     for (const res of streams.get(runId) ?? []) {
       // Oversize snapshots close the stream; clients resync via the durable GET endpoint.
       if (res.writableEnded || res.destroyed || bytes > 256 * 1024 || res.writableLength + bytes > 256 * 1024) {
-        streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) streams.delete(runId)
+        streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }
         if (!res.writableEnded && !res.destroyed) res.end()
         continue
       }
@@ -122,7 +122,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     return task
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
-  const context: ApiContext = { store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, reportDir, reportJobs, progress }
+  const context: ApiContext = { store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
   app.use(walletRouter(context))
   app.use(operationsRouter(context))
   app.use(auditRouter(context))
