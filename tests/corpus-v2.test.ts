@@ -83,7 +83,7 @@ describe('golden facts (#198)', () => {
   })
 })
 
-describe('UC4 content: the missing fact is free, but only a focused search finds it (#211)', async () => {
+describe('UC4 content: relevant free evidence survives the query floor (#211)', async () => {
   type Uc4 = { question: string; focusedQueryExample: string; missingFact: string; requestedFacts: { id: string; coveredBy: string }[]; expectedPicks: { wouldHaveBought: string } }
   const uc4 = (JSON.parse(readFileSync(join(root, 'data/corpus/v2/story-bible.json'), 'utf8')) as { useCases: (Uc4 & { id: string })[] }).useCases.find(u => u.id === 'UC4')!
   const hidden = uc4.requestedFacts.find(f => f.id === uc4.missingFact)!.coveredBy
@@ -91,9 +91,9 @@ describe('UC4 content: the missing fact is free, but only a focused search finds
   const loadFactor = corpus.articles.filter(a => a.publisherSlug === 'load-factor')
   const ranked = async (q: string, k: number) => (await searchIndex(await buildIndex(loadFactor), q, k)).ranked.map(r => r.articleId)
 
-  it('keeps the free article out of the first search: below the per-publisher cut of 5 for the question', async () => {
+  it('keeps relevant free renewable-power evidence inside the first search after filtering unrelated hits', async () => {
     const top = await ranked(uc4.question, 5)
-    expect(top).not.toContain(hidden)
+    expect(top).toContain(hidden)
     expect(top).toContain(uc4.expectedPicks.wouldHaveBought)
     expect(top).toContain('lf-penang-grid-connection')
   })

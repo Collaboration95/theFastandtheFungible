@@ -1,3 +1,4 @@
+import { searchText, searchWords, keywordCoverage } from '../publisher/search-text.js'
 // Search tuning study: within-publisher ranking (MRR, R@1) and cross-publisher separability of relevance (AUC).
 import fs from 'fs'; import path from 'path'
 import { pathToFileURL } from 'node:url'
@@ -18,17 +19,17 @@ export const CHOSEN_CONFIGS: [string, Cfg][] = [
 const dbs: Record<string, any> = {}
 async function db(p: string) { if (dbs[p]) return dbs[p]
   const d = create({ schema: { articleId: 'string', title: 'string', abstract: 'string', tags: 'string[]', body: 'string', embedding: 'vector[768]' } })
-  await insertMultiple(d, pubs[p].map(a => ({ articleId: a.articleId, title: a.title, abstract: a.abstract, tags: a.tags, body: a.body, embedding: vec(a) })))
+  await insertMultiple(d, pubs[p].map(a => ({ articleId: a.articleId, title: searchText(a.title), abstract: searchText(a.abstract), tags: a.tags.map(searchText), body: searchText(a.body), embedding: vec(a) })))
   return dbs[p] = d }
 export async function rank(p: string, term: string, c: Cfg) {
   const props = c.body === false ? ['title', 'abstract', 'tags'] : ['title', 'abstract', 'tags', 'body']
-  const base: any = { term, limit: 10, properties: props, boost: c.boost, threshold: SEARCH_TUNING.threshold, ...(c.bm25 ? { relevance: c.bm25 } : {}) }
+  const base: any = { term: searchText(term), limit: c.mode === 'fulltext' ? pubs[p].length : 10, properties: props, boost: c.boost, threshold: SEARCH_TUNING.threshold, ...(c.bm25 ? { relevance: c.bm25 } : {}) }
   const r = c.mode === 'fulltext' ? await search(await db(p), { ...base, mode: 'fulltext' })
     : await search(await db(p), { ...base, mode: c.mode, vector: { value: qv[term], property: 'embedding' }, similarity: c.sim ?? SEARCH_TUNING.similarity, ...(c.mode === 'hybrid' ? { hybridWeights: c.w === undefined ? SEARCH_TUNING.hybridWeights : { text: 1 - c.w, vector: c.w } } : {}) })
   const top = Math.max(0, ...r.hits.map((h: any) => h.score))
   return r.hits.map((h: any) => { const a = pubs[p].find(x => x.articleId === h.document.articleId)
     const rel = c.rel === 'cos' ? cosineRelevance(cos(qv[term], vec(a))) : c.rel === 'sat' ? keywordRelevance(h.score) : top ? h.score / top : 0
-    return { id: h.document.articleId, rel } })
+    return { id: h.document.articleId, rel } }).filter((h: {id:string}) => c.mode !== 'fulltext' || keywordCoverage(term, searchWords((() => {const a=pubs[p].find(a => a.articleId === h.id)!;return `${a.title} ${a.abstract} ${a.tags.join(' ')} ${a.body}`})())) >= 0.5).slice(0,10)
 }
 function auc(pos: number[], neg: number[]) { let s = 0; for (const p of pos) for (const n of neg) s += p > n ? 1 : p === n ? 0.5 : 0; return s / (pos.length * neg.length || 1) }
 export async function evalCfg(c: Cfg) {

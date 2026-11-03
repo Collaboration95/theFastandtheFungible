@@ -93,20 +93,17 @@ describe('UC1–UC4 scenarios: separate API and publisher processes', () => {
     assertNoLeaks(h.observations, h.corpus)
   }, 30_000)
 
-  it('UC4: a focused free search finds the missing fact: 3 of 3 answered, nothing bought, the paid deep-dive only a skip row (#211)', async () => {
+  it('UC4: relevance-filtered first search answers 3 of 3 free; paid deep-dive stays a skip row', async () => {
     const UC4 = USE_CASES.UC4
     const run = await h.until(await h.ask('UC4'))
     verify(run)
     expect(run).toMatchObject({ spentMinor: 0, intents: [], grants: [], receipts: [] })
-    // v1 from the first search answers 2 of 3; the one follow-up reads the free article; v2 answers all 3.
-    expect(factsSummary(run, 1)?.line).toBe('2 of 3 answered')
-    expect(factsSummary(run)?.line).toBe('3 of 3 answered · found free on a focused search · nothing bought')
-    expect(run.answers.map(a => a.version)).toEqual([1, 2])
-    expect(run.checkpoint.followUp).toMatchObject({ requirementId: 'r3', status: 'done', helped: ['r3'], reanswered: true })
-    expect(run.events.filter(e => e.type === 'FOLLOW_UP')).toHaveLength(2)
-    const missing = 'lf-corporate-green-power-round-2026'
-    expect(run.answers[0].claims.flatMap(c => c.citations.map(r => r.resourceId))).not.toContain(missing)
-    expect(cited(run)).toContain(missing)
+    // Filtering unrelated hits before the read cap makes the renewable-power evidence available immediately.
+    expect(factsSummary(run, 1)?.line).toBe('3 of 3 answered · nothing bought')
+    expect(run.answers.map(a => a.version)).toEqual([1])
+    expect(run.checkpoint.followUp).toBeUndefined()
+    expect(run.events.filter(e => e.type === 'FOLLOW_UP')).toHaveLength(0)
+    expect(cited(run)).toContain('lf-corporate-green-power-round-2026')
     // Complete before any decision: round 1 records the table without asking a model; the deep-dive is a skip row.
     expect(run.decisions).toHaveLength(1)
     expect(verdicts(run)[UC4.expected.wouldHaveBought!]).toBe('SKIP_NO_GAP')
@@ -202,8 +199,8 @@ describe('leak gate and Stop: audited Clef and LLM requests', () => {
     // #208: coverage is graded by the decision model in one multi-question request per evidence state; a frozen
     // requested fact is part of the question by construction, so no gap_material question is ever sent for it.
     const clefQuestions = (a: { body: unknown }) => Object.keys((a.body as { questions: object }).questions)
-    // Three evidence states: answer v1, the follow-up's new free passages (nothing found), answer v2 after the purchase.
-    expect(audits.filter(a => a.kind === 'clef' && clefQuestions(a).some(q => q.startsWith('coverage_r')))).toHaveLength(3)
+    // Two evidence states: answer v1 and answer v2 after purchase; the relevance floor removes unrelated follow-up passages.
+    expect(audits.filter(a => a.kind === 'clef' && clefQuestions(a).some(q => q.startsWith('coverage_r')))).toHaveLength(2)
     expect(audits.filter(a => a.kind === 'clef' && clefQuestions(a).includes('gap_material'))).toHaveLength(0)
     expect(audits.some(a => a.kind === 'clef' && a.grants.length === 0)).toBe(true)
     expect(audits.some(a => a.kind === 'groq' && a.grants.length === 1)).toBe(true)

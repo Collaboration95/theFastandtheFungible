@@ -20,6 +20,7 @@
 
 <p align="center">
   <a href="https://github.com/Collaboration95/theFastandtheFungible/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Collaboration95/theFastandtheFungible/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://codespaces.new/Collaboration95/theFastandtheFungible"><img alt="Open in GitHub Codespaces" src="https://github.com/codespaces/badge.svg"></a>
   <a href="#numbers"><img alt="Latest committed nightly scorecard" src="docs/media/scorecard.svg"></a>
   <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?sort=semver"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-lightgrey"></a>
@@ -51,8 +52,6 @@ Every gate has regression tests and a corresponding [read-only audit rule](scrip
 | Simulated or substituted work is labelled | [Rail label regression](tests/gate-audit.test.ts) | `missing_rail_label` |
 
 ## Use it from your agent
-
-Packages are **built and consumer-tested but not yet published** to npm, PyPI or the MCP Registry (publishing is an owner step, #265). Install from a release artifact or your checkout. The caps below are set by the operator running the engine, default to zero, and a calling model cannot raise them.
 
 **TypeScript SDK** ([docs](docs/sdk.md)). `make release-artifacts` builds `dist/release/` and tests each file in a clean consumer, then:
 
@@ -121,7 +120,7 @@ Node ≥ 22.13 and Make. No keys needed.
 
 ```sh
 git clone https://github.com/Collaboration95/theFastandtheFungible && cd theFastandtheFungible
-make setup
+ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci
 make run                                   # web on :5100; `make run OFFSET=100` shifts every port
 ```
 
@@ -176,6 +175,9 @@ citations matched to delivered passages and an idempotent retry. It does not val
 Native XRP interop with the XRPL AI Starter Kit's t54 client and server: [compatibility](docs/x402-xrpl.md#starter-kit-compatibility) · [Testnet evidence](docs/evidence/starter-kit-interop.md).
 
 ## Status and honesty
+
+Packages are **built and consumer-tested but not yet published** to npm, PyPI or the MCP Registry (publishing is an owner step, #265). Install from a release artifact or your checkout. The caps below are set by the operator running the engine, default to zero, and a calling model cannot raise them.
+
 
 - **Testnet only.** No real money, no mainnet. Mainnet readiness is a [checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist), not a claim.
 - **Simulated mode is labelled** on every screen, receipt and MCP result. The writer corpus is fictional and new writers are unverified; this is not KYB or a sanctions service.

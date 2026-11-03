@@ -18,7 +18,8 @@ describe('fact menu (#260)', () => {
     const after = await frozenInputs('eval/questions/bank.v1.json')
     expect(after.bank).toBe(before.bank)
     expect(after.corpusContent).toBe(before.corpus)
-    expect(after.snapshots).toBe(before.snapshots)
+    // Lane Q intentionally re-freezes retrieval/coverage snapshots; bank and prose remain unchanged.
+    expect(after.snapshots).toBe(JSON.parse(readFileSync('eval/scorecard/frozen-first-run-bank-v1.json', 'utf8')).snapshots)
   })
 
   it('rejects answer digits, markup, control characters, unbounded text and unknown fields', () => {

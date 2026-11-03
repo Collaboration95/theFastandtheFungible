@@ -1,3 +1,4 @@
+import { searchText } from '../../publisher/search-text.js'
 // Clarify and plan (D8, D9, #136, #137). Neither step can spend: they return
 // questions and generic search sub-queries only. The prompt and few-shot live here.
 import { z } from 'zod'
@@ -54,7 +55,7 @@ const STOP = new Set(['a', 'an', 'the', 'of', 'at', 'in', 'on', 'to', 'for', 'an
 const MAX_SUBQUERY = 120
 const clip = (text: string) => text.length <= MAX_SUBQUERY ? text : text.slice(0, MAX_SUBQUERY).replace(/\s+\S*$/, '')
 /** Content words of a clause: possessives stripped, stop words and punctuation dropped. */
-const keywords = (text: string) => text.replace(/['’]s\b/g, '').split(/[^A-Za-z0-9&-]+/).filter(w => w && !STOP.has(w.toLowerCase()) && w !== '&').join(' ')
+const keywords = (text: string) => searchText(text).split(/[^A-Za-z0-9&-]+/).filter(w => w && !STOP.has(w.toLowerCase()) && w !== '&').join(' ')
 
 function fixtureQuestions(question: string): Scope['questions'] {
   // Story-bible rule (UC2): an outlook or analyst view on a company's deal gets the angle question.
