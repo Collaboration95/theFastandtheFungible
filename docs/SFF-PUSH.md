@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 4 Nov: Fixture soak hardening: clamshell-sleep root cause, bounded provider waits, lower audit retention and watchdog diagnostics; 30-minute fixture soak has 615 successes and zero violations. [Evidence](evidence/soak-nov4.md).
 - 3 Nov: Python SDK adds typed budgeted asks, durable event iteration, receipt verification and a framework-independent tool wrapper; synthetic engine tests run only on package changes. Publication remains #265.
 - 3 Nov: One-click MCPB extension, release asset, registry metadata and five-client install reference; fixture archive smoke validates caps. Publication remains #265.
 - 3 Nov: Official RLUSD (Testnet) pays writers end to end: supplied-payer UC2 0.90, UC3 0.30 fully refunded, both receipt verifiers pass; faucet 401 bypassed with bounded Testnet DEX provisioning. [Evidence](evidence/rlusd.md).

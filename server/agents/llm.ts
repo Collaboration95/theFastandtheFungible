@@ -1,6 +1,6 @@
 import { reportModelUsage } from '../telemetry.js'
 import { loadConfig } from '../config.js'
-import { retryAfterMs, retryDelayMs } from './provider-retry.js'
+import { withProviderDeadline, retryAfterMs, retryDelayMs } from './provider-retry.js'
 import { startActiveObservation, type LangfuseGeneration } from '@langfuse/tracing'
 import { deepseekPricingWindow } from '../telemetry.js'
 /**
@@ -39,7 +39,7 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
   const endpoint = baseUrl.endsWith('/chat/completions') ? baseUrl : `${baseUrl}/chat/completions`
   const controller = new AbortController()
   const configuredTimeout = Number(loadConfig().LLM_SYNTHESIS_TIMEOUT_MS ?? loadConfig().LLM_TIMEOUT_MS ?? 45000)
-  const timeout = setTimeout(() => controller.abort(), Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : 45000)
+  const deadlineMs = Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : 45000
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
   const messages = [
     { role: 'system', content: system }, { role: 'user', content: JSON.stringify(input, (key, value) => {
@@ -52,59 +52,63 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
   // pricing_window selects the Langfuse price tier for the custom deepseek-flash model.
   generation.update({ model: researchModel(), modelParameters, input: messages, metadata: { provider: provider.label, ...(provider.label === 'DeepSeek' ? { pricing_window: deepseekPricingWindow() } : {}) } })
   let usage: { prompt_tokens?: number; completion_tokens?: number; prompt_cache_hit_tokens?: number; prompt_cache_miss_tokens?: number } | undefined
-  try {
-    const response = await fetch(endpoint, {
-      method: 'POST', signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: researchModel(), ...modelParameters, stream: true, stream_options: { include_usage: true }, ...provider.extra,
-        response_format: { type: 'json_object' }, messages }),
-    })
-    if (!response.ok) {
-      const retryAfter = response.headers.get('retry-after')
-      await response.body?.cancel().catch(() => undefined)
-      throw new LlmHttpError(response.status, retryAfterMs(retryAfter))
+  return withProviderDeadline('LLM', deadlineMs, controller, async () => {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST', signal: controller.signal,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model: researchModel(), ...modelParameters, stream: true, stream_options: { include_usage: true }, ...provider.extra,
+          response_format: { type: 'json_object' }, messages }),
+      })
+      if (!response.ok) {
+        const retryAfter = response.headers.get('retry-after')
+        void response.body?.cancel().catch(() => undefined)
+        throw new LlmHttpError(response.status, retryAfterMs(retryAfter))
+      }
+      reader = response.body?.getReader()
+      if (!reader) throw new Error('LLM returned no stream')
+      const decoder = new TextDecoder()
+      let pending = '', text = '', finished = false
+      const consume = (line: string) => {
+        if (!line.startsWith('data:')) return
+        const data = line.slice(5).trim()
+        if (!data) return
+        if (data === '[DONE]') { finished = true; return }
+        const frame = JSON.parse(data) as { error?: unknown; usage?: typeof usage; choices?: { delta?: { content?: string }; finish_reason?: string }[] }
+        if (frame.usage) usage = frame.usage
+        if (frame.error) throw new Error('LLM stream failed')
+        if (frame.choices?.[0]?.finish_reason === 'length') throw new Error('LLM JSON truncated')
+        const delta = frame.choices?.[0]?.delta?.content
+        if (typeof delta === 'string') { if (!text) generation.update({ completionStartTime: new Date() }); text += delta; onToken?.(delta) }
+        if (text.length > 1_000_000) throw new Error('LLM JSON exceeds limit')
+      }
+      while (!finished) {
+        const { value, done } = await reader.read()
+        pending += decoder.decode(value, { stream: !done })
+        const lines = pending.split(/\r?\n/)
+        pending = lines.pop() ?? ''
+        for (const line of lines) { consume(line); if (finished) break }
+        if (done) { if (pending && !finished) consume(pending); break }
+      }
+      const parsed: unknown = JSON.parse(text)
+      // DeepSeek reports cache hits separately; they are billed at a fraction of normal input.
+      reportModelUsage(usage?.prompt_tokens, usage?.completion_tokens)
+      const cached = usage?.prompt_cache_hit_tokens
+      generation.update({ output: parsed, ...(usage ? { usageDetails: cached === undefined ? { input: usage.prompt_tokens ?? 0, output: usage.completion_tokens ?? 0 } : { input: usage.prompt_cache_miss_tokens ?? (usage.prompt_tokens ?? 0) - cached, input_cache_read: cached, output: usage.completion_tokens ?? 0 } } : {}) })
+      return parsed
+    } catch (error) {
+      generation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'LLM call failed' })
+      throw error
+    } finally {
+      controller.abort()
+      void reader?.cancel().catch(() => undefined)
     }
-    reader = response.body?.getReader()
-    if (!reader) throw new Error('LLM returned no stream')
-    const decoder = new TextDecoder()
-    let pending = '', text = '', finished = false
-    const consume = (line: string) => {
-      if (!line.startsWith('data:')) return
-      const data = line.slice(5).trim()
-      if (!data) return
-      if (data === '[DONE]') { finished = true; return }
-      const frame = JSON.parse(data) as { error?: unknown; usage?: typeof usage; choices?: { delta?: { content?: string }; finish_reason?: string }[] }
-      if (frame.usage) usage = frame.usage
-      if (frame.error) throw new Error('LLM stream failed')
-      if (frame.choices?.[0]?.finish_reason === 'length') throw new Error('LLM JSON truncated')
-      const delta = frame.choices?.[0]?.delta?.content
-      if (typeof delta === 'string') { if (!text) generation.update({ completionStartTime: new Date() }); text += delta; onToken?.(delta) }
-      if (text.length > 1_000_000) throw new Error('LLM JSON exceeds limit')
-    }
-    while (!finished) {
-      const { value, done } = await reader.read()
-      pending += decoder.decode(value, { stream: !done })
-      const lines = pending.split(/\r?\n/)
-      pending = lines.pop() ?? ''
-      for (const line of lines) { consume(line); if (finished) break }
-      if (done) { if (pending && !finished) consume(pending); break }
-    }
-    const parsed: unknown = JSON.parse(text)
-    // DeepSeek reports cache hits separately; they are billed at a fraction of normal input.
-    reportModelUsage(usage?.prompt_tokens, usage?.completion_tokens)
-    const cached = usage?.prompt_cache_hit_tokens
-    generation.update({ output: parsed, ...(usage ? { usageDetails: cached === undefined ? { input: usage.prompt_tokens ?? 0, output: usage.completion_tokens ?? 0 } : { input: usage.prompt_cache_miss_tokens ?? (usage.prompt_tokens ?? 0) - cached, input_cache_read: cached, output: usage.completion_tokens ?? 0 } } : {}) })
-    return parsed
-  } catch (error) {
-    generation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'LLM call failed' })
-    throw error
-  } finally {
-    clearTimeout(timeout)
-    await reader?.cancel().catch(() => undefined)
-  }
+  })
 }
 
-class LlmHttpError extends Error {
+export class LlmHttpError extends Error {
+  readonly code = 'PROVIDER_HTTP'
+  override name = 'LlmHttpError'
   constructor(readonly status: number, readonly retryMs: number) { super(`LLM returned ${status}`) }
 }
 

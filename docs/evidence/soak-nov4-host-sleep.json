@@ -1,0 +1,18 @@
+{
+  "label": "Observed local macOS power-state evidence; only relevant state timestamps retained",
+  "source": "pmset -g log, read 4 Nov 2026 SGT",
+  "sleep": {
+    "localTime": "2026-11-03 17:04:23 +0800",
+    "state": "Entering Sleep",
+    "reason": "Clamshell Sleep",
+    "durationSeconds": 606
+  },
+  "wake": {
+    "localTime": "2026-11-03 17:14:29 +0800",
+    "state": "DarkWake from Deep Idle"
+  },
+  "run1EndUtc": "2026-11-03T09:14:29.610000+00:00",
+  "approximateFailingChildLaunchUtc": "2026-11-03T09:04:23.859000+00:00",
+  "recordedChildElapsedMs": 605751,
+  "interpretation": "Clamshell suspension accounts for the full apparent stall and delayed 45-second watchdog. Application logs alone did not capture a blocked provider await."
+}

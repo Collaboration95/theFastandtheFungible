@@ -1,0 +1,119 @@
+{
+  "schema": "chaos-v1",
+  "label": "SYNTHETIC fixture ledger; real SIGKILL; production API/SDK/MCP/publisher; no Testnet, providers or real value",
+  "seed": 279,
+  "testedCommit": "eae85eda66c9fc2b39a701167df2efd113873d50",
+  "worktreeDirty": false,
+  "startedAt": "2026-11-03T06:35:10.856Z",
+  "durationMs": 9558754,
+  "iterations": 3031,
+  "faultsInjected": 3031,
+  "processKills": 787,
+  "payments": 3807,
+  "refunds": 453,
+  "recovered": 2539,
+  "failedCleanly": 492,
+  "doubleCharges": 0,
+  "invariantViolations": 1,
+  "stuckReservations": 0,
+  "reservationsHeld": 0,
+  "byFault": {
+    "kill-before-sign": 165,
+    "kill-after-sign": 148,
+    "kill-after-submit": 162,
+    "kill-after-validation": 141,
+    "submit-timeout-before": 173,
+    "submit-timeout-after": 169,
+    "duplicate-submit": 153,
+    "publisher-down": 170,
+    "publisher-slow": 148,
+    "engine-restart": 171,
+    "identical-intents": 145,
+    "sdk-retry": 169,
+    "mcp-retry": 150,
+    "hire-replay": 169,
+    "refund-replay": 162,
+    "sse-drop": 157,
+    "caps": 163,
+    "decision-down": 156,
+    "provider-down": 160
+  },
+  "byUseCase": {
+    "UC2": 2242,
+    "UC1": 171,
+    "UC3": 453,
+    "UC4": 165
+  },
+  "maxRssBytes": 1079158368,
+  "maxHandles": 110,
+  "latencyMs": {
+    "firstWindowP95": 8758.771166999999,
+    "lastWindowP95": 13046.690042000264,
+    "p95DriftMs": 4287.918875000265
+  },
+  "lastMetrics": {
+    "schema": "operations-v1",
+    "rail": "xrpl-testnet",
+    "purchasesByStatus": {
+      "VERIFIED": 1
+    },
+    "settleLatencyMs": {
+      "samples": 1,
+      "p50": 30,
+      "p95": 30
+    },
+    "payerLockWaitMs": {
+      "samples": 1,
+      "p95": 0,
+      "scope": "last 1024 successful lock acquisitions in this process"
+    },
+    "reconcileBacklog": {
+      "count": 0,
+      "oldestAgeMs": null,
+      "unknownAgeCount": 0,
+      "exhaustedDeliveries": 0
+    },
+    "spendTodayBySurface": {
+      "web": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "mcp": {
+        "spentMinor": 90,
+        "reservedMinor": 0
+      },
+      "x402": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "agent": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      }
+    },
+    "fallbacks": {
+      "llm": 2,
+      "decision": 0,
+      "decisionUnavailable": 0
+    },
+    "modelUsageByRun": [
+      {
+        "runId": "e68d9890-e951-46d0-8c82-ffcd84869c04",
+        "reportedCalls": 0,
+        "inputTokens": null,
+        "outputTokens": null,
+        "estimatedUsd": null
+      }
+    ]
+  },
+  "escrow": {
+    "iterations": 608,
+    "faultsInjected": 608,
+    "creates": 608,
+    "releases": 304,
+    "cancellations": 304,
+    "invariantViolations": 0
+  },
+  "scope": "Single payer writer; independent fresh stores per iteration, retained across crash; four escrow timeout/restart/downtime probes every 20 iterations",
+  "failure": "Error: iteration 3031 provider-down/UC2: exit=null signal=SIGKILL watchdog=true elapsedMs=605751 "
+}
