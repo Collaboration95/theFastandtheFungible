@@ -2,12 +2,18 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { createServer as createHttpServer, request } from 'node:http'
 import { once } from 'node:events'
 import { createServer } from 'vite'
-import { resolve } from 'node:path'
+import { resolve, join } from 'node:path'
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 
 const cleanup: (() => unknown)[] = []
 afterEach(async () => { for (const close of cleanup.splice(0).reverse()) await close(); vi.unstubAllEnvs() })
 
 it('bundled dev proxy checks Host and Origin before supplying its server-only token', async () => {
+  // CI has no operator .env. Exercise the denylist against an existing synthetic file.
+  const fixtureDir = mkdtempSync(resolve('.ra286-proxy-'))
+  cleanup.push(() => rmSync(fixtureDir, { recursive: true, force: true }))
+  const credentialFile = join(fixtureDir, '.env')
+  writeFileSync(credentialFile, 'RA_API_TOKEN=synthetic-file-canary\n')
   const calls: string[] = []
   const backend = createHttpServer((req, res) => { calls.push(req.headers.authorization ?? ''); res.end('{}') })
   backend.listen(0, '127.0.0.1'); await once(backend, 'listening')
@@ -30,5 +36,7 @@ it('bundled dev proxy checks Host and Origin before supplying its server-only to
   expect(await wire({ Host: `127.0.0.1:${port}`, Origin: 'http://127.0.0.1:6200' })).toBe(200)
   expect(calls).toEqual(['Bearer private-proxy-token'])
   // Vite's filesystem denylist must continue to hide credentials.
-  expect((await fetch(`http://127.0.0.1:${port}/@fs/${resolve('.env')}`)).status).toBe(403)
+  const denied = await fetch(`http://127.0.0.1:${port}/@fs/${credentialFile}`)
+  expect(denied.status).toBe(403)
+  expect(await denied.text()).not.toContain('synthetic-file-canary')
 })
