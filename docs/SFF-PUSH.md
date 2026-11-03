@@ -53,7 +53,7 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 | False-complete | 5.26% → **5.26%** | 0.00% → 0.00% |
 
 **Waste target missed (35.48% ≥25%).** Held-out flow F1 and +15-point uplift pass;
-sweep regresses, and dev flow F1 misses. Full-bank secondary waste is 40.54%
+sweep regresses, and dev flow F1 misses. Full-bank secondary waste is 41.36%
 (previous 47.19%), flow F1 0.419 unchanged, uplift +20.75 pts. These subsets must
 not be compared directly with the historical whole-bank columns below. Coverage
 false-complete on holdout is 1/19 (5.26%); whole-bank remains 1/53 (1.89%).

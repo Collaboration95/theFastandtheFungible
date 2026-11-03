@@ -249,13 +249,15 @@ governs delivery; this is **not** a successful optimization or a no-regression
 acceptance claim. No tests, leak checks, raw 0.20 gate, or audit rules were relaxed.
 
 Secondary whole-bank aggregation of the two disjoint splits: gross waste
-**47.19% → 40.54%**, flow F1 **0.419 → 0.419**, and uplift **+16.98 → +20.75 pts**.
+**47.19% → 41.36%**, flow F1 **0.419 → 0.419**, and uplift **+16.98 → +20.75 pts**.
 This is not held-out evidence. The held-out false-complete rate is 1/19 missing
 facts = 5.26%, not the full bank's 1/53 = 1.89%; the underlying coverage prompts
 and snapshots did not change. Flow citation validity is 100% on both splits.
 After-purchase support: held-out 12 → 16 of 26; dev 8 → 15 of 27. Gross simulated
-spend: held-out S$3.30 → S$3.10, waste S$1.30 → S$1.10; dev S$5.60 → S$4.30,
-waste S$2.90 → S$1.90. Refunds remain gross waste and do not restore authority.
+spend: held-out S$3.30 → S$3.10, waste S$1.30 → S$1.10; dev S$5.60 → S$6.45,
+waste S$2.90 → S$2.85. Refunds remain gross waste and do not restore authority. Whole-bank gross
+spend rises S$8.90 → S$9.55 while waste falls S$4.20 → S$3.95: part of the
+percentage improvement is more useful spending, not fewer purchases.
 
 **What changed.** Deterministic policy requires P(adds the open fact) × seller
 trust × novelty / price ≥ **0.5 expected facts/S$**, in addition to every existing
