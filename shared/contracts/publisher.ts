@@ -1,5 +1,6 @@
 import { EscrowStatusSchema } from './escrow.js'
 import { z } from 'zod'
+import { AssetSchema } from './asset.js'
 /** Settlement rails. Both are labelled; neither moves real value. */
 export const SIMULATED_LABEL = 'SIMULATED SGD · no real funds'
 export const XRPL_LABEL = 'XRPL TESTNET · no real value'
@@ -11,8 +12,8 @@ export const XRPL_EXPLORER = 'https://testnet.xrpl.org/transactions'
 const hash256 = z.string().regex(/^[0-9A-F]{64}$/)
 /** x402-shaped payment terms carried by a quote; invoiceId (the quote hash) becomes the XRPL InvoiceID. */
 // `rail` is 'simulated' for the fixture rail (#130): same signed-blob checks, a local signer, no network.
-export const PaymentRequirementSchema = z.object({ rail: RailSchema, network: z.literal('xrpl:1'), asset: z.literal('XRP'), payTo: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), amountDrops: z.string().regex(/^[1-9]\d*$/), invoiceId: hash256 })
-export const LedgerProofSchema = z.object({ txHash: hash256, ledgerIndex: z.number().int().positive(), payer: z.string(), payTo: z.string(), amountDrops: z.string() })
+export const PaymentRequirementSchema = z.object({ rail: RailSchema, network: z.literal('xrpl:1'), asset: AssetSchema, payTo: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), amountDrops: z.string().regex(/^(?:[1-9]\d*(?:\.\d{1,6})?|0\.\d{1,6})$/), invoiceId: hash256 })
+export const LedgerProofSchema = z.object({ txHash: hash256, ledgerIndex: z.number().int().positive(), payer: z.string(), payTo: z.string(), amountDrops: z.string(), asset: AssetSchema.optional(), deliveredAmount: z.unknown().optional() })
 export const QuoteRequestSchema = z.object({ profileId: z.string(), resourceId: z.string(), version: z.string(), runId: z.string(), intentId: z.string() })
 /**
  * Kept for the x402 v2 flow, derived from PAYMENT-REQUIRED (#115): quoteId = the

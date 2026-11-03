@@ -1,4 +1,5 @@
 // x402 v2 header codec and invoice binding. Node only: never import from src/.
+import type { Asset } from './contracts/asset.js'
 import type { z } from 'zod'
 import { PaymentRequiredSchema, PaymentResponseSchema, PaymentSignatureSchema } from './contracts/x402.js'
 import { canonicalJson, sha256 } from './manifest.js'
@@ -9,8 +10,8 @@ export type X402Header = keyof typeof X402_HEADERS
 type HeaderValue<H extends X402Header> = z.infer<(typeof X402_HEADERS)[H]>
 
 /** `articleId` is the run's `resourceId`. Canonical JSON, so key order never matters. */
-export const invoiceIdFor = (input: { quoteId: string; articleId: string; version: string; manifestRoot: string; amount: string; payTo: string }) =>
-  canonicalJson({ quoteId: input.quoteId, articleId: input.articleId, version: input.version, manifestRoot: input.manifestRoot, amount: input.amount, payTo: input.payTo })
+export const invoiceIdFor = (input: { quoteId: string; articleId: string; version: string; manifestRoot: string; amount: string; payTo: string; asset?: Asset }) =>
+  canonicalJson({ quoteId: input.quoteId, articleId: input.articleId, version: input.version, manifestRoot: input.manifestRoot, amount: input.amount, payTo: input.payTo, ...(input.asset && input.asset !== 'XRP' ? { asset: input.asset } : {}) })
 /** The on-ledger XRPL `InvoiceID`: sha256(invoiceId), 64 uppercase hex chars. */
 export const ledgerInvoiceId = (invoiceId: string) => sha256(invoiceId).toUpperCase()
 

@@ -1,3 +1,6 @@
+import { amountFor, ledgerAmount } from '../shared/contracts/asset.js'
+import { checkIssuedPayment } from '../shared/issued-currency.js'
+import { screenPayee } from './payee-screening.js'
 import { bounded } from './dependencies.js'
 import { loadConfig } from './config.js'
 import { Wallet, decode, type Transaction } from 'xrpl'
@@ -35,7 +38,7 @@ export class XrplPayer {
   }
   /** Amount, network and invoice must match the quote exactly; the publisher cannot ask for more. */
   static checkTerms(terms: PaymentRequirement, amountMinor: number, dropsPerMinor: number, quoteHash: string): string | undefined {
-    if (terms.amountDrops !== String(amountMinor * dropsPerMinor)) return 'XRPL amount does not match the quoted price'
+    if (terms.amountDrops !== (terms.asset === 'XRP' ? String(amountMinor * dropsPerMinor) : amountFor(amountMinor, terms.asset))) return 'XRPL amount does not match the quoted price'
     if (terms.invoiceId !== quoteHash.toUpperCase()) return 'XRPL InvoiceID does not match the quote'
     return undefined
   }
@@ -128,22 +131,29 @@ export class XrplPayer {
   private async sign(terms: PaymentRequirement & { memo?: string }): Promise<Submission> {
     if (!this.wallet) throw new Error('XRPL payer seed is not configured')
     if (this.wallet.classicAddress === simulatedPayerWallet().classicAddress) throw new Error('The SIMULATED test payer is refused on the XRPL Testnet')
+    if (terms.asset !== 'XRP') {
+      try { await checkIssuedPayment(this.ledger, this.address!, terms.payTo, terms.amountDrops, terms.asset) } catch (e) { throw new BeforeSignError(e instanceof Error ? e.message : 'Issued-currency preflight failed') }
+      this.balanceCache = undefined
+    }
     const balance = await this.balance()
-    if (balance.availableDrops < Number(terms.amountDrops) + FEE_CAP_DROPS + this.escrowFeeHolds()) throw new BeforeSignError('Payer balance below reserve; nothing was charged')
+    if (balance.availableDrops < (terms.asset === 'XRP' ? Number(terms.amountDrops) : 0) + FEE_CAP_DROPS + this.escrowFeeHolds()) throw new BeforeSignError('Payer balance below reserve; nothing was charged')
     const account = this.wallet.classicAddress
     const [info, current, fee] = await Promise.all([
       this.ledger.request({ command: 'account_info', account, ledger_index: 'current' }),
       this.ledger.request({ command: 'ledger_current' }),
       this.ledger.request({ command: 'fee' }),
     ])
+    for (const address of [terms.payTo, ...(terms.asset === 'XRP' ? [] : [terms.asset.issuer])]) {
+      const refusal = screenPayee(address); if (refusal) throw new BeforeSignError(refusal.refusal)
+    }
     const lastLedgerSequence = Number(current.result.ledger_current_index) + 20
     const signed = this.wallet.sign({
-      TransactionType: 'Payment', Account: account, Destination: terms.payTo, Amount: terms.amountDrops, InvoiceID: terms.invoiceId,
+      TransactionType: 'Payment', Account: account, Destination: terms.payTo, Amount: ledgerAmount(terms.amountDrops, terms.asset), InvoiceID: terms.invoiceId,
       ...(terms.memo ? { Memos: [{ Memo: { MemoData: Buffer.from(terms.memo).toString('hex').toUpperCase() } }] } : {}),
       // Fee capped so a fee spike never drains the wallet; LastLedgerSequence makes expiry provable.
       Sequence: Number(info.result.account_data.Sequence), Fee: String(Math.min(FEE_CAP_DROPS, Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12)))), LastLedgerSequence: lastLedgerSequence,
     })
-    this.balanceCache!.committed += Number(terms.amountDrops) + FEE_CAP_DROPS
+    this.balanceCache!.committed += (terms.asset === 'XRP' ? Number(terms.amountDrops) : 0) + FEE_CAP_DROPS
     return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
   }
   async status(submission: Submission): Promise<PaymentOutcome> {
@@ -183,7 +193,7 @@ export class SimulatedPayer {
   readonly address = this.wallet.classicAddress
   async pay<T>(terms: PaymentRequirement, persist: (signed: Submission) => Submission, send: (submission: Submission) => Promise<T>): Promise<{ submission: Submission; sent: Promise<T> }> {
     const lastLedgerSequence = simulatedLedgerIndex() + 20
-    const signed = this.wallet.sign({ TransactionType: 'Payment', Account: this.address, Destination: terms.payTo, Amount: terms.amountDrops, InvoiceID: terms.invoiceId, Sequence: 1, Fee: '12', LastLedgerSequence: lastLedgerSequence })
+    const signed = this.wallet.sign({ TransactionType: 'Payment', Account: this.address, Destination: terms.payTo, Amount: ledgerAmount(terms.amountDrops, terms.asset), InvoiceID: terms.invoiceId, Sequence: 1, Fee: '12', LastLedgerSequence: lastLedgerSequence })
     const submission = persist({ txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence })
     return { submission, sent: send(submission) }
   }

@@ -33,7 +33,7 @@ function publicMetadata(value: unknown): void {
 }
 
 
-export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string; ledgerIndex?: number }
+export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string; ledgerIndex?: number; cancelledAt?: string }
 
 /** All mutations are synchronous SQLite transactions; no transaction crosses an await. */
 export class Store {
@@ -126,7 +126,7 @@ export class Store {
       const charged = intents.filter(i => chargedStatuses.has(i.status))
       const policy = this.policyPayments(id)
       const policySpent = policy.filter(p => p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
-      const policyReserved = policy.filter(p => !p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
+      const policyReserved = policy.filter(p => !p.confirmedAt && !p.cancelledAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
       spentMinor += policy.filter(p => p.confirmedAt?.slice(0, 10) === day).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
       const hold = this.db.prepare('SELECT minor, closed FROM hire_reserves WHERE run_id=?').get(id)
       spentMinor += intents.filter(i => i.escrow?.state === 'CANCELLED' && i.createdAt?.slice(0, 10) === day).reduce((sum, i) => sum + i.amountMinor, 0)
@@ -354,7 +354,7 @@ export class Store {
     const usage = this.usage(new Date().toISOString().slice(0, 10), undefined, run.runId)
     const own = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', run.runId)
       .filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
-    return usage.spentMinor + usage.reservedMinor + own + this.policyPayments(run.runId).filter(p => !p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0) + amount <= spendPolicy().walletDailyMinor
+    return usage.spentMinor + usage.reservedMinor + own + this.policyPayments(run.runId).filter(p => !p.confirmedAt && !p.cancelledAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0) + amount <= spendPolicy().walletDailyMinor
   }
   /** CAS prevents independent managers/processes from submitting the same intent. */
   claimSubmitting(intentId: string): boolean {
@@ -399,7 +399,7 @@ export class Store {
       this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), deliveryToken)
       this.saveIntent({ ...intent, status: 'SETTLED', settledAt: receipt.settledAt, receiptId: receipt.receiptId, error: undefined })
       this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: receipt.xrpl?.txHash ?? intent.txHash ?? null, ledgerIndex: receipt.xrpl?.ledgerIndex ?? null,
-        amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl?.amountDrops ?? intent.quote?.payment?.amountDrops ?? null, payTo: intent.quote?.payment?.payTo ?? null, payer: receipt.xrpl?.payer ?? null,
+        asset: receipt.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount ?? null, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl?.amountDrops ?? intent.quote?.payment?.amountDrops ?? null, payTo: intent.quote?.payment?.payTo ?? null, payer: receipt.xrpl?.payer ?? null,
         label: receipt.label, resourceId: receipt.resourceId, version: receipt.version, profileId: intent.profileId, settledAt: receipt.settledAt, policyVersion: this.rawRun(intent.runId).policyVersion ?? POLICY_VERSION } })
     })
   }
@@ -478,7 +478,7 @@ export class Store {
       this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
       this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? 'VERIFIED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
       this.audit.append({ runId: intent.runId, intentId, kind: terminal === 'finish' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', data: { txHash: tx.txHash, ledgerIndex, owner: terms.payer, createSequence: e.publicStatus.createSequence, createHash: e.publicStatus.createHash, result: 'tesSUCCESS', proofOk: e.publicStatus.proofOk ?? false, amountDrops: terms.amount, payTo: terms.payTo } })
-      this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: tx.txHash, ledgerIndex, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl!.amountDrops, payTo: terms.payTo, payer: terms.payer, label: receipt.label, scheme: 'escrow-v1', state: e.publicStatus.state } })
+      this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: tx.txHash, ledgerIndex, asset: receipt.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount ?? null, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl!.amountDrops, payTo: terms.payTo, payer: terms.payer, label: receipt.label, scheme: 'escrow-v1', state: e.publicStatus.state } })
     })
   }
   /** Write-once: the first signed payment for an intent is the only one that may ever be submitted. */
@@ -528,12 +528,27 @@ export class Store {
       this.audit.append({ runId, kind: 'payout-reserve', data: { policyVersion: 'hire-v1', totalDrops: String(total), payments: payments.map(p => ({ id: p.id, kind: p.kind, payTo: p.payTo, amountDrops: p.amountDrops })) } })
     })
   }
+  cancelRefusedRoyalty(runId: string, id: string, caller: string, reason: Record<string, unknown>) {
+    this.atomic(() => {
+      const payment = this.policyPayments(runId).find(p => p.id === id)!
+      if (payment.cancelledAt) return
+      if (payment.submission || payment.kind !== 'royalty') throw new Error('Signed payout requires reconciliation')
+      const cancelledAt = new Date().toISOString()
+      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, cancelledAt }), id)
+      const refund: PolicyPayment = { id: `${id}:refund`, kind: 'change', payTo: caller, amountDrops: payment.amountDrops }
+      this.db.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(refund.id, runId, JSON.stringify(refund))
+      this.audit.append({ runId, intentId: id, kind: 'refusal', data: { stage: 'payout', paymentKind: payment.kind, payTo: payment.payTo, amountDrops: payment.amountDrops, ...reason } })
+      this.audit.append({ runId, intentId: id, kind: 'payout-cancel', data: { cancelledAt, paymentKind: payment.kind, amountDrops: payment.amountDrops, refundId: refund.id, refundPayTo: caller } })
+      this.audit.append({ runId, kind: 'payout-reserve', data: { policyVersion: 'hire-v1', totalDrops: refund.amountDrops, payments: [refund], reason: 'denylist refund' } })
+    })
+  }
   assertPolicyPaymentAllowed(runId: string) {
     if (this.isPaused() || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
   }
   recordPolicySubmission(runId: string, id: string, submission: Submission) {
     return this.atomic(() => {
       const payment = this.policyPayments(runId).find(p => p.id === id)!
+      if (payment.cancelledAt) throw new Error('Policy payment cancelled')
       if (payment.submission) return payment.submission
       if (this.isPaused() || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
       this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, submission }), id)
@@ -552,7 +567,7 @@ export class Store {
     })
   }
   closeHireReserve(runId: string) {
-    if (this.policyPayments(runId).some(p => !p.confirmedAt)) throw new Error('Hire payments pending')
+    if (this.policyPayments(runId).some(p => !p.confirmedAt && !p.cancelledAt)) throw new Error('Hire payments pending')
     this.db.prepare('UPDATE hire_reserves SET closed=1 WHERE run_id=?').run(runId)
   }
   getDeliveryToken(intentId: string): string | undefined { return this.db.prepare('SELECT token FROM receipts WHERE intent_id=?').get(intentId)?.token as string | undefined }

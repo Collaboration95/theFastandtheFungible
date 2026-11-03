@@ -1,5 +1,6 @@
 // The publisher's own x402 facilitator (#129, D7): verify, submit, de-duplicate by tx hash.
 // Simulated rail: the same checks with a local signer and no network, labelled SIMULATED.
+import { ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
 import { decode, hashes, verifySignature } from 'xrpl'
 import type { Rail } from '../shared/contracts/publisher.js'
 import { X402_NETWORK, type PaymentRequirements, type PaymentResponse, type PaymentSignature } from '../shared/contracts/x402.js'
@@ -8,12 +9,12 @@ import { lookupTx, simulatedLedgerIndex, simulatedPayerWallet, validatedLedgerIn
 import type { PublisherJournal, X402Quote, X402Settlement } from './journal.js'
 
 export const MAX_TIMEOUT_SECONDS = 60
-type Tx = { TransactionType?: string; Account?: string; Destination?: string; Amount?: unknown; InvoiceID?: string; LastLedgerSequence?: number }
+type Tx = { TransactionType?: string; Account?: string; Destination?: string; Amount?: unknown; InvoiceID?: string; LastLedgerSequence?: number; Flags?: number; SendMax?: unknown; Paths?: unknown; DeliverMin?: unknown }
 export type Verified = { ok: true; txHash: string; payer: string; quote: X402Quote } | { ok: false; reason: string; txHash?: string }
 export type Settled = { ok: true; settlement: X402Settlement; quote: X402Quote } | { ok: false; reason: string; txHash?: string; pending?: boolean }
 
 export const requirementsFor = (quote: X402Quote): PaymentRequirements => ({
-  scheme: 'exact', network: X402_NETWORK, amount: quote.amount, asset: 'XRP', payTo: quote.payTo,
+  scheme: 'exact', network: X402_NETWORK, amount: quote.amount, asset: quote.asset ?? 'XRP', payTo: quote.payTo,
   maxTimeoutSeconds: MAX_TIMEOUT_SECONDS, extra: { invoiceId: quote.invoiceId, areFeesSponsored: false },
 })
 export const paymentResponse = (result: Settled): PaymentResponse => result.ok
@@ -36,7 +37,10 @@ export class Facilitator {
           : ledgerInvoiceId(quote.invoiceId) !== String(tx.InvoiceID).toUpperCase() ? 'InvoiceID does not match the quote'
             : signature.accepted.extra.invoiceId !== quote.invoiceId ? 'accepted requirements name another invoice'
               : tx.Destination !== quote.payTo ? 'wrong destination'
-                : tx.Amount !== quote.amount ? 'wrong amount'
+                : !matchesAmount(ledgerAmount(signature.accepted.amount, signature.accepted.asset), quote.amount, quote.asset) || signature.accepted.payTo !== quote.payTo ? 'accepted terms differ from quote'
+                : (Number(tx.Flags ?? 0) & 0x20000) !== 0 ? 'partial payments are refused'
+                : tx.SendMax !== undefined || tx.Paths !== undefined || tx.DeliverMin !== undefined ? 'cross-currency payments are refused'
+                : !matchesAmount(tx.Amount, quote.amount, quote.asset) ? 'wrong amount'
                   : typeof tx.LastLedgerSequence !== 'number' ? 'LastLedgerSequence missing'
                     : this.rail === 'simulated' && tx.Account !== this.simulatedPayer ? 'the simulated rail accepts only the SIMULATED test payer'
                       : this.rail === 'xrpl-testnet' && tx.Account === this.simulatedPayer ? 'the SIMULATED test payer is refused on the XRPL Testnet'
@@ -67,6 +71,7 @@ export class Facilitator {
     const { txHash, quote, payer } = verified
     const existing = this.journal.settlementByTx(txHash)
     if (existing) return { ok: true, settlement: existing, quote }
+    try { this.journal.bindPayment(quote.ledgerInvoiceId, txHash) } catch { return { ok: false, reason: 'Invoice already settled or bound to another payment', txHash } }
     let ledgerIndex: number | undefined
     if (this.rail === 'xrpl-testnet') {
       const confirmed = await this.submitAndConfirm(signature.payload.signedTxBlob, txHash, quote)
@@ -83,7 +88,7 @@ export class Facilitator {
   }
 
   private async submitAndConfirm(blob: string, txHash: string, quote: X402Quote): Promise<{ ok: true; ledgerIndex: number } | { ok: false; reason: string; pending?: boolean }> {
-    const terms = { rail: 'xrpl-testnet' as const, network: 'xrpl:1' as const, asset: 'XRP' as const, payTo: quote.payTo, amountDrops: quote.amount, invoiceId: quote.ledgerInvoiceId }
+    const terms = { rail: 'xrpl-testnet' as const, network: 'xrpl:1' as const, asset: quote.asset ?? 'XRP' as const, payTo: quote.payTo, amountDrops: quote.amount, invoiceId: quote.ledgerInvoiceId }
     // Already validated (e.g. a resend after a restart) needs no new submission; else only an open quote may be submitted.
     if (!(await this.onLedger(txHash))) {
       if (Date.parse(quote.expiresAt) <= Date.now()) return { ok: false, reason: 'quote expired' }

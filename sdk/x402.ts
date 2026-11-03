@@ -1,17 +1,20 @@
-/** Generic Node x402 v2 exact/XRP buyer. No ResearchAgent-specific routes or manifests. */
+/** Generic Node x402 v2 exact XRP / issued-currency buyer. No ResearchAgent-specific routes or manifests. */
+import { ledgerAmount, decimalUnits, type Asset } from '../shared/contracts/asset.js'
+import { checkIssuedPayment } from '../shared/issued-currency.js'
+import { screenPayee } from '../server/payee-screening.js'
 import { Wallet, decode } from 'xrpl'
 import { decodeHeader, encodeHeader, ledgerInvoiceId } from '../shared/x402.js'
 import { signPayment, testnetLedger, verifyPayment, simulatedPayerWallet, type Ledger } from '../shared/xrpl.js'
 type Submission = Awaited<ReturnType<typeof signPayment>>
 
-export type PaymentAttempt = { signature: string; submission: Submission; payTo: string; amountDrops: string; invoiceId: string }
+export type PaymentAttempt = { signature: string; submission: Submission; payTo: string; amountDrops: string; invoiceId: string; asset?: Asset }
 export type PaymentJournal = { load(key: string): PaymentAttempt | undefined; save(key: string, value: PaymentAttempt): PaymentAttempt }
 const attempts = new Map<string, PaymentAttempt>()
 const memoryJournal: PaymentJournal = { load: key => attempts.get(key), save: (key, value) => {
   const old = attempts.get(key); if (old) return old; attempts.set(key, value); return value
 } }
 const queues = new Map<string, Promise<unknown>>()
-export type PayOptions = { wallet: Wallet; maxDrops: string; method?: string; body?: string;
+export type PayOptions = { wallet: Wallet; maxDrops: string; issued?: { asset: Exclude<Asset, 'XRP'>; maxAmount: string }; method?: string; body?: string;
   headers?: HeadersInit; idempotencyKey?: string; journal?: PaymentJournal; ledger?: Ledger; fetch?: typeof fetch }
 
 /** Persist the returned attempt to retry delivery safely after a process restart. Fees are capped at 2,000 drops. */
@@ -36,22 +39,25 @@ export async function payAndFetch(url: string, options: PayOptions) {
       if (first.status !== 402) { await first.body?.cancel(); throw new Error('Expected x402 payment challenge') }
       const required = decodeHeader('PAYMENT-REQUIRED', first.headers.get('PAYMENT-REQUIRED'))
       await first.body?.cancel()
-      const terms = required.accepts[0] // codec rejects Mainnet, non-XRP and non-exact schemes
+      const terms = options.issued ? required.accepts.find(t => JSON.stringify(t.asset) === JSON.stringify(options.issued!.asset)) : required.accepts.find(t => t.asset === 'XRP')
+      if (!terms) throw new Error('Requested asset unavailable')
       if (terms.scheme !== 'exact') throw new Error('Use the ResearchAgent escrow purchase service for escrow-v1')
-      if (new URL(required.resource.url, url).href !== resource.href || BigInt(terms.amount) > BigInt(options.maxDrops) || terms.maxTimeoutSeconds > 300) throw new Error('x402 terms exceed resource or spending authority')
+      if (new URL(required.resource.url, url).href !== resource.href || (terms.asset === 'XRP' ? BigInt(terms.amount) > BigInt(options.maxDrops) : decimalUnits(terms.amount)! > (decimalUnits(options.issued!.maxAmount) ?? -1n)) || terms.maxTimeoutSeconds > 300) throw new Error('x402 terms exceed resource or spending authority')
+      for (const address of [terms.payTo, ...(terms.asset === 'XRP' ? [] : [terms.asset.issuer])]) { const refusal = screenPayee(address); if (refusal) throw new Error(refusal.refusal) }
+      if (terms.asset !== 'XRP') await checkIssuedPayment(ledger, options.wallet.classicAddress, terms.payTo, terms.amount, terms.asset)
       const invoiceId = ledgerInvoiceId(terms.extra.invoiceId)
-      const submission = await signPayment(options.wallet, { Destination: terms.payTo, Amount: terms.amount, InvoiceID: invoiceId }, ledger)
-      attempt = journal.save(key, { submission, payTo: terms.payTo, amountDrops: terms.amount, invoiceId,
+      const submission = await signPayment(options.wallet, { Destination: terms.payTo, Amount: ledgerAmount(terms.amount, terms.asset), InvoiceID: invoiceId }, ledger)
+      attempt = journal.save(key, { submission, payTo: terms.payTo, amountDrops: terms.amount, asset: terms.asset, invoiceId,
         signature: encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: terms, payload: { signedTxBlob: submission.txBlob } }) })
     }
-    if (BigInt(attempt.amountDrops) > BigInt(options.maxDrops)) throw new Error('Stored payment exceeds authority')
+    if ((attempt.asset ?? 'XRP') === 'XRP' ? BigInt(attempt.amountDrops) > BigInt(options.maxDrops) : !options.issued || JSON.stringify(options.issued.asset) !== JSON.stringify(attempt.asset) || decimalUnits(attempt.amountDrops)! > (decimalUnits(options.issued.maxAmount) ?? -1n)) throw new Error('Stored payment exceeds authority')
     headers.set('PAYMENT-SIGNATURE', attempt.signature)
     const response = await request() // ambiguous failure keeps the same durable blob, never signs again
     const receipt = decodeHeader('PAYMENT-RESPONSE', response.headers.get('PAYMENT-RESPONSE'))
     if (!receipt.success || receipt.transaction !== attempt.submission.txHash || receipt.payer !== options.wallet.classicAddress) throw new Error('x402 settlement receipt mismatch; reuse this intent')
     const proof = await verifyPayment(ledger, receipt.transaction, { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', ...attempt })
     if (proof.state !== 'ok') throw new Error('x402 settlement is not ledger-proven; reuse this intent')
-    return { response, receipt, payment: { txHash: attempt.submission.txHash, payTo: attempt.payTo, amountDrops: attempt.amountDrops, feeDrops: String(decode(attempt.submission.txBlob).Fee) } }
+    return { response, receipt, payment: { txHash: attempt.submission.txHash, payTo: attempt.payTo, amountDrops: attempt.amountDrops, asset: attempt.asset ?? 'XRP', feeDrops: String(decode(attempt.submission.txBlob).Fee) } }
   })
   queues.set(options.wallet.classicAddress, task)
   try { return await task } finally { if (queues.get(options.wallet.classicAddress) === task) queues.delete(options.wallet.classicAddress); await owned?.close() }

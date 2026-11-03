@@ -41,6 +41,10 @@ export function createMissing({ slugs, env, envText, log = console.log, generate
 }
 
 async function main() {
+  if (process.argv.includes('--rlusd')) {
+    const { setupRlusdWallets } = await import('./rlusd-wallets.ts')
+    await setupRlusdWallets(); return
+  }
   const slugs = paidSlugs()
   const fresh = []
   if (process.argv.includes('--create')) {

@@ -1,5 +1,6 @@
 // XRPL Testnet access shared by the publisher (verifies payments) and the api (pays).
 // Runtime code: import by path, never from shared/contracts/index (the browser bundle).
+import { matchesAmount } from './contracts/asset.js'
 import { createHash } from 'node:crypto'
 import { Client, Wallet, type ECDSA } from 'xrpl'
 import type { LedgerProof, PaymentRequirement } from './contracts/publisher.js'
@@ -68,12 +69,15 @@ export async function verifyPayment(ledger: Ledger, txHash: string, terms: Payme
   const { tx, meta } = found
   const reason = tx.TransactionType !== 'Payment' ? 'not a Payment'
     : meta.TransactionResult !== 'tesSUCCESS' ? `ledger result ${String(meta.TransactionResult)}`
+      : (Number(tx.Flags ?? 0) & 0x20000) !== 0 ? 'partial payments are refused'
+      : tx.SendMax !== undefined || tx.Paths !== undefined || tx.DeliverMin !== undefined ? 'cross-currency payments are refused'
+      : terms.asset !== 'XRP' && !matchesAmount(tx.Amount ?? tx.DeliverMax, terms.amountDrops, terms.asset) ? 'wrong transaction amount'
       : tx.Destination !== terms.payTo ? 'wrong destination'
-        : meta.delivered_amount !== terms.amountDrops ? 'wrong delivered amount'
+        : !matchesAmount(meta.delivered_amount, terms.amountDrops, terms.asset) ? 'wrong delivered amount'
           : String(tx.InvoiceID ?? '').toUpperCase() !== terms.invoiceId ? 'InvoiceID does not match the quote'
             : undefined
   if (reason) return { state: 'invalid', reason }
-  return { state: 'ok', proof: { txHash, ledgerIndex: found.ledgerIndex, payer: String(tx.Account), payTo: terms.payTo, amountDrops: terms.amountDrops } }
+  return { state: 'ok', proof: { txHash, ledgerIndex: found.ledgerIndex, payer: String(tx.Account), payTo: terms.payTo, amountDrops: terms.amountDrops, asset: terms.asset, deliveredAmount: meta.delivered_amount } }
 }
 
 /** Public, test-only seed salt: the SIMULATED payer is accepted only on the simulated rail, never on the Testnet. */
@@ -88,7 +92,7 @@ export const simulatedLedgerIndex = (now = Date.now()) => Math.floor(now / 4000)
  * capped fee, LastLedgerSequence = current + 20. Without one (SIMULATED rail): no network, the simulated
  * ledger clock. The caller persists the blob write-once before submitting it.
  */
-export async function signPayment(wallet: Wallet, payment: { Destination: string; Amount: string; InvoiceID: string }, ledger?: Ledger): Promise<{ txHash: string; txBlob: string; lastLedgerSequence: number }> {
+export async function signPayment(wallet: Wallet, payment: { Destination: string; Amount: string | { currency: string; issuer: string; value: string }; InvoiceID: string }, ledger?: Ledger): Promise<{ txHash: string; txBlob: string; lastLedgerSequence: number }> {
   let fields = { Sequence: 1, Fee: '12', LastLedgerSequence: simulatedLedgerIndex() + 20 }
   if (ledger) {
     const [info, current, fee] = await Promise.all([

@@ -397,3 +397,45 @@ object identity and ledger results. `npm run audit:verify -- --testnet` checks
 both escrow receipt transactions and validated events, including creates still
 awaiting a terminal receipt. CSV/JSONL exports identify escrow state and parent
 create identity; direct Payment verification remains unchanged.
+
+## Issued Testnet currency (#275) and refused hire payouts (#310)
+
+XRP remains the default. Set `XRPL_PUBLISHER_<SLUG>_CURRENCY=RLUSD` on the
+publisher to advertise issued currency first, with a separately invoiced XRP
+alternative. `XRPL_RLUSD_ISSUER` defaults to Ripple's documented Testnet issuer;
+a different issuer is always labelled **test USD (substitute for RLUSD)**.
+`asset` is `XRP` or the ResearchAgent extension `{currency, issuer, label}`.
+The currency hex is `524C555344000000000000000000000000000000`. Issued `amount`
+is a decimal token value. This extension has local publisher/SDK integration
+coverage; compatibility with external facilitators is not claimed.
+
+Existing prices and budgets remain SGD minor units (#163 is still open).
+The explicitly fixed demo conversion is **1 SGD = 1 test USD**, while XRP keeps
+1 SGD cent = 1,000 drops. Neither is live FX or an exchangeability claim.
+The invoice binds the exact asset/issuer, amount, article/version, root and payee.
+The buyer validates against the signed manifest price, screens issuer/payee and
+checks token balance, both trust lines, writer limit and XRP reserve plus fees.
+Trust lines are provisioned only by operator tooling, never implicitly by a buy.
+Escrow remains XRP only; opting a token writer into escrow refuses without fallback.
+
+Quotes, API/SDK purchase results, receipts and audit exports carry `asset`.
+For compatibility `amountDrops` is the settlement value string: integer drops
+for XRP, decimal token value for issued assets; consume it together with `asset`.
+Receipts/audit rows also carry the independently verified `deliveredAmount`.
+The facilitator refuses tfPartialPayment and conversion fields before submission;
+validated delivery must equal the quote's value/currency/issuer. It binds the
+invoice to the first signed hash before submission, including ambiguous retries.
+
+The generic SDK stays XRP by default. For tokens, explicitly supply
+`issued: { asset: {currency, issuer, label}, maxAmount: '0.60' }` alongside the
+existing `maxDrops` native cap. Replay rechecks the asset and current limit.
+Use the same durable journal. No API/UI settings in `src/` were changed.
+
+Hire policy cancels unsigned denylisted royalties and creates write-once change
+refunds to the original caller; ordinary refused purchases already release their
+reservation and increase unspent-budget change. `cancelledRoyalties` explains
+those refunds in the money chain. Cancelled rows never sign; signed/uncertain
+payouts remain reserved. `payout-cancel` and replacement `payout-reserve` rows are
+atomic with the change; signatures/settlement use the original audit flow.
+The caller may itself be denied, in which case policy holds funds rather than
+bypassing the screen. See COMPLIANCE.md and the public evidence JSON.

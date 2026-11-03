@@ -139,9 +139,9 @@ claims that a law applies or that a credential satisfies it.
 | done (local) | One intent / one charge, persist-before-submit, reconciliation | `server/store.ts`, `server/xrpl.ts`, `tests/xrpl.test.ts`. |
 | done (local) | Exact XRP amount, invoice binding and Testnet restriction | `shared/x402.ts`, `shared/xrpl.ts`, `publisher/facilitator.ts`. |
 | gap | Key custody and signer policy | Replace development environment seeds with KMS/HSM or external signer; rotate keys, audit access and implement recovery. |
-| gap | Price units: RLUSD vs XRP drops (#163) | Select denomination, validate issuer/trustlines, define rounding, quote expiry and refund drift. Do not treat the fixed demo rate as FX. |
+| gap | Price units: RLUSD vs XRP drops (#163) | SGD budget units retained; fixed demo 1 SGD = 1 test USD. Issuer/trust-line checks implemented on Testnet; mainnet FX and redemption remain open. |
 | gap | Facilitator SLA and distributed operation | Define availability, latency, idempotency across instances, durable storage, incident ownership and fallback reconciliation. |
-| gap | Reserves, fees and funding | Model account/owner reserves, token trustline reserves, fee headroom and refund liquidity against the chosen network; alert before depletion. |
+| partial | Reserves, fees and funding | #275 reads live base/owner reserve and checks trust-line balances, limits and incremental reserve before TrustSet. Production alerts, funding and refund liquidity remain open. |
 | gap | Monitoring and operations | Alert on pending age, failed delivery after settlement, duplicate intents, balance/fee changes and refund refusal. Test failover and backup restore. |
 | gap | Writer identity and compliance | Review writer onboarding, KYC, sanctions and whether Travel Rule obligations apply. Assess XRPL Credentials as an identity attestation mechanism; credentials alone are not a compliance decision. |
 | done (local) | Operator audit trail and receipt export (#288) | Hash-chained `audit_log` in the same transaction as each spend decision, CSV/JSONL export, `npm run audit:verify [--testnet]`: [COMPLIANCE.md](COMPLIANCE.md). Not signed or externally timestamped; pin the head to catch truncation. |
@@ -330,3 +330,34 @@ articles, not mainnet measurements or Starter Kit compatibility results.
   exact remains default. Suggested upstream fix: document an extension interface
   for lock/proof/release receipts rather than treating lock as settlement.
   Severity: medium interoperability risk. Mainnet interoperability is untested.
+
+## Issued-currency integration · 3 Nov 2026 (#275 / #310)
+
+Evidence: `docs/evidence/rlusd-275-refund-310.json`,
+`docs/evidence/rlusd-275-refund-310.md`, `tests/rlusd.test.ts`.
+
+- **Observed: official RLUSD faucet requires authentication.** Ripple documents
+  Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV; its account exists.
+  The faucet mint endpoint returned HTTP 401 Authentication required.
+  Workaround: a Testnet issuer labelled **test USD (substitute for RLUSD)**.
+  Suggested fix: document authenticated funding or a bounded developer faucet
+  with machine-readable failure guidance. Severity: medium setup friction.
+  Mainnet impact: no mainnet inference; issuer onboarding/redemption remain gaps.
+- **Observed: trust lines lock XRP reserve.** Payer and writer each needed a
+  trust line; setup reads live reserve (0.2 XRP increment observed), checks extra
+  owner reserve and keeps 2,000 drops fee headroom. Purchase checks token balance
+  separately. Writer received 0.6 issued units; fee 12 drops. Suggested fix:
+  quickstarts should show recipient trust lines, limits, token and XRP liquidity.
+  Severity: medium. Mainnet impact: production funding/alerts still needed.
+- **Code-derived partial-payment trap, prevented.** Amount/API-v2 DeliverMax is
+  not delivered_amount. Reject tfPartialPayment and conversion fields, then
+  compare exact decimal value/currency/issuer in validated metadata. Tests inject
+  underpayment, wrong issuer and unavailable delivery; no live attack claimed.
+  Suggested fix: adversarial issued-currency x402 reference tests. Severity:
+  high integrity risk; the same failure mode matters on mainnet.
+- **Observed #310:** a denied 2,500-drop royalty was cancelled before signing,
+  audited and returned via a stable refund intent; 110,000 unused budget drops
+  returned separately. Reservation zero, replay identical, audit/gate pass.
+  Suggested fix: reference custody flows must distinguish unsigned refusal from
+  ambiguous ledger settlement; only unsigned payouts permit automatic cancel.
+  Severity: high custody risk. Mainnet still needs policy/legal review.

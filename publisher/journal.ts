@@ -1,3 +1,4 @@
+import type { Asset } from '../shared/contracts/asset.js'
 import type { EscrowQuote } from '../shared/contracts/escrow.js'
 import { escrowInvoice } from '../shared/escrow.js'
 import { createHash, randomBytes } from 'node:crypto'
@@ -12,7 +13,7 @@ export function digestBytes(bytes: string): string {
   return createHash('sha256').update(bytes, 'utf8').digest('hex')
 }
 /** What the publisher asked for in one 402 (#128). `invoiceId` is invoiceIdFor(...); the tx InvoiceID is its sha256. */
-export type X402Quote = { invoiceId: string; ledgerInvoiceId: string; quoteId: string; publisherSlug: string; articleId: string; version: string; amount: string; payTo: string; expiresAt: string }
+export type X402Quote = { invoiceId: string; ledgerInvoiceId: string; quoteId: string; publisherSlug: string; articleId: string; version: string; amount: string; payTo: string; expiresAt: string; asset?: Asset }
 export type X402Refund = { originalTxHash: string; intentId: string; txHash: string; txBlob: string }
 export type X402Settlement = { txHash: string; ledgerInvoiceId: string; payer: string; ledgerIndex?: number; settledAt: string }
 
@@ -23,6 +24,7 @@ export class PublisherJournal {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
     this.db = new DatabaseSync(path)
     this.db.exec(`PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;
+      CREATE TABLE IF NOT EXISTS x402_bindings (invoice TEXT PRIMARY KEY, hash TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS escrow_quotes (invoice TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS escrow_grants (tx_hash TEXT PRIMARY KEY, invoice TEXT UNIQUE NOT NULL, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS x402_quotes (ledger_invoice_id TEXT PRIMARY KEY, quote_json TEXT NOT NULL);
@@ -75,6 +77,12 @@ export class PublisherJournal {
   quoteByInvoice(ledgerInvoiceId: string): X402Quote | undefined {
     const row = this.db.prepare('SELECT quote_json FROM x402_quotes WHERE ledger_invoice_id = ?').get(ledgerInvoiceId.toUpperCase()) as { quote_json: string } | undefined
     return row ? JSON.parse(row.quote_json) as X402Quote : undefined
+  }
+  bindPayment(invoice: string, hash: string) {
+    return this.transaction(() => {
+      this.db.prepare('INSERT OR IGNORE INTO x402_bindings VALUES (?,?)').run(invoice, hash)
+      if (this.db.prepare('SELECT hash FROM x402_bindings WHERE invoice=?').get(invoice)?.hash !== hash) throw new PublisherError(409, 'Invoice already bound to another payment')
+    })
   }
   settlementByTx(txHash: string): X402Settlement | undefined {
     const row = this.db.prepare('SELECT settlement_json FROM x402_settlements WHERE tx_hash = ?').get(txHash) as { settlement_json: string } | undefined

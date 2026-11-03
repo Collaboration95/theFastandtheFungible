@@ -6,6 +6,7 @@ import { matchesCreate } from '../shared/escrow.js'
 // Never put premium bytes, seeds, tokens, signed blobs or the question text in an entry: assertSafe() rejects them.
 import { createHash, randomBytes } from 'node:crypto'
 import type { DatabaseSync } from 'node:sqlite'
+import { amountFor, matchesAmount, type Asset } from '../shared/contracts/asset.js'
 import { DROPS_PER_MINOR, PurchaseIntentSchema, ReceiptSchema, XRPL_EXPLORER, XRPL_LABEL, type PurchaseIntent, type Receipt } from '../shared/contracts/index.js'
 import { lookupTx, verifyPayment, type Ledger } from '../shared/xrpl.js'
 import { ledgerInvoiceId } from '../shared/x402.js'
@@ -142,7 +143,7 @@ function checkCoverage(db: DatabaseSync, entries: AuditEntry[], result: ChainRes
     const entry = settles.get(receipt.intentId)
     if (!entry) { flag(`receipt for intent ${receipt.intentId} has no settle entry`); continue }
     const txHash = receipt.xrpl?.txHash ?? intent.txHash
-    if (entry.data.txHash !== txHash || entry.data.amountMinor !== receipt.amountMinor || entry.data.payTo !== (intent.quote?.payment?.payTo ?? null)) flag(`receipt for intent ${receipt.intentId} differs from its settle entry (tx, amount or payee)`, entry.seq)
+    if ((entry.data.asset !== undefined && canonical(entry.data.asset) !== canonical(receipt.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP')) || (entry.data.deliveredAmount != null && canonical(entry.data.deliveredAmount) !== canonical(receipt.xrpl?.deliveredAmount)) || entry.data.txHash !== txHash || entry.data.amountMinor !== receipt.amountMinor || entry.data.payTo !== (intent.quote?.payment?.payTo ?? null)) flag(`receipt for intent ${receipt.intentId} differs from its settle entry (tx, amount or payee)`, entry.seq)
   }
   for (const row of db.prepare('SELECT intent_id, tx_hash FROM submissions').all() as Row[]) {
     const id = String(row.intent_id)
@@ -177,7 +178,14 @@ function checkCoverage(db: DatabaseSync, entries: AuditEntry[], result: ChainRes
   if (hasTable(db, 'policy_payments')) {
     const payoutSigns = by('payout-sign'), payoutSettles = by('payout-settle')
     for (const row of db.prepare('SELECT json FROM policy_payments ORDER BY id').all() as Row[]) {
-      const payment = JSON.parse(String(row.json)) as { id: string; payTo: string; amountDrops: string; submission?: { txHash: string }; confirmedAt?: string }
+      const payment = JSON.parse(String(row.json)) as { id: string; payTo: string; amountDrops: string; cancelledAt?: string; submission?: { txHash: string }; confirmedAt?: string }
+      if (payment.cancelledAt) {
+        const cancel = entries.find(e => e.kind === 'payout-cancel' && e.intentId === payment.id)
+        if (!cancel || cancel.data.amountDrops !== payment.amountDrops || cancel.data.cancelledAt !== payment.cancelledAt || payment.submission) flag(`cancelled payout ${payment.id} differs from its payout-cancel entry`)
+        const refund = db.prepare('SELECT json FROM policy_payments WHERE id=?').get(`${payment.id}:refund`)
+        const p = refund ? JSON.parse(String(refund.json)) : undefined
+        if (!p || p.payTo !== cancel?.data.refundPayTo || p.amountDrops !== payment.amountDrops || p.cancelledAt) flag(`cancelled payout ${payment.id} has no matching caller refund`)
+      }
       if (baseline.has(payment.id) || !payment.submission) continue
       result.coverage.payouts++
       const sign = payoutSigns.get(payment.id), settle = payoutSettles.get(payment.id)
@@ -226,12 +234,13 @@ export function auditEntries(db: DatabaseSync, range: DateRange = {}): AuditEntr
 
 /** `purchase` = the operator paid a writer for an article; `inbound`, `royalty` and `change` are the hire-the-agent flow (#274). */
 export type ReceiptRow = {
+  asset?: Asset; deliveredAmount?: unknown
   escrowTerms?: EscrowTerms; escrowCreateHash?: string; escrowCreateSequence?: number; escrowState?: string
   kind: 'purchase' | 'inbound' | 'royalty' | 'change'; label: string; network: string; runId: string; intentId: string; surface: string; principal: string; policyVersion: string; writer: string; resourceId: string; version: string
   payee: string; payer: string; amountMinor: number | ''; currency: string; amountDrops: string; txHash: string; invoiceId: string; ledgerIndex: number | ''; explorerUrl: string
   status: string; refundTxHash: string; refundAmountMinor: number | ''; refundExplorerUrl: string; reservedAt: string; settledAt: string
 }
-export const RECEIPT_COLUMNS: (keyof ReceiptRow)[] = ['kind', 'label', 'network', 'runId', 'intentId', 'surface', 'principal', 'policyVersion', 'writer', 'resourceId', 'version', 'payee', 'payer', 'amountMinor', 'currency', 'amountDrops', 'txHash', 'invoiceId', 'ledgerIndex', 'explorerUrl', 'status', 'refundTxHash', 'refundAmountMinor', 'refundExplorerUrl', 'reservedAt', 'settledAt', 'escrowState', 'escrowCreateHash', 'escrowCreateSequence']
+export const RECEIPT_COLUMNS: (keyof ReceiptRow)[] = ['asset', 'deliveredAmount', 'kind', 'label', 'network', 'runId', 'intentId', 'surface', 'principal', 'policyVersion', 'writer', 'resourceId', 'version', 'payee', 'payer', 'amountMinor', 'currency', 'amountDrops', 'txHash', 'invoiceId', 'ledgerIndex', 'explorerUrl', 'status', 'refundTxHash', 'refundAmountMinor', 'refundExplorerUrl', 'reservedAt', 'settledAt', 'escrowState', 'escrowCreateHash', 'escrowCreateSequence']
 const explorer = (tx: string) => `${XRPL_EXPLORER}/${tx}`
 
 /**
@@ -249,7 +258,7 @@ export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow
     const txHash = receipt.xrpl?.txHash ?? intent.txHash ?? ''
     return [{
       ...(intent.escrow ? { escrowTerms: EscrowTermsSchema.parse(JSON.parse(intent.quote!.quoteId)), escrowCreateHash: intent.escrow.createHash, escrowCreateSequence: intent.escrow.createSequence, escrowState: intent.escrow.state } : {}),
-      kind: 'purchase', label: receipt.label, network: testnet ? 'XRPL Testnet (xrpl:1), no real value' : 'SIMULATED rail, no real funds', runId: receipt.runId, intentId: receipt.intentId,
+      asset: receipt.xrpl?.asset ?? terms?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount, kind: 'purchase', label: receipt.label, network: testnet ? 'XRPL Testnet (xrpl:1), no real value' : 'SIMULATED rail, no real funds', runId: receipt.runId, intentId: receipt.intentId,
       surface: String(admission?.surface ?? 'unattributed'), principal: String(admission?.principal ?? 'unattributed'), policyVersion: String(admission?.policy_version ?? ''),
       writer: intent.profileId, resourceId: receipt.resourceId, version: receipt.version, payee: receipt.xrpl?.payTo ?? terms?.payTo ?? '', payer: receipt.xrpl?.payer ?? '',
       amountMinor: receipt.amountMinor, currency: receipt.currency, amountDrops: receipt.xrpl?.amountDrops ?? terms?.amountDrops ?? String(receipt.amountMinor * DROPS_PER_MINOR),
@@ -279,7 +288,7 @@ export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow
 
 /** RFC 4180 quoting, plus a leading apostrophe on cells a spreadsheet would execute (writer-controlled text is untrusted). */
 const cell = (value: unknown) => {
-  let text = value === undefined || value === null ? '' : String(value)
+  let text = value === undefined || value === null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value)
   if (/^[=+\-@\t\r]/.test(text) && typeof value === 'string') text = `'${text}`
   return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
 }
@@ -294,12 +303,12 @@ export async function verifyOnTestnet(rows: ReceiptRow[], ledger: Ledger): Promi
     const out: TestnetCheck[] = []
     if (row.escrowTerms) return verifyEscrowOnTestnet(row, ledger)
     try {
-      const paid = await verifyPayment(ledger, row.txHash, { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', payTo: row.payee, amountDrops: row.amountDrops, invoiceId: row.invoiceId })
+      const paid = await verifyPayment(ledger, row.txHash, { rail: 'xrpl-testnet', network: 'xrpl:1', asset: row.asset || 'XRP', payTo: row.payee, amountDrops: row.amountDrops, invoiceId: row.invoiceId })
       if (paid.state === 'pending') out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'pending', detail: 'not found as a validated transaction on this node' })
       else if (paid.state === 'invalid') out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'mismatch', detail: paid.reason })
       else if (row.payer && paid.proof.payer !== row.payer) out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'mismatch', detail: 'sender differs from the receipt payer' })
       else if (row.ledgerIndex !== '' && paid.proof.ledgerIndex !== row.ledgerIndex) out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'mismatch', detail: `validated in ledger ${paid.proof.ledgerIndex}, receipt says ${row.ledgerIndex}` })
-      else out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'ok', detail: `ledger ${paid.proof.ledgerIndex} · ${row.amountDrops} drops → ${row.payee}` })
+      else out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'ok', detail: `ledger ${paid.proof.ledgerIndex} · ${row.amountDrops} ${!row.asset || row.asset === 'XRP' ? 'drops' : row.asset.label} → ${row.payee}` })
     } catch (error) { out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'error', detail: `lookup failed: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}` }) }
     if (row.refundTxHash) {
       const refund = { intentId: row.intentId, txHash: row.refundTxHash, kind: 'refund' as const }
@@ -310,7 +319,7 @@ export async function verifyOnTestnet(rows: ReceiptRow[], ledger: Ledger): Promi
           const { tx, meta } = found
           const wrong = tx.TransactionType !== 'Payment' ? 'not a Payment' : meta.TransactionResult !== 'tesSUCCESS' ? `ledger result ${String(meta.TransactionResult)}`
             : tx.Account !== row.payee ? 'refund was not sent by the payee' : tx.Destination !== row.payer ? 'refund was not sent to the payer'
-              : meta.delivered_amount !== String(Number(row.refundAmountMinor) * DROPS_PER_MINOR) ? 'refund amount differs from the recorded refund'
+              : !matchesAmount(meta.delivered_amount, amountFor(Number(row.refundAmountMinor), row.asset || 'XRP'), row.asset || 'XRP') ? 'refund amount differs from the recorded refund'
                 : String(tx.InvoiceID ?? '').toUpperCase() !== row.txHash.toUpperCase() ? 'refund InvoiceID is not the original payment hash' : undefined
           out.push(wrong ? { ...refund, status: 'mismatch', detail: wrong } : { ...refund, status: 'ok', detail: `ledger ${found.ledgerIndex} · ${row.refundAmountMinor} minor back to ${row.payer}` })
         }

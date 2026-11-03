@@ -179,3 +179,37 @@ it('refuses a payout to a denylisted payee before signing it, and the audit log 
   expect(store.listRuns().flatMap(run => store.policyPayments(run.runId)).every(p => !p.submission)).toBe(true)
   expect(store.auditVerify().ok).toBe(true)
 }, 30_000)
+
+it.each(['purchase', 'royalty'] as const)('refunds unspent %s after denylist refusal; replay/restart never charge again (#310)', async kind => {
+  const s = await setup()
+  const registry = await (await fetch(`${s.options.publisherUrl}/registry`)).json()
+  const payee = registry.publishers.find((p: { slug: string }) => p.slug === (kind === 'purchase' ? 'notfinancialtimes' : 'open-records')).wallet
+  expect(payee).toBeTruthy()
+  const dir = mkdtempSync(join(tmpdir(), 'hire-refund-')); clean.push(() => rmSync(dir, { recursive: true, force: true }))
+  const list = join(dir, 'deny.json'); writeFileSync(list, JSON.stringify([{ address: payee, reason: `chaos ${kind} refusal` }]))
+  vi.stubEnv('PAYEE_DENYLIST_FILE', list)
+  const first = await payAndFetch(s.url, s.opts), result = await first.response.json()
+  expect(first.response.status).toBe(200)
+  expect(s.api.store.walletStatus().reservedMinor).toBe(0)
+  expect(s.api.store.auditVerify().ok).toBe(true)
+  const run = s.api.store.getRun(result.run_id)
+  expect(auditRuns([run], s.corpus, [], [{ runId: run.runId, budgetMinor: 200, result }]).total).toBe(0)
+  if (kind === 'purchase') {
+    expect(run.intents.map(i => ({ profile: i.profileId, status: i.status, error: i.error }))).toContainEqual(expect.objectContaining({ status: 'FAILED_NOT_SETTLED', error: expect.stringContaining('denylist') }))
+    expect(Number(result.moneyChain.changeDrops)).toBe(200000 - run.spentMinor * 1000)
+  } else {
+    expect(result.moneyChain.cancelledRoyalties.length).toBeGreaterThan(0)
+    expect(s.api.store.auditEntries().some(e => e.kind === 'payout-cancel')).toBe(true)
+    const returned = result.moneyChain.cancelledRoyalties.reduce((sum: number, p: { amountDrops: string }) => sum + Number(p.amountDrops), 0)
+    expect(Number(result.moneyChain.changeDrops)).toBe(200000 - run.spentMinor * 1000 + returned)
+  }
+  expect(result.moneyChain.payments.every((p: { payTo: string }) => p.payTo !== payee)).toBe(true)
+  const submits = s.chain.submits
+  // Removal of the denylist cannot revive a cancelled payment, even across restart.
+  writeFileSync(list, '[]')
+  const restarted = await createApiApp(s.options); clean.push(() => restarted.close())
+  const server = restarted.app.listen(0, '127.0.0.1'); await new Promise(done => server.once('listening', done))
+  clean.push(() => { server.closeAllConnections(); return new Promise(done => server.close(done)) })
+  const replay = await payAndFetch(s.url, { ...s.opts, fetch: (url, init) => fetch(String(url).replace(new URL(s.url).origin, `http://127.0.0.1:${(server.address() as AddressInfo).port}`), init) })
+  expect(await replay.response.json()).toEqual(result); expect(s.chain.submits).toBe(submits)
+}, 30000)

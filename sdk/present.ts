@@ -17,7 +17,7 @@ export function presentRun(run: RunSnapshot, publisherUrl: string) {
     purchases: run.intents.map(intent => {
       const receipt = run.receipts.find(r => r.intentId === intent.intentId)
       return { intentId: intent.intentId, resourceId: intent.resourceId, writer: run.candidates.find(c => c.profileId === intent.profileId && c.resourceId === intent.resourceId)?.publisher ?? intent.profileId,
-        escrow: intent.escrow ?? null, priceMinor: intent.amountMinor, status: intent.status, verified: intent.status === 'VERIFIED', refunded: intent.status === 'REFUNDED', txHash: receipt?.xrpl?.txHash ?? null, explorerUrl: receipt?.xrpl?.explorerUrl ?? null, label: receipt?.label ?? run.labels.settlement }
+        asset: receipt?.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', settlementAmount: receipt?.xrpl?.amountDrops ?? null, escrow: intent.escrow ?? null, priceMinor: intent.amountMinor, status: intent.status, verified: intent.status === 'VERIFIED', refunded: intent.status === 'REFUNDED', txHash: receipt?.xrpl?.txHash ?? null, explorerUrl: receipt?.xrpl?.explorerUrl ?? null, label: receipt?.label ?? run.labels.settlement }
     }) }
 }
 
