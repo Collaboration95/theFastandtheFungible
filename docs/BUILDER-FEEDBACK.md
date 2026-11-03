@@ -2,7 +2,11 @@
 
 Re-ranked 2026-11-04 from dated committed evidence. No new payment or mainnet experiment. Original entries and dates are retained below.
 
+Top three for Ripple: issuer permission, exact issued delivery, and public endpoint history/transport. Remaining items cover x402 recovery and onboarding.
+
 ## 1. Issuer permission blocks RLUSD escrow
+
+Runnable: `node scripts/repro/01-issuer-permission.mjs` (<30 s). [Upstream draft](feedback/upstream/01-issuer-permission.md).
 
 - Date / class: 2026-11-03; Observed flags + document-derived refusal.
 - Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
@@ -14,6 +18,8 @@ Re-ranked 2026-11-04 from dated committed evidence. No new payment or mainnet ex
 
 ## 2. Exact issued amount must mean delivered amount
 
+Runnable: `node scripts/repro/02-delivered-amount.mjs` (<30 s). [Upstream draft](feedback/upstream/02-delivered-amount.md).
+
 - Date / class: 2026-11-03; Code-derived; adversarial fixture proof.
 - Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
 - Evidence / reproduction: [record](evidence/rlusd.md); Amount/DeliverMax alone cannot prove exact delivered value; wrong issuer and partial payment fixtures are rejected.
@@ -22,7 +28,20 @@ Re-ranked 2026-11-04 from dated committed evidence. No new payment or mainnet ex
 - Severity: High.
 - Mainnet consequence: Underpayment acceptance is an integrity risk on mainnet; no live attack observed.
 
-## 3. Settled invoice consumption obstructs recovery
+## 3. Public endpoints disagree on retained history; HTTP lacks browser CORS
+
+Runnable: `node scripts/repro/07-endpoint-history.mjs` (<30 s). [Upstream draft](feedback/upstream/07-endpoint-history.md).
+
+- Date / class: 2026-11-04; observed read-only Testnet; historical HTTP attempt and fresh WebSocket verification.
+- Evidence: [13/13 live verification](evidence/round2-p1/live-validation.json), original [HTTP attempt](evidence/round2-e/rpc-attempt.json).
+- Workaround: s.altnet WebSocket, then Clio; retain committed evidence during outages.
+- Suggested fix: document endpoint retention, browser transport support and recommended archival lookup URL.
+- Severity: Medium; unavailable history must not be presented as failed settlement.
+- Mainnet consequence: analogous availability risk only; no mainnet measurement.
+
+## 4. Settled invoice consumption obstructs recovery
+
+Runnable: `node scripts/repro/03-invoice-consumption.mjs` (<30 s). [Upstream draft](feedback/upstream/03-invoice-consumption.md).
 
 - Date / class: 2026-11-03; Code-derived; reproduced offline.
 - Pinned package/source: x402-xrpl 0.3.4; npm source commit and hosted facilitator revision unknown.
@@ -32,7 +51,9 @@ Re-ranked 2026-11-04 from dated committed evidence. No new payment or mainnet ex
 - Severity: Medium.
 - Mainnet consequence: New signing after ambiguity risks a second charge; none observed here.
 
-## 4. Header-only v2 challenge is not retried
+## 5. Header-only v2 challenge is not retried
+
+Runnable: `node scripts/repro/04-header-only.mjs` (<30 s). [Upstream draft](feedback/upstream/04-header-only.md).
 
 - Date / class: 2026-11-03; Observed offline and exploratory Testnet.
 - Pinned package/source: x402-xrpl 0.3.4; npm source commit and hosted facilitator revision unknown.
@@ -42,7 +63,9 @@ Re-ranked 2026-11-04 from dated committed evidence. No new payment or mainnet ex
 - Severity: Medium.
 - Mainnet consequence: Valid header-only sellers become unreachable; no mainnet incident observed.
 
-## 5. Escrow expiry does not return funds automatically
+## 6. Escrow expiry does not return funds automatically
+
+Runnable: `node scripts/repro/05-expiry-cancel.mjs` (<30 s). [Upstream draft](feedback/upstream/05-expiry-cancel.md).
 
 - Date / class: 2026-11-03; Observed Testnet.
 - Pinned package/source: Committed escrow-273.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
@@ -52,7 +75,9 @@ Re-ranked 2026-11-04 from dated committed evidence. No new payment or mainnet ex
 - Severity: Medium.
 - Mainnet consequence: Recovery availability and liquidity matter before real-money use; mainnet untested.
 
-## 6. Official RLUSD funding requires authenticated access
+## 7. Official RLUSD funding requires authenticated access
+
+Runnable: `node scripts/repro/06-funding-auth.mjs` (<30 s). [Upstream draft](feedback/upstream/06-funding-auth.md).
 
 - Date / class: 2026-11-03; Observed Testnet HTTP.
 - Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
@@ -575,20 +600,21 @@ from source/document-derived constraints. No mainnet execution.
 
 - **4 Nov 2026 — observed local fixture tooling incident (no Testnet/mainnet transaction):** the 12-hour soak on `eae85ed` stopped on a watchdog at iteration 3031; host power logs establish a matching 606-second clamshell sleep. Stdout was discarded and no stack was retained. Evidence: `docs/evidence/soak-nov4-run1.json` and `docs/evidence/soak-nov4-host-sleep.json`, analysis: `docs/evidence/soak-nov4.md`. Workaround/fix: bounded LLM awaits and nonblocking cancellation, sequential leak-audit token sets, preloaded sanitized diagnostics and continue-on-violation watchdogs. Suggested tooling fix: always preserve bounded child output and phase/resource samples. Severity: high for soak reliability; mainnet impact: no observed mainnet incident, model timeout availability risk is code-derived, fixture audit allocation is test-only.
 
-## 4 Nov 2026 — historical transaction lookup unavailable
+## 4 Nov 2026 — endpoint history retention and browser transport
 
-- **Observed, read-only Testnet API; low verification friction:** the fixed
-  xrpl-labs Testnet endpoint returned HTTP 200 / txnNotFound for committed RLUSD
-  purchase 1F2449A4660747066E99A89CEA5B49276D266F35820789042A8694EDB1DA23AF.
-  Evidence: `docs/evidence/round2-e/rpc-attempt.json`; source baseline
-  ec97bfdfe38e61b1b1b3fed6a1b4d3546052927c. Reproduction: one API-v2 `tx` lookup
-  by that hash, no account query. The page's browser refresh also retained its
-  historical/missing status for the same hash. This does not establish a reset
-  cause or an invalid original payment. Workaround: retain dated committed
-  receipts, source links and offline verification. Suggested fix: document
-  history retention/reset boundaries and archival lookup availability explicitly.
-  Severity: low (fresh verification unavailable). Mainnet impact: none observed;
-  no mainnet request, transaction, signing or funding operation occurred.
+Observed read-only: xrpl-labs returned `txnNotFound` for the committed RLUSD hash,
+while s.altnet and Clio returned validated `tesSUCCESS` in the judge review.
+This establishes endpoint-specific availability, not a Testnet reset or invalid payment.
+Ripple JSON-RPC preflight lacked CORS (400 in the review); the fresh HTTP
+comparison confirms no Access-Control-Allow-Origin on s.altnet or Clio.
+xrpl-labs does advertise CORS but lacks these hashes. The original attempt
+is retained in `docs/evidence/round2-e/rpc-attempt.json`; `docs/evidence/round2-p1/endpoint-comparison.json` records that comparison; the fresh P1 WebSocket
+check validates 13/13 on s.altnet in `docs/evidence/round2-p1/live-validation.json`.
+Workaround: bounded WebSocket tx lookup on s.altnet, Clio alternative, xrpl-labs last.
+Suggested fix: publish an endpoint matrix with retained ledger ranges, CORS and
+WebSocket URLs; explain that txnNotFound is not proof of failed settlement.
+Severity: medium verification friction. Mainnet impact: analogous endpoint-selection
+risk only, unmeasured on mainnet. No writes, signing, funding or account queries.
 
 ### 2026-11-04 · release and tooling admission (Lane D)
 

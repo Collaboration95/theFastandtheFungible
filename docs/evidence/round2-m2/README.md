@@ -1,5 +1,9 @@
 # Lane M2 — engine worker responsiveness
 
+> What this proves: Lane M2 — engine worker responsiveness.
+> Scope: Local shared-host follow-up measurements.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Synthetic fixture inference and SIMULATED settlement only. No providers, Testnet,
 real value, protected ports, threshold changes or weakened checks.
 

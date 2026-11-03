@@ -1,5 +1,9 @@
 # Lane I — agent kill switch (2026-11-04)
 
+> What this proves: Lane I — agent kill switch (2026-11-04).
+> Scope: Fixture agent pause controls with simulated settlement.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Local synthetic-provider and simulated-settlement evidence only. No live provider,
 Testnet submission, real money or desktop acceptance is claimed.
 

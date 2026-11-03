@@ -1,5 +1,9 @@
 # Independent Python receipt verification
 
+> What this proves: Independent Python receipt verification.
+> Scope: Offline Python and TypeScript receipt conformance.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 LOCAL offline evidence, 4 November 2026, based on main #350 (472ac268).
 No live providers, Testnet queries/transactions, real funds or semantic assessment.
 

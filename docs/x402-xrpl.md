@@ -545,3 +545,16 @@ wallet; the writer accepts it with CredentialAccept. The engine checks accepted,
 unexpired credentials read-only on validated Testnet ledgers. Identity is not
 truth and does not change x402 payment policy, trust weights or price. See
 [operator setup and issuer runbook](writer-verification.md).
+
+## Read-only historical verification (4 Nov 2026)
+
+The public ledger page automatically checks committed hashes over
+`wss://s.altnet.rippletest.net:51233`, with Clio and xrpl-labs fallbacks.
+Only two lookups run concurrently, with 5 s and 256 KiB limits per response.
+Only allowlisted endpoints and curated hash `tx` requests are exposed; there is
+no account lookup, wallet, signing or submit interface. JSON-RPC HTTP lacks
+browser CORS support on the observed endpoint. Endpoint history differs;
+`txnNotFound` is an availability result, not proof of failed payment.
+Only validated tesSUCCESS matching the committed amount, destination, InvoiceID,
+fee, ledger and credential issuer/subject/type gets the verified style.
+See [P1 evidence](evidence/round2-p1/README.md) and [runnable feedback](BUILDER-FEEDBACK.md).

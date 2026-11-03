@@ -1,5 +1,9 @@
 # Lane C1 — engine BYOK, cooperative Stop and active-work cap
 
+> What this proves: Lane C1 — engine BYOK, cooperative Stop and active-work cap.
+> Scope: Synthetic providers and simulated payments.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Local synthetic evidence, 4 November 2026. Base includes merged #345
 (`21b2a1ed`). Fake providers on ephemeral loopback ports, synthetic credentials,
 fixture publishers, simulated payments only. No live providers, Testnet, real

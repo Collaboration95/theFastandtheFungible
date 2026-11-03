@@ -1,5 +1,9 @@
 # C2 desktop recovery — 4 November 2026
 
+> What this proves: C2 desktop recovery — 4 November 2026.
+> Scope: Local packaged app and fixture checks; unsigned.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Local native Apple Silicon acceptance, fixture-only. Engine/provider Lane C1,
 real-provider calls, real Keychain incidents, Testnet and Apple signing are not
 claimed. No production Keychain service was touched. No delegated implementation

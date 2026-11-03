@@ -518,3 +518,5 @@ Significant product, design and process decisions, newest first. One line each: 
 
 - 2026-11-04: Lane N credential evidence stores public type text and derives XRPL hex at runtime; scanner history repaired without ignores or gate changes.
 - 2026-11-04 — Lane M2: exact-byte bounded validation caches and research/decision yields reduce worst worker interval p99 205.914 → 28.623 ms; all five integrated 600-ask soak gates pass, 200-run SIGKILL chaos has zero violations/double charges; no thresholds loosened (docs/evidence/round2-m2/README.md).
+
+- 2026-11-04 · Lane P1 (Builder feedback / Feasibility): ledger auto-verifies 13/13 historical Testnet rows over bounded WebSocket; XRPL primitive links, CredentialCreate badges, truthful SGD/asset events, seven <30 s feedback repros and upstream drafts. Evidence: `docs/evidence/round2-p1/README.md`.

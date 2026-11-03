@@ -1,5 +1,9 @@
 # Lane M — responsive retained-history accounting
 
+> What this proves: Lane M — responsive retained-history accounting.
+> Scope: Local synthetic retained-history performance and exact accounting equivalence.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Synthetic fixtures and SIMULATED payments only, on a shared development Mac. No live provider, Testnet or real value. No performance threshold or test assertion was loosened. This is bounded engine evidence, not release or device acceptance.
 
 ## Attribution and repair

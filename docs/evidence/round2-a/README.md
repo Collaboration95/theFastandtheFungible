@@ -1,5 +1,9 @@
 # Lane A reliability evidence
 
+> What this proves: Lane A reliability evidence.
+> Scope: Local synthetic engine and accounting checks.
+> Limits: This packet alone does not establish mainnet readiness or human acceptance.
+
 Local synthetic fixtures only. No live provider, network ledger, Testnet settlement or real money was used. `history.json` records the host, SQLite version, query plans and five timing samples. Run directly:
 
 ```
