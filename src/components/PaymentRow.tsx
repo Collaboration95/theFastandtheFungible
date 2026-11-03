@@ -18,7 +18,7 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
     <div className="ra-payment-heading"><b>{refunded ? '↩' : state.ok ? '✓' : state.failed ? '✕' : '○'} {source?.publisher ?? intent.resourceId}</b><span>{money(intent.amountMinor)}</span></div>
     <p className="ra-payment-title">{source?.title ?? intent.resourceId}</p>
     {testnet && intent.quote?.payment?.asset && intent.quote.payment?.asset !== 'XRP' && <p>{settlementAssetLabel(intent.quote.payment?.asset)}</p>}
-    <p key={intent.status} className={`ra-payment-status${state.ok ? ' is-ok' : state.failed || state.quarantined && !refunded ? ' is-bad' : ''}`}>{status}{refunded && <span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(intent.quote?.payment?.asset) : 'simulated'}</span>}{elapsed !== undefined && state.ok && ` · ${elapsed.toFixed(1)} s`}</p>
+    <p style={intent.escrow?.mode === 'key-reveal' ? { overflowWrap: 'anywhere' } : undefined} key={intent.status} className={`ra-payment-status${state.ok ? ' is-ok' : state.failed || state.quarantined && !refunded ? ' is-bad' : ''}`}>{status}{refunded && <span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(intent.quote?.payment?.asset) : 'simulated'}</span>}{elapsed !== undefined && state.ok && ` · ${elapsed.toFixed(1)} s`}</p>
     {state.phase === 'submitted' && <PendingTime since={state.pendingSince} />}
     {state.failed && <button className="ra-btn ra-btn-go" onClick={() => onRetry(intent.intentId)}>Retry delivery</button>}
     <Verification run={run} intent={intent} />

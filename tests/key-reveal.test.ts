@@ -124,3 +124,37 @@ it('a paid invalid article stays quarantined and yields fraud evidence plus repu
   s.restart(); await s.buy()
   expect(s.store.getRun(s.run.runId).receipts).toHaveLength(1)
 })
+
+it('writer retries return the persisted finish without a second transaction', async () => {
+  const s = await setup()
+  await s.buy()
+  const e = s.store.getEscrow('escrow-one')!, create = s.store.escrowOutbox('escrow-one')[0]
+  const { encodeHeader } = await import('../shared/x402.js')
+  const { escrowInvoice } = await import('../shared/escrow.js')
+  const header = encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: 'XRP', amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } })
+  for (let n = 0; n < 2; n++) {
+    const response = await s.client.paidGet(s.store.getIntent('escrow-one')!.paidPath!, header)
+    expect(response.delivery).toEqual({ finishHash: e.publicStatus.finishHash })
+  }
+  expect(s.c.txs.size).toBe(2)
+})
+
+it('retries grant persistence errors after validated reveal without charging again', async () => {
+  const s = await setup()
+  const spy = vi.spyOn(s.store, 'addGrant').mockImplementationOnce(() => { throw new Error('temporary persistence failure') })
+  expect((await s.buy()).status).toBe('SUBMITTING')
+  spy.mockRestore(); s.restart(); await s.manager.reconcile()
+  expect(s.store.getIntent('escrow-one')!.status).toBe('VERIFIED')
+  expect(s.store.getRun(s.run.runId).contents).toHaveLength(1)
+  expect(s.c.txs.size).toBe(2)
+})
+
+it('explicit key-reveal mode never downgrades a trusted writer to exact payment', async () => {
+  const s = await setup()
+  const { newRecord } = await import('../server/reputation.js')
+  s.store.putReputation({ ...newRecord(s.candidate.profileId, s.candidate.wallet!), passes: 1, T: 0.95 })
+  const intent = await s.buy()
+  expect(intent.status).toBe('VERIFIED')
+  expect(intent.escrow?.mode).toBe('key-reveal')
+  expect([...s.c.txs.values()].map(t => t.tx_json.TransactionType)).toEqual(['EscrowCreate', 'EscrowFinish'])
+})

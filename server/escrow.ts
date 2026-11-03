@@ -17,7 +17,8 @@ import { XrplPayer, FEE_CAP_DROPS } from './xrpl.js'
 import type { EscrowOperation } from './escrow-state.js'
 
 export function escrowSelected(store: Store, runId: string, c: PublicCandidate, optIn?: boolean): boolean {
-  const opted = process.env.ESCROW_MODE === 'key-reveal' || (optIn ?? (store.getRun(runId).checkpoint.escrow as boolean | undefined ?? (process.env.ESCROW_WRITERS ?? '').split(',').includes(c.profileId)))
+  if (process.env.ESCROW_MODE === 'key-reveal') return true
+  const opted = optIn ?? (store.getRun(runId).checkpoint.escrow as boolean | undefined ?? (process.env.ESCROW_WRITERS ?? '').split(',').includes(c.profileId))
   const rep = c.wallet ? store.getReputation(c.wallet) : undefined
   return opted && (!rep || rep.passes === 0 || rep.T < 0.8)
 }
@@ -55,15 +56,16 @@ export class EscrowPurchases {
     const key = fulfillment.slice(8)
     this.store.persistReveal(intent.intentId, { key, finishHash: hash, ledgerIndex: found.ledgerIndex, transaction: found.tx })
     let proof = false
+    let d: z.infer<typeof RevealedDelivery> | undefined
     try {
-      const d = RevealedDelivery.parse(decryptDelivery(e.quote, key))
+      d = RevealedDelivery.parse(decryptDelivery(e.quote, key))
       const manifest = this.store.getManifest(intent.intentId)!
       proof = d.articleId === intent.resourceId && d.version === intent.version && manifest.root === t.manifestRoot && verifyManifestSignature(manifest) && verifyDelivery(d.body, d.passages, d.salts, manifest).ok
-      if (proof) {
-        const content = { source: intent.source, profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: d.title, publisher: d.publisher, body: d.body, spans: d.passages }
-        this.store.addGrant({ source: intent.source, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, contentDigest: manifest.root, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: d.salts })
-      }
     } catch { /* Invalid envelope remains private; evidence can be exported explicitly after reveal. */ }
+    if (proof && d) {
+      const content = { source: intent.source, profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: d.title, publisher: d.publisher, body: d.body, spans: d.passages }
+      this.store.addGrant({ source: intent.source, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, contentDigest: t.manifestRoot, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: d.salts })
+    }
     this.store.escrowTransition(intent.intentId, { proofOk: proof, revealLedger: found.ledgerIndex })
     this.store.completeEscrow(intent.intentId, 'finish', found.ledgerIndex, hash)
     if (!proof) this.recordFailedProof(this.store.getIntent(intent.intentId)!)

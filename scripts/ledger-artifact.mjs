@@ -20,6 +20,15 @@ export function artifact() {
   const p2 = JSON.parse(read('docs/evidence/round2-p2/transactions.json')).transactions
   for (const row of p2) if (!/^[A-F0-9]{64}$/.test(row.hash) || !Number.isInteger(row.ledgerIndex) || row.source !== 'docs/evidence/round2-p2/transactions.json') throw Error('Invalid P2 evidence')
   rows.push(...credentials, ...p2.map(row => ({ ...row, sourceCommit: 'bb55d448dde4d365a2bda4777c661657b46b5757' })))
+  const evidencePath = 'docs/evidence/round2-r/transactions.json'
+  const reveal = JSON.parse(read(evidencePath)).transactions
+  const sourceRef = '30a9898282286252d25bc1cfe15c3f88004cd8ae'
+  if (!/^[a-f0-9]{40}$/.test(sourceRef)) throw Error('Commit key-reveal evidence before generating ledger rows')
+  for (const r of reveal) {
+    if (!/^[A-F0-9]{64}$/.test(r.hash) || r.result !== 'tesSUCCESS' || !Number.isInteger(r.ledgerIndex)) throw Error('Invalid key-reveal ledger evidence')
+    const create = reveal.find(c => c.path === r.path && c.type === 'EscrowCreate')
+    rows.push({ ...r, group: 'escrow', operation: { EscrowCreate: 'create', EscrowFinish: 'finish', EscrowCancel: 'cancel' }[r.type], date: '2026-11-04', owner: create.account, createSequence: r.offerSequence ?? create.sequence, amountDrops: create.amount, source: evidencePath, sourceCommit: sourceRef })
+  }
   return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-04', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
 }
 function htmlArtifact(out) {

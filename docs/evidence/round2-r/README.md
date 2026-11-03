@@ -55,3 +55,8 @@ Receipt conformance adds seven vectors; the old 177 remain unchanged. Python's
 AES-256-GCM implementation also passes two independent NIST known-answer vectors,
 including authentication rejection. See [protocol, threat model and gate-1
 interpretation](../../key-reveal-escrow.md).
+
+The original 200-run matrix (seed 279) completed with 55 actual process kills,
+259 payments, 34 refunds, zero invariant violations, zero double charges and zero
+stuck reservations. [Full result](chaos-200.json) identifies the base commit and
+dirty implementation tree tested; it is local fixture evidence, not Testnet load.

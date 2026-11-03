@@ -523,3 +523,5 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 — Lane Q: fixture-only Codespaces first run; consistent RA_URL/:8788 examples buy S$0.90 analyst evidence and report 2/2 facts; dash/quote normalisation and corpus-calibrated keyword abstention; clean Node 22 clone validated, no real Codespace (docs/evidence/round2-q/README.md).
 
 - 2026-11-04 · Lane P2: `make testnet` isolates faucet wallets (0600); cold first validated hash 60.005 s. `/demo/` autoplays recorded XRP Testnet UC3 pay → failed proof → refund → re-buy with Pause, explorer/live checks; 1,874,689-byte JS+JSON, labelled simulated fallback. Evidence: `docs/evidence/round2-p2/README.md`.
+
+- 2026-11-04 — Lane R: opt-in XRP key-reveal escrow makes XRPL the delivery channel; four validated Testnet transactions, two offline verifiers, pre-grant quarantine and three actual SIGKILL recovery boundaries. Evidence: `docs/evidence/round2-r/`.
