@@ -1,6 +1,6 @@
 /** Local fixture rehearsal. No dotenv, publication, signing, or release mutation. */
 import { spawn, execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync, readlinkSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { createHash, randomUUID } from 'node:crypto'
 import { hostname, platform, release, arch, cpus, loadavg } from 'node:os'
@@ -31,12 +31,17 @@ try {
   await run('artifacts','make',['release-artifacts'])
   await run('consumers','node',['scripts/check-release-consumers.mjs','--manifest','dist/release/manifest.json'])
   report.artifacts=JSON.parse(readFileSync('dist/release/manifest.json')).artifacts;save()
-  report.consumers=JSON.parse(readFileSync('dist/release/consumer-results.json'))
+  report.consumers=JSON.parse(readFileSync('dist/release/consumer-results.json'));report.verifiers=report.consumers.verifiers;save()
   await run('desktop-download-arm64','node',['desktop/download.mjs'],{DESKTOP_ARCH:'arm64'})
   await run('desktop-arm64','node',['desktop/build.mjs','--dmg','--unsigned'],{DESKTOP_ARCH:'arm64'})
   report.dmgs=readdirSync('desktop/out').filter(f=>f.endsWith('.dmg')).map(f=>artifact(join('desktop/out',f)));save()
   const app=resolve('desktop/out/mac-arm64/ResearchAgent.app')
-  report.app={path:app,executable:artifact(join(app,'Contents/MacOS/ResearchAgent'))}
+  const walkApp=(dir,relative='')=>readdirSync(dir,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name)).flatMap(e=>{
+    const p=join(dir,e.name),name=join(relative,e.name)
+    return e.isSymbolicLink()?[{file:name,symlink:readlinkSync(p)}]:e.isDirectory()?walkApp(p,name):[{...artifact(p),file:name}]
+  })
+  const appManifest=join(out,'app-manifest.json');writeFileSync(appManifest,JSON.stringify(walkApp(app),null,2)+'\n')
+  report.app={path:app,manifest:artifact(appManifest),executable:artifact(join(app,'Contents/MacOS/ResearchAgent'))};save()
   await run('desktop-recovery','node',['desktop/smoke.mjs','--fixture-only','--recovery','--app',app,'--output',join(out,'desktop-recovery.json')],{RA_DESKTOP_KEYCHAIN_SERVICE:'ResearchAgent-Accept-'+randomUUID(),LLM_PROVIDER:null,DECISION_PROVIDER:null,SETTLEMENT_RAIL:null})
   await run('desktop-download-x64','node',['desktop/download.mjs'],{DESKTOP_ARCH:'x64'})
   await run('desktop-x64','node',['desktop/build.mjs','--dmg','--unsigned'],{DESKTOP_ARCH:'x64'})

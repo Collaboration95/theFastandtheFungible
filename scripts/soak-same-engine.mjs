@@ -18,6 +18,7 @@ export async function deadline(promise, ms) {
   try { return await Promise.race([promise, new Promise((_,reject)=> { timer=setTimeout(()=>reject(new Error('timeout')),ms) })]) }
   finally { clearTimeout(timer) }
 }
+export function burstPass(b) {return b.peak===4&&b.activeAfterDrain===0&&b.admitted+b.overloaded===100&&b.overloaded>0&&b.idempotentRetries===b.admitted}
 export function compare(report) {
   const rows = report.asks.filter(r=>r.stage==='measured'), good = rows.filter(r=>r.ok)
   const first=good.slice(0,100), last=good.slice(-100)
@@ -37,7 +38,7 @@ export function compare(report) {
 }
 
 // Loaded with --import in both host and engine worker, before any engine module.
-export function installGuard() {
+export async function installGuard() {
   const channel=new BroadcastChannel('same-engine-soak-'+process.env.SOAK_ID)
   const original=net.Socket.prototype.connect
   net.Socket.prototype.connect=function(...args) {
@@ -54,6 +55,16 @@ export function installGuard() {
   }
   syncBuiltinESMExports()
   if (!isMainThread && workerData?.apiPort !== undefined) {
+    const {register}=await import('tsx/esm/api');register()
+    const {ActiveWork}=await import('../server/agents/active-work.ts')
+    const acquire=ActiveWork.prototype.acquire
+    let burst=false
+    channel.onmessage=({data})=>{if(data.burstStart) {burst=true;channel.postMessage({burstReady:true})}}
+    ActiveWork.prototype.acquire=function(...args) {
+      const release=acquire.apply(this,args)
+      if(burst)channel.postMessage({burstActive:this.active})
+      return ()=>{release();if(burst)channel.postMessage({burstActive:this.active})}
+    }
     const histogram=monitorEventLoopDelay({resolution:10}); histogram.enable()
     const engineId=randomUUID()
     const timer=setInterval(()=> {channel.postMessage({worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,handles:process.getActiveResourcesInfo().length,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset()},1000)
@@ -104,9 +115,10 @@ async function run(o) {
     r.selectorsBeforeBoot={runnable:store.runnableRunIds(),recoverable:store.recoverableRunIds()}
   } finally {store.close()}
   r.seedDurationMs=Date.now()-start;save()
+  let burstReady=false,burstPeak=0,burstActive=0
   let worker, engine, stage='startup', completed=0, lastWall=Date.now(), lastMono=performance.now()
   const channel=new BroadcastChannel('same-engine-soak-'+process.env.SOAK_ID)
-  channel.onmessage=({data})=> {if(data.blocked)r.failures.push('non-loopback request');if(data.worker)worker=data}
+  channel.onmessage=({data})=> {if(data.burstReady)burstReady=true;if(data.burstActive!==undefined){burstActive=data.burstActive;burstPeak=Math.max(burstPeak,burstActive)};if(data.blocked)r.failures.push('non-loopback request');if(data.worker)worker=data}
   const bytes=path=>existsSync(path)?statSync(path).size:0
   const sample=()=>{const wall=Date.now(),mono=performance.now();r.samples.push({at:wall,elapsedMs:wall-start,stage,completed,rss:process.memoryUsage().rss,hostHeap:process.memoryUsage().heapUsed,hostHandles:process.getActiveResourcesInfo().length,worker,dbBytes:bytes(dbPath),walBytes:bytes(dbPath+'-wal'),load:loadavg(),gapMs:mono-lastMono,hostSleepMs:Math.max(0,(wall-lastWall)-(mono-lastMono))});lastWall=wall;lastMono=mono}
   const timer=setInterval(sample,1000)
@@ -121,6 +133,7 @@ async function run(o) {
     for(const [s,count] of [['warmup',o.warmup],['measured',o.runs]]){stage=s;const began=Date.now();for(let i=0;i<count;i+=o.concurrency)await Promise.all(Array.from({length:Math.min(o.concurrency,count-i)},(_,j)=>ask(i+j,s)));if(s==='measured'&&Date.now()-began<61000)await new Promise(done=>setTimeout(done,61000-(Date.now()-began)))}
     if(o.burst) {
       stage='burst'
+      channel.postMessage({burstStart:true});await deadline((async()=>{while(!burstReady)await new Promise(done=>setTimeout(done,10))})(),o.timeoutMs)
       const headers={Authorization:'Bearer '+engine.apiToken,'Content-Type':'application/json'}
       const post=(path,body,key)=>fetch(engine.apiUrl+path,{method:'POST',headers:{...headers,...(key?{'Idempotency-Key':key}:{})},body:JSON.stringify(body),signal:AbortSignal.timeout(o.timeoutMs)})
       const responses=await Promise.all(Array.from({length:100},(_,i)=>post('/runs',{question:`Admission burst ${i}?`,budgetMinor:0},`burst-${i}`)))
@@ -131,7 +144,8 @@ async function run(o) {
         else if(response.status===503&&body.code==='overloaded'&&body.retryable===true)refused.push(i)
       }
       for(const id of admitted) {const stopped=await post(`/runs/${id}/stop`,{});if(!stopped.ok)throw Error('Burst stop failed')}
-      r.burst={requested:true,limit:4,submitted:100,admitted:admitted.length,overloaded:refused.length,idempotentRetries:retries,pass:admitted.length===4&&refused.length===96&&retries===4};save()
+      await deadline((async()=>{while(burstActive)await new Promise(done=>setTimeout(done,10))})(),o.timeoutMs)
+      r.burst={requested:true,limit:4,submitted:100,admitted:admitted.length,overloaded:refused.length,idempotentRetries:retries,peak:burstPeak,activeAfterDrain:burstActive,pass:burstPass({peak:burstPeak,activeAfterDrain:burstActive,admitted:admitted.length,overloaded:refused.length,idempotentRetries:retries})};save()
     }
     stage='restart';await close(engine);engine=undefined
     for(let i=0;i<20;i++){const t=performance.now();engine=await boot();const identity={engineId:worker.engineId,workerId:worker.workerId};await close(engine);engine=undefined;r.restarts.push({cycle:i+1,...identity,ms:performance.now()-t,closed:true});save()}
@@ -145,7 +159,7 @@ if(process.argv[1]&&resolve(process.argv[1])===self){
   if(process.argv.includes('--internal'))process.exitCode=await run(o)
   else {
     const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
-    Object.assign(env,{SOAK_ID:randomUUID(),ACTIVE_WORK_LIMIT:'4',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0',RECONCILE_INTERVAL_MS:'1000',MCP_DAILY_CAP_MINOR:'100000000',WALLET_DAILY_CAP_MINOR:'100000000',NODE_OPTIONS:`--import=data:text/javascript,${encodeURIComponent(`import {installGuard} from ${JSON.stringify(pathToFileURL(self).href)};installGuard()` )}`})
+    Object.assign(env,{SOAK_ID:randomUUID(),ACTIVE_WORK_LIMIT:'4',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0',RECONCILE_INTERVAL_MS:'1000',MCP_DAILY_CAP_MINOR:'100000000',WALLET_DAILY_CAP_MINOR:'100000000',NODE_OPTIONS:`--import=data:text/javascript,${encodeURIComponent(`import {installGuard} from ${JSON.stringify(pathToFileURL(self).href)};await installGuard()` )}`})
     const child=spawn(process.execPath,[...(o.cpuProfDir ? ['--cpu-prof', '--cpu-prof-dir='+resolve(o.cpuProfDir)] : []),self,...process.argv.slice(2),'--internal'],{env,stdio:'inherit'})
     child.on('exit',code=>{process.exitCode=code??1})
   }

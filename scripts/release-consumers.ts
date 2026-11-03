@@ -41,6 +41,11 @@ try {
     console.log(await run(python,['-m','researchagent','verify',join(root,'accepted-receipt.json'),'--json']))
     writeFileSync(join(dir,'consumer.py'), `import json\nfrom researchagent import Client\nc=Client(${JSON.stringify(engine.apiUrl)}, token=${JSON.stringify(engine.apiToken)})\na=c.ask(${JSON.stringify(question)},budget=999,idempotency_key='wheel').result()\nb=c.ask(${JSON.stringify(question)},budget=999,idempotency_key='wheel').result()\nassert c.verify(c.receipts(a['run_id']))['ok']\nprint(json.dumps([a,b]))\n`)
     const [pa,pb] = JSON.parse(await run(python, ['consumer.py'])); check('wheel',pa,pb,store)
+    await run('python3',['-m','venv',join(dir,'sdist-venv')])
+    const sdistPython=join(dir,'sdist-venv/bin/python')
+    await run(sdistPython,['-m','pip','install','--no-deps',file('sdist')])
+    writeFileSync(join(dir,'sdist-consumer.py'),readFileSync(join(dir,'consumer.py'),'utf8').replaceAll("idempotency_key='wheel'","idempotency_key='sdist'"))
+    const [sa,sb]=JSON.parse(await run(sdistPython,['sdist-consumer.py']));check('sdist',sa,sb,store)
   } finally { store.close() }
 } finally { await engine.close() }
 const bundle = join(dir,'bundle'); execFileSync('unzip',['-q',file('mcpb'),'-d',bundle])
@@ -52,5 +57,5 @@ try {
   const a = await ask(), b = await ask(); const store = new Store(join(dir,'mcp-data/app.db'))
   try { check('mcpb',a,b,store) } finally { store.close() }
 } finally { await client.close() }
-writeFileSync(join(root,'consumer-results.json'),JSON.stringify({ sourceSha: manifest.sourceSha, manifestSha256:sha256(manifestFile), mode:manifest.mode, runtime:manifest.runtime, consumers:results },null,2)+'\n')
+writeFileSync(join(root,'consumer-results.json'),JSON.stringify({ sourceSha: manifest.sourceSha, manifestSha256:sha256(manifestFile), mode:manifest.mode, runtime:manifest.runtime, verifiers:{receiptSha256:sha256(join(root,'accepted-receipt.json')),typescript:{command:'npm run verify:answer -- accepted-receipt.json --json',pass:true},python:{command:'python -m researchagent verify accepted-receipt.json --json',installation:'exact wheel in clean venv',pass:true}}, consumers:results },null,2)+'\n')
 console.log(JSON.stringify(results,null,2))

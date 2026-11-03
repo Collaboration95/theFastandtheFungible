@@ -5,7 +5,7 @@ const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll
 export function render(r) {
   const samples=r.samples, maxT=Math.max(...samples.map(s=>s.elapsedMs))/1000||1
   const points=(value,y,max)=>samples.map((s,i)=>`${i===0||s.gapMs>2500?'M':'L'}${(80+s.elapsedMs/1000/maxT*960).toFixed(1)},${(y+170-value(s)/max*170).toFixed(1)}`).join(' ')
-  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="680" viewBox="0 0 1120 680"><rect width="1120" height="680" fill="#fafbfc"/><g font-family="sans-serif" fill="#243348"><text x="50" y="32" font-size="20">Same-engine soak — BASELINE / shared host</text><text x="50" y="57" font-size="13">Fixture models · SIMULATED rail · embeddings / telemetry off · no finals claim</text>`
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="680" viewBox="0 0 1120 680"><rect width="1120" height="680" fill="#fafbfc"/><g font-family="sans-serif" fill="#243348"><text x="50" y="32" font-size="20">Same-engine soak — ${r.options.burst?'REHEARSAL':'BASELINE'} / shared host</text><text x="50" y="57" font-size="13">Fixture models · SIMULATED rail · embeddings / telemetry off · no finals claim</text>`
   for(const [y,title,max,value,color] of [[100,'Process RSS (MiB)',1600,s=>s.rss/1048576,'#2463a5'],[350,'Worker interval p99 loop delay (ms)',Math.max(60,...samples.map(s=>s.worker?.loopP99Ms??0)),s=>s.worker?.loopP99Ms??0,'#aa5822']]) {
     svg+=`<text x="80" y="${y-15}">${title}</text>`
     for(let i=0;i<=4;i++){const yy=y+170-i/4*170;svg+=`<path d="M80 ${yy}H1040" stroke="#dce3eb"/><text x="20" y="${yy+4}" font-size="12">${(max*i/4).toFixed(0)}</text>`}

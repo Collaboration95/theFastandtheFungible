@@ -8,6 +8,7 @@ On 9 November, on the selected clean main SHA, run:
 
 ```sh
 npm ci
+mkdir -p scratch
 caffeinate -dims node scripts/final-acceptance.mjs > scratch/final-acceptance.log 2>&1 &
 wait $!
 ```
