@@ -42,16 +42,47 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 `eval/scorecard/history.jsonl`; paste "before → after" here when a number moves.
 
 
-Numbers headline · LIVE, 92 new heldout questions / 20 source clusters, 3 Nov:
+Numbers v6 headline · LIVE, frozen 92 heldout questions / 20 source clusters, 3 Nov:
+
+| Metric | Before (95% CI) | After (95% CI) |
+|---|---:|---:|
+| Wasted gross spend | 52.87% [28.30, 73.31] | 40.68% [11.18, 68.40] |
+| Wasted net spend (confirmed simulated refunds) | 52.87% [28.30, 73.31] | 40.68% [11.18, 68.40] |
+| Gross spend buying a final-used fact | 47.13% [26.69, 71.70] | 59.32% [31.60, 88.82] |
+| First-purchase F1 (flow) | 0.530 [0.347, 0.673] | 0.526 [0.349, 0.667] |
+| Selection F1 (sweep) | 0.660 [0.479, 0.796] | 0.660 [0.484, 0.800] |
+| Supported-fact uplift | 32.61 pts [20.99, 44.87] | 35.87 pts [22.11, 49.50] |
+
+**Gross waste target still missed (40.68% ≥25%).** Gross/net waste decreased
+12.19 pts (paired 95% CI −28.57 to −1.23); used-spend share increased 12.19 pts
+[1.23, 28.57]. No refunds occurred in either heldout run, so gross and net
+coincide. Flow F1 slipped 0.00360 [−0.03368, 0.02052]; sweep slipped 0.00019
+[−0.03376, 0.03105]. Uplift increased 3.26 pts [0.00, 8.18]. Free-supported
+facts rose 6 → 13; final-supported facts 36 → 46 of 92. This is primarily better
+fact use, not an established selection-F1 improvement.
+
+Source-cluster bootstrap: 20 sources, 2,000 replicates, seed 700; conditional on
+fixed synthetic documents and observed model draws. Wide intervals remain;
+source documents and the prior aggregate results were already visible. No
+heldout retuning. LIVE decision/coverage, fixture writer/planner, keyword search,
+**SIMULATED payments, zero XRP**; no live DeepSeek or chain-refund claim. Both
+raw API audits: **0 violations / 10 runs / 728 observations** each.
+Model cost **US$0.4412058 / US$4** (usage-derived at dated harness rates, not an
+invoice). `eval/scorecard/spend-extraction-results.json` retains exact scoring
+inputs and CIs; `spend-extraction-spend.json` accounts for all 946 requests.
+
+Historical #318 headline · LIVE, 92 new heldout questions / 20 source clusters, 3 Nov:
 
 | Metric | Before (95% CI) | After (95% CI) |
 |---|---:|---:|
 | Wasted gross spend | 52.87% [28.30, 73.31] | 52.87% [28.30, 73.31] |
+| Wasted net spend (confirmed simulated refunds) | 52.87% [28.30, 73.31] | 52.87% [28.30, 73.31] |
+| Gross spend buying a final-used fact | 47.13% [26.69, 71.70] | 47.13% [26.69, 71.70] |
 | First-purchase F1 (flow) | 0.530 [0.347, 0.673] | 0.530 [0.347, 0.673] |
 | Selection F1 (sweep) | 0.660 [0.479, 0.796] | 0.660 [0.479, 0.796] |
 | Supported-fact uplift | 32.61 pts [20.99, 44.87] | 32.61 pts [20.99, 44.87] |
 
-**No measured improvement; waste target missed.** Paired delta CIs are [0, 0]
+**No measured improvement; gross waste target missed.** No refunds occurred in this heldout sample, so gross and net coincide. Paired delta CIs are [0, 0]
 conditional on these model draws. The bank is now 140 questions: 48 historical
 dev + 92 prospective heldout. All earlier work saw the old full bank; source
 documents were visible previously. CIs resample sources, not question paraphrases,
@@ -66,6 +97,8 @@ Historical #276 headline · LIVE, prospectively held-out rates/power (24 questio
 | Metric | Held-out LIVE before → after (headline) | Dev LIVE before → after |
 |---|---:|---:|
 | Wasted gross spend | 39.39% → **35.48%** | 51.79% → 44.19% |
+| Wasted net spend (confirmed simulated refunds) | 39.39% → **35.48%** | 42.55% → 35.14% |
+| Gross spend buying a final-used fact | 60.61% → **64.52%** | 48.21% → 55.81% |
 | First-purchase F1 (flow) | 0.588 → **0.625** | 0.308 → 0.296 |
 | Selection F1 (sweep) | 0.714 → **0.667** | 0.400 → 0.320 |
 | Supported-fact uplift | +15.38 pts → **+15.38 pts** | +18.52 pts → +25.93 pts |
@@ -83,11 +116,11 @@ fit retains identity probabilities (Platt/isotonic lost); dev-selected threshold
 trials. `eval/REPORT-decisions.md` §6 and `receipt-value-results.json` carry exact
 provenance, limitations and trial failures. README publishes the held-out row.
 
-Historical whole-bank #260 table (retained):
+Historical whole-bank #260 table (retained; net refunds and final-use shares were not measured in these rows):
 
 | Metric | Live baseline (9 Oct) | live, pre-fact-menu · 3 Nov SGT | live, post-fact-menu + #301 · 3 Nov SGT | Target 12 Nov |
 |---|---|---|---|---|
-| Wasted spend | 39.5% | 36.19% | 47.19% (target missed; +11.00 pts) | ≤ 20% |
+| Wasted gross spend | 39.5% | 36.19% | 47.19% (target missed; +11.00 pts) | ≤ 20% |
 | Purchase-selection F1 | 0.24 flow / 0.41 sweep | 0.235 flow / 0.400 sweep | 0.419 flow / 0.513 sweep (0.45 lane target missed) | ≥ 0.5 flow |
 | Supported-fact uplift from paying | +9.5 pts | +11.32 pts | +16.98 pts | ≥ +20 pts |
 | False-complete rate | 1.9% | 1.89% | 1.89% | ≤ 2% |
@@ -286,6 +319,7 @@ Agents add items there and keep working around them.
 ## Decisions log
 
 - 3 Nov: #280 agent keys are hashed principals in the existing admission/purchase ledger, managed by CLI while #311 owns UI; scoped pause/revoke blocks unsigned work and preserves signed-intent recovery.
+- 3 Nov: Numbers v6 preserves gross waste, adds confirmed-refund net waste and final-used spend with source-cluster CIs; fix requested-passage selection and the “buying … now” false positive, plus deterministic fact-key/scope vetoes. No heldout retuning or spending-authority change; gross/net 52.87% → 40.68%, target still missed.
 
 - 3 Nov (#275/#310): preserve SGD budgets and fixed labelled demo FX while adding issuer-bound Testnet payments; use explicitly labelled test USD when the official RLUSD faucet requires authentication. Cancel only unsigned refused royalties and refund the caller atomically; uncertain signatures keep their reservation.
 
@@ -331,6 +365,7 @@ Significant product, design and process decisions, newest first. One line each: 
 ## Changelog
 
 - 3 Nov: Lane C #280 one wallet/many agents: private-file token creation, per-agent caps/pause/revoke, shared policy accounting and principal exports; two MCP clients + SDK spent 0.18 Testnet XRP + 24 drops fees, zero gate violations ([evidence](evidence/agents-280.md)).
+- 3 Nov: Lane B Numbers v6: gross/net heldout waste 52.87% → 40.68% (paired 95% CI −28.57 to −1.23 pts); used spend 47.13% → 59.32%. Two extraction and four fact-scope regressions, README/scorecard definitions and CIs; 0 audit violations, US$0.4412058 models, simulated payments.
 
 - 3 Nov: Lane C #275/#310 issued-currency quotes, policy/SDK/receipts, trust-line/reserve preflight and partial-payment rejection; unsigned denylisted royalty cancellation and caller refunds with audit coverage. Full UC2 writer received 0.90 test USD; 2,500-drop refused royalty returned, reserve zero ([evidence](evidence/rlusd-275-refund-310.md)). No `src/` changes.
 

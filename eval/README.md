@@ -146,8 +146,25 @@ from masquerading as a new measurement.
 
 Metric definitions:
 
-- **Waste:** gross purchase cost adding no bank-supported requested fact / gross
-  spend; refunded failed proofs still count. No spend means `null`.
+- **Wasted gross spend** (`wastedSpendPct`, unchanged): purchase cost adding no
+  bank-supported requested fact at the post-purchase rewrite / all gross purchase
+  cost. Failed proofs and subsequently refunded purchases still count as gross waste.
+- **Wasted net spend** (`netWastedSpendPct`): (gross wasted cost minus confirmed
+  refunds of wasted purchases) / (gross purchase cost minus all confirmed refunds).
+  A failed proof, challenge or pending refund is not enough: production refunds
+  must have a validated on-chain outcome. The offline harness's synchronous
+  `proof: REFUNDED` outcome models a confirmed refund; its net result is explicitly
+  **SIMULATED**, not a measurement of on-chain refunds. Refunds never replenish
+  spending authority. XRP fees and model costs are separate; they are not deducted
+  from SGD article prices. Zero gross/net denominators are `null`, not zero waste.
+- **Gross spend buying a fact used in the final answer** (`usedSpendPct`): cost of
+  verified purchases whose `gainedFacts` intersects final bank-supported requested
+  fact IDs / gross purchase cost. A fact appearing in v2 but disappearing from the
+  final answer does not count; refunded purchases never count. This measures the
+  cost of purchases that contributed a surviving fact, not price per individual
+  fact, semantic quality of all prose, or independent provenance beyond bank labels.
+  Gross waste remains the historical immediate-gain measure; this additional
+  final-use metric does not rewrite it.
 - **Flow F1:** first purchase per question against the bank's expected purchase,
   using the existing flow harness with `--flow requested` and raw thresholds.
 - **Sweep F1:** existing `purchaseMetrics` over open fact decision units, raw
@@ -245,3 +262,42 @@ The UI source is untouched. Menu matching can only veto; it cannot grant access,
 mark a requirement supported, or authorize spending. Missing or ambiguous menus
 keep the probability estimate. A long menu cannot multiply one targeted fact's
 value. Gross waste still counts refunded purchases.
+
+
+### Numbers v6: gross/net and extraction repair (3 Nov)
+
+The v5 bank, corpus, coverage snapshots and 48-dev/92-heldout split remain frozen.
+`frozen-pre-spend-extraction.json` preserves the prior candidate; v6 fingerprints
+both new code and the metric implementation. Freeze before either run:
+
+```sh
+OFFSET=700 DECISION_NUMBERS_POLICY=off EVAL_LIVE=1 EVAL_SPEND_CAP_USD=1 npm run scorecard -- --live --split heldout
+OFFSET=700 EVAL_LIVE=1 EVAL_SPEND_CAP_USD=1 npm run scorecard -- --live --split heldout
+node --import tsx scripts/report-numbers.ts <before-report.json> <after-report.json> eval/scorecard/spend-extraction-results.json
+node scripts/readme-scorecard.mjs
+```
+
+The baseline switch retains v5 extraction/filtering and scope/v1. The default
+adds requested-passage ranking and fact-menu scope/v2. No heldout retuning, fitting,
+label changes or cross-run inference replay. All six quality metrics now receive
+the same 2,000-replicate, seed-700 source-cluster CIs and paired delta CIs.
+
+The deterministic fact-menu rule handles known capex, capacity, lead-time and
+issuance keys. It requires one compatible signed entry with the requested year
+and a matching subject (specialized package/process ahead of company names).
+Public titles can supply subject/metric context. A verified schema-v2 manifest
+with no promised entries cannot establish an explicit requested key. Missing,
+legacy or invalid manifests remain unknown. Today's menus are coarse: years do
+not prove exact quarters or dates; one of several named package types does not
+prove the entire comparison/trend. This is a necessary rejection check, never a
+coverage assertion or a grant. These limitations and any false negatives remain
+visible in the unchanged heldout labels.
+
+The writer's extractive fallback ranks only accessible, instruction-filtered
+passages by requested-fact terms and inverse passage frequency. It preserves
+existing requested evidence and adds the best tied passages (at most two per
+requirement, five requirements) before the final citation validation. Ordinary
+"buying ... now sends" prose no longer matches the buy/purchase command detector;
+actual purchase instructions remain filtered. LIVE decision/coverage results
+still use a fixture writer, synthetic corpus, keyword search and simulated
+payments; they do not establish live DeepSeek synthesis or XRPL performance.

@@ -1,3 +1,5 @@
+import { LEGACY_SOURCE_INSTRUCTION } from './untrusted.js'
+import { requestedPassageScores } from './fact-selection.js'
 import { reportModelFallback } from '../telemetry.js'
 import { recordStep, scoreStep, traceStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
@@ -165,7 +167,7 @@ async function followUp(client: PublisherClient, query: string, known: Pick<Publ
 
 // Source instructions are data, never agent commands or evidence for an answer.
 const instruction = INSTRUCTION
-export const usableContents = (contents: ContentEnvelope[]) => contents.map(c => ({ ...c, spans: c.spans.filter(s => !instruction.test(s.text) && c.body.includes(s.text)) }))
+export const usableContents = (contents: ContentEnvelope[]) => contents.map(c => ({ ...c, spans: c.spans.filter(s => !(process.env.DECISION_NUMBERS_POLICY === 'off' ? LEGACY_SOURCE_INSTRUCTION : instruction).test(s.text) && c.body.includes(s.text)) }))
 function priorContents(contents: ContentEnvelope[], candidates: PublicCandidate[], previous: Answer) {
   return contents.filter(c => candidates.some(m => m.resourceId === c.resourceId && m.version === c.version && m.tier === 'FREE')
     || previous.claims.some(p => p.citations.some(ref => ref.resourceId === c.resourceId && ref.version === c.version)))
@@ -234,6 +236,27 @@ function fixture(question: string, contents: ContentEnvelope[], candidates: Publ
     const spare = selected.filter(e => !requirements.some(r => fixtureSupports({ text: r }, e.claim.text)))
     if (selected.length >= 8 && spare.length) selected.splice(selected.indexOf(spare.reduce((low, e) => e.score < low.score ? e : low)), 1)
     if (selected.length < 8) selected.push(best)
+  }
+  if (process.env.DECISION_NUMBERS_POLICY !== 'off') {
+    const passages = evidence.map(e => e.claim.text)
+    const pinned = new Set<typeof evidence[number]>()
+    for (const requirement of requirements.slice(0, 5)) {
+      const scores = requestedPassageScores(requirement, passages)
+      const ranked = evidence.map((e, i) => ({ e, score: scores[i] })).sort((a, b) => b.score - a.score || b.e.score - a.e.score)
+      const best = ranked[0]
+      if (!best || best.score <= 0) continue
+      // A topic-only free summary can tie the paid answer. Keep both ties;
+      // preserve previously selected requested evidence on later rewrites.
+      for (const { e } of ranked.filter(r => r.score === best.score).slice(0, 2)) {
+        pinned.add(e)
+        if (selected.includes(e)) continue
+        const spare = [...selected].reverse().find(item => !pinned.has(item) && !requirements.some(r => fixtureSupports({ text: r }, item.claim.text)))
+        if (selected.length >= 8 && spare) selected.splice(selected.indexOf(spare), 1)
+        // Only requested passages can exceed the broad-summary cap (at most
+        // two per frozen requirement); never discard an already answered fact.
+        selected.push(e)
+      }
+    }
   }
   selected.sort((a, b) => b.score - a.score)
   const claims = selected.map(e => e.claim)

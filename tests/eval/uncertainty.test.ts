@@ -3,7 +3,7 @@ import { bootstrapQuality } from '../../eval/scorecard/uncertainty.js'
 import type { QuestionResult } from '../../eval/decisions/offline.js'
 import type { Question } from '../../eval/questions/bank.js'
 it('resamples whole source groups, preserves null waste and yields zero paired deltas on identical data', () => {
-  const result = (id: string) => ({ id, spentMinor: 0, wastedMinor: 0, requested: 1, firstBuy: null, expectedBuy: null, free: { supported: [] }, final: { supported: [] } } as unknown as QuestionResult)
+  const result = (id: string) => ({ id, spentMinor: 0, refundedMinor: 0, purchases: [], wastedMinor: 0, requested: 1, firstBuy: null, expectedBuy: null, free: { supported: [] }, final: { supported: [] } } as unknown as QuestionResult)
   const results = [result('Q01'), result('Q02'), result('Q03')]
   const questions = results.map((r, i) => ({ id: r.id, lane: i < 2 ? 'source:a' : 'source:b' } as Question))
   const ci = bootstrapQuality(results, [], questions, undefined, 100)

@@ -1,28 +1,30 @@
 {
   "schema": "tftf.scorecard/v1",
-  "at": "2026-11-03T03:02:40.926Z",
+  "at": "2026-11-03T03:27:11.020Z",
   "split": "heldout",
-  "policy": "receipt-value/v1+scope/v1",
+  "policy": "receipt-value/v1+scope/v2+extraction/v2",
   "worktreeDirty": true,
-  "commit": "18a538ebe11e6ffcba1702e1f2675306b0215129",
-  "inputHash": "0133fcce57685bc266940bec4fd733a36fbd7565a3e3fba0d554820801a36e18",
+  "commit": "b3ca4f75640fb8aa8de6ac046f0cf19937d97356",
+  "inputHash": "b0b5bb4016e2c1c4444c06a65a0b3f0a66b37de4fe9536a1ff19d62544edc2ed",
   "mode": "LIVE",
   "labels": {
     "search": "keyword only (embeddings unavailable)",
-    "settlement": "SIMULATED \u00b7 no payment",
+    "settlement": "SIMULATED · no payment",
     "wallets": "SIMULATED publisher keys",
     "corpus": "synthetic demo articles",
-    "research": "fixture \u00b7 extractive-fixture",
-    "decision": "openai \u00b7 gpt-6-luna \u00b7 batch-evidence/v4-marginal-fact+gap-plain \u00b7 originality original,rewrite,overlap \u00b7 credibility 0,1,2",
+    "research": "fixture · extractive-fixture",
+    "decision": "openai · gpt-6-luna · batch-evidence/v4-marginal-fact+gap-plain · originality original,rewrite,overlap · credibility 0,1,2",
     "coverage": "scripted needle check (eval)",
     "timing": "LIVE decision; fixture writer/planner; SIMULATED settlement",
     "boot": "booted demo API + publisher (fresh child process; module load included)"
   },
   "quality": {
-    "wastedSpendPct": 52.87162162162162,
-    "selectionF1Flow": 0.5299145299145299,
-    "selectionF1Sweep": 0.6601941747572816,
-    "supportedFactUpliftPts": 32.608695652173914,
+    "wastedSpendPct": 40.67796610169491,
+    "netWastedSpendPct": 40.67796610169491,
+    "usedSpendPct": 59.32203389830509,
+    "selectionF1Flow": 0.5263157894736842,
+    "selectionF1Sweep": 0.66,
+    "supportedFactUpliftPts": 35.869565217391305,
     "falseCompleteRate": 0
   },
   "confidenceIntervals": {
@@ -33,108 +35,118 @@
     "questions": 92,
     "intervals": {
       "wastedSpendPct": {
-        "low": 28.30188679245283,
-        "high": 73.30552659019813,
+        "low": 11.177644710578843,
+        "high": 68.39887640449439,
+        "validReplicates": 2000
+      },
+      "netWastedSpendPct": {
+        "low": 11.177644710578843,
+        "high": 68.39887640449439,
+        "validReplicates": 2000
+      },
+      "usedSpendPct": {
+        "low": 31.60112359550562,
+        "high": 88.82235528942115,
         "validReplicates": 2000
       },
       "selectionF1Flow": {
-        "low": 0.3469387755102041,
-        "high": 0.6730769230769231,
+        "low": 0.3486238532110092,
+        "high": 0.6666666666666666,
         "validReplicates": 2000
       },
       "selectionF1Sweep": {
-        "low": 0.4788732394366197,
-        "high": 0.7956989247311828,
+        "low": 0.4838709677419355,
+        "high": 0.8,
         "validReplicates": 2000
       },
       "supportedFactUpliftPts": {
-        "low": 20.987654320987655,
-        "high": 44.87179487179487,
+        "low": 22.105263157894736,
+        "high": 49.504950495049506,
         "validReplicates": 2000
       }
     }
   },
   "timing": {
     "samples": 10,
-    "p50FirstAnswerMs": 65.84872950000863,
-    "p95FirstAnswerMs": 113.3635373500044,
-    "p95FinalAnswerMs": 4939.243864250004,
-    "coldStartMs": 685.2157909999951,
+    "p50FirstAnswerMs": 64.0022084999946,
+    "p95FirstAnswerMs": 92.76741494999729,
+    "p95FinalAnswerMs": 5559.789416849992,
+    "coldStartMs": 545.6375000000116,
     "node": "v26.3.1",
     "platform": "darwin",
     "observations": [
       {
         "questionId": "Q49",
-        "runId": "b1f655f9-1322-4ff7-a5e1-403598034cb7",
-        "firstMs": 148.45337500001187,
-        "finalMs": 2326.016083000024
+        "runId": "29d5abbd-3165-4650-be4e-fc6c91645ab6",
+        "firstMs": 112.56345899999724,
+        "finalMs": 2331.602666999999
       },
       {
         "questionId": "Q50",
-        "runId": "72d1878d-a533-4318-b169-8cc586a0f0c6",
-        "firstMs": 61.006500000017695,
-        "finalMs": 2245.3563330000034
+        "runId": "2ef03f0f-cebe-478d-917b-c2945edc7d5e",
+        "firstMs": 62.25533300000825,
+        "finalMs": 2277.305208000005
       },
       {
         "questionId": "Q51",
-        "runId": "ffa4a614-e9f1-4052-a537-221c62ac55e8",
-        "firstMs": 66.59799999999814,
-        "finalMs": 2657.717417000007
+        "runId": "2ba51867-394b-4160-9c46-79e64f42486b",
+        "firstMs": 64.27116699999897,
+        "finalMs": 2600.561625000002
       },
       {
         "questionId": "Q52",
-        "runId": "ba43fe69-09bf-4f74-afc3-fcc669879d87",
-        "firstMs": 70.47595799999544,
-        "finalMs": 4637.544457999989
+        "runId": "1ffaad9b-b1f9-49d4-8c37-ca21e83f67ae",
+        "firstMs": 65.95595900001354,
+        "finalMs": 5238.236499999999
       },
       {
         "questionId": "Q53",
-        "runId": "6d2f8e61-54e8-427b-ae77-51481369edc5",
-        "firstMs": 60.28158300000359,
-        "finalMs": 5186.088833000016
+        "runId": "65f5ee16-e1f9-4b6a-8e6b-ac715440ee7b",
+        "firstMs": 60.023207999998704,
+        "finalMs": 5822.878166999988
       },
       {
         "questionId": "Q54",
-        "runId": "beeb4949-7768-4820-b1c6-06cc74d6f5cc",
-        "firstMs": 67.93183300000965,
-        "finalMs": 3427.596333000023
+        "runId": "afa0d238-a87c-4ce6-aaeb-0f15d0b5fed1",
+        "firstMs": 65.04666599998018,
+        "finalMs": 3243.387832999986
       },
       {
         "questionId": "Q55",
-        "runId": "dae78f26-f0a2-4eeb-9e59-94241a42ba65",
-        "firstMs": 63.52462499999092,
-        "finalMs": 1708.9599999999919
+        "runId": "5b0bc22f-feb3-438a-8b9f-2aca5fd4b991",
+        "firstMs": 63.17629199998919,
+        "finalMs": 1979.8936669999966
       },
       {
         "questionId": "Q56",
-        "runId": "0b981814-3b37-4c8d-9bf0-8b692f7a035d",
-        "firstMs": 65.09945900001912,
-        "finalMs": 3098.8697090000205
+        "runId": "f5a76761-28b8-4120-a111-2cf486388e8c",
+        "firstMs": 63.73324999999022,
+        "finalMs": 3615.0495419999934
       },
       {
         "questionId": "Q57",
-        "runId": "6a993f0a-82e3-43fd-bc13-8bdccd44b4d5",
-        "firstMs": 55.87575000000652,
-        "finalMs": 1535.5557079999999
+        "runId": "597e97b3-0bf4-44fd-965c-ac55d7b3e5ab",
+        "firstMs": 58.41004200000316,
+        "finalMs": 1784.1627089999965
       },
       {
         "questionId": "Q58",
-        "runId": "8d23e735-1ff3-4371-abf4-092aa9da4f1f",
-        "firstMs": 67.62066600000253,
-        "finalMs": 4015.1929999999993
+        "runId": "32a83931-8365-436b-b5e5-59a07197b490",
+        "firstMs": 68.57224999999744,
+        "finalMs": 3661.4134170000034
       }
     ]
   },
   "cost": {
-    "providerCalls": 483,
+    "providerCalls": 463,
     "estimatedUsageCalls": 0,
-    "inputTokens": 2277745,
+    "inputTokens": 2133551,
     "outputTokens": 0,
-    "modelUsd": 0.22777449999999985,
-    "latencyModelUsdPerQuery": 0.004296539999999999,
-    "flowDecisionUsdPerQuery": 0.0017753184782608716,
+    "modelUsd": 0.21335509999999985,
+    "latencyModelUsdPerQuery": 0.004304159999999999,
+    "flowDecisionUsdPerQuery": 0.0015284108695652187,
     "xrpDropsSpent": 0,
-    "simulatedMinorSpent": 2960,
+    "simulatedMinorSpent": 2655,
     "rates": "eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)"
   },
   "audit": {

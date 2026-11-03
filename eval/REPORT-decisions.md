@@ -436,3 +436,94 @@ Validation: bank verification and unchanged corpus leak checks pass; 660 unit
 tests and all four browser end-to-end tests pass. The historical menu test still
 checks the exact v1 bank/prose/snapshot hashes; v2 is tested separately with
 honest author provenance. No test or gate has been loosened.
+
+## 8. Gross/net spending and requested-fact extraction (3 Nov 2026)
+
+The v6 candidate is frozen before the fresh heldout pair. Bank v2 (140
+questions), its 48-dev/92-heldout split, all source prose/menus and constructed
+coverage snapshots are unchanged. `DECISION_NUMBERS_POLICY=off` reproduces
+v5 extraction and country-scope policy; default adds the repairs below. The
+prior freeze and #318 results remain intact. No heldout fitting or retuning.
+
+### What the historical failures actually were
+
+- **Q07, BoJ 7–2 vote:** the requested-fact pass used a binary lexical coverage
+  shortcut. An adjacent summary could be treated as already answering the
+  requirement, while freshness/tag ranking filled the eight broad-summary slots
+  with other spans. Ranking accessible passages by requested terms and inverse
+  passage frequency, retaining ties and preserving existing requested evidence,
+  keeps the paid p1 vote in both v2 and the next rewrite. It uses no bank needles.
+- **Q48, HBM 41 vs 29 weeks:** p1 never reached selection. The source instruction
+  regex matched `buy` inside “buying” and then `now` in a later sentence, removing
+  the entire verified passage as an instruction. Word boundaries on buy/purchase
+  repair that false positive. Direct purchase instructions remain blocked, with
+  the existing injection pack and added command-token regressions.
+- **Q21/Q37/Q44/Q38:** deterministic policy rejects a known requested fact key
+  without a compatible signed entry and subject/year scope. This catches the
+  undated Malaysia digest (its verified v2 manifest has no fact claims), general
+  TSMC capacity for a CoWoS requirement, Kestrel queues for QFN/BGA, and the existing
+  wrong-country Singapore/Vietnam case, even under all-high model scores. All
+  four intended sources remain eligible in regression tests. Unknown/legacy/
+  invalid menus keep the model fallback. Coarse menus still cannot establish
+  every quarter, date, named package or trend; the rule only rejects, never
+  asserts coverage or grants access. Public titles supply context.
+
+The answer fix is in the server's extractive fallback; no UI change is needed.
+The #312 headline presentation remains with that lane. Citation validation is
+unchanged: each selected claim retains its exact resource/version/span binding
+and must resolve against supplied free or verified-grant contents. Live
+DeepSeek synthesis has not been measured by this fixture-writer evaluation.
+
+Gross waste keeps the historical immediate-gain numerator and gross denominator.
+Net waste subtracts confirmed wasted refunds from the numerator and all confirmed
+refunds from the denominator; a pending challenge is not a refund. The harness
+models refunds synchronously and all payments here are **SIMULATED**, with no
+on-chain execution or fees measured. Net does not replenish budget authority.
+The extra used-spend share counts purchases adding a requested fact that survives
+in the final answer. Definitions and zero-denominator behavior: `eval/README.md`.
+
+### Fresh heldout result
+
+| Metric | Before (95% CI) | After (95% CI) |
+|---|---:|---:|
+| Wasted gross spend | 52.87% [28.30, 73.31] | 40.68% [11.18, 68.40] |
+| Wasted net spend (confirmed simulated refunds) | 52.87% [28.30, 73.31] | 40.68% [11.18, 68.40] |
+| Gross spend buying a final-used fact | 47.13% [26.69, 71.70] | 59.32% [31.60, 88.82] |
+| First-purchase F1 (flow) | 0.530 [0.347, 0.673] | 0.526 [0.349, 0.667] |
+| Selection F1 (sweep) | 0.660 [0.479, 0.796] | 0.660 [0.484, 0.800] |
+| Supported-fact uplift | 32.61 pts [20.99, 44.87] | 35.87 pts [22.11, 49.50] |
+
+**Gross waste target still missed (40.68% ≥25%).** Gross/net waste decreased
+12.19 pts (paired 95% CI −28.57 to −1.23); used-spend share increased 12.19 pts
+[1.23, 28.57]. No refunds occurred in either heldout run, so gross and net
+coincide. Flow F1 slipped 0.00360 [−0.03368, 0.02052]; sweep slipped 0.00019
+[−0.03376, 0.03105]. Uplift increased 3.26 pts [0.00, 8.18]. Free-supported
+facts rose 6 → 13; final-supported facts 36 → 46 of 92. This is primarily better
+fact use, not an established selection-F1 improvement.
+
+Source-cluster bootstrap: 20 sources, 2,000 replicates, seed 700; conditional on
+fixed synthetic documents and observed model draws. Wide intervals remain;
+source documents and the prior aggregate results were already visible. No
+heldout retuning. LIVE decision/coverage, fixture writer/planner, keyword search,
+**SIMULATED payments, zero XRP**; no live DeepSeek or chain-refund claim. Both
+raw API audits: **0 violations / 10 runs / 728 observations** each.
+Model cost **US$0.4412058 / US$4** (usage-derived at dated harness rates, not an
+invoice). `eval/scorecard/spend-extraction-results.json` retains exact scoring
+inputs and CIs; `spend-extraction-spend.json` accounts for all 946 requests.
+
+Baseline `2026-11-03T03:25:08.427Z`; after `2026-11-03T03:27:11.020Z`.
+Evaluated candidate `b3ca4f7`, input hash
+`b0b5bb4016e2c1c4444c06a65a0b3f0a66b37de4fe9536a1ff19d62544edc2ed`.
+Dirty flags cover documentation and the generated preceding history row;
+evaluated source matches the committed freeze. Each run has a fresh cache.
+Gross simulated article cost S$29.60 → S$26.55; wasted cost S$15.65 → S$10.80;
+refunded cost S$0 → S$0; used cost S$13.95 → S$15.75. Neither refunded purchases
+nor failures are removed from the historical gross metric. The older dev sample
+illustrates the accounting difference: gross 44.19%, net 35.14% after refunds.
+
+Validation: 678 unit tests and four browser end-to-end tests passed before the
+UX rebase; bank verification and unchanged corpus leak checks pass. Final
+integrated validation is recorded in the PR. No test, leak check, gate audit,
+raw decision threshold or spend cap was loosened. The source command detector's
+word-boundary correction and bounded extra requested claims are explicit
+behavior changes, not claims that production synthesis has been measured.
