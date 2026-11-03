@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- Shared validation for impact/report components. */
 import type { CSSProperties, ReactNode } from 'react'
-import { AnswerSchema, providerLabels, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
+import { AnswerSchema, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
 import { candidateOf, citationKey, leadSentence, money } from '../format'
 import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
@@ -55,7 +55,7 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
   const cites = (claim: Claim) => claim.citations.map(chip)
 
   if (!answer) return <section className="ra-verdict" aria-label="Research answer" aria-busy="true">
-    <div className="ra-vlabel"><h2>Short answer</h2><span className="ra-ver">{run.phase === 'FAILED' || run.phase === 'STOPPED' ? 'no verified answer' : 'reading free sources'}</span></div>
+    <div className="ra-vlabel"><h2>{run.phase === 'FAILED' ? 'Draft · free sources only' : 'Short answer'}</h2><span className="ra-ver">{run.phase === 'FAILED' || run.phase === 'STOPPED' ? 'no verified answer' : 'reading free sources'}</span></div>
     <div className="ra-vtext is-skel" aria-hidden="true"><i style={{ width: '92%' }} /><i style={{ width: '84%' }} /><i style={{ width: '46%' }} /></div>
     {(run.phase === 'FAILED' || run.phase === 'STOPPED') && <p className="ra-vnote" role="status">No verified answer is available. Ask again to begin a new run.</p>}
   </section>
@@ -72,12 +72,12 @@ export default function Answer({ run, onCitation, view, onView, compare, onCompa
   const list = compare && showLatest ? [...answer.claims, ...removed.map(claim => ({ ...claim, gone: true }))] : answer.claims
   return <>
     <section className={`ra-verdict${impact && showLatest ? ' has-impact' : ''}`} aria-label="Research answer" key={`v${answer.version}`}>
-      <div className="ra-vlabel"><h2>Short answer</h2></div>
+      <div className="ra-vlabel"><h2>{run.phase === 'FAILED' ? 'Draft · free sources only' : 'Short answer'}</h2></div>
       {answers.length > 1 && <div className="ra-vswitch" role="group" aria-label="Answer version">{answers.map(item => <button type="button" key={item.version} aria-pressed={item === answer} onClick={() => onView(item === latest ? 'latest' : 'baseline')}>v{item.version}</button>).filter((_, index) => index === 0 || index === answers.length - 1)}</div>}
       <p className={`ra-vtext${highlight ? ' is-hl' : ''}`}><span className="ra-lead">{words.map((word, index) => /^\s+$/.test(word) ? word : <span className="w" key={index} style={{ '--d': `${index * 22}ms` } as CSSProperties}>{word}</span>)}</span>{leadClaims.flatMap(cites)}</p>
       {rest && <details className="ra-answer-context"><summary>Read full context</summary><p className="ra-vrest">{rest}</p></details>}
       {impact && showLatest && <p className={`ra-impact i-${impact.classification.toLowerCase()}`} title={impact.explanation}>{IMPACT[impact.classification]}</p>}
-      <div className="ra-vfoot">{report}{answers.length > 1 && <button type="button" className="ra-btn" aria-pressed={compare} onClick={onCompare}>{compare ? `Back to v${latest!.version}` : `Compare v1 → v${latest!.version}`}</button>}{answer.provider === 'fixture' && <span className="ra-hint">{providerLabels[answer.provider]} · {answer.model}</span>}</div>
+      <div className="ra-vfoot">{report}{answers.length > 1 && <button type="button" className="ra-btn" aria-pressed={compare} onClick={onCompare}>{compare ? `Back to v${latest!.version}` : `Compare v1 → v${latest!.version}`}</button>}</div>
     </section>
     {!compare && <RequestedFacts run={run} version={answer.version} />}
     {!compare && gap}

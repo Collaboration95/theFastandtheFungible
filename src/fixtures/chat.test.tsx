@@ -2,6 +2,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { exampleRun, paidStoryRun, uc2Scope } from './run.js'
+Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { value() { this.setAttribute('open', '') }, configurable: true })
+Object.defineProperty(HTMLDialogElement.prototype, 'close', { value() { this.removeAttribute('open') }, configurable: true })
+
 import App from '../App.js'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.history.replaceState(null, '', '/'); try { localStorage.clear() } catch { /* no storage */ } })
@@ -89,7 +92,7 @@ describe('chat page (owner, 9 Oct)', () => {
     await screen.findByTestId('ra-chat-reply')
     message('Kestrel outlook?')
     await screen.findByRole('dialog', { name: 'Search plan' })
-    fireEvent.click(screen.getByRole('button', { name: 'Go now' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start now' }))
     await screen.findByRole('heading', { name: 'Kestrel outlook?' })
     expect(calls.find(call => call.path === '/runs')?.body).toMatchObject({ question: 'Kestrel outlook?', budgetMinor: 200 })
   })

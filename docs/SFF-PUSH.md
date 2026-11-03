@@ -287,6 +287,8 @@ Agents add items there and keep working around them.
 
 - 3 Nov (#275/#310): preserve SGD budgets and fixed labelled demo FX while adding issuer-bound Testnet payments; use explicitly labelled test USD when the official RLUSD faucet requires authentication. Cancel only unsigned refused royalties and refund the caller atomically; uncertain signatures keep their reservation.
 
+- 3 Nov: #311 relocates environment labels per UX-DIRECTION §3.2; net cost leads Spend while gross charges continue to consume budget. Keep the mandatory refund rail even though it makes the literal env-word count 2 rather than the spec's conflicting target 1; #314 tracks the confirmed reconciler-to-answer handoff gap.
+
 - 3 Nov: UX sledgehammer ([direction](design/UX-DIRECTION.md), #311, #312): one header environment indicator replaces the per-surface SIMULATED/fixture labels, which stay on receipts, refunds, exports and where a model or search is substituted (gate 5 kept, relocated); motion limited to a ten-entry allowlist and #262's money flight is not built (budget-bar and status transitions only); ink-on-paper, Geist-only, seven type sizes, plain copy. Why: 8–10 labels and 30 keyframes per screen read as noise to a UX judge.
 - 3 Nov: Numbers v5 freezes 48 historical dev + 92 new heldout questions (20 source groups) before the policy pair. Cluster-bootstrap CIs, same-vendor author disclosure, and no heldout tuning; the flat 52.87% waste result and wide interval stay visible.
 
@@ -346,6 +348,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 
 ### Tue 3 Nov
+- UX lane #311: shell, environment popover, plan, payments/verification/refund, net Spend and receipt sheets; four allowed keyframes, no in-app cast/odometer. Recovery state clarified; #312 retains answer/supporting-screen/PDF/site work.
 - Lane B #276: value-of-information veto, conservative signed-menu duplicate checks, keyed receipt refit and exact intent/answer labels; held-out waste 39.39% → 35.48% (target missed), flow F1 0.588 → 0.625, uplift +15.38 pts unchanged; dev waste 51.79% → 44.19%, flow F1 0.308 → 0.296. Zero gate violations; scorecard/README refreshed.
 - Lane B #260: signed corpus fact menus, both decision providers and local scorecards; live F1 0.235 → 0.419, waste 36.19% → 47.19% (both targets missed), zero gate violations; README regenerated, fixture quality unchanged.
 - Lane A #259: installed unsigned Apple Silicon DMG, 136,597,522 bytes (130.27 MiB); launch to interactive 2.070 s with fresh fixture data. UC1–UC3, refund, report, Keychain round trip and hardening checks pass; no live payment/signing claim. [Evidence](evidence/macos-app-259.md).

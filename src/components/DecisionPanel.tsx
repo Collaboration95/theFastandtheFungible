@@ -17,7 +17,7 @@ function FullRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) {
   const scale = Math.max(0.8, ...round.rows.map(row => row.value))
   const order = [...round.rows].sort((a, b) => Number(a.verdict === 'BUY') - Number(b.verdict === 'BUY'))
   return <section className="ra-panel ra-decide" aria-label={`Decision round ${round.round}`}>
-    <div className="ra-panel-h"><h2>Worth buying</h2><span className="mono">{decisionLabel(round)}</span></div>
+    <div className="ra-panel-h"><h2>Worth buying</h2><span className="mono">Decided by {round.provider === 'fixture' ? 'Offline rules' : decisionLabel(round)}</span></div>
     <div className="ra-gapline"><span>Gap: {round.gap || 'none left open'}</span></div>
     <ul className="ra-rows">{round.rows.map((row, index) => {
       const verdict = plainVerdict(row, run)
@@ -37,7 +37,7 @@ function FoldedRound({ run, round, onWhy }: { run: RunSnapshot; round: DecisionR
   return <section className="ra-panel ra-decide is-fold" aria-label={`Decision round ${round.round}`}>
     <div className="ra-panel-h"><h2>Considered {round.rows.length} paywalled source{round.rows.length === 1 ? '' : 's'}</h2>{onWhy && <button type="button" className="ra-link" onClick={onWhy}>Why these?</button>}</div>
     {/* Gate 5: folded or not, the decision provider stays on screen. */}
-    <p className="ra-fold-by mono">{decisionLabel(round)}</p>
+    <p className="ra-fold-by mono">Decided by {round.provider === 'fixture' ? 'Offline rules' : decisionLabel(round)}</p>
     <ul className="ra-mini">{round.rows.map(row => {
       const verdict = plainVerdict(row, run)
       return <li key={`${row.candidate.resourceId}:${row.candidate.version}`} className={verdict.tone === 'buy' || verdict.tone === 'would' ? 'is-buy' : ''}><span className="ra-row-n" title={row.candidate.title}><b>{row.candidate.title}</b><small>{row.candidate.publisher}</small></span><span className={`ra-price${row.candidate.price.amountMinor > run.perSourceCapMinor ? ' is-over' : ''}`}>{money(row.candidate.price.amountMinor)}</span><span className={`ra-stamp s-${verdict.tone}`} title={verdict.why}>{verdict.stamp}</span></li>
@@ -49,7 +49,7 @@ function LaterRound({ run, round }: { run: RunSnapshot; round: DecisionRound }) 
   const left = run.budgetMinor - run.spentMinor - run.reservedMinor
   const buys = round.rows.filter(row => row.verdict === 'BUY')
   return <section className="ra-panel ra-decide is-later" aria-label={`Decision round ${round.round}`}>
-    <div className="ra-panel-h"><h2>Round {round.round}</h2><span className="mono">{decisionLabel(round)}</span></div>
+    <div className="ra-panel-h"><h2>Round {round.round}</h2><span className="mono">Decided by {round.provider === 'fixture' ? 'Offline rules' : decisionLabel(round)}</span></div>
     <div className="ra-gapline"><span>Gap: {round.gap || 'none left open'}</span></div>
     <ul className="ra-rows is-r2">{round.rows.map((row, index) => {
       const verdict = plainVerdict(row, run)

@@ -43,7 +43,7 @@ if (clip) {
     await page.keyboard.press('Control+Enter')
     const clarify = page.getByRole('button', { name: 'pricing & margins' })
     if (uc === 'UC2') await clarify.press('Enter')
-    await page.getByRole('button', { name: 'Go now' }).waitFor()
+    await page.getByRole('button', { name: 'Start now' }).waitFor()
     await page.keyboard.press('Control+Enter')
     await page.waitForFunction(() => document.title.includes('Answer ready'), { timeout: 60_000 })
     // Hold the cited result for a readable ending; total take is padded to 18 seconds below.
@@ -63,7 +63,7 @@ if (clip) {
 async function expectReady() {
   for (let attempt = 0; attempt < 100; attempt++) {
     if (child.exitCode !== null) throw new Error('Record server exited')
-    try { if ((await fetch(url)).ok) return } catch { /* startup */ }
+    try { if ((await fetch(new URL('/api/health', url))).ok && (await fetch(url)).ok) return } catch { /* startup */ }
     await new Promise(done => setTimeout(done, 200))
   }
   throw new Error('Record server did not become ready')

@@ -54,3 +54,15 @@ describe('one run view model', () => {
     for (const row of ucRuns.UC2.decisions[0].rows) expect(html).toContain(renderToStaticMarkup(<span>{row.candidate.title}</span>).slice(6, -7))
   })
 })
+
+// #314: a reconciled payment must not contradict the pending answer recovery.
+it('shows Recovering when delivery verifies but a failed run still needs its answer resumed', () => {
+  const run = structuredClone(ucRuns.UC2)
+  run.phase = 'FAILED'
+  run.error = 'Delivery incomplete. Retry delivery to verify and re-answer.'
+  run.checkpoint = { ...run.checkpoint, nextAction: 'retry-delivery' }
+  expect(deriveRunState(run).phase).toBe('recovering')
+  expect(deriveRunState({ ...ucRuns.UC3, phase: 'FAILED', checkpoint: { ...ucRuns.UC3.checkpoint, nextAction: 'retry-delivery', intentId: ucRuns.UC3.intents[0].intentId } }).phase).toBe('failed')
+  expect(deriveRunState({ ...run, stopped: true }).phase).toBe('stopped')
+  expect(deriveRunState({ ...run, checkpoint: { ...run.checkpoint, nextAction: 'ask' } }).phase).toBe('failed')
+})

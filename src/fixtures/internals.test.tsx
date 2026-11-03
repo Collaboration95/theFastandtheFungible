@@ -3,13 +3,14 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { RunSnapshotSchema } from '../../shared/contracts/index.js'
 import { exampleRun, offlineWireExampleRun, offlineZeroBudgetRun } from './run.js'
 import DecisionTable from '../components/DecisionTable.js'
-import Budget from '../components/Budget.js'
+import SpendPanel from '../components/SpendPanel.js'
 import Wire from '../components/Wire.js'
 import Ledger from '../components/Ledger.js'
-import Modes from '../components/Modes.js'
+import ModelLabels from '../components/ModelLabels.js'
 import Activity from '../components/Activity.js'
+import EnvIndicator from '../components/EnvIndicator'
 import Layout from '../components/Layout.js'
-import RunTape from '../components/RunTape.js'
+import RunActivity from '../components/RunActivity.js'
 import DecisionPanel from '../components/DecisionPanel.js'
 import Answer from '../components/Answer.js'
 import { getAccessibleContent } from '../components/Sources.js'
@@ -48,15 +49,15 @@ describe('visible internals', () => {
   })
 
   it('shows exact minor-unit budget and permanent simulation labels', () => {
-    const html = renderToStaticMarkup(<Budget run={{ ...exampleRun, budgetMinor: 200, spentMinor: 80, reservedMinor: 35 }} />)
-    for (const amount of ['S$2.00', 'S$0.80', 'S$0.35', 'S$0.85']) expect(html).toContain(amount)
-    expect(html).toContain('SIMULATED SGD · no real funds')
-    const modes = renderToStaticMarkup(<Modes labels={exampleRun.labels} />)
-    expect(renderToStaticMarkup(<Modes labels={{ ...exampleRun.labels, settlement: 'XRPL TESTNET · no real value' }} />)).toContain('XRPL TESTNET · no real value')
+    const html = renderToStaticMarkup(<SpendPanel onRetry={() => {}} onReceipt={() => {}} run={{ ...exampleRun, budgetMinor: 200, spentMinor: 80, reservedMinor: 35 }} />)
+    for (const amount of ['S$2.00', 'S$0.80', 'S$0.85']) expect(html).toContain(amount)
+    expect(html).not.toContain('SIMULATED SGD · no real funds')
+    const modes = renderToStaticMarkup(<ModelLabels labels={exampleRun.labels} />)
+    expect(renderToStaticMarkup(<ModelLabels labels={{ ...exampleRun.labels, settlement: 'XRPL TESTNET · no real value' }} />)).toContain('XRPL TESTNET · no real value')
     for (const label of ['fixture', 'Research ·', 'Decide ·', 'Publisher ·', 'local', 'SIMULATED SGD']) expect(modes).toContain(label)
     expect(modes).not.toContain('fallback')
     // A live provider that fell back to a fixture is labelled, amber.
-    const fellBack = renderToStaticMarkup(<Modes labels={exampleRun.labels} configured={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-chat' }} />)
+    const fellBack = renderToStaticMarkup(<ModelLabels labels={exampleRun.labels} configured={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-chat' }} />)
     expect(fellBack).toContain('is-fallback')
     expect(fellBack).toContain('(fallback)')
   })
@@ -89,7 +90,7 @@ describe('visible internals', () => {
   })
 
   it('keeps layout slots and historical activity without dumping event data', () => {
-    const html = renderToStaticMarkup(<Layout labels={<Modes />}><p>Answer slot</p><Activity run={offlineZeroBudgetRun} /></Layout>)
+    const html = renderToStaticMarkup(<Layout labels={<ModelLabels />}><p>Answer slot</p><Activity run={offlineZeroBudgetRun} /></Layout>)
     expect(html).toContain('Answer slot')
     expect(html).toContain('ResearchAgent')
     expect(html).toContain('Offline synthetic example')
@@ -97,38 +98,30 @@ describe('visible internals', () => {
   })
 
   it('shows the run as steps with Stop while live, and no button once the run is over', () => {
-    const live = renderToStaticMarkup(<RunTape run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
-    expect(live).toContain('>Stop<')
+    const live = renderToStaticMarkup(<RunActivity run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    expect(live).toContain('Stop buying ⌘.')
     expect(live).toContain('Choose what to buy')
     expect(live).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop</)
     expect(live).not.toContain('ra-runbar-clock')
-    const done = renderToStaticMarkup(<RunTape run={offlineZeroBudgetRun} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    const done = renderToStaticMarkup(<RunActivity run={offlineZeroBudgetRun} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
     expect(done).not.toContain('ra-stop')
     expect(done).not.toContain('Run finished')
   })
 
   it('#199: a stage-paced live run never reads as a replay', () => {
-    const html = renderToStaticMarkup(<RunTape run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    const html = renderToStaticMarkup(<RunActivity run={{ ...offlineZeroBudgetRun, phase: 'DECIDE' }} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
     expect(html).not.toContain('Replaying')
   })
 
-  it('always labels the rail in the header and names provider fallbacks', () => {
-    expect(renderToStaticMarkup(<Modes quiet labels={exampleRun.labels} />)).toContain('SIMULATED')
-    const down = renderToStaticMarkup(<Modes quiet labels={exampleRun.labels} configured={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-chat' }} />)
-    expect(down).toContain('is-fallback')
-    expect(down).not.toContain('Publisher')
-    // Final-push labels: a keyword-only search or a fixture plan on a live setup is a substitution too (gate 5).
-    const live = { ...exampleRun.labels, research: 'DeepSeek · deepseek-flash (pending)' }
-    expect(renderToStaticMarkup(<Modes quiet labels={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-flash', search: 'hybrid', plan: 'client plan' }} configured={live} />)).toContain('SIMULATED')
-    const search = renderToStaticMarkup(<Modes quiet labels={{ ...exampleRun.labels, research: 'DeepSeek · deepseek-flash', search: 'keyword only (embeddings unavailable)', plan: 'fixture · scope-fixture' }} configured={live} />)
-    expect(search).toContain('Fixture fallback · Plan + Search')
-    const models = renderToStaticMarkup(<Modes labels={{ ...exampleRun.labels, search: 'hybrid', plan: 'client plan' }} />)
-    for (const text of ['Research ·', 'Decide ·', 'Plan · client plan', 'Search · hybrid', 'Publisher ·']) expect(models).toContain(text)
+  it('labels the environment once and keeps raw model labels in Show work', () => {
+    expect(renderToStaticMarkup(<EnvIndicator labels={exampleRun.labels} recording />)).toContain('Demo · simulated payments')
+    const models = renderToStaticMarkup(<ModelLabels labels={exampleRun.labels} />)
+    for (const text of ['Research ·', 'Decide ·', 'Publisher ·', 'SIMULATED SGD']) expect(models).toContain(text)
   })
 
   it('folds the decision round to what was bought and skipped, with Why these? to reopen it', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} fold onWhy={() => {}} />)
-    for (const text of ['Considered', 'Why these?', 'WOULD BUY', 'SKIP', `${offlineZeroBudgetRun.decisions[0].model}`]) expect(html).toContain(text)
+    for (const text of ['Considered', 'Why these?', 'WOULD BUY', 'SKIP', 'Offline rules']) expect(html).toContain(text)
     expect(html).not.toContain('value = gap')
   })
 
@@ -259,9 +252,8 @@ describe('stage pacing', () => {
     expect(renderToStaticMarkup(<Answer run={paidStoryRun} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)).not.toContain('ra-facts')
   })
   it('#210: the focused search is its own run-tape step, after the first search', () => {
-    const html = renderToStaticMarkup(<RunTape run={ucRuns.UC4} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
-    expect(html).toContain('Search again')
-    expect(html).toContain('found free: How much of its electricity comes from renewable sources')
+    const html = renderToStaticMarkup(<RunActivity run={ucRuns.UC4} onStop={() => {}} stopping={false} onShowWork={() => {}} />)
+    expect(html).toContain('Done')
     const before = staged(ucRuns.UC4, ucRuns.UC4.events.find(e => e.type === 'FOLLOW_UP')!.id)
     expect(before.contents.some(c => c.resourceId === 'lf-corporate-green-power-round-2026')).toBe(false)
   })

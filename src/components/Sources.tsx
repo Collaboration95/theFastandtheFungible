@@ -63,9 +63,9 @@ export default function Sources({ run, onOpen }: SourcesProps) {
         <span className="ra-count"><span><em>{read}</em> read</span>{skipped > 0 && <span><em>{skipped}</em> not bought</span>}</span>
         {named.map(({ candidate, state }) => <button key={identity(candidate)} type="button" className={`ra-pill st-${state.tone}`} disabled={!onOpen} onClick={() => open(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`}><span className="ra-mono" aria-hidden="true">{initials(candidate.publisher)}</span>{candidate.publisher}<em>{state.bought ? '✓ ' : ''}{state.label}</em></button>)}
         {/* Gate 5: only a keyword-only search needs saying; hybrid is the quiet default. */}
-        {run.labels.search && run.labels.search !== 'hybrid' && <span className="ra-chip is-fallback" title="Search mode for this run">search · {run.labels.search}</span>}
+
         <button type="button" className="ra-link ra-viewall" onClick={() => setAll(!all)} aria-expanded={all}>{all ? 'Hide' : 'View all'}</button>
-        <span className="ra-note-right">Synthetic corpus · fictional</span></div>}
+        </div>}
     {all && <ul className="ra-cards is-all">
       {cards.map(({ candidate, state }, index) => <li key={identity(candidate)} style={{ '--i': index } as CSSProperties}>
         <button type="button" className={`ra-card${state.bought ? ' is-bought' : ''}`} disabled={!onOpen} onClick={() => open(candidate)} aria-label={`${candidate.publisher}: ${candidate.title}, ${state.label}`}>

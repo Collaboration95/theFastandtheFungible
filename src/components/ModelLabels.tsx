@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { ModeLabels } from '../../shared/contracts/index.js'
 
-/** Gate 5: every provider and the settlement rail are labelled. `quiet` (the header) shows a chip only when a live
-    provider fell back to a fixture, in amber; the full list lives in Show work → Models, and SIMULATED SGD sits on the money. */
-export default function Modes({ labels, configured, quiet = false }: { labels?: ModeLabels; configured?: ModeLabels; quiet?: boolean }) {
+/** Verbatim engine labels, retained exclusively in Show work. */
+export default function ModelLabels({ labels, configured }: { labels?: ModeLabels; configured?: ModeLabels }) {
   const [paused, setPaused] = useState(false)
   useEffect(() => {
     let active = true
@@ -18,11 +17,6 @@ export default function Modes({ labels, configured, quiet = false }: { labels?: 
   // Live search embeds the query; keyword-only means the embedding call failed (gate 5). A fixture plan means the planner fell back.
   const searchDown = !!labels?.search?.startsWith('keyword') && configured?.research !== undefined && !configured.research.startsWith('fixture')
   const planDown = !!labels?.plan && fallback(labels.plan, configured?.research)
-  if (quiet) {
-    const down = [fallback(research, configured?.research) && 'Research', fallback(decision, configured?.decision) && 'Decide', planDown && 'Plan', searchDown && 'Search'].filter(Boolean)
-
-    return <ul className="ra-modes" aria-label="Provider substitution">{pauseLabel}<li className="ra-chip is-sim">{(labels?.settlement ?? configured?.settlement)?.startsWith('XRPL') ? 'XRPL TESTNET' : 'SIMULATED'}</li>{research.startsWith('fixture') && <li className="ra-chip">Fixture research</li>}{down.length > 0 && <li className="ra-chip is-fallback">Fixture fallback · {down.join(' + ')}</li>}</ul>
-  }
   return <ul className="ra-modes" aria-label="Provider and simulation labels">{pauseLabel}
     <li className={`ra-chip${fallback(research, configured?.research) ? ' is-fallback' : ''}`}><i aria-hidden="true" />Research · {research}{fallback(research, configured?.research) ? ' (fallback)' : ''}</li>
     <li className={`ra-chip${fallback(decision, configured?.decision) ? ' is-fallback' : ''}`}><i aria-hidden="true" />Decide · {decision}{fallback(decision, configured?.decision) ? ' (fallback)' : ''}</li>

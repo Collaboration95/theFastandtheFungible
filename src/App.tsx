@@ -5,29 +5,28 @@ import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from '
 import { candidateOf, favicon, leadSentence, money } from './format'
 import Layout from './components/Layout'
 import Sidebar, { NAV_WIDTH, NavToggle } from './components/Sidebar'
-import Modes from './components/Modes'
+import EnvIndicator from './components/EnvIndicator'
+import Notice from './components/Notice'
 import Ask from './components/Ask'
 import Settings from './components/Settings'
-import RunTape from './components/RunTape'
+import RunActivity from './components/RunActivity'
 import Sources, { getAccessibleContent } from './components/Sources'
 import Answer, { validatedAnswers } from './components/Answer'
 import ReportButton from './components/ReportButton'
-import Budget from './components/Budget'
+import SpendPanel from './components/SpendPanel'
 import DecisionPanel from './components/DecisionPanel'
-import Purchase from './components/Purchase'
 import Passage from './components/Passage'
-import Receipt from './components/Receipt'
+import ReceiptSheet from './components/ReceiptSheet'
 import ShowWork from './components/ShowWork'
 import Presenter from './components/Presenter'
 import Toasts, { type Toast } from './components/Toasts'
 import ClarifyChips from './components/ClarifyChips'
-import ActionModal from './components/ActionModal'
+import PlanSheet from './components/PlanSheet'
 import ChatThread, { type ChatMessage } from './components/ChatThread'
 import ReputationPanel from './components/ReputationPanel'
 import CommandPalette, { type Command } from './components/CommandPalette'
 import { deriveRunState } from './runState'
 import { modifier } from './shortcuts'
-import Cast from './components/Cast'
 import { DEMO_QUESTIONS } from '../shared/contracts/examples'
 
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
@@ -77,6 +76,13 @@ export default function App() {
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
   const [clarifyNever, setClarifyNever] = useState(() => !recording && (new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1'))
   const [navOpen, setNavOpen] = useState(() => !recording && prefs.get(navKey) !== 'rail')
+  useEffect(() => {
+    const narrow = matchMedia('(max-width: 780px)')
+    const close = () => { if (narrow.matches) setNavOpen(false) }
+    const timer = setTimeout(close, 0)
+    narrow.addEventListener('change', close)
+    return () => { clearTimeout(timer); narrow.removeEventListener('change', close) }
+  }, [])
   // Settings → Universal budget per query: every question uses it, and Home shows a chip instead of the slider.
   const [universal, setUniversal] = useState(() => !recording && prefs.get(universalKey) === '1')
   const [universalMinor, setUniversalMinor] = useState(() => savedBudget(prefs.get(universalMinorKey)))
@@ -191,7 +197,7 @@ export default function App() {
       queue.push([{ id: `failed-${id}`, tone: 'err', icon: '!', title: 'Delivery failed after payment', body: `Charged once (${money(intent.amountMinor)}, ${rail}). Retry fetches the same copy.`, actions: [{ label: 'Retry delivery', onClick: () => void retry(id), primary: true }] }, 0])
       state.failed.add(id)
     }
-    if (fallback && !state.fallback) { state.fallback = true; queue.push([{ id: 'fallback', tone: 'warn', icon: '!', title: 'Research model unavailable', body: 'Showing a fixture answer instead.' }, 8000]) }
+    if (fallback) state.fallback = true
     if (ended && ended !== state.ended) {
       state.ended = ended
       // The end of a run says only that the agent is done (the spend is on the budget card); Go back is added while the run is off screen.
@@ -201,7 +207,7 @@ export default function App() {
       else if (shown.phase === 'DONE') {
         queue.push([{ id: 'end', tone: '', icon: '✓', title: 'Your answer is ready', runId: shown.runId }, 0])
         if (notify && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-          const note = new Notification('Your answer is ready · ResearchAgent', { body: leadSentence(answers.at(-1)?.conclusion ?? ''), tag: shown.runId })
+          const note = new Notification(`Your answer is ready (${shown.labels.settlement === XRPL_LABEL ? 'Testnet' : 'demo'}) · ResearchAgent`, { body: leadSentence(answers.at(-1)?.conclusion ?? ''), tag: shown.runId })
           note.onclick = () => { window.focus(); void openRun(shown.runId); note.close() }
         }
       }
@@ -213,6 +219,7 @@ export default function App() {
     let title = 'ResearchAgent', icon: Parameters<typeof favicon>[0] = 'idle'
     if (screen === 'run' && shown) {
       if (model.purchases.some(item => item.failed)) { title = '! Delivery failed · ResearchAgent'; icon = 'alert' }
+      else if (model.phase === 'recovering') { title = 'Recovering · ResearchAgent'; icon = 'work' }
       else if (finished) { title = model.phase === 'done' ? '✓ Answer ready · ResearchAgent' : model.phase === 'stopped' ? 'Stopped · ResearchAgent' : '! Paused · ResearchAgent'; icon = model.phase === 'done' ? 'done' : model.phase === 'failed' ? 'alert' : 'idle' }
       else { icon = 'work'; title = `${model.phase[0].toUpperCase() + model.phase.slice(1)} · ResearchAgent` }
     }
@@ -229,7 +236,7 @@ export default function App() {
       const result = await scope(input.question, clarifyNever ? 'never' : undefined)
       if (result.chat) { setThread([{ id: 1, question: input.question, reply: result.chat.reply, label: result.label }]); setDraft(''); setScreen('chat'); return }
       setPending({ input, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
-    } catch { setError('Can’t reach the server. Try again.'); throw new Error('scope failed') }
+    } catch { setError("Can't reach the ResearchAgent server."); throw new Error('scope failed') }
     finally { setSending(false) }
   }
   // A follow-up on the chat page: a chat reply joins the thread; a research question opens the plan card there,
@@ -266,7 +273,7 @@ export default function App() {
       const url = new URL(window.location.href); url.searchParams.set('run', created.runId); window.history.replaceState(null, '', url)
       setCursor(pace === 'real' ? Infinity : 0)
       setRun(created); setTab('run'); setScreen('run'); setDraft('')
-    } catch { setError('Can’t reach the server. Try again.'); throw new Error('ask failed') }
+    } catch { setError("Can't reach the ResearchAgent server."); throw new Error('ask failed') }
     finally { setSending(false) }
   }
   const stopRun = async () => {
@@ -331,10 +338,10 @@ export default function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-  const labels = <><nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav><span className="ra-phase" role="status"><Cast who="scout" pose={model.scoutPose} size={20} />{model.phase}</span><Modes quiet labels={shown?.labels} configured={health.labels} /><button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands">Commands <kbd>{modifier}K</kbd></button></>
+  const labels = <><nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav><EnvIndicator labels={shown?.labels ?? health.labels} recording={recording} /><button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><kbd>{modifier}K</kbd></button></>
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
-  const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
+  const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: model.phase === 'recovering' ? 'READ_PAID' : finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
   const nav = <Sidebar runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={screen === 'settings' ? closeSettings : openSettings} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
     onOpenRun={id => void openRun(id)} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
   // A run's toast seen from another screen (Home, or another run) gets a way back to that run.
@@ -348,7 +355,7 @@ export default function App() {
 
   const pendingCard = pending && (pending.step === 'clarify'
     ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
-    : <ActionModal plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={cancelPending} />)
+    : <PlanSheet budgetMinor={pending.input.budgetMinor} plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={cancelPending} />)
   const settlement = shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'
   if (tab === 'writers') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main className="ra-writers-view">{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading">Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>
   if (screen === 'settings') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
@@ -364,34 +371,41 @@ export default function App() {
 
   if (screen === 'home' || !shown) return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <main className="ra-home-wrap">
-      {(error || healthError) && <p className="ra-banner" role="alert">{error || "Backend unreachable."} <button className="ra-link" onClick={() => window.location.reload()}>Retry connection</button></p>}
-      <Ask onAsk={sendAsk} busy={sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
+      {(error || healthError) && <p className="ra-banner" role="alert">{error || "Can't reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>}
+      <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
     </main>
     {overlays}
   </Layout>
 
-  const intents = shown.intents.filter(item => item.runId === shown.runId)
-  return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
+    return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <div className="ra-ws">
       <main className="ra-brief">
         <h1 className="ra-q">{shown.question}</h1>
-        {(error || healthError) && <p className="ra-banner" role="alert">{error || "Backend unreachable."} <button className="ra-link" onClick={() => window.location.reload()}>Retry connection</button></p>}
+        <details className="ra-mobile-spend"><summary>Spent {money(shown.spentMinor - (shown.refundedMinor ?? 0))} of {money(shown.budgetMinor)} · {shown.receipts.length} payments ›</summary><SpendPanel run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} /></details>
+        <RunActivity run={shown} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
+        {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}
+        {shown.phase === 'FAILED' && model.phase !== 'recovering' && <Notice tone="error">{shown.intents.some(i => i.status === 'DELIVERY_FAILED') ? 'Delivery incomplete. Retry delivery in Payments.' : 'The run could not finish. Start a new question.'}</Notice>}
+        {shown.labels.research.startsWith('fixture') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Written from offline extracts: the model was unavailable.</Notice>}
+        {shown.labels.plan?.startsWith('fixture') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Planned with offline rules: the planner was unavailable.</Notice>}
+        {shown.labels.decision.startsWith('fixture') && !!health.labels && !health.labels.decision.startsWith('fixture') && <Notice tone="warn">Decided by offline rules: the decision model was unavailable.</Notice>}
+        {shown.labels.search?.startsWith('keyword') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Keyword search only: embeddings were unavailable.</Notice>}
+        {shown.intents.filter(i => i.status === 'REFUNDED').map(i => <Notice key={i.intentId}>{candidateOf(shown, i)?.publisher ?? 'The writer'}'s article didn't contain what it promised, so it was refunded and not used.</Notice>)}
+        {(error || healthError) && <p className="ra-banner" role="alert">{error || "Can't reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>}
         {!compare && <details className="ra-source-details"><summary>Sources · {shown.candidates.length} found</summary><Sources run={shown} onOpen={candidate => setPassage({ candidate })} /></details>}
         <Answer run={shown} view={view} onView={setView} compare={compare} onCompare={() => { setView('latest'); setCompare(!compare) }}
           onCitation={citation => { const candidate = candidateOf(shown, citation); if (candidate) setPassage({ candidate, citation }) }}
-          report={<ReportButton run={shown} onReport={downloadReport} busy={!finished} />} />
+          report={finished ? <ReportButton run={shown} onReport={downloadReport} /> : undefined} />
       </main>
       <aside className="ra-side" aria-label="Budget and purchases">
-        <Budget run={shown} />
-        {model.budgetBlocked && <p className="ra-note" role="status">Budget too small for eligible sources. The free answer is kept; start a new question to change the cap.</p>}
+        <SpendPanel run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
+        {model.budgetBlocked && <p className="ra-note">Budget too small for eligible sources. Raise the budget on a new question.</p>}
         {model.phase === 'stopped' && <p role="status">{model.stopMessage}</p>}
-        <div className="ra-purchase-slot">{[...intents].reverse().map(intent => <Purchase key={intent.intentId} run={shown} intent={intent} onRetry={id => void retry(id)} onReceipt={setReceipt} />)}{!intents.length && <p className="ra-note">{finished ? 'No purchases on this run.' : 'Purchase activity will appear here. Policy code checks each source against your cap.'}</p>}</div>
-        <details className="ra-decision-details"><summary>Purchase decisions · {shown.decisions.length} {shown.decisions.length === 1 ? 'round' : 'rounds'}</summary><DecisionPanel run={shown} fold={!why && (finished || intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>
+        <details className="ra-decision-details"><summary>Purchase decisions · {shown.decisions.length} {shown.decisions.length === 1 ? 'round' : 'rounds'}</summary><DecisionPanel run={shown} fold={!why && (finished || shown.intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>
       </aside>
-      <RunTape run={shown} realDone={isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
+
     </div>
     {passage && <Passage candidate={passage.candidate} content={getAccessibleContent(shown, passage.candidate)} citation={passage.citation} onClose={() => setPassage(undefined)} />}
-    {receipt && <Receipt run={shown} receipt={receipt} onClose={() => setReceipt(undefined)} />}
+    {receipt && <ReceiptSheet run={shown} receipt={receipt} onClose={() => setReceipt(undefined)} />}
     {work && <ShowWork run={shown} configured={health.labels} onClose={() => setWork(false)} />}
     {overlays}
   </Layout>

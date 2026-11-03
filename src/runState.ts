@@ -2,7 +2,7 @@ import { XRPL_LABEL, type PurchaseIntent, type RunSnapshot, type TraceEvent } fr
 import { candidateOf, money } from './format'
 import { isTerminal, runEvents } from './stage'
 
-export type AgentPhase = 'idle' | 'clarifying' | 'planning' | 'searching' | 'deciding' | 'buying' | 'verifying' | 'refunding' | 'writing' | 'done' | 'stopped' | 'failed'
+export type AgentPhase = 'idle' | 'clarifying' | 'planning' | 'searching' | 'deciding' | 'buying' | 'verifying' | 'refunding' | 'writing' | 'done' | 'stopped' | 'failed' | 'recovering'
 export type PaymentPhase = 'quoted' | 'approved by policy' | 'submitted' | 'validated' | 'delivered' | 'verified' | 'challenged' | 'refunded' | 'failed' | 'skipped'
 const PAYMENT: Record<PurchaseIntent['status'], PaymentPhase> = { DECIDED: 'approved by policy', QUOTED: 'quoted', RESERVED: 'approved by policy', SUBMITTING: 'submitted', SETTLED: 'validated', DELIVERY_PENDING: 'delivered', VERIFIED: 'verified', CLAIM_FAILED: 'challenged', CHALLENGED: 'challenged', REFUNDED: 'refunded', CHALLENGE_REJECTED: 'challenged', CHALLENGE_REFUSED: 'challenged', DELIVERY_FAILED: 'failed', FAILED_NOT_SETTLED: 'failed', SKIPPED: 'skipped' }
 const LEVEL: Record<PurchaseIntent['status'], number> = { DECIDED: 0, QUOTED: 1, RESERVED: 2, SUBMITTING: 2, SETTLED: 3, DELIVERY_PENDING: 4, VERIFIED: 5, DELIVERY_FAILED: 3, FAILED_NOT_SETTLED: 2, SKIPPED: 0, CLAIM_FAILED: 4, CHALLENGED: 4, REFUNDED: 4, CHALLENGE_REJECTED: 4, CHALLENGE_REFUSED: 4 }
@@ -21,13 +21,13 @@ export function purchaseState(run: RunSnapshot, intent: PurchaseIntent) {
     explorerUrl: receipt?.xrpl?.explorerUrl, pendingSince: run.events.find(event => event.type === 'PURCHASE' && event.data?.intentId === intent.intentId && event.data?.status === 'SUBMITTING')?.at,
   }
 }
-const SCOUT_POSE = { idle: 'idle', clarifying: 'clarifying', planning: 'clarifying', searching: 'searching', deciding: 'weighing', buying: 'paying', verifying: 'verifying', refunding: 'caught-a-lie', writing: 'verifying', done: 'done', stopped: 'stopped', failed: 'stopped' } as const
+const SCOUT_POSE = { idle: 'idle', clarifying: 'clarifying', planning: 'clarifying', searching: 'searching', deciding: 'weighing', buying: 'paying', verifying: 'verifying', refunding: 'caught-a-lie', writing: 'verifying', done: 'done', stopped: 'stopped', failed: 'stopped', recovering: 'verifying' } as const
 export function deriveRunState(run?: RunSnapshot, pending?: 'clarify' | 'plan') {
   const purchases = run?.intents.map(intent => purchaseState(run, intent)) ?? []
   const terminal = isTerminal(run)
   const last = run && runEvents(run).at(-1)
   const phase: AgentPhase = pending ? pending === 'clarify' ? 'clarifying' : 'planning' : !run ? 'idle'
-    : terminal ? run.stopped || run.phase === 'STOPPED' ? 'stopped' : run.phase === 'FAILED' ? 'failed' : 'done'
+    : terminal ? run.stopped || run.phase === 'STOPPED' ? 'stopped' : run.phase === 'FAILED' ? run.intents.some(i => i.status === 'VERIFIED' && (!run.checkpoint?.intentId || i.intentId === run.checkpoint.intentId)) && run.checkpoint?.nextAction === 'retry-delivery' ? 'recovering' : 'failed' : 'done'
     : last && ['CHALLENGE', 'REFUND'].includes(last.type) ? 'refunding'
     : run.phase === 'READ_PAID' || last?.type === 'PROOF' || purchases.some(item => item.phase === 'delivered') ? 'verifying'
     : run.phase === 'BUY' ? 'buying' : run.phase === 'DECIDE' ? 'deciding' : run.phase === 'ANSWER' ? 'writing' : 'searching'

@@ -23,12 +23,12 @@ test('UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views,
   await expect(page.getByRole('dialog', { name: 'Search plan' })).toBeVisible()
   await page.keyboard.press('Control+Enter')
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
-  await expect(page.getByText('SIMULATED', { exact: true }).first()).toBeVisible()
-  await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ })).toContainText('verified')
-  await tabTo(page, 'View')
+  await expect(page.getByRole('button', { name: /Demo · simulated payments/ })).toBeVisible()
+  await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ })).toContainText('Verified')
+  await tabTo(page, 'Receipt ›')
   await page.keyboard.press('Enter')
   await expect(page.getByRole('dialog', { name: 'Receipt', exact: true })).toBeVisible()
-  await expect(page.getByRole('dialog', { name: 'Receipt', exact: true })).toContainText('SIMULATED')
+  await expect(page.getByRole('dialog', { name: 'Receipt', exact: true })).toContainText('Simulated payment · no ledger entry')
   await page.keyboard.press('Escape')
   await page.keyboard.press('Control+2')
   await expect(page.getByRole('region', { name: 'Writers', exact: true })).toBeVisible()
@@ -59,7 +59,7 @@ test('UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views,
 test('first run, recoverable backend error, record mode and narrow reflow', async ({ page }) => {
   await page.route('**/api/health', route => route.abort())
   await page.goto('/?record=1')
-  await expect(page.getByRole('button', { name: 'Retry connection' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
   await expect(page.getByRole('button', { name: /presenter/i })).toHaveCount(0)
   for (const width of [320, 360, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 844 })
@@ -76,14 +76,19 @@ test('failure recovery views: labelled fallback, slow Testnet, stopped unused pa
   await page.route('**/runs/fixture-uc2/events', route => route.fulfill({ contentType: 'text/event-stream', body: ': fixture test\n\n' }))
   await page.route('**/api/health', route => route.fulfill({ json: { labels: { ...snapshot.labels, research: 'DeepSeek · configured' } } }))
   await page.goto('/?run=fixture-uc2&pace=real')
-  await expect(page.getByText('Fixture fallback · Research')).toBeVisible()
+  await expect(page.getByText('Written from offline extracts: the model was unavailable.')).toBeVisible()
+  snapshot = { ...snapshot, phase: 'FAILED', checkpoint: { ...snapshot.checkpoint, nextAction: 'retry-delivery' } }
+  await page.reload()
+  await expect(page.getByText('Recovering', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Resume answer' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Draft · free sources only' })).toBeVisible()
   snapshot = { ...snapshot, phase: 'STOPPED', stopped: true, answers: snapshot.answers.slice(0, 1) }
   await page.reload()
   await expect(page.getByText(/An earlier payment completed/).first()).toBeVisible()
   snapshot = { ...snapshot, phase: 'BUY', stopped: false, labels: { ...snapshot.labels, settlement: XRPL_LABEL }, intents: [{ ...snapshot.intents[0], status: 'SUBMITTING' }], receipts: [], grants: [], events: [], spentMinor: 0, reservedMinor: 90 }
   await page.reload()
-  await expect(page.getByText(/Waiting for Testnet validation/)).toBeVisible()
-  await expect(page.getByText('XRPL TESTNET', { exact: true }).first()).toBeVisible()
+  await expect(page.locator('.ra-side').getByText(/Waiting/)).toBeVisible()
+  await expect(page.getByRole('button', { name: /XRPL Testnet · test funds/ })).toBeVisible()
   snapshot = { ...ucRuns.UC2, intents: [], receipts: [], grants: [], spentMinor: 0, decisions: ucRuns.UC2.decisions.map(round => ({ ...round, rows: round.rows.map(row => ({ ...row, verdict: 'SKIP_OVER_BUDGET' as const })) })) }
   await page.reload()
   await expect(page.getByText(/Budget too small for eligible sources/)).toBeVisible()

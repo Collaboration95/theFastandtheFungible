@@ -4,7 +4,7 @@ import Activity from './Activity'
 import Wire from './Wire'
 import DecisionTable from './DecisionTable'
 import Ledger from './Ledger'
-import Modes from './Modes'
+import ModelLabels from './ModelLabels'
 import { candidateOf, money, shortHash } from '../format'
 
 type Tab = 'Trace' | 'Wire' | 'Policy' | 'Receipts' | 'Models' | 'Ledger'
@@ -35,7 +35,7 @@ export default function ShowWork({ run, configured, onClose }: { run: RunSnapsho
         <b>{candidateOf(run, receipt)?.publisher ?? receipt.resourceId}</b> · {money(receipt.amountMinor)} · {receipt.label}<br />
         <span className="mono">receipt {receipt.receiptId} · intent {shortHash(receipt.intentId)} · settled {receipt.settledAt}</span>
       </li>)}</ol>)}
-      {tab === 'Models' && <div className="ra-models"><Modes labels={run.labels} configured={configured} /></div>}
+      {tab === 'Models' && <div className="ra-models"><ModelLabels labels={run.labels} configured={configured} /></div>}
       {tab === 'Ledger' && <Ledger run={run} />}
     </div>
   </dialog>

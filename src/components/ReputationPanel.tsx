@@ -51,7 +51,8 @@ function PublisherRow({ row }: { row: Row }) {
 export default function ReputationPanel({ records, run, full, presenter = false, onReset }: { records: ReputationRecord[]; run?: RunSnapshot; full?: RunSnapshot; presenter?: boolean; onReset?: () => void }) {
   const list = rows(records, run, full)
   return <section className="ra-panel ra-rep" aria-label="Writers">
-    <div className="ra-panel-h"><h2>Writers</h2><span className="ra-chip is-sim">SYNTHETIC writers</span>{presenter && onReset && <button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button>}</div>
+    <div className="ra-panel-h"><h2>Writers</h2>{presenter && onReset && <button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button>}</div>
+    <p className="ra-note">All writers and articles are fictional.</p>
     {list.length === 0 ? <p>No history yet.</p> : <div className="ra-table-scroll"><table>
       <thead><tr><th scope="col">Publisher · writers</th><th scope="col">Proofs</th><th scope="col">Challenges</th><th scope="col">Relevance</th><th scope="col">H</th><th scope="col">C</th><th scope="col">T</th><th scope="col">Status</th></tr></thead>
       {list.map(row => <PublisherRow key={row.slug} row={row} />)}

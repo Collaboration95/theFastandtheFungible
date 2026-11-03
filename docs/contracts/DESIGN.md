@@ -13,94 +13,44 @@ set a spending mandate, review the plan, then inspect the sources that can
 change the answer. The first-run home/demo may use a more expressive treatment;
 the working workspace stays focused and neutral.
 
-## Visual system
+## Visual system (UX-1, #311)
 
-The **Quiet Evidence Terminal** direction keeps the existing calm, neutral
-surfaces and restrained semantic accent. The working canvas is a reading
-surface; the application frame is stable; panels are reserved for decisions,
-source inspection, and the dossier. A neutral sans-serif carries interface and
-answer text. A compact mono treatment may be used for token caps, prices, state
-labels, and event metadata. Any expressive/editorial face remains limited to
-the first-run home/demo.
-The cast marks agent and money states in the research workspace.
+`src/styles.css` owns the tokens from UX-DIRECTION §5: Paper #FBF8F2,
+Surface white, Ink #24211E, Muted #655D55, Rule #E8E2D8 and strong rule
+#C9BFB2. Green #2F6B4F, red #9B3E35 and ochre #9A6B20 convey state alongside
+text. Geist Sans carries all product text and tabular amounts. Seven sizes:
+12, 13, 14, 15, 20, 28 and 32 px; weights 400/500/600. Geist Mono is for
+copyable hashes, ids, code and Show work. Radii are 6/10/12 px. The only
+pill is EnvIndicator; no gradients, glows, decorative cast or odometer.
 
-The signature elements are the **scope bar** and the **research path**. The
-scope bar is a compact, editable checkpoint before research begins. The path is
-a numbered vertical sequence—Search, Purchase, Answer—that keeps the evidence,
-XRPL settlement, and conclusion in one reading order. It is a status-bearing
-workflow, not a decorative ribbon; hero statistics and presentation-only
-explainer blocks are not part of the product shell.
+The 48 px shell has Run/Writers and one permanent environment control,
+including in recording mode. Its first-visit popover explains writers,
+payments, search and the actual models. The raw API labels are unchanged.
+ReceiptSheet retains its transaction row and environment footer, PaymentRow
+labels every refund rail, Writers states that articles are fictional, and
+decision captions name the provider. Model/search/planner substitutions use
+Notice. Show work keeps verbatim labels. Exports keep their environment notes.
 
-## Palette and token ownership
+SpendPanel headlines **net cost**, while the bar distinguishes net, refunded
+and reserved amounts. Remaining authority subtracts gross spend and reserves;
+refunds never restore it. PaymentRow owns verification and retry; ReceiptSheet
+opens from each payment. Only the 5 s PlanSheet starts the plan. No spending
+is authorized by a payment-row control or model output.
 
-`src/styles.css` is the runtime token owner. The mapping is:
+RunActivity uses the same event-derived state as payment rows. A reconciled,
+verified payment with an unfinished recovery checkpoint says Recovering and
+offers Resume answer; the server handoff follow-up is #314. During an active
+run, Activity remains open through completion to preserve reading position;
+saved runs open collapsed. The user can collapse it at any time.
 
-`DESIGN.md semantic palette → :root CSS variables → shared React primitives`
+Motion uses four keyframes: fade-in, rise-4, spin and countdown, with only the
+pending spinner looping. The budget bar transitions in 240 ms; payment status
+in 160 ms; the plan countdown takes 5 s. Reduced motion removes transitions
+and animations. Verify 320/360/390/768/1024/1440 px, 200% text zoom and axe.
 
-Newsprint `#F2E9DD`, Paper `#FBF8F2`, Paper Deep `#E9DFD1`, Ink `#24211E`,
-Charcoal `#171716`, Muted `#655D55`, Rule `#C9BFB2`, Editorial Salmon `#D9A28F`,
-Salmon Deep `#91503F`, Evidence Green `#2F6B4F`, Caution Ochre `#9A6B20`, and
-Block Red `#9B3E35` are the shared semantic values. Accent colours communicate
-state with text and labels; they are never the only signal.
-
-## Layout and density
-
-Desktop uses a centered answer/progress workspace after a run starts. Sources
-and Activity are secondary tabs or disclosures; an evidence drawer may own its
-own overflow, but there is no default three-column layout. The start state is
-intentionally sparse: one question, a few grounded suggestions, and one
-composer. Results use readable source rows because comparison is the task. The
-document owns vertical scrolling.
-
-At 780px the workspace and its secondary inspection regions stack. At 520px
-source rows preserve title, access state, relevance, family, price, and action
-as a stacked record. Controls stay touchable and the same source decisions
-remain available. Verify the redesign at 360/390/768/1024/1440px, 200% text
-zoom, and 320px reflow without body overflow.
-
-## Shape, motion, and content
-
-Surfaces are flat with hairline rules and near-square controls. Rounded pills
-are limited to semantic badges and compact filter chips. Motion is purposeful: short money and refund movement may explain real state
-changes; static cast marks have no generic entrance animation;
-state changes may transition the budget bar, but research results do not depend
-on animation. Reduced motion removes transitions and smooth scrolling.
-
-Write in plain, specific language: “Buy S$0.20”, “Skipped · duplicate”, and
-“GridScope blocked: S$1.40 exceeds the remaining S$1.00.” Never expose a truth
-score or imply that fixture payment reached a real publisher. Open evidence,
-premium preview, unlocked text, fixture settlement, and dossier citations stay
-distinct.
-
-## Cast: agent and money states
-
-`design/cast/build-cast.mjs` owns shared parts and the palette above, generating
-48 states with 160×160 and 24-unit SVGs in `src/assets/cast/`. See `design/cast/sheet.html` for
-every named pose; `design/cast/PROMPT.md` records direction and regeneration.
-A restrained 24-unit grid and 1.5-unit stroke keeps small marks legible at
-16–24 px. No anthropomorphic faces, mascots or decorative motion.
-Scout is the researcher; Purse represents the human-set budget authority;
-eight fictional writers carry distinct props; AlphaLeak's split seal marks
-a failed promise; Receipt and Ledger represent proof and Testnet settlement.
-Each state has both a prop/shape and a text label.
-
-`src/components/Cast.tsx` supplies `role="img"` and an accessible name; adjacent
-transaction text remains authoritative. The marks remain static. Any future payment movement must respect
-`prefers-reduced-motion`. No endless animation, fake ledger-clock finality,
-or spend initiated by artwork. Stamps describe actual evidence only: a payment
-receipt is not a content-verification proof. SIMULATED stays visible in ochre
-with text; Ledger says Testnet. Locked Purse is future escrow artwork (#261),
-not a shipped escrow claim. Full flow choreography is #262.
-
-`design/cards/post-card.html` and `design/cards/render.mjs` produce light-theme
-1200×630 and 1080×1350 daily post images with title, before → after metric and
-cast pose. Keep fictional/illustrative and Testnet labels in exports.
-
-## Design bar
-
-The owner's bar: a YC-style startup. Clean, restrained, professional, in the
-vein of Linear, Vercel and Stripe. No childish or hyper-interactive gimmicks.
-Motion only explains money or state changes. The working product stays light.
+Answer layout, supporting screens, mobile Spend sheet refinements, PDF and
+site work remain #312. Cast assets remain available to social cards and the
+separate cast QA gallery, with no app imports.
 
 ## Brand
 
@@ -127,8 +77,8 @@ and centered mark at 1024 px; leave the padding intact. Maskable PWA marks stay
 within the central 80% safe circle. `desktop/build/icon.icns` and `icon.png`
 are ready for the packaging lane; no claim of a signed or installed Mac app.
 
-Geist is the identity and interface face, Geist Mono is for prices and metadata,
-and Newsreader is for limited editorial use. Write plainly and specifically:
+Geist is the identity and interface face. Geist Mono is for technical identifiers
+and Show work; editorial faces are excluded from the product. Write plainly and specifically:
 “Search expertise. Buy the missing evidence.” Avoid hype and unsupported
 quality claims. `npm run check:naming` scans prose and visible UI names,
 preserving URL/npm slugs, code identifiers and verbatim historical records.
