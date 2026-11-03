@@ -8,7 +8,7 @@ import type { PaymentRequirement } from '../shared/contracts/index.js'
 const issuer = Wallet.generate().classicAddress
 const payer = Wallet.generate().classicAddress
 const payee = Wallet.generate().classicAddress
-const asset = { currency: '524C555344000000000000000000000000000000', issuer, label: 'RLUSD (Testnet)' } as const
+const asset = { currency: '524C555344000000000000000000000000000000', issuer, label: 'test USD (substitute for RLUSD)' } as const
 
 describe('issued payment refusal before signing (synthetic ledger)', () => {
   it.each([
@@ -74,4 +74,47 @@ it('keeps a refused purchase visible without inventing a receipt or explorer lin
     run.intents = [{ intentId: 'denied', profileId: 'writer', resourceId: 'paid', amountMinor: 10, status: 'FAILED_NOT_SETTLED' }] as RunSnapshot['intents']
     expect(presentRun(run, 'http://localhost').purchases[0]).toMatchObject({ writer: 'writer', txHash: null, explorerUrl: null, settlementAmount: null, verified: false })
   } finally { store.close() }
+})
+
+import { payAndFetch, type PaymentAttempt } from '../sdk/x402.js'
+import { encodeHeader } from '../shared/x402.js'
+it.each(['resource', 'amount', 'timeout', 'extension', 'asset'])('refuses x402 %s outside operator authority before ledger access', async fault => {
+  const request = vi.fn(), persist = vi.fn()
+  const challenge = {
+    x402Version: 2 as const,
+    resource: { url: fault === 'resource' ? '/other' : '/paid' },
+    accepts: [{ scheme: 'exact' as const, network: 'xrpl:1' as const, asset: fault === 'asset' ? asset : 'XRP' as const,
+      amount: fault === 'amount' ? '2000' : '1000', payTo: payee,
+      maxTimeoutSeconds: fault === 'timeout' ? 301 : 60,
+      extra: { invoiceId: 'fixture', ...(fault === 'extension' ? { crossCurrency: true } : {}) } }],
+  }
+  const transport = vi.fn(async () => new Response(null, { status: 402, headers: { 'PAYMENT-REQUIRED': encodeHeader('PAYMENT-REQUIRED', challenge) } }))
+  await expect(payAndFetch('http://localhost/paid', { wallet: Wallet.generate(), maxDrops: '1000', ledger: { request },
+    fetch: transport, journal: { load: () => undefined, save: persist } })).rejects.toThrow(/authority|Unsupported|unavailable/)
+  expect(request).not.toHaveBeenCalled()
+  expect(persist).not.toHaveBeenCalled()
+})
+it('refuses a durable payment exceeding the retry budget without resubmitting', async () => {
+  const request = vi.fn(), transport = vi.fn(), persist = vi.fn()
+  const stored = { amountDrops: '2000', asset: 'XRP' } as PaymentAttempt
+  await expect(payAndFetch('http://localhost/paid', { wallet: Wallet.generate(), maxDrops: '1000', ledger: { request }, fetch: transport,
+    journal: { load: () => stored, save: persist } })).rejects.toThrow('Stored payment exceeds authority')
+  expect(request).not.toHaveBeenCalled()
+  expect(transport).not.toHaveBeenCalled()
+  expect(persist).not.toHaveBeenCalled()
+})
+
+import { PublisherClient, PublisherHttpError } from '../server/publisher-client.js'
+import type { Challenge } from '../shared/contracts/publisher.js'
+it.each(['registry', 'challenge', 'escrow'])('preserves %s refusal and redacts publisher bodies when telemetry throws', async method => {
+  const wires: unknown[] = []
+  vi.stubGlobal('fetch', vi.fn(async () => new Response('premium-error-body', { status: 403 })))
+  const client = new PublisherClient({ baseUrl: 'http://localhost', onWire: wire => { wires.push(wire); throw new Error('observer failed') } })
+  try {
+    const result = method === 'registry' ? client.registry() : method === 'challenge' ? client.challenge('writer', {} as Challenge, 100) : client.escrowQuote('/paid', { payer, intentId: 'fixture', condition: 'fixture', cancelAfter: 1 })
+    await expect(result).rejects.toEqual(new PublisherHttpError(403))
+    expect(wires).toHaveLength(1)
+    expect(JSON.stringify(wires)).not.toContain('premium-error-body')
+    expect(JSON.stringify(wires)).not.toContain('observer failed')
+  } finally { vi.unstubAllGlobals() }
 })

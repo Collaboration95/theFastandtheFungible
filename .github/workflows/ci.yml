@@ -49,6 +49,12 @@ jobs:
       - run: npm ci
       - run: npm run hygiene && npm run lint && npm run typecheck
       - run: npx vitest run --coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-summary
+          path: coverage/coverage-summary.json
+          retention-days: 7
       - run: node scripts/check-coverage.mjs
       - run: npm run test:sdk:package
       - run: npm run readme:check

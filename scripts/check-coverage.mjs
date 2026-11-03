@@ -45,6 +45,7 @@ export function enforce(groups, floors) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const files = productFiles()
   const groups = summarize(JSON.parse(readFileSync('coverage/coverage-summary.json', 'utf8')), files)
+  console.log(JSON.stringify(groups, null, 2))
   const evidence = 'docs/evidence/round2-b/'
   const report = { sha: execFileSync('git', ['rev-parse', 'HEAD']).toString().trim(), worktreeDirty: Boolean(execFileSync('git', ['status', '--porcelain']).toString().trim()), runner: process.platform + '/' + process.arch + ' ' + process.version, components: groups }
   if (process.argv.includes('--baseline')) {
@@ -56,5 +57,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     enforce(groups, existsSync(floorsPath) ? JSON.parse(readFileSync(floorsPath, 'utf8')) : baseline.components)
     if (process.argv.includes('--record')) writeFileSync(evidence + 'coverage-final.json', JSON.stringify(report, null, 2) + '\n')
   }
-  console.log(JSON.stringify(groups, null, 2))
 }
