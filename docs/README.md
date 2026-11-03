@@ -6,7 +6,8 @@ the walkthrough, slides and project map.
 
 **Current push:** [SFF-PUSH.md](SFF-PUSH.md) tracks the SingHacks finals
 deliverables and changelog; [JUDGING-CRITERIA.md](JUDGING-CRITERIA.md) has the
-Ripple-track criteria.
+Ripple-track criteria; [submission/](submission/README.md) holds the finals
+submission pack (description, deck, video script, pitch, Q&A).
 
 ## Contracts (as built)
 
