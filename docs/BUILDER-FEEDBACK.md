@@ -441,6 +441,18 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
 
 - 2026-11-03 · Observed tooling friction · `tests/mcp-http.test.ts`: Node fetch did not transmit the overridden Host in the rebinding test, so the request reached MCP content negotiation (406). Workaround: use `node:http.request` for the hostile Host assertion (403). Suggested fix: document forbidden/rewritten header behavior in client test tooling. Severity low; no XRPL mainnet impact.
 
+### 2026-11-03 — Packaged utility crash left an MCP connection open (observed)
+
+Evidence: `docs/evidence/app-acceptance.md`; isolated DMG fixture crash test killed
+the engine after signed-blob persistence. The first run timed out waiting for a
+restart because an active HTTP POST held listener shutdown open. Workaround/fix:
+close active HTTP sockets before awaiting MCP listener shutdown, then restart with
+bounded backoff against the same x402 journal. Suggested tooling fix: expose a
+bounded abort/drain primitive for embedded MCP HTTP hosts. Severity: medium
+(desktop availability). Mainnet impact: availability/reconciliation delay; the
+persisted payment blob must remain authoritative and must never be re-signed.
+No mainnet transaction was attempted.
+
 ## Observed Testnet reliability measurement · 3 Nov 2026
 
 Evidence: `docs/evidence/live-reliability.md` and the paired
@@ -475,14 +487,3 @@ Evidence for all entries: `docs/evidence/starter-kit-interop.md`,
 | Observed · 2026-11-03 | npm x402-xrpl 0.3.4 metadata omits repository/gitHead; hosted /supported has no deployed revision. | Pin exact tarball/integrity; label source/deployment commits unknown. | Publish source repository, release commit and facilitator build revision. | Low | Supply-chain reproducibility gap, not a payment incident. |
 | Code-derived, reproduced offline · 2026-11-03 | t54 middleware consumes invoices after settlement; replay is refused even though delivery recovery may be needed. | Our SDK journal retains the original blob and refuses replacement signing; publisher supports same-blob redelivery. | Retain a settled receipt/delivery mapping for idempotent recovery. | Medium | Integrators who re-sign after an ambiguous response could double-pay; none observed here. |
 | Code-derived · 2026-11-03 | t54 issued assets are currency strings plus extra.issuer; ResearchAgent uses typed asset objects. t54 memo-only mode also omits our required InvoiceID. | Scope proof to native XRP and upstream default both binding; reject unsupported forms. | Document explicit asset/binding profiles and shared negative vectors. | Medium | Unsupported profiles must fail closed; no mainnet execution. |
-### 2026-11-03 — Packaged utility crash left an MCP connection open (observed)
-
-Evidence: `docs/evidence/app-acceptance.md`; isolated DMG fixture crash test killed
-the engine after signed-blob persistence. The first run timed out waiting for a
-restart because an active HTTP POST held listener shutdown open. Workaround/fix:
-close active HTTP sockets before awaiting MCP listener shutdown, then restart with
-bounded backoff against the same x402 journal. Suggested tooling fix: expose a
-bounded abort/drain primitive for embedded MCP HTTP hosts. Severity: medium
-(desktop availability). Mainnet impact: availability/reconciliation delay; the
-persisted payment blob must remain authoritative and must never be re-signed.
-No mainnet transaction was attempted.

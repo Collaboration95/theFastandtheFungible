@@ -38,6 +38,8 @@ async function startLocalEngine() {
     target.once('message', value => { clearTimeout(timer); done(value) })
     target.once('exit', () => { clearTimeout(timer); fail(new Error('Engine exited')) })
   })
+  // Keep the operator bearer stable for already enabled stdio clients across utility restarts.
+  localEnv.RA_API_TOKEN = engine.apiToken
   if (quitting) { target.kill(); return }
   await backendRequest(engine, '/api/wallet/pause', { method: 'POST', body: JSON.stringify({ paused: preferences.paused }) })
   agentStore = new Store(join(userData, preferences.live ? 'testnet' : 'fixture', 'app.db'))

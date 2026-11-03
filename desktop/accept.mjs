@@ -57,6 +57,9 @@ async function run(live) {
     const pending = client.callTool({ name: 'ask_expert', arguments: args }, undefined, { timeout: 180000 }).catch(() => undefined)
     let before
     if (!live) {
+      await prefs.evaluate(() => window.desktop.mcp())
+      accounts.push('local-api-token')
+      const operatorToken = await readSecret('local-api-token')
       await expect.poll(() => store.listRuns().flatMap(r => store.getRun(r.runId).intents).filter(i => store.getSubmission(i.intentId)).length, { timeout: 60000, intervals: [5] }).toBe(1)
       const intent = store.listRuns().flatMap(r => store.getRun(r.runId).intents)[0]
       before = store.getSubmission(intent.intentId)
@@ -67,7 +70,9 @@ async function run(live) {
         const next = JSON.parse(await readFile(join(data, 'engine.json'), 'utf8'))
         return next.pid !== pid && next.apiUrl !== apiUrl
       }, { timeout: 60000 }).toBe(true)
-      console.log('Engine restarted; reconnecting MCP')
+      const restarted = JSON.parse(await readFile(join(data, 'engine.json'), 'utf8'))
+      expect((await fetch(`${restarted.apiUrl}/api/mcp/status`, { headers: { Authorization: `Bearer ${operatorToken}` } })).status).toBe(200)
+      console.log('Engine restarted; operator bearer preserved; reconnecting MCP')
       await client.close(); await connect()
     }
     const response = live ? await pending : await client.callTool({ name: 'ask_expert', arguments: args }, undefined, { timeout: 180000 })

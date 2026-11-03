@@ -282,3 +282,43 @@ refund, grant, isolation or numeric assertion was dropped or weakened.
 
 A scan of both packaged application resource trees (18,538 files) found none
 of the nontrivial credential values from the local .env. No values were logged.
+
+## Operator bearer survives utility restart
+
+After rebasing onto #337 (base 50781b6), a final fixture probe also enabled the
+legacy stdio adapter through Settings IPC, read its token from the isolated test
+Keychain, killed the utility after durable signing, and authenticated to the new
+engine with that same saved token (HTTP 200). Main now retains the operator token
+in its private engine environment across utility restarts; nothing new is exposed
+to renderers or written to disk. HTTP agent replay still returned the same run,
+signed submission, one receipt and one grant. No additional Testnet purchase.
+
+```json
+{
+  "sha256": "4d7960e9d595a2e23557097b7166dd1d763488a1273027e8bb1dda891d344efe",
+  "at": "2026-11-03T05:50:23.123Z",
+  "executablePath": "/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-dmg-xfrCxR/ResearchAgent.app/Contents/MacOS/ResearchAgent",
+  "dmg": "/Users/speedpowermac/.t3/worktrees/tftf/t3-52df585a/desktop/out/ResearchAgent-0.7.0-arm64.dmg",
+  "bytes": 136677386,
+  "results": [
+    {
+      "live": false,
+      "data": "/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-accept-Sesajo",
+      "coldStartMs": 4177,
+      "arch": "arm64",
+      "runId": "45cf60b9-8464-41d0-a638-4993dcc729cb",
+      "spentMinor": 90,
+      "labels": {
+        "research": "fixture \u00b7 extractive-fixture",
+        "decision": "fixture \u00b7 metadata-fixture",
+        "publisher": "local",
+        "settlement": "SIMULATED SGD \u00b7 no real funds",
+        "search": "keyword only (embeddings unavailable)",
+        "plan": "fixture \u00b7 scope-fixture"
+      },
+      "crashRecovered": true,
+      "sameSubmission": true
+    }
+  ]
+}
+```
