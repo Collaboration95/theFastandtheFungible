@@ -59,6 +59,7 @@ Start with the [judging criteria](JUDGING-CRITERIA.md) and the [SFF push tracker
 | [round2-e](evidence/round2-e/README.md) | Nine historical Testnet transactions on the [ledger page](../site/ledger/index.html) ([data](../site/ledger/transactions.json)) |
 | [round2-f](evidence/round2-f/README.md) | Three independent local origins; collided IDs kept distinct |
 | [round2-g](evidence/round2-g/README.md) | "What your money bought": 30 claim-to-passage links, tamper results |
+| [round2-h](evidence/round2-h/README.md) | Same-engine workload baseline on a shared host, with the misses it retained (a baseline, not final acceptance) |
 | [round2-i](evidence/round2-i/README.md) | Agent kill switch across SDKs and MCP |
 | [round2-j](evidence/round2-j/README.md) | UX polish before and after |
 | [round2-k](evidence/round2-k/README.md) | Python receipt verifier; 177 conformance cases, 100% agreement |
