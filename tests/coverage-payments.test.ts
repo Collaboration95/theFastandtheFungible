@@ -109,7 +109,7 @@ import type { Challenge } from '../shared/contracts/publisher.js'
 it.each(['registry', 'challenge', 'escrow'])('preserves %s refusal and redacts publisher bodies when telemetry throws', async method => {
   const wires: unknown[] = []
   vi.stubGlobal('fetch', vi.fn(async () => new Response('premium-error-body', { status: 403 })))
-  const client = new PublisherClient({ baseUrl: 'http://localhost', onWire: wire => { wires.push(wire); throw new Error('observer failed') } })
+  const client = new PublisherClient({ baseUrl: 'http://127.0.0.1:1234', onWire: wire => { wires.push(wire); throw new Error('observer failed') } })
   try {
     const result = method === 'registry' ? client.registry() : method === 'challenge' ? client.challenge('writer', {} as Challenge, 100) : client.escrowQuote('/paid', { payer, intentId: 'fixture', condition: 'fixture', cancelAfter: 1 })
     await expect(result).rejects.toEqual(new PublisherHttpError(403))

@@ -153,14 +153,23 @@ export function approvedPublisherOrigin(raw: string): string {
 }
 let activeRequests = 0
 const waiters: (() => void)[] = []
+async function acquireSlot(signal?: AbortSignal | null): Promise<void> {
+  signal?.throwIfAborted()
+  if (activeRequests < 4) { activeRequests++; return }
+  await new Promise<void>((resolve,reject) => {
+    const wake = () => { signal?.removeEventListener('abort',abort); resolve() }
+    const abort = () => { const index=waiters.indexOf(wake); if(index >= 0) waiters.splice(index,1); reject(signal?.reason) }
+    waiters.push(wake)
+    signal?.addEventListener('abort',abort,{once:true})
+  })
+}
 async function limitedFetch(url: string, init: RequestInit): Promise<Response> {
-  if (activeRequests >= 4) await new Promise<void>(resolve => waiters.push(resolve))
-  activeRequests++
+  await acquireSlot(init.signal)
   try {
     init.signal?.throwIfAborted()
     const response = await fetch(url, { ...init, redirect: 'error' })
     // Hold the slot through body consumption, not just response headers.
     const bytes = await boundedBody(response, new URL(url).pathname.includes('/articles/') ? 2 * 1024 * 1024 : 256 * 1024)
     return new Response(new Uint8Array(bytes), { status: response.status, headers: response.headers })
-  } finally { activeRequests--; waiters.shift()?.() }
+  } finally { const next=waiters.shift(); if(next) next(); else activeRequests-- }
 }

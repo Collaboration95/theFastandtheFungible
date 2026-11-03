@@ -20,7 +20,8 @@ export function plainVerdict(row: DecisionRow, run: RunSnapshot): { stamp: strin
   if (row.verdict === 'SKIP_OVER_CAP') return { stamp: 'SKIP', tone: 'cap', why: `${price} is over the ${money(run.perSourceCapMinor)} per-source cap` }
   if (row.verdict === 'SKIP_OVER_BUDGET') return row.wouldBuy ? { stamp: 'WOULD BUY', tone: 'would', why: run.budgetMinor === 0 ? `Would buy with a budget of ${price} or more` : 'Would buy, but too little budget is left' } : { stamp: 'SKIP', tone: 'skip', why: 'Costs more than the budget left' }
   if (row.verdict === 'SKIP_REWRITE') {
-    const source = row.candidate.derivedFrom ? run.candidates.find(item => item.resourceId === row.candidate.derivedFrom) : undefined
+    const matches = row.candidate.derivedFrom ? run.candidates.filter(item => item.resourceId === row.candidate.derivedFrom) : []
+    const source = new Set(matches.map(sourceKey)).size === 1 ? matches[0] : undefined
     return { stamp: 'REWRITE', tone: 'skip', why: source ? `A rewrite of ${source.publisher}` : 'A rewrite of evidence it already has' }
   }
   if (row.verdict === 'SKIP_LOW_TRUST') {

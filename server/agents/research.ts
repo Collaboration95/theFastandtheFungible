@@ -146,7 +146,6 @@ async function followUp(client: PublisherClient, query: string, known: Pick<Publ
     if (result.status === 'rejected') { unavailable.add(publisher.slug); return [] }
     const excluded = knownBy(publisher.slug)
     return result.value.filter(hit => {
-      if (known.some(c => c.source && hit.source && c.source.origin === hit.source.origin && c.profileId === hit.publisherSlug && c.resourceId === hit.articleId && c.version === hit.version)) return false
       if (excluded.has(identity({ source: hit.source, resourceId: hit.articleId, version: hit.version }))) return false
       const problem = manifestProblem(hit, publisher.wallet)
       if (problem && !dropped.some(d => d.resourceId === hit.articleId)) dropped.push({ publisherSlug: hit.publisherSlug, resourceId: hit.articleId, reason: problem })
@@ -162,7 +161,7 @@ async function followUp(client: PublisherClient, query: string, known: Pick<Publ
   const reads = await Promise.allSettled(free.map(h => client.readFree(h, bySlug.get(h.publisherSlug)!.name)))
   const contents = reads.flatMap(r => r.status === 'fulfilled' ? [r.value] : [])
   // Register only what was read or may be judged: a free hit whose read failed adds nothing.
-  const kept = hits.filter(h => paid.includes(h) || contents.some(c => c.resourceId === h.articleId && c.version === h.version && c.profileId === h.publisherSlug))
+  const kept = hits.filter(h => paid.includes(h) || contents.some(c => sameSource(c, {source:h.source,resourceId:h.articleId,version:h.version})))
   // Gate 5: any publisher answering in keyword mode makes the follow-up keyword-only, even when nothing new was kept.
   const returned = settled.flatMap(r => r.status === 'fulfilled' ? r.value : [])
   const search = !returned.length ? undefined : returned.some(h => h.searchMode === 'keyword') ? SEARCH_LABELS[1] : SEARCH_LABELS[0]
@@ -187,7 +186,7 @@ function gaps(question: string, contents: ContentEnvelope[], candidates: PublicC
   const rules = FIXTURE_GAP_RULES.filter(rule => rule.cue.test(question))
   if (rules.length) return rules.filter(rule => !evidence.some(e => e.spans.some(s => rule.answered(s.text, focus)))).map(rule => ({ text: ruleGap(rule, focus) }))
   // No rule: tags the found sources carry that no accessible evidence covers yet.
-  const covered = new Set(evidence.filter(e => e.spans.length).flatMap(e => candidates.find(c => c.resourceId === e.content.resourceId && c.version === e.content.version)?.facets ?? []))
+  const covered = new Set(evidence.filter(e => e.spans.length).flatMap(e => candidates.find(c => sameSource(c,e.content))?.facets ?? []))
   return [...new Set(candidates.flatMap(c => c.facets))].filter(tag => !covered.has(tag)).map(tag => ({ text: `No accessible evidence on ${tag.replace(/-/g, ' ')}.`, tags: [tag] }))
 }
 /** LLM gaps are untrusted text: ≤ 160 chars, no instructions, and never naming a source to buy (gate 2). */

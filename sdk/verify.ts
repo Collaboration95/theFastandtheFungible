@@ -27,7 +27,13 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     checks.push({ check: 'historical origin', status: 'SKIP', detail: 'v1 origin unresolved; original singleton semantics' })
   } else {
     add('source binding', [...b.sources, ...b.candidates, ...b.intents, ...b.grants, ...b.receipts, ...b.intents.flatMap(i => i.quote ?? []), ...b.proofs, ...b.answers.flatMap(a => a.claims.flatMap(c => c.citations))].every(s => !!s.source && sourceBinding(s)), 'v2 references require complete matching identity')
-    for (const i of b.intents) add(`origin reservation ${i.intentId}`, entriesForOrigin(b, i.intentId, key(i)) && !!i.quote && key(i.quote) === key(i), 'Saved endpoint context matches pre-sign audit reservation')
+    for (const i of b.intents) {
+      const reserved = entriesForOrigin(b, i.intentId, key(i)) && !!i.quote && key(i.quote) === key(i)
+      const refused = i.status === 'SKIPPED' && !i.txHash && !i.receiptId && !i.escrow && (!i.quote || key(i.quote) === key(i)) &&
+        ![...b.payments, ...b.receipts, ...b.grants].some(r => r.intentId === i.intentId) &&
+        !b.audit.entries.some(e => !('commitment' in e) && e.intentId === i.intentId && ['sign','escrow-sign','settle','ESCROW_CREATE'].includes(e.kind)) && entriesForOrigin(b, i.intentId, key(i), 'refusal')
+      add(`origin reservation ${i.intentId}`, reserved || refused, 'Saved endpoint context matches pre-sign reservation or unsigned, uncharged refusal')
+    }
   }
   const unique = (items: string[]) => new Set(items).size === items.length
   add('identities', unique(b.sources.map(key)) && unique(b.proofs.map(key)) && unique(b.intents.map(i => i.intentId)) && unique(b.payments.map(p => p.intentId)), 'Unambiguous source, proof and intent identities')
@@ -118,6 +124,6 @@ export function verificationText(result: VerificationResult): string {
 export { ReceiptBundleSchema, sha256 }
 export type { ReceiptBundle }
 
-function entriesForOrigin(b: ReceiptBundle, intentId: string, identity: string): boolean {
-  return b.audit.entries.some(e => !('commitment' in e) && e.kind === 'reserve' && e.intentId === intentId && e.data.source && sourceKey({ source: e.data.source as NonNullable<ReceiptBundle['sources'][number]['source']>, resourceId: String(e.data.resourceId), version: String(e.data.version) }) === identity)
+function entriesForOrigin(b: ReceiptBundle, intentId: string, identity: string, kind = 'reserve'): boolean {
+  return b.audit.entries.some(e => !('commitment' in e) && e.kind === kind && e.intentId === intentId && e.data.source && sourceKey({ source: e.data.source as NonNullable<ReceiptBundle['sources'][number]['source']>, resourceId: String(e.data.resourceId), version: String(e.data.version) }) === identity)
 }

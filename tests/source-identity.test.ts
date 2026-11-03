@@ -44,3 +44,34 @@ it('rejects redirects without forwarding payment signature or engine bearer', as
     expect(forwarded).toBe(0)
   } finally { for(const s of [redirect,target]) {s.closeAllConnections(); await new Promise<void>(r=>s.close(()=>r()))} }
 })
+it('follow-up exclusions retain a new signer identity at the same origin and local IDs', async()=>{
+  const { followUpSearch }=await import('../server/agents/research.js')
+  const { exampleCandidate }=await import('../shared/contracts/examples.js')
+  const changed={...source,sellerKey:'new-key'}
+  const hit={source:changed,publisherSlug:'writer',writerSlug:'writer',articleId:'article',version:'v1',title:'Article',abstract:'Abstract',tags:[],tier:'FREE' as const,priceMinor:0,url:'/w/writer/articles/article',relevance:1,family:'article',publishedAt:'2026-11-04',searchMode:'keyword' as const}
+  const client={registry:async()=>[{slug:'writer',name:'Writer',kind:'independent'}],searchPublisher:async()=>[hit],readFree:async()=>({...exampleContent,...ref,source:changed,profileId:'writer'})} as unknown as PublisherClient
+  const found=await followUpSearch(client,'q',[{...exampleCandidate,...ref,profileId:'writer',publisherSlug:'writer'}])
+  expect(found.candidates).toHaveLength(1)
+  expect(sourceKey(found.candidates[0])).toBe(sourceKey({...ref,source:changed}))
+})
+it('expires queued discovery without waiting for four unrelated paid requests to finish',async()=>{
+  const {createServer}=await import('node:http')
+  const responses:import('node:http').ServerResponse[]=[]
+  let ready!:()=>void
+  const occupied=new Promise<void>(resolve=>{ready=resolve})
+  const server=createServer((_req,res)=>{responses.push(res);if(responses.length === 4) ready()})
+  await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve))
+  const baseUrl=`http://127.0.0.1:${(server.address() as {port:number}).port}`
+  const paid=Array.from({length:4},()=>new PublisherClient({baseUrl}).paidGet('/w/writer/articles/article',undefined))
+  try {
+    await occupied
+    const start=performance.now()
+    await expect(new PublisherClient({baseUrl,deadline:Date.now()+100}).registry()).rejects.toThrow()
+    expect(performance.now()-start).toBeLessThan(500)
+    expect(responses).toHaveLength(4)
+  } finally {
+    for(const res of responses) res.end('{}')
+    await Promise.allSettled(paid)
+    server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()))
+  }
+})

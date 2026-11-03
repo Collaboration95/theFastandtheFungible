@@ -425,7 +425,7 @@ export class Store {
       if (old) return old
       const next = PurchaseIntentSchema.parse({ ...input, status: 'SKIPPED', error: reason, createdAt: new Date().toISOString() })
       this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(next.intentId, next.runId, JSON.stringify(next))
-      this.audit.append({ runId: next.runId, intentId: next.intentId, kind: 'refusal', data: { scheme: 'escrow-v1', reason, amountMinor: next.amountMinor } })
+      this.audit.append({ runId: next.runId, intentId: next.intentId, kind: 'refusal', data: { scheme: 'escrow-v1', reason, amountMinor: next.amountMinor, ...(next.source ? { source: next.source, resourceId: next.resourceId, version: next.version, profileId: next.profileId } : {}) } })
       return next
     })
   }

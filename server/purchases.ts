@@ -74,7 +74,7 @@ export class PurchaseManager {
     const existing = this.store.getIntent(input.intentId)
     const escrow = existing?.escrow || !existing && escrowSelected(this.store, input.runId, input.candidate, input.escrow)
     if (!escrow) return this.buy(input)
-    if (!(this.payer instanceof XrplPayer)) return Promise.resolve(this.store.skipEscrow({ intentId: input.intentId, runId: input.runId, profileId: input.candidate.profileId, resourceId: input.candidate.resourceId, version: input.candidate.version, amountMinor: input.candidate.price.amountMinor, status: 'SKIPPED' }, 'Escrow requires the XRPL Testnet rail; no fallback'))
+    if (!(this.payer instanceof XrplPayer)) return Promise.resolve(this.store.skipEscrow({ source: input.candidate.source, intentId: input.intentId, runId: input.runId, profileId: input.candidate.profileId, resourceId: input.candidate.resourceId, version: input.candidate.version, amountMinor: input.candidate.price.amountMinor, status: 'SKIPPED' }, 'Escrow requires the XRPL Testnet rail; no fallback'))
     return new EscrowPurchases(this.store, this.client, this.payer).purchase(input.runId, { ...input.candidate, manifest: input.manifest ?? input.candidate.manifest }, input.intentId)
   }
   private async buy({ runId, candidate, intentId, manifest = candidate.manifest }: Purchase): Promise<PurchaseIntent> {
