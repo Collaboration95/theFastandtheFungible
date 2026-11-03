@@ -73,6 +73,7 @@ export async function run() {
   const sample = SAMPLE.map(id => { const q = bank.questions.find(q => q.id === id); if (!q) throw new Error(`Missing frozen sample ${id}`); return q })
   console.log('Measuring 10 API queries and cold start on ephemeral ports…')
   const latency = await measureLatency(dir, sample, world, live)
+  writeFileSync(join(dir, 'operations.json'), JSON.stringify(latency.operations, null, 2) + '\n')
   const measuredRuns = readRuns(latency.dbPath)
   if (live && measuredRuns.some(r => r.events.some(e => e.type === 'DECISION_UNAVAILABLE') || r.checkpoint.coverage?.some(c => c.error))) throw new Error('Live timing run has failed model judgments; no baseline published')
   const audit = auditRuns(measuredRuns, world.corpus, latency.observations)

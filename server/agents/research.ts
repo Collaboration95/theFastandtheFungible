@@ -1,3 +1,4 @@
+import { reportModelFallback } from '../telemetry.js'
 import { recordStep, scoreStep, traceStep } from '../telemetry.js'
 import { startActiveObservation } from '@langfuse/tracing'
 import { AnswerSchema, PublicCandidateSchema, SEARCH_LABELS, type Answer, type Claim, type ContentEnvelope, type Gap, type Impact, type ModeLabels, type Plan, type PublicCandidate } from '../../shared/contracts/index.js'
@@ -256,6 +257,7 @@ export function writeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer; 
     const result = await composeAnswer(input)
     // Only when the LLM was actually asked (it needs citable passages); otherwise the fixture is expected.
     if (isLlmConfigured() && usableContents(input.contents).some(c => c.spans.length)) scoreStep('answer-fallback', result.answer.provider === 'fixture', result.answer.provider === 'fixture' ? 'LLM output failed or no valid claims; labelled extractive fixture shown' : undefined)
+    if (isLlmConfigured() && usableContents(input.contents).some(c => c.spans.length) && result.answer.provider === 'fixture') reportModelFallback()
     observation.update({ output: { provider: result.answer.provider, model: result.answer.model, conclusion: result.answer.conclusion, validClaims: result.answer.claims.length, openGaps: result.answer.openGaps.map(g => g.text), impact: result.impact?.classification } })
     return result
   }, { asType: 'chain' })

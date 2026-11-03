@@ -232,3 +232,25 @@ from access/inference errors. Severity low for local eval; no observed mainnet
 impact, all settlement SIMULATED. This is model/tooling friction, not an XRPL
 incident. Total attempts, including the interrupted run, are itemized in
 `eval/scorecard/lane-b-spend.json`.
+## 3 Nov 2026 — live recovery and sequencing (#287)
+
+- **Code-derived failure mode, reproduced with injected local faults:** a paid-GET
+  response couples ledger finality to body delivery; the old payer lock kept the
+  next writer waiting up to the 60 s HTTP timeout even after validation. Evidence:
+  `docs/evidence/payment-ops-287.md`, `scripts/payment-ops-proof.ts`,
+  `tests/xrpl.test.ts`. Workaround: keep the signed blob and reservation, query
+  validated status independently, release sequencing on ledger proof, and retry
+  delivery with the same hash. A missing transaction or submit timeout is not
+  proof of no charge. Suggested fix: Starter Kit/x402 examples should separate
+  settlement finality from body delivery, persist before submit, and demonstrate
+  crash-before-submit and lost-response recovery. Severity: high (wallet-wide
+  stall and unsafe naive retries); mainnet impact: correctness and availability,
+  not mainnet validation.
+- **Observed Testnet finality, 3 Nov:** one 60,000-drop payment validated at ledger
+  22025680; purchase plus idempotent repeat took 8.85 s, with one receipt.
+  Hash: `0109AE3D362011C2E277B3A617770162304651A93C5884CCC403D459C4FE9FC5`. No submit edge case
+  occurred in this real check; crash/timeout cases are explicitly synthetic.
+  Workaround: retain journal and poll ledger instead of signing a replacement.
+  Suggested fix: expose independent settlement and delivery timing in facilitator
+  examples. Severity: informational for this successful check; mainnet latency
+  and custody remain unmeasured.

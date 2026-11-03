@@ -5,6 +5,7 @@ import { createServer, type Server } from 'node:http'
 import { once } from 'node:events'
 import { afterEach, describe, expect, it } from 'vitest'
 import { Wallet, decode, hashes } from 'xrpl'
+import { createApiApp } from '../server/routes.js'
 import { Store } from '../server/store.js'
 import { PurchaseManager } from '../server/purchases.js'
 import { PublisherClient } from '../server/publisher-client.js'
@@ -274,4 +275,95 @@ describe('atomic ledger and verified purchase flow', () => {
     expect(s.listPastRuns().map(run => run.runId)).toEqual([...later.slice(1).reverse(), a.runId])
     expect(s.listPastRuns().filter(run => !run.pinned)).toHaveLength(4)
   })
+})
+
+
+describe('continuous reconciliation lifecycle', () => {
+  it('settles a lost response on a timer without restarting, then stops ticks on drain', async () => {
+    const p = await publisher()
+    const api = await createApiApp({ dbPath: ':memory:', publisherUrl: p.client.options.baseUrl, reconcileIntervalMs: 10 })
+    cleanup.push(() => api.close())
+    const run = api.store.createRun('question', 200)
+    p.state.loseSettlementResponse = true
+    await api.purchases.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'live-tick' })
+    await expect.poll(() => api.store.getIntent('live-tick')?.status).toBe('VERIFIED')
+    expect(p.state.charges).toBe(1)
+    expect(api.store.getRun(run.runId)).toMatchObject({ spentMinor: 80, reservedMinor: 0 })
+    await api.drain()
+    const events = api.store.getRun(run.runId).events.length
+    await new Promise(resolve => setTimeout(resolve, 35))
+    expect(api.store.getRun(run.runId).events).toHaveLength(events)
+  })
+
+  it('durably bounds automatic delivery retries at three with backoff; manual retry remains available', async () => {
+    const p = await publisher(), s = store(), manager = new PurchaseManager(s, p.client)
+    const run = s.createRun('question', 200)
+    p.state.failDelivery = true
+    await manager.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'retry' })
+    expect(s.getIntent('retry')?.status).toBe('DELIVERY_FAILED')
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      p.state.failDelivery = true
+      // Advance persisted due time with a controlled clock, leaving the actual HTTP transport live.
+      const realNow = Date.now
+      const due = Date.parse(s.getIntent('retry')?.nextDeliveryAt ?? '')
+      Date.now = () => Math.max(realNow(), Number.isFinite(due) ? due + 1 : 0)
+      try { await manager.reconcile() } finally { Date.now = realNow }
+      expect(s.getIntent('retry')?.deliveryAttempts).toBe(attempt)
+      const gets = p.state.paidGets
+      await manager.reconcile()
+      expect(p.state.paidGets).toBe(gets)
+    }
+    const gets = p.state.paidGets
+    await manager.reconcile(); await manager.reconcile()
+    expect(p.state.paidGets).toBe(gets)
+    expect(s.getIntent('retry')?.status).toBe('DELIVERY_FAILED')
+    expect((await manager.retryDelivery('retry')).status).toBe('VERIFIED')
+    expect(p.state.charges).toBe(1)
+  })
+})
+
+it('automatically recovers a settled delivery failure without a manual request', async () => {
+  const p = await publisher()
+  const api = await createApiApp({ dbPath: ':memory:', publisherUrl: p.client.options.baseUrl, reconcileIntervalMs: 10 })
+  cleanup.push(() => api.close())
+  const run = api.store.createRun('question', 200)
+  p.state.failDelivery = true
+  await api.purchases.purchase({ runId: run.runId, candidate, manifest: MANIFEST, intentId: 'auto-delivery' })
+  await expect.poll(() => api.store.getIntent('auto-delivery')?.status).toBe('VERIFIED')
+  expect(api.store.getIntent('auto-delivery')?.deliveryAttempts).toBe(1)
+  expect(p.state.charges).toBe(1)
+})
+
+it('keeps reconciling other intents while one writer blocks delivery across ticks', async () => {
+  const p = await publisher()
+  const api = await createApiApp({ dbPath: ':memory:', publisherUrl: p.client.options.baseUrl, reconcileIntervalMs: 100000 })
+  cleanup.push(() => api.close())
+  const firstRun = api.store.createRun('first', 200)
+  p.state.failDelivery = true
+  const first = await api.purchases.purchase({ runId: firstRun.runId, candidate, manifest: MANIFEST, intentId: 'slow-delivery' })
+  expect(first.status).toBe('DELIVERY_FAILED')
+  let release!: () => void, entered!: () => void
+  const held = new Promise<void>(resolve => { release = resolve })
+  const started = new Promise<void>(resolve => { entered = resolve })
+  const client = api.purchases.client, original = client.paidGet.bind(client)
+  let lose = true
+  client.paidGet = async (path, signature, observer) => {
+    if (signature) {
+      const blob = JSON.parse(Buffer.from(signature, 'base64').toString()).payload.signedTxBlob
+      if (hashes.hashSignedTx(blob).toUpperCase() === first.txHash) { entered(); await held }
+      else if (lose) { lose = false; await original(path, signature, observer); throw new Error('Lost response') }
+    }
+    return original(path, signature, observer)
+  }
+  const tick = api.reconcileOnce()
+  try {
+    await started
+    const secondRun = api.store.createRun('second', 200)
+    const pending = await api.purchases.purchase({ runId: secondRun.runId, candidate, manifest: MANIFEST, intentId: 'other-intent' })
+    expect(pending.status).toBe('SUBMITTING')
+    await api.reconcileOnce()
+    expect(api.store.getIntent('other-intent')?.status).toBe('VERIFIED')
+    expect(api.store.getIntent('slow-delivery')?.status).toBe('DELIVERY_PENDING')
+    expect(p.state.charges).toBe(2)
+  } finally { release(); await tick }
 })

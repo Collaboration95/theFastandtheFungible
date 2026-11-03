@@ -1,3 +1,4 @@
+import { reportModelUsage } from '../telemetry.js'
 import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
 // OpenAI Decisions (gpt-6-luna) as the purchase-decision model (#214, owner decision 8 Oct; amends D9).
@@ -240,6 +241,7 @@ export class OpenAIDecisionsProvider implements DecisionProvider {
       try {
         // Pretty-printed JSON carries exactly the permitted state, as in the benchmark.
         const result = await this.request(JSON.stringify(state, null, 2), questions, signal)
+        reportModelUsage(result.usage?.input_tokens, result.usage?.output_tokens)
         generation.update({ output: Object.fromEntries(result.answers), usageDetails: { input: result.usage?.input_tokens ?? 0, output: result.usage?.output_tokens ?? 0 } })
         return result.answers
       } catch (error) { generation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'Decisions failed' }); throw error }

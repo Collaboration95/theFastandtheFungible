@@ -1,3 +1,4 @@
+import { reportModelUsage } from '../telemetry.js'
 import { loadConfig } from '../config.js'
 import { startActiveObservation, type LangfuseGeneration } from '@langfuse/tracing'
 import { deepseekPricingWindow } from '../telemetry.js'
@@ -90,6 +91,7 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
     }
     const parsed: unknown = JSON.parse(text)
     // DeepSeek reports cache hits separately; they are billed at a fraction of normal input.
+    reportModelUsage(usage?.prompt_tokens, usage?.completion_tokens)
     const cached = usage?.prompt_cache_hit_tokens
     generation.update({ output: parsed, ...(usage ? { usageDetails: cached === undefined ? { input: usage.prompt_tokens ?? 0, output: usage.completion_tokens ?? 0 } : { input: usage.prompt_cache_miss_tokens ?? (usage.prompt_tokens ?? 0) - cached, input_cache_read: cached, output: usage.completion_tokens ?? 0 } } : {}) })
     return parsed
