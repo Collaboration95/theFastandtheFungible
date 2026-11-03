@@ -249,8 +249,10 @@ const explorer = (tx: string) => `${XRPL_EXPLORER}/${tx}`
  */
 export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow[] {
   const bounds = parseRange(range)
-  const admissions = new Map((db.prepare('SELECT run_id, surface, principal, policy_version FROM admissions').all() as Row[]).map(r => [String(r.run_id), r]))
-  const purchases = (db.prepare('SELECT r.json AS receipt, i.json AS intent FROM receipts r JOIN intents i ON i.id=r.intent_id ORDER BY r.rowid').all() as Row[]).flatMap(row => {
+  const scope = range.principal && range.principal !== 'unattributed' ? ' WHERE run_id IN (SELECT run_id FROM admissions WHERE principal=?)' : ''
+  const args = scope ? [range.principal!] : []
+  const admissions = new Map((db.prepare('SELECT run_id, surface, principal, policy_version FROM admissions' + scope).all(...args) as Row[]).map(r => [String(r.run_id), r]))
+  const purchases = (db.prepare('SELECT r.json AS receipt, i.json AS intent FROM receipts r JOIN intents i ON i.id=r.intent_id' + (scope ? ' WHERE i.run_id IN (SELECT run_id FROM admissions WHERE principal=?)' : '') + ' ORDER BY r.rowid').all(...args) as Row[]).flatMap(row => {
     const receipt: Receipt = ReceiptSchema.parse(JSON.parse(String(row.receipt))), intent: PurchaseIntent = PurchaseIntentSchema.parse(JSON.parse(String(row.intent)))
     if (!inRange(receipt.settledAt, bounds)) return []
     const admission = admissions.get(receipt.runId), terms = intent.quote?.payment
@@ -274,10 +276,10 @@ export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow
       status: '', refundTxHash: '', refundAmountMinor: '', refundExplorerUrl: '', reservedAt: '', settledAt: '', ...f }
     return inRange(row.settledAt, bounds) ? [row] : []
   }
-  const inbound = auditEntries(db).filter(e => e.kind === 'inbound' && e.runId).flatMap(e => hire('inbound', e.runId!, String(e.data.txHash), {
+  const inbound = (!hasTable(db, 'audit_log') ? [] : db.prepare("SELECT * FROM audit_log WHERE kind='inbound'" + (scope ? ' AND run_id IN (SELECT run_id FROM admissions WHERE principal=?)' : '') + ' ORDER BY seq').all(...args) as Row[]).map(toEntry).filter(e => e.runId).flatMap(e => hire('inbound', e.runId!, String(e.data.txHash), {
     payee: String(e.data.payTo), payer: String(e.data.payer), amountDrops: String(e.data.amountDrops), amountMinor: Number(e.data.amountDrops) / DROPS_PER_MINOR, txHash: String(e.data.txHash),
     invoiceId: String(e.data.invoiceId), ledgerIndex: typeof e.data.ledgerIndex === 'number' ? e.data.ledgerIndex : '', explorerUrl: explorer(String(e.data.txHash)), status: 'SETTLED', settledAt: String(e.data.settledAt ?? e.at) }))
-  const payouts = !hasTable(db, 'policy_payments') ? [] : (db.prepare('SELECT run_id, json FROM policy_payments ORDER BY run_id, id').all() as Row[]).flatMap(row => {
+  const payouts = !hasTable(db, 'policy_payments') ? [] : (db.prepare('SELECT run_id, json FROM policy_payments' + scope + ' ORDER BY run_id, id').all(...args) as Row[]).flatMap(row => {
     const p = JSON.parse(String(row.json)) as { id: string; kind: 'royalty' | 'change'; payTo: string; amountDrops: string; submission?: { txHash: string }; confirmedAt?: string; ledgerIndex?: number }
     if (!p.submission) return []
     return hire(p.kind, String(row.run_id), p.id, { writer: p.kind === 'royalty' ? p.id.split(':royalty:')[1] ?? '' : '', payee: p.payTo, amountDrops: p.amountDrops, amountMinor: '',

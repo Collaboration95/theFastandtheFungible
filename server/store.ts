@@ -79,6 +79,18 @@ export class Store {
       CREATE TABLE IF NOT EXISTS manifests (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grant_salts (intent_id TEXT PRIMARY KEY REFERENCES grants(intent_id), json TEXT NOT NULL);
     `)
+    // Source-row indexes, not counters: SQLite maintains these atomically even across crashes.
+    // Completed history without money never enters request-path accounting or recovery.
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS usage_active_runs ON runs(id) WHERE json_extract(json,'$.phase') NOT IN ('DONE','STOPPED','FAILED');
+      CREATE INDEX IF NOT EXISTS usage_failed_runs ON runs(json_extract(json,'$.phase'));
+      CREATE INDEX IF NOT EXISTS usage_intent_status ON intents(json_extract(json,'$.status'),run_id);
+      CREATE INDEX IF NOT EXISTS usage_cancelled_intents ON intents(substr(json_extract(json,'$.createdAt'),1,10),run_id) WHERE json_extract(json,'$.escrow.state')='CANCELLED';
+      CREATE INDEX IF NOT EXISTS usage_policy_run ON policy_payments(run_id,id);
+      CREATE INDEX IF NOT EXISTS usage_policy_day ON policy_payments(substr(json_extract(json,'$.confirmedAt'),1,10),run_id);
+      CREATE INDEX IF NOT EXISTS usage_policy_pending ON policy_payments(run_id) WHERE NOT coalesce(json_extract(json,'$.confirmedAt'),'') AND NOT coalesce(json_extract(json,'$.cancelledAt'),'');
+      CREATE INDEX IF NOT EXISTS usage_open_hire ON hire_reserves(run_id) WHERE closed=0;
+    `)
     if (path !== ':memory:') for (const file of [path, `${path}-wal`, `${path}-shm`]) if (existsSync(file)) chmodSync(file, 0o600)
     const escrowColumns = new Set(this.db.prepare('PRAGMA table_info(escrows)').all().map(r => r.name))
     if (!escrowColumns.has('owner')) this.db.exec('ALTER TABLE escrows ADD COLUMN owner TEXT')
@@ -88,6 +100,7 @@ export class Store {
     this.db.exec(`INSERT OR IGNORE INTO admissions SELECT key, 'mcp', 'operator', run_id, budget, budget, day, 'mcp-v0' FROM mcp_requests`)
     this.agentKeys = new AgentKeys(this.db)
     AuditLog.ensureSchema(this.db)
+    this.db.exec('CREATE INDEX IF NOT EXISTS usage_admission_principal ON admissions(principal,run_id); CREATE INDEX IF NOT EXISTS usage_audit_kind_run ON audit_log(kind,run_id)')
     this.audit = new AuditLog(this.db)
     this.atomic(() => this.audit.boot(this.policySnapshot()))
   }
@@ -130,20 +143,37 @@ export class Store {
   /** Gross charges by receipt day; unfinished budgets and uncertain submissions carry across midnight. */
   private usage(day: string, surface?: Surface, excludeRun?: string, principal?: string) {
     let spentMinor = 0, reservedMinor = 0
-    const admissions = new Map(this.db.prepare('SELECT run_id, surface, principal FROM admissions').all().map(row => [row.run_id as string, row]))
-    for (const row of this.db.prepare('SELECT id FROM runs').all()) {
+    // UNION deduplicates candidate IDs; primary-key order preserves the oracle's JS addition order
+    // (policy drops may be fractional minor units). Only hydrate contributing source rows.
+    const candidates = this.db.prepare(`WITH relevant(id) AS (
+      SELECT id FROM runs INDEXED BY usage_active_runs WHERE json_extract(json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
+      UNION SELECT run_id FROM hire_reserves WHERE closed=0
+      UNION SELECT run_id FROM intents WHERE json_extract(json,'$.status') IN ('RESERVED','SUBMITTING')
+      UNION SELECT i.run_id FROM intents i LEFT JOIN receipts r ON r.intent_id=i.id
+        WHERE json_extract(i.json,'$.status') IN ('SETTLED','DELIVERY_PENDING','DELIVERY_FAILED','VERIFIED','CLAIM_FAILED','CHALLENGED','REFUNDED','CHALLENGE_REJECTED','CHALLENGE_REFUSED')
+        AND (r.intent_id IS NULL OR substr(json_extract(r.json,'$.settledAt'),1,10)=?)
+      UNION SELECT run_id FROM intents WHERE json_extract(json,'$.escrow.state')='CANCELLED' AND substr(json_extract(json,'$.createdAt'),1,10)=?
+      UNION SELECT run_id FROM policy_payments WHERE substr(json_extract(json,'$.confirmedAt'),1,10)=?
+      UNION SELECT run_id FROM policy_payments WHERE NOT coalesce(json_extract(json,'$.confirmedAt'),'') AND NOT coalesce(json_extract(json,'$.cancelledAt'),'')
+    ) SELECT r.id, json_extract(r.json,'$.phase') AS phase, json_extract(r.json,'$.budgetMinor') AS budgetMinor,
+      (SELECT json_group_array(json(i.json) ORDER BY i.rowid) FROM intents i WHERE i.run_id=r.id) AS intents,
+      (SELECT json_group_array(json(t.json)) FROM receipts t JOIN intents i ON i.id=t.intent_id WHERE i.run_id=r.id) AS receipts,
+      (SELECT json_group_array(json(p.json) ORDER BY p.id) FROM policy_payments p WHERE p.run_id=r.id) AS payments,
+      h.minor AS holdMinor, h.closed AS holdClosed
+      FROM relevant v JOIN runs r ON r.id=v.id LEFT JOIN admissions a ON a.run_id=r.id LEFT JOIN hire_reserves h ON h.run_id=r.id
+      WHERE (? IS NULL OR a.surface=?) AND (? IS NULL OR a.principal=?) ORDER BY r.id`)
+      .all(day, day, day, surface ?? null, surface ?? null, principal ?? null, principal ?? null)
+    for (const row of candidates) {
       const id = row.id as string
-      if (surface && admissions.get(id)?.surface !== surface) continue
-      if (principal && admissions.get(id)?.principal !== principal) continue
-      const run = this.rawRun(id)
-      const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', id)
-      const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', id)
+      const run = { phase: String(row.phase), budgetMinor: Number(row.budgetMinor) }
+      const intents = JSON.parse(String(row.intents)) as PurchaseIntent[]
+      const receipts = JSON.parse(String(row.receipts)) as Receipt[]
       const charged = intents.filter(i => chargedStatuses.has(i.status))
-      const policy = this.policyPayments(id)
+      const policy = JSON.parse(String(row.payments)) as PolicyPayment[]
       const policySpent = policy.filter(p => p.confirmedAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
       const policyReserved = policy.filter(p => !p.confirmedAt && !p.cancelledAt).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
       spentMinor += policy.filter(p => p.confirmedAt?.slice(0, 10) === day).reduce((sum, p) => sum + Number(p.amountDrops) / DROPS_PER_MINOR, 0)
-      const hold = this.db.prepare('SELECT minor, closed FROM hire_reserves WHERE run_id=?').get(id)
+      const hold = row.holdMinor === null ? undefined : { minor: Number(row.holdMinor), closed: Number(row.holdClosed) }
       spentMinor += intents.filter(i => i.escrow?.state === 'CANCELLED' && i.createdAt?.slice(0, 10) === day).reduce((sum, i) => sum + i.amountMinor, 0)
       const gross = charged.reduce((sum, i) => sum + i.amountMinor, 0) + policySpent
       spentMinor += charged.reduce((sum, i) => {
@@ -186,7 +216,7 @@ export class Store {
       const key = this.agentKeys.get(id)
       if (!key) throw new AgentDenied('Agent key not found')
       const from = new Date(`${day}T00:00:00Z`); from.setUTCDate(from.getUTCDate() - 6)
-      const receipts = receiptRows(this.db, { from: from.toISOString().slice(0, 10), to: day }).filter(r => r.principal === id && r.kind !== 'inbound')
+      const receipts = receiptRows(this.db, { from: from.toISOString().slice(0, 10), to: day, principal: id }).filter(r => r.principal === id && r.kind !== 'inbound')
       return { ...key, maxMinor: Math.min(key.maxMinor, spendPolicy().maxMinor), dailyMinor: Math.min(key.dailyMinor, spendPolicy().walletDailyMinor),
         ...this.usage(day, undefined, undefined, id), spent7DaysMinor: receipts.reduce((s, r) => s + (typeof r.amountMinor === 'number' ? r.amountMinor : Number(r.amountDrops) / DROPS_PER_MINOR), 0),
         rails: [...new Set(receipts.map(r => r.label))] }
@@ -204,8 +234,11 @@ export class Store {
     })
   }
   walletStatus(day = new Date().toISOString().slice(0, 10)) {
-    return this.atomic(() => ({ ...this.usage(day), dailyMinor: spendPolicy().walletDailyMinor,
-      paused: this.isPaused(), label: this.isPaused() ? PAUSED : 'Spending enabled', policyVersion: POLICY_VERSION }))
+    return this.atomic(() => {
+      const paused = this.isPaused()
+      return { ...this.usage(day), dailyMinor: spendPolicy().walletDailyMinor,
+        paused, label: paused ? PAUSED : 'Spending enabled', policyVersion: POLICY_VERSION }
+    })
   }
   mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.usage(day, 'mcp')) }
   isHireRun(runId: string) { return !!this.db.prepare('SELECT run_id FROM hire_reserves WHERE run_id=?').get(runId) }
@@ -277,7 +310,7 @@ export class Store {
   }
   /** Operational selectors never hydrate retained bodies or event arrays. */
   runnableRunIds(includeHire = false): string[] {
-    return this.db.prepare(`SELECT id FROM runs r WHERE json_extract(r.json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
+    return this.db.prepare(`SELECT id FROM runs r INDEXED BY usage_active_runs WHERE json_extract(r.json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
       ${includeHire ? '' : 'AND NOT EXISTS (SELECT 1 FROM hire_reserves h WHERE h.run_id=r.id)'} ORDER BY r.rowid`).all().map(r => String(r.id))
   }
   recoverableRunIds(): string[] {
