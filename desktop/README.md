@@ -71,3 +71,50 @@ flush the macOS filesystem cache. Live settlement and signed/notarised launch
 require separate live evidence and are not inferred from offline smoke results.
 
 Installed DMG size, cold-start method and validation limits: [evidence](../docs/evidence/macos-app-259.md).
+
+## Connect an agent over HTTP
+
+Local mode hosts Streamable HTTP at `http://127.0.0.1:9689/mcp` alongside the
+legacy stdio adapter. Only the exact loopback Host is accepted; browser Origins
+are refused. Every request requires its own agent bearer, rechecked against the
+same durable engine registry. Paused or revoked keys receive 401, including
+already connected clients. The endpoint stops with the app. Remote-backend mode
+has no local MCP listener. Port 9689 must be available.
+
+Open Desktop Settings → Connect an agent. Each Claude Desktop, Claude Code,
+Cursor or Codex panel creates independent per-call/daily allowances (SGD cents),
+shows gross spend, reserved authority and last authenticated HTTP request, and
+provides pause/resume and permanent revoke. Create a replacement to change caps.
+The wallet cap and wallet pause apply to all clients. Agent allowances replace
+the legacy MCP caps; the requested tool budget is clamped by backend policy.
+Settings refreshes every ten seconds while unfocused. Fixture and Testnet modes
+have separate registries.
+
+Copy config writes the secret directly from Keychain to the clipboard; it never
+enters the renderer. Paste into the client's private config. Claude Code uses
+native HTTP; Cursor uses URL/headers JSON; Codex uses TOML URL/http_headers.
+Claude Desktop uses the `mcp-remote` stdio bridge via `npx` (Node and an initial
+package download required). These are generated configs; interactive sessions
+in all four products have not been acceptance-tested. Protect config files and
+the clipboard as credentials. Revoke the connection if exposed.
+
+Tools: `search_expertise`, `ask_expert`, `get_run`, `wallet_status`,
+`verify_answer` (receipt verification; optional read-only Testnet lookups), and
+`hire`. Hire wraps `/v1/ask`: request a quote with question, budget_minor
+(100/200/500) and a stable idempotency_key; sign it using the caller's wallet,
+then pass payment_signature with the same inputs. A verified settled caller
+payment supplies research authority; the fixed S$0.20 fee is additional. The
+backend refuses payments that cannot fit the agent/wallet caps, before submitting
+anything. It never silently changes an already signed invoice. No tool exposes
+an article purchase or arbitrary signing command. The HTTP host disables the
+legacy environment-configured outbound `hire_researcher` signer.
+
+Headless local HTTP: `node --import tsx mcp/server.ts --http`; provision agent
+keys with `npm run agents -- add --db data/mcp/app.db ... --token-file <private-path>`
+(use RA_DATA_DIR if configured). Raw keys are emitted only to that new private
+file. Stdio remains the default. HTTP refuses RA_BACKEND_URL because its registry
+must be the local engine's database.
+
+HTTP fixture tests and a single real Testnet purchase are recorded in
+[app-mcp-http evidence](../docs/evidence/app-mcp-http.md). The latter uses the
+local Testnet payer; it is not packaged Keychain acceptance evidence.

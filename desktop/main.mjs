@@ -1,3 +1,5 @@
+import { Store } from '../server/store.js'
+import { startMcpHttp } from '../mcp/http.js'
 import { app, BrowserWindow, Menu, protocol, session, ipcMain, utilityProcess, dialog, shell, clipboard } from 'electron'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { join, extname, resolve, sep } from 'node:path'
@@ -15,11 +17,14 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, corsEnabled: true } }])
 if (process.env.RA_DESKTOP_DATA) app.setPath('userData', resolve(process.env.RA_DESKTOP_DATA))
 app.setName('ResearchAgent')
+let mcpHttp, agentStore
 let engine, child, mainWindow, preferencesWindow, quitting = false
 let preferences = { ...defaults }
 let coldStartMs
 const userData = app.getPath('userData')
 async function stopEngine() {
+  await mcpHttp?.close(); mcpHttp = undefined
+  agentStore?.close(); agentStore = undefined
   if (!child) return
   const target = child; child = undefined
   await new Promise(done => {
@@ -59,6 +64,10 @@ async function boot() {
     })
     await backendRequest(engine, '/api/wallet/pause', { method: 'POST', body: JSON.stringify({ paused: preferences.paused }) })
     child.on('exit', () => { if (!quitting) { dialog.showErrorBox('Local engine stopped', 'Quit and reopen ResearchAgent to recover.'); app.quit() } })
+  }
+  if (preferences.backend === 'local') {
+    agentStore = new Store(join(userData, preferences.live ? 'testnet' : 'fixture', 'app.db'))
+    mcpHttp = await startMcpHttp({ apiUrl: engine.apiUrl, store: agentStore, port: 9689 })
   }
   // Connection metadata is public. The MCP adapter reads credentials from Keychain only.
   await writeFile(join(userData, 'engine.json'), JSON.stringify({ apiUrl: engine.apiUrl, remote: preferences.backend === 'remote' }), { mode: 0o600 })
@@ -127,6 +136,33 @@ async function boot() {
       }
       return addresses
     } finally { await client.disconnect() }
+  })
+  const clients = ['Claude Desktop', 'Claude Code', 'Cursor', 'Codex']
+  secureHandler('desktop:agents', async () => ({ url: mcpHttp?.url, agents: agentStore ? agentStore.agentKeys.list().map(key => ({ ...agentStore.agentStatus(key.id), lastCall: agentStore.lastMcpCall(key.id) })) : [] }))
+  secureHandler('desktop:agent-create', async (name, maxMinor, dailyMinor) => {
+    if (!agentStore || !clients.includes(name) || !Number.isSafeInteger(dailyMinor) || dailyMinor > preferences.walletDailyMinor) throw new Error('Invalid agent')
+    const key = agentStore.addAgent({ name, maxMinor, dailyMinor })
+    try { await writeSecret(`agent-${key.id}`, key.token) }
+    catch { agentStore.setAgentPaused(key.id, true, true); throw new Error('Keychain failed') }
+    return { id: key.id }
+  })
+  secureHandler('desktop:agent-control', async (id, operation) => {
+    if (!agentStore || typeof id !== 'string' || !['pause', 'resume', 'revoke'].includes(operation)) throw new Error('Invalid control')
+    agentStore.setAgentPaused(id, operation !== 'resume', operation === 'revoke')
+  })
+  secureHandler('desktop:agent-copy', async id => {
+    const agent = agentStore?.agentKeys.get(id)
+    if (!agent || agent.revoked || !mcpHttp) throw new Error('Agent unavailable')
+    const token = await readSecret(`agent-${id}`)
+    if (!token) throw new Error('Credential missing')
+    const url = mcpHttp.url
+    let snippet
+    if (agent.name === 'Claude Code') snippet = `claude mcp add --transport http researchagent ${url} --header "Authorization: Bearer ${token}"`
+    else if (agent.name === 'Codex') snippet = `[mcp_servers.researchagent]\nurl = "${url}"\nhttp_headers = { Authorization = "Bearer ${token}" }`
+    else if (agent.name === 'Claude Desktop') snippet = JSON.stringify({ mcpServers: { researchagent: { command: 'npx', args: ['-y', 'mcp-remote', url, '--header', `Authorization: Bearer ${token}`] } } }, null, 2)
+    else snippet = JSON.stringify({ mcpServers: { researchagent: { url, headers: { Authorization: `Bearer ${token}` } } } }, null, 2)
+    clipboard.writeText(snippet)
+    return { copied: true }
   })
   secureHandler('desktop:mcp', async () => {
     // Persist only when the operator explicitly enables the external MCP adapter.

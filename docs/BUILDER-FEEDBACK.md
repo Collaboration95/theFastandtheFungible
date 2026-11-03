@@ -429,3 +429,5 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
   live ledger was used and no production money bug was confirmed.
 
 - 2026-11-03 · Observed tooling incident: release backfill test inherited Git hook GIT_DIR/GIT_INDEX_FILE and wrote its fixture commit into the caller worktree; hook then failed on an existing tag. Evidence: docs/evidence/stream-281.md and tests/release.test.ts. Workaround: restore caller ref/index, strip inherited GIT_* variables from fixture subprocesses. Suggested fix: isolate Git subprocess environments in temporary-repository tests. Severity: high local tooling; no XRPL/mainnet action or funds affected.
+
+- 2026-11-03 · Observed tooling friction · `tests/mcp-http.test.ts`: Node fetch did not transmit the overridden Host in the rebinding test, so the request reached MCP content negotiation (406). Workaround: use `node:http.request` for the hostile Host assertion (403). Suggested fix: document forbidden/rewritten header behavior in client test tooling. Severity low; no XRPL mainnet impact.
