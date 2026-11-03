@@ -25,6 +25,7 @@ export class PublisherJournal {
     this.db = new DatabaseSync(path)
     this.db.exec(`PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;
       CREATE TABLE IF NOT EXISTS x402_bindings (invoice TEXT PRIMARY KEY, hash TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS key_reveals (invoice TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS escrow_quotes (invoice TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS escrow_grants (tx_hash TEXT PRIMARY KEY, invoice TEXT UNIQUE NOT NULL, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS x402_quotes (ledger_invoice_id TEXT PRIMARY KEY, quote_json TEXT NOT NULL);
@@ -57,6 +58,13 @@ export class PublisherJournal {
   saveEscrowGrant(hash: string, invoice: string, grant: unknown) {
     this.db.prepare('INSERT OR IGNORE INTO escrow_grants VALUES (?,?,?)').run(hash, invoice, JSON.stringify(grant))
     if (!this.escrowGrant(hash)) throw new PublisherError(409, 'Escrow invoice already locked')
+  }
+  keyReveal(invoice: string): { secret: string; finish?: import('../server/xrpl.js').Submission } | undefined {
+    const row = this.db.prepare('SELECT json FROM key_reveals WHERE invoice=?').get(invoice)
+    return row && JSON.parse(String(row.json))
+  }
+  saveKeyReveal(invoice: string, value: { secret: string; finish?: import('../server/xrpl.js').Submission }) {
+    this.db.prepare('INSERT INTO key_reveals VALUES (?,?) ON CONFLICT(invoice) DO UPDATE SET json=excluded.json').run(invoice, JSON.stringify(value))
   }
   close(): void { this.db.close() }
   private transaction<T>(operation: () => T): T {

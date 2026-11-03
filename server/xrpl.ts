@@ -86,7 +86,7 @@ export class XrplPayer {
         this.ledger.request({ command: 'ledger_current' }), this.ledger.request({ command: 'fee' }),
       ])
       const base = Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12))
-      const cost = Math.ceil(base * (tx.TransactionType === 'EscrowFinish' ? 35.25 : 1))
+      const cost = Math.ceil(base * (tx.TransactionType === 'EscrowFinish' && typeof tx.Fulfillment === 'string' ? 33 + tx.Fulfillment.length / 2 / 16 : 1))
       if (!Number.isSafeInteger(cost) || cost > FEE_CAP_DROPS) throw new BeforeSignError('Escrow fee exceeds policy ceiling')
       const lastLedgerSequence = Number(current.result.ledger_current_index) + 20
       await beforeSign?.()

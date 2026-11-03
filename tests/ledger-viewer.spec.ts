@@ -7,8 +7,8 @@ let server:Server, url:string
 test.beforeEach(async({page})=>{ await page.routeWebSocket(/wss:\/\/.*/,ws=>ws.close()) })
 test.beforeAll(async()=>{server=createServer(async(req,res)=>{try{const name=(req.url??'/').split('?')[0];if(!['/','/index.html','/ledger.js','/style.css','/transactions.json'].includes(name)){res.writeHead(404).end();return}res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.json')?'application/json':name.endsWith('.css')?'text/css':'text/html');res.end(await readFile(resolve('site/ledger',name==='/'?'index.html':name.slice(1))))}catch{res.writeHead(404).end()}});await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${(server.address() as {port:number}).port}`})
 test.afterAll(async()=>{await new Promise<void>(r=>server.close(()=>r()))})
-test('offline evidence, keyboard and accessibility',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(16);await expect(page.getByRole('link',{name:'Download public evidence JSON'})).toHaveAttribute('download','');await expect(page.getByRole('button')).toBeEnabled();await page.getByRole('button').focus();await expect(page.getByRole('button')).toBeFocused();const a=await new AxeBuilder({page}).analyze();expect(a.violations.filter(v=>['serious','critical'].includes(v.impact??''))).toEqual([])})
-test('CORS and unavailable history retain snapshot',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(16);await expect(page.getByRole('status')).toContainText('finished');await expect(page.locator('.state').first()).toContainText('Historical')})
+test('offline evidence, keyboard and accessibility',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(20);await expect(page.getByRole('link',{name:'Download public evidence JSON'})).toHaveAttribute('download','');await expect(page.getByRole('button')).toBeEnabled();await page.getByRole('button').focus();await expect(page.getByRole('button')).toBeFocused();const a=await new AxeBuilder({page}).analyze();expect(a.violations.filter(v=>['serious','critical'].includes(v.impact??''))).toEqual([])})
+test('CORS and unavailable history retain snapshot',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(20);await expect(page.getByRole('status')).toContainText('finished');await expect(page.locator('.state').first()).toContainText('Historical')})
 test('stubbed v2 response states are conservative',async({page})=>{
  await page.goto(url)
  const statuses=await page.evaluate(async()=>{
@@ -43,8 +43,8 @@ test('auto-checks all rows and styles only matching validated successes',async({
   ws.send(JSON.stringify({id:request.id,result:{hash:r.hash,validated:true,ledger_index:r.ledgerIndex,tx_json:t,meta:{TransactionResult:'tesSUCCESS',delivered_amount:r.deliveredAmount}}}))
  }))
  await page.goto(url)
- await expect(page.getByRole('status')).toContainText('16/16 validated')
- await expect(page.locator('.state.verified')).toHaveCount(16)
- await expect(page.locator('caption')).toContainText('16 curated')
+ await expect(page.getByRole('status')).toContainText('20/20 validated')
+ await expect(page.locator('.state.verified')).toHaveCount(20)
+ await expect(page.locator('caption')).toContainText('20 curated')
  await expect(page.locator('a[href*="blob/main"]')).toHaveCount(0)
 })

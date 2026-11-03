@@ -1,0 +1,117 @@
+# Key-reveal escrow
+
+**XRPL is our delivery channel.** Opt-in exchange of XRP payment for an article
+key on XRPL Testnet. This mode is off by default. Set `ESCROW_MODE=key-reveal` on
+buyer and publisher, opt the writer into `ESCROW_WRITERS`, and use the
+`xrpl-testnet` rail with XRP. An unsupported writer is skipped without an exact
+payment fallback. Existing `escrow-policy-v1` remains buyer-controlled.
+
+The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent,
+and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity).
+The writer signs the escrow quote with its wallet key. The signed terms bind
+buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter,
+PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag.
+The existing passage manifest separately authenticates each salted passage.
+
+```mermaid
+sequenceDiagram
+    participant W as Writer
+    participant P as Buyer policy
+    participant L as XRPL Testnet
+    participant G as Grant / answer
+    P->>W: Request quote for buyer + intent
+    W->>W: Persist K, ciphertext and signed quote
+    W-->>P: Signed commitments + quarantined ciphertext
+    P->>P: Reserve budget; persist quote + exact create blob
+    P->>L: EscrowCreate (Condition, CancelAfter)
+    P->>W: Same signed create blob
+    W->>L: Verify validated create and exact escrow object
+    W->>W: Persist signed finish blob
+    W->>L: EscrowFinish (Fulfillment encodes K)
+    L-->>P: Validated successful finish, K and ledger index
+    P->>P: Persist reveal; verify K; decrypt; verify commitments + passages
+    P->>G: Verified grant; premium plaintext accessible; cited answer
+    Note over P,L: No writer finish: after CancelAfter, policy submits EscrowCancel
+```
+
+## Gate 1 interpretation
+
+The rule is **“no premium bytes before a grant.”** Ciphertext arrives before the
+grant, but it is quarantined: never decrypted, never shown, and never given to any
+model before the validated EscrowFinish reveals K. Premium **PLAINTEXT is
+accessible only after the verified grant**. Decryption and proof checks run in the
+private engine boundary after validation and before publishing the grant. This is
+an explicit interpretation, not a loosening; no leak threshold is changed.
+
+Snapshots, model contents, payment-row HTML, audit rows and ordinary receipt
+exports contain neither ciphertext nor plaintext before the grant. Public quote
+commitments contain hashes, IV and tag. Post-grant receipts intentionally include
+the ciphertext and the now-public K for offline verification.
+
+## Recovery and fraud
+
+Buyer SQLite persists the signed quote and ciphertext before create signing,
+and persists the exact signed create blob before submit. Writer SQLite persists
+K before returning its quote, and the exact signed finish before submit. Retries
+reuse those blobs. An expired writer signature is not replaced by a second
+principal purchase: the buyer can cancel the original object after its deadline.
+
+Recovery verifies the escrow object or searches validated terminal history; an
+absent object without terminal history stays pending. It persists the validated
+reveal before decrypting. A crash after create, observed reveal or stored grant
+replays the same intent. The terminal receipt and intent update are atomic and
+idempotent. CancelAfter is checked against validated ledger time, not wall time;
+expiry permits cancellation and does not automatically return principal.
+
+An invalid authenticated envelope or failed passage proof creates no accessible
+grant. Payment has already completed: it remains charged, with status
+`CLAIM_FAILED`, and uses the existing reputation rejection path. No unilateral
+refund or new money flow is implied. Download the evidence from
+`GET /runs/:id/intents/:intentId/key-reveal-proof.json` after validated release.
+It contains the signed quote, passage manifest, ciphertext, K, create hash and
+validated finish transaction. Normal API access rules apply. Before release this
+endpoint refuses the request. Honest deliveries have the same downloadable proof.
+
+## Receipts
+
+Optional `proofs[].keyReveal` in the existing receipt bundle adds the signed
+quote/envelope, key, create/finish hashes and reveal ledger index. TS and independent
+stdlib Python verifiers verify the writer signature, K/Condition binding, GCM tag,
+ciphertext and decrypted-byte SHA-256, delivered identity, receipt/quote binding,
+and the existing salted passage hashes. Python's public-evidence AES implementation
+has independent NIST known-answer tests. The old 177 conformance vectors are
+unchanged; seven additive vectors cover valid delivery and changed key, Condition,
+ciphertext, manifest, ledger index and signature.
+
+Offline success checks cryptographic consistency, **not ledger finality**. The
+bundled ledger index and transaction hashes require an independent ledger lookup
+to establish that publication actually occurred. TS `--testnet` adds read-only
+ledger checks; Python remains offline.
+
+## Threat model and limits
+
+- XRP only. The observed RLUSD Testnet issuer lacks the token-escrow permission
+  flag; amendment activation alone is insufficient. No mainnet support is claimed.
+- The writer receives the principal only by publishing K through a successful
+  finish. A relay can submit the same fulfillment; funds still go to the original
+  destination. Buyer cancellation is policy-only and cannot win before expiry.
+- K becomes public. This is acceptable because each ciphertext is encrypted for
+  one buyer and intent with a fresh key; it does not unlock other buyers' copies.
+  It is not DRM: anyone with that ciphertext and public K can read that copy.
+- A writer can commit to nonsense or an undecryptable envelope and collect. The
+  cryptographic proof establishes responsibility, not truth or automatic damages.
+  Existing challenges/reputation handle broken promises; this is not a truth oracle.
+- K may appear in an unvalidated submitted finish. The buyer still waits for
+  validation. Ledger outages/history gaps retain reservations pending reconciliation.
+- A dishonest buyer can create extra escrow objects outside policy. This product
+  guarantees one charge per policy intent, not control of arbitrary wallet activity.
+- Conditional finish costs more than a Payment. The [XRPL fee formula](https://xrpl.org/docs/concepts/transactions/transaction-cost)
+  scales as `base_fee × (33 + fulfillment_bytes / 16)` before multisign/load effects.
+  Here K is 32 bytes and its encoded fulfillment is 36 bytes. At the observed
+  12-drop signing base, `ceil(12 × (33 + 36/16)) = 423` drops. A 2,000-drop cap
+  rejects excessive fees. Live create/cancel each cost 12 drops. A cancelled
+  60,000-drop principal is fully returned; its buyer still pays 24 drops in fees.
+- Synthetic corpus and extractive fixture answers in the proof are labelled;
+  Testnet value transfer is real Testnet execution, with no real value.
+
+[Evidence and commands](evidence/round2-r/README.md).

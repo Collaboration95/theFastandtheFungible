@@ -87,7 +87,7 @@ export class PublisherClient {
       delivery: response.status === 200 ? JSON.parse(text) as unknown : undefined,
     }
   }
-  async escrowQuote(path: string, request: { payer: string; intentId: string; condition: string; cancelAfter: number }) {
+  async escrowQuote(path: string, request: { mode?: 'key-reveal'; payer: string; intentId: string; condition: string; cancelAfter: number }) {
     const result = await this.request('POST', `${path}/escrow-quote`, request)
     return EscrowQuoteSchema.parse(JSON.parse(result.bytes.toString('utf8')))
   }

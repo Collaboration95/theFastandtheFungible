@@ -40,3 +40,7 @@ export function Mark({ className = '' }: { className?: string }) {
 export function favicon(state: 'idle' | 'work' | 'done' | 'alert'): string {
   return `data:image/svg+xml,${encodeURIComponent(brandFavicons[state])}`
 }
+
+export function keyRevealLabel(e: import('../shared/contracts/escrow').EscrowStatus): string {
+  return e.state === 'CANCELLED' ? 'Cancelled · refunded' : e.state === 'RELEASED' ? `Paid by key reveal · EscrowFinish ${e.finishHash} · key published in ledger ${e.revealLedger}` : 'Escrow locked · waiting for writer to reveal key'
+}

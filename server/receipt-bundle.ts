@@ -17,7 +17,7 @@ export function receiptBundle(store: Store, runId: string): ReceiptBundle {
       const intent = run.intents.find(i => i.status === 'VERIFIED' && sameSource(i, source))
       if (!intent) return source.verification ? [{ source: source.source, resourceId: source.resourceId, version: source.version, ...source.verification }] : []
       const manifest = store.getManifest(intent.intentId), delivery = store.getDelivery(intent.intentId)
-      return manifest && delivery ? [{ source: source.source, resourceId: source.resourceId, version: source.version, intentId: intent.intentId, manifest, salts: delivery.salts }] : []
+      return manifest && delivery ? [{ source: source.source, resourceId: source.resourceId, version: source.version, intentId: intent.intentId, manifest, salts: delivery.salts, ...(intent.escrow?.mode === 'key-reveal' ? { keyReveal: store.keyRevealEvidence(intent.intentId) } : {}) }] : []
     }),
     audit: { anchor, entries: entries.slice(Math.max(0, first)).map(e => e.runId === runId ? e : { seq: e.seq, prevHash: e.prevHash, hash: e.hash, commitment: true }), head: entries.at(-1)?.hash ?? GENESIS_HASH },
   })

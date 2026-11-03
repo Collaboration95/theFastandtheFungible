@@ -169,3 +169,16 @@ Retention is a v3 concept; v1/v2 reject contribution extensions.
 Network ledger checks are opt-in in TS and absent in Python: Python always reports
 testnet SKIP. Offline success verifies evidence consistency, never ledger finality.
 The legacy Node wrapper remains explicitly selected by Client.verify(repo_dir=...).
+
+## Optional key-reveal evidence
+
+`proofs[].keyReveal` adds `quote` (signed escrow terms plus hex ciphertext), `key`
+(32-byte hex preimage), `createHash`, `finishHash` and positive `ledgerIndex`.
+It is emitted only for verified key-reveal grants. The terms' `keyReveal` object
+binds ciphertextHash, plaintextHash (SHA-256 of exact decrypted UTF-8 bytes), IV
+and tag. The escrow status adds `mode: key-reveal` and `revealLedger`.
+Both verifiers authenticate the quote, decrypt AES-256-GCM, compare all delivery
+and passage evidence and require matching intent/receipt hashes and ledger index.
+Absent evidence for an accessible key-reveal source fails verification. Legacy
+bundles and the original 177 vectors retain their semantics. Offline checks do
+not prove ledger finality. See [protocol and gate interpretation](key-reveal-escrow.md).

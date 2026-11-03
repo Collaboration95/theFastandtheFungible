@@ -1,4 +1,7 @@
-import { decode, hashes } from 'xrpl'
+import { encryptDelivery } from '../shared/key-reveal.js'
+import { XrplPayer } from '../server/xrpl.js'
+import { fulfillmentFor } from '../shared/escrow.js'
+import { Wallet, decode, hashes } from 'xrpl'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import type { PaymentSignature } from '../shared/contracts/x402.js'
@@ -7,12 +10,16 @@ import { escrowInvoice, ledgerTime, matchesCreate, safeSignature, signEscrowQuot
 import { lookupTx, type Ledger } from '../shared/xrpl.js'
 import type { PublisherJournal } from './journal.js'
 import type { PublisherKeys } from './registry.js'
-export const EscrowRequestSchema = z.object({ payer: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), intentId: z.string().min(1).max(200), condition: z.string().regex(/^A0258020[0-9A-F]{64}810120$/), cancelAfter: z.number().int().positive() })
-export async function escrowQuote(input: unknown, item: { publisherSlug: string; articleId: string; version: string; manifestRoot: string; amount: string; payTo: string }, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal): Promise<EscrowQuote> {
+export const EscrowRequestSchema = z.object({ mode: z.literal('key-reveal').optional(), payer: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), intentId: z.string().min(1).max(200), condition: z.string().regex(/^A0258020[0-9A-F]{64}810120$/), cancelAfter: z.number().int().positive() })
+export async function escrowQuote(input: unknown, item: { publisherSlug: string; articleId: string; version: string; manifestRoot: string; amount: string; payTo: string }, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal, delivery?: unknown): Promise<EscrowQuote> {
   const request = EscrowRequestSchema.parse(input), now = await ledgerTime(ledger)
   if (request.cancelAfter < now + 60 || request.cancelAfter > now + 120) throw new Error('Escrow deadline outside policy')
-  const terms = { ...request, ...item, scheme: 'escrow-v1' as const, network: 'xrpl:1' as const, asset: 'XRP' as const, quoteId: randomUUID() }
-  const quote = signEscrowQuote(terms, keys.publicKey, keys.privateKey)
+  const encrypted = request.mode === 'key-reveal' && delivery ? encryptDelivery(delivery) : undefined
+  if (request.mode && !encrypted) throw new Error('Key reveal unavailable')
+  const { mode: _mode, ...base } = request
+  const terms = { ...base, ...item, ...(encrypted ? { condition: encrypted.condition, keyReveal: encrypted.commitment } : {}), scheme: 'escrow-v1' as const, network: 'xrpl:1' as const, asset: 'XRP' as const, quoteId: randomUUID() }
+  const quote = { ...signEscrowQuote(terms, keys.publicKey, keys.privateKey), ...(encrypted ? { ciphertext: encrypted.ciphertext } : {}) }
+  if (encrypted) journal.saveKeyReveal(escrowInvoice(terms), { secret: encrypted.secret })
   journal.saveEscrowQuote(quote)
   return quote
 }
@@ -53,4 +60,24 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
   const grant = { scheme: 'escrow-v1', state: 'LOCKED', articleId, version, manifestRoot: terms.manifestRoot, createHash: hash }
   journal.saveEscrowGrant(hash, invoice, grant)
   return { hash, payer: terms.payer, grant }
+}
+
+/** Writer alone holds K. Persist the exact finish blob before any network submission. */
+export async function revealEscrow(quote: EscrowQuote, createBlob: string, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal) {
+  const invoice = escrowInvoice(quote.terms), privateState = journal.keyReveal(invoice)
+  if (!privateState || !quote.terms.keyReveal) throw new Error('No writer key')
+  const payer = new XrplPayer(ledger, new Wallet(keys.publicKey, keys.privateKey))
+  let finish = privateState.finish
+  if (!finish) {
+    await lockEscrow(createBlob, invoice, quote.terms.articleId, quote.terms.version, ledger, journal)
+    const sent = await payer.escrow({ TransactionType: 'EscrowFinish', Owner: quote.terms.payer, OfferSequence: Number(decode(createBlob).Sequence), Condition: quote.terms.condition, Fulfillment: fulfillmentFor(privateState.secret) }, 0,
+      s => { journal.saveKeyReveal(invoice, { ...privateState, finish: s }); return s },
+      s => ledger.request({ command: 'submit', tx_blob: s.txBlob }))
+    finish = sent.submission
+    await sent.sent
+  } else {
+    const found = await lookupTx(ledger, finish.txHash)
+    if (found.state !== 'validated') await ledger.request({ command: 'submit', tx_blob: finish.txBlob })
+  }
+  return { finishHash: finish.txHash }
 }

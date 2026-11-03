@@ -67,6 +67,7 @@ Start with the [judging criteria](JUDGING-CRITERIA.md) and the [SFF push tracker
 | [round2-m2](evidence/round2-m2/README.md) | Retained-history follow-up profiling and measurements |
 | [round2-n](evidence/round2-n/README.md) | Accepted writer Credentials on Testnet; advisory identity only |
 | [round2-p1](evidence/round2-p1/README.md) | 13/13 live transaction checks and seven runnable feedback repros |
+| [round2-r](evidence/round2-r/README.md) | Writer-owned key-reveal escrow: four live Testnet transactions, independent verifiers and SIGKILL recovery |
 | [soak-nov4](evidence/soak-nov4.md) | Real-SIGKILL soak, host-sleep diagnosis, 30-minute verification |
 
 **Earlier evidence**

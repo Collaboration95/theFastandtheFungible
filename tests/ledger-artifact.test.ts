@@ -8,7 +8,7 @@ import { classify, refresh, lookup, endpoints } from '../site/ledger/ledger.js'
 const row = data.rows[0]
 function valid() { return {result:{hash:row.hash,ledger_index:row.ledgerIndex,validated:true,tx_json:{TransactionType:"Payment",Account:row.from,Destination:row.to,InvoiceID:row.invoiceId,NetworkID:1,Fee:row.feeDrops,Amount:row.deliveredAmount},meta:{TransactionResult:'tesSUCCESS',delivered_amount:row.deliveredAmount}}} }
 describe('public ledger',()=>{
- it('rebuilds sixteen source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(16); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(16)})
+ it('rebuilds twenty source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(20); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(20)})
  it('only matching validated success is fresh',()=>{
   expect(classify(row,valid())).toContain('validated · tesSUCCESS')
   for(const mutate of [(b: {result: Record<string, any>})=>b.result.validated=false,(b: {result: Record<string, any>})=>b.result.tx_json.NetworkID=0,(b: {result: Record<string, any>})=>b.result.meta.TransactionResult='tecFAILED',(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,value:'9'},(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,issuer:'wrong'},(b: {result: Record<string, any>})=>b.result.error='txnNotFound',(b: {result: Record<string, any>})=>delete b.result.meta]){const b=valid();mutate(b);expect(classify(row,b)).not.toContain('validated · tesSUCCESS')}

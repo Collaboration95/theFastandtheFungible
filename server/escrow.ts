@@ -1,4 +1,6 @@
 // Trusted policy purchase path. Bytes are quarantined until proof AND validated finish.
+import { decryptDelivery } from '../shared/key-reveal.js'
+import { conditionFor } from '../shared/escrow.js'
 import { decode } from 'xrpl'
 import { z } from 'zod'
 import { EscrowQuoteSchema } from '../shared/contracts/escrow.js'
@@ -15,6 +17,7 @@ import { XrplPayer, FEE_CAP_DROPS } from './xrpl.js'
 import type { EscrowOperation } from './escrow-state.js'
 
 export function escrowSelected(store: Store, runId: string, c: PublicCandidate, optIn?: boolean): boolean {
+  if (process.env.ESCROW_MODE === 'key-reveal') return true
   const opted = optIn ?? (store.getRun(runId).checkpoint.escrow as boolean | undefined ?? (process.env.ESCROW_WRITERS ?? '').split(',').includes(c.profileId))
   const rep = c.wallet ? store.getReputation(c.wallet) : undefined
   return opted && (!rep || rep.passes === 0 || rep.T < 0.8)
@@ -29,22 +32,47 @@ export class EscrowPurchases {
       const hashlock = newHashlock(), cancelAfter = await ledgerTime(this.payer.ledger) + 120
       const paidPath = PublisherClient.paidPath(candidate)
       let quote
-      try { quote = EscrowQuoteSchema.parse(await this.client.forSource(candidate.source).escrowQuote(paidPath, { payer: this.payer.address!, intentId, condition: hashlock.condition, cancelAfter })) }
+      try { quote = EscrowQuoteSchema.parse(await this.client.forSource(candidate.source).escrowQuote(paidPath, { ...(process.env.ESCROW_MODE === 'key-reveal' ? { mode: 'key-reveal' as const } : {}), payer: this.payer.address!, intentId, condition: hashlock.condition, cancelAfter })) }
       catch { return this.store.skipEscrow({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'SKIPPED' }, 'Writer escrow unavailable; no paid fallback') }
       const t = quote.terms
-      if (!verifyEscrowQuote(quote) || t.network !== 'xrpl:1' || t.asset !== 'XRP' || t.payer !== this.payer.address || t.payTo !== candidate.wallet || t.intentId !== intentId || t.condition !== hashlock.condition || t.cancelAfter !== cancelAfter || t.articleId !== candidate.resourceId || t.version !== candidate.version || t.publisherSlug !== candidate.profileId || t.manifestRoot !== manifest.root || t.amount !== String(candidate.price.amountMinor * DROPS_PER_MINOR)) throw new Error('Escrow quote binding rejected')
+      if (!verifyEscrowQuote(quote) || t.network !== 'xrpl:1' || t.asset !== 'XRP' || t.payer !== this.payer.address || t.payTo !== candidate.wallet || t.intentId !== intentId || (process.env.ESCROW_MODE === 'key-reveal' ? !t.keyReveal || !quote.ciphertext : t.condition !== hashlock.condition || !!t.keyReveal) || t.cancelAfter !== cancelAfter || t.articleId !== candidate.resourceId || t.version !== candidate.version || t.publisherSlug !== candidate.profileId || t.manifestRoot !== manifest.root || t.amount !== String(candidate.price.amountMinor * DROPS_PER_MINOR)) throw new Error('Escrow quote binding rejected')
       const invoice = escrowInvoice(t)
       const intent = this.store.reserveIntent({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'QUOTED', paidPath,
         quote: { source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, quoteId: invoice, quoteHash: ledgerInvoiceId(invoice), amountMinor: candidate.price.amountMinor, currency: 'SGD', contentDigest: manifest.root, expiresAt: new Date(Date.now() + 60000).toISOString(), payment: { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', amountDrops: t.amount, payTo: t.payTo, invoiceId: ledgerInvoiceId(invoice) } } })
       if (intent.status !== 'RESERVED') return intent
       this.store.recordManifest(intentId, manifest)
       if (!this.store.claimSubmitting(intentId)) return this.store.getIntent(intentId)!
-      this.store.prepareEscrow({ intentId, secret: hashlock.secret, quote, publicStatus: { scheme: 'escrow-v1', policy: 'escrow-policy-v1', state: 'PREPARED', owner: t.payer, cancelAfter } })
+      this.store.prepareEscrow({ intentId, secret: t.keyReveal ? '' : hashlock.secret, quote, publicStatus: { scheme: 'escrow-v1', policy: 'escrow-policy-v1', ...(t.keyReveal ? { mode: 'key-reveal' as const } : {}), state: 'PREPARED', owner: t.payer, cancelAfter } })
     }
     return this.advance(intentId)
   }
+  /** Only a validated terminal transaction can open the quarantined envelope. */
+  private async acceptReveal(intent: PurchaseIntent, hash: string): Promise<void> {
+    const e = this.store.getEscrow(intent.intentId)!, t = e.quote.terms
+    const found = await lookupTx(this.payer.ledger, hash)
+    if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS') return
+    const tx = found.tx, fulfillment = String(tx.Fulfillment ?? '')
+    if (tx.TransactionType !== 'EscrowFinish' || tx.Owner !== t.payer || Number(tx.OfferSequence) !== e.publicStatus.createSequence || tx.Condition !== t.condition || !/^A0228020[A-F0-9]{64}$/.test(fulfillment) || conditionFor(fulfillment.slice(8)) !== t.condition) throw new Error('Ledger key binding rejected')
+    const key = fulfillment.slice(8)
+    this.store.persistReveal(intent.intentId, { key, finishHash: hash, ledgerIndex: found.ledgerIndex, transaction: found.tx })
+    let proof = false
+    let d: z.infer<typeof RevealedDelivery> | undefined
+    try {
+      d = RevealedDelivery.parse(decryptDelivery(e.quote, key))
+      const manifest = this.store.getManifest(intent.intentId)!
+      proof = d.articleId === intent.resourceId && d.version === intent.version && manifest.root === t.manifestRoot && verifyManifestSignature(manifest) && verifyDelivery(d.body, d.passages, d.salts, manifest).ok
+    } catch { /* Invalid envelope remains private; evidence can be exported explicitly after reveal. */ }
+    if (proof && d) {
+      const content = { source: intent.source, profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: d.title, publisher: d.publisher, body: d.body, spans: d.passages }
+      this.store.addGrant({ source: intent.source, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, contentDigest: t.manifestRoot, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: d.salts })
+    }
+    this.store.escrowTransition(intent.intentId, { proofOk: proof, revealLedger: found.ledgerIndex })
+    this.store.completeEscrow(intent.intentId, 'finish', found.ledgerIndex, hash)
+    if (!proof) this.recordFailedProof(this.store.getIntent(intent.intentId)!)
+    this.event(intent, 'finish', hash, found.ledgerIndex)
+  }
   private recordFailedProof(intent: PurchaseIntent) {
-    if (intent.escrow?.proofOk !== false || !this.store.getRun(intent.runId).events.some(e => e.type === 'PROOF' && e.data?.intentId === intent.intentId && e.data?.ok === false)) return
+    if (intent.escrow?.proofOk !== false || !(intent.escrow?.mode === 'key-reveal' || this.store.getRun(intent.runId).events.some(e => e.type === 'PROOF' && e.data?.intentId === intent.intentId && e.data?.ok === false))) return
     const run = this.store.getRun(intent.runId)
     const recorded = Array.isArray(run.checkpoint.trustRecorded) ? run.checkpoint.trustRecorded as string[] : []
     if (recorded.includes(intent.intentId)) return
@@ -85,7 +113,8 @@ export class EscrowPurchases {
         const found = await lookupTx(this.payer.ledger, hash)
         if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS' || found.tx.Owner !== t.payer || Number(found.tx.OfferSequence) !== e.publicStatus.createSequence) continue
         const op = found.tx.TransactionType === 'EscrowFinish' ? 'finish' : found.tx.TransactionType === 'EscrowCancel' ? 'cancel' : undefined
-        if (!op || op === 'finish' && (found.tx.Condition !== t.condition || found.tx.Fulfillment !== fulfillmentFor(e.secret))) continue
+        if (!op || op === 'finish' && (found.tx.Condition !== t.condition || (!t.keyReveal && found.tx.Fulfillment !== fulfillmentFor(e.secret)))) continue
+        if (op === 'finish' && t.keyReveal) { await this.acceptReveal(intent, hash); return true }
         this.store.completeEscrow(intent.intentId, op, found.ledgerIndex, hash)
         this.event(intent, op, hash, found.ledgerIndex)
         if (op === 'finish') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'Proof verified and relayed escrow release validated', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
@@ -157,6 +186,20 @@ export class EscrowPurchases {
         e = this.store.escrowTransition(intentId, { state: 'LOCKED', createHash: create.txHash, createSequence: Number(decode(create.txBlob).Sequence) }, status.ledgerIndex)
         this.event(intent, 'create', create.txHash, status.ledgerIndex)
       }
+      if (e.quote.terms.keyReveal) {
+        if (e.reveal) { await this.acceptReveal(intent, e.reveal.finishHash); return this.store.getIntent(intentId)! }
+        if (await this.reconcileObject(intent)) return this.store.getIntent(intentId)!
+        const now = await ledgerTime(this.payer.ledger)
+        if (now >= e.publicStatus.cancelAfter || this.store.getRun(intent.runId).stopped || this.store.isPaused()) {
+          this.store.escrowTransition(intentId, { state: 'CANCEL_DUE' })
+          await this.terminal(intent, 'cancel')
+        } else {
+          const result = await this.client.forSource(intent.source, true).paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: 'XRP', amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
+          const response = z.object({ finishHash: z.string().regex(/^[A-F0-9]{64}$/) }).parse(result.delivery)
+          await this.acceptReveal(intent, response.finishHash)
+        }
+        return this.store.getIntent(intentId)!
+      }
       // Reconcile an escaped finish before considering Stop/expiry/cancellation.
       if (this.store.escrowOutbox(intentId).some(t => t.operation === 'finish')) { await this.terminal(intent, 'finish'); return this.store.getIntent(intentId)! }
       const now = await ledgerTime(this.payer.ledger)
@@ -187,3 +230,5 @@ export class EscrowPurchases {
   }
 }
 const Delivery = z.object({ articleId: z.string(), version: z.string(), title: z.string(), publisher: z.string(), body: z.string(), passages: z.array(z.object({ id: z.string(), text: z.string() })), salts: z.array(z.string()), grant: z.object({ state: z.literal('LOCKED'), createHash: z.string(), manifestRoot: z.string(), articleId: z.string(), version: z.string() }) })
+
+const RevealedDelivery = z.object({ articleId: z.string(), version: z.string(), title: z.string(), publisher: z.string(), body: z.string(), passages: z.array(z.object({ id: z.string(), text: z.string() })), salts: z.array(z.string()) })

@@ -558,6 +558,17 @@ export class Store {
     })
   }
   getEscrow(intentId: string): EscrowRecord | undefined { return this.rows<EscrowRecord>('SELECT json FROM escrows WHERE intent_id=?', intentId)[0] }
+  persistReveal(intentId: string, reveal: NonNullable<EscrowRecord['reveal']>) {
+    const e = this.getEscrow(intentId)!
+    if (e.reveal && (e.reveal.key !== reveal.key || e.reveal.finishHash !== reveal.finishHash || e.reveal.ledgerIndex !== reveal.ledgerIndex)) throw new Error('Reveal is immutable')
+    this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify({ ...e, reveal }), intentId)
+  }
+  /** Explicit post-reveal fraud evidence; never part of ordinary snapshots or exports. */
+  keyRevealEvidence(intentId: string) {
+    const e = this.getEscrow(intentId)
+    if (!e?.reveal || !['RELEASED'].includes(e.publicStatus.state)) throw new Error('Validated reveal required')
+    return { quote: e.quote, manifest: this.getManifest(intentId), ...e.reveal, createHash: e.publicStatus.createHash }
+  }
   escrowOutbox(intentId?: string): EscrowOutbox[] {
     return intentId ? this.rows('SELECT json FROM escrow_outbox WHERE intent_id=? ORDER BY rowid', intentId) : this.rows('SELECT json FROM escrow_outbox ORDER BY rowid')
   }
@@ -622,7 +633,7 @@ export class Store {
       const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!
       if (['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return
       const tx = observedHash ? { txHash: observedHash } : this.escrowOutbox(intentId).find(r => r.operation === terminal)
-      if (!tx || terminal === 'finish' && !e.publicStatus.proofOk) throw new Error('Terminal escrow proof missing')
+      if (!tx || terminal === 'finish' && !e.publicStatus.proofOk && !e.reveal) throw new Error('Terminal escrow proof missing')
       e.publicStatus = { ...e.publicStatus, state: terminal === 'finish' ? 'RELEASED' : 'CANCELLED', [terminal + 'Hash']: tx.txHash }
       const settledAt = new Date().toISOString(), terms = e.quote.terms
       const receipt = ReceiptSchema.parse({ source: intent.source, receiptId: `escrow-${tx.txHash}`, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version,
@@ -630,7 +641,7 @@ export class Store {
         xrpl: { txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
       this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
       this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
-      this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? 'VERIFIED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
+      this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? e.publicStatus.proofOk ? 'VERIFIED' : 'CLAIM_FAILED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
       this.audit.append({ runId: intent.runId, intentId, kind: terminal === 'finish' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', data: { txHash: tx.txHash, ledgerIndex, owner: terms.payer, createSequence: e.publicStatus.createSequence, createHash: e.publicStatus.createHash, result: 'tesSUCCESS', proofOk: e.publicStatus.proofOk ?? false, amountDrops: terms.amount, payTo: terms.payTo } })
       this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: tx.txHash, ledgerIndex, asset: receipt.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount ?? null, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl!.amountDrops, payTo: terms.payTo, payer: terms.payer, label: receipt.label, scheme: 'escrow-v1', state: e.publicStatus.state } })
     })
