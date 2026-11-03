@@ -25,10 +25,20 @@ for (const folder of ['server', 'publisher', 'shared', 'mcp', 'sdk', 'eval/decis
 }
 await mkdir(join(stage, 'desktop'), { recursive: true })
 for (const name of ['main.mjs', 'policy.mjs', 'keychain.mjs', 'engine-host.mjs', 'preload.cjs', 'preferences.html', 'preferences.js', 'preferences.css', 'mcp.mjs']) await cp(`desktop/${name}`, join(stage, 'desktop', name))
-// The engine's existing worker contract, with a desktop-specific Host/Origin guard.
-let worker = await readFile('desktop/engine-worker.mjs', 'utf8')
-worker = worker.replace("'./policy.mjs'", "'../desktop/policy.mjs'")
-worker = worker.replace("'../server/routes.js'", "'./routes.js'")
+// Compile the shared worker, retaining its startup, auth and shutdown contract.
+// The desktop adds only its local Host/Origin and pause boundary.
+let worker = await readFile('server/engine-worker.mjs', 'utf8')
+worker = worker.replace("import { register } from 'tsx/esm/api'", "import { createServer } from 'node:http'\nimport { localRequest } from '../desktop/policy.mjs'")
+worker = worker.replace('register()', '').replace(/\.ts(['"])/g, '.js$1')
+const listener = "api.app.listen(workerData.apiPort, '127.0.0.1')"
+if (!worker.includes(listener)) throw new Error('Shared worker listener changed; review desktop boundary')
+worker = worker.replace(listener, `createServer((req, res) => {
+    if (!localRequest(req, req.socket.localPort) ||
+        (process.env.RA_PAUSED === '1' && !['GET', 'HEAD'].includes(req.method))) {
+      res.writeHead(403); res.end(); return
+    }
+    api.app(req, res)
+  }).listen(workerData.apiPort, '127.0.0.1')`)
 await writeFile(join(stage, 'server/engine-worker.mjs'), worker)
 await writeFile(join(stage, 'desktop/report-renderer.mjs'), "export const chromium = { launch: async () => { throw new Error('Desktop uses HTML print fallback') } }\n")
 await cp('dist', join(stage, 'ui'), { recursive: true })
@@ -62,7 +72,8 @@ await electronBuild({ targets: undefined, config: {
   appId: 'org.researchagent.desktop', productName: 'ResearchAgent', electronVersion: pkg.devDependencies.electron,
   electronDist: resolve('node_modules/electron/dist'),
   directories: { app: stage, output: resolve('desktop/out'), buildResources: resolve('desktop/build') },
-  files: ['**/*', '!package-lock.json'], asar: true,
+  // A utilityProcess needs a real cwd for the engine's corpus paths; ASAR is virtual.
+  files: ['**/*', '!package-lock.json'], asar: false,
   mac: { target: [{ target: 'dmg', arch: ['arm64'] }], category: 'public.app-category.productivity', icon: resolve('desktop/build/icon.icns'),
     identity: identity || null, hardenedRuntime: true, entitlements: resolve('desktop/build/entitlements.mac.plist'), entitlementsInherit: resolve('desktop/build/entitlements.mac.plist'), notarize: false },
   afterSign: async context => {

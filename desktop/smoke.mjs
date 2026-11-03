@@ -14,6 +14,7 @@ const app = await electron.launch({ executablePath, args: process.env.DESKTOP_AP
 let apiUrl, publisherUrl
 try {
   const page = await app.firstWindow()
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   const errors = []
   const logs = []
   app.process().stdout?.on('data', chunk => logs.push(chunk.toString()))
@@ -60,7 +61,8 @@ try {
     if (index === 1) { expect(run.spentMinor).toBeGreaterThan(0); expect(run.grants.length).toBeGreaterThan(0) }
     if (index === 2) { expect(run.refundedMinor).toBeGreaterThan(0); expect(run.intents.some(intent => intent.status === 'REFUNDED')).toBe(true) }
     runs.push({ useCase: `UC${index + 1}`, phase: run.phase, spentMinor: run.spentMinor, refundedMinor: run.refundedMinor, grants: run.grants.length })
-    await page.screenshot({ path: `desktop/evidence/uc${index + 1}.png` })
+    await expect(page.locator('.ra-odo')).toHaveText(`S$${((run.budgetMinor - run.spentMinor - run.reservedMinor) / 100).toFixed(2)}`)
+    await page.screenshot({ animations: 'disabled', path: `desktop/evidence/uc${index + 1}.png` })
   }
   const reportReady = app.waitForEvent('window')
   await page.getByRole('button', { name: /Download report/ }).click()
