@@ -23,6 +23,8 @@ export function hireService(context: ApiContext) {
   const journal = new PublisherJournal(store.path)
   const hires = new HireJournal(store.path)
   const facilitator = payer ? new Facilitator(journal, 'xrpl-testnet', payer.ledger) : undefined
+  payer?.restorePending(store.listRuns().flatMap(run => store.policyPayments(run.runId)
+    .flatMap(p => p.submission && !p.confirmedAt ? [p.submission] : [])))
   const active = new Map<string, Promise<unknown>>()
   const router = Router()
   async function finish(hire: Hire, principal: string) {

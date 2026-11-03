@@ -9,6 +9,7 @@ export function hireLedger() {
       case 'account_info': return { result: { account_data: { Sequence: 1 + txs.size, Balance: '100000000', OwnerCount: 0 } } }
       case 'ledger_current': return { result: { ledger_current_index: 100 + txs.size } }
       case 'fee': return { result: { drops: { open_ledger_fee: '12' } } }
+      case 'server_info': return { result: { info: { validated_ledger: { age: 0, reserve_base_xrp: 1, reserve_inc_xrp: 0.2 } } } }
       case 'ledger': return { result: { ledger_index: 100 + txs.size } }
       case 'submit': {
         submits++

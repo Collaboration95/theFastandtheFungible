@@ -88,6 +88,6 @@ try {
   journal.close()
   server.closeAllConnections(); pub.closeAllConnections()
   await Promise.all([new Promise(done => server.close(done)), new Promise(done => pub.close(done))])
-  await api.drain(); api.close(); publisher.locals.journal.close(); await ledger.close?.()
+  await api.drain(); await api.close(); publisher.locals.journal.close(); await ledger.close?.()
   if (disposableFixture) rmSync(dir, { recursive: true, force: true })
 }
