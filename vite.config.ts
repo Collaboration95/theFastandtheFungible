@@ -32,7 +32,7 @@ export default defineConfig({
     configurePreviewServer(server) {
       server.middlewares.use((req, res, next) => {
         const path = new URL(req.url ?? '/', 'http://localhost').pathname
-        if (/^\/(?:data|\.playwright|\.git|\.lane-a|clips)(?:\/|$)|^\/\.env/.test(path)) { res.statusCode = 403; res.end('Forbidden'); return }
+        if (/^\/(?:data|scratch|\.playwright|\.git|\.lane-a|clips)(?:\/|$)|^\/\.env/.test(path)) { res.statusCode = 403; res.end('Forbidden'); return }
         next()
       })
     },
@@ -42,7 +42,7 @@ export default defineConfig({
     allowedHosts: clientHosts,
     host: process.env.RA_CLIENT_LAN === '1' ? '0.0.0.0' : '127.0.0.1',
     port: 5100 + offset,
-    fs: { allow: ['.', realpathSync('node_modules')], deny: ['.env', '.env.*', '**/data/**', '**/.playwright/**', '**/.git/**', '**/.lane-a/**', '**/clips/**'] },
+    fs: { allow: ['.', realpathSync('node_modules')], deny: ['.env', '.env.*', '**/data/**', '**/scratch/**', '**/.playwright/**', '**/.git/**', '**/.lane-a/**', '**/clips/**'] },
     proxy,
   },
   preview: { host: '127.0.0.1', allowedHosts: clientHosts, proxy },

@@ -6,7 +6,7 @@ import { resolve } from 'node:path'
 import dotenv from 'dotenv'
 import { applyBackupPair, liveDecisionProvider } from './stage-checks.mjs'
 import { probeWorkersAi } from './cf-probe.mjs'
-dotenv.config({ quiet: true })
+dotenv.config({ quiet: true, path: process.env.DOTENV_CONFIG_PATH || '.env' })
 const live = process.argv.includes('--live')
 // CF_BACKUP=1 (#196): every Cloudflare client in this demo uses the backup pair (_2) instead. Names only, never values.
 if (process.env.CF_BACKUP === '1') {

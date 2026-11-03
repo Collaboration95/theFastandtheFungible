@@ -1,6 +1,10 @@
 # Thin wrapper over npm scripts. `make` lists targets.
 # OFFSET=100 shifts every port (5200/8888/8890) so a worktree can run beside main.
+ifeq ($(filter testnet,$(MAKECMDGOALS)),testnet)
+OFFSET ?= 1800
+else
 OFFSET ?= $(or $(DEMO_PORT_OFFSET),$(shell sed -n 's/^DEMO_PORT_OFFSET=//p' .env 2>/dev/null),0)
+endif
 export DEMO_PORT_OFFSET := $(OFFSET)
 PORTS := $(shell echo $$((5100+$(OFFSET)))),$(shell echo $$((8788+$(OFFSET)))),$(shell echo $$((8790+$(OFFSET))))
 DOCTOR := node --import tsx scripts/doctor.mjs
@@ -137,3 +141,7 @@ app-accept: dmg ## packaged fixture crash recovery + one Keychain Testnet purcha
 release-artifacts:
 	node scripts/release-artifacts.mjs
 	node scripts/check-release-consumers.mjs --manifest dist/release/manifest.json
+
+.PHONY: testnet
+testnet: ## fixture models + isolated faucet wallets on XRPL Testnet; ARGS=--capture records UC3
+	node --import tsx scripts/testnet-start.ts $(ARGS)

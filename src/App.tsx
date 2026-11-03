@@ -58,7 +58,14 @@ export default function App() {
   const [backTo, setBackTo] = useState<'home' | 'run' | 'chat'>('home')
   const [draft, setDraft] = useState('')
   const [picked, setPicked] = useState<number>(BUDGET.initialMinor)
-  const [cursor, setCursor] = useState(Infinity)
+  const [cursor, setCursor] = useState(browserDemo && !new URLSearchParams(location.search).has('scenario') ? 0 : Infinity)
+  const [demoPaused, setDemoPaused] = useState(false)
+  useEffect(() => {
+    if (!browserDemo) return
+    const pause = (e: Event) => setDemoPaused((e as CustomEvent<boolean>).detail)
+    window.addEventListener('demo-pause', pause)
+    return () => window.removeEventListener('demo-pause', pause)
+  }, [])
   const [pace, setPace] = useState<Pace>(initialPace)
   const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean }>({ faults: false })
   const [notify, setNotify] = useState(() => !recording && prefs.get(notifyKey) === '1')
@@ -115,10 +122,10 @@ export default function App() {
   const nextId = next?.id
   const delay = current ? (recording ? dwell(current) * 0.28 : dwell(current)) / SPEED[pace] : 350
   useEffect(() => {
-    if (!replaying || nextId === undefined) return
+    if (demoPaused || !replaying || nextId === undefined) return
     const timer = setTimeout(() => setCursor(nextId), delay)
     return () => clearTimeout(timer)
-  }, [replaying, nextId, delay])
+  }, [demoPaused, replaying, nextId, delay])
   const shown = run && replaying && (recording || browserDemo || !isTerminal(run)) ? staged(run, cursor) : run
   const model = deriveRunState(shown, pending?.step)
   const finished = !!shown && model.terminal && !replaying
