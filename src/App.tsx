@@ -30,6 +30,7 @@ import { deriveRunState } from './runState'
 import { modifier } from './shortcuts'
 import { DEMO_QUESTIONS } from '../shared/contracts/examples'
 
+const browserDemo = import.meta.env.MODE === 'browser-demo'
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
 const universalKey = 'researchagent.budget-universal', universalMinorKey = 'researchagent.budget-universal-minor'
 /** A saved budget in minor units: 0 to the maximum, in 5-cent steps; anything else falls back to the default. */
@@ -40,9 +41,10 @@ const prefs = {
 }
 const recording = new URLSearchParams(window.location.search).get('record') === '1'
 function initialPace(): Pace {
-  if (recording) return 'stage'
-  const value = new URLSearchParams(window.location.search).get('pace') ?? prefs.get(paceKey)
-  return value === 'real' || value === 'slow' ? value : 'stage'
+  if (recording || browserDemo) return 'stage'
+  // Old staged preferences must not delay financial truth in normal use.
+  prefs.set(paceKey, 'real')
+  return 'real'
 }
 
 export default function App() {
@@ -73,7 +75,7 @@ export default function App() {
   const [pending, setPending] = useState<{ input: AskInput; scope: ScopeResult; answers: Record<string, string>; step: 'clarify' | 'plan' }>()
   // A question that needs no research opens the chat page (owner, 9 Oct): a plain conversation, never saved to history, no run.
   const [thread, setThread] = useState<ChatMessage[]>([])
-  const [tab, setTab] = useState<'run' | 'writers'>('run')
+  const [tab, setTab] = useState<'run' | 'writers'>(browserDemo && new URLSearchParams(location.search).has('writers') ? 'writers' : 'run')
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
   const [clarifyNever, setClarifyNever] = useState(() => !recording && (new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1'))
   const [navOpen, setNavOpen] = useState(() => !recording && prefs.get(navKey) !== 'rail')
@@ -102,7 +104,7 @@ export default function App() {
   const runId = run?.runId
   useEffect(() => {
     if (!runId) return
-    return streamRun(runId, { onSnapshot: setRun, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
+    return streamRun(runId, { onSnapshot: value => { setRun(value); setError(current => current === 'Connection lost. Reconnecting…' ? '' : current) }, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
   }, [runId])
 
   // Stage pacing: reveal one trace event at a time, holding each for its dwell.
@@ -117,7 +119,7 @@ export default function App() {
     const timer = setTimeout(() => setCursor(nextId), delay)
     return () => clearTimeout(timer)
   }, [replaying, nextId, delay])
-  const shown = run && replaying ? staged(run, cursor) : run
+  const shown = run && replaying && (recording || browserDemo || !isTerminal(run)) ? staged(run, cursor) : run
   const model = deriveRunState(shown, pending?.step)
   const finished = !!shown && model.terminal && !replaying
   const openRun = async (id: string) => {
@@ -310,7 +312,7 @@ export default function App() {
     ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: item.question, group: 'Recent runs', run: () => { setTab('run'); void openRun(item.runId) } })),
     { id: 'cmd-record', label: recording ? 'Leave record mode' : 'Record mode', run: () => { const url = new URL(window.location.href); url.search = recording ? '' : '?record=1'; window.location.assign(url) } },
     { id: 'cmd-mcp', label: 'Connect an agent (MCP)', run: () => { void navigator.clipboard.writeText('claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- make mcp').catch(() => setError('Clipboard unavailable. Run: claude mcp add researchagent -- make mcp')) } },
-    { id: 'cmd-stop', label: 'Stop buying', hint: `${modifier}.`, run: () => void stopRun() },
+    ...(run && !isTerminal(run) ? [{ id: 'cmd-stop', label: 'Stop buying', hint: `${modifier}.`, run: () => void stopRun() }] : []),
     { id: 'cmd-ask', label: 'Submit question / Go now', hint: `${modifier}↵`, run: () => { if (pending?.step === 'plan') go(pending.scope.plan); else document.querySelector<HTMLFormElement>('.ra-composer')?.requestSubmit() } },
     { id: 'cmd-focus', label: 'Focus question', hint: '/', run: focusAsk },
     { id: 'cmd-shortcuts', label: 'Keyboard shortcuts', hint: '?', run: () => setPalette('shortcuts') },
@@ -339,7 +341,7 @@ export default function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-  const labels = <><nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav><EnvIndicator labels={shown?.labels ?? health.labels} recording={recording} /><button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><kbd>{modifier}K</kbd></button></>
+  const labels = <>{(replaying || recording || browserDemo) && <span className="ra-caption">Replay</span>}<nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav>{!browserDemo && <EnvIndicator labels={shown?.labels ?? health.labels} recording={recording} />}<button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><kbd>{modifier}K</kbd></button></>
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: model.phase === 'recovering' ? 'READ_PAID' : finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
@@ -373,7 +375,7 @@ export default function App() {
   if (screen === 'home' || !shown) return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <main className="ra-home-wrap">
       {(error || healthError) && <p className="ra-banner" role="alert">{error || "Can't reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>}
-      <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
+      <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
     </main>
     {overlays}
   </Layout>
@@ -383,7 +385,7 @@ export default function App() {
       <main className="ra-brief">
         <h1 className="ra-q">{shown.question}</h1>
         <MobileSpend run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
-        <RunActivity run={shown} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
+        <RunActivity run={shown} actualTerminal={!!run && isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
         {/* Replace the draft reading surface when the activity timeline closes. */}
         <Fragment key={`${shown.runId}:${finished ? 'final' : 'draft'}`}>
         {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}

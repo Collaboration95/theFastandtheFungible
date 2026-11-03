@@ -10,11 +10,13 @@ permissions:
   actions: read
 
 jobs:
+  acceptance:
+    uses: ./.github/workflows/ci.yml
   desktop:
+    needs: acceptance
     uses: ./.github/workflows/desktop.yml
-    secrets: inherit
   publish:
-    needs: desktop
+    needs: [acceptance, desktop]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -46,8 +48,17 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run build:mcpb
-      - run: cp dist/ResearchAgent.mcpb dist/server.json "$RUNNER_TEMP/assets/"
+      - uses: actions/download-artifact@v4
+        with:
+          name: accepted-release-artifacts
+          path: dist/release/
+      - name: Admit exact accepted bytes and source
+        run: node scripts/admit-release.mjs
+        env:
+          ACCEPTANCE_RESULT: ${{ needs.acceptance.result }}
+      - run: cp dist/release/* "$RUNNER_TEMP/assets/"
+      - name: Stable unsigned DMG aliases with manifest hashes
+        run: node scripts/desktop-release-assets.mjs "$RUNNER_TEMP/assets"
       - name: Describe the unsigned download
         run: |
           printf '\n\nApple Silicon and Intel Mac apps attached. Unsigned: move to Applications, then right-click → Open (Privacy & Security → Open Anyway if blocked). See desktop/SIGNING.md.\n' >> "$RUNNER_TEMP/notes.md"

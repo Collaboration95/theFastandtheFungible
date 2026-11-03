@@ -88,3 +88,46 @@ test('a terminal snapshot above the SSE limit recovers the same browser run with
   expect(again.spentMinor).toBe(terminal.spentMinor)
   await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought')
 })
+
+test('migrates stored stage pace, shows terminal purchases immediately and clears reconnect errors', async ({ page }) => {
+  const { readFile } = await import('node:fs/promises')
+  const full = JSON.parse(await readFile('src/fixtures/uc/uc2.json', 'utf8'))
+  await page.addInitScript(() => { localStorage.setItem('researchagent.pace','stage'); localStorage.setItem('researchagent.environment-seen','1') })
+  await page.route('**/runs/fixture-uc2', route => route.fulfill({json:full}))
+  await page.addInitScript(snapshot => {
+    window.EventSource = class extends EventTarget {
+      constructor() {
+        super()
+        setTimeout(() => this.dispatchEvent(new MessageEvent('snapshot',{data:'invalid'})),500)
+        setTimeout(() => this.dispatchEvent(new MessageEvent('snapshot',{data:JSON.stringify(snapshot)})),1500)
+      }
+      close() {}
+    } as unknown as typeof EventSource
+  }, full)
+  await page.goto('/?run=fixture-uc2')
+  await expect(page.getByRole('region',{name:'Sources',exact:true})).toContainText('1 bought')
+  await expect(page.getByRole('button',{name:/Stop buying/})).toHaveCount(0)
+  expect(await page.evaluate(()=>localStorage.getItem('researchagent.pace'))).toBe('real')
+  await expect(page.getByText('Connection lost. Reconnecting…')).toBeVisible()
+  await expect(page.getByText('Connection lost. Reconnecting…')).toHaveCount(0)
+  await page.keyboard.press('Meta+k')
+  await expect(page.getByRole('button', {name:/Stop buying/})).toHaveCount(0)
+})
+
+test('keyboard plan cancellation admits zero runs; Go now admits exactly once', async ({ page }) => {
+  let admissions = 0
+  page.on('request', r => { if (r.method()==='POST' && new URL(r.url()).pathname==='/runs') admissions++ })
+  await page.goto('/')
+  await ask(page, /^Kestrel–TSMC outlook/)
+  await page.getByRole('button',{name:'pricing & margins'}).click()
+  await expect(page.getByRole('dialog',{name:'Search plan'})).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog',{name:'Search plan'})).toHaveCount(0)
+  expect(admissions).toBe(0)
+  await page.goto('/')
+  await ask(page, /^Kestrel–TSMC outlook/)
+  await page.getByRole('button',{name:'pricing & margins'}).click()
+  await page.getByRole('button',{name:'Start now'}).click()
+  await finished(page)
+  expect(admissions).toBe(1)
+})

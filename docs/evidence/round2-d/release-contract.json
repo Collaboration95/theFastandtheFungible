@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "mode": "offline fixture tests; simulated settlement",
+  "admission": ["same source SHA", "all required CI jobs successful", "manifest hash matches receipt", "artifact size and SHA-256 unchanged", "tgz/wheel/MCPB installed consumer receipt"],
+  "negativeTests": ["swapped artifact", "missing consumer", "missing payment receipt", "stale successful SHA", "each required job failure"],
+  "requiredJobs": ["verify", "chaos", "browser", "python", "artifacts", "check"],
+  "ownerActionsExecuted": false
+}

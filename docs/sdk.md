@@ -119,3 +119,19 @@ no real-money operation, and all substituted/fixture modes retain their labels.
 Bearer endpoints require HTTPS or exact loopback HTTP, without URL credentials or redirects. HTTP requests have a 15-second bound composed with caller cancellation. SSE uses a separate 30-second idle bound and a 256 KiB incomplete-frame bound; interrupted streams resynchronize via the existing run. `waitMs` bounds observation and returns the latest admitted handle. Interrupted observation errors preserve `runId`; resume with `getRun`, using the original idempotency identity for any admission retry.
 
 `ResearchAgentError` carries `code`, optional `status`, `retryable` and optional `runId`. Codes include `cap_zero`, `paused`, `budget_exhausted`, `overloaded`, `deadline` and `settlement_pending`; overload scheduling itself is deferred. Budget clamps preserve free-only research and expose `clampReason` (`paused`, `cap_zero`, or `budget_exhausted`). `payAndFetch` requires an explicit durable journal, including with an injected ledger; a network payment never falls back to process-memory identity.
+
+## Exact local release artifacts
+
+`make release-artifacts` builds the SDK tgz, Python wheel/sdist and MCPB once,
+then tests the installed bytes with fixture models and simulated settlement.
+`dist/release/manifest.json` records independent versions, source SHA, runtimes,
+bytes and SHA-256; `consumer-results.json` records acceptance separately.
+The npm consumer installs declared dependencies normally in a temporary project;
+the wheel uses a new venv; MCP starts from the extracted MCPB. Each asks twice
+with the same key and checks delivered citations, one receipt/intent and caps.
+No registry publication is performed. Python offline verification still invokes
+the repository verifier and requires its Node dependencies; wheel installation
+alone does not supply that verifier. Minimum supported Node is 22.13 and Python
+3.10; hosted artifact acceptance uses those runtimes.
+
+See [release artifact evidence](evidence/round2-d/README.md).

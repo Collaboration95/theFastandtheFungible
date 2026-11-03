@@ -33,7 +33,7 @@ PR or issue.
 | Product | Cheaper CI: docs-only changes skip tests, no duplicate runs | #252 | done |
 | Product | Nightly scorecard + hard-gate audit | #256 | local-only · live pre/post-menu and fixture scores, 3 Nov |
 | Product | MCP server: any agent searches and buys within a human-set cap | #255 | done · fixture proof + Claude Code transcript |
-| Product | Feature-a-day run: 9 notable features, one release each, Thu 5 → Fri 13 ([calendar](#feature-a-day-5-13-nov)) | #270, #260, #259, #262, #273–#277; slack #278–#281 | planned · 5–13 Nov |
+| Product | Feature-a-day run: 9 notable features, one release each, Thu 5 → Fri 13 ([calendar](#feature-a-day-5-13-nov)) | #270, #260, #259, #262, #273–#277; slack #278–#281 | historical plan · implementation moved ahead; see completed milestones and release history |
 | Product | Day 1: the local app done properly (keyboard-first, state model, record mode) | #270 | done · keyboard-first app, unified state and record mode (Lane A) |
 | Product | macOS app (Electron DMG): Keychain seed, signing pipeline ready for the Developer ID | #259 | done · unsigned Apple Silicon DMG; offline installed proof |
 | Product | Hill-climb: fact menu, then value-of-information buying + nightly refit | #260, #276 | #260 implemented · both live targets missed; #276 next |
@@ -228,13 +228,10 @@ buying, precise measure/period menus, and held-out evaluation of the hardened pr
 
 ### Feature-a-day: 5-13 Nov
 
-Written 3 Nov by the second planning pass. **Public commitment: one notable
-feature a day for nine days, Thu 5 → Fri 13 Nov,** each with its own tagged
-release, then polish to the pitch. Owner rules: every day's feature must make an
-engineer stop scrolling, nothing gets padded out to fill a day, and nothing
-bloats the product. If a feature slips, a slack feature (F10–F13) takes its
-day; the streak doesn't break. Day 0 (Wed 4) is the announcement: MCP (#255,
-shipped 3 Nov) and the first scorecard (#256).
+Historical plan written 3 Nov. Implementation and milestone releases moved ahead
+of this prospective calendar; dates below are the original plan, not claims of
+daily release delivery. Current merged/released status is recorded above and in
+README completed milestones. Historical release names and tags are preserved.
 
 **Design bar (owner, 3 Nov):** a YC-style startup product: clean, fast, it
 works (Linear, Vercel, Stripe docs). No childish or hyper-interactive gimmicks.
@@ -502,3 +499,6 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04: Lane E ranks six XRPL/x402 findings, pins capability profiles, and adds a generated nine-row historical TESTNET ledger with bounded read-only refresh; fixture/browser/axe checks pass. Public tx lookup returned txnNotFound, so no fresh verification or deployment is claimed.
 
 - 2026-11-04: Lane B adds exact component coverage ratchets (payments ≥85%), required Chromium/Python admission and parallel unchanged chaos; aggregate check rejects failed, cancelled or unexpected skipped gates; same-run GET recovery fixes the #345 oversized-SSE browser regression. Hosted CI: 278 → 249 s; all required jobs green. Evidence: docs/evidence/round2-b/.
+- 3 Nov: Browser replay at `/demo/` uses the real app and recorded UC1–UC3 fixture event traces, including UC3 refund; no backend or keys.
+
+- 2026-11-04: Lane D bundles #332 static UC1–UC3 replay, clean tgz/wheel/MCPB consumers (eight cited passages, one intent/receipt each), same-SHA release admission and actual-state controls; local fixture evidence and owner upload packet: docs/evidence/round2-d/.

@@ -11,6 +11,7 @@ export default tseslint.config(
       'coverage/**',
       'dist/**',
       'packages/sdk/dist/**',
+      'site/demo/**', // Generated Vite output; source under demo/ remains linted.
       'desktop/dist/**',
       'desktop/out/**',
       'node_modules/**',

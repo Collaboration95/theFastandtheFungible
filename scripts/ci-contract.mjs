@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { appendFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 
-export const requiredJobs = ['verify', 'chaos', 'browser', 'python']
+export const requiredJobs = ['verify', 'chaos', 'browser', 'python', 'artifacts']
 export function fullCheck(paths, knownBase = true) {
   if (!knownBase) return true
   return paths.some(file => /^(src|server|shared|publisher|data|tests|scripts|eval|docker|packages|sdk|mcp|desktop)\//.test(file)
@@ -21,7 +21,7 @@ export function detect(base) {
   } catch { return true }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  if (process.argv[2] === 'detect') appendFileSync(process.env.GITHUB_OUTPUT, 'full=' + detect(process.env.BASE_SHA) + '\n')
+  if (process.argv[2] === 'detect') appendFileSync(process.env.GITHUB_OUTPUT, 'full=' + (process.env.GITHUB_REF?.startsWith('refs/tags/') ? true : detect(process.env.BASE_SHA)) + '\n')
   else {
     const needs = JSON.parse(process.env.CI_NEEDS)
     if (!admitted({ result: needs.changes?.result, full: needs.changes?.outputs?.full },

@@ -5,6 +5,14 @@ on:
   workflow_call:
   workflow_dispatch:
     inputs:
+      signing_identity:
+        description: 'OWNER ONLY: exact Developer ID Application identity for sign=true'
+        type: string
+        default: ''
+      sign:
+        description: 'OWNER ONLY: sign and notarise using configured secrets'
+        type: boolean
+        default: false
       version:
         description: 'Optional package version for a pre-release validation build'
         type: string
@@ -29,7 +37,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Prepare Developer ID when secrets exist
+      - name: Owner-dispatched signing setup
+        if: github.event_name == 'workflow_dispatch' && inputs.sign == true
         run: node desktop/ci-signing.mjs
         env:
           APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
@@ -43,9 +52,15 @@ jobs:
           if [[ "$GITHUB_REF_NAME" == desktop-check-* ]]; then
             export DESKTOP_VERSION="${GITHUB_REF_NAME#desktop-check-}"
           fi
-          make dmg
+          if [[ "$OWNER_SIGN" == true ]]; then
+            node desktop/build.mjs --dmg --sign
+          else
+            node desktop/build.mjs --dmg --unsigned
+          fi
         env:
           DESKTOP_VERSION: ${{ inputs.version || '' }}
+          CSC_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.signing_identity || '' }}
+          OWNER_SIGN: ${{ github.event_name == 'workflow_dispatch' && inputs.sign == true }}
       - uses: actions/upload-artifact@v4
         with:
           name: researchagent-${{ matrix.arch }}-dmg

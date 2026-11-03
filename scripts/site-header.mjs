@@ -10,9 +10,10 @@ const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 // Discover every page, including future verify pages, instead of silently skipping new routes.
 const siteRoot = join(import.meta.dirname, '..', 'site')
 const keys = { 'index.html': 'home', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build' }
-const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html')).map(file => ({ file, key: keys[file] ?? 'none' }))
+const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html') && !file.startsWith('demo/')).map(file => ({ file, key: keys[file] ?? 'none' }))
 
 const NAV = [
+  ['demo', 'demo/', 'Try it'],
   ['home', '', 'Explainers'],
   ['talk', 'talk/', 'Walkthrough'],
   ['slides', 'slides/', 'Slides'],
@@ -49,7 +50,8 @@ const MARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M1
 function block(page) {
   const depth = page.file.split('/').length - 1
   const up = '../'.repeat(depth)
-  const nav = NAV.map(([key, href, label]) =>
+  // Ledger is lane E's pinned header; validate its existing navigation until E refreshes it.
+  const nav = NAV.filter(([key]) => page.file !== 'ledger/index.html' || key !== 'demo').map(([key, href, label]) =>
     `<a href="${up}${href || 'index.html'}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
   const note = page.note ? `<span class="ra-hdr-note">${page.note}</span>` : ''
   return `${START}

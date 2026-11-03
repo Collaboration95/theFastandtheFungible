@@ -10,9 +10,10 @@
 <p align="center">A search engine for agent-readable expertise: answer from free sources, then buy the missing evidence.<br>Writers search their own articles; a decision model judges value; policy code pays within your budget and verifies delivery.</p>
 
 <p align="center">
+  <a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Try it in your browser</a> ·
   <a href="https://collaboration95.github.io/theFastandtheFungible/">Explainers</a> ·
   <a href="https://collaboration95.github.io/theFastandtheFungible/talk/">Walkthrough</a> ·
-  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/download/v0.6.0/ResearchAgent-0.6.0-arm64.dmg">Download for Mac</a> ·
+  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest">Download for Mac</a> ·
   <a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a>
 </p>
 
@@ -84,7 +85,7 @@ Native XRP interop with the XRPL AI Starter Kit’s t54 client and server: [comp
 
 ## Mac app
 
-[Download the Apple Silicon DMG](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v0.6.0/ResearchAgent-0.6.0-arm64.dmg),
+[Download the Apple Silicon DMG](https://github.com/Collaboration95/theFastandtheFungible/releases/latest),
 drag ResearchAgent to Applications, then open it. Until Developer ID signing lands, use
 Finder → right-click → Open, or Privacy & Security → Open Anyway for this unsigned build.
 The default offline demo labels simulated payments. Desktop settings store provider credentials and wallet seeds in macOS Keychain.
@@ -144,9 +145,9 @@ Pitch definition: gross cost of verified purchases adding a requested, bank-supp
 [Separate MCP Testnet proof](eval/mcp/testnet-2026-11-03.md) records real Testnet settlement,
 citations matched to delivered passages and an idempotent retry. It does not validate the scorecard's quality estimate.
 
-## Shipped in 10 days
+## Completed milestones
 
-The build is in progress. These six releases are shipped; the remaining features below are **on main**, pending release.
+These are historical released milestones. Later features below are merged; registry publication and signing status are tracked in #265.
 
 | Release | Shipped |
 |---|---|
