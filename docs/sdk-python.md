@@ -62,3 +62,19 @@ CI runs these tests only for changes under packages/sdk-python/. Publication is
 not performed; owner action is tracked in #265.
 
 Client endpoints require HTTPS or exact loopback HTTP and refuse credentials/redirects. `Client(..., wait_timeout=60)` bounds each event/result observation using monotonic time; each polling request is bounded by the remaining wait and the configured request timeout. On interrupted observation, `ResearchAgentError.run_id` preserves the admitted run. Retrieve that run instead of creating a new identity. Errors expose safe `code`, `status`, `retryable` and `run_id` fields. Clamped asks continue free-first and include `clampReason`.
+
+## Exact local release artifacts
+
+`make release-artifacts` builds the SDK tgz, Python wheel/sdist and MCPB once,
+then tests the installed bytes with fixture models and simulated settlement.
+`dist/release/manifest.json` records independent versions, source SHA, runtimes,
+bytes and SHA-256; `consumer-results.json` records acceptance separately.
+The npm consumer installs declared dependencies normally in a temporary project;
+the wheel uses a new venv; MCP starts from the extracted MCPB. Each asks twice
+with the same key and checks delivered citations, one receipt/intent and caps.
+No registry publication is performed. Python offline verification still invokes
+the repository verifier and requires its Node dependencies; wheel installation
+alone does not supply that verifier. Minimum supported Node is 22.13 and Python
+3.10; hosted artifact acceptance uses those runtimes.
+
+See [release artifact evidence](evidence/round2-d/README.md).

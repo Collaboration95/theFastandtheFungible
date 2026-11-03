@@ -24,6 +24,12 @@ it('backfills the exact old commit without changing HEAD, package versions or ex
     writeFileSync(join(dir,'.gitignore'),'remote.git/\n'); git('add','.gitignore'); git('commit','-qm','ignore fixture remote'); git('push','-q','origin','main')
     const current = git('rev-parse','HEAD')
     expect(run('--at',old,'--notes-file','notes.md','--dry-run')).toContain('Historical measurements')
+    const semver = execFileSync(process.execPath, ['scripts/release.mjs','1.0.0','Finals','--dry-run'], {cwd:dir,encoding:'utf8',env})
+    expect(semver).toContain('v1.0.0')
+    expect(() => execFileSync(process.execPath, ['scripts/release.mjs','1.0.0','Finals'], {cwd:dir,stdio:'pipe',env})).toThrow()
+    expect(git('rev-parse','HEAD')).toBe(current)
+    expect(git('tag','-l','v1.0.0')).toBe('')
+
     expect(() => run('--at',old)).toThrow()
     run('--at',old,'--notes-file','notes.md','--push')
     expect(git('rev-parse','v0.3.0^{}')).toBe(old)

@@ -27,3 +27,30 @@ for (const id of ['UC1', 'UC2', 'UC3']) it(`${id}: committed engine trace preser
   if (id === 'UC3') { expect(run.refundedMinor).toBe(30); expect(run.intents.some(i => i.status === 'REFUNDED')).toBe(true) }
   if (id !== 'UC1') expect(run.answers.length).toBeGreaterThan(1)
 })
+
+it('audits raw terminal snapshots, including nested event payloads, before bundling', () => {
+  for (const id of ['UC1','UC2','UC3']) {
+    const raw = readFileSync(`demo/traces/${id}.json`, 'utf8')
+    const capture = JSON.parse(raw), run = RunSnapshotSchema.parse(capture.run)
+    expect(capture.provenance.source).toMatch(/^[a-f0-9]{40}$/)
+    expect(Date.parse(capture.provenance.capturedAt)).not.toBeNaN()
+    for (const content of run.contents) {
+      const candidate = run.candidates.find(c => c.resourceId === content.resourceId && c.version === content.version)
+      expect(candidate).toBeDefined()
+      if (candidate?.tier !== 'PAID') continue
+      const grant = run.grants.find(g => g.resourceId === content.resourceId && g.version === content.version)
+      expect(grant).toBeDefined()
+      expect(run.intents.find(i => i.intentId === grant?.intentId)?.status).toBe('VERIFIED')
+      expect(run.events.some(e => e.type === 'GRANT' && e.data?.intentId === grant?.intentId)).toBe(true)
+    }
+    const walk = (value: unknown) => {
+      if (!value || typeof value !== 'object') return
+      for (const [key, item] of Object.entries(value)) {
+        expect(key).not.toMatch(/^(seed|apiKey|privateKey|signedBlob|txBlob|quarantineBody)$/i)
+        if (key === 'body' && typeof item === 'string') expect(run.contents.some(c => c.body === item)).toBe(true)
+        walk(item)
+      }
+    }
+    walk(capture)
+  }
+})

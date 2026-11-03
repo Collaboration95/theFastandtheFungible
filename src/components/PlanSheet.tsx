@@ -50,7 +50,7 @@ export default function PlanSheet({ plan, writers, budgetMinor = 200, capMinor =
     <h2>Ready to start</h2><p className="ra-plan-question">{plan.restatement}</p>
     <p className="ra-caption">Plan</p><ol className="ra-plan-steps">
       <li id="ra-plan-what">Search {who} for “{subqueries.join(', ')}”</li>
-      <li>Read free sources and draft an answer</li><li>Buy at most one article if it fills a gap</li><li>Check it against the writer's promises; refund if one is broken</li>
+      <li>Read free sources and draft an answer</li><li>Buy at most one article if it fills a gap</li><li>Check it against the writer's promises; request an eligible refund if one is broken (shown as refunded only after verification)</li>
     </ol>
     {editing && <ol className="ra-plan-edit">{subqueries.map((query, index) => <li key={index}><input aria-label={`Search ${index + 1}`} value={query} maxLength={160} onChange={event => setSubqueries(list => list.map((item, i) => i === index ? event.target.value : item))} /></li>)}</ol>}
     <p>Budget <strong>{money(budgetMinor)}</strong> · up to {money(capMinor)} per article</p>

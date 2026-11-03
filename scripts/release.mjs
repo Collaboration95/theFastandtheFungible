@@ -1,15 +1,6 @@
-// One tagged release per feature day (#269). Day N is v0.(N+1).0: Day 0 is v0.1.0, Day 9 is v0.10.0.
-// Run from a clean checkout whose HEAD is origin/main (main itself, or a worktree on a detached/spare branch):
-//   node scripts/release.mjs <day> "<title>" [--date YYYY-MM-DD] [--dry-run] [--push]
-// Historical backfill: add --at <sha> --notes-file <path>; tag only, no package bump or HEAD push.
-// What it does: bumps package.json (and the lockfile's root entry), commits that, and creates an annotated tag
-// whose message is the release notes. The tag's push triggers .github/workflows/release.yml, which publishes the
-// GitHub release from the tag message. Without --push it only prints the push command; --dry-run prints the notes
-// and changes nothing.
-// Notes = that day's section of docs/SFF-PUSH.md ("### Tue 3 Nov"), the PR titles merged since the previous v* tag,
-// and the day's post visual if docs/releases/day-<N>.(png|jpg|gif) is committed.
+// Owner-only tagging helper. Version changes must already be merged through PR gates.
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 const argv = process.argv.slice(2)
 const flag = (name) => { const i = argv.indexOf(name); if (i < 0) return null; const [, v] = argv.splice(i, 2); return v }
@@ -18,12 +9,13 @@ const dryRun = has('--dry-run'), push = has('--push')
 const dateArg = flag('--date')
 const at = flag('--at'), notesFile = flag('--notes-file')
 const [dayArg, title] = argv
-const day = Number(dayArg)
-if (!Number.isInteger(day) || day < 0 || !title) {
-  console.error('usage: node scripts/release.mjs <day> "<title>" [--date YYYY-MM-DD] [--at <sha> --notes-file <path>] [--dry-run] [--push]')
+const explicitVersion = /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/.test(dayArg ?? '') ? dayArg.replace(/^v/, '') : null
+const day = explicitVersion ? null : Number(dayArg)
+if ((!explicitVersion && (!Number.isInteger(day) || day < 0)) || !title) {
+  console.error('usage: node scripts/release.mjs <day|version> "<title>" [--date YYYY-MM-DD] [--at <sha> --notes-file <path>] [--dry-run] [--push]')
   process.exit(2)
 }
-const version = `0.${day + 1}.0`
+const version = explicitVersion ?? `0.${day + 1}.0`
 const tag = `v${version}`
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim()
 
@@ -67,16 +59,11 @@ const notes = notesFile ? `Day ${day} · ${title}\n\n${readFileSync(notesFile, '
 if (dryRun) { console.log(`${tag}\n\n${notes}`); process.exit(0) }
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
-if (!at && pkg.version !== version) {
-  const bump = (file, edit) => writeFileSync(file, edit(readFileSync(file, 'utf8')))
-  // Replace only the first two version fields (root package.json "version"; lockfile top and packages[""] entries).
-  bump('package.json', (s) => s.replace(/"version": "[^"]+"/, `"version": "${version}"`))
-  if (existsSync('package-lock.json')) {
-    let n = 0
-    bump('package-lock.json', (s) => s.replace(/"version": "[^"]+"/g, (m) => (n++ < 2 ? `"version": "${version}"` : m)))
-  }
-  git('add', 'package.json', 'package-lock.json')
-  git('commit', '-q', '-m', `chore(release): ${tag} Day ${day} · ${title}`)
+if (!at && pkg.version !== version) throw new Error('Version must already be merged through a PR; release never bumps or pushes main')
+if (!at) {
+  const sha = git('rev-parse', target)
+  const runs = JSON.parse(execFileSync('gh', ['run', 'list', '--workflow', 'ci.yml', '--commit', sha, '--status', 'success', '--json', 'headSha,conclusion'], {encoding:'utf8'}))
+  if (!runs.some(run => run.headSha === sha && run.conclusion === 'success')) throw new Error('Merged SHA needs green CI before tagging')
 }
 // verbatim: the default cleanup would strip every line that starts with "#" (the notes' headings).
 // Historical tag dates follow the feature commit so chronological tag views retain Day order.
@@ -84,8 +71,8 @@ if (at) process.env.GIT_COMMITTER_DATE = git('show', '-s', '--format=%cI', targe
 git('tag', '-a', '--cleanup=verbatim', tag, target, '-m', notes)
 console.log(`Created ${tag} at ${git('rev-parse', '--short', target)}.`)
 if (push) {
-  git('push', 'origin', ...(at ? [tag] : ['HEAD:main', tag]))
-  console.log(`Pushed ${at ? tag : `HEAD to main and ${tag}`}; the release workflow publishes it.`)
+  git('push', 'origin', tag)
+  console.log(`Pushed ${tag}; the release workflow publishes it.`)
 } else {
-  console.log(`Publish with: git push origin ${at ? '' : 'HEAD:main '}${tag}`)
+  console.log(`Publish with: git push origin ${tag}`)
 }

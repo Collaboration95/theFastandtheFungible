@@ -80,3 +80,19 @@ See [BYOK engine configuration](byok.md) for `LLM_PROVIDER=openai-compatible`,
 reviewed endpoint limits, unknown costs, and `ACTIVE_WORK_LIMIT` (default 4).
 One inference key works with explicitly SIMULATED payments; Testnet still needs
 its separate wallet. The UNCALIBRATED generic judge buys nothing.
+
+## Exact local release artifacts
+
+`make release-artifacts` builds the SDK tgz, Python wheel/sdist and MCPB once,
+then tests the installed bytes with fixture models and simulated settlement.
+`dist/release/manifest.json` records independent versions, source SHA, runtimes,
+bytes and SHA-256; `consumer-results.json` records acceptance separately.
+The npm consumer installs declared dependencies normally in a temporary project;
+the wheel uses a new venv; MCP starts from the extracted MCPB. Each asks twice
+with the same key and checks delivered citations, one receipt/intent and caps.
+No registry publication is performed. Python offline verification still invokes
+the repository verifier and requires its Node dependencies; wheel installation
+alone does not supply that verifier. Minimum supported Node is 22.13 and Python
+3.10; hosted artifact acceptance uses those runtimes.
+
+See [release artifact evidence](evidence/round2-d/README.md).

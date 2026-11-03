@@ -50,7 +50,8 @@ const MARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M1
 function block(page) {
   const depth = page.file.split('/').length - 1
   const up = '../'.repeat(depth)
-  const nav = NAV.map(([key, href, label]) =>
+  // Ledger is lane E's pinned header; validate its existing navigation until E refreshes it.
+  const nav = NAV.filter(([key]) => page.file !== 'ledger/index.html' || key !== 'demo').map(([key, href, label]) =>
     `<a href="${up}${href || 'index.html'}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
   const note = page.note ? `<span class="ra-hdr-note">${page.note}</span>` : ''
   return `${START}

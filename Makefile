@@ -132,3 +132,8 @@ soak: ## deterministic fixture chaos soak (HOURS=12 by default)
 .PHONY: app-accept
 app-accept: dmg ## packaged fixture crash recovery + one Keychain Testnet purchase
 	node --import tsx desktop/accept.mjs
+
+.PHONY: release-artifacts
+release-artifacts:
+	node scripts/release-artifacts.mjs
+	node scripts/check-release-consumers.mjs --manifest dist/release/manifest.json

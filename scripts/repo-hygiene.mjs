@@ -88,6 +88,7 @@ for (const f of mdFiles) {
       if (!existsSync(join(root, '.github/workflows', m[1]))) bad(`${f}:${i + 1}: badge points at missing workflow ${m[1]}`)
     }
   })
+  if (fence) bad(`${f}: unclosed code fence`)
 }
 
 for (const f of files) {

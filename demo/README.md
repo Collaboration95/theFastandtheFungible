@@ -7,3 +7,8 @@ The `/demo/` Pages build uses `src/main.tsx` and the real app components, with a
 Run `npm run test:demo` to build and run Chromium against Python's static HTTP server on an ephemeral port, under the actual Pages subpath. Unit tests check every replay prefix for grant and citation boundaries. The smoke checks UC3 through refund, receipt, citation and Writers, then UC2 through the command palette; it also enforces the 2 MB JS+data limit and no requests outside the static site.
 
 `npm run site:publish` rebuilds the demo into ignored `site/demo/` and publishes the site with the existing conflict-checked publisher, preserving gh-pages-only files and evolution data. `npm run publish:site` is the separate writer-publishing command.
+
+Raw snapshots are audited as well as every staged prefix: paid bodies require a
+VERIFIED intent, delivered grant and GRANT trace; nested body fields must match
+delivered content. The historical capture SHA/date remain in each JSON. Normal
+app pace is real; only explicit replay/recording uses staged financial history.

@@ -42,8 +42,9 @@ const prefs = {
 const recording = new URLSearchParams(window.location.search).get('record') === '1'
 function initialPace(): Pace {
   if (recording || browserDemo) return 'stage'
-  const value = new URLSearchParams(window.location.search).get('pace') ?? prefs.get(paceKey)
-  return value === 'real' || value === 'slow' ? value : 'stage'
+  // Old staged preferences must not delay financial truth in normal use.
+  prefs.set(paceKey, 'real')
+  return 'real'
 }
 
 export default function App() {
@@ -103,7 +104,7 @@ export default function App() {
   const runId = run?.runId
   useEffect(() => {
     if (!runId) return
-    return streamRun(runId, { onSnapshot: setRun, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
+    return streamRun(runId, { onSnapshot: value => { setRun(value); setError(current => current === 'Connection lost. Reconnecting…' ? '' : current) }, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
   }, [runId])
 
   // Stage pacing: reveal one trace event at a time, holding each for its dwell.
@@ -118,7 +119,7 @@ export default function App() {
     const timer = setTimeout(() => setCursor(nextId), delay)
     return () => clearTimeout(timer)
   }, [replaying, nextId, delay])
-  const shown = run && replaying ? staged(run, cursor) : run
+  const shown = run && replaying && (recording || browserDemo || !isTerminal(run)) ? staged(run, cursor) : run
   const model = deriveRunState(shown, pending?.step)
   const finished = !!shown && model.terminal && !replaying
   const openRun = async (id: string) => {
@@ -340,7 +341,7 @@ export default function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-  const labels = <><nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav>{!browserDemo && <EnvIndicator labels={shown?.labels ?? health.labels} recording={recording} />}<button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><kbd>{modifier}K</kbd></button></>
+  const labels = <>{(replaying || recording || browserDemo) && <span className="ra-caption">Replay</span>}<nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav>{!browserDemo && <EnvIndicator labels={shown?.labels ?? health.labels} recording={recording} />}<button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><kbd>{modifier}K</kbd></button></>
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: model.phase === 'recovering' ? 'READ_PAID' : finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
@@ -384,7 +385,7 @@ export default function App() {
       <main className="ra-brief">
         <h1 className="ra-q">{shown.question}</h1>
         <MobileSpend run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
-        <RunActivity run={shown} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
+        <RunActivity run={shown} actualTerminal={!!run && isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
         {/* Replace the draft reading surface when the activity timeline closes. */}
         <Fragment key={`${shown.runId}:${finished ? 'final' : 'draft'}`}>
         {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}

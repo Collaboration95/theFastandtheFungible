@@ -23,7 +23,7 @@ describe('required CI admission', () => {
   it('wires the tested evaluator to an always-reporting aggregate and each required dependency', () => {
     const workflow = readFileSync('.github/workflows/ci.yml', 'utf8')
     expect(workflow).toContain('if: always()')
-    expect(workflow).toContain('needs: [changes, verify, chaos, browser, python]')
+    expect(workflow).toContain('needs: [changes, verify, chaos, browser, python, artifacts]')
     expect(workflow).toContain('node scripts/ci-contract.mjs aggregate')
     expect(workflow).toContain('node scripts/ci-contract.mjs detect')
     expect(workflow).toContain('python -m pytest packages/sdk-python')
