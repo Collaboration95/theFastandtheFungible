@@ -21,6 +21,8 @@ of a reused synthetic question holdout, not an unbiased generalisation estimate.
 | #324 wafer-only domain veto with wafer/foundry/TSMC/Kestrel synonyms | Benchmark-specific commodity/domain exception | Removed; coarse price requests use request-derived entity overlap across any domain; no wafer, writer or company allowlist |
 | #324 allow entity/title context for metric promises | General public-scope principle with coarse-menu false negatives/positives | Retained; price menus can omit the precise metric, and cannot establish factual support |
 | #324 arbitrary mixed letter/digit identifiers | General identifier principle | Retained and extended to arbitrary acronyms |
+| #320 confirmed-refund net-waste accounting, surviving-fact used spend and null zero-denominators | General measurement rules | Retained; refunds never restore budget, all gross purchases remain in the denominator |
+| #320 extend the unchanged source-cluster bootstrap to new metrics, frozen-input comparison guards; #324 generated headline | General measurement/reporting rules | Retained; current recommendation uses fresh-set evidence, historical number stays labelled |
 | #324 require a standalone number rather than identifier digits | General numerical-evidence principle | Retained; an identifier alone is not a numerical result |
 
 No thresholds, hard gates, leak checks, old labels or old tests are loosened.
@@ -42,7 +44,8 @@ not a universal ontology or a semantic coverage claim.
   operators, periods and metrics plus the unchanged old corpus are distractors.
 - Offline Codex specifications, existing corpus `assemble` and menu schema,
   existing bank schema/needle verification. Same vendor as Luna; human review
-  pending. Templates and regular single-fact questions make this a narrow,
+  pending. Policy and set share an author: prospectively new content, not a
+  blinded independent-author test. Templates and regular single-fact questions make this a narrow,
   relatively structured challenge, not a representative customer sample.
 - `scripts/generate-fresh-eval.ts` builds `eval/questions/bank.fresh.v1.json`
   and the isolated `corpus-fresh.v1/`. `check-corpus.mjs --extra` checks the

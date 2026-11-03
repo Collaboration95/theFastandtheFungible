@@ -1,11 +1,13 @@
 {
   "schema": "tftf.scorecard/v1",
-  "at": "2026-11-03T03:47:11.448Z",
-  "split": "heldout",
-  "policy": "receipt-value/v1+scope/v3+extraction/v3",
+  "at": "2026-11-03T04:11:10.137Z",
+  "split": "all",
+  "policy": "receipt-value/v1+scope/v4+extraction/v4",
+  "evaluationSet": "fresh-v1",
+  "bankFile": "eval/questions/bank.fresh.v1.json",
   "worktreeDirty": true,
-  "commit": "1e279c85963f3ed56414a6c4fe5d798cdca73f62",
-  "inputHash": "7b5f6b4f7a244de769b5ef7c7d61c22c2388022c8e42cb0097ddd110e769b0e9",
+  "commit": "32ca7c681c238dd377b7caf81ab359d3a279de48",
+  "inputHash": "7f3c15a1f48504455b915e5ca22c2b8349eb374a397bb5cc309330471593069b",
   "mode": "LIVE",
   "labels": {
     "search": "keyword only (embeddings unavailable)",
@@ -19,139 +21,139 @@
     "boot": "booted demo API + publisher (fresh child process; module load included)"
   },
   "quality": {
-    "wastedSpendPct": 19.950738916256157,
-    "netWastedSpendPct": 19.950738916256157,
-    "usedSpendPct": 80.04926108374384,
-    "selectionF1Flow": 0.5454545454545454,
-    "selectionF1Sweep": 0.6875,
-    "supportedFactUpliftPts": 38.04347826086956,
+    "wastedSpendPct": 6.8493150684931505,
+    "netWastedSpendPct": 6.8493150684931505,
+    "usedSpendPct": 93.15068493150685,
+    "selectionF1Flow": 0.9375,
+    "selectionF1Sweep": 0.9375,
+    "supportedFactUpliftPts": 66.66666666666667,
     "falseCompleteRate": 0
   },
   "confidenceIntervals": {
     "method": "source-family cluster percentile bootstrap, 95%; conditional on fixed corpus and model draws",
     "seed": 700,
     "repeats": 2000,
-    "clusters": 20,
-    "questions": 92,
+    "clusters": 24,
+    "questions": 48,
     "intervals": {
       "wastedSpendPct": {
-        "low": 8,
-        "high": 36.8421052631579,
+        "low": 0,
+        "high": 18.75,
         "validReplicates": 2000
       },
       "netWastedSpendPct": {
-        "low": 8,
-        "high": 36.8421052631579,
+        "low": 0,
+        "high": 18.75,
         "validReplicates": 2000
       },
       "usedSpendPct": {
-        "low": 63.1578947368421,
-        "high": 92,
+        "low": 81.25,
+        "high": 100,
         "validReplicates": 2000
       },
       "selectionF1Flow": {
-        "low": 0.3614457831325301,
-        "high": 0.6885245901639344,
+        "low": 0.8,
+        "high": 1,
         "validReplicates": 2000
       },
       "selectionF1Sweep": {
-        "low": 0.5074626865671642,
-        "high": 0.8118811881188119,
+        "low": 0.8,
+        "high": 1,
         "validReplicates": 2000
       },
       "supportedFactUpliftPts": {
-        "low": 24,
-        "high": 51.13636363636363,
+        "low": 45.833333333333336,
+        "high": 83.33333333333333,
         "validReplicates": 2000
       }
     }
   },
   "timing": {
     "samples": 10,
-    "p50FirstAnswerMs": 110.67118699999992,
-    "p95FirstAnswerMs": 260.9454500000122,
-    "p95FinalAnswerMs": 4637.165951599984,
-    "coldStartMs": 1447.7006669999973,
+    "p50FirstAnswerMs": 61.36849999999686,
+    "p95FirstAnswerMs": 100.16503735000218,
+    "p95FinalAnswerMs": 2300.345037649995,
+    "coldStartMs": 715.0981250000041,
     "node": "v26.3.1",
     "platform": "darwin",
     "observations": [
       {
-        "questionId": "Q49",
-        "runId": "f18d8a1b-f8ef-4f0d-8ed4-0412f608324d",
-        "firstMs": 317.1983750000072,
-        "finalMs": 2715.940917
+        "questionId": "Q201",
+        "runId": "f55765cf-5b8f-4374-b444-47aea7075797",
+        "firstMs": 128.31925000000047,
+        "finalMs": 2115.914875000002
       },
       {
-        "questionId": "Q50",
-        "runId": "5b896e8c-ee9a-462c-ae9d-f22a066e5f82",
-        "firstMs": 192.19187500001863,
-        "finalMs": 2772.8609580000048
+        "questionId": "Q202",
+        "runId": "ac7e09dc-7987-4fd7-b2e4-60bc3d963795",
+        "firstMs": 57.368249999999534,
+        "finalMs": 2077.599291000006
       },
       {
-        "questionId": "Q51",
-        "runId": "4aaa296a-5d23-4ebb-8e6e-26c96b45414d",
-        "firstMs": 131.51608299999498,
-        "finalMs": 2317.117666999984
+        "questionId": "Q203",
+        "runId": "c7297944-645f-4cfa-a722-12b4af464289",
+        "firstMs": 65.75433300000441,
+        "finalMs": 2247.4245419999934
       },
       {
-        "questionId": "Q52",
-        "runId": "4d2cc10e-574c-44ae-a947-d7b292ff3fda",
-        "firstMs": 90.24424999998882,
-        "finalMs": 5338.214332999982
+        "questionId": "Q204",
+        "runId": "8eda6dd0-09c6-48d8-b89d-11a0861d3114",
+        "firstMs": 65.44974999999977,
+        "finalMs": 2243.331791000004
       },
       {
-        "questionId": "Q53",
-        "runId": "5771d637-0f7c-41fa-af31-1651d8edce25",
-        "firstMs": 106.16408300001058,
-        "finalMs": 2336.9797919999983
+        "questionId": "Q205",
+        "runId": "457f6f87-8465-477e-a17c-462be6e45275",
+        "firstMs": 62.46883300000627,
+        "finalMs": 1943.4478329999984
       },
       {
-        "questionId": "Q54",
-        "runId": "7a4f6541-1b8a-46e2-bb6c-9baa75c8bd95",
-        "firstMs": 115.17829099998926,
-        "finalMs": 2379.7430830000085
+        "questionId": "Q206",
+        "runId": "b5460395-0403-46dd-b1aa-f6dfcef1b197",
+        "firstMs": 59.30599999999686,
+        "finalMs": 2092.932209000006
       },
       {
-        "questionId": "Q55",
-        "runId": "83950945-61cb-4f3e-9a29-1094cead0bd2",
-        "firstMs": 186.0246670000197,
-        "finalMs": 1944.4366670000018
+        "questionId": "Q207",
+        "runId": "a5e89df8-1aea-42b7-ab83-94567405b58a",
+        "firstMs": 60.26816699998744,
+        "finalMs": 2050.768082999988
       },
       {
-        "questionId": "Q56",
-        "runId": "e9ce68ff-4bce-44da-a66f-2cf63c0033a9",
-        "firstMs": 81.12949999998091,
-        "finalMs": 2291.332624999981
+        "questionId": "Q208",
+        "runId": "5a2f0416-244e-4315-bf95-8d2b5c995316",
+        "firstMs": 58.9409169999999,
+        "finalMs": 2343.643624999997
       },
       {
-        "questionId": "Q57",
-        "runId": "0a5799aa-5492-4227-98eb-d14d07599c10",
-        "firstMs": 72.89008300000569,
-        "finalMs": 1722.9320000000007
+        "questionId": "Q209",
+        "runId": "276efb86-e4d4-4321-b891-f755af6b9b69",
+        "firstMs": 62.73029099999985,
+        "finalMs": 1921.5123329999915
       },
       {
-        "questionId": "Q58",
-        "runId": "85947009-8186-4cfa-9a01-284d4d45b45b",
-        "firstMs": 74.63058299999102,
-        "finalMs": 3780.32904099999
+        "questionId": "Q210",
+        "runId": "cd709729-e405-4e32-9ee0-4dc4c6e142bb",
+        "firstMs": 59.26575000000594,
+        "finalMs": 1751.211374999999
       }
     ]
   },
   "cost": {
-    "providerCalls": 435,
+    "providerCalls": 225,
     "estimatedUsageCalls": 0,
-    "inputTokens": 1934899,
+    "inputTokens": 893861,
     "outputTokens": 0,
-    "modelUsd": 0.1934898999999999,
-    "latencyModelUsdPerQuery": 0.0036008399999999997,
-    "flowDecisionUsdPerQuery": 0.0013889326086956536,
+    "modelUsd": 0.08938610000000004,
+    "latencyModelUsdPerQuery": 0.0025819799999999998,
+    "flowDecisionUsdPerQuery": 0.0009297937500000001,
     "xrpDropsSpent": 0,
-    "simulatedMinorSpent": 2030,
+    "simulatedMinorSpent": 1460,
     "rates": "eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)"
   },
   "audit": {
     "runs": 10,
-    "observations": 646,
+    "observations": 568,
     "violations": [],
     "total": 0,
     "byRule": {
@@ -172,8 +174,8 @@
     "dmgColdStartMs": null
   },
   "counts": {
-    "questions": 92,
-    "coverageSnapshots": 193,
-    "requestedFacts": 92
+    "questions": 48,
+    "coverageSnapshots": 96,
+    "requestedFacts": 48
   }
 }

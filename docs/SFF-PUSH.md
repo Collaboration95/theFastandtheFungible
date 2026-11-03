@@ -35,6 +35,21 @@ PR or issue.
 | Story | Daily posts (two on weekends, [post calendar](#post-calendar)) + SFF chapter on the [evolution page](https://collaboration95.github.io/theFastandtheFungible/evolution/) | #257 | daily log ready; SFF chapter publishes after main merge |
 | Presentation | 2-minute pitch, rehearsed | plan only | planned · 14–18 Nov |
 
+<!-- fresh-scorecard:start -->
+Fresh-set recommendation (3 Nov): **On 48 fresh synthetic questions, 93.15% of gross article spend bought a requested fact retained in the final cited answer (95% CI 81.25–100.00%).**
+
+LIVE decisions/coverage; fixture research, keyword search and SIMULATED payments. Same-vendor labels await human review; structured templates and fixed model draws limit generalisation.
+
+| Metric (%, uplift in pts); 95% CI | #324 reused heldout (92) | Fresh main (48) | Fresh generalised (48) |
+|---|---:|---:|---:|
+| Final-used gross spend | 80.05 [63.16, 92.00] | 90.07 [79.31, 100.00] | 93.15 [81.25, 100.00] |
+| Wasted gross spend | 19.95 [8.00, 36.84] | 9.93 [0.00, 20.69] | 6.85 [0.00, 18.75] |
+| Wasted net spend | 19.95 [8.00, 36.84] | 9.93 [0.00, 20.69] | 6.85 [0.00, 18.75] |
+| Supported-fact uplift | 38.04 [24.00, 51.14] | 66.67 [45.83, 83.33] | 66.67 [45.83, 83.33] |
+
+No pooling with the reused holdout. Different-set comparison is descriptive; fresh main/generalised runs use the same frozen set, one run per policy. Evidence: [rule audit](../eval/FRESH-AUDIT.md), [full report](../eval/REPORT-decisions.md).
+<!-- fresh-scorecard:end -->
+
 ## Hill-climb scorecard
 
 Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
@@ -42,7 +57,7 @@ Baselines are from the 9 Oct live runs (see `eval/REPORT-decisions.md`,
 `eval/scorecard/history.jsonl`; paste "before → after" here when a number moves.
 
 
-Numbers v7 pitch · **80.05% of gross spend bought a requested fact retained in
+Historical #324 result (superseded for the current pitch by the fresh-set table above) · **80.05% of gross spend bought a requested fact retained in
 the final cited answer [95% CI 63.16–92.00%]**. LIVE decisions/coverage;
 fixture planner/writer, synthetic corpus, keyword search, SIMULATED payments.
 Reused frozen question holdout: 92 questions / 20 source clusters, 3 Nov.
@@ -354,6 +369,8 @@ Agents add items there and keep working around them.
 
 ## Decisions log
 
+- 3 Nov: Lane B fresh-set audit replaces corpus-specific subject/acronym/wafer/year lists before a frozen 48-question/24-new-document test; recommend 93.15% final-used spend [81.25–100.00], with synthetic/fixture caveat and no pooling of the reused holdout. No post-result tuning; [audit](../eval/FRESH-AUDIT.md).
+
 - 3 Nov: Submission pack lives in `docs/submission/` (link-checked by hygiene). The deck is HTML exported to PDF by Playwright on the UX-DIRECTION ink/paper system, one slide per criterion, with every number sourced on the slide. The video and pitch label each scene Testnet, simulated or fixture, and the Claude Code scene does not claim the Testnet purchase (an SDK stdio client made it). Why: judges pre-assess the PDF and video, and overclaiming costs more than it gains.
 - 3 Nov: Numbers v7 uses final-used gross spend as the pitch headline, preserving gross/net waste and every gate. Diagnose #320, add wafer-domain rejection and short identifier ranking; dev/synthetic checks then one final reused-heldout run. Point waste 19.95% meets <25%, CI 8.00–36.84% does not establish a below-target population rate. Separate live Testnet sanity evidence never stands in for benchmark confidence.
 - 3 Nov (#312): screen and PDF share a question-aware selector over validated claim sentences; no uncited conclusion becomes the lead. Extracts say Lead finding. Report claims are concise extracts, with every cited passage printed once. Keep gross budget authority and gate-5 disclosures unchanged.
@@ -407,6 +424,8 @@ Significant product, design and process decisions, newest first. One line each: 
 - 3 Nov: Cloud Run held in reserve; local-first.
 
 ## Changelog
+
+- 3 Nov: Lane B generalisation audit: four fresh domains, one LIVE run per policy, used spend 90.07% → 93.15%, paired CI touches zero; waste 6.85% [0.00–18.75], uplift +66.67 pts [45.83–83.33], zero gate violations, US$0.1800611 models. README/SFF tables and #321 slide-7 source note updated; simulated payments, no `src/` or deck HTML edits.
 
 - 3 Nov: Submission pack ([docs/submission](submission/README.md)): 50/150/300-word descriptions, a 10-slide deck built from code with its PDF export (`node docs/submission/deck/export.mjs`), a 2:45 demo-video script with commands and existing release clips, a 2-minute pitch (282 words) with a 3-minute variant, and 10 judge Q&A answers. Recording is with the owner on #265.
 - 3 Nov: Lane B Numbers v7: waste 40.68% → 19.95%, headline used spend 59.32% → 80.05% [63.16–92.00]; classify all 24 #320 wasted purchases, minimal scope/tokenizer fixes, all CIs and limits retained. Live UC2 purchase plus UC3 failed proof/refund/replacement, four validated Testnet txs, zero audit violations, US$0.3389854 models.

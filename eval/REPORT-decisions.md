@@ -627,3 +627,124 @@ Bank/corpus and leak checks unchanged, all pass. Frozen dev fixture repeat with
 README generator check, source-boundary, secret scan and diff whitespace checks
 pass. No tests, leak thresholds, gate audits, score thresholds or spending caps
 loosened. Ship-pr review step 4 skipped as requested; final CI gates the merge.
+
+
+## 10. Prospective new-document generalisation audit (3 Nov 2026)
+
+**Recommended pitch wording:** “On 48 fresh synthetic questions, 93.15% of gross article spend bought a requested fact retained in the final cited answer (95% CI 81.25–100.00%).”
+
+**One-line caveat:** LIVE decisions/coverage; fixture research, keyword search and SIMULATED payments. Same-vendor labels await human review; structured templates and fixed model draws limit generalisation.
+
+The complete rule classification is in `FRESH-AUDIT.md`: benchmark-specific
+wafer/company/package/acronym/year lists were removed or replaced by
+request-derived entity/acronym matching and general year parsing. All old tests
+remain intact. The inherited country list predates these PRs and remains a
+limitation; coarse metric aliases and lexical entity heuristics are not semantic
+coverage guarantees. The generic rule can only veto policy purchases.
+
+### Freeze and sampling
+
+The set and BOTH candidate fingerprints were committed at `32ca7c681c238dd377b7caf81ab359d3a279de48`
+before any live evaluation (base main `0a97a52`, including #324 and #323).
+`frozen-fresh-main.json` pins exact #324 scope/selection source; the generalised
+candidate is `frozen-fresh-general.json`. Bank, extended corpus, snapshots,
+metric/CI code and config match; only the two policy source hashes differ.
+The evidence runner validates those fingerprints before calls. Subsequent
+shipping rebases do not rewrite these evaluated-input receipts.
+
+48 new questions and requested facts, 24 new source documents (two questions
+each), four domains: water utilities, maritime logistics, fibre networks and
+food cold chain. Water use overlaps an existing topic, but maritime/fibre/food
+content and all operators/facts are new. 32 paid-needed, 16 free-sufficient;
+S$0.20–0.65 fixed prices. Each document has two unrequested measurements too.
+The search world includes the unchanged old corpus as additional distractors.
+New documents stay in an opt-in eval directory, preserving all old corpus,
+search-vector, bank and golden-path invariants. The existing corpus assembler,
+manifest schema, bank verifier and unmodified eight-word leak check validate
+the additions; `check-corpus.mjs --extra` checks free/paid pairs across BOTH sets.
+
+One live main-policy run and one live generalised-policy run, new caches, no
+live dev run and no post-result policy, source, label or threshold tuning.
+A pre-run call forecast is not a quality trial. Authoring/validation failures
+(number substring and shared template prose) were fixed before the freeze,
+with no checker relaxation. Earlier unit-test failures drove only old-dev
+regression fixes before freezing. No fresh model outcome was available then.
+Policy and set share an OpenAI Codex author; labels have not had human review.
+This is prospectively new content, not a blinded independent-author benchmark.
+
+### Results, not an overall product improvement estimate
+
+| Metric (%, uplift in pts); 95% CI | #324 reused heldout (92) | Fresh main (48) | Fresh generalised (48) |
+|---|---:|---:|---:|
+| Final-used gross spend | 80.05 [63.16, 92.00] | 90.07 [79.31, 100.00] | 93.15 [81.25, 100.00] |
+| Wasted gross spend | 19.95 [8.00, 36.84] | 9.93 [0.00, 20.69] | 6.85 [0.00, 18.75] |
+| Wasted net spend | 19.95 [8.00, 36.84] | 9.93 [0.00, 20.69] | 6.85 [0.00, 18.75] |
+| Supported-fact uplift | 38.04 [24.00, 51.14] | 66.67 [45.83, 83.33] | 66.67 [45.83, 83.33] |
+| First-purchase F1 | 0.55 [0.36, 0.69] | 0.91 [0.76, 1.00] | 0.94 [0.80, 1.00] |
+| Sweep F1 | 0.69 [0.51, 0.81] | 0.91 [0.76, 1.00] | 0.94 [0.80, 1.00] |
+
+All intervals are 95% percentile source-cluster bootstrap, 2,000 replicates,
+seed 700; 24 fresh clusters versus 20 old heldout clusters. They condition on
+fixed synthetic data and observed model draws. Shared prose templates can
+correlate different documents; that correlation, provider variability and
+human label error are not captured by the intervals. No population or
+production claim follows from the point estimate or its lower bound.
+
+Main → generalised paired waste change **−3.08 pts [−9.43, 0.00]**;
+final-used share change **+3.08 pts [0.00, 9.43]**. Both include zero, so a strict
+policy improvement is not established. Uplift change **0.00 pts [0.00, 0.00]**;
+flow/sweep F1 change +0.03125 [0.00000, 0.10000]. These sequential runs also
+include model variability; they do not isolate a causal component effect.
+Do not treat fresh versus historical scores as paired or pool the reused
+holdout into an independent-test estimate. The tasks differ in difficulty.
+
+Main gross purchases S$15.10; wasted S$1.50; final-used S$13.60.
+Generalised gross S$14.60; wasted S$1.00; final-used S$13.60.
+Zero refunds; gross and net waste coincide. Both runs have 13/48 facts supported
+for free and 45/48 finally supported, so uplift is 32/48, not final recall or
+customer ROI. The three missing facts (Q210/Q211/Q212, water recovery/capacity/
+cost) stay counted; no questions are discarded.
+
+Post-result error inventory, with **no fix or rerun**: main buys wrong-operator
+`fresh-shipping-3` before the correct source for Q220, wasting S$0.50; the generic
+entity price rule vetoes that purchase in the other run. Both runs also buy
+`fresh-networks-3` for Q231/Q232 (Delta demand/investment) before the correct
+operator, wasting S$1.00 total. Those metric wordings are outside the explicit
+scope-key filter. The free fact misses show retrieval/extraction is still
+imperfect. This test found no collapse on the fresh structured content, but
+cannot establish that repeated historical tuning caused no overfitting.
+
+### Gates, spend and reproduction
+
+Both API/wire audits: **0 violations / 10 runs / 568 observations**, all six
+quality metrics retained. The audit includes exact citations, policy/budget,
+idempotency, premium-leak and simulation-label checks. SIMULATED article
+payments; zero Testnet/mainnet funds, zero cloud resources. LIVE Luna decisions
+and coverage; extractive fixture planner/writer and keyword search. Neither the
+percentage nor the fast fixture first-answer timing measures live DeepSeek
+synthesis or on-chain settlement.
+
+- Main `2026-11-03T04:09:14.039Z`: US$0.0906750, 227 calls.
+- Generalised `2026-11-03T04:11:10.137Z`: US$0.0893861, 225 calls.
+- **Total US$0.1800611 / US$4 authorised, 452 requests**, zero failed requests,
+  zero estimated-usage calls. Separate enforced US$1 caps imply US$2 task max.
+  Dated 8 Oct transport rates, usage-derived estimates, not invoices.
+
+`fresh-spend.json` includes every trial/meter. `fresh-results.json` retains
+sufficient flow/purchase/final-fact and sweep records to reproduce all point
+estimates/CIs. `scripts/report-fresh.ts` checks frozen shared inputs and both
+run hashes, re-scores both runs and reproduces the paired intervals offline.
+The original same-input comparison guard is unchanged. Raw traces, databases,
+wire observations and all provider records are archived outside the worktree
+before cleanup; no `.env` or credentials are archived.
+
+Validation: `OFFSET=700 npm run check:fast` passes **697 tests** after rebasing;
+`npm run build` passes. Fresh and historical bank validators, combined corpus
+schema/leak check, README/SFF generator check, metric/CI reproduction, frozen
+fingerprint comparison, source boundary and secret/whitespace checks pass.
+No gate, test, threshold, leak check or metric definition loosened. Step 4 of
+ship-pr skipped as requested; CI green is still required before squash merge.
+
+The README and SFF-PUSH tables are generated from the committed fresh scorecard
+by `node scripts/readme-scorecard.mjs`. `docs/submission/README.md` gives #321's
+deck owner exact slide-7/pitch wording; deck HTML is untouched.
