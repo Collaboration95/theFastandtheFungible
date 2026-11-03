@@ -70,3 +70,5 @@ screenshots and launch-to-interactive timing under ignored `desktop/evidence/`.
 Its launch is a fresh process with empty application data; it does not claim to
 flush the macOS filesystem cache. Live settlement and signed/notarised launch
 require separate live evidence and are not inferred from offline smoke results.
+
+Installed DMG size, cold-start method and validation limits: [evidence](../docs/evidence/macos-app-259.md).
