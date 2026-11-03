@@ -67,7 +67,7 @@ const identity = process.env.CSC_NAME || identities.match(/"(Developer ID Applic
 if (identity && (!identity.startsWith('Developer ID Application:') || !identities.includes(identity))) throw new Error('CSC_NAME is not a valid Keychain identity')
 console.log(identity ? 'Developer ID signing + hardened runtime + ra-notary notarisation + stapling' : 'UNSIGNED BUILD · no Developer ID Application identity in Keychain · signing/notarisation skipped')
 process.env.CUSTOM_DMGBUILD_PATH = resolve('node_modules/.cache/researchagent-dmg/dmgbuild')
-await electronBuild({ targets: undefined, config: {
+await electronBuild({ publish: 'never', targets: undefined, config: {
   appId: 'org.researchagent.desktop', productName: 'ResearchAgent', electronVersion: pkg.devDependencies.electron,
   electronDist: resolve('node_modules/electron/dist'),
   directories: { app: stage, output: resolve('desktop/out'), buildResources: resolve('desktop/build') },

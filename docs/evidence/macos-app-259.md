@@ -1,11 +1,10 @@
 # Installed macOS app · #259 · 3 Nov 2026
 
-Reachability proof, Apple Silicon / macOS 26.6. Build source `c2b24b2`, based on
-`a4e27d3` (main). The final rebase included #286; authenticated HTTPS remote mode and shared wallet controls are wired. This is a single-user local app.
+Reachability proof, Apple Silicon / macOS 26.6. Final installed artifact source `725e0eb`, based on `3c365d6` (main), built by [macOS validation run 41562664758](https://github.com/Collaboration95/theFastandtheFungible/actions/runs/41562664758). The final rebase included #286; authenticated HTTPS remote mode and shared wallet controls are wired. This is a single-user local app.
 
-- DMG: `ResearchAgent-0.4.0-arm64.dmg`, **136,647,266 bytes** / **130.32 MiB**.
-- SHA-256: `a360e4cd66c5e34bad36c0a0b8b095b9cff9d909d1711920ce36af540f4e8f15`.
-- Installed cold start: **2126 ms** from before Playwright process launch to an
+- DMG: `ResearchAgent-0.4.0-arm64.dmg`, **136,596,911 bytes** / **130.27 MiB**.
+- SHA-256: `b1c517551051b2452053251cabd633fbd77a679c3052a272a2c0afa2b50ccab1`.
+- Installed cold start: **2124 ms** from before Playwright process launch to an
   enabled engine-backed example button. Fresh empty app data; filesystem cache
   was not flushed, and automation overhead is included. One measured installed
   sample, not a percentile or first-ever Gatekeeper launch.
@@ -18,7 +17,7 @@ Reachability proof, Apple Silicon / macOS 26.6. Build source `c2b24b2`, based on
 `DESKTOP_VERSION=0.4.0 OFFSET=900 make dmg`; mount read-only with `hdiutil`, copy
 ResearchAgent.app into `/Applications`, eject, then `OFFSET=900 make desktop-smoke`.
 Two local DMG builds total (before the parallel #286 merge): the first failed installed startup and was deleted;
-the second established installed operation. After #286 merged at the final fetch, the tag/manual macOS workflow builds the updated artifact to avoid a third local DMG build. The fixed package uses real files because
+the second established installed operation. After #286 merged at the final fetch, the explicit validation tag built the updated artifact on macOS CI. That artifact was downloaded, installed and passed the same smoke, avoiding a third local DMG build. The fixed package uses real files because
 ASAR is not a real working directory for utilityProcess. The worker is compiled
 from the shared engine source, retaining startup and shutdown semantics.
 
@@ -61,3 +60,10 @@ fail-closed when an identity exists; its unexercised owner setup is on #265.
 The staged post-#286 smoke also passed UC1–UC3 through the authenticated proxy, direct unauthenticated mutation/MCP rejection (401), and the wallet-wide cap/status controls. Remote HTTPS credential/header validation uses offline transports; no deployed remote service was used.
 
 Installer workflow validation caught and fixed a checksum-manifest parser error: Electron publishes binary-mode `*filename` records. Exact asset-name and SHA-256 verification remain required; no checksum check was bypassed (Actions run 41562353549).
+
+The validation build exposed Electron Builder auto-publishing two bot-owned draft
+v0.4.0 releases when GH_TOKEN was present (run 41562664758). Both unpublished
+drafts were removed through gh; `desktop/build.mjs` now explicitly sets
+`publish: 'never'`. Only the release workflow publishes after merge. This is a
+packaging-side-effect fix; it does not change the engine or renderer code. The
+release DMG is the locally tested artifact above, with its exact SHA-256.
