@@ -38,6 +38,14 @@ asset equivalent with an explicit no-ledger-transaction label.
 
 ## Verification
 
-Required checks and final results are recorded below after execution.
+All required local checks pass: `npm run check:fast` (131 files, 1,153 tests;
+20 chaos iterations, zero double charges or invariant violations), `npm run hygiene`,
+`npx playwright test --config playwright.ledger.config.ts` (4 tests), and
+`python3 -m pytest packages/sdk-python` (205 tests). `npm run readme:check` also passes.
+The repository commit hook repeats check:fast. Browser tests bind an ephemeral port.
+
+Recorded repro durations: issuer permission 0.047 s; delivered amount 0.048 s;
+invoice consumption 0.050 s; header-only challenge 0.146 s; expiry/cancel replay
+0.052 s; funding-auth replay 0.065 s; endpoint/history 10.250 s.
 No hard gate, threshold or test has been loosened. The stale browser row-count
 assertion was corrected from nine to thirteen to cover the four credential rows.

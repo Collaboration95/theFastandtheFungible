@@ -4,7 +4,16 @@
 
 ## Reproduce
 
-From this checkout after `npm ci` (Node 22+):
+Use Node 22+ and a clean public ResearchAgent checkout pinned to the repro source:
+
+```sh
+gh repo clone Collaboration95/theFastandtheFungible researchagent-repro
+cd researchagent-repro
+git checkout d38fe39e
+npm ci
+```
+
+Then run:
 
 ```sh
 node scripts/repro/07-endpoint-history.mjs
@@ -17,7 +26,7 @@ Read-only public Testnet tx lookups; availability can change.
 
 
 - Date / class: 2026-11-04; observed read-only Testnet; historical HTTP attempt and fresh WebSocket verification.
-- Evidence: [13/13 live verification](../../evidence/round2-p1/live-validation.json), original [HTTP attempt](../../evidence/round2-e/rpc-attempt.json).
+- Evidence: [13/13 live verification](https://github.com/Collaboration95/theFastandtheFungible/blob/d38fe39e/docs/evidence/round2-p1/live-validation.json), original [HTTP attempt](https://github.com/Collaboration95/theFastandtheFungible/blob/d38fe39e/docs/evidence/round2-e/rpc-attempt.json).
 - Workaround: s.altnet WebSocket, then Clio; retain committed evidence during outages.
 - Suggested fix: document endpoint retention, browser transport support and recommended archival lookup URL.
 - Severity: Medium; unavailable history must not be presented as failed settlement.
