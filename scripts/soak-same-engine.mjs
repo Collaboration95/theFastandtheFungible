@@ -4,7 +4,7 @@ import { writeFileSync, readFileSync, mkdirSync, existsSync, statSync } from 'no
 import { resolve, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { randomUUID, createHash } from 'node:crypto'
-import { performance, monitorEventLoopDelay } from 'node:perf_hooks'
+import { performance, monitorEventLoopDelay, PerformanceObserver } from 'node:perf_hooks'
 import { BroadcastChannel, isMainThread, threadId, workerData } from 'node:worker_threads'
 import { loadavg, cpus, platform, release } from 'node:os'
 import net from 'node:net'
@@ -66,8 +66,14 @@ export async function installGuard() {
       return ()=>{release();if(burst)channel.postMessage({burstActive:this.active})}
     }
     const histogram=monitorEventLoopDelay({resolution:10}); histogram.enable()
+    let gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{}}
+    const observer=new PerformanceObserver(list=>{for(const entry of list.getEntries()){
+      gc.count++;gc.totalPauseMs+=entry.duration;gc.maxPauseMs=Math.max(gc.maxPauseMs,entry.duration)
+      const kind=String(entry.detail.kind);gc.kinds[kind]=(gc.kinds[kind]||0)+1
+    }})
+    observer.observe({entryTypes:['gc']})
     const engineId=randomUUID()
-    const timer=setInterval(()=> {channel.postMessage({worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,handles:process.getActiveResourcesInfo().length,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset()},1000)
+    const timer=setInterval(()=> {channel.postMessage({worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,handles:process.getActiveResourcesInfo().length,gc,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset();gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{}}},1000)
     timer.unref()
     channel.unref()
   } else channel.unref()
