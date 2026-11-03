@@ -165,8 +165,13 @@ are checked by the caller on every use. There is no signer worker or change to
 payment ordering, outbox persistence, settlement or recovery.
 
 Store reads still fetch authoritative SQLite JSON inside the original transaction.
-RunSnapshot fields use their original Zod schemas; bounded per-store reuse avoids
-validating unchanged JSON fields. Entries contain strings and hits return fresh
-JSON values. Non-round-trippable values bypass reuse. The RunSnapshot schema has
-no cross-field refinements. SQLite rows, transactions and persistence format are
-unchanged; no cached state can survive a rollback as spending authority.
+A per-store LRU (32 entries, 8 MiB string storage) reuses complete RunSnapshot
+validation only for identical persisted JSON bytes. Values are serialized strings;
+every hit returns a fresh JSON parse. Writes and assembled snapshots still execute
+the complete original schema. SQLite rows, transactions and persistence format are
+unchanged; a rollback or external edit cannot turn stale cache entries into authority.
+
+The asynchronous research loop yields between content additions, answer processing
+and decision rounds so immediately resolved fixture promises do not monopolize the
+worker. No yield crosses a SQLite transaction, signing persistence or the synchronous
+Stop-check-to-purchase handoff. Calibration starts in the existing order.

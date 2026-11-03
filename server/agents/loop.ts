@@ -1,3 +1,4 @@
+import { setImmediate as yieldToLoop } from 'node:timers/promises'
 import { sourceKey, sameSource, citationIdentity } from '../../shared/source-identity.js'
 import { loadConfig } from '../config.js'
 import { activeTraceUrl, scoreTrace, traceRun } from '../telemetry.js'
@@ -144,6 +145,7 @@ export class RunLoop {
       this.progress(runId)
     }
     const result = await (this.options.writeAnswer ?? writeAnswer)({ signal: this.signal(runId), question: run.question, contents: this.accessible(run), candidates: run.candidates.map(candidate => PublicCandidateSchema.parse(candidate)), version: (previous?.version ?? 0) + 1, onToken, ...(this.focus(run) ? { focus: this.focus(run) } : {}), ...(requirements ? { requirements: requirements.map(r => r.text) } : {}), ...(previous ? { previous: structuredClone(previous) } : {}) })
+    await yieldToLoop()
     const answer = AnswerSchema.parse(result.answer)
     if (answer.version !== (previous?.version ?? 0) + 1) throw new Error('Answer version mismatch')
     let coverage: Coverage | undefined
@@ -161,8 +163,10 @@ export class RunLoop {
     if (!previous && started && !this.store.getRun(runId).events.some(event => event.type === 'FREE_DRAFT')) scoreTrace('time-to-first-answer-s', (Date.now() - started) / 1000, 'ask → validated cited answer v1')
     const latest = this.store.getRun(runId)
     this.store.updateRun(runId, { labels: { ...latest.labels, research: `${providerLabels[answer.provider]} · ${answer.model}` }, checkpoint: { ...latest.checkpoint, answerVersion: answer.version, ...(latest.checkpoint.intentId ? { answeredIntentId: latest.checkpoint.intentId } : {}) } })
+    await yieldToLoop()
     if (requirements) this.saveCoverage(runId, coverage ?? await this.assessCoverage(runId, answer))
     if (this.stopped(runId)) this.trace(runId, 'STOPPED', 'Stopped; last good answer preserved.')
+    await yieldToLoop()
     return true
   }
   /** The run's frozen requested facts (#208); undefined for legacy runs, which keep the free-text gap path. */
@@ -278,7 +282,7 @@ export class RunLoop {
     const search = found.search === SEARCH_LABELS[1] || latest.labels.search === SEARCH_LABELS[1] ? SEARCH_LABELS[1] : latest.labels.search ?? found.search
     if (added.length) this.store.updateRun(runId, { candidates: [...latest.candidates, ...added] })
     if (search !== latest.labels.search) this.store.updateRun(runId, { labels: { ...this.store.getRun(runId).labels, search } })
-    for (const content of contents) this.store.addContent(runId, structuredClone(content))
+    for (const content of contents) { this.store.addContent(runId, structuredClone(content)); await yieldToLoop() }
     latest = this.store.getRun(runId)
     const paidFound = added.filter(c => c.tier === 'PAID').length
     // Does a new free passage answer an open fact? One coverage request over the new passages only.
@@ -367,7 +371,7 @@ export class RunLoop {
         const candidates = retrieved.candidates.map(candidate => PublicCandidateSchema.parse(candidate))
         if (retrieved.contents.some(content => !candidates.some(candidate => candidate.tier === 'FREE' && sameSource(candidate, content) && candidate.profileId === content.profileId))) throw new Error('Retrieval returned ungranted paid content')
         this.store.updateRun(runId, { candidates })
-        for (const content of retrieved.contents) this.store.addContent(runId, structuredClone(content))
+        for (const content of retrieved.contents) { this.store.addContent(runId, structuredClone(content)); await yieldToLoop() }
         await this.answer(runId)
       } else if (run.checkpoint.intentId && run.checkpoint.answeredIntentId !== run.checkpoint.intentId && run.intents.some(intent => intent.intentId === run.checkpoint.intentId && intent.status === 'VERIFIED')) {
         await this.answer(runId)
@@ -386,6 +390,7 @@ export class RunLoop {
       let calibration: Promise<unknown> | undefined
       let stopReason: StopReason | undefined
       try { while (!this.stopped(runId)) {
+        await yieldToLoop()
         await calibration
         calibration = undefined
         run = this.store.getRun(runId)
@@ -420,6 +425,7 @@ export class RunLoop {
           this.failDecision(runId, error)
           return
         }
+        await yieldToLoop()
         this.store.addDecision(runId, decision)
         const latest = this.store.getRun(runId)
         this.store.updateRun(runId, { labels: { ...latest.labels, decision: decisionLabel(decision) }, ...(target ? { checkpoint: { ...latest.checkpoint, attempts: [...(latest.checkpoint.attempts ?? []), { requirementId: target.id, fingerprint }] } } : {}) })
