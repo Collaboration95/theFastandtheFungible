@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 // @ts-expect-error manual JavaScript harness is intentionally independent of the application build
-import { compare, deadline } from '../scripts/soak-same-engine.mjs'
+import { compare, deadline, options } from '../scripts/soak-same-engine.mjs'
 function evidence() {
   return { options:{runs:200},asks:Array.from({length:200},(_,index)=>({index,stage:'measured',ok:true,rss:200*1048576,ms:index<100?100:200,pid:1,engineId:'one',workerId:4,storeId:'db'})),samples:Array.from({length:61},()=>({stage:'measured',rss:200*1048576,gapMs:1000,hostSleepMs:0,worker:{loopP99Ms:12}})),restarts:Array.from({length:20},()=>({closed:true})),failures:[] as string[],auditViolations:0 }
 }
@@ -24,3 +24,10 @@ it('marks sample gaps and host sleep invalid',()=>{const r=evidence();r.samples[
 it('times out a hung operation, retains timeout evidence, and rejects missing asks',async()=>{await expect(deadline(new Promise(()=>{}),10)).rejects.toThrow('timeout');const r=evidence();r.failures.push('timeout');r.asks.pop();expect(compare(r).pass).toBe(false)})
 it('detects a failed memory gate even with otherwise valid observations',()=>{const r=evidence();r.samples[0].rss=1600*1048576;expect(compare(r).valid).toBe(true);expect(compare(r).gates.rssMax.pass).toBe(false);expect(compare(r).pass).toBe(false)})
 it('uses the relative latency allowance when it exceeds 250 ms',()=>{const r=evidence();r.asks.forEach((a,i)=>{a.ms=i<100?2000:2400});expect(compare(r).gates.latencyP95).toEqual({value:400,limit:400,pass:true});r.asks[199].ms=5000;expect(compare(r).gates.latencyP95.pass).toBe(true);for(let i=190;i<200;i++)r.asks[i].ms=2401;expect(compare(r).gates.latencyP95.pass).toBe(false)})
+
+it('preserves string profile-directory flags without changing default invocation', () => {
+  const args = ['--runs', '6', '--data-dir', '/tmp/fresh', '--output', '/tmp/report.json']
+  expect(options(args).cpuProfDir).toBeUndefined()
+  expect(options([...args, '--cpu-prof-dir', '/tmp/profiles']).cpuProfDir).toBe('/tmp/profiles')
+  expect(options(args).runs).toBe(6)
+})

@@ -61,10 +61,10 @@ export function installGuard() {
     channel.unref()
   } else channel.unref()
 }
-function options(args) {
+export function options(args) {
   const o={runs:2000,warmup:200,concurrency:1,seed:279,historyRuns:10000,eventsPerRun:60,timeoutMs:120000,burst:false}
-  const names={'runs':'runs','warmup':'warmup','concurrency':'concurrency','seed':'seed','history-runs':'historyRuns','events-per-run':'eventsPerRun','data-dir':'dataDir','output':'output','timeout-ms':'timeoutMs'}
-  for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output'].includes(key)?args[++i]:Number(args[++i])}
+  const names={'runs':'runs','warmup':'warmup','concurrency':'concurrency','seed':'seed','history-runs':'historyRuns','events-per-run':'eventsPerRun','data-dir':'dataDir','output':'output','timeout-ms':'timeoutMs','cpu-prof-dir':'cpuProfDir'}
+  for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output','cpuProfDir'].includes(key)?args[++i]:Number(args[++i])}
   for(const key of ['runs','warmup','concurrency','seed','historyRuns','eventsPerRun','timeoutMs'])if(!Number.isSafeInteger(o[key])||o[key]<0)throw Error('Invalid '+key)
   if(!o.runs||!o.concurrency||!o.timeoutMs||!o.dataDir||!o.output)throw Error('Positive counts, --data-dir and --output required')
   if(o.burst)throw Error('100-request burst at limit 4 pending C1 engine-wide admission cap; flag reserved')
@@ -133,7 +133,7 @@ if(process.argv[1]&&resolve(process.argv[1])===self){
   else {
     const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
     Object.assign(env,{SOAK_ID:randomUUID(),LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0',RECONCILE_INTERVAL_MS:'1000',MCP_DAILY_CAP_MINOR:'100000000',WALLET_DAILY_CAP_MINOR:'100000000',NODE_OPTIONS:`--import=data:text/javascript,${encodeURIComponent(`import {installGuard} from ${JSON.stringify(pathToFileURL(self).href)};installGuard()` )}`})
-    const child=spawn(process.execPath,[self,...process.argv.slice(2),'--internal'],{env,stdio:'inherit'})
+    const child=spawn(process.execPath,[...(o.cpuProfDir ? ['--cpu-prof', '--cpu-prof-dir='+resolve(o.cpuProfDir)] : []),self,...process.argv.slice(2),'--internal'],{env,stdio:'inherit'})
     child.on('exit',code=>{process.exitCode=code??1})
   }
 }

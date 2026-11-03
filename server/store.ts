@@ -79,6 +79,18 @@ export class Store {
       CREATE TABLE IF NOT EXISTS manifests (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grant_salts (intent_id TEXT PRIMARY KEY REFERENCES grants(intent_id), json TEXT NOT NULL);
     `)
+    // Source-row indexes, not counters: SQLite maintains these atomically even across crashes.
+    // Completed history without money never enters request-path accounting or recovery.
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS usage_active_runs ON runs(id) WHERE json_extract(json,'$.phase') NOT IN ('DONE','STOPPED','FAILED');
+      CREATE INDEX IF NOT EXISTS usage_failed_runs ON runs(json_extract(json,'$.phase'));
+      CREATE INDEX IF NOT EXISTS usage_intent_status ON intents(json_extract(json,'$.status'),run_id);
+      CREATE INDEX IF NOT EXISTS usage_cancelled_intents ON intents(substr(json_extract(json,'$.createdAt'),1,10),run_id) WHERE json_extract(json,'$.escrow.state')='CANCELLED';
+      CREATE INDEX IF NOT EXISTS usage_policy_run ON policy_payments(run_id,id);
+      CREATE INDEX IF NOT EXISTS usage_policy_day ON policy_payments(substr(json_extract(json,'$.confirmedAt'),1,10),run_id);
+      CREATE INDEX IF NOT EXISTS usage_policy_pending ON policy_payments(run_id) WHERE NOT coalesce(json_extract(json,'$.confirmedAt'),'') AND NOT coalesce(json_extract(json,'$.cancelledAt'),'');
+      CREATE INDEX IF NOT EXISTS usage_open_hire ON hire_reserves(run_id) WHERE closed=0;
+    `)
     if (path !== ':memory:') for (const file of [path, `${path}-wal`, `${path}-shm`]) if (existsSync(file)) chmodSync(file, 0o600)
     const escrowColumns = new Set(this.db.prepare('PRAGMA table_info(escrows)').all().map(r => r.name))
     if (!escrowColumns.has('owner')) this.db.exec('ALTER TABLE escrows ADD COLUMN owner TEXT')
@@ -130,11 +142,23 @@ export class Store {
   /** Gross charges by receipt day; unfinished budgets and uncertain submissions carry across midnight. */
   private usage(day: string, surface?: Surface, excludeRun?: string, principal?: string) {
     let spentMinor = 0, reservedMinor = 0
-    const admissions = new Map(this.db.prepare('SELECT run_id, surface, principal FROM admissions').all().map(row => [row.run_id as string, row]))
-    for (const row of this.db.prepare('SELECT id FROM runs').all()) {
+    // UNION deduplicates candidate IDs; primary-key order preserves the oracle's JS addition order
+    // (policy drops may be fractional minor units). Only hydrate contributing source rows.
+    const candidates = this.db.prepare(`WITH relevant(id) AS (
+      SELECT id FROM runs WHERE json_extract(json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
+      UNION SELECT run_id FROM hire_reserves WHERE closed=0
+      UNION SELECT run_id FROM intents WHERE json_extract(json,'$.status') IN ('RESERVED','SUBMITTING')
+      UNION SELECT i.run_id FROM intents i LEFT JOIN receipts r ON r.intent_id=i.id
+        WHERE json_extract(i.json,'$.status') IN ('SETTLED','DELIVERY_PENDING','DELIVERY_FAILED','VERIFIED','CLAIM_FAILED','CHALLENGED','REFUNDED','CHALLENGE_REJECTED','CHALLENGE_REFUSED')
+        AND (r.intent_id IS NULL OR substr(json_extract(r.json,'$.settledAt'),1,10)=?)
+      UNION SELECT run_id FROM intents WHERE json_extract(json,'$.escrow.state')='CANCELLED' AND substr(json_extract(json,'$.createdAt'),1,10)=?
+      UNION SELECT run_id FROM policy_payments WHERE substr(json_extract(json,'$.confirmedAt'),1,10)=?
+      UNION SELECT run_id FROM policy_payments WHERE NOT coalesce(json_extract(json,'$.confirmedAt'),'') AND NOT coalesce(json_extract(json,'$.cancelledAt'),'')
+    ) SELECT r.id FROM relevant v JOIN runs r ON r.id=v.id LEFT JOIN admissions a ON a.run_id=r.id
+      WHERE (? IS NULL OR a.surface=?) AND (? IS NULL OR a.principal=?) ORDER BY r.id`)
+      .all(day, day, day, surface ?? null, surface ?? null, principal ?? null, principal ?? null)
+    for (const row of candidates) {
       const id = row.id as string
-      if (surface && admissions.get(id)?.surface !== surface) continue
-      if (principal && admissions.get(id)?.principal !== principal) continue
       const run = this.rawRun(id)
       const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', id)
       const receipts = this.rows<Receipt>('SELECT r.json FROM receipts r JOIN intents i ON i.id=r.intent_id WHERE i.run_id=?', id)
@@ -204,8 +228,11 @@ export class Store {
     })
   }
   walletStatus(day = new Date().toISOString().slice(0, 10)) {
-    return this.atomic(() => ({ ...this.usage(day), dailyMinor: spendPolicy().walletDailyMinor,
-      paused: this.isPaused(), label: this.isPaused() ? PAUSED : 'Spending enabled', policyVersion: POLICY_VERSION }))
+    return this.atomic(() => {
+      const paused = this.isPaused()
+      return { ...this.usage(day), dailyMinor: spendPolicy().walletDailyMinor,
+        paused, label: paused ? PAUSED : 'Spending enabled', policyVersion: POLICY_VERSION }
+    })
   }
   mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.usage(day, 'mcp')) }
   isHireRun(runId: string) { return !!this.db.prepare('SELECT run_id FROM hire_reserves WHERE run_id=?').get(runId) }
