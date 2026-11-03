@@ -1,7 +1,6 @@
 name: desktop
 on:
-  push:
-    tags: ['v*']
+  workflow_call:
   workflow_dispatch:
 permissions:
   contents: write
@@ -25,8 +24,3 @@ jobs:
           name: researchagent-arm64-dmg
           path: desktop/out/*.dmg
           retention-days: 14
-      - name: Attach this tag's DMG
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          TAG: ${{ github.ref_name }}
-        run: gh release upload "$TAG" desktop/out/*.dmg --clobber

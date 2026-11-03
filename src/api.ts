@@ -48,8 +48,9 @@ export async function retryDelivery(runId: string, intentId: string): Promise<Ru
 }
 export async function createReport(runId: string): Promise<{ format: 'PDF' | 'HTML'; url: string }> {
   const report = z.object({ format: z.enum(['PDF', 'HTML']), url: z.string().min(1) }).parse(await request(`${runPath(runId)}/report`, {}))
-  const url = new URL(report.url, window.location.origin)
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error('Unsafe report URL')
+  const url = new URL(report.url, window.location.href)
+  const desktopReport = window.location.protocol === 'app:' && url.protocol === 'app:' && url.host === 'researchagent' && /^\/runs\/[a-f0-9-]+\/report\.html$/.test(url.pathname)
+  if ((!['http:', 'https:'].includes(url.protocol) && !desktopReport) || url.username || url.password) throw new Error('Unsafe report URL')
   return report
 }
 

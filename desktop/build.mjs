@@ -27,7 +27,7 @@ await mkdir(join(stage, 'desktop'), { recursive: true })
 for (const name of ['main.mjs', 'policy.mjs', 'keychain.mjs', 'engine-host.mjs', 'preload.cjs', 'preferences.html', 'preferences.js', 'preferences.css', 'mcp.mjs']) await cp(`desktop/${name}`, join(stage, 'desktop', name))
 // The engine's existing worker contract, with a desktop-specific Host/Origin guard.
 let worker = await readFile('desktop/engine-worker.mjs', 'utf8')
-worker = worker.replaceAll("'../publisher/", "'../publisher/").replace("'./policy.mjs'", "'../desktop/policy.mjs'")
+worker = worker.replace("'./policy.mjs'", "'../desktop/policy.mjs'")
 worker = worker.replace("'../server/routes.js'", "'./routes.js'")
 await writeFile(join(stage, 'server/engine-worker.mjs'), worker)
 await writeFile(join(stage, 'desktop/report-renderer.mjs'), "export const chromium = { launch: async () => { throw new Error('Desktop uses HTML print fallback') } }\n")
@@ -51,9 +51,11 @@ execFileSync('npm', ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no
 console.log(`Desktop staged · ${version} · offline default · no .env copied`)
 if (!process.argv.includes('--dmg')) process.exit(0)
 if (process.platform !== 'darwin') throw new Error('Build the DMG on macOS')
+const arch = execFileSync('lipo', ['-archs', 'node_modules/electron/dist/Electron.app/Contents/MacOS/Electron'], { encoding: 'utf8' }).trim()
+if (arch !== 'arm64') throw new Error('Apple Silicon Electron required; rerun desktop/download.mjs with a clean electron/dist')
 const identities = execFileSync('/usr/bin/security', ['find-identity', '-v', '-p', 'codesigning'], { encoding: 'utf8' })
 const identity = process.env.CSC_NAME || identities.match(/"(Developer ID Application:[^"]+)"/)?.[1]
-if (identity && !identities.includes(identity)) throw new Error('CSC_NAME is not a valid Keychain identity')
+if (identity && (!identity.startsWith('Developer ID Application:') || !identities.includes(identity))) throw new Error('CSC_NAME is not a valid Keychain identity')
 console.log(identity ? 'Developer ID signing + hardened runtime + ra-notary notarisation + stapling' : 'UNSIGNED BUILD · no Developer ID Application identity in Keychain · signing/notarisation skipped')
 process.env.CUSTOM_DMGBUILD_PATH = resolve('node_modules/.cache/researchagent-dmg/dmgbuild')
 await electronBuild({ targets: undefined, config: {

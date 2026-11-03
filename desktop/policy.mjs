@@ -19,7 +19,7 @@ export function localRequest(request, port) {
   return !origin || origin === ORIGIN
 }
 export function engineEnv({ userData, preferences, secrets = {} }) {
-  const live = preferences.live && !preferences.paused
+  const live = preferences.live
   // Allowlist, never inherit .env, NODE_OPTIONS, provider URLs, proxy settings or wallet seeds.
   return {
     PATH: '/usr/bin:/bin:/usr/sbin:/sbin', HOME: userData, TMPDIR: process.env.TMPDIR || '/tmp',

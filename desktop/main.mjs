@@ -32,13 +32,13 @@ async function boot() {
   await mkdir(userData, { recursive: true })
   try { preferences = settings(JSON.parse(await readFile(join(userData, 'desktop.json'), 'utf8'))) } catch { /* First launch uses offline fixtures. */ }
   const secrets = {}
-  if (preferences.live && !preferences.paused) {
+  if (preferences.live) {
     for (const name of [...SECRET_ACCOUNTS, 'xrpl-payer']) secrets[name] = await readSecret(name)
     const roster = JSON.parse(await readFile(join(root, 'desktop', 'wallets.json'), 'utf8'))
     for (const name of roster) secrets[name] = await readSecret(name)
     if (!secrets['xrpl-payer'] || !secrets.deepseek || (!secrets.openai && !secrets.cloudflare)) throw new Error('Live credentials incomplete')
   }
-  const env = loadConfig({ ...engineEnv({ userData, preferences, secrets }), RA_LIVE: preferences.live && !preferences.paused ? '1' : '0', RA_PAUSED: preferences.paused ? '1' : '0' })
+  const env = loadConfig({ ...engineEnv({ userData, preferences, secrets }), RA_LIVE: preferences.live ? '1' : '0', RA_PAUSED: preferences.paused ? '1' : '0' })
   child = utilityProcess.fork(join(root, 'desktop', 'engine-host.mjs'), [], { env, cwd: root, stdio: 'ignore', serviceName: 'ResearchAgent Engine' })
   engine = await new Promise((done, fail) => {
     const timer = setTimeout(() => fail(new Error('Engine boot timed out')), 30_000)
@@ -110,7 +110,7 @@ async function boot() {
   const shortcut = (label, accelerator, key, code) => ({ label, accelerator, click: () => mainWindow?.webContents.sendInputEvent({ type: 'keyDown', keyCode: key, modifiers: ['meta'], ...(code ? { code } : {}) }) })
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'ResearchAgent', submenu: [{ role: 'about' }, { label: 'Desktop Settings…', accelerator: 'Cmd+,', click: openPreferences }, { type: 'separator' }, { role: 'hide' }, { role: 'quit' }] },
-    { label: 'File', submenu: [shortcut('New Question', 'Cmd+N', 'N'), { role: 'close' }] },
+    { label: 'File', submenu: [shortcut('New Question', 'Cmd+N', 'N'), { label: 'Print…', accelerator: 'Cmd+P', click: () => BrowserWindow.getFocusedWindow()?.webContents.print() }, { role: 'close' }] },
     { role: 'editMenu' },
     { label: 'View', submenu: [shortcut('Run', 'Cmd+1', '1'), shortcut('Writers', 'Cmd+2', '2'), shortcut('Command Menu', 'Cmd+K', 'K'),
       { label: 'Record Mode · 1280 × 800', click: () => { mainWindow.setContentSize(1280, 800); void mainWindow.loadURL(`${ORIGIN}/?record=1`) } },
@@ -136,6 +136,10 @@ function makeWindow(options) {
     webPreferences: { preload: join(root, 'desktop', 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true } })
   window.webContents.on('will-navigate', (event, url) => { if (!url.startsWith(`${ORIGIN}/`) || (!url.startsWith(`${ORIGIN}/?`) && url !== `${ORIGIN}/`)) event.preventDefault() })
   window.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith(`${ORIGIN}/`) && /^\/runs\/[a-f0-9-]+\/report\.html$/.test(new URL(url).pathname)) {
+      const report = makeWindow({ width: 900, height: 900 })
+      void report.loadURL(url).then(() => report.show())
+    }
     // Explicit explorer links only; never load remote content inside Electron.
     if (/^https:\/\/testnet.xrpl.org\/(?:transactions|accounts)\/[a-zA-Z0-9]+$/.test(url)) void shell.openExternal(url)
     return { action: 'deny' }

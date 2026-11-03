@@ -1,6 +1,6 @@
 # ResearchAgent for macOS
 
-Apple Silicon, macOS 12 or later. Open the DMG, drag **ResearchAgent** to
+Apple Silicon, macOS 13 or later. Open the DMG, drag **ResearchAgent** to
 **Applications**, then open it. Unsigned first-launch instructions and the
 automatic Developer ID pipeline are in [SIGNING.md](SIGNING.md).
 
@@ -21,7 +21,7 @@ mode, set MCP per-call/daily caps, and pause new requests. Apply restarts the ap
 and stops active work. The browser's per-question budget remains its authorization;
 MCP caps are enforced by the engine. Shared wallet-wide caps/pause are #286.
 Remote backends and remote publishers remain disabled pending #286 authentication.
-The API token entry is saved in Keychain for that integration, not sent anywhere.
+Token storage is reserved for that integration.
 The SDK currently covers MCP tools; this app reuses Day 1's validated UI API module
 through a main-process protocol proxy, and uses the SDK for desktop wallet status
 and the packaged MCP adapter. It adds no second UI fetch implementation.

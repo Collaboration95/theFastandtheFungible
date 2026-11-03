@@ -1,18 +1,23 @@
 import { _electron as electron, expect } from '@playwright/test'
-import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, writeFile, rm, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { request } from 'node:http'
 import { execFileSync } from 'node:child_process'
 
 const executablePath = process.env.DESKTOP_EXECUTABLE || '/Applications/ResearchAgent.app/Contents/MacOS/ResearchAgent'
 const data = await mkdtemp(join(tmpdir(), 'researchagent-desktop-smoke-'))
 await mkdir('desktop/evidence', { recursive: true })
+const canary = 'desktop-secret-canary-not-a-wallet'
 const start = performance.now()
-const app = await electron.launch({ executablePath, args: process.env.DESKTOP_APP_PATH ? [process.env.DESKTOP_APP_PATH] : [], env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_DATA: data }, timeout: 30_000 })
+const app = await electron.launch({ executablePath, args: process.env.DESKTOP_APP_PATH ? [process.env.DESKTOP_APP_PATH] : [], env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_DATA: data, XRPL_PAYER_SEED: canary, OPENAI_API_KEY: canary, RA_API_TOKEN: canary }, timeout: 30_000 })
 let apiUrl, publisherUrl
 try {
   const page = await app.firstWindow()
   const errors = []
+  const logs = []
+  app.process().stdout?.on('data', chunk => logs.push(chunk.toString()))
+  app.process().stderr?.on('data', chunk => logs.push(chunk.toString()))
   page.on('pageerror', error => errors.push(error.message))
   await expect(page.getByRole('textbox').first()).toBeVisible()
   await expect(page.getByRole('button', { name: /^Bank of Japan decision/ })).toBeEnabled()
@@ -25,16 +30,19 @@ try {
   expect(await page.evaluate(() => typeof window.require)).toBe('undefined')
   await expect(page.evaluate(() => window.desktop.state())).rejects.toThrow()
   await expect(page.evaluate(() => fetch('https://example.com'))).rejects.toThrow()
-  expect(await page.evaluate(async () => (await fetch('/data/corpus/v2/story-bible.json')).status)).toBe(404)
+  expect(await page.evaluate(async () => (await fetch('/data/corpus/v2/story-bible.json')).status)).toBe(403)
   ;({ apiUrl } = JSON.parse(await readFile(join(data, 'engine.json'), 'utf8')))
   const health = await (await fetch(`${apiUrl}/health`)).json()
   publisherUrl = health.publisherUrl
   expect(apiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/)
   expect([5100, 8788, 8790]).not.toContain(Number(new URL(apiUrl).port))
-  expect((await fetch(`${apiUrl}/health`, { headers: { Host: 'rebind.example' } })).status).toBe(403)
+  const rebindingStatus = await new Promise((done, fail) => {
+    const req = request(`${apiUrl}/health`, { headers: { Host: 'rebind.example' } }, res => { res.resume(); done(res.statusCode) })
+    req.on('error', fail); req.end()
+  })
+  expect(rebindingStatus).toBe(403)
   expect((await fetch(`${apiUrl}/runs`, { method: 'POST', headers: { Origin: 'https://attacker.example' }, body: '{}' })).status).toBe(403)
-  // Block every non-loopback socket in this process tree via Chromium and the engine's OS sandbox
-  // is not assumed. Fixtures are verified below with all provider inputs absent and fetch hooks.
+  // No provider inputs are passed. This verifies fixture operation; it does not claim an OS network sandbox.
   const cases = [/^Bank of Japan decision/, /^Kestrel–TSMC outlook/, /^Malaysia packaging lead times/]
   const runs = []
   for (const [index, preset] of cases.entries()) {
@@ -54,6 +62,23 @@ try {
     runs.push({ useCase: `UC${index + 1}`, phase: run.phase, spentMinor: run.spentMinor, refundedMinor: run.refundedMinor, grants: run.grants.length })
     await page.screenshot({ path: `desktop/evidence/uc${index + 1}.png` })
   }
+  const reportReady = app.waitForEvent('window')
+  await page.getByRole('button', { name: /Download report/ }).click()
+  const report = await reportReady
+  await report.waitForLoadState()
+  await expect(report.getByText('ResearchAgent evidence report').first()).toBeVisible()
+  await report.close()
+  const preferencesReady = app.waitForEvent('window')
+  await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Desktop Settings…').click())
+  const preferences = await preferencesReady
+  await expect(preferences.getByRole('heading', { name: 'Desktop settings' })).toBeVisible()
+  const safeState = await preferences.evaluate(() => window.desktop.state())
+  expect(JSON.stringify(safeState)).not.toContain(canary)
+  await preferences.close()
+  for (const entry of await readdir(data, { recursive: true, withFileTypes: true })) {
+    if (entry.isFile()) expect((await readFile(join(entry.parentPath, entry.name))).includes(Buffer.from(canary))).toBe(false)
+  }
+  expect(logs.join('')).not.toContain(canary)
   expect(errors).toEqual([])
   const listeners = execFileSync('lsof', ['-nP', '-iTCP', '-sTCP:LISTEN'], { encoding: 'utf8' }).split('\n').filter(line => line.includes(new URL(apiUrl).port))
   expect(listeners.every(line => !line.includes('*:'))).toBe(true)
