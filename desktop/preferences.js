@@ -26,3 +26,31 @@ byId('wallets').onclick = () => void action(async () => {
 })
 byId('mcp').onclick = () => void action(async () => { byId('command').textContent = await window.desktop.mcp(); status('MCP setup copied.') })
 byId('apply').onclick = () => void action(() => window.desktop.save({ backend: byId('backend').value, remoteUrl: byId('remoteUrl').value, walletDailyMinor: Number(byId('walletDailyMinor').value), live: byId('live').checked, paused: byId('paused').checked, maxMinor: Number(byId('maxMinor').value), dailyMinor: Number(byId('dailyMinor').value) }))
+
+async function renderAgents() {
+  const state = await window.desktop.agents()
+  byId('endpoint').textContent = state.url || 'Select Local engine to connect agents.'
+  byId('agents').replaceChildren()
+  for (const name of ['Claude Desktop', 'Claude Code', 'Cursor', 'Codex']) {
+    const panel = document.createElement('section')
+    const title = document.createElement('h3'); title.textContent = name; panel.append(title)
+    const max = document.createElement('input'); max.type = 'number'; max.min = '0'; max.max = '500'; max.value = '100'; max.setAttribute('aria-label', `${name} per-call allowance in SGD cents`)
+    const daily = document.createElement('input'); daily.type = 'number'; daily.min = '0'; daily.value = '200'; daily.setAttribute('aria-label', `${name} daily allowance in SGD cents`)
+    const label = document.createElement('p'); label.textContent = 'New connection · per call / daily (SGD cents)'; panel.append(label, max, daily)
+    const button = (text, work) => { const b = document.createElement('button'); b.textContent = text; b.onclick = () => void action(async () => { b.disabled = true; try { await work(); await renderAgents() } finally { b.disabled = false } }); panel.append(b) }
+    if (state.url) button('Create connection', () => window.desktop.agentCreate(name, Number(max.value), Number(daily.value)))
+    for (const agent of state.agents.filter(a => a.name === name)) {
+      const row = document.createElement('p')
+      row.textContent = `${agent.id.slice(0, 8)} · ${agent.revoked ? 'Revoked' : agent.paused ? 'Paused' : 'Active'} · S$${(agent.maxMinor / 100).toFixed(2)}/call · S$${(agent.dailyMinor / 100).toFixed(2)}/day · Spent S$${(agent.spentMinor / 100).toFixed(2)} · Reserved S$${(agent.reservedMinor / 100).toFixed(2)} · Last call ${agent.lastCall || 'Never'}`
+      panel.append(row)
+      if (!agent.revoked) {
+        button('Copy config', async () => { await window.desktop.agentCopy(agent.id); status('Private config copied to clipboard.') })
+        button(agent.paused ? 'Resume' : 'Pause', () => window.desktop.agentControl(agent.id, agent.paused ? 'resume' : 'pause'))
+        button('Revoke', () => window.desktop.agentControl(agent.id, 'revoke'))
+      }
+    }
+    byId('agents').append(panel)
+  }
+}
+void action(renderAgents)
+setInterval(() => { if (!document.hidden && !byId('agents').contains(document.activeElement)) void action(renderAgents) }, 10000)

@@ -38,6 +38,14 @@ export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedA
 
 /** All mutations are synchronous SQLite transactions; no transaction crosses an await. */
 export class Store {
+  recordMcpCall(id: string) {
+    this.db.exec('CREATE TABLE IF NOT EXISTS mcp_calls (agent_id TEXT PRIMARY KEY, at TEXT NOT NULL)')
+    this.db.prepare('INSERT OR REPLACE INTO mcp_calls VALUES (?,?)').run(id, new Date().toISOString())
+  }
+  lastMcpCall(id: string) {
+    this.db.exec('CREATE TABLE IF NOT EXISTS mcp_calls (agent_id TEXT PRIMARY KEY, at TEXT NOT NULL)')
+    return this.db.prepare('SELECT at FROM mcp_calls WHERE agent_id=?').get(id)?.at ?? null
+  }
   private readonly db: DatabaseSync
   /** Hash-chained operator ledger (#288). Entries are written inside the same transactions as the state they describe. */
   readonly audit: AuditLog

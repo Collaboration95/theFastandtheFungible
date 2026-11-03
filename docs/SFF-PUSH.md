@@ -10,6 +10,8 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 3 Nov: Mac wallet Streamable HTTP MCP, per-agent Keychain connections and allowance controls, receipt verifier and inbound hire tools; one policy-selected Testnet purchase (90,000 drops + 12 fee), [evidence](evidence/app-mcp-http.md).
+
 ## Deliverables
 
 | Track | Deliverable | Issue | Status |

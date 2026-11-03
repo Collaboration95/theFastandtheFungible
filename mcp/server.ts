@@ -4,6 +4,8 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { startEngine } from '../server/engine.js'
+import { startMcpHttp } from './http.js'
+import { Store } from '../server/store.js'
 import { createMcpServer } from './tools.js'
 
 // A client can launch this entry from any directory; corpus paths stay repository-relative.
@@ -26,7 +28,14 @@ try {
   server.server.onclose = () => { void close() }
   process.once('SIGINT', () => { void close() })
   process.once('SIGTERM', () => { void close() })
-  await server.connect(new StdioServerTransport())
+  if (process.argv.includes('--http')) {
+    if (config.RA_BACKEND_URL) throw new Error('HTTP host requires its local principal database')
+    const store = new Store(resolve(dataDir, 'app.db'))
+    const http = await startMcpHttp({ apiUrl, store, port: 9689 })
+    const originalClose = server.close.bind(server)
+    server.close = async () => { await http.close(); store.close(); await originalClose() }
+    console.error(`ResearchAgent MCP listening at ${http.url}; agent bearer required`)
+  } else await server.connect(new StdioServerTransport())
 } catch (error) {
   console.error(error instanceof Error && error.message.startsWith('Invalid configuration:') ? error.message : 'ResearchAgent MCP startup failed; check operator configuration. No credentials are logged.')
   await engine?.close()

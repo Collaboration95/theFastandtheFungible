@@ -52,6 +52,8 @@ otherwise it is labelled simulated. Testnet funds have no real value. [All make 
 
 ## Try it in Claude Code
 
+HTTP option: open Mac **Desktop Settings → Connect an agent → Claude Code**, create an allowance and copy its command (app stays open; per-agent bearer on loopback Streamable HTTP).
+
 From the installed checkout, authorize S$2 per question and S$5 per UTC day in fixture mode:
 
 ```sh
