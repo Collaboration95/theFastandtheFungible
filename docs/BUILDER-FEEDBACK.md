@@ -388,3 +388,42 @@ Evidence: `docs/evidence/rlusd-275-refund-310.json`,
 - 2026-11-03 · Observed local tooling friction (#312): sharing node_modules to save disk makes Vite reject the symlinked Geist font path during `make record OFFSET=2100` (403, clip log). Workaround: allow only the resolved node_modules directory in Vite dev fs; existing .env/corpus/store deny rules remain. Suggested fix: Vite should recognize dependency asset realpaths consistently with bundled imports. Severity: low; mainnet impact: none (development recording only).
 
 - 2026-11-03 · Observed local tooling friction (#312): a Playwright demo startup found its allocated ephemeral port already occupied (evidence: `docs/design/ux2/README.md`, first-take console message). Rerunning with a fresh allocation started successfully. Suggested fix: retain the bound port lease until the child server is ready, rather than closing the allocator first. Severity: low; mainnet impact: none (local test startup only).
+
+## 3 Nov 2026 — historical release tooling (#279)
+
+- **Observed GitHub tooling behavior, not an XRPL incident:** the pre-desktop
+  release workflow marked a newly published older tag as Latest. Evidence:
+  `docs/evidence/release-day2.json`, release run `41567080081`. Workaround:
+  publish the immutable Day 2 commit/tag with explicit historical notes, then
+  set v0.3.0 `--latest=false` and restore v0.4.0 as Latest. Suggested fix:
+  release automation should compare version tags and set Latest explicitly;
+  the updated workflow does this. Severity: low release navigation friction;
+  mainnet impact: none; no ledger or wallet operation was involved.
+
+- **Observed evaluation tooling friction after integration:** full
+  `scorecard --check` refuses the frozen `server/agents/loop.ts` hash after the
+  merged escrow path adds its purchase flag. The actual hash equals main;
+  evidence: `docs/evidence/chaos-279-scorecard-freeze.json`. Workaround: preserve
+  the quality gate and display independently labelled historical reliability
+  with `--reliability-only` (cannot combine with quality/live flags). Suggested
+  fix: review/version frozen inputs whenever integrated runtime source changes;
+  retain prior quality history. Severity: low (quality comparison blocked);
+  mainnet impact: none; no ledger or model call occurred in the refused run.
+  Resolved by the upstream v5 freeze; the subsequent full heldout fixture check
+  passed (`docs/evidence/chaos-279-scorecard.json`).
+
+## 3 Nov 2026 — local chaos tooling (#279)
+
+- **Observed local harness interruption; cause partly inferred, not an XRPL incident:**
+  the first integrated soak stopped at iteration 248 after 52 escrow probes,
+  without worker assertion output. The original harness could not distinguish
+  its watchdog from an external kill. Evidence: `docs/evidence/chaos-279-interrupted-soak.json`
+  and `docs/evidence/chaos-279.md`. A successful diagnostic replay reached 1.53 GB
+  RSS; duplicate concurrent SSE snapshots inflated audit work. Workaround:
+  hash identical snapshot/run/grant context and audit each distinct observation;
+  regression preserves every distinct state. Record exit signal/watchdog/elapsed
+  diagnostics; retain the 45 s watchdog and all invariants. The repaired 30-minute
+  soak passed 609 main episodes plus 124 escrow probes. Suggested tooling fix:
+  bounded, deduplicated observation collectors and explicit child-exit diagnostics.
+  Severity: medium local test reliability; mainnet impact: none observed, no
+  live ledger was used and no production money bug was confirmed.

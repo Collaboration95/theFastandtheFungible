@@ -1,0 +1,107 @@
+{
+  "schema": "chaos-v1",
+  "label": "SYNTHETIC fixture ledger; real SIGKILL; production API/SDK/MCP/publisher; no Testnet, providers or real value",
+  "seed": 279,
+  "startedAt": "2026-11-03T02:33:27.665Z",
+  "durationMs": 1801053,
+  "iterations": 570,
+  "faultsInjected": 570,
+  "processKills": 144,
+  "payments": 663,
+  "refunds": 80,
+  "recovered": 463,
+  "failedCleanly": 107,
+  "doubleCharges": 0,
+  "invariantViolations": 0,
+  "stuckReservations": 0,
+  "reservationsHeld": 0,
+  "byFault": {
+    "kill-before-sign": 27,
+    "kill-after-sign": 22,
+    "kill-after-submit": 31,
+    "kill-after-validation": 33,
+    "submit-timeout-before": 31,
+    "submit-timeout-after": 32,
+    "duplicate-submit": 26,
+    "publisher-down": 39,
+    "publisher-slow": 24,
+    "engine-restart": 31,
+    "identical-intents": 32,
+    "sdk-retry": 29,
+    "mcp-retry": 30,
+    "hire-replay": 26,
+    "refund-replay": 39,
+    "sse-drop": 32,
+    "caps": 24,
+    "decision-down": 34,
+    "provider-down": 28
+  },
+  "byUseCase": {
+    "UC2": 417,
+    "UC1": 40,
+    "UC4": 33,
+    "UC3": 80
+  },
+  "maxRssBytes": 1368232008,
+  "maxHandles": 107,
+  "latencyMs": {
+    "firstWindowP95": 11350.43058299998,
+    "lastWindowP95": 14573.634042000165,
+    "p95DriftMs": 3223.203459000186
+  },
+  "lastMetrics": {
+    "schema": "operations-v1",
+    "rail": "xrpl-testnet",
+    "purchasesByStatus": {},
+    "settleLatencyMs": {
+      "samples": 0,
+      "p50": null,
+      "p95": null
+    },
+    "payerLockWaitMs": {
+      "samples": 0,
+      "p95": null,
+      "scope": "last 1024 successful lock acquisitions in this process"
+    },
+    "reconcileBacklog": {
+      "count": 0,
+      "oldestAgeMs": null,
+      "unknownAgeCount": 0,
+      "exhaustedDeliveries": 0
+    },
+    "spendTodayBySurface": {
+      "web": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "mcp": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "x402": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "agent": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      }
+    },
+    "fallbacks": {
+      "llm": 0,
+      "decision": 0,
+      "decisionUnavailable": 0
+    },
+    "modelUsageByRun": [
+      {
+        "runId": "8ceb7e50-d91a-4f04-b4c0-026c1c9c4ea9",
+        "reportedCalls": 0,
+        "inputTokens": null,
+        "outputTokens": null,
+        "estimatedUsd": null
+      }
+    ]
+  },
+  "scope": "Single payer writer; independent fresh stores per iteration, retained across crash; escrow excluded until #273 lands",
+  "testedCommit": "74a3d0101c67dc8f61591b601cb244f5935f5230"
+}

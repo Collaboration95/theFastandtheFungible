@@ -1,0 +1,121 @@
+{
+  "schema": "chaos-v1",
+  "label": "SYNTHETIC fixture ledger; real SIGKILL; production API/SDK/MCP/publisher; no Testnet, providers or real value",
+  "seed": 2279,
+  "testedCommit": "d05a340a04eda5a81f69532386426da915e25fb5",
+  "worktreeDirty": false,
+  "startedAt": "2026-11-03T03:06:23.881Z",
+  "durationMs": 815248,
+  "iterations": 248,
+  "faultsInjected": 248,
+  "processKills": 47,
+  "payments": 322,
+  "refunds": 28,
+  "recovered": 199,
+  "failedCleanly": 49,
+  "doubleCharges": 0,
+  "invariantViolations": 1,
+  "stuckReservations": 0,
+  "reservationsHeld": 0,
+  "byFault": {
+    "kill-before-sign": 8,
+    "kill-after-sign": 11,
+    "kill-after-submit": 11,
+    "kill-after-validation": 12,
+    "submit-timeout-before": 9,
+    "submit-timeout-after": 15,
+    "duplicate-submit": 13,
+    "publisher-down": 15,
+    "publisher-slow": 23,
+    "engine-restart": 5,
+    "identical-intents": 8,
+    "sdk-retry": 21,
+    "mcp-retry": 17,
+    "hire-replay": 9,
+    "refund-replay": 10,
+    "sse-drop": 17,
+    "caps": 19,
+    "decision-down": 14,
+    "provider-down": 11
+  },
+  "byUseCase": {
+    "UC2": 185,
+    "UC1": 18,
+    "UC4": 17,
+    "UC3": 28
+  },
+  "maxRssBytes": 1350225872,
+  "maxHandles": 103,
+  "latencyMs": {
+    "firstWindowP95": 10214.418624999991,
+    "lastWindowP95": 10374.758584000054,
+    "p95DriftMs": 160.33995900006266
+  },
+  "lastMetrics": {
+    "schema": "operations-v1",
+    "rail": "xrpl-testnet",
+    "purchasesByStatus": {
+      "REFUNDED": 1,
+      "VERIFIED": 1
+    },
+    "settleLatencyMs": {
+      "samples": 2,
+      "p50": 22,
+      "p95": 22
+    },
+    "payerLockWaitMs": {
+      "samples": 2,
+      "p95": 0,
+      "scope": "last 1024 successful lock acquisitions in this process"
+    },
+    "reconcileBacklog": {
+      "count": 0,
+      "oldestAgeMs": null,
+      "unknownAgeCount": 0,
+      "exhaustedDeliveries": 0
+    },
+    "spendTodayBySurface": {
+      "web": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "mcp": {
+        "spentMinor": 70,
+        "reservedMinor": 0
+      },
+      "x402": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      },
+      "agent": {
+        "spentMinor": 0,
+        "reservedMinor": 0
+      }
+    },
+    "fallbacks": {
+      "llm": 0,
+      "decision": 0,
+      "decisionUnavailable": 0
+    },
+    "modelUsageByRun": [
+      {
+        "runId": "60d33862-9ea4-4014-b3ba-e1c62ad25059",
+        "reportedCalls": 0,
+        "inputTokens": null,
+        "outputTokens": null,
+        "estimatedUsd": null
+      }
+    ]
+  },
+  "escrow": {
+    "iterations": 52,
+    "faultsInjected": 52,
+    "creates": 52,
+    "releases": 26,
+    "cancellations": 26,
+    "invariantViolations": 0
+  },
+  "scope": "Single payer writer; independent fresh stores per iteration, retained across crash; four escrow timeout/restart/downtime probes every 20 iterations",
+  "failure": "Error: iteration 248 identical-intents/UC3: ",
+  "classification": "Incomplete experiment: worker exited without assertion output at identical-intents/UC3; investigate timeout versus process termination. Not a completed clean soak."
+}

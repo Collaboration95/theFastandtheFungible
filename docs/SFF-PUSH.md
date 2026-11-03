@@ -374,6 +374,9 @@ Agents add items there and keep working around them.
 - 3 Nov (#276): freeze semis/packaging dev vs rates/power heldout before tuning; marginal expected-facts/S$ is deterministic policy, not model spending authority. Accept receipt fits only by grouped dev rules; identity wins this run. Publish the failed 25% waste target and sweep/dev regressions; no held-out retuning or test loosening.
 - 3 Nov: #273 ships opted-in `escrow-policy-v1`: buyer-held hashlock, 120 s CancelAfter and a 15 s finish margin; conditional grant before private delivery, proof plus validated release before access; API/SDK/receipts only, direct exact default.
 
+- 3 Nov: #279 injects faults only in test processes, Ledger and HTTP seams; SIGKILL recovery retains synthetic ledger and both journals; each completed iteration audits grants, receipts, refunds and caps. The 12 h soak remains an operator command, with actual shorter-run evidence recorded separately.
+- 3 Nov: Day 2 release backfill tags the exact #304 commit with explicit historical notes; no package downgrade, existing tag move or Latest replacement.
+
 - 3 Nov: #260 reuses #300’s signed manifest-v2 `covers` format; bounded untrusted promises are checked on the bound passage, never treated as coverage. Scorecards run locally; final calibration fit rejected; stays off, raw threshold unchanged.
 - 3 Nov: #274 hire-v1 receives Testnet funds, reserves budget plus fee through the shared admission, pays a fixed 25% fee royalty equally by distinct cited writer, and returns gross unspent budget; API/SDK/CLI money chain precedes the queued UX work.
 
@@ -419,6 +422,8 @@ Significant product, design and process decisions, newest first. One line each: 
 
 - 3 Nov: Lane D #288 hash-chained `audit_log` written in the same transaction as each admission, decision, reserve, sign, settle, deliver, proof, refund, refusal and pause; CSV/JSONL receipt export (`audit:export`, `/api/audit/receipts.*`); `audit:verify [--testnet]` (5 of 5 October Testnet payments re-confirmed read-only); hire-the-agent inbound, royalty and change payments covered too; payee denylist tests and audit reason; `data:prune`; [COMPLIANCE.md](COMPLIANCE.md).
 - 3 Nov: Lane C #273 escrow-v1 integrated with the payer queue and durable reconciler; SYNTHETIC product-path Testnet finish 12.107 s, failed-proof cancel 129.448 s with writer offline, 459 drops fees; #288 hash-chain events and escrow-aware audit:verify; [evidence](evidence/escrow-273.md).
+
+- 3 Nov: Lane A #279: 500 chaos iterations plus two 30-minute fixture soaks (1679 main fault episodes, 423 SIGKILLs, 124 additional escrow probes), zero double charges or invariants in completed runs; one interrupted harness run retained and duplicate observations repaired. Seeded 20-run CI smoke; 12 h operator mode. Day 2 / v0.3.0 backfilled on #304 with honest selection/uplift/waste notes ([evidence](evidence/chaos-279.md)).
 
 - 3 Nov: Lane D #287 live payment reconciliation, reserve precheck, protected deep health/metrics, JSON money logs and ops runbook; synthetic queued-payment p95 307.91→6.24 ms under 300 ms writer delay; one verified 0.06 XRP Testnet payment ([evidence](evidence/payment-ops-287.md)).
 - 3 Nov: #274 adds x402 hired answers, generic `sdk/x402` buyer, optional remote MCP hire, durable capped royalties/change and a separate caller demo; fixture and live chain evidence in `docs/evidence/hire-274.md`.

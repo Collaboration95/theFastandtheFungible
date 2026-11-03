@@ -271,3 +271,70 @@ A PASS offline is evidence integrity only; it explicitly skips ledger checks.
 Keep an independently recorded audit head and supply `--expect-head` when needed.
 See [SDK/API instructions](sdk.md#verify-an-exported-answer-278) and the
 [real Testnet UC3 and tamper demonstration](evidence/verify-278.md).
+
+## Seeded chaos and fixture soak (#279)
+
+```sh
+npm run chaos -- --runs 500 --seed 279
+npm run chaos -- --soak 12h --seed 279 --output scratch/chaos/soak-12h.json
+# Equivalent convenience target:
+make soak HOURS=12
+```
+
+`check:fast` includes a deterministic 20-iteration smoke. The first iterations
+cover every fault, then the seed picks additional faults and UC1–UC4 scenarios.
+Every iteration uses production API, policy, SDK, publisher and reconciliation
+with an isolated **synthetic durable ledger**. No live provider, dotenv or
+Testnet connection is loaded; generated fixture signing keys have no value.
+`OFFSET=1700` is set in the child environment; all listeners use ephemeral ports.
+MCP retries use real MCP tools over in-memory JSON-RPC transport; stdio remains
+covered by the existing end-to-end suite.
+
+The parent sends payment processes through actual SIGKILL boundaries before
+signing, after durable signing/before submit, after ledger apply, and after
+buyer validation/before receipt record. Each killed process restarts against
+the same buyer, publisher and ledger SQLite stores. A fifth scenario restarts
+a completed engine. Submit failures before/after apply, duplicate submits,
+publisher 503/slow responses, broken SSE, provider and decision outages,
+concurrent identical asks, SDK/MCP retries, hire inbound replays, refund
+replays and capped concurrent admissions exercise the existing seams.
+
+The live timer runs at 20 ms in this harness; explicit `reconcileOnce()` ticks
+also run before assertions. Production keeps its existing 15 s default. The
+summary reads `/api/metrics`, audits persisted runs and observed SSE snapshots,
+compares actual synthetic ledger charges to receipts, and checks grants,
+refunds, per-prompt/source/wallet caps and unknown buyer payments. A fault that
+was not exercised fails the iteration. SUBMITTING still held after three
+explicit recovery ticks counts as stuck; any remaining backlog fails the run.
+
+Output is an atomically replaced, bounded JSON summary, not a raw trace. First
+and last 100 iteration latencies give p95 drift; maximum child RSS and active
+resource counts are recorded. These measure repeated process recovery, not
+memory leakage in a single continuously running engine. Temp stores are removed
+after every iteration and on normal failure; hard-killing the parent may leave
+one `ra-chaos-*` directory in the OS temp directory. The 12 h command is provided;
+only the duration recorded in `docs/evidence/chaos-279.md` has been executed.
+Escrow coverage below is enabled once #273 is present.
+
+After #273, each 20-iteration block also runs four escrow probes against a
+separate synthetic ledger: ambiguous create/finish/cancel submissions and a
+publisher unavailable after lock. They recreate the manager and buyer Store,
+retain ledger/publisher state, replay concurrent purchases and assert one create,
+one terminal operation, one receipt and no open object or reserved principal.
+These additional probes use a controlled policy BUY, distinct from the full
+API/SDK/UC1–UC4 scenarios. Counts appear separately under `escrow` in the summary.
+
+To append explicitly historical reliability rows to a scorecard without changing
+its frozen quality comparisons:
+
+```sh
+npm run scorecard -- --reliability-only --chaos-evidence docs/evidence/chaos-279-500.json --soak-evidence docs/evidence/chaos-279-integrated-soak.json
+```
+
+The optional rows are `chaosPassRatePct`, `doubleCharges`, and `soakP95DriftMs`;
+the output retains the evidence paths and tested commits. No evidence arguments
+means no reliability observation, rather than an invented zero.
+
+`--reliability-only` displays observations without running quality evaluation;
+it refuses `--check`, `--live`, `--compare` and `--plan`. Normal scorecard execution
+retains every frozen-input check.

@@ -1,3 +1,4 @@
+import { readReliability } from './chaos.js'
 import dotenv from 'dotenv'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
@@ -22,6 +23,16 @@ export function history(): Scorecard[] { return existsSync(historyFile) ? readFi
 const read = (file: string) => JSON.parse(readFileSync(file, 'utf8'))
 
 export async function run() {
+  const chaosAt = process.argv.indexOf('--chaos-evidence'), soakAt = process.argv.indexOf('--soak-evidence')
+  if (soakAt >= 0 && chaosAt < 0) throw new Error('--soak-evidence requires --chaos-evidence')
+  const reliability = chaosAt < 0 ? null : readReliability(process.argv[chaosAt+1], soakAt < 0 ? undefined : process.argv[soakAt+1])
+  if (process.argv.includes('--reliability-only')) {
+    if (!reliability || ['--check','--live','--compare','--plan'].some(flag => process.argv.includes(flag))) throw new Error('--reliability-only requires evidence and cannot run or bypass quality checks')
+    console.log(JSON.stringify({ reliability, quality: 'not evaluated' },null,2))
+    console.log('| Historical fixture reliability | Observation |\n|---|---:|')
+    for (const key of ['chaosPassRatePct','doubleCharges','soakP95DriftMs'] as const) console.log(`| ${key} | ${reliability[key] ?? 'null'} |`)
+    return
+  }
   const realFetch = globalThis.fetch
   const live = process.argv.includes('--live'), planOnly = process.argv.includes('--plan')
   if (!live) globalThis.fetch = (async (url, init) => {
@@ -100,7 +111,7 @@ export async function run() {
     labels: { ...flow.labels, timing: live ? 'LIVE decision; fixture writer/planner; SIMULATED settlement' : 'fixture; measured wall clock', corpus: 'synthetic demo articles', boot: latency.boot },
     quality, confidenceIntervals: bootstrapQuality(flow.results, sweep.dataset, bank.questions), timing: { ...timings(latency.samples), coldStartMs: latency.coldStartMs, node: process.version, platform: process.platform, observations: latency.samples },
     cost: { providerCalls: calls.length, estimatedUsageCalls: calls.filter(c => c.estimatedUsage).length, inputTokens: calls.reduce((s, c) => s + c.inputTokens, 0), outputTokens: calls.reduce((s, c) => s + c.outputTokens, 0), modelUsd: usd(calls), latencyModelUsdPerQuery: sample.length ? usd(latencyCalls) / sample.length : null, flowDecisionUsdPerQuery: usd(calls.filter(c => c.phase === 'scorecard-flow')) / ids.length, xrpDropsSpent: measuredRuns.flatMap(r => r.receipts).reduce((s, r) => s + Number(r.xrpl?.amountDrops ?? 0), 0), simulatedMinorSpent: flow.summary.overall.spentMinor, rates: 'eval/decisions/transport.ts (8 Oct 2026 rates; usage-derived estimate, not an invoice)' },
-    audit, external: { mcpE2e: null, dmgColdStartMs: null }, counts: { questions: flow.results.length, coverageSnapshots: coverage.snapshots, requestedFacts: flow.summary.overall.requestedFacts },
+    audit, external: { reliability, mcpE2e: null, dmgColdStartMs: null }, counts: { questions: flow.results.length, coverageSnapshots: coverage.snapshots, requestedFacts: flow.summary.overall.requestedFacts },
   }
   const comparison = baseline ? deltas(quality, baseline.quality) : []
   const local = join(dir, 'report.json')
@@ -117,6 +128,7 @@ export async function run() {
   appendFileSync(historyFile, text + '\n')
   console.log(`\n| Metric | ${scorecard.mode} · ${scorecard.commit.slice(0, 8)} |\n|---|---:|`)
   for (const [key, value] of Object.entries({ ...quality, ...timings(latency.samples), coldStartMs: latency.coldStartMs, providerCalls: calls.length, modelUsd: usd(calls), modelUsdPerQuery: sample.length ? usd(latencyCalls) / sample.length : null, xrpDropsSpent: 0, hardGateViolations: audit.total })) console.log(`| ${{ wastedSpendPct: 'Wasted gross spend (%)', netWastedSpendPct: 'Wasted net spend after confirmed refunds (%)', usedSpendPct: 'Gross spend buying a final-used fact (%)' }[key] ?? key} | ${value === null ? 'null' : value} |`)
+  if (reliability) for (const key of ['chaosPassRatePct','doubleCharges','soakP95DriftMs'] as const) console.log(`| ${key} | ${reliability[key] ?? 'null'} |`)
   if (reference && baseline) console.log('Deltas: ' + JSON.stringify(reportDeltas(scorecard, baseline)))
   console.log(`History appended; raw evidence: ${local}`)
 }
