@@ -74,5 +74,65 @@ billing cost remains null; the runner stops at a cap or exhausted quota.
 
 ## Results
 
-Pending completion of the paired experiment. Raw allowlisted observations:
-`live-reliability-before.json` and `live-reliability-after.json`.
+| Metric | Before | After |
+|---|---:|---:|
+| Runs | 30 | 30 |
+| Fully live operational successes | 14/30 | 27/30 |
+| Runs with substitutions | 14/30 (46.7%) | 2/30 (6.7%) |
+| UC contract failures | 2 | 1 |
+| First answer p50 / p95 | 1.491 / 2.369 s | 1.698 / 2.318 s |
+| Final p50 / p95 | 19.731 / 37.398 s | 20.005 / 36.040 s |
+| Testnet settlement p50 / p95 | 7.856 / 10.196 s | 7.851 / 10.272 s |
+| Reported-token model cost scenario | US$0.6514 | US$0.6417 |
+| Raw lexical audit flags | 0 | 1 (public-fact paraphrase) |
+
+Raw allowlisted observations: `live-reliability-before.json` and
+`live-reliability-after.json`. All 60 runs completed; no provider HTTP error or
+quota exhaustion occurred. Before: 241 reported model calls; after counts are
+in JSON. Remaining substitutions are both Q51 planner fallbacks. UC2's expected
+purchase failed twice before and once after. This unseeded provider experiment
+cannot attribute UC2 variability or small latency differences solely to the fix.
+First-answer p50 regressed; p95 first/final improved slightly. Settlement is
+essentially unchanged. Retry and cache outage behavior is established by fault
+tests, not by a live Groq/Cloudflare exhaustion incident.
+
+The reported-token scenario total is below US$1.50 plus embedding reservations
+and the doctor's small probes; actual provider billing is unavailable. Per-run
+`modelUsage.estimatedUsd` stays null because operator blended prices were not
+configured. Model reservations and the scenario are distinct from Testnet XRP.
+
+### Strict lexical audit finding (retained, not waived)
+
+Before: zero persisted-state audit flags. After: one `premium_leak` lexical
+flag in UC3 run `91b23f85-5764-4730-865f-6533f0df2c93`, answer version 2.
+The model's text “Phase 2 was commissioned on 15 August 2026” matches eight
+words in an unpurchased Load Factor article. Its cited **free** record,
+`or-penang-packaging-output-2026-q3`, independently states that the Phase 2
+**plant** was commissioned on that date. The model omitted “plant.” The free
+record is accessible; the answer binds that fact to its free passage. There is
+no Load Factor grant, delivered content or citation in this run. This is a
+public-fact paraphrase collision in the exact-word detector, not evidence that
+private Load Factor bytes were delivered. Provider wire payloads were not
+captured, so that last distinction is based on persisted provenance and the
+production accessible-content path, not a raw provider-wire inspection.
+
+`tests/live-reliability-audit.test.ts` reproduces the finding: the actual free
+passage passes, its short paraphrase triggers the unchanged checker, and the
+citation resolves to the free passage. The raw finding remains in the after
+JSON. `summarise-live-reliability.mjs` writes both summaries and deliberately
+exits 1 when the audit has any finding; it contains no automatic waiver. No
+threshold, exemption list, audit code or hard gate was loosened. Do not describe
+this experiment as having zero raw audit flags or as an unqualified gate-audit
+PASS. Operational success counts above are separate from this audit.
+
+### Verification
+
+`make doctor OFFSET=800` passed. `npm run check:fast` passed lint/typecheck,
+730 tests in 92 files and the 20-iteration seeded crash/recovery smoke before
+the additional lexical reproduction test. Final checks are recorded in the PR.
+All existing five-gate tests remain. The run's runtime source hashes distinguish
+the original main implementation from the after process's uncommitted sources;
+Git commit alone does not identify that dirty after process. Local fixture
+checks ran concurrently with part of each phase; machine load and live network
+conditions were not controlled. These are local observations, not a statistical
+latency improvement claim.

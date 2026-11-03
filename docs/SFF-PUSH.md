@@ -460,6 +460,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - MCP Testnet proof: stdio purchase settled on XRPL Testnet with delivered citations and a ledger-checked idempotent retry.
 
 ### Tue 3 Nov
+- Live reliability: measured the same 30-run UC1–UC3/held-out sequence on real research/decision providers and XRPL Testnet; clarified the planner prompt without changing its spending-language guard, bounded provider retries and embedding failure fan-out. Synthetic corpus and scenario costs stay labelled; [paired evidence](evidence/live-reliability.md).
 - UX lane #312: answer and claims, article-specific Activity, supporting tables/palette/settings, mobile Spend sheet and neutral site. UC3 PDF 50 → 4 pages on the same v0.5.0 snapshot; citation-backed dated lead replaces the author introduction. Rebased onto Lane B #320; UI makes no spending-policy change.
 - UX lane #311: shell, environment popover, plan, payments/verification/refund, net Spend and receipt sheets; four allowed keyframes, no in-app cast/odometer. Recovery state clarified; #312 retains answer/supporting-screen/PDF/site work.
 - Lane B #276: value-of-information veto, conservative signed-menu duplicate checks, keyed receipt refit and exact intent/answer labels; held-out waste 39.39% → 35.48% (target missed), flow F1 0.588 → 0.625, uplift +15.38 pts unchanged; dev waste 51.79% → 44.19%, flow F1 0.308 → 0.296. Zero gate violations; scorecard/README refreshed.
