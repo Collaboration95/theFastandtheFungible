@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { XRPL_LABEL, type LedgerView, type RunSnapshot } from '../../shared/contracts/index.js'
+import { settlementAssetLabel } from '../format'
 import { getLedger } from '../api'
 import { deriveRunState } from '../runState'
 
@@ -35,12 +36,12 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
   const nameOf = (address: string) => view?.rail === 'xrpl-testnet' ? view.wallets.find(w => w.address === address)?.name ?? short(address) : short(address)
   return <section className="ra-panel ra-ledger" aria-label="XRPL Testnet ledger">
     <h2>Ledger · XRPL Testnet</h2>
-    <p className="ra-muted">{XRPL_LABEL} · S$0.01 = 1,000 drops (fixed demo rate)</p>
+    <p className="ra-muted">{XRPL_LABEL} · Fixed demo rates: S$0.01 = 1,000 XRP drops; S$1 = 1 issued test unit</p>
     <h3>Payments this run</h3>
     {payments.length === 0 ? <p>No ledger payment yet.</p> : <ol className="ra-ledger-payments">
       {payments.map(receipt => <li key={receipt.receiptId}>
         <span className="ra-ledger-flow"><span>{nameOf(receipt.xrpl!.payer)}</span><span aria-hidden="true"> → </span><strong>{nameOf(receipt.xrpl!.payTo)}</strong></span>
-        <span>S${(receipt.amountMinor / 100).toFixed(2)} = {xrp(receipt.xrpl!.amountDrops)} · ledger {receipt.xrpl!.ledgerIndex}</span>
+        <span>S${(receipt.amountMinor / 100).toFixed(2)} = {receipt.xrpl!.asset && receipt.xrpl!.asset !== 'XRP' ? `${receipt.xrpl!.amountDrops} ${settlementAssetLabel(receipt.xrpl!.asset)}` : xrp(receipt.xrpl!.amountDrops)} · ledger {receipt.xrpl!.ledgerIndex}</span>
         <a href={receipt.xrpl!.explorerUrl} target="_blank" rel="noreferrer">tx {receipt.xrpl!.txHash.slice(0, 10)}… on the explorer</a>
       </li>)}
     </ol>}
@@ -49,7 +50,7 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
     </ol>}
     <h3>Wallets</h3>
     {view?.rail !== 'xrpl-testnet' ? <p>Loading Testnet balances…</p> : <table className="ra-ledger-wallets">
-      <thead><tr><th scope="col">Wallet</th><th scope="col">Balance</th><th scope="col">Received from ResearchAgent</th></tr></thead>
+      <thead><tr><th scope="col">Wallet</th><th scope="col">Balance</th><th scope="col">XRP received from ResearchAgent</th></tr></thead>
       <tbody>{view.wallets.map(wallet => <tr key={wallet.address} className={moved.has(wallet.address) ? 'ra-ledger-moved' : undefined}>
         <th scope="row">{wallet.name}<br /><a href={`${view.accountExplorer}/${wallet.address}`} target="_blank" rel="noreferrer"><code>{short(wallet.address)}</code></a></th>
         <td>{xrp(wallet.balanceDrops)}</td>

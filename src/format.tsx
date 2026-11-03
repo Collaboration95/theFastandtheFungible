@@ -1,6 +1,9 @@
 /* eslint-disable react-refresh/only-export-components -- Small shared helpers next to the logo mark. */
 import { brandPath, brandFavicons } from './assets/brand/identity'
+import { RLUSD_TESTNET_ISSUER, type Asset } from '../shared/contracts/asset.js'
 import type { Citation, DecisionRow, RunSnapshot } from '../shared/contracts/index.js'
+
+export const settlementAssetLabel = (asset?: Asset) => !asset || asset === 'XRP' ? 'XRPL Testnet' : asset.issuer === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : asset.label
 
 export const money = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 export const shortHash = (hash: string) => hash.length > 14 ? `${hash.slice(0, 6)}…${hash.slice(-5)}` : hash

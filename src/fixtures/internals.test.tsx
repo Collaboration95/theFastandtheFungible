@@ -46,6 +46,11 @@ describe('visible internals', () => {
         xrpl: { txHash: hash, ledgerIndex: 21296154, payer: 'rwi1i3TJfZKmLWoAiNkXUBZmdWVGFxBNRQ', payTo: 'rGhpLNe5FR5GmPapPhLCxgi2h7fefhUVkp', amountDrops: '80000', explorerUrl: `https://testnet.xrpl.org/transactions/${hash}` } }] }
     const html = renderToStaticMarkup(<Ledger run={run} />)
     for (const text of ['Ledger · XRPL Testnet', 'S$0.80 = 0.08 XRP', 'ledger 21296154', `https://testnet.xrpl.org/transactions/${hash}`, 'rGhpLN…UVkp']) expect(html).toContain(text)
+    const issued = structuredClone(run)
+    Object.assign(issued.receipts[0].xrpl, { amountDrops: '0.80', asset: { currency: '524C555344000000000000000000000000000000', issuer: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV', label: 'RLUSD (Testnet)' } })
+    const issuedHtml = renderToStaticMarkup(<Ledger run={issued} />)
+    expect(issuedHtml).toContain('0.80 RLUSD (Testnet)')
+    expect(issuedHtml).not.toContain('0.000001 XRP')
   })
 
   it('shows exact minor-unit budget and permanent simulation labels', () => {
