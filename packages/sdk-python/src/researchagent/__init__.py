@@ -159,7 +159,8 @@ class Client:
             error.close()
             codes = {'unauthorized', 'not_found', 'invalid', 'backend_unavailable', 'cancelled', 'payment_failed', 'verification_failed', 'cap_zero', 'paused', 'budget_exhausted', 'overloaded', 'deadline', 'settlement_pending'}
             if isinstance(envelope, dict) and isinstance(envelope.get('code'), str) and envelope.get('code') in codes and envelope.get('status') == status and isinstance(envelope.get('retryable'), bool):
-                raise ResearchAgentError(envelope['code'], status, retryable=envelope['retryable'], run_id=envelope.get('runId')) from None
+                cls = UnauthorizedError if envelope['code'] == 'unauthorized' else InvalidRequestError if envelope['code'] == 'invalid' else ResearchAgentError
+                raise cls(envelope['code'], status, retryable=envelope['retryable'], run_id=envelope.get('runId')) from None
             cls = UnauthorizedError if status in (401, 403) else InvalidRequestError if 400 <= status < 500 else BackendError
             code = 'unauthorized' if status in (401, 403) else 'not_found' if status == 404 else 'invalid' if status < 500 else 'backend_unavailable'
             raise cls(code, status) from None
