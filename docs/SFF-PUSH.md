@@ -545,3 +545,5 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 · Lane X: live key-reveal lifecycle and policy checks, escrow-finish refunds/re-buy and multi-origin hire; local Testnet default after V2 with explicit Payment opt-out; cold-faucet hashes and verification in docs/evidence/lane-x/.
 
 - 2026-11-04 — Feasibility (W2): controlled A/B/C/B/A plus load-affected B rerun find no W regression; quiet full C soak passes all five unchanged gates (loop p99 25.821 ms). Evidence: docs/evidence/soak-nov4-ab/README.md; local synthetic/SIMULATED only.
+
+- 2026-11-04 — Lane Y: link RC SDK/Python/MCP installs and unsigned DMGs, report package MCP version, reconcile quiet-host soak evidence, mark upstream drafts unfiled, and record #367–#374.
