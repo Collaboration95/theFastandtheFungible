@@ -19,17 +19,17 @@ paid article from that writer by key reveal. Output is addresses, timings and ha
 What the writer sees:
 
 ```
-Wallet rDUT9Z2wnCXsbVBCh5cjMf4DsUMSe5dJSn · XRPL TESTNET · key saved privately
-Writer live · address rDUT9Z2wnCXsbVBCh5cjMf4DsUMSe5dJSn · CredentialCreate tx https://testnet.xrpl.org/transactions/278CF28FF1FE8DE3B331C57883A010BFA41BE4D4EA7DEF24547A1291DED7EEEF ↗ · first sale will appear as EscrowFinish
+Wallet rH5nJSbPoLZrjtHtwWUn7wXzQRkwbCj9jQ · XRPL TESTNET · key saved privately
+Writer live · address rH5nJSbPoLZrjtHtwWUn7wXzQRkwbCj9jQ · CredentialCreate tx https://testnet.xrpl.org/transactions/A8AAD1E42C3877E8A15682BA65E86FB4C7E0DC36BC14685E0DF5EC07AC624023 ↗ · first sale will appear as EscrowFinish
 ```
 
 | Step | Seconds from start | Hash | Ledger | Result |
 |---|---:|---|---:|---|
-| Writer live (npx install + faucet + CredentialCreate/Accept) | 48.8 | `278CF28FF1FE8DE3B331C57883A010BFA41BE4D4EA7DEF24547A1291DED7EEEF` | 22057989 | tesSUCCESS |
-| Buyer EscrowCreate (key reveal) | | `590A9A753A7050B3B75547F96EB92915DBC2541571868B1183A7FE62ED23C4E3` | 22057996 | tesSUCCESS |
-| Writer EscrowFinish (key published) | 74.0 | `D73E5090655B426A85283409C5601201B342873ABF62D527361452220D43A592` | 22057998 | tesSUCCESS |
+| Writer live (npx install + faucet + CredentialCreate/Accept) | 43.8 | `A8AAD1E42C3877E8A15682BA65E86FB4C7E0DC36BC14685E0DF5EC07AC624023` | 22058157 | tesSUCCESS |
+| Buyer EscrowCreate (key reveal) | | `8F7318AD20B83D75C3CEC22A08CA530BC60027AFE823FE5BA20EA5C83A7C671B` | 22058164 | tesSUCCESS |
+| Writer EscrowFinish (key published) | 67.7 | `AC7BC339205878056B70609EC8B243CFB0BB1F2E37EDF3D4BE3E46CA6AD247FF` | 22058166 | tesSUCCESS |
 
-Acceptance: Credential validated in 48.8 s (< 90 s) from a fresh directory and a cold npm cache; intent `VERIFIED` with `escrow.mode = key-reveal`.
+Acceptance: Credential validated in 43.8 s (< 90 s) from a fresh directory and a cold npm cache; intent `VERIFIED` with `escrow.mode = key-reveal`.
 
 Notes
 - The Credential issuer is a **local operator** Testnet wallet created on first run (`issuer.private.json`, mode 0600), labelled "Local operator · Testnet identity only". It proves wallet onboarding and the #357 verifier path, not a human identity check. Which issuer is canonical for the demo is an owner decision.
