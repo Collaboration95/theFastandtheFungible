@@ -15,7 +15,11 @@ export async function startEngine({ apiPort = 0, publisherPort = 0, dataDir, liv
     LLM_PROVIDER: live && process.env.RA_ACCEPT_TESTNET !== '1' ? 'deepseek' : 'fixture', DECISION_PROVIDER: live && process.env.RA_ACCEPT_TESTNET !== '1' ? (config.DECISION_PROVIDER === 'openai' ? 'openai' : 'cloudflare') : 'fixture',
     SEARCH_EMBEDDINGS: live ? (config.SEARCH_EMBEDDINGS ?? 'live') : 'off',
     SETTLEMENT_RAIL: live && config.XRPL_PAYER_SEED ? 'xrpl-testnet' : 'simulated' })
-  const worker = new Worker(new URL('./engine-worker.mjs', import.meta.url), { env, execArgv: process.execArgv.filter(arg => !arg.startsWith('--input-type')), workerData: { apiPort }, stdout: true, stderr: true })
+  // Bound the nursery rather than old space: transient snapshot validation creates
+  // heavy allocation traffic. This reduces transient heap capacity without capping
+  // old space or external buffers; pause distributions are workload dependent.
+  // Measured rationale and full unchanged gates: docs/evidence/round2-u/README.md.
+  const worker = new Worker(new URL('./engine-worker.mjs', import.meta.url), { env, resourceLimits: { maxYoungGenerationSizeMb: 16 }, execArgv: process.execArgv.filter(arg => !arg.startsWith('--input-type')), workerData: { apiPort }, stdout: true, stderr: true })
   // stdout is reserved for the MCP JSON-RPC transport, including publisher startup messages.
   worker.stdout.pipe(process.stderr)
   worker.stderr.pipe(process.stderr)

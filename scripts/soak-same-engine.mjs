@@ -8,6 +8,7 @@ import { performance, monitorEventLoopDelay, PerformanceObserver } from 'node:pe
 import { BroadcastChannel, isMainThread, threadId, workerData } from 'node:worker_threads'
 import { loadavg, cpus, platform, release } from 'node:os'
 import net from 'node:net'
+import { writeHeapSnapshot, getHeapStatistics } from 'node:v8'
 import { syncBuiltinESMExports } from 'node:module'
 import { execFileSync } from 'node:child_process'
 
@@ -62,29 +63,29 @@ export async function installGuard() {
     const {ActiveWork}=await import('../server/agents/active-work.ts')
     const acquire=ActiveWork.prototype.acquire
     let burst=false
-    channel.onmessage=({data})=>{if(data.burstStart) {burst=true;channel.postMessage({burstReady:true})}}
+    channel.onmessage=({data})=>{if(data.heapSnapshot && process.env.SOAK_HEAP_DIR) { mkdirSync(process.env.SOAK_HEAP_DIR,{recursive:true}); const before=process.memoryUsage(); const path=writeHeapSnapshot(join(process.env.SOAK_HEAP_DIR,`${data.heapSnapshot}.heapsnapshot`)); channel.postMessage({snapshot:data.heapSnapshot,path,before,after:process.memoryUsage()}) };if(data.burstStart) {burst=true;channel.postMessage({burstReady:true})}}
     ActiveWork.prototype.acquire=function(...args) {
       const release=acquire.apply(this,args)
       if(burst)channel.postMessage({burstActive:this.active})
       return ()=>{release();if(burst)channel.postMessage({burstActive:this.active})}
     }
     const histogram=monitorEventLoopDelay({resolution:10}); histogram.enable()
-    let gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{}}
+    let gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{},pausesMs:[]}
     const observer=new PerformanceObserver(list=>{for(const entry of list.getEntries()){
-      gc.count++;gc.totalPauseMs+=entry.duration;gc.maxPauseMs=Math.max(gc.maxPauseMs,entry.duration)
+      gc.pausesMs.push(entry.duration);gc.count++;gc.totalPauseMs+=entry.duration;gc.maxPauseMs=Math.max(gc.maxPauseMs,entry.duration)
       const kind=String(entry.detail.kind);gc.kinds[kind]=(gc.kinds[kind]||0)+1
     }})
     observer.observe({entryTypes:['gc']})
     const engineId=randomUUID()
-    const timer=setInterval(()=> {channel.postMessage({worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,handles:process.getActiveResourcesInfo().length,gc,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset();gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{}}},1000)
+    const timer=setInterval(()=> {channel.postMessage({worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,memory:process.memoryUsage(),v8:getHeapStatistics(),handles:process.getActiveResourcesInfo().length,gc,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset();gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{},pausesMs:[]}},1000)
     timer.unref()
     channel.unref()
   } else channel.unref()
 }
 export function options(args) {
   const o={runs:2000,warmup:200,concurrency:1,seed:279,historyRuns:10000,eventsPerRun:60,timeoutMs:120000,burst:false}
-  const names={'runs':'runs','warmup':'warmup','concurrency':'concurrency','seed':'seed','history-runs':'historyRuns','events-per-run':'eventsPerRun','data-dir':'dataDir','output':'output','timeout-ms':'timeoutMs','cpu-prof-dir':'cpuProfDir'}
-  for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--diagnostic-slope'){o.diagnosticSlope=true;continue}if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output','cpuProfDir'].includes(key)?args[++i]:Number(args[++i])}
+  const names={'runs':'runs','warmup':'warmup','concurrency':'concurrency','seed':'seed','history-runs':'historyRuns','events-per-run':'eventsPerRun','data-dir':'dataDir','output':'output','timeout-ms':'timeoutMs','cpu-prof-dir':'cpuProfDir','heap-dir':'heapDir'}
+  for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--diagnostic-slope'){o.diagnosticSlope=true;continue}if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output','cpuProfDir','heapDir'].includes(key)?args[++i]:Number(args[++i])}
   for(const key of ['runs','warmup','concurrency','seed','historyRuns','eventsPerRun','timeoutMs'])if(!Number.isSafeInteger(o[key])||o[key]<0)throw Error('Invalid '+key)
   if(!o.runs||!o.concurrency||!o.timeoutMs||!o.dataDir||!o.output)throw Error('Positive counts, --data-dir and --output required')
   if(o.diagnosticSlope&&o.runs>=2000)throw Error('Diagnostic slope is only allowed below 2000 asks; full-run gate is mandatory')
@@ -126,11 +127,13 @@ async function run(o) {
   } finally {store.close()}
   r.seedDurationMs=Date.now()-start;save()
   let burstReady=false,burstPeak=0,burstActive=0
+  const snapshots=[]
+  const snapshot=async name=>{if(!o.heapDir)return;channel.postMessage({heapSnapshot:name});await deadline((async()=>{while(!snapshots.some(s=>s.snapshot===name))await new Promise(done=>setTimeout(done,10))})(),o.timeoutMs);r.snapshots=snapshots;save()}
   let worker, engine, stage='startup', completed=0, lastWall=Date.now(), lastMono=performance.now()
   const channel=new BroadcastChannel('same-engine-soak-'+process.env.SOAK_ID)
-  channel.onmessage=({data})=> {if(data.burstReady)burstReady=true;if(data.burstActive!==undefined){burstActive=data.burstActive;burstPeak=Math.max(burstPeak,burstActive)};if(data.blocked)r.failures.push('non-loopback request');if(data.worker)worker=data}
+  channel.onmessage=({data})=> {if(data.snapshot)snapshots.push(data);if(data.burstReady)burstReady=true;if(data.burstActive!==undefined){burstActive=data.burstActive;burstPeak=Math.max(burstPeak,burstActive)};if(data.blocked)r.failures.push('non-loopback request');if(data.worker)worker=data}
   const bytes=path=>existsSync(path)?statSync(path).size:0
-  const sample=()=>{const wall=Date.now(),mono=performance.now();r.samples.push({at:wall,elapsedMs:wall-start,stage,completed,rss:process.memoryUsage().rss,hostHeap:process.memoryUsage().heapUsed,hostHandles:process.getActiveResourcesInfo().length,worker,dbBytes:bytes(dbPath),walBytes:bytes(dbPath+'-wal'),load:loadavg(),gapMs:mono-lastMono,hostSleepMs:Math.max(0,(wall-lastWall)-(mono-lastMono))});lastWall=wall;lastMono=mono}
+  const sample=()=>{const wall=Date.now(),mono=performance.now();r.samples.push({at:wall,elapsedMs:wall-start,stage,completed,rss:process.memoryUsage().rss,hostHeap:process.memoryUsage().heapUsed,hostMemory:process.memoryUsage(),hostHandles:process.getActiveResourcesInfo().length,worker,dbBytes:bytes(dbPath),walBytes:bytes(dbPath+'-wal'),load:loadavg(),gapMs:mono-lastMono,hostSleepMs:Math.max(0,(wall-lastWall)-(mono-lastMono))});lastWall=wall;lastMono=mono}
   const timer=setInterval(sample,1000)
   const boot=async()=>{worker=undefined;const e=await deadline(startEngine({dataDir:o.dataDir}),o.timeoutMs);const readyAt=performance.now();while(!worker){if(performance.now()-readyAt>o.timeoutMs)throw Error('timeout waiting for worker metrics');await new Promise(done=>setTimeout(done,10))};const h=await(await fetch(e.apiUrl+'/health')).json();if(!h.labels.research.includes('fixture')||!h.labels.decision.includes('fixture')||!h.labels.settlement.includes('SIMULATED'))throw Error('Unsafe engine mode');for(const url of [e.apiUrl,e.publisherUrl])if([5100,8788,8790].includes(+new URL(url).port))throw Error('Protected port');return e}
   const close=async e=>{await deadline(e.close(),o.timeoutMs);for(const url of [e.apiUrl,e.publisherUrl]){let reachable=false;try{await fetch(url+'/health',{signal:AbortSignal.timeout(1000)});reachable=true}catch{ /* expected refusal */ }if(reachable)throw Error('Listener survived close')}}
@@ -140,7 +143,9 @@ async function run(o) {
     const ask=async(index,s)=>{const uc=['UC1','UC2','UC3','UC4'][(index+o.seed)%4],t=performance.now();const identity={pid:process.pid,engineId:worker.engineId,workerId:worker.workerId,storeId};let row
       try{const result=await sdk.ask(USE_CASES[uc].question+(uc==='UC2'?' (pricing & margins)':''),{budgetSgd:2,idempotencyKey:`soak-${s}-${index}`,signal:AbortSignal.timeout(o.timeoutMs)});const snapshot=await(await fetch(engine.apiUrl+'/api/mcp/runs/'+result.run_id,{headers:{Authorization:'Bearer '+engine.apiToken}})).json();const audit=auditRuns([snapshot],corpus);r.auditViolations+=audit.total;row={ok:result.phase==='DONE',runId:result.run_id,phase:result.phase,reservedMinor:snapshot.reservedMinor};if(snapshot.reservedMinor)r.failures.push('unexplained reservation '+result.run_id)}catch(error){row={ok:false,error:error.message};r.failures.push('ask failed '+index)}
       r.asks.push({...identity,...row,index,uc,stage:s,ms:performance.now()-t,rss:process.memoryUsage().rss});if(s==='measured')completed++;save()}
+    await snapshot('early')
     for(const [s,count] of [['warmup',o.warmup],['measured',o.runs]]){stage=s;const began=Date.now();for(let i=0;i<count;i+=o.concurrency)await Promise.all(Array.from({length:Math.min(o.concurrency,count-i)},(_,j)=>ask(i+j,s)));if(s==='measured'&&Date.now()-began<61000)await new Promise(done=>setTimeout(done,61000-(Date.now()-began)))}
+    await snapshot('late')
     if(o.burst) {
       stage='burst'
       channel.postMessage({burstStart:true});await deadline((async()=>{while(!burstReady)await new Promise(done=>setTimeout(done,10))})(),o.timeoutMs)
@@ -170,6 +175,7 @@ if(process.argv[1]&&resolve(process.argv[1])===self){
   else {
     const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
     Object.assign(env,{SOAK_ID:randomUUID(),ACTIVE_WORK_LIMIT:'4',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0',RECONCILE_INTERVAL_MS:'1000',MCP_DAILY_CAP_MINOR:'100000000',WALLET_DAILY_CAP_MINOR:'100000000',NODE_OPTIONS:`--import=data:text/javascript,${encodeURIComponent(`import {installGuard} from ${JSON.stringify(pathToFileURL(self).href)};await installGuard()` )}`})
+    if(o.heapDir)env.SOAK_HEAP_DIR=resolve(o.heapDir)
     const child=spawn(process.execPath,[...(o.cpuProfDir ? ['--cpu-prof', '--cpu-prof-dir='+resolve(o.cpuProfDir)] : []),self,...process.argv.slice(2),'--internal'],{env,stdio:'inherit'})
     child.on('exit',code=>{process.exitCode=code??1})
   }
