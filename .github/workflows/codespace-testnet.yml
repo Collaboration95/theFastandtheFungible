@@ -2,6 +2,8 @@ name: Devcontainer Testnet boot
 # Manual and nightly only; never on PRs. Boots .devcontainer/testnet and pays on XRPL Testnet (no real value).
 # A faucet failure from CI IPs is reported as a yellow warning annotation plus a SIMULATED label, not a red failure.
 on:
+  push:
+    branches: [guru/lane-a3-zero-clone-testnet] # TEMPORARY first-run trigger; removed before merge
   workflow_dispatch:
   schedule:
     - cron: '23 19 * * *'
