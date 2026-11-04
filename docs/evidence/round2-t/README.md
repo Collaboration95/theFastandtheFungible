@@ -31,3 +31,24 @@ and restart coverage, not a live Testnet process-kill experiment. The standard
 200-run chaos matrix separately uses real SIGKILL and simulated settlement.
 All original 184 receipt conformance cases are retained; eight anchor cases add
 malformed/head/answer and stubbed-ledger coverage shared by TS and Python.
+
+## PR recovery and browser diagnosis (2026-11-04)
+
+Rebased onto main after #364 and #365. Both SFF-PUSH entries and both builder
+feedback entries are retained; main's MCP artifact, consumer process-group
+cleanup and diagnostic-only quick RSS slope are unchanged.
+
+Hosted run 41742856407 failed before run admission: the Ask click was intercepted
+by `section.ra-env-pop` (environment disclosure), not the new answer/receipt
+anchor footer. The environment component was identical on main. Its automatic
+opening waited for asynchronous health labels and could cover Ask after the
+preset click. Suppress automatic opening after pointer or keyboard interaction;
+explicit disclosure remains available. Both new regression cases fail against
+the original main component and pass with the fix (Node 22). Browser selectors,
+assertions, timeouts, conformance cases and hard gates are unchanged.
+
+The early ECONNREFUSED was the preview proxy polling the API during startup;
+health subsequently succeeded and nine other hosted specs passed. The same
+transient startup message was observed locally with the browser suite passing.
+Recovery verification uses fixture providers, simulated settlement, ephemeral
+ports and DOTENV_CONFIG_PATH=.playwright/no-env. No new Testnet transactions.

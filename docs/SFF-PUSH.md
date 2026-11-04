@@ -532,3 +532,5 @@ Significant product, design and process decisions, newest first. One line each: 
 
 - 2026-11-04 — Lane Z (Reachability): standalone MCP npm tarball, clean npx/SDK consumers, post-tag install snippets and labelled local zero-clone timing evidence; registries remain unpublished.
 - 2026-11-04 — Lane T: opt-in policy-owned XRPL answer anchors, additive anchor-v1 receipts, TS/Python --ledger PASS on ledger 22048303 (12-drop fee), tamper FAIL, restart/conformance coverage; evidence round2-t.
+
+- 2026-11-04 — Lane T recovery: preserve #364/#365 on rebase; prevent delayed environment onboarding from covering Ask. Existing browser assertions and 184 receipt conformance cases unchanged. Evidence: `docs/evidence/round2-t/README.md`.
