@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import { gzipSync } from 'node:zlib'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, copyFileSync, readFileSync } from 'node:fs'
 import react from '@vitejs/plugin-react'
 export default defineConfig({
   root: 'demo', base: '/theFastandtheFungible/demo/', plugins: [react(), {
     name: 'compressed-audited-replays', enforce: 'post',
+    closeBundle() { mkdirSync('site/evidence', { recursive: true }); copyFileSync('docs/evidence/real-writers.json', 'site/evidence/real-writers.json') },
     transform(_code, id) {
       if (!/[/\\]demo[/\\]traces[/\\]UC[^?]*\.json$/.test(id)) return
       // Keep raw evidence in Git; encode the identical bytes for the static replay.

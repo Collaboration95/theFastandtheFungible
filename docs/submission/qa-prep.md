@@ -138,3 +138,10 @@ the questions, and they follow templates. It does not rule out overfitting."
   state that hashlock isn't fair exchange (B17).
 
 Key reveal makes *delivery* atomic. *Quality* is enforced by the pre-commitment (manifest), a verifiable fraud proof and reputation, not by the ledger.
+
+## Supply and buyers
+
+- Supply is anyone with a Markdown folder.
+- Buyers are agents with budgets that already exist (Claude Code / MCP).
+- The first writers are people who already publish free notes: they keep the free version as the free source and attach a paid deep version.
+- Key reveal means a writer needs no payment server trust and no Stripe account, just an XRPL address.

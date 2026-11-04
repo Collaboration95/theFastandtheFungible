@@ -86,7 +86,7 @@ export async function fairExchange(row, finishBody, createBody) {
 }
 export async function refresh(rows, Socket = WebSocket, update = () => {}) {
   let next = 0
-  await Promise.all(Array.from({length: 2}, async () => {
+  await Promise.all(Array.from({length: 8}, async () => {
     while (next < rows.length) {
       const row = rows[next++]
       let status = 'Historical; unavailable'
@@ -112,16 +112,18 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   document.querySelector('#rows').replaceChildren()
   for (const row of data.rows) {
     const tr = document.createElement('tr')
-    const amount = row.deliveredAmount ?? row.amountDrops ?? 'principal amount not recorded in this evidence'
+    const amount = row.deliveredAmount ?? row.amountDrops ?? (row.group === 'anchor' ? `Memo = audit head ${row.head}; answer anchor` : 'principal amount not recorded in this evidence')
     for (const text of [`${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${row.date}`, `${typeof amount === 'object' ? amount.value + ' RLUSD · issuer ' + amount.issuer : amount + (row.deliveredAmount || row.amountDrops ? ' drops' : '')} · fee ${row.feeDrops} drops`]) { const td = document.createElement('td'); td.textContent = text; tr.append(td) }
     const source = document.createElement('td'); const a = document.createElement('a'); a.href = 'https://github.com/Collaboration95/theFastandtheFungible/blob/' + (row.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943') + '/' + row.source; a.textContent = `Ledger ${row.ledgerIndex} · committed source`; source.append(a); tr.append(source)
-    const td = document.createElement('td'); const link = document.createElement('a'); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.textContent = row.hash; const state = document.createElement('span'); state.className='state'; state.textContent='Historical; not freshly verified'; td.append(link,state); cells.set(row.hash,state); tr.append(td); document.querySelector('#rows').append(tr)
+    const td = document.createElement('td'); const link = document.createElement('a'); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.textContent = row.hash; const state = document.createElement('span'); state.className='state'; state.textContent='Checking live…'; td.append(link,state); cells.set(row.hash,state); tr.append(td); document.querySelector('#rows').append(tr)
   }
   document.querySelector('caption').textContent = `${data.rows.length} curated transactions · snapshot ${data.snapshotDate}`
   const run = async () => {
     const button = document.querySelector('#refresh'); button.disabled = true
-    let verified = 0
+    let verified = 0, checked = 0
+    document.querySelector('#status').textContent = `Checking ${data.rows.length} hashes live… 0/${data.rows.length}`
     await refresh(data.rows, WebSocket, (hash, status) => {
+      document.querySelector('#status').textContent = `Checking ${data.rows.length} hashes live… ${++checked}/${data.rows.length}`
       const cell = cells.get(hash); cell.textContent = status
       cell.classList.toggle('verified', status.startsWith('validated'))
       if (status.startsWith('validated')) verified++
@@ -131,4 +133,11 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   }
   document.querySelector('#refresh').onclick = run
   await run()
+}
+
+if (typeof document !== "undefined" && document.querySelector("#real-writers")) {
+  const { writers } = await fetch("../evidence/real-writers.json").then(r => { if (!r.ok) throw Error("Writer evidence unavailable"); return r.json() }).catch(() => ({ writers: [] }))
+  const list = document.querySelector("#real-writers")
+  list.textContent = writers.length ? "" : "No consenting writers listed yet."
+  for (const writer of writers) { const p = document.createElement("p"); p.textContent = `${writer.name} · ${writer.address} · real person · Testnet · no real value`; list.append(p) }
 }

@@ -36,7 +36,9 @@ it('first run buys, cites paid contribution, reports coverage, and abstains with
     expect(run.contributions.purchases[0].structuralUse).toBe('cited')
     expect(events.filter(e=>e.type==='COVERAGE').at(-1)?.label).toBe('2 of 2 requested facts answered.')
     for (const dash of ['-', '–', '—']) {
-      const r = await client.ask(`How did the Kestrel${dash}TSMC deal change margins?`, {budget:0})
+      const r = await client.ask(`How did the Kestrel${dash}TSMC deal change margins?`, {budget:1})
+      expect(r.receipts).toHaveLength(1)
+      expect(r.spentMinor).toBeGreaterThan(0)
       expect(r.citations.length).toBeGreaterThan(0)
       expect(r.answer?.conclusion).toContain('Kestrel')
     }

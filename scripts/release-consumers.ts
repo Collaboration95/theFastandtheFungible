@@ -29,7 +29,7 @@ const run = async (cmd: string, args: string[]) => {
     return out
   } finally { await stopProcess(p) }
 }
-const question = 'What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?'
+const question = 'How did the Kestrel-TSMC deal change margins?'
 const results: object[] = []
 try {
 const engine = await startEngine({ dataDir: join(dir, 'engine') })

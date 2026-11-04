@@ -23,7 +23,7 @@
   <a href="https://codespaces.new/Collaboration95/theFastandtheFungible"><img alt="Open in GitHub Codespaces" src="https://github.com/codespaces/badge.svg"></a>
   <a href="https://codespaces.new/Collaboration95/theFastandtheFungible?devcontainer_path=.devcontainer%2Ftestnet%2Fdevcontainer.json"><img alt="Open in Codespaces · XRPL Testnet" src="https://img.shields.io/badge/Open_in_Codespaces-XRPL_Testnet-blue"></a>
   <a href="#numbers"><img alt="Latest committed nightly scorecard" src="docs/media/scorecard.svg"></a>
-  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1"><img alt="Latest release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?sort=semver"></a>
+  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1"><img alt="Latest release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?include_prereleases&sort=semver"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-lightgrey"></a>
   <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-lightgrey"></a>
 </p>
@@ -263,3 +263,10 @@ Packages are **built and consumer-tested but not yet published** to npm, PyPI or
 - `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
 
 [Documentation](docs/README.md) · [Changelog](CHANGELOG.md) · [Project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) · [Slides](https://collaboration95.github.io/theFastandtheFungible/slides/) · [Build log](https://collaboration95.github.io/theFastandtheFungible/evolution/) · [Builder feedback](docs/BUILDER-FEEDBACK.md) · [Design record](docs/FINAL-PUSH.md) · [MIT license](LICENSE)
+
+## Real writers
+
+real person · Testnet · no real value
+
+The consenting-writer list is [real-writers.json](docs/evidence/real-writers.json).
+It is empty pending owner-supplied consent; fictional corpus writers are separate.

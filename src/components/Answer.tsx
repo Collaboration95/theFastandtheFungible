@@ -1,3 +1,4 @@
+import { keywordCoverage, searchWords } from '../../publisher/search-text.js'
 import AnchorStatus from './AnchorStatus'
 import { sameSource } from '../../shared/source-identity.js'
 /* eslint-disable react-refresh/only-export-components -- Shared validation for impact/report components. */
@@ -54,7 +55,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   const dropped = baseline?.claims.filter(c => !answer.claims.some(b => b.text === c.text)) ?? []
   const hasPaidEvidence = answer.claims.some(claim => claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID'))
   const draft = run.phase !== 'DONE'
-  const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, answer.claims.filter(c => c.stance === stance)])
+  const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, answer.claims.filter(c => c.stance === stance && (stance !== 'UNCERTAIN' || keywordCoverage(run.question, searchWords([c.text, ...c.citations.flatMap(ref => { const source = candidateOf(run, ref); return source ? [source.title, source.preview] : [] })].join(' '))) >= 0.5))])
   return <>
     <section className="ra-verdict" aria-label="Research answer">
       <div className="ra-answer-heading"><h2 className="ra-caption">{draft ? hasPaidEvidence ? 'Draft · verified evidence' : 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>

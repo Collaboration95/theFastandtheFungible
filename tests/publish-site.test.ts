@@ -29,7 +29,7 @@ async function temporary() {
 async function publish(rail: 'simulated' | 'xrpl-testnet' = 'simulated', fund = vi.fn(async () => {})) {
   const root = await temporary()
   const logs: string[] = []
-  const site = await publishSite({ folder: 'examples/writer-starter', slug: 'test-writer', root, port: 0, rail, env: {}, fund, log: line => logs.push(line) })
+  const site = await publishSite({ folder: 'examples/writer-starter', slug: 'test-writer', root, port: 0, rail, env: {}, fund, credential: vi.fn(async () => ({ hash: 'A'.repeat(64), acceptHash: 'B'.repeat(64), trust: { issuer: Wallet.generate().classicAddress, credentialTypeText: 'researchagent/writer-v1', label: 'Test issuer' } })), log: line => logs.push(line) })
   cleanup.push(() => new Promise<void>(done => { site.server.closeAllConnections(); site.server.close(() => done()) }))
   return { ...site, root, logs, fund, client: new PublisherClient({ baseUrl: site.baseUrl }) }
 }
@@ -135,7 +135,7 @@ describe('Markdown folder → paid writer (#277)', () => {
     const key = await readFile(keyFile, 'utf8')
     expect((await stat(keyFile)).mode & 0o777).toBe(0o600)
     const fund = vi.fn(async (wallet: Wallet) => { expect(key).toContain(wallet.seed) })
-    const site = await publishSite({ ...options, fund })
+    const site = await publishSite({ ...options, fund, credential: async () => ({ hash: 'A'.repeat(64), acceptHash: 'B'.repeat(64), trust: { issuer: Wallet.generate().classicAddress, credentialTypeText: 'researchagent/writer-v1', label: 'Test issuer' } }) })
     cleanup.push(() => new Promise<void>(done => { site.server.closeAllConnections(); site.server.close(() => done()) }))
     expect(fund).toHaveBeenCalledOnce()
     expect(await readFile(keyFile, 'utf8')).toBe(key)

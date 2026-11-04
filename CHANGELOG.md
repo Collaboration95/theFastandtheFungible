@@ -2,8 +2,7 @@
 
 All notable changes to ResearchAgent. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Tagged releases are
-feature-day milestones (v0.x), not semantic-version promises; the SDK and Python
-package carry their own 1.0.0 version in `packages/`.
+feature-day milestones (v0.x). Package versions follow the release tag.
 
 Every number below keeps the scope label of the evidence it comes from
 (synthetic, fixture, local or Testnet). Nothing here uses real money.

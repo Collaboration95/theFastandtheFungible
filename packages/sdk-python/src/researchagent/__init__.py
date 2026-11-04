@@ -158,7 +158,7 @@ class Client:
             except (ValueError, OSError):
                 envelope = {}
             error.close()
-            codes = {'unauthorized', 'not_found', 'invalid', 'backend_unavailable', 'cancelled', 'payment_failed', 'verification_failed', 'cap_zero', 'paused', 'budget_exhausted', 'overloaded', 'deadline', 'settlement_pending'}
+            codes = {'unauthorized', 'not_found', 'invalid', 'backend_unavailable', 'cancelled', 'payment_failed', 'verification_failed', 'cap_zero', 'paused', 'budget_exhausted', 'per_call_cap', 'overloaded', 'deadline', 'settlement_pending'}
             if isinstance(envelope, dict) and isinstance(envelope.get('code'), str) and envelope.get('code') in codes and envelope.get('status') == status and isinstance(envelope.get('retryable'), bool):
                 cls = UnauthorizedError if envelope['code'] == 'unauthorized' else InvalidRequestError if envelope['code'] == 'invalid' else ResearchAgentError
                 raise cls(envelope['code'], status, retryable=envelope['retryable'], run_id=envelope.get('runId')) from None

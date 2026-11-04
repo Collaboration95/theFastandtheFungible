@@ -1,3 +1,4 @@
+import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'
 import { sourceKey } from '../../shared/source-identity.js'
 import { factMenuMismatch, scopeContradiction } from './scope-policy.js'
@@ -88,7 +89,7 @@ export const gapOverlap = (gap: string, candidate: PublicCandidate) => textOverl
  * "Malaysia", "TSMC"). Possessives split off ("Semiconductor's" → "semiconductor").
  */
 export const questionEntities = (question: string) => {
-  const tokens = question.match(/[A-Za-z][A-Za-z0-9-]*/g) ?? []
+  const tokens = searchText(question).match(/[A-Za-z][A-Za-z0-9-]*/g) ?? []
   return new Set(tokens.filter((token, index) => (index > 0 && /^[A-Z]/.test(token)) || /^[A-Z0-9]{2,}$/.test(token)).map(token => token.toLowerCase()))
 }
 /**
@@ -98,7 +99,7 @@ export const questionEntities = (question: string) => {
 export const entityOverlap = (question: string, candidate: PublicCandidate) => {
   const entities = questionEntities(question)
   if (!entities.size) return 1
-  const own = new Set(`${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`.toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [])
+  const own = new Set(searchText(`${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`).toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [])
   return Math.min(1, [...entities].filter(entity => own.has(entity)).length / Math.min(2, entities.size))
 }
 
