@@ -58,8 +58,25 @@ Funding, hire ingress, royalties, change and cooperative refunds stay Payments.
 
 ## Zero-clone Testnet MCP (next release candidate)
 
-Build `make release-artifacts`, then run `npx -y "file:$PWD/dist/release/researchagent-mcp-1.0.0-rc.1.tgz" --testnet` with operator-set `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500` in the environment. The local artifact version is rc.1; the published rc.1 does not contain this feature. `scripts/install-snippets.mjs --tag <tag>` generates release commands.
+```sh
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y <mcp tgz> --testnet
+```
 
-Stdio initializes before provisioning. Tools wait for the public Testnet faucet; one funding request per machine when the cached buyer needs replenishing. Wallets and durable cap accounting live under `$XDG_STATE_HOME/researchagent/testnet/` (fallback `~/.local/state/researchagent/testnet/`), with `wallets.private.json` mode 0600. Keep this directory for wallet reuse and daily accounting. Never publish it. Testnet uses key-reveal escrow and answer anchors explicitly, fixture models and fictional writers, no real value. Faucet/network failures return visible SIMULATED fallback labels with a reason class. Caps default to zero and only policy can spend.
+`<mcp tgz>` is the release asset from the next release candidate (the published rc.1 does not contain `--testnet`), or the
+local `dist/release/researchagent-mcp-*.tgz` from `make release-artifacts`. `node scripts/install-snippets.mjs --tag <tag> --testnet`
+prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots its own engine and fixture publisher.
 
-Opt-in packed-byte acceptance: `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet`. Default CI never calls the faucet. The consumer uses a fresh npm cache, checks restart/reuse, caps and s.altnet validation, saves timings/hashes only, and deletes its private scratch.
+- **Rail.** `ESCROW_MODE=key-reveal` and `ANCHOR_RAIL=xrpl-testnet` are set for the engine only. `wallet_status` shows
+  `rail: xrpl-testnet`, the public payer address and the label `Testnet · no real value`. `ask_expert` and `get_run` add
+  `ledger.purchases[]` (`create`, `finish`, `refund`) and `ledger.anchor`, each `{ txHash, explorerUrl }`.
+- **Wallets.** Stdio `initialize` answers at once; the first tool call waits for the public Testnet faucet (about 20 s cold,
+  about 4 s with cached wallets). One buyer is funded by the faucet; fixture writers are funded from it, so one faucet
+  request per machine. Wallets and durable cap accounting live under `$XDG_STATE_HOME/researchagent/testnet/`
+  (fallback `~/.local/state/researchagent/testnet/`); `wallets.private.json` is mode 0600 and is never printed or
+  returned by a tool. Keep that directory to reuse wallets; never publish it.
+- **Caps.** Operator-set and zero by default (`mcp/policy.ts` is unchanged). Only policy code can purchase.
+- **Fallback.** If the faucet or network fails, the engine runs SIMULATED and says so in `startupLabels`:
+  `SIMULATED fallback · faucet_unavailable | validation_timeout | wallet_cache_unavailable | network_unavailable · no ledger transactions`.
+- **Opt-in acceptance.** `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet` probes the packed bytes over
+  stdio with a fresh npm cache, restarts to prove wallet reuse and cap enforcement, and checks each hash on s.altnet.
+  Default CI never calls the faucet. Evidence: [round3-a](evidence/round3-a/README.md).

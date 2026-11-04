@@ -1,4 +1,5 @@
 import { loadConfig } from '../server/config.js'
+import dotenv from 'dotenv'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
@@ -10,26 +11,29 @@ import { createMcpServer } from './tools.js'
 // A client can launch this entry from any directory; corpus paths stay repository-relative.
 const root = fileURLToPath(new URL('..', import.meta.url))
 process.chdir(root)
-
+// Testnet mode never reads a local .env; the fixture engine gets only provisioned wallet material.
+const testnet = process.argv.includes('--testnet')
+if (!testnet) dotenv.config({ path: resolve(root, '.env'), quiet: true })
 let engine: Awaited<ReturnType<typeof startEngine>> | undefined
 try {
-  const testnet = process.argv.includes('--testnet')
   if (testnet && process.env.RA_BACKEND_URL) throw new Error('Testnet mode requires a local engine')
-  const stateDir = testnet ? (await import('./testnet.js')).testnetStateDir() : undefined
+  const testnetModule = testnet ? await import('./testnet.js') : undefined
   const config = loadConfig()
-  const dataDir = resolve(config.RA_DATA_DIR ?? stateDir ?? resolve(root, 'data/mcp'))
-  const endpoint = (async () => {
-    const setup = testnet ? await (await import('./testnet.js')).prepareMcpTestnet() : undefined
-    engine = config.RA_BACKEND_URL ? undefined : await startEngine({ dataDir, live: !testnet && config.RA_LIVE === '1', testnet: setup?.testnet })
+  const dataDir = resolve(config.RA_DATA_DIR ?? testnetModule?.testnetStateDir() ?? resolve(root, 'data/mcp'))
+  // Testnet answers stdio `initialize` immediately and provisions wallets in the background; tools wait for it.
+  const boot = async () => {
+    const setup = await testnetModule?.prepareMcpTestnet()
+    engine = config.RA_BACKEND_URL ? undefined : await startEngine({ dataDir, live: !testnet && config.RA_LIVE === '1', env: setup?.env })
     return { apiUrl: config.RA_BACKEND_URL || engine!.apiUrl, token: config.RA_API_TOKEN || engine?.apiToken, labels: setup?.labels }
-  })()
+  }
+  const endpoint = testnet ? boot() : await boot()
   const server = createMcpServer(endpoint)
   let closing = false
   const close = async () => {
     if (closing) return
     closing = true
     await server.close()
-    await endpoint.catch(() => undefined)
+    await Promise.resolve(endpoint).catch(() => undefined)
     await engine?.close()
   }
   server.server.onclose = () => { void close() }

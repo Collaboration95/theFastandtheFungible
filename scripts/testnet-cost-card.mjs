@@ -1,27 +1,43 @@
+// Cost and latency card from live XRPL Testnet runs. Input is sanitized transaction metadata
+// (docs/evidence/round3-a/probe.json), never a wallet cache. Offline; no network, no secrets.
+//   node scripts/testnet-cost-card.mjs [probe.json] [--xrp-sgd 2.00] [--markdown]
 import { readFileSync } from 'node:fs'
-// Input is sanitized live tx metadata, not seeds or a private wallet cache.
-const path = process.argv[2] || 'docs/evidence/round3-a/probe.json'
-let input = JSON.parse(readFileSync(path, 'utf8'))
-// A receipts.json export can be measured independently from Testnet as well.
-if (input.payments && !input.timings) {
-  if (process.env.RA_ACCEPT_TESTNET !== '1') throw Error('Receipt fee lookup requires RA_ACCEPT_TESTNET=1')
-  const hashes = [...new Set(input.payments.flatMap(p => [p.escrowCreateHash, p.txHash, p.refundTxHash]).concat(input.ledgerAnchor?.txHash).filter(Boolean))]
-  const transactions = []
-  for (const hash of hashes) {
-    if (!/^[A-F0-9]{64}$/i.test(hash)) throw Error('Invalid receipt transaction hash')
-    const response = await fetch('https://s.altnet.rippletest.net:51234/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'tx', params: [{ transaction: hash }] }), signal: AbortSignal.timeout(15000) })
-    const { result } = await response.json()
-    if (!result.validated || result.meta.TransactionResult !== 'tesSUCCESS') throw Error('Receipt transaction is not validated successful Testnet evidence')
-    const tx = result.tx_json ?? result
-    transactions.push({ hash, type: tx.TransactionType, feeDrops: Number(tx.Fee) })
-  }
-  input = { timings: [{ transactions }] }
-}
-const rateIndex = process.argv.indexOf('--xrp-sgd')
-const rate = rateIndex < 0 ? undefined : Number(process.argv[rateIndex + 1])
-if (rate !== undefined && !(Number.isFinite(rate) && rate > 0)) throw Error('Positive XRP/SGD projection rate required')
+const args = process.argv.slice(2)
+const flag = name => { const i = args.indexOf(name); return i < 0 ? undefined : args[i + 1] }
+const path = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--xrp-sgd') || 'docs/evidence/round3-a/probe.json'
+const { timings } = JSON.parse(readFileSync(path, 'utf8'))
+const rate = flag('--xrp-sgd') === undefined ? undefined : Number(flag('--xrp-sgd'))
+if (rate !== undefined && !(Number.isFinite(rate) && rate > 0)) throw Error('--xrp-sgd must be a positive number')
 const fees = {}
-for (const run of input.timings) for (const tx of run.transactions) (fees[tx.type] ??= []).push(tx.feeDrops)
-const average = type => fees[type]?.reduce((a, b) => a + b, 0) / fees[type]?.length || 0
-const keyRevealDrops = average('EscrowCreate') + average('EscrowFinish')
-console.log(JSON.stringify({ label: 'Observed XRPL Testnet · no real value', feesDrops: { keyReveal: keyRevealDrops, create: average('EscrowCreate'), finish: average('EscrowFinish'), anchorPayment: average('Payment'), plainPaymentReference: 12, refundPaymentReference: 12 }, timings: input.timings.map(({ attempt, initializeSeconds, fundedSeconds, purchaseSeconds }) => ({ attempt, initializeSeconds, fundedSeconds, purchaseSeconds })), ...(rate === undefined ? {} : { projection: { label: 'Mainnet projection; fees can change; excludes reserves, principal and model costs', xrpSgdRate: rate, keyRevealSgd: keyRevealDrops / 1e6 * rate } }) }, null, 2))
+for (const run of timings) for (const tx of run.transactions) (fees[tx.type] ??= []).push(tx.feeDrops)
+const mean = type => { const v = fees[type]; if (!v?.length) throw Error(`No ${type} in ${path}`); return v.reduce((a, b) => a + b, 0) / v.length }
+const round1 = n => Math.round(n * 10) / 10
+const create = mean('EscrowCreate'), finish = mean('EscrowFinish'), anchor = mean('AccountSet')
+// Plain Payment and writer-signed refund fees were observed at 12 drops in docs/evidence/numbers-v7-testnet.md.
+const REFERENCE = { plainPayment: 12, refundPayment: 12, source: 'docs/evidence/numbers-v7-testnet.md (observed live Testnet runs)' }
+const first = timings[0], rest = timings.slice(1)
+const card = {
+  label: 'Observed on XRPL Testnet · no real value · fixture models and fictional writers',
+  feesDrops: { escrowCreate: create, escrowFinish: finish, keyRevealPurchase: create + finish, anchor, ...REFERENCE },
+  latencySeconds: {
+    initialize: round1(first.initializeSeconds),
+    coldWalletProvisioning: round1(first.fundedSeconds),
+    cachedWalletProvisioning: rest.length ? round1(Math.max(...rest.map(t => t.fundedSeconds))) : null,
+    purchaseAnchored: round1(Math.max(...timings.map(t => t.purchaseSeconds))),
+  },
+  runs: timings.length,
+  ...(rate === undefined ? {} : { projection: {
+    label: 'PROJECTION, not a measurement: Testnet fees can differ from mainnet fees under load; excludes principal, the 0.2 XRP escrow owner reserve (held, then released) and model costs',
+    xrpSgdRate: rate, rateNote: 'assumed round figure, not a market quote; change with --xrp-sgd',
+    keyRevealPurchaseSgd: (create + finish) / 1e6 * rate, anchorSgd: anchor / 1e6 * rate,
+  } }),
+}
+if (args.includes('--markdown')) {
+  const f = card.feesDrops, l = card.latencySeconds, p = card.projection
+  console.log(`| Key-reveal purchase (EscrowCreate + EscrowFinish) | ${f.keyRevealPurchase} drops (${f.escrowCreate} + ${f.escrowFinish}) |
+| Answer anchor (AccountSet) | ${f.anchor} drops |
+| Plain payment / writer-signed refund | ${f.plainPayment} / ${f.refundPayment} drops (earlier runs) |
+| MCP initialize · cold wallet provisioning · cached wallets | ${l.initialize} s · ${l.coldWalletProvisioning} s · ${l.cachedWalletProvisioning ?? 'n/a'} s |
+| Anchored key-reveal answer, end to end (slowest of ${card.runs} runs) | ${l.purchaseAnchored} s |${p ? `
+| **Projection** at an assumed S$${p.xrpSgdRate.toFixed(2)} per XRP | S$${p.keyRevealPurchaseSgd.toFixed(5)} per purchase, S$${p.anchorSgd.toFixed(5)} per anchor (fees only) |` : ''}`)
+} else console.log(JSON.stringify(card, null, 2))

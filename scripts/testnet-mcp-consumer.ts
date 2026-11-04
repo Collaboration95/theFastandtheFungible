@@ -14,7 +14,7 @@ const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 const tgz = resolve(dirname(manifestPath), manifest.artifacts.find((a: { kind: string }) => a.kind === 'mcp-tgz').file)
 const scratch = mkdtempSync(join(tmpdir(), 'ra-testnet-consumer-'))
 const evidence = resolve('docs/evidence/round3-a'); mkdirSync(evidence, { recursive: true })
-const timings: object[] = []
+const timings: { payerAddress?: string }[] = []
 try {
  for (let attempt = 1; attempt <= 2; attempt++) {
   const started = performance.now()
@@ -31,9 +31,13 @@ try {
    await client.connect(transport)
    const initializeSeconds = (performance.now() - started) / 1000
    assert(initializeSeconds < 20, 'Initialize exceeded 20s')
+   const initialized = performance.now()
    const wallet = await call('wallet_status')
-   const fundedSeconds = (performance.now() - started) / 1000
+   // First tool call waits for provisioning; a reused cache returns at once.
+   const fundedSeconds = (performance.now() - initialized) / 1000
    assert.equal(wallet.rail, 'xrpl-testnet', 'SIMULATED fallback cannot satisfy live acceptance')
+   assert.match(wallet.payerAddress, /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/); assert(wallet.startupLabels.includes('Testnet · no real value'))
+   if (attempt > 1) { assert.equal(wallet.payerAddress, timings[0].payerAddress, 'second run must reuse the cached wallets'); assert(fundedSeconds < 15, 'cached wallets should not be re-funded') }
    assert(fundedSeconds < 60, 'Funding exceeded 60s')
    assert.equal(statSync(join(scratch, 'state/researchagent/testnet/wallets.private.json')).mode & 0o777, 0o600)
    const args = { question: 'What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?', budget_sgd: 999, idempotency_key: `round3-a-${attempt}` }
@@ -49,11 +53,11 @@ try {
     assert.match(hash || '', /^[A-F0-9]{64}$/)
     const response = await fetch('https://s.altnet.rippletest.net:51234/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'tx', params: [{ transaction: hash }] }), signal: AbortSignal.timeout(15000) })
     const { result } = await response.json(); assert.equal(result.validated, true); assert.equal(result.meta.TransactionResult, 'tesSUCCESS')
-    const tx = result.tx_json ?? result; assert.equal(tx.TransactionType, ['EscrowCreate', 'EscrowFinish', 'Payment'][i])
+    const tx = result.tx_json ?? result; assert.equal(tx.TransactionType, ['EscrowCreate', 'EscrowFinish', 'AccountSet'][i])
     transactions.push({ hash, type: tx.TransactionType, feeDrops: Number(tx.Fee), ledgerIndex: result.ledger_index })
    }
    if (attempt === 2) { const capped = await call('ask_expert', { ...args, idempotency_key: 'daily-cap-exhausted' }); assert.equal(capped.spentMinor, 0); assert(capped.budgetMinor < 90) }
-   timings.push({ attempt, initializeSeconds, fundedSeconds, purchaseSeconds: (performance.now() - askStarted) / 1000, transactions })
+   timings.push({ attempt, payerAddress: wallet.payerAddress, rail: wallet.rail, initializeSeconds, fundedSeconds, purchaseSeconds: (performance.now() - askStarted) / 1000, transactions })
    console.log(JSON.stringify(timings.at(-1)))
   } finally { await client.close(); await stopProcess(child) }
  }

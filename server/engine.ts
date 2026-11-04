@@ -4,9 +4,9 @@ import { Worker } from 'node:worker_threads'
 import { resolve } from 'node:path'
 import { mkdirSync } from 'node:fs'
 
-export type EngineOptions = { apiPort?: number; publisherPort?: number; dataDir: string; live?: boolean; apiToken?: string; testnet?: boolean }
+export type EngineOptions = { apiPort?: number; publisherPort?: number; dataDir: string; live?: boolean; apiToken?: string; env?: NodeJS.ProcessEnv }
 /** An in-process worker isolates configuration and publisher readers between engines. No UI or fixed ports. */
-export async function startEngine({ apiPort = 0, publisherPort = 0, dataDir, live = false, apiToken, testnet = false }: EngineOptions) {
+export async function startEngine({ apiPort = 0, publisherPort = 0, dataDir, live = false, apiToken, env: extraEnv = {} }: EngineOptions) {
   mkdirSync(dataDir, { recursive: true })
   const config = loadConfig()
   apiToken = apiToken || config.RA_API_TOKEN || randomBytes(32).toString('hex')
@@ -14,7 +14,7 @@ export async function startEngine({ apiPort = 0, publisherPort = 0, dataDir, liv
     PUBLISHER_PORT: String(publisherPort), LANGFUSE_ENABLED: '0', PUBLISHER_FAULTS: '0',
     LLM_PROVIDER: live && process.env.RA_ACCEPT_TESTNET !== '1' ? 'deepseek' : 'fixture', DECISION_PROVIDER: live && process.env.RA_ACCEPT_TESTNET !== '1' ? (config.DECISION_PROVIDER === 'openai' ? 'openai' : 'cloudflare') : 'fixture',
     SEARCH_EMBEDDINGS: live ? (config.SEARCH_EMBEDDINGS ?? 'live') : 'off',
-    SETTLEMENT_RAIL: (live || testnet) && config.XRPL_PAYER_SEED ? 'xrpl-testnet' : 'simulated' })
+    SETTLEMENT_RAIL: extraEnv.XRPL_PAYER_SEED || (live && config.XRPL_PAYER_SEED) ? 'xrpl-testnet' : 'simulated', ...extraEnv })
   // Bound the nursery rather than old space: transient snapshot validation creates
   // heavy allocation traffic. This reduces transient heap capacity without capping
   // old space or external buffers; pause distributions are workload dependent.

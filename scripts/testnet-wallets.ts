@@ -32,34 +32,37 @@ export async function provision(file = walletFile, faucet = fetch, ledger = test
         await new Promise(r => setTimeout(r, 250))
       }
     }
+    // Submit every writer funding payment back to back (the open-ledger Sequence advances), then wait once: ~4 s per writer becomes ~4 s total.
+    const submitted: string[] = []
     for (const slug of slugs.filter(s => !['buyer','open-records','grid-operators-report'].includes(s))) {
       const address = Wallet.fromSeed(seeds[slug]).classicAddress
       if (await balanceOf(address) >= 5_000_000) continue
       for (let attempt = 0; ; attempt++) {
         try {
           const payment = await signPayment(buyer, {Destination:address, Amount:'6000000', InvoiceID:'0'.repeat(64)}, ledger)
-          const submitted = await ledger.request({command:'submit',tx_blob:payment.txBlob})
-          const code = submitted.result.engine_result
+          const result = await ledger.request({command:'submit',tx_blob:payment.txBlob})
+          const code = result.result.engine_result
           if (code && code !== 'tesSUCCESS' && code !== 'terQUEUED') {
             if (code === 'tefPAST_SEQ' && attempt === 0) continue
             throw new ProvisionError(`funding tx result ${/^[a-zA-Z0-9_]+$/.test(code) ? code : 'unknown'}`)
           }
-          const deadline = Date.now()+15000
-          for (;;) {
-            const found = await lookupTx(ledger,payment.txHash)
-            if (found.state === 'validated') {
-              if(found.meta.TransactionResult !== 'tesSUCCESS') throw new ProvisionError('funding tx result failed')
-              break
-            }
-            if(Date.now()>deadline) throw new ProvisionError('funding validation timeout')
-            await new Promise(r=>setTimeout(r,250))
-          }
+          submitted.push(payment.txHash)
           break
         } catch (error) {
           if (attempt === 0 && ['actNotFound','tefPAST_SEQ'].includes(resultCode(error) ?? '')) continue
           throw error
         }
       }
+    }
+    const deadline = Date.now()+30000
+    for (const hash of submitted) for (;;) {
+      const found = await lookupTx(ledger,hash)
+      if (found.state === 'validated') {
+        if(found.meta.TransactionResult !== 'tesSUCCESS') throw new ProvisionError('funding tx result failed')
+        break
+      }
+      if(Date.now()>deadline) throw new ProvisionError('funding validation timeout')
+      await new Promise(r=>setTimeout(r,250))
     }
     return seeds
   } finally { await ledger.close() }

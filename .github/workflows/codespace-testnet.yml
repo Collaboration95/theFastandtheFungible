@@ -1,4 +1,6 @@
 name: Devcontainer Testnet boot
+# Manual and nightly only; never on PRs. Boots .devcontainer/testnet and pays on XRPL Testnet (no real value).
+# A faucet failure from CI IPs is reported as a yellow warning annotation plus a SIMULATED label, not a red failure.
 on:
   workflow_dispatch:
   schedule:
@@ -8,21 +10,31 @@ permissions:
 jobs:
   testnet:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Boot devcontainer and ask UC3
+      - name: Generate an ephemeral API token and operator caps for the container
+        run: |
+          token="$(openssl rand -hex 32)"
+          echo "::add-mask::$token"
+          # Same devcontainer, plus operator environment; the lifecycle commands then start it with a known token.
+          mkdir -p .devcontainer/testnet-ci
+          jq --arg token "$token" '.containerEnv += {RA_API_TOKEN: $token, MCP_MAX_BUDGET_MINOR: "200", MCP_DAILY_CAP_MINOR: "500"}' .devcontainer/testnet/devcontainer.json > .devcontainer/testnet-ci/devcontainer.json
+      - name: Boot devcontainer (postStartCommand = make testnet) and buy UC3
+        id: probe
         uses: devcontainers/ci@v0.3
         with:
-          configFile: .devcontainer/testnet/devcontainer.json
+          configFile: .devcontainer/testnet-ci/devcontainer.json
           push: never
-          runCmd: |
-            export RA_API_TOKEN="$(node -e 'process.stdout.write(require("crypto").randomBytes(32).toString("hex"))')"
-            export MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500
-            node -e 'const c=require("./.devcontainer/testnet/devcontainer.json");require("child_process").execSync(c.postStartCommand,{stdio:"inherit"})'
-            node --import tsx scripts/codespace-testnet-probe.ts
+          runCmd: node --import tsx scripts/codespace-testnet-probe.ts
+      - name: Summary
+        if: always()
+        run: |
+          f=scratch/codespace-testnet/result.json
+          if [ -f "$f" ]; then { echo '### Devcontainer Testnet boot'; echo '```json'; cat "$f"; echo; echo '```'; } >> "$GITHUB_STEP_SUMMARY"; grep -q simulated-fallback "$f" && echo "::warning title=SIMULATED fallback::$(jq -r .label "$f")" || true; fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: devcontainer-testnet-timings
           path: scratch/codespace-testnet/result.json
+          if-no-files-found: warn

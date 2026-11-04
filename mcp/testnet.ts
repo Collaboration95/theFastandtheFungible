@@ -2,24 +2,42 @@ import { homedir } from 'node:os'
 import { resolve, isAbsolute } from 'node:path'
 import { provision, isolatedEnv } from '../scripts/testnet-wallets.js'
 
+/** Wallets and durable cap accounting live here: `$XDG_STATE_HOME/researchagent/testnet`. */
 export function testnetStateDir() {
   const xdg = process.env.XDG_STATE_HOME
   return resolve(xdg && isAbsolute(xdg) ? xdg : resolve(homedir(), '.local/state'), 'researchagent/testnet')
 }
-/** Provisioning never changes operator caps or exposes private wallet material. */
-export async function prepareMcpTestnet() {
+
+/** Gate 5: a faucet or network failure becomes a visible reason class, never raw error text. */
+export const reasonClass = (error: unknown) => {
+  const message = error instanceof Error ? error.message : ''
+  if (/faucet/i.test(message)) return 'faucet_unavailable'
+  if (/timeout/i.test(message)) return 'validation_timeout'
+  if (/wallet (cache|file|directory)|private state/i.test(message)) return 'wallet_cache_unavailable'
+  return 'network_unavailable'
+}
+
+const FIXTURE = 'Fixture models and fictional writers'
+/**
+ * Provisions (or reuses) faucet wallets and returns engine-only environment overrides. The parent
+ * process environment is never mutated and operator caps are never touched (hard gate 2).
+ */
+export async function prepareMcpTestnet(load: typeof provision = provision) {
   const started = performance.now()
   try {
     const root = testnetStateDir()
-    const seeds = await provision(resolve(root, 'wallets.private.json'), fetch, undefined, root)
-    const env = isolatedEnv(seeds)
-    Object.assign(process.env, Object.fromEntries(Object.entries(env).filter(([, value]) => value !== undefined)), { ESCROW_MODE: 'key-reveal', ANCHOR_RAIL: 'xrpl-testnet' })
-    console.error(`Testnet · no real value · wallets ready in ${((performance.now() - started) / 1000).toFixed(2)} s`)
-    return { testnet: true, labels: ['Testnet · no real value', 'Fixture models and fictional writers'] }
-  } catch {
-    Object.assign(process.env, Object.fromEntries(Object.entries(isolatedEnv()).filter(([, value]) => value !== undefined)), { ANCHOR_RAIL: 'simulated' })
-    const reason = 'network_or_provisioning_error'
-    console.error(`SIMULATED fallback · ${reason} · no ledger transactions`)
-    return { testnet: false, labels: [`SIMULATED fallback · ${reason} · no ledger transactions`, 'Fixture models and fictional writers'] }
+    const seeds = await load(resolve(root, 'wallets.private.json'), fetch, undefined, root)
+    const full = isolatedEnv(seeds)
+    const env: NodeJS.ProcessEnv = { ESCROW_MODE: 'key-reveal', ANCHOR_RAIL: 'xrpl-testnet', DOTENV_CONFIG_PATH: '.testnet-no-env' }
+    for (const [key, value] of Object.entries(full)) if (value !== undefined && /^(XRPL_|ESCROW_|SETTLEMENT_RAIL$)/.test(key)) env[key] = value
+    env.ESCROW_MODE = 'key-reveal'
+    env.ESCROW_WRITERS = Object.keys(seeds).filter(slug => slug !== 'buyer').join(',')
+    const seconds = ((performance.now() - started) / 1000).toFixed(2)
+    console.error(`Testnet · no real value · wallets ready in ${seconds} s`)
+    return { testnet: true as const, env, labels: ['Testnet · no real value', FIXTURE] }
+  } catch (error) {
+    const label = `SIMULATED fallback · ${reasonClass(error)} · no ledger transactions`
+    console.error(label)
+    return { testnet: false as const, env: {} as NodeJS.ProcessEnv, labels: [label, FIXTURE] }
   }
 }
