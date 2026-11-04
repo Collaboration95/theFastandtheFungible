@@ -90,6 +90,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test tests/e2e.spec.ts tests/a11y.spec.ts
       - run: npm run test:demo
+      - run: npm run test:judge
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

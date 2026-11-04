@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'dotenv/config'
 import { parseArgs } from 'node:util'
 import { basename, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -10,7 +11,7 @@ export async function main(args = process.argv.slice(2)) {
       testnet: { type: 'boolean' }, slug: { type: 'string' }, name: { type: 'string' }, port: { type: 'string' }, rail: { type: 'string' }, help: { type: 'boolean' },
     } })
     if (values.help) {
-      console.log('Usage: npm run publish:site -- ./my-notes [--slug my-notes] [--name "My Notes"] [--port 9590] [--rail simulated]\nDefault: XRPL Testnet wallet + faucet. Never pass seeds as arguments. Ctrl-C stops the site; rerun to update it.')
+      console.log('Usage: npm run publish:site -- ./my-notes [--slug my-notes] [--name "My Notes"] [--port 9590] [--testnet | --rail simulated]\nDefault (--testnet): XRPL Testnet faucet wallet + Testnet writer Credential + key-reveal escrow. Never pass seeds as arguments. Ctrl-C stops the site; rerun to update it.')
       return
     }
     if (positionals.length !== 1) throw new Error('Give one Markdown folder. Try: npm run publish:site -- examples/writer-starter')

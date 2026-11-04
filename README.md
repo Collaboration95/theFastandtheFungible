@@ -142,6 +142,8 @@ The command explicitly authorizes up to S$2 per question and S$5 per UTC day in 
 cp -R examples/writer-starter my-notes && npm run publish:site -- ./my-notes --rail simulated
 ```
 
+On Testnet, one command makes a writer live in about a minute: a faucet wallet (key saved at mode 0600, never printed), a Testnet writer Credential, and key-reveal escrow. `npm run publish:site -- ./my-notes --testnet`. The zero-clone form, `npx -y <MCP tgz URL> publish ./writer-starter --testnet`, ships with the next release candidate (rc.2); the rc.1 tgz does not have it. It prints `Writer live · address r… · CredentialCreate tx ↗ · first sale will appear as EscrowFinish`.
+
 Verify an exported answer on its own ledger evidence (Export ⋯ → Download receipts.json): after the `pip install` above, `researchagent verify receipts.json --ledger` needs no Node and prints `PASS testnet N/N (read-only, s.altnet)`, `PASS audit anchor` with the ledger number, and `RESULT PASS`. A refunded key reveal passes only when a validated writer refund exists. A simulated export prints `SKIP audit anchor: simulated run (no ledger)`; an export that claims an anchor, or a Testnet run without one, fails. Checkout equivalent: `npm run verify:answer -- receipts.json --ledger`.
 
 ## What's notable
@@ -194,11 +196,15 @@ For live providers, add keys from `.env.example` to your ignored `.env`, run `ma
 
 The browser is a view. The API owns retrieval, decisions, budget, payment and synthesis. Each writer searches their own full text and returns a signed manifest; a 5 s plan modal confirms before any spending; the decision model scores value; policy code pays over x402 v2; the delivered article is checked against the signed promises, and broken ones are challenged and refunded. DeepSeek writes the answer only from evidence the run actually holds, with citations. [Architecture and trust boundaries](docs/contracts/ARCHITECTURE.md) · [x402, verification and refunds](docs/x402-xrpl.md) · [Security](docs/contracts/SECURITY.md).
 
+## Real writers
+
+**real person · Testnet · no real value.** Writers who have given consent to be listed appear here and on the [ledger](https://collaboration95.github.io/theFastandtheFungible/ledger/), read only from [`docs/evidence/real-writers.json`](docs/evidence/real-writers.json) ([schema](docs/evidence/real-writers.schema.json)). The list is empty today: it waits for consenting writers, and the fictional corpus is never mixed into it. The onboarding run in [`docs/evidence/round3-c/`](docs/evidence/round3-c/) used a synthetic starter and a public-faucet wallet.
+
 ## Engineering
 
-Counts are from the Lane V2 local run on 4 Nov 2026, based on `0927dd9b` plus these changes.
+Counts are from a local run on 4 Nov 2026 at `bd57c7db` plus the round-3 Lane C changes; they are regenerated on freeze day.
 
-- **Tests.** 1,210 TypeScript tests in 141 files (Vitest, about 50 s) and 222 Python tests; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
+- **Tests.** 1,226 TypeScript tests in 147 files (Vitest, about 40 s) and 223 Python tests; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
 - **Coverage gates.** Nine components each have an exact covered/total floor that may not fall; payments branches must also stay at or above 85% (86.2% in hosted CI). [Method and numbers](docs/evidence/round2-b/README.md).
 - **CI.** `changes` decides whether the full set runs. Then `verify`, `chaos`, `browser`, `python` and `artifacts` run in parallel, and an always-reporting `check` job refuses a failed, cancelled, missing or unexpectedly skipped one ([`ci.yml`](.github/workflows/ci.yml)). Hosted wall time on the integration PR: 249 s.
 - **Release admission.** A tag publishes only if its commit is on `main`, it equals the package version, same-SHA CI passed, and every artifact hash matches the manifest. Each of the SDK tarball, wheel and MCPB must also pass a clean-install consumer: cited passages, one receipt, one intent, an idempotent retry and the cap preserved. The publisher uploads those accepted bytes without rebuilding ([`release-contract.mjs`](scripts/release-contract.mjs), [evidence](docs/evidence/round2-d/README.md)).
@@ -263,10 +269,3 @@ Packages are **built and consumer-tested but not yet published** to npm, PyPI or
 - `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
 
 [Documentation](docs/README.md) · [Changelog](CHANGELOG.md) · [Project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) · [Slides](https://collaboration95.github.io/theFastandtheFungible/slides/) · [Build log](https://collaboration95.github.io/theFastandtheFungible/evolution/) · [Builder feedback](docs/BUILDER-FEEDBACK.md) · [Design record](docs/FINAL-PUSH.md) · [MIT license](LICENSE)
-
-## Real writers
-
-real person · Testnet · no real value
-
-The consenting-writer list is [real-writers.json](docs/evidence/real-writers.json).
-It is empty pending owner-supplied consent; fictional corpus writers are separate.

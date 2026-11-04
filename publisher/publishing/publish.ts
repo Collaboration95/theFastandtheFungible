@@ -83,7 +83,7 @@ export async function publishSite(options: PublishOptions) {
     }
     // Check indexability before registering; startup builds the same index with the same cache.
     await buildIndex(corpus.articles, embeddings)
-    app = createPublisherApp({ writers: corpus, rail, env: { ...env, ESCROW_MODE: rail === 'xrpl-testnet' ? 'key-reveal' : env.ESCROW_MODE, ESCROW_WRITERS: options.slug, ...saved, ...(wallet ? { [variable]: wallet.seed } : {}) },
+    app = createPublisherApp({ writers: corpus, rail, env: { ...env, ...(rail === 'xrpl-testnet' ? { ESCROW_MODE: env.ESCROW_MODE === 'payment' ? 'payment' : 'key-reveal', ESCROW_WRITERS: [env.ESCROW_WRITERS, options.slug].filter(Boolean).join(',') } : {}), ...saved, ...(wallet ? { [variable]: wallet.seed } : {}) },
       journal: join(dir, 'publisher.db'), embeddings })
     await app.locals.ready
     const server = app.listen(options.port ?? 8790 + Number(env.OFFSET || 0), '127.0.0.1')

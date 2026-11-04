@@ -142,7 +142,7 @@ no real-money operation, and all substituted/fixture modes retain their labels.
 
 Bearer endpoints require HTTPS or exact loopback HTTP, without URL credentials or redirects. HTTP requests have a 15-second bound composed with caller cancellation. SSE uses a separate 30-second idle bound and a 256 KiB incomplete-frame bound; interrupted streams resynchronize via the existing run. `waitMs` bounds observation and returns the latest admitted handle. Interrupted observation errors preserve `runId`; resume with `getRun`, using the original idempotency identity for any admission retry.
 
-`ResearchAgentError` carries `code`, optional `status`, `retryable` and optional `runId`. Codes include `cap_zero`, `paused`, `budget_exhausted`, `overloaded`, `deadline` and `settlement_pending`; overload scheduling itself is deferred. Budget clamps preserve free-only research and expose `clampReason` (`paused`, `cap_zero`, or `budget_exhausted`). `payAndFetch` requires an explicit durable journal, including with an injected ledger; a network payment never falls back to process-memory identity.
+`ResearchAgentError` carries `code`, optional `status`, `retryable` and optional `runId`. Codes include `cap_zero`, `paused`, `per_call_cap`, `budget_exhausted`, `overloaded`, `deadline` and `settlement_pending`; overload scheduling itself is deferred. Budget clamps preserve free-only research and expose `clampReason` (`paused`, `cap_zero`, `per_call_cap` when the operator's per-call cap binds, or `budget_exhausted` when the daily budget does). `payAndFetch` requires an explicit durable journal, including with an injected ledger; a network payment never falls back to process-memory identity.
 
 ## Exact local release artifacts
 

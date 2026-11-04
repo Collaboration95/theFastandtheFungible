@@ -1,42 +1,100 @@
-import { test, expect } from '@playwright/test'
-import { spawn } from 'node:child_process'
+// Headless first-touch walk: landing → every demo tab → ledger → release link.
+// Run with `npm run test:judge` (builds the demo first). Hermetic: XRPL sockets and GitHub are stubbed.
+import { test, expect, type Page } from '@playwright/test'
+import { spawn, type ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
 import { mkdir, cp } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 
-test('judge path: landing, every replay, ledger progress and RC release', async ({ page }, info) => {
+const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1'
+const SIMULATED: Record<string, RegExp> = { 'Simulated UC1': /^Bank of Japan decision/, 'Simulated UC2': /^Kestrel–TSMC outlook/, 'Simulated UC3': /^Malaysia packaging lead times/ }
+const TABS = ['Testnet UC3', 'Testnet · key reveal', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
+let server: ChildProcess, base: string
+
+// eslint-disable-next-line no-empty-pattern -- Playwright requires a destructured first argument.
+test.beforeAll(async ({}, info) => {
   const root = info.outputPath('pages')
   await mkdir(root, { recursive: true })
   await cp('site', `${root}/theFastandtheFungible`, { recursive: true })
-  const server = spawn('python3', ['-u', '-m', 'http.server', '0', '--bind', '127.0.0.1', '--directory', root], { stdio: ['ignore', 'pipe', 'ignore'] })
-  try {
-    const [chunk] = await once(server.stdout!, 'data')
-    const base = `http://127.0.0.1:${String(chunk).match(/port (\d+)/)![1]}/theFastandtheFungible`
-    await page.goto(base + '/')
-    await expect(page.locator('body')).not.toContainText('v0.8.0')
-    await expect(page.getByRole('link', { name: 'Download for Mac', exact: true })).toHaveAttribute('href', /releases\/tag\/v1\.0\.0-rc/)
-    for (const scenario of ['', '?scenario=UC-key-reveal', '?scenario=UC1', '?scenario=UC2']) {
-      await page.goto(base + '/demo/' + scenario)
-      for (let second = 0; second < 40; second++) {
-        await expect(page.locator('body')).not.toContainText('v0.8.0')
-        await expect(page.locator('body')).not.toContainText('twenty twenty')
-        await page.waitForTimeout(1000)
-        if (await page.title().then(t => t.includes('Answer ready'))) break
-      }
-    }
-    await page.goto(base + '/ledger/')
-    await page.waitForTimeout(3000)
-    await expect(page.locator('body')).not.toContainText('not freshly verified')
-    await expect(page.getByRole('status')).toContainText(/Checking \d+ hashes live|check finished/)
-    // External GitHub release navigation is checked through authenticated gh in shipping.
-  } finally { server.kill('SIGTERM'); await once(server, 'exit') }
+  server = spawn('python3', ['-u', '-m', 'http.server', '0', '--bind', '127.0.0.1', '--directory', root], { stdio: ['ignore', 'pipe', 'ignore'] })
+  const [chunk] = await once(server.stdout!, 'data')
+  base = `http://127.0.0.1:${String(chunk).match(/port (\d+)/)![1]}/theFastandtheFungible`
+})
+test.afterAll(async () => { server.kill('SIGTERM'); await once(server, 'exit') })
+test.beforeEach(async ({ page }) => {
+  await page.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
+  await page.route('https://github.com/**', route => route.fulfill({ contentType: 'text/html', body: '<title>release</title>' }))
 })
 
-test.fixme('all replay frames exclude Failed and could not finish', async () => {
-  // Lane B owns src/App.tsx and replay traces; enable after its replay fix merges.
+/** Watch one replay to completion; report every forbidden string seen on the way. */
+async function walk(page: Page, tab: string) {
+  await page.goto(`${base}/demo/`)
+  if (tab !== 'Testnet UC3') await page.getByRole('navigation', { name: 'Recorded scenarios' }).getByRole('link', { name: tab, exact: true }).click()
+  // Simulated replays wait for the judge to pick their recorded question.
+  if (SIMULATED[tab]) {
+    await page.getByRole('button', { name: SIMULATED[tab] }).click()
+    await page.getByRole('button', { name: /^Ask$/ }).click()
+    await page.getByRole('button', { name: 'Start now' }).click()
+  }
+  const seen = new Set<string>()
+  let ready = false
+  for (let second = 0; second < 60 && !ready; second++) {
+    const text = await page.locator('body').innerText()
+    for (const bad of ['v0.8.0', 'twenty twenty', 'Failed', 'could not finish']) if (text.includes(bad)) seen.add(bad)
+    ready = /Answer ready/.test(await page.title())
+    if (!ready) await page.waitForTimeout(1000)
+  }
+  return { seen, ready }
+}
+const contrast = async (page: Page) => !(await page.locator('.ra-payment').count()) ? [] : new AxeBuilder({ page }).include('.ra-payment').withRules(['color-contrast']).analyze().then(r => r.violations)
+
+test('landing points at the release candidate, never the stale Latest', async ({ page }) => {
+  await page.goto(`${base}/`)
+  await expect(page.locator('body')).not.toContainText('v0.8.0')
+  expect(await page.locator('a[href*="releases/latest"]').count()).toBe(0)
+  const mac = page.getByRole('link', { name: 'Download for Mac', exact: true })
+  await expect(mac).toHaveAttribute('href', TAG)
+  await mac.click()
+  expect(page.url()).toBe(TAG)
 })
-test.fixme('payment card passes axe color-contrast', async ({ page }) => {
-  // Lane B owns the faint key line in src/format.tsx; enable after its fix merges.
-  const result = await new AxeBuilder({ page }).include('.ra-payment-card').withRules(['color-contrast']).analyze()
-  expect(result.violations).toEqual([])
+
+for (const tab of TABS) {
+  test(`demo tab "${tab}": no stale or spelled-out text, finishes`, async ({ page }) => {
+    test.setTimeout(120_000)
+    const { seen, ready } = await walk(page, tab)
+    expect(ready, 'replay reached Answer ready').toBe(true)
+    // Lane B owns the key-reveal replay's "Failed" frame; it is asserted separately below (fixme until it lands).
+    const allowed = tab === 'Testnet · key reveal' ? ['Failed', 'could not finish'] : []
+    expect([...seen].filter(s => !allowed.includes(s))).toEqual([])
+    expect(await contrast(page), 'axe color-contrast on payment cards').toEqual([])
+    if (tab === 'Testnet UC3') {
+      const banner = page.locator('.demo-banner')
+      await banner.locator('summary').click()
+      await expect(banner).toContainText('researchagent-mcp-1.0.0-rc.1.tgz')
+      await expect(banner.getByRole('link', { name: /Release candidate/ })).toHaveAttribute('href', TAG)
+      expect(await banner.locator('a[href*="releases/latest"]').count()).toBe(0)
+    }
+  })
+}
+
+// Lane B (proof that passes) removes the key-reveal replay's "Failed" frame in src/App.tsx and demo/traces/**.
+// Enable this once that PR is on main; it fails today (the replay shows "Failed · The run could not finish").
+test.fixme('key-reveal replay never shows Failed or "could not finish"', async ({ page }) => {
+  test.setTimeout(120_000)
+  const { seen } = await walk(page, 'Testnet · key reveal')
+  expect([...seen]).toEqual([])
+})
+
+test('ledger: live-check progress replaces the stale snapshot text within 3 s', async ({ page }) => {
+  const initial = await (await page.request.get(`${base}/ledger/`)).text()
+  expect(initial).toContain('Checking 25 hashes live… 0/25')
+  expect(initial).not.toContain('Principal amount not recorded in this evidence</td><td>12 drops')
+  await page.goto(`${base}/ledger/`)
+  await page.waitForTimeout(3000)
+  await expect(page.locator('body')).not.toContainText('not freshly verified')
+  await expect(page.getByRole('status')).toContainText(/Read-only check finished: \d+\/25/)
+  await expect(page.getByText('Memo = audit head 2861e38da5e3…; answer anchor')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Real writers' })).toBeVisible()
+  await expect(page.getByText('real person · Testnet · no real value', { exact: true })).toBeVisible()
+  await expect(page.getByText('No consenting writers listed yet.')).toBeVisible()
 })

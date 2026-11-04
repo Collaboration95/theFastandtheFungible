@@ -27,8 +27,8 @@ export async function issueWriterCredential(subject: Wallet, root: string) {
     let cached: { hash: string; acceptHash: string; trust: typeof trust } | undefined
     try { cached = JSON.parse(await readFile(receiptFile, 'utf8')) } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw Error('Credential receipt unavailable') }
     if (cached) {
-      const entry = await client.request({ command: 'ledger_entry', ledger_index: 'validated', credential: { subject: subject.classicAddress, issuer: policy.issuer, credential_type: policy.credentialType } })
-      if (entry.result.validated && 'Flags' in entry.result.node && (Number(entry.result.node.Flags) & 0x10000)) return cached
+      const entry = await client.request({ command: 'ledger_entry', ledger_index: 'validated', credential: { subject: subject.classicAddress, issuer: policy.issuer, credential_type: policy.credentialType } } as never) as unknown as { result: { validated?: boolean; node?: { Flags?: number } } }
+      if (entry.result.validated && (Number(entry.result.node?.Flags) & 0x10000)) return cached
       throw Error('Saved writer credential is no longer accepted; ask the local operator')
     }
     const create = await client.submitAndWait({ TransactionType: 'CredentialCreate', Account: issuer.classicAddress, Subject: subject.classicAddress, CredentialType: policy.credentialType }, { wallet: issuer })

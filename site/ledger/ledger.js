@@ -112,7 +112,7 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   document.querySelector('#rows').replaceChildren()
   for (const row of data.rows) {
     const tr = document.createElement('tr')
-    const amount = row.deliveredAmount ?? row.amountDrops ?? (row.group === 'anchor' ? `Memo = audit head ${row.head}; answer anchor` : 'principal amount not recorded in this evidence')
+    const amount = row.deliveredAmount ?? row.amountDrops ?? (row.group === 'anchor' ? `Memo = audit head ${row.head.slice(0, 12)}…; answer anchor` : 'principal amount not recorded in this evidence')
     for (const text of [`${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${row.date}`, `${typeof amount === 'object' ? amount.value + ' RLUSD · issuer ' + amount.issuer : amount + (row.deliveredAmount || row.amountDrops ? ' drops' : '')} · fee ${row.feeDrops} drops`]) { const td = document.createElement('td'); td.textContent = text; tr.append(td) }
     const source = document.createElement('td'); const a = document.createElement('a'); a.href = 'https://github.com/Collaboration95/theFastandtheFungible/blob/' + (row.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943') + '/' + row.source; a.textContent = `Ledger ${row.ledgerIndex} · committed source`; source.append(a); tr.append(source)
     const td = document.createElement('td'); const link = document.createElement('a'); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.textContent = row.hash; const state = document.createElement('span'); state.className='state'; state.textContent='Checking live…'; td.append(link,state); cells.set(row.hash,state); tr.append(td); document.querySelector('#rows').append(tr)
@@ -135,9 +135,20 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   await run()
 }
 
-if (typeof document !== "undefined" && document.querySelector("#real-writers")) {
-  const { writers } = await fetch("../evidence/real-writers.json").then(r => { if (!r.ok) throw Error("Writer evidence unavailable"); return r.json() }).catch(() => ({ writers: [] }))
-  const list = document.querySelector("#real-writers")
-  list.textContent = writers.length ? "" : "No consenting writers listed yet."
-  for (const writer of writers) { const p = document.createElement("p"); p.textContent = `${writer.name} · ${writer.address} · real person · Testnet · no real value`; list.append(p) }
+// Real, consenting writers only: rendered from the committed evidence list, never from the fictional corpus.
+export function renderRealWriters(list, writers) {
+  list.textContent = writers.length ? '' : 'No consenting writers listed yet.'
+  for (const writer of writers) {
+    const p = document.createElement('p'), a = document.createElement('a')
+    a.href = `https://testnet.xrpl.org/accounts/${encodeURIComponent(writer.address)}`; a.textContent = writer.address
+    p.append(`${writer.name} · `, a, ' · real person · Testnet · no real value'); list.append(p)
+  }
+}
+if (typeof document !== 'undefined' && document.querySelector('#real-writers')) {
+  const list = document.querySelector('#real-writers')
+  try {
+    const response = await fetch('../evidence/real-writers.json')
+    if (!response.ok) throw Error('unavailable')
+    renderRealWriters(list, (await response.json()).writers)
+  } catch { list.textContent = 'Writer list unavailable.' }
 }

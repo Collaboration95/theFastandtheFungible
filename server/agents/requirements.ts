@@ -42,7 +42,7 @@ export const focusWords = (focus: string) => (focus.toLowerCase().match(/[a-z]{4
 export const FIXTURE_GAP_RULES: { cue: RegExp; answered: (text: string, focus?: string) => boolean; gap: string | ((focus?: string) => string) }[] = [
   // The clarified angle (UC2) narrows the analyst gap: estimates must speak to that angle to close it.
   { cue: /\b(?:analysts?|outlook)\b/i, answered: (text, focus) => /\b(?:analysts?|consensus)\b/i.test(text) && /\d/.test(text) && (!focus || focusWords(focus).some(w => text.toLowerCase().includes(w))), gap: focus => `No accessible analyst estimates on ${focus ? focus.replace(/\s*&\s*/g, ' and ') : 'pricing or margins'}.` },
-  { cue: /^(?!.*\b(?:analysts?|outlook|pricing|price)\b)(?=.*\bchang(?:e|ed)\b).*\bmargins?\b/i, answered: text => /\bmargins?\b/i.test(text) && (text.match(/\d+(?:\.\d+)?\s*(?:%|percent)/gi) ?? []).length >= 2, gap: 'No accessible comparison of gross margins before and after the deal.' },
+  { cue: /^(?!.*\b(?:analysts?|outlook|pricing|price)\b).*\bmargins?\b/i, answered: text => /\bmargins?\b/i.test(text) && (text.match(/\d+(?:\.\d+)?\s*(?:%|percent)/gi) ?? []).length >= 2, gap: 'No accessible comparison of gross margins before and after the deal.' },
   { cue: /\blead[- ]times?\b/i, answered: text => /\b\d+(?:\.\d+)?\s*weeks?\b/i.test(text), gap: 'No accessible dated figures for lead times in weeks, or their trend.' },
   { cue: /\b(?:change|changed|react|reacted)\b/i, answered: text => CLAIM_KINDS['dated-figure'](text), gap: 'No accessible dated figures on what changed and how the market reacted.' },
   // UC4 (#211): a share of electricity from renewable sources needs a percentage of electricity under a contract or source.

@@ -63,7 +63,6 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ })).toContainText('Verified')
     await expect(page.getByText('Replay of a recorded run · fictional writers · simulated payments')).toBeVisible()
     await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC1`)
-    await page.keyboard.press('Meta+k')
     await page.getByRole('button', { name: /^Bank of Japan decision/ }).click()
     await page.getByRole('button', { name: /^Ask$/ }).click()
     await page.getByRole('button', { name: 'Start now' }).click()
