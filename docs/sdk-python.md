@@ -1,9 +1,12 @@
 # Python SDK
 
+Install status: registries are not yet published. Run `node scripts/install-snippets.mjs --tag v1.0.0` after the owner publishes that release for asset install commands. Local tarballs are built with `make release-artifacts`; MCP includes `researchagent-mcp-1.0.0.tgz` with an npx bin. npm does not support a native git-subdirectory install.
+
+
 Python 3.10+, typed src-layout package, no runtime dependencies. From this checkout:
 
 ```sh
-python -m pip install ./packages/sdk-python
+pip install "git+https://github.com/Collaboration95/theFastandtheFungible#subdirectory=packages/sdk-python"
 export RA_URL=http://127.0.0.1:10488 # OFFSET=1700 backend
 python examples/python/ask.py
 ```

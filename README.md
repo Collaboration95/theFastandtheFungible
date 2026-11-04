@@ -53,6 +53,8 @@ Every gate has regression tests and a corresponding [read-only audit rule](scrip
 
 ## Use it from your agent
 
+Registries are not yet published. Python installs directly from Git today. TypeScript and MCP currently use locally built artifacts or the checkout; npm has no native git-subdirectory install equivalent. After the owner tags and releases, run `node scripts/install-snippets.mjs --tag v1.0.0` for zero-clone release-asset commands. [Local zero-clone measurements](docs/evidence/round2-z/README.md) use file URLs as stand-ins.
+
 **TypeScript SDK** ([docs](docs/sdk.md)). `make release-artifacts` builds `dist/release/` and tests each file in a clean consumer, then:
 
 ```sh
@@ -68,7 +70,7 @@ console.log(run.answer, run.citations, run.receipts)
 **Python SDK** ([docs](docs/sdk-python.md)). Python 3.10+, no runtime dependencies:
 
 ```sh
-pip install ./dist/release/researchagent-1.0.0-py3-none-any.whl
+pip install "git+https://github.com/Collaboration95/theFastandtheFungible#subdirectory=packages/sdk-python"
 python -m researchagent verify receipts.json --json   # offline, no Node, no network
 ```
 ```python
@@ -84,7 +86,13 @@ print(task.result()['answer'])
 claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- node --import "$PWD/node_modules/tsx/dist/loader.mjs" "$PWD/mcp/server.ts"
 ```
 
-That is stdio from this checkout, with S$2 per question and S$5 per UTC day in fixture mode. [HTTP from the Mac app](docs/mcp.md#app-hosted-streamable-http) gives each agent its own revocable allowance. For Claude Desktop, `ResearchAgent.mcpb` is attached to each [release](https://github.com/Collaboration95/theFastandtheFungible/releases/latest); [Codex config and all clients](docs/mcp.md).
+For the standalone package after `make release-artifacts`:
+
+```sh
+claude mcp add researchagent -- npx -y "file:$PWD/dist/release/researchagent-mcp-1.0.0.tgz"
+```
+
+That command works today from this checkout, with S$2 per question and S$5 per UTC day in fixture mode. [HTTP from the Mac app](docs/mcp.md#app-hosted-streamable-http) gives each agent its own revocable allowance. For Claude Desktop, `ResearchAgent.mcpb` is attached to each [release](https://github.com/Collaboration95/theFastandtheFungible/releases/latest); [Codex config and all clients](docs/mcp.md).
 
 **Mac app** ([guide](desktop/README.md)). Download the DMG from [Releases](https://github.com/Collaboration95/theFastandtheFungible/releases/latest) (Apple Silicon and Intel, **unsigned**: right-click → Open). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
 
