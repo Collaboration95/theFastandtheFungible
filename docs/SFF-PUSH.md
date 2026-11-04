@@ -557,3 +557,5 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 — Lane B (Creativity / UX): the default `/demo/` replay is the Testnet key-reveal UC3 (key published, broken promise, writer-signed refund labelled as cooperative, second key reveal, anchor) with no "Failed" frame in any tab; fraud-proof download, gate-5 `missing_rail_label` for cooperative refunds, policy-only Testnet CredentialDelete for our own issuer. Replay goldens changed.
 
 - 2026-11-04 — Reachability (Lane D3): `npx -y <mcp tgz> app --testnet` serves the web UI on 127.0.0.1 over the packed Testnet engine with no clone (cold 34.7 s to ready, browser-driven Kestrel purchase, validated hashes on s.altnet, S$5/day Testnet cap); tgz +0.19 MB; simulated `app` consumer in default CI. Evidence: [round3-d](evidence/round3-d/README.md).
+
+- 2026-11-04 — Lane E: opt-in TEST-SGD key-reveal XLS-85 escrow (public-faucet issuer, no real value, stand-in for RLUSD), 3 happy + no-show ledger runs, 224/224 TS/Python conformance; RLUSD flag-gated control refreshed. MCP IOU and Lane C ledger rows follow up.

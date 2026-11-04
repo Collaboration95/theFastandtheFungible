@@ -81,9 +81,19 @@ quote/envelope, key, create/finish hashes and reveal ledger index. TS and indepe
 stdlib Python verifiers verify the writer signature, K/Condition binding, GCM tag,
 ciphertext and decrypted-byte SHA-256, delivered identity, receipt/quote binding,
 and the existing salted passage hashes. Python's public-evidence AES implementation
-has independent NIST known-answer tests. The old 177 conformance vectors are
-unchanged; seven additive vectors cover valid delivery and changed key, Condition,
-ciphertext, manifest, ledger index and signature.
+has independent NIST known-answer tests. The shared conformance corpus grows from 200 to 224 vectors, including three
+live Testnet IOU happy paths, one no-show cancellation, and mutations of amount,
+currency, issuer and settlement balance deltas. TS and Python agree on all 224.
+The ledger fixtures contain public transactions and keys already published by
+EscrowFinish; they contain no wallet seeds. Cold means fresh application/journal
+state per run, reusing the faucet-funded wallet cache. Happy timings were 18.386 s,
+17.835 s and 15.009 s; no-show cancellation took 132.345 s. Each IOU finish cost
+423 drops, identical to the independently re-queried XRP conditional finish;
+create/cancel each cost 12 drops. Hashes and timings: `evidence/round3-e/`.
+
+The fixture runs exercise purchases without answer anchoring; `--ledger` still
+checks their real IOU transactions independently. They do not claim live model
+or writer-identity evidence.
 
 Offline success checks cryptographic consistency, **not ledger finality**. The
 bundled ledger index and transaction hashes require an independent ledger lookup
