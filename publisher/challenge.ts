@@ -3,10 +3,12 @@
 // InvoiceID = the original tx hash, write-once per payment and per intent. The publisher key
 // signs in memory only: never logged or traced.
 import { ledgerAmount, type Asset } from '../shared/contracts/asset.js'
+import { escrowInvoice } from '../shared/escrow.js'
+import { ledgerInvoiceId } from '../shared/x402.js'
 import { Wallet } from 'xrpl'
 import type { Challenge, ChallengeResult, Rail } from '../shared/contracts/publisher.js'
 import { verifyDelivery } from '../shared/manifest.js'
-import { signPayment, verifyPayment, type Ledger } from '../shared/xrpl.js'
+import { signPayment, verifyPayment, lookupTx, type Ledger } from '../shared/xrpl.js'
 import { PublisherError, type PublisherJournal } from './journal.js'
 import type { Manifests } from './manifest.js'
 import type { PublisherEntry } from './registry.js'
@@ -46,6 +48,15 @@ export function createChallenges(journal: PublisherJournal, manifests: Manifests
   }
 
   return async function challenge(entry: PublisherEntry, body: Challenge): Promise<ChallengeResult> {
+    // EscrowFinish is independently validated before it can authorize a refund Payment.
+    const escrow = journal.revealQuoteByFinish(body.txHash)
+    if (escrow && !journal.settlementByTx(body.txHash)) {
+      const t = escrow.terms, found = ledger && await lookupTx(ledger, body.txHash)
+      if (t.intentId !== body.intentId || t.publisherSlug !== entry.publisher.slug || !found || found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS' || found.tx.TransactionType !== 'EscrowFinish' || found.tx.Owner !== t.payer || found.tx.Condition !== t.condition) throw new PublisherError(404, 'No validated escrow finish')
+      const invoice = escrowInvoice(t), id = ledgerInvoiceId(invoice)
+      if (!journal.quoteByInvoice(id)) journal.saveQuote({ invoiceId: invoice, ledgerInvoiceId: id, quoteId: t.quoteId, publisherSlug: t.publisherSlug, articleId: t.articleId, version: t.version, amount: t.amount, payTo: t.payTo, asset: 'XRP', expiresAt: new Date().toISOString() })
+      journal.settle({ txHash: body.txHash, ledgerInvoiceId: id, payer: t.payer, ledgerIndex: found.ledgerIndex, settledAt: new Date().toISOString() })
+    }
     const settlement = journal.settlementByTx(body.txHash)
     const quote = settlement && journal.quoteByInvoice(settlement.ledgerInvoiceId)
     const article = quote && quote.publisherSlug === entry.publisher.slug ? entry.articles.find(a => a.articleId === quote.articleId && a.version === quote.version) : undefined

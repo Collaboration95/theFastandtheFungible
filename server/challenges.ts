@@ -3,6 +3,8 @@
 // The buyer checks a refund on the ledger itself (verifyPayment, roles swapped). Write-once per intent.
 import { SIMULATED_LABEL, XRPL_LABEL, type PurchaseIntent } from '../shared/contracts/index.js'
 import type { Challenge } from '../shared/contracts/publisher.js'
+import { decryptDelivery } from '../shared/key-reveal.js'
+import { z } from 'zod'
 import { verifyPayment } from '../shared/xrpl.js'
 import type { PurchaseManager } from './purchases.js'
 import { XrplPayer } from './xrpl.js'
@@ -25,10 +27,22 @@ async function run({ store, client, payer }: PurchaseManager, intentId: string, 
   const intent = store.getIntent(intentId)
   if (!intent) throw new Error('Intent not found')
   if (!['CLAIM_FAILED', 'CHALLENGED'].includes(intent.status)) return intent
-  const manifest = store.getManifest(intentId), delivery = store.getDelivery(intentId)
+  const manifest = store.getManifest(intentId)
+  const delivery = store.getDelivery(intentId)
+  let passages = delivery?.content.spans, salts = delivery?.salts
+  // Failed escrow passages remain private; decrypt published evidence only inside policy.
+  if (!delivery && intent.escrow?.mode === 'key-reveal') {
+    const escrow = store.getEscrow(intentId)
+    if (escrow?.reveal) {
+      try {
+        const d = z.object({ passages: z.array(z.object({ id: z.string(), text: z.string() })), salts: z.array(z.string()) }).parse(decryptDelivery(escrow.quote, escrow.reveal.key))
+        passages = d.passages; salts = d.salts
+      } catch { /* Unauthenticated envelopes cannot substantiate a passage challenge. */ }
+    }
+  }
   const claim = manifest?.claims.find(c => intent.failedClaimIds?.includes(c.id))
   const index = claim ? manifest!.leaves.indexOf(claim.leaf) : -1
-  const passage = delivery?.content.spans[index], salt = delivery?.salts[index]
+  const passage = passages?.[index], salt = salts?.[index]
   // A root mismatch with no claim to point at stays quarantined; there is nothing the writer could re-check.
   if (!claim || !passage || !salt || !intent.txHash) return intent
   const testnet = intent.quote?.payment?.rail === 'xrpl-testnet'

@@ -63,6 +63,10 @@ export class PublisherJournal {
     const row = this.db.prepare('SELECT json FROM key_reveals WHERE invoice=?').get(invoice)
     return row && JSON.parse(String(row.json))
   }
+  revealQuoteByFinish(hash: string): EscrowQuote | undefined {
+    const row = this.db.prepare("SELECT q.json FROM escrow_quotes q JOIN key_reveals k ON k.invoice=q.invoice WHERE json_extract(k.json,'$.finish.txHash')=?").get(hash)
+    return row && JSON.parse(String(row.json))
+  }
   saveKeyReveal(invoice: string, value: { secret: string; finish?: import('../server/xrpl.js').Submission }) {
     this.db.prepare('INSERT INTO key_reveals VALUES (?,?) ON CONFLICT(invoice) DO UPDATE SET json=excluded.json').run(invoice, JSON.stringify(value))
   }

@@ -55,11 +55,15 @@ export class EscrowPurchases {
     if (tx.TransactionType !== 'EscrowFinish' || tx.Owner !== t.payer || Number(tx.OfferSequence) !== e.publicStatus.createSequence || tx.Condition !== t.condition || !/^A0228020[A-F0-9]{64}$/.test(fulfillment) || conditionFor(fulfillment.slice(8)) !== t.condition) throw new Error('Ledger key binding rejected')
     const key = fulfillment.slice(8)
     this.store.persistReveal(intent.intentId, { key, finishHash: hash, ledgerIndex: found.ledgerIndex, transaction: found.tx })
-    let proof = false
+    let proof = false, decryptVerified = false
+    let failedClaimIds: string[] = []
     let d: z.infer<typeof RevealedDelivery> | undefined
     try {
-      d = RevealedDelivery.parse(decryptDelivery(e.quote, key))
+      const decrypted = decryptDelivery(e.quote, key)
+      decryptVerified = true
+      d = RevealedDelivery.parse(decrypted)
       const manifest = this.store.getManifest(intent.intentId)!
+      failedClaimIds = verifyDelivery(d.body, d.passages, d.salts, manifest).failedClaims
       proof = d.articleId === intent.resourceId && d.version === intent.version && manifest.root === t.manifestRoot && verifyManifestSignature(manifest) && verifyDelivery(d.body, d.passages, d.salts, manifest).ok
     } catch { /* Invalid envelope remains private; evidence can be exported explicitly after reveal. */ }
     if (proof && d) {
@@ -67,8 +71,8 @@ export class EscrowPurchases {
       this.store.addGrant({ source: intent.source, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, contentDigest: t.manifestRoot, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: d.salts })
       if (!this.store.getRun(intent.runId).events.some(e => e.type === 'GRANT' && e.data?.intentId === intent.intentId)) this.store.appendEvent(intent.runId, { type:'GRANT', label:'Key-reveal manifest root verified', data:{intentId:intent.intentId, resourceId:intent.resourceId, version:intent.version} })
     }
-    this.store.escrowTransition(intent.intentId, { proofOk: proof, revealLedger: found.ledgerIndex })
-    this.store.completeEscrow(intent.intentId, 'finish', found.ledgerIndex, hash)
+    this.store.escrowTransition(intent.intentId, { proofOk: proof, keyVerified: true, decryptVerified, revealLedger: found.ledgerIndex })
+    this.store.completeEscrow(intent.intentId, 'finish', found.ledgerIndex, hash, failedClaimIds)
     if (!proof) this.recordFailedProof(this.store.getIntent(intent.intentId)!)
     this.event(intent, 'finish', hash, found.ledgerIndex)
   }

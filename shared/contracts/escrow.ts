@@ -10,7 +10,7 @@ export const EscrowQuoteSchema = z.object({ ciphertext: z.string().regex(/^[A-F0
 export const EscrowStatusSchema = z.object({ scheme: z.literal('escrow-v1'), policy: z.literal('escrow-policy-v1'),
   state: z.enum(['PREPARED', 'LOCKED', 'VERIFIED_FOR_RELEASE', 'CANCEL_DUE', 'RELEASED', 'CANCELLED']),
   mode: z.literal('key-reveal').optional(), revealLedger: z.number().int().positive().optional(), owner: z.string(), cancelAfter: z.number(), createSequence: z.number().optional(), createHash: z.string().optional(),
-  finishHash: z.string().optional(), cancelHash: z.string().optional(), proofOk: z.boolean().optional(),
+  keyVerified: z.boolean().optional(), decryptVerified: z.boolean().optional(), finishHash: z.string().optional(), cancelHash: z.string().optional(), proofOk: z.boolean().optional(),
 })
 export type EscrowTerms = z.infer<typeof EscrowTermsSchema>
 export type EscrowQuote = z.infer<typeof EscrowQuoteSchema>
