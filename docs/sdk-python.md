@@ -130,3 +130,14 @@ ledger checks are labelled SKIP. An independent audit head detects rewritten
 chains; a self-contained export alone cannot. Structural contribution evidence
 does not certify semantic truth. See [receipt spec](receipt-spec.md) and
 [conformance evidence](evidence/round2-k/README.md).
+
+## Verify against the ledger
+
+`python -m researchagent verify receipts.json --ledger` uses bounded, read-only
+WebSocket Testnet lookups (s.altnet, then Clio), with no wallet or backend.
+The Python API is `verify(bundle, ledger=True)`. `audit anchor` becomes PASS for
+validated matching anchor-v1 evidence, or FAIL with a reason. Without the flag,
+it remains SKIP (requires online check); offline fixture behavior is unchanged.
+Each endpoint has a five-second deadline and 256 KiB response cap; at most two
+lookups run concurrently. The implementation uses Python's standard library.
+Anchor fees are separate from article spend. See receipt-spec.md.

@@ -1,3 +1,4 @@
+import { LedgerAnchorSchema } from './anchor.js'
 import { z } from 'zod'
 import { AnswerSchema, CoverageSchema, ImpactSchema, RequirementSchema } from './answer.js'
 import { ContentEnvelopeSchema, PublicCandidateSchema } from './corpus.js'
@@ -54,6 +55,7 @@ export const RunCheckpointSchema = z.object({
   attempts: z.array(z.object({ requirementId: z.string(), fingerprint: z.string() })).optional(),
 }).catchall(z.unknown())
 export const RunSnapshotSchema = z.object({
+  ledgerAnchor: LedgerAnchorSchema.optional(),
   policyVersion: z.string().optional(),
   runId: z.string(), question: z.string(), budgetMinor: z.number().int().nonnegative(), spentMinor: z.number().int().nonnegative(), reservedMinor: z.number().int().nonnegative(), perSourceCapMinor: z.number().int().nonnegative(),
   /** Derived: sum of intent refunds. spentMinor stays the gross charge. */ refundedMinor: z.number().int().nonnegative().optional(),

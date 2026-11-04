@@ -13,12 +13,13 @@ def main():
     command = commands.add_parser("verify")
     command.add_argument("receipts", type=Path)
     command.add_argument("--json", action="store_true")
+    command.add_argument("--ledger", action="store_true")
     args = parser.parse_args()
     try:
         bundle = json.loads(args.receipts.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         parser.error("Cannot read receipt JSON")
-    result = verify(bundle)
+    result = verify(bundle, ledger=args.ledger)
     print(
         json.dumps(result)
         if args.json

@@ -63,6 +63,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS admissions (key TEXT NOT NULL, surface TEXT NOT NULL, principal TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, requested INTEGER NOT NULL, admitted INTEGER NOT NULL, day TEXT NOT NULL, policy_version TEXT NOT NULL, PRIMARY KEY(surface, principal, key));
       CREATE TABLE IF NOT EXISTS wallet_control (id INTEGER PRIMARY KEY CHECK(id=1), paused INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS mcp_requests (key TEXT PRIMARY KEY, question TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, budget INTEGER NOT NULL, day TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS answer_anchors (head TEXT PRIMARY KEY, run_id TEXT NOT NULL, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL REFERENCES runs(id), json TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS events_run_id ON events(run_id,id);
@@ -378,7 +379,7 @@ export class Store {
     if (change.hidden !== undefined) this.db.prepare('UPDATE run_meta SET hidden=? WHERE run_id=?').run(change.hidden ? 1 : 0, runId)
   }
   updateRun(runId: string, patch: Partial<RunSnapshot>): RunSnapshot {
-    const allowed = new Set(['phase', 'stopped', 'round', 'candidates', 'labels', 'checkpoint', 'error', 'reportStatus'])
+    const allowed = new Set(['ledgerAnchor', 'phase', 'stopped', 'round', 'candidates', 'labels', 'checkpoint', 'error', 'reportStatus'])
     if (Object.keys(patch).some(key => !allowed.has(key))) throw new Error('Protected run fields require ledger APIs')
     publicMetadata(patch.checkpoint)
     this.atomic(() => {
@@ -860,6 +861,8 @@ export class Store {
     })
   }
   auditVerify(options: { expectHead?: string } = {}) { return verifyChain(this.db, options) }
+  anchorRows(): import('./anchor.js').AnchorRecord[] { return this.rows('SELECT json FROM answer_anchors ORDER BY rowid') }
+  saveAnchor(row: import('./anchor.js').AnchorRecord) { this.db.prepare('INSERT INTO answer_anchors VALUES (?,?,?) ON CONFLICT(head) DO UPDATE SET json=excluded.json').run(row.head, row.runId, JSON.stringify(row)) }
   auditEntries(range: DateRange = {}) { return auditEntries(this.db, range) }
   receiptRows(range: DateRange = {}) { return receiptRows(this.db, range) }
   /** Deletes premium content, events and run bodies past the window; keeps receipts, intents and every audit row (#288). */

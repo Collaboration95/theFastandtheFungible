@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import EnvIndicator from '../src/components/EnvIndicator.js'
 import { exampleRun } from '../src/fixtures/run.js'
 import { XRPL_LABEL } from '../shared/contracts/index.js'
 
-afterEach(() => { cleanup(); vi.restoreAllMocks() })
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals() })
 it('keeps simulation labels usable when private mode refuses storage', () => {
   vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('storage disabled') })
   vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('storage disabled') })
@@ -31,4 +31,20 @@ it('labels Testnet funds as having no value and preserves supplied model labels'
   expect(screen.getByText(/research protocol fixture/)).toBeTruthy()
   fireEvent.click(trigger)
   expect(trigger.getAttribute('aria-expanded')).toBe('false')
+})
+
+for (const interaction of ['pointer', 'keyboard']) it(`does not cover an active question when health labels arrive late (${interaction})`, () => {
+  vi.useFakeTimers()
+  vi.stubGlobal('localStorage', { getItem: () => null, setItem: vi.fn() })
+  try {
+    const { rerender } = render(<EnvIndicator />)
+    if (interaction === 'pointer') fireEvent.pointerDown(document.body)
+    else fireEvent.keyDown(document.body, { key: 'k' })
+    rerender(<EnvIndicator labels={exampleRun.labels} />)
+    act(() => { vi.runAllTimers() })
+    expect(screen.queryByRole('region', { name: "What's real here" })).toBeNull()
+    // Explicit disclosure remains available after automatic onboarding is skipped.
+    fireEvent.click(screen.getByRole('button'))
+    expect(screen.getByRole('region', { name: "What's real here" })).toBeTruthy()
+  } finally { vi.useRealTimers() }
 })

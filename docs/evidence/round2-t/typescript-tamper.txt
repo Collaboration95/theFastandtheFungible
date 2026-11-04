@@ -1,0 +1,21 @@
+
+> research-agent@1.0.0 verify:answer
+> tsx scripts/verify-answer.ts docs/evidence/round2-t/tampered.json --ledger
+
+VERIFY 7bfa6844-0412-41d4-9515-a6d22220dd3f
+PASS CONTRIBUTIONS 1/1
+PASS MANIFEST   3/3
+PASS PASSAGES   3/3
+PASS CITATION   16/16
+PASS GRANT      1/1
+PASS RECEIPT    3/3
+PASS REFUND     2/2
+FAIL AUDIT CHAIN 0/1
+SKIP writer credentials: Unsigned advisory identity; requires online check
+SKIP historical origin: v1 origin unresolved; original singleton semantics
+FAIL audit seq 17: Chain link or entry hash differs
+FAIL audit chain: 15 links; head 2861e38da5e32b6ec982e5b6246d581b158338222db4c87a9718b9de9c7335a0
+FAIL anchor binding: Anchor head, run and answer commitment agree
+FAIL audit anchor: Audit head mismatch
+SKIP testnet: Payments/refunds NOT checked on ledger; add --testnet (read-only, no keys)
+RESULT FAIL

@@ -408,7 +408,7 @@ def contributions(b):
     )
 
 
-def verify(export, *, expect_head=None):
+def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None):
     """Verify a dict or JSON path; valid means internal consistency, not ledger truth."""
     checks = [dict(check="writer credentials", status="SKIP", detail="Unsigned advisory identity; requires online check")]
 
@@ -566,13 +566,21 @@ def verify(export, *, expect_head=None):
             and prev == b["audit"]["head"]
             and (not expect_head or prev == expect_head),
         )
-        if expect_head:
-            add("audit anchor", prev == expect_head)
+        anchor = b.get('ledgerAnchor')
+        if anchor:
+            commitment = next((e for e in entries if e['kind'] == 'answer-anchor' and e['runId'] == b['runId'] and e['hash'] == b['audit']['head']), {})
+            add('anchor binding', all(p['payer'] == anchor['account'] for p in b['payments'] if p['kind'] == 'purchase') and anchor['head'] == prev and anchor['runIdHash'] == sha(b['runId']) and commitment.get('data', {}).get('answersHash') == sha(canonical(b['answers'])), 'Anchor head, run and answer commitment agree')
+        if ledger:
+            from ._anchor import lookup, check
+            try:
+                if not anchor:
+                    raise ValueError('No ledger anchor in export')
+                reason = check(anchor, b['runId'], prev, (ledger_lookup or lookup)(anchor['txHash']))
+                add('audit anchor', chain and reason is None, reason or ('Validated XRPL Testnet ledger ' + str(anchor['ledgerIndex']) if chain else 'Audit head mismatch'))
+            except (OSError, ValueError, KeyError, TypeError) as error:
+                add('audit anchor', False, str(error))
         else:
-            skip(
-                "audit anchor",
-                "Self-contained chain; independently supplied head required to detect rewriting",
-            )
+            skip('audit anchor', 'not anchored (simulated); requires online check' if 'SIMULATED' in b['label'] else 'requires online check (--ledger)')
         source_ok = {}
         for s in b["sources"]:
             ps = [p for p in b["proofs"] if key(p) == key(s)]

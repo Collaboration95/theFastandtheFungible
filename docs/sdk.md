@@ -160,3 +160,14 @@ Receipt contribution v3 exposes exact claim/passage use with semantic assessment
 labelled not independently verified. See [receipt contribution contract](contracts/CONTRIBUTION.md)
 and [offline fixture evidence](evidence/round2-g/README.md). Python callers can use
 `Client.receipts(run_id)`; the existing offline verifier accepts v1/v2/v3.
+
+## Verify against the ledger
+
+`npm run verify:answer -- receipts.json --ledger` verifies an optional anchor-v1
+against XRPL Testnet, read-only and without keys. The `audit anchor` check is
+PASS for a validated matching memo, FAIL for missing/mismatched/unavailable
+ledger evidence. Without `--ledger` it remains SKIP (requires online check).
+The SDK equivalent is `verifyAnswer(bundle, { onlineLedger: true })`.
+This is separate from `--testnet`, which checks article payments/refunds.
+The operator enables anchoring with `ANCHOR_RAIL=xrpl-testnet`; anchor fees are
+shown separately and do not change the article budget. See receipt-spec.md.
