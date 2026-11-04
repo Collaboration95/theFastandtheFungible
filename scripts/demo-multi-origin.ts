@@ -5,7 +5,7 @@ import { createServer } from 'node:http'
 import { decide } from '../server/agents/decision.js'
 /** Offline finals topology proof. No inherited credentials, providers or Testnet. */
 import { once } from 'node:events'
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -25,6 +25,7 @@ export async function demoMultiOrigin() {
   for (const name of Object.keys(process.env)) if (/(?:API_KEY|TOKEN|SEED|SECRET)$/.test(name)) delete process.env[name]
   Object.assign(process.env,{LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SEARCH_EMBEDDINGS:'off',SETTLEMENT_RAIL:'simulated',LANGFUSE_ENABLED:'0'})
   const root = await mkdtemp(join(tmpdir(), 'ra-multi-origin-'))
+  try {
   const folder = join(root, 'markdown'); await mkdir(folder)
   await writeFile(join(folder, 'evidence.md'), '---\ntitle: Capacity evidence\nabstract: Independent capacity analysis\ntier: PAID\nprice: 0.50\ntags: capacity\nsynthetic: true\n---\nOnly 240 of the 600 MW has confirmed energisation slots before 2028.\n\nSubstation works have slipped fourteen months.\n\nThe remaining capacity depends on new transmission infrastructure.\n\nAn independent engineering assessment identifies the critical commissioning constraints.\n' + ('The synthetic engineering scenario records planning assumptions and commissioning dependencies for comparison across independent reports. '.repeat(40)))
   const started = performance.now()
@@ -87,6 +88,10 @@ export async function demoMultiOrigin() {
     finally {hung.closeAllConnections();await new Promise<void>(r=>hung.close(()=>r()))}
     return { mcpOrigins, gateAudit, hungMs, label: 'SYNTHETIC / SIMULATED / pinned-local-origin topology', urls, onboardingMs, originsFound: new Set(found.candidates.map(c => c.source?.origin)).size, collided: collided.map(c => c.source), sameWallet: collided[0].wallet === collided[1].wallet, receipts: current.receipts.length, spentMinor: current.spentMinor, grants: current.grants.length, citations: presented.citations.filter(c => c.source?.profileId === 'collision'), deadMs, healthyOrigins: new Set(partial.candidates.map(c => c.source?.origin)).size, verification: verified, bundle, root }
   } finally { store.close(); for (const s of [a.server,b.server,server]) { s.closeAllConnections(); if(s.listening) await new Promise<void>(r => s.close(() => r())) }; roster.locals.journal.close() }
+  } finally {
+    if(process.env.KEEP_CONSUMER_SCRATCH === '1') console.log('Multi-origin scratch retained: '+root)
+    else await rm(root,{recursive:true,force:true})
+  }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (!process.argv.includes('--fixture')) throw new Error('--fixture required')

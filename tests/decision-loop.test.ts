@@ -25,6 +25,7 @@ function harness(budgetMinor = 200) {
   const run: RunSnapshot = structuredClone({ ...exampleRun, budgetMinor, phase: 'SEARCH', answers: [], candidates: [], contents: [], round: 0 })
   const store = {
     getRun: vi.fn(() => structuredClone(run)),
+    updateRunState: vi.fn((id: string, patch: Partial<RunSnapshot>): void => { store.updateRun(id, patch) }),
     updateRun: vi.fn((_id: string, patch: Partial<RunSnapshot>) => { Object.assign(run, structuredClone(patch)); return structuredClone(run) }),
     appendEvent: vi.fn((_id: string, input: Omit<TraceEvent, 'id' | 'runId' | 'at'>) => { const event = { ...input, id: run.events.length + 1, runId: run.runId, at: new Date().toISOString() }; run.events.push(event); return event }),
     addAnswer: vi.fn((_id: string, answer: Answer, impact?: Impact) => { if (run.answers.some(value => value.version === answer.version)) throw new Error('Immutable'); run.answers.push(structuredClone(answer)); run.impact = impact }),

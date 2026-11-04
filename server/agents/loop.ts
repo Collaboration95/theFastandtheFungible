@@ -43,7 +43,7 @@ export class RunLoop {
 
   private trace(runId: string, phase: RunSnapshot['phase'], label: string, checkpoint: Record<string, unknown> = {}) {
     const run = this.store.getRun(runId)
-    this.store.updateRun(runId, { phase, checkpoint: { ...run.checkpoint, ...checkpoint, phase, round: run.round } })
+    this.store.updateRunState(runId, { phase, checkpoint: { ...run.checkpoint, ...checkpoint, phase, round: run.round } })
     const event = this.store.appendEvent(runId, { type: phase, label })
     // A disconnected SSE consumer must not interrupt a persisted run.
     try { this.onEvent?.(event) } catch { /* The event is already durable. */ }

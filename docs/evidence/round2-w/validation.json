@@ -1,0 +1,268 @@
+{
+  "measuredSource": "9a34e9d4fcb52444740a2898fb7f092d54a75324",
+  "logSha256": {
+    "w-integrated-check.log": "a7e8d6de8c47446229ecb05affcd1ee4a727b3b363c1bffb68969f3f6f2c5543",
+    "w-integrated-python.log": "867c6efc42c131b5381909890e16dcc6b67c4f19faaf810d9f8b0645004c8032",
+    "w-integrated-hygiene.log": "57786b7418d737a828de8595bbcfd6d192a779a72f348ef1acbae99010988444",
+    "w-integrated-artifacts.log": "10cc77456b86993d3d4e06cb8ee18c8bd4cc6b538edae747ddecb963cf77d017",
+    "w-integrated-chaos.json": "461c6bb6519f281079cfeaf06589cd9c1ca3f73aa7e5375197d463241d2395aa",
+    "w-conformance.log": "cd6769c58c24c714262ab538686d5a48539172f9180080dd416c9616ddf8ce8d",
+    "w-pyconformance.log": "d3c5bebf21996f96a51751be5c982d6a03112742019a5e0bdc938105682d4555"
+  },
+  "chaos": {
+    "schema": "chaos-v1",
+    "label": "SYNTHETIC fixture ledger; real SIGKILL; production API/SDK/MCP/publisher; no Testnet, providers or real value",
+    "seed": 279,
+    "testedCommit": "9a34e9d4fcb52444740a2898fb7f092d54a75324",
+    "worktreeDirty": false,
+    "startedAt": "2026-11-04T06:38:36.217Z",
+    "durationMs": 422504,
+    "iterations": 200,
+    "faultsInjected": 200,
+    "processKills": 55,
+    "payments": 259,
+    "refunds": 34,
+    "recovered": 171,
+    "failedCleanly": 29,
+    "doubleCharges": 0,
+    "invariantViolations": 0,
+    "stuckReservations": 0,
+    "reservationsHeld": 0,
+    "byFault": {
+      "kill-before-sign": 10,
+      "kill-after-sign": 8,
+      "kill-after-submit": 13,
+      "kill-after-validation": 13,
+      "submit-timeout-before": 9,
+      "submit-timeout-after": 14,
+      "duplicate-submit": 11,
+      "publisher-down": 14,
+      "publisher-slow": 8,
+      "engine-restart": 11,
+      "identical-intents": 12,
+      "sdk-retry": 9,
+      "mcp-retry": 11,
+      "hire-replay": 6,
+      "refund-replay": 12,
+      "sse-drop": 8,
+      "caps": 9,
+      "decision-down": 10,
+      "provider-down": 12
+    },
+    "byUseCase": {
+      "UC2": 147,
+      "UC1": 10,
+      "UC3": 34,
+      "UC4": 9
+    },
+    "maxRssBytes": 368236248,
+    "maxHandles": 35,
+    "latencyMs": {
+      "firstWindowP95": 3822.582542,
+      "lastWindowP95": 3914.2693340000114,
+      "p95DriftMs": 91.68679200001134
+    },
+    "lastMetrics": {
+      "schema": "operations-v1",
+      "rail": "xrpl-testnet",
+      "purchasesByStatus": {
+        "VERIFIED": 1
+      },
+      "settleLatencyMs": {
+        "samples": 1,
+        "p50": 11,
+        "p95": 11
+      },
+      "payerLockWaitMs": {
+        "samples": 1,
+        "p95": 0,
+        "scope": "last 1024 successful lock acquisitions in this process"
+      },
+      "reconcileBacklog": {
+        "count": 0,
+        "oldestAgeMs": null,
+        "unknownAgeCount": 0,
+        "exhaustedDeliveries": 0
+      },
+      "spendTodayBySurface": {
+        "web": {
+          "spentMinor": 0,
+          "reservedMinor": 0
+        },
+        "mcp": {
+          "spentMinor": 90,
+          "reservedMinor": 0
+        },
+        "x402": {
+          "spentMinor": 0,
+          "reservedMinor": 0
+        },
+        "agent": {
+          "spentMinor": 0,
+          "reservedMinor": 0
+        }
+      },
+      "fallbacks": {
+        "llm": 2,
+        "decisionUnavailable": 0,
+        "decision": 0
+      },
+      "modelUsageByRun": [
+        {
+          "runId": "34981f6d-d05f-4abb-ba22-616c11a8a91e",
+          "reportedCalls": 0,
+          "inputTokens": null,
+          "outputTokens": null,
+          "estimatedUsd": null
+        }
+      ]
+    },
+    "escrow": {
+      "iterations": 40,
+      "faultsInjected": 40,
+      "creates": 40,
+      "releases": 20,
+      "cancellations": 20,
+      "invariantViolations": 0
+    },
+    "scope": "Single payer writer; independent fresh stores per iteration, retained across crash; four escrow timeout/restart/downtime probes every 20 iterations",
+    "resourcePhases": {
+      "imports-ready": 213406768,
+      "corpus-ready": 257075984,
+      "api-ready": 285636344,
+      "ask-complete": 346719424,
+      "before-audit": 346768576,
+      "after-audit": 365352544,
+      "after-leak-check": 368154328
+    },
+    "windows": [
+      {
+        "endIteration": 50,
+        "samples": 50,
+        "elapsedMs": 130447,
+        "p95Ms": 3907.9805410000045,
+        "childRssP50Bytes": 287813808,
+        "childRssMaxBytes": 365005456,
+        "parentRssBytes": 18877128,
+        "maxHandles": 35,
+        "byFault": {
+          "kill-before-sign": 3,
+          "kill-after-sign": 2,
+          "kill-after-submit": 3,
+          "kill-after-validation": 1,
+          "submit-timeout-before": 5,
+          "submit-timeout-after": 3,
+          "duplicate-submit": 4,
+          "publisher-down": 3,
+          "publisher-slow": 2,
+          "engine-restart": 2,
+          "identical-intents": 3,
+          "sdk-retry": 1,
+          "mcp-retry": 4,
+          "hire-replay": 2,
+          "refund-replay": 5,
+          "sse-drop": 1,
+          "caps": 1,
+          "decision-down": 2,
+          "provider-down": 3
+        }
+      },
+      {
+        "endIteration": 100,
+        "samples": 50,
+        "elapsedMs": 210552,
+        "p95Ms": 2563.648375000019,
+        "childRssP50Bytes": 285044984,
+        "childRssMaxBytes": 368236248,
+        "parentRssBytes": 19827736,
+        "maxHandles": 35,
+        "byFault": {
+          "kill-before-sign": 1,
+          "kill-after-sign": 2,
+          "kill-after-submit": 2,
+          "kill-after-validation": 6,
+          "submit-timeout-before": 1,
+          "submit-timeout-after": 4,
+          "duplicate-submit": 0,
+          "publisher-down": 6,
+          "publisher-slow": 2,
+          "engine-restart": 5,
+          "identical-intents": 5,
+          "sdk-retry": 2,
+          "mcp-retry": 0,
+          "hire-replay": 0,
+          "refund-replay": 3,
+          "sse-drop": 2,
+          "caps": 3,
+          "decision-down": 5,
+          "provider-down": 1
+        }
+      },
+      {
+        "endIteration": 150,
+        "samples": 50,
+        "elapsedMs": 310502,
+        "p95Ms": 3798.70404099999,
+        "childRssP50Bytes": 287273088,
+        "childRssMaxBytes": 345146848,
+        "parentRssBytes": 21630432,
+        "maxHandles": 35,
+        "byFault": {
+          "kill-before-sign": 3,
+          "kill-after-sign": 3,
+          "kill-after-submit": 3,
+          "kill-after-validation": 3,
+          "submit-timeout-before": 1,
+          "submit-timeout-after": 5,
+          "duplicate-submit": 4,
+          "publisher-down": 2,
+          "publisher-slow": 2,
+          "engine-restart": 2,
+          "identical-intents": 2,
+          "sdk-retry": 4,
+          "mcp-retry": 4,
+          "hire-replay": 0,
+          "refund-replay": 1,
+          "sse-drop": 4,
+          "caps": 2,
+          "decision-down": 2,
+          "provider-down": 3
+        }
+      },
+      {
+        "endIteration": 200,
+        "samples": 50,
+        "elapsedMs": 422503,
+        "p95Ms": 4077.0395410000347,
+        "childRssP50Bytes": 286813904,
+        "childRssMaxBytes": 355272880,
+        "parentRssBytes": 23220040,
+        "maxHandles": 35,
+        "byFault": {
+          "kill-before-sign": 3,
+          "kill-after-sign": 1,
+          "kill-after-submit": 5,
+          "kill-after-validation": 3,
+          "submit-timeout-before": 2,
+          "submit-timeout-after": 2,
+          "duplicate-submit": 3,
+          "publisher-down": 3,
+          "publisher-slow": 2,
+          "engine-restart": 2,
+          "identical-intents": 2,
+          "sdk-retry": 2,
+          "mcp-retry": 3,
+          "hire-replay": 4,
+          "refund-replay": 3,
+          "sse-drop": 1,
+          "caps": 3,
+          "decision-down": 1,
+          "provider-down": 5
+        }
+      }
+    ],
+    "failures": [],
+    "attempts": 200
+  },
+  "consumerScratchRemaining": []
+}

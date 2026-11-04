@@ -1,6 +1,6 @@
 // Real SIGKILLs; simulated ledger and generated test wallets, no environment credentials.
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { Wallet } from 'xrpl'
 import { chain } from '../../tests/fixtures/key-reveal-ledger.js'
@@ -17,6 +17,7 @@ if (!dir) {
   const results = []
   for (const point of ['create', 'reveal', 'decrypt']) {
     const work = mkdtempSync(resolve('scratch/key-reveal-kill-'))
+    try {
     writeFileSync(join(work, 'test-wallets.json'), JSON.stringify({ buyer: Wallet.generate().seed, writer: Wallet.generate().seed, other: Wallet.generate().seed }), { mode: 0o600 })
     const env = { PATH: process.env.PATH, HOME: work, NODE_NO_WARNINGS: '1', ESCROW_MODE: 'key-reveal', LANGFUSE_ENABLED: '0' }
     const killed = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/chaos/key-reveal.ts', work, point], { env, timeout: 30_000 })
@@ -24,6 +25,10 @@ if (!dir) {
     const recovered = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/chaos/key-reveal.ts', work, 'recover'], { env, timeout: 30_000 })
     if (recovered.status !== 0) throw new Error(`Recovery failed at ${point}: ${recovered.stderr.toString()}`)
     results.push({ boundary: point, signal: killed.signal, ...JSON.parse(readFileSync(join(work, 'result.json'), 'utf8')) })
+    } finally {
+      if(process.env.KEEP_CONSUMER_SCRATCH === '1') console.log('Chaos scratch retained: '+work)
+      else rmSync(work,{recursive:true,force:true})
+    }
   }
   mkdirSync('docs/evidence/round2-r', { recursive: true })
   writeFileSync('docs/evidence/round2-r/crash.json', JSON.stringify({ label: 'SIMULATED ledger; actual process SIGKILL; no live funds', results }, null, 2) + '\n')
