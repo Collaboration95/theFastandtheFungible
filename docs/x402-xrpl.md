@@ -558,3 +558,5 @@ browser CORS support on the observed endpoint. Endpoint history differs;
 Only validated tesSUCCESS matching the committed amount, destination, InvoiceID,
 fee, ledger and credential issuer/subject/type gets the verified style.
 See [P1 evidence](evidence/round2-p1/README.md) and [runnable feedback](BUILDER-FEEDBACK.md).
+
+Key reveal makes *delivery* atomic. *Quality* is enforced by the pre-commitment (manifest), a verifiable fraud proof and reputation, not by the ledger.

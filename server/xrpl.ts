@@ -99,6 +99,9 @@ export class XrplPayer {
   anchor<T>(memo: string, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>) {
     return this.escrow({ TransactionType: 'AccountSet', Memos: [{ Memo: { MemoType: Buffer.from('researchagent/anchor-v1').toString('hex').toUpperCase(), MemoData: Buffer.from(memo).toString('hex').toUpperCase() } }] } as Omit<Transaction, 'Account'>, 0, persist, send)
   }
+  revokeCredential<T>(subject: string, credentialType: string, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>) {
+    return this.escrow({ TransactionType: 'CredentialDelete', Subject: subject, CredentialType: credentialType } as Omit<Transaction, 'Account'>, 0, persist, send)
+  }
   restorePending(submissions: Submission[]) { this.pending.push(...submissions) }
   private async waitForSequence(submission: Submission): Promise<PaymentOutcome> {
     const deadline = Date.now() + Math.min(5000, this.timing.timeoutMs)

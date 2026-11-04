@@ -21,7 +21,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     page.on('pageerror', error => errors.push(error.message))
     page.on('request', request => requests.push(request.url()))
     await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/`)
-    await expect(page.getByText('Recorded on XRPL Testnet · no real value', {exact:true})).toBeVisible()
+    await expect(page.getByText(/^Recorded on XRPL Testnet · no real value · key reveal .*the refund is writer-signed \(fixture writer cooperates\)$/)).toBeVisible()
     await expect(page.getByRole('button', { name: 'Pause', exact:true })).toBeVisible()
     await page.getByRole('button', { name:'Pause', exact:true }).click()
     await expect(page.getByRole('button', { name:'Resume', exact:true })).toBeVisible()
@@ -30,11 +30,14 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
     await expect(page.getByText('Updated with paid evidence', { exact: true })).toBeVisible()
     await expect(page.getByRole('region', { name: /Purchase: AlphaLeak/ })).toContainText('Refunded S$0.30')
-    await expect(page.getByRole('region', { name: 'Purchase: The Fab Floor' })).toContainText('Verified')
+    await expect(page.getByRole('region', { name: 'Purchase: The Fab Floor' })).toContainText('Paid by key reveal')
     await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 kept · 1 refunded')
     const spend = page.getByRole('region', { name: 'Spend', exact: true }).first()
     await expect(spend).toContainText('S$1.30 budget left · refunds don’t restore budget'.replace('’', "'"))
-    await expect(page.getByRole('link', { name: 'tx ↗', exact: true })).toHaveCount(2)
+    // Each key-reveal card lists its own create and finish transactions; the refund links separately.
+    await expect(page.getByRole('link', { name: 'tx ↗', exact: true })).toHaveCount(4)
+    await expect(page.getByRole('link', { name: /^Refund tx [A-F0-9]{6}…[A-F0-9]{5} ↗$/ })).toHaveCount(1)
+    await expect(page.locator('p:visible', { hasText: 'Refund · writer-signed · fixture writer cooperates (a real writer could refuse)' })).toHaveCount(1)
     await page.screenshot({ path: info.outputPath('uc3.png'), fullPage: true })
     await page.getByRole('button', { name: /Receipt/ }).first().click()
     await expect(page.getByRole('dialog')).toBeVisible()
@@ -83,12 +86,36 @@ test('key reveal tab autoplays and preserves quarantine disclosure', async ({ pa
   await page.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
   await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC-key-reveal`)
   await expect(page.getByText(/ciphertext before grant stays quarantined/)).toBeVisible()
-  await expect(page.getByRole('link',{name:'Testnet UC3',exact:true})).toBeVisible()
-  await expect(page.getByRole('link',{name:'Testnet · key reveal',exact:true})).toBeVisible()
+  for (const name of ['Testnet UC3 · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show']) await expect(page.getByRole('link',{name,exact:true})).toBeVisible()
   await expect(page.locator('.demo-transactions p')).toHaveCount(4)
   await expect(page.locator('.demo-transactions')).toContainText('EscrowFinish (key published)')
   await expect(page.locator('.demo-transactions')).toContainText('EscrowCancel (writer no-show)')
   await expect(page.locator('.demo-transactions')).toContainText('Historical')
   await expect(page).toHaveTitle(/Answer ready/, {timeout:45000})
  } finally {python.kill('SIGTERM');await once(python,'exit')}
+})
+
+// The first minute of every Testnet replay: no failure frame, ever, and every recorded hash live-green quickly.
+for (const [name, query, rows] of [['default key-reveal UC3', '', 6], ['writer no-show', '?scenario=UC-key-reveal', 4]] as const) test(`${name} replay never shows a failure and its hashes go live-green`, async ({ page }, info) => {
+  test.setTimeout(150_000)
+  const root = info.outputPath('pages')
+  await mkdir(`${root}/theFastandtheFungible`, { recursive: true })
+  await cp('site', `${root}/theFastandtheFungible`, { recursive: true })
+  const python = spawn('python3', ['-u', '-m', 'http.server', '0', '--bind', '127.0.0.1', '--directory', root], { stdio: ['ignore', 'pipe', 'ignore'] })
+  try {
+    const [chunk] = await once(python.stdout!, 'data')
+    const port = String(chunk).match(/port (\d+)/)?.[1]
+    await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/${query}`)
+    let greenAt: number | undefined
+    for (let second = 0; second < 60; second++) {
+      const text = await page.locator('body').innerText()
+      expect(text, `at ${second} s`).not.toMatch(/Failed|could not finish|Start a new question|Resume the answer/i)
+      const states = await page.locator('.demo-transactions p span').allTextContents()
+      if (greenAt === undefined && states.length === rows && states.every(t => /validated/.test(t))) greenAt = second
+      await page.waitForTimeout(1000)
+    }
+    expect(greenAt, 'every recorded hash is validated live').toBeDefined()
+    expect(greenAt!, 'within 10 s').toBeLessThanOrEqual(10)
+    await expect(page).toHaveTitle(/Answer ready/)
+  } finally { python.kill('SIGTERM'); await once(python, 'exit') }
 })

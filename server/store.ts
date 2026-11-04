@@ -90,6 +90,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS escrow_outbox (intent_id TEXT NOT NULL REFERENCES escrows(intent_id), operation TEXT NOT NULL, tx_hash TEXT UNIQUE NOT NULL, json TEXT NOT NULL, PRIMARY KEY(intent_id,operation));
       CREATE TABLE IF NOT EXISTS submissions (intent_id TEXT PRIMARY KEY REFERENCES intents(id), tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL, last_ledger INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS publisher_reputation (wallet TEXT PRIMARY KEY, json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS credential_revocations (intent_id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS manifests (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grant_salts (intent_id TEXT PRIMARY KEY REFERENCES grants(intent_id), json TEXT NOT NULL);
     `)
@@ -579,6 +580,12 @@ export class Store {
     if (e.reveal && (e.reveal.key !== reveal.key || e.reveal.finishHash !== reveal.finishHash || e.reveal.ledgerIndex !== reveal.ledgerIndex)) throw new Error('Reveal is immutable')
     this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify({ ...e, reveal }), intentId)
   }
+  /** Persisted CredentialDelete submission, so a crash re-sends the same signed blob instead of signing twice. */
+  credentialRevocation(intentId: string, submission?: import('./xrpl.js').Submission): import('./xrpl.js').Submission | undefined {
+    if (submission) this.prepare('INSERT OR IGNORE INTO credential_revocations VALUES (?,?)').run(intentId, JSON.stringify(submission))
+    const row = this.prepare('SELECT json FROM credential_revocations WHERE intent_id=?').get(intentId)
+    return row ? JSON.parse(String(row.json)) : undefined
+  }
   /** Explicit post-reveal fraud evidence; never part of ordinary snapshots or exports. */
   keyRevealEvidence(intentId: string) {
     const e = this.getEscrow(intentId)
@@ -832,7 +839,7 @@ export class Store {
         const label = testnet ? XRPL_LABEL : SIMULATED_LABEL
         const inserted = this.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run(intent.runId, '{}')
         refundEvent = TraceEventSchema.parse({ id: Number(inserted.lastInsertRowid), runId: intent.runId, at: new Date().toISOString(), type: 'REFUND',
-          label: `Refunded S$${(refund.amountMinor / 100).toFixed(2)} · InvoiceID = original tx · ${label}`,
+          label: `${intent.escrow?.mode === 'key-reveal' ? 'Refund · writer-signed · fixture writer cooperates (a real writer could refuse) · ' : ''}Refunded S$${(refund.amountMinor / 100).toFixed(2)} · InvoiceID = original tx · ${label}`,
           data: { intentId, txHash: refund.txHash, amountMinor: refund.amountMinor, originalTxHash: intent.txHash, label, ...(testnet ? { explorerUrl: `${XRPL_EXPLORER}/${refund.txHash}` } : {}) } })
         this.prepare('UPDATE events SET json=? WHERE id=?').run(JSON.stringify(refundEvent), refundEvent.id)
       }

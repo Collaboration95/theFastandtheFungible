@@ -56,6 +56,7 @@ export function staged(run: RunSnapshot, cursor: number): RunSnapshot {
       if (real) status.set(real.intentId, 'VERIFIED')
     } else if (event.type === 'FAILED' && intent && ['SETTLED', 'DELIVERY_PENDING'].includes(status.get(intent.intentId) ?? '')) set('DELIVERY_FAILED')
   }
+  if (phase === 'FAILED' && run.phase === 'DONE' && run.intents.some(i => i.escrow?.mode === 'key-reveal')) phase = 'BUY'
   const intents = run.intents.filter(item => status.has(item.intentId)).map(item => ({ ...item, status: status.get(item.intentId)! }))
   const paid = intents.filter(isPaid)
   const verified = new Set(intents.filter(item => item.status === 'VERIFIED').map(item => item.intentId))

@@ -5,6 +5,7 @@ import { activeTraceUrl, scoreTrace, traceRun } from '../telemetry.js'
 import type { Store } from '../store.js'
 import type { PublisherClient } from '../publisher-client.js'
 import type { PurchaseManager } from '../purchases.js'
+import { revokeBrokenCredential } from '../revoke-credential.js'
 import { challenge } from '../challenges.js'
 import { createHash } from 'node:crypto'
 import { AnswerSchema, COVERAGE_STATUSES, CoverageSchema, PlanSchema, PublicCandidateSchema, RunCheckpointSchema, SEARCH_LABELS, STOP_LABELS, decisionLabel, providerLabels } from '../../shared/contracts/index.js'
@@ -73,7 +74,9 @@ export class RunLoop {
   }
   /** A failed proof: challenge the writer (#132), then the outcome lowers trust whether or not it refunds (D5). */
   private async challengeAndRecord(runId: string, intentId: string) {
-    this.recordProof(runId, await challenge(this.purchases, intentId))
+    const intent = await challenge(this.purchases, intentId)
+    this.recordProof(runId, intent)
+    await revokeBrokenCredential(this.purchases, intent).catch(() => undefined)
   }
   /** The clarify answers (UC2's angle) narrow the gap the answer writer names. */
   private focus(run: RunSnapshot) {

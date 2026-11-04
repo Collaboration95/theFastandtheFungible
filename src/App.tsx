@@ -396,6 +396,7 @@ export default function App() {
         {/* Replace the draft reading surface when the activity timeline closes. */}
         <Fragment key={`${shown.runId}:${finished ? 'final' : 'draft'}`}>
         {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}
+        {model.phase === 'recovering' && shown.intents.some(i => i.escrow?.mode === 'key-reveal') && <Notice>Waiting for the writer to publish the key · CancelAfter pending</Notice>}
         {shown.phase === 'FAILED' && model.phase !== 'recovering' && <Notice tone="error">{shown.intents.some(i => i.status === 'DELIVERY_FAILED') ? 'Delivery incomplete. Retry delivery in Payments.' : 'The run could not finish. Start a new question.'}</Notice>}
         {shown.labels.research.startsWith('fixture') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Written from offline extracts: the model was unavailable.</Notice>}
         {shown.labels.plan?.startsWith('fixture') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Planned with offline rules: the planner was unavailable.</Notice>}
