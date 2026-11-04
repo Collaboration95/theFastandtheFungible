@@ -1,6 +1,6 @@
 import { Store } from '../server/store.js'
 import { DatabaseSync } from 'node:sqlite'
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir, platform, arch, cpus } from 'node:os'
 import { join, dirname } from 'node:path'
 import { performance } from 'node:perf_hooks'
@@ -9,7 +9,9 @@ import { createApiApp } from '../server/routes.js'
 const arg = (name: string, fallback: string) => process.argv.includes(name) ? process.argv[process.argv.indexOf(name)+1] : fallback
 const runs=Number(arg('--runs','3000')), events=Number(arg('--events-per-run','60'))
 const output=arg('--output','scratch/history-3000.json')
-const path=join(mkdtempSync(join(tmpdir(),'ra-history-')),'history.db')
+const scratch=mkdtempSync(join(tmpdir(),'ra-history-'))
+const path=join(scratch,'history.db')
+try {
 let store=new Store(path)
 const prototype=store.createRun('SYNTHETIC retained history',0)
 store.close()
@@ -41,3 +43,8 @@ for(let n=0;n<5;n++){start=performance.now();api.store.runnableRunIds();api.stor
 await api.close()
 const result={mode:'local synthetic; no providers or ledger',source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),host:{platform:platform(),arch:arch(),cpu:cpus()[0].model,node:process.version,sqlite:process.versions.sqlite},runs,eventsPerRun:events,eventRows:runs*events,fullHydrationMs:{before,after},indexMigrationMs:migration,selectionAndNoopReconcileMs:samples,under500ms:samples.every(v=>v<500),beforePlan,afterPlan}
 mkdirSync(dirname(output),{recursive:true});writeFileSync(output,JSON.stringify(result,null,2));console.log(JSON.stringify(result))
+
+} finally {
+ if(process.env.KEEP_CONSUMER_SCRATCH === '1') console.log('History scratch retained: '+scratch)
+ else rmSync(scratch,{recursive:true,force:true})
+}

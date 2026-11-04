@@ -60,6 +60,7 @@ export async function installGuard() {
   syncBuiltinESMExports()
   if (!isMainThread && workerData?.apiPort !== undefined) {
     const {register}=await import('tsx/esm/api');register()
+    if(process.env.SOAK_SPANS==='1') { const {installSpans}=await import('./soak-loop-diagnostics.mjs');await installSpans(channel) }
     const {ActiveWork}=await import('../server/agents/active-work.ts')
     const acquire=ActiveWork.prototype.acquire
     let burst=false
@@ -77,15 +78,17 @@ export async function installGuard() {
     }})
     observer.observe({entryTypes:['gc']})
     const engineId=randomUUID()
-    const timer=setInterval(()=> {channel.postMessage({worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,memory:process.memoryUsage(),v8:getHeapStatistics(),handles:process.getActiveResourcesInfo().length,gc,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset();gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{},pausesMs:[]}},1000)
-    timer.unref()
+    let intervalStart=Date.now()
+    let nextBoundary=Number(process.env.SOAK_EPOCH)+(Math.floor((Date.now()-Number(process.env.SOAK_EPOCH))/1000)+1)*1000
+    const tick=()=> {if(Date.now()<nextBoundary){const t=setTimeout(tick,nextBoundary-Date.now());t.unref();return}const end=Date.now(),interval=Math.floor((end-Number(process.env.SOAK_EPOCH))/1000);channel.postMessage({interval,intervalStart,intervalEnd:end,worker:true,workerId:threadId,engineId,heap:process.memoryUsage().heapUsed,memory:process.memoryUsage(),v8:getHeapStatistics(),handles:process.getActiveResourcesInfo().length,gc,loopP99Ms:histogram.percentile(99)/1e6});histogram.reset();gc={count:0,totalPauseMs:0,maxPauseMs:0,kinds:{},pausesMs:[]};intervalStart=end;nextBoundary=Number(process.env.SOAK_EPOCH)+(interval+1)*1000;const timer=setTimeout(tick,Math.max(1,Number(process.env.SOAK_EPOCH)+(interval+1)*1000-Date.now()));timer.unref()}
+    const timer=setTimeout(tick,Math.max(1,Number(process.env.SOAK_EPOCH)+(Math.floor((Date.now()-Number(process.env.SOAK_EPOCH))/1000)+1)*1000-Date.now()));timer.unref()
     channel.unref()
   } else channel.unref()
 }
 export function options(args) {
   const o={runs:2000,warmup:200,concurrency:1,seed:279,historyRuns:10000,eventsPerRun:60,timeoutMs:120000,burst:false}
   const names={'runs':'runs','warmup':'warmup','concurrency':'concurrency','seed':'seed','history-runs':'historyRuns','events-per-run':'eventsPerRun','data-dir':'dataDir','output':'output','timeout-ms':'timeoutMs','cpu-prof-dir':'cpuProfDir','heap-dir':'heapDir'}
-  for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--diagnostic-slope'){o.diagnosticSlope=true;continue}if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output','cpuProfDir','heapDir'].includes(key)?args[++i]:Number(args[++i])}
+  for(let i=0;i<args.length;i++){if(args[i]==='--internal')continue;if(args[i]==='--spans'){o.spans=true;continue}if(args[i]==='--diagnostic-slope'){o.diagnosticSlope=true;continue}if(args[i]==='--burst'){o.burst=true;continue}const key=names[args[i].slice(2)];if(!key||!args[i+1])throw Error('Unknown/missing flag');o[key]=['dataDir','output','cpuProfDir','heapDir'].includes(key)?args[++i]:Number(args[++i])}
   for(const key of ['runs','warmup','concurrency','seed','historyRuns','eventsPerRun','timeoutMs'])if(!Number.isSafeInteger(o[key])||o[key]<0)throw Error('Invalid '+key)
   if(!o.runs||!o.concurrency||!o.timeoutMs||!o.dataDir||!o.output)throw Error('Positive counts, --data-dir and --output required')
   if(o.diagnosticSlope&&o.runs>=2000)throw Error('Diagnostic slope is only allowed below 2000 asks; full-run gate is mandatory')
@@ -103,7 +106,7 @@ async function run(o) {
   if(existsSync(o.dataDir))throw Error('Data root must be fresh')
   mkdirSync(o.dataDir,{recursive:true});mkdirSync(resolve(o.output,'..'),{recursive:true})
   const start=Date.now(), storeId=randomUUID(), dbPath=join(o.dataDir,'app.db')
-  const r={schema:'same-engine-soak-v1',label:'BASELINE · SHARED HOST · SYNTHETIC fixtures / SIMULATED rail · not finals acceptance', options:o,harnessSha256:createHash('sha256').update(readFileSync(fileURLToPath(import.meta.url))).digest('hex'),source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),host:{platform:platform(),release:release(),cpus:cpus().length,node:process.version,load:loadavg()},startedAt:new Date().toISOString(),storeId,pid:process.pid,samples:[],asks:[],restarts:[],failures:[],auditViolations:0,burst:{requested:o.burst,pass:false},seedCases:[]}
+  const r={schema:'same-engine-soak-v1',label:'BASELINE · SHARED HOST · SYNTHETIC fixtures / SIMULATED rail · not finals acceptance', options:o,harnessSha256:createHash('sha256').update(readFileSync(fileURLToPath(import.meta.url))).digest('hex'),source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),host:{platform:platform(),release:release(),cpus:cpus().length,node:process.version,load:loadavg()},startedAt:new Date().toISOString(),storeId,pid:process.pid,samples:[],intervals:[],lags:[],asks:[],restarts:[],failures:[],auditViolations:0,burst:{requested:o.burst,pass:false},seedCases:[]}
   const save=()=>writeFileSync(o.output,JSON.stringify(r,null,2)+'\n')
   const store=new Store(dbPath)
   // Store creates validated run records; historical event insertion is batched per run.
@@ -126,12 +129,16 @@ async function run(o) {
     r.selectorsBeforeBoot={runnable:store.runnableRunIds(),recoverable:store.recoverableRunIds()}
   } finally {store.close()}
   r.seedDurationMs=Date.now()-start;save()
+  const controls=new Map()
+  const control=spawn(process.execPath,[fileURLToPath(new URL('./soak-idle-control.mjs',import.meta.url))],{env:{PATH:process.env.PATH},stdio:['ignore','inherit','inherit','ipc']})
+  await deadline(new Promise((done,fail)=>{control.once('error',fail);control.on('message',m=>{if(m.ready)done();if(m.control)controls.set(m.interval,m)})}),o.timeoutMs)
+  control.send({epoch:Number(process.env.SOAK_EPOCH)})
   let burstReady=false,burstPeak=0,burstActive=0
   const snapshots=[]
   const snapshot=async name=>{if(!o.heapDir)return;channel.postMessage({heapSnapshot:name});await deadline((async()=>{while(!snapshots.some(s=>s.snapshot===name))await new Promise(done=>setTimeout(done,10))})(),o.timeoutMs);r.snapshots=snapshots;save()}
   let worker, engine, stage='startup', completed=0, lastWall=Date.now(), lastMono=performance.now()
   const channel=new BroadcastChannel('same-engine-soak-'+process.env.SOAK_ID)
-  channel.onmessage=({data})=> {if(data.snapshot)snapshots.push(data);if(data.burstReady)burstReady=true;if(data.burstActive!==undefined){burstActive=data.burstActive;burstPeak=Math.max(burstPeak,burstActive)};if(data.blocked)r.failures.push('non-loopback request');if(data.worker)worker=data}
+  channel.onmessage=({data})=> {if(data.lag)r.lags.push({...data,stage,completed});if(data.snapshot)snapshots.push(data);if(data.burstReady)burstReady=true;if(data.burstActive!==undefined){burstActive=data.burstActive;burstPeak=Math.max(burstPeak,burstActive)};if(data.blocked)r.failures.push('non-loopback request');if(data.worker){worker=data;r.intervals.push({interval:data.interval,engineId:data.engineId,stage,completed,start:data.intervalStart,end:data.intervalEnd,engineP99Ms:data.loopP99Ms,load:loadavg()})}}
   const bytes=path=>existsSync(path)?statSync(path).size:0
   const sample=()=>{const wall=Date.now(),mono=performance.now();r.samples.push({at:wall,elapsedMs:wall-start,stage,completed,rss:process.memoryUsage().rss,hostHeap:process.memoryUsage().heapUsed,hostMemory:process.memoryUsage(),hostHandles:process.getActiveResourcesInfo().length,worker,dbBytes:bytes(dbPath),walBytes:bytes(dbPath+'-wal'),load:loadavg(),gapMs:mono-lastMono,hostSleepMs:Math.max(0,(wall-lastWall)-(mono-lastMono))});lastWall=wall;lastMono=mono}
   const timer=setInterval(sample,1000)
@@ -165,7 +172,7 @@ async function run(o) {
     stage='restart';await close(engine);engine=undefined
     for(let i=0;i<20;i++){const t=performance.now();engine=await boot();const identity={engineId:worker.engineId,workerId:worker.workerId};await close(engine);engine=undefined;r.restarts.push({cycle:i+1,...identity,ms:performance.now()-t,closed:true});save()}
   } catch(error){r.failures.push(error.message)}
-  finally{if(engine)try{await close(engine)}catch(error){r.failures.push(error.message)}clearInterval(timer);sample();channel.close();r.durationMs=Date.now()-start;r.summary=compare(r);save()}
+  finally{if(engine)try{await close(engine)}catch(error){r.failures.push(error.message)}clearInterval(timer);sample();channel.close();control.send({stop:true});await new Promise(done=>control.once('exit',done));for(const row of r.intervals)row.control=controls.get(row.interval)??null;for(const s of r.samples)s.control=controls.get(s.worker?.interval)??null;r.controlIntervals=[...controls.values()];r.durationMs=Date.now()-start;r.summary=compare(r);save()}
   console.log(JSON.stringify(r.summary));return r.summary.pass?0:1
 }
 const self=fileURLToPath(import.meta.url)
@@ -174,7 +181,7 @@ if(process.argv[1]&&resolve(process.argv[1])===self){
   if(process.argv.includes('--internal'))process.exitCode=await run(o)
   else {
     const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
-    Object.assign(env,{SOAK_ID:randomUUID(),ACTIVE_WORK_LIMIT:'4',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0',RECONCILE_INTERVAL_MS:'1000',MCP_DAILY_CAP_MINOR:'100000000',WALLET_DAILY_CAP_MINOR:'100000000',NODE_OPTIONS:`--import=data:text/javascript,${encodeURIComponent(`import {installGuard} from ${JSON.stringify(pathToFileURL(self).href)};await installGuard()` )}`})
+    Object.assign(env,{SOAK_ID:randomUUID(),SOAK_EPOCH:String(Date.now()),SOAK_SPANS:o.spans?'1':'0',ACTIVE_WORK_LIMIT:'4',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',SEARCH_EMBEDDINGS:'off',LANGFUSE_ENABLED:'0',RECONCILE_INTERVAL_MS:'1000',MCP_DAILY_CAP_MINOR:'100000000',WALLET_DAILY_CAP_MINOR:'100000000',NODE_OPTIONS:`--import=data:text/javascript,${encodeURIComponent(`import {installGuard} from ${JSON.stringify(pathToFileURL(self).href)};await installGuard()` )}`})
     if(o.heapDir)env.SOAK_HEAP_DIR=resolve(o.heapDir)
     const child=spawn(process.execPath,[...(o.cpuProfDir ? ['--cpu-prof', '--cpu-prof-dir='+resolve(o.cpuProfDir)] : []),self,...process.argv.slice(2),'--internal'],{env,stdio:'inherit'})
     child.on('exit',code=>{process.exitCode=code??1})

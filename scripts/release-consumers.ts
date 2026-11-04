@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
@@ -31,6 +31,7 @@ const run = async (cmd: string, args: string[]) => {
 }
 const question = 'What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?'
 const results: object[] = []
+try {
 const engine = await startEngine({ dataDir: join(dir, 'engine') })
 const check = (kind: string, a: AskResult, b: AskResult, store: Store) => {
   assert.equal(a.run_id, b.run_id); assert(a.citations.length > 0); assert.equal(a.receipts.length, 1); assert(a.spentMinor <= 200); assert(a.budgetMinor <= 200)
@@ -100,3 +101,9 @@ try {
 await assertNoProcesses()
 writeFileSync(join(root,'consumer-results.json'),JSON.stringify({ sourceSha: manifest.sourceSha, manifestSha256:sha256(manifestFile), mode:manifest.mode, runtime:manifest.runtime, verifiers:{receiptSha256:sha256(join(root,'accepted-receipt.json')),typescript:{command:'npm run verify:answer -- accepted-receipt.json --json',pass:true},python:{command:'python -m researchagent verify accepted-receipt.json --json',installation:'exact wheel in clean venv',pass:true}}, consumers:results },null,2)+'\n')
 console.log(JSON.stringify(results,null,2))
+
+} finally {
+  await assertNoProcesses()
+  if (process.env.KEEP_CONSUMER_SCRATCH === '1') console.log('Consumer scratch retained: ' + dir)
+  else rmSync(dir, {recursive:true, force:true})
+}

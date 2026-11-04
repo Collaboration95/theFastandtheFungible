@@ -15,7 +15,7 @@ import { mkdirSync } from 'node:fs'
 import type { Submission } from './xrpl.js'
 import { leafHash, manifestRoot } from '../shared/manifest.js'
 import { dirname } from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
+import { DatabaseSync, type StatementSync } from 'node:sqlite'
 import type { Manifest } from '../shared/contracts/manifest.js'
 import { AnswerSchema, BUDGET, ContentEnvelopeSchema, DecisionRoundSchema, GrantSchema, ImpactSchema, PurchaseIntentSchema, ReceiptSchema, ReputationRecordSchema, RunSnapshotSchema, TraceEventSchema, type Answer, type ContentEnvelope, type DecisionRound, type DeliveryProof, type Grant, type Impact, type ModeLabels, type PurchaseIntent, type Receipt, type ReputationRecord, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
 
@@ -49,6 +49,17 @@ export class Store {
     return this.db.prepare('SELECT at FROM mcp_calls WHERE agent_id=?').get(id)?.at ?? null
   }
   private readonly validatedRuns = new ExactCache<string>(32)
+  private readonly statements = new Map<string, StatementSync>()
+  private prepare(sql: string): StatementSync {
+    let statement = this.statements.get(sql)
+    if (!statement) {
+      statement = this.db.prepare(sql)
+      // SQL shapes are fixed; bound future dynamic callers as well.
+      if (this.statements.size >= 128) this.statements.delete(this.statements.keys().next().value!)
+      this.statements.set(sql, statement)
+    }
+    return statement
+  }
   private readonly db: DatabaseSync
   /** Hash-chained operator ledger (#288). Entries are written inside the same transactions as the state they describe. */
   readonly audit: AuditLog
@@ -95,7 +106,7 @@ export class Store {
       CREATE INDEX IF NOT EXISTS usage_open_hire ON hire_reserves(run_id) WHERE closed=0;
     `)
     if (path !== ':memory:') for (const file of [path, `${path}-wal`, `${path}-shm`]) if (existsSync(file)) chmodSync(file, 0o600)
-    const escrowColumns = new Set(this.db.prepare('PRAGMA table_info(escrows)').all().map(r => r.name))
+    const escrowColumns = new Set(this.prepare('PRAGMA table_info(escrows)').all().map(r => r.name))
     if (!escrowColumns.has('owner')) this.db.exec('ALTER TABLE escrows ADD COLUMN owner TEXT')
     if (!escrowColumns.has('create_sequence')) this.db.exec('ALTER TABLE escrows ADD COLUMN create_sequence INTEGER')
     this.db.exec(`UPDATE escrows SET owner=json_extract(json, '$.publicStatus.owner'), create_sequence=json_extract(json, '$.publicStatus.createSequence') WHERE owner IS NULL;
@@ -120,10 +131,10 @@ export class Store {
     catch (error) { this.db.exec('ROLLBACK'); throw error }
   }
   private rows<T>(sql: string, ...args: string[]): T[] {
-    return this.db.prepare(sql).all(...args).map(row => JSON.parse(row.json as string) as T)
+    return this.prepare(sql).all(...args).map(row => JSON.parse(row.json as string) as T)
   }
   private rawRun(runId: string): RunSnapshot {
-    const row = this.db.prepare('SELECT json FROM runs WHERE id=?').get(runId)
+    const row = this.prepare('SELECT json FROM runs WHERE id=?').get(runId)
     if (!row) throw new Error('Run not found')
     const bytes = row.json as string
     const cached = this.validatedRuns.get(bytes)
@@ -133,16 +144,16 @@ export class Store {
     return run
   }
   private saveRun(run: RunSnapshot): void {
-    this.db.prepare('UPDATE runs SET json=? WHERE id=?').run(JSON.stringify(RunSnapshotSchema.parse(run)), run.runId)
+    this.prepare('UPDATE runs SET json=? WHERE id=?').run(JSON.stringify(RunSnapshotSchema.parse(run)), run.runId)
   }
   private saveIntent(intent: PurchaseIntent): void {
-    this.db.prepare('UPDATE intents SET json=? WHERE id=?').run(JSON.stringify(PurchaseIntentSchema.parse(intent)), intent.intentId)
+    this.prepare('UPDATE intents SET json=? WHERE id=?').run(JSON.stringify(PurchaseIntentSchema.parse(intent)), intent.intentId)
   }
   private insertRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {
     const run = RunSnapshotSchema.parse({ runId: randomUUID(), question, budgetMinor, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: BUDGET.capMinor,
       phase: 'SEARCH', stopped: false, round: 0, candidates: [], contents: [], answers: [], decisions: [], intents: [], receipts: [], grants: [], events: [], checkpoint: {}, reportStatus: 'NONE',
       labels: labels ?? { research: 'fixture', decision: 'fixture', publisher: 'local', settlement: 'SIMULATED SGD · no real funds' } })
-    this.db.prepare('INSERT INTO runs VALUES (?,?)').run(run.runId, JSON.stringify(run))
+    this.prepare('INSERT INTO runs VALUES (?,?)').run(run.runId, JSON.stringify(run))
     return run
   }
   createRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {
@@ -153,7 +164,7 @@ export class Store {
     let spentMinor = 0, reservedMinor = 0
     // UNION deduplicates candidate IDs; primary-key order preserves the oracle's JS addition order
     // (policy drops may be fractional minor units). Only hydrate contributing source rows.
-    const candidates = this.db.prepare(`WITH relevant(id) AS (
+    const candidates = this.prepare(`WITH relevant(id) AS (
       SELECT id FROM runs INDEXED BY usage_active_runs WHERE json_extract(json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
       UNION SELECT run_id FROM hire_reserves WHERE closed=0
       UNION SELECT run_id FROM intents WHERE json_extract(json,'$.status') IN ('RESERVED','SUBMITTING')
@@ -210,7 +221,7 @@ export class Store {
       return key
     })
   }
-  runPrincipal(runId: string) { return this.db.prepare('SELECT surface, principal FROM admissions WHERE run_id=?').get(runId) as { surface: Surface; principal: string } | undefined }
+  runPrincipal(runId: string) { return this.prepare('SELECT surface, principal FROM admissions WHERE run_id=?').get(runId) as { surface: Surface; principal: string } | undefined }
   private runAgent(runId: string) {
     const identity = this.runPrincipal(runId)
     return identity?.surface === 'agent' ? this.agentKeys.get(identity.principal) : undefined
@@ -231,12 +242,12 @@ export class Store {
     })
   }
   isPaused() {
-    return spendPolicy().paused || Boolean(this.db.prepare('SELECT paused FROM wallet_control WHERE id=1').get()?.paused)
+    return spendPolicy().paused || Boolean(this.prepare('SELECT paused FROM wallet_control WHERE id=1').get()?.paused)
   }
   setPaused(paused: boolean, actor: { surface?: string; principal?: string; reason?: string } = {}) {
     this.atomic(() => {
       const previous = this.isPaused()
-      this.db.prepare('INSERT INTO wallet_control VALUES (1,?) ON CONFLICT(id) DO UPDATE SET paused=excluded.paused').run(Number(paused))
+      this.prepare('INSERT INTO wallet_control VALUES (1,?) ON CONFLICT(id) DO UPDATE SET paused=excluded.paused').run(Number(paused))
       this.audit.append({ kind: 'pause', surface: actor.surface ?? 'operator', principal: actor.principal ?? 'operator',
         data: { paused, ...(actor.reason ? { reason: actor.reason } : {}), previousEffectivePaused: previous, effectivePaused: this.isPaused(), envPaused: spendPolicy().paused, policyVersion: POLICY_VERSION } })
     })
@@ -249,20 +260,20 @@ export class Store {
     })
   }
   mcpStatus(day = new Date().toISOString().slice(0, 10)) { return this.atomic(() => this.usage(day, 'mcp')) }
-  isHireRun(runId: string) { return !!this.db.prepare('SELECT run_id FROM hire_reserves WHERE run_id=?').get(runId) }
+  isHireRun(runId: string) { return !!this.prepare('SELECT run_id FROM hire_reserves WHERE run_id=?').get(runId) }
   /** Read-only identity lookup for capacity admission; preserves the original durable key. */
   admissionRun(surface: Surface, principal: string, key: string) {
-    const row = this.db.prepare('SELECT run_id FROM admissions WHERE surface=? AND principal=? AND key=?').get(surface, principal, key) as { run_id: string } | undefined
+    const row = this.prepare('SELECT run_id FROM admissions WHERE surface=? AND principal=? AND key=?').get(surface, principal, key) as { run_id: string } | undefined
     return row ? this.getRun(row.run_id) : undefined
   }
-  isMcpRun(runId: string) { return !!this.db.prepare("SELECT key FROM admissions WHERE run_id=? AND surface IN ('mcp','agent')").get(runId) }
+  isMcpRun(runId: string) { return !!this.prepare("SELECT key FROM admissions WHERE run_id=? AND surface IN ('mcp','agent')").get(runId) }
   /** Key insertion, wallet/surface reservation and run creation commit before async work. */
   admit(input: { surface: Surface; principal: string; question: string; requestedMinor: number;
     idempotencyKey: string; maxMinor: number; dailyMinor?: number; labels?: ModeLabels; reserveMinor?: number }, day = new Date().toISOString().slice(0, 10)) {
     const admitted = this.atomic(() => {
       const agent = input.surface === 'agent' ? this.agentKeys.get(input.principal) : undefined
       if (input.surface === 'agent' && (!agent || agent.revoked || agent.paused)) throw new AgentDenied('Agent paused or revoked')
-      const old = this.db.prepare('SELECT run_id FROM admissions WHERE surface=? AND principal=? AND key=?').get(input.surface, input.principal, input.idempotencyKey)
+      const old = this.prepare('SELECT run_id FROM admissions WHERE surface=? AND principal=? AND key=?').get(input.surface, input.principal, input.idempotencyKey)
       if (old) {
         const run = this.rawRun(old.run_id as string)
         if (run.question !== input.question) throw new Error('Idempotency key belongs to a different question')
@@ -276,11 +287,11 @@ export class Store {
       const budget = this.isPaused() ? 0 : clampBudget(input.requestedMinor, Math.max(0, Math.min(input.maxMinor, agent ? agent.maxMinor - (input.reserveMinor ?? 0) : input.maxMinor)), Math.max(0, Math.min(remaining, surfaceRemaining) - (input.reserveMinor ?? 0)))
       const run = this.insertRun(input.question, budget, input.labels)
       if (input.reserveMinor && (this.isPaused() || Math.min(remaining, surfaceRemaining, agent?.maxMinor ?? Infinity) < input.reserveMinor)) throw new Error('Wallet cannot reserve hire fee')
-      if (input.reserveMinor) this.db.prepare('INSERT INTO hire_reserves (run_id, minor) VALUES (?,?)').run(run.runId, input.reserveMinor)
+      if (input.reserveMinor) this.prepare('INSERT INTO hire_reserves (run_id, minor) VALUES (?,?)').run(run.runId, input.reserveMinor)
       if (budget < input.requestedMinor) run.checkpoint.budgetReason = this.isPaused() ? 'paused' : input.maxMinor === 0 || agent?.maxMinor === 0 ? 'cap_zero' : 'budget_exhausted'
       run.policyVersion = POLICY_VERSION
       this.saveRun(run)
-      this.db.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)
+      this.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)
       this.audit.append({ runId: run.runId, kind: 'admission', surface: input.surface, principal: input.principal, data: {
         requestedMinor: input.requestedMinor, admittedMinor: budget, maxMinor: input.maxMinor, surfaceDailyMinor: dailyMinor ?? null, agentMaxMinor: agent?.maxMinor ?? null, walletDailyMinor: spendPolicy().walletDailyMinor,
         walletRemainingMinor: remaining, surfaceRemainingMinor: surfaceRemaining, hireReserveMinor: input.reserveMinor ?? 0, paused: this.isPaused(), policyVersion: POLICY_VERSION, day,
@@ -306,7 +317,7 @@ export class Store {
       run.decisions = this.rows('SELECT json FROM decisions WHERE run_id=? ORDER BY round', runId)
       run.events = this.rows('SELECT json FROM events WHERE run_id=? ORDER BY id', runId)
       // Quarantine (#131): only a grant whose proof verified is accessible content; a failed one stays for audit only.
-      const paid = this.db.prepare('SELECT g.content, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId)
+      const paid = this.prepare('SELECT g.content, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId)
         .filter(row => (JSON.parse(row.json as string) as PurchaseIntent).status === 'VERIFIED' && (!(JSON.parse(row.json as string) as PurchaseIntent).escrow || (JSON.parse(row.json as string) as PurchaseIntent).escrow?.state === 'RELEASED'))
         .map(row => ContentEnvelopeSchema.parse(JSON.parse(row.content as string)))
       run.contents = [...run.contents.filter(content => run.candidates.some(c => c.tier === 'FREE' && sameResource(c, content))), ...paid]
@@ -318,11 +329,11 @@ export class Store {
   }
   /** Operational selectors never hydrate retained bodies or event arrays. */
   runnableRunIds(includeHire = false): string[] {
-    return this.db.prepare(`SELECT id FROM runs r INDEXED BY usage_active_runs WHERE json_extract(r.json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
+    return this.prepare(`SELECT id FROM runs r INDEXED BY usage_active_runs WHERE json_extract(r.json,'$.phase') NOT IN ('DONE','STOPPED','FAILED')
       ${includeHire ? '' : 'AND NOT EXISTS (SELECT 1 FROM hire_reserves h WHERE h.run_id=r.id)'} ORDER BY r.rowid`).all().map(r => String(r.id))
   }
   recoverableRunIds(): string[] {
-    return this.db.prepare(`SELECT id FROM runs r WHERE json_extract(r.json,'$.phase')='FAILED'
+    return this.prepare(`SELECT id FROM runs r WHERE json_extract(r.json,'$.phase')='FAILED'
       AND NOT json_extract(r.json,'$.stopped') AND NOT EXISTS (SELECT 1 FROM hire_reserves h WHERE h.run_id=r.id)
       AND json_extract(r.json,'$.checkpoint.intentId') IS NOT NULL AND json_extract(r.json,'$.checkpoint.intentId') != ''
       AND (json_extract(r.json,'$.checkpoint.answeredIntentId') IS NOT json_extract(r.json,'$.checkpoint.intentId')
@@ -331,7 +342,7 @@ export class Store {
       ORDER BY r.rowid`).all().map(r => String(r.id))
   }
   operationalUsage() {
-    const rows = this.db.prepare(`SELECT run_id, json_extract(json,'$.type') AS type, json_extract(json,'$.data') AS data FROM events
+    const rows = this.prepare(`SELECT run_id, json_extract(json,'$.type') AS type, json_extract(json,'$.data') AS data FROM events
       WHERE json_extract(json,'$.type') IN ('MODEL_USAGE','MODEL_FALLBACK','DECISION_UNAVAILABLE')`).all()
     const usage = new Map<string, Record<string, unknown>[]>()
     let llm = 0, decisionUnavailable = 0
@@ -340,8 +351,8 @@ export class Store {
       else if (row.type === 'DECISION_UNAVAILABLE') decisionUnavailable++
       else { const id = String(row.run_id); const values = usage.get(id) ?? []; values.push(row.data ? JSON.parse(String(row.data)) : {}); usage.set(id, values) }
     }
-    return { fallbacks: { llm, decisionUnavailable, decision: Number(this.db.prepare(`SELECT count(*) AS n FROM decisions WHERE json_extract(json,'$.fallbackReason') IS NOT NULL AND json_extract(json,'$.fallbackReason') != ''`).get()!.n) },
-      modelUsageByRun: this.db.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => {
+    return { fallbacks: { llm, decisionUnavailable, decision: Number(this.prepare(`SELECT count(*) AS n FROM decisions WHERE json_extract(json,'$.fallbackReason') IS NOT NULL AND json_extract(json,'$.fallbackReason') != ''`).get()!.n) },
+      modelUsageByRun: this.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => {
         const values = usage.get(String(row.id)) ?? []
         return { runId: String(row.id), reportedCalls: values.length,
           inputTokens: values.length ? values.reduce((n,u) => n + Number(u.inputTokens ?? 0),0) : null,
@@ -360,12 +371,12 @@ export class Store {
       this.saveIntent({ ...intent, refundCandidate: { txHash, observedAt: new Date().toISOString() } })
     })
   }
-  listRuns(): RunSnapshot[] { return this.db.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => this.getRun(row.id as string)) }
+  listRuns(): RunSnapshot[] { return this.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => this.getRun(row.id as string)) }
   /** Sidebar history, newest first: every pinned run, then the `recent` latest others. Deleting only hides a run: its receipts and ledger rows stay (one charge per intent). */
   listPastRuns(recent = 4): { runId: string; question: string; phase: RunSnapshot['phase']; stopped: boolean; budgetMinor: number; spentMinor: number; at: string; pinned: boolean }[] {
-    const meta = new Map(this.db.prepare('SELECT run_id, pinned, hidden FROM run_meta').all().map(row => [row.run_id as string, row]))
+    const meta = new Map(this.prepare('SELECT run_id, pinned, hidden FROM run_meta').all().map(row => [row.run_id as string, row]))
     let others = 0
-    return this.db.prepare('SELECT id FROM runs ORDER BY rowid DESC').all().flatMap(row => {
+    return this.prepare('SELECT id FROM runs ORDER BY rowid DESC').all().flatMap(row => {
       const id = row.id as string, m = meta.get(id)
       if (m?.hidden || (!m?.pinned && others++ >= recent)) return []
       const run = this.getRun(id)
@@ -374,11 +385,16 @@ export class Store {
   }
   setRunMeta(runId: string, change: { pinned?: boolean; hidden?: boolean }): void {
     this.rawRun(runId)
-    this.db.prepare('INSERT OR IGNORE INTO run_meta (run_id) VALUES (?)').run(runId)
-    if (change.pinned !== undefined) this.db.prepare('UPDATE run_meta SET pinned=? WHERE run_id=?').run(change.pinned ? 1 : 0, runId)
-    if (change.hidden !== undefined) this.db.prepare('UPDATE run_meta SET hidden=? WHERE run_id=?').run(change.hidden ? 1 : 0, runId)
+    this.prepare('INSERT OR IGNORE INTO run_meta (run_id) VALUES (?)').run(runId)
+    if (change.pinned !== undefined) this.prepare('UPDATE run_meta SET pinned=? WHERE run_id=?').run(change.pinned ? 1 : 0, runId)
+    if (change.hidden !== undefined) this.prepare('UPDATE run_meta SET hidden=? WHERE run_id=?').run(change.hidden ? 1 : 0, runId)
   }
   updateRun(runId: string, patch: Partial<RunSnapshot>): RunSnapshot {
+    this.updateRunState(runId, patch)
+    return this.getRun(runId)
+  }
+  /** Persist metadata without hydrating an unused full event/content projection. */
+  updateRunState(runId: string, patch: Partial<RunSnapshot>): void {
     const allowed = new Set(['ledgerAnchor', 'phase', 'stopped', 'round', 'candidates', 'labels', 'checkpoint', 'error', 'reportStatus'])
     if (Object.keys(patch).some(key => !allowed.has(key))) throw new Error('Protected run fields require ledger APIs')
     publicMetadata(patch.checkpoint)
@@ -400,15 +416,14 @@ export class Store {
       this.saveRun({ ...run, ...patch })
       if (run.phase !== patch.phase && patch.phase && (run.phase === 'FAILED' && patch.phase === 'READ_PAID' || run.checkpoint.recoveryIntentId && patch.phase === 'DONE')) this.audit.append({ runId, intentId: run.checkpoint.intentId, kind: 'recovery', data: { from: run.phase, to: patch.phase, answerVersion: run.checkpoint.answerVersion ?? 0, noNewSpending: true } })
     })
-    return this.getRun(runId)
   }
   appendEvent(runId: string, input: Omit<TraceEvent, 'id' | 'runId' | 'at'>): TraceEvent {
     publicMetadata(input.data)
     const event = this.atomic(() => {
       this.rawRun(runId)
-      const result = this.db.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run(runId, '{}')
+      const result = this.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run(runId, '{}')
       const event = TraceEventSchema.parse({ ...input, id: Number(result.lastInsertRowid), runId, at: new Date().toISOString() })
-      this.db.prepare('UPDATE events SET json=? WHERE id=?').run(JSON.stringify(event), event.id)
+      this.prepare('UPDATE events SET json=? WHERE id=?').run(JSON.stringify(event), event.id)
       return event
     })
     // Subscriber failures must not roll back committed state or derail a purchase.
@@ -422,14 +437,14 @@ export class Store {
       if (!run.contents.some(c => sameSource(c, citation) && c.spans.some(s => s.id === citation.spanId && c.body.includes(s.text)))) throw new Error('Answer cites inaccessible content')
     }
     this.atomic(() => {
-      this.db.prepare('INSERT INTO answers VALUES (?,?,?)').run(runId, answer.version, JSON.stringify(answer))
+      this.prepare('INSERT INTO answers VALUES (?,?,?)').run(runId, answer.version, JSON.stringify(answer))
       if (impact) this.saveRun({ ...this.rawRun(runId), impact: ImpactSchema.parse(impact) })
     })
   }
   addDecision(runId: string, decision: DecisionRound): void {
     const parsed = DecisionRoundSchema.parse(decision)
     this.atomic(() => {
-      this.db.prepare('INSERT INTO decisions VALUES (?,?,?)').run(runId, parsed.round, JSON.stringify(parsed))
+      this.prepare('INSERT INTO decisions VALUES (?,?,?)').run(runId, parsed.round, JSON.stringify(parsed))
       const verdicts: Record<string, number> = {}
       for (const row of parsed.rows) verdicts[row.verdict] = (verdicts[row.verdict] ?? 0) + 1
       this.audit.append({ runId, kind: 'decision', data: { round: parsed.round, provider: parsed.provider, model: parsed.model, promptVersion: parsed.promptVersion ?? null, threshold: parsed.threshold,
@@ -443,7 +458,7 @@ export class Store {
     this.atomic(() => {
       const run = this.rawRun(runId)
       if (!run.candidates.some(c => c.tier === 'FREE' && sameResource(c, content))) {
-        const granted = this.db.prepare('SELECT g.content, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId).some(row => JSON.stringify(content) === row.content && (JSON.parse(row.json as string) as PurchaseIntent).status === 'VERIFIED')
+        const granted = this.prepare('SELECT g.content, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId).some(row => JSON.stringify(content) === row.content && (JSON.parse(row.json as string) as PurchaseIntent).status === 'VERIFIED')
         if (!granted) throw new Error('Paid or unknown content requires verified grant')
         return
       }
@@ -465,7 +480,7 @@ export class Store {
       const old = this.getIntent(input.intentId)
       if (old) return old
       const next = PurchaseIntentSchema.parse({ ...input, status: 'SKIPPED', error: reason, createdAt: new Date().toISOString() })
-      this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(next.intentId, next.runId, JSON.stringify(next))
+      this.prepare('INSERT INTO intents VALUES (?,?,?)').run(next.intentId, next.runId, JSON.stringify(next))
       this.audit.append({ runId: next.runId, intentId: next.intentId, kind: 'refusal', data: { scheme: 'escrow-v1', reason, amountMinor: next.amountMinor, ...(next.source ? { source: next.source, resourceId: next.resourceId, version: next.version, profileId: next.profileId } : {}) } })
       return next
     })
@@ -493,7 +508,7 @@ export class Store {
       else if (Date.parse(quote.expiresAt) <= Date.now() || !Number.isFinite(Date.parse(quote.expiresAt))) error = 'Quote expired'
       else if (intents.some(i => i.profileId === intent.profileId && sameSource(i, intent) && (reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED'))) error = 'Resource already purchased or reserved'
       const result: PurchaseIntent = { ...intent, status: error ? 'SKIPPED' : 'RESERVED', createdAt: new Date().toISOString(), error }
-      this.db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId, intent.runId, JSON.stringify(result))
+      this.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId, intent.runId, JSON.stringify(result))
       const terms = { source: intent.source ?? null, resourceId: intent.resourceId, version: intent.version, profileId: intent.profileId, amountMinor: intent.amountMinor, payTo: quote.payment?.payTo ?? null, rail: quote.payment?.rail ?? null,
         runBudgetMinor: run.budgetMinor, perSourceCapMinor: run.perSourceCapMinor, committedMinor: committed, walletDailyMinor: spendPolicy().walletDailyMinor, policyVersion: run.policyVersion ?? POLICY_VERSION }
       this.audit.append(error ? { runId: intent.runId, intentId: intent.intentId, kind: 'refusal', data: { stage: 'reserve', reason: error, ...terms } }
@@ -551,7 +566,7 @@ export class Store {
       const existing = this.rows<Receipt>('SELECT json FROM receipts WHERE intent_id=?', intentId)[0]
       if (existing) { if (existing.receiptId !== receipt.receiptId) throw new Error('Settlement receipt mismatch'); return }
       if (intent.status !== 'SUBMITTING') throw new Error('Settlement requires submitting reservation')
-      this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), deliveryToken)
+      this.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), deliveryToken)
       this.saveIntent({ ...intent, status: 'SETTLED', settledAt: receipt.settledAt, receiptId: receipt.receiptId, error: undefined })
       this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: receipt.xrpl?.txHash ?? intent.txHash ?? null, ledgerIndex: receipt.xrpl?.ledgerIndex ?? null,
         asset: receipt.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount ?? null, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl?.amountDrops ?? intent.quote?.payment?.amountDrops ?? null, payTo: intent.quote?.payment?.payTo ?? null, payer: receipt.xrpl?.payer ?? null,
@@ -562,7 +577,7 @@ export class Store {
   persistReveal(intentId: string, reveal: NonNullable<EscrowRecord['reveal']>) {
     const e = this.getEscrow(intentId)!
     if (e.reveal && (e.reveal.key !== reveal.key || e.reveal.finishHash !== reveal.finishHash || e.reveal.ledgerIndex !== reveal.ledgerIndex)) throw new Error('Reveal is immutable')
-    this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify({ ...e, reveal }), intentId)
+    this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify({ ...e, reveal }), intentId)
   }
   /** Explicit post-reveal fraud evidence; never part of ordinary snapshots or exports. */
   keyRevealEvidence(intentId: string) {
@@ -579,7 +594,7 @@ export class Store {
       if (old) return old
       const intent = this.getIntent(record.intentId)
       if (intent?.status !== 'SUBMITTING' || this.getSubmission(record.intentId)) throw new Error('Escrow requires an exclusive reservation')
-      this.db.prepare('INSERT INTO escrows (intent_id, invoice, json) VALUES (?,?,?)').run(record.intentId, record.quote.terms.quoteId, JSON.stringify(record))
+      this.prepare('INSERT INTO escrows (intent_id, invoice, json) VALUES (?,?,?)').run(record.intentId, record.quote.terms.quoteId, JSON.stringify(record))
       this.saveIntent({ ...intent, escrow: record.publicStatus })
       return record
     })
@@ -589,8 +604,8 @@ export class Store {
     this.atomic(() => {
       const row = this.escrowOutbox(intentId).find(t => t.operation === operation)
       if (!row) return
-      this.db.prepare('INSERT OR IGNORE INTO escrow_attempts VALUES (?,?)').run(row.txHash, JSON.stringify(row))
-      this.db.prepare('DELETE FROM escrow_outbox WHERE intent_id=? AND operation=?').run(intentId, operation)
+      this.prepare('INSERT OR IGNORE INTO escrow_attempts VALUES (?,?)').run(row.txHash, JSON.stringify(row))
+      this.prepare('DELETE FROM escrow_outbox WHERE intent_id=? AND operation=?').run(intentId, operation)
     })
   }
   recordEscrowSubmission(intentId: string, operation: EscrowOperation, signed: Submission): Submission {
@@ -603,15 +618,15 @@ export class Store {
       if (operation === 'finish' && (e.publicStatus.state !== 'VERIFIED_FOR_RELEASE' || !e.publicStatus.proofOk || this.rawRun(intent.runId).stopped || this.isPaused() || this.principalPaused(intent.runId))) throw new Error('Finish requires a verified proof and active run')
       if (operation === 'cancel' && !['LOCKED', 'VERIFIED_FOR_RELEASE', 'CANCEL_DUE'].includes(e.publicStatus.state)) throw new Error('Cancel requires a locked escrow')
       const row = { ...signed, operation, intentId }
-      this.db.prepare('INSERT INTO escrow_outbox VALUES (?,?,?,?)').run(intentId, operation, signed.txHash, JSON.stringify(row))
+      this.prepare('INSERT INTO escrow_outbox VALUES (?,?,?,?)').run(intentId, operation, signed.txHash, JSON.stringify(row))
       if (operation === 'create') {
         const tx = decode(signed.txBlob)
         if (tx.TransactionType !== 'EscrowCreate' || tx.Account !== e.publicStatus.owner) throw new Error('Create identity mismatch')
-        this.db.prepare('UPDATE escrows SET owner=?, create_sequence=? WHERE intent_id=?').run(tx.Account, Number(tx.Sequence), intentId)
+        this.prepare('UPDATE escrows SET owner=?, create_sequence=? WHERE intent_id=?').run(tx.Account, Number(tx.Sequence), intentId)
         e.publicStatus.createSequence = Number(tx.Sequence)
       }
       e.publicStatus = { ...e.publicStatus, [operation + 'Hash']: signed.txHash }
-      this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
+      this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
       this.saveIntent({ ...intent, escrow: e.publicStatus })
       this.audit.append({ runId: intent.runId, intentId, kind: 'escrow-sign', data: { operation, txHash: signed.txHash, owner: e.publicStatus.owner, createSequence: e.publicStatus.createSequence, lastLedgerSequence: signed.lastLedgerSequence, amountDrops: e.quote.terms.amount, payTo: e.quote.terms.payTo, invoiceHash: intent.quote!.quoteHash, proofOk: e.publicStatus.proofOk ?? false } })
       return signed
@@ -622,7 +637,7 @@ export class Store {
       const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!
       if (['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return e
       const next = { ...e, publicStatus: { ...e.publicStatus, ...patch } }
-      this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(next), intentId)
+      this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(next), intentId)
       this.saveIntent({ ...intent, escrow: next.publicStatus })
       if (patch.state === 'LOCKED' && e.publicStatus.state !== 'LOCKED') this.audit.append({ runId: intent.runId, intentId, kind: 'ESCROW_CREATE', data: { txHash: next.publicStatus.createHash, owner: next.publicStatus.owner, createSequence: next.publicStatus.createSequence, ledgerIndex, result: 'tesSUCCESS', invoiceHash: intent.quote!.quoteHash, amountDrops: e.quote.terms.amount, payTo: e.quote.terms.payTo, cancelAfter: e.quote.terms.cancelAfter } })
       if (patch.proofOk !== undefined && patch.proofOk !== e.publicStatus.proofOk) this.audit.append({ runId: intent.runId, intentId, kind: 'proof', data: { verified: patch.proofOk, status: next.publicStatus.state, scheme: 'escrow-v1', accessible: false } })
@@ -640,8 +655,8 @@ export class Store {
       const receipt = ReceiptSchema.parse({ source: intent.source, receiptId: `escrow-${tx.txHash}`, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version,
         amountMinor: terminal === 'finish' ? intent.amountMinor : 0, currency: 'SGD', settledAt, label: 'XRPL TESTNET · no real value', escrow: e.publicStatus,
         xrpl: { txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
-      this.db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
-      this.db.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
+      this.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
+      this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
       this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? e.publicStatus.proofOk ? 'VERIFIED' : 'CLAIM_FAILED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
       this.audit.append({ runId: intent.runId, intentId, kind: terminal === 'finish' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', data: { txHash: tx.txHash, ledgerIndex, owner: terms.payer, createSequence: e.publicStatus.createSequence, createHash: e.publicStatus.createHash, result: 'tesSUCCESS', proofOk: e.publicStatus.proofOk ?? false, amountDrops: terms.amount, payTo: terms.payTo } })
       this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: tx.txHash, ledgerIndex, asset: receipt.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount ?? null, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl!.amountDrops, payTo: terms.payTo, payer: terms.payer, label: receipt.label, scheme: 'escrow-v1', state: e.publicStatus.state } })
@@ -656,7 +671,7 @@ export class Store {
       if (this.getEscrow(intentId)) throw new Error('Intent uses escrow')
       if (intent?.status !== 'SUBMITTING') throw new Error('Payment submission requires a submitting reservation')
       if (this.isPaused() || this.principalPaused(intent.runId) || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) throw new Error('Signing authority expired')
-      this.db.prepare('INSERT INTO submissions VALUES (?,?,?,?)').run(intentId, signed.txHash, signed.txBlob, signed.lastLedgerSequence)
+      this.prepare('INSERT INTO submissions VALUES (?,?,?,?)').run(intentId, signed.txHash, signed.txBlob, signed.lastLedgerSequence)
       this.saveIntent({ ...intent, txHash: signed.txHash })
       this.audit.append({ runId: intent.runId, intentId, kind: 'sign', data: { txHash: signed.txHash, lastLedgerSequence: signed.lastLedgerSequence, amountMinor: intent.amountMinor,
         payTo: intent.quote?.payment?.payTo ?? null, rail: intent.quote?.payment?.rail ?? null, walletDailyMinor: spendPolicy().walletDailyMinor, paused: false, policyVersion: this.rawRun(intent.runId).policyVersion ?? POLICY_VERSION } })
@@ -664,14 +679,14 @@ export class Store {
     })
   }
   getSubmission(intentId: string): Submission | undefined {
-    const row = this.db.prepare('SELECT tx_hash, tx_blob, last_ledger FROM submissions WHERE intent_id=?').get(intentId)
+    const row = this.prepare('SELECT tx_hash, tx_blob, last_ledger FROM submissions WHERE intent_id=?').get(intentId)
     return row ? { txHash: row.tx_hash as string, txBlob: row.tx_blob as string, lastLedgerSequence: Number(row.last_ledger) } : undefined
   }
   /** Releases a reservation only when the ledger proves no payment can ever settle (caller supplies that proof). */
   failSubmission(intentId: string, reason: string): PurchaseIntent {
     return this.atomic(() => {
       const intent = this.getIntent(intentId)
-      if (!intent || intent.status !== 'SUBMITTING' || this.db.prepare('SELECT 1 FROM receipts WHERE intent_id=?').get(intentId)) throw new Error('Only an unsettled submission can fail')
+      if (!intent || intent.status !== 'SUBMITTING' || this.prepare('SELECT 1 FROM receipts WHERE intent_id=?').get(intentId)) throw new Error('Only an unsettled submission can fail')
       const next: PurchaseIntent = { ...intent, status: 'FAILED_NOT_SETTLED', error: reason }
       this.saveIntent(next)
       this.audit.append({ runId: intent.runId, intentId, kind: 'refusal', data: { stage: 'submission', reason, amountMinor: intent.amountMinor, payTo: intent.quote?.payment?.payTo ?? null, txHash: intent.txHash ?? null, policyVersion: POLICY_VERSION } })
@@ -685,12 +700,12 @@ export class Store {
     const run = this.getRun(runId)
     this.atomic(() => {
       if (this.policyPayments(runId).length) return
-      const hold = this.db.prepare('SELECT minor FROM hire_reserves WHERE run_id=?').get(runId)
+      const hold = this.prepare('SELECT minor FROM hire_reserves WHERE run_id=?').get(runId)
       const total = payments.reduce((sum, p) => sum + Number(p.amountDrops), 0)
       if (!hold || !['DONE', 'FAILED', 'STOPPED'].includes(run.phase) || run.reservedMinor
         || payments.some(p => !/^[1-9]\d*$/.test(p.amountDrops) || !Number.isSafeInteger(Number(p.amountDrops)))
         || total + run.spentMinor * DROPS_PER_MINOR > (run.budgetMinor + Number(hold.minor)) * DROPS_PER_MINOR) throw new Error('Invalid policy payment reservation')
-      for (const payment of payments) this.db.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(payment.id, runId, JSON.stringify(payment))
+      for (const payment of payments) this.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(payment.id, runId, JSON.stringify(payment))
       this.audit.append({ runId, kind: 'payout-reserve', data: { policyVersion: 'hire-v1', totalDrops: String(total), payments: payments.map(p => ({ id: p.id, kind: p.kind, payTo: p.payTo, amountDrops: p.amountDrops })) } })
     })
   }
@@ -700,9 +715,9 @@ export class Store {
       if (payment.cancelledAt) return
       if (payment.submission || payment.kind !== 'royalty') throw new Error('Signed payout requires reconciliation')
       const cancelledAt = new Date().toISOString()
-      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, cancelledAt }), id)
+      this.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, cancelledAt }), id)
       const refund: PolicyPayment = { id: `${id}:refund`, kind: 'change', payTo: caller, amountDrops: payment.amountDrops }
-      this.db.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(refund.id, runId, JSON.stringify(refund))
+      this.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(refund.id, runId, JSON.stringify(refund))
       this.audit.append({ runId, intentId: id, kind: 'refusal', data: { stage: 'payout', paymentKind: payment.kind, payTo: payment.payTo, amountDrops: payment.amountDrops, ...reason } })
       this.audit.append({ runId, intentId: id, kind: 'payout-cancel', data: { cancelledAt, paymentKind: payment.kind, amountDrops: payment.amountDrops, refundId: refund.id, refundPayTo: caller } })
       this.audit.append({ runId, kind: 'payout-reserve', data: { policyVersion: 'hire-v1', totalDrops: refund.amountDrops, payments: [refund], reason: 'denylist refund' } })
@@ -717,7 +732,7 @@ export class Store {
       if (payment.cancelledAt) throw new Error('Policy payment cancelled')
       if (payment.submission) return payment.submission
       if (this.isPaused() || this.principalPaused(runId) || !this.walletAllows(this.rawRun(runId), 0)) throw new Error('Policy payment paused or capped')
-      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, submission }), id)
+      this.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, submission }), id)
       this.audit.append({ runId, intentId: id, kind: 'payout-sign', data: { paymentKind: payment.kind, txHash: submission.txHash, lastLedgerSequence: submission.lastLedgerSequence, payTo: payment.payTo, amountDrops: payment.amountDrops, paused: false, walletDailyMinor: spendPolicy().walletDailyMinor } })
       return submission
     })
@@ -728,15 +743,15 @@ export class Store {
       if (!payment.submission) throw new Error('No signed policy payment')
       if (payment.confirmedAt) return
       const confirmedAt = new Date().toISOString()
-      this.db.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, confirmedAt, ...(ledgerIndex === undefined ? {} : { ledgerIndex }) }), id)
+      this.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, confirmedAt, ...(ledgerIndex === undefined ? {} : { ledgerIndex }) }), id)
       this.audit.append({ runId, intentId: id, kind: 'payout-settle', data: { paymentKind: payment.kind, txHash: payment.submission.txHash, ledgerIndex: ledgerIndex ?? null, payTo: payment.payTo, amountDrops: payment.amountDrops, confirmedAt } })
     })
   }
   closeHireReserve(runId: string) {
     if (this.policyPayments(runId).some(p => !p.confirmedAt && !p.cancelledAt)) throw new Error('Hire payments pending')
-    this.db.prepare('UPDATE hire_reserves SET closed=1 WHERE run_id=?').run(runId)
+    this.prepare('UPDATE hire_reserves SET closed=1 WHERE run_id=?').run(runId)
   }
-  getDeliveryToken(intentId: string): string | undefined { return this.db.prepare('SELECT token FROM receipts WHERE intent_id=?').get(intentId)?.token as string | undefined }
+  getDeliveryToken(intentId: string): string | undefined { return this.prepare('SELECT token FROM receipts WHERE intent_id=?').get(intentId)?.token as string | undefined }
   /**
    * Stores the delivered bytes as an UNVERIFIED grant (#131): the intent stays DELIVERY_PENDING and the
    * content is not accessible until server/proofs.ts records the proof. The grant's digest is the root
@@ -754,22 +769,22 @@ export class Store {
       if (!intent || !sameSource(intent, grant) || !sameSource(intent, content) || !(chargedStatuses.has(intent.status) || intent.status === 'SUBMITTING' && intent.escrow?.state === 'LOCKED') || intent.runId !== grant.runId || intent.resourceId !== grant.resourceId || intent.version !== grant.version || content.profileId !== intent.profileId || content.resourceId !== intent.resourceId || content.version !== intent.version) throw new Error('Grant does not match settled quote')
       const existing = this.rows<Grant>('SELECT json FROM grants WHERE intent_id=?', grant.intentId)[0]
       if (existing) { if (existing.contentDigest !== root) throw new Error('Grant is immutable'); return }
-      this.db.prepare('INSERT INTO grants VALUES (?,?,?)').run(grant.intentId, JSON.stringify(grant), JSON.stringify(content))
-      this.db.prepare('INSERT INTO grant_salts VALUES (?,?)').run(grant.intentId, JSON.stringify(proof.salts))
+      this.prepare('INSERT INTO grants VALUES (?,?,?)').run(grant.intentId, JSON.stringify(grant), JSON.stringify(content))
+      this.prepare('INSERT INTO grant_salts VALUES (?,?)').run(grant.intentId, JSON.stringify(proof.salts))
       this.audit.append({ runId: grant.runId, intentId: grant.intentId, kind: 'deliver', data: { resourceId: grant.resourceId, version: grant.version, contentDigest: root, passageCount: content.spans.length, accessible: false } })
     })
   }
   /** Server-private: the delivered content and salts behind a grant (proof check and challenge only; never in a snapshot). */
   getDelivery(intentId: string): { grant: Grant; content: ContentEnvelope; salts: string[] } | undefined {
-    const row = this.db.prepare('SELECT g.json, g.content, s.json AS salts FROM grants g JOIN grant_salts s ON s.intent_id=g.intent_id WHERE g.intent_id=?').get(intentId)
+    const row = this.prepare('SELECT g.json, g.content, s.json AS salts FROM grants g JOIN grant_salts s ON s.intent_id=g.intent_id WHERE g.intent_id=?').get(intentId)
     return row ? { grant: JSON.parse(row.json as string) as Grant, content: ContentEnvelopeSchema.parse(JSON.parse(row.content as string)), salts: JSON.parse(row.salts as string) as string[] } : undefined
   }
   /** Write-once: the verified search manifest the policy evaluated for this intent. */
   recordManifest(intentId: string, manifest: Manifest): void {
-    this.db.prepare('INSERT OR IGNORE INTO manifests VALUES (?,?)').run(intentId, JSON.stringify(manifest))
+    this.prepare('INSERT OR IGNORE INTO manifests VALUES (?,?)').run(intentId, JSON.stringify(manifest))
   }
   getManifest(intentId: string): Manifest | undefined {
-    const row = this.db.prepare('SELECT json FROM manifests WHERE intent_id=?').get(intentId)
+    const row = this.prepare('SELECT json FROM manifests WHERE intent_id=?').get(intentId)
     return row ? JSON.parse(row.json as string) as Manifest : undefined
   }
   /** Only server/proofs.ts calls this: DELIVERY_PENDING → VERIFIED (root bound to the quote) or CLAIM_FAILED (quarantined). */
@@ -815,11 +830,11 @@ export class Store {
       if (refund) {
         const testnet = intent.quote?.payment?.rail === 'xrpl-testnet'
         const label = testnet ? XRPL_LABEL : SIMULATED_LABEL
-        const inserted = this.db.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run(intent.runId, '{}')
+        const inserted = this.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run(intent.runId, '{}')
         refundEvent = TraceEventSchema.parse({ id: Number(inserted.lastInsertRowid), runId: intent.runId, at: new Date().toISOString(), type: 'REFUND',
           label: `Refunded S$${(refund.amountMinor / 100).toFixed(2)} · InvoiceID = original tx · ${label}`,
           data: { intentId, txHash: refund.txHash, amountMinor: refund.amountMinor, originalTxHash: intent.txHash, label, ...(testnet ? { explorerUrl: `${XRPL_EXPLORER}/${refund.txHash}` } : {}) } })
-        this.db.prepare('UPDATE events SET json=? WHERE id=?').run(JSON.stringify(refundEvent), refundEvent.id)
+        this.prepare('UPDATE events SET json=? WHERE id=?').run(JSON.stringify(refundEvent), refundEvent.id)
       }
       return next
     })
@@ -831,12 +846,12 @@ export class Store {
   listReputation(): ReputationRecord[] { return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation ORDER BY wallet') }
   putReputation(record: ReputationRecord): void {
     const parsed = ReputationRecordSchema.parse(record)
-    this.db.prepare('INSERT INTO publisher_reputation VALUES (?,?) ON CONFLICT(wallet) DO UPDATE SET json=excluded.json').run(parsed.wallet, JSON.stringify(parsed))
+    this.prepare('INSERT INTO publisher_reputation VALUES (?,?) ON CONFLICT(wallet) DO UPDATE SET json=excluded.json').run(parsed.wallet, JSON.stringify(parsed))
   }
   resetReputation(): void { this.db.exec('DELETE FROM publisher_reputation') }
   /** Probe an actual write transaction without changing operator state. */
   checkWritable(): void {
-    this.atomic(() => { this.db.prepare('INSERT OR IGNORE INTO wallet_control VALUES (1,0)').run(); this.db.prepare('UPDATE wallet_control SET paused=paused WHERE id=1').run() })
+    this.atomic(() => { this.prepare('INSERT OR IGNORE INTO wallet_control VALUES (1,0)').run(); this.prepare('UPDATE wallet_control SET paused=paused WHERE id=1').run() })
   }
   spendBySurface() {
     const day = new Date().toISOString().slice(0, 10)
@@ -856,18 +871,18 @@ export class Store {
   recordAudit(input: AuditInput, once?: Record<string, string>) {
     return this.atomic(() => {
       // `once` makes a replayed request idempotent: an entry of this kind with the same data field values is not written twice.
-      if (once && Object.entries(once).every(([field, value]) => this.db.prepare(`SELECT 1 FROM audit_log WHERE kind=? AND json_extract(data, ?)=? LIMIT 1`).get(input.kind, `$.${field}`, value))) return undefined
+      if (once && Object.entries(once).every(([field, value]) => this.prepare(`SELECT 1 FROM audit_log WHERE kind=? AND json_extract(data, ?)=? LIMIT 1`).get(input.kind, `$.${field}`, value))) return undefined
       return this.audit.append(input)
     })
   }
   auditVerify(options: { expectHead?: string } = {}) { return verifyChain(this.db, options) }
   anchorRows(): import('./anchor.js').AnchorRecord[] { return this.rows('SELECT json FROM answer_anchors ORDER BY rowid') }
-  saveAnchor(row: import('./anchor.js').AnchorRecord) { this.db.prepare('INSERT INTO answer_anchors VALUES (?,?,?) ON CONFLICT(head) DO UPDATE SET json=excluded.json').run(row.head, row.runId, JSON.stringify(row)) }
+  saveAnchor(row: import('./anchor.js').AnchorRecord) { this.prepare('INSERT INTO answer_anchors VALUES (?,?,?) ON CONFLICT(head) DO UPDATE SET json=excluded.json').run(row.head, row.runId, JSON.stringify(row)) }
   auditEntries(range: DateRange = {}) { return auditEntries(this.db, range) }
   receiptRows(range: DateRange = {}) { return receiptRows(this.db, range) }
   /** Deletes premium content, events and run bodies past the window; keeps receipts, intents and every audit row (#288). */
   prune(options: PruneOptions) { return this.atomic(() => pruneRunData(this.db, this.audit, options)) }
   /** Reclaim the freed pages so pruned bytes are not left in the file. Cannot run inside a transaction. */
   compact(): void { this.db.exec('PRAGMA wal_checkpoint(TRUNCATE); VACUUM; PRAGMA wal_checkpoint(TRUNCATE)') }
-  close(): void { this.db.close() }
+  close(): void { this.statements.clear(); this.db.close() }
 }
