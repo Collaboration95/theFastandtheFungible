@@ -7,8 +7,8 @@ import { mkdir, cp } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 
 const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1'
-const SIMULATED: Record<string, RegExp> = { 'Simulated UC1': /^Bank of Japan decision/, 'Simulated UC2': /^Kestrel–TSMC outlook/, 'Simulated UC3': /^Malaysia packaging lead times/ }
-const TABS = ['Testnet UC3', 'Testnet · key reveal', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
+const SIMULATED: Record<string, RegExp> = { 'Testnet UC3 · payment': /^Malaysia packaging lead times/, 'Simulated UC1': /^Bank of Japan decision/, 'Simulated UC2': /^Kestrel–TSMC outlook/, 'Simulated UC3': /^Malaysia packaging lead times/ }
+const TABS = ['Testnet UC3 · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
 let server: ChildProcess, base: string
 
 // eslint-disable-next-line no-empty-pattern -- Playwright requires a destructured first argument.
@@ -29,8 +29,8 @@ test.beforeEach(async ({ page }) => {
 /** Watch one replay to completion; report every forbidden string seen on the way. */
 async function walk(page: Page, tab: string) {
   await page.goto(`${base}/demo/`)
-  if (tab !== 'Testnet UC3') await page.getByRole('navigation', { name: 'Recorded scenarios' }).getByRole('link', { name: tab, exact: true }).click()
-  // Simulated replays wait for the judge to pick their recorded question.
+  if (tab !== TABS[0]) await page.getByRole('navigation', { name: 'Recorded scenarios' }).getByRole('link', { name: tab, exact: true }).click()
+  // The payment and simulated replays wait for the judge to pick their recorded question.
   if (SIMULATED[tab]) {
     await page.getByRole('button', { name: SIMULATED[tab] }).click()
     await page.getByRole('button', { name: /^Ask$/ }).click()
@@ -59,15 +59,13 @@ test('landing points at the release candidate, never the stale Latest', async ({
 })
 
 for (const tab of TABS) {
-  test(`demo tab "${tab}": no stale or spelled-out text, finishes`, async ({ page }) => {
+  test(`demo tab "${tab}": never shows Failed, stale or spelled-out text, and finishes`, async ({ page }) => {
     test.setTimeout(120_000)
     const { seen, ready } = await walk(page, tab)
     expect(ready, 'replay reached Answer ready').toBe(true)
-    // Lane B owns the key-reveal replay's "Failed" frame; it is asserted separately below (fixme until it lands).
-    const allowed = tab === 'Testnet · key reveal' ? ['Failed', 'could not finish'] : []
-    expect([...seen].filter(s => !allowed.includes(s))).toEqual([])
+    expect([...seen]).toEqual([])
     expect(await contrast(page), 'axe color-contrast on payment cards').toEqual([])
-    if (tab === 'Testnet UC3') {
+    if (tab === TABS[0]) {
       const banner = page.locator('.demo-banner')
       await banner.locator('summary').click()
       await expect(banner).toContainText('researchagent-mcp-1.0.0-rc.1.tgz')
@@ -76,14 +74,6 @@ for (const tab of TABS) {
     }
   })
 }
-
-// Lane B (proof that passes) removes the key-reveal replay's "Failed" frame in src/App.tsx and demo/traces/**.
-// Enable this once that PR is on main; it fails today (the replay shows "Failed · The run could not finish").
-test.fixme('key-reveal replay never shows Failed or "could not finish"', async ({ page }) => {
-  test.setTimeout(120_000)
-  const { seen } = await walk(page, 'Testnet · key reveal')
-  expect([...seen]).toEqual([])
-})
 
 test('ledger: live-check progress replaces the stale snapshot text within 3 s', async ({ page }) => {
   const initial = await (await page.request.get(`${base}/ledger/`)).text()
