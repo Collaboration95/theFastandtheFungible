@@ -137,11 +137,15 @@ does not certify semantic truth. See [receipt spec](receipt-spec.md) and
 
 ## Verify against the ledger
 
-`python -m researchagent verify receipts.json --ledger` uses bounded, read-only
-WebSocket Testnet lookups (s.altnet, then Clio), with no wallet or backend.
-The Python API is `verify(bundle, ledger=True)`. `audit anchor` becomes PASS for
-validated matching anchor-v1 evidence, or FAIL with a reason. Without the flag,
-it remains SKIP (requires online check); offline fixture behavior is unchanged.
-Each endpoint has a five-second deadline and 256 KiB response cap; at most two
-lookups run concurrently. The implementation uses Python's standard library.
+`researchagent verify receipts.json --ledger` (or `python -m researchagent verify ...`)
+uses bounded, read-only JSON-RPC `tx` lookups against `s.altnet.rippletest.net:51234`,
+then Clio, with no wallet or backend. The Python API is `verify(bundle, ledger=True)`.
+`--ledger` checks the anchor *and* every payment, refund and escrow event, and prints
+`PASS testnet N/N (read-only, s.altnet)`; `--testnet` alone checks the payments.
+`audit anchor` becomes PASS for validated matching anchor-v1 evidence, or FAIL with a
+reason; a simulated export prints `SKIP audit anchor: simulated run (no ledger)`.
+A key reveal whose article broke its promises passes (`key-reveal-proof`) only with a
+validated writer refund. Without the flag, ledger checks remain SKIP (requires online
+check); offline fixture behavior is unchanged. Each endpoint has a five-second deadline
+and 256 KiB response cap. The implementation uses Python's standard library.
 Anchor fees are separate from article spend. See receipt-spec.md.

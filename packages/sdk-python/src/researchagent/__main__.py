@@ -1,4 +1,4 @@
-"""Offline receipt verification CLI."""
+"""Receipt verification CLI: offline by default; --ledger adds read-only Testnet checks."""
 
 import argparse
 import json
@@ -14,20 +14,27 @@ def main():
     command.add_argument("receipts", type=Path)
     command.add_argument("--json", action="store_true")
     command.add_argument("--ledger", action="store_true")
+    command.add_argument("--testnet", action="store_true")
     args = parser.parse_args()
     try:
         bundle = json.loads(args.receipts.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         parser.error("Cannot read receipt JSON")
-    result = verify(bundle, ledger=args.ledger)
+    result = verify(bundle, ledger=args.ledger, testnet=args.testnet)
+    testnet = [c for c in result["checks"] if c["check"].startswith("testnet ")]
     print(
         json.dumps(result)
         if args.json
         else "\n".join(
             [
+                *(c["status"] + " " + c["check"] + ": " + c["detail"] for c in result["checks"]),
                 *(
-                    c["status"] + " " + c["check"] + ": " + c["detail"]
-                    for c in result["checks"]
+                    [
+                        ("PASS" if all(c["status"] != "FAIL" for c in testnet) else "FAIL")
+                        + " testnet %d/%d (read-only, s.altnet)" % (sum(c["status"] == "PASS" for c in testnet), len(testnet))
+                    ]
+                    if testnet
+                    else []
                 ),
                 "RESULT " + ("PASS" if result["ok"] else "FAIL"),
             ]

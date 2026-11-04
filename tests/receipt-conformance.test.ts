@@ -9,6 +9,16 @@ for (const c of manifest.cases) it(c.name, async () => {
     for (const p of m.path.slice(0,-1)) target=target[p]
     target[m.path.at(-1)!]=m.value
   }
+  if ('ledgerTransactions' in c) {
+    const responses = JSON.parse(readFileSync(String(c.ledgerTransactions), 'utf8'))
+    for (const m of (c.ledgerMutations ?? [])) {
+      let target = responses
+      for (const p of m.path.slice(0,-1)) target = target[p]
+      target[m.path.at(-1)!] = m.value
+    }
+    expect((await verifyAnswer(b, { onlineLedger: true, anchorLookup: async h => responses[h], testnet: true, ledger: { request: async q => ({ result: responses[String(q.transaction)] }) } })).ok).toBe(c.expected)
+    return
+  }
   expect((await verifyAnswer(b, 'ledgerResponse' in c ? { onlineLedger: true, anchorLookup: async () => c.ledgerResponse as Record<string, unknown> } : {})).ok).toBe(c.expected)
 })
 

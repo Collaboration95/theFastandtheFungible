@@ -130,7 +130,7 @@ The command explicitly authorizes up to S$2 per question and S$5 per UTC day in 
 cp -R examples/writer-starter my-notes && npm run publish:site -- ./my-notes --rail simulated
 ```
 
-For an exported anchored answer, define the CLI shorthand and verify: `researchagent() { python -m researchagent "$@"; }; researchagent verify receipts.json --ledger` → audit anchor: **PASS** (CLI: `PASS audit anchor`, with ledger number). Requires a validated Testnet anchor and network access. Checkout equivalent: `npm run verify:answer -- receipts.json --ledger`.
+Verify an exported answer on its own ledger evidence (Export ⋯ → Download receipts.json): after the `pip install` above, `researchagent verify receipts.json --ledger` needs no Node and prints `PASS testnet N/N (read-only, s.altnet)`, `PASS audit anchor` with the ledger number, and `RESULT PASS`. A refunded key reveal passes only when a validated writer refund exists. A simulated export prints `SKIP audit anchor: simulated run (no ledger)`; an export that claims an anchor, or a Testnet run without one, fails. Checkout equivalent: `npm run verify:answer -- receipts.json --ledger`.
 
 ## What's notable
 

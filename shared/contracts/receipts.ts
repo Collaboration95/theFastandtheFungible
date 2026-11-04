@@ -18,6 +18,7 @@ export const ReceiptRowSchema = z.object({
 })
 /** A portable, explicit export of accessible evidence. Never includes quarantined bodies or signed blobs. */
 export const ReceiptBundleSchema = z.object({
+  fraudProofs: z.array(z.object({ intentId: z.string(), manifest: ManifestSchema, quote: EscrowQuoteSchema, key: z.string().regex(/^[A-F0-9]{64}$/), finishHash: z.string(), ledgerIndex: z.number().int().positive(), ciphertextHash: z.string(), failedClaimIds: z.array(z.string()) })).optional(),
   ledgerAnchor: LedgerAnchorSchema.optional(),
   schemaVersion: z.union([z.literal(1), z.literal(2), z.literal(3)]), identityVersion: z.union([z.literal(1), z.literal(2)]).optional(), contributions: ContributionsSchema.optional(), requirements: z.array(RequirementSchema).optional(), runId: z.string(), label: z.string(),
   answers: z.array(AnswerSchema).min(1), sources: z.array(ContentEnvelopeSchema), candidates: z.array(PublicCandidateSchema),
