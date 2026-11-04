@@ -1,4 +1,5 @@
 // Node-only escrow-v1 protocol. No secret is derived from article bytes.
+import { matchesAmount } from './contracts/asset.js'
 import { createHash, randomBytes } from 'node:crypto'
 import { deriveAddress, sign, verify } from 'ripple-keypairs'
 import { verifySignature } from 'xrpl'
@@ -26,7 +27,7 @@ export async function ledgerTime(ledger: Ledger): Promise<number> {
   return time
 }
 export function matchesCreate(tx: Record<string, unknown>, t: EscrowTerms): boolean {
-  return tx.TransactionType === 'EscrowCreate' && tx.Account === t.payer && tx.Destination === t.payTo && tx.Amount === t.amount &&
+  return tx.TransactionType === 'EscrowCreate' && tx.Account === t.payer && tx.Destination === t.payTo && matchesAmount(tx.Amount, t.amount, t.asset) &&
     tx.Condition === t.condition && tx.CancelAfter === t.cancelAfter && tx.FinishAfter === undefined && tx.InvoiceID === undefined &&
     tx.DestinationTag === undefined && tx.SourceTag === undefined && !tx.Flags &&
     canonicalJson(tx.Memos) === canonicalJson(escrowMemo(t)) &&

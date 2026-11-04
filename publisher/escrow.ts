@@ -1,3 +1,7 @@
+import { amountFor, matchesAmount } from '../shared/contracts/asset.js'
+import { ledgerInvoiceId } from '../shared/x402.js'
+import { escrowAsset } from '../server/escrow-asset.js'
+import { canonicalJson } from '../shared/manifest.js'
 import { encryptDelivery } from '../shared/key-reveal.js'
 import { XrplPayer } from '../server/xrpl.js'
 import { fulfillmentFor } from '../shared/escrow.js'
@@ -17,7 +21,9 @@ export async function escrowQuote(input: unknown, item: { publisherSlug: string;
   const encrypted = request.mode === 'key-reveal' && delivery ? encryptDelivery(delivery) : undefined
   if (request.mode && !encrypted) throw new Error('Key reveal unavailable')
   const { mode: _mode, ...base } = request
-  const terms = { ...base, ...item, ...(encrypted ? { condition: encrypted.condition, keyReveal: encrypted.commitment } : {}), scheme: 'escrow-v1' as const, network: 'xrpl:1' as const, asset: 'XRP' as const, quoteId: randomUUID() }
+  const asset = escrowAsset()
+  if (asset !== 'XRP' && !encrypted) throw Error('IOU requires key reveal')
+  const terms = { ...base, ...item, ...(encrypted ? { condition: encrypted.condition, keyReveal: encrypted.commitment } : {}), scheme: 'escrow-v1' as const, network: 'xrpl:1' as const, asset, amount: asset === 'XRP' ? item.amount : amountFor(Number(item.amount) / 1000, asset), quoteId: randomUUID() }
   const quote = { ...signEscrowQuote(terms, keys.publicKey, keys.privateKey), ...(encrypted ? { ciphertext: encrypted.ciphertext } : {}) }
   if (encrypted) journal.saveKeyReveal(escrowInvoice(terms), { secret: encrypted.secret })
   journal.saveEscrowQuote(quote)
@@ -27,7 +33,7 @@ export function verifyEscrowSignature(signature: PaymentSignature, journal: Publ
   const quote = journal.escrowQuote(signature.accepted.extra.invoiceId)
   if (!quote) throw new Error('Unknown escrow invoice')
   const t = quote.terms, a = signature.accepted
-  if (a.scheme !== 'escrow-v1' || a.network !== t.network || a.asset !== t.asset || a.payTo !== t.payTo || a.amount !== t.amount || a.maxTimeoutSeconds !== 120 || !safeSignature(signature.payload.signedTxBlob) || !matchesCreate(decode(signature.payload.signedTxBlob), t)) throw new Error('Escrow signature binding rejected')
+  if (a.scheme !== 'escrow-v1' || a.network !== t.network || canonicalJson(a.asset) !== canonicalJson(t.asset) || a.payTo !== t.payTo || a.amount !== t.amount || a.maxTimeoutSeconds !== 120 || !safeSignature(signature.payload.signedTxBlob) || !matchesCreate(decode(signature.payload.signedTxBlob), t)) throw new Error('Escrow signature binding rejected')
   return quote
 }
 /** Validate the exact create and object before issuing a durable conditional grant. */
@@ -56,7 +62,7 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
   }
   if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS' || !matchesCreate(found.tx, terms)) throw new Error('Escrow not validated')
   const object = (await ledger.request({ command: 'ledger_entry', escrow: { owner: terms.payer, seq: Number(tx.Sequence) }, ledger_index: 'validated' })).result.node
-  if (object.Account !== terms.payer || object.Destination !== terms.payTo || object.Amount !== terms.amount || object.Condition !== terms.condition || object.CancelAfter !== terms.cancelAfter) throw new Error('Locked object mismatch')
+  if (object.Account !== terms.payer || object.Destination !== terms.payTo || !matchesAmount(object.Amount, terms.amount, terms.asset) || object.Condition !== terms.condition || object.CancelAfter !== terms.cancelAfter) throw new Error('Locked object mismatch')
   const grant = { scheme: 'escrow-v1', state: 'LOCKED', articleId, version, manifestRoot: terms.manifestRoot, createHash: hash }
   journal.saveEscrowGrant(hash, invoice, grant)
   return { hash, payer: terms.payer, grant }
@@ -66,6 +72,12 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
 export async function revealEscrow(quote: EscrowQuote, createBlob: string, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal) {
   const invoice = escrowInvoice(quote.terms), privateState = journal.keyReveal(invoice)
   if (!privateState || !quote.terms.keyReveal) throw new Error('No writer key')
+  // Persist the IOU identity before submitting, including recovery after a writer crash.
+  // The existing challenge path validates the finish before recording settlement.
+  if (quote.terms.asset !== 'XRP') {
+    const t=quote.terms, id=ledgerInvoiceId(invoice)
+    if (!journal.quoteByInvoice(id)) journal.saveQuote({invoiceId:invoice,ledgerInvoiceId:id,quoteId:t.quoteId,publisherSlug:t.publisherSlug,articleId:t.articleId,version:t.version,amount:t.amount,payTo:t.payTo,asset:t.asset,expiresAt:new Date().toISOString()})
+  }
   const payer = new XrplPayer(ledger, new Wallet(keys.publicKey, keys.privateKey))
   let finish = privateState.finish
   if (!finish) {

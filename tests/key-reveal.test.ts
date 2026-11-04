@@ -15,8 +15,9 @@ import { candidateFrom, honestArticle, alphaLeakArticle } from './fixtures/pay-p
 // A deterministic ledger SIMULATION. Production protocol, signer, journal and HTTP publisher.
 const cleanup: (() => unknown)[] = []
 afterEach(async () => { for (const f of cleanup.splice(0).reverse()) await f(); vi.restoreAllMocks(); vi.unstubAllEnvs() })
-async function setup(options: { opted?: boolean; broken?: boolean; budget?: number } = {}) {
+async function setup(options: { opted?: boolean; broken?: boolean; budget?: number; iou?: boolean } = {}) {
   vi.stubEnv('ESCROW_MODE', 'key-reveal')
+  if(options.iou) { vi.stubEnv('ESCROW_ASSET','test-iou'); vi.stubEnv('TESTNET_IOU_ISSUER',Wallet.generate().classicAddress) }
   const c = chain(), dir = mkdtempSync(join(tmpdir(), 'escrow-'))
   cleanup.push(() => rmSync(dir, { recursive: true, force: true }))
   const env = { ESCROW_MODE: 'key-reveal', XRPL_PUBLISHER_LOAD_FACTOR_SEED: Wallet.generate().seed!, XRPL_PUBLISHER_ALPHALEAK_SEED: Wallet.generate().seed! }
@@ -192,4 +193,24 @@ it('waits for a submitted writer finish to validate in the normal purchase flow'
   expect((await s.buy()).status).toBe('VERIFIED')
   expect(deferred).toBe(true)
   expect(s.c.txs.size).toBe(2)
+})
+
+it('IOU key reveal preserves one charge after recovery and binds settlement asset', async () => {
+  const s=await setup({iou:true})
+  expect((await s.buy()).status).toBe('VERIFIED')
+  s.restart(); await s.manager.reconcile(); await s.buy()
+  const run=s.store.getRun(s.run.runId)
+  expect(run.receipts).toHaveLength(1)
+  expect(run.receipts[0].xrpl?.asset).toMatchObject({currency:'SGT',issuer:process.env.TESTNET_IOU_ISSUER})
+  expect([...s.c.txs.values()].filter(t=>t.tx_json.TransactionType==='EscrowCreate')).toHaveLength(1)
+})
+it('IOU no-show returns principal once and never grants plaintext', async () => {
+  const s=await setup({iou:true})
+  vi.spyOn(s.client,'paidGet').mockRejectedValue(new Error('no-show'))
+  await s.buy()
+  s.c.state.now=s.store.getEscrow('escrow-one')!.quote.terms.cancelAfter+1
+  s.restart(); await s.manager.reconcile(); await s.manager.reconcile()
+  expect(s.store.getIntent('escrow-one')?.escrow?.state).toBe('CANCELLED')
+  expect(s.store.getRun(s.run.runId).contents).toEqual([])
+  expect(s.store.getRun(s.run.runId).spentMinor).toBe(0)
 })

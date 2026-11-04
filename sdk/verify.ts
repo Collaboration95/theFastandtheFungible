@@ -113,7 +113,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     const settle = entries.find(e => e.kind === 'settle' && e.intentId === intent.intentId && e.runId === b.runId)
     const refund = entries.find(e => e.kind === 'refund' && e.intentId === intent.intentId && e.runId === b.runId)
     const quoteOk = !!terms && row?.invoiceId === terms.invoiceId && intent.quote?.quoteHash === terms.invoiceId && (intent.escrow || ledgerInvoiceId(intent.quote!.quoteId) === terms.invoiceId)
-    let invoiceOk = Boolean(intent.escrow && row?.escrowTerms && canonical(row.escrowTerms) === intent.quote?.quoteId && row.escrowState === intent.escrow.state && row.escrowTerms.manifestRoot === intent.quote?.contentDigest && row.escrowTerms.amount === amountFor(intent.amountMinor) && row.escrowTerms.payer === row.payer)
+    let invoiceOk = Boolean(intent.escrow && row?.escrowTerms && canonical(row.escrowTerms) === intent.quote?.quoteId && row.escrowState === intent.escrow.state && row.escrowTerms.manifestRoot === intent.quote?.contentDigest && row.escrowTerms.amount === amountFor(intent.amountMinor, row.escrowTerms.asset) && row.escrowTerms.payer === row.payer)
     if (!intent.escrow) try { const invoice = JSON.parse(intent.quote!.quoteId); invoiceOk = invoice.articleId === intent.resourceId && invoice.version === intent.version && invoice.payTo === row?.payee && invoice.amount === row?.amountDrops && invoice.manifestRoot === intent.quote!.contentDigest && canonical(invoice.asset ?? 'XRP') === canonical(row?.asset ?? 'XRP') } catch { /* invalid binding */ }
     const candidate = b.candidates.find(c => key(c) === key(intent) && c.profileId === intent.profileId)
     const manifest = candidate?.manifest
@@ -135,7 +135,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     add(`refund ${intent.intentId}`, Boolean(row && row.refundTxHash === (intent.refund?.txHash ?? '') && row.refundAmountMinor === (intent.refund?.amountMinor ?? '') && (!intent.refund || refund?.data.txHash === intent.refund.txHash && refund.data.amountMinor === intent.refund.amountMinor && refund.data.originalTxHash === row.txHash)), intent.refund ? 'Recorded refund matches audit; ledger confirmation requires --testnet' : 'No refund recorded')
   }
   add('receipt coverage', b.receipts.length === b.payments.filter(p => p.kind === 'purchase').length && b.receipts.every(r => b.intents.some(i => i.intentId === r.intentId)) && entries.filter(e => e.kind === 'settle' || e.kind === 'refund').every(e => b.payments.some(p => p.intentId === e.intentId && (e.kind === 'refund' ? p.refundTxHash === e.data.txHash : p.txHash === e.data.txHash))), 'Every charge/refund has its payment row; no omitted audit settlements')
-  if (options.testnet || options.onlineLedger && (!b.label.includes('SIMULATED') || b.ledgerAnchor)) {
+  if (options.testnet || options.onlineLedger && (!b.label.includes('SIMULATED') || b.ledgerAnchor || b.payments.some(p => p.escrowTerms && p.escrowTerms.asset !== 'XRP'))) {
     const owned = options.ledger ? undefined : testnetLedger(testnetUrl())
     try {
       const found = [...await verifyOnTestnet(b.payments, options.ledger ?? owned!), ...await verifyEscrowEvents(entries, options.ledger ?? owned!)]

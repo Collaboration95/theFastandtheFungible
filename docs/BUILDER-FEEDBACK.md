@@ -786,3 +786,18 @@ Code-derived failure mode from the round-2 cold incident: faucet HTTP success di
 - Evidence: workflow run 41804181845 (devcontainers/ci, ubuntu-latest): the faucet funded a buyer from a GitHub-hosted IP and UC3 completed in 51.9 s with validated EscrowCreate and EscrowFinish hashes (`docs/evidence/round3-a/README.md`). That is one observation, not a statement about faucet rate limits from CI IPs.
 - Tooling friction: `gh workflow run` returns 404 for a workflow file that exists only on a feature branch (dispatch needs it on the default branch), so the first run needed a temporary branch-scoped `push` trigger.
 - Severity: low. Mainnet impact: none.
+
+### 2026-11-04 — RLUSD TokenEscrow control re-query (observed)
+
+Read-only s.altnet JSON-RPC `feature` reports TokenEscrow enabled; `account_info`
+for official RLUSD issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV at ledger
+22058675 reports Flags 2174353408, lacking lsfAllowTrustLineLocking (0x40000000).
+Flag-gated, not amendment-gated; one AccountSet away (SetFlag 17).
+Evidence: Lane E commit; `docs/evidence/round3-e/runs.json` has the stand-in
+escrow transaction hashes and timings. Workaround: dedicated Testnet issuer,
+SGT currency labelled TEST-SGD with no real value, zero transfer fees. Suggested
+fix: official Testnet issuer enables flag 17. Severity: demo integration blocked
+for official RLUSD escrow. Mainnet impact: not tested; issuer permission remains
+a prerequisite. No authenticated RLUSD faucet or rejection transaction attempted;
+this is an issuer-flags control, not evidence of a live tecNO_PERMISSION.
+No upstream report filed (owner-only).

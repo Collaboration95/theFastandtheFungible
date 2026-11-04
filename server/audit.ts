@@ -1,5 +1,6 @@
+import { verifyEscrowCredit } from './escrow-asset.js'
 import { EscrowTermsSchema, type EscrowTerms } from '../shared/contracts/escrow.js'
-import { matchesCreate } from '../shared/escrow.js'
+import { conditionFor, matchesCreate } from '../shared/escrow.js'
 // Tamper-evident operator ledger (#288). Every authorisation or refusal of money movement is one row in
 // `audit_log`, hash-chained to the row before it and written inside the same SQLite transaction as the state
 // change it describes (Store.atomic), so a spend cannot exist without its audit row and the reverse.
@@ -337,8 +338,9 @@ async function verifyEscrowOnTestnet(row: ReceiptRow, ledger: Ledger): Promise<T
     const op = row.escrowState === 'RELEASED' ? 'finish' : row.escrowState === 'CANCELLED' ? 'cancel' : undefined
     const createOk = create.state === 'validated' && create.meta.TransactionResult === 'tesSUCCESS' && matchesCreate(create.tx, t) && Number(create.tx.Sequence) === row.escrowCreateSequence
     out.push({ intentId: row.intentId, txHash: row.escrowCreateHash!, kind: 'escrow-create', status: createOk ? 'ok' : 'mismatch', detail: createOk ? 'validated bound escrow principal' : 'create missing or differs from bound terms' })
+    if (op && terminal.state === 'validated') verifyEscrowCredit(terminal.meta, t, op === 'finish' ? t.payTo : t.payer)
     const terminalOk = op && terminal.state === 'validated' && terminal.meta.TransactionResult === 'tesSUCCESS' && terminal.tx.TransactionType === (op === 'finish' ? 'EscrowFinish' : 'EscrowCancel') && terminal.tx.Owner === t.payer && Number(terminal.tx.OfferSequence) === row.escrowCreateSequence &&
-      (op !== 'finish' || terminal.tx.Condition === t.condition) && row.amountDrops === (op === 'finish' ? t.amount : '0') && (row.ledgerIndex === '' || row.ledgerIndex === terminal.ledgerIndex)
+      (op !== 'finish' || terminal.tx.Condition === t.condition && (!t.keyReveal || typeof terminal.tx.Fulfillment === 'string' && /^A0228020[A-F0-9]{64}$/.test(terminal.tx.Fulfillment) && conditionFor(terminal.tx.Fulfillment.slice(8)) === t.condition)) && row.amountDrops === (op === 'finish' ? t.amount : '0') && (row.ledgerIndex === '' || row.ledgerIndex === terminal.ledgerIndex)
     out.push({ intentId: row.intentId, txHash: row.txHash, kind: op === 'cancel' ? 'escrow-cancel' : 'escrow-finish', status: terminalOk ? 'ok' : 'mismatch', detail: terminalOk ? 'validated terminal for the same escrow object' : 'terminal missing or differs from receipt' })
   } catch { out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'escrow-create', status: 'error', detail: 'escrow ledger lookup unavailable' }) }
   return out
@@ -358,7 +360,7 @@ export async function verifyEscrowEvents(entries: AuditEntry[], ledger: Ledger):
           const memos = found.tx.Memos as { Memo: { MemoData: string } }[]
           const invoice = Buffer.from(memos[0].Memo.MemoData, 'hex').toString('utf8')
           const terms = EscrowTermsSchema.parse(JSON.parse(invoice))
-          ok = matchesCreate(found.tx, terms) && ledgerInvoiceId(invoice) === e.data.invoiceHash && found.tx.Account === e.data.owner && found.tx.Sequence === e.data.createSequence && found.tx.Amount === e.data.amountDrops && found.tx.Destination === e.data.payTo && found.tx.CancelAfter === e.data.cancelAfter
+          ok = matchesCreate(found.tx, terms) && ledgerInvoiceId(invoice) === e.data.invoiceHash && found.tx.Account === e.data.owner && found.tx.Sequence === e.data.createSequence && matchesAmount(found.tx.Amount, String(e.data.amountDrops), terms.asset) && found.tx.Destination === e.data.payTo && found.tx.CancelAfter === e.data.cancelAfter
         } else ok = found.tx.TransactionType === (kind === 'escrow-finish' ? 'EscrowFinish' : 'EscrowCancel') && found.tx.Owner === e.data.owner && found.tx.OfferSequence === e.data.createSequence
       }
       checks.push({ ...base, status: ok ? 'ok' : 'mismatch', detail: ok ? 'validated escrow event matches its audit entry' : 'escrow event missing or differs from audit' })

@@ -1,10 +1,13 @@
 // Trusted policy purchase path. Bytes are quarantined until proof AND validated finish.
+import { amountFor, ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
+import { escrowAsset, preflightEscrow, verifyEscrowCredit } from './escrow-asset.js'
+import { canonicalJson } from '../shared/manifest.js'
 import { decryptDelivery } from '../shared/key-reveal.js'
 import { conditionFor } from '../shared/escrow.js'
 import { decode } from 'xrpl'
 import { z } from 'zod'
 import { EscrowQuoteSchema } from '../shared/contracts/escrow.js'
-import { DROPS_PER_MINOR, type PublicCandidate, type PurchaseIntent } from '../shared/contracts/index.js'
+import { type PublicCandidate, type PurchaseIntent } from '../shared/contracts/index.js'
 import { verifyDelivery, verifyManifestSignature } from '../shared/manifest.js'
 import { escrowInvoice, escrowMemo, fulfillmentFor, ledgerTime, matchesCreate, newHashlock, verifyEscrowQuote } from '../shared/escrow.js'
 import { encodeHeader, ledgerInvoiceId } from '../shared/x402.js'
@@ -35,10 +38,10 @@ export class EscrowPurchases {
       try { quote = EscrowQuoteSchema.parse(await this.client.forSource(candidate.source).escrowQuote(paidPath, { ...(process.env.ESCROW_MODE === 'key-reveal' ? { mode: 'key-reveal' as const } : {}), payer: this.payer.address!, intentId, condition: hashlock.condition, cancelAfter })) }
       catch { return this.store.skipEscrow({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'SKIPPED' }, 'Writer escrow unavailable; no paid fallback') }
       const t = quote.terms
-      if (!verifyEscrowQuote(quote) || t.network !== 'xrpl:1' || t.asset !== 'XRP' || t.payer !== this.payer.address || t.payTo !== candidate.wallet || t.intentId !== intentId || (process.env.ESCROW_MODE === 'key-reveal' ? !t.keyReveal || !quote.ciphertext : t.condition !== hashlock.condition || !!t.keyReveal) || t.cancelAfter !== cancelAfter || t.articleId !== candidate.resourceId || t.version !== candidate.version || t.publisherSlug !== candidate.profileId || t.manifestRoot !== manifest.root || t.amount !== String(candidate.price.amountMinor * DROPS_PER_MINOR)) throw new Error('Escrow quote binding rejected')
+      if (!verifyEscrowQuote(quote) || t.network !== 'xrpl:1' || canonicalJson(t.asset) !== canonicalJson(escrowAsset()) || t.payer !== this.payer.address || t.payTo !== candidate.wallet || t.intentId !== intentId || (process.env.ESCROW_MODE === 'key-reveal' ? !t.keyReveal || !quote.ciphertext : t.condition !== hashlock.condition || !!t.keyReveal) || t.cancelAfter !== cancelAfter || t.articleId !== candidate.resourceId || t.version !== candidate.version || t.publisherSlug !== candidate.profileId || t.manifestRoot !== manifest.root || t.amount !== amountFor(candidate.price.amountMinor, t.asset)) throw new Error('Escrow quote binding rejected')
       const invoice = escrowInvoice(t)
       const intent = this.store.reserveIntent({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'QUOTED', paidPath,
-        quote: { source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, quoteId: invoice, quoteHash: ledgerInvoiceId(invoice), amountMinor: candidate.price.amountMinor, currency: 'SGD', contentDigest: manifest.root, expiresAt: new Date(Date.now() + 60000).toISOString(), payment: { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', amountDrops: t.amount, payTo: t.payTo, invoiceId: ledgerInvoiceId(invoice) } } })
+        quote: { source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, quoteId: invoice, quoteHash: ledgerInvoiceId(invoice), amountMinor: candidate.price.amountMinor, currency: 'SGD', contentDigest: manifest.root, expiresAt: new Date(Date.now() + 60000).toISOString(), payment: { rail: 'xrpl-testnet', network: 'xrpl:1', asset: t.asset, amountDrops: t.amount, payTo: t.payTo, invoiceId: ledgerInvoiceId(invoice) } } })
       if (intent.status !== 'RESERVED') return intent
       this.store.recordManifest(intentId, manifest)
       if (!this.store.claimSubmitting(intentId)) return this.store.getIntent(intentId)!
@@ -53,6 +56,7 @@ export class EscrowPurchases {
     if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS') return
     const tx = found.tx, fulfillment = String(tx.Fulfillment ?? '')
     if (tx.TransactionType !== 'EscrowFinish' || tx.Owner !== t.payer || Number(tx.OfferSequence) !== e.publicStatus.createSequence || tx.Condition !== t.condition || !/^A0228020[A-F0-9]{64}$/.test(fulfillment) || conditionFor(fulfillment.slice(8)) !== t.condition) throw new Error('Ledger key binding rejected')
+    verifyEscrowCredit(found.meta, t, t.payTo)
     const key = fulfillment.slice(8)
     this.store.persistReveal(intent.intentId, { key, finishHash: hash, ledgerIndex: found.ledgerIndex, transaction: found.tx })
     let proof = false, decryptVerified = false
@@ -102,7 +106,7 @@ export class EscrowPurchases {
       if (!['entryNotFound', 'objectNotFound'].includes((error as { data?: { error?: string } }).data?.error ?? '')) throw error
     }
     if (object) {
-      if (object.Account !== t.payer || object.Destination !== t.payTo || object.Amount !== t.amount || object.Condition !== t.condition || object.CancelAfter !== t.cancelAfter) throw new Error('Escrow object differs from quote')
+      if (object.Account !== t.payer || object.Destination !== t.payTo || !matchesAmount(object.Amount, t.amount, t.asset) || object.Condition !== t.condition || object.CancelAfter !== t.cancelAfter) throw new Error('Escrow object differs from quote')
       return false
     }
     const create = await lookupTx(this.payer.ledger, e.publicStatus.createHash!)
@@ -120,6 +124,7 @@ export class EscrowPurchases {
         const op = found.tx.TransactionType === 'EscrowFinish' ? 'finish' : found.tx.TransactionType === 'EscrowCancel' ? 'cancel' : undefined
         if (!op || op === 'finish' && (found.tx.Condition !== t.condition || (!t.keyReveal && found.tx.Fulfillment !== fulfillmentFor(e.secret)))) continue
         if (op === 'finish' && t.keyReveal) { await this.acceptReveal(intent, hash); return true }
+        verifyEscrowCredit(found.meta, t, op === 'finish' ? t.payTo : t.payer)
         this.store.completeEscrow(intent.intentId, op, found.ledgerIndex, hash)
         this.event(intent, op, hash, found.ledgerIndex)
         if (op === 'finish') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'Proof verified and relayed escrow release validated', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
@@ -157,6 +162,9 @@ export class EscrowPurchases {
     }
     const result = await this.payer.waitFor(tx)
     if (result.state === 'success') {
+      const found = await lookupTx(this.payer.ledger, tx.txHash)
+      if (found.state !== 'validated') return
+      verifyEscrowCredit(found.meta, e.quote.terms, op === 'finish' ? e.quote.terms.payTo : e.quote.terms.payer)
       // The signed outbox fixes operation, owner and object; successful validation proves its terminal branch.
       this.store.completeEscrow(intent.intentId, op, result.ledgerIndex)
       this.event(intent, op, tx.txHash, result.ledgerIndex)
@@ -173,7 +181,8 @@ export class EscrowPurchases {
       if (!create) {
         if (this.store.isPaused() || this.store.getRun(intent.runId).stopped || await ledgerTime(this.payer.ledger) >= e.quote.terms.cancelAfter - 15) return this.store.failSubmission(intentId, 'Escrow not signed before stop or expiry')
         const t = e.quote.terms
-        const sent = await this.payer.escrow({ TransactionType: 'EscrowCreate', Destination: t.payTo, Amount: t.amount, Condition: t.condition, CancelAfter: t.cancelAfter, Memos: escrowMemo(t) }, Number(t.amount),
+        await preflightEscrow(this.payer.ledger, t)
+        const sent = await this.payer.escrow({ TransactionType: 'EscrowCreate', Destination: t.payTo, Amount: ledgerAmount(t.amount, t.asset), Condition: t.condition, CancelAfter: t.cancelAfter, Memos: escrowMemo(t) }, t.asset === 'XRP' ? Number(t.amount) : 0,
           s => this.store.recordEscrowSubmission(intentId, 'create', s), async s => { try { await this.payer.ledger.request({ command: 'submit', tx_blob: s.txBlob }) } catch { /* hash decides */ } }, undefined, () => this.terminalFeeHolds(intentId))
         await sent.sent
         create = { ...sent.submission, intentId, operation: 'create' }
@@ -199,7 +208,7 @@ export class EscrowPurchases {
           this.store.escrowTransition(intentId, { state: 'CANCEL_DUE' })
           await this.terminal(intent, 'cancel')
         } else {
-          const result = await this.client.forSource(intent.source, true).paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: 'XRP', amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
+          const result = await this.client.forSource(intent.source, true).paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: e.quote.terms.asset, amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
           const response = z.object({ finishHash: z.string().regex(/^[A-F0-9]{64}$/) }).parse(result.delivery)
           // The writer has submitted, not necessarily validated. Keep the normal hire
           // flow open for ledger close; durable reconciliation still owns timeouts.
@@ -215,7 +224,7 @@ export class EscrowPurchases {
       if (this.store.getRun(intent.runId).stopped || this.store.isPaused() || now >= e.publicStatus.cancelAfter - 15) e = this.store.escrowTransition(intentId, { state: 'CANCEL_DUE' })
       if (e.publicStatus.state === 'LOCKED') {
         try {
-          const result = await this.client.forSource(intent.source, true).paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: 'XRP', amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
+          const result = await this.client.forSource(intent.source, true).paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: e.quote.terms.asset, amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
           if (result.status !== 200 || result.response?.escrowState !== 'LOCKED' || result.response.transaction !== create.txHash || result.response.success) throw new Error('Conditional grant missing')
           const d = Delivery.parse(result.delivery)
           if (d.grant.state !== 'LOCKED' || d.grant.createHash !== create.txHash || d.grant.manifestRoot !== e.quote.terms.manifestRoot || d.grant.articleId !== intent.resourceId || d.grant.version !== intent.version || d.articleId !== intent.resourceId || d.version !== intent.version) throw new Error('Grant identity mismatch')

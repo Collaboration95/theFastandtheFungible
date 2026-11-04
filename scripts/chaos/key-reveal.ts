@@ -19,7 +19,7 @@ if (!dir) {
     const work = mkdtempSync(resolve('scratch/key-reveal-kill-'))
     try {
     writeFileSync(join(work, 'test-wallets.json'), JSON.stringify({ buyer: Wallet.generate().seed, writer: Wallet.generate().seed, other: Wallet.generate().seed }), { mode: 0o600 })
-    const env = { PATH: process.env.PATH, HOME: work, NODE_NO_WARNINGS: '1', ESCROW_MODE: 'key-reveal', LANGFUSE_ENABLED: '0' }
+    const env = { ESCROW_ASSET:process.env.ESCROW_ASSET, TESTNET_IOU_ISSUER:process.env.TESTNET_IOU_ISSUER, PATH: process.env.PATH, HOME: work, NODE_NO_WARNINGS: '1', ESCROW_MODE: 'key-reveal', LANGFUSE_ENABLED: '0' }
     const killed = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/chaos/key-reveal.ts', work, point], { env, timeout: 30_000 })
     if (killed.signal !== 'SIGKILL') throw new Error(`Expected SIGKILL at ${point}; ${killed.stderr.toString()}`)
     const recovered = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/chaos/key-reveal.ts', work, 'recover'], { env, timeout: 30_000 })
@@ -30,8 +30,8 @@ if (!dir) {
       else rmSync(work,{recursive:true,force:true})
     }
   }
-  mkdirSync('docs/evidence/round2-r', { recursive: true })
-  writeFileSync('docs/evidence/round2-r/crash.json', JSON.stringify({ label: 'SIMULATED ledger; actual process SIGKILL; no live funds', results }, null, 2) + '\n')
+  mkdirSync('scratch/round3-e', { recursive: true })
+  writeFileSync('scratch/round3-e/crash-'+(process.env.ESCROW_ASSET || 'XRP')+'.json', JSON.stringify({ label: 'SIMULATED ledger; actual process SIGKILL; no live funds', results }, null, 2) + '\n')
   console.log('key-reveal chaos: 3 SIGKILL boundaries, zero violations, zero double charges')
 } else {
   process.env.ESCROW_MODE = 'key-reveal'

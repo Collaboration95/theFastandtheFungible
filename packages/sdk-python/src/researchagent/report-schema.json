@@ -1068,6 +1068,28 @@
               "asset": {
                 "anyOf": [
                   {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "const": "SGT"
+                      },
+                      "issuer": {
+                        "type": "string",
+                        "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+                      },
+                      "label": {
+                        "type": "string",
+                        "const": "TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD"
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "issuer",
+                      "label"
+                    ]
+                  },
+                  {
                     "type": "string",
                     "const": "XRP"
                   },
