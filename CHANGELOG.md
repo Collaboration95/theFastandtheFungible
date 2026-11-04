@@ -13,7 +13,7 @@ the MCP Registry; that is an owner step tracked in #265.
 ## 1.0.0 (candidate)
 
 Merged on `main` after [v0.8.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.8.0)
-(PRs #332 and #341–#358).
+(PRs #332 and #341–#366).
 
 ### Added
 
@@ -21,6 +21,8 @@ Merged on `main` after [v0.8.0](https://github.com/Collaboration95/theFastandthe
   EscrowFinish; a second Testnet demo tab and the ledger page verify the
   key/Condition binding, ciphertext commitments and authenticated decryption
   read-only in the browser. Synthetic articles and fixture no-show are labelled.
+- Policy-owned answer audit anchors, verified with `--ledger` (#366).
+- Live ledger verification, forwarded fixture Codespaces and first-run relevance, cold Testnet launcher and recorded UC3, standalone MCP tarball, and rehearsal evidence (#359–#362, #364–#365).
 
 - Same-engine fixture workload harness and retained shared-host baseline misses.
   [#353](https://github.com/Collaboration95/theFastandtheFungible/pull/353)

@@ -48,3 +48,18 @@ for (const interaction of ['pointer', 'keyboard']) it(`does not cover an active 
     expect(screen.getByRole('region', { name: "What's real here" })).toBeTruthy()
   } finally { vi.useRealTimers() }
 })
+
+it('does not auto-open after remount while a preset or question already holds focus', () => {
+  vi.useFakeTimers()
+  vi.stubGlobal('localStorage', { getItem: () => null, setItem: vi.fn() })
+  const preset = document.createElement('button')
+  document.body.append(preset)
+  preset.focus()
+  try {
+    render(<EnvIndicator labels={exampleRun.labels} />)
+    act(() => { vi.runAllTimers() })
+    expect(screen.queryByRole('region', { name: "What's real here" })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /Demo.*simulated payments/ }))
+    expect(screen.getByRole('region', { name: "What's real here" })).toBeTruthy()
+  } finally { preset.remove(); vi.useRealTimers() }
+})

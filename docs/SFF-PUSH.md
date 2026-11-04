@@ -538,3 +538,4 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 — Lane U: worker snapshots retain about 110 MiB (publisher index about 17 MiB); nursery 96→16 MiB, full RSS 982.93→906.84 MiB and GC max/p99 73.43/10.85→22.94/0.71 ms. Integrated loop gate still FAILS at 57.44 ms with only 0.57 ms GC in that interval; no threshold changed. [Evidence](evidence/round2-u/README.md).
 
 - 2026-11-04 · Lane V1: added faucet-Testnet key-reveal autoplay, no-show cancellation, shared browser key/Condition and ciphertext proof, explicit ledger labels and fair-exchange footer; raw grant/citation audits retained.
+- 2026-11-04 — Lane V2 (Reachability / UX): validated cold-wallet startup (3/3 captures; first hashes 76.448/77.810/71.768 s), Testnet Codespaces config (schema/local clone only), Testnet README hero and verify links, explicit MCP caps/hint, honest net/gross budget and kept/refunded counts; evidence docs/evidence/lane-v2/.

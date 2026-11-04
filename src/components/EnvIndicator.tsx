@@ -23,7 +23,7 @@ export default function EnvIndicator({ labels, recording = false }: { labels?: M
   }, [])
   useEffect(() => {
     if (recording || !labels) return
-    try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => { if (!interacted.current) setOpen(true) }, 0); return () => clearTimeout(timer) } } catch { /* private mode */ }
+    try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => { if (!interacted.current && (!document.activeElement || document.activeElement === document.body)) setOpen(true) }, 0); return () => clearTimeout(timer) } } catch { /* private mode */ }
   }, [labels, recording])
   return <div className="ra-env" ref={box}>
     <button ref={trigger} className="ra-env-trigger" aria-expanded={open} aria-controls="environment-details" onClick={() => open ? close() : setOpen(true)}><i aria-hidden="true" /><span className="ra-env-full">{testnet ? 'XRPL Testnet · test funds' : 'Demo · simulated payments'}</span><span className="ra-env-short">{testnet ? 'Testnet' : 'Demo'}</span></button>

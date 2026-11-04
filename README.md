@@ -21,16 +21,26 @@
 <p align="center">
   <a href="https://github.com/Collaboration95/theFastandtheFungible/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Collaboration95/theFastandtheFungible/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://codespaces.new/Collaboration95/theFastandtheFungible"><img alt="Open in GitHub Codespaces" src="https://github.com/codespaces/badge.svg"></a>
+  <a href="https://codespaces.new/Collaboration95/theFastandtheFungible?devcontainer_path=.devcontainer%2Ftestnet%2Fdevcontainer.json"><img alt="Open in Codespaces · XRPL Testnet" src="https://img.shields.io/badge/Open_in_Codespaces-XRPL_Testnet-blue"></a>
   <a href="#numbers"><img alt="Latest committed nightly scorecard" src="docs/media/scorecard.svg"></a>
   <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?sort=semver"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-lightgrey"></a>
   <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-lightgrey"></a>
 </p>
 
-![19-second refund demo: a failed proof returns the payment](docs/media/refund-demo.gif)
+![Testnet UC3: purchase, failed proof, refund and re-buy](docs/media/refund-demo.gif)
 
-Fictional writers and synthetic articles; this clip uses **simulated payments**.
-[Original MP4](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v0.6.0/uc3-2026-11-03.mp4) · [Regenerate the GIF](scripts/readme-media.mjs).
+Recorded on XRPL Testnet · no real value · [verify these 3 hashes live](https://collaboration95.github.io/theFastandtheFungible/ledger/).
+Fictional writers and fixture models.
+
+### Verify in 30 s
+
+| Transaction | Explorer |
+|---|---|
+| Purchase | [8E4C6D5F6FF474F89C199DEB07D8FF7D51586ECECAA4BC754894428586DC461B](https://testnet.xrpl.org/transactions/8E4C6D5F6FF474F89C199DEB07D8FF7D51586ECECAA4BC754894428586DC461B) |
+| Refund | [0BB4C81FE0AB8810FC7FE3E510BEE553719FAB113309C2367F01D83155840BDD](https://testnet.xrpl.org/transactions/0BB4C81FE0AB8810FC7FE3E510BEE553719FAB113309C2367F01D83155840BDD) |
+| Re-buy | [F8429067926319A2545DEF1065073B59CF08F51CFB7ED489F9271B349451C85D](https://testnet.xrpl.org/transactions/F8429067926319A2545DEF1065073B59CF08F51CFB7ED489F9271B349451C85D) |
+
 
 ## What it does
 
@@ -53,7 +63,13 @@ Every gate has regression tests and a corresponding [read-only audit rule](scrip
 
 ## Use it from your agent
 
-Registries are not yet published. Python installs directly from Git today. TypeScript and MCP currently use locally built artifacts or the checkout; npm has no native git-subdirectory install equivalent. After the owner tags and releases, run `node scripts/install-snippets.mjs --tag v1.0.0` for zero-clone release-asset commands. [Local zero-clone measurements](docs/evidence/round2-z/README.md) use file URLs as stand-ins.
+Python installs directly from Git, without a clone:
+
+```sh
+pip install "git+https://github.com/Collaboration95/theFastandtheFungible#subdirectory=packages/sdk-python"
+```
+
+TypeScript and MCP install from consumer-tested artifacts built below. [Publication status](#status-and-honesty).
 
 **TypeScript SDK** ([docs](docs/sdk.md)). `make release-artifacts` builds `dist/release/` and tests each file in a clean consumer, then:
 
@@ -89,10 +105,10 @@ claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=
 For the standalone package after `make release-artifacts`:
 
 ```sh
-claude mcp add researchagent -- npx -y "file:$PWD/dist/release/researchagent-mcp-1.0.0.tgz"
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y "file:$PWD/dist/release/researchagent-mcp-1.0.0.tgz"
 ```
 
-That command works today from this checkout, with S$2 per question and S$5 per UTC day in fixture mode. [HTTP from the Mac app](docs/mcp.md#app-hosted-streamable-http) gives each agent its own revocable allowance. For Claude Desktop, `ResearchAgent.mcpb` is attached to each [release](https://github.com/Collaboration95/theFastandtheFungible/releases/latest); [Codex config and all clients](docs/mcp.md).
+The command explicitly authorizes up to S$2 per question and S$5 per UTC day in fixture mode (simulated payments). Without those operator settings the caps stay zero. [HTTP from the Mac app](docs/mcp.md#app-hosted-streamable-http) gives each agent its own revocable allowance. For Claude Desktop, `ResearchAgent.mcpb` is attached to each [release](https://github.com/Collaboration95/theFastandtheFungible/releases/latest); [Codex config and all clients](docs/mcp.md).
 
 **Mac app** ([guide](desktop/README.md)). Download the DMG from [Releases](https://github.com/Collaboration95/theFastandtheFungible/releases/latest) (Apple Silicon and Intel, **unsigned**: right-click → Open). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
 
@@ -103,6 +119,8 @@ That command works today from this checkout, with S$2 per question and S$5 per U
 ```sh
 cp -R examples/writer-starter my-notes && npm run publish:site -- ./my-notes --rail simulated
 ```
+
+For an exported anchored answer, define the CLI shorthand and verify: `researchagent() { python -m researchagent "$@"; }; researchagent verify receipts.json --ledger` → audit anchor: **PASS** (CLI: `PASS audit anchor`, with ledger number). Requires a validated Testnet anchor and network access. Checkout equivalent: `npm run verify:answer -- receipts.json --ledger`.
 
 ## What's notable
 
@@ -119,7 +137,7 @@ Every row links to committed evidence. Labels are part of the claim: **synthetic
 | Bounded engine | 3,000-run history load 34,372.8 ms → 313.3 ms (110×). 100 concurrent asks: 4 admitted, 96 typed 503. Stop cancels a stalled provider call in 5.5 ms with no signature after it. | local, synthetic | [round2-a](docs/evidence/round2-a/README.md), [round2-c1](docs/evidence/round2-c1/README.md) |
 | Chaos and soak | Real SIGKILLs, zero double charges: a 30-minute soak ran 615 iterations and 155 kills; v0.7.0 recorded 1,729 episodes and 431 kills. The first long soak ended at a 606 s laptop sleep, which the write-up diagnoses. | fixture | [soak-nov4](docs/evidence/soak-nov4.md), [chaos-279](docs/evidence/chaos-279.md) |
 | A Mac app that recovers | 13 packaged recovery cases pass: missing, locked or corrupt credentials, port conflict, outage and restart. All 13 privileged IPC methods reject the research window. | local, unsigned, fixture | [round2-c2](docs/evidence/round2-c2/README.md) |
-| Testnet ledger page | 13/13 validated in the 4 Nov read-only check; automatically rechecks on load over WebSocket, comparing amounts, bindings and credential identity. Unavailable history stays labelled. | Testnet, no real value | [round2-p1](docs/evidence/round2-p1/README.md), [live page](https://collaboration95.github.io/theFastandtheFungible/ledger/) |
+| Testnet ledger page | 25/25 validated live on load (4 Nov check); WebSocket checks compare amounts, bindings and credential identity. Unavailable history stays labelled. | Testnet, no real value | [round2-p1](docs/evidence/round2-p1/README.md), [live page](https://collaboration95.github.io/theFastandtheFungible/ledger/) |
 | XRPL primitives used, and why | [Payment + InvoiceID](https://testnet.xrpl.org/transactions/1F2449A4660747066E99A89CEA5B49276D266F35820789042A8694EDB1DA23AF) binds payment to the quoted content. [EscrowCreate + PREIMAGE-SHA-256](https://testnet.xrpl.org/transactions/C82B337DC66343C64F653E86627E590434670E48AC4526369338ED1099A25926) locks XRP pending proof or explicit cancellation (buyer-controlled). [RLUSD trust line](https://testnet.xrpl.org/transactions/3232360079F218229444F11B9945D0E5F29284FDCD7808AE5FB8D3AE9290F6AA) supports issued currency with exact validated delivered_amount. [CredentialCreate/Accept (#357)](https://testnet.xrpl.org/transactions/225F19ED4BF1C206AE140D5286BE352F2F6E7A7A05A317D949DAEE876E98DAC6) identifies accepted writer credentials independently of content quality. [x402 v2](https://testnet.xrpl.org/transactions/FE6EF0F8785B4FC776551B378B62B8E9BA480D17FA375A3BB637FCE310AD1373) carries challenge, signed-payment and settlement headers. [Starter Kit t54](https://testnet.xrpl.org/transactions/570DE6EB58157FB8C5D1F8E23ECAF0A8340750ADFCB6A238CB8E70E2FD4B5588) interoperates with pinned x402-xrpl 0.3.4. | Testnet, no real value; synthetic articles | [XRPL contract](docs/x402-xrpl.md), [Credentials](docs/evidence/round2-n/README.md) |
 | Ranked builder feedback | Seven XRPL and x402 findings ranked by severity with workaround, suggested fix and mainnet consequence, plus the September submissions. | observed and code-derived, labelled | [BUILDER-FEEDBACK](docs/BUILDER-FEEDBACK.md) |
 
@@ -130,11 +148,19 @@ Node ≥ 22.13 and Make. No keys needed.
 ```sh
 git clone https://github.com/Collaboration95/theFastandtheFungible && cd theFastandtheFungible
 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci
-make run                                   # web on :5100; `make run OFFSET=100` shifts every port
-make testnet                               # fixture models, faucet wallets, real XRP Testnet; no keys
 ```
 
-Open <http://127.0.0.1:5100>. Fixture providers and simulated payments work offline.
+Choose one alternative (each command stays running):
+
+```sh
+make run       # http://127.0.0.1:5100 · offline fixture · simulated payments
+```
+
+```sh
+make testnet   # http://127.0.0.1:6900 · fixture models · public faucet · XRP Testnet
+```
+
+Testnet has no real value; provisioning failures select a labelled SIMULATED fallback with a reason class. The second Codespaces badge selects this configuration. Schema and local clean-clone validation are not a real Codespace run.
 To call the SDKs against it, start it with a token and operator caps (otherwise the token is random and the caps are zero):
 `RA_API_TOKEN=dev-token MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500 make run`, then `RA_URL=http://127.0.0.1:8788 RA_API_TOKEN=dev-token npx tsx examples/ask.ts`, or the same variables with `python examples/python/ask.py` after `pip install ./packages/sdk-python`.
 For live providers, add keys from `.env.example` to your ignored `.env`, run `make doctor`, then `make live`. Live model calls can incur provider fees; settlement uses XRPL Testnet when a payer seed is configured and is otherwise labelled simulated. [All make targets, Docker and operation](docs/running.md).
@@ -147,9 +173,9 @@ The browser is a view. The API owns retrieval, decisions, budget, payment and sy
 
 ## Engineering
 
-Counts are from a run on 4 Nov 2026 at `main` (`fd5a089b`).
+Counts are from the Lane V2 local run on 4 Nov 2026, based on `0927dd9b` plus these changes.
 
-- **Tests.** 1,117 TypeScript tests in 127 files (Vitest, about 40 s) and 205 Python tests; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
+- **Tests.** 1,210 TypeScript tests in 141 files (Vitest, about 50 s) and 222 Python tests; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
 - **Coverage gates.** Nine components each have an exact covered/total floor that may not fall; payments branches must also stay at or above 85% (86.2% in hosted CI). [Method and numbers](docs/evidence/round2-b/README.md).
 - **CI.** `changes` decides whether the full set runs. Then `verify`, `chaos`, `browser`, `python` and `artifacts` run in parallel, and an always-reporting `check` job refuses a failed, cancelled, missing or unexpectedly skipped one ([`ci.yml`](.github/workflows/ci.yml)). Hosted wall time on the integration PR: 249 s.
 - **Release admission.** A tag publishes only if its commit is on `main`, it equals the package version, same-SHA CI passed, and every artifact hash matches the manifest. Each of the SDK tarball, wheel and MCPB must also pass a clean-install consumer: cited passages, one receipt, one intent, an idempotent retry and the cap preserved. The publisher uploads those accepted bytes without rebuilding ([`release-contract.mjs`](scripts/release-contract.mjs), [evidence](docs/evidence/round2-d/README.md)).
@@ -186,12 +212,14 @@ Native XRP interop with the XRPL AI Starter Kit's t54 client and server: [compat
 
 ## Status and honesty
 
+Registries are not yet published. After an owner release, `node scripts/install-snippets.mjs --tag v1.0.0` prints release-asset install commands. Local zero-clone measurements use file URLs as stand-ins.
+
 Packages are **built and consumer-tested but not yet published** to npm, PyPI or the MCP Registry (publishing is an owner step, #265). Install from a release artifact or your checkout. Operator caps default to zero; a calling model cannot raise them.
 
 - **Testnet only.** No real money, no mainnet. Mainnet readiness is a [checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist), not a claim.
 - **Simulated mode is labelled** on every screen, receipt and MCP result. The writer corpus is fictional and new writers are unverified; this is not KYB or a sanctions service.
 - **Not done yet:** publishing to npm, PyPI and the MCP Registry; Apple Developer ID signing and notarisation; public remote federation of writers (only three pinned loopback origins); durable hosted storage; licensing. Owner steps are tracked in #265.
-- **Not shown:** no number above is a production benchmark. The [ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/) shows historical, committed evidence, not a fresh on-chain lookup.
+- **Not shown:** no number above is a production benchmark.
 - `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
 
 [Documentation](docs/README.md) · [Changelog](CHANGELOG.md) · [Project map](https://collaboration95.github.io/theFastandtheFungible/project-map/) · [Slides](https://collaboration95.github.io/theFastandtheFungible/slides/) · [Build log](https://collaboration95.github.io/theFastandtheFungible/evolution/) · [Builder feedback](docs/BUILDER-FEEDBACK.md) · [Design record](docs/FINAL-PUSH.md) · [MIT license](LICENSE)

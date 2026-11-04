@@ -20,7 +20,7 @@ test('UC2: clarify chip → plan card → paid purchase with proof ✓ → STREN
   // The plan card confirms the plan before any spending; it is not a purchase approval.
   await page.getByRole('button', { name: 'Start now' }).click()
   await finished(page)
-  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought')
+  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 kept · 0 refunded')
   await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ }).getByText(/Verified/)).toBeVisible()
   await expect(page.locator('.ra-vtext')).toContainText('55.2%')
   await expect(page.getByRole('button', { name: /MarketPulse.*bought/ })).toHaveCount(0)
@@ -91,7 +91,7 @@ test('a terminal snapshot above the SSE limit recovers the same browser run with
   const again = await (await page.request.get('/runs/' + encodeURIComponent(id))).json()
   expect(again.receipts).toEqual(terminal.receipts)
   expect(again.spentMinor).toBe(terminal.spentMinor)
-  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought')
+  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 kept · 0 refunded')
 })
 
 test('migrates stored stage pace, shows terminal purchases immediately and clears reconnect errors', async ({ page }) => {
@@ -110,7 +110,7 @@ test('migrates stored stage pace, shows terminal purchases immediately and clear
     } as unknown as typeof EventSource
   }, full)
   await page.goto('/?run=fixture-uc2')
-  await expect(page.getByRole('region',{name:'Sources',exact:true})).toContainText('1 bought')
+  await expect(page.getByRole('region',{name:'Sources',exact:true})).toContainText('1 kept · 0 refunded')
   await expect(page.getByRole('button',{name:/Stop buying/})).toHaveCount(0)
   expect(await page.evaluate(()=>localStorage.getItem('researchagent.pace'))).toBe('real')
   await expect(page.getByText('Connection lost. Reconnecting…')).toBeVisible()

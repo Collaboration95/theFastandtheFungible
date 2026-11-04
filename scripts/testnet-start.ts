@@ -1,8 +1,8 @@
 import { spawn } from 'node:child_process'
 import { prepare } from './testnet-wallets.js'
 const started = Date.now()
-const { env, fallback } = await prepare()
-if (fallback) console.warn('SIMULATED fallback · public Testnet faucet/network unavailable · no ledger transactions')
+const { env, fallback, reason } = await prepare()
+if (fallback) console.warn(`SIMULATED fallback · ${reason} · no ledger transactions`)
 if (process.env.ANCHOR_RAIL === 'xrpl-testnet') env.ANCHOR_RAIL = 'xrpl-testnet'
 if (process.argv.includes('--key-reveal')) { if (fallback) throw Error('Key-reveal capture requires Testnet'); env.ESCROW_MODE = 'key-reveal'; env.ESCROW_WRITERS = 'alphaleak,the-fab-floor' }
 env.TESTNET_STARTED_AT = String(started)
