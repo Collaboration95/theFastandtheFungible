@@ -62,13 +62,13 @@ only create/finish/refund/re-buy hashes and first-create timing under
 selects a fresh wallet cache. The acceptance script deletes its private scratch.
 Funding, hire ingress, royalties, change and cooperative refunds stay Payments.
 
-## Zero-clone Testnet MCP (next release candidate)
+## Zero-clone Testnet MCP (v1.0.0-rc.2)
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y <mcp tgz> --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.2/researchagent-mcp-1.0.0-rc.2.tgz --testnet
 ```
 
-`<mcp tgz>` is the release asset from the next release candidate (the published rc.1 does not contain `--testnet`), or the
+Release candidate · not yet on npm/PyPI/MCP Registry. Alternatively use the
 local `dist/release/researchagent-mcp-*.tgz` from `make release-artifacts`. `node scripts/install-snippets.mjs --tag <tag> --testnet`
 prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots its own engine and fixture publisher.
 
@@ -87,13 +87,13 @@ prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots
   stdio with a fresh npm cache, restarts to prove wallet reuse and cap enforcement, and checks each hash on s.altnet.
   Default CI never calls the faucet. Evidence: [round3-a](evidence/round3-a/README.md).
 
-## Zero-clone Testnet app (next release candidate)
+## Zero-clone Testnet app (v1.0.0-rc.2)
 
 ```sh
-npx -y <mcp tgz> app --testnet     # or without --testnet for the labelled SIMULATED rail
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.2/researchagent-mcp-1.0.0-rc.2.tgz app --testnet     # or without --testnet for the labelled SIMULATED rail
 ```
 
-Same `<mcp tgz>` rules as above (the published rc.1 has no `app`). Only Node 22 is needed: the tgz carries the engine,
+Release candidate · not yet on npm/PyPI/MCP Registry. Only Node 22 is needed: the tgz carries the engine,
 the fixture corpus and the built web UI (about 0.2 MB gzipped on top of a 21 MB tgz). It boots the same engine as the MCP
 bin, with the same faucet wallets from `$XDG_STATE_HOME/researchagent/testnet/` (shared with `--testnet` MCP; the app's own
 database lives in `testnet/app/`), serves the UI on `127.0.0.1` (ephemeral port, or `--port N`) and prints:
@@ -114,7 +114,7 @@ ResearchAgent ready: http://127.0.0.1:N · fixture models · XRPL TESTNET · no 
 - **No `.env`.** The app never reads one; models and writers are fixtures. Key reveal and anchoring are on.
 - **SDK.** The printed `baseUrl` is the bearer-protected engine (not the UI port); the token is in `…/api-token` (mode
   0600, removed on exit) and is never printed. The SDK's `ask` is the MCP surface, so also set the operator caps, e.g.
-  `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500 npx -y <mcp tgz> app --testnet` (default zero, as for MCP).
+  `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500 npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.2/researchagent-mcp-1.0.0-rc.2.tgz app --testnet` (default zero, as for MCP).
   `RA_URL=<baseUrl> RA_API_TOKEN=$(cat <token file>) npx tsx examples/ask.ts` works from a checkout.
 - **Fallback.** A faucet or network failure starts the app on the SIMULATED rail and the ready line says why
   (`SIMULATED fallback · faucet_unavailable | validation_timeout | wallet_cache_unavailable | network_unavailable · no ledger
