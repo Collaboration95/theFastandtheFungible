@@ -67,3 +67,24 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     expect(requests.every(url => url.startsWith(`http://127.0.0.1:${port}/theFastandtheFungible/`))).toBe(true)
   } finally { python.kill('SIGTERM'); await once(python, 'exit') }
 })
+
+test('key reveal tab autoplays and preserves quarantine disclosure', async ({ page }, info) => {
+ const root=info.outputPath('pages')
+ await mkdir(`${root}/theFastandtheFungible`,{recursive:true})
+ await cp('site',`${root}/theFastandtheFungible`,{recursive:true})
+ const python = spawn('python3', ['-u','-m','http.server','0','--bind','127.0.0.1','--directory',root], {stdio:['ignore','pipe','ignore']})
+ try {
+  const [chunk] = await once(python.stdout!, 'data')
+  const port = String(chunk).match(/port (\d+)/)?.[1]
+  await page.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
+  await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC-key-reveal`)
+  await expect(page.getByText(/ciphertext before grant stays quarantined/)).toBeVisible()
+  await expect(page.getByRole('link',{name:'Testnet UC3',exact:true})).toBeVisible()
+  await expect(page.getByRole('link',{name:'Testnet · key reveal',exact:true})).toBeVisible()
+  await expect(page.locator('.demo-transactions p')).toHaveCount(4)
+  await expect(page.locator('.demo-transactions')).toContainText('EscrowFinish (key published)')
+  await expect(page.locator('.demo-transactions')).toContainText('EscrowCancel (writer no-show)')
+  await expect(page.locator('.demo-transactions')).toContainText('Historical')
+  await expect(page).toHaveTitle(/Answer ready/, {timeout:45000})
+ } finally {python.kill('SIGTERM');await once(python,'exit')}
+})

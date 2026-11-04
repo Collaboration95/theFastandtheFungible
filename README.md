@@ -110,6 +110,7 @@ Every row links to committed evidence. Labels are part of the claim: **synthetic
 
 | Capability | Result | Scope | Evidence |
 |---|---|---|---|
+| Key-reveal escrow | The writer is paid only by publishing the article decryption key in EscrowFinish. | Testnet, synthetic articles | [Autoplay key reveal](https://collaboration95.github.io/theFastandtheFungible/demo/?scenario=UC-key-reveal) · [Live ledger proof](https://collaboration95.github.io/theFastandtheFungible/ledger/) |
 | Independent writers in one search | Three pinned origins; writers with identical writer, article and span IDs stay distinct through policy, grants, citations and receipts. Ten parallel retries per intent plus a restart give one receipt per intent. | local, simulated | [round2-f](docs/evidence/round2-f/README.md) |
 | "What your money bought" | 30 paid claim-to-passage links in three scenarios; each quotes one delivered span, and mutated receipts are rejected. Semantic value is shown as "not assessed". | synthetic | [round2-g](docs/evidence/round2-g/README.md), [contract](docs/contracts/CONTRIBUTION.md) |
 | Two independent receipt verifiers | TypeScript and a Python verifier (own Ed25519 and secp256k1 checks) agree on 177 of 177 conformance cases: 10 goldens and 167 tampered receipts. | local, offline | [round2-k](docs/evidence/round2-k/README.md), [spec](docs/receipt-spec.md) |

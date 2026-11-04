@@ -536,3 +536,5 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 — Lane T recovery: preserve #364/#365 on rebase; prevent delayed environment onboarding from covering Ask. Existing browser assertions and 184 receipt conformance cases unchanged. Evidence: `docs/evidence/round2-t/README.md`.
 
 - 2026-11-04 — Lane U: worker snapshots retain about 110 MiB (publisher index about 17 MiB); nursery 96→16 MiB, full RSS 982.93→906.84 MiB and GC max/p99 73.43/10.85→22.94/0.71 ms. Integrated loop gate still FAILS at 57.44 ms with only 0.57 ms GC in that interval; no threshold changed. [Evidence](evidence/round2-u/README.md).
+
+- 2026-11-04 · Lane V1: added faucet-Testnet key-reveal autoplay, no-show cancellation, shared browser key/Condition and ciphertext proof, explicit ledger labels and fair-exchange footer; raw grant/citation audits retained.

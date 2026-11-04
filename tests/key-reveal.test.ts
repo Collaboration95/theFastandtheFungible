@@ -48,6 +48,7 @@ it('key reveal pays only through writer finish and grants only after validated k
   expect(finish.tx_json.Account).not.toBe(s.wallet.classicAddress)
   s.restart(); await s.manager.reconcile(); await s.buy()
   expect(s.store.getRun(s.run.runId).receipts).toHaveLength(1)
+  expect(s.store.getRun(s.run.runId).events.filter(e => e.type === 'GRANT' && e.data?.intentId === result.intentId)).toHaveLength(1)
   expect([...s.c.txs.values()].filter(t => t.tx_json.TransactionType === 'EscrowCreate')).toHaveLength(1)
 })
 

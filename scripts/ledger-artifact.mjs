@@ -27,8 +27,20 @@ export function artifact() {
   for (const r of reveal) {
     if (!/^[A-F0-9]{64}$/.test(r.hash) || r.result !== 'tesSUCCESS' || !Number.isInteger(r.ledgerIndex)) throw Error('Invalid key-reveal ledger evidence')
     const create = reveal.find(c => c.path === r.path && c.type === 'EscrowCreate')
-    rows.push({ ...r, group: 'escrow', operation: { EscrowCreate: 'create', EscrowFinish: 'finish', EscrowCancel: 'cancel' }[r.type], date: '2026-11-04', owner: create.account, createSequence: r.offerSequence ?? create.sequence, amountDrops: create.amount, source: evidencePath, sourceCommit: sourceRef })
+    rows.push({ ...r, label: { EscrowCreate:'key reveal: EscrowCreate', EscrowFinish:'EscrowFinish (key published)', EscrowCancel:'EscrowCancel (writer no-show)' }[r.type], group: 'escrow', operation: { EscrowCreate: 'create', EscrowFinish: 'finish', EscrowCancel: 'cancel' }[r.type], date: '2026-11-04', owner: create.account, createSequence: r.offerSequence ?? create.sequence, amountDrops: create.amount, source: evidencePath, sourceCommit: sourceRef })
   }
+  const oldProof = JSON.parse(read('docs/evidence/round2-r/happy-receipt.json')).proofs[0].keyReveal
+  const oldFinish = rows.find(r => r.hash === oldProof.finishHash)
+  oldFinish.keyReveal = { create: rows.find(r => r.hash === oldProof.createHash), terms: oldProof.quote.terms, condition: oldProof.quote.terms.condition, commitment: oldProof.quote.terms.keyReveal, ciphertext: oldProof.quote.ciphertext }
+  const v1Path = 'docs/evidence/round2-v1/transactions.json'
+  const v1 = JSON.parse(read(v1Path)).transactions
+  const proof = JSON.parse(read('docs/evidence/round2-v1/proof.json'))
+  for (const row of v1) {
+    if (!/^[A-F0-9]{64}$/.test(row.hash) || !Number.isInteger(row.ledgerIndex) || row.source !== v1Path) throw Error('Invalid V1 evidence')
+    rows.push({ ...row, sourceCommit: JSON.parse(read('docs/evidence/round2-v1/source.json')).commit })
+  }
+  const finish = rows.find(r => r.hash === proof.finishHash)
+  finish.keyReveal = { create: rows.find(r => r.hash === proof.createHash), terms: proof.quote.terms, condition: proof.quote.terms.condition, commitment: proof.quote.terms.keyReveal, ciphertext: proof.quote.ciphertext }
   const anchors = JSON.parse(read('docs/evidence/round2-t/transactions.json')).transactions
   for (const row of anchors) {
     if (!/^[A-F0-9]{64}$/.test(row.hash) || row.result !== 'tesSUCCESS' || !Number.isInteger(row.ledgerIndex)) throw Error('Invalid answer anchor evidence')
@@ -41,7 +53,7 @@ function htmlArtifact(out) {
   const rows = JSON.parse(out).rows.map(r => {
     const a = r.deliveredAmount ?? r.amountDrops
     const amount = typeof a === 'object' ? `${a.value} RLUSD · issuer ${a.issuer}` : a ? `${a} drops` : 'Principal amount not recorded in this evidence'
-    return `<tr><td>${escape(r.group)}: ${escape(r.operation ?? r.kind)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
+    return `<tr><td>${escape(r.label ?? `${r.group}: ${r.operation ?? r.kind}`)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
   }).join('')
   return read('site/ledger/index.html').replace(/<caption>.*?<\/caption>/, `<caption>${JSON.parse(out).rows.length} curated transactions · snapshot ${JSON.parse(out).snapshotDate}</caption>`).replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
 }

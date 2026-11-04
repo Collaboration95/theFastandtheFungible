@@ -17,6 +17,11 @@ Merged on `main` after [v0.8.0](https://github.com/Collaboration95/theFastandthe
 
 ### Added
 
+- Key-reveal escrow: the writer is paid only by publishing the article key in
+  EscrowFinish; a second Testnet demo tab and the ledger page verify the
+  key/Condition binding, ciphertext commitments and authenticated decryption
+  read-only in the browser. Synthetic articles and fixture no-show are labelled.
+
 - Same-engine fixture workload harness and retained shared-host baseline misses.
   [#353](https://github.com/Collaboration95/theFastandtheFungible/pull/353)
 - Writer identity verification using native XRPL Credentials.

@@ -8,7 +8,7 @@ import { classify, refresh, lookup, endpoints } from '../site/ledger/ledger.js'
 const row = data.rows[0]
 function valid() { return {result:{hash:row.hash,ledger_index:row.ledgerIndex,validated:true,tx_json:{TransactionType:"Payment",Account:row.from,Destination:row.to,InvoiceID:row.invoiceId,NetworkID:1,Fee:row.feeDrops,Amount:row.deliveredAmount},meta:{TransactionResult:'tesSUCCESS',delivered_amount:row.deliveredAmount}}} }
 describe('public ledger',()=>{
- it('rebuilds twenty-one source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(21); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(21)})
+ it('rebuilds twenty-five source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(25); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(25)})
  it('only matching validated success is fresh',()=>{
   expect(classify(row,valid())).toContain('validated · tesSUCCESS')
   for(const mutate of [(b: {result: Record<string, any>})=>b.result.validated=false,(b: {result: Record<string, any>})=>b.result.tx_json.NetworkID=0,(b: {result: Record<string, any>})=>b.result.meta.TransactionResult='tecFAILED',(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,value:'9'},(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,issuer:'wrong'},(b: {result: Record<string, any>})=>b.result.error='txnNotFound',(b: {result: Record<string, any>})=>delete b.result.meta]){const b=valid();mutate(b);expect(classify(row,b)).not.toContain('validated · tesSUCCESS')}
@@ -53,7 +53,7 @@ it('closes a timed out socket and rejects unallowlisted targets',async()=>{
 })
 it('matches escrow operation identity and rejects cross-role substitution',()=>{
  for(const r of data.rows.filter((r:{group:string})=>r.group==='escrow')){
-  const t={hash:r.hash,TransactionType:({create:'EscrowCreate',finish:'EscrowFinish',cancel:'EscrowCancel'} as Record<string,string>)[r.operation],Fee:r.feeDrops,Account:r.owner,Owner:r.owner,Sequence:r.createSequence,OfferSequence:r.createSequence,Amount:r.amountDrops}
+  const t={hash:r.hash,TransactionType:({create:'EscrowCreate',finish:'EscrowFinish',cancel:'EscrowCancel'} as Record<string,string>)[r.operation],Fee:r.feeDrops,Account:r.owner,Owner:r.owner,Sequence:r.createSequence,OfferSequence:r.createSequence,Amount:r.amountDrops,Condition:r.condition}
   const body={result:{hash:r.hash,ledger_index:r.ledgerIndex,validated:true,tx_json:t,meta:{TransactionResult:'tesSUCCESS'}}}
   expect(classify(r,body)).toContain('validated · tesSUCCESS')
   t.OfferSequence++;t.Sequence++;expect(classify(r,body)).toContain('Historical')
