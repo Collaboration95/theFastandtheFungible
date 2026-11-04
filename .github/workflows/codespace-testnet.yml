@@ -1,0 +1,28 @@
+name: Devcontainer Testnet boot
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 19 * * *'
+permissions:
+  contents: read
+jobs:
+  testnet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Boot devcontainer and ask UC3
+        uses: devcontainers/ci@v0.3
+        with:
+          configFile: .devcontainer/testnet/devcontainer.json
+          push: never
+          runCmd: |
+            export RA_API_TOKEN="$(node -e 'process.stdout.write(require("crypto").randomBytes(32).toString("hex"))')"
+            export MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500
+            node -e 'const c=require("./.devcontainer/testnet/devcontainer.json");require("child_process").execSync(c.postStartCommand,{stdio:"inherit"})'
+            node --import tsx scripts/codespace-testnet-probe.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: devcontainer-testnet-timings
+          path: scratch/codespace-testnet/result.json

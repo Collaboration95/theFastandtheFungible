@@ -269,3 +269,11 @@ Receipt contribution v3 exposes exact claim/passage use with semantic assessment
 labelled not independently verified. See [receipt contribution contract](contracts/CONTRIBUTION.md)
 and [offline fixture evidence](evidence/round2-g/README.md). Python callers can use
 `Client.receipts(run_id)`; the existing offline verifier accepts v1/v2/v3.
+
+## Zero-clone Testnet MCP (next release candidate)
+
+Build `make release-artifacts`, then run `npx -y "file:$PWD/dist/release/researchagent-mcp-1.0.0-rc.1.tgz" --testnet` with operator-set `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500` in the environment. The local artifact version is rc.1; the published rc.1 does not contain this feature. `scripts/install-snippets.mjs --tag <tag>` generates release commands.
+
+Stdio initializes before provisioning. Tools wait for the public Testnet faucet; one funding request per machine when the cached buyer needs replenishing. Wallets and durable cap accounting live under `$XDG_STATE_HOME/researchagent/testnet/` (fallback `~/.local/state/researchagent/testnet/`), with `wallets.private.json` mode 0600. Keep this directory for wallet reuse and daily accounting. Never publish it. Testnet uses key-reveal escrow and answer anchors explicitly, fixture models and fictional writers, no real value. Faucet/network failures return visible SIMULATED fallback labels with a reason class. Caps default to zero and only policy can spend.
+
+Opt-in packed-byte acceptance: `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet`. Default CI never calls the faucet. The consumer uses a fresh npm cache, checks restart/reuse, caps and s.altnet validation, saves timings/hashes only, and deletes its private scratch.

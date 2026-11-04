@@ -55,3 +55,11 @@ only create/finish/refund/re-buy hashes and first-create timing under
 `docs/evidence/lane-x/`. `TESTNET_WALLET_FILE=scratch/<unique>/wallets.private.json`
 selects a fresh wallet cache. The acceptance script deletes its private scratch.
 Funding, hire ingress, royalties, change and cooperative refunds stay Payments.
+
+## Zero-clone Testnet MCP (next release candidate)
+
+Build `make release-artifacts`, then run `npx -y "file:$PWD/dist/release/researchagent-mcp-1.0.0-rc.1.tgz" --testnet` with operator-set `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500` in the environment. The local artifact version is rc.1; the published rc.1 does not contain this feature. `scripts/install-snippets.mjs --tag <tag>` generates release commands.
+
+Stdio initializes before provisioning. Tools wait for the public Testnet faucet; one funding request per machine when the cached buyer needs replenishing. Wallets and durable cap accounting live under `$XDG_STATE_HOME/researchagent/testnet/` (fallback `~/.local/state/researchagent/testnet/`), with `wallets.private.json` mode 0600. Keep this directory for wallet reuse and daily accounting. Never publish it. Testnet uses key-reveal escrow and answer anchors explicitly, fixture models and fictional writers, no real value. Faucet/network failures return visible SIMULATED fallback labels with a reason class. Caps default to zero and only policy can spend.
+
+Opt-in packed-byte acceptance: `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet`. Default CI never calls the faucet. The consumer uses a fresh npm cache, checks restart/reuse, caps and s.altnet validation, saves timings/hashes only, and deletes its private scratch.

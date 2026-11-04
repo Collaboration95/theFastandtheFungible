@@ -11,6 +11,8 @@ for (const dir of ['corpus', 'writers', 'calibration']) cpSync(`data/${dir}`, `$
 mkdirSync(`${out}/eval/decisions`, { recursive: true })
 cpSync('eval/decisions/calibration.ts', `${out}/eval/decisions/calibration.ts`)
 cpSync('eval/decisions/metrics.ts', `${out}/eval/decisions/metrics.ts`)
+mkdirSync(`${out}/scripts`, { recursive: true })
+cpSync('scripts/testnet-wallets.ts', `${out}/scripts/testnet-wallets.ts`)
 cpSync('LICENSE', `${out}/LICENSE`)
 cpSync('mcp/manifest.json', `${out}/manifest.json`)
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
@@ -34,7 +36,7 @@ function compile(dir) {
     }
   }
 }
-for (const dir of ['mcp', 'server', 'shared', 'sdk', 'publisher', 'eval']) compile(`${out}/${dir}`)
+for (const dir of ['mcp', 'server', 'shared', 'sdk', 'publisher', 'eval', 'scripts']) compile(`${out}/${dir}`)
 const worker = `${out}/server/engine-worker.mjs`
 writeFileSync(worker, readFileSync(worker, 'utf8').replace("import { register } from 'tsx/esm/api'", '').replace('register()', '').replaceAll('.ts\'', '.js\''))
 writeFileSync(`${out}/mcp/extension.mjs`, readFileSync('mcp/extension.mjs', 'utf8').replace('./server.ts', './server.js'))
