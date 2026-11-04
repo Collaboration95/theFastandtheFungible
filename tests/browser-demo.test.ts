@@ -2,12 +2,12 @@ import { expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { RunSnapshotSchema } from '../shared/contracts/index.js'
 import { runEvents, staged } from '../src/stage'
-for (const id of ['UC1', 'UC2', 'UC3', 'UC3-testnet']) it(`${id}: committed engine trace preserves grant and citation boundaries at every replay event`, () => {
+for (const id of ['UC1', 'UC2', 'UC3', 'UC3-testnet', 'UC-key-reveal']) it(`${id}: committed engine trace preserves grant and citation boundaries at every replay event`, () => {
   const capture = JSON.parse(readFileSync(`demo/traces/${id}.json`, 'utf8'))
   const run = RunSnapshotSchema.parse(capture.run)
   expect(run.phase).toBe('DONE')
   expect(run.labels.research).toMatch(/^fixture/)
-  expect(run.labels.settlement).toMatch(id === 'UC3-testnet' ? /XRPL TESTNET/ : /SIMULATED/)
+  expect(run.labels.settlement).toMatch(id.includes('testnet') || id === 'UC-key-reveal' ? /XRPL TESTNET/ : /SIMULATED/)
   expect(run.events.some(e => e.type === 'FREE_DRAFT')).toBe(true)
   for (const event of runEvents(run)) {
     const shown = staged(run, event.id)
@@ -29,7 +29,7 @@ for (const id of ['UC1', 'UC2', 'UC3', 'UC3-testnet']) it(`${id}: committed engi
 })
 
 it('audits raw terminal snapshots, including nested event payloads, before bundling', () => {
-  for (const id of ['UC1','UC2','UC3','UC3-testnet']) {
+  for (const id of ['UC1','UC2','UC3','UC3-testnet','UC-key-reveal']) {
     const raw = readFileSync(`demo/traces/${id}.json`, 'utf8')
     const capture = JSON.parse(raw), run = RunSnapshotSchema.parse(capture.run)
     expect(capture.provenance.source).toMatch(/^[a-f0-9]{40}$/)
@@ -46,7 +46,7 @@ it('audits raw terminal snapshots, including nested event payloads, before bundl
     const walk = (value: unknown) => {
       if (!value || typeof value !== 'object') return
       for (const [key, item] of Object.entries(value)) {
-        expect(key).not.toMatch(/^(seed|apiKey|privateKey|signedBlob|txBlob|quarantineBody)$/i)
+        expect(key).not.toMatch(/^(seed|apiKey|privateKey|signedBlob|txBlob|quarantineBody|ciphertext|fulfillment)$/i)
         if (key === 'body' && typeof item === 'string') expect(run.contents.some(c => c.body === item)).toBe(true)
         walk(item)
       }

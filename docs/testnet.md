@@ -30,7 +30,18 @@ command does not attempt it. Credentials are optional and are not issued here.
 
 The static `/demo/` autoplays the committed Testnet UC3 with Pause/Resume and
 secondary simulated UC1–UC3 scenarios. It performs no engine, provider, wallet or
-payment calls. At most three bounded read-only tx lookups per hash (two concurrent,
-five seconds each) compare ledger identity, destination, invoice and amount using
+payment calls. Up to three allowlisted endpoint attempts per row (two workers,
+five seconds per lookup; a key-reveal finish also fetches its create transaction) compare ledger identity, destination, invoice and amount using
 the ledger page verifier. Unavailable history stays labelled historical; recorded
 validation never implies that a fresh lookup succeeded.
+
+`make testnet ARGS="--capture --key-reveal"` records the second demo tab using
+these same isolated faucet wallets and HTTP/SSE capture path. The labelled
+fixture AlphaLeak refuses signed delivery and is then quarantined by the fixture harness; the
+harness waits for policy's validated cancellation, injects a labelled quarantine
+(not automatic reputation scoring), resumes the existing policy
+loop, and records The Fab Floor's key publication and cited delivery. This is
+capture orchestration, not a claim that the public UI automatically replans a
+cancelled no-show today. Principal is fully returned; transaction fees remain
+paid. The post-grant proof export is public evidence; no unrevealed key or wallet
+seed is exported. Ciphertext before the grant stays quarantined.

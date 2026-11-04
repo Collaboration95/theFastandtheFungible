@@ -65,6 +65,7 @@ export class EscrowPurchases {
     if (proof && d) {
       const content = { source: intent.source, profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: d.title, publisher: d.publisher, body: d.body, spans: d.passages }
       this.store.addGrant({ source: intent.source, intentId: intent.intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, contentDigest: t.manifestRoot, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: d.salts })
+      if (!this.store.getRun(intent.runId).events.some(e => e.type === 'GRANT' && e.data?.intentId === intent.intentId)) this.store.appendEvent(intent.runId, { type:'GRANT', label:'Key-reveal manifest root verified', data:{intentId:intent.intentId, resourceId:intent.resourceId, version:intent.version} })
     }
     this.store.escrowTransition(intent.intentId, { proofOk: proof, revealLedger: found.ledgerIndex })
     this.store.completeEscrow(intent.intentId, 'finish', found.ledgerIndex, hash)
