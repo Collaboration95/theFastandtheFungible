@@ -7,7 +7,7 @@ import { resolve, dirname, join } from 'node:path'
 const pkg = JSON.parse(await readFile('package.json', 'utf8'))
 const stage = resolve('desktop/dist')
 const version = process.env.DESKTOP_VERSION || pkg.version
-if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Invalid desktop version')
+if (!/^\d+\.\d+\.\d+(?:-rc\.[1-9]\d*)?$/.test(version)) throw new Error('Invalid desktop version')
 execFileSync('npm', ['run', 'build'], { stdio: 'inherit' })
 await rm(stage, { force: true, recursive: true })
 await mkdir(stage, { recursive: true })
