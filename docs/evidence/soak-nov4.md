@@ -134,3 +134,18 @@ preserves every window, including slow p95 samples and its fault counts.
 **100 unit-test files / 744 tests**, plus the 20-iteration fixture chaos smoke.
 The focused transport/watchdog/continuation and existing audit regressions also
 passed. No live providers, Testnet, real money or protected ports were used.
+
+
+## Quiet-host same-engine status, 4 Nov 2026
+
+The separate same-engine memory/latency soak now has a valid **five-gate PASS**
+on `97770e1e`: 200 warmups / 2,000 measured asks, 10,000 retained runs ×60
+events, 20 clean restarts, no failed asks or audit violations. Worst interval
+engine p99 **25.821 ms**, idle-control max p99 **12.075 ms**, one-minute load
+**1.739–3.427**. RSS slope **2.173 MiB/100**, median growth **9.373 MiB**,
+max RSS **918.887 MiB**, p95 drift **1.515 ms**. All original limits remain.
+Controlled A/B/C and reverse repeats support contention rather than a W
+regression, with historical causal limits documented in
+[the compact evidence](soak-nov4-ab/README.md). This is local synthetic fixture /
+SIMULATED evidence, not live-provider, Testnet or human/finals acceptance.
+Historical failed runs above and in round2-u/round2-w remain unchanged.
