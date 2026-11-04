@@ -120,7 +120,7 @@ The command explicitly authorizes up to S$2 per question and S$5 per UTC day in 
 cp -R examples/writer-starter my-notes && npm run publish:site -- ./my-notes --rail simulated
 ```
 
-For an exported anchored answer: `researchagent verify receipts.json --ledger` → `audit anchor: PASS` (requires a validated Testnet anchor and network access). Checkout equivalent: `npm run verify:answer -- receipts.json --ledger`; the Python CLI prints `PASS audit anchor`.
+For an exported anchored answer, define the CLI shorthand and verify: `researchagent() { python -m researchagent "$@"; }; researchagent verify receipts.json --ledger` → audit anchor: **PASS** (CLI: `PASS audit anchor`, with ledger number). Requires a validated Testnet anchor and network access. Checkout equivalent: `npm run verify:answer -- receipts.json --ledger`.
 
 ## What's notable
 
@@ -137,7 +137,7 @@ Every row links to committed evidence. Labels are part of the claim: **synthetic
 | Bounded engine | 3,000-run history load 34,372.8 ms → 313.3 ms (110×). 100 concurrent asks: 4 admitted, 96 typed 503. Stop cancels a stalled provider call in 5.5 ms with no signature after it. | local, synthetic | [round2-a](docs/evidence/round2-a/README.md), [round2-c1](docs/evidence/round2-c1/README.md) |
 | Chaos and soak | Real SIGKILLs, zero double charges: a 30-minute soak ran 615 iterations and 155 kills; v0.7.0 recorded 1,729 episodes and 431 kills. The first long soak ended at a 606 s laptop sleep, which the write-up diagnoses. | fixture | [soak-nov4](docs/evidence/soak-nov4.md), [chaos-279](docs/evidence/chaos-279.md) |
 | A Mac app that recovers | 13 packaged recovery cases pass: missing, locked or corrupt credentials, port conflict, outage and restart. All 13 privileged IPC methods reject the research window. | local, unsigned, fixture | [round2-c2](docs/evidence/round2-c2/README.md) |
-| Testnet ledger page | 21/21 validated live on load (4 Nov check); WebSocket checks compare amounts, bindings and credential identity. Unavailable history stays labelled. | Testnet, no real value | [round2-p1](docs/evidence/round2-p1/README.md), [live page](https://collaboration95.github.io/theFastandtheFungible/ledger/) |
+| Testnet ledger page | 25/25 validated live on load (4 Nov check); WebSocket checks compare amounts, bindings and credential identity. Unavailable history stays labelled. | Testnet, no real value | [round2-p1](docs/evidence/round2-p1/README.md), [live page](https://collaboration95.github.io/theFastandtheFungible/ledger/) |
 | XRPL primitives used, and why | [Payment + InvoiceID](https://testnet.xrpl.org/transactions/1F2449A4660747066E99A89CEA5B49276D266F35820789042A8694EDB1DA23AF) binds payment to the quoted content. [EscrowCreate + PREIMAGE-SHA-256](https://testnet.xrpl.org/transactions/C82B337DC66343C64F653E86627E590434670E48AC4526369338ED1099A25926) locks XRP pending proof or explicit cancellation (buyer-controlled). [RLUSD trust line](https://testnet.xrpl.org/transactions/3232360079F218229444F11B9945D0E5F29284FDCD7808AE5FB8D3AE9290F6AA) supports issued currency with exact validated delivered_amount. [CredentialCreate/Accept (#357)](https://testnet.xrpl.org/transactions/225F19ED4BF1C206AE140D5286BE352F2F6E7A7A05A317D949DAEE876E98DAC6) identifies accepted writer credentials independently of content quality. [x402 v2](https://testnet.xrpl.org/transactions/FE6EF0F8785B4FC776551B378B62B8E9BA480D17FA375A3BB637FCE310AD1373) carries challenge, signed-payment and settlement headers. [Starter Kit t54](https://testnet.xrpl.org/transactions/570DE6EB58157FB8C5D1F8E23ECAF0A8340750ADFCB6A238CB8E70E2FD4B5588) interoperates with pinned x402-xrpl 0.3.4. | Testnet, no real value; synthetic articles | [XRPL contract](docs/x402-xrpl.md), [Credentials](docs/evidence/round2-n/README.md) |
 | Ranked builder feedback | Seven XRPL and x402 findings ranked by severity with workaround, suggested fix and mainnet consequence, plus the September submissions. | observed and code-derived, labelled | [BUILDER-FEEDBACK](docs/BUILDER-FEEDBACK.md) |
 
@@ -173,9 +173,9 @@ The browser is a view. The API owns retrieval, decisions, budget, payment and sy
 
 ## Engineering
 
-Counts are from the Lane V2 local run on 4 Nov 2026, based on `e4c25a06` plus these changes.
+Counts are from the Lane V2 local run on 4 Nov 2026, based on `0927dd9b` plus these changes.
 
-- **Tests.** 1,207 TypeScript tests in 140 files (Vitest, about 50 s) and 222 Python tests; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
+- **Tests.** 1,210 TypeScript tests in 141 files (Vitest, about 50 s) and 222 Python tests; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
 - **Coverage gates.** Nine components each have an exact covered/total floor that may not fall; payments branches must also stay at or above 85% (86.2% in hosted CI). [Method and numbers](docs/evidence/round2-b/README.md).
 - **CI.** `changes` decides whether the full set runs. Then `verify`, `chaos`, `browser`, `python` and `artifacts` run in parallel, and an always-reporting `check` job refuses a failed, cancelled, missing or unexpectedly skipped one ([`ci.yml`](.github/workflows/ci.yml)). Hosted wall time on the integration PR: 249 s.
 - **Release admission.** A tag publishes only if its commit is on `main`, it equals the package version, same-SHA CI passed, and every artifact hash matches the manifest. Each of the SDK tarball, wheel and MCPB must also pass a clean-install consumer: cited passages, one receipt, one intent, an idempotent retry and the cap preserved. The publisher uploads those accepted bytes without rebuilding ([`release-contract.mjs`](scripts/release-contract.mjs), [evidence](docs/evidence/round2-d/README.md)).

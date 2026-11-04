@@ -7,10 +7,10 @@ for await (const event of task.events) { void event }
 const run = await task
 if (process.argv.includes('--json')) console.log(JSON.stringify(run))
 else {
-  console.log('Answer:', JSON.stringify(run.answer))
-  console.log('Citation:', JSON.stringify(run.citations[0] ?? 'none'))
+  console.log('Answer:', (run.answer?.conclusion ?? 'No answer').replaceAll('\n', ' '))
+  console.log('Citation:', run.citations[0]?.url ?? 'none')
   console.log('Tx hash:', run.receipts[0]?.xrpl?.txHash ?? 'none (simulated or free)')
   console.log(`Spend: S$${(run.spentMinor / 100).toFixed(2)} gross`)
   console.log('Mode:', run.labels.settlement)
-  console.log('Verify: researchagent verify receipts.json --ledger (export receipts.json from the run)')
+  console.log('Verify: python -m researchagent verify receipts.json --ledger (export receipts.json from the run)')
 }

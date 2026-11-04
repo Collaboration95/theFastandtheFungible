@@ -22,7 +22,7 @@ Merged on `main` after [v0.8.0](https://github.com/Collaboration95/theFastandthe
   key/Condition binding, ciphertext commitments and authenticated decryption
   read-only in the browser. Synthetic articles and fixture no-show are labelled.
 - Policy-owned answer audit anchors, verified with `--ledger` (#366).
-- Live ledger verification (#359), forwarded fixture Codespaces and first-run relevance (#361), cold Testnet launcher and recorded UC3 (#364), standalone MCP tarball (#365), and round-2 reachability evidence (#360, #362).
+- Live ledger verification, forwarded fixture Codespaces and first-run relevance, cold Testnet launcher and recorded UC3, standalone MCP tarball, and rehearsal evidence (#359–#362, #364–#365).
 
 - Same-engine fixture workload harness and retained shared-host baseline misses.
   [#353](https://github.com/Collaboration95/theFastandtheFungible/pull/353)
