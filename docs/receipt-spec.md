@@ -183,11 +183,23 @@ Absent evidence for an accessible key-reveal source fails verification. Legacy
 bundles and the original 177 vectors retain their semantics. Offline checks do
 not prove ledger finality. See [protocol and gate interpretation](key-reveal-escrow.md).
 
+**Proof outcome is separate from ledger correctness.** An `EscrowFinish` is
+ledger-correct when it is validated `tesSUCCESS` for the right escrow, whatever the
+article's quality. When the audit records `proofOk: false`, a `key-reveal-proof` row
+passes (`refunded`) only if a bound refund entry exists (offline) and, with
+`--ledger`, a validated writer-signed Payment returns the full principal with
+InvoiceID = the finish hash. A missing, unvalidated, short or misdirected refund
+fails. Optional `fraudProofs[]` repeat what the export already holds (signed
+manifest, quote, published key, finish hash, ledger index, ciphertext hash, failed
+claim IDs) so a third party can show the broken promise. Eight `key-reveal-refund/*`
+vectors, including the missing-refund tamper, were added to the manifest (192 → 200
+cases); the TypeScript and Python verifiers agree on every case.
+
 ## XRPL anchor-v1
 
-With `ANCHOR_RAIL=xrpl-testnet` and the Testnet settlement rail, deterministic
-policy anchors terminal answers. Default is off. SIMULATED exports remain
-unanchored. No model may initiate this transaction. A no-op AccountSet avoids
+On the Testnet settlement rail, deterministic policy anchors terminal answers.
+Default is on; `ANCHOR_RAIL=off` opts out. SIMULATED exports remain
+unanchored (`--ledger` prints SKIP for them, and fails only for an export that claims an anchor or is a Testnet run without one). No model may initiate this transaction. A no-op AccountSet avoids
 XRPL's self-Payment restriction; no settings are supplied. Its single Memo has
 hex UTF-8 MemoType `researchagent/anchor-v1` and MemoData
 `<lowercase audit head>:<lowercase SHA-256(run ID)>`.

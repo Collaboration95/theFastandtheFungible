@@ -30,6 +30,15 @@ def test_conformance(case, monkeypatch):
     monkeypatch.setattr(socket, "create_connection", forbidden)
     monkeypatch.setattr(socket, "getaddrinfo", forbidden)
     monkeypatch.setattr(subprocess, "Popen", forbidden)
+    if "ledgerTransactions" in case:
+        responses = json.loads((ROOT / case["ledgerTransactions"]).read_text())
+        for m in case["ledgerMutations"]:
+            target = responses
+            for p in m["path"][:-1]:
+                target = target[p]
+            target[m["path"][-1]] = m["value"]
+        assert verify(b, ledger=True, testnet=True, ledger_lookup=lambda h: responses[h])["ok"] is case["expected"]
+        return
     assert verify(b, ledger="ledgerResponse" in case, ledger_lookup=lambda _: case["ledgerResponse"])["ok"] is case["expected"]
 
 
@@ -132,3 +141,30 @@ def test_cli(arguments, code):
     assert result.returncode == code
     if code != 2:
         assert json.loads(result.stdout)["ok"] is (code == 0)
+
+
+def test_ledger_skips_simulated_export_but_testnet_does_not():
+    b = json.loads((ROOT / "docs/evidence/round2-g/redundant.receipts.json").read_text())
+
+    def unreachable(_):
+        raise AssertionError("A simulated export must not touch the ledger")
+
+    result = verify(b, ledger=True, ledger_lookup=unreachable)
+    assert result["ok"]
+    assert {c["check"]: c["status"] for c in result["checks"]}["audit anchor"] == "SKIP"
+    assert not verify(b, testnet=True, ledger_lookup=unreachable)["ok"]
+
+
+def test_cli_ledger_prints_testnet_line_and_skips_simulated():
+    import os
+    import sys
+
+    result = subprocess.run(
+        [sys.executable, "-m", "researchagent", "verify", "docs/evidence/round2-g/redundant.receipts.json", "--ledger"],
+        cwd=ROOT,
+        env={**os.environ, "PYTHONPATH": str(ROOT / "packages/sdk-python/src")},
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+    assert "SKIP audit anchor: simulated run (no ledger)" in result.stdout

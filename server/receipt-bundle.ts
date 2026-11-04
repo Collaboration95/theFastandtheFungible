@@ -10,6 +10,10 @@ export function receiptBundle(store: Store, runId: string): ReceiptBundle {
   const entries = store.auditEntries().filter(e => !pinned || e.seq <= pinned.seq), first = entries.findIndex(e => e.runId === runId)
   const anchor = first > 0 ? { seq: entries[first - 1].seq, hash: entries[first - 1].hash } : { seq: 0, hash: GENESIS_HASH }
   return ReceiptBundleSchema.parse({
+    fraudProofs: run.intents.filter(i => i.escrow?.mode === 'key-reveal' && i.escrow.state === 'RELEASED' && i.failedClaimIds?.length).map(i => {
+      const e = store.keyRevealEvidence(i.intentId)
+      return { intentId: i.intentId, manifest: e.manifest, quote: e.quote, key: e.key, finishHash: e.finishHash, ledgerIndex: e.ledgerIndex, ciphertextHash: e.quote.terms.keyReveal!.ciphertextHash, failedClaimIds: i.failedClaimIds! }
+    }),
     ledgerAnchor: run.ledgerAnchor,
     schemaVersion: run.receipts.length ? 3 : run.candidates.some(c => c.source) ? 2 : 1, identityVersion: run.receipts.length ? (run.candidates.some(c => c.source) ? 2 : 1) : undefined, contributions: run.receipts.length ? contributions({ ...run, sources: run.contents }) : undefined, runId, label: `${run.labels.settlement}; ${run.labels.research}; writer identity unverified`,
     requirements: run.checkpoint.requirements ?? [], answers: run.answers, sources: run.contents, candidates: run.candidates.map(candidate => ({ ...candidate, verification: undefined })), intents: run.intents,

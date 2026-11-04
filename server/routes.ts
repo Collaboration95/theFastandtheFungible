@@ -87,7 +87,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const client = new PublisherClient({ baseUrls: options.publisherUrls ?? (!options.publisherUrl && config.PUBLISHER_URLS ? config.PUBLISHER_URLS.split(',').map(s => s.trim()) : undefined), baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
   // Requested Testnet never silently falls back to simulated settlement.
   const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
-  if (config.ANCHOR_RAIL === 'xrpl-testnet' && payer instanceof XrplPayer) anchors = new AnswerAnchors(store, payer)
+  if (config.ANCHOR_RAIL !== 'off' && payer instanceof XrplPayer) anchors = new AnswerAnchors(store, payer)
   const purchases = new PurchaseManager(store, client, payer)
   let provider = options.provider
   // DECISION_PROVIDER=openai: OpenAI Decisions (gpt-6-luna, #214); =cloudflare: Clef (the one-line revert); otherwise the labelled fixture.

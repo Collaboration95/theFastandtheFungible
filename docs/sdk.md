@@ -167,11 +167,26 @@ and [offline fixture evidence](evidence/round2-g/README.md). Python callers can 
 
 ## Verify against the ledger
 
-`npm run verify:answer -- receipts.json --ledger` verifies an optional anchor-v1
-against XRPL Testnet, read-only and without keys. The `audit anchor` check is
-PASS for a validated matching memo, FAIL for missing/mismatched/unavailable
-ledger evidence. Without `--ledger` it remains SKIP (requires online check).
-The SDK equivalent is `verifyAnswer(bundle, { onlineLedger: true })`.
-This is separate from `--testnet`, which checks article payments/refunds.
-The operator enables anchoring with `ANCHOR_RAIL=xrpl-testnet`; anchor fees are
-shown separately and do not change the article budget. See receipt-spec.md.
+`researchagent verify receipts.json --ledger` (Python wheel, no Node) and
+`npm run verify:answer -- receipts.json --ledger` check everything the export
+claims on XRPL Testnet, read-only and without keys: the answer anchor, every
+payment, refund and escrow event. The Python CLI reads JSON-RPC from
+`s.altnet.rippletest.net:51234` with Clio as fallback and prints
+`PASS testnet N/N (read-only, s.altnet)`. `--ledger` implies the payment checks;
+the older `--testnet` flag remains for payments without the anchor.
+
+A *simulated* export has no ledger, so `--ledger` prints
+`SKIP audit anchor: simulated run (no ledger)` and stays `RESULT PASS`. It fails
+only when the export claims an anchor or is a Testnet run without one. An explicit
+`--testnet` on a simulated export still fails (`testnet coverage`).
+
+The ledger check and the proof outcome are separate. An `EscrowFinish` is
+ledger-correct when it is validated `tesSUCCESS` for the right escrow. Key reveal
+guarantees delivery, not quality, so a published key for an article that broke
+its promises is recorded as `key-reveal-proof` = `refunded`. That passes only when
+a validated, writer-signed refund exists for the full principal; a missing,
+unvalidated, short or misdirected refund fails. The SDK equivalent is
+`verifyAnswer(bundle, { onlineLedger: true })`.
+
+Anchoring is on by default for `make testnet`; opt out with `ANCHOR_RAIL=off`. Anchor
+fees are shown separately and do not change the article budget. See receipt-spec.md.

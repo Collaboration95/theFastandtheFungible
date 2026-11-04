@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { RunSnapshot } from '../../shared/contracts/index.js'
 import { getValidatedAnswer } from './Answer'
+import { saveReceipts } from '../download'
 export interface ReportButtonProps { run: RunSnapshot; onReport: () => void | Promise<void>; busy?: boolean; onCompare?: () => void }
 /** Download report. While the PDF is written the button becomes a progress pill; the page stays usable. */
 export default function ReportButton({ run, onReport, busy = false, onCompare }: ReportButtonProps) {
@@ -16,6 +17,8 @@ export default function ReportButton({ run, onReport, busy = false, onCompare }:
       setPending(true); setError('')
       try { await onReport() } catch { setError('Couldn’t download the report. Try again.') } finally { setPending(false) }
     }}>Download report (PDF)</button>}
+    <button type="button" className="ra-btn" onClick={() => { setError(''); saveReceipts(run.runId).catch(() => setError('Couldn’t download receipts.json. Try again.')) }}>Download receipts.json</button>
+    <small>Verify it: <code>researchagent verify receipts.json --ledger</code></small>
     {run.answers.length > 1 && <button type="button" className="ra-btn" onClick={onCompare}>See what changed after the purchase</button>}
     <button type="button" className="ra-btn" onClick={() => { void navigator.clipboard.writeText(`${window.location.href} (${run.labels.settlement.includes('TESTNET') ? 'Testnet' : 'demo'})`).catch(() => setError('Couldn’t copy the link. Try again.')) }}>Copy link</button>
     {(error || run.reportStatus === 'FAILED') && <span className="ra-err" role="alert">{error || 'Couldn’t create the report. Try again.'}</span>}

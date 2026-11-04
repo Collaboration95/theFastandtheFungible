@@ -38,8 +38,14 @@ five seconds per lookup; a key-reveal finish also fetches its create transaction
 the ledger page verifier. Unavailable history stays labelled historical; recorded
 validation never implies that a fresh lookup succeeded.
 
-`make testnet ARGS="--capture --key-reveal"` records the second demo tab using
-these same isolated faucet wallets and HTTP/SSE capture path. The labelled
+`make testnet ARGS="--capture --key-reveal"` records the default demo tab, the
+key-reveal UC3 (AlphaLeak key published, broken promise, writer-signed refund,
+The Fab Floor key reveal, answer anchor), writing `demo/traces/UC3-key-reveal.json` and
+`docs/evidence/lane-b3/` including the exported `UC3.receipts.json`; `--kestrel` records
+the Kestrel question as evidence only. Anchoring is on by default on Testnet
+(`ANCHOR_RAIL=off` opts out). `make testnet ARGS="--capture --key-reveal --no-show"`
+records the writer no-show tab using
+these same isolated faucet wallets and HTTP/SSE capture path. In that one the labelled
 fixture AlphaLeak refuses signed delivery and is then quarantined by the fixture harness; the
 harness waits for policy's validated cancellation, injects a labelled quarantine
 (not automatic reputation scoring), resumes the existing policy

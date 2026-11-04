@@ -61,11 +61,17 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   }
   if (options.onlineLedger) {
     try {
+      if (!b.ledgerAnchor && b.label.includes('SIMULATED')) checks.push({ check: 'audit anchor', status: 'SKIP', detail: 'simulated run (no ledger)' })
+      else {
       if (!b.ledgerAnchor) throw Error('No ledger anchor in export')
       const reason = checkAnchor(b.ledgerAnchor, b.runId, prev, await (options.anchorLookup ?? anchorLookup)(b.ledgerAnchor.txHash))
       add('audit anchor', chainOk && !reason, reason ?? (chainOk ? `Validated XRPL Testnet ledger ${b.ledgerAnchor.ledgerIndex}` : 'Audit head mismatch'))
+      }
     } catch (e) { add('audit anchor', false, e instanceof Error ? e.message : 'Ledger unavailable') }
   } else checks.push({ check: 'audit anchor', status: 'SKIP', detail: b.label.includes('SIMULATED') ? 'not anchored (simulated); requires online check' : 'requires online check (--ledger); other runs are opaque commitments' })
+  for (const e of entries.filter(e => e.kind === 'ESCROW_FINISH' && e.data.proofOk === false)) {
+    add(`key-reveal-proof ${e.intentId}`, entries.some(r => r.kind === 'refund' && r.intentId === e.intentId && r.data.originalTxHash === e.data.txHash && b.payments.some(p => p.intentId === e.intentId && p.refundTxHash === r.data.txHash)), 'Failed proof requires a bound refund; validation requires --ledger')
+  }
   const sourceOk = new Map<string, boolean>()
   for (const s of b.sources) {
     const proofs = b.proofs.filter(p => key(p) === key(s)), p = proofs[0]
@@ -129,14 +135,14 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     add(`refund ${intent.intentId}`, Boolean(row && row.refundTxHash === (intent.refund?.txHash ?? '') && row.refundAmountMinor === (intent.refund?.amountMinor ?? '') && (!intent.refund || refund?.data.txHash === intent.refund.txHash && refund.data.amountMinor === intent.refund.amountMinor && refund.data.originalTxHash === row.txHash)), intent.refund ? 'Recorded refund matches audit; ledger confirmation requires --testnet' : 'No refund recorded')
   }
   add('receipt coverage', b.receipts.length === b.payments.filter(p => p.kind === 'purchase').length && b.receipts.every(r => b.intents.some(i => i.intentId === r.intentId)) && entries.filter(e => e.kind === 'settle' || e.kind === 'refund').every(e => b.payments.some(p => p.intentId === e.intentId && (e.kind === 'refund' ? p.refundTxHash === e.data.txHash : p.txHash === e.data.txHash))), 'Every charge/refund has its payment row; no omitted audit settlements')
-  if (options.testnet) {
+  if (options.testnet || options.onlineLedger && (!b.label.includes('SIMULATED') || b.ledgerAnchor)) {
     const owned = options.ledger ? undefined : testnetLedger(testnetUrl())
     try {
       const found = [...await verifyOnTestnet(b.payments, options.ledger ?? owned!), ...await verifyEscrowEvents(entries, options.ledger ?? owned!)]
-      for (const c of found) checks.push({ check: `testnet ${c.kind} ${c.intentId}`, status: c.status === 'ok' ? 'PASS' : c.status === 'skipped' ? 'SKIP' : 'FAIL', detail: c.detail })
+      for (const c of found) checks.push({ check: `testnet ${c.kind} ${c.intentId}`, status: c.status === 'ok' || c.status === 'refunded' ? 'PASS' : c.status === 'skipped' ? 'SKIP' : 'FAIL', detail: c.detail })
       add('testnet coverage', b.payments.every(p => p.label === XRPL_LABEL), 'All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof')
     } catch { add('testnet', false, 'Read-only Testnet lookup unavailable') } finally { await owned?.close() }
-  } else checks.push({ check: 'testnet', status: 'SKIP', detail: 'Payments/refunds NOT checked on ledger; add --testnet (read-only, no keys)' })
+  } else checks.push({ check: 'testnet', status: 'SKIP', detail: options.onlineLedger ? 'simulated run (no ledger)' : 'Payments/refunds NOT checked on ledger; add --ledger (read-only, no keys)' })
   return { ok: checks.every(c => c.status !== 'FAIL'), runId: b.runId, checks }
 }
 
@@ -145,7 +151,7 @@ export function verificationText(result: VerificationResult): string {
   const lines = [`VERIFY ${result.runId ?? 'report'}`]
   for (const prefix of groups) {
     const checks = result.checks.filter(c => c.check.startsWith(prefix))
-    if (checks.length) lines.push(`${checks.some(c => c.status === 'FAIL') ? 'FAIL' : checks.every(c => c.status === 'SKIP') ? 'SKIP' : 'PASS'} ${prefix.trim().toUpperCase().padEnd(10)} ${checks.filter(c => c.status === 'PASS').length}/${checks.length}`)
+    if (checks.length) lines.push(`${checks.some(c => c.status === 'FAIL') ? 'FAIL' : checks.every(c => c.status === 'SKIP') ? 'SKIP' : 'PASS'} ${prefix === 'testnet ' ? `testnet ${checks.filter(c => c.status === 'PASS').length}/${checks.length} (read-only, s.altnet)` : `${prefix.trim().toUpperCase().padEnd(10)} ${checks.filter(c => c.status === 'PASS').length}/${checks.length}`}`)
   }
   for (const c of result.checks.filter(c => c.status !== 'PASS' || c.check === 'audit anchor')) lines.push(`${c.status.padEnd(4)} ${c.check}: ${c.detail}`)
   lines.push(`RESULT ${result.ok ? 'PASS' : 'FAIL'}`)

@@ -408,7 +408,7 @@ def contributions(b):
     )
 
 
-def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None):
+def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testnet=False):
     """Verify a dict or JSON path; valid means internal consistency, not ledger truth."""
     checks = [dict(check="writer credentials", status="SKIP", detail="Unsigned advisory identity; requires online check")]
 
@@ -571,12 +571,16 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None):
             commitment = next((e for e in entries if e['kind'] == 'answer-anchor' and e['runId'] == b['runId'] and e['hash'] == b['audit']['head']), {})
             add('anchor binding', all(p['payer'] == anchor['account'] for p in b['payments'] if p['kind'] == 'purchase') and anchor['head'] == prev and anchor['runIdHash'] == sha(b['runId']) and commitment.get('data', {}).get('answersHash') == sha(canonical(b['answers'])), 'Anchor head, run and answer commitment agree')
         if ledger:
-            from ._anchor import lookup, check
+            from ._anchor import check
+            from ._ledger import lookup
             try:
-                if not anchor:
+                if not anchor and 'SIMULATED' in b['label']:
+                    skip('audit anchor', 'simulated run (no ledger)')
+                elif not anchor:
                     raise ValueError('No ledger anchor in export')
-                reason = check(anchor, b['runId'], prev, (ledger_lookup or lookup)(anchor['txHash']))
-                add('audit anchor', chain and reason is None, reason or ('Validated XRPL Testnet ledger ' + str(anchor['ledgerIndex']) if chain else 'Audit head mismatch'))
+                if anchor:
+                    reason = check(anchor, b['runId'], prev, (ledger_lookup or lookup)(anchor['txHash']))
+                    add('audit anchor', chain and reason is None, reason or ('Validated XRPL Testnet ledger ' + str(anchor['ledgerIndex']) if chain else 'Audit head mismatch'))
             except (OSError, ValueError, KeyError, TypeError) as error:
                 add('audit anchor', False, str(error))
         else:
@@ -853,7 +857,15 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None):
                 if e["kind"] in ("settle", "refund")
             ),
         )
-        skip("testnet", "Payments/refunds NOT checked on ledger; offline only")
+        for e in entries:
+            if e['kind'] == 'ESCROW_FINISH' and e['data'].get('proofOk') is False:
+                add('key-reveal-proof ' + e['intentId'], any(r['kind'] == 'refund' and r['intentId'] == e['intentId'] and r['data'].get('originalTxHash') == e['data']['txHash'] and any(p['intentId'] == e['intentId'] and p.get('refundTxHash') == r['data'].get('txHash') for p in b['payments']) for r in entries))
+        if testnet or ledger and ('SIMULATED' not in b['label'] or b.get('ledgerAnchor')):
+            from ._ledger import lookup, verify_transactions
+            verify_transactions(b, entries, ledger_lookup or lookup, add)
+            add('testnet coverage', all(p['label'] == 'XRPL TESTNET · no real value' for p in b['payments']), 'All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof')
+        else:
+            skip("testnet", "simulated run (no ledger)" if ledger else "Payments/refunds NOT checked on ledger; add --ledger (read-only, no keys)")
         return dict(
             ok=all(c["status"] != "FAIL" for c in checks),
             runId=b["runId"],

@@ -2,6 +2,309 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "fraudProofs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "intentId": {
+            "type": "string"
+          },
+          "manifest": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 2
+              },
+              "publisherSlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "articleId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "wallet": {
+                "type": "string",
+                "pattern": "^r[1-9A-HJ-NP-Za-km-z]{24,34}$"
+              },
+              "pubKey": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{66}$"
+              },
+              "priceMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "leaves": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "root": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "claims": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "dated-figure",
+                        "named-source",
+                        "numeric-series"
+                      ]
+                    },
+                    "leaf": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "covers": {
+                      "type": "object",
+                      "properties": {
+                        "entity": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "measure": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "period": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        },
+                        "comparison": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 48,
+                          "pattern": "^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$"
+                        }
+                      },
+                      "required": [
+                        "entity",
+                        "measure"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "leaf"
+                  ]
+                }
+              },
+              "wordCount": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "publishedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "relevance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "sig": {
+                "type": "string",
+                "pattern": "^[0-9A-F]+$"
+              }
+            },
+            "required": [
+              "publisherSlug",
+              "articleId",
+              "version",
+              "wallet",
+              "pubKey",
+              "priceMinor",
+              "leaves",
+              "root",
+              "claims",
+              "wordCount",
+              "publishedAt",
+              "relevance",
+              "sig"
+            ]
+          },
+          "quote": {
+            "type": "object",
+            "properties": {
+              "ciphertext": {
+                "type": "string",
+                "pattern": "^[A-F0-9]+$"
+              },
+              "terms": {
+                "type": "object",
+                "properties": {
+                  "keyReveal": {
+                    "type": "object",
+                    "properties": {
+                      "ciphertextHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "plaintextHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "iv": {
+                        "type": "string",
+                        "pattern": "^[A-F0-9]{24}$"
+                      },
+                      "tag": {
+                        "type": "string",
+                        "pattern": "^[A-F0-9]{32}$"
+                      }
+                    },
+                    "required": [
+                      "ciphertextHash",
+                      "plaintextHash",
+                      "iv",
+                      "tag"
+                    ]
+                  },
+                  "scheme": {
+                    "type": "string",
+                    "const": "escrow-v1"
+                  },
+                  "network": {
+                    "type": "string",
+                    "const": "xrpl:1"
+                  },
+                  "asset": {
+                    "type": "string",
+                    "const": "XRP"
+                  },
+                  "quoteId": {
+                    "type": "string"
+                  },
+                  "intentId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "publisherSlug": {
+                    "type": "string"
+                  },
+                  "articleId": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "manifestRoot": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^[1-9]\\d*$"
+                  },
+                  "payer": {
+                    "type": "string"
+                  },
+                  "payTo": {
+                    "type": "string"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "pattern": "^A0258020[0-9A-F]{64}810120$"
+                  },
+                  "cancelAfter": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "scheme",
+                  "network",
+                  "asset",
+                  "quoteId",
+                  "intentId",
+                  "publisherSlug",
+                  "articleId",
+                  "version",
+                  "manifestRoot",
+                  "amount",
+                  "payer",
+                  "payTo",
+                  "condition",
+                  "cancelAfter"
+                ]
+              },
+              "pubKey": {
+                "type": "string"
+              },
+              "sig": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "terms",
+              "pubKey",
+              "sig"
+            ]
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[A-F0-9]{64}$"
+          },
+          "finishHash": {
+            "type": "string"
+          },
+          "ledgerIndex": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "ciphertextHash": {
+            "type": "string"
+          },
+          "failedClaimIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "intentId",
+          "manifest",
+          "quote",
+          "key",
+          "finishHash",
+          "ledgerIndex",
+          "ciphertextHash",
+          "failedClaimIds"
+        ]
+      }
+    },
     "ledgerAnchor": {
       "type": "object",
       "properties": {

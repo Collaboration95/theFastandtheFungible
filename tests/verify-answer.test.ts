@@ -62,6 +62,7 @@ it('pins an external audit head, treats simulated transactions as unverified on 
   const request = vi.fn().mockRejectedValue(new Error('offline'))
   const result = await verifyAnswer(b, { testnet: true, ledger: { request } })
   expect(result.ok).toBe(false)
+  expect((await verifyAnswer(b, { onlineLedger: true, anchorLookup: request, ledger: { request } })).checks.find(c => c.check === 'audit anchor')?.status).toBe('SKIP')
   expect(request).not.toHaveBeenCalled()
   expect((await verifyAnswer({ sources: [] })).ok).toBe(false)
 })

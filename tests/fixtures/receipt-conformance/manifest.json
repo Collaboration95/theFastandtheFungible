@@ -11874,6 +11874,99 @@
           }
         ]
       }
+    },
+    {
+      "name": "key-reveal-refund/offline",
+      "fixture": "docs/evidence/lane-b3/UC3.receipts.json",
+      "mutations": [],
+      "expected": true
+    },
+    {
+      "name": "key-reveal-refund/ledger",
+      "fixture": "docs/evidence/lane-b3/UC3.receipts.json",
+      "mutations": [],
+      "expected": true,
+      "ledgerTransactions": "tests/fixtures/receipt-conformance/uc3-key-reveal-ledger.json",
+      "ledgerMutations": []
+    },
+    {
+      "name": "key-reveal-refund/ledger-refund-wrong-destination",
+      "fixture": "docs/evidence/lane-b3/UC3.receipts.json",
+      "mutations": [],
+      "expected": false,
+      "ledgerTransactions": "tests/fixtures/receipt-conformance/uc3-key-reveal-ledger.json",
+      "ledgerMutations": [
+        {
+          "path": [
+            "BB71016D63ACF759E8C5B4B99E118C17DDD1E7C01F3770327C5C316864B2DA82",
+            "Destination"
+          ],
+          "value": "rJTMu65usAJn9NKKtxKpsXTD3P3DQHmQcj"
+        }
+      ]
+    },
+    {
+      "name": "key-reveal-refund/ledger-refund-signed-by-buyer",
+      "fixture": "docs/evidence/lane-b3/UC3.receipts.json",
+      "mutations": [],
+      "expected": false,
+      "ledgerTransactions": "tests/fixtures/receipt-conformance/uc3-key-reveal-ledger.json",
+      "ledgerMutations": [
+        {
+          "path": [
+            "BB71016D63ACF759E8C5B4B99E118C17DDD1E7C01F3770327C5C316864B2DA82",
+            "Account"
+          ],
+          "value": "rP2v3V86gwcoaqz2MMnUprHXQznPPQZZDA"
+        }
+      ]
+    },
+    {
+      "name": "key-reveal-refund/ledger-refund-short",
+      "fixture": "docs/evidence/lane-b3/UC3.receipts.json",
+      "mutations": [],
+      "expected": false,
+      "ledgerTransactions": "tests/fixtures/receipt-conformance/uc3-key-reveal-ledger.json",
+      "ledgerMutations": [
+        {
+          "path": [
+            "BB71016D63ACF759E8C5B4B99E118C17DDD1E7C01F3770327C5C316864B2DA82",
+            "meta",
+            "delivered_amount"
+          ],
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "name": "key-reveal-refund/ledger-refund-unvalidated",
+      "fixture": "docs/evidence/lane-b3/UC3.receipts.json",
+      "mutations": [],
+      "expected": false,
+      "ledgerTransactions": "tests/fixtures/receipt-conformance/uc3-key-reveal-ledger.json",
+      "ledgerMutations": [
+        {
+          "path": [
+            "BB71016D63ACF759E8C5B4B99E118C17DDD1E7C01F3770327C5C316864B2DA82",
+            "validated"
+          ],
+          "value": false
+        }
+      ]
+    },
+    {
+      "name": "key-reveal-refund/missing-refund",
+      "fixture": "tests/fixtures/receipt-conformance/uc3-key-reveal-no-refund.json",
+      "mutations": [],
+      "expected": false
+    },
+    {
+      "name": "key-reveal-refund/missing-refund-ledger",
+      "fixture": "tests/fixtures/receipt-conformance/uc3-key-reveal-no-refund.json",
+      "mutations": [],
+      "expected": false,
+      "ledgerTransactions": "tests/fixtures/receipt-conformance/uc3-key-reveal-ledger.json",
+      "ledgerMutations": []
     }
   ]
 }
