@@ -32,7 +32,7 @@ jobs:
       - name: Preserve Latest when backfilling an older version
         run: |
           git fetch --tags origin
-          newest=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
+          newest=$(git tag -l 'v*' --sort=-v:refname | awk '!/-/ { print; exit }')
           if [[ "$TAG" != *-* && "$TAG" = "$newest" ]]; then
             echo 'RELEASE_LATEST=true' >> "$GITHUB_ENV"
           else
