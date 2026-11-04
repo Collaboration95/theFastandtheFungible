@@ -13,4 +13,5 @@ execFileSync(process.execPath, ['--import', 'tsx', 'scripts/release-consumers.ts
 if (process.argv.includes('--testnet')) {
   if (process.env.RA_ACCEPT_TESTNET !== '1') throw Error('--testnet requires RA_ACCEPT_TESTNET=1 (public network)')
   execFileSync(process.execPath, ['--import', 'tsx', 'scripts/testnet-mcp-consumer.ts', manifest], { env: { ...env, RA_ACCEPT_TESTNET: '1' }, stdio: 'inherit', timeout: 360000 })
+  execFileSync(process.execPath, ['--import', 'tsx', 'scripts/testnet-app-consumer.ts', manifest], { env: { ...env, RA_ACCEPT_TESTNET: '1' }, stdio: 'inherit', timeout: 600000 })
 }

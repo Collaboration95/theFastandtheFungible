@@ -19,12 +19,15 @@ const mcpRoot = resolve('dist/mcpb')
 const mcpPkg = JSON.parse(readFileSync(join(mcpRoot, 'package.json')))
 writeFileSync(join(mcpRoot, 'bin.mjs'), '#!/usr/bin/env node\nawait import("./mcp/extension.mjs")\n')
 writeFileSync(join(mcpRoot, 'package.json'), JSON.stringify({ name: 'researchagent-mcp', version: mcpPkg.version, type: 'module', engines: {node: '>=22.13'}, bin: { 'researchagent-mcp': './bin.mjs' }, bundledDependencies: Object.keys(mcpPkg.dependencies).concat(['@playwright/test', 'playwright', 'playwright-core']), dependencies: {...mcpPkg.dependencies, '@playwright/test': '*', playwright: '*', 'playwright-core': '*'} }))
+// `app` subcommand: ship the built web UI (about 0.8 MB) so `npx <tgz> app` needs no clone. A separate outDir keeps dist/release intact.
+run('node_modules/.bin/vite', ['build', '--outDir', 'dist/mcp-ui', '--emptyOutDir'])
+cpSync('dist/mcp-ui', join(mcpRoot, 'ui'), { recursive: true })
 const mcpPacked = JSON.parse(execFileSync('npm', ['pack', mcpRoot, '--json', '--pack-destination', out], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }))[0]
 for (const name of ['ResearchAgent.mcpb', 'server.json']) cpSync('dist/' + name, join(out, name))
 const pkg = JSON.parse(readFileSync('package.json')); const sdk = JSON.parse(readFileSync('packages/sdk/package.json'))
 const pyVersion = readFileSync('packages/sdk-python/pyproject.toml', 'utf8').match(/^version = "([^"]+)"/m)[1]
 if (pyVersion !== pythonVersion(pkg.version) || sdk.version !== pkg.version) throw Error('Release package versions must agree')
-const artifacts = [['mcp-tgz', mcpPacked.filename, pkg.version], ['tgz', packed.filename, sdk.version], ['wheel', `researchagent-${pyVersion}-py3-none-any.whl`, pyVersion], ['sdist', `researchagent-${pyVersion}.tar.gz`, pyVersion], ['mcpb', 'ResearchAgent.mcpb', pkg.version], ['metadata', 'server.json', pkg.version]].map(([kind, file, version]) => ({ kind, file, version, bytes: statSync(join(out, file)).size, sha256: sha256(join(out, file)), acceptance: kind === 'sdist' || kind === 'metadata' ? 'hash only' : 'requires matching clean consumer receipt' }))
+const artifacts = [['mcp-tgz', mcpPacked.filename, pkg.version], ['tgz', packed.filename, sdk.version], ['wheel', `researchagent-${pyVersion}-py3-none-any.whl`, pyVersion], ['sdist', `researchagent-${pyVersion}.tar.gz`, pyVersion], ['mcpb', 'ResearchAgent.mcpb', pkg.version], ['metadata', 'server.json', pkg.version]].map(([kind, file, version]) => ({ kind, file, version, bytes: statSync(join(out, file)).size, sha256: sha256(join(out, file)), ...(kind === 'mcp-tgz' ? { includes: ['mcp stdio', 'app subcommand', 'web ui'] } : {}), acceptance: kind === 'sdist' || kind === 'metadata' ? 'hash only' : 'requires matching clean consumer receipt' }))
 writeFileSync(join(out, 'manifest.json'), JSON.stringify({ schema: 1, sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), runtime: { node: process.version, python: execFileSync(python, ['--version'], { encoding: 'utf8' }).trim() }, mode: 'fixture providers; simulated settlement', artifacts }, null, 2) + '\n')
 
 } finally {

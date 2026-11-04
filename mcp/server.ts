@@ -11,6 +11,8 @@ import { createMcpServer } from './tools.js'
 // A client can launch this entry from any directory; corpus paths stay repository-relative.
 const root = fileURLToPath(new URL('..', import.meta.url))
 process.chdir(root)
+// `app` subcommand: zero-clone web app on the same engine (mcp/app.ts). Hermetic: never reads .env.
+if (process.argv[2] === 'app') { await (await import('./app.js')).runApp(process.argv.slice(3)); process.exit() }
 // Testnet mode never reads a local .env; the fixture engine gets only provisioned wallet material.
 const testnet = process.argv.includes('--testnet')
 if (!testnet) dotenv.config({ path: resolve(root, '.env'), quiet: true })

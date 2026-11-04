@@ -17,7 +17,8 @@ function members(group: number) {
 }
 function signal(group: number, signal: NodeJS.Signals) {
   try { process.kill(-group, signal) } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error
+    // macOS reports EPERM, not ESRCH, for a group whose members are all zombies; survivors are still asserted below.
+    if (!['ESRCH', 'EPERM'].includes((error as NodeJS.ErrnoException).code ?? '')) throw error
   }
 }
 export async function stopProcess(child: ChildProcessWithoutNullStreams) {

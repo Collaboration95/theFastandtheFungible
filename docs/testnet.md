@@ -87,6 +87,43 @@ prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots
   stdio with a fresh npm cache, restarts to prove wallet reuse and cap enforcement, and checks each hash on s.altnet.
   Default CI never calls the faucet. Evidence: [round3-a](evidence/round3-a/README.md).
 
+## Zero-clone Testnet app (next release candidate)
+
+```sh
+npx -y <mcp tgz> app --testnet     # or without --testnet for the labelled SIMULATED rail
+```
+
+Same `<mcp tgz>` rules as above (the published rc.1 has no `app`). Only Node 22 is needed: the tgz carries the engine,
+the fixture corpus and the built web UI (about 0.2 MB gzipped on top of a 21 MB tgz). It boots the same engine as the MCP
+bin, with the same faucet wallets from `$XDG_STATE_HOME/researchagent/testnet/` (shared with `--testnet` MCP; the app's own
+database lives in `testnet/app/`), serves the UI on `127.0.0.1` (ephemeral port, or `--port N`) and prints:
+
+```text
+ResearchAgent ready: http://127.0.0.1:N · fixture models · XRPL TESTNET · no real value
+  payer address: r… (public; seeds stay in …/researchagent/testnet, mode 0600)
+  caps: per-prompt budget set in the UI (max S$5.00) · wallet daily cap S$5.00 (app Testnet default; WALLET_DAILY_CAP_MINOR overrides)
+  SDK: createClient({ baseUrl: 'http://127.0.0.1:M', token: readFileSync('…/api-token', 'utf8').trim() })
+  verify: await client.verify(await client.receipts(runId), { testnet: true })
+```
+
+- **Authority.** The UI's per-prompt budget and deterministic policy are the only spending authority; the page never holds
+  the engine token (this server adds the bearer, like the desktop shell and the Vite proxy). Requests need Host `127.0.0.1:N`
+  (or `localhost:N`) and no foreign Origin, so a web page cannot drive the engine. `mcp/policy.ts` caps are untouched;
+  the app adds a wallet-wide **daily cap of S$5.00 in Testnet mode** (S$20 default on the SIMULATED rail; set
+  `WALLET_DAILY_CAP_MINOR` to change it).
+- **No `.env`.** The app never reads one; models and writers are fixtures. Key reveal and anchoring are on.
+- **SDK.** The printed `baseUrl` is the bearer-protected engine (not the UI port); the token is in `…/api-token` (mode
+  0600, removed on exit) and is never printed. The SDK's `ask` is the MCP surface, so also set the operator caps, e.g.
+  `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500 npx -y <mcp tgz> app --testnet` (default zero, as for MCP).
+  `RA_URL=<baseUrl> RA_API_TOKEN=$(cat <token file>) npx tsx examples/ask.ts` works from a checkout.
+- **Fallback.** A faucet or network failure starts the app on the SIMULATED rail and the ready line says why
+  (`SIMULATED fallback · faucet_unavailable | validation_timeout | wallet_cache_unavailable | network_unavailable · no ledger
+  transactions`); the UI labels every figure SIMULATED.
+- **Opt-in acceptance.** `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet` also boots the packed
+  `app --testnet` from a fresh npm cache and wallet cache, drives the UI in Chromium (Kestrel question → key-reveal escrow →
+  `tx ↗` links and the anchor) and checks each hash on s.altnet. Default CI runs only the SIMULATED `app` consumer.
+  Evidence: [round3-d](evidence/round3-d/README.md).
+
 ## Devcontainer Testnet CI
 
 [`codespace-testnet.yml`](../.github/workflows/codespace-testnet.yml) (manual and nightly, never on PRs) boots `.devcontainer/testnet`
