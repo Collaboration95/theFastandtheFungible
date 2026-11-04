@@ -15,9 +15,10 @@ export function validateManifest(manifest, root) {
 export function admitRelease(manifest, receipt, sha, jobs) {
   if (manifest.sourceSha !== sha || receipt.sourceSha !== sha || receipt.manifestSha256 !== sha256(receipt.manifestFile)) throw Error('Stale source or manifest')
   for (const name of releaseJobs) if (jobs[name] !== 'success') throw Error('Required job failed: ' + name)
-  for (const kind of ['tgz', 'wheel', 'mcpb', 'mcp-tgz']) {
+  // `app` boots the web UI from the mcp-tgz bytes, so it must carry that artifact's hash.
+  for (const kind of ['tgz', 'wheel', 'mcpb', 'mcp-tgz', 'app']) {
     const r = receipt.consumers.find(r => r.kind === kind)
-    const a = manifest.artifacts.find(a => a.kind === kind)
+    const a = manifest.artifacts.find(a => a.kind === (kind === 'app' ? 'mcp-tgz' : kind))
     if (!r || r.sha256 !== a.sha256 || r.citations < 1 || r.receipts !== 1 || r.intents !== 1 || !r.idempotent || !r.capPreserved) throw Error('Missing accepted consumer: ' + kind)
   }
 }

@@ -98,6 +98,46 @@ try {
   try { check(kind,a,b,store); if (kind === 'mcp-tgz') results.push({timing:'MCP npx',seconds:(performance.now()-started)/1000}) } finally { store.close() }
 } finally { try { await client.close() } finally { await stopProcess(child) } }
 }
+// `app`: the packed tgz serves the web UI and engine on one command (simulated; the Testnet variant is opt-in elsewhere).
+{
+  const started = performance.now()
+  const child = managedSpawn('npx', ['--yes', '--cache', join(dir, 'npx-cache-app'), pathToFileURL(file('mcp-tgz')).href, 'app'], { cwd: dir, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, XDG_STATE_HOME: join(dir, 'app-state') } as NodeJS.ProcessEnv })
+  let out = ''
+  child.stdout.on('data', chunk => out += chunk)
+  child.stderr.resume()
+  try {
+    const url = await new Promise<string>((done, fail) => {
+      const timer = setTimeout(() => fail(Error('app never printed its ready line')), 90_000)
+      const poll = setInterval(() => { const m = out.match(/ResearchAgent ready: (http:\/\/127\.0\.0\.1:\d+) · fixture models · SIMULATED rail · no real value/); if (m) { clearTimeout(timer); clearInterval(poll); done(m[1]) } }, 50)
+      child.once('exit', code => { clearTimeout(timer); clearInterval(poll); fail(Error('app exited early (' + code + ')')) })
+    })
+    const page = await (await fetch(url)).text()
+    assert(/<div id="root"/.test(page) && /<script type="module"/.test(page), 'UI HTML not served')
+    const readySeconds = (performance.now() - started) / 1000
+    // The same web-surface path the UI uses: POST /runs through the app origin, which adds the engine bearer.
+    const post = () => fetch(url + '/runs', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'app' }, body: JSON.stringify({ question, budgetMinor: 200 }) })
+    const first = await post(); assert.equal(first.status, 201)
+    const { runId } = await first.json() as { runId: string }
+    type Snap = { runId: string; phase: string; budgetMinor: number; spentMinor: number; intents: { status: string }[]; receipts: unknown[]; contents: { resourceId: string; version: number; spans: { id: string; text: string }[] }[]; answers: { claims: { citations: { resourceId: string; spanId: string; version: string | number }[] }[] }[] }
+    let run: Snap
+    const deadline = Date.now() + 90_000
+    for (;;) {
+      run = await (await fetch(`${url}/runs/${runId}`)).json() as Snap
+      if (['DONE', 'FAILED', 'STOPPED'].includes(run.phase)) break
+      assert(Date.now() < deadline, 'app run did not finish'); await new Promise(r => setTimeout(r, 250))
+    }
+    assert.equal(run.phase, 'DONE'); assert.equal(run.intents.length, 1); assert.equal(run.intents[0].status, 'VERIFIED'); assert.equal(run.receipts.length, 1)
+    assert(run.spentMinor > 0 && run.spentMinor <= 200 && run.budgetMinor <= 200)
+    const citations = run.answers.at(-1)?.claims.flatMap(claim => claim.citations) ?? []; assert(citations.length > 0)
+    for (const c of citations) assert(run.contents.some(d => d.resourceId === c.resourceId && String(d.version) === String(c.version) && d.spans.some(sp => sp.id === c.spanId && sp.text.length > 0)))
+    const again = await post(); assert.equal(again.status, 200); assert.equal(((await again.json()) as { runId: string }).runId, runId)
+    assert.equal((await fetch(`${url}/runs/${runId}/receipts.json`)).status, 200)
+    const store = new Store(join(dir, 'app-state/researchagent/app/app.db'))
+    try { assert.equal(store.getRun(runId).intents.length, 1) } finally { store.close() }
+    results.push({ kind: 'app', sha256: sha256(file('mcp-tgz')), citations: citations.length, receipts: run.receipts.length, intents: run.intents.length, idempotent: true, capPreserved: true })
+    results.push({ timing: 'app (simulated)', readySeconds, seconds: (performance.now() - started) / 1000 })
+  } finally { await stopProcess(child) }
+}
 await assertNoProcesses()
 writeFileSync(join(root,'consumer-results.json'),JSON.stringify({ sourceSha: manifest.sourceSha, manifestSha256:sha256(manifestFile), mode:manifest.mode, runtime:manifest.runtime, verifiers:{receiptSha256:sha256(join(root,'accepted-receipt.json')),typescript:{command:'npm run verify:answer -- accepted-receipt.json --json',pass:true},python:{command:'python -m researchagent verify accepted-receipt.json --json',installation:'exact wheel in clean venv',pass:true}}, consumers:results },null,2)+'\n')
 console.log(JSON.stringify(results,null,2))

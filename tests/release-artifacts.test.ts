@@ -12,7 +12,7 @@ it('blocks swapped bytes, omitted receipts, stale successful SHA and any failed 
     const sha = 'a'.repeat(40)
     const manifest = {schema:1,sourceSha:sha,mode:'fixture providers; simulated settlement',artifacts:kinds.map(kind=>({kind,file:kind,version:'1.0.0',bytes:kind.length,sha256:sha256(join(root,kind))}))}
     const manifestFile = join(root,'manifest.json'); writeFileSync(manifestFile,JSON.stringify(manifest))
-    const receipt = {sourceSha:sha,manifestFile,manifestSha256:sha256(manifestFile),consumers:['tgz','wheel','mcpb','mcp-tgz'].map(kind=>({kind,sha256:sha256(join(root,kind)),citations:1,receipts:1,intents:1,idempotent:true,capPreserved:true}))}
+    const receipt = {sourceSha:sha,manifestFile,manifestSha256:sha256(manifestFile),consumers:['tgz','wheel','mcpb','mcp-tgz','app'].map(kind=>({kind,sha256:sha256(join(root,kind==='app'?'mcp-tgz':kind)),citations:1,receipts:1,intents:1,idempotent:true,capPreserved:true}))}
     const jobs = Object.fromEntries(releaseJobs.map((j: string)=>[j,'success']))
     expect(()=>validateManifest(manifest,root)).not.toThrow()
     expect(()=>admitRelease(manifest,receipt,sha,jobs)).not.toThrow()

@@ -17,3 +17,12 @@ it('keeps the pending Testnet MCP line generated and labelled as not yet release
   expect(readme).toContain(line)
   expect(readme).toMatch(/from the next release candidate \(not in rc\.1\)/)
 })
+it('keeps the pending zero-clone app line generated and labelled as not yet released', () => {
+  const readme = readFileSync('README.md', 'utf8')
+  const tag = readme.match(/install-snippets\.mjs --tag (\S+) --app; pending release/)?.[1]
+  expect(tag).toBeTruthy()
+  const line = execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', tag!, '--app'], { encoding: 'utf8' }).trim()
+  expect(line).toMatch(/^npx -y \S+\.tgz app --testnet$/)
+  expect(readme).toContain(line)
+  expect(readme).toMatch(/also \*\*from the next release candidate, not in rc\.1\*\*/)
+})

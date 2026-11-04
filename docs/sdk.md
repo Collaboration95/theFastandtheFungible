@@ -75,6 +75,23 @@ hashes do not establish independent authenticity. Export with receipts(id), or
 GET /runs/:id/report.json. PDF verification remains available through the
 repository's `npm run verify:answer` command.
 
+### Against the local app engine
+
+`npx -y <mcp tgz> app --testnet` (or without `--testnet`) boots an engine and prints its `baseUrl` and the path of a
+0600 token file. Point the SDK at it; the browser UI and the SDK share one engine, wallet and cap accounting:
+
+```ts
+import { readFileSync } from 'node:fs'
+import { createClient } from '@researchagent/sdk'
+const client = createClient({ baseUrl: 'http://127.0.0.1:PORT', token: readFileSync(TOKEN_FILE, 'utf8').trim() })
+const run = await client.ask('How did margins change?', { budget: 2, idempotencyKey: 'deal-1' })
+console.log(await client.verify(await client.receipts(run.run_id), { testnet: true }))
+```
+
+`ask` is the MCP surface: it needs `MCP_MAX_BUDGET_MINOR` and `MCP_DAILY_CAP_MINOR` in the environment of the `app`
+command (default zero, so a bare `ask` buys nothing). Browser purchases use the UI's own per-prompt budget and the app's
+wallet-wide daily cap (S$5.00 on Testnet). See [docs/testnet.md](testnet.md#zero-clone-testnet-app-next-release-candidate).
+
 ### `hire`
 
 `hire(question, { budgetMinor: 100 | 200 | 500, idempotencyKey })` calls the
