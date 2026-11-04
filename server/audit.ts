@@ -303,8 +303,8 @@ export async function verifyOnTestnet(rows: ReceiptRow[], ledger: Ledger): Promi
   const check = async (row: ReceiptRow): Promise<TestnetCheck[]> => {
     if (row.label !== XRPL_LABEL) return [{ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'skipped', detail: 'SIMULATED rail: there is no ledger transaction to check' }]
     const out: TestnetCheck[] = []
-    if (row.escrowTerms) return verifyEscrowOnTestnet(row, ledger)
-    try {
+    if (row.escrowTerms) out.push(...await verifyEscrowOnTestnet(row, ledger))
+    else try {
       const paid = await verifyPayment(ledger, row.txHash, { rail: 'xrpl-testnet', network: 'xrpl:1', asset: row.asset || 'XRP', payTo: row.payee, amountDrops: row.amountDrops, invoiceId: row.invoiceId })
       if (paid.state === 'pending') out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'pending', detail: 'not found as a validated transaction on this node' })
       else if (paid.state === 'invalid') out.push({ intentId: row.intentId, txHash: row.txHash, kind: 'payment', status: 'mismatch', detail: paid.reason })

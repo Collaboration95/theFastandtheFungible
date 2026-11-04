@@ -159,3 +159,37 @@ it('explicit key-reveal mode never downgrades a trusted writer to exact payment'
   expect(intent.escrow?.mode).toBe('key-reveal')
   expect([...s.c.txs.values()].map(t => t.tx_json.TransactionType)).toEqual(['EscrowCreate', 'EscrowFinish'])
 })
+
+it('refunds a failed escrow delivery once with a separate Payment and buys a replacement', async () => {
+  const s = await setup({ broken: true })
+  const original = await s.buy()
+  const { challenge } = await import('../server/challenges.js')
+  const refunded = await challenge(s.manager, original.intentId, { pollMs: 1, timeoutMs: 100 })
+  expect(refunded.status).toBe('REFUNDED')
+  expect(refunded.refund?.txHash).not.toBe(original.txHash)
+  const { verifyOnTestnet } = await import('../server/audit.js')
+  const checks = await verifyOnTestnet(s.store.receiptRows(), s.c.ledger)
+  expect(checks.map(c => [c.kind,c.status])).toEqual([['escrow-create','ok'],['escrow-finish','ok'],['refund','ok']])
+  await challenge(s.manager, original.intentId)
+  const replacement = await candidateFrom(s.client.origin, honestArticle)
+  const result = await s.manager.purchase({ runId: s.run.runId, candidate: replacement, intentId: 'replacement', escrow: true })
+  expect(result.status).toBe('VERIFIED')
+  expect(result.escrow?.keyVerified).toBe(true)
+  expect(result.escrow?.decryptVerified).toBe(true)
+  expect([...s.c.txs.values()].map(t => t.tx_json.TransactionType)).toEqual(['EscrowCreate', 'EscrowFinish', 'Payment', 'EscrowCreate', 'EscrowFinish'])
+})
+
+it('waits for a submitted writer finish to validate in the normal purchase flow', async () => {
+  const s = await setup(), request = s.c.ledger.request.bind(s.c.ledger)
+  let deferred = false
+  vi.spyOn(s.c.ledger, 'request').mockImplementation(async r => {
+    if (r.command === 'tx' && !deferred && s.c.txs.get(String(r.transaction))?.tx_json.TransactionType === 'EscrowFinish') {
+      deferred = true
+      return { result: { validated: false } }
+    }
+    return request(r)
+  })
+  expect((await s.buy()).status).toBe('VERIFIED')
+  expect(deferred).toBe(true)
+  expect(s.c.txs.size).toBe(2)
+})

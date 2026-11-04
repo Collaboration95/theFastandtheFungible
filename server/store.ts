@@ -644,7 +644,7 @@ export class Store {
       return next
     })
   }
-  completeEscrow(intentId: string, terminal: 'finish' | 'cancel', ledgerIndex: number, observedHash?: string): void {
+  completeEscrow(intentId: string, terminal: 'finish' | 'cancel', ledgerIndex: number, observedHash?: string, failedClaimIds?: string[]): void {
     this.atomic(() => {
       const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!
       if (['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return
@@ -657,7 +657,7 @@ export class Store {
         xrpl: { txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
       this.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
       this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
-      this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? e.publicStatus.proofOk ? 'VERIFIED' : 'CLAIM_FAILED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
+      this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? e.publicStatus.proofOk ? 'VERIFIED' : 'CLAIM_FAILED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, ...(failedClaimIds ? { failedClaimIds } : {}), error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
       this.audit.append({ runId: intent.runId, intentId, kind: terminal === 'finish' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', data: { txHash: tx.txHash, ledgerIndex, owner: terms.payer, createSequence: e.publicStatus.createSequence, createHash: e.publicStatus.createHash, result: 'tesSUCCESS', proofOk: e.publicStatus.proofOk ?? false, amountDrops: terms.amount, payTo: terms.payTo } })
       this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: tx.txHash, ledgerIndex, asset: receipt.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount ?? null, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl!.amountDrops, payTo: terms.payTo, payer: terms.payer, label: receipt.label, scheme: 'escrow-v1', state: e.publicStatus.state } })
     })

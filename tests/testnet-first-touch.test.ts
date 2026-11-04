@@ -61,3 +61,10 @@ it('classifies faucet failures without leaking response bodies', async () => {
   expect(result.reason).toContain('faucet HTTP 429')
   expect(JSON.stringify(result)).not.toContain('private response')
 })
+it('defaults funded local writers to key reveal with an explicit payment opt-out', () => {
+  const env = isolatedEnv({ buyer:'synthetic', alphaleak:'synthetic' })
+  expect(env.ESCROW_MODE).toBe('key-reveal')
+  expect(env.ESCROW_WRITERS).toBe('alphaleak')
+  vi.stubEnv('ESCROW_MODE','payment')
+  try { expect(isolatedEnv({ buyer:'synthetic', alphaleak:'synthetic' }).ESCROW_WRITERS).toBe('') } finally { vi.unstubAllEnvs() }
+})

@@ -1,3 +1,4 @@
+import KeyRevealLifecycle from './KeyRevealLifecycle'
 import { keyRevealLabel } from '../format'
 import type { PurchaseIntent, Receipt, RunSnapshot } from '../../shared/contracts'
 import { candidateOf, money, shortHash, settlementAssetLabel } from '../format'
@@ -9,7 +10,7 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
   const source = candidateOf(run, intent), state = purchaseState(run, intent)
   const refunded = intent.status === 'REFUNDED', testnet = run.labels.settlement.startsWith('XRPL')
   const receipt = run.receipts.find(r => r.intentId === intent.intentId)
-  const status = intent.escrow?.mode === 'key-reveal' ? keyRevealLabel(intent.escrow) : refunded ? `Refunded ${money(intent.refund?.amountMinor ?? 0)}` : state.ok ? 'Verified' : state.failed ? `Paid ${money(intent.amountMinor)} · delivery failed. You won't be charged again.` : state.notSettled ? 'Not settled · nothing charged' : state.quarantined ? intent.status === 'CHALLENGED' ? 'Refunding…' : 'Promise broken' : state.level >= 3 ? 'Paid · checking' : state.level === 2 ? 'Paying…' : `Quoted ${money(intent.amountMinor)}`
+  const status = refunded ? `Refunded ${money(intent.refund?.amountMinor ?? 0)}` : intent.escrow?.mode === 'key-reveal' ? keyRevealLabel(intent.escrow) : state.ok ? 'Verified' : state.failed ? `Paid ${money(intent.amountMinor)} · delivery failed. You won't be charged again.` : state.notSettled ? 'Not settled · nothing charged' : state.quarantined ? intent.status === 'CHALLENGED' ? 'Refunding…' : 'Promise broken' : state.level >= 3 ? 'Paid · checking' : state.level === 2 ? 'Paying…' : `Quoted ${money(intent.amountMinor)}`
   const refundEvent = run.events.find(e => e.type === 'REFUND' && e.data?.intentId === intent.intentId)
   const refundUrl = refundEvent?.data?.explorerUrl
   const start = run.events.find(e => e.type === 'BUY' && e.data?.intentId === intent.intentId)?.at
@@ -21,6 +22,7 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
     <p style={intent.escrow?.mode === 'key-reveal' ? { overflowWrap: 'anywhere' } : undefined} key={intent.status} className={`ra-payment-status${state.ok ? ' is-ok' : state.failed || state.quarantined && !refunded ? ' is-bad' : ''}`}>{status}{refunded && <span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(intent.quote?.payment?.asset) : 'simulated'}</span>}{elapsed !== undefined && state.ok && ` · ${elapsed.toFixed(1)} s`}</p>
     {state.phase === 'submitted' && <PendingTime since={state.pendingSince} />}
     {state.failed && <button className="ra-btn ra-btn-go" onClick={() => onRetry(intent.intentId)}>Retry delivery</button>}
+    {intent.escrow?.mode === 'key-reveal' && <KeyRevealLifecycle escrow={intent.escrow} />}
     <Verification run={run} intent={intent} />
     {testnet && typeof refundUrl === 'string' && refundUrl.startsWith('https://testnet.xrpl.org/') && <a href={refundUrl} target="_blank" rel="noreferrer">Refund tx {shortHash(intent.refund?.txHash ?? '')} ↗</a>}
     {testnet && /^[A-Fa-f0-9]{64}$/.test(intent.txHash ?? '') && <a href={`https://testnet.xrpl.org/transactions/${intent.txHash}`} target="_blank" rel="noreferrer">tx ↗</a>}
