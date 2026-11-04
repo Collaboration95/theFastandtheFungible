@@ -1,0 +1,1196 @@
+{
+  "schema": "lane-u-heap-attribution-v1",
+  "scope": "Local fixture inference and SIMULATED settlement; worker snapshots perturb collection and RSS, not timing acceptance.",
+  "baselineSource": "7b26ceb9",
+  "diagnosticOptions": {
+    "runs": 300,
+    "warmup": 50,
+    "historyRuns": 10000,
+    "eventsPerRun": 60
+  },
+  "workerNurseryMiB": {
+    "default": 96,
+    "tuned": 16,
+    "oldGenerationMiB": 4096
+  },
+  "snapshots": {
+    "before": {
+      "captures": [
+        {
+          "snapshot": "early",
+          "path": "/Users/speedpowermac/.t3/worktrees/tftf/t3-aa2c5ab6/scratch/u-before-heaps/early.heapsnapshot",
+          "before": {
+            "rss": 380457824,
+            "heapTotal": 153976832,
+            "heapUsed": 95497072,
+            "external": 15027269,
+            "arrayBuffers": 4439232
+          },
+          "after": {
+            "rss": 416185232,
+            "heapTotal": 83197952,
+            "heapUsed": 79972392,
+            "external": 12215406,
+            "arrayBuffers": 1641424
+          }
+        },
+        {
+          "snapshot": "late",
+          "path": "/Users/speedpowermac/.t3/worktrees/tftf/t3-aa2c5ab6/scratch/u-before-heaps/late.heapsnapshot",
+          "before": {
+            "rss": 662445520,
+            "heapTotal": 197263360,
+            "heapUsed": 118693656,
+            "external": 12736508,
+            "arrayBuffers": 1961789
+          },
+          "after": {
+            "rss": 506787464,
+            "heapTotal": 97140736,
+            "heapUsed": 92747440,
+            "external": 12280942,
+            "arrayBuffers": 1706960
+          }
+        }
+      ],
+      "early": {
+        "method": "Immediate dominators of reachable graph excluding weak edges; retained sizes overlap for ancestor/descendant entries. V8 internal/ephemeron edges are used as represented, not a native allocation census.",
+        "nodes": 835942,
+        "reachable": 835934,
+        "totalSelfMiB": 97.37455177307129,
+        "byTypeMiB": {
+          "synthetic": 0.0025177001953125,
+          "hidden": 1.8958892822265625,
+          "string": 35.308149337768555,
+          "object shape": 3.766845703125,
+          "code": 13.244400024414062,
+          "array": 20.605819702148438,
+          "number": 0.5624847412109375,
+          "symbol": 0.018768310546875,
+          "object": 9.159820556640625,
+          "closure": 6.882270812988281,
+          "concatenated string": 0.3604736328125,
+          "native": 4.792942047119141,
+          "bigint": 0.5843582153320312,
+          "sliced string": 0.110931396484375,
+          "regexp": 0.07888031005859375
+        },
+        "topDominators": [
+          {
+            "id": 163945,
+            "type": "closure",
+            "name": "app",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.87194061279297
+          },
+          {
+            "id": 1332759,
+            "type": "closure",
+            "name": "getrouter",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.85883331298828
+          },
+          {
+            "id": 1367961,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00003814697265625,
+            "retainedMiB": 16.85877227783203
+          },
+          {
+            "id": 1367963,
+            "type": "closure",
+            "name": "router",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.858734130859375
+          },
+          {
+            "id": 1509077,
+            "type": "object",
+            "name": "Array",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 16.857650756835938
+          },
+          {
+            "id": 163957,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00016021728515625,
+            "retainedMiB": 16.801292419433594
+          },
+          {
+            "id": 688183,
+            "type": "object",
+            "name": "Map",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 16.797531127929688
+          },
+          {
+            "id": 688185,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00025177001953125,
+            "retainedMiB": 16.797500610351562
+          },
+          {
+            "id": 911567,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.020904541015625,
+            "retainedMiB": 9.148406982421875
+          },
+          {
+            "id": 740287,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.014923095703125,
+            "retainedMiB": 6.649421691894531
+          },
+          {
+            "id": 118837,
+            "type": "string",
+            "name": "\"use strict\";\nvar __create = Object.create;\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames",
+            "selfMiB": 6.631660461425781,
+            "retainedMiB": 6.631660461425781
+          },
+          {
+            "id": 118839,
+            "type": "string",
+            "name": "\"use strict\";\nvar __create = Object.create;\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames",
+            "selfMiB": 5.81475830078125,
+            "retainedMiB": 5.81475830078125
+          },
+          {
+            "id": 250857,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.0011138916015625,
+            "retainedMiB": 3.1455841064453125
+          },
+          {
+            "id": 535429,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 3.0815505981445312
+          },
+          {
+            "id": 535435,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.8252716064453125
+          },
+          {
+            "id": 259183,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00008392333984375,
+            "retainedMiB": 2.6410064697265625
+          },
+          {
+            "id": 299905,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.636962890625
+          },
+          {
+            "id": 1431423,
+            "type": "object",
+            "name": "Memory",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.6252517700195312
+          },
+          {
+            "id": 1431425,
+            "type": "object",
+            "name": "ArrayBuffer",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 2.6251296997070312
+          },
+          {
+            "id": 1520093,
+            "type": "native",
+            "name": "system / JSArrayBufferData",
+            "selfMiB": 2.625,
+            "retainedMiB": 2.625
+          },
+          {
+            "id": 535323,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.0002899169921875,
+            "retainedMiB": 2.588134765625
+          },
+          {
+            "id": 535325,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.58489990234375
+          },
+          {
+            "id": 535389,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 2.4672393798828125
+          },
+          {
+            "id": 562015,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.3677978515625
+          },
+          {
+            "id": 562021,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.1695327758789062
+          },
+          {
+            "id": 170873,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.061767578125
+          },
+          {
+            "id": 596283,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.0051651000976562
+          },
+          {
+            "id": 562035,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.0046844482421875
+          },
+          {
+            "id": 252655,
+            "type": "object",
+            "name": "On",
+            "selfMiB": 0.00012969970703125,
+            "retainedMiB": 1.9901351928710938
+          },
+          {
+            "id": 252657,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00687408447265625,
+            "retainedMiB": 1.9804153442382812
+          },
+          {
+            "id": 562245,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.0002899169921875,
+            "retainedMiB": 1.9796142578125
+          },
+          {
+            "id": 562247,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 1.97637939453125
+          },
+          {
+            "id": 170879,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 1.9105224609375
+          },
+          {
+            "id": 562041,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 1.883056640625
+          },
+          {
+            "id": 562403,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 1.87774658203125
+          }
+        ]
+      },
+      "late": {
+        "method": "Immediate dominators of reachable graph excluding weak edges; retained sizes overlap for ancestor/descendant entries. V8 internal/ephemeron edges are used as represented, not a native allocation census.",
+        "nodes": 850281,
+        "reachable": 850273,
+        "totalSelfMiB": 109.61362648010254,
+        "byTypeMiB": {
+          "synthetic": 0.0025177001953125,
+          "hidden": 2.168212890625,
+          "string": 43.78173637390137,
+          "object shape": 3.7727432250976562,
+          "code": 16.358963012695312,
+          "array": 20.80699920654297,
+          "number": 0.5958251953125,
+          "symbol": 0.018768310546875,
+          "object": 9.247428894042969,
+          "closure": 6.871063232421875,
+          "concatenated string": 0.363922119140625,
+          "native": 4.849147796630859,
+          "sliced string": 0.113006591796875,
+          "regexp": 0.0789337158203125,
+          "bigint": 0.5843582153320312
+        },
+        "topDominators": [
+          {
+            "id": 163945,
+            "type": "closure",
+            "name": "app",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 17.074722290039062
+          },
+          {
+            "id": 1332759,
+            "type": "closure",
+            "name": "getrouter",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.863021850585938
+          },
+          {
+            "id": 1367961,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00003814697265625,
+            "retainedMiB": 16.862960815429688
+          },
+          {
+            "id": 1367963,
+            "type": "closure",
+            "name": "router",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.86292266845703
+          },
+          {
+            "id": 1509077,
+            "type": "object",
+            "name": "Array",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 16.861732482910156
+          },
+          {
+            "id": 163957,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00016021728515625,
+            "retainedMiB": 16.79741668701172
+          },
+          {
+            "id": 688183,
+            "type": "object",
+            "name": "Map",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 16.79149627685547
+          },
+          {
+            "id": 688185,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00025177001953125,
+            "retainedMiB": 16.791465759277344
+          },
+          {
+            "id": 911567,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.020904541015625,
+            "retainedMiB": 9.1182861328125
+          },
+          {
+            "id": 118837,
+            "type": "string",
+            "name": "\"use strict\";\nvar __create = Object.create;\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames",
+            "selfMiB": 6.631660461425781,
+            "retainedMiB": 6.631660461425781
+          },
+          {
+            "id": 740287,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.014923095703125,
+            "retainedMiB": 6.335174560546875
+          },
+          {
+            "id": 118839,
+            "type": "string",
+            "name": "\"use strict\";\nvar __create = Object.create;\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames",
+            "selfMiB": 5.81475830078125,
+            "retainedMiB": 5.81475830078125
+          },
+          {
+            "id": 1203159,
+            "type": "object",
+            "name": "Store",
+            "selfMiB": 0.0001678466796875,
+            "retainedMiB": 3.9703521728515625
+          },
+          {
+            "id": 1261653,
+            "type": "object",
+            "name": "ExactCache",
+            "selfMiB": 0.00012969970703125,
+            "retainedMiB": 3.9664459228515625
+          },
+          {
+            "id": 1261655,
+            "type": "object",
+            "name": "Map",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 3.9663162231445312
+          },
+          {
+            "id": 1680833,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00174713134765625,
+            "retainedMiB": 3.9662857055664062
+          },
+          {
+            "id": 250857,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.0011138916015625,
+            "retainedMiB": 3.14630126953125
+          },
+          {
+            "id": 535429,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 3.0728759765625
+          },
+          {
+            "id": 535435,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.8271713256835938
+          },
+          {
+            "id": 259183,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00008392333984375,
+            "retainedMiB": 2.6410064697265625
+          },
+          {
+            "id": 299905,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.636962890625
+          },
+          {
+            "id": 1431423,
+            "type": "object",
+            "name": "Memory",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.6252517700195312
+          },
+          {
+            "id": 1431425,
+            "type": "object",
+            "name": "ArrayBuffer",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 2.6251296997070312
+          },
+          {
+            "id": 1520093,
+            "type": "native",
+            "name": "system / JSArrayBufferData",
+            "selfMiB": 2.625,
+            "retainedMiB": 2.625
+          },
+          {
+            "id": 535323,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.0002899169921875,
+            "retainedMiB": 2.5900344848632812
+          },
+          {
+            "id": 535325,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.5851974487304688
+          },
+          {
+            "id": 535389,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 2.4675369262695312
+          },
+          {
+            "id": 562015,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.3669509887695312
+          },
+          {
+            "id": 562021,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.1710281372070312
+          },
+          {
+            "id": 170873,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.0622711181640625
+          },
+          {
+            "id": 562035,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.005035400390625
+          },
+          {
+            "id": 596283,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 1.9995803833007812
+          },
+          {
+            "id": 252655,
+            "type": "object",
+            "name": "On",
+            "selfMiB": 0.00012969970703125,
+            "retainedMiB": 1.9901351928710938
+          },
+          {
+            "id": 562245,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.0002899169921875,
+            "retainedMiB": 1.981109619140625
+          },
+          {
+            "id": 252657,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00687408447265625,
+            "retainedMiB": 1.9804153442382812
+          }
+        ]
+      }
+    },
+    "tuned": {
+      "captures": [
+        {
+          "snapshot": "early",
+          "path": "/Users/speedpowermac/.t3/worktrees/tftf/t3-aa2c5ab6/scratch/u-tuned-heaps/early.heapsnapshot",
+          "before": {
+            "rss": 306689808,
+            "heapTotal": 108052480,
+            "heapUsed": 93135800,
+            "external": 12442846,
+            "arrayBuffers": 1854809
+          },
+          "after": {
+            "rss": 397914168,
+            "heapTotal": 82411520,
+            "heapUsed": 79590256,
+            "external": 12215406,
+            "arrayBuffers": 1641424
+          }
+        },
+        {
+          "snapshot": "late",
+          "path": "/Users/speedpowermac/.t3/worktrees/tftf/t3-aa2c5ab6/scratch/u-tuned-heaps/late.heapsnapshot",
+          "before": {
+            "rss": 658067656,
+            "heapTotal": 187236352,
+            "heapUsed": 146835824,
+            "external": 13689597,
+            "arrayBuffers": 3115615
+          },
+          "after": {
+            "rss": 487206784,
+            "heapTotal": 98041856,
+            "heapUsed": 92996168,
+            "external": 12280942,
+            "arrayBuffers": 1706960
+          }
+        }
+      ],
+      "early": {
+        "method": "Immediate dominators of reachable graph excluding weak edges; retained sizes overlap for ancestor/descendant entries. V8 internal/ephemeron edges are used as represented, not a native allocation census.",
+        "nodes": 834010,
+        "reachable": 834002,
+        "totalSelfMiB": 97.00856971740723,
+        "byTypeMiB": {
+          "synthetic": 0.0025177001953125,
+          "hidden": 1.878631591796875,
+          "string": 35.326276779174805,
+          "object shape": 3.7569046020507812,
+          "code": 12.949172973632812,
+          "array": 20.55327606201172,
+          "number": 0.5624847412109375,
+          "symbol": 0.018768310546875,
+          "object": 9.154930114746094,
+          "closure": 6.878807067871094,
+          "concatenated string": 0.361236572265625,
+          "native": 4.791362762451172,
+          "bigint": 0.5843582153320312,
+          "regexp": 0.07888031005859375,
+          "sliced string": 0.1109619140625
+        },
+        "topDominators": [
+          {
+            "id": 742271,
+            "type": "closure",
+            "name": "app",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.87664794921875
+          },
+          {
+            "id": 1475709,
+            "type": "closure",
+            "name": "getrouter",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.863540649414062
+          },
+          {
+            "id": 1476853,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00003814697265625,
+            "retainedMiB": 16.863479614257812
+          },
+          {
+            "id": 638279,
+            "type": "closure",
+            "name": "router",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.863441467285156
+          },
+          {
+            "id": 638283,
+            "type": "object",
+            "name": "Array",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 16.86235809326172
+          },
+          {
+            "id": 159013,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00016021728515625,
+            "retainedMiB": 16.805999755859375
+          },
+          {
+            "id": 1508495,
+            "type": "object",
+            "name": "Map",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 16.80223846435547
+          },
+          {
+            "id": 820535,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00025177001953125,
+            "retainedMiB": 16.802207946777344
+          },
+          {
+            "id": 531599,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.020904541015625,
+            "retainedMiB": 9.1517333984375
+          },
+          {
+            "id": 648181,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.014923095703125,
+            "retainedMiB": 6.649040222167969
+          },
+          {
+            "id": 118693,
+            "type": "string",
+            "name": "\"use strict\";\nvar __create = Object.create;\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames",
+            "selfMiB": 6.631660461425781,
+            "retainedMiB": 6.631660461425781
+          },
+          {
+            "id": 118695,
+            "type": "string",
+            "name": "\"use strict\";\nvar __create = Object.create;\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames",
+            "selfMiB": 5.81475830078125,
+            "retainedMiB": 5.81475830078125
+          },
+          {
+            "id": 820537,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 3.0817184448242188
+          },
+          {
+            "id": 455869,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.0011138916015625,
+            "retainedMiB": 3.0107345581054688
+          },
+          {
+            "id": 1168547,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.8253936767578125
+          },
+          {
+            "id": 1128549,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00008392333984375,
+            "retainedMiB": 2.6401596069335938
+          },
+          {
+            "id": 601433,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.636962890625
+          },
+          {
+            "id": 601435,
+            "type": "object",
+            "name": "Memory",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.6252517700195312
+          },
+          {
+            "id": 742767,
+            "type": "object",
+            "name": "ArrayBuffer",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 2.6251296997070312
+          },
+          {
+            "id": 1508701,
+            "type": "native",
+            "name": "system / JSArrayBufferData",
+            "selfMiB": 2.625,
+            "retainedMiB": 2.625
+          },
+          {
+            "id": 1168495,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.0002899169921875,
+            "retainedMiB": 2.5882568359375
+          },
+          {
+            "id": 377839,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.58502197265625
+          },
+          {
+            "id": 377841,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 2.4672393798828125
+          },
+          {
+            "id": 434341,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.3694229125976562
+          },
+          {
+            "id": 434347,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.1695327758789062
+          },
+          {
+            "id": 428411,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.0622940063476562
+          },
+          {
+            "id": 451683,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.0063552856445312
+          },
+          {
+            "id": 443715,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.0050735473632812
+          },
+          {
+            "id": 415423,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.0002899169921875,
+            "retainedMiB": 1.9796142578125
+          },
+          {
+            "id": 415425,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 1.97637939453125
+          },
+          {
+            "id": 457727,
+            "type": "object",
+            "name": "On",
+            "selfMiB": 0.00012969970703125,
+            "retainedMiB": 1.9340133666992188
+          },
+          {
+            "id": 457729,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00687408447265625,
+            "retainedMiB": 1.9318084716796875
+          },
+          {
+            "id": 428419,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 1.9105224609375
+          },
+          {
+            "id": 451689,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 1.883056640625
+          },
+          {
+            "id": 415489,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 1.87774658203125
+          }
+        ]
+      },
+      "late": {
+        "method": "Immediate dominators of reachable graph excluding weak edges; retained sizes overlap for ancestor/descendant entries. V8 internal/ephemeron edges are used as represented, not a native allocation census.",
+        "nodes": 858265,
+        "reachable": 858257,
+        "totalSelfMiB": 109.85685157775879,
+        "byTypeMiB": {
+          "synthetic": 0.0025177001953125,
+          "hidden": 2.2290802001953125,
+          "string": 43.800947189331055,
+          "object shape": 3.7801284790039062,
+          "code": 16.033203125,
+          "array": 20.98077392578125,
+          "number": 0.619873046875,
+          "symbol": 0.018768310546875,
+          "object": 9.486358642578125,
+          "closure": 6.910438537597656,
+          "concatenated string": 0.363311767578125,
+          "native": 4.855121612548828,
+          "bigint": 0.5843582153320312,
+          "sliced string": 0.113037109375,
+          "regexp": 0.0789337158203125
+        },
+        "topDominators": [
+          {
+            "id": 742271,
+            "type": "closure",
+            "name": "app",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 17.076515197753906
+          },
+          {
+            "id": 1475709,
+            "type": "closure",
+            "name": "getrouter",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.867347717285156
+          },
+          {
+            "id": 1476853,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00003814697265625,
+            "retainedMiB": 16.867286682128906
+          },
+          {
+            "id": 638279,
+            "type": "closure",
+            "name": "router",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 16.86724853515625
+          },
+          {
+            "id": 638283,
+            "type": "object",
+            "name": "Array",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 16.866058349609375
+          },
+          {
+            "id": 159013,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00016021728515625,
+            "retainedMiB": 16.801742553710938
+          },
+          {
+            "id": 1508495,
+            "type": "object",
+            "name": "Map",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 16.795822143554688
+          },
+          {
+            "id": 820535,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00025177001953125,
+            "retainedMiB": 16.795791625976562
+          },
+          {
+            "id": 531599,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.020904541015625,
+            "retainedMiB": 9.121612548828125
+          },
+          {
+            "id": 118693,
+            "type": "string",
+            "name": "\"use strict\";\nvar __create = Object.create;\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames",
+            "selfMiB": 6.631660461425781,
+            "retainedMiB": 6.631660461425781
+          },
+          {
+            "id": 648181,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.014923095703125,
+            "retainedMiB": 6.3347930908203125
+          },
+          {
+            "id": 118695,
+            "type": "string",
+            "name": "\"use strict\";\nvar __create = Object.create;\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames",
+            "selfMiB": 5.81475830078125,
+            "retainedMiB": 5.81475830078125
+          },
+          {
+            "id": 1136545,
+            "type": "object",
+            "name": "Store",
+            "selfMiB": 0.0001678466796875,
+            "retainedMiB": 3.9696807861328125
+          },
+          {
+            "id": 1617383,
+            "type": "object",
+            "name": "ExactCache",
+            "selfMiB": 0.00012969970703125,
+            "retainedMiB": 3.9659347534179688
+          },
+          {
+            "id": 1617457,
+            "type": "object",
+            "name": "Map",
+            "selfMiB": 0.000030517578125,
+            "retainedMiB": 3.9658050537109375
+          },
+          {
+            "id": 1687647,
+            "type": "array",
+            "name": "",
+            "selfMiB": 0.00174713134765625,
+            "retainedMiB": 3.9657745361328125
+          },
+          {
+            "id": 820537,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 3.0730667114257812
+          },
+          {
+            "id": 455869,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.0011138916015625,
+            "retainedMiB": 3.0114517211914062
+          },
+          {
+            "id": 1168547,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.8272933959960938
+          },
+          {
+            "id": 1128549,
+            "type": "object",
+            "name": "system / Context",
+            "selfMiB": 0.00008392333984375,
+            "retainedMiB": 2.6401596069335938
+          },
+          {
+            "id": 601433,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.636962890625
+          },
+          {
+            "id": 601435,
+            "type": "object",
+            "name": "Memory",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.6252517700195312
+          },
+          {
+            "id": 742767,
+            "type": "object",
+            "name": "ArrayBuffer",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 2.6251296997070312
+          },
+          {
+            "id": 1508701,
+            "type": "native",
+            "name": "system / JSArrayBufferData",
+            "selfMiB": 2.625,
+            "retainedMiB": 2.625
+          },
+          {
+            "id": 1168495,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.0002899169921875,
+            "retainedMiB": 2.5901565551757812
+          },
+          {
+            "id": 377839,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.5853195190429688
+          },
+          {
+            "id": 377841,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.000091552734375,
+            "retainedMiB": 2.4675369262695312
+          },
+          {
+            "id": 434341,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.3685989379882812
+          },
+          {
+            "id": 434347,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 2.1710281372070312
+          },
+          {
+            "id": 428411,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.0628204345703125
+          },
+          {
+            "id": 451683,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 2.0067291259765625
+          },
+          {
+            "id": 443715,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00006103515625,
+            "retainedMiB": 1.99951171875
+          },
+          {
+            "id": 415423,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.0002899169921875,
+            "retainedMiB": 1.981109619140625
+          },
+          {
+            "id": 415425,
+            "type": "object",
+            "name": "Object",
+            "selfMiB": 0.00005340576171875,
+            "retainedMiB": 1.9762725830078125
+          },
+          {
+            "id": 457727,
+            "type": "object",
+            "name": "On",
+            "selfMiB": 0.00012969970703125,
+            "retainedMiB": 1.9340133666992188
+          }
+        ]
+      }
+    }
+  },
+  "sqlite": {
+    "cacheSizeKiB": 2000,
+    "pageSizeBytes": 4096,
+    "mmapBytes": 0,
+    "method": "Read-only PRAGMA query confirms connection defaults; Store has no cache_size/mmap override. Not a measurement of live cache occupancy."
+  },
+  "native": {
+    "method": "macOS vmmap -summary of baseline process at 2026-11-04 13:54:20 +0800; asynchronously sampled, overlapping regions are not additive with V8 metrics.",
+    "physicalFootprintMiB": 817.2,
+    "physicalPeakMiB": 914.2,
+    "mallocResidentMiB": 130.4,
+    "mallocAllocatedMiB": 71.6,
+    "mallocFragmentationMiB": 58.8,
+    "mappedFileResidentMiB": 0.09375,
+    "v8TaggedResidentMiB": 622.7,
+    "libraryReadOnlyResidentMiB": 271.6,
+    "limits": "Native residual is not SQLite attribution. RSS includes host, engine and loader isolates, V8 spare capacity, allocator fragmentation, libraries and buffers. V8 ArrayBuffers are a subset of external, not additive."
+  }
+}
