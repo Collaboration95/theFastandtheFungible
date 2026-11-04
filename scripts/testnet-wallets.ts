@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile, chmod, lstat, realpath } from 'node:fs/promises'
 import { resolve, sep } from 'node:path'
-import { Wallet } from 'xrpl'
+import { Client, AccountSetAsfFlags, Wallet, type SubmittableTransaction } from 'xrpl'
 import { TESTNET_WSS, testnetLedger, signPayment, lookupTx } from '../shared/xrpl.js'
 class ProvisionError extends Error {}
 const resultCode = (e: unknown) => { const value = e as { data?: { error?: string }; message?: string }; return value.data?.error ?? (['actNotFound', 'tefPAST_SEQ'].find(code => value.message?.includes(code))) }
@@ -64,13 +64,41 @@ export async function provision(file = walletFile, faucet = fetch, ledger = test
       if(Date.now()>deadline) throw new ProvisionError('funding validation timeout')
       await new Promise(r=>setTimeout(r,250))
     }
+    if (process.env.ESCROW_ASSET === 'test-iou') await provisionIou(seeds, file)
     return seeds
   } finally { await ledger.close() }
 }
 export function isolatedEnv(seeds?: Record<string, string>): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { RA_API_TOKEN:process.env.RA_API_TOKEN, MCP_MAX_BUDGET_MINOR:process.env.MCP_MAX_BUDGET_MINOR, MCP_DAILY_CAP_MINOR:process.env.MCP_DAILY_CAP_MINOR, DEMO_WEB_PORT:process.env.DEMO_WEB_PORT, DEMO_API_PORT:process.env.DEMO_API_PORT, DEMO_PUBLISHER_PORT:process.env.DEMO_PUBLISHER_PORT, CODESPACE_NAME:process.env.CODESPACE_NAME, GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN, PATH:process.env.PATH, HOME:process.env.HOME, TMPDIR:process.env.TMPDIR, DOTENV_CONFIG_PATH:'.testnet-no-env', LLM_PROVIDER:'fixture', DECISION_PROVIDER:'fixture', SEARCH_EMBEDDINGS:'off', LANGFUSE_ENABLED:'0', SETTLEMENT_RAIL:seeds?'xrpl-testnet':'simulated', XRPL_RPC_URL:TESTNET_WSS, APP_DB:':memory:', PUBLISHER_DB:':memory:', PUBLISHER_SECRET:'isolated-testnet-demo', ESCROW_WRITERS:'' }
-  if (seeds) { env.ESCROW_MODE = process.env.ESCROW_MODE === 'payment' ? 'payment' : 'key-reveal'; env.ESCROW_WRITERS = env.ESCROW_MODE === 'key-reveal' ? Object.keys(seeds).filter(s => s !== 'buyer').join(',') : ''; env.XRPL_PAYER_SEED=seeds.buyer; for(const [slug,seed] of Object.entries(seeds)) if(slug!=='buyer') env[`XRPL_PUBLISHER_${slug.toUpperCase().replaceAll('-','_')}_SEED`]=seed }
+  if (seeds?.issuer && process.env.ESCROW_ASSET === 'test-iou') { env.ESCROW_ASSET='test-iou'; env.TESTNET_IOU_ISSUER=Wallet.fromSeed(seeds.issuer).classicAddress }
+  if (seeds) { env.ESCROW_MODE = process.env.ESCROW_MODE === 'payment' ? 'payment' : 'key-reveal'; env.ESCROW_WRITERS = env.ESCROW_MODE === 'key-reveal' ? Object.keys(seeds).filter(s => !['buyer','issuer'].includes(s)).join(',') : ''; env.XRPL_PAYER_SEED=seeds.buyer; for(const [slug,seed] of Object.entries(seeds)) if(!['buyer','issuer'].includes(slug)) env[`XRPL_PUBLISHER_${slug.toUpperCase().replaceAll('-','_')}_SEED`]=seed }
   return env
 }
 
 export async function prepare(load = provision) { try { return { env: isolatedEnv(await load()), fallback: false } } catch (error) { return { env: isolatedEnv(), fallback: true, reason: error instanceof ProvisionError ? error.message : 'network or provisioning error' } } }
+
+/** Only faucet-funded Testnet XRP; persist issuer seed before any transaction. */
+async function provisionIou(seeds: Record<string,string>, file: string) {
+  seeds.issuer ||= Wallet.generate().seed!
+  await writeFile(file, JSON.stringify(seeds), {mode:0o600}); await chmod(file,0o600)
+  const client = new Client(TESTNET_WSS)
+  await client.connect()
+  try {
+    const buyer=Wallet.fromSeed(seeds.buyer), issuer=Wallet.fromSeed(seeds.issuer)
+    const submit = async (wallet: Wallet, tx: Record<string,unknown>) => {
+      const prepared = await client.autofill({...tx,Account:wallet.classicAddress} as SubmittableTransaction)
+      if (Number(prepared.Fee)>2000) throw Error('Provision fee cap')
+      const r=await client.submitAndWait(wallet.sign(prepared).tx_blob)
+      if (typeof r.result.meta !== 'object' || r.result.meta?.TransactionResult !== 'tesSUCCESS') throw Error('IOU provisioning transaction failed')
+    }
+    try { await client.request({command:'account_info',account:issuer.classicAddress}) }
+    catch { await submit(buyer,{TransactionType:'Payment',Destination:issuer.classicAddress,Amount:'6000000'}) }
+    await submit(issuer,{TransactionType:'AccountSet',SetFlag:AccountSetAsfFlags.asfAllowTrustLineLocking})
+    for (const [slug,seed] of Object.entries(seeds)) {
+      if (['issuer','open-records','grid-operators-report'].includes(slug)) continue
+      await submit(Wallet.fromSeed(seed),{TransactionType:'TrustSet',LimitAmount:{currency:'SGT',issuer:issuer.classicAddress,value:'1000000'}})
+    }
+    const lines=await client.request({command:'account_lines',account:buyer.classicAddress,peer:issuer.classicAddress,ledger_index:'validated'})
+    if (!lines.result.lines.some(l=>l.currency==='SGT' && Number(l.balance)>=1000)) await submit(issuer,{TransactionType:'Payment',Destination:buyer.classicAddress,Amount:{currency:'SGT',issuer:issuer.classicAddress,value:'10000'}})
+  } finally { await client.disconnect() }
+}

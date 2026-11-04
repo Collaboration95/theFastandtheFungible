@@ -1,5 +1,8 @@
 """Read-only, bounded Testnet JSON-RPC; no signer or configurable mainnet host."""
 import json
+import hashlib
+import re
+from decimal import Decimal
 from urllib.request import Request, urlopen
 
 
@@ -35,8 +38,26 @@ def verify_transactions(b, entries, lookup, add):
         expected = amount if asset == 'XRP' else dict(currency=asset['currency'], issuer=asset['issuer'], value=amount)
         return t.get('TransactionType') == 'Payment' and t.get('Account') == sender and t.get('Destination') == dest and m.get('delivered_amount') == expected and t.get('InvoiceID', '').upper() == invoice.upper() and not (int(t.get('Flags', 0)) & 0x20000) and not any(k in t for k in ('SendMax', 'Paths', 'DeliverMin')) and (asset == 'XRP' or t.get('Amount', t.get('DeliverMax')) == expected) and (ledger in (None, '') or n == ledger)
 
+    def matches_amount(actual, value, asset):
+        if asset == 'XRP':
+            return actual == value
+        return isinstance(actual, dict) and actual.get('currency') == asset['currency'] and actual.get('issuer') == asset['issuer'] and Decimal(actual['value']) == Decimal(value)
+
     def create_ok(t, terms):
-        return t.get('TransactionType') == 'EscrowCreate' and t.get('Account') == terms['payer'] and t.get('Destination') == terms['payTo'] and t.get('Amount') == terms['amount'] and t.get('Condition') == terms['condition'] and t.get('CancelAfter') == terms['cancelAfter'] and not any(k in t for k in ('FinishAfter', 'InvoiceID', 'DestinationTag', 'SourceTag')) and not t.get('Flags') and t.get('Memos') == [{'Memo': {'MemoType': b'researchagent/escrow-v1'.hex().upper(), 'MemoData': __import__('researchagent.verify', fromlist=['canonical']).canonical(terms).encode().hex().upper()}}] and isinstance(t.get('Sequence'), int) and t['Sequence'] > 0 and isinstance(t.get('LastLedgerSequence'), int) and 0 < int(t.get('Fee', 0)) <= 2000
+        return t.get('TransactionType') == 'EscrowCreate' and t.get('Account') == terms['payer'] and t.get('Destination') == terms['payTo'] and matches_amount(t.get('Amount'), terms['amount'], terms['asset']) and t.get('Condition') == terms['condition'] and t.get('CancelAfter') == terms['cancelAfter'] and not any(k in t for k in ('FinishAfter', 'InvoiceID', 'DestinationTag', 'SourceTag')) and not t.get('Flags') and t.get('Memos') == [{'Memo': {'MemoType': b'researchagent/escrow-v1'.hex().upper(), 'MemoData': __import__('researchagent.verify', fromlist=['canonical']).canonical(terms).encode().hex().upper()}}] and isinstance(t.get('Sequence'), int) and t['Sequence'] > 0 and isinstance(t.get('LastLedgerSequence'), int) and 0 < int(t.get('Fee', 0)) <= 2000
+
+    def credit(meta, terms, recipient):
+        asset = terms['asset']
+        if asset == 'XRP':
+            return True
+        deltas = []
+        for node in meta.get('AffectedNodes', []):
+            n = node.get('ModifiedNode', {})
+            f, p = n.get('FinalFields', {}), n.get('PreviousFields', {})
+            low, high = f.get('LowLimit', {}).get('issuer'), f.get('HighLimit', {}).get('issuer')
+            if n.get('LedgerEntryType') == 'RippleState' and f.get('Balance', {}).get('currency') == asset['currency'] and {low, high} == {recipient, asset['issuer']}:
+                deltas.append((Decimal(f['Balance']['value'])-Decimal(p['Balance']['value'])) * (1 if low == recipient else -1))
+        return len(deltas) == 1 and deltas[0] == Decimal(terms['amount'])
 
     def check(name, fn):
         try:
@@ -55,9 +76,9 @@ def verify_transactions(b, entries, lookup, add):
                 return create_ok(t, terms) and t.get('Sequence') == p['escrowCreateSequence']
             check('escrow-create ' + name, create)
             def terminal(p=p, terms=terms):
-                t, _, n = tx(p['txHash'])
+                t, meta, n = tx(p['txHash'])
                 finish = p['escrowState'] == 'RELEASED'
-                return p['escrowState'] in ('RELEASED', 'CANCELLED') and t.get('TransactionType') == ('EscrowFinish' if finish else 'EscrowCancel') and t.get('Owner') == terms['payer'] and t.get('OfferSequence') == p['escrowCreateSequence'] and (not finish or t.get('Condition') == terms['condition']) and p['amountDrops'] == (terms['amount'] if finish else '0') and (p['ledgerIndex'] == '' or n == p['ledgerIndex'])
+                return credit(meta, terms, terms['payTo'] if finish else terms['payer']) and p['escrowState'] in ('RELEASED', 'CANCELLED') and t.get('TransactionType') == ('EscrowFinish' if finish else 'EscrowCancel') and t.get('Owner') == terms['payer'] and t.get('OfferSequence') == p['escrowCreateSequence'] and (not finish or t.get('Condition') == terms['condition'] and (not terms.get('keyReveal') or bool(re.fullmatch('A0228020[A-F0-9]{64}', t.get('Fulfillment',''))) and 'A0258020'+hashlib.sha256(bytes.fromhex(t['Fulfillment'][8:])).hexdigest().upper()+'810120' == terms['condition'])) and p['amountDrops'] == (terms['amount'] if finish else '0') and (p['ledgerIndex'] == '' or n == p['ledgerIndex'])
             check(('escrow-finish ' if p['escrowState'] == 'RELEASED' else 'escrow-cancel ') + name, terminal)
         else:
             check('payment ' + name, lambda p=p: payment(p['txHash'], p['payer'], p['payee'], p['amountDrops'], p['invoiceId'], p.get('asset', 'XRP'), p['ledgerIndex']))
@@ -77,7 +98,7 @@ def verify_transactions(b, entries, lookup, add):
                 import hashlib
                 invoice = bytes.fromhex(t['Memos'][0]['Memo']['MemoData']).decode()
                 terms = json.loads(invoice)
-                return create_ok(t, terms) and hashlib.sha256(invoice.encode()).hexdigest().upper() == d['invoiceHash'] and t.get('Account') == d['owner'] and t.get('Sequence') == d['createSequence'] and t.get('Amount') == d['amountDrops'] and t.get('Destination') == d['payTo'] and t.get('CancelAfter') == d['cancelAfter']
+                return create_ok(t, terms) and hashlib.sha256(invoice.encode()).hexdigest().upper() == d['invoiceHash'] and t.get('Account') == d['owner'] and t.get('Sequence') == d['createSequence'] and terms['amount'] == d['amountDrops'] and t.get('Destination') == d['payTo'] and t.get('CancelAfter') == d['cancelAfter']
             return t.get('TransactionType') == ('EscrowFinish' if e['kind'] == 'ESCROW_FINISH' else 'EscrowCancel') and t.get('Owner') == d['owner'] and t.get('OfferSequence') == d['createSequence']
         check(e['kind'].lower().replace('_', '-') + ' ' + e['intentId'], event)
         if e['kind'] == 'ESCROW_FINISH':

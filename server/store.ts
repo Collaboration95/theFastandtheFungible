@@ -661,7 +661,7 @@ export class Store {
       const settledAt = new Date().toISOString(), terms = e.quote.terms
       const receipt = ReceiptSchema.parse({ source: intent.source, receiptId: `escrow-${tx.txHash}`, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version,
         amountMinor: terminal === 'finish' ? intent.amountMinor : 0, currency: 'SGD', settledAt, label: 'XRPL TESTNET · no real value', escrow: e.publicStatus,
-        xrpl: { txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
+        xrpl: { asset: terms.asset, txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
       this.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
       this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
       this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? e.publicStatus.proofOk ? 'VERIFIED' : 'CLAIM_FAILED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, ...(failedClaimIds ? { failedClaimIds } : {}), error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })

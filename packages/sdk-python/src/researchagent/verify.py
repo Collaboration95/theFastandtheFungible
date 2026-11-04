@@ -755,7 +755,7 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
                     and canonical(et) == q["quoteId"]
                     and row.get("escrowState") == escrow["state"]
                     and et["manifestRoot"] == q["contentDigest"]
-                    and et["amount"] == amount()
+                    and et["amount"] == amount(et.get("asset", "XRP"))
                     and et["payer"] == row["payer"]
                 )
             else:
@@ -860,7 +860,7 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
         for e in entries:
             if e['kind'] == 'ESCROW_FINISH' and e['data'].get('proofOk') is False:
                 add('key-reveal-proof ' + e['intentId'], any(r['kind'] == 'refund' and r['intentId'] == e['intentId'] and r['data'].get('originalTxHash') == e['data']['txHash'] and any(p['intentId'] == e['intentId'] and p.get('refundTxHash') == r['data'].get('txHash') for p in b['payments']) for r in entries))
-        if testnet or ledger and ('SIMULATED' not in b['label'] or b.get('ledgerAnchor')):
+        if testnet or ledger and ('SIMULATED' not in b['label'] or b.get('ledgerAnchor') or any(p.get('escrowTerms', {}).get('asset', 'XRP') != 'XRP' for p in b['payments'])):
             from ._ledger import lookup, verify_transactions
             verify_transactions(b, entries, ledger_lookup or lookup, add)
             add('testnet coverage', all(p['label'] == 'XRPL TESTNET · no real value' for p in b['payments']), 'All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof')

@@ -1,10 +1,16 @@
 import { spawn } from 'node:child_process'
 import { prepare } from './testnet-wallets.js'
+if (process.argv.includes('--iou')) process.env.ESCROW_ASSET = 'test-iou'
 const started = Date.now()
 const { env, fallback, reason } = await prepare()
 if (fallback) console.warn(`SIMULATED fallback · ${reason} · no ledger transactions`)
 env.ANCHOR_RAIL = process.env.ANCHOR_RAIL === 'off' ? 'off' : 'xrpl-testnet'
 if (process.argv.includes('--key-reveal')) { if (fallback) throw Error('Key-reveal capture requires Testnet'); env.ESCROW_MODE = 'key-reveal' }
+if (process.env.ESCROW_ASSET === 'test-iou') {
+  if (fallback) throw Error('IOU provisioning failed; no IOU execution')
+  env.ESCROW_MODE = 'key-reveal'
+  console.log('TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD')
+}
 env.TESTNET_STARTED_AT = String(started)
 const captureOnly = process.argv.includes('--capture')
 const args = captureOnly ? ['--import','tsx','scripts/capture-browser-demo.ts', ...(!fallback?['--testnet']:[]), ...(process.argv.includes('--key-reveal') ? ['--key-reveal'] : []), ...(process.argv.includes('--kestrel') ? ['--kestrel'] : []), ...(process.argv.includes('--no-show') ? ['--no-show'] : [])] : ['scripts/demo.mjs']

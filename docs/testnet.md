@@ -135,3 +135,13 @@ to `result.json` and the step summary, and exits 0 (gate 5: nothing simulated pa
 `0AB8881C01758BC9418A700918153F172AEB9F9B474B12134D564A6B9A99D039` (EscrowCreate, ledger 22057869) and
 `E76A9F4A6363785C6ACCEF528540F0140AF6FA3969D4E07854FEDDB1E7130CBE` (EscrowFinish, ledger 22057870). This is not a real
 Codespace; that check stays with the owner (#265).
+
+## Token escrow opt-in
+
+`make testnet ARGS=--iou` (or `ESCROW_ASSET=test-iou make testnet`) enables
+TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD.
+S$ prices map 1:1. XRP key reveal remains the default. The public faucet funds
+a dedicated permissioned issuer and trust lines; seeds stay in the existing 0600
+scratch store. The launcher refuses IOU execution if provisioning fails.
+The issuer has zero transfer fees. MCP IOU mode is a follow-up.
+See [key reveal](key-reveal-escrow.md) for the asset matrix and safety checks.

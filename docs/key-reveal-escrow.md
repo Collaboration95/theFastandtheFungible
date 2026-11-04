@@ -87,13 +87,36 @@ ciphertext, manifest, ledger index and signature.
 
 Offline success checks cryptographic consistency, **not ledger finality**. The
 bundled ledger index and transaction hashes require an independent ledger lookup
-to establish that publication actually occurred. TS `--testnet` adds read-only
-ledger checks; Python remains offline.
+to establish that publication actually occurred. TS and Python `--ledger` add read-only s.altnet ledger checks for create,
+finish/cancel, IOU settlement and key publication.
 
 ## Threat model and limits
 
-- XRP only. The observed RLUSD Testnet issuer lacks the token-escrow permission
-  flag; amendment activation alone is insufficient. No mainnet support is claimed.
+| Asset | Key-reveal escrow on Testnet |
+| --- | --- |
+| XRP | ✓ Default |
+| TEST-SGD (SGT) | ✓ Opt-in; our Testnet issuer; no real value; stand-in for RLUSD |
+| Official RLUSD | ✗ Until its issuer enables AllowTrustLineLocking |
+
+TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD. S$ prices map 1:1 to TEST-SGD; this is neither a peg nor a backing claim.
+
+`make testnet ARGS=--iou` provisions a dedicated issuer with AccountSet flag 17,
+buyer/writer trust lines and a buyer issuance using only public-faucet-funded
+Testnet accounts. Seeds remain in the 0600 scratch wallet store. `ESCROW_ASSET=test-iou`
+is the equivalent environment switch (the launcher supplies TESTNET_IOU_ISSUER).
+XRP remains the default; MCP IOU support is a follow-up.
+
+The issuer is separate from buyer and writer. Policy rejects issuer-as-party,
+missing permission, nonzero transfer fees, frozen/unauthorized lines, insufficient
+balance or destination limit before create signing. This is a conservative subset
+of XLS-85: no transfer-fee arithmetic or freeze exception is claimed. Settlement
+checks the writer RippleState balance delta (currency, issuer, sign and exact
+value), never the requested Amount as proof of delivery. Cancellation checks the
+buyer's returned balance delta. Existing reservations and signed outboxes remain.
+
+See [XLS-85](https://xls.xrpl.org/xls/XLS-0085-token-escrow.html) and
+[xrpl.js flag 17](https://js.xrpl.org/enums/AccountSetAsfFlags.html).
+No mainnet support is claimed.
 - The writer receives the principal only by publishing K through a successful
   finish. A relay can submit the same fulfillment; funds still go to the original
   destination. Buyer cancellation is policy-only and cannot win before expiry.
