@@ -80,3 +80,15 @@ prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots
 - **Opt-in acceptance.** `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet` probes the packed bytes over
   stdio with a fresh npm cache, restarts to prove wallet reuse and cap enforcement, and checks each hash on s.altnet.
   Default CI never calls the faucet. Evidence: [round3-a](evidence/round3-a/README.md).
+
+## Devcontainer Testnet CI
+
+[`codespace-testnet.yml`](../.github/workflows/codespace-testnet.yml) (manual and nightly, never on PRs) boots `.devcontainer/testnet`
+with `devcontainers/ci`, lets its `postStartCommand` run `make testnet` with a generated API token and operator caps
+(S$2 per question, S$5 per day), asks UC3 over the SDK, and checks EscrowCreate and EscrowFinish on s.altnet. A faucet or
+network failure is not a red build: the probe prints a yellow `SIMULATED fallback (reason)` warning annotation, writes it
+to `result.json` and the step summary, and exits 0 (gate 5: nothing simulated passes as Testnet). First run:
+[run 41804181845](https://github.com/Collaboration95/theFastandtheFungible/actions/runs/41804181845), real Testnet, 51.9 s,
+`0AB8881C01758BC9418A700918153F172AEB9F9B474B12134D564A6B9A99D039` (EscrowCreate, ledger 22057869) and
+`E76A9F4A6363785C6ACCEF528540F0140AF6FA3969D4E07854FEDDB1E7130CBE` (EscrowFinish, ledger 22057870). This is not a real
+Codespace; that check stays with the owner (#265).

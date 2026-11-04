@@ -229,8 +229,8 @@ Measured on XRPL Testnet through the packed MCP tgz (`--testnet`), fixture model
 | Key-reveal purchase (EscrowCreate + EscrowFinish) | 435 drops (12 + 423) |
 | Answer anchor (AccountSet) | 12 drops |
 | Plain payment / writer-signed refund | 12 / 12 drops (earlier runs) |
-| MCP initialize · cold wallet provisioning · cached wallets | 10.5 s · 18.4 s · 3.9 s |
-| Anchored key-reveal answer, end to end (slowest of 2 runs) | 45.6 s |
+| MCP initialize · cold wallet provisioning · cached wallets | 11.2 s · 17 s · 3.9 s |
+| Anchored key-reveal answer, end to end (slowest of 2 runs) | 45.7 s |
 | **Projection** at an assumed S$2.00 per XRP | S$0.00087 per purchase, S$0.00002 per anchor (fees only) |
 
 Regenerate: `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet && node scripts/testnet-cost-card.mjs --xrp-sgd 2.00 --markdown`. The EscrowFinish fee scales with the serialized fulfillment size ([builder feedback B19](docs/BUILDER-FEEDBACK.md)).
