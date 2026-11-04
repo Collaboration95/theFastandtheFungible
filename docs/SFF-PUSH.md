@@ -542,3 +542,4 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 — Lane V2 (Reachability / UX): validated cold-wallet startup (3/3 captures; first hashes 76.448/77.810/71.768 s), Testnet Codespaces config (schema/local clone only), Testnet README hero and verify links, explicit MCP caps/hint, honest net/gross budget and kept/refunded counts; evidence docs/evidence/lane-v2/.
 
 - 2026-11-04 — Lane W: add paired idle-loop control and opt-in span/CPU attribution, bound Store statement reuse and skip unused trace hydration; clean disposable consumer/tool scratch. Full soak retains a 2032.14 ms loop FAIL versus 12.04 ms idle control; no gate loosened. Evidence: docs/evidence/round2-w/.
+- 2026-11-04 · Lane X: live key-reveal lifecycle and policy checks, escrow-finish refunds/re-buy and multi-origin hire; local Testnet default after V2 with explicit Payment opt-out; cold-faucet hashes and verification in docs/evidence/lane-x/.

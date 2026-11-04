@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-04",
+  "codeCommit": "1b3124af",
+  "evidenceClass": "fixture providers and synthetic corpus; real Testnet cold boots; simulated ledger chaos and hire tests",
+  "fastGate": {
+    "unitTests": 1216,
+    "smokeRuns": 20,
+    "status": "PASS"
+  },
+  "hygiene": "PASS",
+  "playwright": {
+    "browser": 18,
+    "demo": 2,
+    "ledger": 5
+  },
+  "pythonSdkTests": 222,
+  "typescriptConformanceVectors": 193,
+  "releaseArtifactsAndConsumers": "PASS",
+  "coldBoots": 3,
+  "independentlyValidatedHashes": 15,
+  "chaos": {
+    "seed": 279,
+    "iterations": 200,
+    "processKills": 55,
+    "doubleCharges": 0,
+    "invariantViolations": 0,
+    "stuckReservations": 0
+  },
+  "keyRevealSigkill": [
+    {
+      "boundary": "create",
+      "signal": "SIGKILL",
+      "status": "VERIFIED",
+      "creates": 1,
+      "receipts": 1,
+      "violations": 0,
+      "doubleCharges": 0
+    },
+    {
+      "boundary": "reveal",
+      "signal": "SIGKILL",
+      "status": "VERIFIED",
+      "creates": 1,
+      "receipts": 1,
+      "violations": 0,
+      "doubleCharges": 0
+    },
+    {
+      "boundary": "decrypt",
+      "signal": "SIGKILL",
+      "status": "VERIFIED",
+      "creates": 1,
+      "receipts": 1,
+      "violations": 0,
+      "doubleCharges": 0
+    }
+  ],
+  "loosened": "Nothing",
+  "provisioningIncident": {
+    "observed": "Wallet funding timeout on preliminary cold provisioning",
+    "workaround": "Retry same private scratch wallet set; succeeded",
+    "scope": "Before V2 rebase; no simulation counted as live acceptance"
+  },
+  "integrationBase": "45edb2c8",
+  "postRebaseUnitTests": 1220,
+  "postRebaseKeyRevealSigkill": "3 passed; zero violations or double charges"
+}
