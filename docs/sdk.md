@@ -1,6 +1,10 @@
 # ResearchAgent SDK v1
 
-Install status: registries are not yet published. Run `node scripts/install-snippets.mjs --tag v1.0.0` after the owner publishes that release for asset install commands. Local tarballs are built with `make release-artifacts`; MCP includes `researchagent-mcp-1.0.0.tgz` with an npx bin. npm does not support a native git-subdirectory install.
+[Release candidate v1.0.0-rc.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1): install without cloning; not yet on npm, PyPI or the MCP Registry.
+
+```sh
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/researchagent-sdk-1.0.0-rc.1.tgz
+```
 
 
 Node 22.13+ ESM, with TypeScript declarations. Build with `npm run build:sdk`,

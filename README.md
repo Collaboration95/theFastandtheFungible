@@ -13,7 +13,7 @@
   <a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Try it in your browser</a> ·
   <a href="https://collaboration95.github.io/theFastandtheFungible/">Explainers</a> ·
   <a href="https://collaboration95.github.io/theFastandtheFungible/talk/">Walkthrough</a> ·
-  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest">Download for Mac</a> ·
+  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1">Download for Mac</a> ·
   <a href="docs/README.md">Docs</a> ·
   <a href="CHANGELOG.md">Changelog</a>
 </p>
@@ -23,7 +23,7 @@
   <a href="https://codespaces.new/Collaboration95/theFastandtheFungible"><img alt="Open in GitHub Codespaces" src="https://github.com/codespaces/badge.svg"></a>
   <a href="https://codespaces.new/Collaboration95/theFastandtheFungible?devcontainer_path=.devcontainer%2Ftestnet%2Fdevcontainer.json"><img alt="Open in Codespaces · XRPL Testnet" src="https://img.shields.io/badge/Open_in_Codespaces-XRPL_Testnet-blue"></a>
   <a href="#numbers"><img alt="Latest committed nightly scorecard" src="docs/media/scorecard.svg"></a>
-  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?sort=semver"></a>
+  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1"><img alt="Latest release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?sort=semver"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-lightgrey"></a>
   <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-lightgrey"></a>
 </p>
@@ -63,18 +63,20 @@ Every gate has regression tests and a corresponding [read-only audit rule](scrip
 
 ## Use it from your agent
 
-Python installs directly from Git, without a clone:
+[Release candidate v1.0.0-rc.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1): install without cloning; not yet on npm, PyPI or the MCP Registry.
 
 ```sh
-pip install "git+https://github.com/Collaboration95/theFastandtheFungible#subdirectory=packages/sdk-python"
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/researchagent-sdk-1.0.0-rc.1.tgz
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/researchagent-1.0.0rc1-py3-none-any.whl
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/researchagent-mcp-1.0.0-rc.1.tgz
 ```
 
-TypeScript and MCP install from consumer-tested artifacts built below. [Publication status](#status-and-honesty).
+Clone/build alternatives and usage:
 
 **TypeScript SDK** ([docs](docs/sdk.md)). `make release-artifacts` builds `dist/release/` and tests each file in a clean consumer, then:
 
 ```sh
-npm i ./dist/release/researchagent-sdk-1.0.0.tgz   # exports createClient from @researchagent/sdk
+npm i ./dist/release/researchagent-sdk-1.0.0-rc.1.tgz   # exports createClient from @researchagent/sdk
 ```
 ```ts
 import { createClient } from '@researchagent/sdk'
@@ -105,12 +107,12 @@ claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=
 For the standalone package after `make release-artifacts`:
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y "file:$PWD/dist/release/researchagent-mcp-1.0.0.tgz"
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y "file:$PWD/dist/release/researchagent-mcp-1.0.0-rc.1.tgz"
 ```
 
-The command explicitly authorizes up to S$2 per question and S$5 per UTC day in fixture mode (simulated payments). Without those operator settings the caps stay zero. [HTTP from the Mac app](docs/mcp.md#app-hosted-streamable-http) gives each agent its own revocable allowance. For Claude Desktop, `ResearchAgent.mcpb` is attached to each [release](https://github.com/Collaboration95/theFastandtheFungible/releases/latest); [Codex config and all clients](docs/mcp.md).
+The command explicitly authorizes up to S$2 per question and S$5 per UTC day in fixture mode (simulated payments). Without those operator settings the caps stay zero. [HTTP from the Mac app](docs/mcp.md#app-hosted-streamable-http) gives each agent its own revocable allowance. For Claude Desktop, `ResearchAgent.mcpb` is attached to each [release](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1); [Codex config and all clients](docs/mcp.md).
 
-**Mac app** ([guide](desktop/README.md)). Download the DMG from [Releases](https://github.com/Collaboration95/theFastandtheFungible/releases/latest) (Apple Silicon and Intel, **unsigned**: right-click → Open). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
+**Mac app** ([guide](desktop/README.md)). Download the unsigned DMG: [Apple Silicon](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/ResearchAgent-1.0.0-rc.1-arm64.dmg) or [Intel](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/ResearchAgent-1.0.0-rc.1-x64.dmg). Drag into Applications, then Finder → right-click → Open (or Privacy & Security → Open Anyway); see [signing notes](desktop/SIGNING.md). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
 
 **Browser replay.** The [`/demo/`](https://collaboration95.github.io/theFastandtheFungible/demo/) page autoplays UC3: Recorded on XRPL Testnet · no real value, including a validated refund and re-buy. Fixture models and fictional writers; simulated UC1–UC3 remain available. No backend, no keys.
 
@@ -212,7 +214,9 @@ Native XRP interop with the XRPL AI Starter Kit's t54 client and server: [compat
 
 ## Status and honesty
 
-Registries are not yet published. After an owner release, `node scripts/install-snippets.mjs --tag v1.0.0` prints release-asset install commands. Local zero-clone measurements use file URLs as stand-ins.
+Quiet-host full soak passes all five unchanged gates (worst-interval p99 25.8 ms); the heavily loaded shared-host run failed. Local synthetic/SIMULATED [evidence](docs/evidence/soak-nov4-ab/README.md).
+
+[Release candidate v1.0.0-rc.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1): install without cloning; not yet on npm, PyPI or the MCP Registry.
 
 Packages are **built and consumer-tested but not yet published** to npm, PyPI or the MCP Registry (publishing is an owner step, #265). Install from a release artifact or your checkout. Operator caps default to zero; a calling model cannot raise them.
 

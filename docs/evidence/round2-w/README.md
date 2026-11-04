@@ -1,4 +1,6 @@
 > Local synthetic fixture asks / SIMULATED settlement on a shared Mac. No live
+
+Current result (#374): Quiet-host full soak now passes all five unchanged gates (worst-interval p99 25.8 ms); the heavily loaded shared-host run failed. [Local synthetic/SIMULATED evidence](../soak-nov4-ab/README.md). Historical measurements below remain pinned to their original runs.
 > providers, Testnet purchases, real funds, or Monday acceptance are claimed.
 
 Lane W adds an independent idle Node child with the same 10 ms histogram
@@ -95,7 +97,7 @@ One-minute host load during measurement: 17.729–77.718. This run overlapped th
 | 165 | 479.461 | 15.401 | 52.730 |
 | 398 | 440.140 | 12.476 | 31.908 |
 
-The worst paired control p99 is 12.042 ms versus engine 2032.140 ms. The control did not have a matching p99 stall. A shared scheduler explanation is not established. Thread-specific descheduling or disk contention remain possible, not proven. The loop gate remains failed; the Monday quiet-host run is still required. No control subtraction, threshold change, or money-path relaxation was made.
+The worst paired control p99 is 12.042 ms versus engine 2032.140 ms. The control did not have a matching p99 stall. A shared scheduler explanation is not established. Thread-specific descheduling or disk contention remain possible, not proven. That run failed the loop gate; the subsequent quiet-host full soak passes all five gates at 25.8 ms ([evidence](../soak-nov4-ab/README.md)). No control subtraction, threshold change, or money-path relaxation was made.
 
 Validation on measured source 9a34e9d4: check:fast **1,209 tests / 142 files**
 plus 20-run chaos smoke; hygiene passes; Python **222 passed**, including the

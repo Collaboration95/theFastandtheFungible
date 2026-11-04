@@ -10,6 +10,19 @@ Every number below keeps the scope label of the evidence it comes from
 Packages are built and consumer-tested but **not published** to npm, PyPI or
 the MCP Registry; that is an owner step tracked in #265.
 
+## v1.0.0-rc.1 — 4 Nov 2026
+
+### Added
+
+- Release-candidate SDK, Python and MCP artifacts (#370); desktop CI downloads Electron before DMG builds (#373).
+- Key-reveal escrow on first touch and in the live Testnet product (#369, #372).
+
+### Changed
+
+- Fix Testnet reachability and first-impression money consistency (#367).
+- Reduce engine nursery footprint with retained-heap evidence (#368); attribute loop stalls, reduce Store work and clean consumer scratch (#371).
+- Quiet-host full soak passes all five unchanged gates, worst-interval p99 25.8 ms; heavily loaded shared-host run failed (#374). [Local synthetic/SIMULATED evidence](docs/evidence/soak-nov4-ab/README.md).
+
 ## 1.0.0 (candidate)
 
 Merged on `main` after [v0.8.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.8.0)

@@ -1,5 +1,7 @@
 # H2 finals rehearsal
 
+Current result (#374): Quiet-host full soak now passes all five unchanged gates (worst-interval p99 25.8 ms); the heavily loaded shared-host run failed. [Local synthetic/SIMULATED evidence](../soak-nov4-ab/README.md). Historical measurements below remain pinned to their original runs.
+
 This lane measures a fixture workload on a declared local host. All inference is
 synthetic and all settlement is simulated. Results describe the named source,
 commands and sampled intervals; they establish no universal memory bound,

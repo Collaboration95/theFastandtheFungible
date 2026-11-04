@@ -1,4 +1,6 @@
 > What this proves: worker heap attribution and a measured nursery-capacity reduction.
+
+Current result (#374): Quiet-host full soak now passes all five unchanged gates (worst-interval p99 25.8 ms); the heavily loaded shared-host run failed. [Local synthetic/SIMULATED evidence](../soak-nov4-ab/README.md). Historical measurements below remain pinned to their original runs.
 > Scope: local same-engine synthetic fixtures / SIMULATED settlement on a shared host.
 > Limits: snapshots perturb GC; this is not live-provider, Testnet or final acceptance.
 
