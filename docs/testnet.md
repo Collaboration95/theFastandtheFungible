@@ -55,3 +55,40 @@ only create/finish/refund/re-buy hashes and first-create timing under
 `docs/evidence/lane-x/`. `TESTNET_WALLET_FILE=scratch/<unique>/wallets.private.json`
 selects a fresh wallet cache. The acceptance script deletes its private scratch.
 Funding, hire ingress, royalties, change and cooperative refunds stay Payments.
+
+## Zero-clone Testnet MCP (next release candidate)
+
+```sh
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y <mcp tgz> --testnet
+```
+
+`<mcp tgz>` is the release asset from the next release candidate (the published rc.1 does not contain `--testnet`), or the
+local `dist/release/researchagent-mcp-*.tgz` from `make release-artifacts`. `node scripts/install-snippets.mjs --tag <tag> --testnet`
+prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots its own engine and fixture publisher.
+
+- **Rail.** `ESCROW_MODE=key-reveal` and `ANCHOR_RAIL=xrpl-testnet` are set for the engine only. `wallet_status` shows
+  `rail: xrpl-testnet`, the public payer address and the label `Testnet · no real value`. `ask_expert` and `get_run` add
+  `ledger.purchases[]` (`create`, `finish`, `refund`) and `ledger.anchor`, each `{ txHash, explorerUrl }`.
+- **Wallets.** Stdio `initialize` answers at once; the first tool call waits for the public Testnet faucet (about 20 s cold,
+  about 4 s with cached wallets). One buyer is funded by the faucet; fixture writers are funded from it, so one faucet
+  request per machine. Wallets and durable cap accounting live under `$XDG_STATE_HOME/researchagent/testnet/`
+  (fallback `~/.local/state/researchagent/testnet/`); `wallets.private.json` is mode 0600 and is never printed or
+  returned by a tool. Keep that directory to reuse wallets; never publish it.
+- **Caps.** Operator-set and zero by default (`mcp/policy.ts` is unchanged). Only policy code can purchase.
+- **Fallback.** If the faucet or network fails, the engine runs SIMULATED and says so in `startupLabels`:
+  `SIMULATED fallback · faucet_unavailable | validation_timeout | wallet_cache_unavailable | network_unavailable · no ledger transactions`.
+- **Opt-in acceptance.** `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet` probes the packed bytes over
+  stdio with a fresh npm cache, restarts to prove wallet reuse and cap enforcement, and checks each hash on s.altnet.
+  Default CI never calls the faucet. Evidence: [round3-a](evidence/round3-a/README.md).
+
+## Devcontainer Testnet CI
+
+[`codespace-testnet.yml`](../.github/workflows/codespace-testnet.yml) (manual and nightly, never on PRs) boots `.devcontainer/testnet`
+with `devcontainers/ci`, lets its `postStartCommand` run `make testnet` with a generated API token and operator caps
+(S$2 per question, S$5 per day), asks UC3 over the SDK, and checks EscrowCreate and EscrowFinish on s.altnet. A faucet or
+network failure is not a red build: the probe prints a yellow `SIMULATED fallback (reason)` warning annotation, writes it
+to `result.json` and the step summary, and exits 0 (gate 5: nothing simulated passes as Testnet). First run:
+[run 41804181845](https://github.com/Collaboration95/theFastandtheFungible/actions/runs/41804181845), real Testnet, 51.9 s,
+`0AB8881C01758BC9418A700918153F172AEB9F9B474B12134D564A6B9A99D039` (EscrowCreate, ledger 22057869) and
+`E76A9F4A6363785C6ACCEF528540F0140AF6FA3969D4E07854FEDDB1E7130CBE` (EscrowFinish, ledger 22057870). This is not a real
+Codespace; that check stays with the owner (#265).

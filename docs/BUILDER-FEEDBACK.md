@@ -774,3 +774,15 @@ Observed locally on XRPL Testnet with faucet wallets: a writer refusing signed d
 Code-derived failure mode from the round-2 cold incident: faucet HTTP success did not guarantee the buyer was visible in the validated ledger before writer funding. Workaround: poll validated account_info for up to 20 seconds, then sign; retry actNotFound/tefPAST_SEQ once. Three fresh-wallet launches and three clean-clone captures succeed after the change (docs/evidence/lane-v2/). Fallback distinguishes faucet HTTP status, validation timeout and funding tx result without bodies or secrets. Suggested tooling fix: expose a validated-funding readiness contract. Severity: demo reliability; mainnet impact: faucet-specific, while sequence/validation races also require reconciliation on mainnet (not tested).
 
 - 2026-11-04 · observed, Lane X cold-wallet setup: public Testnet ledger was reachable; first provisioning attempt timed out waiting for writer funding validation, retrying the same scratch wallet set succeeded. Evidence: `docs/evidence/lane-x/validation.json` provisioningIncident and cold acceptance hashes. Workaround: retain the private scratch cache and retry (never publish seeds). Suggested fix: expose faucet/funding validation progress and a retryable receipt hash. Severity: demo startup delay; mainnet impact: faucet-specific setup does not apply, ledger validation delay still requires durable reconciliation.
+
+### 2026-11-04 · Zero-clone Testnet MCP: serial faucet-wallet funding (observed, Lane A round 3)
+
+- Evidence: `docs/evidence/round3-a/README.md`. Cold wallet provisioning through the packed MCP took 57.67 s when each fixture-writer funding Payment waited for validation before the next was signed; submitting all funding Payments back to back (the open-ledger `Sequence` advances) and then waiting once took 18–19 s on the same Testnet.
+- Workaround: submit-then-wait-once in `scripts/testnet-wallets.ts`, with the existing one-shot `tefPAST_SEQ` retry. Suggested fix: docs for `xrpl.js` `autofill` could show queued-sequence batching for faucet-style setup, and say whether `account_info` with `ledger_index: current` is the supported source of the next Sequence.
+- Severity: low (first-touch latency). Mainnet impact: none; Testnet faucet only. Observed, not code-derived.
+
+### 2026-11-04 · devcontainer-in-CI Testnet boot (observed, Lane A round 3)
+
+- Evidence: workflow run 41804181845 (devcontainers/ci, ubuntu-latest): the faucet funded a buyer from a GitHub-hosted IP and UC3 completed in 51.9 s with validated EscrowCreate and EscrowFinish hashes (`docs/evidence/round3-a/README.md`). That is one observation, not a statement about faucet rate limits from CI IPs.
+- Tooling friction: `gh workflow run` returns 404 for a workflow file that exists only on a feature branch (dispatch needs it on the default branch), so the first run needed a temporary branch-scoped `push` trigger.
+- Severity: low. Mainnet impact: none.

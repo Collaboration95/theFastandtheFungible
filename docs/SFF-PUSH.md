@@ -549,3 +549,5 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 — Lane Y: link RC SDK/Python/MCP installs and unsigned DMGs, report package MCP version, reconcile quiet-host soak evidence, mark upstream drafts unfiled, and record #367–#374.
 
 - 2026-11-04 — Lane Y verification: replace pre-release URL prohibition with generated RC command and registry-status assertions; no spending or performance gate changed.
+
+- 2026-11-04 — Reachability / Feasibility (Lane A3): `npx -y <mcp tgz> --testnet` runs real key-reveal + anchor on XRPL Testnet with no clone (init 11 s, cold wallets 17 s, validated hashes on s.altnet), devcontainer-in-CI Testnet boot workflow, and the Testnet cost card in README Numbers. Evidence: docs/evidence/round3-a/README.md; models/writers stay fixtures, faucet failure is a labelled SIMULATED fallback.
