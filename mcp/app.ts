@@ -37,8 +37,8 @@ export function parseAppArgs(argv: string[]) {
 }
 
 /** The tgz ships the built UI at `ui/`; a checkout falls back to `dist/` from `npm run build`. */
-function uiDirectory(root: string) {
-  const dir = [resolve(root, 'ui'), resolve(root, 'dist')].find(candidate => existsSync(join(candidate, 'index.html')))
+function uiDirectory(root: string, override?: string) {
+  const dir = [override, resolve(root, 'ui'), resolve(root, 'dist')].filter((candidate): candidate is string => Boolean(candidate)).find(candidate => existsSync(join(candidate, 'index.html')))
   if (!dir) throw new Error('UI bundle not found; run npm run build in a checkout')
   return dir
 }
@@ -71,7 +71,8 @@ function openBrowser(url: string) {
   execFile(command, args, { windowsHide: true }, () => {}).unref()
 }
 
-export async function runApp(argv: string[]) {
+/** `stop` ends the app like Ctrl-C (tests); `ui` overrides the bundled UI directory. */
+export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: string; stop?: AbortSignal } = {}) {
   const started = performance.now()
   let options
   try { options = parseAppArgs(argv) } catch (error) { console.error((error as Error).message); process.exitCode = 2; return }
@@ -88,7 +89,7 @@ export async function runApp(argv: string[]) {
     if (tokenFile) rmSync(tokenFile, { force: true })
   })()
   try {
-    const ui = uiDirectory(root)
+    const ui = uiDirectory(root, uiOverride)
     const testnetModule = options.testnet ? await import('./testnet.js') : undefined
     const setup = await testnetModule?.prepareMcpTestnet()
     const config = loadConfig()
@@ -156,7 +157,10 @@ export async function runApp(argv: string[]) {
     console.log(lines.join('\n'))
     if (options.open) openBrowser(url)
     await new Promise<void>(done => {
-      for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => done())
+      const signals = ['SIGINT', 'SIGTERM'] as const
+      const finish = () => { for (const signal of signals) process.off(signal, finish); done() }
+      for (const signal of signals) process.on(signal, finish)
+      if (stop?.aborted) finish(); else stop?.addEventListener('abort', finish, { once: true })
     })
   } catch (error) {
     console.error(error instanceof Error && /^(UI bundle|Invalid configuration:)/.test(error.message) ? error.message : 'ResearchAgent app startup failed; check operator configuration. No credentials are logged.')
