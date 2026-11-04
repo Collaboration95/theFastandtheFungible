@@ -1,0 +1,9 @@
+{
+  "name": "ResearchAgent · XRPL Testnet · no real value",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "containerEnv": {"ELECTRON_SKIP_BINARY_DOWNLOAD": "1", "SEARCH_EMBEDDINGS": "off", "LANGFUSE_ENABLED": "0"},
+  "postCreateCommand": "npm ci",
+  "postStartCommand": "nohup make testnet > /tmp/researchagent-testnet.log 2>&1 &",
+  "forwardPorts": [6900],
+  "portsAttributes": {"6900": {"label": "ResearchAgent · XRPL Testnet (SIMULATED on provisioning failure)", "onAutoForward": "openBrowser"}}
+}

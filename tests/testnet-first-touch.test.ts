@@ -32,3 +32,32 @@ it('stores reusable seeds only in scratch with 0600; funding endpoints and netwo
   await expect(provision('/tmp/forbidden-wallet.json',faucet,ledger)).rejects.toThrow('scratch')
   await expect(provision(file,faucet,{...ledger,request:async()=>({result:{info:{network_id:0}}})})).rejects.toThrow('network ID')
 })
+it('waits for a validated buyer and retries an account race once before funding', async () => {
+  const { Wallet } = await import('xrpl')
+  const buyer = Wallet.generate(), writer = Wallet.generate()
+  const file = resolve(`scratch/testnet-unit-${crypto.randomUUID()}/wallets.private.json`)
+  const { writeFile } = await import('node:fs/promises')
+  await mkdir(resolve(file, '..'), { recursive: true })
+  await writeFile(file, JSON.stringify({ buyer: buyer.seed, alphaleak: writer.seed }))
+  let validations = 0, signatures = 0, submitted = 0
+  const ledger = { close: async () => {}, request: async (r: Record<string, unknown>) => {
+    if (r.command === 'server_info') return {result:{info:{network_id:1}}}
+    if (r.command === 'account_info') {
+      if (r.account === buyer.classicAddress && r.ledger_index === 'validated' && ++validations < 3) throw {data:{error:'actNotFound'}}
+      if (r.account === buyer.classicAddress && r.ledger_index === 'current' && ++signatures === 1) throw {data:{error:'actNotFound'}}
+      return {result:{account_data:{Balance:r.account === writer.classicAddress ? '0' : '100000000',Sequence:1}}}
+    }
+    if (r.command === 'ledger_current') return {result:{ledger_current_index:100}}
+    if (r.command === 'fee') return {result:{drops:{open_ledger_fee:'12'}}}
+    if (r.command === 'submit') { submitted++; expect(validations).toBeGreaterThanOrEqual(3); return {result:{engine_result:'tesSUCCESS'}} }
+    return {result:{validated:true,meta:{TransactionResult:'tesSUCCESS'},ledger_index:101}}
+  }}
+  await provision(file, (async () => new Response('{}')) as typeof fetch, ledger)
+  expect(submitted).toBe(1)
+  expect(signatures).toBe(2)
+})
+it('classifies faucet failures without leaking response bodies', async () => {
+  const result = await prepare(() => provision(`scratch/testnet-unit-${crypto.randomUUID()}/wallets.private.json`, (async () => new Response('private response', {status:429})) as typeof fetch, {close:async()=>{},request:async r=>({result:r.command==='server_info'?{info:{network_id:1}}:{account_data:{Balance:'0'}}})}))
+  expect(result.reason).toContain('faucet HTTP 429')
+  expect(JSON.stringify(result)).not.toContain('private response')
+})

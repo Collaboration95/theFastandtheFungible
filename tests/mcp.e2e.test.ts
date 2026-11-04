@@ -30,6 +30,7 @@ it('stdio search → policy buy → cited answer; cap, daily cap, retry and rest
   let client = await connect(env)
   try {
     expect((await client.listTools()).tools.map(t => t.name).sort()).toEqual(['ask_expert', 'get_run', 'hire', 'pause_spending', 'search_expertise', 'verify_answer', 'wallet_status'])
+    expect(await call(client, 'ask_expert', {question: 'What changed?'})).toEqual({hint: 'Set budget_sgd (for example 2); the operator caps remain authoritative.'})
     const search = await call(client, 'search_expertise', { query: USE_CASES.UC2.question })
     const corpus = await loadWriterCorpus()
     assertNoLeaks([{ kind: 'MCP stdio search', raw: JSON.stringify(search), grants: [] }], corpus)

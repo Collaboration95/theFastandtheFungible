@@ -23,6 +23,7 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
     {state.failed && <button className="ra-btn ra-btn-go" onClick={() => onRetry(intent.intentId)}>Retry delivery</button>}
     <Verification run={run} intent={intent} />
     {testnet && typeof refundUrl === 'string' && refundUrl.startsWith('https://testnet.xrpl.org/') && <a href={refundUrl} target="_blank" rel="noreferrer">Refund tx {shortHash(intent.refund?.txHash ?? '')} ↗</a>}
+    {testnet && /^[A-Fa-f0-9]{64}$/.test(intent.txHash ?? '') && <a href={`https://testnet.xrpl.org/transactions/${intent.txHash}`} target="_blank" rel="noreferrer">tx ↗</a>}
     {receipt && <button className="ra-link ra-receipt-link" onClick={() => onReceipt(receipt)}>Receipt ›</button>}
   </section>
 }

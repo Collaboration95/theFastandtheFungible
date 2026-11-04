@@ -67,7 +67,7 @@ test('paid UC2 export opens the before/after comparison and returns to the answe
   await page.getByRole('button', { name: 'pricing & margins' }).click()
   await page.getByRole('button', { name: 'Start now' }).click()
   await expect(page).toHaveTitle(/Answer ready/)
-  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought')
+  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 kept · 0 refunded')
   await page.getByText('Export ⋯', { exact: true }).click()
   await page.getByRole('button', { name: 'See what changed after the purchase' }).click()
   await expect(page.getByRole('region', { name: 'What changed after the purchase' })).toBeVisible()

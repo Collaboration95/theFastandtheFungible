@@ -29,6 +29,11 @@ const env = { ...process.env, RA_API_TOKEN: process.env.RA_API_TOKEN || randomBy
   SETTLEMENT_RAIL: process.env.SETTLEMENT_RAIL || (live && process.env.XRPL_PAYER_SEED ? 'xrpl-testnet' : 'simulated'),
   // Langfuse Cloud traces for live runs only (fixture demos and browser tests stay local).
   LANGFUSE_ENABLED: process.env.LANGFUSE_ENABLED || (live ? '1' : '0'), LANGFUSE_TRACING_ENVIRONMENT: process.env.LANGFUSE_TRACING_ENVIRONMENT || (live ? 'live' : 'fixture') }
+const forwardedHost = process.env.CODESPACE_NAME && process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ? `${process.env.CODESPACE_NAME}-${ports.web}.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}` : undefined
+if (forwardedHost) {
+  if (!/^[a-z0-9.-]+$/i.test(forwardedHost)) throw new Error('Invalid Codespaces forwarding hostname')
+  Object.assign(env, { RA_CLIENT_LAN: '1', RA_ALLOWED_HOSTS: forwardedHost, RA_WEB_ORIGIN: `https://${forwardedHost}` })
+}
 const children = []
 let stopping = false
 // The SIGKILL timer stays referenced: an unref'd one let the launcher exit first and leave servers holding the ports.
