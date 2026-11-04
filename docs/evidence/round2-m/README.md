@@ -1,5 +1,7 @@
 # Lane M — responsive retained-history accounting
 
+Current result (#374): Quiet-host full soak now passes all five unchanged gates (worst-interval p99 25.8 ms); the heavily loaded shared-host run failed. [Local synthetic/SIMULATED evidence](../soak-nov4-ab/README.md). Historical measurements below remain pinned to their original runs.
+
 > What this proves: Lane M — responsive retained-history accounting.
 > Scope: Local synthetic retained-history performance and exact accounting equivalence.
 > Limits: This packet alone does not establish mainnet readiness or human acceptance.

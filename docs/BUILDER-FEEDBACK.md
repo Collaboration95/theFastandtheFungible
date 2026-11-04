@@ -8,6 +8,8 @@ Top three for Ripple: issuer permission, exact issued delivery, and public endpo
 
 Runnable: `node scripts/repro/01-issuer-permission.mjs` (<30 s). [Upstream draft](feedback/upstream/01-issuer-permission.md).
 
+- Filed: draft ready → [docs/feedback/upstream/01-issuer-permission.md](feedback/upstream/01-issuer-permission.md); not filed (owner-only, #265).
+
 - Date / class: 2026-11-03; Observed flags + document-derived refusal.
 - Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
 - Evidence / reproduction: [record](evidence/rlusd.md); Issuer Flags 2174353408 lacked AllowTrustLineLocking on 2026-11-03; predicted tecNO_PERMISSION was never submitted.
@@ -19,6 +21,8 @@ Runnable: `node scripts/repro/01-issuer-permission.mjs` (<30 s). [Upstream draft
 ## 2. Exact issued amount must mean delivered amount
 
 Runnable: `node scripts/repro/02-delivered-amount.mjs` (<30 s). [Upstream draft](feedback/upstream/02-delivered-amount.md).
+
+- Filed: draft ready → [docs/feedback/upstream/02-delivered-amount.md](feedback/upstream/02-delivered-amount.md); not filed (owner-only, #265).
 
 - Date / class: 2026-11-03; Code-derived; adversarial fixture proof.
 - Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
@@ -32,6 +36,8 @@ Runnable: `node scripts/repro/02-delivered-amount.mjs` (<30 s). [Upstream draft]
 
 Runnable: `node scripts/repro/07-endpoint-history.mjs` (<30 s). [Upstream draft](feedback/upstream/07-endpoint-history.md).
 
+- Filed: draft ready → [docs/feedback/upstream/07-endpoint-history.md](feedback/upstream/07-endpoint-history.md); not filed (owner-only, #265).
+
 - Date / class: 2026-11-04; observed read-only Testnet; historical HTTP attempt and fresh WebSocket verification.
 - Evidence: [13/13 live verification](evidence/round2-p1/live-validation.json), original [HTTP attempt](evidence/round2-e/rpc-attempt.json).
 - Workaround: s.altnet WebSocket, then Clio; retain committed evidence during outages.
@@ -42,6 +48,8 @@ Runnable: `node scripts/repro/07-endpoint-history.mjs` (<30 s). [Upstream draft]
 ## 4. Settled invoice consumption obstructs recovery
 
 Runnable: `node scripts/repro/03-invoice-consumption.mjs` (<30 s). [Upstream draft](feedback/upstream/03-invoice-consumption.md).
+
+- Filed: draft ready → [docs/feedback/upstream/03-invoice-consumption.md](feedback/upstream/03-invoice-consumption.md); not filed (owner-only, #265).
 
 - Date / class: 2026-11-03; Code-derived; reproduced offline.
 - Pinned package/source: x402-xrpl 0.3.4; npm source commit and hosted facilitator revision unknown.
@@ -55,6 +63,8 @@ Runnable: `node scripts/repro/03-invoice-consumption.mjs` (<30 s). [Upstream dra
 
 Runnable: `node scripts/repro/04-header-only.mjs` (<30 s). [Upstream draft](feedback/upstream/04-header-only.md).
 
+- Filed: draft ready → [docs/feedback/upstream/04-header-only.md](feedback/upstream/04-header-only.md); not filed (owner-only, #265).
+
 - Date / class: 2026-11-03; Observed offline and exploratory Testnet.
 - Pinned package/source: x402-xrpl 0.3.4; npm source commit and hosted facilitator revision unknown.
 - Evidence / reproduction: [record](evidence/starter-kit-interop.md); x402Fetch returned unpaid 402 when challenge was only PAYMENT-REQUIRED.
@@ -67,6 +77,8 @@ Runnable: `node scripts/repro/04-header-only.mjs` (<30 s). [Upstream draft](feed
 
 Runnable: `node scripts/repro/05-expiry-cancel.mjs` (<30 s). [Upstream draft](feedback/upstream/05-expiry-cancel.md).
 
+- Filed: draft ready → [docs/feedback/upstream/05-expiry-cancel.md](feedback/upstream/05-expiry-cancel.md); not filed (owner-only, #265).
+
 - Date / class: 2026-11-03; Observed Testnet.
 - Pinned package/source: Committed escrow-273.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
 - Evidence / reproduction: [record](evidence/escrow-273.md); Failed-proof escrow stayed locked through 120-second deadline; explicit EscrowCancel returned 29988 of 30000 drops after fee.
@@ -78,6 +90,8 @@ Runnable: `node scripts/repro/05-expiry-cancel.mjs` (<30 s). [Upstream draft](fe
 ## 7. Official RLUSD funding requires authenticated access
 
 Runnable: `node scripts/repro/06-funding-auth.mjs` (<30 s). [Upstream draft](feedback/upstream/06-funding-auth.md).
+
+- Filed: draft ready → [docs/feedback/upstream/06-funding-auth.md](feedback/upstream/06-funding-auth.md); not filed (owner-only, #265).
 
 - Date / class: 2026-11-03; Observed Testnet HTTP.
 - Pinned package/source: Committed rlusd.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.

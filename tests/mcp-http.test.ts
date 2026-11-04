@@ -1,3 +1,4 @@
+import pkg from '../package.json' with { type: 'json' }
 import { request } from 'node:http'
 import { it, expect } from 'vitest'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
@@ -24,6 +25,7 @@ it('SDK HTTP ask, principal caps, strict policy boundary, verification, isolatio
     expect((await fetch(http.url, { method: 'POST', headers: { ...headers, Origin: 'https://evil.example' } })).status).toBe(403)
     expect(await new Promise<number | undefined>((done, fail) => { const r = request(http.url, { method: 'POST', headers: { ...headers, Host: 'evil.example' } }, res => { res.resume(); done(res.statusCode) }); r.on('error', fail); r.end() })).toBe(403)
     await client.connect(new StreamableHTTPClientTransport(new URL(http.url), { requestInit: { headers } }))
+    expect(client.getServerVersion()?.version).toBe(pkg.version)
     const call = async (name: string, args: Record<string, unknown>) => {
       const result = await client.callTool({ name, arguments: args })
       expect(result.isError).not.toBe(true)

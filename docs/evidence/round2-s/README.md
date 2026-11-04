@@ -1,5 +1,7 @@
 # Lane S — full-soak memory diagnosis, 4 November 2026
 
+Current result (#374): Quiet-host full soak now passes all five unchanged gates (worst-interval p99 25.8 ms); the heavily loaded shared-host run failed. [Local synthetic/SIMULATED evidence](../soak-nov4-ab/README.md). Historical measurements below remain pinned to their original runs.
+
 Verdict: the +77.366 MiB/100 asks quick result is a short-window artifact,
 not sustained retention in the tested full workload. No engine repair is needed.
 This is local synthetic fixture inference / SIMULATED settlement evidence, not

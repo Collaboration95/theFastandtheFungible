@@ -1,9 +1,13 @@
 # Python SDK
 
-Install status: registries are not yet published. Run `node scripts/install-snippets.mjs --tag v1.0.0` after the owner publishes that release for asset install commands. Local tarballs are built with `make release-artifacts`; MCP includes `researchagent-mcp-1.0.0.tgz` with an npx bin. npm does not support a native git-subdirectory install.
+[Release candidate v1.0.0-rc.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1): install without cloning; not yet on npm, PyPI or the MCP Registry.
+
+```sh
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/researchagent-1.0.0rc1-py3-none-any.whl
+```
 
 
-Python 3.10+, typed src-layout package, no runtime dependencies. From this checkout:
+Python 3.10+, typed src-layout package, no runtime dependencies. Clone/build alternative:
 
 ```sh
 pip install "git+https://github.com/Collaboration95/theFastandtheFungible#subdirectory=packages/sdk-python"
