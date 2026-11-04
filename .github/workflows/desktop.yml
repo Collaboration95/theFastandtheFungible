@@ -37,6 +37,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # ELECTRON_SKIP_BINARY_DOWNLOAD skips electron's postinstall; fetch the exact arch binary via gh.
+      - name: Download the Electron binary for this arch
+        run: node desktop/download.mjs
       - name: Owner-dispatched signing setup
         if: github.event_name == 'workflow_dispatch' && inputs.sign == true
         run: node desktop/ci-signing.mjs
