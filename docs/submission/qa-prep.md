@@ -136,3 +136,5 @@ the questions, and they follow templates. It does not rule out overfitting."
 - **"Can a writer cheat the escrow?"** No: they're paid only if the proof
   passes. A buyer could read and refuse to release, so writers opt in. We
   state that hashlock isn't fair exchange (B17).
+
+Key reveal makes *delivery* atomic. *Quality* is enforced by the pre-commitment (manifest), a verifiable fraud proof and reputation, not by the ledger.

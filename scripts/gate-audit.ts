@@ -30,8 +30,9 @@ export function auditRuns(runs: RunSnapshot[], corpus: WriterCorpus, observation
     for (const intent of run.intents) {
       const e = intent.escrow
       const finished = e?.finishHash || e?.state === 'RELEASED' || run.events.some(v => v.type === 'ESCROW_FINISH' && v.data?.intentId === intent.intentId)
-      if (e && (finished && e.proofOk !== true || intent.status === 'VERIFIED' && e.state !== 'RELEASED')) add('escrow_finish_without_verified_proof', run.runId, intent.intentId)
+      if (e && (finished && e.proofOk !== true && !(e.mode === 'key-reveal' && intent.status === 'REFUNDED' && intent.refund?.amountMinor === intent.amountMinor && intent.refund.txHash && !run.grants.some(g => g.intentId === intent.intentId)) || intent.status === 'VERIFIED' && e.state !== 'RELEASED')) add('escrow_finish_without_verified_proof', run.runId, intent.intentId)
 
+      if (e?.mode === 'key-reveal' && intent.refund && !run.events.some(v => v.type === 'REFUND' && v.data?.intentId === intent.intentId && v.label.includes('writer-signed') && v.label.includes('fixture writer cooperates (a real writer could refuse)'))) add('missing_rail_label', run.runId, 'key-reveal refund requires writer cooperation label')
       const receipts = run.receipts.filter(r => r.intentId === intent.intentId)
       // Repeated observations of the SAME receipt/transaction are retries, not new charges.
       const receiptHashes = receipts.map(r => r.xrpl?.txHash ?? r.receiptId.replace(/^x402-/, ''))

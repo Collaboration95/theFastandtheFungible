@@ -28,6 +28,7 @@ export function deriveRunState(run?: RunSnapshot, pending?: 'clarify' | 'plan') 
   const terminal = isTerminal(run)
   const last = run && runEvents(run).at(-1)
   const phase: AgentPhase = pending ? pending === 'clarify' ? 'clarifying' : 'planning' : !run ? 'idle'
+    : run.phase === 'FAILED' && run.intents.some(i => i.escrow?.mode === 'key-reveal' && ['LOCKED', 'CANCEL_DUE'].includes(i.escrow.state)) ? 'recovering'
     : terminal ? run.stopped || run.phase === 'STOPPED' ? 'stopped' : run.phase === 'FAILED' ? run.intents.some(i => i.status === 'VERIFIED' && (!run.checkpoint?.intentId || i.intentId === run.checkpoint.intentId)) && run.checkpoint?.nextAction === 'retry-delivery' ? 'recovering' : 'failed' : 'done'
     : last && ['CHALLENGE', 'REFUND'].includes(last.type) ? 'refunding'
     : run.phase === 'READ_PAID' || last?.type === 'PROOF' || purchases.some(item => item.phase === 'delivered') ? 'verifying'

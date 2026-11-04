@@ -29,6 +29,14 @@ function paidRun(): RunSnapshot {
 const dirs: string[] = []
 afterEach(() => dirs.splice(0).forEach(d => rmSync(d, { recursive: true, force: true })))
 describe('hard-gate audit', () => {
+  it('requires the writer cooperation label on key-reveal refunds', () => {
+    const r = paidRun(), i = r.intents[0]
+    i.status = 'REFUNDED'; i.refund = { amountMinor: i.amountMinor, txHash: 'refund' }
+    i.escrow = { mode: 'key-reveal', scheme: 'escrow-v1', policy: 'escrow-policy-v1', state: 'RELEASED', owner: 'payer', cancelAfter: 1, proofOk: false }
+    expect(auditRuns([r], corpus).byRule.missing_rail_label).toBe(1)
+    r.events.push({ id: 3, runId: r.runId, at: '', type: 'REFUND', label: 'Refund · writer-signed · fixture writer cooperates (a real writer could refuse)', data: { intentId: i.intentId } })
+    expect(auditRuns([r], corpus).byRule.missing_rail_label).toBe(0)
+  })
   it('accepts clean free and verified-paid runs', () => { expect(auditRuns([copy(), paidRun()], corpus).total).toBe(0) })
   const cases: [Rule, (r: RunSnapshot) => void][] = [
     ['citation_without_verified_grant', r => { r.intents[0].status = 'CLAIM_FAILED' }],

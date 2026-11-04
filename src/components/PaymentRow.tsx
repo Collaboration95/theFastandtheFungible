@@ -3,6 +3,7 @@ import { keyRevealLabel } from '../format'
 import type { PurchaseIntent, Receipt, RunSnapshot } from '../../shared/contracts'
 import { candidateOf, money, shortHash, settlementAssetLabel } from '../format'
 import { purchaseState } from '../runState'
+import { saveReceipts } from '../download'
 import PendingTime from './PendingTime'
 import Verification from './Verification'
 
@@ -19,13 +20,16 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
     <div className="ra-payment-heading"><b>{refunded ? '↩' : state.ok ? '✓' : state.failed ? '✕' : '○'} {source?.publisher ?? intent.resourceId}</b><span>{money(intent.amountMinor)}</span></div>
     <p className="ra-payment-title">{source?.title ?? intent.resourceId}</p>
     {testnet && intent.quote?.payment?.asset && intent.quote.payment?.asset !== 'XRP' && <p>{settlementAssetLabel(intent.quote.payment?.asset)}</p>}
-    <p style={intent.escrow?.mode === 'key-reveal' ? { overflowWrap: 'anywhere' } : undefined} key={intent.status} className={`ra-payment-status${state.ok ? ' is-ok' : state.failed || state.quarantined && !refunded ? ' is-bad' : ''}`}>{status}{refunded && <span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(intent.quote?.payment?.asset) : 'simulated'}</span>}{elapsed !== undefined && state.ok && ` · ${elapsed.toFixed(1)} s`}</p>
+    <p style={intent.escrow?.mode === 'key-reveal' ? { overflowWrap: 'anywhere' } : undefined} key={intent.status} className={`ra-payment-status${intent.escrow?.mode === 'key-reveal' && !refunded ? ' ra-key-line' : ''}${state.ok ? ' is-ok' : state.failed || state.quarantined && !refunded ? ' is-bad' : ''}`}>{status}{refunded && <span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(intent.quote?.payment?.asset) : 'simulated'}</span>}{elapsed !== undefined && state.ok && ` · ${elapsed.toFixed(1)} s`}</p>
+    {intent.escrow?.mode === 'key-reveal' && intent.refund && <><p>Refund · writer-signed · fixture writer cooperates (a real writer could refuse)</p><p>Trust score drops · credential revocation recommended</p><button className="ra-link" onClick={() => { void saveReceipts(run.runId, 'fraud-proof.json', b => (b.fraudProofs as { intentId: string }[] | undefined)?.find(p => p.intentId === intent.intentId)) }}>Fraud proof ↗</button></>}
     {state.phase === 'submitted' && <PendingTime since={state.pendingSince} />}
     {state.failed && <button className="ra-btn ra-btn-go" onClick={() => onRetry(intent.intentId)}>Retry delivery</button>}
     {intent.escrow?.mode === 'key-reveal' && <KeyRevealLifecycle escrow={intent.escrow} />}
     <Verification run={run} intent={intent} />
-    {testnet && typeof refundUrl === 'string' && refundUrl.startsWith('https://testnet.xrpl.org/') && <a href={refundUrl} target="_blank" rel="noreferrer">Refund tx {shortHash(intent.refund?.txHash ?? '')} ↗</a>}
-    {testnet && /^[A-Fa-f0-9]{64}$/.test(intent.txHash ?? '') && <a href={`https://testnet.xrpl.org/transactions/${intent.txHash}`} target="_blank" rel="noreferrer">tx ↗</a>}
+    <p className="ra-payment-links">{[
+      testnet && typeof refundUrl === 'string' && refundUrl.startsWith('https://testnet.xrpl.org/') && <a key="refund" href={refundUrl} target="_blank" rel="noreferrer">Refund tx {shortHash(intent.refund?.txHash ?? '')} ↗</a>,
+      testnet && intent.escrow?.mode !== 'key-reveal' && /^[A-Fa-f0-9]{64}$/.test(intent.txHash ?? '') && <a key="paid" href={`https://testnet.xrpl.org/transactions/${intent.txHash}`} target="_blank" rel="noreferrer">{refunded ? 'purchase tx ↗' : 'tx ↗'}</a>,
+    ].filter(Boolean).flatMap((link, i) => i ? [' · ', link] : [link])}</p>
     {receipt && <button className="ra-link ra-receipt-link" onClick={() => onReceipt(receipt)}>Receipt ›</button>}
   </section>
 }

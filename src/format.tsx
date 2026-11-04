@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { sourceKey, sameSource, type SourceRef } from '../shared/source-identity.js'
 /* eslint-disable react-refresh/only-export-components -- Small shared helpers next to the logo mark. */
 import { brandPath, brandFavicons } from './assets/brand/identity'
@@ -41,6 +42,9 @@ export function favicon(state: 'idle' | 'work' | 'done' | 'alert'): string {
   return `data:image/svg+xml,${encodeURIComponent(brandFavicons[state])}`
 }
 
-export function keyRevealLabel(e: import('../shared/contracts/escrow').EscrowStatus): string {
-  return e.state === 'CANCELLED' ? 'Cancelled · refunded' : e.state === 'RELEASED' ? `Paid by key reveal · EscrowFinish ${e.finishHash} · key published in ledger ${e.revealLedger}` : 'Escrow locked · waiting for writer to reveal key'
+export function keyRevealLabel(e: import('../shared/contracts/escrow').EscrowStatus): ReactNode {
+  if (e.state === 'CANCELLED') return 'Cancelled · refunded'
+  if (e.state !== 'RELEASED') return 'Escrow locked · waiting for writer to reveal key'
+  const hash = e.finishHash ?? ''
+  return <>Paid by key reveal · EscrowFinish {/^[a-f0-9]{64}$/i.test(hash) ? <a href={`https://testnet.xrpl.org/transactions/${hash}`} target="_blank" rel="noreferrer">{shortHash(hash)} ↗</a> : shortHash(hash)} · key published in ledger {e.revealLedger}</>
 }

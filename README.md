@@ -30,16 +30,21 @@
 
 ![Testnet UC3: purchase, failed proof, refund and re-buy](docs/media/refund-demo.gif)
 
-Recorded on XRPL Testnet · no real value · [verify these 3 hashes live](https://collaboration95.github.io/theFastandtheFungible/ledger/).
-Fictional writers and fixture models.
+Recorded on XRPL Testnet · no real value · [verify these 6 hashes live](https://collaboration95.github.io/theFastandtheFungible/demo/).
+Fictional writers and fixture models. Key reveal makes *delivery* atomic; the refund after a broken promise is writer-signed (the fixture writer cooperates, a real one could refuse).
 
 ### Verify in 30 s
 
 | Transaction | Explorer |
 |---|---|
-| Purchase | [8E4C6D5F6FF474F89C199DEB07D8FF7D51586ECECAA4BC754894428586DC461B](https://testnet.xrpl.org/transactions/8E4C6D5F6FF474F89C199DEB07D8FF7D51586ECECAA4BC754894428586DC461B) |
-| Refund | [0BB4C81FE0AB8810FC7FE3E510BEE553719FAB113309C2367F01D83155840BDD](https://testnet.xrpl.org/transactions/0BB4C81FE0AB8810FC7FE3E510BEE553719FAB113309C2367F01D83155840BDD) |
-| Re-buy | [F8429067926319A2545DEF1065073B59CF08F51CFB7ED489F9271B349451C85D](https://testnet.xrpl.org/transactions/F8429067926319A2545DEF1065073B59CF08F51CFB7ED489F9271B349451C85D) |
+| Escrow created, AlphaLeak | [319923F5F4863F3E1505424E6FC8F20B365E7A926F1086197CB68DF6842AA3EB](https://testnet.xrpl.org/transactions/319923F5F4863F3E1505424E6FC8F20B365E7A926F1086197CB68DF6842AA3EB) |
+| EscrowFinish, key published (article then failed its promise) | [57BA72D45D4A6B39097B678E06CF9F8FF38F426879791138461425CEEC4B2B8C](https://testnet.xrpl.org/transactions/57BA72D45D4A6B39097B678E06CF9F8FF38F426879791138461425CEEC4B2B8C) |
+| Refund (writer-signed) | [BB71016D63ACF759E8C5B4B99E118C17DDD1E7C01F3770327C5C316864B2DA82](https://testnet.xrpl.org/transactions/BB71016D63ACF759E8C5B4B99E118C17DDD1E7C01F3770327C5C316864B2DA82) |
+| Escrow created, The Fab Floor | [7FC899B54AC439BB7FC3DC7BF9A57837FB06BAECF998D92F86841DA61CA94C60](https://testnet.xrpl.org/transactions/7FC899B54AC439BB7FC3DC7BF9A57837FB06BAECF998D92F86841DA61CA94C60) |
+| EscrowFinish, key published · sha256(K) = Condition ✓ (checked in your browser on /demo/) | [8A8A3A8E1770BE5FD5FD5192DF1C37E84854320373D91BDBB4D806E5A947E366](https://testnet.xrpl.org/transactions/8A8A3A8E1770BE5FD5FD5192DF1C37E84854320373D91BDBB4D806E5A947E366) |
+| Answer anchor (memo = audit head) | [7501BAD9994552932D7F52AA96A53313163207C86438C9C01D33B069F37A4BE1](https://testnet.xrpl.org/transactions/7501BAD9994552932D7F52AA96A53313163207C86438C9C01D33B069F37A4BE1) |
+
+Or check the whole run with no Node: [receipts.json](docs/evidence/lane-b3/UC3.receipts.json), then `researchagent verify docs/evidence/lane-b3/UC3.receipts.json --ledger` (`pip install` line below).
 
 
 ## What it does
@@ -122,7 +127,7 @@ The command explicitly authorizes up to S$2 per question and S$5 per UTC day in 
 
 **Mac app** ([guide](desktop/README.md)). Download the unsigned DMG: [Apple Silicon](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/ResearchAgent-1.0.0-rc.1-arm64.dmg) or [Intel](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/ResearchAgent-1.0.0-rc.1-x64.dmg). Drag into Applications, then Finder → right-click → Open (or Privacy & Security → Open Anyway); see [signing notes](desktop/SIGNING.md). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
 
-**Browser replay.** The [`/demo/`](https://collaboration95.github.io/theFastandtheFungible/demo/) page autoplays UC3: Recorded on XRPL Testnet · no real value, including a validated refund and re-buy. Fixture models and fictional writers; simulated UC1–UC3 remain available. No backend, no keys.
+**Browser replay.** The [`/demo/`](https://collaboration95.github.io/theFastandtheFungible/demo/) page autoplays the key-reveal UC3: Recorded on XRPL Testnet · no real value, with a key published on the ledger, a broken promise, a writer-signed refund and a second key reveal. Tabs also replay the plain-payment UC3 and the writer no-show cancellation; simulated UC1–UC3 remain available. Fixture models and fictional writers. No backend, no keys.
 
 **Writers.** Turn a Markdown folder into a searchable, payable writer ([publishing guide](docs/publishing.md), [compliance posture](docs/COMPLIANCE.md)):
 
