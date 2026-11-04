@@ -17,7 +17,7 @@ export default function KeyRevealLifecycle({ escrow: e }: { escrow: EscrowStatus
   return <section aria-label="Key-reveal escrow" className="ra-key-reveal">
     <small>XRPL Testnet · key-reveal escrow · no real value</small>
     <ol>
-      {e.createHash && <li>Escrow created <Tx hash={e.createHash} /></li>}
+      {e.createHash && <li>{e.state === 'PREPARED' ? 'Escrow submitted · awaiting validation' : 'Escrow created'} <Tx hash={e.createHash} /></li>}
       {e.finishHash && <li>Writer published key in ledger {e.revealLedger ?? 'awaiting verification'} <Tx hash={e.finishHash} /></li>}
       {e.keyVerified === true && <li>sha256(K) = Condition ✓</li>}
       {e.decryptVerified === true && <li>ciphertext decrypts ✓</li>}

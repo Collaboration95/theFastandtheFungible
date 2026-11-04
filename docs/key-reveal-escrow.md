@@ -1,7 +1,9 @@
 # Key-reveal escrow
 
-**XRPL is our delivery channel.** Opt-in exchange of XRP payment for an article
-key on XRPL Testnet. This mode is off by default. Set `ESCROW_MODE=key-reveal` on
+**XRPL is our delivery channel.** Exchange of XRP payment for an article
+key on XRPL Testnet. `make testnet` defaults to key reveal for its local writers
+(including `.devcontainer/testnet`). Opt out with `ESCROW_MODE=payment make testnet`.
+Other launches retain their existing settlement configuration. Set `ESCROW_MODE=key-reveal` on
 buyer and publisher, opt the writer into `ESCROW_WRITERS`, and use the
 `xrpl-testnet` rail with XRP. An unsupported writer is skipped without an exact
 payment fallback. Existing `escrow-policy-v1` remains buyer-controlled.
@@ -115,3 +117,27 @@ ledger checks; Python remains offline.
   Testnet value transfer is real Testnet execution, with no real value.
 
 [Evidence and commands](evidence/round2-r/README.md).
+
+## Live product and refunds
+
+Live purchase activity and receipts show validated create and finish links, the
+publication ledger, and separate policy results for key/Condition binding and
+ciphertext authentication/decryption. A pending CancelAfter countdown is advisory;
+only a validated EscrowCancel reports principal returned. Historical receipts
+without the new check fields do not acquire check marks by inference.
+
+UC3's failed signed passage promise can be challenged after EscrowFinish. Policy
+reopens the authenticated envelope privately; no failed plaintext enters a grant,
+snapshot or model. The publisher validates its persisted finish before recording
+the settlement for the existing write-once refund journal. The refund is a separate
+Payment whose InvoiceID is the finish hash. Replacement expertise uses a new
+intent and escrow; gross budget authorization is not replenished by the refund.
+Multi-origin key-reveal intent identifiers hash the complete source identity,
+run and round to fit the existing 200-character quote limit.
+
+An envelope that cannot authenticate/decrypt, or lacks a failed passage claim,
+cannot support the passage challenge and remains quarantined and charged.
+Unsupported escrow writers remain skipped with no exact-payment fallback.
+Caller hire funding, royalties, change and refunds remain explicit Payments;
+they are transfers rather than purchases of encrypted article delivery.
+Simulated `make run` remains unchanged. No gates or test thresholds were loosened.

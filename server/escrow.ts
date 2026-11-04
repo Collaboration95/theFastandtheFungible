@@ -201,6 +201,10 @@ export class EscrowPurchases {
         } else {
           const result = await this.client.forSource(intent.source, true).paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: 'XRP', amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
           const response = z.object({ finishHash: z.string().regex(/^[A-F0-9]{64}$/) }).parse(result.delivery)
+          // The writer has submitted, not necessarily validated. Keep the normal hire
+          // flow open for ledger close; durable reconciliation still owns timeouts.
+          const deadline = Date.now() + 30000
+          while ((await lookupTx(this.payer.ledger, response.finishHash)).state !== 'validated' && Date.now() < deadline) await new Promise(r => setTimeout(r, 250))
           await this.acceptReveal(intent, response.finishHash)
         }
         return this.store.getIntent(intentId)!

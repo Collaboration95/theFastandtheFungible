@@ -2,7 +2,10 @@
 
 Run `make testnet`, or `node --import tsx scripts/testnet-start.ts` after installing
 Node dependencies. No npm command is needed to launch. Fixture models, fictional
-writers and XRP on XRPL Testnet only; no real value. Open the printed local URL,
+writers and XRP on XRPL Testnet only; no real value. Local writer purchases default
+to key-reveal escrow. Use `ESCROW_MODE=payment make testnet` for explicit plain
+Payments. The live activity and receipt show create, key publication, policy
+checks and cancellation countdown. Unsupported writers are skipped without fallback. Open the printed local URL,
 choose Malaysia packaging lead times (UC3), Ask, and confirm the plan. The prompt
 budget authorizes policy purchases; no per-purchase approval is added.
 
@@ -45,3 +48,10 @@ capture orchestration, not a claim that the public UI automatically replans a
 cancelled no-show today. Principal is fully returned; transaction fees remain
 paid. The post-grant proof export is public evidence; no unrevealed key or wallet
 seed is exported. Ciphertext before the grant stays quarantined.
+
+For three independent cold boots use `node --import tsx scripts/accept-key-reveal.ts`.
+It runs `make testnet` three times through the browser proxy, asks UC3, and saves
+only create/finish/refund/re-buy hashes and first-create timing under
+`docs/evidence/lane-x/`. `TESTNET_WALLET_FILE=scratch/<unique>/wallets.private.json`
+selects a fresh wallet cache. The acceptance script deletes its private scratch.
+Funding, hire ingress, royalties, change and cooperative refunds stay Payments.
