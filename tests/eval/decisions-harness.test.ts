@@ -102,8 +102,9 @@ describe('provider adapters (#212)', () => {
 })
 
 describe('real-corpus scenarios (#212)', () => {
+  let scenarios: Awaited<ReturnType<typeof buildScenarios>>
+  beforeAll(async () => { scenarios = await buildScenarios(world) })
   it('builds one scenario per bank question, with dev and test splits and in-domain labels', async () => {
-    const scenarios = await buildScenarios(world)
     expect(scenarios.length).toBeGreaterThanOrEqual(40)
     expect(new Set(scenarios.map(s => s.split))).toEqual(new Set(['dev', 'test']))
     const uc2 = scenarios.find(s => s.id === 'Q09')!
@@ -118,8 +119,8 @@ describe('real-corpus scenarios (#212)', () => {
     expect(plannedCalls(uc2, 'baseline', false)).toBe(1 + uc2.candidates.length)
   })
   it('evaluates the fixture arm through the real policy and summarizes it', async () => {
-    const scenarios = (await buildScenarios(world)).filter(s => ['Q09', 'Q01', 'Q42'].includes(s.id))
-    const rows = await Promise.all(scenarios.map(s => evaluate(world, s, 'fixture')))
+    const selectedScenarios = scenarios.filter(s => ['Q09', 'Q01', 'Q42'].includes(s.id))
+    const rows = await Promise.all(selectedScenarios.map(s => evaluate(world, s, 'fixture')))
     expect(rows.find(r => r.id === 'Q09')?.selected).toBe('notft-kestrel-tsmc-deal-margins')
     const summary = summarizeRows(rows)
     expect(summary.n).toBe(3)
@@ -127,7 +128,7 @@ describe('real-corpus scenarios (#212)', () => {
     expect(compare(rows, rows).f1.difference).toBe(0)
   })
   it('lets budget and cap bind under a maximally positive judgment', async () => {
-    const s = (await buildScenarios(world)).find(x => x.id === 'Q09')!
+    const s = scenarios.find(x => x.id === 'Q09')!
     const max = s.candidates.map(() => ({ addressesGap: 1, originality: { original: 1, rewrite: 0, overlap: 0 }, credibility: 2 }))
     expect((await select({ ...s, budgetMinor: 0 }, 'luna', 'gap', 1, max, 0.2)).selected).toBeNull()
     expect((await select({ ...s, perSourceCapMinor: 5 }, 'luna', 'gap', 1, max, 0.2)).selected).toBeNull()
