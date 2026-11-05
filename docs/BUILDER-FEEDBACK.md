@@ -801,3 +801,10 @@ for official RLUSD escrow. Mainnet impact: not tested; issuer permission remains
 a prerequisite. No authenticated RLUSD faucet or rejection transaction attempted;
 this is an issuer-flags control, not evidence of a live tecNO_PERMISSION.
 No upstream report filed (owner-only).
+
+## 4 Nov 2026 · observed post-DONE anchor visibility delay
+
+- Evidence: `docs/evidence/round3-d/probe.json` records `anchorShownWithoutReload: false`; the validated anchor existed in the engine before a reload displayed it.
+- Workaround: reload the answer. RC.2 preparation adds a bounded read-only run poll and browser success/timeout regressions (`tests/ux2.spec.ts`).
+- Suggested fix: expose the post-run anchoring lifecycle to clients until validation or timeout; do not treat DONE as completion of asynchronous audit anchoring.
+- Severity: medium UX/evidence discoverability. Mainnet impact: the same client lifecycle failure could hide an existing anchor; this observation was Testnet only, with no mainnet test.

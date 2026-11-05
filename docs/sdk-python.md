@@ -1,9 +1,9 @@
 # Python SDK
 
-[Release candidate v1.0.0-rc.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1): install without cloning; not yet on npm, PyPI or the MCP Registry.
+[Release candidate v1.0.0-rc.2](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.2): release candidate · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ```sh
-pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.1/researchagent-1.0.0rc1-py3-none-any.whl
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.2/researchagent-1.0.0rc2-py3-none-any.whl
 ```
 
 

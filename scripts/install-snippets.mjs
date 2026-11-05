@@ -1,5 +1,5 @@
 import { pythonVersion } from './release-version.mjs'
-// Run after the owner cuts a release; output is deliberately absent from README links.
+// Generate exact release-asset commands; npm prereleases map to PEP 440 wheel versions.
 const tag = process.argv[process.argv.indexOf('--tag') + 1]
 if (!/^v\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(tag || '')) throw Error('Usage: node scripts/install-snippets.mjs --tag v1.0.0')
 const v = tag.slice(1)

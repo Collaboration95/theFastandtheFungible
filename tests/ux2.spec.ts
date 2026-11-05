@@ -74,3 +74,42 @@ test('paid UC2 export opens the before/after comparison and returns to the answe
   await page.getByRole('button', { name: 'Back to answer' }).click()
   await expect(page.locator('.ra-vtext')).toContainText('55.2%')
 })
+
+test('completed Testnet answer gets its anchor without a reload and polling stops', async ({ page }) => {
+  const { readFile } = await import('node:fs/promises')
+  const run = JSON.parse(await readFile('src/fixtures/uc/uc2.json', 'utf8'))
+  // Use the contract's exact settlement label, with fixture content and stubbed ledger evidence.
+  const { XRPL_LABEL } = await import('../shared/contracts/publisher')
+  run.labels.settlement = XRPL_LABEL
+  run.events.at(-1).at = new Date().toISOString()
+  let reads = 0
+  let ready = false
+  await page.route(`**/runs/${run.runId}/events`, route => route.fulfill({ contentType: 'text/event-stream', body: ': heartbeat\n\n' }))
+  await page.route(`**/runs/${run.runId}`, route => {
+    reads++
+    return route.fulfill({ json: { ...run, ...(ready ? { ledgerAnchor: { version: 'anchor-v1', network: 'xrpl:1', txHash: 'A'.repeat(64), account: 'rNtb7gEMUHyPUR6B39HQLkEhUtrYtY7NNf', head: 'b'.repeat(64), runIdHash: 'c'.repeat(64), ledgerIndex: 123, feeDrops: '12' } } : {}) } })
+  })
+  await page.goto(`/?run=${run.runId}&pace=real`)
+  await expect(page.getByText('Anchoring…', { exact: true }).first()).toBeVisible()
+  ready = true
+  const anchor = page.getByRole('link', { name: 'Anchored on XRPL · ledger 123' }).first()
+  await expect(anchor).toHaveAttribute('href', `https://testnet.xrpl.org/transactions/${'A'.repeat(64)}`)
+  const stoppedAt = reads
+  await page.waitForTimeout(4500)
+  expect(reads).toBe(stoppedAt)
+})
+
+test('anchor waiting ends after its bounded deadline', async ({ page }) => {
+  const { readFile } = await import('node:fs/promises')
+  const { XRPL_LABEL } = await import('../shared/contracts/publisher')
+  const run = JSON.parse(await readFile('src/fixtures/uc/uc2.json', 'utf8'))
+  run.labels.settlement = XRPL_LABEL
+  run.events.at(-1).at = new Date().toISOString()
+  await page.route(`**/runs/${run.runId}/events`, route => route.fulfill({ contentType: 'text/event-stream', body: ': heartbeat\n\n' }))
+  await page.route(`**/runs/${run.runId}`, route => route.fulfill({ json: run }))
+  await page.clock.install()
+  await page.goto(`/?run=${run.runId}&pace=real`)
+  await expect(page.getByText('Anchoring…', { exact: true }).first()).toBeVisible()
+  await page.clock.fastForward(91_000)
+  await expect(page.getByText('No anchor recorded for this Testnet run (anchoring was off or unavailable)', { exact: true }).first()).toBeVisible()
+})

@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 5 Nov: Lane R2 prepares v1.0.0-rc.2 artifacts and concrete installs, displays completed answer anchors without reload, and expands the read-only Testnet ledger to 45/45 verified hashes, including TEST-SGD IOU (stand-in for RLUSD); all local consumers/browser suites pass. Tagging remains with the orchestrator. [Evidence](evidence/round3-r2/README.md).
 - 4 Nov: Lane R1 prepares v1.0.0-rc.1 versions, PEP 440 wheel names and prerelease/Latest policy; five fixture consumers pass. Final version bump follows 9 Nov acceptance.
 - 4 Nov: Zero-clone release consumers clean up npm/npx process groups with escalation and assert no surviving processes; fixture-only regression covers a SIGTERM-resistant grandchild. [#364](https://github.com/Collaboration95/theFastandtheFungible/pull/364).
 - 4 Nov: Lane S full 2,000-ask soaks reject sustained memory growth (RSS slopes −1.899 / −0.644 MiB/100 asks); quiet-host full soak now passes all five gates (worst-interval p99 25.8 ms), while the heavily loaded shared-host run failed ([evidence](evidence/soak-nov4-ab/README.md)). Quick slope is diagnostic only; no full threshold changed. [Evidence](evidence/round2-s/README.md).
