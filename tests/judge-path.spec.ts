@@ -6,7 +6,7 @@ import { once } from 'node:events'
 import { mkdir, cp } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 
-const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.1'
+const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.2'
 const SIMULATED: Record<string, RegExp> = { 'Testnet UC3 · payment': /^Malaysia packaging lead times/, 'Simulated UC1': /^Bank of Japan decision/, 'Simulated UC2': /^Kestrel–TSMC outlook/, 'Simulated UC3': /^Malaysia packaging lead times/ }
 const TABS = ['Testnet UC3 · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
 let server: ChildProcess, base: string
@@ -68,7 +68,7 @@ for (const tab of TABS) {
     if (tab === TABS[0]) {
       const banner = page.locator('.demo-banner')
       await banner.locator('summary').click()
-      await expect(banner).toContainText('researchagent-mcp-1.0.0-rc.1.tgz')
+      await expect(banner).toContainText('researchagent-mcp-1.0.0-rc.2.tgz')
       await expect(banner.getByRole('link', { name: /Release candidate/ })).toHaveAttribute('href', TAG)
       expect(await banner.locator('a[href*="releases/latest"]').count()).toBe(0)
     }
@@ -77,12 +77,12 @@ for (const tab of TABS) {
 
 test('ledger: live-check progress replaces the stale snapshot text within 3 s', async ({ page }) => {
   const initial = await (await page.request.get(`${base}/ledger/`)).text()
-  expect(initial).toContain('Checking 25 hashes live… 0/25')
+  expect(initial).toContain('Checking 45 hashes live… 0/45')
   expect(initial).not.toContain('Principal amount not recorded in this evidence</td><td>12 drops')
   await page.goto(`${base}/ledger/`)
   await page.waitForTimeout(3000)
   await expect(page.locator('body')).not.toContainText('not freshly verified')
-  await expect(page.getByRole('status')).toContainText(/Read-only check finished: \d+\/25/)
+  await expect(page.getByRole('status')).toContainText(/Read-only check finished: \d+\/45/)
   await expect(page.getByText('Memo = audit head 2861e38da5e3…; answer anchor')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Real writers' })).toBeVisible()
   await expect(page.getByText('real person · Testnet · no real value', { exact: true })).toBeVisible()

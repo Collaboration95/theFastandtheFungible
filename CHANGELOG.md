@@ -9,9 +9,14 @@ Every number below keeps the scope label of the evidence it comes from
 Packages are built and consumer-tested but **not published** to npm, PyPI or
 the MCP Registry; that is an owner step tracked in #265.
 
-## Unreleased
+## v1.0.0-rc.2 — 5 Nov 2026
 
 ### Added
+
+- Zero-clone Testnet MCP (#376) and app (#380), fixture models, fictional writers and no real value; writer onboarding and judge path (#378).
+- TEST-SGD IOU key-reveal token escrow (#381): three happy paths and a no-show cancellation; stand-in for RLUSD, not real RLUSD. Expanded ledger verifies these runs and writer Credentials read-only.
+- RC.2 artifacts and generated installs; completed answers poll for their validated anchor without reload (browser regression).
+- Verifier accepts key-reveal proofs, Python `--ledger`, and default anchors (#377); default replay leads with live key-reveal UC3 and honest refund semantics (#379).
 
 - Writer cold start: `publish --testnet` (repo bin and MCP tgz) provisions a faucet writer wallet, issues a Testnet writer Credential, enables key-reveal escrow and prints `Writer live · address r… · CredentialCreate tx ↗`. Evidence in `docs/evidence/round3-c/` (public faucet, synthetic starter). A "Real writers" list (`docs/evidence/real-writers.json`, empty until consent) is shown on the README and `/ledger/`, labelled "real person · Testnet · no real value".
 - `npm run test:judge`: headless landing → every demo tab → ledger → release-link walk, run in CI.

@@ -8,7 +8,7 @@ import { classify, refresh, lookup, endpoints } from '../site/ledger/ledger.js'
 const row = data.rows[0]
 function valid() { return {result:{hash:row.hash,ledger_index:row.ledgerIndex,validated:true,tx_json:{TransactionType:"Payment",Account:row.from,Destination:row.to,InvoiceID:row.invoiceId,NetworkID:1,Fee:row.feeDrops,Amount:row.deliveredAmount},meta:{TransactionResult:'tesSUCCESS',delivered_amount:row.deliveredAmount}}} }
 describe('public ledger',()=>{
- it('rebuilds twenty-five source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(25); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(25)})
+ it('rebuilds forty-five source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(45); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(45)})
  it('only matching validated success is fresh',()=>{
   expect(classify(row,valid())).toContain('validated · tesSUCCESS')
   for(const mutate of [(b: {result: Record<string, any>})=>b.result.validated=false,(b: {result: Record<string, any>})=>b.result.tx_json.NetworkID=0,(b: {result: Record<string, any>})=>b.result.meta.TransactionResult='tecFAILED',(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,value:'9'},(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,issuer:'wrong'},(b: {result: Record<string, any>})=>b.result.error='txnNotFound',(b: {result: Record<string, any>})=>delete b.result.meta]){const b=valid();mutate(b);expect(classify(row,b)).not.toContain('validated · tesSUCCESS')}
@@ -53,7 +53,7 @@ it('closes a timed out socket and rejects unallowlisted targets',async()=>{
 })
 it('matches escrow operation identity and rejects cross-role substitution',()=>{
  for(const r of data.rows.filter((r:{group:string})=>r.group==='escrow')){
-  const t={hash:r.hash,TransactionType:({create:'EscrowCreate',finish:'EscrowFinish',cancel:'EscrowCancel'} as Record<string,string>)[r.operation],Fee:r.feeDrops,Account:r.owner,Owner:r.owner,Sequence:r.createSequence,OfferSequence:r.createSequence,Amount:r.amountDrops,Condition:r.condition}
+  const t={hash:r.hash,TransactionType:({create:'EscrowCreate',finish:'EscrowFinish',cancel:'EscrowCancel'} as Record<string,string>)[r.operation],Fee:r.feeDrops,Account:r.owner,Owner:r.owner,Sequence:r.createSequence,OfferSequence:r.createSequence,Amount:r.amountDrops,Condition:r.condition,Destination:r.destination,Fulfillment:r.fulfillment}
   const body={result:{hash:r.hash,ledger_index:r.ledgerIndex,validated:true,tx_json:t,meta:{TransactionResult:'tesSUCCESS'}}}
   expect(classify(r,body)).toContain('validated · tesSUCCESS')
   t.OfferSequence++;t.Sequence++;expect(classify(r,body)).toContain('Historical')
@@ -84,4 +84,16 @@ it('freshly verifies the answer anchor row and refuses memo edits', () => {
  const body = { result: { hash: row.hash, ledger_index: row.ledgerIndex, validated: true, meta: {TransactionResult:'tesSUCCESS'}, tx_json: { TransactionType:'AccountSet', Account:row.account, Fee:row.feeDrops, Memos:[{Memo:memo}] } } }
  expect(classify(row,body)).toContain('validated · tesSUCCESS')
  memo.MemoData = '00'; expect(classify(row,body)).toContain('anchor memo mismatch')
+})
+
+it('binds token escrow amount, issuer, destination and revealed key to retained evidence',()=>{
+ const retained=JSON.parse(readFileSync('docs/evidence/round3-r2/ledger-responses.json','utf8'))
+ for(const r of data.rows.filter((r:{source:string})=>r.source.includes('round3-r2'))){
+  const body={result:retained.find((x:{hash:string})=>x.hash===r.hash).response}
+  expect(classify(r,body)).toContain('validated · tesSUCCESS')
+  for(const field of r.operation==='create'?['Amount','Destination']:r.fulfillment?['Fulfillment']:[]){
+   const bad=structuredClone(body);bad.result.tx_json[field]=field==='Amount'?{...r.amountDrops,issuer:'wrong'}:'wrong'
+   expect(classify(r,bad)).toContain('Historical')
+  }
+ }
 })

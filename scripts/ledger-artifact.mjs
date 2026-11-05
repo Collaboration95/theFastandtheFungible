@@ -46,16 +46,41 @@ export function artifact() {
     if (!/^[A-F0-9]{64}$/.test(row.hash) || row.result !== 'tesSUCCESS' || !Number.isInteger(row.ledgerIndex)) throw Error('Invalid answer anchor evidence')
     rows.push({ ...row, sourceCommit: 'fba9010bb52ab245370ba7c8362226ff107ada90' })
   }
-  return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-04', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
+  // Curate only hashes present in the original lane evidence; bind fields to retained tx responses.
+  const retained = JSON.parse(read('docs/evidence/round3-r2/ledger-responses.json'))
+  const lanes = {
+    'round3-e': JSON.parse(read('docs/evidence/round3-e/runs.json')).flatMap(r => r.hashes),
+    'round3-a': JSON.parse(read('docs/evidence/round3-a/probe.json')).timings.flatMap(r => r.transactions.map(t => t.hash)),
+    'round3-d': JSON.parse(read('docs/evidence/round3-d/probe.json')).transactions.map(t => t.hash),
+    'round3-c': JSON.parse(read('docs/evidence/round3-c/onboarding.json')).transactions.map(t => t.hash),
+  }
+  for (const { hash, lane, mode, response: r } of retained) {
+    if (!lanes[lane]?.includes(hash) || r.hash !== hash || !r.validated || r.meta?.TransactionResult !== 'tesSUCCESS') throw Error('Invalid round-three evidence')
+    const t = r.tx_json
+    const row = { hash, ledgerIndex: r.ledger_index, feeDrops: t.Fee, date: r.close_time_iso.slice(0, 10), source: 'docs/evidence/round3-r2/ledger-responses.json', sourceCommit: '2cf29b3cee5687e7db67fa4b2eee374c814889e1', label: `${lane}: ${mode ?? 'synthetic writer / fixture models'} · ${t.TransactionType}` }
+    if (t.TransactionType.startsWith('Escrow')) {
+      const create = t.TransactionType === 'EscrowCreate' ? t : retained.find(x => x.response.tx_json.TransactionType === 'EscrowCreate' && x.response.tx_json.Account === t.Owner && x.response.tx_json.Sequence === t.OfferSequence)?.response.tx_json
+      if (!create) throw Error('Missing escrow create')
+      Object.assign(row, { group: 'escrow', operation: {EscrowCreate:'create',EscrowFinish:'finish',EscrowCancel:'cancel'}[t.TransactionType], owner: create.Account, destination: create.Destination, createSequence: create.Sequence, amountDrops: create.Amount, condition: t.Condition, fulfillment: t.Fulfillment })
+      if (lane === 'round3-e') row.label += ' · TEST-SGD IOU · stand-in for RLUSD · token escrow (XLS-85)'
+    } else if (t.TransactionType === 'AccountSet') {
+      const memo = t.Memos.find(m => Buffer.from(m.Memo.MemoType, 'hex').toString() === 'researchagent/anchor-v1').Memo
+      Object.assign(row, { group:'anchor', operation:'anchor', account:t.Account, head:Buffer.from(memo.MemoData, 'hex').toString().split(':')[0] })
+    } else if (t.TransactionType === 'CredentialCreate') Object.assign(row, { group:'Testnet, credential', operation:t.TransactionType, issuer:t.Account, subject:t.Subject, credentialTypeText:Buffer.from(t.CredentialType,'hex').toString() })
+    else throw Error('Unsupported round-three transaction')
+    rows.push(row)
+  }
+  if (rows.length !== new Set(rows.map(r => r.hash)).size) throw Error('Duplicate ledger hash')
+  return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-05', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
 }
 function htmlArtifact(out) {
   const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')
   const rows = JSON.parse(out).rows.map(r => {
     const a = r.deliveredAmount ?? r.amountDrops
-    const amount = typeof a === 'object' ? `${a.value} RLUSD · issuer ${a.issuer}` : a ? `${a} drops` : r.group === 'anchor' ? `Memo = audit head ${r.head.slice(0, 12)}…; answer anchor` : 'Principal amount not recorded in this evidence'
+    const amount = typeof a === 'object' ? `${a.value} ${a.currency === "SGT" ? "TEST-SGD IOU (SGT; stand-in for RLUSD)" : a.currency} · issuer ${a.issuer}` : a ? `${a} drops` : r.group === 'anchor' ? `Memo = audit head ${r.head.slice(0, 12)}…; answer anchor` : 'Principal amount not recorded in this evidence'
     return `<tr><td>${escape(r.label ?? `${r.group}: ${r.operation ?? r.kind}`)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
   }).join('')
-  return read('site/ledger/index.html').replace(/<caption>.*?<\/caption>/, `<caption>${JSON.parse(out).rows.length} curated transactions · snapshot ${JSON.parse(out).snapshotDate}</caption>`).replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
+  return read('site/ledger/index.html').replace(/Checking \d+ hashes live… 0\/\d+/, `Checking ${JSON.parse(out).rows.length} hashes live… 0/${JSON.parse(out).rows.length}`).replace(/<caption>.*?<\/caption>/, `<caption>${JSON.parse(out).rows.length} curated transactions · snapshot ${JSON.parse(out).snapshotDate}</caption>`).replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const out = artifact()

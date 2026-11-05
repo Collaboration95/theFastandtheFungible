@@ -13,8 +13,9 @@ export function classify(row, body) {
     if (t.TransactionType !== row.operation || t.CredentialType !== credentialTypeHex(row.credentialTypeText) || (row.operation === 'CredentialCreate' ? t.Account !== row.issuer || t.Subject !== row.subject : t.Account !== row.subject || t.Issuer !== row.issuer)) return 'Historical; credential mismatch'
   } else if (row.group === 'escrow') {
     const type = { create: 'EscrowCreate', finish: 'EscrowFinish', cancel: 'EscrowCancel' }[row.operation]
+    if (row.fulfillment && t.Fulfillment !== row.fulfillment) return 'Historical; key reveal mismatch'
     if (row.condition && t.Condition !== row.condition) return 'Historical; condition mismatch'
-    if (t.TransactionType !== type || (row.operation === 'create' ? t.Account !== row.owner || t.Sequence !== row.createSequence || t.Amount !== row.amountDrops : t.Owner !== row.owner || t.OfferSequence !== row.createSequence)) return 'Historical; escrow mismatch'
+    if (t.TransactionType !== type || (row.operation === 'create' ? t.Account !== row.owner || t.Sequence !== row.createSequence || !sameAmount(t.Amount, row.amountDrops) || (row.destination && t.Destination !== row.destination) : t.Owner !== row.owner || t.OfferSequence !== row.createSequence)) return 'Historical; escrow mismatch'
   } else if (row.group === 'anchor') {
     const memo = t.Memos?.length === 1 ? t.Memos[0]?.Memo : undefined
     if (t.TransactionType !== 'AccountSet' || t.Account !== row.account || memo?.MemoType?.toUpperCase() !== credentialTypeHex('researchagent/anchor-v1') || !new RegExp('^' + credentialTypeHex(row.head + ':') + '[A-F0-9]{128}$').test(memo?.MemoData?.toUpperCase() ?? '')) return 'Historical; anchor memo mismatch'
@@ -113,7 +114,7 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   for (const row of data.rows) {
     const tr = document.createElement('tr')
     const amount = row.deliveredAmount ?? row.amountDrops ?? (row.group === 'anchor' ? `Memo = audit head ${row.head.slice(0, 12)}…; answer anchor` : 'principal amount not recorded in this evidence')
-    for (const text of [`${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${row.date}`, `${typeof amount === 'object' ? amount.value + ' RLUSD · issuer ' + amount.issuer : amount + (row.deliveredAmount || row.amountDrops ? ' drops' : '')} · fee ${row.feeDrops} drops`]) { const td = document.createElement('td'); td.textContent = text; tr.append(td) }
+    for (const text of [`${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${row.date}`, `${typeof amount === 'object' ? amount.value + ' ' + (amount.currency === 'SGT' ? 'TEST-SGD IOU (SGT; stand-in for RLUSD)' : amount.currency) + ' · issuer ' + amount.issuer : amount + (row.deliveredAmount || row.amountDrops ? ' drops' : '')} · fee ${row.feeDrops} drops`]) { const td = document.createElement('td'); td.textContent = text; tr.append(td) }
     const source = document.createElement('td'); const a = document.createElement('a'); a.href = 'https://github.com/Collaboration95/theFastandtheFungible/blob/' + (row.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943') + '/' + row.source; a.textContent = `Ledger ${row.ledgerIndex} · committed source`; source.append(a); tr.append(source)
     const td = document.createElement('td'); const link = document.createElement('a'); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.textContent = row.hash; const state = document.createElement('span'); state.className='state'; state.textContent='Checking live…'; td.append(link,state); cells.set(row.hash,state); tr.append(td); document.querySelector('#rows').append(tr)
   }
