@@ -54,3 +54,6 @@ export function satisfiesFactCover(text: string, covers: FactCover): boolean {
     && (!covers.period || mentionsMenuPhrase(periodText, covers.period))
     && (!covers.comparison || mentionsMenuPhrase(text, covers.comparison))
 }
+
+/** Display only: keep value-free signed catalogue periods unchanged. */
+export const displayPeriod = (period: string) => Object.entries(years).reduce((text, [digits, words]) => text.replaceAll(words, digits), period)

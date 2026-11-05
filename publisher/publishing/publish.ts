@@ -1,3 +1,4 @@
+import { issueWriterCredential } from './credential.js'
 import { once } from 'node:events'
 import { existsSync } from 'node:fs'
 import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
@@ -30,7 +31,7 @@ export async function fundTestnetWallet(wallet: Wallet): Promise<void> {
 
 export type PublishOptions = {
   folder: string; slug: string; name?: string; rail?: Rail; port?: number; root?: string
-  env?: NodeJS.ProcessEnv; fund?: (wallet: Wallet) => Promise<void>; log?: (line: string) => void
+  credential?: typeof issueWriterCredential; env?: NodeJS.ProcessEnv; fund?: (wallet: Wallet) => Promise<void>; log?: (line: string) => void
 }
 export async function publishSite(options: PublishOptions) {
   const started = performance.now()
@@ -53,6 +54,7 @@ export async function publishSite(options: PublishOptions) {
     const saved = existsSync(keyFile) ? parse(await readFile(keyFile)) : {}
     const variable = seedEnvName(options.slug)
     let wallet: Wallet | undefined
+    let credential: Awaited<ReturnType<typeof issueWriterCredential>> | undefined
     if (rail === 'xrpl-testnet') {
       if (saved[variable] && env[variable] && saved[variable] !== env[variable]) throw new Error('Saved writer key differs from the environment; refusing to replace the wallet')
       try { wallet = saved[variable] || env[variable] ? Wallet.fromSeed(saved[variable] || env[variable]!) : Wallet.generate() }
@@ -66,6 +68,7 @@ export async function publishSite(options: PublishOptions) {
       await chmod(keyFile, 0o600)
       log(`Wallet ${wallet.classicAddress} · XRPL TESTNET · key saved privately`)
       await (options.fund ?? fundTestnetWallet)(wallet)
+      credential = await (options.credential ?? issueWriterCredential)(wallet, root)
     } else log('SIMULATED wallet and payments · no Testnet transaction')
     let embeddings: EmbeddingCache | undefined
     const cacheFile = join(dir, 'embeddings.json')
@@ -80,7 +83,7 @@ export async function publishSite(options: PublishOptions) {
     }
     // Check indexability before registering; startup builds the same index with the same cache.
     await buildIndex(corpus.articles, embeddings)
-    app = createPublisherApp({ writers: corpus, rail, env: { ...env, ...saved, ...(wallet ? { [variable]: wallet.seed } : {}) },
+    app = createPublisherApp({ writers: corpus, rail, env: { ...env, ...(rail === 'xrpl-testnet' ? { ESCROW_MODE: env.ESCROW_MODE === 'payment' ? 'payment' : 'key-reveal', ESCROW_WRITERS: [env.ESCROW_WRITERS, options.slug].filter(Boolean).join(',') } : {}), ...saved, ...(wallet ? { [variable]: wallet.seed } : {}) },
       journal: join(dir, 'publisher.db'), embeddings })
     await app.locals.ready
     const server = app.listen(options.port ?? 8790 + Number(env.OFFSET || 0), '127.0.0.1')
@@ -97,7 +100,11 @@ export async function publishSite(options: PublishOptions) {
       } else log('Search: keyword · live embeddings off (SEARCH_EMBEDDINGS=live enables hybrid)')
       log('Metadata: deterministic · headings/front matter → signed fact menu · no LLM calls')
       const seconds = (performance.now() - started) / 1000
-      log(`Published ${corpus.articles.length} articles · unverified writer · ${corpus.publishers[0].synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED'}`)
+      if (credential && wallet) {
+        log(`Writer live · address ${wallet.classicAddress} · CredentialCreate tx https://testnet.xrpl.org/transactions/${credential.hash} ↗ · first sale will appear as EscrowFinish`)
+        log(`WRITER_CREDENTIAL_ISSUERS=${JSON.stringify([credential.trust])}`)
+      }
+      log(`Published ${corpus.articles.length} articles · ${credential ? "Testnet credential issued" : "unverified writer"} · ${corpus.publishers[0].synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED'}`)
       log(`Site ${baseUrl}/w/${options.slug}/`)
       log(`Registry ${baseUrl}/registry · registered locally for the next engine start`)
       log(`UI/MCP: PUBLISHER_URL=${baseUrl} (keep this command running)`)

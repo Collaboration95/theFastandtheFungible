@@ -1,7 +1,7 @@
 import { expect, it, vi } from 'vitest'
 import { createClient, ResearchAgentError } from '../sdk/index.js'
 import { errorEnvelope } from '../shared/contracts/errors.js'
-it.each(['cap_zero','paused','budget_exhausted','overloaded','deadline','settlement_pending','unauthorized','backend_unavailable'] as const)('preserves safe %s errors', async code => {
+it.each(['cap_zero','paused','budget_exhausted','per_call_cap','overloaded','deadline','settlement_pending','unauthorized','backend_unavailable'] as const)('preserves safe %s errors', async code => {
   const client = createClient({ baseUrl:'https://fixture.invalid', fetch: async()=>new Response(JSON.stringify({...errorEnvelope(code,503,'retained-run'),message:'PRIVATE'}),{status:503}) })
   await expect(client.wallet()).rejects.toMatchObject({code,status:503,runId:'retained-run'})
   await expect(client.wallet()).rejects.not.toThrow('PRIVATE')
@@ -44,7 +44,7 @@ it('maps HTTP errors through MCP structured content for all policy/recovery cate
   const [a,b]=InMemoryTransport.createLinkedPair()
   try {
     await server.connect(a);await client.connect(b)
-    for(code of ['cap_zero','paused','budget_exhausted','overloaded','deadline','settlement_pending','unauthorized','backend_unavailable'] as const){
+    for(code of ['cap_zero','paused','budget_exhausted','per_call_cap','overloaded','deadline','settlement_pending','unauthorized','backend_unavailable'] as const){
       const response=await client.callTool({name:'wallet_status',arguments:{}})
       expect(response.isError).toBe(true)
       expect(response.structuredContent).toMatchObject({code,status:503,runId:'retained'})

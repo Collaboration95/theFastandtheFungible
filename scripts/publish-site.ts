@@ -5,17 +5,17 @@ import { basename, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { publishSite } from '../publisher/publishing/publish.js'
 
-export async function main() {
+export async function main(args = process.argv.slice(2)) {
   try {
-    const { values, positionals } = parseArgs({ allowPositionals: true, options: {
-      slug: { type: 'string' }, name: { type: 'string' }, port: { type: 'string' }, rail: { type: 'string' }, help: { type: 'boolean' },
+    const { values, positionals } = parseArgs({ args, allowPositionals: true, options: {
+      testnet: { type: 'boolean' }, slug: { type: 'string' }, name: { type: 'string' }, port: { type: 'string' }, rail: { type: 'string' }, help: { type: 'boolean' },
     } })
     if (values.help) {
-      console.log('Usage: npm run publish:site -- ./my-notes [--slug my-notes] [--name "My Notes"] [--port 9590] [--rail simulated]\nDefault: XRPL Testnet wallet + faucet. Never pass seeds as arguments. Ctrl-C stops the site; rerun to update it.')
+      console.log('Usage: npm run publish:site -- ./my-notes [--slug my-notes] [--name "My Notes"] [--port 9590] [--testnet | --rail simulated]\nDefault (--testnet): XRPL Testnet faucet wallet + Testnet writer Credential + key-reveal escrow. Never pass seeds as arguments. Ctrl-C stops the site; rerun to update it.')
       return
     }
     if (positionals.length !== 1) throw new Error('Give one Markdown folder. Try: npm run publish:site -- examples/writer-starter')
-    const rail = values.rail ?? 'xrpl-testnet'
+    const rail = values.testnet || values.rail === 'testnet' ? 'xrpl-testnet' : values.rail ?? 'xrpl-testnet'
     if (rail !== 'simulated' && rail !== 'xrpl-testnet') throw new Error('--rail must be xrpl-testnet or simulated; Mainnet is disabled')
     const port = Number(values.port ?? 8790 + Number(process.env.OFFSET || 0))
     if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('--port must be an integer from 0 to 65535')

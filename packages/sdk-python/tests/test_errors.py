@@ -4,7 +4,7 @@ from urllib.error import HTTPError
 import pytest
 from researchagent import Client, ResearchAgentError, InvalidRequestError, BackendError, AskTask
 
-@pytest.mark.parametrize('code', ['cap_zero', 'paused', 'budget_exhausted', 'overloaded', 'deadline', 'settlement_pending', 'unauthorized', 'backend_unavailable'])
+@pytest.mark.parametrize('code', ['cap_zero', 'paused', 'budget_exhausted', 'per_call_cap', 'overloaded', 'deadline', 'settlement_pending', 'unauthorized', 'backend_unavailable'])
 def test_safe_envelope(code):
     class Opener:
         def open(self, *args, **kwargs):

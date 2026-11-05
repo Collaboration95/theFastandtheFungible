@@ -39,8 +39,8 @@ function socketFor(mode = 'valid') {
 it('bounds WebSockets and allows only matching validated success',async()=>{
  for(const mode of ['valid','not-found','network','mismatch','connection','malformed','oversized']) {
   const stub=socketFor(mode), states:string[]=[]
-  await refresh([row,row,row],stub.Socket,(_h:string,s:string)=>states.push(s))
-  expect(stub.maximum()).toBe(2); expect(stub.active()).toBe(0)
+  await refresh(Array(12).fill(row),stub.Socket,(_h:string,s:string)=>states.push(s))
+  expect(stub.maximum()).toBe(8); expect(stub.active()).toBe(0)
   expect(states.every(s=>s.startsWith('validated'))).toBe(mode==='valid')
  }
 })

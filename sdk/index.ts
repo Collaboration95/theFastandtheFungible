@@ -42,7 +42,7 @@ export type ClientOptions = { baseUrl: string; token?: string; fetch?: typeof fe
   /** Explicit operator signing authority. Required for pay and hire; never inferred from a seed. */
   payment?: Omit<import('./x402.js').PayOptions, 'method' | 'body' | 'headers' | 'idempotencyKey'> & { journal: import('./x402.js').PaymentJournal }
 }
-export type AskResult = PresentedRun & { requestedBudgetMinor: number; clamped: boolean; clampReason?: 'paused' | 'cap_zero' | 'budget_exhausted'; humanMaxBudgetMinor: number; humanDailyCapMinor: number; receipts: RunSnapshot['receipts'] }
+export type AskResult = PresentedRun & { requestedBudgetMinor: number; clamped: boolean; clampReason?: 'paused' | 'cap_zero' | 'per_call_cap' | 'budget_exhausted'; humanMaxBudgetMinor: number; humanDailyCapMinor: number; receipts: RunSnapshot['receipts'] }
 export type AskTask = Promise<AskResult> & { events: AsyncIterable<TraceEvent> }
 
 /** Policy owns admission and spending. Direct x402 requires separate explicit operator authority. */
@@ -199,7 +199,7 @@ export function createClient(options: ClientOptions) {
         }
         const requestedMinor = Math.floor(budget * 100 + 1e-7)
         return { ...presentRun(run, mode.publisherUrl), requestedBudgetMinor: requestedMinor,
-          clamped: run.budgetMinor < requestedMinor, clampReason: z.enum(['paused','cap_zero','budget_exhausted']).optional().parse(run.checkpoint.budgetReason), humanMaxBudgetMinor: mode.maxMinor, humanDailyCapMinor: mode.dailyMinor, receipts: run.receipts }
+          clamped: run.budgetMinor < requestedMinor, clampReason: z.enum(['paused','cap_zero','per_call_cap','budget_exhausted']).optional().parse(run.checkpoint.budgetReason), humanMaxBudgetMinor: mode.maxMinor, humanDailyCapMinor: mode.dailyMinor, receipts: run.receipts }
       }).finally(() => { finished = true; for (const wake of waiters) wake(); waiters.clear() })
       // A stream-only consumer observes rejection through the iterator.
       void result.catch(() => undefined)

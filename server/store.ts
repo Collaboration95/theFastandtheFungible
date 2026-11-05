@@ -289,7 +289,7 @@ export class Store {
       const run = this.insertRun(input.question, budget, input.labels)
       if (input.reserveMinor && (this.isPaused() || Math.min(remaining, surfaceRemaining, agent?.maxMinor ?? Infinity) < input.reserveMinor)) throw new Error('Wallet cannot reserve hire fee')
       if (input.reserveMinor) this.prepare('INSERT INTO hire_reserves (run_id, minor) VALUES (?,?)').run(run.runId, input.reserveMinor)
-      if (budget < input.requestedMinor) run.checkpoint.budgetReason = this.isPaused() ? 'paused' : input.maxMinor === 0 || agent?.maxMinor === 0 ? 'cap_zero' : 'budget_exhausted'
+      if (budget < input.requestedMinor) run.checkpoint.budgetReason = this.isPaused() ? 'paused' : input.maxMinor === 0 || agent?.maxMinor === 0 ? 'cap_zero' : Math.max(0, Math.min(input.maxMinor, agent?.maxMinor ?? Infinity) - (input.reserveMinor ?? 0)) <= Math.max(0, Math.min(remaining, surfaceRemaining) - (input.reserveMinor ?? 0)) ? 'per_call_cap' : 'budget_exhausted'
       run.policyVersion = POLICY_VERSION
       this.saveRun(run)
       this.prepare('INSERT INTO admissions VALUES (?,?,?,?,?,?,?,?)').run(input.idempotencyKey, input.surface, input.principal, run.runId, input.requestedMinor, budget, day, POLICY_VERSION)

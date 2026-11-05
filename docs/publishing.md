@@ -56,3 +56,24 @@ for your seller wallet with Testnet CredentialCreate; accept with CredentialAcce
 The same seller wallet carries its identity across approved origins. Verification
 attests identity, not article truth, and never changes purchase policy or prices.
 See [writer verification](writer-verification.md) for setup, limits and revocation.
+
+## Supply and buyers
+
+- Supply is anyone with a Markdown folder.
+- Buyers are agents with budgets that already exist (Claude Code / MCP).
+- The first writers are people who already publish free notes: they keep the free version as the free source and attach a paid deep version.
+- Key reveal means a writer needs no payment server trust and no Stripe account, just an XRPL address.
+
+## Faucet writer onboarding
+
+`npm run publish:site -- ./my-notes --rail testnet` (or `--testnet`)
+provisions a public-faucet writer wallet, then the local operator's Testnet
+issuer creates a `researchagent/writer-v1` credential and the writer accepts it.
+The repo bin is also packaged as `npx -y <rc MCP tgz> publish ./writer-starter --testnet`.
+Keep it running; start the buyer engine with the printed PUBLISHER_URL and
+WRITER_CREDENTIAL_ISSUERS. Key reveal is enabled for this writer by default.
+The issuer cache is private and local; this proves wallet onboarding, not a
+human identity check or consent. The owner must approve any issuer used beyond
+this local Testnet demonstration. Wallet and issuer files use mode 0600.
+No seeds are printed. The separate real-writers.json list stays empty until
+consenting writers are supplied by the owner.

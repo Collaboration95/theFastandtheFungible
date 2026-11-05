@@ -114,3 +114,14 @@ it('reopens a WAL after process death between reservation and settlement with ex
   })
   expect(outputs[0]).toEqual(outputs[1])
 })
+
+it('names the binding limit when a request is clamped', () => {
+  vi.stubEnv('WALLET_DAILY_CAP_MINOR', '500')
+  const s = fixture()
+  const admit = (key: string, requestedMinor: number, maxMinor: number, dailyMinor?: number) => s.admit({ surface: 'mcp' as Surface, principal: 'p', question: 'synthetic', requestedMinor, maxMinor, dailyMinor, idempotencyKey: key }, '2026-11-01').run.checkpoint.budgetReason
+  expect(admit('fits', 100, 200)).toBeUndefined()
+  // Per-call cap binds while the daily budget is far from spent.
+  expect(admit('cap', 300, 200)).toBe('per_call_cap')
+  // The per-call cap would allow it, but the wallet's daily budget cannot.
+  expect(admit('daily', 1000, 5000)).toBe('budget_exhausted')
+})

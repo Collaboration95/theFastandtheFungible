@@ -2,13 +2,24 @@
 
 All notable changes to ResearchAgent. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Tagged releases are
-feature-day milestones (v0.x), not semantic-version promises; the SDK and Python
-package carry their own 1.0.0 version in `packages/`.
+feature-day milestones (v0.x). Package versions follow the release tag.
 
 Every number below keeps the scope label of the evidence it comes from
 (synthetic, fixture, local or Testnet). Nothing here uses real money.
 Packages are built and consumer-tested but **not published** to npm, PyPI or
 the MCP Registry; that is an owner step tracked in #265.
+
+## Unreleased
+
+### Added
+
+- Writer cold start: `publish --testnet` (repo bin and MCP tgz) provisions a faucet writer wallet, issues a Testnet writer Credential, enables key-reveal escrow and prints `Writer live · address r… · CredentialCreate tx ↗`. Evidence in `docs/evidence/round3-c/` (public faucet, synthetic starter). A "Real writers" list (`docs/evidence/real-writers.json`, empty until consent) is shown on the README and `/ledger/`, labelled "real person · Testnet · no real value".
+- `npm run test:judge`: headless landing → every demo tab → ledger → release-link walk, run in CI.
+- `per_call_cap` clamp reason, distinct from `budget_exhausted`, across the engine, TS and Python SDKs and MCP output. No cap value changed.
+
+### Changed
+
+- First-touch polish: promise lists show digit years, no duplicates, capped at five; the Unclear list applies the relevance floor; the README question about Kestrel–TSMC margins now buys the paid article on the fixture; ledger status reads "Checking 25 hashes live… 0/25" and checks in parallel; the anchor row says "Memo = audit head …; answer anchor"; badge, landing page and demo banner point to the release candidate.
 
 ## v1.0.0-rc.1 — 4 Nov 2026
 
