@@ -1,9 +1,9 @@
 # ResearchAgent SDK v1
 
-[Release candidate v1.0.0-rc.2](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.2): release candidate · not yet on npm/PyPI/MCP Registry. Install without cloning.
+[Release v1.0.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ```sh
-npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.2/researchagent-sdk-1.0.0-rc.2.tgz
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-sdk-1.0.0.tgz
 ```
 
 
@@ -77,7 +77,7 @@ repository's `npm run verify:answer` command.
 
 ### Against the local app engine
 
-`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.2/researchagent-mcp-1.0.0-rc.2.tgz app --testnet` (or without `--testnet`) boots an engine and prints its `baseUrl` and the path of a
+`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz app --testnet` (or without `--testnet`) boots an engine and prints its `baseUrl` and the path of a
 0600 token file. Point the SDK at it; the browser UI and the SDK share one engine, wallet and cap accounting:
 
 ```ts
@@ -90,7 +90,7 @@ console.log(await client.verify(await client.receipts(run.run_id), { testnet: tr
 
 `ask` is the MCP surface: it needs `MCP_MAX_BUDGET_MINOR` and `MCP_DAILY_CAP_MINOR` in the environment of the `app`
 command (default zero, so a bare `ask` buys nothing). Browser purchases use the UI's own per-prompt budget and the app's
-wallet-wide daily cap (S$5.00 on Testnet). See [docs/testnet.md](testnet.md#zero-clone-testnet-app-v100-rc2).
+wallet-wide daily cap (S$5.00 on Testnet). See [docs/testnet.md](testnet.md#zero-clone-testnet-app-v100).
 
 ### `hire`
 

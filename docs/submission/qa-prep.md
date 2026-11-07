@@ -59,7 +59,7 @@ Credential in 44 seconds."
 **Behind it:** `docs/evidence/real-writers.json` is empty by design. The
 team-authored label is "team-authored · real content · not an independent writer
 · Testnet" (J1, #390). Writer onboarding: [round3-c](../evidence/round3-c/README.md);
-first-try `init` + `publish` is {{J3_FIRST_TRY_SECONDS}} (J3, #389).
+first-try `init` + `publish` is 33.9 s (J3, #389).
 
 ### 3. I asked my own question. What happens?
 

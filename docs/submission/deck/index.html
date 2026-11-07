@@ -201,11 +201,11 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
     <div><div class="d">5 Nov</div><div class="v">rc.2</div><div class="t">Real Testnet without cloning; key reveal by default.</div></div>
     <div><div class="d">7 Nov</div><div class="v">main</div><div class="t"><span class="mono" style="font-size:20px">try</span>, TEST-SGD escrow, judge questions answered, Settings.</div></div>
     <div class="next"><div class="d">9–10 Nov</div><div class="v">Lanes</div><div class="t"><span class="mono" style="font-size:20px">init</span> + publish for strangers; final acceptance.</div></div>
-    <div class="next"><div class="d">12 Nov</div><div class="v"><span class="ph">{{RELEASE_TAG}}</span></div><div class="t">Release with the one-line judge path.</div></div>
+    <div class="next"><div class="d">12 Nov</div><div class="v"><span class="ph">v1.0.0</span></div><div class="t">Release with the one-line judge path.</div></div>
   </div>
   <div class="stats">
     <div class="stat"><b>183</b><span>pull requests merged since SingHacks (21 Sep–7 Nov)</span></div>
-    <div class="stat"><b>10</b><span>tagged releases, v0.1.0 → v1.0.0-rc.2</span></div>
+    <div class="stat"><b>11</b><span>tagged releases, v0.1.0 → v1.0.0</span></div>
     <div class="stat"><b>1,293</b><span>TypeScript tests plus 258 Python tests on main, every hard gate included</span></div>
     <div class="stat"><b>224</b><span>shared receipt-conformance vectors; the TypeScript and Python verifiers agree on all</span></div>
   </div>
@@ -216,7 +216,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
 <section class="slide" data-title="One line, real ledger">
   <div class="crit">Reachability · zero clone</div>
   <h1>One line, no clone: the whole judge path on real Testnet</h1>
-  <div class="cmdline"><span class="p">$</span> npx -y …/releases/download/<span class="ph">{{RELEASE_TAG}}</span>/researchagent-mcp-<span class="ph">{{RELEASE_VERSION}}</span>.tgz try --testnet</div>
+  <div class="cmdline"><span class="p">$</span> npx -y …/releases/download/<span class="ph">v1.0.0</span>/researchagent-mcp-<span class="ph">1.0.0</span>.tgz try --testnet</div>
   <div class="grid g2" style="grid-template-columns:1.22fr 1fr;gap:48px;margin-top:30px">
     <div class="term">
       <div class="dim">Testnet · no real value · Fixture models and fictional writers</div>
@@ -328,7 +328,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
   <div class="grid g2" style="grid-template-columns:1.05fr 1fr;gap:56px;margin-top:40px">
     <div>
       <div class="term">
-        <div><span class="p">$</span> pip install …/researchagent-<span class="ph">{{RELEASE_VERSION}}</span>…whl</div>
+        <div><span class="p">$</span> pip install …/researchagent-<span class="ph">1.0.0</span>…whl</div>
         <div><span class="p">$</span> researchagent verify UC3.receipts.json --ledger</div>
         <div>PASS checks: 57 PASS, 0 FAIL, 2 SKIP</div>
         <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22057921</div>
@@ -358,7 +358,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
     <div class="card"><h3>Claude Code, any MCP client</h3><p><code>claude mcp add … --testnet</code>. Seven tools; operator caps default to zero.</p><div class="num">Cold initialize 6.3 s · <code>--iou</code> for TEST-SGD</div></div>
     <div class="card"><h3>Local web app, no clone</h3><p><code>app --testnet</code> serves the real UI on 127.0.0.1 with faucet wallets. Ask your own question.</p><div class="num">Ready in 27.0 s from an empty cache</div></div>
     <div class="card"><h3>SDKs: TypeScript and Python</h3><p>Ask, stream, verify. No purchase method: only backend policy can buy.</p><div class="num">Python verifier needs no Node</div></div>
-    <div class="card"><h3>Writers in one command</h3><p><code>publish ./notes --testnet</code>: faucet wallet, XRPL Credential, key-reveal escrow.</p><div class="num">Credential in 43.8 s · first try from <code>init</code>: <span class="ph">{{J3_FIRST_TRY_SECONDS}}</span></div></div>
+    <div class="card"><h3>Writers in one command</h3><p><code>publish ./notes --testnet</code>: faucet wallet, XRPL Credential, key-reveal escrow.</p><div class="num">Credential in 43.8 s · first try from <code>init</code>: <span class="ph">33.9 s</span></div></div>
     <div class="card"><h3>Hire the agent over x402</h3><p>Another agent pays ResearchAgent; it buys, pays a royalty to every cited writer and returns the change.</p><div class="num">Five-hop chain on Testnet, 3 Nov</div></div>
   </div>
   <p class="honest" style="margin-top:28px;font-size:22px"><b>Your own XRPL question:</b> a team-authored writer (our real build notes, labelled, not independent) answers it. Frozen 20-question judge bank: <b>15/20</b> bought and cited on Testnet, 0 blank answers. <b>No hosted instance:</b> it all runs locally from release artifacts (<span class="ph">{{REGISTRY_STATUS}}</span>).</p>
@@ -423,7 +423,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
     <table class="ledger">
       <tr><th>What</th><th>Where</th></tr>
       <tr><td>Run the judge path</td><td class="h2">npx -y … try --testnet</td></tr>
-      <tr><td>Release, every artifact</td><td class="h2"><span class="ph">{{RELEASE_TAG}}</span> on GitHub Releases</td></tr>
+      <tr><td>Release, every artifact</td><td class="h2"><span class="ph">v1.0.0</span> on GitHub Releases</td></tr>
       <tr><td>Replay of a Testnet run</td><td class="h2"><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">…/theFastandtheFungible/demo/</a></td></tr>
       <tr><td>45 hashes, checked live</td><td class="h2"><a href="https://collaboration95.github.io/theFastandtheFungible/ledger/">…/theFastandtheFungible/ledger/</a></td></tr>
       <tr><td>Demo video</td><td class="h2"><span class="ph">{{VIDEO_URL}}</span></td></tr>

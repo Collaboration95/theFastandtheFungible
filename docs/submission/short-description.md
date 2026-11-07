@@ -28,7 +28,7 @@ a stablecoin-style test token. Two independent verifiers, one of them Python wit
 no Node, re-check every receipt against the ledger.
 
 Try it with no clone:
-`npx -y <release>/researchagent-mcp-{{RELEASE_VERSION}}.tgz try --testnet`. It
+`npx -y <release>/researchagent-mcp-1.0.0.tgz try --testnet`. It
 finished in 84 s from an empty cache, with six Testnet links and `RESULT PASS`.
 
 Everything runs on XRPL Testnet (no real money). The research writers are
@@ -43,7 +43,7 @@ decision model judges what is worth buying, but only deterministic policy code c
 spend, and never past your budget. Five hard gates hold on every run, and a
 read-only audit checks them.
 
-What's new since SingHacks (183 merged pull requests, 10 tagged releases):
+What's new since SingHacks (183 merged pull requests, 11 tagged releases):
 
 - **Key-reveal escrow.** The buyer locks payment in a native XRPL Escrow whose
   condition is the hash of the article's key. To get paid, the writer must
@@ -58,12 +58,12 @@ What's new since SingHacks (183 merged pull requests, 10 tagged releases):
   about 2 seconds.
 - **Zero clone.** One line runs the whole judge path on Testnet in 84 s and ends
   with `RESULT PASS`:
-  `npx -y <release>/researchagent-mcp-{{RELEASE_VERSION}}.tgz try --testnet`.
+  `npx -y <release>/researchagent-mcp-1.0.0.tgz try --testnet`.
   The same package is an MCP server for Claude Code and a local web app.
 - **Writers in one command.** A Markdown folder becomes a Testnet writer with an
   XRPL Credential in 44 s.
 
-Proof: [release {{RELEASE_TAG}}](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/{{RELEASE_TAG}}) ·
+Proof: [release v1.0.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0) ·
 [browser replay](https://collaboration95.github.io/theFastandtheFungible/demo/) ·
 [live ledger check](https://collaboration95.github.io/theFastandtheFungible/ledger/).
 
@@ -78,7 +78,7 @@ instance: everything runs on your machine. Mainnet is disabled in code.
 | Claim | Label | Source |
 |---|---|---|
 | "183 merged pull requests" | 21 Sep–7 Nov 2026 SGT, `main` | `gh pr list --state merged` filtered to after 20 Sep |
-| "10 tagged releases" | v0.1.0–v0.8.0, v1.0.0-rc.1, rc.2 (pre-releases) | `gh release list` |
+| "11 tagged releases" | v0.1.0–v0.8.0, v1.0.0-rc.1, rc.2 (pre-releases), v1.0.0 | `gh release list` |
 | Key-reveal escrow, refund | XRPL Testnet, fixture models, fictional writers; the refund after a finish is writer-signed (the fixture writer cooperates) | [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377), [#379](https://github.com/Collaboration95/theFastandtheFungible/pull/379), [key-reveal-escrow.md](../key-reveal-escrow.md) |
 | Stablecoin escrow | TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381), [#384](https://github.com/Collaboration95/theFastandtheFungible/pull/384), [m1-iou](../evidence/m1-iou/README.md) |
 | "Official RLUSD payments work on Testnet" | Official Testnet RLUSD issuer, UC2 0.90 paid, UC3 0.30 refunded, 3 Nov | [rlusd.md](../evidence/rlusd.md) |
