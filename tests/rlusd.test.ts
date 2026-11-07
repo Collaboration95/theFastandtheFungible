@@ -1,6 +1,5 @@
+import { resources } from './helpers/resource-scope.js'
 import { openPaymentJournal } from '../sdk/x402-journal.js'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import { Wallet } from 'xrpl'
@@ -73,7 +72,7 @@ it('policy buys issued currency, verifies proof before access, replays once, exp
   s.store.addAnswer(run.runId, { conclusion: 'Verified issued payment.', claims: [{ id: 'issued', text: content.spans[0].text, stance: 'SUPPORTS', citations: [{ resourceId: content.resourceId, version: content.version, spanId: content.spans[0].id }] }], openGaps: [], version: 1, provider: 'fixture', model: 'extractive-fixture' })
   const verified = await verifyAnswer(receiptBundle(s.store, run.runId), { testnet: true, ledger: s.chain.ledger })
   expect(verified.checks.filter(c => c.status === 'FAIL')).toEqual([])
-  const journal = openPaymentJournal(join(mkdtempSync(join(tmpdir(), 'rlusd-caller-')), 'caller.db')); clean.push(() => journal.close())
+  const journal = openPaymentJournal(join(resources().tempDir('rlusd-caller-'), 'caller.db')); clean.push(() => journal.close())
   const paid = await payAndFetch(`${s.url}${candidate.url}`, { journal, wallet: s.payer, ledger: s.chain.ledger, maxDrops: '1', issued: { asset, maxAmount: '0.60' } })
   expect(paid.payment.asset).toEqual(asset); expect(paid.response.ok).toBe(true)
 })
@@ -114,9 +113,8 @@ it('binds a quote to its first signed blob before ledger submission', async () =
 })
 it('screens the issuer as well as the writer before signing', async () => {
   const s = await setup(), candidate = await candidateFrom(s.url, honestArticle)
-  const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs')
-  const { tmpdir } = await import('node:os')
-  const dir = mkdtempSync(`${tmpdir()}/issuer-screen-`); clean.push(() => rmSync(dir, { recursive: true, force: true }))
+  const { writeFileSync, rmSync } = await import('node:fs')
+  const dir = resources().tempDir('issuer-screen-'); clean.push(() => rmSync(dir, { recursive: true, force: true }))
   writeFileSync(`${dir}/deny.json`, JSON.stringify([{ address: asset.issuer, reason: 'issuer test entry' }]))
   vi.stubEnv('PAYEE_DENYLIST_FILE', `${dir}/deny.json`)
   const run = s.store.createRun('pricing', 100)

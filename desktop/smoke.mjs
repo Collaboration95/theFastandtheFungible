@@ -1,20 +1,25 @@
+import { register } from 'node:module'
+register('tsx/esm', import.meta.url)
+const { ResourceScope } = await import('../shared/resource-scope.ts')
 if (process.argv.includes('--recovery')) {
   await import('./recovery-smoke.mjs')
   process.exit(0)
 }
 import { _electron as electron, expect } from '@playwright/test'
-import { mkdtemp, mkdir, readFile, writeFile, rm, readdir } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { request } from 'node:http'
 import { execFileSync } from 'node:child_process'
 
 const executablePath = process.env.DESKTOP_EXECUTABLE || '/Applications/ResearchAgent.app/Contents/MacOS/ResearchAgent'
-const data = await mkdtemp(join(tmpdir(), 'researchagent-desktop-smoke-'))
+const scope = new ResourceScope()
+try {
+const data = scope.tempDir('researchagent-desktop-smoke-')
 await mkdir('desktop/evidence', { recursive: true })
 const canary = 'desktop-secret-canary-not-a-wallet'
 const start = performance.now()
 const app = await electron.launch({ executablePath, args: process.env.DESKTOP_APP_PATH ? [process.env.DESKTOP_APP_PATH] : [], env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_DATA: data, XRPL_PAYER_SEED: canary, OPENAI_API_KEY: canary, RA_API_TOKEN: canary }, timeout: 30_000 })
+scope.own(app)
 let apiUrl, publisherUrl
 try {
   const page = await app.firstWindow()
@@ -107,5 +112,6 @@ try {
   await app.close()
   if (apiUrl) await expect(fetch(`${apiUrl}/health`)).rejects.toThrow()
   if (publisherUrl) await expect(fetch(`${publisherUrl}/health`)).rejects.toThrow()
-  await rm(data, { recursive: true, force: true })
 }
+
+} finally { await scope.close() }

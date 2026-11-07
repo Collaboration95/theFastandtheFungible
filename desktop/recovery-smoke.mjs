@@ -1,6 +1,8 @@
+import { register } from 'node:module'
+register('tsx/esm', import.meta.url)
+const { ResourceScope } = await import('../shared/resource-scope.ts')
 import { _electron as electron, expect } from '@playwright/test'
-import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve, join, dirname } from 'node:path'
 import { createServer } from 'node:net'
 const arg = flag => process.argv[process.argv.indexOf(flag) + 1]
@@ -22,14 +24,17 @@ async function settings(app) {
   return page
 }
 for (const fault of ['fresh-start', 'missing-key', 'deleted-key', 'locked-key', 'denied-key', 'corrupt-key', 'incomplete-config', 'remote-token-absent', 'remote-outage', 'boot-timeout', 'port-conflict']) {
-  const data = await mkdtemp(join(tmpdir(), 'ra-c2-'))
+  const scope = new ResourceScope()
+  try {
+  const data = scope.tempDir('ra-c2-')
   let listener
   const env = { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_KEYCHAIN_SERVICE: service, RA_DESKTOP_DATA: data, RA_DESKTOP_RECOVERY_TEST: '1', ...(fault === 'fresh-start' || fault === 'port-conflict' ? {} : { RA_DESKTOP_RECOVERY_FAULT: fault }) }
   if (fault === 'port-conflict') {
-    listener = createServer(); await new Promise(done => listener.listen(0, '127.0.0.1', done))
+    listener = createServer(); scope.defer(() => new Promise(done => listener.listening ? listener.close(done) : done())); await new Promise(done => listener.listen(0, '127.0.0.1', done))
     env.RA_DESKTOP_TEST_MCP_PORT = String(listener.address().port)
   }
   const app = await electron.launch({ executablePath, env, timeout: 30000 })
+  scope.own(app)
   let apiUrl
   try {
     const main = await app.firstWindow()
@@ -88,6 +93,7 @@ for (const fault of ['fresh-start', 'missing-key', 'deleted-key', 'locked-key', 
     try { const prefs = await settings(again); await expect.poll(async () => (await prefs.evaluate(() => window.desktop.state())).wallet?.wallet?.paused, { timeout: 30000 }).toBe(true); results.push({ case: 'durable-pause-relaunch', passed: true }) }
     finally { await again.close() }
   }
+  } finally { await scope.close() }
 }
 await writeFile(output, JSON.stringify({ fixtureOnly: true, nativeArch: process.arch, listenersAfterQuit: 0, checkedListenerCount: ports.size, cases: results, limits: 'Faults are injected before credential/network rails. Unit tests separately exercise actual bootSecrets decisions. No live provider, Keychain incident or Testnet acceptance claimed.' }, null, 2))
 await writeFile(join(dirname(output), 'ipc-canaries.json'), JSON.stringify(ipc, null, 2))

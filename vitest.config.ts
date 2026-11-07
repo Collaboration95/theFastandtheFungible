@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    globalSetup: ['scripts/test-resources.mjs'],
+    setupFiles: ['tests/helpers/resource-scope.ts'],
     // D22: tracing is never on in tests, whatever the shell exports.
     env: { LANGFUSE_ENABLED: '0', DOTENV_CONFIG_PATH: '.playwright/no-env' },
     maxWorkers: process.env.RA_TEST_WORKERS ? Math.max(1, Number(process.env.RA_TEST_WORKERS)) : 3,

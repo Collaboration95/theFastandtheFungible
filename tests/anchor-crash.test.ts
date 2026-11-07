@@ -1,7 +1,7 @@
+import { resources } from './helpers/resource-scope.js'
 // Crash boundary injection: disk DB reopened; ledger accepts duplicate blobs once.
 import { it, expect, vi } from 'vitest'
-import { mkdtempSync, readFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Store } from '../server/store.js'
 import { AnswerAnchors } from '../server/anchor.js'
@@ -15,8 +15,8 @@ const purchased = (store: Store) => {
  vi.spyOn(store, 'getRun').mockImplementation(id => ({ ...get(id), receipts }))
 }
 for (const crash of ['before-submit','after-submit','after-validation']) it(`recovers ${crash} with one signature and one fee`,async()=>{
- const path=join(mkdtempSync(join(tmpdir(),'anchor-crash-')),'app.db')
- let store=new Store(path)
+ const path=join(resources().tempDir('anchor-crash-'),'app.db')
+ let store=resources().own(new Store(path))
  const run=store.createRun('test',200,{research:'fixture',decision:'fixture',publisher:'local',settlement:'XRPL TESTNET · no real value'})
  store.addAnswer(run.runId,{version:1,conclusion:'No evidence',claims:[],openGaps:[],provider:'fixture',model:'fixture'})
  store.updateRun(run.runId,{phase:'DONE'})
@@ -46,7 +46,7 @@ for (const crash of ['before-submit','after-submit','after-validation']) it(`rec
  let anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet))
  await anchors.ensure(run.runId).catch(()=>undefined)
  const blob=store.anchorRows()[0].submission!.txBlob
- store.close();store=new Store(path)
+ store.close();store=resources().own(new Store(path))
  purchased(store)
  anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet))
  await Promise.all([anchors.ensure(run.runId),anchors.ensure(run.runId)])

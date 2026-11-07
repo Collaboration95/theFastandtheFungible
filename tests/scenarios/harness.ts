@@ -1,9 +1,8 @@
-import { spawn, type ChildProcess } from 'node:child_process'
+import { ResourceScope } from '../../shared/resource-scope.js'
 import { once } from 'node:events'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { createServer as createHttpServer } from 'node:http'
 import { createServer } from 'node:net'
-import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { loadWriterCorpus } from '../../publisher/corpus.js'
 import { RunSnapshotSchema, type RunSnapshot, type Grant } from '../../shared/contracts/index.js'
@@ -37,43 +36,37 @@ const pause = (ms: number) => new Promise(done => setTimeout(done, ms))
 /** `plain`: the unmodified v2 corpus (no canaries, no over-cap decoy), for the UI fixture generator (#154). */
 export async function startScenario(options: { injection?: boolean; audited?: boolean; plain?: boolean } = {}) {
   const audited = options.audited ?? false
-  const dir = mkdtempSync(join(tmpdir(), 'tftf-scenarios-'))
+  const scope = new ResourceScope()
+  try {
+  const dir = scope.tempDir('tftf-scenarios-')
   const corpus = options.plain ? await loadWriterCorpus(undefined, { allowMini: false }) : await scenarioCorpus(options)
   writeFileSync(join(dir, 'corpus.json'), JSON.stringify(corpus))
-  const children: ChildProcess[] = []
   const logs: string[] = []
   const observations: Observation[] = []
   const controllers: AbortController[] = []
   const streams: Promise<void>[] = []
   let llm: ReturnType<typeof createHttpServer> | undefined
   const env = { ...process.env, DOTENV_CONFIG_PATH: join(dir, 'no-env'), PORT: '0', HOST: '127.0.0.1', PUBLISHER_PORT: '0', APP_DB: join(dir, 'api.db'), REPORT_DIR: join(dir, 'reports'), PUBLISHER_SECRET: 'scenario-fixture-secret', SCENARIO_CORPUS: join(dir, 'corpus.json'), SCENARIO_JOURNAL: join(dir, 'publisher.db'), SCENARIO_AUDIT: join(dir, 'audit.jsonl'), LLM_PROVIDER: 'fixture', GROQ_API_KEY: '', LLM_API_KEY: '', LLM_BASE_URL: '', LLM_MODEL: '', DECISION_PROVIDER: 'fixture', CLOUDFLARE_API_TOKEN: '', CLOUDFLARE_ACCOUNT_ID: '', BUY_THRESHOLD: '', PUBLISHER_FAULTS: '0', SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' }
-  async function stop() {
+  scope.defer(async () => {
     controllers.forEach(c => c.abort())
-    await Promise.all(streams)
-    await Promise.all(children.map(async child => {
-      if (child.exitCode !== null || child.signalCode !== null) return
-      const exited = once(child, 'exit')
-      child.kill('SIGTERM')
-      const timer = setTimeout(() => child.kill('SIGKILL'), 2000)
-      await exited
-      clearTimeout(timer)
-    }))
-    if (llm) { llm.closeAllConnections(); await new Promise<void>(done => llm!.close(() => done())) }
-    rmSync(dir, { recursive: true, force: true })
-  }
+    const results = await Promise.allSettled(streams)
+    const errors = results.filter(r => r.status === 'rejected').map(r => r.reason)
+    if (errors.length) throw new AggregateError(errors, 'Scenario streams failed')
+  })
+  scope.defer(async () => { if (llm) { llm.closeAllConnections(); await new Promise<void>(done => llm!.close(() => done())) } })
+  const stop = () => scope.close()
   async function start(args: string[], port?: number) {
-    const child = spawn(process.execPath, ['--import', 'tsx', ...args], { cwd: process.cwd(), env, stdio: ['ignore', 'pipe', 'pipe'] })
-    children.push(child)
+    const child = scope.spawn(process.execPath, ['--import', 'tsx', ...args], { cwd: process.cwd(), env })
     let output = ''
     child.stdout!.on('data', data => { output += String(data); logs.push(String(data)) })
     child.stderr!.on('data', data => logs.push(String(data)))
     for (let i = 0; i < 500; i++) {
-      if (child.exitCode !== null) throw new Error(`Scenario process exited: ${logs.join('')}`)
+      if (child.exitCode !== null || child.signalCode !== null) throw new Error(`Scenario process exited: ${logs.join('')}`)
       const actual = port ?? Number(output.match(/PORT=(\d+)/)?.[1])
       if (actual) {
         const base = `http://127.0.0.1:${actual}`
         try {
-          const response = await fetch(base + '/health')
+          const response = await fetch(base + '/health', { signal: AbortSignal.timeout(1000) })
           const raw = await response.text()
           observations.push({ kind: 'health', raw, grants: [] })
           if (response.ok) return base
@@ -168,6 +161,7 @@ export async function startScenario(options: { injection?: boolean; audited?: bo
     }
     return { base, publisher, corpus, observations, scope, logs, ask, until, request, stop, scoring, db: env.APP_DB, audits: (): Audit[] => readFileSync(join(dir, 'audit.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line)) }
   } catch (error) { await stop(); throw error }
+  } catch (error) { await scope.close(); throw error }
 }
 
 const RUN = 8 // the search leak gate's run length

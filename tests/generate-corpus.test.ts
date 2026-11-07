@@ -1,5 +1,5 @@
-import { mkdtempSync, readFileSync, readdirSync, existsSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { resources } from './helpers/resource-scope.js'
+import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error plain .mjs script, no declarations
@@ -39,7 +39,7 @@ const files = (out: string) => readdirSync(join(out, 'articles'), { recursive: t
 
 describe('corpus generator (#119)', () => {
   it('plans, writes valid articles within the call cap, forces golden facts and passages', async () => {
-    const out = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const out = resources().tempDir('corpus-')
     const { llm, log } = fakeLlm()
     const r = await run(out, llm)
     expect(r.failed).toEqual([])
@@ -61,20 +61,20 @@ describe('corpus generator (#119)', () => {
   })
 
   it('retries when a required fact is missing, and gives up after 2 retries without writing', async () => {
-    const out = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const out = resources().tempDir('corpus-')
     const { llm, log } = fakeLlm({ flaky: 'notft-kestrel-tsmc-deal-margins' })
     const r = await run(out, llm, { only: 'notfinancialtimes' })
     expect(log.filter(n => n === 'write:notft-kestrel-tsmc-deal-margins')).toHaveLength(2)
     expect(JSON.parse(readFileSync(join(out, 'articles/notfinancialtimes/notft-kestrel-tsmc-deal-margins.json'), 'utf8')).body).toContain('55.2%')
     expect(r.failed).toEqual([])
-    const out2 = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const out2 = resources().tempDir('corpus-')
     const bad = await run(out2, async (name: string, s: string, i: Obj) => name === 'write:notft-kestrel-tsmc-deal-margins' ? { abstract: 'x', body: filler(700, 'z') } : fakeLlm().llm(name, s, i), { only: 'notfinancialtimes' })
     expect(bad.failed).toHaveLength(1)
     expect(existsSync(join(out2, 'articles/notfinancialtimes/notft-kestrel-tsmc-deal-margins.json'))).toBe(false)
   })
 
   it('is idempotent: a second run makes no LLM calls and rewrites nothing', async () => {
-    const out = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const out = resources().tempDir('corpus-')
     await run(out, fakeLlm().llm, { only: 'the-fab-floor' })
     const again = fakeLlm()
     const r = await run(out, again.llm, { only: 'the-fab-floor' })
@@ -84,13 +84,13 @@ describe('corpus generator (#119)', () => {
   })
 
   it('backs off on 429 and enforces the hard call cap', async () => {
-    const out = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const out = resources().tempDir('corpus-')
     const waits: number[] = []
     const { llm } = fakeLlm({ fail429: { name: 'plan:kopi-contrarian', times: 2 } })
     const r = await run(out, llm, { only: 'kopi-contrarian', wait: async (ms: number) => { waits.push(ms) } })
     expect(waits).toEqual([5000, 15000])
     expect(r.failed).toEqual([])
-    const capped = await run(mkdtempSync(join(tmpdir(), 'corpus-')), fakeLlm().llm, { only: 'kopi-contrarian', cap: 3 })
+    const capped = await run(resources().tempDir('corpus-'), fakeLlm().llm, { only: 'kopi-contrarian', cap: 3 })
     expect(capped.calls).toBe(3)
     expect(capped.failed.length).toBeGreaterThan(0)
   })
@@ -98,13 +98,13 @@ describe('corpus generator (#119)', () => {
   it('caps real provider requests, not just llm calls (streamJson retries internally)', async () => {
     let sent = 0
     const { llm } = fakeLlm()
-    const r = await run(mkdtempSync(join(tmpdir(), 'corpus-')), (n, s, i) => { sent += 2; return llm(n, s, i) }, { only: 'kopi-contrarian', cap: 6, requests: () => sent })
+    const r = await run(resources().tempDir('corpus-'), (n, s, i) => { sent += 2; return llm(n, s, i) }, { only: 'kopi-contrarian', cap: 6, requests: () => sent })
     expect(sent).toBeLessThanOrEqual(8)
     expect(r.failed.length).toBeGreaterThan(0)
   })
 
   it('dry-run uses no LLM and writes nothing', async () => {
-    const out = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const out = resources().tempDir('corpus-')
     const r = await run(out, async () => { throw new Error('network') }, { dryRun: true })
     expect(r.written).toBe(0)
     expect(existsSync(join(out, 'articles'))).toBe(false)

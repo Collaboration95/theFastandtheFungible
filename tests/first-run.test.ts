@@ -1,4 +1,5 @@
-import { mkdtempSync, rmSync } from 'node:fs'
+import { resources } from './helpers/resource-scope.js'
+import { rmSync } from 'node:fs'
 import { expect, it, vi } from 'vitest'
 import { startEngine } from '../server/engine.js'
 import { createClient } from '../sdk/index.js'
@@ -25,7 +26,7 @@ it('coverage handles price/pricing and margin/margins without accepting an absen
 })
 it('first run buys, cites paid contribution, reports coverage, and abstains without purchases', async () => {
   vi.stubEnv('MCP_MAX_BUDGET_MINOR','200'); vi.stubEnv('MCP_DAILY_CAP_MINOR','500')
-  const dir = mkdtempSync('/tmp/first-run-')
+  const dir = resources().tempDir('first-run-')
   const engine = await startEngine({dataDir: dir})
   try {
     const client = createClient({baseUrl:engine.apiUrl, token:engine.apiToken})

@@ -1,7 +1,9 @@
-import { spawn } from 'node:child_process'
-import { mkdir, mkdtemp, rm } from 'node:fs/promises'
+import { register } from 'node:module'
+register('tsx/esm', import.meta.url)
+const { ResourceScope } = await import('../shared/resource-scope.ts')
+const scope = new ResourceScope()
+import { mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { tmpdir } from 'node:os'
 import { allocateDemoPorts } from './demo-ports.mjs'
 
 // No shared ledger or provider calls. All ports, stores and processes belong to this take.
@@ -9,11 +11,13 @@ const clip = process.argv.includes('--clip')
 const uc = process.env.UC || 'UC2'
 if (!/^UC[1-4]$/.test(uc)) throw new Error('UC must be UC1, UC2, UC3 or UC4')
 const ports = clip ? await allocateDemoPorts() : { web: 5100 + Number(process.env.DEMO_PORT_OFFSET || 300), api: 8788 + Number(process.env.DEMO_PORT_OFFSET || 300), pub: 8790 + Number(process.env.DEMO_PORT_OFFSET || 300) }
-const store = await mkdtemp(resolve(tmpdir(), 'researchagent-record-'))
+try {
+const store = scope.tempDir('researchagent-record-')
 const env = { ...process.env, DOTENV_CONFIG_PATH: '.record-no-env', DEMO_WEB_PORT: String(ports.web), DEMO_API_PORT: String(ports.api), DEMO_PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: `http://127.0.0.1:${ports.pub}`, APP_DB: `${store}/app.db`, PUBLISHER_DB: `${store}/publisher.db`, REPORT_DIR: `${store}/reports`, SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' }
-const child = spawn(process.execPath, ['scripts/demo.mjs'], { env, stdio: 'inherit' })
+const child = scope.spawn(process.execPath, ['scripts/demo.mjs'], { env, stdio: 'inherit' })
 let browser
-async function cleanup() { await browser?.close(); child.kill('SIGTERM'); await new Promise(done => child.exitCode !== null ? done() : child.once('exit', done)); await rm(store, { recursive: true, force: true }) }
+scope.defer(() => browser?.close())
+async function cleanup() { await scope.close() }
 process.on('SIGINT', () => { void cleanup().then(() => process.exit()) })
 process.on('SIGTERM', () => { void cleanup().then(() => process.exit()) })
 const url = `http://127.0.0.1:${ports.web}/?record=1`
@@ -56,7 +60,7 @@ if (clip) {
     const output = `clips/${uc.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.webm`
     await rename(await page.video().path(), output)
     if (!(await stat(output)).size) throw new Error('Empty recording')
-    const ffmpeg = spawn('ffmpeg', ['-y', '-i', output, '-t', '20', '-vf', 'tpad=stop_mode=clone:stop_duration=18', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', output.replace('.webm', '.mp4')], { stdio: 'ignore' })
+    const ffmpeg = scope.spawn('ffmpeg', ['-y', '-i', output, '-t', '20', '-vf', 'tpad=stop_mode=clone:stop_duration=18', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', output.replace('.webm', '.mp4')], { stdio: 'ignore' })
     ffmpeg.on('error', () => console.log('ffmpeg unavailable; WebM is ready.'))
     await new Promise(done => { ffmpeg.on('error', done); ffmpeg.on('exit', done) })
     console.log(`Clip saved: ${resolve(output)}`)
@@ -70,3 +74,5 @@ async function expectReady() {
   }
   throw new Error('Record server did not become ready')
 }
+
+} catch (error) { await scope.close(); throw error }

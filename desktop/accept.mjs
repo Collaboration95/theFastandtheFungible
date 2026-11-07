@@ -1,10 +1,12 @@
+import { register } from 'node:module'
+register('tsx/esm', import.meta.url)
+const { ResourceScope } = await import('../shared/resource-scope.ts')
 // Run with node --import tsx; never send dotenv credentials to the Electron parent env.
 import 'dotenv/config'
 import { _electron as electron, expect } from '@playwright/test'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
-import { mkdtemp, mkdir, readFile, writeFile, stat } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { mkdir, readFile, writeFile, stat } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { Store } from '../server/store.ts'
@@ -22,16 +24,20 @@ const output = resolve('desktop/evidence/acceptance.json')
 await mkdir('desktop/evidence', { recursive: true })
 const pkg = JSON.parse(await readFile('package.json', 'utf8'))
 const dmg = resolve(process.env.DESKTOP_DMG || `desktop/out/ResearchAgent-${process.env.DESKTOP_VERSION || pkg.version}-${process.env.DESKTOP_ARCH || 'arm64'}.dmg`)
-const mount = await mkdtemp(join(tmpdir(), 'ra-dmg-'))
+const scope = new ResourceScope()
+try {
+const mount = scope.tempDir('ra-dmg-')
 execFileSync('hdiutil', ['attach', '-readonly', '-nobrowse', '-mountpoint', mount, dmg], { stdio: 'ignore' })
+scope.defer(() => { execFileSync('hdiutil', ['detach', mount], { stdio: 'ignore' }) })
 const executablePath = join(mount, 'ResearchAgent.app/Contents/MacOS/ResearchAgent')
 async function run(live) {
-  const data = await mkdtemp(join(tmpdir(), 'ra-accept-'))
+  const data = live ? scope.evidenceDir('ra-accept-', 'Signed Testnet journals; manual reconciliation before deletion') : scope.tempDir('ra-accept-')
   // Keep isolated journals for inspection; a failed live run must never be blindly replayed.
   await writeFile(join(data, 'desktop.json'), JSON.stringify({ live, paused: false, maxMinor: 100, dailyMinor: 100, walletDailyMinor: 100, backend: 'local' }))
   console.log(live ? 'Launching packaged Testnet acceptance' : 'Launching packaged fixture/crash acceptance')
   const start = performance.now()
   const app = await electron.launch({ executablePath, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_DATA: data, RA_DESKTOP_KEYCHAIN_SERVICE: service, RA_DESKTOP_ACCEPT_TESTNET: live ? '1' : '0', RA_DESKTOP_CRASH_TEST: live ? '0' : '1' }, timeout: 180000 })
+  scope.own(app)
   let store, client
   try {
     const page = await app.firstWindow({ timeout: 180000 })
@@ -116,5 +122,6 @@ try {
   for (const account of accounts) {
     try { execFileSync('/usr/bin/security', ['delete-generic-password', '-s', service, '-a', account], { stdio: 'ignore' }) } catch { /* Missing item is harmless. */ }
   }
-  execFileSync('hdiutil', ['detach', mount], { stdio: 'ignore' })
 }
+
+} finally { await scope.close() }

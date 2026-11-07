@@ -1,11 +1,11 @@
+import { ResourceScope } from '../shared/resource-scope.js'
 // Frozen-bank acceptance through packed stdio MCP. Faucet Testnet only; never loads .env.
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, join } from 'node:path'
-import { tmpdir } from 'node:os'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { processTransport } from './release-processes.js'
 import { receiptBundle } from '../server/receipt-bundle.js'
 import { verifyAnswer } from '../sdk/verify.js'
 import { Store } from '../server/store.js'
@@ -13,7 +13,9 @@ import { auditRuns } from './gate-audit.js'
 import { loadWriterCorpus } from '../publisher/corpus.js'
 import { createHash } from 'node:crypto'
 if (process.env.RA_ACCEPT_TESTNET !== '1') throw Error('RA_ACCEPT_TESTNET=1 required')
-const tgz = resolve(process.argv[2]), scratch = process.env.J1_STATE_DIR || mkdtempSync(join(tmpdir(), 'j1-judge-'))
+const scope = new ResourceScope()
+try {
+const tgz = resolve(process.argv[2]), scratch = process.env.J1_STATE_DIR || scope.evidenceDir('j1-judge-', 'Testnet wallets and potentially signed obligations; retain for manual reconciliation')
 const out = resolve('docs/evidence/round4-j1'); mkdirSync(out,{recursive:true})
 const bankBytes=readFileSync('eval/questions/judge-xrpl.v1.json');const bank=JSON.parse(bankBytes.toString())
 const resume = process.env.J1_RESUME === '1'
@@ -23,7 +25,7 @@ const artifactSha256 = existsSync(tgz) ? createHash('sha256').update(readFileSyn
 assert(artifactSha256, 'Original packed artifact or recorded resume digest required')
 if (previous) { assert.equal(previous.bankSha256,createHash('sha256').update(bankBytes).digest('hex')); assert.equal(previous.artifactSha256,artifactSha256) }
 const packed=join(scratch,'packed');mkdirSync(packed,{recursive:true});if (!resume) execFileSync('tar',['-xzf',tgz,'-C',packed])
-const transport = new StdioClientTransport({command:process.execPath,args:[join(packed,'package/bin.mjs'),'--testnet'],env:{PATH:process.env.PATH!,HOME:process.env.HOME!,XDG_STATE_HOME:scratch,MCP_MAX_BUDGET_MINOR:'200',MCP_DAILY_CAP_MINOR:'5000'},stderr:'inherit'})
+const transport = processTransport(scope.spawn(process.execPath, [join(packed,'package/bin.mjs'),'--testnet'], { env: {PATH:process.env.PATH!,HOME:process.env.HOME!,XDG_STATE_HOME:scratch,MCP_MAX_BUDGET_MINOR:'200',MCP_DAILY_CAP_MINOR:'5000'} }))
 const client=new Client({name:'frozen-judge-bank',version:'1'})
 const results: Record<string,unknown>[]=(previous?.results ?? []).map((r: Record<string,unknown>) => ({...r, violations:Array.isArray(r.violations) ? r.violations : (r.violations as {violations:unknown[]}).violations}))
 const call=async(name:string,args={})=>{const r=await client.callTool({name,arguments:args},undefined,{timeout:240000});assert(!r.isError,`${name} failed: ${JSON.stringify(r.content)}`);return JSON.parse((r.content as {text:string}[])[0].text)}
@@ -51,3 +53,5 @@ try {
  }
  assert.equal(results.length,20);assert(results.filter(r=>r.buyAndCite).length>=12);assert(!results.some(r=>r.blank));assert(results.every(r=>r.verificationOk));assert(!results.some(r=>(r.violations as unknown[]).length))
 }finally{await client.close()}
+
+} finally { await scope.close() }

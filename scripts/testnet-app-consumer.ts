@@ -1,30 +1,28 @@
+import { ResourceScope, waitForOutput } from '../shared/resource-scope.js'
 // Explicit opt-in (RA_ACCEPT_TESTNET=1): `npx -y <packed mcp tgz> app --testnet` from a fresh npm cache and a fresh
 // wallet cache, driven in a real browser, then every hash is checked on s.altnet. Public Testnet only; no real value.
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
-import { managedSpawn, stopProcess } from './release-processes.js'
+import { stopProcess } from './release-processes.js'
 if (process.env.RA_ACCEPT_TESTNET !== '1') throw Error('Network opt-in required: RA_ACCEPT_TESTNET=1')
 const manifestPath = resolve(process.argv[2] || 'dist/release/manifest.json')
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 const tgz = resolve(dirname(manifestPath), manifest.artifacts.find((a: { kind: string }) => a.kind === 'mcp-tgz').file)
-const scratch = mkdtempSync(join(tmpdir(), 'ra-testnet-app-'))
+const scope = new ResourceScope()
+try {
+const scratch = scope.evidenceDir('ra-testnet-app-', 'Testnet wallets and potentially signed obligations; retain for manual reconciliation')
 const evidence = resolve('docs/evidence/round3-d'); mkdirSync(evidence, { recursive: true })
 const cache = join(scratch, 'npm-cache'), state = join(scratch, 'state')
 const boot = async () => {
   const started = performance.now()
-  const child = managedSpawn('npx', ['-y', '--cache', cache, pathToFileURL(tgz).href, 'app', '--testnet'], { cwd: scratch, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, XDG_STATE_HOME: state } as NodeJS.ProcessEnv })
+  const child = scope.spawn('npx', ['-y', '--cache', cache, pathToFileURL(tgz).href, 'app', '--testnet'], { cwd: scratch, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, XDG_STATE_HOME: state } as NodeJS.ProcessEnv })
   let out = ''
   child.stdout.on('data', chunk => { out += chunk })
   child.stderr.resume()
-  const ready = await new Promise<RegExpMatchArray>((done, fail) => {
-    const timer = setTimeout(() => fail(Error('app --testnet was not ready in 120 s')), 120_000)
-    const poll = setInterval(() => { const m = out.match(/ResearchAgent ready: (http:\/\/127\.0\.0\.1:\d+) · fixture models · XRPL TESTNET · no real value/); if (m) { clearTimeout(timer); clearInterval(poll); done(m) } }, 50)
-    child.once('exit', code => { clearTimeout(timer); clearInterval(poll); fail(Error(`app exited early (${code})`)) })
-  })
+  const ready = await waitForOutput(child, /ResearchAgent ready: (http:\/\/127\.0\.0\.1:\d+) · fixture models · XRPL TESTNET · no real value/, 120_000)
   const seconds = (performance.now() - started) / 1000
   const payer = out.match(/payer address: (r[1-9A-HJ-NP-Za-km-z]{24,34})/)?.[1]
   assert(payer, 'ready block must print the public payer address')
@@ -84,4 +82,6 @@ try {
     writeFileSync(join(evidence, 'probe.json'), JSON.stringify(probe, null, 2) + '\n')
     console.log(JSON.stringify(probe))
   } finally { await browser.close() }
-} finally { if (process.env.KEEP_CONSUMER_SCRATCH === '1') console.log('Scratch retained: ' + scratch); else rmSync(scratch, { recursive: true, force: true }) }
+} finally { /* outer scope owns scratch and groups */ }
+
+} finally { await scope.close() }
