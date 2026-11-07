@@ -10,7 +10,7 @@ export default function ReportButton({ run, onReport, busy = false, onCompare }:
   const available = !!getValidatedAnswer(run, [...run.answers].sort((a, b) => a.version - b.version).at(-1))
   const writing = pending || run.reportStatus === 'GENERATING'
   if (writing) return <span className="ra-progress" role="status"><span className="ra-spin" aria-hidden="true" />Preparing PDF…<i aria-hidden="true" /></span>
-  if (!available || busy) return null
+  if ((!available && run.phase !== 'DONE') || busy) return null
   return <details className="ra-export"><summary>Export ⋯</summary><div role="group" aria-label="Export actions">
     {import.meta.env.MODE !== 'browser-demo' && <button className="ra-btn ra-btn-pen" type="button" disabled={!available || busy} title={busy ? 'The report unlocks when the run ends' : undefined} onClick={async () => {
       if (!available || busy) return

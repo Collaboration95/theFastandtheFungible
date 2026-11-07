@@ -4,12 +4,13 @@ import { getRun } from '../api'
 /** Anchoring completes after DONE. Read the same run for at most 90 seconds. */
 export default function AnchorStatus({ run }: { run: RunSnapshot }) {
   const [now] = useState(Date.now)
-  const [result, setResult] = useState<{ runId: string; anchor?: RunSnapshot['ledgerAnchor']; expired?: boolean }>()
+  const [result, setResult] = useState<{ runId: string; anchor?: RunSnapshot['ledgerAnchor']; expired?: boolean; failure?: string }>()
   const simulated = run.labels.settlement.includes('SIMULATED')
   const endedAt = Date.parse(run.events.at(-1)?.at ?? '')
-  const terminal = ['DONE', 'STOPPED', 'FAILED'].includes(run.phase)
+  const terminal = run.phase === 'DONE' || (run.receipts.length > 0 && ['STOPPED', 'FAILED'].includes(run.phase))
+  const failure = [...run.events].reverse().find(e => e.label?.startsWith('Anchor unavailable ('))?.label
   useEffect(() => {
-    if (simulated || run.ledgerAnchor || !terminal || !Number.isFinite(endedAt)) return
+    if (simulated || failure || run.ledgerAnchor || !terminal || !Number.isFinite(endedAt)) return
     const remaining = endedAt + 90_000 - Date.now()
     if (remaining <= 0) return
     const abort = new AbortController()
@@ -22,8 +23,8 @@ export default function AnchorStatus({ run }: { run: RunSnapshot }) {
       try {
         const next = await getRun(run.runId, abort.signal)
         if (abort.signal.aborted) return
-        if (next.runId === run.runId && next.ledgerAnchor) {
-          setResult({ runId: run.runId, anchor: next.ledgerAnchor })
+        if (next.runId === run.runId && (next.ledgerAnchor || next.events.some(e => e.label?.startsWith('Anchor unavailable (')))) {
+          setResult({ runId: run.runId, anchor: next.ledgerAnchor, failure: [...next.events].reverse().find(e => e.label?.startsWith('Anchor unavailable ('))?.label })
           clearTimeout(deadline)
           return
         }
@@ -32,9 +33,9 @@ export default function AnchorStatus({ run }: { run: RunSnapshot }) {
     }
     timer = setTimeout(() => { void poll() }, 2000)
     return () => { abort.abort(); clearTimeout(timer); clearTimeout(deadline) }
-  }, [run.runId, run.ledgerAnchor, simulated, terminal, endedAt])
+  }, [run.runId, run.ledgerAnchor, simulated, terminal, endedAt, failure])
   const current = result?.runId === run.runId ? result : undefined
   const a = run.ledgerAnchor ?? current?.anchor
   const recent = Number.isFinite(endedAt) && now - endedAt < 90_000 && !current?.expired
-  return <p className="ra-caption" aria-live="polite">{a ? <><a href={`https://testnet.xrpl.org/transactions/${a.txHash}`} target="_blank" rel="noopener noreferrer">Anchored on XRPL · ledger {a.ledgerIndex}</a> · anchor fee {a.feeDrops} drops (Testnet)</> : simulated ? 'not anchored (simulated)' : recent ? 'Anchoring…' : 'No anchor recorded for this Testnet run (anchoring was off or unavailable)'}</p>
+  return <p className="ra-caption" aria-live="polite">{a ? <><a href={`https://testnet.xrpl.org/transactions/${a.txHash}`} target="_blank" rel="noopener noreferrer">Anchored on XRPL · {run.receipts.length === 0 ? 'no purchase · ' : ''}anchor fee {a.feeDrops} drops (Testnet) · ledger {a.ledgerIndex}</a></> : simulated ? 'not anchored (simulated)' : failure || current?.failure || (terminal && recent ? 'Anchoring…' : 'Anchor unavailable (no validated anchor recorded)')}</p>
 }

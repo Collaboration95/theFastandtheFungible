@@ -28,10 +28,10 @@ export function createMcpServer(endpoint: string | Endpoint | Promise<Endpoint>,
     catch (error) { if (error instanceof ResearchAgentError) return { ...result(errorEnvelope(error.code, error.status ?? 503, error.runId)), isError: true }; return { ...result({ error: 'ResearchAgent command failed. Check backend availability, arguments and idempotency key. No automatic retry of a new purchase.', labels: ['mode unavailable; no evidence returned'] }), isError: true } }
   }
   const withLedger = async (data: Awaited<ReturnType<typeof client.getRun>>) => {
-    if (!labels.includes('Testnet · no real value') || !['DONE', 'STOPPED'].includes(data.phase)) return data
+    if (!labels.includes('Testnet · no real value') || !['DONE', 'STOPPED', 'FAILED'].includes(data.phase)) return data
     const deadline = Date.now() + 20_000
     let bundle = await client.receipts(data.run_id)
-    while (!bundle.ledgerAnchor && Date.now() < deadline) {
+    while (!bundle.ledgerAnchor && (data.phase === 'DONE' || bundle.receipts.length > 0) && Date.now() < deadline) {
       await new Promise(done => setTimeout(done, 500))
       bundle = await client.receipts(data.run_id)
     }

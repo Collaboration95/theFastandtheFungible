@@ -48,15 +48,18 @@ export async function runTry(argv: string[]) {
       await new Promise<void>((done, fail) => { verifier.once('error', fail); verifier.once('exit', code => code === 0 ? done() : fail(Error('Ledger verifier failed'))) })
       const verification = { stdout }
       rows.forEach(([label, hash], i) => console.log(`${i + 1}. ${label}${label.includes('Finish') || label.includes('finish') ? ' · sha256(K) = Condition ✓' : ''}: https://testnet.xrpl.org/transactions/${hash}`))
-      console.log(verification.stdout.trim())
+      console.log(verification.stdout.trim().split('\n').filter(line => line !== 'RESULT PASS').join('\n'))
     } else {
       const { verifyAnswer, verificationText } = await import('../sdk/verify.js')
       const result = await verifyAnswer(bundle, { onlineLedger: true })
       console.log('SIMULATED · no explorer links or ledger transactions')
-      console.log(verificationText(result))
+      console.log(verificationText(result).split('\n').filter(line => line !== 'RESULT PASS').join('\n'))
       if (!result.ok) throw Error('Simulated receipt verification failed')
     }
-    console.log(`Finished in ${((performance.now() - started) / 1000).toFixed(1)} s · budget S$2.00 · spent S$${(answer.spentMinor / 100).toFixed(2)}`)
+    const purchases = bundle.payments.filter(p => p.kind === 'purchase')
+    const gross = purchases.reduce((sum, p) => sum + Number(p.amountMinor), 0)
+    const net = gross - purchases.reduce((sum, p) => sum + Number(p.refundAmountMinor), 0)
+    console.log(`Finished in ${((performance.now() - started) / 1000).toFixed(1)} s · budget S$2.00 · net S$${(net / 100).toFixed(2)} · gross S$${(gross / 100).toFixed(2)}`)
     console.log('RESULT PASS')
   } finally {
     try { await engine?.close() } finally { await scope.close() }

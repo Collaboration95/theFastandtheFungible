@@ -59,6 +59,8 @@ test('funding leaf keeps TEST-SGD issuer, trust-line and issuance order serial a
  const root = resources().tempDir('ra-provision-iou-')
  const file = `${root}/wallets.private.json`
  const submitted: string[] = []
+ const progress = vi.spyOn(console, 'error').mockImplementation(() => {})
+ let activeReads = 0, maxReads = 0
  let warm = false
  const connect = vi.spyOn(Client.prototype, 'connect').mockResolvedValue()
  vi.spyOn(Client.prototype, 'disconnect').mockResolvedValue()
@@ -67,6 +69,8 @@ test('funding leaf keeps TEST-SGD issuer, trust-line and issuance order serial a
      if (!warm && submitted.length === 0) throw Error('fixture issuer not funded')
      return { result: { account_data: { Flags: warm ? 0x40000000 : 0 } } }
    }
+   activeReads++; maxReads = Math.max(maxReads, activeReads)
+   await Promise.resolve(); activeReads--
    return { result: { lines: warm ? [{ currency: 'SGT', limit: '1000000', balance: '10000' }] : [] } }
  }) as never)
  vi.spyOn(Client.prototype, 'autofill').mockImplementation((async (tx: { TransactionType: string }) => { submitted.push(tx.TransactionType); return { ...tx, Fee: '12' } }) as never)
@@ -78,6 +82,8 @@ test('funding leaf keeps TEST-SGD issuer, trust-line and issuance order serial a
  const cold = await provisioner.prepare({ asset: 'test-iou', writers: ['alphaleak'] })
  expect(submitted).toEqual(['Payment', 'AccountSet', 'TrustSet', 'TrustSet', 'Payment'])
  expect(cold.issuer).toBeTruthy()
+ expect(maxReads).toBeGreaterThan(1)
+ expect(progress.mock.calls.flat().join('\n')).toMatch(/issuer.*elapsed[\s\S]*trust lines.*elapsed[\s\S]*issuance.*elapsed/)
  warm = true; submitted.length = 0
  const reused = await provisioner.prepare({ asset: 'test-iou', writers: ['alphaleak'] })
  expect(reused).toEqual(cold)

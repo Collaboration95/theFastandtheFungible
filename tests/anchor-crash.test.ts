@@ -14,7 +14,7 @@ const purchased = (store: Store) => {
  const get = store.getRun.bind(store)
  vi.spyOn(store, 'getRun').mockImplementation(id => ({ ...get(id), receipts }))
 }
-for (const crash of ['before-submit','after-submit','after-validation']) it(`recovers ${crash} with one signature and one fee`,async()=>{
+for (const hasPurchase of [true, false]) for (const crash of ['before-submit','after-submit','after-validation']) it(`recovers purchase=${hasPurchase} ${crash} with one signature and one fee`,async()=>{
  const path=join(resources().tempDir('anchor-crash-'),'app.db')
  let store=resources().own(new Store(path))
  const run=store.createRun('test',200,{research:'fixture',decision:'fixture',publisher:'local',settlement:'XRPL TESTNET · no real value'})
@@ -42,12 +42,12 @@ for (const crash of ['before-submit','after-submit','after-validation']) it(`rec
   }
   throw Error('unexpected '+req.command)
  }}
- purchased(store)
+ if (hasPurchase) purchased(store)
  let anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet))
  await anchors.ensure(run.runId).catch(()=>undefined)
  const blob=store.anchorRows()[0].submission!.txBlob
  store.close();store=resources().own(new Store(path))
- purchased(store)
+ if (hasPurchase) purchased(store)
  anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet))
  await Promise.all([anchors.ensure(run.runId),anchors.ensure(run.runId)])
  await anchors.ensure(run.runId)
@@ -58,15 +58,40 @@ for (const crash of ['before-submit','after-submit','after-validation']) it(`rec
  store.close()
 })
 
-it('skips the anchor and fee when nothing was bought', async () => {
+for (const phase of ['STOPPED', 'FAILED'] as const) it(`skips incomplete abstention ${phase}`, async () => {
  const store = new Store(':memory:')
  const run = store.createRun('off corpus', 200, {research:'fixture', decision:'fixture', publisher:'local', settlement:'XRPL TESTNET · no real value'})
  store.addAnswer(run.runId, {version:1, conclusion:'Nothing bought', claims:[], openGaps:[], provider:'fixture', model:'fixture'})
- store.updateRun(run.runId, {phase:'DONE'})
+ store.updateRun(run.runId, {phase})
  const request = vi.fn(async () => { throw Error('no ledger call allowed') })
  const anchors = new AnswerAnchors(store, new XrplPayer({request}, Wallet.generate()))
  await anchors.ensure(run.runId)
  expect(request).not.toHaveBeenCalled()
  expect(store.anchorRows()).toHaveLength(0)
+ store.close()
+})
+
+it('keeps DONE and publishes a redacted reason when anchoring throws', async () => {
+ const store = new Store(':memory:')
+ const run = store.createRun('off corpus',200,{research:'fixture',decision:'fixture',publisher:'local',settlement:'XRPL TESTNET · no real value'})
+ store.addAnswer(run.runId,{version:1,conclusion:'Nothing bought',claims:[],openGaps:[],provider:'fixture',model:'fixture'})
+ store.updateRun(run.runId,{phase:'DONE'})
+ const anchors = new AnswerAnchors(store,new XrplPayer({request:async()=>{throw Error('private transport details')}},Wallet.generate()))
+ await anchors.ensure(run.runId)
+ const done = store.getRun(run.runId)
+ expect(done.phase).toBe('DONE'); expect(done.ledgerAnchor).toBeUndefined()
+ expect(done.events.at(-1)?.label).toBe('Anchor unavailable (submission or validation failed)')
+ expect(JSON.stringify(done)).not.toContain('private transport details')
+ store.close()
+})
+
+it('does not anchor simulated DONE abstentions', async () => {
+ const store = new Store(':memory:')
+ const run = store.createRun('off corpus',200,{research:'fixture',decision:'fixture',publisher:'local',settlement:'SIMULATED SGD · no real funds'})
+ store.addAnswer(run.runId,{version:1,conclusion:'Nothing bought',claims:[],openGaps:[],provider:'fixture',model:'fixture'})
+ store.updateRun(run.runId,{phase:'DONE'})
+ const request=vi.fn(async()=>{throw Error('must not reach ledger')})
+ await new AnswerAnchors(store,new XrplPayer({request},Wallet.generate())).ensure(run.runId)
+ expect(request).not.toHaveBeenCalled(); expect(store.anchorRows()).toHaveLength(0)
  store.close()
 })

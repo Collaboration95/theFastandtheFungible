@@ -27,6 +27,7 @@ export async function prepareMcpTestnet(load: typeof provision = provision, asse
   const started = performance.now()
   try {
     const root = testnetStateDir()
+    if (asset === 'test-iou') console.error('Testnet IOU · wallets · elapsed 0.0 s')
     const seeds = await load(resolve(root, 'wallets.private.json'), fetch, undefined, root, asset, ...(signal ? [signal] : []))
     const full = isolatedEnv(seeds, asset)
     const env: NodeJS.ProcessEnv = { ESCROW_MODE: 'key-reveal', ANCHOR_RAIL: 'xrpl-testnet', DOTENV_CONFIG_PATH: '.testnet-no-env' }

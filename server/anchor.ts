@@ -15,12 +15,14 @@ export class AnswerAnchors {
   ensure(runId: string): Promise<void> {
     const existing = this.jobs.get(runId)
     if (existing) return existing
-    const job = this.perform(runId).finally(() => this.jobs.delete(runId))
+    const job = this.perform(runId).catch(() => {
+      this.store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Anchor unavailable (submission or validation failed)' })
+    }).finally(() => this.jobs.delete(runId))
     this.jobs.set(runId, job); return job
   }
   private async perform(runId: string) {
     const run = this.store.getRun(runId)
-    if (!run.receipts.length) return // Nothing bought: no anchor transaction or fee.
+    if (!run.receipts.length && run.phase !== 'DONE') return // Incomplete abstentions are not attestations.
     if (!['DONE','STOPPED','FAILED'].includes(run.phase) || !run.answers.length || run.labels.settlement !== 'XRPL TESTNET · no real value') return
     const answersHash = hash(canonical(run.answers))
     let row = this.store.anchorRows().filter(r => r.runId === runId).at(-1)
@@ -39,14 +41,16 @@ export class AnswerAnchors {
       await signed.sent
     } else {
       const status = await this.payer.status(record.submission)
-      if (status.state === 'expired' || status.state === 'failed') { record.failed = true; this.store.saveAnchor(record); return }
+      if (status.state === 'expired' || status.state === 'failed') { record.failed = true; this.store.saveAnchor(record); this.store.appendEvent(runId, { type: 'SNAPSHOT', label: `Anchor unavailable (${status.state})` }); return }
       if (status.state !== 'success') { try { await this.payer.ledger.request({ command: 'submit', tx_blob: record.submission.txBlob }) } catch { /* hash decides */ } }
     }
     const found = await lookupTx(this.payer.ledger, record.submission!.txHash)
-    if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS') return
+    if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS') {
+      this.store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Anchor unavailable (validation pending or unsuccessful)' }); return
+    }
     const tx = decode(record.submission!.txBlob)
     this.store.updateRun(runId, { ledgerAnchor: { version: 'anchor-v1', network: 'xrpl:1', head: record.head, runIdHash: hash(runId), account: this.payer.address!, txHash: record.submission!.txHash, ledgerIndex: found.ledgerIndex, feeDrops: String(tx.Fee) } })
-    this.store.appendEvent(runId, { type: 'SNAPSHOT', label: `Anchored on XRPL · ledger ${found.ledgerIndex}` })
+    this.store.appendEvent(runId, { type: 'SNAPSHOT', label: `Anchored on XRPL · ${run.receipts.length ? '' : 'no purchase · '}anchor fee ${tx.Fee} drops (Testnet) · ledger ${found.ledgerIndex}` })
   }
   async reconcile() { for (const run of this.store.listRuns()) await this.ensure(run.runId).catch(() => undefined) }
   async drain() { await Promise.allSettled(this.jobs.values()) }
