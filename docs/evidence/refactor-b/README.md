@@ -1,5 +1,17 @@
 # Lane B: parallel browser admission
 
+Final integrated benchmark: **350 → 262 s** five-success CI median
+(historical audit baseline 355 s). Browser **326 → 115 s**;
+critical job verify **230 s**. Both timing targets pass. Replay
+builds **2 → 1**; every browser group passed, with zero reported Playwright
+flakes. One unchanged refund unit assertion failed in a sixth attempt and is
+retained in observed-failure.json and integrated-after.json. No claim of a
+controlled long-term failure/flake-rate improvement is made.
+
+The >=50 net LOC deletion target is missed: implementation/config/tests/lockfile
+net **+2 LOC**, excluding documentation and measurement evidence. Nothing
+loosened. Largest integrated CI package: **3,586,660 bytes**, below 8 MB.
+
 Pre-Lane-C final configuration: **350 → 221 s** five-run CI median (historical audit
 baseline 355 s). Browser **326 → 107 s**; critical job is verify at **162 s**.
 Both timing targets pass. Replay builds **2 → 1**, zero failures and zero reported
@@ -174,3 +186,49 @@ edited by this lane. Integrated local check:fast passed: 161 files, 1,369 tests,
 44.05 s Vitest wall, chaos smoke zero invariant violations. The pre-C samples
 remain historical observations; integrated-after.json records a fresh five-run
 sample of the combined tree. Its implementation head is `7b4ed6490f48cabbb3ba37694b737eef66b7bbc0`.
+
+### Integrated timing and gate outcomes
+
+| Run | Outcome | End-to-end seconds | Browser seconds | Replay builds |
+| --- | --- | ---: | ---: | ---: |
+| 42349180130 | success | 176 | 115 | 1 |
+| 42349187960 | success | 271 | 127 | 1 |
+| 42349189997 | success | 253 | 92 | 1 |
+| 42349191766 | failure | 279 | 99 | 1 |
+| 42349193608 | success | 322 | 118 | 1 |
+| 42349698314 | success | 262 | 113 | 1 |
+
+The timing median uses all five successful attempts; the failed attempt stays
+in the gate-rate denominator. Before: 15 success, 3 failure, 2 cancellation
+(3/18 non-cancelled failures, 16.7%). Integrated sample: 5 success, 1 failure
+(1/6, 16.7%). These observational samples cannot establish a controlled long-term
+rate. All six browser jobs passed, with no Playwright flaky reports. The unit
+failure expected REFUNDED but got CHALLENGE_REFUSED at key-reveal.test.ts:169;
+that test supplies a 100 ms challenge deadline. A timing-related cause is a
+code-derived possibility, not a proven diagnosis. No assertion or deadline was
+changed, and the failure was not erased or reclassified as success.
+
+| Job | Before median (s) | Integrated median (s) |
+| --- | ---: | ---: |
+| changes | 8 | 6 |
+| verify | 227 | 230 |
+| chaos | 135 | 95 |
+| browser | 326 | 115 |
+| python | 83 | 51 |
+| artifacts | 112 | 69 |
+| check | 7 | 6 |
+
+Browser range across the five successes: 92–127 s. End-to-end
+median 262 s is 8 s below target; browser median 115 s is
+105 s below target. Jobs overlap; medians must not be summed.
+Total CI improvement also includes unmodified verify variance and Lane C's
+startup work; it is not an isolated causal attribution to Lane B alone.
+
+The benchmark is pinned to the Lane-C integration head above. Main subsequently
+advanced with judge coverage #398 (`6819f1e6`); the shipping branch was rebased
+onto it, and check:fast passed again (1,369 tests, zero chaos violations).
+The final evidence commit runs fresh CI on that latest combined tree before
+merge. The measurements are five branch/PR successes, not five post-merge main
+runs or five runs of #398. Each run builds its own SHA's bytes; no artifact is
+substituted across these revisions. integrated-ci-package-sizes.json pins all
+integrated package hashes and sizes from run 42349180130.
