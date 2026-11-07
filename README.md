@@ -5,6 +5,10 @@
   </picture>
 </p>
 
+<p align="center">
+  <img src="design/character/hero.gif" width="672" height="120" alt="Pixel-art agent walks a dashed ledger line, searches a locked page, drops a coin into the escrow lock, the writer's key turns, and it walks off with the verified page while its proof stays anchored on the ledger">
+</p>
+
 <h3 align="center">Research with a wallet.</h3>
 
 <p align="center">ResearchAgent answers from free sources, then buys the missing evidence from independent writers over x402 on XRPL, inside a budget you set.</p>

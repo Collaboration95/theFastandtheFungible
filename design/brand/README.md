@@ -1,7 +1,9 @@
 # ResearchAgent identity
 
 The open index: a route to evidence, framed by two source boundaries. Ink on
-Paper, a sparse Editorial Salmon layout accent, no mascot, gradients or motion.
+Paper, a sparse Editorial Salmon layout accent, no gradients. The one character
+is the pixel agent in `design/character/` (its head is this mark);
+see its README for where it may move.
 The mark shares the cast's 24-unit grid and 1.5-unit stroke. Geist Regular is
 outlined into paths so exports do not depend on fonts installed on a machine.
 Geist is bundled under the SIL Open Font License; see `FONT-LICENSE.txt`.

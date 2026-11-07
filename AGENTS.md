@@ -34,6 +34,11 @@
 - Visuals use a restrained geometric icon/illustration system: light palette,
   consistent grid and stroke, legible at 16–24 px. No cartoon mascots or generic
   entrance motion; short motion must explain money or refund state changes.
+  One exception, requested by the owner (7 Nov): the pixel-art agent
+  in `design/character/` may appear in the README hero, the explainers site and
+  app loading/empty states. Its motion shows a state (search, pay, key reveal,
+  verified, refund), respects reduced motion, and it never stands in for a
+  real receipt, label or ledger link. No other mascots.
 - Needs-human items belong in pinned issue #265, not in docs.
 
 ## How work is run (SFF push)

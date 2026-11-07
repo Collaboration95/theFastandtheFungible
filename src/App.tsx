@@ -8,6 +8,7 @@ import Sidebar, { NAV_WIDTH, NavToggle } from './components/Sidebar'
 import EnvIndicator from './components/EnvIndicator'
 import Notice from './components/Notice'
 import Ask from './components/Ask'
+import AgentSprite from './components/AgentSprite'
 import Settings from './components/Settings'
 import RunActivity from './components/RunActivity'
 import Sources, { getAccessibleContent } from './components/Sources'
@@ -367,7 +368,7 @@ export default function App() {
     ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
     : <PlanSheet budgetMinor={pending.input.budgetMinor} plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={cancelPending} />)
   const settlement = shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'
-  if (tab === 'writers') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main className="ra-writers-view">{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading">Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>
+  if (tab === 'writers') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main className="ra-writers-view">{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>
   if (screen === 'settings') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
       onUniversal={on => { setUniversal(on); prefs.set(universalKey, on ? '1' : '0') }} onBudget={minor => { setUniversalMinor(minor); prefs.set(universalMinorKey, String(minor)) }} />
