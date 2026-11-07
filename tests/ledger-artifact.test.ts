@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 const data = JSON.parse(readFileSync('site/ledger/transactions.json','utf8'))
 // @ts-expect-error Browser module is deliberately dependency-free JavaScript.
 import { classify, refresh, lookup, endpoints } from '../site/ledger/ledger.js'
-const row = data.rows[0]
+const row = data.rows.find((r: {deliveredAmount?:unknown}) => r.deliveredAmount)
 function valid() { return {result:{hash:row.hash,ledger_index:row.ledgerIndex,validated:true,tx_json:{TransactionType:"Payment",Account:row.from,Destination:row.to,InvoiceID:row.invoiceId,NetworkID:1,Fee:row.feeDrops,Amount:row.deliveredAmount},meta:{TransactionResult:'tesSUCCESS',delivered_amount:row.deliveredAmount}}} }
 describe('public ledger',()=>{
  it('rebuilds forty-five source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(45); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(45)})
@@ -40,7 +40,7 @@ it('bounds WebSockets and allows only matching validated success',async()=>{
  for(const mode of ['valid','not-found','network','mismatch','connection','malformed','oversized']) {
   const stub=socketFor(mode), states:string[]=[]
   await refresh(Array(12).fill(row),stub.Socket,(_h:string,s:string)=>states.push(s))
-  expect(stub.maximum()).toBe(8); expect(stub.active()).toBe(0)
+  expect(stub.maximum()).toBe(['not-found','network','mismatch'].includes(mode) ? 3 : 1); expect(stub.active()).toBe(0)
   expect(states.every(s=>s.startsWith('validated'))).toBe(mode==='valid')
  }
 })
@@ -96,4 +96,21 @@ it('binds token escrow amount, issuer, destination and revealed key to retained 
    expect(classify(r,bad)).toContain('Historical')
   }
  }
+})
+
+it('multiplexes sixteen requests on one socket and accepts out-of-order replies', async () => {
+ let opened = 0, active = 0, peak = 0
+ class Socket {
+  onopen?: () => void; onmessage?: (e:{data:string}) => void
+  constructor() { opened++; queueMicrotask(() => this.onopen?.()) }
+  send(raw:string) {
+   const {id} = JSON.parse(raw); active++; peak = Math.max(peak, active)
+   setTimeout(() => { active--; this.onmessage?.({data:JSON.stringify({...valid(),id})}) }, 20 - id % 16)
+  }
+  close() { /* no real transport in this fixture */ }
+ }
+ const states:string[] = []
+ await refresh(Array(45).fill(row), Socket, (_h:string, s:string) => states.push(s))
+ expect(opened).toBe(1); expect(peak).toBe(16)
+ expect(states).toHaveLength(45); expect(states.every(s=>s.startsWith('validated'))).toBe(true)
 })

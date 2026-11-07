@@ -1,8 +1,10 @@
+import { currencyLabel } from '../site/ledger/ledger.js'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 const root = fileURLToPath(new URL('../', import.meta.url))
 const read = p => readFileSync(path.join(root, p), 'utf8')
+const priority = row => row.keyReveal ? 0 : row.group === 'anchor' ? 1 : row.label?.includes('key reveal') ? 2 : 3
 export function artifact() {
   const rows = JSON.parse(read('docs/evidence/round2-e/curation.json'))
   if (rows.length !== 9 || new Set(rows.map(r => r.hash)).size !== 9) throw Error('Expected nine unique hashes')
@@ -70,6 +72,7 @@ export function artifact() {
     else throw Error('Unsupported round-three transaction')
     rows.push(row)
   }
+  rows.sort((a, b) => priority(a) - priority(b))
   if (rows.length !== new Set(rows.map(r => r.hash)).size) throw Error('Duplicate ledger hash')
   return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-05', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
 }
@@ -77,7 +80,7 @@ function htmlArtifact(out) {
   const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')
   const rows = JSON.parse(out).rows.map(r => {
     const a = r.deliveredAmount ?? r.amountDrops
-    const amount = typeof a === 'object' ? `${a.value} ${a.currency === "SGT" ? "TEST-SGD IOU (SGT; stand-in for RLUSD)" : a.currency} · issuer ${a.issuer}` : a ? `${a} drops` : r.group === 'anchor' ? `Memo = audit head ${r.head.slice(0, 12)}…; answer anchor` : 'Principal amount not recorded in this evidence'
+    const amount = typeof a === 'object' ? `${a.value} ${currencyLabel(a.currency)} · issuer ${a.issuer}` : a ? `${a} drops` : r.group === 'anchor' ? `Memo = audit head ${r.head.slice(0, 12)}…; answer anchor` : 'Principal amount not recorded in this evidence'
     return `<tr><td>${escape(r.label ?? `${r.group}: ${r.operation ?? r.kind}`)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
   }).join('')
   return read('site/ledger/index.html').replace(/Checking \d+ hashes live… 0\/\d+/, `Checking ${JSON.parse(out).rows.length} hashes live… 0/${JSON.parse(out).rows.length}`).replace(/<caption>.*?<\/caption>/, `<caption>${JSON.parse(out).rows.length} curated transactions · snapshot ${JSON.parse(out).snapshotDate}</caption>`).replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)

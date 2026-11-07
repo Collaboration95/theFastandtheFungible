@@ -11,6 +11,15 @@ add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
 - 7 Nov: Pixel-art agent: head is the open-index mark; generated sprite sheet (8 poses incl. pay, key reveal, refund), README hero GIF (89 KB, transparent, dark/light evidence), site loop and app loading sprite; drift check in `check:fast`. AGENTS.md mascot rule narrowed to this one character.
+- 7 Nov: L4 multiplexes 16 read-only ledger lookups (45/45 live in 1.97 s versus 27.5 s), collapses demo proofs, makes feedback IDs unique (B24–B29), prepares the filing kit and refreshes fixture metrics. Evidence: `docs/evidence/round4-l4/`.
+- 5 Nov: Reuse decisions-harness scenarios without changing assertions. [#383](https://github.com/Collaboration95/theFastandtheFungible/pull/383).
+- 5 Nov: Prepare rc.2 installs, completed anchors and 45-row ledger evidence. [#382](https://github.com/Collaboration95/theFastandtheFungible/pull/382).
+- 4 Nov: Verify TEST-SGD key-reveal token escrow on Testnet. [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381).
+- 4 Nov: Add zero-clone Testnet web app. [#380](https://github.com/Collaboration95/theFastandtheFungible/pull/380).
+- 4 Nov: Default replay to key-reveal UC3 with honest refund semantics. [#379](https://github.com/Collaboration95/theFastandtheFungible/pull/379).
+- 5 Nov: Add writer cold start, real-writers list and first-touch judge path. [#378](https://github.com/Collaboration95/theFastandtheFungible/pull/378).
+- 4 Nov: Verify own key-reveal receipts, Python ledger checks and anchors. [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377).
+- 4 Nov: Add zero-clone Testnet MCP, devcontainer CI and cost card. [#376](https://github.com/Collaboration95/theFastandtheFungible/pull/376).
 - 5 Nov: Lane R2 prepares v1.0.0-rc.2 artifacts and concrete installs, displays completed answer anchors without reload, and expands the read-only Testnet ledger to 45/45 verified hashes, including TEST-SGD IOU (stand-in for RLUSD); all local consumers/browser suites pass. Tagging remains with the orchestrator. [Evidence](evidence/round3-r2/README.md).
 - 4 Nov: Lane R1 prepares v1.0.0-rc.1 versions, PEP 440 wheel names and prerelease/Latest policy; five fixture consumers pass. Final version bump follows 9 Nov acceptance.
 - 4 Nov: Zero-clone release consumers clean up npm/npx process groups with escalation and assert no surviving processes; fixture-only regression covers a SIGTERM-resistant grandchild. [#364](https://github.com/Collaboration95/theFastandtheFungible/pull/364).
@@ -564,3 +573,42 @@ Significant product, design and process decisions, newest first. One line each: 
 - 2026-11-04 — Feasibility / UX (Lane C3): `publish --testnet` (repo bin + MCP tgz) puts a faucet writer live with a Testnet Credential and key-reveal escrow in 43.8 s cold (buyer key-reveal sale by 67.7 s), a "Real writers" list (empty until consent) on README and /ledger/, `per_call_cap` clamp reason, first-touch polish sweep and the `npm run test:judge` headless judge path. Evidence: [docs/evidence/round3-c/](evidence/round3-c/README.md).
 
 - 2026-11-07 — M1: zero-clone MCP and app Testnet IOU opt-in, cached TEST-SGD issuer/trust lines, labelled token amounts and IOU receipt evidence (stand-in for RLUSD; no real value).
+## Testnet judge-path metrics · 7 Nov 2026
+
+Historical round-4 observations on `421f5f9f`: fixture models / fictional writers,
+real Testnet, no real value. [Evidence and limitations](evidence/round4-l4/judge-path.md).
+
+| Metric | Observed |
+|---|---:|
+| Demo load → first verified hash / Done | ~1 s / 7 s |
+| Ledger → 45/45 verified | 27.5 s (L4 results below) |
+| MCP cold initialize / package | 56.5 s / 21.4 MB |
+| Faucet setup (prior card / app / MCP) | 17 / 19.1 / 24.3 s |
+| MCP fresh cache → verified anchored answer | ~112 s (sum) |
+| App cold ready / fresh cache → anchored UC3 | 134 / ~190 s |
+| UC3 fees: create / conditional finish / refund / anchor | 12 / 423 / 12 / 12 drops |
+| UC3 six-transaction fees | 894 Testnet drops |
+| Frozen judge-bank buy-and-cite hit rate | unmeasured; J1 owns measurement |
+| Devcontainer CI / validated purchase | ~130 / 43.9 s; Codespace substitute |
+
+### L4 fixture refresh · 7 Nov 2026
+
+Fixture models, synthetic corpus, SIMULATED payments; 0 provider calls / US$0 /
+0 Testnet drops. Historical fixture → fresh fixture (different input hashes,
+descriptive only; see `eval/scorecard/ROUND4.md`). Historical LIVE fresh-set
+numbers above remain a separate evidence class.
+
+| Metric | 2026-11-03 fixture before | 7 Nov fixture after |
+|---|---:|---:|
+| usedSpendPct | 69.82 | 70.73 |
+| wastedSpendPct | 30.18 | 29.27 |
+| supportedFactUpliftPts | 36.55 | 37.93 |
+| selectionF1Flow | 0.55 | 0.57 |
+| p50FirstAnswerMs | 47 | 190 |
+| p95FirstAnswerMs | 129 | 655 |
+| coldStartMs | 581 | 3962 |
+| Audit violations | 0 | 0 |
+
+Live read-only ledger: **27.5 s → 1.970 s**, 45/45, first verified row 1.143 s
+(`docs/evidence/round4-l4/live-ledger.json`). Local CI-style browser fixture:
+**128 ms**, 45/45; no historical fixture timing retained. Six-second threshold unchanged.
