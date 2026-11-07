@@ -138,7 +138,7 @@ test('keyboard plan cancellation admits zero runs; Go now admits exactly once', 
   expect(admissions).toBe(1)
 })
 
-test('a judge question outside the writer corpus ends with an honest publishing invitation', async ({ page }) => {
+test('a judge question with declined matches explains policy and invites publishing', async ({ page }) => {
   await page.goto('/?pace=real')
   await page.getByRole('button', { name: 'Got it', exact: true }).click()
   await page.getByLabel('Your question').fill('Which Singapore banks are piloting RLUSD settlement in 2026?')
@@ -146,8 +146,25 @@ test('a judge question outside the writer corpus ends with an honest publishing 
   await page.getByRole('button', { name: 'Start now' }).click()
   await finished(page)
   const answer = page.getByRole('region', { name: 'Research answer' })
-  await expect(answer).toContainText('No listed writer covers this yet · nothing bought')
+  await expect(answer).toContainText(/Found 2 paid articles; none (?:selected by policy|cleared the value threshold)/)
+  await expect(answer).not.toContainText('No listed writer covers this')
+  await answer.getByText('Why ▸', { exact: true }).click()
+  await expect(answer.locator('li')).toHaveCount(2)
+  await expect(answer).toContainText('SKIP_LOW_VALUE')
   await expect(answer.getByRole('link', { name: 'Publish a note on this →' })).toHaveAttribute('href', /docs\/publishing\.md$/)
   await expect(answer.locator('.is-skel')).toHaveCount(0)
   await expect(page.getByRole('status')).not.toContainText('answered from free sources')
+})
+
+test('zero candidate questions retain the no-writer publishing invitation', async ({ page }) => {
+  await page.goto('/?pace=real')
+  await page.getByRole('button', { name: 'Got it', exact: true }).click()
+  await page.getByLabel('Your question').fill('How do Kubernetes pods schedule?')
+  await page.getByRole('button', { name: /^Ask/ }).click()
+  await page.getByRole('button', { name: 'Start now' }).click()
+  await finished(page)
+  const answer = page.getByRole('region', { name: 'Research answer' })
+  await expect(answer).toContainText('No listed writer covers this yet · nothing bought')
+  await expect(answer.getByRole('link', { name: 'Publish a note on this →' })).toBeVisible()
+  await expect(answer.locator('li')).toHaveCount(0)
 })
