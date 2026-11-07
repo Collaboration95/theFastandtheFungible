@@ -6,7 +6,7 @@ import { authorFactMenu } from './fact-menu.js'
 import { sha256 } from '../../shared/manifest.js'
 import { countWords, sharesRun, validateWriterCorpus, type Article, type WriterCorpus } from '../../shared/contracts/writers.js'
 
-const examples: Record<string, string> = { title: 'My evidence note', abstract: 'A summary of the topic, without the paid answer.', tier: 'PAID (or FREE)', price: '0.10 (FREE uses 0)', tags: 'energy, methodology', synthetic: 'false (true for fictional examples)', questions: 'What changed?', entity: 'electricity', measure: 'share' }
+const examples: Record<string, string> = { title: 'My evidence note', abstract: 'A summary of the topic, without the paid answer.', tier: 'PAID', price: '0.10', tags: 'energy, methodology', synthetic: 'false', questions: 'What changed?', entity: 'electricity', measure: 'share' }
 const Meta = z.object({
   title: z.string().min(1).max(160),
   abstract: z.string().min(1).max(220),
