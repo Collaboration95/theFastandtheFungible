@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 7 Nov: Submission pack refreshed for judges' pre-assessment: 12-slide deck and PDF (since SingHacks, the one-line `try --testnet` proof, key-reveal and TEST-SGD escrow, verify-don't-trust, fees, builder feedback; pixel agent on slides 1 and 12), 50/150/300-word descriptions, a 9-shot 2:50 video script led by `try`, a 2:00 pitch and 20 R/P/Y judge answers. J1 (15/20) and S1b filled; `{{…}}` placeholders for J3, the release, registry, upstream filing and video are listed in [submission/README](submission/README.md#placeholders).
 - 7 Nov: Pixel-art agent: head is the open-index mark; generated sprite sheet (8 poses incl. pay, key reveal, refund), README hero GIF (89 KB, transparent, dark/light evidence), site loop and app loading sprite; drift check in `check:fast`. AGENTS.md mascot rule narrowed to this one character.
 - 7 Nov: L4 multiplexes 16 read-only ledger lookups (45/45 live in 1.97 s versus 27.5 s), collapses demo proofs, makes feedback IDs unique (B24–B29), prepares the filing kit and refreshes fixture metrics. Evidence: `docs/evidence/round4-l4/`.
 - 5 Nov: Reuse decisions-harness scenarios without changing assertions. [#383](https://github.com/Collaboration95/theFastandtheFungible/pull/383).
