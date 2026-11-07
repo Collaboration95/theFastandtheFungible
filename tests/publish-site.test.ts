@@ -190,6 +190,8 @@ it('scaffolds two documented notes, preserves existing files, and reports all fi
   await expect(publishSite({ folder, slug: 'newcomer', root: join(root, 'state'), fund })).rejects.toThrow(/abstract:[\s\S]*tier:[\s\S]*price:[\s\S]*body:[\s\S]*2-allocation.md/)
   expect(performance.now() - started).toBeLessThan(3000)
   expect(fund).not.toHaveBeenCalled()
+  await writeFile(join(folder, '1-capacity.md'), '---\ntitle: Broken\ntier: FREE\nprice: 0.10\n---\nToo short.')
+  await expect(markdownCorpus(folder, 'newcomer', 'Newcomer')).rejects.toThrow(/abstract:[\s\S]*price: a FREE article has price 0. Example: price: 0[\s\S]*body:/)
 })
 
 it('accepts 300 author words, keeps fixture limits and leakage checks, and refuses reserved port', async () => {
