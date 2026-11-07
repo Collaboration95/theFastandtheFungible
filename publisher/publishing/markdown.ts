@@ -41,7 +41,7 @@ export function parseMarkdown(text: string, slug: string, id: string, publishedA
   }
   const words = countWords(match[2])
   const real = raw.synthetic !== 'true'
-  if (options.validateBody && !(real && options.relax) && (words < (real ? 150 : 600) || words > (real ? 3000 : 1400))) problems.push(`body: ${words} words; ${real ? 'real-writer limit 150–3,000' : 'fictional corpus limit 600–1,400'}. Example: four paragraphs totalling 300 words.${real ? ' Use --relax to waive only this length check.' : ''}`)
+  if (options.validateBody && !(real && options.relax) && (words < (real ? 150 : 600) || words > (real ? 3000 : 1400))) problems.push(`body: ${words} words; ${real ? 'real-writer limit 150–3,000' : 'fictional corpus limit 600–1,400'}. Example: four paragraphs totalling ${real ? 300 : 900} words.${real ? ' Use --relax to waive only this length check.' : ''}`)
   if (options.validateBody && match[2].trim().split(/\n\s*\n/).length < 4) problems.push('body.passages: needs at least 4 paragraphs. Example: separate paragraphs with a blank line.')
   const body = match[2].trim()
   const blocks = body.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean)
