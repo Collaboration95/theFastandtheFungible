@@ -20,6 +20,8 @@ it('runs and verifies labelled simulated receipts when the faucet is unavailable
   expect(output).toContain('SIMULATED · no explorer links or ledger transactions')
   expect(output).not.toContain('https://testnet.xrpl.org/transactions/')
   expect(output.trim()).toMatch(/RESULT PASS$/)
+  expect(output.match(/RESULT PASS/g)).toHaveLength(1)
+  expect(output).toMatch(/net S\$[\d.]+ · gross S\$[\d.]+/)
   const run = output.match(/VERIFY ([^\n]+)/)?.[1]
   expect(run).toBeTruthy()
   log.mockClear()

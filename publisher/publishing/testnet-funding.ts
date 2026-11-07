@@ -79,6 +79,9 @@ async function prepareWallets(file: string, faucet: typeof fetch, ledger: Return
 }
 /** Only faucet-funded Testnet XRP; persist issuer seed before any transaction. */
 async function provisionIou(seeds: Record<string,string>, file: string) {
+  const started = performance.now()
+  const progress = (step: string) => console.error(`Testnet IOU · ${step} · elapsed ${((performance.now() - started) / 1000).toFixed(1)} s`)
+  progress('issuer')
   seeds.issuer ||= Wallet.generate().seed!
   await writeFile(file, JSON.stringify(seeds), {mode:0o600}); await chmod(file,0o600)
   const client = new Client(TESTNET_WSS)
@@ -95,12 +98,18 @@ async function provisionIou(seeds: Record<string,string>, file: string) {
     catch { await submit(buyer,{TransactionType:'Payment',Destination:issuer.classicAddress,Amount:'6000000'}) }
     const info = await client.request({command:'account_info',account:issuer.classicAddress,ledger_index:'validated'})
     if (!(info.result.account_data.Flags & 0x40000000)) await submit(issuer,{TransactionType:'AccountSet',SetFlag:AccountSetAsfFlags.asfAllowTrustLineLocking})
-    for (const [slug,seed] of Object.entries(seeds)) {
-      if (['issuer','open-records','grid-operators-report'].includes(slug)) continue
+    progress('trust lines')
+    const holders = Object.entries(seeds).filter(([slug]) => !['issuer','open-records','grid-operators-report'].includes(slug))
+    const balances = new Map(await Promise.all(holders.map(async ([slug, seed]) => {
+      const existing = await client.request({command:'account_lines',account:Wallet.fromSeed(seed).classicAddress,peer:issuer.classicAddress,ledger_index:'validated'})
+      return [slug, existing.result.lines] as const
+    })))
+    // Only the balance reads above overlap; signing and validation retain their order.
+    for (const [slug,seed] of holders) {
       const wallet = Wallet.fromSeed(seed)
-      const existing = await client.request({command:'account_lines',account:wallet.classicAddress,peer:issuer.classicAddress,ledger_index:'validated'})
-      if (!existing.result.lines.some(l => l.currency === 'SGT' && Number(l.limit) >= 1000000)) await submit(wallet,{TransactionType:'TrustSet',LimitAmount:{currency:'SGT',issuer:issuer.classicAddress,value:'1000000'}})
+      if (!balances.get(slug)!.some(l => l.currency === 'SGT' && Number(l.limit) >= 1000000)) await submit(wallet,{TransactionType:'TrustSet',LimitAmount:{currency:'SGT',issuer:issuer.classicAddress,value:'1000000'}})
     }
+    progress('issuance')
     const lines=await client.request({command:'account_lines',account:buyer.classicAddress,peer:issuer.classicAddress,ledger_index:'validated'})
     if (!lines.result.lines.some(l=>l.currency==='SGT' && Number(l.balance)>=1000)) await submit(issuer,{TransactionType:'Payment',Destination:buyer.classicAddress,Amount:{currency:'SGT',issuer:issuer.classicAddress,value:'10000'}})
   } finally { await client.disconnect() }
