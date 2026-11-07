@@ -2,7 +2,6 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { sourceKey, sameSource } from '../../shared/source-identity.js'
 import { factsSummary } from '../../shared/coverage.js'
 import { dirname, extname } from 'node:path'
-import { chromium } from '@playwright/test'
 import { z } from 'zod'
 import { ClaimSchema, ReportSchema, RunSnapshotSchema, type Claim, type ContentEnvelope, type Report, type RunSnapshot } from '../../shared/contracts/index.js'
 import { resolveCitation } from './citations.js'
@@ -101,8 +100,9 @@ export async function renderReport(input: Report, outputPath: string): Promise<{
   }
   const html = reportHtml(report)
   await mkdir(dirname(outputPath), { recursive: true })
-  let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined
+  let browser: Awaited<ReturnType<typeof import('@playwright/test').chromium.launch>> | undefined
   try {
+    const { chromium } = await import('@playwright/test')
     browser = await chromium.launch({ headless: true })
     const page = await browser.newPage()
     // Rendering is offline: source strings are escaped, and no remote resources load.

@@ -17,7 +17,7 @@ writeFileSync(`${out}/package.json`, JSON.stringify({ name: 'researchagent-mcp',
 // Each entry stays at its original depth. Rebase module URLs before bundling so
 // worker, corpus and app paths retain their source semantics even in chunks.
 for (const [entry, target] of [
-  ['mcp/server.ts', 'mcp/server.js'], ['mcp/app.ts', 'mcp/app.js'],
+  ['shared/startup-plan.ts', 'shared/startup-plan.js'], ['mcp/server.ts', 'mcp/server.js'], ['mcp/app.ts', 'mcp/app.js'],
   ['mcp/try.ts', 'mcp/try.js'], ['scripts/publish-site.ts', 'scripts/publish-site.js'],
   ['server/engine-worker.mjs', 'server/engine-worker.mjs'], ['scripts/verify-answer.ts', 'scripts/verify-answer.js'],
 ]) {
@@ -28,16 +28,13 @@ for (const [entry, target] of [
       if (path.includes('/node_modules/')) return
       let contents = readFileSync(path, 'utf8')
       if (path.endsWith('/server/engine-worker.mjs')) contents = contents.replace("import { register } from 'tsx/esm/api'", '').replace('register()', '')
-      // PDF rendering already falls back to HTML when Chromium is unavailable.
-      // Keep that fallback without shipping a browser test framework at startup.
-      if (path.endsWith('/server/agents/report.ts')) contents = contents.replace("import { chromium } from '@playwright/test'", '').replace('browser = await chromium.launch', "const { chromium } = await import('@playwright/test'); browser = await chromium.launch")
       const sourceUrl = relative(dirname(resolve(target)), path).replaceAll('\\', '/')
       contents = contents.replaceAll('import.meta.url', `new URL(${JSON.stringify(sourceUrl)}, import.meta.url).href`)
       return { contents, loader: path.endsWith('.ts') ? 'ts' : 'js' }
     }) } }],
   })
 }
-writeFileSync(`${out}/mcp/extension.mjs`, readFileSync('mcp/extension.mjs', 'utf8').replaceAll('./server.ts', './server.js').replaceAll('./try.ts', './try.js'))
+writeFileSync(`${out}/mcp/extension.mjs`, readFileSync('mcp/extension.mjs', 'utf8').replaceAll('../shared/startup-plan.ts', '../shared/startup-plan.js').replaceAll('./server.ts', './server.js').replaceAll('./try.ts', './try.js'))
 execFileSync('node_modules/.bin/mcpb', ['validate', `${out}/manifest.json`], { stdio: 'inherit' })
 execFileSync('node_modules/.bin/mcpb', ['pack', out, resolve('dist/ResearchAgent.mcpb')], { stdio: 'inherit' })
 const { createHash } = await import('node:crypto')

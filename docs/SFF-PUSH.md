@@ -459,6 +459,8 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
+- 7 Nov: Lane C adds direct portable mode dispatch, sanitized startup plans, a Testnet funding leaf and bounded worker close; three fresh-cache/fresh-wallet packed Testnet runs and unchanged-gate evidence in `docs/evidence/refactor-c/`.
+
 - 7 Nov: Lane A scopes fixture scratch, handles and process groups; leak gate rejects unowned leftovers, startup failures and TERM-ignoring grandchildren are covered, and live acceptance journals retain an explicit XDG-state reason. Evidence: `docs/evidence/refactor-a/`.
 
 - 7 Nov: Shared owner Settings adds nine sections, guarded/audited local changes, macOS Keychain controls, onboarding and window persistence; fixture screenshots and axe evidence in [settings](evidence/settings/README.md). PR #386 completes the guarded zero-clone proxy; packed Testnet Settings cap/audit proof and unsigned arm64 DMG fixture recovery/smoke acceptance are recorded alongside the screenshots.

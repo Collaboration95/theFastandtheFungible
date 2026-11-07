@@ -1,9 +1,9 @@
+import { parseCommand, resolveStartup } from '../shared/startup-plan.js'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { execFile } from 'node:child_process'
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
-import { homedir } from 'node:os'
-import { extname, isAbsolute, join, resolve, sep } from 'node:path'
+import { extname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Readable } from 'node:stream'
 import { startEngine } from '../server/engine.js'
@@ -22,20 +22,10 @@ const PUBLISHER_PATH = /^\/w(?:\/|$)/
 const sgd = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 
 export function parseAppArgs(argv: string[]) {
-  const options = { testnet: false, open: false, port: 0 }
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]
-    if (arg === '--testnet') options.testnet = true
-    else if (arg === '--iou') { /* passed to provisioning below */ }
-    else if (arg === '--open') options.open = true
-    else if (arg === '--port') {
-      const port = Number(argv[++i])
-      if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error(`--port needs 0-65535. ${USAGE}`)
-      options.port = port
-    } else throw new Error(`Unknown argument ${JSON.stringify(arg)}. ${USAGE}`)
-  }
-  if (argv.includes('--iou') && !options.testnet) throw new Error(`--iou requires --testnet. ${USAGE}`)
-  return options
+  let command
+  try { command = parseCommand(['app', ...argv]) } catch { throw Error(USAGE) }
+  if (command.options.positionals.length || argv.some(arg => !['--testnet', '--iou', '--open', '--port'].includes(arg) && argv[argv.indexOf(arg) - 1] !== '--port')) throw Error(`Unknown argument. ${USAGE}`)
+  return { testnet: command.options.testnet ?? false, open: command.options.open ?? false, port: command.options.port ?? 0 }
 }
 
 /** The tgz ships the built UI at `ui/`; a checkout falls back to `dist/` from `npm run build`. */
@@ -43,11 +33,6 @@ function uiDirectory(root: string, override?: string) {
   const dir = [override, resolve(root, 'ui'), resolve(root, 'dist')].filter((candidate): candidate is string => Boolean(candidate)).find(candidate => existsSync(join(candidate, 'index.html')))
   if (!dir) throw new Error('UI bundle not found; run npm run build in a checkout')
   return dir
-}
-
-const stateHome = () => {
-  const xdg = process.env.XDG_STATE_HOME
-  return xdg && isAbsolute(xdg) ? xdg : resolve(homedir(), '.local/state')
 }
 
 /** The browser origin is the only one the proxy accepts; DNS-rebinding pages cannot reach the engine. */
@@ -104,12 +89,13 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
   try {
     const ui = uiDirectory(root, uiOverride)
     const testnetModule = options.testnet ? await import('./testnet.js') : undefined
-    const setup = await testnetModule?.prepareMcpTestnet(undefined, argv.includes('--iou') ? 'test-iou' : process.env.ESCROW_ASSET)
+    const setup = await testnetModule?.prepareMcpTestnet(undefined, argv.includes('--iou') ? 'test-iou' : process.env.ESCROW_ASSET, stop)
     const config = loadConfig()
-    const dataDir = resolve(config.RA_DATA_DIR ?? (testnetModule ? join(testnetModule.testnetStateDir(), 'app') : join(stateHome(), 'researchagent/app')))
+    const plan = resolveStartup(config, parseCommand(['app', ...argv]))
+    const dataDir = plan.stateDir
     mkdirSync(dataDir, { recursive: true, mode: 0o700 })
     // Engine-only overrides: the parent environment is never mutated and no operator cap is raised (gate 2).
-    const dailyMinor = Number(config.WALLET_DAILY_CAP_MINOR ?? (setup?.testnet ? String(APP_DAILY_CAP_MINOR) : '2000'))
+    const dailyMinor = setup?.testnet ? plan.caps.walletDailyMinor : Number(config.WALLET_DAILY_CAP_MINOR ?? '2000')
     const env: NodeJS.ProcessEnv = { ...setup?.env, DOTENV_CONFIG_PATH: '.app-no-env' }
     if (setup?.testnet) env.WALLET_DAILY_CAP_MINOR = String(dailyMinor)
     // Bind once on an ephemeral port, then pin engine admission to that UI origin.
@@ -117,7 +103,7 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
     await new Promise<void>((done, fail) => { http!.once('error', fail); http!.listen(options.port, '127.0.0.1', done) })
     const port = (http.address() as { port: number }).port
     env.RA_WEB_ORIGIN = `http://127.0.0.1:${port}`
-    engine = await startEngine({ dataDir, live: false, env })
+    engine = await startEngine({ dataDir, live: false, env, signal: stop })
     const engineUrl = engine.apiUrl, token = engine.apiToken, publisherUrl = engine.publisherUrl
     // The SDK talks to the bearer-protected engine; the token lives only in this 0600 file, never on screen.
     tokenFile = join(dataDir, 'api-token')
