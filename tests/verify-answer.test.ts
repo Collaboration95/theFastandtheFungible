@@ -117,24 +117,33 @@ it('authorizes receipt exports for the owning agent and conceals other runs', as
 })
 
 it('CLI verifies the recorded JSON and PDF offline, rejects the exact citation tamper and detects PDF byte edits', async () => {
-  const { spawnSync } = await import('node:child_process')
+  const { spawn } = await import('node:child_process')
   const { mkdtempSync, readFileSync, writeFileSync, rmSync } = await import('node:fs')
   const { tmpdir } = await import('node:os')
   const { join } = await import('node:path')
-  const run = (path: string) => spawnSync(process.execPath, ['--import', 'tsx', 'scripts/verify-answer.ts', path], { encoding: 'utf8' })
-  for (const name of ['report.json', 'report.pdf']) {
-    const result = run(`docs/evidence/verify-278/${name}`)
-    expect(result.status, result.stderr + result.stdout).toBe(0)
-    expect(result.stdout).toContain('Payments/refunds NOT checked on ledger')
-  }
-  const bad = run('docs/evidence/verify-278/tampered.json')
-  expect(bad.status).toBe(1)
-  expect(bad.stdout).toContain('fab-floor-kestrel-penang-lead-times@v1#p1: Exact citation passage missing or hash mismatch')
+  const run = (path: string) => new Promise<{ status: number | null; stdout: string; stderr: string }>((resolve, reject) => {
+    const child = spawn(process.execPath, ['--import', 'tsx', 'scripts/verify-answer.ts', path])
+    let stdout = '', stderr = ''
+    child.stdout.on('data', chunk => { stdout += String(chunk) })
+    child.stderr.on('data', chunk => { stderr += String(chunk) })
+    child.once('error', reject)
+    child.once('close', status => resolve({ status, stdout, stderr }))
+  })
   const dir = mkdtempSync(join(tmpdir(), 'verify-pdf-'))
   try {
     const bytes = readFileSync('docs/evidence/verify-278/report.pdf'); bytes[20] ^= 1
     const path = join(dir, 'edited.pdf'); writeFileSync(path, bytes)
-    const changed = run(path)
+    // Independent offline CLI probes share the original 5 s deadline; no serial startup cost.
+    const [json, pdf, bad, changed] = await Promise.all([
+      run('docs/evidence/verify-278/report.json'), run('docs/evidence/verify-278/report.pdf'),
+      run('docs/evidence/verify-278/tampered.json'), run(path),
+    ])
+    for (const result of [json, pdf]) {
+      expect(result.status, result.stderr + result.stdout).toBe(0)
+      expect(result.stdout).toContain('Payments/refunds NOT checked on ledger')
+    }
+    expect(bad.status).toBe(1)
+    expect(bad.stdout).toContain('fab-floor-kestrel-penang-lead-times@v1#p1: Exact citation passage missing or hash mismatch')
     expect(changed.status).toBe(2)
     expect(changed.stderr).toContain('PDF byte hash differs')
   } finally { rmSync(dir, { recursive: true, force: true }) }
