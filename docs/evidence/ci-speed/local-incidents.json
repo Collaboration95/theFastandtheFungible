@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "countedInHostedMetrics": false,
+  "incidents": [
+    {
+      "id": "local-loader-395-416",
+      "category": "true_positive",
+      "evidenceClass": "reported_local_acceptance_plus_inspected_source_diff",
+      "introducedByPr": 395,
+      "fixedByPr": 416,
+      "observedSourceSha": "c66bd7fc6b8b174ebda52a03969588a9acba65fa",
+      "introducedMergeSha": "e276447c1801dc6ae1197ead5eaced2b7ab0be3d",
+      "repairMergeSha": "369dd0e285c3d1ebc38f79d456c6b0e7ce8483c2",
+      "failure": "desktop-recovery startup: tsx must be loaded with --import instead of --loader",
+      "cause": "Five scripts used node:module register with tsx/esm, introduced by resource ownership migration.",
+      "repair": "Import register from tsx/esm/api, invoke register(), add repo-hygiene rejection of old loader pattern.",
+      "paths": [
+        "desktop/smoke.mjs",
+        "desktop/recovery-smoke.mjs",
+        "desktop/accept.mjs",
+        "scripts/record.mjs",
+        "scripts/mcp-demo.mjs",
+        "scripts/repo-hygiene.mjs"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/416",
+          "kind": "PR body reports local startup probes on Node20/22/26 and13 native recovery cases after repair"
+        },
+        {
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/369dd0e285c3d1ebc38f79d456c6b0e7ce8483c2",
+          "kind": "inspected corrective source diff"
+        },
+        {
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/395",
+          "kind": "introduced startup migration; native consumers reported not run live"
+        }
+      ],
+      "independentLocalRerunByAudit": false,
+      "rawLocalFailureArtifactRetrieved": false,
+      "qualification": "PR416 reports the native pass; no fresh native acceptance success is inferred by this audit. CI does not start these macOS scripts; this is a local catch, not hosted CI catch."
+    },
+    {
+      "id": "local-stale-provenance-393",
+      "category": "stale_test",
+      "subtype": "stale_label_expectations",
+      "evidenceClass": "test_only_commit_plus_reported_local_browser_verification",
+      "fixedByPr": 393,
+      "repairMergeSha": "15f0dd6de9d7d4b85155ce25098165926e4228a1",
+      "paths": [
+        "tests/ux.spec.ts",
+        "tests/ux2.spec.ts"
+      ],
+      "before": "All writers and articles are fictional.",
+      "after": "Built-in examples are fictional.",
+      "evidence": [
+        {
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/393",
+          "kind": "PR body says no behavior change; six local Playwright cases pass"
+        },
+        {
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/15f0dd6de9d7d4b85155ce25098165926e4228a1",
+          "kind": "inspected two-line assertion-only repair"
+        }
+      ],
+      "rawLocalFailureArtifactRetrieved": false,
+      "independentLocalRerunByAudit": false,
+      "qualification": "No failing hosted run attributed to this label repair. Local pre-repair failure log is not retained here; stale expectation follows from the assertion-only diff and PR report."
+    }
+  ]
+}

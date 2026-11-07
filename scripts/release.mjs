@@ -63,8 +63,8 @@ const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
 if (!at && pkg.version !== version) throw new Error('Version must already be merged through a PR; release never bumps or pushes main')
 if (!at) {
   const sha = git('rev-parse', target)
-  const runs = JSON.parse(execFileSync('gh', ['run', 'list', '--workflow', 'ci.yml', '--commit', sha, '--status', 'success', '--json', 'headSha,conclusion'], {encoding:'utf8'}))
-  if (!runs.some(run => run.headSha === sha && run.conclusion === 'success')) throw new Error('Merged SHA needs green CI before tagging')
+  const statuses = JSON.parse(execFileSync('gh', ['api', `repos/{owner}/{repo}/commits/${sha}/status`], {encoding:'utf8'})).statuses
+  if (statuses.find(status => status.context === 'local-gate')?.state !== 'success') throw new Error('Merged SHA needs a successful local-gate status before tagging; run npm run gate -- --publish on that clean commit')
 }
 // verbatim: the default cleanup would strip every line that starts with "#" (the notes' headings).
 // Historical tag dates follow the feature commit so chronological tag views retain Day order.

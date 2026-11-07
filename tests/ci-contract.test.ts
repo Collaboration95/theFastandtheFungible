@@ -1,15 +1,9 @@
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error Node CLI helper has no TS declarations
-import { admitted, fullCheck, requiredJobs } from '../scripts/ci-contract.mjs'
+import { admitted, requiredJobs, hostedFull } from '../scripts/ci-contract.mjs'
 import { readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 describe('required CI admission', () => {
-  it.each(['shared/contracts/run.ts', 'packages/sdk-python/README.md', 'server/moved.md', '.github/workflows/ci.yml'])('runs every gate for %s', path => expect(fullCheck([path])).toBe(true))
-  it('skips docs only but fails open to full verification on unknown history and code renames', () => {
-    expect(fullCheck(['docs/running.md', 'docs/picture.png'])).toBe(false)
-    expect(fullCheck(['docs/running.md'], false)).toBe(true)
-    expect(fullCheck(['server/old.ts', 'docs/old.md'])).toBe(true)
-  })
   const green = Object.fromEntries(requiredJobs.map((job: string) => [job, 'success']))
   it('admits all-success and intentional docs skips only', () => {
     expect(admitted({ result: 'success', full: 'true' }, green)).toBe(true)
@@ -49,4 +43,15 @@ npx() { case "$*" in *config.ts*) group=judge;; *demo.config.ts*) group=demo;; *
   const script = mock.replace('*config.ts*) group=judge;; *demo.config.ts*) group=demo;;', '*demo.config.ts*) group=demo;; *judge.config.ts*) group=judge;;') + block
   expect(spawnSync('bash', ['-e', '-c', script]).status).toBe(failed === 'none' ? 0 : 1)
   expect(workflow.match(/npm run build:demo/g)).toHaveLength(1)
+})
+
+// Hosted admission remains full for releases, nightly and explicit dispatch.
+it('uses local admission on PRs and keeps full hosted release verification', () => {
+  expect(hostedFull('pull_request')).toBe(false)
+  for (const event of ['push','schedule','workflow_dispatch','workflow_call',undefined]) expect(hostedFull(event)).toBe(true)
+  const workflow = readFileSync('.github/workflows/ci.yml','utf8')
+  expect(workflow).not.toContain('branches: [main]')
+  expect(workflow).toContain('schedule:')
+  expect(workflow).toContain('cancel-in-progress: true')
+  expect(workflow).toContain('npm run chaos -- --runs 200 --seed 279')
 })
