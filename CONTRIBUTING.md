@@ -70,7 +70,10 @@ browser replay, live Testnet hash probes and 200-episode chaos run at release
 and nightly; affected browser paths also run locally. Local release acceptance
 uses a bounded dependency graph and native arm64 packaging. Use `--all-arch`
 for local Intel packaging, `--serial` to diagnose scheduling, or
-`--isolated-soak` to run the unchanged soak alone before the graph.
+`--concurrent-soak` for an explicit contention experiment. The default isolates
+the unchanged soak. `--reuse scratch/final-acceptance-<timestamp>/acceptance.json`
+verifies a prepared exact clean source tree before reusing non-timing checks;
+the full soak always executes again. See [acceptance scheduling](docs/contracts/acceptance-scheduling.md).
 
 ## Licence
 

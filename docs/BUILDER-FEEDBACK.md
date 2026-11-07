@@ -910,8 +910,11 @@ Observed verifier contract mismatch: a no-purchase Testnet run exports no ledger
 Evidence: `docs/evidence/ci-speed/README.md` and its raw history/timing JSON.
 The serial acceptance baseline on the 10-CPU Mac missed loop p99 at 60.981 ms
 against the unchanged <50 ms limit; its four memory/latency gates passed.
-Workaround: keep failed measurements, avoid unrelated test load, and use an
-explicit isolated-soak diagnostic when needed. Suggested fix: content-keyed
-local merge receipts and bounded release scheduling, with full hosted release
-verification retained. Severity: medium development/acceptance delay. Mainnet
+Concurrent acceptance attempts also missed at 99.615 ms and 167.248 ms.
+Workaround: isolate the full soak by default (27.394 ms passing cold; 24.789 ms
+passing on explicit verified reuse), retain every miss, and reuse only unchanged
+outputs on the exact clean source/runtime. Cold acceptance is 554.5 s; prepared
+reuse with a fresh full soak is 301.2 s. Suggested fix: content-keyed local merge
+receipts and bounded release scheduling, with full hosted release verification
+retained. Severity: medium development/acceptance delay. Mainnet
 impact: none measured; synthetic fixtures and simulated settlement only.

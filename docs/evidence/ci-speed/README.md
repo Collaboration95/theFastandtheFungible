@@ -198,14 +198,15 @@ are redundant: verify enforced eight coverage repairs and several test repairs,
 while the aggregate correctly refused failed/cancelled dependencies. Avoid using
 that historical zero alone to remove a hard gate.
 
-A narrow consolidation candidate exists in `tests/ci-contract.test.ts` at the
-pinned source: the same five jobs × four failure states run both in process and
-through **20 separate Node CLI processes**. The in-process matrix already checks
-the decision table; a smaller representative CLI integration set could preserve
-JSON/exit-code/error plumbing, docs-skip behavior and browser-group propagation.
-No historical failure names this test as a root cause. Its attributable cost and
-any speedup are **unmeasured**, so this is a parent-owned review candidate, not a
-measured saving or a completed change.
+The duplicate aggregate CLI matrix was consolidated after review. Every job ×
+failure-state combination still runs in process; four CLI failures cover each
+serialization state and two CLI successes cover full/intentional-skip admission.
+The five obsolete hosted diff-routing cases are replaced by executable local
+routing tests. [cleanup.json](cleanup.json) lists **each** removed or demoted
+execution and why. No product assertion or hard-gate test was deleted. Individual
+CLI-process savings were not measured. The pre-commit duplicate suite, acceptance
+unit/smoke duplicates, hosted PR matrix and local Intel cross-build demotions are
+also listed explicitly in the PR's Loosened section.
 
 ## Evidence tables
 
@@ -232,20 +233,61 @@ separate local desktop loader defect and cannot establish this timing failure's
 cause. Early health-proxy connection refusals recovered; they are not assigned
 as the root cause.
 
-## Parent measurements
+## Local measurements on this Mac
 
-Reserved to the parent: `timings.json` (pending),
-[acceptance-serial.json](acceptance-serial.json) and
-`acceptance-parallel.json` (pending). The parent may replace this
-section after measurements finish. Historical hosted job minutes above are not
-an isolated before/after speed experiment.
+All runs use fixture providers and simulated settlement. Measurements are in
+[timings.json](timings.json), with [code-cold](gate-code-cold.json),
+[code-cached](gate-code-cached.json), [docs-only](gate-docs-cold.json) receipts and
+[historical successful PR timings](hosted-before.json). Gate probes add a harmless
+comment to `server/store.ts` or a Markdown contract and restore original bytes.
+They measure change routing, scheduling and cache behavior; they are synthetic
+probes, not a distribution of feature PRs. Complete fixture logs are retained
+outside source in the repository's shared Git `local-gate` storage.
 
-The parent reports the serial baseline started at **20:00 SGT on 7 November**,
-finished at **20:15**, and took **856.548 s**. Its soak loop gate failed at
-**60.98 ms**; RSS/latency passed. Lint included a new gate still being implemented.
-Python, coverage, consumers, all browser groups and DMGs passed according to that
-report. These are parent-reported local results, not fresh hosted audit evidence;
-read the parent-owned artifacts for the final exact outcomes.
+| Case | Before | After on this host |
+| --- | ---: | ---: |
+| Representative server-only PR admission | 78.576 s local + 246 s historical CI median = **324.6 s** | **97.790 s** cold affected gate |
+| Same synthetic server tree, repeat | same repeated legacy work | **7.177 s** cached gate |
+| Markdown-only PR admission | 78.576 s local + 25 s historical CI median = **103.6 s** | **2.385 s** cold docs gate |
+| Full cold local acceptance | owner-reported **998 s** | **554.515 s**, pass; native arm64 |
+| Prepared same-clean-SHA acceptance | repeat serial acceptance | **301.176 s**, pass; 21 verified steps reused, full fresh soak |
+
+The historical medians use the last successful PR run per merged PR: 125 code
+PRs and 10 Markdown-only PRs. They include queue/aggregation time and are not a
+controlled paired experiment. Hosted sanity now runs asynchronously and is not
+added to local merge admission. Posting the final status adds a few GitHub
+requests; exact publication time is retained in the final local receipt.
+
+The original serial attempt ([report](acceptance-serial.json)) took **856.548 s**
+and failed loop p99 **60.981 ms** plus in-progress tooling lint. RSS and latency
+passed; consumers, browser groups, Python, coverage, both DMGs and full chaos
+passed. That run is **failed timing evidence**, not successful acceptance.
+A separate repaired `npm run check:fast` passed in **78.576 s**.
+
+Concurrent experiments took **340.195 s** ([first](acceptance-parallel-first.json))
+and **349.181 s** ([lower sibling priority](acceptance-parallel-priority.json)),
+but failed the unchanged loop gate at **99.615 ms** and **167.248 ms**. The first
+also exposed generated browser JS entering lint; outputs moved under excluded
+`test-results`. The second passed every non-soak check. These misses are retained;
+no threshold was raised and neither run qualifies as acceptance.
+
+The default now reserves the soak's phase. The [cold isolated report](acceptance-isolated.json)
+passed **all 26 checks** with 1,402 unit tests under coverage, full configured
+200-episode chaos, browser groups, installed package consumers, independent
+verifiers and native recovery. Its full 2,000-ask soak passed with loop p99
+**27.394 ms**. The [prepared-tree report](acceptance-reused.json) verifies the
+same clean SHA/tree, host/runtime/dependencies, every retained log and recursively
+hashed output before reuse; it reruns the full soak and both live site probes.
+Its loop p99 was **24.789 ms**. Both retain unchanged RSS slope, median, max and
+latency gates. The corresponding `soak-*-summary.json` files retain every value.
+
+**Limit:** the six-minute target is met for a prepared exact source tree, not a
+cold run. Cold isolation costs **9m15s** here; running the soak with sibling load
+failed on this shared host. No paid-runner improvement was measured. Local Intel
+packaging is now opt-in; the old acceptance included it, while hosted release
+still produces both architectures. This scope difference is explicit, not a
+native Intel acceptance claim. The scheduling/reuse contract is documented in
+[acceptance-scheduling](../../contracts/acceptance-scheduling.md).
 
 ## Capacity and billing context
 

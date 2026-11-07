@@ -43,6 +43,7 @@ async function run(name,cmd,args,extra={},dependencies=[]) {
 const artifact=(p)=>({file:p,bytes:statSync(p).size,sha256:digest(p)})
 try {
   if(platform()!=='darwin'||arch()!=='arm64')throw Error('Full unsigned arm64 acceptance requires an Apple Silicon Mac')
+  if(report.worktreeDirty)throw Error('Acceptance requires a clean source tree before expensive work; commit intended changes first')
   const ts=new Date().toISOString().replace(/[^0-9]/g,'')
   const browserResults=resolve('test-results','final-acceptance-'+ts);report.browserResults=browserResults
   const soak=join(out,'soak-same-engine.json');mkdirSync('scratch',{recursive:true})
