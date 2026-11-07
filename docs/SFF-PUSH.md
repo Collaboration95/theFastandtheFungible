@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 7 Nov: Pixel agent v2: a chunkier 32 × 40 researcher (blinking visor face, blush, an expression per state, antenna as the mark's route, satchel with the mark, weighted walk); README hero 672 × 92 (was 120 tall), LinkedIn square/banner/portrait exports in `design/character/social/`, v1-vs-v2 comparisons in [evidence](evidence/character/README.md#v1--v2).
 - 7 Nov: J5 freezes v2 before two team-authored notes; v2 held-out 8/20; v1 dev 16/20 buy-and-cite, zero blanks/gate violations in both banks; online verification 16/20 dev and 8/20 held-out (missing anchors retained as failures). Policy unchanged; dev gains one question, held-out remains 8/20. [Evidence](evidence/j5-coverage/README.md).
 - 7 Nov: Lane D projects sidebar history without snapshot hydration, shares pure presentation selectors and deletes 9 dead UI lines (Cast retained for built/tested QA page); local synthetic 2,000-row p95 602.18 → 81.15 ms, CPU −86.92%; deletion targets missed. [Evidence](evidence/refactor-d/README.md).
 - 7 Nov: Prepare v1.0.0: versions bumped from rc.2 across the packages, MCPB, registry metadata and live docs; install lines regenerated for v1.0.0 (including `try --testnet`); changelog folds rc.1/rc.2 with #384–#391; submission placeholders filled (tag, versions, 33.9 s first-try writer) and the deck re-exported. No tag or release yet; the orchestrator tags after acceptance.
