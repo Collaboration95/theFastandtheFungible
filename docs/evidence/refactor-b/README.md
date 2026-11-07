@@ -1,6 +1,6 @@
 # Lane B: parallel browser admission
 
-Final configuration: **350 → 221 s** five-run CI median (historical audit
+Pre-Lane-C final configuration: **350 → 221 s** five-run CI median (historical audit
 baseline 355 s). Browser **326 → 107 s**; critical job is verify at **162 s**.
 Both timing targets pass. Replay builds **2 → 1**, zero failures and zero reported
 flaky browser tests in five final runs. The >=50 net LOC deletion target is
@@ -126,7 +126,7 @@ remain available in before.json and after.json.
 The final workflow removes the unsuccessful Chromium cache experiment. A fresh
 five-run sample of that final configuration follows in final-after.json.
 
-## Final five successful Actions runs (no added caches)
+## Pre-Lane-C five successful Actions runs (no added caches)
 
 Implementation head `64cb0b1e5a443c8d2dcb7c57187bd07e25d83d76` (full SHA in final-after.json). The later
 commit adds evidence and corrects the package-review wording only.
@@ -165,3 +165,12 @@ cache removal follows its separate measured negative result, not that total.
 Final CI release artifacts were independently downloaded and hash/size checked;
 final-ci-package-sizes.json pins sourceSha `4e89c84dabb2867a6198c98e91002eea203f45b9`.
 Largest package: 3,476,119 bytes. Clean consumer installs remain required.
+
+## Integration with Lane C
+
+Lane C merged as `db50380b` while the evidence commit was being finalized.
+Rebase preserved both shared changelog entries; no C-owned source files were
+edited by this lane. Integrated local check:fast passed: 161 files, 1,369 tests,
+44.05 s Vitest wall, chaos smoke zero invariant violations. The pre-C samples
+remain historical observations; integrated-after.json records a fresh five-run
+sample of the combined tree. Its implementation head is `7b4ed6490f48cabbb3ba37694b737eef66b7bbc0`.
