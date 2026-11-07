@@ -1,0 +1,792 @@
+{
+  "schema": 1,
+  "acceptanceEligible": true,
+  "mode": "full fixture workload on a declared local host",
+  "sourceSha": "45cea44b62853b739a094e0fbc49ad9b465c1cb8",
+  "sourceTree": "6171f8926b70e4d95960962e45e3f49ffd8e45a7",
+  "worktreeDirty": false,
+  "runnerSha256": "6b6f1d72ad550f21a595ba25959ccabd529222afbd1c1e022ed3465275591062",
+  "timestamp": "2026-11-07T12:32:55.934Z",
+  "host": {
+    "hostname": "MacBook-Pro-7.local",
+    "platform": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "cpus": 10,
+    "node": "v26.3.1",
+    "load": [
+      2.896484375,
+      4.58349609375,
+      4.37744140625
+    ]
+  },
+  "gates": [
+    {
+      "name": "soak",
+      "dependencies": [],
+      "pass": false,
+      "startedAt": "2026-11-07T12:32:55.935Z",
+      "command": [
+        "caffeinate",
+        "-dims",
+        "node",
+        "scripts/soak-same-engine.mjs",
+        "--runs",
+        "2000",
+        "--warmup",
+        "200",
+        "--concurrency",
+        "1",
+        "--seed",
+        "279",
+        "--history-runs",
+        "10000",
+        "--events-per-run",
+        "60",
+        "--data-dir",
+        "scratch/finals-soak-279-20261107123255934",
+        "--output",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107123255913/soak-same-engine.json",
+        "--burst"
+      ],
+      "exitCode": 1,
+      "finishedAt": "2026-11-07T12:38:45.050Z",
+      "logSha256": "0c7ad5ce5429960d6080a92fc77e6fbc89a16ff449b3a84a6752a5b105b20497",
+      "error": "soak failed; see /Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107123255913/soak.log",
+      "status": "FAIL",
+      "durationMs": 349115
+    },
+    {
+      "name": "chaos",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:32:55.935Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npm",
+        "run",
+        "chaos",
+        "--",
+        "--runs",
+        "200",
+        "--seed",
+        "279"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:37:28.190Z",
+      "logSha256": "8e0d6653bf47f694afe6fc1d56b2ddd800949f30637396d69d0b22cb869922a9",
+      "status": "PASS",
+      "durationMs": 272255
+    },
+    {
+      "name": "ui-build",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:32:55.936Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:33:01.531Z",
+      "logSha256": "944a420e0228f1013ba2dc713e153a95f0a5b364a641484a1a59bdb375740314",
+      "status": "PASS",
+      "durationMs": 5595
+    },
+    {
+      "name": "demo-build",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:32:55.936Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npm",
+        "run",
+        "build:demo"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:32:57.003Z",
+      "logSha256": "9e82e99a8a37985d3b92908d66d7992d35c484f20aa9b13c164767e0559c7ece",
+      "status": "PASS",
+      "durationMs": 1067
+    },
+    {
+      "name": "browser-demo",
+      "dependencies": [
+        "demo-build"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:32:57.005Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npx",
+        "playwright",
+        "test",
+        "--config",
+        "playwright.demo.config.ts",
+        "--output",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/test-results/final-acceptance-20261107123255934/demo"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:33:58.887Z",
+      "logSha256": "3e7c4dd5958e3d702dac003b7dab0868bbaaacec2159607b241e929a9beb5a17",
+      "status": "PASS",
+      "durationMs": 61882
+    },
+    {
+      "name": "coverage",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:33:01.535Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npx",
+        "vitest",
+        "run",
+        "--coverage"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:34:17.675Z",
+      "logSha256": "f64dfaa9cd4ee80c4e902f7c52d5a0131d55e3a9c22c02fc098fef8a7466f7a0",
+      "status": "PASS",
+      "durationMs": 76140
+    },
+    {
+      "name": "desktop-download-arm64",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:33:58.887Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "node",
+        "desktop/download.mjs"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:33:58.984Z",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "PASS",
+      "durationMs": 97
+    },
+    {
+      "name": "browser-ledger",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:33:58.984Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npx",
+        "playwright",
+        "test",
+        "--config",
+        "playwright.ledger.config.ts",
+        "--output",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/test-results/final-acceptance-20261107123255934/ledger"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:34:01.223Z",
+      "logSha256": "fb807d450b6150407ba86c1e7483160072c2a81d5869549e41f500c73d216c8c",
+      "status": "PASS",
+      "durationMs": 2239
+    },
+    {
+      "name": "site-demo",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:01.224Z",
+      "status": "PASS",
+      "finishedAt": "2026-11-07T12:34:01.582Z",
+      "durationMs": 358
+    },
+    {
+      "name": "site-ledger",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:01.583Z",
+      "status": "PASS",
+      "finishedAt": "2026-11-07T12:34:01.926Z",
+      "durationMs": 343
+    },
+    {
+      "name": "hygiene",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:01.926Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npm",
+        "run",
+        "hygiene"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:34:02.860Z",
+      "logSha256": "c92202007f16310395f986882786e1cdda128285c422cef0c28f5ce84d21fc98",
+      "status": "PASS",
+      "durationMs": 934
+    },
+    {
+      "name": "lint",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:02.860Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:34:09.361Z",
+      "logSha256": "47919dd3b258ca7d9745cd8a9ec77b50df298e6136ec36090120b62ad2c56af2",
+      "status": "PASS",
+      "durationMs": 6501
+    },
+    {
+      "name": "typecheck",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:09.362Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:34:13.941Z",
+      "logSha256": "3c7571a61116f73bc065bcf7065179fa30f76c73cd6b64a7f2aae2aa20c1c292",
+      "status": "PASS",
+      "durationMs": 4579
+    },
+    {
+      "name": "python",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:13.942Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "python3",
+        "-m",
+        "pytest",
+        "packages/sdk-python"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:34:28.793Z",
+      "logSha256": "f7bdfcb23452ddfa01288785207acbe5adf681fa4b70e5ff3c890f215490d17c",
+      "status": "PASS",
+      "durationMs": 14851
+    },
+    {
+      "name": "browser",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:17.675Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "npx",
+        "playwright",
+        "test",
+        "--output",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/test-results/final-acceptance-20261107123255934/app"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:34:50.436Z",
+      "logSha256": "f321177e3b314c5474b41d367af7281afdf5b7fcc8bc4c5e5b1e9effaf4758ad",
+      "status": "PASS",
+      "durationMs": 32761
+    },
+    {
+      "name": "coverage-gate",
+      "dependencies": [
+        "coverage"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:28.794Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "node",
+        "scripts/check-coverage.mjs"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:34:28.896Z",
+      "logSha256": "48063113087dbee5a750855e9ef545415bb142d29303fbc1bc12f0ad4e4e59be",
+      "status": "PASS",
+      "durationMs": 102
+    },
+    {
+      "name": "desktop-arm64",
+      "dependencies": [
+        "desktop-download-arm64"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:34:50.437Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "node",
+        "desktop/build.mjs",
+        "--dmg",
+        "--unsigned"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:35:51.630Z",
+      "logSha256": "19619e315979929ff026c74197d38e6d1aecbdb39261bd8f65a0c5d46108a524",
+      "status": "PASS",
+      "durationMs": 61193
+    },
+    {
+      "name": "artifacts",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:35:51.630Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "make",
+        "release-artifacts"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:36:18.623Z",
+      "logSha256": "50d512ff6d401ff1730b9e5c0608c1965a7bbd8d665ecba309e95119b73a940c",
+      "status": "PASS",
+      "durationMs": 26993
+    },
+    {
+      "name": "arm64-evidence",
+      "dependencies": [
+        "desktop-arm64"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:35:51.630Z",
+      "status": "PASS",
+      "finishedAt": "2026-11-07T12:35:52.137Z",
+      "durationMs": 507
+    },
+    {
+      "name": "desktop-recovery",
+      "dependencies": [
+        "desktop-arm64",
+        "arm64-evidence"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:35:52.138Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "node",
+        "desktop/smoke.mjs",
+        "--fixture-only",
+        "--recovery",
+        "--app",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/desktop/out/mac-arm64/ResearchAgent.app",
+        "--output",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107123255913/desktop-recovery.json"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:36:12.410Z",
+      "logSha256": "cc339f6a4b483d04953128bd0efcd6993c48e510278a6b480bd6e8cae9176351",
+      "status": "PASS",
+      "durationMs": 20272
+    },
+    {
+      "name": "artifact-preservation",
+      "dependencies": [
+        "artifacts"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:36:18.624Z",
+      "status": "PASS",
+      "finishedAt": "2026-11-07T12:36:18.626Z",
+      "durationMs": 2
+    },
+    {
+      "name": "consumers",
+      "dependencies": [
+        "artifacts"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:36:18.626Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "node",
+        "scripts/check-release-consumers.mjs",
+        "--manifest",
+        "dist/release/manifest.json"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:36:33.627Z",
+      "logSha256": "bf3dd14bc1fcd797eed3a9d4c46e6a02ce137a0faeff5183d81802d59aff2047",
+      "status": "PASS",
+      "durationMs": 15001
+    },
+    {
+      "name": "artifact-evidence",
+      "dependencies": [
+        "artifacts",
+        "consumers"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:36:33.628Z",
+      "status": "PASS",
+      "finishedAt": "2026-11-07T12:36:33.631Z",
+      "durationMs": 3
+    },
+    {
+      "name": "check-fast",
+      "dependencies": [
+        "hygiene",
+        "lint",
+        "typecheck",
+        "coverage",
+        "chaos"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:37:28.190Z",
+      "coveredBy": [
+        "hygiene",
+        "lint",
+        "typecheck",
+        "coverage",
+        "chaos"
+      ],
+      "status": "PASS",
+      "finishedAt": "2026-11-07T12:37:28.190Z",
+      "durationMs": 0
+    },
+    {
+      "name": "soak-evidence",
+      "dependencies": [],
+      "pass": true,
+      "startedAt": "2026-11-07T12:38:45.050Z",
+      "status": "PASS",
+      "finishedAt": "2026-11-07T12:38:45.056Z",
+      "durationMs": 6
+    },
+    {
+      "name": "render",
+      "dependencies": [
+        "soak-evidence"
+      ],
+      "pass": true,
+      "startedAt": "2026-11-07T12:38:45.056Z",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "10",
+        "node",
+        "scripts/render-soak.mjs",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107123255913/soak-same-engine.json",
+        "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107123255913/soak-same-engine.svg"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T12:38:45.115Z",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "PASS",
+      "durationMs": 59
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "mcp-tgz",
+      "file": "researchagent-mcp-1.0.1.tgz",
+      "version": "1.0.1",
+      "bytes": 3586918,
+      "sha256": "499b2d36744bdecb4aeb65a36ced09b4ae7b5bd3a31a4fd808d698cd3d76409a",
+      "includes": [
+        "mcp stdio",
+        "app subcommand",
+        "web ui"
+      ],
+      "acceptance": "requires matching clean consumer receipt"
+    },
+    {
+      "kind": "tgz",
+      "file": "researchagent-sdk-1.0.1.tgz",
+      "version": "1.0.1",
+      "bytes": 89969,
+      "sha256": "b3d5812fe838aae37563984c7da3c05e042920856aaa2e87edae8347f8998579",
+      "acceptance": "requires matching clean consumer receipt"
+    },
+    {
+      "kind": "wheel",
+      "file": "researchagent-1.0.1-py3-none-any.whl",
+      "version": "1.0.1",
+      "bytes": 113070,
+      "sha256": "d0d9663679ec9e138a84aa81be962ac3dabcd665ad0f78f7fffa3eb1e25ee38a",
+      "acceptance": "requires matching clean consumer receipt"
+    },
+    {
+      "kind": "sdist",
+      "file": "researchagent-1.0.1.tar.gz",
+      "version": "1.0.1",
+      "bytes": 107486,
+      "sha256": "54fc043c32c5d137980cb1423ac8989d27de215896d024da69fdc699d4e4ce4f",
+      "acceptance": "hash only"
+    },
+    {
+      "kind": "mcpb",
+      "file": "ResearchAgent.mcpb",
+      "version": "1.0.1",
+      "bytes": 3440576,
+      "sha256": "a239dd6230b8a4623bd5e8942925134d00f7023704a6885a403ed7f34f8014ae",
+      "acceptance": "requires matching clean consumer receipt"
+    },
+    {
+      "kind": "metadata",
+      "file": "server.json",
+      "version": "1.0.1",
+      "bytes": 725,
+      "sha256": "7dd30bb082dd1b656fd329d150fe73e917861d2623da73540effb23fc9d8f9fd",
+      "acceptance": "hash only"
+    }
+  ],
+  "dmgs": [
+    {
+      "file": "desktop/out/ResearchAgent-1.0.1-arm64.dmg",
+      "bytes": 135008302,
+      "sha256": "9e53de33c06e1de5bc6baf98de83c668ad9a473d4895e4598881213a55009124"
+    },
+    {
+      "file": "desktop/out/ResearchAgent-1.0.1-x64.dmg",
+      "bytes": 139076953,
+      "sha256": "246cf2a0649ff3cae0714b6e3e2d3be13559a131c1eacf2780402397d9f2ee85"
+    }
+  ],
+  "pass": false,
+  "schedule": {
+    "mode": "bounded DAG including soak",
+    "concurrency": 4,
+    "siblingNiceness": 10,
+    "localArchitectures": [
+      "arm64"
+    ],
+    "hostedArchitectures": [
+      "arm64",
+      "x64"
+    ]
+  },
+  "browserResults": "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/test-results/final-acceptance-20261107123255934",
+  "x64": "deferred to hosted desktop release matrix; native acceptance pending",
+  "site": [
+    {
+      "url": "https://collaboration95.github.io/theFastandtheFungible/demo/",
+      "status": 200
+    },
+    {
+      "url": "https://collaboration95.github.io/theFastandtheFungible/ledger/",
+      "status": 200
+    }
+  ],
+  "app": {
+    "path": "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/desktop/out/mac-arm64/ResearchAgent.app",
+    "manifest": {
+      "file": "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107123255913/app-manifest.json",
+      "bytes": 1991165,
+      "sha256": "0fa76b419a7dbe56847f14654278f5007669d7f29f34a02ddd3cd9658b5cad21"
+    },
+    "executable": {
+      "file": "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/desktop/out/mac-arm64/ResearchAgent.app/Contents/MacOS/ResearchAgent",
+      "bytes": 33968,
+      "sha256": "e1e6fcf02e1263644308692375784cf67507c3bbc7a408acae15d92a8fd4850c"
+    }
+  },
+  "consumers": {
+    "sourceSha": "45cea44b62853b739a094e0fbc49ad9b465c1cb8",
+    "manifestSha256": "6d61caed6e83809c5234dac6b67ffc7677a8f250aa845a93d53e804438df6544",
+    "mode": "fixture providers; simulated settlement",
+    "runtime": {
+      "node": "v26.3.1",
+      "python": "Python 3.14.7"
+    },
+    "verifiers": {
+      "receiptSha256": "d820c2366717e3b496355bcb4a45a18576c91351eedd595145ab358b03bcdc70",
+      "typescript": {
+        "command": "npm run verify:answer -- accepted-receipt.json --json",
+        "pass": true
+      },
+      "python": {
+        "command": "python -m researchagent verify accepted-receipt.json --json",
+        "installation": "exact wheel in clean venv",
+        "pass": true
+      }
+    },
+    "consumers": [
+      {
+        "kind": "tgz",
+        "sha256": "b3d5812fe838aae37563984c7da3c05e042920856aaa2e87edae8347f8998579",
+        "citations": 8,
+        "receipts": 1,
+        "intents": 1,
+        "idempotent": true,
+        "capPreserved": true
+      },
+      {
+        "timing": "TypeScript",
+        "seconds": 1.062597
+      },
+      {
+        "kind": "wheel",
+        "sha256": "d0d9663679ec9e138a84aa81be962ac3dabcd665ad0f78f7fffa3eb1e25ee38a",
+        "citations": 8,
+        "receipts": 1,
+        "intents": 1,
+        "idempotent": true,
+        "capPreserved": true
+      },
+      {
+        "timing": "Python",
+        "seconds": 1.9660669579999999
+      },
+      {
+        "kind": "sdist",
+        "sha256": "54fc043c32c5d137980cb1423ac8989d27de215896d024da69fdc699d4e4ce4f",
+        "citations": 8,
+        "receipts": 1,
+        "intents": 1,
+        "idempotent": true,
+        "capPreserved": true
+      },
+      {
+        "kind": "mcpb",
+        "sha256": "a239dd6230b8a4623bd5e8942925134d00f7023704a6885a403ed7f34f8014ae",
+        "citations": 8,
+        "receipts": 1,
+        "intents": 1,
+        "idempotent": true,
+        "capPreserved": true
+      },
+      {
+        "kind": "mcp-tgz",
+        "sha256": "499b2d36744bdecb4aeb65a36ced09b4ae7b5bd3a31a4fd808d698cd3d76409a",
+        "citations": 8,
+        "receipts": 1,
+        "intents": 1,
+        "idempotent": true,
+        "capPreserved": true
+      },
+      {
+        "timing": "MCP npx",
+        "seconds": 2.035505666
+      },
+      {
+        "kind": "app",
+        "sha256": "499b2d36744bdecb4aeb65a36ced09b4ae7b5bd3a31a4fd808d698cd3d76409a",
+        "citations": 8,
+        "receipts": 1,
+        "intents": 1,
+        "idempotent": true,
+        "capPreserved": true
+      },
+      {
+        "timing": "app (simulated)",
+        "readySeconds": 1.7991495000000013,
+        "seconds": 2.09206825
+      }
+    ]
+  },
+  "verifiers": {
+    "receiptSha256": "d820c2366717e3b496355bcb4a45a18576c91351eedd595145ab358b03bcdc70",
+    "typescript": {
+      "command": "npm run verify:answer -- accepted-receipt.json --json",
+      "pass": true
+    },
+    "python": {
+      "command": "python -m researchagent verify accepted-receipt.json --json",
+      "installation": "exact wheel in clean venv",
+      "pass": true
+    }
+  },
+  "soak": {
+    "file": "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107123255913/soak-same-engine.json",
+    "sha256": "660fb43c69e057947cc770e2fe836659b63b5d768b69648478085a9f9ea1aee4",
+    "source": "45cea44b62853b739a094e0fbc49ad9b465c1cb8",
+    "summary": {
+      "gates": {
+        "rssSlope": {
+          "value": 2.7536648860734263,
+          "limit": 5,
+          "pass": true
+        },
+        "rssMedian": {
+          "value": -2.816436767578125,
+          "limit": 100,
+          "pass": true
+        },
+        "rssMax": {
+          "value": 795.1139602661133,
+          "limit": 1536,
+          "pass": true
+        },
+        "loopP99": {
+          "value": 167.247871,
+          "limit": 50,
+          "pass": false
+        },
+        "latencyP95": {
+          "value": -61.98420800004533,
+          "limit": 250,
+          "pass": true
+        }
+      },
+      "valid": true,
+      "pass": false,
+      "acceptanceEligible": true,
+      "completed": 2000,
+      "failed": 0,
+      "warmMedianMiB": 598.5453262329102,
+      "finalMedianMiB": 595.728889465332,
+      "firstP95Ms": 222.06079100000352,
+      "lastP95Ms": 160.0765829999582,
+      "sampleGaps": 0,
+      "identityCount": 1,
+      "loopMethod": "maximum of worker one-second histogram p99s, 10 ms resolution"
+    },
+    "burst": {
+      "requested": true,
+      "limit": 4,
+      "submitted": 100,
+      "admitted": 4,
+      "overloaded": 96,
+      "idempotentRetries": 4,
+      "peak": 4,
+      "activeAfterDrain": 0,
+      "pass": true
+    },
+    "restarts": 20
+  },
+  "checksPass": false,
+  "finishedAt": "2026-11-07T12:38:45.115Z",
+  "durationMs": 349181
+}

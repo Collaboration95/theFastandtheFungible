@@ -43,3 +43,28 @@ it('backfills the exact old commit without changing HEAD, package versions or ex
     expect(git('status','--porcelain')).toBe('')
   } finally { rmSync(dir,{recursive:true,force:true}) }
 })
+
+import { resources } from './helpers/resource-scope'
+it('current release needs the latest successful local gate on the merged SHA', () => {
+  const dir = resources().tempDir('release-local-gate-')
+  const fixtureEnv = { ...env }
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: dir, encoding: 'utf8', env: fixtureEnv }).trim()
+  git('init','-q','-b','main');git('config','user.email','fixture@example.invalid');git('config','user.name','Fixture')
+  mkdirSync(join(dir,'scripts'));mkdirSync(join(dir,'docs'));mkdirSync(join(dir,'bin'))
+  copyFileSync(resolve('scripts/release.mjs'),join(dir,'scripts/release.mjs'))
+  writeFileSync(join(dir,'package.json'),'{"version":"1.2.3"}\n');writeFileSync(join(dir,'docs/SFF-PUSH.md'),'# Fixture\n')
+  writeFileSync(join(dir,'.gitignore'),'remote.git/\n')
+  writeFileSync(join(dir,'bin/gh'),`#!${process.execPath}
+if (process.argv[2] !== 'api' || !process.argv[3].endsWith('/status')) process.exit(7)
+console.log(JSON.stringify({statuses:JSON.parse(process.env.FIXTURE_STATUSES)}))
+`,{mode:0o755})
+  git('add','.');git('commit','-qm','fixture')
+  git('init','--bare','-q',join(dir,'remote.git'));git('remote','add','origin',join(dir,'remote.git'));git('push','-q','origin','main')
+  fixtureEnv.PATH = join(dir,'bin') + ':' + fixtureEnv.PATH
+  const run = (statuses: unknown[]) => execFileSync(process.execPath,['scripts/release.mjs','1.2.3','Fixture release'],{cwd:dir,encoding:'utf8',stdio:'pipe',env:{...fixtureEnv,FIXTURE_STATUSES:JSON.stringify(statuses)}})
+  for (const statuses of [[],[{context:'ci',state:'success'}],[{context:'local-gate',state:'pending'}],[{context:'local-gate',state:'failure'},{context:'local-gate',state:'success'}]]) {
+    expect(()=>run(statuses)).toThrow()
+    expect(git('tag','-l','v1.2.3')).toBe('')
+  }
+  expect(run([{context:'local-gate',state:'success'}])).toContain('Created v1.2.3')
+})

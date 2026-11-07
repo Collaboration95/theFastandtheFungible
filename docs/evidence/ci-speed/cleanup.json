@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "history": "No historical root failure names the aggregate test file. Zero catches alone was not used to remove any product test.",
+  "changes": [
+    {
+      "check": "tests/ci-contract.test.ts: runs every gate for shared/contracts/run.ts",
+      "action": "deleted obsolete hosted routing case",
+      "reason": "PR hosted routing is now always sanity; local gate full/unknown/code routing has executable regressions."
+    },
+    {
+      "check": "tests/ci-contract.test.ts: runs every gate for packages/sdk-python/README.md",
+      "action": "deleted obsolete hosted routing case",
+      "reason": "Local Python/packed SDK routing regression replaces the removed hosted detector."
+    },
+    {
+      "check": "tests/ci-contract.test.ts: runs every gate for server/moved.md",
+      "action": "deleted obsolete hosted routing case",
+      "reason": "Local gate treats a Markdown suffix inside server as product code; rename/unknown-history regressions retain conservative admission."
+    },
+    {
+      "check": "tests/ci-contract.test.ts: runs every gate for .github/workflows/ci.yml",
+      "action": "deleted obsolete hosted routing case",
+      "reason": "Local workflow/tool configuration changes select every step; nightly/manual/release trigger contract is tested."
+    },
+    {
+      "check": "tests/ci-contract.test.ts: skips docs only but fails open to full verification on unknown history and code renames",
+      "action": "deleted obsolete hosted detector case",
+      "reason": "Executable local gate regressions retain docs routing and full verification for unknown base/paths/renames."
+    },
+    {
+      "check": "tests/ci-contract.test.ts: 20 hosted aggregate CLI failure subprocess cases",
+      "action": "consolidated to four failure and two success CLI cases",
+      "reason": "All 20 job-by-state failure combinations still execute in-process. CLI cases cover failure/cancel/skipped/missing serialization plus full and intentional-skip success. No historical root failure names this test; individual time saving not measured."
+    },
+    {
+      "check": ".husky/pre-commit: complete check:fast",
+      "action": "demoted to staged whitespace check",
+      "reason": "Repeats the complete explicit merge gate after every intermediate commit. Final clean-head local-gate status owns merge admission."
+    },
+    {
+      "check": "acceptance: separate test:unit via check:fast",
+      "action": "removed duplicate invocation",
+      "reason": "Full coverage already executes the complete unit suite. check-fast receipt requires coverage, lint, types, hygiene and chaos."
+    },
+    {
+      "check": "acceptance: separate 20-episode seed-279 chaos smoke",
+      "action": "removed duplicate invocation",
+      "reason": "Full configured 200-episode seed-279 chaos includes the identical smoke prefix and escrow probes."
+    },
+    {
+      "check": "hosted PR full verify/coverage, chaos, browser, Python, artifacts",
+      "action": "demoted to nightly/manual/release",
+      "reason": "Local change-aware admission retains complete unit hard-gate tests, seeded chaos/key reveal and affected browser/desktop/Python/packed-SDK consumers. Hosted sanity and full backstop remain; coverage floors unchanged."
+    },
+    {
+      "check": "local acceptance x64 download/packaging",
+      "action": "opt-in --all-arch; hosted release retains it",
+      "reason": "Cross-build on arm64 was not native Intel execution evidence. Both published DMGs and package assets remain required."
+    }
+  ],
+  "retained": "Every existing product assertion, five hard-gate suite, coverage floor, leak limit and soak threshold."
+}

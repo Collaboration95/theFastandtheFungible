@@ -1,6 +1,6 @@
 ---
 name: ship-pr
-description: Ship a finished worktree branch to main - rebase, check, PR, wait for CI, merge and clean up. Use when asked to "push and open a PR and merge it" or when a lane's work is done.
+description: Ship a finished worktree branch to main - rebase, local gate, PR, merge and clean up. Use when asked to "push and open a PR and merge it" or when a lane's work is done.
 argument-hint: <worktree path> "<closes #issues>"
 ---
 
@@ -9,11 +9,11 @@ argument-hint: <worktree path> "<closes #issues>"
 Run from the worktree given in the arguments. Stop and report at the first failing step; never skip one.
 
 1. `git fetch -q origin && git rebase origin/main`. If the branch was cut from `origin/main`, run `git branch --unset-upstream 2>/dev/null || true` first so a bare push can never target main ("no upstream" means it's already safe; carry on).
-2. `npm run check:fast`. Fix failures here, not after the PR.
+2. `npm run gate`. Fix failures here, not after the PR. Commit all intended changes; the final receipt must describe a clean tree. Unknown diffs run the full gate. Never bypass a failing step or edit a receipt.
 3. `git push -u origin HEAD`, then `gh pr create --base main` and a body that fills in every section of `.github/pull_request_template.md`. Start with the **Focus / How / Metric** lines, naming the judging criterion the PR serves (see `docs/JUDGING-CRITERIA.md`), or `Upkeep`. Use `--body-file`; `gh` ignores the template when you pass `--body`.
 4. Review: only inside an overnight/orchestrated run, or if the user asked for one. Then run `scripts/orch/review.sh <worktree> <pr> "<issues>"`, stop on BLOCKERS, and carry anything under LOOSENED into your update. Otherwise skip this step.
-5. `gh pr checks <pr> --watch --fail-fast`. Never merge before CI is green and never poll with `sleep`. Never use `gh pr merge --auto`: `main` has no required checks, so `--auto` merges at once, before CI.
+5. After pushing the final commit, run `npm run gate -- --publish`. Check `gh pr view <pr> --json headRefOid` matches the receipt SHA and that the latest `local-gate` status is success. Merge on that local result; hosted PR sanity and nightly suites are backstops. Every push or rebase needs a new receipt/status. Never use `gh pr merge --auto`: it can merge immediately without verifying the receipt.
 6. Merge: `gh pr merge <pr> --squash`, or `--rebase` when the commits are deliberately separate so one can be reverted alone. If GitHub reports mergeability `UNKNOWN`, re-check `gh pr view <pr> --json mergeable` a few times before retrying; on `CONFLICTING`, rebase and go back to step 2. Never hide `gh` errors with `>/dev/null 2>&1`.
-7. Clean up from the main checkout: `git worktree remove <worktree>`, `git branch -D <branch>`, `git push origin --delete <branch>`.
+7. Fetch the squash/rebase merge commit. If its tree matches the tested tree, run `npm run gate -- --base HEAD^ --publish` from a clean checkout of that commit (safe content-cache hits avoid repeating identical work); otherwise run the affected gate again. This supplies release admission for the exact merged SHA. Clean up from the main checkout: `git worktree remove <worktree>`, `git branch -D <branch>`, `git push origin --delete <branch>`.
 
-Report: PR link, CI result, merge commit (and the review verdict if one ran).
+Report: PR link, local-gate receipt/status, hosted CI result, merge commit (and the review verdict if one ran).

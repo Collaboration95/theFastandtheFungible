@@ -904,3 +904,17 @@ Observed verifier contract mismatch: a no-purchase Testnet run exports no ledger
 | B35 · 2026-11-07 | Disclosure / paid-content collision | Observed full-state UC3 `try` gate audit flagged the unchanged refund disclosure because it also appeared in paid `team-recovery` (#403). Static runtime-label scan also found the TEST-SGD asset label in paid `team-rlusd`: nine overlapping eight-word windows in total. Evidence: `docs/evidence/r5-k/public-label-before.json`, `public-label-scan.json`, `fresh-uc3-try.gate-audit.json`. | Paraphrase paid passages; preserve public labels, disclosure and detector. Fresh packed UC3: 67.8 s, ledger PASS, full-state gate audit 0. | Lint every paid note against runtime strings and public metadata before network acceptance. | medium acceptance tooling | No mainnet execution or funds lost; do not weaken premium-byte detection to accommodate disclosure reuse. |
 
 - 2026-11-07 — Lane X, observed tooling friction: publishing source URLs both in public search metadata and paid-body references trips the unchanged eight-word search-leak oracle. Evidence: `docs/evidence/x-explainers/README.md`, `tests/search-leak.test.ts`. Workaround: public URL/access-date metadata plus numbered body citations; no duplicate URL prose in paid bodies. Suggested fix: document this authoring convention in the publisher guide. Severity: low; mainnet impact: none established, content-authoring boundary only.
+
+### 2026-11-07 — Local acceptance and repeated CI waits (observed tooling)
+
+Evidence: `docs/evidence/ci-speed/README.md` and its raw history/timing JSON.
+The serial acceptance baseline on the 10-CPU Mac missed loop p99 at 60.981 ms
+against the unchanged <50 ms limit; its four memory/latency gates passed.
+Concurrent acceptance attempts also missed at 99.615 ms and 167.248 ms.
+Workaround: isolate the full soak by default (27.394 ms passing cold; 24.789 ms
+passing on explicit verified reuse), retain every miss, and reuse only unchanged
+outputs on the exact clean source/runtime. Cold acceptance is 554.5 s; prepared
+reuse with a fresh full soak is 301.2 s. Suggested fix: content-keyed local merge
+receipts and bounded release scheduling, with full hosted release verification
+retained. Severity: medium development/acceptance delay. Mainnet
+impact: none measured; synthetic fixtures and simulated settlement only.

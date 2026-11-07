@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "host": "10-CPU Apple Silicon Mac; declared host in acceptance reports",
+  "before": {
+    "legacyCheckFastSeconds": 78.576,
+    "codePrHostedMedianSeconds": 246,
+    "codePrCount": 125,
+    "docsPrHostedMedianSeconds": 25,
+    "docsPrCount": 10,
+    "method": "Last successful pull_request ci.yml run per merged PR in frozen history; creation-to-last-update includes queues. Add measured serial local check for an indicative previous merge wait. Not a controlled paired PR experiment.",
+    "ownerReportedAcceptanceSeconds": 998,
+    "measuredSerialFailedAttemptSeconds": 856.548
+  },
+  "after": {
+    "codeColdSyntheticGateSeconds": 97.7903386669932,
+    "codeCachedSyntheticGateSeconds": 7.176695958012715,
+    "docsColdSyntheticGateSeconds": 2.385004499985371,
+    "coldAcceptanceSeconds": 554.5146221670439,
+    "preparedTreeAcceptanceSeconds": 301.1760955420323,
+    "reusedSteps": 21,
+    "nativeLocalArchitectures": [
+      "arm64"
+    ],
+    "hostedReleaseArchitectures": [
+      "arm64",
+      "x64"
+    ]
+  },
+  "failedExperiments": [
+    {
+      "receipt": "acceptance-parallel-first.json",
+      "seconds": 340.195,
+      "loopP99Ms": 99.614719,
+      "otherFailure": "lint scanned generated browser output; fixed by using test-results"
+    },
+    {
+      "receipt": "acceptance-parallel-priority.json",
+      "seconds": 349.181,
+      "loopP99Ms": 167.247871,
+      "otherFailure": null
+    }
+  ],
+  "limits": [
+    "Cold acceptance still exceeds the six-minute target. Prepared same-source acceptance meets it by reusing fully verified non-timing results; the full 2000-ask soak is always fresh.",
+    "Legacy acceptance also built Intel locally. Current local default builds arm64; --all-arch restores both. Hosted release assets and both DMGs remain unchanged.",
+    "Serial baseline failed loop p99 and in-progress lint; never count its wall time as passing acceptance.",
+    "Synthetic comment probes measure one server-only route and one Markdown-only route. They do not establish a distribution of future PR times."
+  ]
+}

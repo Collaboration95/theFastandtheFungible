@@ -1,0 +1,229 @@
+{
+  "schema": "same-engine-soak-v1",
+  "label": "BASELINE \u00b7 SHARED HOST \u00b7 SYNTHETIC fixtures / SIMULATED rail \u00b7 not finals acceptance",
+  "source": "369dd0e285c3d1ebc38f79d456c6b0e7ce8483c2",
+  "harnessSha256": "32f7c0495c17938a8aa48fe747a481fa1757947da64708f76997dd3580f27e45",
+  "host": {
+    "platform": "darwin",
+    "release": "25.6.0",
+    "cpus": 10,
+    "node": "v26.3.1",
+    "load": [
+      3.17041015625,
+      4.4013671875,
+      4.83935546875
+    ]
+  },
+  "options": {
+    "runs": 2000,
+    "warmup": 200,
+    "concurrency": 1,
+    "seed": 279,
+    "historyRuns": 10000,
+    "eventsPerRun": 60,
+    "timeoutMs": 120000,
+    "burst": true,
+    "dataDir": "scratch/finals-soak-279-20261107120044745",
+    "output": "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107120044725/soak-same-engine.json"
+  },
+  "startedAt": "2026-11-07T12:00:45.142Z",
+  "durationMs": 304710,
+  "seedDurationMs": 6111,
+  "summary": {
+    "gates": {
+      "rssSlope": {
+        "value": 1.307377316631813,
+        "limit": 5,
+        "pass": true
+      },
+      "rssMedian": {
+        "value": -13.849815368652344,
+        "limit": 100,
+        "pass": true
+      },
+      "rssMax": {
+        "value": 820.1964340209961,
+        "limit": 1536,
+        "pass": true
+      },
+      "loopP99": {
+        "value": 60.981247,
+        "limit": 50,
+        "pass": false
+      },
+      "latencyP95": {
+        "value": 0.5752499999871361,
+        "limit": 250,
+        "pass": true
+      }
+    },
+    "valid": true,
+    "pass": false,
+    "acceptanceEligible": true,
+    "completed": 2000,
+    "failed": 0,
+    "warmMedianMiB": 664.0507507324219,
+    "finalMedianMiB": 650.2009353637695,
+    "firstP95Ms": 156.2581250000003,
+    "lastP95Ms": 156.83337499998743,
+    "sampleGaps": 0,
+    "identityCount": 1,
+    "loopMethod": "maximum of worker one-second histogram p99s, 10 ms resolution"
+  },
+  "burst": {
+    "requested": true,
+    "limit": 4,
+    "submitted": 100,
+    "admitted": 4,
+    "overloaded": 96,
+    "idempotentRetries": 4,
+    "peak": 4,
+    "activeAfterDrain": 0,
+    "pass": true
+  },
+  "failures": [],
+  "auditViolations": 0,
+  "sampleCount": 298,
+  "restarts": [
+    {
+      "cycle": 1,
+      "engineId": "3add6515-bf8d-4837-a61b-32679d415724",
+      "workerId": 4,
+      "ms": 521.7069580000243,
+      "closed": true
+    },
+    {
+      "cycle": 2,
+      "engineId": "35fbe0a8-db80-4369-ae16-f5cab3b665df",
+      "workerId": 5,
+      "ms": 942.5028329999768,
+      "closed": true
+    },
+    {
+      "cycle": 3,
+      "engineId": "d37d559b-089f-4195-ad38-0aba1d9c4325",
+      "workerId": 6,
+      "ms": 979.0807919999934,
+      "closed": true
+    },
+    {
+      "cycle": 4,
+      "engineId": "dc84e78e-17af-4d8f-bd84-49059105bee5",
+      "workerId": 7,
+      "ms": 998.2563749999972,
+      "closed": true
+    },
+    {
+      "cycle": 5,
+      "engineId": "87e60028-d19e-4f4b-a6fd-ed858759ab9c",
+      "workerId": 8,
+      "ms": 983.789625000034,
+      "closed": true
+    },
+    {
+      "cycle": 6,
+      "engineId": "05a0e425-1f19-402c-a712-be1cc62757c5",
+      "workerId": 9,
+      "ms": 1001.0486249999958,
+      "closed": true
+    },
+    {
+      "cycle": 7,
+      "engineId": "e139b643-17bf-4053-ac6c-5d5f040e0b87",
+      "workerId": 10,
+      "ms": 1003.8684169999906,
+      "closed": true
+    },
+    {
+      "cycle": 8,
+      "engineId": "67cdfd18-68e5-4de9-a12f-c0f66ebae7e5",
+      "workerId": 11,
+      "ms": 990.1520420000306,
+      "closed": true
+    },
+    {
+      "cycle": 9,
+      "engineId": "0422d977-18f3-4eca-9ff0-6277190a8400",
+      "workerId": 12,
+      "ms": 981.718125000014,
+      "closed": true
+    },
+    {
+      "cycle": 10,
+      "engineId": "2bb95301-e04e-4c87-aabe-50ee1c6ef13b",
+      "workerId": 13,
+      "ms": 993.3130840000231,
+      "closed": true
+    },
+    {
+      "cycle": 11,
+      "engineId": "8ff057a5-ecd9-4c0c-a105-649eaefa5e8b",
+      "workerId": 14,
+      "ms": 996.4794579999871,
+      "closed": true
+    },
+    {
+      "cycle": 12,
+      "engineId": "f5b77be2-2662-4ecb-9e60-de28529bd38f",
+      "workerId": 15,
+      "ms": 984.0304170000018,
+      "closed": true
+    },
+    {
+      "cycle": 13,
+      "engineId": "214c355e-8a2e-44c3-a955-d278759fed6e",
+      "workerId": 16,
+      "ms": 988.2223329999833,
+      "closed": true
+    },
+    {
+      "cycle": 14,
+      "engineId": "efd84f27-d578-4667-9c35-9226ae1ce2d4",
+      "workerId": 17,
+      "ms": 999.5780420000083,
+      "closed": true
+    },
+    {
+      "cycle": 15,
+      "engineId": "5d85fb5a-76c5-4449-b6ec-028d373cdab4",
+      "workerId": 18,
+      "ms": 993.5627080000122,
+      "closed": true
+    },
+    {
+      "cycle": 16,
+      "engineId": "e5758510-c3c3-4669-bd32-c5852b9d6c8a",
+      "workerId": 19,
+      "ms": 988.0817500000121,
+      "closed": true
+    },
+    {
+      "cycle": 17,
+      "engineId": "334cadb2-3bde-4687-9240-4b242409d80c",
+      "workerId": 20,
+      "ms": 982.8519589999923,
+      "closed": true
+    },
+    {
+      "cycle": 18,
+      "engineId": "115a68cd-0895-4f44-965e-8d1200f142d4",
+      "workerId": 21,
+      "ms": 991.6029589999816,
+      "closed": true
+    },
+    {
+      "cycle": 19,
+      "engineId": "ef438eca-1d1a-4cbb-8a3f-44664f4e6aa2",
+      "workerId": 22,
+      "ms": 997.015374999959,
+      "closed": true
+    },
+    {
+      "cycle": 20,
+      "engineId": "8b0d85b1-6617-4248-ac79-4666484ca009",
+      "workerId": 23,
+      "ms": 988.4676669999608,
+      "closed": true
+    }
+  ]
+}

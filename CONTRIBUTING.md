@@ -18,8 +18,9 @@ log API keys and wallet seeds.
 1. Branch from `origin/main`. Agents use a git worktree
    (`git worktree add ../tftf-wt/<branch> -b <branch> origin/main`) and check
    `gh pr list` first so two people don't edit the same files.
-2. Run `npm run check:fast` (lint, typecheck, unit tests, repo hygiene and 20 chaos episodes). It must pass
-   and CI must be green before merge.
+2. Run `npm run gate`, commit, push, then `npm run gate -- --publish`. The clean
+   PR head must have a successful `local-gate` commit status before merge. See
+   [local gate](docs/contracts/local-gate.md) for change routing and cache rules.
 3. Open a PR with the [template](.github/pull_request_template.md). It starts with the
    [judging criterion](docs/JUDGING-CRITERIA.md) the change serves. Keep PRs few and
    larger rather than many tiny ones.
@@ -50,33 +51,29 @@ Friction with XRPL, x402 or the Starter Kit is useful to the ecosystem. Open a
 
 Tests use ephemeral ports. Don't bind 5100, 8788 or 8790; the demo owns them.
 
-CI preserves local `check:fast`: the `verify` job runs hygiene, lint, typecheck
-and the full Vitest suite once with V8 coverage; `chaos` runs the unchanged
-`chaos:smoke` matrix in parallel (20 episodes and four escrow probes).
-SDK package and generated README checks remain required. `python` runs on
-every full-code change, including shared-only changes. Documentation-only
-changes skip these four jobs intentionally; unavailable base history runs all.
+The pre-commit hook checks staged whitespace only; commits do not repeat the
+full test suite. The change-aware local gate owns merge admission. All product code changes run
+unit tests, including the five hard-gate contracts, plus lint, typecheck and
+seeded chaos smoke. Affected browser, desktop, Python and consumer paths add
+their checks; unknown paths run everything. Docs-only edits use hygiene and
+applicable generated README checks. `npm run check:fast` remains available as
+the uncached full legacy check.
 
-Run `npx vitest run --coverage && node scripts/check-coverage.mjs` for component
-branch and line ratchets. Reports include unexecuted product files; raw
-numerators/denominators and disjoint ownership are in docs/evidence/round2-b.
-No financial files are excluded. Desktop V8 numbers are diagnostic only;
-installed native launch, recovery and Keychain acceptance remain separate
-release requirements.
+Hosted PR CI does quick syntax/metadata sanity only. There is no duplicate
+main-push CI. Nightly, manual and reusable release CI retain the complete
+verify/coverage, browser, Python, artifacts and chaos matrix. The release still
+publishes the same package assets and both DMGs. No Mac self-hosted runner is
+registered. Fixture runs do not load developer credentials or spend money.
 
-The required `browser` job runs Chromium with
-`npx playwright test tests/e2e.spec.ts tests/a11y.spec.ts` after
-`npx playwright install --with-deps chromium`. It uses ephemeral ports,
-fixture providers and simulated payments, clears inherited credentials, and
-does not load .env. Failure screenshots/error context are retained for seven
-days; traces (which can contain headers) are disabled. The foundation, perf,
-ux and ux2 specs remain runnable with `npx playwright test` but are not yet
-required CI checks. Run Python locally with
-`python3 -m pytest packages/sdk-python`.
-
-The always-reporting `check` aggregate requires success from every full-code
-job; failure, cancellation, missing output or unexpected skipping refuses
-admission. Workflow trigger and failure-injection contracts run in Vitest.
+Coverage floors (including payments branches ≥85%) remain unchanged. Full
+browser replay, live Testnet hash probes and 200-episode chaos run at release
+and nightly; affected browser paths also run locally. Local release acceptance
+uses a bounded dependency graph and native arm64 packaging. Use `--all-arch`
+for local Intel packaging, `--serial` to diagnose scheduling, or
+`--concurrent-soak` for an explicit contention experiment. The default isolates
+the unchanged soak. `--reuse scratch/final-acceptance-<timestamp>/acceptance.json`
+verifies a prepared exact clean source tree before reusing non-timing checks;
+the full soak always executes again. See [acceptance scheduling](docs/contracts/acceptance-scheduling.md).
 
 ## Licence
 

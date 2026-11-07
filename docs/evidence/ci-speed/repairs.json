@@ -1,0 +1,727 @@
+{
+  "schemaVersion": 1,
+  "repairs": [
+    {
+      "id": "ba8dbf88",
+      "sha": "ba8dbf88b3472dfcbe15f9681fe9a6ad6e96449e",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/ba8dbf88b3472dfcbe15f9681fe9a6ad6e96449e",
+      "message": "perf(eval): reuse unchanged leak corpus preprocessing (Refs #256)",
+      "fixedByPr": 268,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/ba8dbf88b3472dfcbe15f9681fe9a6ad6e96449e",
+      "cachedResponse": "commit-ba8dbf88b3472dfcbe15f9681fe9a6ad6e96449e.json",
+      "responseSha256": "d1beb7eb2543740b96706c591e76c4798cf3c63011e955cee39e9414c7941a66",
+      "changedPaths": [
+        "tests/gate-audit.test.ts",
+        "tests/scenarios/harness.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/gate-audit.test.ts",
+          "status": "modified",
+          "additions": 11,
+          "deletions": 0,
+          "patch": "@@ -8,6 +8,7 @@ import { exampleAnswer, exampleCandidate, exampleContent, exampleRun } from '../\n import { SIMULATED_LABEL, type RunSnapshot } from '../shared/contracts/index.js'\n import { loadWriterCorpus } from '../publisher/corpus.js'\n import type { WriterCorpus } from '../shared/contracts/writers.js'\n+import { assertNoLeaks } from './scenarios/harness.js'\n import { Store } from '../server/store.js'\n \n let corpus: WriterCorpus\n@@ -63,6 +64,16 @@ describe('hard-gate audit', () => {\n     const r = copy(); r.events.push({ id: 1, runId: r.runId, type: 'PURCHASE', at: '', label: 'RESERVED', data: { intentId: 'unknown' } })\n     expect(auditRuns([r], corpus).byRule.purchase_without_policy).toBe(1)\n   })\n+  it('invalidates cached leak markers after paid or public corpus mutation', () => {\n+    const c = structuredClone(corpus), paid = c.articles.find(a => a.tier === 'PAID')!, free = c.articles.find(a => a.tier === 'FREE')!\n+    assertNoLeaks([], c)\n+    const text = 'Private cache mutation sentinel has nine entirely novel words.'\n+    paid.passages.push({ id: 'new-private', text }); paid.body += '\\n' + text\n+    const observation = { kind: 'mutated', raw: text, grants: [] }\n+    expect(() => assertNoLeaks([observation], c)).toThrow(`leaked ${paid.articleId}`)\n+    free.body += '\\n' + text\n+    expect(() => assertNoLeaks([observation], c)).not.toThrow()\n+  })\n   it('audits raw SQLite without sanitizing corrupt public fields or writing to the store', () => {\n     const dir = mkdtempSync(join(tmpdir(), 'gate-audit-')); dirs.push(dir)\n     const file = join(dir, 'api.db'), store = new Store(file), run = store.createRun('test', 200); store.close()"
+        },
+        {
+          "filename": "tests/scenarios/harness.ts",
+          "status": "modified",
+          "additions": 14,
+          "deletions": 1,
+          "patch": "@@ -182,7 +182,13 @@ const runsOf = (text: string) => { const w = words(text); return Array.from({ le\n  * may carry a marker only under a grant for the same run, article and version, or when that exact\n  * text is also in an article granted to it (a rewrite repeating its original).\n  */\n-export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus) {\n+type LeakIndex = { fingerprint: string; paid: Article[]; markers: Map<Article, { exact: string[]; runs: Set<string> }> }\n+const leakIndexes = new WeakMap<WriterCorpus, LeakIndex>()\n+function leakIndex(corpus: WriterCorpus): LeakIndex {\n+  // Full structural comparison detects in-place edits to paid passages AND public exemptions.\n+  const fingerprint = JSON.stringify(corpus.articles)\n+  const cached = leakIndexes.get(corpus)\n+  if (cached?.fingerprint === fingerprint) return cached\n   const publicText = corpus.articles.flatMap(a => [a.title, a.abstract, a.publishedAt, ...a.tags, ...(a.tier === 'FREE' ? [a.body] : [])])\n   const publicRuns = new Set(publicText.flatMap(runsOf))\n   const paid = corpus.articles.filter(a => a.tier === 'PAID')\n@@ -191,6 +197,13 @@ export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus)\n     const runs = new Set(a.passages.flatMap(p => words(p.text).length < RUN ? [] : runsOf(p.text)).filter(run => !publicRuns.has(run)))\n     return [a, { exact: [canary(a.articleId), ...short], runs }]\n   }))\n+  const index = { fingerprint, paid, markers }\n+  leakIndexes.set(corpus, index)\n+  return index\n+}\n+\n+export function assertNoLeaks(observations: Observation[], corpus: WriterCorpus) {\n+  const { paid, markers } = leakIndex(corpus)\n   const raws = new Map<Observation, Set<string>>()\n   for (const observation of observations) {\n     const granted = paid.filter(a => observation.grants.some(g => g.runId === observation.runId && g.resourceId === a.articleId && g.version === a.version))"
+        }
+      ]
+    },
+    {
+      "id": "ba9e0154",
+      "sha": "ba9e0154985583c8b2da76ae73e21d1e9bb6b6cb",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/ba9e0154985583c8b2da76ae73e21d1e9bb6b6cb",
+      "message": "test(ci): give the premium leak oracle test a 30 s timeout\n\nIt scans every paid article and timed out at the 5 s default on loaded CI\nrunners, failing main runs. Assertions unchanged.",
+      "fixedByPr": 284,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/ba9e0154985583c8b2da76ae73e21d1e9bb6b6cb",
+      "cachedResponse": "commit-ba9e0154985583c8b2da76ae73e21d1e9bb6b6cb.json",
+      "responseSha256": "a1bb91c1113cf85f9612bcbcc75135562c8fa6af51b38089743760a51ad64442",
+      "changedPaths": [
+        "tests/scenarios/scenarios.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/scenarios/scenarios.test.ts",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -262,7 +262,7 @@ describe('premium leak oracle', () => {\n     }\n     const paid = corpus.articles.find(a => a.articleId === UC2.expected.round1)!\n     expect(() => assertNoLeaks([{ kind: 'poisoned', runId: 'run-a', raw: JSON.stringify(paid.passages[0].text), grants: [] }], corpus)).toThrow(`leaked ${paid.articleId}`)\n-  })\n+  }, 30_000) // the oracle scans every paid article; a loaded CI runner exceeded the 5 s default\n   it('requires the grant to match the observation run, article and version', () => {\n     const paid = corpus.articles.find(a => a.articleId === UC2.expected.round1)!\n     const grant = { runId: 'run-a', resourceId: paid.articleId, version: paid.version, intentId: 'i', contentDigest: 'd', grantedAt: new Date().toISOString() }"
+        }
+      ]
+    },
+    {
+      "id": "c41a2cea",
+      "sha": "c41a2cea358614da625447a97be93d8f08ecf9b5",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/c41a2cea358614da625447a97be93d8f08ecf9b5",
+      "message": "test(security): use a synthetic credential file in proxy checks (Refs #286)",
+      "fixedByPr": 301,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/c41a2cea358614da625447a97be93d8f08ecf9b5",
+      "cachedResponse": "commit-c41a2cea358614da625447a97be93d8f08ecf9b5.json",
+      "responseSha256": "11935631eced36e3a862cef545b40f7ce3a8beed4216bae6e9bd8a7745b2f139",
+      "changedPaths": [
+        "docs/BUILDER-FEEDBACK.md",
+        "tests/client-admission.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/client-admission.test.ts",
+          "status": "modified",
+          "additions": 10,
+          "deletions": 2,
+          "patch": "@@ -2,12 +2,18 @@ import { afterEach, expect, it, vi } from 'vitest'\n import { createServer as createHttpServer, request } from 'node:http'\n import { once } from 'node:events'\n import { createServer } from 'vite'\n-import { resolve } from 'node:path'\n+import { resolve, join } from 'node:path'\n+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'\n \n const cleanup: (() => unknown)[] = []\n afterEach(async () => { for (const close of cleanup.splice(0).reverse()) await close(); vi.unstubAllEnvs() })\n \n it('bundled dev proxy checks Host and Origin before supplying its server-only token', async () => {\n+  // CI has no operator .env. Exercise the denylist against an existing synthetic file.\n+  const fixtureDir = mkdtempSync(resolve('.ra286-proxy-'))\n+  cleanup.push(() => rmSync(fixtureDir, { recursive: true, force: true }))\n+  const credentialFile = join(fixtureDir, '.env')\n+  writeFileSync(credentialFile, 'RA_API_TOKEN=synthetic-file-canary\\n')\n   const calls: string[] = []\n   const backend = createHttpServer((req, res) => { calls.push(req.headers.authorization ?? ''); res.end('{}') })\n   backend.listen(0, '127.0.0.1'); await once(backend, 'listening')\n@@ -30,5 +36,7 @@ it('bundled dev proxy checks Host and Origin before supplying its server-only to\n   expect(await wire({ Host: `127.0.0.1:${port}`, Origin: 'http://127.0.0.1:6200' })).toBe(200)\n   expect(calls).toEqual(['Bearer private-proxy-token'])\n   // Vite's filesystem denylist must continue to hide credentials.\n-  expect((await fetch(`http://127.0.0.1:${port}/@fs/${resolve('.env')}`)).status).toBe(403)\n+  const denied = await fetch(`http://127.0.0.1:${port}/@fs/${credentialFile}`)\n+  expect(denied.status).toBe(403)\n+  expect(await denied.text()).not.toContain('synthetic-file-canary')\n })"
+        }
+      ]
+    },
+    {
+      "id": "725e0eb9",
+      "sha": "725e0eb927073b523ebaf2771ae7c7c6c646499e",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/725e0eb927073b523ebaf2771ae7c7c6c646499e",
+      "message": "fix(desktop): parse Electron binary-mode checksum records (Refs #259)",
+      "fixedByPr": null,
+      "evidenceKind": "compare",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/compare/8f62dc0c44273faee6c0413ff58769858b3a830c...725e0eb927073b523ebaf2771ae7c7c6c646499e",
+      "cachedResponse": "8f62dc0c44273faee6c0413ff58769858b3a830c...725e0eb927073b523ebaf2771ae7c7c6c646499e.json",
+      "responseSha256": "1116239b5203c9668c3d36ca87ac9dfa1eb16366ccd4f2e22dee4427cbe1b507",
+      "changedPaths": [
+        "desktop/download.mjs",
+        "docs/evidence/macos-app-259.md"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "desktop/download.mjs",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -14,7 +14,7 @@ if (!existsSync(join(target, executable))) {\n     const asset = `electron-v${version}-darwin-arm64.zip`\n     execFileSync('gh', ['release', 'download', `v${version}`, '--repo', 'electron/electron', '--pattern', asset, '--dir', temp], { stdio: 'inherit' })\n     execFileSync('gh', ['release', 'download', `v${version}`, '--repo', 'electron/electron', '--pattern', 'SHASUMS256.txt', '--dir', temp], { stdio: 'inherit' })\n-    const expected = readFileSync(join(temp, 'SHASUMS256.txt'), 'utf8').split('\\n').find(line => line.endsWith(` ${asset}`))?.split(/\\s+/)[0]\n+    const expected = readFileSync(join(temp, 'SHASUMS256.txt'), 'utf8').split('\\n').find(line => line.trim().split(/\\s+/)[1]?.replace(/^\\*/, '') === asset)?.split(/\\s+/)[0]\n     if (!expected || createHash('sha256').update(readFileSync(join(temp, asset))).digest('hex') !== expected) throw new Error('Electron checksum mismatch')\n     mkdirSync(target, { recursive: true })\n     execFileSync('unzip', ['-q', join(temp, asset), '-d', target])"
+        }
+      ]
+    },
+    {
+      "id": "810d564c",
+      "sha": "810d564c30e67d705444f3bddafc2703ed74b616",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/810d564c30e67d705444f3bddafc2703ed74b616",
+      "message": "Stabilize refusal coverage and prove the hosted aggregate fails closed",
+      "fixedByPr": 344,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/810d564c30e67d705444f3bddafc2703ed74b616",
+      "cachedResponse": "commit-810d564c30e67d705444f3bddafc2703ed74b616.json",
+      "responseSha256": "5abbe4309ae1754fc1479b05770395cf1cfab9741e41529f8acf37fe01354936",
+      "changedPaths": [
+        ".github/workflows/ci.yml",
+        "scripts/check-coverage.mjs",
+        "tests/ci-contract.test.ts",
+        "tests/coverage-payments.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "scripts/check-coverage.mjs",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -45,6 +45,7 @@ export function enforce(groups, floors) {\n if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {\n   const files = productFiles()\n   const groups = summarize(JSON.parse(readFileSync('coverage/coverage-summary.json', 'utf8')), files)\n+  console.log(JSON.stringify(groups, null, 2))\n   const evidence = 'docs/evidence/round2-b/'\n   const report = { sha: execFileSync('git', ['rev-parse', 'HEAD']).toString().trim(), worktreeDirty: Boolean(execFileSync('git', ['status', '--porcelain']).toString().trim()), runner: process.platform + '/' + process.arch + ' ' + process.version, components: groups }\n   if (process.argv.includes('--baseline')) {\n@@ -56,5 +57,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)\n     enforce(groups, existsSync(floorsPath) ? JSON.parse(readFileSync(floorsPath, 'utf8')) : baseline.components)\n     if (process.argv.includes('--record')) writeFileSync(evidence + 'coverage-final.json', JSON.stringify(report, null, 2) + '\\n')\n   }\n-  console.log(JSON.stringify(groups, null, 2))\n }"
+        },
+        {
+          "filename": "tests/coverage-payments.test.ts",
+          "status": "modified",
+          "additions": 44,
+          "deletions": 1,
+          "patch": "@@ -8,7 +8,7 @@ import type { PaymentRequirement } from '../shared/contracts/index.js'\n const issuer = Wallet.generate().classicAddress\n const payer = Wallet.generate().classicAddress\n const payee = Wallet.generate().classicAddress\n-const asset = { currency: '524C555344000000000000000000000000000000', issuer, label: 'RLUSD (Testnet)' } as const\n+const asset = { currency: '524C555344000000000000000000000000000000', issuer, label: 'test USD (substitute for RLUSD)' } as const\n \n describe('issued payment refusal before signing (synthetic ledger)', () => {\n   it.each([\n@@ -75,3 +75,46 @@ it('keeps a refused purchase visible without inventing a receipt or explorer lin\n     expect(presentRun(run, 'http://localhost').purchases[0]).toMatchObject({ writer: 'writer', txHash: null, explorerUrl: null, settlementAmount: null, verified: false })\n   } finally { store.close() }\n })\n+\n+import { payAndFetch, type PaymentAttempt } from '../sdk/x402.js'\n+import { encodeHeader } from '../shared/x402.js'\n+it.each(['resource', 'amount', 'timeout', 'extension', 'asset'])('refuses x402 %s outside operator authority before ledger access', async fault => {\n+  const request = vi.fn(), persist = vi.fn()\n+  const challenge = {\n+    x402Version: 2 as const,\n+    resource: { url: fault === 'resource' ? '/other' : '/paid' },\n+    accepts: [{ scheme: 'exact' as const, network: 'xrpl:1' as const, asset: fault === 'asset' ? asset : 'XRP' as const,\n+      amount: fault === 'amount' ? '2000' : '1000', payTo: payee,\n+      maxTimeoutSeconds: fault === 'timeout' ? 301 : 60,\n+      extra: { invoiceId: 'fixture', ...(fault === 'extension' ? { crossCurrency: true } : {}) } }],\n+  }\n+  const transport = vi.fn(async () => new Response(null, { status: 402, headers: { 'PAYMENT-REQUIRED': encodeHeader('PAYMENT-REQUIRED', challenge) } }))\n+  await expect(payAndFetch('http://localhost/paid', { wallet: Wallet.generate(), maxDrops: '1000', ledger: { request },\n+    fetch: transport, journal: { load: () => undefined, save: persist } })).rejects.toThrow(/authority|Unsupported|unavailable/)\n+  expect(request).not.toHaveBeenCalled()\n+  expect(persist).not.toHaveBeenCalled()\n+})\n+it('refuses a durable payment exceeding the retry budget without resubmitting', async () => {\n+  const request = vi.fn(), transport = vi.fn(), persist = vi.fn()\n+  const stored = { amountDrops: '2000', asset: 'XRP' } as PaymentAttempt\n+  await expect(payAndFetch('http://localhost/paid', { wallet: Wallet.generate(), maxDrops: '1000', ledger: { request }, fetch: transport,\n+    journal: { load: () => stored, save: persist } })).rejects.toThrow('Stored payment exceeds authority')\n+  expect(request).not.toHaveBeenCalled()\n+  expect(transport).not.toHaveBeenCalled()\n+  expect(persist).not.toHaveBeenCalled()\n+})\n+\n+import { PublisherClient, PublisherHttpError } from '../server/publisher-client.js'\n+import type { Challenge } from '../shared/contracts/publisher.js'\n+it.each(['registry', 'challenge', 'escrow'])('preserves %s refusal and redacts publisher bodies when telemetry throws', async method => {\n+  const wires: unknown[] = []\n+  vi.stubGlobal('fetch', vi.fn(async () => new Response('premium-error-body', { status: 403 })))\n+  const client = new PublisherClient({ baseUrl: 'http://localhost', onWire: wire => { wires.push(wire); throw new Error('observer failed') } })\n+  try {\n+    const result = method === 'registry' ? client.registry() : method === 'challenge' ? client.challenge('writer', {} as Challenge, 100) : client.escrowQuote('/paid', { payer, intentId: 'fixture', condition: 'fixture', cancelAfter: 1 })\n+    await expect(result).rejects.toEqual(new PublisherHttpError(403))\n+    expect(wires).toHaveLength(1)\n+    expect(JSON.stringify(wires)).not.toContain('premium-error-body')\n+    expect(JSON.stringify(wires)).not.toContain('observer failed')\n+  } finally { vi.unstubAllGlobals() }\n+})"
+        }
+      ]
+    },
+    {
+      "id": "6c7ece84",
+      "sha": "6c7ece841b97d30bfea20b5ebcebfaf556520bed",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/6c7ece841b97d30bfea20b5ebcebfaf556520bed",
+      "message": "Cover private-mode and unconnected settlement labels across V8 runtimes",
+      "fixedByPr": 344,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/6c7ece841b97d30bfea20b5ebcebfaf556520bed",
+      "cachedResponse": "commit-6c7ece841b97d30bfea20b5ebcebfaf556520bed.json",
+      "responseSha256": "67b9f0dbba794e631fa73098613be99a561c1cd1f2fb06e91ab73be934403e8a",
+      "changedPaths": [
+        "tests/coverage-environment.test.tsx"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/coverage-environment.test.tsx",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,34 @@\n+// @vitest-environment jsdom\n+import { afterEach, expect, it, vi } from 'vitest'\n+import { cleanup, fireEvent, render, screen } from '@testing-library/react'\n+import EnvIndicator from '../src/components/EnvIndicator.js'\n+import { exampleRun } from '../src/fixtures/run.js'\n+import { XRPL_LABEL } from '../shared/contracts/index.js'\n+\n+afterEach(() => { cleanup(); vi.restoreAllMocks() })\n+it('keeps simulation labels usable when private mode refuses storage', () => {\n+  vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('storage disabled') })\n+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('storage disabled') })\n+  render(<EnvIndicator labels={exampleRun.labels} />)\n+  const trigger = screen.getByRole('button', { name: /Demo.*simulated payments/ })\n+  fireEvent.click(trigger)\n+  expect(screen.getByText('Simulated, no ledger entry')).toBeTruthy()\n+  fireEvent.click(screen.getByRole('button', { name: 'Got it' }))\n+  expect(trigger.getAttribute('aria-expanded')).toBe('false')\n+})\n+it('keeps an unconnected environment explicitly simulated', () => {\n+  render(<EnvIndicator />)\n+  fireEvent.click(screen.getByRole('button'))\n+  expect(screen.getAllByText('Connecting…', { exact: false }).length).toBeGreaterThan(0)\n+  expect(screen.getByText('Simulated, no ledger entry')).toBeTruthy()\n+})\n+it('labels Testnet funds as having no value and preserves supplied model labels', () => {\n+  render(<EnvIndicator recording labels={{ ...exampleRun.labels, settlement: XRPL_LABEL, research: 'research protocol fixture', decision: 'decision protocol fixture', search: 'hybrid' }} />)\n+  const trigger = screen.getByRole('button')\n+  fireEvent.click(trigger)\n+  expect(screen.getByText('XRPL Testnet, test funds with no value')).toBeTruthy()\n+  expect(screen.getByText('Hybrid')).toBeTruthy()\n+  expect(screen.getByText(/research protocol fixture/)).toBeTruthy()\n+  fireEvent.click(trigger)\n+  expect(trigger.getAttribute('aria-expanded')).toBe('false')\n+})"
+        }
+      ]
+    },
+    {
+      "id": "b806ea0f",
+      "sha": "b806ea0ffc0bdbc291fbb0e2961b0ab09b35dd64",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/b806ea0ffc0bdbc291fbb0e2961b0ab09b35dd64",
+      "message": "Recover oversized and stalled browser streams through the same durable run (#345)",
+      "fixedByPr": 344,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/b806ea0ffc0bdbc291fbb0e2961b0ab09b35dd64",
+      "cachedResponse": "commit-b806ea0ffc0bdbc291fbb0e2961b0ab09b35dd64.json",
+      "responseSha256": "9e7a3c4b13743286cdc1b0e0f1793d3cf0afc53fae7bb50e2e4ebfa8328c2663",
+      "changedPaths": [
+        "src/api.ts",
+        "src/fixtures/internals.test.tsx",
+        "tests/e2e.spec.ts",
+        "tests/stream-recovery.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "src/api.ts",
+          "status": "modified",
+          "additions": 49,
+          "deletions": 9,
+          "patch": "@@ -4,10 +4,10 @@ import type { Ask, LedgerView, ReputationRecord, RunSnapshot, Scope, TraceEvent\n \n const runPath = (runId: string) => `/runs/${encodeURIComponent(runId)}`\n \n-async function request(path: string, body?: unknown): Promise<unknown> {\n-  const response = await fetch(path, body === undefined ? { method: 'GET' } : {\n+async function request(path: string, body?: unknown, signal?: AbortSignal): Promise<unknown> {\n+  const response = await fetch(path, { ...(body === undefined ? { method: 'GET' } : {\n     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),\n-  })\n+  }), ...(signal ? { signal } : {}) })\n   // Do not reflect arbitrary server error bodies (which may contain secrets).\n   if (!response.ok) throw new Error(`ResearchAgent request failed (HTTP ${response.status})`)\n   return response.json()\n@@ -37,8 +37,8 @@ const pastRuns = async (response: Response) => { if (!response.ok) throw new Err\n export const listPastRuns = async () => pastRuns(await fetch('/api/runs'))\n export const pinRun = async (runId: string, pinned: boolean) => pastRuns(await fetch(`/api${runPath(runId)}/pin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pinned }) }))\n export const deleteRun = async (runId: string) => pastRuns(await fetch(`/api${runPath(runId)}`, { method: 'DELETE' }))\n-export async function getRun(runId: string): Promise<RunSnapshot> {\n-  return RunSnapshotSchema.parse(await request(runPath(runId)))\n+export async function getRun(runId: string, signal?: AbortSignal): Promise<RunSnapshot> {\n+  return RunSnapshotSchema.parse(await request(runPath(runId), undefined, signal))\n }\n export async function stop(runId: string): Promise<RunSnapshot> {\n   return RunSnapshotSchema.parse(await request(`${runPath(runId)}/stop`, {}))\n@@ -61,32 +61,72 @@ export function streamRun(runId: string, handlers: {\n }): () => void {\n   const source = new EventSource(`${runPath(runId)}/events`)\n   let closed = false\n+  let latest: RunSnapshot | undefined\n+  let frontier = 0\n+  let snapshotAt = Date.now()\n+  let recovering = false\n+  let revision = 0\n+  const abort = new AbortController()\n+  const terminal = (run: RunSnapshot) => ['DONE', 'STOPPED', 'FAILED'].includes(run.phase)\n+  const accept = (run: RunSnapshot) => {\n+    const cursor = run.events.reduce((max, event) => Math.max(max, event.id), 0)\n+    // A GET begun before an SSE update must never roll back money or event state.\n+    if (closed || run.runId !== runId || cursor < frontier || (latest && (\n+      run.spentMinor < latest.spentMinor || (run.refundedMinor ?? 0) < (latest.refundedMinor ?? 0)\n+      || latest.receipts.some(receipt => !run.receipts.some(next => next.receiptId === receipt.receiptId))\n+      || (terminal(latest) && !terminal(run) && cursor === frontier)))) return false\n+    frontier = cursor\n+    latest = run\n+    revision++\n+    snapshotAt = Date.now()\n+    handlers.onSnapshot(run)\n+    return true\n+  }\n+  const recover = async () => {\n+    if (closed || recovering) return\n+    recovering = true\n+    const started = revision\n+    try {\n+      const run = await getRun(runId, abort.signal)\n+      if (started === revision && accept(run) && terminal(run)) unsubscribe()\n+    } catch {\n+      if (!closed) handlers.onError?.(new Error('Run resynchronization failed; retrying the same run'))\n+    } finally { recovering = false }\n+  }\n+  // Heartbeats do not carry snapshots. A quiet or oversized stream still has a\n+  // durable GET; this path never admits or retries a research/purchase intent.\n+  const timer = setInterval(() => {\n+    if (Date.now() - snapshotAt >= 5000 && (!latest || !terminal(latest))) void recover()\n+  }, 5000)\n   const snapshot = (event: MessageEvent<string>) => {\n     if (closed) return\n     const parsed = parseMessage(event.data, RunSnapshotSchema)\n-    if (parsed !== undefined) handlers.onSnapshot(parsed)\n+    if (parsed !== undefined) accept(parsed)\n   }\n   const trace = (event: MessageEvent<string>) => {\n     if (closed) return\n     const parsed = parseMessage(event.data, TraceEventSchema)\n-    if (parsed !== undefined) handlers.onEvent(parsed)\n+    if (parsed !== undefined && parsed.runId === runId) { frontier = Math.max(frontier, parsed.id); handlers.onEvent(parsed) }\n   }\n   function parseMessage<T>(data: string, schema: z.ZodType<T>): T | undefined {\n     try { return schema.parse(JSON.parse(data)) }\n     catch { handlers.onError?.(new Error('Invalid run stream payload')); return undefined }\n   }\n   const error = () => {\n-    if (!closed) handlers.onError?.(new Error('Run stream disconnected; reconnecting automatically'))\n+    if (!closed) void recover()\n   }\n   source.addEventListener('snapshot', snapshot)\n   source.addEventListener('trace', trace)\n   source.addEventListener('error', error)\n-  return () => {\n+  function unsubscribe() {\n     if (closed) return\n     closed = true\n+    clearInterval(timer)\n+    abort.abort()\n     source.removeEventListener('snapshot', snapshot)\n     source.removeEventListener('trace', trace)\n     source.removeEventListener('error', error)\n     source.close()\n   }\n+  return unsubscribe\n }"
+        },
+        {
+          "filename": "tests/e2e.spec.ts",
+          "status": "modified",
+          "additions": 26,
+          "deletions": 0,
+          "patch": "@@ -62,3 +62,29 @@ for (const width of [1280, 390]) {\n     }\n   })\n }\n+\n+test('a terminal snapshot above the SSE limit recovers the same browser run without another admission (#345)', async ({ page }) => {\n+  let admissions = 0\n+  page.on('request', request => {\n+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/runs') admissions++\n+  })\n+  await page.goto('/?pace=real')\n+  await ask(page, /^Kestrel–TSMC outlook/)\n+  await page.getByRole('button', { name: 'pricing & margins' }).click()\n+  await page.getByRole('button', { name: 'Start now' }).click()\n+  await finished(page)\n+  const id = new URL(page.url()).searchParams.get('run')!\n+  const response = await page.request.get('/runs/' + encodeURIComponent(id))\n+  const bytes = await response.body()\n+  expect(bytes.byteLength).toBeGreaterThan(256 * 1024)\n+  const terminal = JSON.parse(bytes.toString())\n+  expect(terminal.phase).toBe('DONE')\n+  await page.reload()\n+  await finished(page)\n+  expect(new URL(page.url()).searchParams.get('run')).toBe(id)\n+  expect(admissions).toBe(1)\n+  const again = await (await page.request.get('/runs/' + encodeURIComponent(id))).json()\n+  expect(again.receipts).toEqual(terminal.receipts)\n+  expect(again.spentMinor).toBe(terminal.spentMinor)\n+  await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought')\n+})"
+        },
+        {
+          "filename": "tests/stream-recovery.test.ts",
+          "status": "added",
+          "additions": 101,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,101 @@\n+import { afterEach, expect, it, vi } from 'vitest'\n+import { streamRun } from '../src/api.js'\n+import { exampleRun } from '../shared/contracts/examples.js'\n+import type { RunSnapshot } from '../shared/contracts/index.js'\n+\n+class Source extends EventTarget {\n+  static instance: Source\n+  close = vi.fn()\n+  constructor(readonly url: string) { super(); Source.instance = this }\n+}\n+const run = (id: number, spent = 0, refunded = 0, phase: RunSnapshot['phase'] = 'SEARCH'): RunSnapshot => ({\n+  ...exampleRun, runId: 'recovery', phase, spentMinor: spent, refundedMinor: refunded,\n+  events: [{ id, runId: 'recovery', type: phase, label: 'fixture state', at: '2026-11-04T00:00:00Z' }],\n+})\n+const json = (value: RunSnapshot) => new Response(JSON.stringify(value))\n+const snapshot = (value: RunSnapshot) => Source.instance.dispatchEvent(new MessageEvent('snapshot', { data: JSON.stringify(value) }))\n+const disconnect = () => Source.instance.dispatchEvent(new Event('error'))\n+const stops: (() => void)[] = []\n+function start() {\n+  vi.useFakeTimers()\n+  vi.stubGlobal('EventSource', Source)\n+  const onSnapshot = vi.fn(), onError = vi.fn()\n+  stops.push(streamRun('recovery', { onSnapshot, onError, onEvent: vi.fn() }))\n+  return { onSnapshot, onError }\n+}\n+afterEach(() => { stops.splice(0).forEach(stop => stop()); vi.useRealTimers(); vi.unstubAllGlobals() })\n+\n+it('recovers a closed stream through GET of the same run, with one request in flight', async () => {\n+  let resolve!: (response: Response) => void\n+  const transport = vi.fn(() => new Promise<Response>(done => { resolve = done }))\n+  vi.stubGlobal('fetch', transport)\n+  const { onSnapshot } = start()\n+  disconnect(); disconnect()\n+  expect(transport).toHaveBeenCalledTimes(1)\n+  resolve(json(run(2, 60, 0, 'DONE')))\n+  await vi.advanceTimersByTimeAsync(0)\n+  expect(onSnapshot).toHaveBeenCalledWith(run(2, 60, 0, 'DONE'))\n+  expect(transport).toHaveBeenCalledWith('/runs/recovery', expect.objectContaining({ method: 'GET' }))\n+  expect(Source.instance.close).toHaveBeenCalledTimes(1)\n+})\n+it('resynchronizes a silent stream and retries a failed GET without admitting work', async () => {\n+  const transport = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(json(run(3, 60, 0, 'DONE')))\n+  vi.stubGlobal('fetch', transport)\n+  const { onSnapshot, onError } = start()\n+  await vi.advanceTimersByTimeAsync(5000)\n+  expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: 'Run resynchronization failed; retrying the same run' }))\n+  await vi.advanceTimersByTimeAsync(5000)\n+  expect(onSnapshot).toHaveBeenCalledWith(run(3, 60, 0, 'DONE'))\n+  expect(transport.mock.calls.every(([path, init]) => path === '/runs/recovery' && init.method === 'GET')).toBe(true)\n+})\n+it('rejects an older GET arriving after SSE and never rolls back charges or refunds', async () => {\n+  let resolve!: (response: Response) => void\n+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(done => { resolve = done })))\n+  const { onSnapshot } = start()\n+  snapshot(run(1))\n+  disconnect()\n+  snapshot(run(2, 100, 30))\n+  resolve(json(run(1)))\n+  await vi.advanceTimersByTimeAsync(0)\n+  snapshot(run(2, 0, 0))\n+  snapshot(run(2, 100, 0))\n+  expect(onSnapshot).toHaveBeenCalledTimes(2)\n+  expect(onSnapshot).toHaveBeenLastCalledWith(run(2, 100, 30))\n+})\n+it('ignores another run and a GET completed after unsubscribe', async () => {\n+  let resolve!: (response: Response) => void\n+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(done => { resolve = done })))\n+  const { onSnapshot } = start()\n+  snapshot({ ...run(1), runId: 'another' })\n+  disconnect()\n+  stops[0]()\n+  resolve(json(run(2, 60, 0, 'DONE')))\n+  await vi.advanceTimersByTimeAsync(0)\n+  expect(onSnapshot).not.toHaveBeenCalled()\n+})\n+\n+it('preserves receipt provenance and rejects an older nonterminal money view', () => {\n+  vi.stubGlobal('fetch', vi.fn())\n+  const { onSnapshot } = start()\n+  const paid = { ...run(4, 60), receipts: [{\n+    receiptId: 'receipt', intentId: 'intent', runId: 'recovery', resourceId: 'fixture', version: 'v1',\n+    amountMinor: 60, currency: 'SGD' as const, settledAt: '', label: exampleRun.labels.settlement,\n+  }] }\n+  snapshot(paid)\n+  snapshot(run(4, 60))\n+  snapshot({ ...paid, phase: 'DONE' })\n+  snapshot(paid)\n+  expect(onSnapshot).toHaveBeenCalledTimes(2)\n+  expect(onSnapshot).toHaveBeenLastCalledWith({ ...paid, phase: 'DONE' })\n+})\n+it('does not accept a GET for another identity and can resynchronize again', async () => {\n+  const transport = vi.fn().mockResolvedValueOnce(json({ ...run(2), runId: 'another' })).mockResolvedValueOnce(json(run(3, 60, 0, 'DONE')))\n+  vi.stubGlobal('fetch', transport)\n+  const { onSnapshot } = start()\n+  disconnect()\n+  await vi.advanceTimersByTimeAsync(0)\n+  expect(onSnapshot).not.toHaveBeenCalled()\n+  disconnect()\n+  await vi.advanceTimersByTimeAsync(0)\n+  expect(onSnapshot).toHaveBeenCalledWith(run(3, 60, 0, 'DONE'))\n+})"
+        }
+      ]
+    },
+    {
+      "id": "2cd0b6a1",
+      "sha": "2cd0b6a1bc75365dd1193f5a05c0b2534f2b6f5a",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/2cd0b6a1bc75365dd1193f5a05c0b2534f2b6f5a",
+      "message": "Record Lane D milestone and release tooling friction",
+      "fixedByPr": 332,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/2cd0b6a1bc75365dd1193f5a05c0b2534f2b6f5a",
+      "cachedResponse": "commit-2cd0b6a1bc75365dd1193f5a05c0b2534f2b6f5a.json",
+      "responseSha256": "0e5ec75e0457f257ddbf7f4e6b3b4389d4aefd80ffb69513dd3c02481861618b",
+      "changedPaths": [
+        "docs/BUILDER-FEEDBACK.md",
+        "docs/SFF-PUSH.md",
+        "docs/evidence/round2-d/README.md",
+        "docs/evidence/round2-d/browser-ready.log",
+        "docs/evidence/round2-d/coverage-node22.log",
+        "playwright.config.ts",
+        "scripts/check-release-consumers.mjs",
+        "scripts/release-artifacts.mjs",
+        "src/App.tsx",
+        "src/components/RunActivity.tsx",
+        "tests/distribution-publishing.test.ts",
+        "tests/e2e.spec.ts",
+        "tests/truthful-controls.test.tsx"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/distribution-publishing.test.ts",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,17 @@\n+import { expect, it } from 'vitest'\n+import { readFileSync } from 'node:fs'\n+import { parseMarkdown } from '../publisher/publishing/markdown.js'\n+\n+it('the published author guide supplies parseable synthetic paid and free first articles', () => {\n+  const guide = readFileSync('docs/publishing.md', 'utf8')\n+  const example = guide.match(/```markdown\\n([\\s\\S]*?)```/)![1]\n+  const paid = parseMarkdown(example, 'new-writer', 'evidence')\n+  expect(paid).toMatchObject({tier:'PAID',priceMinor:10,synthetic:true})\n+  const free = parseMarkdown(example.replace('tier: PAID','tier: FREE').replace('price: 0.10','price: 0'), 'new-writer', 'public')\n+  expect(free).toMatchObject({tier:'FREE',priceMinor:0,synthetic:true})\n+  // Common copied-document forms retain scalar data rather than executing YAML.\n+  const copied = example.replace('title: My evidence note', '# author note\\ntitle: \\'My evidence note\\'').replaceAll('\\n','\\r\\n')\n+  expect(parseMarkdown(copied,'new-writer','quoted').title).toBe(paid.title)\n+  expect(() => parseMarkdown(example.replace('price: 0.10','price: 99999999999999999999'),'new-writer','overflow')).toThrow('price is too large')\n+  expect(() => parseMarkdown(example.replace('tags: research, evidence','tags: '+ 'x'.repeat(161)),'new-writer','topics')).toThrow('public topics')\n+})"
+        },
+        {
+          "filename": "tests/truthful-controls.test.tsx",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,21 @@\n+import { expect, it } from 'vitest'\n+import { renderToStaticMarkup } from 'react-dom/server'\n+import RunActivity from '../src/components/RunActivity'\n+import { staged } from '../src/stage'\n+import { ucRuns } from '../src/fixtures/run'\n+import type { RunSnapshot } from '../shared/contracts'\n+const render = (run: RunSnapshot, actualTerminal: boolean) => renderToStaticMarkup(<RunActivity run={run} actualTerminal={actualTerminal} stopping={false} onStop={() => {}} onShowWork={() => {}} />)\n+it('actual terminal state disables Stop while an explicit replay is still searching', () => {\n+  const run = ucRuns.UC3\n+  const prefix = staged(run, run.events.find(e => e.type === 'SEARCH')!.id)\n+  expect(render(prefix, false)).toContain('Stop buying')\n+  expect(render(prefix, true)).not.toContain('Stop buying')\n+})\n+it.each([['CHALLENGED','Refund pending for'], ['CHALLENGE_REFUSED','Refund refused for'], ['CHALLENGE_REJECTED','Refund rejected for']] as const)('%s cannot be labelled refunded by an old timeline row', (status, label) => {\n+  const run = structuredClone(ucRuns.UC3)\n+  for (const intent of run.intents) if (intent.status === 'REFUNDED') intent.status = status\n+  run.refundedMinor = 0\n+  const html = render(run, true)\n+  expect(html).toContain(label)\n+  expect(html).not.toContain('Refunded AlphaLeak')\n+})"
+        }
+      ]
+    },
+    {
+      "id": "00faaddd",
+      "sha": "00faaddd7b3e7c3099dcb03de7f75322cf690454",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/00faaddd7b3e7c3099dcb03de7f75322cf690454",
+      "message": "fix: reap release consumer process groups and close stdio",
+      "fixedByPr": 364,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/00faaddd7b3e7c3099dcb03de7f75322cf690454",
+      "cachedResponse": "commit-00faaddd7b3e7c3099dcb03de7f75322cf690454.json",
+      "responseSha256": "36a9c5917e5955f492e97eeb00e8229098e3bd5ad8d1d7053b695183b9ca155b",
+      "changedPaths": [
+        "docs/BUILDER-FEEDBACK.md",
+        "docs/SFF-PUSH.md",
+        "scripts/check-release-consumers.mjs",
+        "scripts/release-consumers.ts",
+        "scripts/release-processes.test.ts",
+        "scripts/release-processes.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "scripts/check-release-consumers.mjs",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -7,4 +7,5 @@ const manifest = resolve(index < 0 ? 'dist/release/manifest.json' : process.argv\n validateManifest(JSON.parse(readFileSync(manifest)), dirname(manifest))\n const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => ['PATH','HOME','TMPDIR','SYSTEMROOT'].includes(k)))\n Object.assign(env, { DOTENV_CONFIG_PATH: '.no-release-env', LANGFUSE_ENABLED: '0', LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture', SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off', MCP_MAX_BUDGET_MINOR: '200', MCP_DAILY_CAP_MINOR: '1000' })\n+execFileSync(process.execPath, ['--import', 'tsx', '--test', 'scripts/release-processes.test.ts'], { env, stdio: 'inherit', timeout: 15000 })\n execFileSync(process.execPath, ['--import', 'tsx', 'scripts/release-consumers.ts', manifest], { env, stdio: 'inherit', timeout: 180000 })"
+        },
+        {
+          "filename": "scripts/release-consumers.ts",
+          "status": "modified",
+          "additions": 40,
+          "deletions": 6,
+          "patch": "@@ -1,11 +1,13 @@\n-import { execFileSync, spawn } from 'node:child_process'\n+import { execFileSync } from 'node:child_process'\n import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'\n import { tmpdir } from 'node:os'\n import { pathToFileURL } from 'node:url'\n import { dirname, join, resolve } from 'node:path'\n import assert from 'node:assert/strict'\n import { Client } from '@modelcontextprotocol/sdk/client/index.js'\n-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'\n+import { ReadBuffer, serializeMessage } from '@modelcontextprotocol/sdk/shared/stdio.js'\n+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'\n+import { managedSpawn, stopProcess, assertNoProcesses } from './release-processes.js'\n import { startEngine } from '../server/engine.js'\n import type { AskResult } from '../sdk/index.js'\n import { Store } from '../server/store.js'\n@@ -14,7 +16,19 @@ const manifestFile = resolve(process.argv[2]), root = dirname(manifestFile)\n const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'))\n const dir = mkdtempSync(join(tmpdir(), 'ra-consumers-'))\n const file = (kind: string) => join(root, manifest.artifacts.find((a: {kind: string}) => a.kind === kind).file)\n-const run = (cmd: string, args: string[]) => new Promise<string>((res, rej) => { const p = spawn(cmd, args, { cwd: dir, env: process.env }); let out = '', err = ''; p.stdout.on('data', c => out += c); p.stderr.on('data', c => err += c); p.on('error', rej); p.on('exit', code => code === 0 ? res(out) : rej(Error(err))) })\n+const run = async (cmd: string, args: string[]) => {\n+  const p = managedSpawn(cmd, args, { cwd: dir, env: process.env })\n+  let out = '', err = ''\n+  p.stdout.on('data', c => out += c)\n+  p.stderr.on('data', c => err += c)\n+  try {\n+    await new Promise<void>((res, rej) => {\n+      p.once('error', rej)\n+      p.once('exit', code => code === 0 ? res() : rej(Error(err)))\n+    })\n+    return out\n+  } finally { await stopProcess(p) }\n+}\n const question = 'What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?'\n const results: object[] = []\n const engine = await startEngine({ dataDir: join(dir, 'engine') })\n@@ -37,7 +51,7 @@ try {\n     const receiptPath=join(root,'accepted-receipt.json')\n     const receiptResponse=await fetch(engine.apiUrl+`/runs/${encodeURIComponent(a.run_id)}/receipts.json`,{headers:{Authorization:'Bearer '+engine.apiToken}})\n     assert(receiptResponse.ok);writeFileSync(receiptPath,JSON.stringify(await receiptResponse.json(),null,2)+'\\n')\n-    execFileSync('npm',['run','verify:answer','--',receiptPath,'--json'],{stdio:'inherit',env:process.env})\n+    console.log(await run('npm',['--prefix',process.cwd(),'run','verify:answer','--',receiptPath,'--json']))\n     const pyStart = performance.now()\n     await run('python3', ['-m','venv',join(dir,'venv')]); const python = join(dir,'venv/bin/python')\n     await run(python, ['-m','pip','install','--no-deps',pathToFileURL(file('wheel')).href])\n@@ -54,15 +68,35 @@ try {\n const bundle = join(dir,'bundle'); execFileSync('unzip',['-q',file('mcpb'),'-d',bundle])\n for (const kind of ['mcpb', 'mcp-tgz']) {\n const started = performance.now()\n-const transport = new StdioClientTransport({ command: kind === 'mcpb' ? process.execPath : 'npx', args: kind === 'mcpb' ? [join(bundle,'mcp/extension.mjs')] : ['--yes', '--cache', join(dir,'npx-cache'), pathToFileURL(file(kind)).href], env: { ...process.env as Record<string,string>, RA_DATA_DIR: join(dir,kind+'-data'), RA_LIVE:'0' }, cwd: dir, stderr: 'pipe' })\n+const child = managedSpawn(kind === 'mcpb' ? process.execPath : 'npx', kind === 'mcpb' ? [join(bundle,'mcp/extension.mjs')] : ['--yes', '--cache', join(dir,'npx-cache'), pathToFileURL(file(kind)).href], { env: { ...process.env, RA_DATA_DIR: join(dir,kind+'-data'), RA_LIVE:'0' }, cwd: dir })\n+const buffer = new ReadBuffer()\n+const transport: Transport = {\n+  async start() {\n+    child.on('error', error => transport.onerror?.(error))\n+    child.stderr.resume()\n+    child.stdout.on('data', chunk => {\n+      try {\n+        buffer.append(chunk)\n+        let message\n+        while ((message = buffer.readMessage()) !== null) transport.onmessage?.(message)\n+      } catch (error) { transport.onerror?.(error as Error) }\n+    })\n+    child.once('exit', () => transport.onclose?.())\n+  },\n+  async send(message) {\n+    await new Promise<void>((done, fail) => child.stdin.write(serializeMessage(message), error => error ? fail(error) : done()))\n+  },\n+  async close() { await stopProcess(child); buffer.clear() },\n+}\n const client = new Client({name:'release-consumer',version:'1'})\n try {\n   await client.connect(transport)\n   assert((await client.listTools()).tools.some(t => t.name === 'ask_expert'))\n   const ask = async () => { const r = await client.callTool({name:'ask_expert',arguments:{question,budget_sgd:999,idempotency_key:'mcpb'}}); assert(!r.isError); return JSON.parse((r.content as {text:string}[])[0].text) }\n   const a = await ask(), b = await ask(); const store = new Store(join(dir,kind+'-data/app.db'))\n   try { check(kind,a,b,store); if (kind === 'mcp-tgz') results.push({timing:'MCP npx',seconds:(performance.now()-started)/1000}) } finally { store.close() }\n-} finally { await client.close() }\n+} finally { try { await client.close() } finally { await stopProcess(child) } }\n }\n+await assertNoProcesses()\n writeFileSync(join(root,'consumer-results.json'),JSON.stringify({ sourceSha: manifest.sourceSha, manifestSha256:sha256(manifestFile), mode:manifest.mode, runtime:manifest.runtime, verifiers:{receiptSha256:sha256(join(root,'accepted-receipt.json')),typescript:{command:'npm run verify:answer -- accepted-receipt.json --json',pass:true},python:{command:'python -m researchagent verify accepted-receipt.json --json',installation:'exact wheel in clean venv',pass:true}}, consumers:results },null,2)+'\\n')\n console.log(JSON.stringify(results,null,2))"
+        },
+        {
+          "filename": "scripts/release-processes.test.ts",
+          "status": "added",
+          "additions": 20,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,20 @@\n+import { test } from 'node:test'\n+import assert from 'node:assert/strict'\n+import { once } from 'node:events'\n+import { managedSpawn, stopProcess, assertNoProcesses } from './release-processes.js'\n+\n+test('cleanup kills an npx-shaped grandchild even when it ignores SIGTERM', async () => {\n+  const child = managedSpawn(process.execPath, ['-e', `\n+    const {spawn}=require('node:child_process');\n+    const p=spawn(process.execPath,['-e',\"process.on('SIGTERM',()=>{}); console.log(process.pid); setInterval(()=>{},1000)\"],{stdio:['ignore','pipe','inherit']});\n+    p.stdout.pipe(process.stdout);\n+    setInterval(()=>{},1000);\n+  `], {})\n+  try {\n+    const [chunk] = await once(child.stdout, 'data')\n+    const pid = Number(String(chunk).trim())\n+    assert(pid > 0)\n+    await stopProcess(child)\n+    await assertNoProcesses()\n+  } finally { await stopProcess(child) }\n+})"
+        },
+        {
+          "filename": "scripts/release-processes.ts",
+          "status": "added",
+          "additions": 42,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,42 @@\n+import { spawn, execFileSync, type ChildProcessWithoutNullStreams, type SpawnOptionsWithoutStdio } from 'node:child_process'\n+import assert from 'node:assert/strict'\n+import { setTimeout as delay } from 'node:timers/promises'\n+\n+// Separate groups include npm/npx grandchildren and their fixture workers.\n+const groups = new Set<number>()\n+export function managedSpawn(command: string, args: string[], options: SpawnOptionsWithoutStdio) {\n+  const child = spawn(command, args, { ...options, detached: true, stdio: 'pipe' })\n+  if (child.pid) groups.add(child.pid)\n+  return child\n+}\n+function members(group: number) {\n+  return execFileSync('ps', ['-axo', 'pid=,pgid=,stat='], { encoding: 'utf8' })\n+    .trim().split('\\n').map(line => line.trim().split(/\\s+/))\n+    .filter(([, pgid, state]) => Number(pgid) === group && !state.startsWith('Z'))\n+    .map(([pid]) => Number(pid))\n+}\n+function signal(group: number, signal: NodeJS.Signals) {\n+  try { process.kill(-group, signal) } catch (error) {\n+    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error\n+  }\n+}\n+export async function stopProcess(child: ChildProcessWithoutNullStreams) {\n+  try {\n+    if (!child.pid) return\n+    signal(child.pid, 'SIGTERM')\n+    const deadline = Date.now() + 1500\n+    while (members(child.pid).length && Date.now() < deadline) await delay(25)\n+    if (members(child.pid).length) signal(child.pid, 'SIGKILL')\n+    const killedDeadline = Date.now() + 3000\n+    while (members(child.pid).length && Date.now() < killedDeadline) await delay(25)\n+    assert.deepEqual(members(child.pid), [], 'consumer process group survived cleanup')\n+  } finally {\n+    child.stdin.destroy()\n+    child.stdout.destroy()\n+    child.stderr.destroy()\n+  }\n+}\n+export async function assertNoProcesses() {\n+  for (const group of groups) assert.deepEqual(members(group), [], 'leftover consumer process')\n+  console.log('Process cleanup verified: ' + [...groups].join(', '))\n+}"
+        }
+      ]
+    },
+    {
+      "id": "01f268cb",
+      "sha": "01f268cb9d12acf4318dd46a80cd3dca41a839c5",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/01f268cb9d12acf4318dd46a80cd3dca41a839c5",
+      "message": "fix: prevent late environment disclosure from covering Ask",
+      "fixedByPr": 366,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/01f268cb9d12acf4318dd46a80cd3dca41a839c5",
+      "cachedResponse": "commit-01f268cb9d12acf4318dd46a80cd3dca41a839c5.json",
+      "responseSha256": "a656dac8eb25ba5e71c57a594d5db38589edf9a76293a32cd7928233ba50afb1",
+      "changedPaths": [
+        "docs/SFF-PUSH.md",
+        "docs/evidence/round2-t/README.md",
+        "src/components/EnvIndicator.tsx",
+        "tests/coverage-environment.test.tsx"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "src/components/EnvIndicator.tsx",
+          "status": "modified",
+          "additions": 13,
+          "deletions": 1,
+          "patch": "@@ -4,14 +4,26 @@ import { useDismiss } from '../useDismiss'\n \n export default function EnvIndicator({ labels, recording = false }: { labels?: ModeLabels; recording?: boolean }) {\n   const [open, setOpen] = useState(false)\n+  const interacted = useRef(false)\n   const box = useRef<HTMLDivElement>(null)\n   const trigger = useRef<HTMLButtonElement>(null)\n   const testnet = labels?.settlement.startsWith('XRPL') ?? false\n   const close = () => { setOpen(false); trigger.current?.focus(); try { localStorage.setItem('researchagent.environment-seen', '1') } catch { /* private mode */ } }\n   useDismiss(open, box, close)\n+  // Health labels may arrive after the user has started typing or chosen a preset.\n+  // Do not open onboarding over that interaction when the response arrives late.\n+  useEffect(() => {\n+    const started = () => { interacted.current = true }\n+    document.addEventListener('pointerdown', started, true)\n+    document.addEventListener('keydown', started, true)\n+    return () => {\n+      document.removeEventListener('pointerdown', started, true)\n+      document.removeEventListener('keydown', started, true)\n+    }\n+  }, [])\n   useEffect(() => {\n     if (recording || !labels) return\n-    try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => setOpen(true), 0); return () => clearTimeout(timer) } } catch { /* private mode */ }\n+    try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => { if (!interacted.current) setOpen(true) }, 0); return () => clearTimeout(timer) } } catch { /* private mode */ }\n   }, [labels, recording])\n   return <div className=\"ra-env\" ref={box}>\n     <button ref={trigger} className=\"ra-env-trigger\" aria-expanded={open} aria-controls=\"environment-details\" onClick={() => open ? close() : setOpen(true)}><i aria-hidden=\"true\" /><span className=\"ra-env-full\">{testnet ? 'XRPL Testnet · test funds' : 'Demo · simulated payments'}</span><span className=\"ra-env-short\">{testnet ? 'Testnet' : 'Demo'}</span></button>"
+        },
+        {
+          "filename": "tests/coverage-environment.test.tsx",
+          "status": "modified",
+          "additions": 18,
+          "deletions": 2,
+          "patch": "@@ -1,11 +1,11 @@\n // @vitest-environment jsdom\n import { afterEach, expect, it, vi } from 'vitest'\n-import { cleanup, fireEvent, render, screen } from '@testing-library/react'\n+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'\n import EnvIndicator from '../src/components/EnvIndicator.js'\n import { exampleRun } from '../src/fixtures/run.js'\n import { XRPL_LABEL } from '../shared/contracts/index.js'\n \n-afterEach(() => { cleanup(); vi.restoreAllMocks() })\n+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals() })\n it('keeps simulation labels usable when private mode refuses storage', () => {\n   vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('storage disabled') })\n   vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('storage disabled') })\n@@ -32,3 +32,19 @@ it('labels Testnet funds as having no value and preserves supplied model labels'\n   fireEvent.click(trigger)\n   expect(trigger.getAttribute('aria-expanded')).toBe('false')\n })\n+\n+for (const interaction of ['pointer', 'keyboard']) it(`does not cover an active question when health labels arrive late (${interaction})`, () => {\n+  vi.useFakeTimers()\n+  vi.stubGlobal('localStorage', { getItem: () => null, setItem: vi.fn() })\n+  try {\n+    const { rerender } = render(<EnvIndicator />)\n+    if (interaction === 'pointer') fireEvent.pointerDown(document.body)\n+    else fireEvent.keyDown(document.body, { key: 'k' })\n+    rerender(<EnvIndicator labels={exampleRun.labels} />)\n+    act(() => { vi.runAllTimers() })\n+    expect(screen.queryByRole('region', { name: \"What's real here\" })).toBeNull()\n+    // Explicit disclosure remains available after automatic onboarding is skipped.\n+    fireEvent.click(screen.getByRole('button'))\n+    expect(screen.getByRole('region', { name: \"What's real here\" })).toBeTruthy()\n+  } finally { vi.useRealTimers() }\n+})"
+        }
+      ]
+    },
+    {
+      "id": "b44cc008",
+      "sha": "b44cc0085c113ec7ef82026c2dbcd4aa4f6cb34c",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/b44cc0085c113ec7ef82026c2dbcd4aa4f6cb34c",
+      "message": "Record cold Testnet evidence and keep onboarding clear of active questions",
+      "fixedByPr": 367,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/b44cc0085c113ec7ef82026c2dbcd4aa4f6cb34c",
+      "cachedResponse": "commit-b44cc0085c113ec7ef82026c2dbcd4aa4f6cb34c.json",
+      "responseSha256": "cdea55627bfb5ea33c6adac95da724def86e919d38f2775f5157ed437c655370",
+      "changedPaths": [
+        "CHANGELOG.md",
+        "README.md",
+        "demo/traces/UC3-testnet.json",
+        "docs/BUILDER-FEEDBACK.md",
+        "docs/SFF-PUSH.md",
+        "docs/evidence/lane-v2/README.md",
+        "docs/evidence/lane-v2/anchor.txt",
+        "docs/evidence/lane-v2/cold-captures.jsonl",
+        "docs/evidence/lane-v2/cold-launches.jsonl",
+        "docs/evidence/lane-v2/live-ledger-v1.json",
+        "docs/evidence/lane-v2/live-ledger.json",
+        "docs/media/refund-demo.gif",
+        "examples/ask.ts",
+        "site/index.html",
+        "src/components/EnvIndicator.tsx",
+        "tests/coverage-environment.test.tsx"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "src/components/EnvIndicator.tsx",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -23,7 +23,7 @@ export default function EnvIndicator({ labels, recording = false }: { labels?: M\n   }, [])\n   useEffect(() => {\n     if (recording || !labels) return\n-    try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => { if (!interacted.current) setOpen(true) }, 0); return () => clearTimeout(timer) } } catch { /* private mode */ }\n+    try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => { if (!interacted.current && (!document.activeElement || document.activeElement === document.body)) setOpen(true) }, 0); return () => clearTimeout(timer) } } catch { /* private mode */ }\n   }, [labels, recording])\n   return <div className=\"ra-env\" ref={box}>\n     <button ref={trigger} className=\"ra-env-trigger\" aria-expanded={open} aria-controls=\"environment-details\" onClick={() => open ? close() : setOpen(true)}><i aria-hidden=\"true\" /><span className=\"ra-env-full\">{testnet ? 'XRPL Testnet · test funds' : 'Demo · simulated payments'}</span><span className=\"ra-env-short\">{testnet ? 'Testnet' : 'Demo'}</span></button>"
+        },
+        {
+          "filename": "tests/coverage-environment.test.tsx",
+          "status": "modified",
+          "additions": 15,
+          "deletions": 0,
+          "patch": "@@ -48,3 +48,18 @@ for (const interaction of ['pointer', 'keyboard']) it(`does not cover an active\n     expect(screen.getByRole('region', { name: \"What's real here\" })).toBeTruthy()\n   } finally { vi.useRealTimers() }\n })\n+\n+it('does not auto-open after remount while a preset or question already holds focus', () => {\n+  vi.useFakeTimers()\n+  vi.stubGlobal('localStorage', { getItem: () => null, setItem: vi.fn() })\n+  const preset = document.createElement('button')\n+  document.body.append(preset)\n+  preset.focus()\n+  try {\n+    render(<EnvIndicator labels={exampleRun.labels} />)\n+    act(() => { vi.runAllTimers() })\n+    expect(screen.queryByRole('region', { name: \"What's real here\" })).toBeNull()\n+    fireEvent.click(screen.getByRole('button', { name: /Demo.*simulated payments/ }))\n+    expect(screen.getByRole('region', { name: \"What's real here\" })).toBeTruthy()\n+  } finally { preset.remove(); vi.useRealTimers() }\n+})"
+        }
+      ]
+    },
+    {
+      "id": "9d7753f5",
+      "sha": "9d7753f5352f249fa4b22167a2096541fbf5b3d9",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/9d7753f5352f249fa4b22167a2096541fbf5b3d9",
+      "message": "Test writer Credential issuance with a scripted Testnet client (restores the publisher coverage floor)",
+      "fixedByPr": 378,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/9d7753f5352f249fa4b22167a2096541fbf5b3d9",
+      "cachedResponse": "commit-9d7753f5352f249fa4b22167a2096541fbf5b3d9.json",
+      "responseSha256": "30932ff27d38fcaef4e09186399e69e8aaac1a45c2bf0bbf6ab60fdde97a43af",
+      "changedPaths": [
+        "tests/writer-credential.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/writer-credential.test.ts",
+          "status": "added",
+          "additions": 67,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,67 @@\n+import { afterEach, describe, expect, it, vi } from 'vitest'\n+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'\n+import { tmpdir } from 'node:os'\n+import { join } from 'node:path'\n+import { Wallet } from 'xrpl'\n+\n+type Script = { network?: number; create?: string; accept?: string; entry?: { validated: boolean; node?: { Flags: number } } }\n+let script: Script = {}\n+const submitted: string[] = []\n+vi.mock('xrpl', async importOriginal => ({\n+  ...await importOriginal<typeof import('xrpl')>(),\n+  Client: class {\n+    async connect() {}\n+    async disconnect() {}\n+    async request(request: { command: string }) {\n+      if (request.command === 'server_info') return { result: { info: { network_id: script.network ?? 1 } } }\n+      return { result: script.entry ?? { validated: false } }\n+    }\n+    async submitAndWait(tx: { TransactionType: string }) {\n+      submitted.push(tx.TransactionType)\n+      const result = tx.TransactionType === 'CredentialCreate' ? script.create ?? 'tesSUCCESS' : script.accept ?? 'tesSUCCESS'\n+      return { result: { hash: tx.TransactionType === 'CredentialCreate' ? 'C'.repeat(64) : 'D'.repeat(64), meta: { TransactionResult: result } } }\n+    }\n+  },\n+}))\n+vi.mock('../publisher/publishing/publish.js', () => ({ fundTestnetWallet: vi.fn(async () => {}) }))\n+const { issueWriterCredential } = await import('../publisher/publishing/credential.js')\n+\n+const dirs: string[] = []\n+const root = async () => { const dir = await mkdtemp(join(tmpdir(), 'writer-credential-')); dirs.push(dir); return dir }\n+afterEach(async () => { for (const dir of dirs.splice(0)) await rm(dir, { recursive: true, force: true }); script = {}; submitted.length = 0 })\n+\n+describe('writer Credential issuance (operator code only)', () => {\n+  it('creates a private issuer, issues and accepts a Credential, and records the trust policy without seeds', async () => {\n+    const dir = await root(), subject = Wallet.generate()\n+    const receipt = await issueWriterCredential(subject, dir)\n+    expect(submitted).toEqual(['CredentialCreate', 'CredentialAccept'])\n+    expect(receipt).toMatchObject({ hash: 'C'.repeat(64), acceptHash: 'D'.repeat(64), trust: { credentialTypeText: 'researchagent/writer-v1' } })\n+    expect((await stat(join(dir, 'issuer.private.json'))).mode & 0o777).toBe(0o600)\n+    expect((await stat(join(dir, `${subject.classicAddress}.credential.json`))).mode & 0o777).toBe(0o600)\n+    expect(JSON.stringify(receipt)).not.toContain('seed')\n+    expect(await readFile(join(dir, 'credential-issuers.json'), 'utf8')).not.toContain('seed')\n+  })\n+  it('reuses the saved Credential while the ledger still shows it accepted, and refuses once it is not', async () => {\n+    const dir = await root(), subject = Wallet.generate()\n+    const first = await issueWriterCredential(subject, dir)\n+    submitted.length = 0\n+    script.entry = { validated: true, node: { Flags: 0x10000 } }\n+    expect(await issueWriterCredential(subject, dir)).toEqual(first)\n+    expect(submitted).toEqual([])\n+    script.entry = { validated: true, node: { Flags: 0 } }\n+    await expect(issueWriterCredential(subject, dir)).rejects.toThrow('no longer accepted')\n+  })\n+  it('refuses a non-Testnet network, a failed create or accept, and a corrupt issuer cache', async () => {\n+    const subject = Wallet.generate()\n+    script = { network: 0 }\n+    await expect(issueWriterCredential(subject, await root())).rejects.toThrow('Testnet network ID')\n+    script = { create: 'tecNO_PERMISSION' }\n+    await expect(issueWriterCredential(subject, await root())).rejects.toThrow('CredentialCreate did not validate')\n+    script = { accept: 'tecNO_ENTRY' }\n+    await expect(issueWriterCredential(subject, await root())).rejects.toThrow('CredentialAccept did not validate')\n+    script = {}\n+    const dir = await root()\n+    await writeFile(join(dir, 'issuer.private.json'), '{', { mode: 0o600 })\n+    await expect(issueWriterCredential(subject, dir)).rejects.toThrow()\n+  })\n+})"
+        }
+      ]
+    },
+    {
+      "id": "c4f2720e",
+      "sha": "c4f2720ee033d6a0bfa439cc9ab29e7d14531f8d",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/c4f2720ee033d6a0bfa439cc9ab29e7d14531f8d",
+      "message": "mcp/app: in-process tests and a stop signal so the mcp coverage baseline holds",
+      "fixedByPr": 380,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/c4f2720ee033d6a0bfa439cc9ab29e7d14531f8d",
+      "cachedResponse": "commit-c4f2720ee033d6a0bfa439cc9ab29e7d14531f8d.json",
+      "responseSha256": "abd8f1b80577eae00ca68340e8cbabc3db4b0ad595ecb2a2184db1f8ca6c5640",
+      "changedPaths": [
+        "mcp/app.ts",
+        "tests/mcp-app.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "mcp/app.ts",
+          "status": "modified",
+          "additions": 9,
+          "deletions": 5,
+          "patch": "@@ -37,8 +37,8 @@ export function parseAppArgs(argv: string[]) {\n }\n \n /** The tgz ships the built UI at `ui/`; a checkout falls back to `dist/` from `npm run build`. */\n-function uiDirectory(root: string) {\n-  const dir = [resolve(root, 'ui'), resolve(root, 'dist')].find(candidate => existsSync(join(candidate, 'index.html')))\n+function uiDirectory(root: string, override?: string) {\n+  const dir = [override, resolve(root, 'ui'), resolve(root, 'dist')].filter((candidate): candidate is string => Boolean(candidate)).find(candidate => existsSync(join(candidate, 'index.html')))\n   if (!dir) throw new Error('UI bundle not found; run npm run build in a checkout')\n   return dir\n }\n@@ -71,7 +71,8 @@ function openBrowser(url: string) {\n   execFile(command, args, { windowsHide: true }, () => {}).unref()\n }\n \n-export async function runApp(argv: string[]) {\n+/** `stop` ends the app like Ctrl-C (tests); `ui` overrides the bundled UI directory. */\n+export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: string; stop?: AbortSignal } = {}) {\n   const started = performance.now()\n   let options\n   try { options = parseAppArgs(argv) } catch (error) { console.error((error as Error).message); process.exitCode = 2; return }\n@@ -88,7 +89,7 @@ export async function runApp(argv: string[]) {\n     if (tokenFile) rmSync(tokenFile, { force: true })\n   })()\n   try {\n-    const ui = uiDirectory(root)\n+    const ui = uiDirectory(root, uiOverride)\n     const testnetModule = options.testnet ? await import('./testnet.js') : undefined\n     const setup = await testnetModule?.prepareMcpTestnet()\n     const config = loadConfig()\n@@ -156,7 +157,10 @@ export async function runApp(argv: string[]) {\n     console.log(lines.join('\\n'))\n     if (options.open) openBrowser(url)\n     await new Promise<void>(done => {\n-      for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => done())\n+      const signals = ['SIGINT', 'SIGTERM'] as const\n+      const finish = () => { for (const signal of signals) process.off(signal, finish); done() }\n+      for (const signal of signals) process.on(signal, finish)\n+      if (stop?.aborted) finish(); else stop?.addEventListener('abort', finish, { once: true })\n     })\n   } catch (error) {\n     console.error(error instanceof Error && /^(UI bundle|Invalid configuration:)/.test(error.message) ? error.message : 'ResearchAgent app startup failed; check operator configuration. No credentials are logged.')"
+        },
+        {
+          "filename": "tests/mcp-app.test.ts",
+          "status": "modified",
+          "additions": 68,
+          "deletions": 4,
+          "patch": "@@ -1,14 +1,17 @@\n-import { afterEach, expect, test } from 'vitest'\n+import { afterEach, expect, test, vi } from 'vitest'\n import { spawn, type ChildProcess } from 'node:child_process'\n-import { existsSync, mkdtempSync, rmSync, statSync } from 'node:fs'\n+import { request } from 'node:http'\n+import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs'\n import { tmpdir } from 'node:os'\n import { join } from 'node:path'\n-import { APP_DAILY_CAP_MINOR, localOrigin, parseAppArgs } from '../mcp/app.js'\n+import { APP_DAILY_CAP_MINOR, localOrigin, parseAppArgs, runApp } from '../mcp/app.js'\n+vi.mock('../mcp/testnet.js', () => ({ prepareMcpTestnet: vi.fn(), testnetStateDir: () => `${process.env.XDG_STATE_HOME}/researchagent/testnet` }))\n+import { prepareMcpTestnet } from '../mcp/testnet.js'\n import { BUDGET } from '../shared/contracts/run.js'\n \n const children: ChildProcess[] = []\n const scratch: string[] = []\n-afterEach(() => { for (const child of children.splice(0)) child.kill('SIGKILL'); for (const dir of scratch.splice(0)) rmSync(dir, { recursive: true, force: true }) })\n+afterEach(() => { process.exitCode = undefined; vi.restoreAllMocks(); delete process.env.RA_BACKEND_URL; for (const child of children.splice(0)) child.kill('SIGKILL'); for (const dir of scratch.splice(0)) rmSync(dir, { recursive: true, force: true }) })\n \n test('arguments are strict, the port is ephemeral by default, and nothing opens a browser unasked', () => {\n   expect(parseAppArgs([])).toEqual({ testnet: false, open: false, port: 0 })\n@@ -58,3 +61,64 @@ test.skipIf(!built)('simulated app boots on an ephemeral port, serves the UI, pr\n   await new Promise(done => child.once('exit', done))\n   expect(existsSync(tokenFile)).toBe(false)\n }, 60_000)\n+\n+// In-process, so the proxy, the static server and the ready block are covered without a browser or network.\n+const boot = async (args: string[], env: Record<string, string> = {}) => {\n+  const state = mkdtempSync(join(tmpdir(), 'ra-app-proc-')); scratch.push(state)\n+  const ui = join(state, 'ui'); (await import('node:fs')).mkdirSync(ui)\n+  writeFileSync(join(ui, 'index.html'), '<div id=\"root\"></div>'); writeFileSync(join(ui, 'app.js'), 'export {}'); writeFileSync(join(ui, 'blob.bin'), 'x')\n+  const saved = { ...process.env }\n+  Object.assign(process.env, { XDG_STATE_HOME: state, ...env })\n+  const lines: string[] = []\n+  vi.spyOn(console, 'log').mockImplementation((line: string) => { lines.push(String(line)) })\n+  vi.spyOn(console, 'error').mockImplementation(() => {})\n+  const stop = new AbortController()\n+  const done = runApp(args, { ui, stop: stop.signal })\n+  const deadline = Date.now() + 30_000\n+  while (!lines.join('\\n').includes('ResearchAgent ready') && Date.now() < deadline && !process.exitCode) await new Promise(r => setTimeout(r, 25))\n+  const out = lines.join('\\n')\n+  return { out, url: out.match(/ready: (http:\\/\\/127\\.0\\.0\\.1:\\d+)/)?.[1] ?? '', tokenFile: out.match(/readFileSync\\('([^']+)'/)?.[1] ?? '', done, stop, restore: () => { process.env = saved } }\n+}\n+const raw = (url: string, init: { method?: string; host?: string; body?: Buffer } = {}) => new Promise<number>((done, fail) => {\n+  const target = new URL(url)\n+  const req = request({ host: target.hostname, port: target.port, path: target.pathname, method: init.method ?? 'GET', headers: { ...(init.host ? { Host: init.host } : {}), ...(init.body ? { 'Content-Type': 'application/json' } : {}) } }, res => { res.resume(); res.on('end', () => done(res.statusCode ?? 0)) })\n+  req.on('error', fail); req.end(init.body)\n+})\n+\n+test('simulated app in-process: static rules, proxy, idempotent web ask, oversize body, clean shutdown', async () => {\n+  const app = await boot(['--port', '0'])\n+  try {\n+    expect(app.out).toContain('· fixture models · SIMULATED rail · no real value'); expect(app.out).toContain('wallet daily cap S$20.00'); expect(app.out).not.toContain('payer address')\n+    expect(await raw(app.url + '/')).toBe(200); expect(await raw(app.url + '/app.js', { method: 'HEAD' })).toBe(200)\n+    expect(await raw(app.url + '/missing.js')).toBe(404); expect(await raw(app.url + '/blob.bin')).toBe(403); expect(await raw(app.url + '/', { method: 'POST' })).toBe(405)\n+    expect(await raw(app.url + '/', { host: 'evil.example' })).toBe(403)\n+    expect(await raw(app.url + '/api/health', { method: 'HEAD' })).toBe(200)\n+    expect(await raw(app.url + '/w/notfinancialtimes/')).toBe(200)\n+    expect(await raw(app.url + '/api/scope', { method: 'POST', body: Buffer.alloc(2 << 20, 97) })).toBe(502)\n+    const ask = () => fetch(app.url + '/runs', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'in-process' }, body: JSON.stringify({ question: 'What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?', budgetMinor: 200 }) })\n+    const first = await ask(); expect(first.status).toBe(201)\n+    const { runId } = await first.json() as { runId: string }\n+    const again = await ask(); expect(again.status).toBe(200); expect(((await again.json()) as { runId: string }).runId).toBe(runId)\n+    for (let i = 0; i < 400; i++) { const run = await (await fetch(`${app.url}/runs/${runId}`)).json() as { phase: string }; if (['DONE', 'FAILED', 'STOPPED'].includes(run.phase)) break; await new Promise(r => setTimeout(r, 50)) }\n+    expect(existsSync(app.tokenFile)).toBe(true)\n+  } finally { app.stop.abort(); await app.done; app.restore() }\n+  expect(existsSync(app.tokenFile)).toBe(false)\n+}, 60_000)\n+\n+test('Testnet label, daily cap and payer line come from the provisioned setup; a faucet failure is labelled SIMULATED with its reason', async () => {\n+  vi.mocked(prepareMcpTestnet).mockResolvedValue({ testnet: true, env: {}, labels: ['Testnet · no real value'] } as never)\n+  const live = await boot(['--testnet'])\n+  try { expect(live.out).toContain('· fixture models · XRPL TESTNET · no real value'); expect(live.out).toContain('payer address: '); expect(live.out).toContain('wallet daily cap S$5.00 (app Testnet default') } finally { live.stop.abort(); await live.done; live.restore() }\n+  const set = await boot(['--testnet'], { WALLET_DAILY_CAP_MINOR: '300' })\n+  try { expect(set.out).toContain('wallet daily cap S$3.00'); expect(set.out).not.toContain('app Testnet default') } finally { set.stop.abort(); await set.done; set.restore() }\n+  vi.mocked(prepareMcpTestnet).mockResolvedValue({ testnet: false, env: {}, labels: ['SIMULATED fallback · faucet_unavailable · no ledger transactions'] } as never)\n+  const down = await boot(['--testnet'])\n+  try { expect(down.out).toContain('fixture models · SIMULATED fallback · faucet_unavailable · no ledger transactions · no real value'); expect(down.out).toContain('settlement is SIMULATED: no ledger transactions') } finally { down.stop.abort(); await down.done; down.restore() }\n+}, 90_000)\n+\n+test('refuses bad arguments and a remote backend before starting anything', async () => {\n+  vi.spyOn(console, 'error').mockImplementation(() => {})\n+  await runApp(['--bogus']); expect(process.exitCode).toBe(2)\n+  process.exitCode = undefined; process.env.RA_BACKEND_URL = 'http://127.0.0.1:1'\n+  await runApp([]); expect(process.exitCode).toBe(1)\n+})"
+        }
+      ]
+    },
+    {
+      "id": "4178f797",
+      "sha": "4178f797128a48fa708dbe19193ebbd57ce9113a",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/4178f797128a48fa708dbe19193ebbd57ce9113a",
+      "message": "Cover owner Settings workflows and retain strict recovery assertions",
+      "fixedByPr": 386,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/4178f797128a48fa708dbe19193ebbd57ce9113a",
+      "cachedResponse": "commit-4178f797128a48fa708dbe19193ebbd57ce9113a.json",
+      "responseSha256": "89242af83070e6d1d7e4fa45cb43968259bffaf75850faf89155cce4c2db42a3",
+      "changedPaths": [
+        "desktop/recovery-smoke.mjs",
+        "docs/evidence/settings/README.md",
+        "docs/evidence/settings/coverage-components.json",
+        "tests/owner-settings-ui.test.tsx"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/owner-settings-ui.test.tsx",
+          "status": "added",
+          "additions": 111,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,111 @@\n+// @vitest-environment jsdom\n+import { afterEach, expect, it, vi } from 'vitest'\n+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'\n+import OwnerSettings from '../src/components/OwnerSettings'\n+\n+const values = { MCP_MAX_BUDGET_MINOR: 0, MCP_DAILY_CAP_MINOR: 0, WALLET_DAILY_CAP_MINOR: 500, SETTLEMENT_RAIL: 'simulated', ESCROW_MODE: 'payment', ESCROW_ASSET: 'XRP', ANCHOR_RAIL: 'off' }\n+afterEach(() => { cleanup(); vi.unstubAllGlobals(); history.replaceState(null, '', '/') })\n+function backend(status = 200) {\n+  const calls: { path: string; init?: RequestInit }[] = []\n+  vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {\n+    calls.push({ path, init })\n+    const code = init?.method === 'POST' ? status : 200\n+    const body = path === '/api/settings' ? { values, csrf: 'synthetic-csrf', keys: { DEEPSEEK_API_KEY: '••••••••' }, version: '1.0.0-rc.2' }\n+      : path === '/api/ledger' ? { rail: 'xrpl-testnet', wallets: [{ role: 'buyer', address: 'synthetic-address', balanceDrops: null }, { name: 'Synthetic publisher', address: 'synthetic-funded', balanceDrops: '1000000' }, { address: 'synthetic-unnamed', balanceDrops: null }] }\n+      : path === '/api/writers/status' ? { publishers: [{ name: 'Synthetic writer', credential: { status: 'unverified' } }, { name: 'No credential writer' }] } : { saved: true }\n+    return { ok: code < 400, status: code, json: async () => body }\n+  }))\n+  return calls\n+}\n+async function open(section: string) {\n+  await screen.findByText('Only you can change these settings. Policy code remains the spending authority.')\n+  fireEvent.click(within(screen.getByRole('navigation', { name: 'Settings sections' })).getByRole('button', { name: section }))\n+}\n+\n+it('saves owner limits with CSRF and reports that restart is required', async () => {\n+  const calls = backend(); render(<OwnerSettings />); await open('Budget and limits')\n+  fireEvent.change(screen.getByLabelText('Per-call cap'), { target: { value: '125' } })\n+  fireEvent.click(screen.getByRole('button', { name: 'Save settings' }))\n+  await screen.findByText('Saved and audited. Restart the app to apply configuration changes.')\n+  const saved = calls.find(c => c.init?.method === 'POST')!\n+  expect(saved.path).toBe('/api/settings')\n+  expect(saved.init?.headers).toMatchObject({ 'X-Settings-CSRF': 'synthetic-csrf', 'X-Settings-UI': location.origin })\n+  expect(JSON.parse(String(saved.init?.body))).toEqual({ ...values, MCP_MAX_BUDGET_MINOR: 125 })\n+})\n+\n+it.each([403, 503])('clears transient credentials even when save is refused (%s)', async status => {\n+  const calls = backend(status); render(<OwnerSettings />); await open('Models')\n+  const input = screen.getByLabelText('Replace key') as HTMLInputElement\n+  fireEvent.change(input, { target: { value: 'synthetic-replacement' } })\n+  fireEvent.click(screen.getByRole('button', { name: 'Save key' }))\n+  await screen.findByText(status === 403 ? 'Settings requires the local owner UI.' : 'Action unavailable. Check configuration and retry.')\n+  expect(input.value).toBe('')\n+  expect(document.body.textContent).not.toContain('synthetic-replacement')\n+  const request = calls.find(c => c.path === '/api/settings/key')!\n+  expect(JSON.parse(String(request.init?.body))).toEqual({ account: 'DEEPSEEK_API_KEY', value: 'synthetic-replacement' })\n+})\n+\n+it('shows unavailable balances and unverified writers without suggesting verification', async () => {\n+  backend(); render(<OwnerSettings />); await open('Wallets')\n+  expect(await screen.findByText('synthetic-address')).toBeTruthy()\n+  expect(screen.getAllByText('Unavailable')).toHaveLength(2)\n+  expect(screen.getByText('Synthetic publisher')).toBeTruthy()\n+  expect(screen.getByText('Wallet', { exact: true, selector: 'td' })).toBeTruthy()\n+  fireEvent.click(screen.getByRole('button', { name: 'Writers' }))\n+  expect(await screen.findByText('Synthetic writer')).toBeTruthy()\n+  expect(screen.getAllByText('unverified', { exact: true })).toHaveLength(2)\n+})\n+\n+it('requires the explicit reset phrase and reports restart after reset', async () => {\n+  const calls = backend(); render(<OwnerSettings />); await open('Data')\n+  const reset = screen.getByRole('button', { name: 'Reset settings' }) as HTMLButtonElement\n+  expect(reset.disabled).toBe(true)\n+  fireEvent.change(screen.getByLabelText('Type RESET SETTINGS'), { target: { value: 'RESET SETTINGS' } })\n+  fireEvent.click(reset)\n+  await waitFor(() => expect(calls.some(c => c.path === '/api/settings/reset')).toBe(true))\n+  await screen.findByText('Settings reset. Restart to apply.')\n+})\n+\n+it('onboarding confirms selected network and caps through the guarded save path', async () => {\n+  history.replaceState(null, '', '/?settings=1&onboarding=1')\n+  const calls = backend(); render(<OwnerSettings />)\n+  await screen.findByText('Only you can change these settings. Policy code remains the spending authority.')\n+  fireEvent.change(screen.getByLabelText('Network'), { target: { value: 'xrpl-testnet' } })\n+  fireEvent.change(screen.getByLabelText('Per-call cap · SGD cents'), { target: { value: '100' } })\n+  fireEvent.click(screen.getByRole('button', { name: 'Confirm caps and start' }))\n+  await screen.findByText('Saved and audited. Restart the app to apply configuration changes.')\n+  expect(JSON.parse(String(calls.find(c => c.init?.method === 'POST')?.init?.body))).toEqual({ ...values, SETTLEMENT_RAIL: 'xrpl-testnet', MCP_MAX_BUDGET_MINOR: 100 })\n+})\n+\n+it('saves a replacement key without returning its value to the page', async () => {\n+  backend(); render(<OwnerSettings />); await open('Models')\n+  fireEvent.change(screen.getByLabelText('Provider'), { target: { value: 'OPENAI_API_KEY' } })\n+  fireEvent.change(screen.getByLabelText('Replace key'), { target: { value: 'synthetic-openai' } })\n+  fireEvent.click(screen.getByRole('button', { name: 'Save key' }))\n+  await screen.findByText('Key saved in the local environment file. Restart to apply.')\n+  expect(document.body.textContent).not.toContain('synthetic-openai')\n+})\n+\n+it('payment selection is included in the deferred settings save', async () => {\n+  const calls = backend(); render(<OwnerSettings />); await open('Payments')\n+  fireEvent.change(screen.getByLabelText('Escrow mode'), { target: { value: 'key-reveal' } })\n+  fireEvent.click(screen.getByRole('button', { name: 'Save settings' }))\n+  await screen.findByText('Saved and audited. Restart the app to apply configuration changes.')\n+  expect(JSON.parse(String(calls.find(c => c.init?.method === 'POST')?.init?.body)).ESCROW_MODE).toBe('key-reveal')\n+})\n+\n+it('copies a versioned agent command with zero default authority and opens release metadata', async () => {\n+  backend()\n+  const writeText = vi.fn(async () => {})\n+  Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })\n+  const openWindow = vi.spyOn(window, 'open').mockImplementation(() => null)\n+  render(<OwnerSettings />); await open('Connect an agent')\n+  fireEvent.click(screen.getByRole('button', { name: 'Copy Claude command' }))\n+  await screen.findByText('Command copied.')\n+  expect(writeText).toHaveBeenCalledWith(expect.stringContaining('MCP_MAX_BUDGET_MINOR=0'))\n+  fireEvent.click(screen.getByRole('button', { name: 'About' }))\n+  fireEvent.click(screen.getByRole('button', { name: 'Check for updates' }))\n+  await screen.findByText('Update check opened.')\n+  expect(openWindow).toHaveBeenCalledWith(expect.stringContaining('/releases'), '_blank', 'noopener')\n+  openWindow.mockRestore()\n+})"
+        }
+      ]
+    },
+    {
+      "id": "9572659f",
+      "sha": "9572659f4fbd6003b354ea69dc9fcb8c078236ba",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/9572659f4fbd6003b354ea69dc9fcb8c078236ba",
+      "message": "test: dismiss the first-visit disclosure before a judge question",
+      "fixedByPr": 390,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/9572659f4fbd6003b354ea69dc9fcb8c078236ba",
+      "cachedResponse": "commit-9572659f4fbd6003b354ea69dc9fcb8c078236ba.json",
+      "responseSha256": "29bac39dfb5fd832c2bb24ee92457a21cacb282c0861d271f7f25e371d60fc59",
+      "changedPaths": [
+        "docs/evidence/round4-j1/README.md",
+        "tests/e2e.spec.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/e2e.spec.ts",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -140,6 +140,7 @@ test('keyboard plan cancellation admits zero runs; Go now admits exactly once',\n \n test('a judge question outside the writer corpus ends with an honest publishing invitation', async ({ page }) => {\n   await page.goto('/?pace=real')\n+  await page.getByRole('button', { name: 'Got it', exact: true }).click()\n   await page.getByLabel('Your question').fill('Which Singapore banks are piloting RLUSD settlement in 2026?')\n   await page.getByRole('button', { name: /^Ask/ }).click()\n   await page.getByRole('button', { name: 'Start now' }).click()"
+        }
+      ]
+    },
+    {
+      "id": "bd8cb623",
+      "sha": "bd8cb623f5781330e811370de157634e5b79acf7",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/bd8cb623f5781330e811370de157634e5b79acf7",
+      "message": "test: parallelize independent offline verifier CLI probes",
+      "fixedByPr": 389,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/bd8cb623f5781330e811370de157634e5b79acf7",
+      "cachedResponse": "commit-bd8cb623f5781330e811370de157634e5b79acf7.json",
+      "responseSha256": "5e28fb8b386b57b52c8e90e235634be6d886b90e8cbff90e9871c71d51142562",
+      "changedPaths": [
+        "tests/verify-answer.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/verify-answer.test.ts",
+          "status": "modified",
+          "additions": 20,
+          "deletions": 11,
+          "patch": "@@ -117,24 +117,33 @@ it('authorizes receipt exports for the owning agent and conceals other runs', as\n })\n \n it('CLI verifies the recorded JSON and PDF offline, rejects the exact citation tamper and detects PDF byte edits', async () => {\n-  const { spawnSync } = await import('node:child_process')\n+  const { spawn } = await import('node:child_process')\n   const { mkdtempSync, readFileSync, writeFileSync, rmSync } = await import('node:fs')\n   const { tmpdir } = await import('node:os')\n   const { join } = await import('node:path')\n-  const run = (path: string) => spawnSync(process.execPath, ['--import', 'tsx', 'scripts/verify-answer.ts', path], { encoding: 'utf8' })\n-  for (const name of ['report.json', 'report.pdf']) {\n-    const result = run(`docs/evidence/verify-278/${name}`)\n-    expect(result.status, result.stderr + result.stdout).toBe(0)\n-    expect(result.stdout).toContain('Payments/refunds NOT checked on ledger')\n-  }\n-  const bad = run('docs/evidence/verify-278/tampered.json')\n-  expect(bad.status).toBe(1)\n-  expect(bad.stdout).toContain('fab-floor-kestrel-penang-lead-times@v1#p1: Exact citation passage missing or hash mismatch')\n+  const run = (path: string) => new Promise<{ status: number | null; stdout: string; stderr: string }>((resolve, reject) => {\n+    const child = spawn(process.execPath, ['--import', 'tsx', 'scripts/verify-answer.ts', path])\n+    let stdout = '', stderr = ''\n+    child.stdout.on('data', chunk => { stdout += String(chunk) })\n+    child.stderr.on('data', chunk => { stderr += String(chunk) })\n+    child.once('error', reject)\n+    child.once('close', status => resolve({ status, stdout, stderr }))\n+  })\n   const dir = mkdtempSync(join(tmpdir(), 'verify-pdf-'))\n   try {\n     const bytes = readFileSync('docs/evidence/verify-278/report.pdf'); bytes[20] ^= 1\n     const path = join(dir, 'edited.pdf'); writeFileSync(path, bytes)\n-    const changed = run(path)\n+    // Independent offline CLI probes share the original 5 s deadline; no serial startup cost.\n+    const [json, pdf, bad, changed] = await Promise.all([\n+      run('docs/evidence/verify-278/report.json'), run('docs/evidence/verify-278/report.pdf'),\n+      run('docs/evidence/verify-278/tampered.json'), run(path),\n+    ])\n+    for (const result of [json, pdf]) {\n+      expect(result.status, result.stderr + result.stdout).toBe(0)\n+      expect(result.stdout).toContain('Payments/refunds NOT checked on ledger')\n+    }\n+    expect(bad.status).toBe(1)\n+    expect(bad.stdout).toContain('fab-floor-kestrel-penang-lead-times@v1#p1: Exact citation passage missing or hash mismatch')\n     expect(changed.status).toBe(2)\n     expect(changed.stderr).toContain('PDF byte hash differs')\n   } finally { rmSync(dir, { recursive: true, force: true }) }"
+        }
+      ]
+    },
+    {
+      "id": "9215725c",
+      "sha": "9215725c862bc62761a94f5f6336d69a0c228571",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/9215725c862bc62761a94f5f6336d69a0c228571",
+      "message": "Keep large history parity and isolate limit edge-case fixtures",
+      "fixedByPr": 394,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/9215725c862bc62761a94f5f6336d69a0c228571",
+      "cachedResponse": "commit-9215725c862bc62761a94f5f6336d69a0c228571.json",
+      "responseSha256": "e297cc72caf45d9e9002b72d94f64815ab06a4372467200ef8025a856c0282b8",
+      "changedPaths": [
+        "tests/history-summary.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/history-summary.test.ts",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 1,
+          "patch": "@@ -49,7 +49,7 @@ function fixture(count: number) {\n it('matches complete ordered old summaries for 2,000 retained paid histories, pins, hides, legacy and missing events', () => {\n   const s = fixture(2000)\n   try {\n-    for (const recent of [0, 4, 17, 2.5, -1, NaN]) expect(s.listPastRuns(recent)).toEqual(oracle(s, recent))\n+    expect(s.listPastRuns()).toEqual(oracle(s))\n     const before = database(s).prepare('SELECT count(*) AS n FROM receipts').get()!.n\n     s.setRunMeta('synthetic-history-1999', { hidden: true, pinned: true })\n     expect(s.listPastRuns()).toEqual(oracle(s))\n@@ -92,3 +92,9 @@ it('matches every charged, reserved, failed-proof and refund status; rejects mal\n     }\n   } finally { s.close() }\n })\n+\n+it('preserves zero, fractional, negative and NaN recent limits', () => {\n+  const s = fixture(30)\n+  try { for (const recent of [0, 17, 2.5, -1, NaN]) expect(s.listPastRuns(recent)).toEqual(oracle(s, recent)) }\n+  finally { s.close() }\n+})"
+        }
+      ]
+    },
+    {
+      "id": "3d2d321b",
+      "sha": "3d2d321be563eb2ba81c7dd03b628a7daca9e7b4",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/3d2d321be563eb2ba81c7dd03b628a7daca9e7b4",
+      "message": "Preserve built Cast QA consumer and cover asset disclosures",
+      "fixedByPr": 394,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/3d2d321be563eb2ba81c7dd03b628a7daca9e7b4",
+      "cachedResponse": "commit-3d2d321be563eb2ba81c7dd03b628a7daca9e7b4.json",
+      "responseSha256": "f3b10ce40e9f12bba8d6b63ce20a36b90c1dc6104ebfa4ce2ebabac62bec36fa",
+      "changedPaths": [
+        "docs/SFF-PUSH.md",
+        "docs/evidence/refactor-d/README.md",
+        "src/components/Cast.tsx",
+        "src/components/cast.css",
+        "src/fixtures/presentation.test.tsx"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "src/components/Cast.tsx",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,26 @@\n+/// <reference types=\"vite/client\" />\n+import manifest from '../assets/cast/manifest.json'\n+import './cast.css'\n+\n+// Vite owns URL rewriting, including a non-root deployment base.\n+const urls = import.meta.glob('../assets/cast/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>\n+type ScoutPose = 'idle' | 'clarifying' | 'searching' | 'weighing' | 'paying' | 'verifying' | 'caught-a-lie' | 'done' | 'stopped'\n+type Writer = 'basis-points' | 'kopi-contrarian' | 'load-factor' | 'marketpulse-digest' | 'notfinancialtimes' | 'open-records' | 'the-fab-floor'\n+type WriterPose = 'listening' | 'paid' | 'verified'\n+type State = { who: 'scout'; pose: ScoutPose }\n+  | { who: 'purse'; pose: 'full' | 'spending' | 'refunded' | 'locked' | 'empty' | 'simulated' }\n+  | { who: Writer; pose: WriterPose }\n+  | { who: 'alphaleak'; pose: WriterPose | 'sneaky' | 'caught' | 'refunding' }\n+  | { who: 'receipt'; pose: 'printing' | 'verified' | 'refunded' | 'simulated' }\n+  | { who: 'ledger'; pose: 'closing' | 'closed' }\n+export type CastProps = State & { label?: string; size?: number }\n+\n+/** State mark only: never starts a payment or infers settlement from elapsed time. */\n+export default function Cast({ who, pose, label, size = 64 }: CastProps) {\n+  const asset = manifest.find(item => item.who === who && item.pose === pose)\n+  if (!asset) return null\n+  const description = label ?? `${asset.label}${who === 'ledger' ? ' · illustration, not a live ledger clock' : who === 'purse' && pose === 'locked' ? ' · illustration, escrow is not implemented' : ''}`\n+  return <span role=\"img\" aria-label={description} className=\"ra-cast\" data-pose={pose} style={{ width: size, height: size }}>\n+    <img src={urls[`../assets/cast/${size <= 24 ? asset.iconFile : asset.file}`]} alt=\"\" aria-hidden=\"true\" width={size} height={size} draggable={false} />\n+  </span>\n+}"
+        },
+        {
+          "filename": "src/components/cast.css",
+          "status": "added",
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,3 @@\n+.ra-cast { display: inline-block; flex: none; vertical-align: middle; max-width: 100%; }\n+.ra-cast img { display: block; width: 100%; height: auto; }\n+/* State marks are static. Meaningful money/refund transitions are scoped to #262. */"
+        }
+      ]
+    },
+    {
+      "id": "4ca31087",
+      "sha": "4ca31087ce1f46a08c7502689c3c9b7697d68e7f",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/4ca31087ce1f46a08c7502689c3c9b7697d68e7f",
+      "message": "Preserve shared coverage floors with lifecycle fault regressions",
+      "fixedByPr": 395,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/4ca31087ce1f46a08c7502689c3c9b7697d68e7f",
+      "cachedResponse": "commit-4ca31087ce1f46a08c7502689c3c9b7697d68e7f.json",
+      "responseSha256": "32c2c6b2f6a056ab076baf3b704792833fc406d4c56897f864a2ca3f93ddaa9d",
+      "changedPaths": [
+        "docs/evidence/refactor-a/README.md",
+        "docs/evidence/refactor-a/artifact-admission.log",
+        "docs/evidence/refactor-a/coverage-gate.json",
+        "docs/evidence/refactor-a/coverage.log",
+        "docs/evidence/refactor-a/final-check-fast.log",
+        "scripts/record.mjs",
+        "tests/resource-scope.test.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/resource-scope.test.ts",
+          "status": "modified",
+          "additions": 37,
+          "deletions": 1,
+          "patch": "@@ -1,4 +1,4 @@\n-import { expect, it } from 'vitest'\n+import { expect, it, vi } from 'vitest'\n import { existsSync } from 'node:fs'\n import { once } from 'node:events'\n import { ResourceScope, withResourceScope, groupMembers } from '../shared/resource-scope.js'\n@@ -97,3 +97,39 @@ it('retains private synthetic evidence with a reason while timers close', async\n     await scope.close()\n   }\n })\n+\n+it('reports scratch entries and registered groups without deleting evidence', async () => {\n+  const { resources } = await import('./helpers/resource-scope.js')\n+  const { resourceLeaks } = await import('../shared/resource-scope.js')\n+  const { writeFileSync } = await import('node:fs')\n+  const { join } = await import('node:path')\n+  const root = resources().tempDir(), registry = resources().tempDir()\n+  writeFileSync(join(root, 'marker'), 'synthetic')\n+  writeFileSync(join(registry, '99999999.json'), '{}')\n+  expect(resourceLeaks(root).directories).toEqual(['marker'])\n+  expect(resourceLeaks(root, registry).groups).toEqual([])\n+})\n+it('propagates signal errors and handles readiness after an early exit', async () => {\n+  const { stopProcess, waitForOutput } = await import('../shared/resource-scope.js')\n+  const scope = new ResourceScope()\n+  const child = scope.spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'])\n+  try {\n+    for (const error of [Object.assign(Error('injected signal failure'), { code: 'EACCES' }), Error('injected signal failure')]) {\n+      const mock = vi.spyOn(process, 'kill').mockImplementation(() => { throw error })\n+      try { await expect(stopProcess(child)).rejects.toThrow('injected signal failure') }\n+      finally { mock.mockRestore() }\n+    }\n+    const exited = scope.spawn(process.execPath, ['-e', 'process.exit(1)'])\n+    await once(exited, 'exit')\n+    await expect(waitForOutput(exited, /ready/, 50)).rejects.toThrow(/before readiness/)\n+  } finally { await scope.close() }\n+})\n+// Exercise the unchanged 1.5 s + 3 s failure deadline, then restore real signalling.\n+it('reports a group surviving both signals rather than claiming cleanup', async () => {\n+  const { stopProcess } = await import('../shared/resource-scope.js')\n+  const scope = new ResourceScope()\n+  const child = scope.spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'])\n+  const mock = vi.spyOn(process, 'kill').mockReturnValue(true)\n+  try { await expect(stopProcess(child)).rejects.toThrow(/survived cleanup/) }\n+  finally { mock.mockRestore(); await scope.close() }\n+}, 10000)"
+        }
+      ]
+    },
+    {
+      "id": "173f7246",
+      "sha": "173f7246cd58408bd57ea594345856e57e1ca087",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/173f7246cd58408bd57ea594345856e57e1ca087",
+      "message": "Bind browser ledger fixtures to all 61 refreshed source responses",
+      "fixedByPr": 402,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/173f7246cd58408bd57ea594345856e57e1ca087",
+      "cachedResponse": "commit-173f7246cd58408bd57ea594345856e57e1ca087.json",
+      "responseSha256": "34974ef4fbf43db2ead12b2b6ca435738c9e67d9a7856f257cce955b68256178",
+      "changedPaths": [
+        "docs/evidence/r5-r/review-timings.txt",
+        "tests/judge-path.spec.ts",
+        "tests/ledger-sockets.ts",
+        "tests/ledger-viewer.spec.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/judge-path.spec.ts",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 7,
+          "patch": "@@ -78,28 +78,28 @@ for (const tab of TABS) {\n \n test('ledger: live-check progress replaces the stale snapshot text within 3 s', async ({ page }) => {\n   const initial = await (await page.request.get(`${base}/ledger/`)).text()\n-  expect(initial).toContain('Checking 45 hashes live… 0/45')\n+  expect(initial).toContain('Checking 61 hashes live… 0/61')\n   expect(initial).not.toContain('Principal amount not recorded in this evidence</td><td>12 drops')\n   await page.goto(`${base}/ledger/`)\n   await page.waitForTimeout(3000)\n   await expect(page.locator('body')).not.toContainText('not freshly verified')\n-  await expect(page.getByRole('status')).toContainText(/Read-only check finished: \\d+\\/45/)\n+  await expect(page.getByRole('status')).toContainText(/Read-only check finished: \\d+\\/61/)\n   await expect(page.getByText('Memo = audit head 2861e38da5e3…; answer anchor')).toBeVisible()\n   await expect(page.getByRole('heading', { name: 'Real writers' })).toBeVisible()\n   await expect(page.getByText('real person · Testnet · no real value', { exact: true })).toBeVisible()\n   await expect(page.getByText('No consenting writers listed yet.')).toBeVisible()\n })\n \n-test('ledger validates 45/45 within six seconds on multiplexed fixture sockets', async ({ page }, info) => {\n+test('ledger validates 61/61 within six seconds on multiplexed fixture sockets', async ({ page }, info) => {\n   await stubLedger(page)\n   const started = performance.now()\n   await page.goto(`${base}/ledger/`)\n-  await expect(page.getByRole('status')).toContainText('45/45 validated', { timeout: Math.max(1, 6000 - (performance.now() - started)) })\n+  await expect(page.getByRole('status')).toContainText('61/61 validated', { timeout: Math.max(1, 6000 - (performance.now() - started)) })\n   const elapsed = performance.now() - started\n   expect(elapsed).toBeLessThanOrEqual(6000)\n-  await info.attach('ledger-fixture-timing', { body: JSON.stringify({ elapsedMs: elapsed, verified: 45, mode: 'stubbed sockets; no live ledger' }), contentType: 'application/json' })\n-  console.log(`L4 CI ledger: ${elapsed.toFixed(0)} ms, 45/45`)\n-  await expect(page.locator('tbody tr')).toHaveCount(45)\n+  await info.attach('ledger-fixture-timing', { body: JSON.stringify({ elapsedMs: elapsed, verified: 61, mode: 'stubbed sockets; no live ledger' }), contentType: 'application/json' })\n+  console.log(`L4 CI ledger: ${elapsed.toFixed(0)} ms, 61/61`)\n+  await expect(page.locator('tbody tr')).toHaveCount(61)\n   await expect(page.locator('tbody')).not.toContainText(/\\b[A-F0-9]{40}\\b/)\n   await expect(page.locator('tbody')).toContainText('RLUSD')\n   await expect(page.locator('tbody tr').first()).toContainText('key published')"
+        },
+        {
+          "filename": "tests/ledger-sockets.ts",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -6,8 +6,8 @@ export async function stubLedger(page: Page) {\n  await page.routeWebSocket(/wss:\\/\\/.*/,ws=>ws.onMessage(async raw=>{\n   const request=JSON.parse(String(raw)), r=data.rows.find((r:{hash:string})=>r.hash===request.transaction)\n   expect(request.command).toBe('tx')\n-  if (r.source.includes('round3-r2')) {\n-   const retained=JSON.parse(await readFile('docs/evidence/round3-r2/ledger-responses.json','utf8'))\n+  if (r.source.includes('round3-r2') || r.source.includes('r5-r')) {\n+   const retained=JSON.parse(await readFile(r.source,'utf8'))\n    ws.send(JSON.stringify({id:request.id,result:retained.find((x:{hash:string})=>x.hash===r.hash).response})); return\n   }\n   const t:Record<string,unknown>={TransactionType:r.operation ?? 'Payment',Fee:r.feeDrops,Account:r.from,Destination:r.to,InvoiceID:r.invoiceId,Amount:r.deliveredAmount??r.amountDrops}"
+        },
+        {
+          "filename": "tests/ledger-viewer.spec.ts",
+          "status": "modified",
+          "additions": 5,
+          "deletions": 5,
+          "patch": "@@ -8,8 +8,8 @@ let server:Server, url:string\n test.beforeEach(async({page})=>{ await page.routeWebSocket(/wss:\\/\\/.*/,ws=>ws.close()) })\n test.beforeAll(async()=>{server=createServer(async(req,res)=>{try{const name=(req.url??'/').split('?')[0];if(!['/','/index.html','/ledger.js','/style.css','/transactions.json'].includes(name)){res.writeHead(404).end();return}res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.json')?'application/json':name.endsWith('.css')?'text/css':'text/html');res.end(await readFile(resolve('site/ledger',name==='/'?'index.html':name.slice(1))))}catch{res.writeHead(404).end()}});await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${(server.address() as {port:number}).port}`})\n test.afterAll(async()=>{await new Promise<void>(r=>server.close(()=>r()))})\n-test('offline evidence, keyboard and accessibility',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(45);await expect(page.getByRole('link',{name:'Download public evidence JSON'})).toHaveAttribute('download','');await expect(page.getByRole('button')).toBeEnabled();await page.getByRole('button').focus();await expect(page.getByRole('button')).toBeFocused();const a=await new AxeBuilder({page}).analyze();expect(a.violations.filter(v=>['serious','critical'].includes(v.impact??''))).toEqual([])})\n-test('CORS and unavailable history retain snapshot',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(45);await expect(page.getByRole('status')).toContainText('finished');await expect(page.locator('.state').first()).toContainText('Historical')})\n+test('offline evidence, keyboard and accessibility',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(61);await expect(page.getByRole('link',{name:'Download public evidence JSON'})).toHaveAttribute('download','');await expect(page.getByRole('button')).toBeEnabled();await page.getByRole('button').focus();await expect(page.getByRole('button')).toBeFocused();const a=await new AxeBuilder({page}).analyze();expect(a.violations.filter(v=>['serious','critical'].includes(v.impact??''))).toEqual([])})\n+test('CORS and unavailable history retain snapshot',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(61);await expect(page.getByRole('status')).toContainText('finished');await expect(page.locator('.state').first()).toContainText('Historical')})\n test('stubbed v2 response states are conservative',async({page})=>{\n  await page.goto(url)\n  const statuses=await page.evaluate(async()=>{\n@@ -36,9 +36,9 @@ test('stubbed v2 response states are conservative',async({page})=>{\n test('auto-checks all rows and styles only matching validated successes',async({page})=>{\n  await stubLedger(page)\n  await page.goto(url)\n- await expect(page.getByRole('status')).toContainText('45/45 validated')\n- await expect(page.locator('.state.verified')).toHaveCount(45)\n- await expect(page.locator('caption')).toContainText('45 curated')\n+ await expect(page.getByRole('status')).toContainText('61/61 validated')\n+ await expect(page.locator('.state.verified')).toHaveCount(61)\n+ await expect(page.locator('caption')).toContainText('61 curated')\n  await expect(page.locator('a[href*=\"blob/main\"]')).toHaveCount(0)\n })\n "
+        }
+      ]
+    },
+    {
+      "id": "0fc9d007",
+      "sha": "0fc9d00795bd8b198a0ccf45eb4c815482be3039",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/0fc9d00795bd8b198a0ccf45eb4c815482be3039",
+      "message": "Align browser anchor assertions with fee and unavailable labels",
+      "fixedByPr": 403,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/0fc9d00795bd8b198a0ccf45eb4c815482be3039",
+      "cachedResponse": "commit-0fc9d00795bd8b198a0ccf45eb4c815482be3039.json",
+      "responseSha256": "41df03d76e1565b8571b15ccf3f9b973fe51736c762c22d9797f730b5372abcb",
+      "changedPaths": [
+        "docs/evidence/r5-a/README.md",
+        "docs/evidence/r5-a/browser-ux2.txt",
+        "tests/ux2.spec.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/ux2.spec.ts",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -92,7 +92,7 @@ test('completed Testnet answer gets its anchor without a reload and polling stop\n   await page.goto(`/?run=${run.runId}&pace=real`)\n   await expect(page.getByText('Anchoring…', { exact: true }).first()).toBeVisible()\n   ready = true\n-  const anchor = page.getByRole('link', { name: 'Anchored on XRPL · ledger 123' }).first()\n+  const anchor = page.getByRole('link', { name: 'Anchored on XRPL · anchor fee 12 drops (Testnet) · ledger 123' }).first()\n   await expect(anchor).toHaveAttribute('href', `https://testnet.xrpl.org/transactions/${'A'.repeat(64)}`)\n   const stoppedAt = reads\n   await page.waitForTimeout(4500)\n@@ -111,5 +111,5 @@ test('anchor waiting ends after its bounded deadline', async ({ page }) => {\n   await page.goto(`/?run=${run.runId}&pace=real`)\n   await expect(page.getByText('Anchoring…', { exact: true }).first()).toBeVisible()\n   await page.clock.fastForward(91_000)\n-  await expect(page.getByText('No anchor recorded for this Testnet run (anchoring was off or unavailable)', { exact: true }).first()).toBeVisible()\n+  await expect(page.getByText('Anchor unavailable (no validated anchor recorded)', { exact: true }).first()).toBeVisible()\n })"
+        }
+      ]
+    },
+    {
+      "id": "7debb3e5",
+      "sha": "7debb3e50aeaffd53cf0e385197e98fdc84c023a",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/7debb3e50aeaffd53cf0e385197e98fdc84c023a",
+      "message": "Assert honest matched declines and retain the zero-candidate browser contract",
+      "fixedByPr": 404,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/7debb3e50aeaffd53cf0e385197e98fdc84c023a",
+      "cachedResponse": "commit-7debb3e50aeaffd53cf0e385197e98fdc84c023a.json",
+      "responseSha256": "dfd0b1df86634dbedcac66db38b5595921f962a45a1f95275a004ae837553fe5",
+      "changedPaths": [
+        "tests/e2e.spec.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/e2e.spec.ts",
+          "status": "modified",
+          "additions": 19,
+          "deletions": 2,
+          "patch": "@@ -138,16 +138,33 @@ test('keyboard plan cancellation admits zero runs; Go now admits exactly once',\n   expect(admissions).toBe(1)\n })\n \n-test('a judge question outside the writer corpus ends with an honest publishing invitation', async ({ page }) => {\n+test('a judge question with declined matches explains policy and invites publishing', async ({ page }) => {\n   await page.goto('/?pace=real')\n   await page.getByRole('button', { name: 'Got it', exact: true }).click()\n   await page.getByLabel('Your question').fill('Which Singapore banks are piloting RLUSD settlement in 2026?')\n   await page.getByRole('button', { name: /^Ask/ }).click()\n   await page.getByRole('button', { name: 'Start now' }).click()\n   await finished(page)\n   const answer = page.getByRole('region', { name: 'Research answer' })\n-  await expect(answer).toContainText('No listed writer covers this yet · nothing bought')\n+  await expect(answer).toContainText(/Found 2 paid articles; none (?:selected by policy|cleared the value threshold)/)\n+  await expect(answer).not.toContainText('No listed writer covers this')\n+  await answer.getByText('Why ▸', { exact: true }).click()\n+  await expect(answer.locator('li')).toHaveCount(2)\n+  await expect(answer).toContainText('SKIP_LOW_VALUE')\n   await expect(answer.getByRole('link', { name: 'Publish a note on this →' })).toHaveAttribute('href', /docs\\/publishing\\.md$/)\n   await expect(answer.locator('.is-skel')).toHaveCount(0)\n   await expect(page.getByRole('status')).not.toContainText('answered from free sources')\n })\n+\n+test('zero candidate questions retain the no-writer publishing invitation', async ({ page }) => {\n+  await page.goto('/?pace=real')\n+  await page.getByRole('button', { name: 'Got it', exact: true }).click()\n+  await page.getByLabel('Your question').fill('How do Kubernetes pods schedule?')\n+  await page.getByRole('button', { name: /^Ask/ }).click()\n+  await page.getByRole('button', { name: 'Start now' }).click()\n+  await finished(page)\n+  const answer = page.getByRole('region', { name: 'Research answer' })\n+  await expect(answer).toContainText('No listed writer covers this yet · nothing bought')\n+  await expect(answer.getByRole('link', { name: 'Publish a note on this →' })).toBeVisible()\n+  await expect(answer.locator('li')).toHaveCount(0)\n+})"
+        }
+      ]
+    },
+    {
+      "id": "c61783bf",
+      "sha": "c61783bf220ae1f16bd156d8d3ce5e6a5d7446a7",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/c61783bf220ae1f16bd156d8d3ce5e6a5d7446a7",
+      "message": "test(ui): assert deduplicated finding and stance in lead",
+      "fixedByPr": 409,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/c61783bf220ae1f16bd156d8d3ce5e6a5d7446a7",
+      "cachedResponse": "commit-c61783bf220ae1f16bd156d8d3ce5e6a5d7446a7.json",
+      "responseSha256": "f07114d55b97fc2534d8f6726583854f82129536f35b6c03c0f9b34da71714d9",
+      "changedPaths": [
+        "tests/browser-demo.spec.ts",
+        "tests/e2e.spec.ts"
+      ],
+      "selectedPatches": [
+        {
+          "filename": "tests/browser-demo.spec.ts",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -29,7 +29,9 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W\n     await expect(page.getByText('Draft · free sources only', { exact: true })).toBeVisible()\n     await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })\n     await expect(page.getByText('Updated with paid evidence', { exact: true })).toBeVisible()\n-    await expect(page.locator('.ra-group').filter({ has: page.getByRole('heading', { name: /^Supports/ }) })).toContainText('26 weeks to 18 weeks')\n+    await expect(page.locator('.ra-vtext')).toContainText('26 weeks to 18 weeks')\n+  await expect(page.locator('.ra-vtext')).toContainText('Supports')\n+  await expect(page.locator('.ra-claim').filter({ hasText: '26 weeks to 18 weeks' })).toHaveCount(0)\n     await expect(page.getByRole('region', { name: /Purchase: AlphaLeak/ })).toContainText('Refunded S$0.30')\n     await expect(page.getByRole('region', { name: 'Purchase: The Fab Floor' })).toContainText('Paid by key reveal')\n     await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 kept · 1 refunded')"
+        },
+        {
+          "filename": "tests/e2e.spec.ts",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -47,7 +47,9 @@ test('UC3: AlphaLeak bought → proof fails → refunded → quarantined; The Fa\n   await expect(leak.getByText(/Checked against the writer/)).toBeVisible()\n   await expect(leak.getByText(/Refunded S\\$0.30/).first()).toBeVisible()\n   await expect(page.getByRole('region', { name: 'Purchase: The Fab Floor' })).toContainText('Verified')\n-  await expect(page.locator('.ra-group').filter({ has: page.getByRole('heading', { name: /^Supports/ }) })).toContainText('26 weeks to 18 weeks')\n+  await expect(page.locator('.ra-vtext')).toContainText('26 weeks to 18 weeks')\n+  await expect(page.locator('.ra-vtext')).toContainText('Supports')\n+  await expect(page.locator('.ra-claim').filter({ hasText: '26 weeks to 18 weeks' })).toHaveCount(0)\n   await page.getByRole('tab', { name: 'Writers' }).click()\n   await expect(page.getByText(/quarantined/i).first()).toBeVisible()\n   await page.getByRole('button', { name: 'AlphaLeak' }).click()"
+        }
+      ]
+    },
+    {
+      "id": "d08d9bbd",
+      "sha": "d08d9bbdf6619c6fb442a261cac5caca46a4cf76",
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/commit/d08d9bbdf6619c6fb442a261cac5caca46a4cf76",
+      "message": "ci(desktop): download the Electron binary before building the DMG\n\n#332 replaced `make dmg` (download + build) with a direct build call, so the\nrelease workflow's DMG jobs had no Electron binary (ELECTRON_SKIP_BINARY_DOWNLOAD)\nand v1.0.0-rc.1 failed to publish at lipo.",
+      "fixedByPr": 373,
+      "evidenceKind": "commit",
+      "endpoint": "repos/Collaboration95/theFastandtheFungible/commits/d08d9bbdf6619c6fb442a261cac5caca46a4cf76",
+      "cachedResponse": "commit-d08d9bbdf6619c6fb442a261cac5caca46a4cf76.json",
+      "responseSha256": "225f1d4843435638a21cc2fec24ca4b20767609b677b78f2c7860c19b421d989",
+      "changedPaths": [
+        ".github/workflows/desktop.yml"
+      ],
+      "selectedPatches": [
+        {
+          "filename": ".github/workflows/desktop.yml",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -37,6 +37,9 @@ jobs:\n           node-version-file: .nvmrc\n           cache: npm\n       - run: npm ci\n+      # ELECTRON_SKIP_BINARY_DOWNLOAD skips electron's postinstall; fetch the exact arch binary via gh.\n+      - name: Download the Electron binary for this arch\n+        run: node desktop/download.mjs\n       - name: Owner-dispatched signing setup\n         if: github.event_name == 'workflow_dispatch' && inputs.sign == true\n         run: node desktop/ci-signing.mjs"
+        }
+      ]
+    }
+  ]
+}

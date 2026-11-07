@@ -229,11 +229,11 @@ The browser is a view. The API owns retrieval, decisions, budget, payment and sy
 
 Counts are from a local run on 7 Nov 2026 at `a4514881` plus the v1.0.0 release-prep changes.
 
-- **Tests.** 1,369 TypeScript tests in the post-#398 integration check ([retained evidence](docs/evidence/refactor-b/README.md)) and 258 Python tests ([#393](https://github.com/Collaboration95/theFastandtheFungible/pull/393)); timings depend on host; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
+- **Tests.** 1,369 TypeScript tests in the post-#398 integration check ([retained evidence](docs/evidence/refactor-b/README.md)) and 258 Python tests ([#393](https://github.com/Collaboration95/theFastandtheFungible/pull/393)); timings depend on host; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run locally when affected; the complete hosted matrix runs nightly and for releases.
 - **Coverage gates.** Nine components each have an exact covered/total floor that may not fall; payments branches must also stay at or above 85% (86.2% in hosted CI). [Method and numbers](docs/evidence/round2-b/README.md).
 - **CI.** `changes` decides whether the full set runs. Then `verify`, `chaos`, `browser`, `python` and `artifacts` run in parallel, and an always-reporting `check` job refuses a failed, cancelled, missing or unexpectedly skipped one ([`ci.yml`](.github/workflows/ci.yml)). Five successful integration runs had a median wall time of 262 s (7 Nov, #396; branch/PR sample, not post-merge main). One failed attempt is retained ([measurements](docs/evidence/refactor-b/README.md)).
 - **Release admission.** A tag publishes only if its commit is on `main`, it equals the package version, same-SHA CI passed, and every artifact hash matches the manifest. Each of the SDK tarball, wheel and MCPB must also pass a clean-install consumer: cited passages, one receipt, one intent, an idempotent retry and the cap preserved. The publisher uploads those accepted bytes without rebuilding ([`release-contract.mjs`](scripts/release-contract.mjs), [evidence](docs/evidence/round2-d/README.md)).
-- **Merge gate.** `npm run check:fast` and green CI. [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md).
+- **Merge gate.** `npm run gate -- --publish` on the clean PR head (`local-gate` status). [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md).
 
 <a id="proof"></a>
 

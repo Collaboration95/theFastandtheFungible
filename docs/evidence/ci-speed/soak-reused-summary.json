@@ -1,0 +1,78 @@
+{
+  "source": "82c4716f5d55bf14cc9bab8edd6a803121ac0379",
+  "host": {
+    "platform": "darwin",
+    "release": "25.6.0",
+    "cpus": 10,
+    "node": "v26.3.1",
+    "load": [
+      3.24755859375,
+      4.140625,
+      4.2802734375
+    ]
+  },
+  "options": {
+    "runs": 2000,
+    "warmup": 200,
+    "concurrency": 1,
+    "seed": 279,
+    "historyRuns": 10000,
+    "eventsPerRun": 60,
+    "timeoutMs": 120000,
+    "burst": true,
+    "dataDir": "scratch/finals-soak-279-20261107125305546",
+    "output": "/Users/speedpowermac/.t3/worktrees/tftf/t3-c7a12f01/scratch/final-acceptance-20261107125305514/soak-same-engine.json"
+  },
+  "summary": {
+    "gates": {
+      "rssSlope": {
+        "value": 1.9215983518502022,
+        "limit": 5,
+        "pass": true
+      },
+      "rssMedian": {
+        "value": 27.466896057128906,
+        "limit": 100,
+        "pass": true
+      },
+      "rssMax": {
+        "value": 779.692268371582,
+        "limit": 1536,
+        "pass": true
+      },
+      "loopP99": {
+        "value": 24.788991,
+        "limit": 50,
+        "pass": true
+      },
+      "latencyP95": {
+        "value": 4.347542000010435,
+        "limit": 250,
+        "pass": true
+      }
+    },
+    "valid": true,
+    "pass": true,
+    "acceptanceEligible": true,
+    "completed": 2000,
+    "failed": 0,
+    "warmMedianMiB": 569.6689071655273,
+    "finalMedianMiB": 597.1358032226562,
+    "firstP95Ms": 153.15775000000576,
+    "lastP95Ms": 157.5052920000162,
+    "sampleGaps": 0,
+    "identityCount": 1,
+    "loopMethod": "maximum of worker one-second histogram p99s, 10 ms resolution"
+  },
+  "burst": {
+    "requested": true,
+    "limit": 4,
+    "submitted": 100,
+    "admitted": 4,
+    "overloaded": 96,
+    "idempotentRetries": 4,
+    "peak": 4,
+    "activeAfterDrain": 0,
+    "pass": true
+  }
+}
