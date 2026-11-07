@@ -1,24 +1,19 @@
-import { ResourceScope, waitForOutput } from '../shared/resource-scope.js'
+import { packedArtifact, withPackedSession, validatedTransactions } from './packed-consumer.js'
+import { waitForOutput } from '../shared/resource-scope.js'
 // Explicit opt-in (RA_ACCEPT_TESTNET=1): `npx -y <packed mcp tgz> app --testnet` from a fresh npm cache and a fresh
 // wallet cache, driven in a real browser, then every hash is checked on s.altnet. Public Testnet only; no real value.
 import assert from 'node:assert/strict'
-import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { mkdirSync, statSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 import { stopProcess } from './release-processes.js'
-if (process.env.RA_ACCEPT_TESTNET !== '1') throw Error('Network opt-in required: RA_ACCEPT_TESTNET=1')
-const manifestPath = resolve(process.argv[2] || 'dist/release/manifest.json')
-const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
-const tgz = resolve(dirname(manifestPath), manifest.artifacts.find((a: { kind: string }) => a.kind === 'mcp-tgz').file)
-const scope = new ResourceScope()
-try {
-const scratch = scope.evidenceDir('ra-testnet-app-', 'Testnet wallets and potentially signed obligations; retain for manual reconciliation')
+const { tgz } = packedArtifact(process.argv[2])
+await withPackedSession(true, async ({ scope, scratch, spawnPacked }) => {
 const evidence = resolve('docs/evidence/round3-d'); mkdirSync(evidence, { recursive: true })
-const cache = join(scratch, 'npm-cache'), state = join(scratch, 'state')
+const state = join(scratch, 'state')
 const boot = async () => {
   const started = performance.now()
-  const child = scope.spawn('npx', ['-y', '--cache', cache, pathToFileURL(tgz).href, 'app', '--testnet'], { cwd: scratch, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, XDG_STATE_HOME: state } as NodeJS.ProcessEnv })
+  const child = spawnPacked(tgz, ['app', '--testnet'])
   let out = ''
   child.stdout.on('data', chunk => { out += chunk })
   child.stderr.resume()
@@ -31,15 +26,9 @@ const boot = async () => {
   assert.equal(statSync(join(state, 'researchagent/testnet/wallets.private.json')).mode & 0o777, 0o600)
   return { child, url: ready[1], seconds, payer }
 }
-const rpc = async (hash: string) => {
-  const response = await fetch('https://s.altnet.rippletest.net:51234/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'tx', params: [{ transaction: hash }] }), signal: AbortSignal.timeout(15000) })
-  return (await response.json()).result
-}
-try {
   const cold = await boot()
   assert(cold.seconds < 60, `cold start ${cold.seconds}s exceeds 60 s`)
-  const browser = await chromium.launch()
-  try {
+  const browser = scope.own(await chromium.launch())
     const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage()
     await page.goto(cold.url + '/?pace=real')
     await page.getByRole('button', { name: /^Kestrel–TSMC outlook/ }).waitFor()
@@ -66,14 +55,7 @@ try {
     const hrefs = [await links.nth(0).getAttribute('href'), await links.nth(1).getAttribute('href'), await anchorLink.getAttribute('href')]
     const hashes = hrefs.map(href => href?.match(/^https:\/\/testnet\.xrpl\.org\/transactions\/([A-F0-9]{64})$/i)?.[1]?.toUpperCase())
     await page.screenshot({ path: join(evidence, 'bought.png'), fullPage: true })
-    const transactions = []
-    for (const [i, hash] of hashes.entries()) {
-      assert(hash, `explorer link ${i} missing`)
-      const result = await rpc(hash)
-      assert.equal(result.validated, true); assert.equal(result.meta.TransactionResult, 'tesSUCCESS')
-      const tx = result.tx_json ?? result; assert.equal(tx.TransactionType, ['EscrowCreate', 'EscrowFinish', 'AccountSet'][i])
-      transactions.push({ type: tx.TransactionType, hash, ledgerIndex: result.ledger_index, feeDrops: Number(tx.Fee) })
-    }
+    const transactions = await validatedTransactions(hashes)
     await stopProcess(cold.child)
     const warm = await boot()
     assert.equal(warm.payer, cold.payer, 'warm start must reuse the cached wallets')
@@ -81,7 +63,5 @@ try {
     const probe = { network: 'XRPL Testnet (s.altnet)', question: 'Kestrel–TSMC outlook, pricing & margins', payer: cold.payer, coldReadySeconds: +cold.seconds.toFixed(1), warmReadySeconds: +warm.seconds.toFixed(1), browserAskToAnchorSeconds: +askSeconds.toFixed(1), anchorShownWithoutReload: liveAnchor, transactions }
     writeFileSync(join(evidence, 'probe.json'), JSON.stringify(probe, null, 2) + '\n')
     console.log(JSON.stringify(probe))
-  } finally { await browser.close() }
-} finally { /* outer scope owns scratch and groups */ }
-
-} finally { await scope.close() }
+  await browser.close()
+})
