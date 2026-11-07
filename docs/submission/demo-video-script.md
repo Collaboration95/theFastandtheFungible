@@ -221,9 +221,9 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
   ```
   Four lines, ending `PASS testnet 12/12 (read-only, s.altnet)` and `RESULT PASS`.
 - **Then open:** <https://collaboration95.github.io/theFastandtheFungible/ledger/>
-  and let "Read-only check finished: 45/45 validated" appear (about 2 s).
+  and let "Read-only check finished: 61/61 validated" appear (wait for the live result; do not preclaim success).
 - **Caption:** "Python verifier · no Node · read-only XRPL Testnet lookups" →
-  "45 historical Testnet transactions · checked live from your browser"
+  "61 historical Testnet transactions · checked live from your browser"
 - **VO (40 words):** "Don't trust us. Verify it. A Python verifier with no
   Node re-checks every receipt against the ledger. Our ledger page re-validates
   forty-five transactions from your browser in about two seconds. Every number

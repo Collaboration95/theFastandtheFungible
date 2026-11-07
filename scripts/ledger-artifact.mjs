@@ -72,9 +72,26 @@ export function artifact() {
     else throw Error('Unsupported round-three transaction')
     rows.push(row)
   }
+  const refreshSource = 'docs/evidence/r5-r/ledger-responses.json'
+  const refreshed = JSON.parse(read(refreshSource))
+  for (const { hash, source, response: r } of refreshed) {
+    if (!read(source).includes(hash) || r.hash !== hash || !r.validated || r.meta?.TransactionResult !== 'tesSUCCESS') throw Error('Invalid round-five evidence')
+    const t = r.tx_json
+    const row = { hash, ledgerIndex: r.ledger_index, feeDrops: t.Fee, date: r.close_time_iso.slice(0, 10), source: refreshSource, sourceCommit: 'f328764fd9ce1badd41174a7da4383d2af637ef9', label: `${source.includes('j5-coverage') ? 'Team-authored writer · fixture models' : source.includes('m1-iou') ? 'TEST-SGD IOU · stand-in for RLUSD · fictional writer' : 'Local publish onboarding · generated test note'} · ${t.TransactionType}` }
+    if (t.TransactionType.startsWith('Escrow')) {
+      const create = t.TransactionType === 'EscrowCreate' ? t : refreshed.find(x => x.response.tx_json.TransactionType === 'EscrowCreate' && x.response.tx_json.Account === t.Owner && x.response.tx_json.Sequence === t.OfferSequence)?.response.tx_json
+      if (!create) throw Error('Missing round-five create')
+      Object.assign(row, { group: 'escrow', operation: { EscrowCreate: 'create', EscrowFinish: 'finish' }[t.TransactionType], owner: create.Account, destination: create.Destination, createSequence: create.Sequence, amountDrops: create.Amount, condition: t.Condition, fulfillment: t.Fulfillment })
+    } else if (t.TransactionType === 'AccountSet') {
+      const memo = t.Memos.find(m => Buffer.from(m.Memo.MemoType, 'hex').toString() === 'researchagent/anchor-v1').Memo
+      Object.assign(row, { group: 'anchor', operation: 'anchor', account: t.Account, head: Buffer.from(memo.MemoData, 'hex').toString().split(':')[0] })
+    } else if (t.TransactionType === 'CredentialCreate') Object.assign(row, { group: 'Testnet, credential', operation: t.TransactionType, issuer: t.Account, subject: t.Subject, credentialTypeText: Buffer.from(t.CredentialType, 'hex').toString() })
+    else throw Error('Unsupported round-five transaction')
+    rows.push(row)
+  }
   rows.sort((a, b) => priority(a) - priority(b))
   if (rows.length !== new Set(rows.map(r => r.hash)).size) throw Error('Duplicate ledger hash')
-  return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-05', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
+  return JSON.stringify({ network: 'xrpl:1', snapshotDate: '2026-11-07', label: 'TESTNET · no real value · historical evidence', rows }, null, 2) + '\n'
 }
 function htmlArtifact(out) {
   const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')

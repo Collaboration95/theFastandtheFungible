@@ -54,8 +54,7 @@ What's new since SingHacks (183 merged pull requests, 11 tagged releases):
   through XLS-85 token escrow. Official RLUSD payments work on Testnet; RLUSD
   escrow waits on one issuer flag, which we document as builder feedback.
 - **Verify, don't trust.** TypeScript and Python verifiers re-check receipts
-  against the ledger. Our public ledger page re-validates 45 transactions in
-  about 2 seconds.
+  against the ledger. Our public ledger page lists 61 historical transactions with live read-only checks.
 - **Zero clone.** One line runs the whole judge path on Testnet in 84 s and ends
   with `RESULT PASS`:
   `npx -y <release>/researchagent-mcp-1.0.0.tgz try --testnet`.
@@ -83,7 +82,7 @@ instance: everything runs on your machine. Mainnet is disabled in code.
 | Stablecoin escrow | TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381), [#384](https://github.com/Collaboration95/theFastandtheFungible/pull/384), [m1-iou](../evidence/m1-iou/README.md) |
 | "Official RLUSD payments work on Testnet" | Official Testnet RLUSD issuer, UC2 0.90 paid, UC3 0.30 refunded, 3 Nov | [rlusd.md](../evidence/rlusd.md) |
 | "RLUSD escrow waits on one issuer flag" | Issuer flags 2174353408 lack AllowTrustLineLocking; predicted refusal, never submitted | [BUILDER-FEEDBACK §1](../BUILDER-FEEDBACK.md#1-issuer-permission-blocks-rlusd-escrow) |
-| "45 transactions in about 2 seconds" | 45/45 in 1.97 s, one read-only measurement, 7 Nov | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388), [live-ledger.json](../evidence/round4-l4/live-ledger.json) |
+| 61 historical transactions | 61/61 validated in 1.65 s, read-only, 7 Nov | [retained live check](../evidence/r5-r/live-ledger.json) |
 | "84 s … `RESULT PASS`" | One cold run (empty npm cache, fresh faucet wallets), 84.2 s, 7 Nov. Two of four cold attempts finished under the 90 s deadline | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
 | "Credential in 44 s" | 43.8 s cold, synthetic starter notes, public faucet | [#378](https://github.com/Collaboration95/theFastandtheFungible/pull/378), [round3-c](../evidence/round3-c/README.md) |
 | Team-authored writer | team-authored · real content · not an independent writer · Testnet; v2 held-out 8/20; v1 dev 16/20 buy-and-cite | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390), [J5 evidence](../evidence/j5-coverage/README.md) |

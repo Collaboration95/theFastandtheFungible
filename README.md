@@ -5,13 +5,19 @@
   </picture>
 </p>
 
+<h3 align="center">Research with a wallet.</h3>
+
+<p align="center">ResearchAgent answers from free sources, then buys the missing evidence from writers over x402 on XRPL, inside a budget you set.</p>
+
+```sh
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz try --testnet
+```
+
+Team-authored build notes and fictional demo writers; no independent writers yet. Testnet only · no real value.
+
 <p align="center">
   <img src="design/character/hero.gif" width="672" height="92" alt="Pixel-art agent walks a dashed ledger line, searches a locked page, drops a coin into the escrow lock, the writer's key turns, and it walks off with the verified page while its proof stays anchored on the ledger">
 </p>
-
-<h3 align="center">Research with a wallet.</h3>
-
-<p align="center">ResearchAgent answers from free sources, then buys the missing evidence from independent writers over x402 on XRPL, inside a budget you set.</p>
 
 <p align="center">
   <a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Try it in your browser</a> ·
@@ -26,7 +32,7 @@
   <a href="https://github.com/Collaboration95/theFastandtheFungible/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Collaboration95/theFastandtheFungible/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://codespaces.new/Collaboration95/theFastandtheFungible"><img alt="Open in GitHub Codespaces" src="https://github.com/codespaces/badge.svg"></a>
   <a href="https://codespaces.new/Collaboration95/theFastandtheFungible?devcontainer_path=.devcontainer%2Ftestnet%2Fdevcontainer.json"><img alt="Open in Codespaces · XRPL Testnet" src="https://img.shields.io/badge/Open_in_Codespaces-XRPL_Testnet-blue"></a>
-  <a href="#numbers"><img alt="Latest committed nightly scorecard" src="docs/media/scorecard.svg"></a>
+  <a href="#numbers"><img alt="Scorecard (3 Nov 2026)" src="docs/media/scorecard.svg"></a>
   <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0"><img alt="Latest release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-lightgrey"></a>
   <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-lightgrey"></a>
@@ -100,7 +106,7 @@ claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=
 claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz --testnet --iou
 ```
 
-TEST-SGD (our Testnet IOU, no real value, stand-in for RLUSD; next packed build): append `--iou` to either Testnet command (or set `ESCROW_ASSET=test-iou`).
+TEST-SGD (our Testnet IOU, no real value, stand-in for RLUSD; included in v1.0.0): append `--iou` to either Testnet command (or set `ESCROW_ASSET=test-iou`). First cold call took 134.1 s, including 102.9 s issuer/trust-line provisioning; cache reused thereafter ([7 Nov review extract](docs/evidence/r5-r/review-timings.txt), [#384](https://github.com/Collaboration95/theFastandtheFungible/pull/384)).
 
 
 No MCP client? One command starts the app on real Testnet (also **release v1.0.0 · not yet on npm/PyPI/MCP Registry**; Node ≥ 22.13, no clone). It serves the web UI on `127.0.0.1` and prints the payer address, how to point the SDK at it and a daily cap (S$5.00 for Testnet). Add `--open` to launch your browser; drop `--testnet` for the labelled SIMULATED rail ([details](docs/testnet.md#zero-clone-testnet-app-v100)).
@@ -183,7 +189,7 @@ Every row links to committed evidence. Labels are part of the claim: **synthetic
 | A Mac app that recovers | 13 packaged recovery cases pass: missing, locked or corrupt credentials, port conflict, outage and restart. All 13 privileged IPC methods reject the research window. | local, unsigned, fixture | [round2-c2](docs/evidence/round2-c2/README.md) |
 | Testnet ledger page | 45/45 validated live on load (5 Nov check); WebSocket checks compare amounts, bindings and credential identity. Unavailable history stays labelled. | Testnet, no real value | [round2-p1](docs/evidence/round2-p1/README.md), [live page](https://collaboration95.github.io/theFastandtheFungible/ledger/) |
 | XRPL primitives used, and why | [Payment + InvoiceID](https://testnet.xrpl.org/transactions/1F2449A4660747066E99A89CEA5B49276D266F35820789042A8694EDB1DA23AF) binds payment to the quoted content. [EscrowCreate + PREIMAGE-SHA-256](https://testnet.xrpl.org/transactions/C82B337DC66343C64F653E86627E590434670E48AC4526369338ED1099A25926) locks XRP pending proof or explicit cancellation (buyer-controlled). [RLUSD trust line](https://testnet.xrpl.org/transactions/3232360079F218229444F11B9945D0E5F29284FDCD7808AE5FB8D3AE9290F6AA) supports issued currency with exact validated delivered_amount. [CredentialCreate/Accept (#357)](https://testnet.xrpl.org/transactions/225F19ED4BF1C206AE140D5286BE352F2F6E7A7A05A317D949DAEE876E98DAC6) identifies accepted writer credentials independently of content quality. [x402 v2](https://testnet.xrpl.org/transactions/FE6EF0F8785B4FC776551B378B62B8E9BA480D17FA375A3BB637FCE310AD1373) carries challenge, signed-payment and settlement headers. [Starter Kit t54](https://testnet.xrpl.org/transactions/570DE6EB58157FB8C5D1F8E23ECAF0A8340750ADFCB6A238CB8E70E2FD4B5588) interoperates with pinned x402-xrpl 0.3.4. | Testnet, no real value; synthetic articles | [XRPL contract](docs/x402-xrpl.md), [Credentials](docs/evidence/round2-n/README.md) |
-| Ranked builder feedback | Seven XRPL and x402 findings ranked by severity with workaround, suggested fix and mainnet consequence, plus the September submissions. | observed and code-derived, labelled | [BUILDER-FEEDBACK](docs/BUILDER-FEEDBACK.md) |
+| Ranked builder feedback | 33 numbered findings (B01–B33), top seven ranked, plus dated entries, by severity with workaround, suggested fix and mainnet consequence, plus the September submissions. | observed and code-derived, labelled | [BUILDER-FEEDBACK](docs/BUILDER-FEEDBACK.md) |
 
 ## Quick start
 
@@ -223,9 +229,9 @@ The browser is a view. The API owns retrieval, decisions, budget, payment and sy
 
 Counts are from a local run on 7 Nov 2026 at `a4514881` plus the v1.0.0 release-prep changes.
 
-- **Tests.** 1,319 TypeScript tests in 158 files (Vitest, about 40 s) and 258 Python tests; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
+- **Tests.** 1,369 TypeScript tests in the post-#398 integration check ([retained evidence](docs/evidence/refactor-b/README.md)) and 258 Python tests ([#393](https://github.com/Collaboration95/theFastandtheFungible/pull/393)); timings depend on host; `npm run check:fast` also runs hygiene, lint, typecheck and 20 chaos episodes with four escrow probes. Chromium end-to-end and axe accessibility specs run on every code change.
 - **Coverage gates.** Nine components each have an exact covered/total floor that may not fall; payments branches must also stay at or above 85% (86.2% in hosted CI). [Method and numbers](docs/evidence/round2-b/README.md).
-- **CI.** `changes` decides whether the full set runs. Then `verify`, `chaos`, `browser`, `python` and `artifacts` run in parallel, and an always-reporting `check` job refuses a failed, cancelled, missing or unexpectedly skipped one ([`ci.yml`](.github/workflows/ci.yml)). Hosted wall time on the integration PR: 249 s.
+- **CI.** `changes` decides whether the full set runs. Then `verify`, `chaos`, `browser`, `python` and `artifacts` run in parallel, and an always-reporting `check` job refuses a failed, cancelled, missing or unexpectedly skipped one ([`ci.yml`](.github/workflows/ci.yml)). Five successful integration runs had a median wall time of 262 s (7 Nov, #396; branch/PR sample, not post-merge main). One failed attempt is retained ([measurements](docs/evidence/refactor-b/README.md)).
 - **Release admission.** A tag publishes only if its commit is on `main`, it equals the package version, same-SHA CI passed, and every artifact hash matches the manifest. Each of the SDK tarball, wheel and MCPB must also pass a clean-install consumer: cited passages, one receipt, one intent, an idempotent retry and the cap preserved. The publisher uploads those accepted bytes without rebuilding ([`release-contract.mjs`](scripts/release-contract.mjs), [evidence](docs/evidence/round2-d/README.md)).
 - **Merge gate.** `npm run check:fast` and green CI. [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md).
 
@@ -261,7 +267,7 @@ citations matched to delivered passages and an idempotent retry. It does not val
 Native XRP interop with the XRPL AI Starter Kit's t54 client and server: [compatibility](docs/x402-xrpl.md#starter-kit-compatibility) · [Testnet evidence](docs/evidence/starter-kit-interop.md).
 
 
-**Testnet cost and latency card** ([`testnet-cost-card.mjs`](scripts/testnet-cost-card.mjs), [raw probe](docs/evidence/round3-a/README.md)).
+**Testnet cost and latency card** ([`testnet-cost-card.mjs`](scripts/testnet-cost-card.mjs), [fee probe](docs/evidence/round3-a/README.md), [7 Nov cold review](docs/evidence/r5-r/review-timings.txt)).
 Measured on XRPL Testnet through the packed MCP tgz (`--testnet`), fixture models, no real value; the projection row is a projection, not a measurement.
 
 | Item | Observed |
@@ -269,8 +275,9 @@ Measured on XRPL Testnet through the packed MCP tgz (`--testnet`), fixture model
 | Key-reveal purchase (EscrowCreate + EscrowFinish) | 435 drops (12 + 423) |
 | Answer anchor (AccountSet) | 12 drops |
 | Plain payment / writer-signed refund | 12 / 12 drops (earlier runs) |
-| MCP initialize · cold wallet provisioning · cached wallets | 11.2 s · 17 s · 3.9 s |
-| Anchored key-reveal answer, end to end (slowest of 2 runs) | 45.7 s |
+| MCP initialize · cold wallet provisioning · cached wallets | 1.5 s initialize · 20.8 s XRP provisioning (7 Nov review; cached timings vary) |
+| Cold `try --testnet`, fresh cache and wallets | 84.19 s; earlier deadline misses retained ([J2](docs/evidence/round4-j2/try-timing.json)) |
+| First `--iou` ask / provisioning within it | 134.1 s / 102.9 s ([7 Nov review](docs/evidence/r5-r/review-timings.txt)); TEST-SGD, no real value |
 | **Projection** at an assumed S$2.00 per XRP | S$0.00087 per purchase, S$0.00002 per anchor (fees only) |
 
 Regenerate: `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet && node scripts/testnet-cost-card.mjs --xrp-sgd 2.00 --markdown`. The EscrowFinish fee scales with the serialized fulfillment size ([builder feedback B19](docs/BUILDER-FEEDBACK.md)).

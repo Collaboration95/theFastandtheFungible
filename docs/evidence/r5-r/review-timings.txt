@@ -1,0 +1,26 @@
+
+### Current numbers (this run unless marked)
+
+| Metric | Value | Scope |
+|---|---|---|
+| `try --testnet`, cold, fresh cache and wallets → `RESULT PASS` | **73.0 s** wall (69.7 s runtime; wallets 19.6 s) | v1.0.0 release URL, Testnet, fixture models |
+| MCP stdio `initialize`, cold | **1.5 s** (warm 2.1 s) | round 4: 56.5 s |
+| MCP `wallet_status` (faucet provisioning) | 20.8 s | |
+| MCP key-reveal ask + anchor | 29.9–35.6 s | team-authored writer |
+| MCP `--iou` first ask (cold provisioning) | **134.1 s** (provisioning 102.9 s) | TEST-SGD, no real value |
+| `app --testnet` → ready | **19.4 s** | round 4: 134 s |
+| App ask → Done → anchored (XRPL Q) | 14.6–16.8 s → 28.5–30 s | |
+| Wheel venv + install / verify `--ledger` | 2.1 s / 3.3–6.4 s, 4 lines | |
+| `init` / `publish --testnet` (stranger, 208 words) | 1.8 s / 27.1 s to a Credential | first try |
+| `/ledger/` 45/45 | 3.1 s | round 4: 27.5 s |
+| `/demo/` → Done | 7.8 s (no-show tab 20.7 s) | |
+| My XRPL questions bought and cited (app + MCP) | **4/4**; off-corpus 0/2 bought | 6 runs |
+| My XRPL questions whose lead finding answers the question | **0/4** [O, my judgement] | the "answers-it" metric below |
+| A stranger's on-topic note bought by the running app | **0/1** (value 0.159 < 0.20) | |
+| Judge bank, buy-and-cite | **v2 held-out 8/20 · v1 dev 16/20** | committed J5 evidence, local packed candidate (not v1.0.0 bytes) |
+| Online receipt verification | dev 16/20 · held-out 8/20 (every failure is a no-purchase missing anchor) | J5 |
+| Hard-gate audit violations | 0 (J5 banks); scorecard 0 across 568 observations (3 Nov) | |
+| Fixture/LIVE scorecard | 93.15% useful spend, 6.85% waste — **from 3 Nov** (the last history entry is a 7 Nov fixture run on `421f5f9f`, dirty tree) | |
+| Testnet fees | 435 drops per key reveal, 12 per anchor or refund | unchanged |
+| Main CI | 337 s (`6819f1e6`), 392 s (`db50380b`) | |
+
