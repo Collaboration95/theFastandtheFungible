@@ -18,11 +18,12 @@ run('node', ['scripts/build-mcpb.mjs'])
 const mcpRoot = resolve('dist/mcpb')
 const mcpPkg = JSON.parse(readFileSync(join(mcpRoot, 'package.json')))
 writeFileSync(join(mcpRoot, 'bin.mjs'), '#!/usr/bin/env node\nawait import("./mcp/extension.mjs")\n')
-writeFileSync(join(mcpRoot, 'package.json'), JSON.stringify({ name: 'researchagent-mcp', version: mcpPkg.version, type: 'module', engines: {node: '>=22.13'}, bin: { 'researchagent-mcp': './bin.mjs' }, bundledDependencies: Object.keys(mcpPkg.dependencies).concat(['@playwright/test', 'playwright', 'playwright-core']), dependencies: {...mcpPkg.dependencies, '@playwright/test': '*', playwright: '*', 'playwright-core': '*'} }))
+writeFileSync(join(mcpRoot, 'package.json'), JSON.stringify({ ...mcpPkg, engines: { node: '>=22.13' }, bin: { 'researchagent-mcp': './bin.mjs' } }))
 // `app` subcommand: ship the built web UI (about 0.8 MB) so `npx <tgz> app` needs no clone. A separate outDir keeps dist/release intact.
 run('node_modules/.bin/vite', ['build', '--outDir', 'dist/mcp-ui', '--emptyOutDir'])
 cpSync('dist/mcp-ui', join(mcpRoot, 'ui'), { recursive: true })
 const mcpPacked = JSON.parse(execFileSync('npm', ['pack', mcpRoot, '--json', '--pack-destination', out], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }))[0]
+if (statSync(join(out, mcpPacked.filename)).size > 8_000_000) throw Error('MCP tgz exceeds the 8 MB cold-start budget')
 for (const name of ['ResearchAgent.mcpb', 'server.json']) cpSync('dist/' + name, join(out, name))
 const pkg = JSON.parse(readFileSync('package.json')); const sdk = JSON.parse(readFileSync('packages/sdk/package.json'))
 const pyVersion = readFileSync('packages/sdk-python/pyproject.toml', 'utf8').match(/^version = "([^"]+)"/m)[1]

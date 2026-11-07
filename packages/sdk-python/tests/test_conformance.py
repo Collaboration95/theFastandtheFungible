@@ -168,3 +168,20 @@ def test_cli_ledger_prints_testnet_line_and_skips_simulated():
     )
     assert result.returncode == 0
     assert "SKIP audit anchor: simulated run (no ledger)" in result.stdout
+
+
+def test_cli_compact_and_verbose():
+    import os
+    import sys
+    import researchagent
+
+    assert researchagent.__version__
+    command = [sys.executable, "-m", "researchagent", "verify", "docs/evidence/round2-g/redundant.receipts.json", "--ledger"]
+    env = {**os.environ, "PYTHONPATH": str(ROOT / "packages/sdk-python/src")}
+    compact = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True)
+    verbose = subprocess.run([*command, "--verbose"], cwd=ROOT, env=env, capture_output=True, text=True)
+    assert compact.returncode == verbose.returncode == 0
+    assert len(compact.stdout.splitlines()) <= 12
+    assert compact.stdout.rstrip().endswith("RESULT PASS")
+    assert verbose.stdout.rstrip().endswith("RESULT PASS")
+    assert len(verbose.stdout.splitlines()) > len(compact.stdout.splitlines())

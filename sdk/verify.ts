@@ -138,7 +138,25 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   if (options.testnet || options.onlineLedger && (!b.label.includes('SIMULATED') || b.ledgerAnchor || b.payments.some(p => p.escrowTerms && p.escrowTerms.asset !== 'XRP'))) {
     const owned = options.ledger ? undefined : testnetLedger(testnetUrl())
     try {
-      const found = [...await verifyOnTestnet(b.payments, options.ledger ?? owned!), ...await verifyEscrowEvents(entries, options.ledger ?? owned!)]
+      const ledger = options.ledger ?? owned!
+      // These independent proofs often reference the same validated transaction.
+      // Share in-flight reads; pending/missing responses are never retained.
+      const transactions = new Map<string, ReturnType<Ledger['request']>>()
+      const cached: Ledger = { request(request) {
+        if (request.command !== 'tx') return ledger.request(request)
+        const key = JSON.stringify(request)
+        let pending = transactions.get(key)
+        if (!pending) {
+          pending = ledger.request(request).then(response => {
+            if (!response.result.validated) transactions.delete(key)
+            return response
+          }, error => { transactions.delete(key); throw error })
+          transactions.set(key, pending)
+        }
+        return pending
+      } }
+      const [payments, escrow] = await Promise.all([verifyOnTestnet(b.payments, cached), verifyEscrowEvents(entries, cached)])
+      const found = [...payments, ...escrow]
       for (const c of found) checks.push({ check: `testnet ${c.kind} ${c.intentId}`, status: c.status === 'ok' || c.status === 'refunded' ? 'PASS' : c.status === 'skipped' ? 'SKIP' : 'FAIL', detail: c.detail })
       add('testnet coverage', b.payments.every(p => p.label === XRPL_LABEL), 'All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof')
     } catch { add('testnet', false, 'Read-only Testnet lookup unavailable') } finally { await owned?.close() }

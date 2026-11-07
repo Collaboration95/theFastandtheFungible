@@ -1,47 +1,43 @@
-import { cpSync, mkdirSync, readFileSync, writeFileSync, readdirSync, unlinkSync, rmSync } from 'node:fs'
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { transformSync } from 'esbuild'
-import { resolve } from 'node:path'
-// Explicit source allowlist: never package .env, databases or local wallet data.
+import { build } from 'esbuild'
+import { resolve, relative, dirname } from 'node:path'
+
+// Only public source assets enter the portable runtime; never copy operator state.
 const out = resolve('dist/mcpb')
-rmSync(out, { recursive: true, force: true })
+execFileSync('python3', ['-c', 'import shutil,sys; shutil.rmtree(sys.argv[1], ignore_errors=True)', out])
 mkdirSync(out, { recursive: true })
-for (const dir of ['mcp', 'server', 'shared', 'sdk', 'publisher']) cpSync(dir, `${out}/${dir}`, { recursive: true, filter: source => !source.endsWith('.db') })
-mkdirSync(`${out}/scripts`, { recursive: true })
-cpSync('scripts/publish-site.ts', `${out}/scripts/publish-site.ts`)
 for (const dir of ['corpus', 'writers', 'calibration']) cpSync(`data/${dir}`, `${out}/data/${dir}`, { recursive: true })
-mkdirSync(`${out}/eval/decisions`, { recursive: true })
-cpSync('eval/decisions/calibration.ts', `${out}/eval/decisions/calibration.ts`)
-cpSync('eval/decisions/metrics.ts', `${out}/eval/decisions/metrics.ts`)
-mkdirSync(`${out}/scripts`, { recursive: true })
-cpSync('scripts/testnet-wallets.ts', `${out}/scripts/testnet-wallets.ts`)
 cpSync('LICENSE', `${out}/LICENSE`)
-cpSync('mcp/manifest.json', `${out}/manifest.json`)
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
 const manifest = JSON.parse(readFileSync('mcp/manifest.json', 'utf8'))
 manifest.version = pkg.version
 writeFileSync(`${out}/manifest.json`, JSON.stringify(manifest, null, 2))
-// Reuse the exact lockfile dependency graph. No package scripts run.
-writeFileSync(`${out}/package.json`, JSON.stringify({ ...pkg, scripts: {}, devDependencies: {} }))
-cpSync('package-lock.json', `${out}/package-lock.json`)
-execFileSync('npm', ['ci', '--ignore-scripts', '--omit=dev'], { cwd: out, stdio: 'inherit' })
-// Existing report generation imports Playwright at startup; ship its JS, no browsers.
-for (const name of ['@playwright/test', 'playwright', 'playwright-core']) cpSync(`node_modules/${name}`, `${out}/node_modules/${name}`, { recursive: true })
-// Transpile the allowlisted sources; runtime uses plain portable Node ESM.
-function compile(dir) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = `${dir}/${entry.name}`
-    if (entry.isDirectory()) compile(path)
-    else if (entry.name.endsWith('.ts')) {
-      writeFileSync(path.slice(0, -3) + '.js', transformSync(readFileSync(path, 'utf8'), { loader: 'ts', format: 'esm', target: 'node22' }).code)
-      unlinkSync(path)
-    }
-  }
+writeFileSync(`${out}/package.json`, JSON.stringify({ name: 'researchagent-mcp', version: pkg.version, type: 'module', dependencies: {} }))
+// Each entry stays at its original depth. Rebase module URLs before bundling so
+// worker, corpus and app paths retain their source semantics even in chunks.
+for (const [entry, target] of [
+  ['mcp/server.ts', 'mcp/server.js'], ['mcp/app.ts', 'mcp/app.js'],
+  ['mcp/try.ts', 'mcp/try.js'], ['scripts/publish-site.ts', 'scripts/publish-site.js'],
+  ['server/engine-worker.mjs', 'server/engine-worker.mjs'], ['scripts/verify-answer.ts', 'scripts/verify-answer.js'],
+]) {
+  await build({ entryPoints: [entry], outfile: `${out}/${target}`, bundle: true, platform: 'node', format: 'esm', target: 'node22', minify: true,
+    external: ['@playwright/test'],
+    banner: { js: "import { createRequire as __raRequire } from 'node:module'; const require = __raRequire(import.meta.url);" },
+    plugins: [{ name: 'portable-paths', setup(b) { b.onLoad({ filter: /\.(ts|mjs)$/ }, async ({ path }) => {
+      if (path.includes('/node_modules/')) return
+      let contents = readFileSync(path, 'utf8')
+      if (path.endsWith('/server/engine-worker.mjs')) contents = contents.replace("import { register } from 'tsx/esm/api'", '').replace('register()', '')
+      // PDF rendering already falls back to HTML when Chromium is unavailable.
+      // Keep that fallback without shipping a browser test framework at startup.
+      if (path.endsWith('/server/agents/report.ts')) contents = contents.replace("import { chromium } from '@playwright/test'", '').replace('browser = await chromium.launch', "const { chromium } = await import('@playwright/test'); browser = await chromium.launch")
+      const sourceUrl = relative(dirname(resolve(target)), path).replaceAll('\\', '/')
+      contents = contents.replaceAll('import.meta.url', `new URL(${JSON.stringify(sourceUrl)}, import.meta.url).href`)
+      return { contents, loader: path.endsWith('.ts') ? 'ts' : 'js' }
+    }) } }],
+  })
 }
-for (const dir of ['mcp', 'server', 'shared', 'sdk', 'publisher', 'eval', 'scripts']) compile(`${out}/${dir}`)
-const worker = `${out}/server/engine-worker.mjs`
-writeFileSync(worker, readFileSync(worker, 'utf8').replace("import { register } from 'tsx/esm/api'", '').replace('register()', '').replaceAll('.ts\'', '.js\''))
-writeFileSync(`${out}/mcp/extension.mjs`, readFileSync('mcp/extension.mjs', 'utf8').replace('./server.ts', './server.js'))
+writeFileSync(`${out}/mcp/extension.mjs`, readFileSync('mcp/extension.mjs', 'utf8').replaceAll('./server.ts', './server.js').replaceAll('./try.ts', './try.js'))
 execFileSync('node_modules/.bin/mcpb', ['validate', `${out}/manifest.json`], { stdio: 'inherit' })
 execFileSync('node_modules/.bin/mcpb', ['pack', out, resolve('dist/ResearchAgent.mcpb')], { stdio: 'inherit' })
 const { createHash } = await import('node:crypto')

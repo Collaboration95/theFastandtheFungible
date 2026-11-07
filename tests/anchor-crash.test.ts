@@ -1,6 +1,6 @@
 // Crash boundary injection: disk DB reopened; ledger accepts duplicate blobs once.
-import { it, expect } from 'vitest'
-import { mkdtempSync } from 'node:fs'
+import { it, expect, vi } from 'vitest'
+import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Store } from '../server/store.js'
@@ -8,6 +8,12 @@ import { AnswerAnchors } from '../server/anchor.js'
 import { XrplPayer } from '../server/xrpl.js'
 import { Wallet, decode } from 'xrpl'
 import type { Ledger } from '../shared/xrpl.js'
+// Anchor recovery applies to purchased runs; supply their existing receipt evidence.
+const receipts = JSON.parse(readFileSync('docs/evidence/lane-b3/UC3.receipts.json', 'utf8')).receipts
+const purchased = (store: Store) => {
+ const get = store.getRun.bind(store)
+ vi.spyOn(store, 'getRun').mockImplementation(id => ({ ...get(id), receipts }))
+}
 for (const crash of ['before-submit','after-submit','after-validation']) it(`recovers ${crash} with one signature and one fee`,async()=>{
  const path=join(mkdtempSync(join(tmpdir(),'anchor-crash-')),'app.db')
  let store=new Store(path)
@@ -36,10 +42,12 @@ for (const crash of ['before-submit','after-submit','after-validation']) it(`rec
   }
   throw Error('unexpected '+req.command)
  }}
+ purchased(store)
  let anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet))
  await anchors.ensure(run.runId).catch(()=>undefined)
  const blob=store.anchorRows()[0].submission!.txBlob
  store.close();store=new Store(path)
+ purchased(store)
  anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet))
  await Promise.all([anchors.ensure(run.runId),anchors.ensure(run.runId)])
  await anchors.ensure(run.runId)
@@ -47,5 +55,18 @@ for (const crash of ['before-submit','after-submit','after-validation']) it(`rec
  expect(store.anchorRows()[0].submission?.txBlob).toBe(blob)
  expect(charges).toBe(1);expect(submissions).toBeLessThanOrEqual(2)
  expect(store.getRun(run.runId).spentMinor).toBe(0)
+ store.close()
+})
+
+it('skips the anchor and fee when nothing was bought', async () => {
+ const store = new Store(':memory:')
+ const run = store.createRun('off corpus', 200, {research:'fixture', decision:'fixture', publisher:'local', settlement:'XRPL TESTNET · no real value'})
+ store.addAnswer(run.runId, {version:1, conclusion:'Nothing bought', claims:[], openGaps:[], provider:'fixture', model:'fixture'})
+ store.updateRun(run.runId, {phase:'DONE'})
+ const request = vi.fn(async () => { throw Error('no ledger call allowed') })
+ const anchors = new AnswerAnchors(store, new XrplPayer({request}, Wallet.generate()))
+ await anchors.ensure(run.runId)
+ expect(request).not.toHaveBeenCalled()
+ expect(store.anchorRows()).toHaveLength(0)
  store.close()
 })
