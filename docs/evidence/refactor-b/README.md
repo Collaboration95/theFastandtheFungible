@@ -1,0 +1,234 @@
+# Lane B: parallel browser admission
+
+Final integrated benchmark: **350 → 262 s** five-success CI median
+(historical audit baseline 355 s). Browser **326 → 115 s**;
+critical job verify **230 s**. Both timing targets pass. Replay
+builds **2 → 1**; every browser group passed, with zero reported Playwright
+flakes. One unchanged refund unit assertion failed in a sixth attempt and is
+retained in observed-failure.json and integrated-after.json. No claim of a
+controlled long-term failure/flake-rate improvement is made.
+
+The >=50 net LOC deletion target is missed: implementation/config/tests/lockfile
+net **+2 LOC**, excluding documentation and measurement evidence. Nothing
+loosened. Largest integrated CI package: **3,586,660 bytes**, below 8 MB.
+
+Pre-Lane-C final configuration: **350 → 221 s** five-run CI median (historical audit
+baseline 355 s). Browser **326 → 107 s**; critical job is verify at **162 s**.
+Both timing targets pass. Replay builds **2 → 1**, zero failures and zero reported
+flaky browser tests in five final runs. The >=50 net LOC deletion target is
+missed: implementation/config/tests/lockfile net **+2 LOC**, excluding evidence.
+No gate, test, timeout, observation window or threshold was loosened.
+
+Fixture app and judge checks; replay observations retain live read-only Testnet
+hash checks and both full 60-second observation windows. No spending authorized.
+
+The required browser job runs three independent groups and explicitly waits for
+all three exit statuses. Demo tests run fully parallel with four workers; judge
+retains its serial shared server. Output directories are separate. A single
+Vite replay build in this job supplies both suites. SHA-256 checks of every
+output file run before and after consumption. Nothing is restored from another
+SHA or workflow run. Clean release consumers and their manifests are unchanged.
+The requiredJobs list and aggregate needs are unchanged because no job was split;
+CLI regressions now cover every required job's failure, cancellation, skip and
+missing result. The docs-only skip predicate is unchanged.
+
+All five previously omitted specs passed locally: ux, ux2, settings, foundation,
+perf (11 tests, 25.5 s including build/startup). CI enables the full default
+Playwright match rather than maintaining a second file list. No assertion,
+coverage floor, timeout or performance threshold changed.
+
+A Chromium cache keyed by OS and exact Playwright version was tested, then
+removed: a warm restore took 4 s and install 22 s (26 s total), versus the
+uncached baseline install median 16 s. The experiment did not establish a net
+saving. cache-validation.json pins the extra attempt; it is excluded from the
+five attempt-1 samples. No new acceptance or binary caches remain. pip wheels are not cached: the baseline pytest installation
+finished in about two seconds; there is no measured net-saving case for another
+cache restore/upload. Consumers continue installing clean.
+
+Package review found no source imports for Bricolage Grotesque or Newsreader;
+Geist and Geist Mono remain. The unused bin mapping in the private root package was removed with lock data.
+The .mjs source wrapper exists and remains covered by its direct test; the
+supported npm publisher command uses .ts. No wrapper or packaged MCP bin was
+removed. Repository docs and scripts do not invoke the root bin name.
+
+## Measurements
+
+before.json pins the five latest successful main runs before this lane, including
+job and step timestamps. This refresh differs from the audit's historical
+355 s median; preserve that historical figure when comparing the stated target.
+Local judge: 10/10 passed, 57.2 s. Local demo: 4/4 passed, about 63 s;
+both minute observations ran concurrently. Local packed consumer acceptance uses
+exact generated manifests; generated sizes: MCP tgz 3,462,192 bytes, MCPB
+3,291,559 bytes, SDK tgz 89,744, wheel 113,069, sdist 107,473. All below 8 MB.
+The initial cache experiment is recorded in after.json; final measurements are
+in final-after.json. Both pin run IDs, SHA, job/step timings, replay build counts
+and reported flaky counts.
+The >=50 net LOC deletion target is not met; no unrelated build code was deleted
+to manufacture a count. No portable shared-chunk changes were made in C's lane.
+
+Local rebased `npm run check:fast`: 161 files, 1,365 tests passed, chaos
+20 iterations with zero invariant violations, zero unexpected temp entries and
+zero live owned groups. Full local coverage and component floors also passed.
+The default browser specs remain serial against their existing isolated app
+server; only the independent replay fixtures gain intra-file concurrency.
+
+Nothing loosened.
+
+## Baseline critical path
+
+Five refreshed successful main wall times (created to updated):
+350, 349, 363, 350, 355 s; median **350 s**. Historical audit: **355 s**.
+Median job durations: changes 8 s, verify 227 s, chaos 135 s, browser 326 s,
+Python 83 s, artifacts 112 s, check 7 s. Browser dominates the critical path;
+job durations overlap and must not be summed. The latest 20 completed main
+outcomes at capture were 15 success, 3 failure and 2 cancelled. This observational
+window does not attribute those failures to this lane, nor prove a flake rate.
+
+Initial cache-experiment code/config/tests/lockfile net change: **+8 LOC**, excluding documentation and
+measurement evidence. The >=50 net LOC reduction target is missed.
+
+The exact concurrent shell was also exercised locally (macOS shasum equivalent
+for the Linux sha256sum commands): all 22 default app tests, four replay tests
+and ten judge tests passed together; all sealed replay hashes matched afterward.
+Fixture screenshots generated by these tests were restored, not committed.
+
+The first PR run checked out GitHub's synthetic merge commit
+`d3c0ee6d09096986bec2affcc05005f0a030ba41` for implementation head
+`33f245d23d6ee224d4273a7ab259d1382df526e2`; workflow_dispatch samples check out
+the branch head itself. Each run builds and accepts its own exact bytes.
+Downloaded first-run release artifacts independently match every manifest hash
+and sourceSha. CI package sizes are in ci-package-sizes.json; largest 3,476,119
+bytes. No downloaded artifacts were substituted into another acceptance run.
+
+## Initial five successful Actions runs (cache experiment, attempt 1)
+
+| Run | End-to-end seconds | Browser seconds | Replay builds | Reported flaky tests |
+| --- | ---: | ---: | ---: | ---: |
+| 42347633362 | 288 | 155 | 1 | 0 |
+| 42347767561 | 312 | 171 | 1 | 0 |
+| 42347769516 | 302 | 141 | 1 | 0 |
+| 42347771331 | 205 | 152 | 1 | 0 |
+| 42347773184 | 296 | 149 | 1 | 0 |
+
+End-to-end median **296 s**: refreshed baseline 350 → 296 s (54 s saving);
+audit baseline 355 → 296 s (59 s saving). **The <=270 s target is missed by
+26 s.** Browser median **152 s**, maximum **155 s**: <=220 s target met.
+Replay builds **2 → 1** in every measured run. All five attempts succeeded;
+zero Playwright flaky reports. This small sample shows no observed increase,
+not statistical proof of an unchanged long-term flake rate. The existing hosted
+unit skip remains; no new test was skipped by this lane.
+
+| Job | Before median (s) | After median (s) |
+| --- | ---: | ---: |
+| changes | 8 | 8 |
+| verify | 227 | 267 |
+| chaos | 135 | 118 |
+| browser | 326 | 152 |
+| python | 83 | 76 |
+| artifacts | 112 | 97 |
+| check | 7 | 7 |
+
+The critical path moved from browser (326 s) to verify (267 s). Startup, runner
+queues and aggregation add wall time; adding overlapping job medians is invalid.
+Parallel workflow_dispatch samples experienced runner queues; none was excluded.
+The verify lane was not altered to reduce coverage or manufacture a timing pass.
+These are branch/PR runs, not five post-merge main runs; raw IDs and timestamps
+remain available in before.json and after.json.
+
+The final workflow removes the unsuccessful Chromium cache experiment. A fresh
+five-run sample of that final configuration follows in final-after.json.
+
+## Pre-Lane-C five successful Actions runs (no added caches)
+
+Implementation head `64cb0b1e5a443c8d2dcb7c57187bd07e25d83d76` (full SHA in final-after.json). The later
+commit adds evidence and corrects the package-review wording only.
+
+| Run | End-to-end seconds | Browser seconds | Replay builds | Reported flaky tests |
+| --- | ---: | ---: | ---: | ---: |
+| 42348554020 | 185 | 127 | 1 | 0 |
+| 42348561995 | 228 | 117 | 1 | 0 |
+| 42348564511 | 278 | 94 | 1 | 0 |
+| 42348566496 | 178 | 107 | 1 | 0 |
+| 42348568587 | 221 | 96 | 1 | 0 |
+
+| Job | Before median (s) | Final median (s) |
+| --- | ---: | ---: |
+| changes | 8 | 8 |
+| verify | 227 | 162 |
+| chaos | 135 | 106 |
+| browser | 326 | 107 |
+| python | 83 | 57 |
+| artifacts | 112 | 66 |
+| check | 7 | 6 |
+
+Browser range: 94–127 s. All five runs succeed,
+with all 36 browser checks required and one replay build each. The final
+end-to-end median is 49 s below the 270 s target; one individual run took 278 s.
+The final browser median is 113 s below the 220 s target. No samples or queue
+time were excluded. The five post-change measurements are branch/PR attempts,
+not five post-merge main observations.
+
+The unmodified verify job also varies substantially (initial experiment median
+267 s, final sample 162 s). Total wall-time improvement is observational and
+includes warmed npm downloads, runner/queue variance and the independent-browser
+change; it is not a controlled causal attribution to cache removal. Chromium
+cache removal follows its separate measured negative result, not that total.
+
+Final CI release artifacts were independently downloaded and hash/size checked;
+final-ci-package-sizes.json pins sourceSha `4e89c84dabb2867a6198c98e91002eea203f45b9`.
+Largest package: 3,476,119 bytes. Clean consumer installs remain required.
+
+## Integration with Lane C
+
+Lane C merged as `db50380b` while the evidence commit was being finalized.
+Rebase preserved both shared changelog entries; no C-owned source files were
+edited by this lane. Integrated local check:fast passed: 161 files, 1,369 tests,
+44.05 s Vitest wall, chaos smoke zero invariant violations. The pre-C samples
+remain historical observations; integrated-after.json records a fresh five-run
+sample of the combined tree. Its implementation head is `7b4ed6490f48cabbb3ba37694b737eef66b7bbc0`.
+
+### Integrated timing and gate outcomes
+
+| Run | Outcome | End-to-end seconds | Browser seconds | Replay builds |
+| --- | --- | ---: | ---: | ---: |
+| 42349180130 | success | 176 | 115 | 1 |
+| 42349187960 | success | 271 | 127 | 1 |
+| 42349189997 | success | 253 | 92 | 1 |
+| 42349191766 | failure | 279 | 99 | 1 |
+| 42349193608 | success | 322 | 118 | 1 |
+| 42349698314 | success | 262 | 113 | 1 |
+
+The timing median uses all five successful attempts; the failed attempt stays
+in the gate-rate denominator. Before: 15 success, 3 failure, 2 cancellation
+(3/18 non-cancelled failures, 16.7%). Integrated sample: 5 success, 1 failure
+(1/6, 16.7%). These observational samples cannot establish a controlled long-term
+rate. All six browser jobs passed, with no Playwright flaky reports. The unit
+failure expected REFUNDED but got CHALLENGE_REFUSED at key-reveal.test.ts:169;
+that test supplies a 100 ms challenge deadline. A timing-related cause is a
+code-derived possibility, not a proven diagnosis. No assertion or deadline was
+changed, and the failure was not erased or reclassified as success.
+
+| Job | Before median (s) | Integrated median (s) |
+| --- | ---: | ---: |
+| changes | 8 | 6 |
+| verify | 227 | 230 |
+| chaos | 135 | 95 |
+| browser | 326 | 115 |
+| python | 83 | 51 |
+| artifacts | 112 | 69 |
+| check | 7 | 6 |
+
+Browser range across the five successes: 92–127 s. End-to-end
+median 262 s is 8 s below target; browser median 115 s is
+105 s below target. Jobs overlap; medians must not be summed.
+Total CI improvement also includes unmodified verify variance and Lane C's
+startup work; it is not an isolated causal attribution to Lane B alone.
+
+The benchmark is pinned to the Lane-C integration head above. Main subsequently
+advanced with judge coverage #398 (`6819f1e6`); the shipping branch was rebased
+onto it, and check:fast passed again (1,369 tests, zero chaos violations).
+The final evidence commit runs fresh CI on that latest combined tree before
+merge. The measurements are five branch/PR successes, not five post-merge main
+runs or five runs of #398. Each run builds its own SHA's bytes; no artifact is
+substituted across these revisions. integrated-ci-package-sizes.json pins all
+integrated package hashes and sizes from run 42349180130.

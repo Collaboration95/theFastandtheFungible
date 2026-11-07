@@ -27,14 +27,26 @@ describe('required CI admission', () => {
     expect(workflow).toContain('node scripts/ci-contract.mjs aggregate')
     expect(workflow).toContain('node scripts/ci-contract.mjs detect')
     expect(workflow).toContain('python -m pytest packages/sdk-python')
-    expect(workflow).toContain('npx playwright test tests/e2e.spec.ts tests/a11y.spec.ts')
+    expect(workflow).toContain('npx playwright test --output=test-results/app')
   })
 })
 
-it.each(['verify', 'chaos', 'browser', 'python'])('the hosted aggregate command exits nonzero for failed %s', failed => {
-  const needs: Record<string, { result: string; outputs?: { full: string } }> = Object.fromEntries(['verify', 'chaos', 'browser', 'python'].map(job => [job, { result: job === failed ? 'failure' : 'success' }]))
+it.each((requiredJobs as string[]).flatMap((job: string) => ['failure', 'cancelled', 'skipped', undefined].map(result => [job, result] as const)))('hosted aggregate rejects %s = %s', (failed, state) => {
+  const needs: Record<string, { result: string | undefined; outputs?: { full: string } }> = Object.fromEntries(requiredJobs.map((job: string) => [job, { result: job === failed ? state : 'success' }]))
   needs.changes = { result: 'success', outputs: { full: 'true' } }
   const result = spawnSync(process.execPath, ['scripts/ci-contract.mjs', 'aggregate'], { env: { ...process.env, CI_NEEDS: JSON.stringify(needs) }, encoding: 'utf8' })
   expect(result.status).toBe(1)
   expect(result.stderr).toContain('Required verification did not complete successfully')
+})
+
+it.each(['none', 'app', 'demo', 'judge'])('browser group failure reaches aggregate: %s', failed => {
+  const workflow = readFileSync('.github/workflows/ci.yml', 'utf8')
+  const block = workflow.split('      - name: Independent browser groups (all required)')[1].split('      - uses:')[0].split('        run: |\n')[1].replace(/^ {10}/gm, '')
+  const mock = `sha256sum() { return 0; }
+npx() { case "$*" in *config.ts*) group=judge;; *demo.config.ts*) group=demo;; *) group=app;; esac; [ "$group" != "${failed}" ]; }
+`
+  // Put demo before the broader config suffix in the mock dispatch.
+  const script = mock.replace('*config.ts*) group=judge;; *demo.config.ts*) group=demo;;', '*demo.config.ts*) group=demo;; *judge.config.ts*) group=judge;;') + block
+  expect(spawnSync('bash', ['-e', '-c', script]).status).toBe(failed === 'none' ? 0 : 1)
+  expect(workflow.match(/npm run build:demo/g)).toHaveLength(1)
 })

@@ -1,0 +1,2942 @@
+[
+  {
+    "conclusion": "success",
+    "createdAt": "2026-11-07T07:04:15Z",
+    "databaseId": 42349698314,
+    "event": "workflow_dispatch",
+    "headSha": "7b4ed6490f48cabbb3ba37694b737eef66b7bbc0",
+    "status": "completed",
+    "updatedAt": "2026-11-07T07:08:37Z",
+    "jobs": [
+      {
+        "name": "changes",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:04:19Z",
+        "completedAt": "2026-11-07T07:04:25Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:20Z",
+            "completedAt": "2026-11-07T07:04:20Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:20Z",
+            "completedAt": "2026-11-07T07:04:22Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:22Z",
+            "completedAt": "2026-11-07T07:04:22Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs detect",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:22Z",
+            "completedAt": "2026-11-07T07:04:22Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:22Z",
+            "completedAt": "2026-11-07T07:04:23Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:23Z",
+            "completedAt": "2026-11-07T07:04:23Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:23Z",
+            "completedAt": "2026-11-07T07:04:23Z"
+          }
+        ]
+      },
+      {
+        "name": "browser",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:04:28Z",
+        "completedAt": "2026-11-07T07:06:21Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:28Z",
+            "completedAt": "2026-11-07T07:04:29Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:29Z",
+            "completedAt": "2026-11-07T07:04:31Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:31Z",
+            "completedAt": "2026-11-07T07:04:32Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:32Z",
+            "completedAt": "2026-11-07T07:04:46Z"
+          },
+          {
+            "name": "Run npx playwright install --with-deps chromium",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:46Z",
+            "completedAt": "2026-11-07T07:05:02Z"
+          },
+          {
+            "name": "Build replay once and seal exact bytes",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:02Z",
+            "completedAt": "2026-11-07T07:05:04Z"
+          },
+          {
+            "name": "Independent browser groups (all required)",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:04Z",
+            "completedAt": "2026-11-07T07:06:20Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T07:06:20Z",
+            "completedAt": "2026-11-07T07:06:20Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:06:20Z",
+            "completedAt": "2026-11-07T07:06:20Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:06:20Z",
+            "completedAt": "2026-11-07T07:06:20Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:06:20Z",
+            "completedAt": "2026-11-07T07:06:20Z"
+          }
+        ]
+      },
+      {
+        "name": "verify",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:04:28Z",
+        "completedAt": "2026-11-07T07:08:28Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:28Z",
+            "completedAt": "2026-11-07T07:04:29Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:29Z",
+            "completedAt": "2026-11-07T07:04:31Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:31Z",
+            "completedAt": "2026-11-07T07:04:33Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:33Z",
+            "completedAt": "2026-11-07T07:04:47Z"
+          },
+          {
+            "name": "Run npm run hygiene && npm run lint && npm run typecheck",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:47Z",
+            "completedAt": "2026-11-07T07:05:14Z"
+          },
+          {
+            "name": "Run npx vitest run --coverage",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:14Z",
+            "completedAt": "2026-11-07T07:08:18Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:18Z",
+            "completedAt": "2026-11-07T07:08:19Z"
+          },
+          {
+            "name": "Run node scripts/check-coverage.mjs",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:19Z",
+            "completedAt": "2026-11-07T07:08:19Z"
+          },
+          {
+            "name": "Run npm run test:sdk:package",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:19Z",
+            "completedAt": "2026-11-07T07:08:25Z"
+          },
+          {
+            "name": "Run npm run readme:check",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:25Z",
+            "completedAt": "2026-11-07T07:08:25Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:25Z",
+            "completedAt": "2026-11-07T07:08:25Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:25Z",
+            "completedAt": "2026-11-07T07:08:25Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:25Z",
+            "completedAt": "2026-11-07T07:08:25Z"
+          }
+        ]
+      },
+      {
+        "name": "python",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:04:28Z",
+        "completedAt": "2026-11-07T07:05:19Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:28Z",
+            "completedAt": "2026-11-07T07:04:29Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:29Z",
+            "completedAt": "2026-11-07T07:04:31Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:31Z",
+            "completedAt": "2026-11-07T07:04:34Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:34Z",
+            "completedAt": "2026-11-07T07:04:45Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:45Z",
+            "completedAt": "2026-11-07T07:04:51Z"
+          },
+          {
+            "name": "Run python -m pip install pytest",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:51Z",
+            "completedAt": "2026-11-07T07:04:52Z"
+          },
+          {
+            "name": "Run python -m pytest packages/sdk-python",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:52Z",
+            "completedAt": "2026-11-07T07:05:16Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:16Z",
+            "completedAt": "2026-11-07T07:05:16Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:16Z",
+            "completedAt": "2026-11-07T07:05:16Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:16Z",
+            "completedAt": "2026-11-07T07:05:16Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:16Z",
+            "completedAt": "2026-11-07T07:05:16Z"
+          }
+        ]
+      },
+      {
+        "name": "artifacts",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:04:28Z",
+        "completedAt": "2026-11-07T07:05:37Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:28Z",
+            "completedAt": "2026-11-07T07:04:29Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:29Z",
+            "completedAt": "2026-11-07T07:04:31Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:31Z",
+            "completedAt": "2026-11-07T07:04:37Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:37Z",
+            "completedAt": "2026-11-07T07:04:42Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:42Z",
+            "completedAt": "2026-11-07T07:04:52Z"
+          },
+          {
+            "name": "Run make release-artifacts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:52Z",
+            "completedAt": "2026-11-07T07:05:32Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:32Z",
+            "completedAt": "2026-11-07T07:05:33Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:33Z",
+            "completedAt": "2026-11-07T07:05:33Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:33Z",
+            "completedAt": "2026-11-07T07:05:33Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:33Z",
+            "completedAt": "2026-11-07T07:05:34Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:34Z",
+            "completedAt": "2026-11-07T07:05:34Z"
+          }
+        ]
+      },
+      {
+        "name": "chaos",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:04:28Z",
+        "completedAt": "2026-11-07T07:06:03Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:29Z",
+            "completedAt": "2026-11-07T07:04:29Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:29Z",
+            "completedAt": "2026-11-07T07:04:31Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:31Z",
+            "completedAt": "2026-11-07T07:04:34Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:34Z",
+            "completedAt": "2026-11-07T07:04:46Z"
+          },
+          {
+            "name": "Run npm run chaos:smoke",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:04:46Z",
+            "completedAt": "2026-11-07T07:05:54Z"
+          },
+          {
+            "name": "Run npx tsx scripts/chaos/key-reveal.ts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:05:54Z",
+            "completedAt": "2026-11-07T07:06:01Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:06:01Z",
+            "completedAt": "2026-11-07T07:06:01Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:06:01Z",
+            "completedAt": "2026-11-07T07:06:02Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:06:02Z",
+            "completedAt": "2026-11-07T07:06:02Z"
+          }
+        ]
+      },
+      {
+        "name": "check",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:08:30Z",
+        "completedAt": "2026-11-07T07:08:36Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:31Z",
+            "completedAt": "2026-11-07T07:08:32Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:32Z",
+            "completedAt": "2026-11-07T07:08:33Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:33Z",
+            "completedAt": "2026-11-07T07:08:34Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs aggregate",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:34Z",
+            "completedAt": "2026-11-07T07:08:34Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:34Z",
+            "completedAt": "2026-11-07T07:08:34Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:34Z",
+            "completedAt": "2026-11-07T07:08:34Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:08:34Z",
+            "completedAt": "2026-11-07T07:08:34Z"
+          }
+        ]
+      }
+    ],
+    "seconds": 262.0,
+    "replayBuildCount": 1,
+    "browserPassReports": [
+      "  4 passed (1.1m)",
+      "  10 passed (1.2m)",
+      "  22 passed (1.2m)"
+    ],
+    "reportedFlakyTests": 0,
+    "measuredAttempt": 1
+  },
+  {
+    "conclusion": "success",
+    "createdAt": "2026-11-07T06:57:08Z",
+    "databaseId": 42349193608,
+    "event": "workflow_dispatch",
+    "headSha": "7b4ed6490f48cabbb3ba37694b737eef66b7bbc0",
+    "status": "completed",
+    "updatedAt": "2026-11-07T07:02:30Z",
+    "jobs": [
+      {
+        "name": "changes",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:12Z",
+        "completedAt": "2026-11-07T06:57:18Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:13Z",
+            "completedAt": "2026-11-07T06:57:13Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:13Z",
+            "completedAt": "2026-11-07T06:57:15Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:15Z",
+            "completedAt": "2026-11-07T06:57:16Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs detect",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:16Z",
+            "completedAt": "2026-11-07T06:57:16Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:16Z",
+            "completedAt": "2026-11-07T06:57:16Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:16Z",
+            "completedAt": "2026-11-07T06:57:16Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:16Z",
+            "completedAt": "2026-11-07T06:57:16Z"
+          }
+        ]
+      },
+      {
+        "name": "chaos",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:58:34Z",
+        "completedAt": "2026-11-07T06:59:55Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:34Z",
+            "completedAt": "2026-11-07T06:58:35Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:35Z",
+            "completedAt": "2026-11-07T06:58:37Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:37Z",
+            "completedAt": "2026-11-07T06:58:40Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:40Z",
+            "completedAt": "2026-11-07T06:58:50Z"
+          },
+          {
+            "name": "Run npm run chaos:smoke",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:50Z",
+            "completedAt": "2026-11-07T06:59:47Z"
+          },
+          {
+            "name": "Run npx tsx scripts/chaos/key-reveal.ts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:47Z",
+            "completedAt": "2026-11-07T06:59:52Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:52Z",
+            "completedAt": "2026-11-07T06:59:52Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:52Z",
+            "completedAt": "2026-11-07T06:59:53Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:53Z",
+            "completedAt": "2026-11-07T06:59:53Z"
+          }
+        ]
+      },
+      {
+        "name": "python",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:58:22Z",
+        "completedAt": "2026-11-07T06:59:02Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:22Z",
+            "completedAt": "2026-11-07T06:58:23Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:23Z",
+            "completedAt": "2026-11-07T06:58:24Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:24Z",
+            "completedAt": "2026-11-07T06:58:26Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:26Z",
+            "completedAt": "2026-11-07T06:58:34Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:34Z",
+            "completedAt": "2026-11-07T06:58:39Z"
+          },
+          {
+            "name": "Run python -m pip install pytest",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:39Z",
+            "completedAt": "2026-11-07T06:58:41Z"
+          },
+          {
+            "name": "Run python -m pytest packages/sdk-python",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:41Z",
+            "completedAt": "2026-11-07T06:58:59Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:59Z",
+            "completedAt": "2026-11-07T06:58:59Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:59Z",
+            "completedAt": "2026-11-07T06:58:59Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:59Z",
+            "completedAt": "2026-11-07T06:59:00Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:00Z",
+            "completedAt": "2026-11-07T06:59:00Z"
+          }
+        ]
+      },
+      {
+        "name": "browser",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:58:24Z",
+        "completedAt": "2026-11-07T07:00:22Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:25Z",
+            "completedAt": "2026-11-07T06:58:25Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:25Z",
+            "completedAt": "2026-11-07T06:58:27Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:27Z",
+            "completedAt": "2026-11-07T06:58:28Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:28Z",
+            "completedAt": "2026-11-07T06:58:42Z"
+          },
+          {
+            "name": "Run npx playwright install --with-deps chromium",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:42Z",
+            "completedAt": "2026-11-07T06:58:59Z"
+          },
+          {
+            "name": "Build replay once and seal exact bytes",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:59Z",
+            "completedAt": "2026-11-07T06:59:01Z"
+          },
+          {
+            "name": "Independent browser groups (all required)",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:01Z",
+            "completedAt": "2026-11-07T07:00:20Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T07:00:20Z",
+            "completedAt": "2026-11-07T07:00:20Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:00:20Z",
+            "completedAt": "2026-11-07T07:00:20Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:00:20Z",
+            "completedAt": "2026-11-07T07:00:21Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:00:21Z",
+            "completedAt": "2026-11-07T07:00:21Z"
+          }
+        ]
+      },
+      {
+        "name": "verify",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:58:38Z",
+        "completedAt": "2026-11-07T07:02:22Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:38Z",
+            "completedAt": "2026-11-07T06:58:39Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:39Z",
+            "completedAt": "2026-11-07T06:58:41Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:41Z",
+            "completedAt": "2026-11-07T06:58:42Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:42Z",
+            "completedAt": "2026-11-07T06:58:53Z"
+          },
+          {
+            "name": "Run npm run hygiene && npm run lint && npm run typecheck",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:53Z",
+            "completedAt": "2026-11-07T06:59:19Z"
+          },
+          {
+            "name": "Run npx vitest run --coverage",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:19Z",
+            "completedAt": "2026-11-07T07:02:13Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:13Z",
+            "completedAt": "2026-11-07T07:02:14Z"
+          },
+          {
+            "name": "Run node scripts/check-coverage.mjs",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:14Z",
+            "completedAt": "2026-11-07T07:02:14Z"
+          },
+          {
+            "name": "Run npm run test:sdk:package",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:14Z",
+            "completedAt": "2026-11-07T07:02:19Z"
+          },
+          {
+            "name": "Run npm run readme:check",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:19Z",
+            "completedAt": "2026-11-07T07:02:20Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:20Z",
+            "completedAt": "2026-11-07T07:02:20Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:20Z",
+            "completedAt": "2026-11-07T07:02:20Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:20Z",
+            "completedAt": "2026-11-07T07:02:20Z"
+          }
+        ]
+      },
+      {
+        "name": "artifacts",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:58:37Z",
+        "completedAt": "2026-11-07T06:59:41Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:38Z",
+            "completedAt": "2026-11-07T06:58:39Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:39Z",
+            "completedAt": "2026-11-07T06:58:41Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:41Z",
+            "completedAt": "2026-11-07T06:58:46Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:46Z",
+            "completedAt": "2026-11-07T06:58:51Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:51Z",
+            "completedAt": "2026-11-07T06:58:58Z"
+          },
+          {
+            "name": "Run make release-artifacts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:58Z",
+            "completedAt": "2026-11-07T06:59:36Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:36Z",
+            "completedAt": "2026-11-07T06:59:38Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:38Z",
+            "completedAt": "2026-11-07T06:59:38Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:38Z",
+            "completedAt": "2026-11-07T06:59:38Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:38Z",
+            "completedAt": "2026-11-07T06:59:38Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:38Z",
+            "completedAt": "2026-11-07T06:59:38Z"
+          }
+        ]
+      },
+      {
+        "name": "check",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:02:24Z",
+        "completedAt": "2026-11-07T07:02:29Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:25Z",
+            "completedAt": "2026-11-07T07:02:25Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:25Z",
+            "completedAt": "2026-11-07T07:02:27Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:27Z",
+            "completedAt": "2026-11-07T07:02:27Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs aggregate",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:27Z",
+            "completedAt": "2026-11-07T07:02:27Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:27Z",
+            "completedAt": "2026-11-07T07:02:27Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:27Z",
+            "completedAt": "2026-11-07T07:02:27Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:02:27Z",
+            "completedAt": "2026-11-07T07:02:27Z"
+          }
+        ]
+      }
+    ],
+    "seconds": 322.0,
+    "replayBuildCount": 1,
+    "browserPassReports": [
+      "  4 passed (1.1m)",
+      "  10 passed (1.2m)",
+      "  22 passed (1.3m)"
+    ],
+    "reportedFlakyTests": 0,
+    "measuredAttempt": 1
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-11-07T06:57:07Z",
+    "databaseId": 42349191766,
+    "event": "workflow_dispatch",
+    "headSha": "7b4ed6490f48cabbb3ba37694b737eef66b7bbc0",
+    "status": "completed",
+    "updatedAt": "2026-11-07T07:01:46Z",
+    "jobs": [
+      {
+        "name": "changes",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:10Z",
+        "completedAt": "2026-11-07T06:57:16Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:11Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:14Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:14Z",
+            "completedAt": "2026-11-07T06:57:14Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs detect",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:14Z",
+            "completedAt": "2026-11-07T06:57:14Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:14Z",
+            "completedAt": "2026-11-07T06:57:14Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:14Z",
+            "completedAt": "2026-11-07T06:57:15Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:15Z",
+            "completedAt": "2026-11-07T06:57:15Z"
+          }
+        ]
+      },
+      {
+        "name": "python",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:49Z",
+        "completedAt": "2026-11-07T06:58:35Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:49Z",
+            "completedAt": "2026-11-07T06:57:50Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:50Z",
+            "completedAt": "2026-11-07T06:57:51Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:51Z",
+            "completedAt": "2026-11-07T06:57:53Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:53Z",
+            "completedAt": "2026-11-07T06:58:00Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:00Z",
+            "completedAt": "2026-11-07T06:58:07Z"
+          },
+          {
+            "name": "Run python -m pip install pytest",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:07Z",
+            "completedAt": "2026-11-07T06:58:09Z"
+          },
+          {
+            "name": "Run python -m pytest packages/sdk-python",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:09Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:33Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:33Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:33Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:33Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          }
+        ]
+      },
+      {
+        "name": "chaos",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:44Z",
+        "completedAt": "2026-11-07T06:59:18Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:45Z",
+            "completedAt": "2026-11-07T06:57:45Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:45Z",
+            "completedAt": "2026-11-07T06:57:47Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:47Z",
+            "completedAt": "2026-11-07T06:57:50Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:50Z",
+            "completedAt": "2026-11-07T06:58:03Z"
+          },
+          {
+            "name": "Run npm run chaos:smoke",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:03Z",
+            "completedAt": "2026-11-07T06:59:08Z"
+          },
+          {
+            "name": "Run npx tsx scripts/chaos/key-reveal.ts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:08Z",
+            "completedAt": "2026-11-07T06:59:15Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:15Z",
+            "completedAt": "2026-11-07T06:59:15Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:15Z",
+            "completedAt": "2026-11-07T06:59:16Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:16Z",
+            "completedAt": "2026-11-07T06:59:16Z"
+          }
+        ]
+      },
+      {
+        "name": "browser",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:50Z",
+        "completedAt": "2026-11-07T06:59:29Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:50Z",
+            "completedAt": "2026-11-07T06:57:51Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:51Z",
+            "completedAt": "2026-11-07T06:57:53Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:53Z",
+            "completedAt": "2026-11-07T06:57:55Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:55Z",
+            "completedAt": "2026-11-07T06:58:05Z"
+          },
+          {
+            "name": "Run npx playwright install --with-deps chromium",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:05Z",
+            "completedAt": "2026-11-07T06:58:20Z"
+          },
+          {
+            "name": "Build replay once and seal exact bytes",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:20Z",
+            "completedAt": "2026-11-07T06:58:21Z"
+          },
+          {
+            "name": "Independent browser groups (all required)",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:21Z",
+            "completedAt": "2026-11-07T06:59:27Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T06:59:27Z",
+            "completedAt": "2026-11-07T06:59:27Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:27Z",
+            "completedAt": "2026-11-07T06:59:27Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:27Z",
+            "completedAt": "2026-11-07T06:59:27Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:27Z",
+            "completedAt": "2026-11-07T06:59:27Z"
+          }
+        ]
+      },
+      {
+        "name": "verify",
+        "conclusion": "failure",
+        "startedAt": "2026-11-07T06:58:19Z",
+        "completedAt": "2026-11-07T07:01:33Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:20Z",
+            "completedAt": "2026-11-07T06:58:20Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:20Z",
+            "completedAt": "2026-11-07T06:58:22Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:22Z",
+            "completedAt": "2026-11-07T06:58:25Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:25Z",
+            "completedAt": "2026-11-07T06:58:35Z"
+          },
+          {
+            "name": "Run npm run hygiene && npm run lint && npm run typecheck",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:35Z",
+            "completedAt": "2026-11-07T06:58:56Z"
+          },
+          {
+            "name": "Run npx vitest run --coverage",
+            "conclusion": "failure",
+            "startedAt": "2026-11-07T06:58:56Z",
+            "completedAt": "2026-11-07T07:01:30Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:30Z",
+            "completedAt": "2026-11-07T07:01:30Z"
+          },
+          {
+            "name": "Run node scripts/check-coverage.mjs",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T07:01:30Z",
+            "completedAt": "2026-11-07T07:01:30Z"
+          },
+          {
+            "name": "Run npm run test:sdk:package",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T07:01:30Z",
+            "completedAt": "2026-11-07T07:01:30Z"
+          },
+          {
+            "name": "Run npm run readme:check",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T07:01:30Z",
+            "completedAt": "2026-11-07T07:01:30Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T07:01:30Z",
+            "completedAt": "2026-11-07T07:01:30Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:30Z",
+            "completedAt": "2026-11-07T07:01:30Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:30Z",
+            "completedAt": "2026-11-07T07:01:30Z"
+          }
+        ]
+      },
+      {
+        "name": "artifacts",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:58:19Z",
+        "completedAt": "2026-11-07T06:59:28Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:19Z",
+            "completedAt": "2026-11-07T06:58:20Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:20Z",
+            "completedAt": "2026-11-07T06:58:22Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:22Z",
+            "completedAt": "2026-11-07T06:58:27Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:27Z",
+            "completedAt": "2026-11-07T06:58:32Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:32Z",
+            "completedAt": "2026-11-07T06:58:40Z"
+          },
+          {
+            "name": "Run make release-artifacts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:40Z",
+            "completedAt": "2026-11-07T06:59:24Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:24Z",
+            "completedAt": "2026-11-07T06:59:26Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:26Z",
+            "completedAt": "2026-11-07T06:59:26Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:26Z",
+            "completedAt": "2026-11-07T06:59:26Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:26Z",
+            "completedAt": "2026-11-07T06:59:26Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:26Z",
+            "completedAt": "2026-11-07T06:59:26Z"
+          }
+        ]
+      },
+      {
+        "name": "check",
+        "conclusion": "failure",
+        "startedAt": "2026-11-07T07:01:36Z",
+        "completedAt": "2026-11-07T07:01:45Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:37Z",
+            "completedAt": "2026-11-07T07:01:37Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:37Z",
+            "completedAt": "2026-11-07T07:01:40Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:40Z",
+            "completedAt": "2026-11-07T07:01:43Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs aggregate",
+            "conclusion": "failure",
+            "startedAt": "2026-11-07T07:01:43Z",
+            "completedAt": "2026-11-07T07:01:43Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T07:01:43Z",
+            "completedAt": "2026-11-07T07:01:43Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:43Z",
+            "completedAt": "2026-11-07T07:01:43Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:43Z",
+            "completedAt": "2026-11-07T07:01:43Z"
+          }
+        ]
+      }
+    ],
+    "seconds": 279.0,
+    "replayBuildCount": 1,
+    "browserPassReports": [
+      "  4 passed (1.1m)",
+      "  22 passed (1.1m)",
+      "  10 passed (1.1m)"
+    ],
+    "reportedFlakyTests": 0,
+    "measuredAttempt": 1
+  },
+  {
+    "conclusion": "success",
+    "createdAt": "2026-11-07T06:57:05Z",
+    "databaseId": 42349189997,
+    "event": "workflow_dispatch",
+    "headSha": "7b4ed6490f48cabbb3ba37694b737eef66b7bbc0",
+    "status": "completed",
+    "updatedAt": "2026-11-07T07:01:18Z",
+    "jobs": [
+      {
+        "name": "changes",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:08Z",
+        "completedAt": "2026-11-07T06:57:15Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:09Z",
+            "completedAt": "2026-11-07T06:57:10Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:10Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs detect",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:13Z"
+          }
+        ]
+      },
+      {
+        "name": "python",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:18Z",
+        "completedAt": "2026-11-07T06:58:22Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:19Z",
+            "completedAt": "2026-11-07T06:57:20Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:20Z",
+            "completedAt": "2026-11-07T06:57:23Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:23Z",
+            "completedAt": "2026-11-07T06:57:26Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:26Z",
+            "completedAt": "2026-11-07T06:57:39Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:39Z",
+            "completedAt": "2026-11-07T06:57:45Z"
+          },
+          {
+            "name": "Run python -m pip install pytest",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:45Z",
+            "completedAt": "2026-11-07T06:57:48Z"
+          },
+          {
+            "name": "Run python -m pytest packages/sdk-python",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:48Z",
+            "completedAt": "2026-11-07T06:58:18Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:18Z",
+            "completedAt": "2026-11-07T06:58:18Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:18Z",
+            "completedAt": "2026-11-07T06:58:18Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:18Z",
+            "completedAt": "2026-11-07T06:58:18Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:18Z",
+            "completedAt": "2026-11-07T06:58:18Z"
+          }
+        ]
+      },
+      {
+        "name": "verify",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:18Z",
+        "completedAt": "2026-11-07T07:01:08Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:18Z",
+            "completedAt": "2026-11-07T06:57:19Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:19Z",
+            "completedAt": "2026-11-07T06:57:21Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:21Z",
+            "completedAt": "2026-11-07T06:57:24Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:24Z",
+            "completedAt": "2026-11-07T06:57:35Z"
+          },
+          {
+            "name": "Run npm run hygiene && npm run lint && npm run typecheck",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:35Z",
+            "completedAt": "2026-11-07T06:58:01Z"
+          },
+          {
+            "name": "Run npx vitest run --coverage",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:01Z",
+            "completedAt": "2026-11-07T07:00:58Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:00:58Z",
+            "completedAt": "2026-11-07T07:00:59Z"
+          },
+          {
+            "name": "Run node scripts/check-coverage.mjs",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:00:59Z",
+            "completedAt": "2026-11-07T07:00:59Z"
+          },
+          {
+            "name": "Run npm run test:sdk:package",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:00:59Z",
+            "completedAt": "2026-11-07T07:01:05Z"
+          },
+          {
+            "name": "Run npm run readme:check",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:05Z",
+            "completedAt": "2026-11-07T07:01:05Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:05Z",
+            "completedAt": "2026-11-07T07:01:05Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:05Z",
+            "completedAt": "2026-11-07T07:01:05Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:05Z",
+            "completedAt": "2026-11-07T07:01:05Z"
+          }
+        ]
+      },
+      {
+        "name": "artifacts",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:18Z",
+        "completedAt": "2026-11-07T06:58:16Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:18Z",
+            "completedAt": "2026-11-07T06:57:19Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:19Z",
+            "completedAt": "2026-11-07T06:57:21Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:21Z",
+            "completedAt": "2026-11-07T06:57:26Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:26Z",
+            "completedAt": "2026-11-07T06:57:31Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:31Z",
+            "completedAt": "2026-11-07T06:57:37Z"
+          },
+          {
+            "name": "Run make release-artifacts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:37Z",
+            "completedAt": "2026-11-07T06:58:12Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:12Z",
+            "completedAt": "2026-11-07T06:58:13Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:13Z",
+            "completedAt": "2026-11-07T06:58:13Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:13Z",
+            "completedAt": "2026-11-07T06:58:13Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:13Z",
+            "completedAt": "2026-11-07T06:58:14Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:14Z",
+            "completedAt": "2026-11-07T06:58:14Z"
+          }
+        ]
+      },
+      {
+        "name": "browser",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:20Z",
+        "completedAt": "2026-11-07T06:58:52Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:21Z",
+            "completedAt": "2026-11-07T06:57:21Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:21Z",
+            "completedAt": "2026-11-07T06:57:23Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:23Z",
+            "completedAt": "2026-11-07T06:57:24Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:24Z",
+            "completedAt": "2026-11-07T06:57:31Z"
+          },
+          {
+            "name": "Run npx playwright install --with-deps chromium",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:31Z",
+            "completedAt": "2026-11-07T06:57:44Z"
+          },
+          {
+            "name": "Build replay once and seal exact bytes",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:44Z",
+            "completedAt": "2026-11-07T06:57:45Z"
+          },
+          {
+            "name": "Independent browser groups (all required)",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:45Z",
+            "completedAt": "2026-11-07T06:58:49Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T06:58:49Z",
+            "completedAt": "2026-11-07T06:58:49Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:49Z",
+            "completedAt": "2026-11-07T06:58:49Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:49Z",
+            "completedAt": "2026-11-07T06:58:50Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:50Z",
+            "completedAt": "2026-11-07T06:58:50Z"
+          }
+        ]
+      },
+      {
+        "name": "chaos",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:19Z",
+        "completedAt": "2026-11-07T06:59:01Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:20Z",
+            "completedAt": "2026-11-07T06:57:20Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:20Z",
+            "completedAt": "2026-11-07T06:57:23Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:23Z",
+            "completedAt": "2026-11-07T06:57:26Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:26Z",
+            "completedAt": "2026-11-07T06:57:40Z"
+          },
+          {
+            "name": "Run npm run chaos:smoke",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:40Z",
+            "completedAt": "2026-11-07T06:58:50Z"
+          },
+          {
+            "name": "Run npx tsx scripts/chaos/key-reveal.ts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:50Z",
+            "completedAt": "2026-11-07T06:58:58Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:58Z",
+            "completedAt": "2026-11-07T06:58:58Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:58Z",
+            "completedAt": "2026-11-07T06:58:58Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:58Z",
+            "completedAt": "2026-11-07T06:58:58Z"
+          }
+        ]
+      },
+      {
+        "name": "check",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:01:11Z",
+        "completedAt": "2026-11-07T07:01:17Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:11Z",
+            "completedAt": "2026-11-07T07:01:12Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:12Z",
+            "completedAt": "2026-11-07T07:01:14Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:14Z",
+            "completedAt": "2026-11-07T07:01:14Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs aggregate",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:14Z",
+            "completedAt": "2026-11-07T07:01:14Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:14Z",
+            "completedAt": "2026-11-07T07:01:15Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:15Z",
+            "completedAt": "2026-11-07T07:01:15Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:15Z",
+            "completedAt": "2026-11-07T07:01:15Z"
+          }
+        ]
+      }
+    ],
+    "seconds": 253.0,
+    "replayBuildCount": 1,
+    "browserPassReports": [
+      "  22 passed (48.5s)",
+      "  10 passed (1.0m)",
+      "  4 passed (1.1m)"
+    ],
+    "reportedFlakyTests": 0,
+    "measuredAttempt": 1
+  },
+  {
+    "conclusion": "success",
+    "createdAt": "2026-11-07T06:57:03Z",
+    "databaseId": 42349187960,
+    "event": "workflow_dispatch",
+    "headSha": "7b4ed6490f48cabbb3ba37694b737eef66b7bbc0",
+    "status": "completed",
+    "updatedAt": "2026-11-07T07:01:34Z",
+    "jobs": [
+      {
+        "name": "changes",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:07Z",
+        "completedAt": "2026-11-07T06:57:13Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:08Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:10Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:10Z",
+            "completedAt": "2026-11-07T06:57:11Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs detect",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:11Z",
+            "completedAt": "2026-11-07T06:57:11Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:11Z",
+            "completedAt": "2026-11-07T06:57:11Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:11Z",
+            "completedAt": "2026-11-07T06:57:11Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:11Z",
+            "completedAt": "2026-11-07T06:57:11Z"
+          }
+        ]
+      },
+      {
+        "name": "browser",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:16Z",
+        "completedAt": "2026-11-07T06:59:23Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:16Z",
+            "completedAt": "2026-11-07T06:57:17Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:17Z",
+            "completedAt": "2026-11-07T06:57:20Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:20Z",
+            "completedAt": "2026-11-07T06:57:24Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:24Z",
+            "completedAt": "2026-11-07T06:57:38Z"
+          },
+          {
+            "name": "Run npx playwright install --with-deps chromium",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:38Z",
+            "completedAt": "2026-11-07T06:57:59Z"
+          },
+          {
+            "name": "Build replay once and seal exact bytes",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:59Z",
+            "completedAt": "2026-11-07T06:58:01Z"
+          },
+          {
+            "name": "Independent browser groups (all required)",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:01Z",
+            "completedAt": "2026-11-07T06:59:21Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T06:59:21Z",
+            "completedAt": "2026-11-07T06:59:21Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:21Z",
+            "completedAt": "2026-11-07T06:59:21Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:21Z",
+            "completedAt": "2026-11-07T06:59:22Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:22Z",
+            "completedAt": "2026-11-07T06:59:22Z"
+          }
+        ]
+      },
+      {
+        "name": "python",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:16Z",
+        "completedAt": "2026-11-07T06:58:17Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:17Z",
+            "completedAt": "2026-11-07T06:57:18Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:18Z",
+            "completedAt": "2026-11-07T06:57:20Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:20Z",
+            "completedAt": "2026-11-07T06:57:23Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:23Z",
+            "completedAt": "2026-11-07T06:57:36Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:36Z",
+            "completedAt": "2026-11-07T06:57:42Z"
+          },
+          {
+            "name": "Run python -m pip install pytest",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:42Z",
+            "completedAt": "2026-11-07T06:57:44Z"
+          },
+          {
+            "name": "Run python -m pytest packages/sdk-python",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:44Z",
+            "completedAt": "2026-11-07T06:58:13Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:13Z",
+            "completedAt": "2026-11-07T06:58:14Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:14Z",
+            "completedAt": "2026-11-07T06:58:14Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:14Z",
+            "completedAt": "2026-11-07T06:58:14Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:14Z",
+            "completedAt": "2026-11-07T06:58:14Z"
+          }
+        ]
+      },
+      {
+        "name": "chaos",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:16Z",
+        "completedAt": "2026-11-07T06:58:51Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:16Z",
+            "completedAt": "2026-11-07T06:57:17Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:17Z",
+            "completedAt": "2026-11-07T06:57:19Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:19Z",
+            "completedAt": "2026-11-07T06:57:21Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:21Z",
+            "completedAt": "2026-11-07T06:57:35Z"
+          },
+          {
+            "name": "Run npm run chaos:smoke",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:35Z",
+            "completedAt": "2026-11-07T06:58:42Z"
+          },
+          {
+            "name": "Run npx tsx scripts/chaos/key-reveal.ts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:42Z",
+            "completedAt": "2026-11-07T06:58:49Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:49Z",
+            "completedAt": "2026-11-07T06:58:50Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:50Z",
+            "completedAt": "2026-11-07T06:58:50Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:50Z",
+            "completedAt": "2026-11-07T06:58:50Z"
+          }
+        ]
+      },
+      {
+        "name": "artifacts",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:16Z",
+        "completedAt": "2026-11-07T06:58:35Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:17Z",
+            "completedAt": "2026-11-07T06:57:18Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:18Z",
+            "completedAt": "2026-11-07T06:57:20Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:20Z",
+            "completedAt": "2026-11-07T06:57:25Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:25Z",
+            "completedAt": "2026-11-07T06:57:32Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:32Z",
+            "completedAt": "2026-11-07T06:57:40Z"
+          },
+          {
+            "name": "Run make release-artifacts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:40Z",
+            "completedAt": "2026-11-07T06:58:31Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:31Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:33Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:33Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:33Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:33Z",
+            "completedAt": "2026-11-07T06:58:33Z"
+          }
+        ]
+      },
+      {
+        "name": "verify",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:16Z",
+        "completedAt": "2026-11-07T07:01:16Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:17Z",
+            "completedAt": "2026-11-07T06:57:17Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:17Z",
+            "completedAt": "2026-11-07T06:57:20Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:20Z",
+            "completedAt": "2026-11-07T06:57:21Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:21Z",
+            "completedAt": "2026-11-07T06:57:35Z"
+          },
+          {
+            "name": "Run npm run hygiene && npm run lint && npm run typecheck",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:35Z",
+            "completedAt": "2026-11-07T06:58:02Z"
+          },
+          {
+            "name": "Run npx vitest run --coverage",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:02Z",
+            "completedAt": "2026-11-07T07:01:07Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:07Z",
+            "completedAt": "2026-11-07T07:01:08Z"
+          },
+          {
+            "name": "Run node scripts/check-coverage.mjs",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:08Z",
+            "completedAt": "2026-11-07T07:01:08Z"
+          },
+          {
+            "name": "Run npm run test:sdk:package",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:08Z",
+            "completedAt": "2026-11-07T07:01:14Z"
+          },
+          {
+            "name": "Run npm run readme:check",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:14Z",
+            "completedAt": "2026-11-07T07:01:14Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:14Z",
+            "completedAt": "2026-11-07T07:01:14Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:14Z",
+            "completedAt": "2026-11-07T07:01:15Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:15Z",
+            "completedAt": "2026-11-07T07:01:15Z"
+          }
+        ]
+      },
+      {
+        "name": "check",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T07:01:19Z",
+        "completedAt": "2026-11-07T07:01:33Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:20Z",
+            "completedAt": "2026-11-07T07:01:21Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:21Z",
+            "completedAt": "2026-11-07T07:01:27Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:27Z",
+            "completedAt": "2026-11-07T07:01:31Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs aggregate",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:31Z",
+            "completedAt": "2026-11-07T07:01:31Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:31Z",
+            "completedAt": "2026-11-07T07:01:31Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:31Z",
+            "completedAt": "2026-11-07T07:01:32Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T07:01:32Z",
+            "completedAt": "2026-11-07T07:01:32Z"
+          }
+        ]
+      }
+    ],
+    "seconds": 271.0,
+    "replayBuildCount": 1,
+    "browserPassReports": [
+      "  4 passed (1.1m)",
+      "  10 passed (1.2m)",
+      "  22 passed (1.3m)"
+    ],
+    "reportedFlakyTests": 0,
+    "measuredAttempt": 1
+  },
+  {
+    "conclusion": "success",
+    "createdAt": "2026-11-07T06:56:56Z",
+    "databaseId": 42349180130,
+    "event": "pull_request",
+    "headSha": "7b4ed6490f48cabbb3ba37694b737eef66b7bbc0",
+    "status": "completed",
+    "updatedAt": "2026-11-07T06:59:52Z",
+    "jobs": [
+      {
+        "name": "changes",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:56:59Z",
+        "completedAt": "2026-11-07T06:57:04Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:56:59Z",
+            "completedAt": "2026-11-07T06:57:00Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:00Z",
+            "completedAt": "2026-11-07T06:57:02Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:02Z",
+            "completedAt": "2026-11-07T06:57:03Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs detect",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:03Z",
+            "completedAt": "2026-11-07T06:57:03Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:03Z",
+            "completedAt": "2026-11-07T06:57:03Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:03Z",
+            "completedAt": "2026-11-07T06:57:03Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:03Z",
+            "completedAt": "2026-11-07T06:57:03Z"
+          }
+        ]
+      },
+      {
+        "name": "browser",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:07Z",
+        "completedAt": "2026-11-07T06:59:02Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:08Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:10Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:10Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:25Z"
+          },
+          {
+            "name": "Run npx playwright install --with-deps chromium",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:25Z",
+            "completedAt": "2026-11-07T06:57:41Z"
+          },
+          {
+            "name": "Build replay once and seal exact bytes",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:41Z",
+            "completedAt": "2026-11-07T06:57:44Z"
+          },
+          {
+            "name": "Independent browser groups (all required)",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:44Z",
+            "completedAt": "2026-11-07T06:58:59Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "skipped",
+            "startedAt": "2026-11-07T06:58:59Z",
+            "completedAt": "2026-11-07T06:58:59Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:59Z",
+            "completedAt": "2026-11-07T06:59:00Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:00Z",
+            "completedAt": "2026-11-07T06:59:00Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:00Z",
+            "completedAt": "2026-11-07T06:59:00Z"
+          }
+        ]
+      },
+      {
+        "name": "verify",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:07Z",
+        "completedAt": "2026-11-07T06:59:41Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:07Z",
+            "completedAt": "2026-11-07T06:57:08Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:10Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:10Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:17Z"
+          },
+          {
+            "name": "Run npm run hygiene && npm run lint && npm run typecheck",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:17Z",
+            "completedAt": "2026-11-07T06:57:35Z"
+          },
+          {
+            "name": "Run npx vitest run --coverage",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:35Z",
+            "completedAt": "2026-11-07T06:59:34Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:34Z",
+            "completedAt": "2026-11-07T06:59:35Z"
+          },
+          {
+            "name": "Run node scripts/check-coverage.mjs",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:35Z",
+            "completedAt": "2026-11-07T06:59:35Z"
+          },
+          {
+            "name": "Run npm run test:sdk:package",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:35Z",
+            "completedAt": "2026-11-07T06:59:39Z"
+          },
+          {
+            "name": "Run npm run readme:check",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:39Z",
+            "completedAt": "2026-11-07T06:59:39Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:39Z",
+            "completedAt": "2026-11-07T06:59:39Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:39Z",
+            "completedAt": "2026-11-07T06:59:39Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:39Z",
+            "completedAt": "2026-11-07T06:59:39Z"
+          }
+        ]
+      },
+      {
+        "name": "python",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:07Z",
+        "completedAt": "2026-11-07T06:57:47Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:08Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:10Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:10Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:19Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:19Z",
+            "completedAt": "2026-11-07T06:57:25Z"
+          },
+          {
+            "name": "Run python -m pip install pytest",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:25Z",
+            "completedAt": "2026-11-07T06:57:27Z"
+          },
+          {
+            "name": "Run python -m pytest packages/sdk-python",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:27Z",
+            "completedAt": "2026-11-07T06:57:45Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:45Z",
+            "completedAt": "2026-11-07T06:57:45Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:45Z",
+            "completedAt": "2026-11-07T06:57:45Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:45Z",
+            "completedAt": "2026-11-07T06:57:46Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:46Z",
+            "completedAt": "2026-11-07T06:57:46Z"
+          }
+        ]
+      },
+      {
+        "name": "artifacts",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:07Z",
+        "completedAt": "2026-11-07T06:58:19Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:09Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:09Z",
+            "completedAt": "2026-11-07T06:57:11Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:11Z",
+            "completedAt": "2026-11-07T06:57:18Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:18Z",
+            "completedAt": "2026-11-07T06:57:23Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:23Z",
+            "completedAt": "2026-11-07T06:57:34Z"
+          },
+          {
+            "name": "Run make release-artifacts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:34Z",
+            "completedAt": "2026-11-07T06:58:15Z"
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:15Z",
+            "completedAt": "2026-11-07T06:58:16Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:16Z",
+            "completedAt": "2026-11-07T06:58:17Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:17Z",
+            "completedAt": "2026-11-07T06:58:17Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:17Z",
+            "completedAt": "2026-11-07T06:58:17Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:17Z",
+            "completedAt": "2026-11-07T06:58:17Z"
+          }
+        ]
+      },
+      {
+        "name": "chaos",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:57:07Z",
+        "completedAt": "2026-11-07T06:58:40Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:08Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:08Z",
+            "completedAt": "2026-11-07T06:57:10Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:10Z",
+            "completedAt": "2026-11-07T06:57:12Z"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:12Z",
+            "completedAt": "2026-11-07T06:57:26Z"
+          },
+          {
+            "name": "Run npm run chaos:smoke",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:57:26Z",
+            "completedAt": "2026-11-07T06:58:32Z"
+          },
+          {
+            "name": "Run npx tsx scripts/chaos/key-reveal.ts",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:32Z",
+            "completedAt": "2026-11-07T06:58:39Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:39Z",
+            "completedAt": "2026-11-07T06:58:39Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:39Z",
+            "completedAt": "2026-11-07T06:58:39Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:58:39Z",
+            "completedAt": "2026-11-07T06:58:39Z"
+          }
+        ]
+      },
+      {
+        "name": "check",
+        "conclusion": "success",
+        "startedAt": "2026-11-07T06:59:44Z",
+        "completedAt": "2026-11-07T06:59:51Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:45Z",
+            "completedAt": "2026-11-07T06:59:46Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:46Z",
+            "completedAt": "2026-11-07T06:59:48Z"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:48Z",
+            "completedAt": "2026-11-07T06:59:48Z"
+          },
+          {
+            "name": "Run node scripts/ci-contract.mjs aggregate",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:48Z",
+            "completedAt": "2026-11-07T06:59:48Z"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:48Z",
+            "completedAt": "2026-11-07T06:59:48Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:48Z",
+            "completedAt": "2026-11-07T06:59:48Z"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success",
+            "startedAt": "2026-11-07T06:59:48Z",
+            "completedAt": "2026-11-07T06:59:49Z"
+          }
+        ]
+      }
+    ],
+    "seconds": 176.0,
+    "replayBuildCount": 1,
+    "browserPassReports": [
+      "  4 passed (1.1m)",
+      "  10 passed (1.1m)",
+      "  22 passed (1.2m)"
+    ],
+    "reportedFlakyTests": 0,
+    "measuredAttempt": 1
+  }
+]

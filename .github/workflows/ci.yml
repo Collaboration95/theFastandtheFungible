@@ -1,6 +1,7 @@
 name: ci
 on:
   workflow_call:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -9,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -88,9 +89,26 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test tests/e2e.spec.ts tests/a11y.spec.ts
-      - run: npm run test:demo
-      - run: npm run test:judge
+      - name: Build replay once and seal exact bytes
+        run: |
+          npm run build:demo
+          find site/demo -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/replay.sha256"
+      - name: Independent browser groups (all required)
+        shell: bash
+        run: |
+          sha256sum --check "$RUNNER_TEMP/replay.sha256"
+          npx playwright test --output=test-results/app &
+          app=$!
+          npx playwright test --config playwright.demo.config.ts --output=test-results/demo &
+          demo=$!
+          npx playwright test --config playwright.judge.config.ts --output=test-results/judge &
+          judge=$!
+          result=0
+          for pid in "$app" "$demo" "$judge"; do
+            wait "$pid" || result=1
+          done
+          sha256sum --check "$RUNNER_TEMP/replay.sha256"
+          exit "$result"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
