@@ -1,0 +1,28 @@
+
+> research-agent@1.0.0 gate:audit
+> tsx scripts/gate-audit.ts --db /var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/r5-a-live-ntTz3Q/researchagent/testnet/app.db
+
+{
+  "runs": 4,
+  "observations": 0,
+  "violations": [
+    {
+      "rule": "premium_leak",
+      "runId": "423fc2d4-6c34-4017-9ff1-af5e0cf6c263",
+      "evidence": "raw public metadata, persisted events or wire observation"
+    }
+  ],
+  "total": 1,
+  "byRule": {
+    "citation_without_verified_grant": 0,
+    "duplicate_settlement": 0,
+    "over_budget": 0,
+    "purchase_without_policy": 0,
+    "premium_leak": 1,
+    "missing_rail_label": 0,
+    "royalty_policy": 0,
+    "money_chain_reconciliation": 0,
+    "escrow_finish_without_verified_proof": 0,
+    "agent_authority": 0
+  }
+}

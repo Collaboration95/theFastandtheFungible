@@ -1,0 +1,1798 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "4EBFDF3F7422BA988AC35955D70B1E820AAD8D4CF2217716A45FCAFD2AB17D1B",
+    "account": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+    "head": "6981ba11c7307ffc9305bb89bd972d00712a7ccb77d90c2d8d6de4794651056e",
+    "runIdHash": "7b99fdcfd175e34e7f725c271a12e3f5a67eb284cd5eedd4e11b746d1697531b",
+    "ledgerIndex": 22132127,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "sourceKey": "team-delivery@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-delivery\",\"v1\",\"p1\"]",
+            "claim": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation.",
+            "citation": "[\"team-delivery@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation.",
+            "manifestRoot": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+            "grantIntentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-delivery\",\"v1\",\"p2\"]",
+            "claim": "This is a team-authored adaptation of docs/key-reveal-escrow.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited.",
+            "citation": "[\"team-delivery@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "This is a team-authored adaptation of docs/key-reveal-escrow.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited.",
+            "manifestRoot": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+            "grantIntentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-delivery\",\"v1\",\"p3\"]",
+            "claim": "The implementation record explains the boundary this way: The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.",
+            "citation": "[\"team-delivery@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The implementation record explains the boundary this way: The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.",
+            "manifestRoot": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+            "grantIntentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-delivery\",\"v1\",\"p4\"]",
+            "claim": "A refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection.",
+            "citation": "[\"team-delivery@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "A refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection.",
+            "manifestRoot": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+            "grantIntentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-delivery\",\"v1\",\"p5\"]",
+            "claim": "A writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state.",
+            "citation": "[\"team-delivery@v1\",\"p5\"]",
+            "spanId": "p5",
+            "passage": "A writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state.",
+            "manifestRoot": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+            "grantIntentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-delivery\",\"v1\",\"p6\"]",
+            "claim": "One charge per intent depends on durable state, rather than a retry counter in the user interface. The engine persists the signed transaction blob before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization.",
+            "citation": "[\"team-delivery@v1\",\"p6\"]",
+            "spanId": "p6",
+            "passage": "One charge per intent depends on durable state, rather than a retry counter in the user interface. The engine persists the signed transaction blob before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization.",
+            "manifestRoot": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+            "grantIntentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "How does key reveal deliver paid research without premium bytes before payment"
+    }
+  ],
+  "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "conclusion": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors. On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named. Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator. On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument. When a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure. The timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current. For the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions. The arrangement carries risks for both sides. If the customer's end-market demand falls, the customer may be obligated to take wafers it cannot use, or it may forfeit a portion of the deposit. If the foundry fails to deliver, the customer may have a claim for refund or damages, but recovery can take years. Public filings occasionally disclose disputes over prepayment terms, though most are resolved without litigation.",
+      "claims": [
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p2\"]",
+          "text": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors.",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p9\"]",
+          "text": "On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p9"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p11\"]",
+          "text": "Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator.",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p11"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p1\"]",
+          "text": "On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p3\"]",
+          "text": "When a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure.",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p4\"]",
+          "text": "The timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p5\"]",
+          "text": "For the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p5"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p6\"]",
+          "text": "The arrangement carries risks for both sides. If the customer's end-market demand falls, the customer may be obligated to take wafers it cannot use, or it may forfeit a portion of the deposit. If the foundry fails to deliver, the customer may have a claim for refund or damages, but recovery can take years. Public filings occasionally disclose disputes over prepayment terms, though most are resolved without litigation.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p6"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on Key reveal delivery.",
+          "tags": [
+            "Key reveal delivery"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  signed manifests and independent verification.",
+          "tags": [
+            " signed manifests and independent verification"
+          ]
+        },
+        {
+          "text": "No accessible evidence on delivery.",
+          "tags": [
+            "delivery"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XRPL.",
+          "tags": [
+            "XRPL"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Testnet.",
+          "tags": [
+            "Testnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on delivered_amount.",
+          "tags": [
+            "delivered_amount"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  faucet funding and Testnet endpoint history.",
+          "tags": [
+            " faucet funding and Testnet endpoint history"
+          ]
+        },
+        {
+          "text": "No accessible evidence on settlement.",
+          "tags": [
+            "settlement"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402 headers.",
+          "tags": [
+            "x402 headers"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  budgets and one charge per intent.",
+          "tags": [
+            " budgets and one charge per intent"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402.",
+          "tags": [
+            "x402"
+          ]
+        },
+        {
+          "text": "No accessible evidence on recovery.",
+          "tags": [
+            "recovery"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD.",
+          "tags": [
+            "RLUSD"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XLS 85.",
+          "tags": [
+            "XLS-85"
+          ]
+        },
+        {
+          "text": "No accessible evidence on stablecoin.",
+          "tags": [
+            "stablecoin"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DEX.",
+          "tags": [
+            "DEX"
+          ]
+        },
+        {
+          "text": "No accessible evidence on reserve.",
+          "tags": [
+            "reserve"
+          ]
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "conclusion": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation. This is a team-authored adaptation of docs/key-reveal-escrow.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited. The implementation record explains the boundary this way: The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. A refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection. A writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state. One charge per intent depends on durable state, rather than a retry counter in the user interface. The engine persists the signed transaction blob before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization. The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors. On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument.",
+      "claims": [
+        {
+          "id": "evidence-[\"team-delivery\",\"v1\",\"p1\"]",
+          "text": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation.",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-delivery\",\"v1\",\"p2\"]",
+          "text": "This is a team-authored adaptation of docs/key-reveal-escrow.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-delivery\",\"v1\",\"p3\"]",
+          "text": "The implementation record explains the boundary this way: The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-delivery\",\"v1\",\"p4\"]",
+          "text": "A refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-delivery\",\"v1\",\"p5\"]",
+          "text": "A writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v1",
+              "spanId": "p5"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-delivery\",\"v1\",\"p6\"]",
+          "text": "One charge per intent depends on durable state, rather than a retry counter in the user interface. The engine persists the signed transaction blob before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v1",
+              "spanId": "p6"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p2\"]",
+          "text": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors.",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p1\"]",
+          "text": "On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on delivered_amount.",
+          "tags": [
+            "delivered_amount"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  faucet funding and Testnet endpoint history.",
+          "tags": [
+            " faucet funding and Testnet endpoint history"
+          ]
+        },
+        {
+          "text": "No accessible evidence on settlement.",
+          "tags": [
+            "settlement"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402 headers.",
+          "tags": [
+            "x402 headers"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  budgets and one charge per intent.",
+          "tags": [
+            " budgets and one charge per intent"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402.",
+          "tags": [
+            "x402"
+          ]
+        },
+        {
+          "text": "No accessible evidence on recovery.",
+          "tags": [
+            "recovery"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD.",
+          "tags": [
+            "RLUSD"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XLS 85.",
+          "tags": [
+            "XLS-85"
+          ]
+        },
+        {
+          "text": "No accessible evidence on stablecoin.",
+          "tags": [
+            "stablecoin"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DEX.",
+          "tags": [
+            "DEX"
+          ]
+        },
+        {
+          "text": "No accessible evidence on reserve.",
+          "tags": [
+            "reserve"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Writer Credentials.",
+          "tags": [
+            "Writer Credentials"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  trust and refund responsibility.",
+          "tags": [
+            " trust and refund responsibility"
+          ]
+        },
+        {
+          "text": "No accessible evidence on credentials.",
+          "tags": [
+            "credentials"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD escrow blockers and the TEST SGD substitute.",
+          "tags": [
+            "RLUSD escrow blockers and the TEST-SGD substitute"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rlusd.",
+          "tags": [
+            "rlusd"
+          ]
+        },
+        {
+          "text": "No accessible evidence on verification.",
+          "tags": [
+            "verification"
+          ]
+        },
+        {
+          "text": "No accessible evidence on EscrowFinish fulfillment fees and XRP drops.",
+          "tags": [
+            "EscrowFinish fulfillment fees and XRP drops"
+          ]
+        },
+        {
+          "text": "No accessible evidence on fees.",
+          "tags": [
+            "fees"
+          ]
+        }
+      ],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "open-records",
+      "resourceId": "or-wafer-capacity-prepayment-explainer",
+      "version": "v1",
+      "title": "What a wafer-capacity prepayment is",
+      "publisher": "Open Records",
+      "body": "## What a wafer-capacity prepayment is\n\nOn 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument.\n\nThe practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors.\n\n## How the money is recorded\n\nWhen a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure.\n\nThe timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current.\n\n## Why customers and foundries use them\n\nFor the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions.\n\nThe arrangement carries risks for both sides. If the customer's end-market demand falls, the customer may be obligated to take wafers it cannot use, or it may forfeit a portion of the deposit. If the foundry fails to deliver, the customer may have a claim for refund or damages, but recovery can take years. Public filings occasionally disclose disputes over prepayment terms, though most are resolved without litigation.\n\n## Recent examples in public records\n\nIn recent years, several foundries have disclosed prepayment arrangements in their annual reports. TSMC, the world's largest contract chipmaker, has reported advance payments from customers in its financial statements, though it does not name them. In 2021 and 2022, during a global chip shortage, multiple automakers and electronics firms announced prepayments to secure capacity. The amounts varied widely. Some were in the hundreds of millions of dollars; others were smaller.\n\nIn Japan, the Bank of Japan (BoJ) has published research on corporate prepayment behavior, noting that such arrangements can affect cash-flow statistics. The BoJ's reports do not single out semiconductors, but the pattern is consistent with other capital-intensive industries. The U.S. Securities and Exchange Commission has brought enforcement actions against companies that misclassified prepayments as revenue, which underscores the importance of the deposit treatment.\n\nOn 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named.\n\n## What to watch in future filings\n\nThe Desk will continue to monitor quarterly reports for changes in deposit balances. A sharp increase in deposits may indicate that customers are locking in capacity ahead of a expected demand surge. A sharp decrease may indicate that wafers are being delivered and revenue is being recognized. Neither trend is inherently positive or negative; both are facts to be recorded.\n\nInvestors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator.\n\nFor now, the wafer-capacity prepayment remains a standard tool in the semiconductor supply chain. It is a deposit, not revenue, until wafers are delivered. That is the fact. The Desk will report further developments as they appear in public filings.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument.",
+          "label": "What a wafer-capacity prepayment is"
+        },
+        {
+          "id": "p2",
+          "text": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors.",
+          "label": "What a wafer-capacity prepayment is"
+        },
+        {
+          "id": "p3",
+          "text": "When a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure.",
+          "label": "How the money is recorded"
+        },
+        {
+          "id": "p4",
+          "text": "The timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current.",
+          "label": "How the money is recorded"
+        },
+        {
+          "id": "p5",
+          "text": "For the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions.",
+          "label": "Why customers and foundries use them"
+        },
+        {
+          "id": "p6",
+          "text": "The arrangement carries risks for both sides. If the customer's end-market demand falls, the customer may be obligated to take wafers it cannot use, or it may forfeit a portion of the deposit. If the foundry fails to deliver, the customer may have a claim for refund or damages, but recovery can take years. Public filings occasionally disclose disputes over prepayment terms, though most are resolved without litigation.",
+          "label": "Why customers and foundries use them"
+        },
+        {
+          "id": "p7",
+          "text": "In recent years, several foundries have disclosed prepayment arrangements in their annual reports. TSMC, the world's largest contract chipmaker, has reported advance payments from customers in its financial statements, though it does not name them. In 2021 and 2022, during a global chip shortage, multiple automakers and electronics firms announced prepayments to secure capacity. The amounts varied widely. Some were in the hundreds of millions of dollars; others were smaller.",
+          "label": "Recent examples in public records"
+        },
+        {
+          "id": "p8",
+          "text": "In Japan, the Bank of Japan (BoJ) has published research on corporate prepayment behavior, noting that such arrangements can affect cash-flow statistics. The BoJ's reports do not single out semiconductors, but the pattern is consistent with other capital-intensive industries. The U.S. Securities and Exchange Commission has brought enforcement actions against companies that misclassified prepayments as revenue, which underscores the importance of the deposit treatment.",
+          "label": "Recent examples in public records"
+        },
+        {
+          "id": "p9",
+          "text": "On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named.",
+          "label": "Recent examples in public records"
+        },
+        {
+          "id": "p10",
+          "text": "The Desk will continue to monitor quarterly reports for changes in deposit balances. A sharp increase in deposits may indicate that customers are locking in capacity ahead of a expected demand surge. A sharp decrease may indicate that wafers are being delivered and revenue is being recognized. Neither trend is inherently positive or negative; both are facts to be recorded.",
+          "label": "What to watch in future filings"
+        },
+        {
+          "id": "p11",
+          "text": "Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator.",
+          "label": "What to watch in future filings"
+        },
+        {
+          "id": "p12",
+          "text": "For now, the wafer-capacity prepayment remains a standard tool in the semiconductor supply chain. It is a deposit, not revenue, until wafers are delivered. That is the fact. The Desk will report further developments as they appear in public filings.",
+          "label": "What to watch in future filings"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "open-records",
+          "articleId": "or-wafer-capacity-prepayment-explainer",
+          "version": "v1",
+          "wallet": "rEzFoerMmNxxhUMoRCjFXpesi9EvjCVg3t",
+          "pubKey": "ED3EECF4E86F675FF7AFDDA95208E25D3AD71BE4F217758CFE42440150D2FEC65E",
+          "priceMinor": 0,
+          "leaves": [
+            "bb1eb157ef9672c1515483dd9f5b4b35dfadfcd97951a71cb2575e0d34631e4f",
+            "e59189747e87233390f7501c4b2195c6746aeb1b4447d8c72d0b0395d70888df",
+            "e4842e6b4c6698cd152fa5bc219e050b93b9b54d4100e4adf7de1b7c267703c2",
+            "b9a90578db9e5187bada3f51d046a534c0db0706bce7d20513066b72d25f85d0",
+            "698509009526cdc859dacaf3fc1de96bb0b598e2452d9835925b4bb04e892bd8",
+            "9c4b1c4694bcc3a0ba4a6ea10cfdece7bfe59cb3efe2d7267a3c8d22e0f4dce4",
+            "fbae352ad6ae2e9ffc4544c561fb359bedcc7beb214e74cb736d714b899d350b",
+            "a898c5cb0104770e5cc2944b4cc5550e9697eb594b7870039dbf9479ad91fae8",
+            "679a693a26cf937967dac6bf9b6e93b8aad73ebf8133523760fc8d462f89c9c3",
+            "59b62ba17caf4134b20ceab5850a709d007cb41cd91fd9b80d0ceb0652776c79",
+            "6144a193535523c2be8d288a9a670c4ab304b8b6b4d8c7d70eb4a2cf1e17c1f1",
+            "9dcc5f0697f8fa66c5b981e3b22defdf9eb6b2e9f89d149cd9c1312ef3807a6b"
+          ],
+          "root": "5ba9f2389b01f2a7067c877a9fdfc426da3aeb4ffb168dc1937f90c391cbd270",
+          "claims": [],
+          "wordCount": 898,
+          "publishedAt": "2026-08-14",
+          "relevance": 1,
+          "sig": "22CDB7F43932D6DD01DE842E088848617ECD08A95D23D7A97C71E507510B0E5EA9371B94128B4FDFF54199EC6892C9CB919646EA12C93A353EE516E697435806"
+        },
+        "salts": [
+          "1b48b6b7fba59bed010410d82e0b5c86",
+          "70f442e4e42de1e0f47f52260d7af1a4",
+          "4e9863ff397e48e8e7d18e85e4951135",
+          "7238bfd2787519e955d312def54dec03",
+          "3b1d0158a9025208deaff4498456cb15",
+          "4acaf1b6eccaa0365630f72745c7c365",
+          "3c83a3c1ef46b9ded793872a7d48ab04",
+          "cd8c1bed882a41e5f35dbdf62dae5d20",
+          "3093dab900e3d81f88176b06b80eea84",
+          "f578d25d87f93f4cbf3e1183e032ff51",
+          "0839c00855d6d19b34f0fa33a3331021",
+          "30e29dd145fcbd8b4e41c7b26377cca2"
+        ]
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-delivery",
+      "version": "v1",
+      "title": "Key reveal: paid research delivery, manifest signatures and content hashes",
+      "publisher": "ResearchAgent builders (team-authored)",
+      "body": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation.\n\nThis is a team-authored adaptation of docs/key-reveal-escrow.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited.\n\nThe implementation record explains the boundary this way: The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.\n\nA refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection.\n\nA writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state.\n\nOne charge per intent depends on durable state, rather than a retry counter in the user interface. The engine persists the signed transaction blob before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization.\n\nIndependent verification checks several different things. Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding. A ledger lookup separately establishes successful validated settlement. Historical endpoints can disagree about availability; a transaction not found on one endpoint is not proof of failure. Readers should retain the transaction hash, network, ledger index and receipt bundle when reporting evidence.\n\nFaucet funds and public Testnet endpoints are suitable for reproducing this prototype without real money. Wallet seeds stay in private local storage and never enter model prompts, article text, receipts or public logs. Testnet balances have no real value. The displayed application prices do not imply a redeemable SGD balance or a guaranteed conversion into XRP. Network availability and faucet funding time remain operational dependencies.\n\nThe purchase receipt is an evidence bundle, not a quality endorsement. Readers should resolve each citation to the delivered passage, check that its exact text appears in the authenticated body, and keep the associated grant and settlement identifiers. Public search abstracts help decide what to investigate; they cannot substitute for paid evidence. A signed promise describes what a writer offers, whereas the delivered passage establishes what the buyer may actually cite. These boundaries apply equally to our own notes and to outside writers.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation."
+        },
+        {
+          "id": "p2",
+          "text": "This is a team-authored adaptation of docs/key-reveal-escrow.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited."
+        },
+        {
+          "id": "p3",
+          "text": "The implementation record explains the boundary this way: The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe."
+        },
+        {
+          "id": "p4",
+          "text": "A refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection."
+        },
+        {
+          "id": "p5",
+          "text": "A writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state."
+        },
+        {
+          "id": "p6",
+          "text": "One charge per intent depends on durable state, rather than a retry counter in the user interface. The engine persists the signed transaction blob before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization."
+        },
+        {
+          "id": "p7",
+          "text": "Independent verification checks several different things. Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding. A ledger lookup separately establishes successful validated settlement. Historical endpoints can disagree about availability; a transaction not found on one endpoint is not proof of failure. Readers should retain the transaction hash, network, ledger index and receipt bundle when reporting evidence."
+        },
+        {
+          "id": "p8",
+          "text": "Faucet funds and public Testnet endpoints are suitable for reproducing this prototype without real money. Wallet seeds stay in private local storage and never enter model prompts, article text, receipts or public logs. Testnet balances have no real value. The displayed application prices do not imply a redeemable SGD balance or a guaranteed conversion into XRP. Network availability and faucet funding time remain operational dependencies."
+        },
+        {
+          "id": "p9",
+          "text": "The purchase receipt is an evidence bundle, not a quality endorsement. Readers should resolve each citation to the delivered passage, check that its exact text appears in the authenticated body, and keep the associated grant and settlement identifiers. Public search abstracts help decide what to investigate; they cannot substitute for paid evidence. A signed promise describes what a writer offers, whereas the delivered passage establishes what the buyer may actually cite. These boundaries apply equally to our own notes and to outside writers."
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "open-records",
+      "resourceId": "or-wafer-capacity-prepayment-explainer",
+      "version": "v1",
+      "title": "What a wafer-capacity prepayment is",
+      "publisher": "Open Records",
+      "preview": "A dated explainer on how chipmakers book future factory space and how the money is recorded before any silicon ships.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "prepayment-explainer",
+      "facets": [
+        "TSMC",
+        "explainer",
+        "prepayment"
+      ],
+      "authority": 2,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Open Records"
+      },
+      "publisherSlug": "open-records",
+      "writerSlug": "open-records",
+      "url": "/w/open-records/articles/or-wafer-capacity-prepayment-explainer",
+      "relevance": 0.2265807171354159
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-delivery",
+      "version": "v1",
+      "title": "Key reveal: paid research delivery, manifest signatures and content hashes",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "How encrypted key reveal delivers paid research without premium bytes before payment; manifest signatures and content hashes checked at delivery.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-delivery",
+      "facets": [
+        "Key reveal delivery",
+        " signed manifests and independent verification",
+        "delivery",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-delivery",
+      "relevance": 0.770680715761522,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-delivery",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "314cc0f9d041a12ba9e1b1a70f097a0b8f089da56fb37acd574f35bb39df69be",
+          "e24f00ff92443341af52fed7497e816195ac1462cce8304f0645a7ea74a53a2c",
+          "59857ff7da837e3720c897541d62044cb90907d37a7c36a6f9c24820259094c7",
+          "15f2bcf9b05e99e8fa47bd4bd4f1bb2c3aa3dde490c8c199fd7da912efb04f5e",
+          "aeaf889fff39fa26acef934a29136f8959648f5eaecc10d6d572d0f651bf34a0",
+          "66885a385664ba9aea5c3b49a0a913d6499f035355cc14647a3d78f5027d7bd0",
+          "d0c2cb4da708ad65ef0fa5627e915e11f82d7581206250e27ec8ff086cbcf2ca",
+          "e4aed5381863588a6bed6ef52a5b876a80ba5d609e56eabce1155fa9ef6ca912",
+          "46ad7647ba9e800196ec7b03af19202a70053e47d76a0f2a31f605a2a1317de0"
+        ],
+        "root": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+        "claims": [],
+        "wordCount": 673,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.770680715761522,
+        "sig": "72AAC334F660800E70E3D6F23274B3EEF597AC96378ED3434AF75701387F4A6CB1F9CD64353D799E8409E39CF518F706E8AD538669F7DE125786CEA39EBBD30A"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-settlement",
+      "version": "v1",
+      "title": "delivered_amount, faucet funding and Testnet endpoint history",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Operational lessons on faucet wallets, partial payments, validated settlement and historical transaction availability.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-settlement",
+      "facets": [
+        "delivered_amount",
+        " faucet funding and Testnet endpoint history",
+        "settlement",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-settlement",
+      "relevance": 0.4676133543242724,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-settlement",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "ae59a4fe8f7ca309f78b98de4a88506495d6155f1be8828f71f82c85b81bd6f7",
+          "77dec905801e25d7ab1d5fce809bc3a87c7dab48dc05c7a1d1ee61a2c64fd0fe",
+          "4e34076f1494a376aa3afec899abc1a6c41d67e8fe0b39d813ef72fbd2da5701",
+          "a1f640e43c292806b8ea9603ae39010052f78f00b94344a7540f3e1d63b16258",
+          "aa6374849f0e1f134b40b4a1370836e6b46c8d3c1540b6b197d005070b035006",
+          "36ff3e42f497e20227e46b68b2b23cd26b9813e673bd977ab4502d39dd08e1f3",
+          "9d23e818112e6c1bf53b7b1740277efe51f104387e9e1565b630755a398d53b7"
+        ],
+        "root": "2c8f38b43fe134a0da45e7f33e3857bc040ae1ca62fd20420d9a7991c028e1c3",
+        "claims": [
+          {
+            "id": "p4:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "a1f640e43c292806b8ea9603ae39010052f78f00b94344a7540f3e1d63b16258",
+            "covers": {
+              "entity": "XRPL",
+              "measure": "source",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p7:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "9d23e818112e6c1bf53b7b1740277efe51f104387e9e1565b630755a398d53b7",
+            "covers": {
+              "entity": "US",
+              "measure": "cost",
+              "period": "twenty twenty six"
+            }
+          }
+        ],
+        "wordCount": 836,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.4676133543242724,
+        "sig": "098CE7747CAFA920A429D043845D37C47CEF9B50F6271147028B23D0386ACD9B0E18800AF1594C8684E838472A9BDB1552E038033678684409DC9C35F46A7F08"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v1",
+      "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "What x402 headers an XRPL buyer sends, payment and delivery failure modes, policy spending authority and retry idempotency.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-x402",
+      "facets": [
+        "x402 headers",
+        " budgets and one charge per intent",
+        "x402",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-x402",
+      "relevance": 0.408536043777195,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-x402",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "3e0b56d30484497a3690eb5f32985a2b55067f745c7b9d8598d1fddf2af540f8",
+          "fc0b030dee18ca6cae02fc11fbe40fee01e238d340898fa4e6114ffa5a4cc7e7",
+          "02ab781d404556911bba9ec5962c12c9cbd785357dd047b1aa47d4f6401cc35d",
+          "bc3f0db5ab8a272c9590706f7c2f26197419c2d56dd75ff0942be6ad1f568d70",
+          "df6bc2550733f77424ded787c0069975551827ce5eb2ba02a22fec46c721fd61",
+          "8017e483725ec132be78b5dd5d384cc097f4c225313cf8fceba2df249a4a3d3f",
+          "5e4ffc0d007e2919504df38f44e8849389a6453309a02a3e09971dcef7c92259",
+          "b3ed9510fb48e8b3f69708445aa8464bec84ff4ad6d6cc0a4257b6d90309edfa"
+        ],
+        "root": "bea1c18648b45ca279afa6a5289d93f0c8f0691fb49a4cd341044fc30a2e4e5d",
+        "claims": [],
+        "wordCount": 867,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.408536043777195,
+        "sig": "CAD58F6B88ACFED676D4DF55F0BD55EDC782AC9311277C0B8E1E295DFC8679E4815D9D92B07446ECE81F3EF8D8D17D76F688E8618D540360AAAB0F377F696902"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-recovery",
+      "version": "v1",
+      "title": "Writer no-show: EscrowCancel, key deadlines and writer-signed refunds",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "When a writer never reveals the key, policy can cancel after expiry. A writer can refuse a refund after EscrowFinish; these are different protections.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-recovery",
+      "facets": [
+        "recovery",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-recovery",
+      "relevance": 0.35979595460618163,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-recovery",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "6fc066e12f7debeafd7b8f4a8a46431d6b4e54471aaecd5a71be3d644080f0b5",
+          "15d634f90ccc915764086601b8aef8e3ec29ee5b5b96c34e95273223228d2b4f",
+          "6abfce338e55e79fac2588b2c8e52aa352a6d85fe64fb5318b4ba3e2ab32a7c4",
+          "543574c2c860b774d6fd7f048e314187da2ec62909ba170345d7122cb8d97786",
+          "82d8eed20c3529356709a412b9d71a80091d560ce028dd02193ab267652593bc",
+          "0f3ee96f08f20b0c51ad7e197cf2788036e722783bd2938e7db9c1b1118083f4",
+          "f12faeb53f2805bd0da21d0550370bb12fae95468c8465ed2c7cf48ee0a94b74",
+          "b5b6de7867def9d64aed1abb5f225df26dfbf9eed1e385920fb40ef3e20aabf2",
+          "d1dda455107494b9ac4ca299d3f6966dd33757144a4bb865042aa1f5f864219b"
+        ],
+        "root": "2970d9b1a3dbb3f6287ef3d92a2a6f6414163488d2afbff94d1619b898c33968",
+        "claims": [],
+        "wordCount": 623,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.35979595460618163,
+        "sig": "11B349A90001995D4C9F2A7244821AB11FACB44738D0D23F65FBC53FDC8FF10118D5DF9C84DE47BC840552B06699BF94DCB83A6AAF6BB15C70B182E2A2844B00"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v1",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.20760984899577217,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "e8785dc9956d4a9fb34f4cd1f06c8fd9fcf5723e043d0cc5d183952fb3a28727",
+          "3db881588551143accfc849d2f4c94b33a0fd5eff0079f9e3431183425f032ee",
+          "bc0676ef43e436dc3d874c0e1fb15115a0599de1d5baac83fb04064044204198",
+          "60bc81becd3cc49f8868371180073fe2bb584653c030a161fad4d254bd3181a6",
+          "9cdf2a361e8112ce7fd4a767b73f6f7d13fbe2fddc3585a424fc3a1cad173afd",
+          "b7dea67b180e03aa1d1eefc959872a65278f29d88eeb470f22ff0af3e6cc1f42",
+          "e6785d98a082893027e0aea3b6047673e0e7594f802487605c4c80daec1c156a",
+          "414858a4a0bcbafeda5b80ef0c495d8fb6a5c6752a33a5a2214e5962eda2a6c0"
+        ],
+        "root": "c2a32c36da1732df65d2373839c4d028ec3c4a417d5ffb976cd259a3dc161cce",
+        "claims": [],
+        "wordCount": 686,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.20760984899577217,
+        "sig": "B510E85BD9D1AA607D0462776BA18787EEF3805C9D3AE2BE55272CAB4877E5BC348F770AB17024B96604C142A1081DD9B6ED7E3486EB2CEEBBBD5AF799F76809"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-credentials",
+      "version": "v1",
+      "title": "XRPL Credentials: writer trust, article accuracy and identity evidence",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "How XRPL Credentials change writer identity checks without proving an article accurate or boosting trust scores.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-credentials",
+      "facets": [
+        "Writer Credentials",
+        " trust and refund responsibility",
+        "credentials",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-credentials",
+      "relevance": 0.13257800206442885,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-credentials",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "5b3106777098bf1b2e1c240d43f04cc779055f9bbc6df2309d657c877029634a",
+          "589f2f70228b5a7fa6e4aebe24fc53fe9ef23c44e74a33be0a29bf9da2598f67",
+          "dcc2e97f5d7ec32813227281531d1d76639613572b31a50e80a6cf1fb883a616",
+          "eb3fbed4f881a2b2613f38a10bbe15cbf861452de1b865b978f050d05e18fa2c",
+          "a5cac341e57f5f17e634de9e196b7f8ce3252cd758d1873ab697c693096e393a",
+          "8aaa1def1524b951ef0db3130b98e76dc57c5ab2b7fda71519dca633a509ac3e",
+          "0004ac92aed62268e77f0bd36902fb40e472cfc7bfa523a6be95c81b6b00e3ff",
+          "eb79f159e3c3bcc51e71954de6beaa74e3f2d0aac96dd839771a5f38985ca795",
+          "a50c618f200a4f3be9f342659a61f6b733b1d456250b6799fb6d03330d9912b6"
+        ],
+        "root": "84713f7503046c5184728a8a3b1b9e9a02a16388f43588af47fb29453dbd10a7",
+        "claims": [],
+        "wordCount": 649,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.13257800206442885,
+        "sig": "DBC613DE6B866669861F88114EDC4A1345A437D7D27FB2B7FC68B84058AD991E1303F26B1EEBB1A6AF11C148C58653475746A19E8142A6F4E6ADC5262C0BEB01"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-rlusd",
+      "version": "v1",
+      "title": "RLUSD escrow today: AllowTrustLineLocking issuer permission and TEST-SGD",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Why RLUSD cannot be escrowed today without issuer permission, and what AllowTrustLineLocking means for token escrow experiments.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-rlusd",
+      "facets": [
+        "RLUSD escrow blockers and the TEST-SGD substitute",
+        "rlusd",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-rlusd",
+      "relevance": 0.1159048942415527,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-rlusd",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "bb2dd1f8433486234f3a9130e156c1a14f521d2ec4230744e918ddbc5a17774b",
+          "126bc887f1e298275bc4c4dc11e7cf10691a80fea48aff04c20d9ec45390bb77",
+          "d7e29b4062d5d781853216efc9e4b80d64d73c153b0d4a88063b3cf883efbca5",
+          "25b619f147bfdedba06a89b0e2770b109b444616e954bda0cadafe7a8f89139b",
+          "3070b079c0482bb73c69c1e73e657b04ec60d6ab22dbcc6ebb9aefce5d3be9b5",
+          "ea73127cac55221bd39edc25bb879fa56e1be7713c16d26909be344109c0baab"
+        ],
+        "root": "d34a30439ce4df7df854223a2fdab44e854fdf6cac3720c3c82b77c466b32464",
+        "claims": [],
+        "wordCount": 780,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.1159048942415527,
+        "sig": "80D53F234D76812B53E4FC27C0F5A468C44CE51985EECFE528EB3EBB2011B0DD6E12227ADA6188ED0F2CE911F8AF6D8B7955415718744F6894CFFE14CD4A1907"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-verification",
+      "version": "v1",
+      "title": "Verifying cited answers: signed manifests, content hashes and ledger evidence",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "An independent verification workflow for a cited answer against ledger evidence, with a distinction between cryptographic consistency and validated settlement.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-verification",
+      "facets": [
+        "verification",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-verification",
+      "relevance": 0.06816499181274459,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-verification",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "1d8364a115b63546c3ab89a12b3c37f8534d39f074a3130a11be456164af1d72",
+          "49c39ba5605f75ab56118f6284c3635f64878486e92827b7965fb3eba359a6f3",
+          "5f213adfbf68021fc7ec9a68677fd875bf21eaa2c806274b4153b15290546d68",
+          "5c93c2b62411717d2041fafd381c00c7ec5f32ded1bd306141601dc088dbe236",
+          "2fe3532d6b55607030a034b11bce5962026af3e567a497b0ae31cd9c1e4927fd",
+          "67a8b520c0dea8d25ac8645c3b22e4a5e0f5f8fe5fe1eae366b1c5c9c9f720e1",
+          "463ad2927478f4935cfaf81aa01c982da0febe6456fbb0bd76a2dbcfa797bbc5",
+          "bb67d20d5435485400d05bcfb18774f9dec150c4dd0629fa4dc1b356c5abaf1d",
+          "e20253b8ffa779c7fcb1c17b6c889ec2b27fc86a96ab37ab7ea75c8bba51e27a"
+        ],
+        "root": "885c8ab18c3db055a93ed741759cc159b387f8862f27639f0a6a3e2a14b26751",
+        "claims": [],
+        "wordCount": 629,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.06816499181274459,
+        "sig": "4071F051EDB149BBC215B1E522D867E5D4F308D81D793F3D3EFC31EA6795BCA931E04E1F57D114EC22C3A50933F7029514A75F269FAC25BCB33E958A48A63300"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-fees",
+      "version": "v1",
+      "title": "EscrowFinish fulfillment fees: XRP drops and SGD prices in the app",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Measured Testnet costs and accounting: how XRP drops differ from the SGD price shown in the app, including principal and fees.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "family": "team-fees",
+      "facets": [
+        "EscrowFinish fulfillment fees and XRP drops",
+        "fees",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-fees",
+      "relevance": 0.06328247460094824,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-fees",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "4022930e7b79c41336f6e85dacb5bfc13cc9747776055b55d0d5a8cd2cddee50",
+          "10f7e0e74fed38fe8fce294ed6c6ecd7947ae65cd86de62301f61612981e52ec",
+          "c8099da9f8021bd77b0471e7ab657fa2569fef41df8dfecdc615562ffb9575f0",
+          "8abbeb01df009dfb667cdbe22b44ffea2b96aa12c164230c76f66f913ed79a4a",
+          "47bff616564eaeed340b5d8a45e3ce8fcb5126b922fab5063800a0eec4a4fc94",
+          "7cb15e0e32da79d1278c87987a2b171c8f0e49bb7cb0a89e45c03bd1f2066a2b",
+          "198d921846457e9007b452f168db24a38fbe061cac7f84f285d8f9a38999dfb1"
+        ],
+        "root": "babc1fad22afc683f71d10f61eff4827018a13ababd9bdc45639ed69092c613f",
+        "claims": [],
+        "wordCount": 715,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.06328247460094824,
+        "sig": "9FB64E1D9C7B505C75B2F5DCA50CF1834BBC29FBE15EF5D760ACA57BC1A6EAD52850789672AB48BE20A02BDC1397C5A278C42057635C4160819ADA20FB4B8D02"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22132125,
+        "owner": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+        "cancelAfter": 847351841,
+        "createSequence": 22132116,
+        "createHash": "582A411EFBA72D5936E76E1A8CA5D8FF5CBB40F040C60C1AEE8188C0A92A0581",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+        "proofOk": true
+      },
+      "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+      "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+      "profileId": "team-builder-notes",
+      "resourceId": "team-delivery",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-07T07:28:45.544Z",
+      "submittingAt": "2026-11-07T07:28:45.544Z",
+      "settledAt": "2026-11-07T07:29:00.123Z",
+      "quote": {
+        "profileId": "team-builder-notes",
+        "resourceId": "team-delivery",
+        "version": "v1",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"team-delivery\",\"asset\":\"XRP\",\"cancelAfter\":847351841,\"condition\":\"A0258020597F1BC9F1F71187E6CDEA9C61762A5F5761CDBB71BFE299F067275FF54E2DA6810120\",\"intentId\":\"62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1\",\"keyReveal\":{\"ciphertextHash\":\"1503d5700aa86671d676e5e32e139012ea26f12d8caa9d63c559adb912b27f9a\",\"iv\":\"6C2CADBE924623B1C294F877\",\"plaintextHash\":\"2cb633d309afe9ef1b7ff1dbe1d4b3c692111f4430a0c42bc5fab8e5a83fea04\",\"tag\":\"F087B9EC68157C3239B410B6C46F27D9\"},\"manifestRoot\":\"cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426\",\"network\":\"xrpl:1\",\"payTo\":\"rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx\",\"payer\":\"rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM\",\"publisherSlug\":\"team-builder-notes\",\"quoteId\":\"8ae70adb-29dc-4c0f-8e2e-72e48e7e5b33\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "8037D5401252EEFF8A9C28F1D0F7A446A40BB4C431DB2BCD3A4D10889BF9CFF0",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-07T07:29:45.543Z",
+        "contentDigest": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+          "amountDrops": "40000",
+          "invoiceId": "8037D5401252EEFF8A9C28F1D0F7A446A40BB4C431DB2BCD3A4D10889BF9CFF0"
+        }
+      },
+      "paidPath": "/w/team-builder-notes/articles/team-delivery",
+      "receiptId": "escrow-EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+      "txHash": "EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+      "resourceId": "team-delivery",
+      "version": "v1",
+      "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+      "contentDigest": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+      "grantedAt": "2026-11-07T07:29:00.121Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22132125,
+        "owner": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+        "cancelAfter": 847351841,
+        "createSequence": 22132116,
+        "createHash": "582A411EFBA72D5936E76E1A8CA5D8FF5CBB40F040C60C1AEE8188C0A92A0581",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+        "proofOk": true
+      },
+      "receiptId": "escrow-EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+      "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+      "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+      "resourceId": "team-delivery",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-07T07:29:00.123Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+        "ledgerIndex": 22132125,
+        "payer": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+        "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "1503d5700aa86671d676e5e32e139012ea26f12d8caa9d63c559adb912b27f9a",
+          "plaintextHash": "2cb633d309afe9ef1b7ff1dbe1d4b3c692111f4430a0c42bc5fab8e5a83fea04",
+          "iv": "6C2CADBE924623B1C294F877",
+          "tag": "F087B9EC68157C3239B410B6C46F27D9"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "8ae70adb-29dc-4c0f-8e2e-72e48e7e5b33",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-delivery",
+        "version": "v1",
+        "manifestRoot": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+        "amount": "40000",
+        "payer": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+        "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "condition": "A0258020597F1BC9F1F71187E6CDEA9C61762A5F5761CDBB71BFE299F067275FF54E2DA6810120",
+        "cancelAfter": 847351841
+      },
+      "escrowCreateHash": "582A411EFBA72D5936E76E1A8CA5D8FF5CBB40F040C60C1AEE8188C0A92A0581",
+      "escrowCreateSequence": 22132116,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+      "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-builder-notes",
+      "resourceId": "team-delivery",
+      "version": "v1",
+      "payee": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+      "payer": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+      "invoiceId": "8037D5401252EEFF8A9C28F1D0F7A446A40BB4C431DB2BCD3A4D10889BF9CFF0",
+      "ledgerIndex": 22132125,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-07T07:28:45.544Z",
+      "settledAt": "2026-11-07T07:29:00.123Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "or-wafer-capacity-prepayment-explainer",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "open-records",
+        "articleId": "or-wafer-capacity-prepayment-explainer",
+        "version": "v1",
+        "wallet": "rEzFoerMmNxxhUMoRCjFXpesi9EvjCVg3t",
+        "pubKey": "ED3EECF4E86F675FF7AFDDA95208E25D3AD71BE4F217758CFE42440150D2FEC65E",
+        "priceMinor": 0,
+        "leaves": [
+          "bb1eb157ef9672c1515483dd9f5b4b35dfadfcd97951a71cb2575e0d34631e4f",
+          "e59189747e87233390f7501c4b2195c6746aeb1b4447d8c72d0b0395d70888df",
+          "e4842e6b4c6698cd152fa5bc219e050b93b9b54d4100e4adf7de1b7c267703c2",
+          "b9a90578db9e5187bada3f51d046a534c0db0706bce7d20513066b72d25f85d0",
+          "698509009526cdc859dacaf3fc1de96bb0b598e2452d9835925b4bb04e892bd8",
+          "9c4b1c4694bcc3a0ba4a6ea10cfdece7bfe59cb3efe2d7267a3c8d22e0f4dce4",
+          "fbae352ad6ae2e9ffc4544c561fb359bedcc7beb214e74cb736d714b899d350b",
+          "a898c5cb0104770e5cc2944b4cc5550e9697eb594b7870039dbf9479ad91fae8",
+          "679a693a26cf937967dac6bf9b6e93b8aad73ebf8133523760fc8d462f89c9c3",
+          "59b62ba17caf4134b20ceab5850a709d007cb41cd91fd9b80d0ceb0652776c79",
+          "6144a193535523c2be8d288a9a670c4ab304b8b6b4d8c7d70eb4a2cf1e17c1f1",
+          "9dcc5f0697f8fa66c5b981e3b22defdf9eb6b2e9f89d149cd9c1312ef3807a6b"
+        ],
+        "root": "5ba9f2389b01f2a7067c877a9fdfc426da3aeb4ffb168dc1937f90c391cbd270",
+        "claims": [],
+        "wordCount": 898,
+        "publishedAt": "2026-08-14",
+        "relevance": 1,
+        "sig": "22CDB7F43932D6DD01DE842E088848617ECD08A95D23D7A97C71E507510B0E5EA9371B94128B4FDFF54199EC6892C9CB919646EA12C93A353EE516E697435806"
+      },
+      "salts": [
+        "1b48b6b7fba59bed010410d82e0b5c86",
+        "70f442e4e42de1e0f47f52260d7af1a4",
+        "4e9863ff397e48e8e7d18e85e4951135",
+        "7238bfd2787519e955d312def54dec03",
+        "3b1d0158a9025208deaff4498456cb15",
+        "4acaf1b6eccaa0365630f72745c7c365",
+        "3c83a3c1ef46b9ded793872a7d48ab04",
+        "cd8c1bed882a41e5f35dbdf62dae5d20",
+        "3093dab900e3d81f88176b06b80eea84",
+        "f578d25d87f93f4cbf3e1183e032ff51",
+        "0839c00855d6d19b34f0fa33a3331021",
+        "30e29dd145fcbd8b4e41c7b26377cca2"
+      ]
+    },
+    {
+      "resourceId": "team-delivery",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-delivery",
+        "version": "v1",
+        "wallet": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+        "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+        "priceMinor": 40,
+        "leaves": [
+          "314cc0f9d041a12ba9e1b1a70f097a0b8f089da56fb37acd574f35bb39df69be",
+          "e24f00ff92443341af52fed7497e816195ac1462cce8304f0645a7ea74a53a2c",
+          "59857ff7da837e3720c897541d62044cb90907d37a7c36a6f9c24820259094c7",
+          "15f2bcf9b05e99e8fa47bd4bd4f1bb2c3aa3dde490c8c199fd7da912efb04f5e",
+          "aeaf889fff39fa26acef934a29136f8959648f5eaecc10d6d572d0f651bf34a0",
+          "66885a385664ba9aea5c3b49a0a913d6499f035355cc14647a3d78f5027d7bd0",
+          "d0c2cb4da708ad65ef0fa5627e915e11f82d7581206250e27ec8ff086cbcf2ca",
+          "e4aed5381863588a6bed6ef52a5b876a80ba5d609e56eabce1155fa9ef6ca912",
+          "46ad7647ba9e800196ec7b03af19202a70053e47d76a0f2a31f605a2a1317de0"
+        ],
+        "root": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+        "claims": [],
+        "wordCount": 673,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.770680715761522,
+        "sig": "72AAC334F660800E70E3D6F23274B3EEF597AC96378ED3434AF75701387F4A6CB1F9CD64353D799E8409E39CF518F706E8AD538669F7DE125786CEA39EBBD30A"
+      },
+      "salts": [
+        "ae80b34750b121f51e25a4ceb22f8470",
+        "ffa43de7efb0c87487332ca01d390c54",
+        "df0e483c305c9b9d1b554b167aeb160a",
+        "8fff3c2844cfd204c5bc7cbb1418f117",
+        "ef58bc7e1ca11fa56f96cea2d72c03c4",
+        "d510bf0eaa09147b37c5ccd889225bbe",
+        "c3e7bbb3594544d4553a3ef8da77efb5",
+        "69804eb4867ee89068ce0eb05f5690a7",
+        "b30f9ebcb3984c3530f05cbda6c1edeb"
+      ],
+      "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "5594B4BA52035D010D13F7D2EB859F77A0F2559F022E4F51E0083B115A16BD0CD5679793EA6F4B16E0638CD465656A9EC5A7F4BBA991DBCD925228E8C7E2B8606DD3A459FBA704781E8DA32F0347D8C6D922ADC47FD5DEE178AF8B1EBD64D6631DC9F40A6BFF4F2C1FEBCE53AA23D7579C0C26C16283225EF8E85D869FD625EDB477C1E8339FA87DFB60943E803F88DA3BA96D449AC8C2C5234582AC838F24B0C35E1A29705C13136CDB3EF7DE4524B928501FCBD6ABF57E28094F2741FB33E0B689CE4EBE0CC47CD38958D4D9E6B26D6A0078486E0824FDD8DF54723983095B5B3BFA4EEFEE0A1FDBB4229A76B849DDF3CA984729602612022D225D25D522E7F5DAEB1C90E638C81F286212ABCA5924A8B9A9F9BF5DAF145C0028EFB5B16EEF3386D476FF76D21962351F70B863A30064AB718CC357907CFDED48A69236C1AE41BF1BB38F36972B718987B043B1180D134B1D6DF234D54950FD829AF3F5D5F607E43D1B84210CF116BA767AA436EB568C487A3B953597752F506BF08736BEB66761E37106D5A2642CA63F7B143A2F515D2B30C30C680EE98D3635D35C118FCDB689111949B0C891F267DF26F0747160C5C321E27C6351D792706223D7842BE95F90AB72A4DC0882D2F4B74B78FF0911D070E20F14A788439BD10271C682C5072381EC5F7F6CBEA2114E966DD0F1CA2B93BC61BA750773CF8C7F12C27E0754E8FE9C9D7BE2BF4BB5FB39D0625E9F303EC1DAD5A76AFC843AC546A1F6E2A8ED16FC03A7DE3CDAFC72006B189DD6A1EC5685D16A4A9E181CD59B849E71CD40DA6247354880C73E0C58CA0D0B05D30C02AB2417214A289424097C17E639E9BEA71CF052398B98CE4BF5ED764739A7184473DABEFF93682AB3B0E677E06ECA58A8F0E056E17F25DCD7227FD2DD2871C893199D813B2A9318964E6E3A5F36C0AC51BAB34F4DFCF6C6C3018EC0113E1BBA1614FB5F96F116531A9C41342CA9A4FBE83E7AE48760CE8CEE5EECB79C0B10449616EF781F7CEBC535AB28C8F91DB515A0A3EEFBA6025755C001360F86E1B5ABBB4E0B874AC878ABDECF84C237504DFB8523EF21DF01F38FB1A0CB48135CFA3352F2DC1592A986ED3E24FBF640DCAA6F2C268AAFC9EBEA8AF7FCEFD0433A70E55285ACCAF8354281C2B0BF30B033DBF0F5E5139BA11F26B024B845EFFDE8C8DCE292D7C7662B46516DB8B5ED2CC6C7FC75579C85ECC6FA7024CE932732EEEEF40B51FF1D10409E737F8B10FBEB2C9254F806EABE13D576C11FA77E3DCCA0E7EC0185BCCA53BCF3CFDE1C3E01D1A200A1A10EBB8C159AFED68B0BE6A3C8A5119F99309A892CB8CEEA6B6B712FD1E988F8E075B61373E9D6B5E8669F6A62669A47076FB5214393EC370B96547126CD064E93A1FFB1F3CFFF44156CDC69B0DA0FC0D2B2FFB95DAD593FC2237806C034421953002C68C57506B169BEEDA6835AC515E8832ACDB65218DA52C93F0CFB4A4677E70421F0815D79C48AFBC57F1324BB92380CFA145624F6689F3C03D3AF3C434F45CB2AF5D6CB7E237B7E2F607579CBB1CD0D9B11EEB589C36D71A98F688D0BD2974677D0E8F11BA74A5DFF8C4E721600A8A78E0E8ECA7B1C59B168A93CAE7DA6CE3785E401AFD55EF3A177685E6CA17B62356D4A42E969C564E41FB7350DA2E60EC68AD12E4728B4348F37F5E982F80E1FC6B75A3293B5F0E55C1900A7009FE9CB4DAB102891450F34BF9ED6D086945E5B6A8D726665A62A71D9A8A4E401BDF1DC5A03AA6195A1DC0E0FE63B8867D208769DAB02A63F44B059F35F8E2E264339D7B1FB9541CEB84A5E3030CF1607D573B2A81B7A29F815B60B3EF35AA18173A4E641449247F7638A52686BB11AD70C1C0660A5C177EC642D632A6CB6E31141D41290AAC53FEE18C0C5CE5D77019B5C4AB0657B0261EFF4830662F36F82208F0D7E7F5B8528C93C91836917E5B4983122EAAEA871A5EB030AAE846185AECA08ABB5604E64D21AD04079506E63DAE5919A5B4054109C47E25FADCEA50BEE19901976071FD1C8B10B522A7615C724DC0DD6076D20A087C5ADDA0F7B0BE87C6DDA5972AB612E9D3B4AEBFBA68CE6B5815CEE7995D9CA0511A5EE1C2BBE2210BF6E90423EAAC16FCEE29DF39E9D95BC1B8760965473A34A71E91DD8981618B5B5786D0E61E14936CFFFEBDD28D69B9EB00EFBA84668FDF9B013AF127BDFCD06B2696C5FDC17E43BC8BCA5B4C2C0119D4929E2C11EDBAA87E9D2324BFF478EBC4BAED0B009D5A9D4F08A2F516B8CBF81DF8C316D849083B7B52C06815D15E9C9BC7DD97F0B6D08A50FDEDE80DEC51F9AAF39954798440C617ABF9A6E18C790477948B12F845C90C16A0761BC58FED01BF45D1E72D5ED8BF1D01679F9B0D365CC57B5A7810F0E39F0AEF58811C1674464231D78898EEB17FD5AE3E42059B0B19BF9447923145F7E77ACBB877A4CE640CBE498D0FD18812B116C115799F220EAD56FA30AA21E3275E818780E75552E33AB462D4A289C61F0046606E9FE14DB99C859D9D6964B8083DD9B45B5E0608713BA5AD59BCA0DDB3E186C9E75A0878DAC2291D93FDB657F876B51D566099D61BB1FB7561861DAC97A56D4E0EC654AA0A9E449B0025202B4DBBEC3BB74525B549B62751E59FF196F38F280072C48F38371E7E20F2E7CA925A5FDA35D6837AD6095811EE1839AA16D6B366754327DDBDB6F74B12AC7BEA511970C9F0917F5100B0CF4F2B487125010B87C57AC7861C1BBF4FAF65FF10F0847365A756DE71AA13942C0DC9B92E88BC85F54A4890AAECCB7AFA62572F25FF980B455556F2E7E5235DD2D86C9CB41CA5C42FD8BBFCFBD87A4F0FE545B8D7252CEE0E930A81A80D7492B71F535776D00B97D4EC2EF2B7A4717CEA69E3253E999C309BD292B31DF67EC83B23F89616C9998E3F3F5BA94D2B019BBD4D4EE8F750C04EB0CACBEFF04EE20869B011B8FB6F40946007C7E1436C63C7D0DBD925F71F703715F26CBA8DB5CE01CCA2D184DB00794A1D577841518E8411DC44ED0B082C58B59F9798B455A8A2A9246CBFD67C988F1C6D9F0503C7DB910F92B53ADE5BB13B8E472245462FCEFE23ED2DA25F9AAE87C6676591D9B5DB16F259845CCA46DC366312D8D93049A8EFDED966B629FFB7FD65C271B5BCF5C503375F5B40156E66C74A2D2F362F2AFF726C4159B5C509EF29BF4CC9349A2A2F740C240F416D5657DD6419374A93B8EFC1C9F80436F661569CA63707F42C521E810A744B897B571B9A8C8509FC387624218A4645C88D06917E6D1E7480B8BEBDECD114374073E0DD6BC147F2504F062527BAF0CF5A03FB41C45A360B0EB772E4A911669AEB47521AB7A452A7EA913D8621C5148112A173CAD34B97545E61F4E2D99191F0421479AF6CDA3356F3D06CF4854A998B20D79027FFAEB10CF15DE47E61333E15DA92C8D12E7157A04C5FD0E931D268B102D337652349958BBEED165DEDB9DBD21D20097538ED899C0D2B8BE7567E0F7A0913130B4DA17FFC667A61842646D06D117F0A849AACAE41CC01165CEB6CA2D5A109E1FFCF4DAA7702DF178BFA4D2EA1FADA7756C3F965671CD3284347D2E763CD69B0DCD1AAE9043D3E9479C9EE46DE4A00CA3967F4FFA27E96BCB46231F9211D520906546D67625DFCDA80FDF32EB01CA0857B215CD366A94473861D3692AD9A3F115E893F868705A6335EB268DAEBAC6E21F598517552429C9D7269F43FD4F55995B7AE367E972BE96FA99910AF085E369989F2EE48AD66961A1302B7C72E4418A704DD40F620E21BE1E55BBA10E1AF31DB01046A7352777B86A349498BF0CC9DB8CBFF36D41E8B778BD564A3145D643BB9EBF25FE299C04050C6EB2A3042C3417A905E352E47CE906B1C606F8E4B5F136CA9CD26D1E99282B20E00DDCB53043A2A52E30116815FAB3F92A741155ED6425C93A82F7F87C268D8FF808A4C23D8EE91CA67C9E495F5B81350E200D03E0DCE6E1659509799C1F519DF12BC42EB9387F3A57E4A63A775789C192D35624EAE3BD0AF534C63556B29430E3BCA5A21A7D174E169680EFA23ED55E533519C67D73E760141B28117FA99E1F1A02E0F30F6B535ADD63F183B1D285BF965A6BCDEF9D8FBB152C0ED413FE26947120D3B4F996DF1634E7096241A4D9BA28A719816D5B865E40313ACEF3912A3BD9B9B17E68E8FA9A0B0F96192141436600AEF7E5266DBF284663C09F699796B66BB4103E636C0E76D72706A14C2FEA8855C0A7712F382C6C54A843A993B09977772953A535A90D305C9918704BA06AB8F369826ECB5333EE6EE5382D37C45DD82795DF8E7248C9748DF0B8CF25A0E70A0ED399374A8F0BD28E598D0C2C2C37BBC180661645EFCBA27624C0C721B54350F5D6EB3D943184B2FA37F9849C26150C679A044D51B61C2D9BD1D1FB9B15CB01D365F820A3A2A5D67BEC26A3761C9F74C0D31BB18EEDD8241561710D4E85195444FA83B0C402C691CCEB3A88F7612D4660B7DE96A3C862531702BC362F545D39E39925D53CA7BD545D2DDC783890C1A8EA494E6E50D26D6A1835702F4AD9DBFBD11E5FC7879DA50CBEC23EDC6A733C6B0862827D5436D1340B5B8B4443728D7B9B01B696504F91235201DFAFE36BED50850ECDA086D217864316693434A7D64CE8DE94A0AEAB07B75C4770C2A0B3722F2C6E6FBD516A61DAF9BA9A9F9E8F9C7A7874BC90D49A7A6C30211138050174A91571F6DFB25355DF788167CB1FA25405814B445872497D904BA75A059515049A6FD8BDA13272F2FEA41614E6EB70772CF4270024EDD5A979364C852B77D683E62BAC24D60597872A1B75FD9604680B211DA83CB1D1DB8B642ED81C75ABD0FF6B2785604B5DEE041B946083EBC09FCA2D25CFC0E430FDBA28ED8F8F9FE86BAB4A1C1ADB108953D375AD0AD6D3796ED36BE29C57F896F2B481F424FED2F835E904A57611CBA34627F4B9665FF6E17E00FDBDB30FDC48CEF39C3B77749CEB7DB224D9782D59FCDDD2A6C586CC3DEE078EEF85C4F5438AF26F85F6CB13AC6F4CCE0A6CDE474F65AFC6E8EE3C97F1F59B575983A936D5D388846CF6581839567DF1D7C512F7A125C2E94AD996E6EACCD58B1B18CA90832AFA7B7AFE1BE3056DFCC031145530E78042A1139BFA24FC66FDF7290CB6716916FD23B2E25427AE61D7C695CDAC5A0CF076A2A953B1D138E6AC47D3CDDE153FFF274CB4D839EC671CEDFE37F91445D20C2BB5F221FEFA769656A46E1AEA4DF4AC3D4669F2F04579803DF9460B1DBB02CB3577ED215F9BA1F8862A72D3C3DE3D867D7A90887B7737A11F86282911AC44899248926D6218C0DDF1E64748AF6E6D1163A3987381018249F891D6B5E51D41226A6D4346CFD98E600C0D362CF3A6FD801984BEFB1C5ACF37A1E0EF27746DF8036E71289A0CA2FD91E1BCD45FB80F5578EBD25756C5F11EC937B8A671E25B2D9C613BC9C5099BC87F35CCF7A7A41D87E2B9D229FDED4ECE9DBE412403142E81F59777EF7E0AF6213C2894489AC99894F667AB7D6F01B6F0F4C757FDDB172A71EBDFB4AC98FFCDF555238659F56CF5DB860DF62322A67A35221C68F4872BABAD25E9530188CDBF524DEC142F0D76AB56835FFB69F011E76681CF184B2581A3EB553349098EAE6C360FD5CC9F0F192B06D599889390ED905556CA9D974C7084364FCE24D16775E9C440910E389DC131D1185B1A16FA1007FDB1868C6E960ECAA2C33B736FB98E2D1B3087DD9BB6745938D793712C46EA92E6C9A8E7EDDD861276E280AA0AB90D2EC5C3B075104B29A3CB6DDF20AE8841012C14FB64D633228F413EDA5E7BB494E598E523040F186E872F0E69501FE9BB4A39615DC3FD7373018486D4CA0B5F18B3FA15DEEADB645932717FD2A38CA909AABCC8744362CF972FD67FD231C42C508349C8724CC4FA4F5DF3A8D69D5623A23FCE0704479031F696CDFD5481BEE675B4CE31390CAE034EA6904F0F715B417C567BB7F466EBE25B9D22DA0DA9BE598548BB55FC874456A120A4E0F2427E9B73CCE5AB3D55567AEC20AB80F63C50F19F6060EFA0D8985636C6EEB0980EB395772A621828302614C0EB315DBC7815C829F9BBD4381B127C812BCA83DBF57530D7C8709E978B5ECD43CD87171D0CDE2FD0F2B09CCF657B8149D331608BC2E3E7B62AEEE047EE2C62BA798EF27E8B89DA554423E7C58D16E9265EB52FBC587DD1710411E23E2CB169204ED581689FC34DBFBC4C470AF9AEE7661416C5DF85E62C49662F709D2902DD29EECFF4B48ECF6FAEA9C02B128FD55327BF8773927F77D9F2BF7F8BA63D43C52C2916EE4985418928763619DECB9814B885D59E612013D1BD767C825A2B751B62BD4B701B08C4479F3C1150060F8B984ECC7F564A93E35B3B2784FE9729F7F71A76D5C0FE0D189CFCB9FDAE8FFB61DB3FF7AF4DCBB7994ABE13A07987F8B75CE9E246DDED8CD1E71DC425403A36F893A354B42FC6089CD850F0FAAB365607BC0C831D2D9DC34FE53BBB4DA264864F6C516F60D6E0FF973FA7E0E67A68B505671264336C3A3F8FE53006563BC0F790B6727B949E935754432F97D13A1AF2A2E5DD8B3C451307966CC19C8A74F170C68F2963D0E9359805A9A4F20827FAD1492462E37B8B2B8919BDBB2F27B48FAE9899FB8C66D54EF82EDBFBE08FB381D979EE7E0D1DB587D580A1701E352761B8F79E9E0B274ADA54514E52C7B6BA6883FD52B20BCDBBF31EBEBE98447630BEC93579D0EE6755606B7BE9EEB67FADC13DD219F85EF0C20CBA52EB16906E9DD238F376AFDBFB0C3FD47E256E3F3F8532FDF7BB3AEE2A6DB4EA8F555F5673417B5FFD7B5F5E4FCE8108AF2B4A749D0CDA2964397DEC7AE7650398F4827863A9EDBAEDB1FAA6C4B57C01809A1EA923BF9AEDBA81087269955E332F61626EBA736E756BD3D30521B46B6430F8E1ECD1428EEB7BE95DCA98E04A11C5C39E4ABEAD7AF28B5727626FBA8953D55512CCE6BC1EB28218D19EE646DAA6EBABC92CA6D773698A9582984DBB93F175984F642B935174C6D0BC93934920A460A7C5C4D96E86F02C53E9B9DA45102F5AAB1F7A80B91E73092155A52617F7530E226596B982CA91298E7E1DACE6D43868BCFBBCD11486DC4D02FCC6ADFB98B40834705D2042AE309A97803BB94F66BA6AD363723F7E8DA05DC009A7A45BC396C34A1E9E64C8B5A10C5308F29D361B2DA3A7AF353345238DFB50D700E689CCFC43B32C3E8A815ACEB1FEAC164B49EDA43FE2E2E368BB40EC1232F361F4A60EEB93BF421BAC247E823FBC4F2DA51038C21C24A52CB19DE057424C8032D5C98D4D3566DBFCC5364A4D9A56732FB55237C0876E7838D62C8561397984FADD89BA45B52AB3B34503AC2458482E631F3E5D1BBEA532B6EBDBF58332D2033D61ADAB1FA7F6FEFA3DBA3E3262A43D4AB6689D5AFDFA9F38993DFCA3E30B21FEB576F3C22E51F02D007312E23776E2DF318E65D3FA49B9D6F09AC52621470EE16AD5C8E671EAD6E9191F805BED980F9D29CD23F1CB5F2898C76EDF675D9A04CD26113D72E48E13BD14B20516DF085C2AD68DC504E12C4E900AEA38E7448C44BE09C9BF631CFC6D302852C5D9DECCC549876CB6768C3B01457BBF705000C86A7B9C8845C8EC3F06911B268AABE1BEA892C7A43AC2D33D8E0362AC44B9ADD8ECC5BB19B9BC684E08439B1450757874FE6F217BD2AA904E188813A16FF18E04E493EB38EB9530DD2649382030D72610F6DB542A8AB86F71DF85799A8D09DCDB433E768D3B9CF24D884A60ACB422F5ADE03A52B6CF7103E5A84842D065254F779AFF214EC2DDFB0C06C1B69B63BBEA1961042B527951E3AB27FDB35100B49127771DE2F526D1D63358A7B67F6B6D9649781FBC09784173AB0681A9983C79B6E99E280C200A5FF47DFB3B5B587D38636AD3C410DC66DC363852FE3C6DD6104ECF0E86784AB04CC0F11AA2FD6A33C8ACA4964423131165EED3CD006D39928D5ACB6D2701A0F89F39BC360C82A03315F6C9BC8B92DE77DB712F74A7C39CEF256B57E49836C00C2BB44F506F99773EF27CC6C0B37FE5FB844B5FA4D714D0D7E0B8E8605EAFB1301F3E5A76957ED7163BC33543030234EB1AA42030AAD553B87BBB7F11A8BEC3CC7AC9DDA4AE8CD9E3F10DC532106B605213EACE2CBFEDDA75A20A2A4D00921EED81828E5046450957F18FBA20640EAC8DB726D50009879449DDAAB8B39B519F69E9E10EB8EB37521207D7A9F6131943582F0E2DABC35223B41E800365F30650DF7C222A72DAAF19CCC2C3B5F8F2180C84076FA36022E637CB2564C2FE6C8D5F1BD9DF4E29B729386BB26BF651306B622992A54647FA30E9132BB5777088F58FCB409C35EE157C0F94A6389E40C469550DD7A6702B2181CA04A8FE1166B36C2C2C37C0144611961A97EA5EAE6ED8B2F8D02A643D32C839F9C441679E172251B97EE103D208F7AAC42DB092705E7B24C154E8D54AADFDFC76CF6F8BB95AC4847D3964EF5798C912AB416A81FE6374E1182DB46C81E037712D2BC14D51734188F4F4A58FBC1C16B9EC65CCA0D713F700EB3F8CE519DB3DE3C21C5F48986EF86E77AC5BB0447BB7496C4DB6B0648F2D8051B394FB72F034E4D632BF48A3E6AC3529E0EC2B933E481CD210C604FCF667C885AAEE56492CD9950FBDCC33BAD3D2DE83B50514A3D432A223C939C2F78227C75B1B1C2CDC0208A63F461FA138322CBE2B0671202AAE3F6DE7129E7A724476B94197902874F832B534F835B7DC00989041887E002A399905E3401DC562ED4628812FEDB2679C4E48C858E73681DEBB4E72A1B2FA4D90EB430ADD96510C7B9D8538FC4448647D0FD15C46EC8349327C3588B54F005BDB97E85A5D82F4185602FDAE167CB16E15FF39E29C1DCC476B25F75B858B7CBCFDCD0959C1AA05718A82FCCA4EED9864D62AAB21C52ABDB8C5F7ABC9A05D2F2DE5AF625D91081751B04F5F4E8A2CA830B299C0628D39AB94235C4ABDA97B89D4CCC1E8EB9BE8D74E79DFCC380AE11F70CDABDC80A7DE81C4CE67B04F421EAB099953312712FF4670D36C7AC28B4924BF8950B26C27968D56EC247861B486CE9F88B2C801E47A8E543275C632C4F46C01F3BFA0A3642C84E21A7151F88FF9927D3036C20D0958D8D7FF829E536F730510DF3CAC543650D7D379C16D44B673AEE8A2E38D102C564D48261F2F4D087530B221DA56B851D2398C6D047416ED242C3C62C39F3DB7D845263D3F1D0DA1A974039908FDD44D0D303646FE6D9226D8E4CDE7AAE994906D5748CBE64B17802B062747AEDEEBAC293DE1AF3FCD4638695FC835B4AB0EF625C18EEFC69558F6C254051785911C6516DDD8FCF1CD6829EAD3D55FDE2E400751A5094D445221D279E0E0634EEBA8FFFC89D6A00CE4514B65EB54914572B070044FF4E0B909D68BA62102F734E83D759F3ABD64D1DD1709273F71906A0E765E3251EA3E4E89399FFAEC435737CF50CE403633556319F52251587F1EC679CDFC0205CED273772769FF9A354A8872986ED3B674D279EEF3E1BD1D21AF7E28DD9C6D634CE923A266044233C3F422E29751F2E8E0213261CDE5D0D4E6440B94D404A25A6E78C4C79ADC25A81AE3D468B217C981828FA6015A7D977F923FA1677559D931059B224E6ED76CD309604D5140CFE243340A9F55B280CE6E029DFFC4AAE297820AB40219D9E94028C256D349E83655C3DE2E24BE9BA57DF868671EAF1272D0D3510EE852BF820A97070AC91C2AF9877587A0E19F1854B8BECE8CAA70B5EDB07266B150558D2C0A0E4303F216FE6568D33C22681CFA81708E6888D3ADC0C90348327AA1F4D48A420C363CEE874420467E8FD9C56A88352852E50673EC5F98DEAC43A2C6835E4DAF4799B327E3098D5DD8F22879665A6C883AA8DD6E5926BAF035A9B3810C5D32913A779FB20BB272474EA9E1A92E971EF8E8286972395A7DC0F85AE10F898184255F0EB658B16AB6A0A650557E18AF70D70628353AC4163A9B4AC74A84D7715A9EC534098A04EAD67020EF6ED928357ADBEDDE4FAF4ADB4150E0448EE2BB99C22DFD45635C352685C70F63D8143E9F469332D66FBCE7BD22E493191CFDB53F899D4E92280173645E63F437898993A9D346D5260DFABA58F8FD5C82A4480FBB95EE0687ED740D0CDE7607A172C47C2DB2D8D228D40A6DB0EB582051F88AB90469A28E19A431A8A4C0B03DCF8C08AF9E03C63C5D6F58E2DE1FEA013D3040B04CAE82C536591FBEDF0B14774EA745C9F4D528F7ECA7A9513221B7A790D9ECB2AABAADC168CA1F5D28A03D3809D64FBAA0D5C430335BEB16CD649DA1DE1E02CFADB097A680A36A6048902B8696C0FC01F84E65E5A39DBDA1EF81551C4BCDB2F36FB3223B893A109703805D595AD2CD9A02C16AEE461DF3277EA7AA08BDF9D2ED9ACDCF160A0647A09E45DE9C390BC6FFE13E39A7F272F6E7442F1C3D2F7EBFF050A64831C138F6730D12663A474CE3B9632816C7B32D943F04E99C0ABCC066106E7C264853BFCA67F2B9039CAD42031D2459E5D356E772BF870462F15B19D844C67E94CC778E7FB1F06581A8BB93264A544E49BCA6B3C3D696C6F9CDE0798EE54B4F37923C1EFA70D4E4BE29A0969BFBE66C778C31C74C85F1032AF27B6168C6D6DE11193609EE0753FD96E5C7B82D82FBBABF66628C444179964DC3CCAE7E64CA2562C3209764B06C37D7D135F4D23B3622CFE1A9805B1BF2D045B7C6C640B68FFB50CCC74FFA524A9D8A9CA3ECE620D36CE39042589960B91B1F0A0081F839A35131584F5899B6EBFE7CB2B942BA3B4041EDFB6E1D6216F81993A92C1BD5DFFAAA77F50A218213F9AF6B89836A92E420A312D71D47197E61331AD92AEA7101491CE1B6BF6A5B3F03A2A0FA0A371456ACB953E4F2E9A20A6ECAB4F775A74B3644D4648854BC9554C8AB30E2FE5DC27345D71EFFA8121A71052AC4D04DC53493AA474E735FA6234543DDDD60F44A68781A8622D2152AB13F601C70104D5A25B2684CDB3C6EF2F97CB55E08E27D2B0C0398DC9BD70E4D4258D49103065EAB3B75FD2AE381A6BFC1415CE6E484D32F67BC60EC138E3E90E6ADFAF4DD830375574E2479E7C78C5977947B3EE9A5C66834ABD5B8A2E8581ABC13FF450B0C1B7F94B4F0DE8BCBA286878E897B4465741D152E999C28A041094926ADDF9AD5872E1762FF468D315A00ED41F31F7514A7A1D9FB7021A400CD42C198DBFB0D0708F2F672AE8A537CEE589C869DDB5946C93CF364172F949E0F18CE8A4A55BBC3CA075635328E35BFB6A46995060012AA21731009FC7B12D6AE7A1F387ADE644633A359C8B27CC67046DC7463DB1C0F05E47DBE09E15A145716ABE679BD01E959E022FC7C9ED65CBB75C119B3C9DBBB0C117A5072AEB8B443D0528EEF605C1B07561644701D87E253D547583EC9B00A8E2818DFF867DCF5AB2EF6FC047C6C6A943D67AB6FDEAD1D330F02828D5228C179D3B5D63204049AA7261A441186A9A768B04EA44F2C01B5DAFA809FE324521A69DCF0E0B7C5A860621D6A3B96C3973B58CF72B22E30957C679E569F33A007EB7F9BC80BE5B0B004E77EC3899CC18AA724B505A7F5D8B1B6E7C01D0AC0AD8FEA08ACE5C9EA5F11050C0CF2DBB749322CF4411C5C7F8A4A3604B14660A2C1A5930CA02100DE2857C6491B061EEC4F1874E6687B48D2635009BF68CA0D517E28D4149C13999C394B4AF25EDA5A1C4BDCE247CBF1822B909B2A7A798A37DEE432C341B2A992CB0709A10AB054E58C87FCAB4BEEA78BE4DFD6073D0C279338AA03D7803F8D35B2F021B8948AE22D63EAAD458479EA61769084A40E3FE37FE23C4367D95E51BBBE5AE5FBB371E6CE39D684CCA7B37B7B294E873B1FA2A1B8302AA5AFEE67C6A3A52ECE450ADCF0D2E5FF803A1668692CC8AF6F86764B952CAA6FB0AFC53ADA61EE1B40A1ED101BA6BC6CD9BCBF803156039613DAA3D6BE34FB1CB5BC7666C7A9B7CB952E881F3AF2196D230EA99253A076FD09E548E9E8FA531273B1C08F8965593FB8BE9207ED73E03DD3C68E011C81D7E7CB757BA59641F034B9DB007EDD3C67715DE3A218EC9EBC96B2973188E39139DB59B5871CF4E9BC8F8A9847E8955EBF5EA019F3E1C533A5EF314958D68CA32C2D426CCCECD8B8EE397B2D25EA7D968FF332F49506532BC78270D559A605508AE60D6EE5FC843D52B3B6F5DF08B49305720253D01563B1B1871A9A89586AC829DE82513D4228B481984386620A3464E156E7B0FAD75D4A13C2C60D3A4A333545DF3E5DF9F7CD913F7F4765B6FFCA0CB3E079F94A9CA370BA0BB9F93FFB4AC8DD7A86E40294D7DF616B5FD6B5BE60D27CAEF60761F953FF859D6F1D60079798DBAE6224A9DDF3CF1D806ED463DB2774C94878E39A2B2F318E0A9387D50C4466A5A6D91D2DE7F9C9FCB275EDFCEC435B23EC4E20BFAFFC478FE1D8709537C9F418932E1787348FB8CC3A7C3528C714EDD8BA55D9D48213BBEEAAE4AD5554944853125701B25342B982297CA853723FCC7AFDE8EBF49963AF5844534D847986854D62FABC02365ED7D623A550D3AD040C5BD724AEB144D08F349EA41EC83662AB3539FDB527DF490B628BECCE96411D55A3D514E41B43EF3999C105C413BBA1A7A57FE66172133DECEE98799EE78CCA80B375F89170F9DC316B2F9A8D1606F729DB269E910D57F0B66658424860A4E17D4AAFAA044F0947F05B13802AD23696FD249E55EB2A142F755F17D9CE61872BC475E0165B4FAA65E9A5794480FA7D7980CD38F4450F35BEBC186905416C6DC6931C03F13A2FCF630C65439FB847E45F4D6647BCFA11B3E4474764F2367BDFA3D970E972E215C97E927DEA7E8023623444A57439750A4A4D3C85F0D980FEAC56580DC83B4C18D296B0EA2E8B2721FC7A9FEC3F9BF90795D03D67EA91D9F035C37897D14136A40F1F0002FE94C51EE61177E4954601A58DAD5B90153667A9C2BE8990B3189E955A2A23F0ACE0367EEC00ED6E27F354EE12DAECB8402B1FF5FF7E92C84989F9962145D171FC74DD5FEFFFFE727C022F72D39EFB060D9747232E456CB42A21298225322964583E4753608F0296935AE79A14C33B09DBD6C8099C97DCA8A024F25B0581B9931B68F0897EAC7D59CA44CEC66FC240BA43BD870F8F063E555F84621267D0DA650BA36133202980C3813E490206A3E4E9D1ABCB3334543A90E400BDDBC41A2B55FEEBC411A2B3FAB0401BFBD651E3A0F183F07ACA1FA960C71AB297C1F97BC54A2A6F8BE647C8711CF8DB7E845801852717E03CC0A724A8572915A2F7BCD64812C75452E0B6857FD1C619F54795C2F3B9EC868B383A09F5393FB32BB4B4CD3E830FAAC0C81D167FEC64AF05D21423ADA3D74E2C9659D7E261CA6B046805C19A18937CE9E915F3FCC568498AF0CB62F21FD290CC1458F3834DD45ADE8ECF505F710197351845A7CA42F56763131C3EDC38FD2EE27BE29891417D001FE017E886DE135A42F8CB0676D23470540DAECD94A001EBCC85C18951F004B5D5561C0CE10D740C8C6C6130CFF7253F5AF87C67FFE3E6C181769CFBFB0387A347428FC35C22591BE7F22D176E5365A758732CE2460AE804C5A5497ECD08000575C8CA8E2B8E132AE8A5D38E2A9152149DB01CD1BC9B4174A239FE644A5B22C844139DC364BB632450864C067AFC6C39AE5542A4852BF820F06EAC1EBD40136F0FACAB43E932456F8B9B56F445989B1DEA0444067F1DA1A1AF2C77682AFB2464C6B8FD34C91BA808E16C25DFD946E52AC923E218902A56039E1B297AC9A78EECC6B04A7E0B920074C2860B063F528E9C12FBB3313112202A748FE1365883CDC504C0FB649F7743E9A634496296F7A6AF679F8178D74D931C6CFD81BBA82FBAEDE2893ED8945DEF92FCC28779882EC056F922263B35C3478250E09248CA06AB63B30F6A57047F01B49EB9F675B5CB0AF658CECC404B58E156696AD7EDC1299C55986CBA4DD4F5C0737837CE8EDA8EB8B0298954E49F8310AC97C356FD52999D003082988D625AE8AC04E9DA5622C787917CB2D14877A5D79FE8B4986F7E37BEC037",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "1503d5700aa86671d676e5e32e139012ea26f12d8caa9d63c559adb912b27f9a",
+              "plaintextHash": "2cb633d309afe9ef1b7ff1dbe1d4b3c692111f4430a0c42bc5fab8e5a83fea04",
+              "iv": "6C2CADBE924623B1C294F877",
+              "tag": "F087B9EC68157C3239B410B6C46F27D9"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "8ae70adb-29dc-4c0f-8e2e-72e48e7e5b33",
+            "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+            "publisherSlug": "team-builder-notes",
+            "articleId": "team-delivery",
+            "version": "v1",
+            "manifestRoot": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+            "amount": "40000",
+            "payer": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+            "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+            "condition": "A0258020597F1BC9F1F71187E6CDEA9C61762A5F5761CDBB71BFE299F067275FF54E2DA6810120",
+            "cancelAfter": 847351841
+          },
+          "pubKey": "EDAADA2F9D934E33EDF1B0F5C874E72B16716B99757B2C4E376AA60008434624C8",
+          "sig": "3CE3DC9556A8E43A2FC3922D9057081FA603BCB0F701C6715A652643185C1465A37BCAC3E4E8D74391107EB4C5FFB659F53D1AACAE4D648E9922489815AD5B07"
+        },
+        "key": "F221BEB5690A87B6A8248AAB6947D4DFFC7A9F86531123817B181F2D583D01DE",
+        "finishHash": "EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+        "ledgerIndex": 22132125,
+        "createHash": "582A411EFBA72D5936E76E1A8CA5D8FF5CBB40F040C60C1AEE8188C0A92A0581"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 13,
+      "hash": "10365b2f674c1b528b831d736e18819ad9f27ed56487c233c749004768c9b998"
+    },
+    "entries": [
+      {
+        "seq": 14,
+        "at": "2026-11-07T07:28:45.026Z",
+        "prevHash": "10365b2f674c1b528b831d736e18819ad9f27ed56487c233c749004768c9b998",
+        "hash": "96d5f11847111e165764c242a8d2da26f10f0104df5674f43cf5781f04999189",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-07",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "750bbd38f62735452488bb3f9b65d2ba90454c7106c9015213b30eeb5f8c3963",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4960,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1960
+        }
+      },
+      {
+        "seq": 15,
+        "at": "2026-11-07T07:28:45.118Z",
+        "prevHash": "96d5f11847111e165764c242a8d2da26f10f0104df5674f43cf5781f04999189",
+        "hash": "28751751bf563061d71209bd6a77ec88719f22851eb99176aed33ec1665ed2b2",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 9,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "team-delivery",
+          "selectedSourceKey": "team-delivery@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 1,
+            "SKIP_LOW_VALUE": 8
+          }
+        }
+      },
+      {
+        "seq": 16,
+        "at": "2026-11-07T07:28:45.544Z",
+        "prevHash": "28751751bf563061d71209bd6a77ec88719f22851eb99176aed33ec1665ed2b2",
+        "hash": "cca2047f1a2a30f5a713ea989b8e13a71c34aa056038653afe3a3b3d93ccb530",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-builder-notes",
+          "quoteHash": "8037D5401252EEFF8A9C28F1D0F7A446A40BB4C431DB2BCD3A4D10889BF9CFF0",
+          "rail": "xrpl-testnet",
+          "resourceId": "team-delivery",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 17,
+        "at": "2026-11-07T07:28:47.434Z",
+        "prevHash": "cca2047f1a2a30f5a713ea989b8e13a71c34aa056038653afe3a3b3d93ccb530",
+        "hash": "c3dbfab87449367a257c183178d760e61a122a1f1ff42f7fe0b32b15cb87775b",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22132116,
+          "invoiceHash": "8037D5401252EEFF8A9C28F1D0F7A446A40BB4C431DB2BCD3A4D10889BF9CFF0",
+          "lastLedgerSequence": 22132142,
+          "operation": "create",
+          "owner": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+          "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+          "proofOk": false,
+          "txHash": "582A411EFBA72D5936E76E1A8CA5D8FF5CBB40F040C60C1AEE8188C0A92A0581"
+        }
+      },
+      {
+        "seq": 18,
+        "at": "2026-11-07T07:28:54.660Z",
+        "prevHash": "c3dbfab87449367a257c183178d760e61a122a1f1ff42f7fe0b32b15cb87775b",
+        "hash": "d38cf911461f505fb7aec05503573ee1f89ed73a5dbc54c0d1bf39c7e4a9b842",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847351841,
+          "createSequence": 22132116,
+          "invoiceHash": "8037D5401252EEFF8A9C28F1D0F7A446A40BB4C431DB2BCD3A4D10889BF9CFF0",
+          "ledgerIndex": 22132123,
+          "owner": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+          "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+          "result": "tesSUCCESS",
+          "txHash": "582A411EFBA72D5936E76E1A8CA5D8FF5CBB40F040C60C1AEE8188C0A92A0581"
+        }
+      },
+      {
+        "seq": 19,
+        "at": "2026-11-07T07:29:00.121Z",
+        "prevHash": "d38cf911461f505fb7aec05503573ee1f89ed73a5dbc54c0d1bf39c7e4a9b842",
+        "hash": "dc34ef21d7394d1443c047d853b71619b171235853bf45eed4b7231de7a266de",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "cede4253ba85b3f7475b80a7ed06b70729f5527aad147656e7bfb72708f3d426",
+          "passageCount": 9,
+          "resourceId": "team-delivery",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 20,
+        "at": "2026-11-07T07:29:00.123Z",
+        "prevHash": "dc34ef21d7394d1443c047d853b71619b171235853bf45eed4b7231de7a266de",
+        "hash": "c3bdd6e929482e0da589a9d1c44fd4eac0e0a6b89f3847fcbe42fdffe968e8d5",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 21,
+        "at": "2026-11-07T07:29:00.123Z",
+        "prevHash": "c3bdd6e929482e0da589a9d1c44fd4eac0e0a6b89f3847fcbe42fdffe968e8d5",
+        "hash": "0c6088f045b6626e1fdc33b9870b916d0a13fc2cf1ac3ee7d8cfcd6540bbad5e",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "582A411EFBA72D5936E76E1A8CA5D8FF5CBB40F040C60C1AEE8188C0A92A0581",
+          "createSequence": 22132116,
+          "ledgerIndex": 22132125,
+          "owner": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+          "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188"
+        }
+      },
+      {
+        "seq": 22,
+        "at": "2026-11-07T07:29:00.123Z",
+        "prevHash": "0c6088f045b6626e1fdc33b9870b916d0a13fc2cf1ac3ee7d8cfcd6540bbad5e",
+        "hash": "2016f231df60877969b73bc787ae9f39da420422a679563614c0d2b28f1db2e0",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": "62079dee-0055-4291-a23b-02316bf2842d:1:team-delivery:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22132125,
+          "payTo": "rennjG2MkXybqZ9SqfNGmKL5BYLYD8CKx",
+          "payer": "rsgDU7VG2N4aGFfcRArtfc18sWKknTE2vM",
+          "receiptId": "escrow-EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "EDC1389909E98072DCDC22F33C026F18E98A676B50A029A1CBA63238E7E2B188"
+        }
+      },
+      {
+        "seq": 23,
+        "at": "2026-11-07T07:29:00.160Z",
+        "prevHash": "2016f231df60877969b73bc787ae9f39da420422a679563614c0d2b28f1db2e0",
+        "hash": "5f94aab5910f654986d64e1130f278a8a104056530836df22b2d66583312daf2",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 9,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 2,
+          "selectedResourceId": null,
+          "selectedSourceKey": null,
+          "threshold": 0.2,
+          "verdicts": {
+            "SKIP_LOW_VALUE": 8,
+            "SKIP_REWRITE": 1
+          }
+        }
+      },
+      {
+        "seq": 24,
+        "at": "2026-11-07T07:29:00.174Z",
+        "prevHash": "5f94aab5910f654986d64e1130f278a8a104056530836df22b2d66583312daf2",
+        "hash": "6981ba11c7307ffc9305bb89bd972d00712a7ccb77d90c2d8d6de4794651056e",
+        "runId": "62079dee-0055-4291-a23b-02316bf2842d",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "c97c35f171fac5b6a528d57337b7f10f121f5d16c98771f42fd8e97f670204d8"
+        }
+      }
+    ],
+    "head": "6981ba11c7307ffc9305bb89bd972d00712a7ccb77d90c2d8d6de4794651056e"
+  }
+}

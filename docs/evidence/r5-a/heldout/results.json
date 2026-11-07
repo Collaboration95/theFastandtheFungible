@@ -1,0 +1,345 @@
+{
+  "bankSha256": "a9faac59d7093117a62dcb363f066a2d70fbb6f86eef4603e29ee40ced333e0e",
+  "artifactSha256": "ed5dfc58ad498f3f3dd301d88851dbb88281e80f6bf2426778149eb89aa28fb4",
+  "labels": "Fixture models · team-authored real content · not an independent writer · XRPL Testnet · faucet only",
+  "results": [
+    {
+      "id": "H01",
+      "question": "What distinguishes a validated XRP payment from an accepted submission?",
+      "runId": "76901082-b263-487c-8723-b90d446d3d36",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/5DA40735B997542199F0C934B400FE5551A2EB9BA6DCA5EA257E37096D39B8C5"
+      ]
+    },
+    {
+      "id": "H02",
+      "question": "How does a buyer recover escrow principal when delivery never happens?",
+      "runId": "2820cf42-053a-4cfa-8a6d-5f9b454eea22",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Operationally, keep failure states explicit. A timeout can mean unavailable history, an unvalidated finish, a writer outage or incomplete local reconciliation. None of those observations alone proves a refund happened. Show principal returned only after verified cancellation, refunded only after the separate refund settles, and pending while evidence is unresolved. The exact same labels should appear in live activity, receipts and replay so that a finance reviewer can reconcile them without guessing. Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. The buyer must retain the signed quote, object identity and transaction hash while waiting. A missing HTTP response is not permission to buy the article a second time. CancelAfter is a ledger deadline. Passing that deadline permits an EscrowCancel; it does not automatically move funds back to the buyer. Policy submits the cancellation and observes a successful validated transaction before recording principal returned. During network uncertainty the engine keeps the reservation pending. Local wall time and a countdown in the interface are useful indications, but the validated ledger determines whether cancellation is available. EscrowCancel returns the original principal when the writer never completes delivery. The transaction fees remain spent. In our documented XRP example a cancelled sixty-thousand-drop principal returned in full, while create and cancel fees together consumed twenty-four drops. These figures describe a historical Testnet observation. They do not promise identical fees under future network load and do not express the principal as real SGD. A writer-signed refund after EscrowFinish is a different operation. Successful finish has already paid the writer and published the key. A subsequent quality challenge cannot reverse that transaction unilaterally. The writer may voluntarily sign a separate Payment returning money to the buyer. Our fixture writer cooperates; a real writer could refuse. The receipt must distinguish that cooperative refund from expiry cancellation, even when both leave the buyer with returned principal. The key-reveal mechanism makes publication of a key atomic with settlement, but it does not make prose true. The writer can sign a promise and deliver content that breaks it. The engine checks the authenticated envelope and salted passages privately, quarantines failed content, and records a failed claim. A fraud proof establishes which signed promise failed. Reputation and an explicit challenge handle that outcome; the ledger itself does not adjudicate the usefulness of an article. Retries must reuse the original obligation. The buyer journals the exact signed create blob before submission, and the writer journals its key and signed finish before submitting. Recovery can therefore inspect the original object or its terminal history rather than submitting another purchase. An absent object with no terminal transaction remains uncertain. The product guarantees one charge for each policy intent; it cannot prevent arbitrary wallet transactions performed outside the engine. Replacement expertise is a new intent with a separately reserved budget amount. A refund does not replenish gross spending authorization. Otherwise a series of bad purchases and refunds could exceed the user limit while the display reported a harmless net spend. The interface shows paid, refunded and reserved amounts separately so that the user can understand both economic outcome and outstanding exposure.",
+      "citations": 8,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/19B08F412F48DBFEAC774840E31D8F6BA98EE0CC5F247000D97A8C2ADA472DF1",
+        "https://testnet.xrpl.org/transactions/F2C45E2BAC8D7F8BEA2A00F83CBC7263ACE2DE33835077AD58895ED5058D072F",
+        "https://testnet.xrpl.org/transactions/FDEAC4878F07B3F3FC0565167505199A429BD88BF03752D909B9DA945E44835E"
+      ]
+    },
+    {
+      "id": "H03",
+      "question": "What additional issuer permission does XLS-85 token escrow need?",
+      "runId": "76825d58-6152-4eff-a5e7-7f8e4b841b84",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Recovery is part of that liquidity story. CancelAfter permits cancellation after the validated ledger deadline; it does not automatically return funds. Policy must submit EscrowCancel and confirm successful validation before describing principal as returned. Fees remain spent. A refund after completed key publication is a different writer-signed Payment and requires writer cooperation. Throughout provisioning, purchase and recovery, the budget remains the spending authority and durable intent identity prevents duplicate principal purchases. These observations support bounded mechanism claims only. This team-authored adaptation separates asset provisioning from buying research. Its sources are docs/BUILDER-FEEDBACK.md, docs/key-reveal-escrow.md and docs/x402-xrpl.md. The builder feedback records dated Testnet observations rather than a current mainnet survey. That distinction is essential for stablecoins: a successful direct token payment does not prove that the same issuer permits token escrow. A wallet balance does not establish that an agent may spend it, and a price displayed in SGD is not an independently measured foreign exchange rate. The basic purchase contract requires an expected network, asset and issuer before policy signs. XRP uses integer drops, with one million drops per XRP. An issued asset also needs the currency and issuer identity; the currency name alone is insufficient. The buyer checks destination, exact amount, invoice binding, expiry and policy limits. Validated settlement must show successful delivery. The requested Amount alone does not prove what arrived, particularly for partial payments. These are payment validation requirements, not decisions delegated to the language model. Token escrow adds issuer requirements beyond holding an issued balance. The builder feedback's 7 November entry B26 records an earlier validated observation: TokenEscrow was enabled, but the official RLUSD Testnet issuer flags lacked AllowTrustLineLocking. The documented implication was that official RLUSD escrow was blocked by issuer permission. The record distinguishes that code-derived blocker from an actually submitted rejection transaction. A trust line does not supply missing issuer consent. Recheck the issuer and network before claiming present support; this article itself performs no fresh ledger query. The available workaround is explicit about substitution. XRP remains the default key-reveal asset, while TEST-SGD is a labelled issued-token stand-in for experiments. TEST-SGD is not official RLUSD and does not demonstrate RLUSD issuer cooperation. Direct RLUSD Testnet payments and conditional token escrow are separate evidence classes. A report should identify which it tested, with the exact transaction hash and issuer, rather than describing every successful token transaction as proof of the same settlement mode. Nothing here is redeemable money or a production stablecoin guarantee. Funding observations also need labels. The 3 November builder feedback records public RLUSD faucet authentication friction and historical bounded native Testnet DEX provisioning. In those samples, acquisition cost about 25.1 Testnet XRP for two RLUSD. That arbitrary test exchange rate is not economic evidence. The workaround used an exact self-payment, a bounded SendMax and a fee cap, checked validated delivered_amount, and kept provisioning separate from product purchases. It does not establish an automatic exchange strategy for the research agent or an available mainnet funding route. A DEX provisioning observation likewise does not establish AMM behavior. The cited repository evidence concerns acquiring a test balance, not measuring pool pricing, liquidity provision or agent routing through an AMM. No AMM performance result is claimed here. When evaluating agent payments, ask which asset was already provisioned, which exact asset policy authorized, and whether conversion happened outside the purchase loop. Do not infer a pool mechanism from an exchange label. This boundary prevents a setup workaround from becoming an unsupported product capability claim. Fees and reserves constrain even faucet-funded micropayments. Builder feedback B19 records 12-drop create and cancel fees and a 423-drop conditional finish using xrpl.js 4.7.0. Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment. These are dated measurements, not universal fee quotes. A wallet needs terminal transaction fee headroom and object reserve liquidity as well as purchase principal. The number of concurrent escrow objects can therefore constrain capacity independently of article prices or burned network fees.",
+      "citations": 8,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/51651738FB7C66B7EEE71F497F1C743194DF8A1A7C221D8DD6E9FD02AB198BEA",
+        "https://testnet.xrpl.org/transactions/DA5597E49C6766CB8A807EB2B34FF9383D8CCF62733B69D1ADAE2D7D70A18670",
+        "https://testnet.xrpl.org/transactions/BBFC907DBD016FA139E0D1B67410CB55D78CAF623D7255A320CD3B0033E02B29"
+      ]
+    },
+    {
+      "id": "H04",
+      "question": "Can a stablecoin trust line alone make RLUSD key reveal work?",
+      "runId": "e93321a2-4760-4c72-ae23-665b8cf3411e",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Recovery is part of that liquidity story. CancelAfter permits cancellation after the validated ledger deadline; it does not automatically return funds. Policy must submit EscrowCancel and confirm successful validation before describing principal as returned. Fees remain spent. A refund after completed key publication is a different writer-signed Payment and requires writer cooperation. Throughout provisioning, purchase and recovery, the budget remains the spending authority and durable intent identity prevents duplicate principal purchases. These observations support bounded mechanism claims only. This team-authored adaptation separates asset provisioning from buying research. Its sources are docs/BUILDER-FEEDBACK.md, docs/key-reveal-escrow.md and docs/x402-xrpl.md. The builder feedback records dated Testnet observations rather than a current mainnet survey. That distinction is essential for stablecoins: a successful direct token payment does not prove that the same issuer permits token escrow. A wallet balance does not establish that an agent may spend it, and a price displayed in SGD is not an independently measured foreign exchange rate. The basic purchase contract requires an expected network, asset and issuer before policy signs. XRP uses integer drops, with one million drops per XRP. An issued asset also needs the currency and issuer identity; the currency name alone is insufficient. The buyer checks destination, exact amount, invoice binding, expiry and policy limits. Validated settlement must show successful delivery. The requested Amount alone does not prove what arrived, particularly for partial payments. These are payment validation requirements, not decisions delegated to the language model. Token escrow adds issuer requirements beyond holding an issued balance. The builder feedback's 7 November entry B26 records an earlier validated observation: TokenEscrow was enabled, but the official RLUSD Testnet issuer flags lacked AllowTrustLineLocking. The documented implication was that official RLUSD escrow was blocked by issuer permission. The record distinguishes that code-derived blocker from an actually submitted rejection transaction. A trust line does not supply missing issuer consent. Recheck the issuer and network before claiming present support; this article itself performs no fresh ledger query. The available workaround is explicit about substitution. XRP remains the default key-reveal asset, while TEST-SGD is a labelled issued-token stand-in for experiments. TEST-SGD is not official RLUSD and does not demonstrate RLUSD issuer cooperation. Direct RLUSD Testnet payments and conditional token escrow are separate evidence classes. A report should identify which it tested, with the exact transaction hash and issuer, rather than describing every successful token transaction as proof of the same settlement mode. Nothing here is redeemable money or a production stablecoin guarantee. Funding observations also need labels. The 3 November builder feedback records public RLUSD faucet authentication friction and historical bounded native Testnet DEX provisioning. In those samples, acquisition cost about 25.1 Testnet XRP for two RLUSD. That arbitrary test exchange rate is not economic evidence. The workaround used an exact self-payment, a bounded SendMax and a fee cap, checked validated delivered_amount, and kept provisioning separate from product purchases. It does not establish an automatic exchange strategy for the research agent or an available mainnet funding route. A DEX provisioning observation likewise does not establish AMM behavior. The cited repository evidence concerns acquiring a test balance, not measuring pool pricing, liquidity provision or agent routing through an AMM. No AMM performance result is claimed here. When evaluating agent payments, ask which asset was already provisioned, which exact asset policy authorized, and whether conversion happened outside the purchase loop. Do not infer a pool mechanism from an exchange label. This boundary prevents a setup workaround from becoming an unsupported product capability claim. Let me be concrete. Take a current high-end accelerator, the kind that goes into training clusters. NVIDIA's published thermal design power for the H100 SXM is 700 watts. For the newer B200 it is around 1000 watts, and NVIDIA has said the GB200 Grace Blackwell superchip pairs two of those with a CPU. A GB200 compute tray, with two Blackwell GPUs and one Grace CPU, is rated at roughly 2700 watts. These are not my numbers; they come from the vendor's own datasheets and from the rack-level reference designs that NVIDIA publishes for its partners. When I cite figures in class, I make students find the primary source, because secondary reporting drifts.",
+      "citations": 8,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/AEC8B5796996E8F71F7C25C9C5346F4FAF90B5DF531F16C9984DFED074417780",
+        "https://testnet.xrpl.org/transactions/DFD4CCD8F2A22D23085979B66230958BD140622773C9805CAED9148D6CF78438",
+        "https://testnet.xrpl.org/transactions/B0A0B73DC34CCC513E3C6CDB2EA3892CE866746F0283CDD636265AD778E86615"
+      ]
+    },
+    {
+      "id": "H05",
+      "question": "Does the Testnet substitute represent redeemable RLUSD?",
+      "runId": "7c50281f-56d8-4ffb-ad00-ab2c46a80b5d",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "The implementation record explains the boundary this way: make testnet ARGS=--iou provisions a dedicated issuer with AccountSet flag 17, buyer/writer trust lines and a buyer issuance using only public-faucet-funded Testnet accounts. Seeds remain in the 0600 scratch wallet store. ESCROW_ASSET=test-iou is the equivalent environment switch (the launcher supplies TESTNET_IOU_ISSUER). XRP remains the default; MCP IOU support is a follow-up. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: See XLS-85 and xrpl.js flag 17. No mainnet support is claimed. - The writer receives the principal only by publishing K through a successful finish. A relay can submit the same fulfillment; funds still go to the original destination. Buyer cancellation is policy-only and cannot win before expiry. - K becomes public. This is acceptable because each ciphertext is encrypted for one buyer and intent with a fresh key; it does not unlock other buyers' copies. It is not DRM: anyone with that ciphertext and public K can read that copy. - A writer can commit to nonsense or an undecryptable envelope and collect. The cryptographic proof establishes responsibility, not truth or automatic damages. Existing challenges/reputation handle broken promises; this is not a truth oracle. - K may appear in an unvalidated submitted finish. The buyer still waits for validation. Ledger outages/history gaps retain reservations pending reconciliation. - A dishonest buyer can create extra escrow objects outside policy. This product guarantees one charge per policy intent, not control of arbitrary wallet activity. - Conditional finish costs more than a Payment. The XRPL fee formula scales as base_fee × (33 + fulfillment_bytes / 16) before multisign/load effects. Here K is 32 bytes and its encoded fulfillment is 36 bytes. At the observed 12-drop signing base, ceil(12 × (33 + 36/16)) = 423 drops. A 2,000-drop cap rejects excessive fees. Live create/cancel each cost 12 drops. A cancelled 60,000-drop principal is fully returned; its buyer still pays 24 drops in fees. - Synthetic corpus and extractive fixture answers in the proof are labelled; Testnet value transfer is real Testnet execution, with no real value. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. Our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence. This is a team-authored adaptation of docs/key-reveal-escrow.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited. The implementation record explains the boundary this way: TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD. S$ prices map 1:1 to TEST-SGD; this is neither a peg nor a backing claim. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: The issuer is separate from buyer and writer. Policy rejects issuer-as-party, missing permission, nonzero transfer fees, frozen/unauthorized lines, insufficient balance or destination limit before create signing. This is a conservative subset of XLS-85: no transfer-fee arithmetic or freeze exception is claimed. Settlement checks the writer RippleState balance delta (currency, issuer, sign and exact value), never the requested Amount as proof of delivery. Cancellation checks the buyer's returned balance delta. Existing reservations and signed outboxes remain. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.",
+      "citations": 6,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/8DF566D07BC95DFAC2E72697E78DEB9A257FB1021389AED146A788B83EA8D6A3",
+        "https://testnet.xrpl.org/transactions/D79BDBCFF1E3A214D3A3DBE0F2973CE342F8DD1881211019A6D36CA3D862043A",
+        "https://testnet.xrpl.org/transactions/E8F8877DEA3502365EF8DEBAF37F042B3574816B21EBA6DD34D586A378349C9D"
+      ]
+    },
+    {
+      "id": "H06",
+      "question": "Who decides which Credential issuer a writer can trust?",
+      "runId": "064b9beb-93f5-4640-9b08-ab7f2aef977c",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/A579B5D9248C3F23510C605B3AA871B1D773823606D90D0D006D600987592C47"
+      ]
+    },
+    {
+      "id": "H07",
+      "question": "Does a DID or identity attestation certify research quality?",
+      "runId": "bce36328-b661-4e71-aa6f-4dca002a9b3e",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/9E07DC92BBAC149A1FFBD94F11D4C8277B27A2687D82DFAA20C62A0B0C99547B"
+      ]
+    },
+    {
+      "id": "H08",
+      "question": "What should an agent check before accepting an issued currency?",
+      "runId": "66baa7b0-be7e-4365-b955-6724d7104bca",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/C59B6F98D0AD3EB60D49C2EB60A0C726A91DA620142123F84262B374DEB2503C"
+      ]
+    },
+    {
+      "id": "H09",
+      "question": "Which x402 step authorizes delivery of paid article passages?",
+      "runId": "5fc3ac93-dc42-404f-a2ca-747903f99d58",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "The implementation record explains the boundary this way: EscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: Buyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The x402 buyer first requests a resource and receives payment requirements rather than premium content. PAYMENT-REQUIRED carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase. This is a team-authored adaptation of docs/x402-xrpl.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited. The implementation record explains the boundary this way: Every writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation.",
+      "citations": 8,
+      "spentMinor": 80,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/E7AF185940FE4A4BF97C03802F36AEFC4BD93FDEB64CEFAADB9D671BCC95775A",
+        "https://testnet.xrpl.org/transactions/9101AC89C9130DEB369EDF165D70456858AC7FEFD43EA68DCAF7C510D64849FB",
+        "https://testnet.xrpl.org/transactions/0859F28AE0BD83F46EDDC9533831DBB7ECFB83C0C8A2053285B345936DE807E8",
+        "https://testnet.xrpl.org/transactions/EFA14D3412A871D1D337CD2A708DFDA0B781D2370A4F4B97F6266ED1D277CCB4",
+        "https://testnet.xrpl.org/transactions/D8B79037F63A000A4A7490721AF371B39AA460C5364D9AD6E8BFAAEF0EDDAA0B"
+      ]
+    },
+    {
+      "id": "H10",
+      "question": "How should a buyer account for a fulfilled escrow fee?",
+      "runId": "a3fe915a-1a69-432b-bd1e-e8d6a0920f81",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/DD31691FA8BD06DF6145FB231172B0DD4CF58F88998C4D0552EBC3D3540CDDC0"
+      ]
+    },
+    {
+      "id": "H11",
+      "question": "Why does a funded wallet still need XRP for reserve and fees?",
+      "runId": "6fcc3ed9-d3bf-4e16-978c-d3866924b527",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/AC516586EBC68DCCF7C649F3D09263CDF3069C4F040630F4C3BF7E3BFFB66D48"
+      ]
+    },
+    {
+      "id": "H12",
+      "question": "Does this agent automatically swap assets through an AMM or DEX?",
+      "runId": "b4ab885e-38c9-42bb-b40c-48f599b9a294",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Recovery is part of that liquidity story. CancelAfter permits cancellation after the validated ledger deadline; it does not automatically return funds. Policy must submit EscrowCancel and confirm successful validation before describing principal as returned. Fees remain spent. A refund after completed key publication is a different writer-signed Payment and requires writer cooperation. Throughout provisioning, purchase and recovery, the budget remains the spending authority and durable intent identity prevents duplicate principal purchases. These observations support bounded mechanism claims only. This team-authored adaptation separates asset provisioning from buying research. Its sources are docs/BUILDER-FEEDBACK.md, docs/key-reveal-escrow.md and docs/x402-xrpl.md. The builder feedback records dated Testnet observations rather than a current mainnet survey. That distinction is essential for stablecoins: a successful direct token payment does not prove that the same issuer permits token escrow. A wallet balance does not establish that an agent may spend it, and a price displayed in SGD is not an independently measured foreign exchange rate. The basic purchase contract requires an expected network, asset and issuer before policy signs. XRP uses integer drops, with one million drops per XRP. An issued asset also needs the currency and issuer identity; the currency name alone is insufficient. The buyer checks destination, exact amount, invoice binding, expiry and policy limits. Validated settlement must show successful delivery. The requested Amount alone does not prove what arrived, particularly for partial payments. These are payment validation requirements, not decisions delegated to the language model. Token escrow adds issuer requirements beyond holding an issued balance. The builder feedback's 7 November entry B26 records an earlier validated observation: TokenEscrow was enabled, but the official RLUSD Testnet issuer flags lacked AllowTrustLineLocking. The documented implication was that official RLUSD escrow was blocked by issuer permission. The record distinguishes that code-derived blocker from an actually submitted rejection transaction. A trust line does not supply missing issuer consent. Recheck the issuer and network before claiming present support; this article itself performs no fresh ledger query. The available workaround is explicit about substitution. XRP remains the default key-reveal asset, while TEST-SGD is a labelled issued-token stand-in for experiments. TEST-SGD is not official RLUSD and does not demonstrate RLUSD issuer cooperation. Direct RLUSD Testnet payments and conditional token escrow are separate evidence classes. A report should identify which it tested, with the exact transaction hash and issuer, rather than describing every successful token transaction as proof of the same settlement mode. Nothing here is redeemable money or a production stablecoin guarantee. Funding observations also need labels. The 3 November builder feedback records public RLUSD faucet authentication friction and historical bounded native Testnet DEX provisioning. In those samples, acquisition cost about 25.1 Testnet XRP for two RLUSD. That arbitrary test exchange rate is not economic evidence. The workaround used an exact self-payment, a bounded SendMax and a fee cap, checked validated delivered_amount, and kept provisioning separate from product purchases. It does not establish an automatic exchange strategy for the research agent or an available mainnet funding route. A DEX provisioning observation likewise does not establish AMM behavior. The cited repository evidence concerns acquiring a test balance, not measuring pool pricing, liquidity provision or agent routing through an AMM. No AMM performance result is claimed here. When evaluating agent payments, ask which asset was already provisioned, which exact asset policy authorized, and whether conversion happened outside the purchase loop. Do not infer a pool mechanism from an exchange label. This boundary prevents a setup workaround from becoming an unsupported product capability claim. Fees and reserves constrain even faucet-funded micropayments. Builder feedback B19 records 12-drop create and cancel fees and a 423-drop conditional finish using xrpl.js 4.7.0. Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment. These are dated measurements, not universal fee quotes. A wallet needs terminal transaction fee headroom and object reserve liquidity as well as purchase principal. The number of concurrent escrow objects can therefore constrain capacity independently of article prices or burned network fees.",
+      "citations": 8,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/29A804F78D1449D29E6D12DDEBDF0E20B358164351DEEF948A63CC9BDEBA83EA",
+        "https://testnet.xrpl.org/transactions/2E1F6402E5C1C73FE9FDB16A3174D954285E7C5F5D320DFDDCC3808E332F6E06",
+        "https://testnet.xrpl.org/transactions/86B7A19CBD8ED7560BE553DC84DFFB5447EDC7234BEE2402B64A7DF599CB1751"
+      ]
+    },
+    {
+      "id": "H13",
+      "question": "What evidence would justify enabling mainnet purchases?",
+      "runId": "7fc1ecff-b3cf-4a24-8755-e9527e87332f",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here. Let me be careful about what I mean by priced. Overnight index swaps had been leaning toward a move for weeks, and the tone from the BoJ's communications had shifted just enough that the residual uncertainty was about timing and language, not direction. When the announcement came, the statement itself was almost anticlimactic. The vote was not unanimous, which I read as a signal that the board is still uncomfortable with the pace rather than the destination. The Governor's press conference then did the heavier lifting, and that is where the real information content sat. The statement language was, as usual, carefully hedged. It noted that underlying inflation was moving toward target in a manner consistent with the bank's projections, but it also flagged that the outlook for global demand remained unusually uncertain. I want to stress that second clause, because it is the part that gets stripped out in the wire copy. The bank is not declaring victory. It is saying that the conditions it set out in previous meetings have been met, and that it will continue to adjust the degree of monetary accommodation as needed. That is a conditional sentence, not a promise. The Governor, in the press conference, was asked directly whether this was the start of a series. His answer, as I transcribed it, was that the bank does not pre-commit to a path and that every meeting will be judged on the data available at the time. He also said something that I think deserves more attention than it received: that the bank is paying close attention to the functioning of the JGB market, particularly at the longer end. That is not a throwaway line. It is a signal that the bank is aware that its own balance sheet and the shape of the curve are now intertwined in ways that make the exit harder than the entry. The market reaction was instructive precisely because it was so contained. The 10-year JGB yield rose 9 bp on 18 September 2026, which is a move, but not a dramatic one given the context. The 2-year yield moved more, which is consistent with a repricing of the near-term policy path rather than a reassessment of the terminal rate. The curve flattened slightly, which is what you would expect if the market believes the bank is serious about normalising but also believes it will stop well short of anything that could be called restrictive. What I found more interesting was the lack of follow-through in the following sessions. If the market had been genuinely surprised, we would have seen a sustained repricing, with the 10-year pushing through recent ranges and the yen strengthening sharply. That did not happen. Instead, the move faded, and By week's end the 10-year was back within a few basis points of where it started. That tells me the market's baseline was already close to the bank's baseline, and the meeting simply confirmed it. I should also note the global backdrop. The Federal Reserve's own path was, at that point, still a source of uncertainty, and the ECB had been signalling caution. The BoJ is not operating in a vacuum, and the Governor was explicit that the bank is watching overseas developments. That is not just diplomatic language. It reflects a genuine constraint: if the Fed is cutting and the BoJ is hiking, the yen dynamics could become disorderly, and that is something the bank wants to avoid. I want to bring in something that might seem tangential but is not. TSMC's capital expenditure plans for the coming year were released around the same time, and they pointed to continued strong demand for advanced semiconductors. For Japan, that matters because it feeds into the export outlook and, more importantly, into the investment cycle that the BoJ is hoping will sustain domestic demand. If TSMC is spending, Japanese equipment makers and materials suppliers benefit, and that shows up in the corporate surveys that the bank watches closely.",
+      "citations": 8,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/262A553553DD5CCBCE98C91B9247E4850120D32781873E25E0664CBC9714238F"
+      ]
+    },
+    {
+      "id": "H14",
+      "question": "Where do KYC and compliance responsibilities sit in this prototype?",
+      "runId": "c926224b-3f87-4606-85fe-7bd30e0dd48f",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/E977000E49E2C7E456CCE285589202950BF356B40DD4B41FC03B48CDED69D487"
+      ]
+    },
+    {
+      "id": "H15",
+      "question": "Can a refund increase the remaining gross purchase authorization?",
+      "runId": "69ab33b2-186c-475a-93d1-db0b73f7d3b8",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/EA27398E1570DB8AB9A7AFF6DE4AEB4C0E0EAF6794ADD22BFECDB66D30947394"
+      ]
+    },
+    {
+      "id": "H16",
+      "question": "What can an offline receipt verifier establish without a ledger lookup?",
+      "runId": "1fdce3b9-7081-4428-b0a1-7117b7965dd3",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/6ABF7D7C899F741131BA2F573527B14AE8BA818C6708B878A614B818B4388F1B"
+      ]
+    },
+    {
+      "id": "H17",
+      "question": "How does the buyer prevent a timeout retry from charging twice?",
+      "runId": "fee92850-7349-407d-ad70-1048377642a7",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/1F3F384AF3A25E52F429C1936ACC5990C1DE88C5250C1631110BBB96AD3FB99D"
+      ]
+    },
+    {
+      "id": "H18",
+      "question": "Can a public search abstract be used as paid cited evidence?",
+      "runId": "22bd436d-bfdd-4ad3-8769-4228b5491e4c",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/5EA712D702F58E6BC8FF1B92E2393D5AF7381D685EB636BBE02BA75D4E6B543F"
+      ]
+    },
+    {
+      "id": "H19",
+      "question": "How should a judge interpret a missing transaction on a history endpoint?",
+      "runId": "db587d90-5015-416d-89ce-2d9ca69b91e4",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "For XRP Payment settlement, delivered_amount is evidence of what the destination actually received. Checking the requested Amount alone can accept an underpayment when partial-payment semantics apply. Our checks bind destination, currency, amount and invoice identity to the intended purchase. Escrow settlement has its own validation and object checks. Issued-token escrow additionally requires the exact RippleState balance delta, with the correct currency, issuer and sign. A requested amount is never sufficient proof of delivery. This is a team-authored adaptation of docs/BUILDER-FEEDBACK.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited. The implementation record explains the boundary this way: Original wording below is historical, including any relative freshness wording. #342 diagnostics distinguish the observed 606-second host sleep from inferred runtime risk; see evidence/soak-nov4.md. It is not a new ledger incident. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: A living record for the SFF judges. 35 catalogued items plus dated tooling incidents: 16 implementation findings and 4 live escrow spike findings below, plus the 15 September research submissions in the appendix. The original source and history audit was recorded on 2 Nov 2026; dated additions below identify live-network observations separately. The original log dates are audit dates; the evidence column dates the original work. The four B17–B20 entries are fresh Testnet observations from 3 Nov 2026. The eight writers and their content are synthetic. Offline settlement is SIMULATED; historical live receipts are XRPL TESTNET · no real value. Neither is evidence of mainnet readiness. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: The first SDK-lane npm ci failed with ENOTEMPTY while removing an Electron transitive dependency; a retry completed without dependency changes. Evidence: SDK v1 lane check output and scripts/check-sdk-package.mjs for the subsequent clean tarball check. Workaround: retry installation. Suggested fix: make npm ci cleanup tolerate transient nonempty dependency directories. Severity: low; mainnet impact: none observed. This was local npm tooling, not XRPL or x402. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: The #278 UC3 runner created its first run using Store's default SIMULATED label while injecting a real Testnet payer; the gate audit refused the inconsistent snapshot (missing_rail_label). Evidence: docs/evidence/verify-278.md and verify-278/summary.json. Workaround: pass the explicit Testnet mode labels, correct the harness metadata and re-export/re-check the same durable run; no replacement payment. Suggested fix: require explicit rail labels in standalone Testnet harness constructors. Severity: low (local evidence tooling). Mainnet impact: none observed; no value funds. This was not a ledger or x402 failure. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe. The implementation record explains the boundary this way: Local scorecard evaluation at 5953559: an initial attempt hit OpenAI Decisions HTTP 503 (\"Decision inference is unavailable\") on one coverage request and correctly refused to publish a baseline. Evidence: eval/scorecard/out/2026-11-02T16-27-35.998Z-live/requests.jsonl and cost.json (local ignored artifacts; US$0.1233354 including all calls). Workaround: one bounded transient retry, with both attempts cached/metered; the next complete run published the pre-menu baseline in eval/scorecard/history.jsonl. Suggested tooling fix: retain per-phase progress and retry transient inference errors without discarding successful calls. Severity: low for local evaluation; mainnet impact: none observed (all settlement SIMULATED). This was a model/tooling incident, not an XRPL, x402, Starter Kit or Testnet failure. Signing the menu with existing XRPL keys required no new wallet/API operation; no signing friction was observed. The local .env key also needs an explicit evaluation mapping; make scorecard LIVE=1 now handles that without loading wallet seeds. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.",
+      "citations": 7,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/9D5CA502AA060D93C4BADAC64D0D091BFD5F1EB4455A38F523BCD61782AB5F69",
+        "https://testnet.xrpl.org/transactions/6019ECDC8F55A32180DFBDBDB2023B26B8FE5A288E327A2C3ED7781D8BA286CD",
+        "https://testnet.xrpl.org/transactions/2D35E9BD54C37E4FC6F94F7A7E64DDA410B3054DD5EE1C06B65CF69D0721DD8B"
+      ]
+    },
+    {
+      "id": "H20",
+      "question": "Is writer cooperation required after a completed key reveal sale?",
+      "runId": "b09d561f-d408-41f1-8846-b2169a20038b",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Operationally, keep failure states explicit. A timeout can mean unavailable history, an unvalidated finish, a writer outage or incomplete local reconciliation. None of those observations alone proves a refund happened. Show principal returned only after verified cancellation, refunded only after the separate refund settles, and pending while evidence is unresolved. The exact same labels should appear in live activity, receipts and replay so that a finance reviewer can reconcile them without guessing. Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. The buyer must retain the signed quote, object identity and transaction hash while waiting. A missing HTTP response is not permission to buy the article a second time. CancelAfter is a ledger deadline. Passing that deadline permits an EscrowCancel; it does not automatically move funds back to the buyer. Policy submits the cancellation and observes a successful validated transaction before recording principal returned. During network uncertainty the engine keeps the reservation pending. Local wall time and a countdown in the interface are useful indications, but the validated ledger determines whether cancellation is available. EscrowCancel returns the original principal when the writer never completes delivery. The transaction fees remain spent. In our documented XRP example a cancelled sixty-thousand-drop principal returned in full, while create and cancel fees together consumed twenty-four drops. These figures describe a historical Testnet observation. They do not promise identical fees under future network load and do not express the principal as real SGD. A writer-signed refund after EscrowFinish is a different operation. Successful finish has already paid the writer and published the key. A subsequent quality challenge cannot reverse that transaction unilaterally. The writer may voluntarily sign a separate Payment returning money to the buyer. Our fixture writer cooperates; a real writer could refuse. The receipt must distinguish that cooperative refund from expiry cancellation, even when both leave the buyer with returned principal. The key-reveal mechanism makes publication of a key atomic with settlement, but it does not make prose true. The writer can sign a promise and deliver content that breaks it. The engine checks the authenticated envelope and salted passages privately, quarantines failed content, and records a failed claim. A fraud proof establishes which signed promise failed. Reputation and an explicit challenge handle that outcome; the ledger itself does not adjudicate the usefulness of an article. Retries must reuse the original obligation. The buyer journals the exact signed create blob before submission, and the writer journals its key and signed finish before submitting. Recovery can therefore inspect the original object or its terminal history rather than submitting another purchase. An absent object with no terminal transaction remains uncertain. The product guarantees one charge for each policy intent; it cannot prevent arbitrary wallet transactions performed outside the engine. Replacement expertise is a new intent with a separately reserved budget amount. A refund does not replenish gross spending authorization. Otherwise a series of bad purchases and refunds could exceed the user limit while the display reported a harmless net spend. The interface shows paid, refunded and reserved amounts separately so that the user can understand both economic outcome and outstanding exposure.",
+      "citations": 8,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/75EEE7DE89BEE8DAD34011541F4E6B2464D3517B6C10356350FFE435F0D9D470",
+        "https://testnet.xrpl.org/transactions/19400E2A7045A05B7FCCABED65116E1AB654E73BEA85D0B3D78AA74801DF8DD8",
+        "https://testnet.xrpl.org/transactions/549F97B0A4D4D5A023A90EAA7F9BE9083FD55A7D86E76F4A56A041C87538C047"
+      ]
+    }
+  ]
+}
