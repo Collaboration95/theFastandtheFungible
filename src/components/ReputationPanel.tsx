@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReputationRecord, ReputationSummary, RunSnapshot } from '../../shared/contracts/index.js'
 import { usePublisherCard, writerName } from './WriterChip'
 
@@ -37,10 +37,13 @@ function PublisherRow({ row }: { row: Row }) {
 
 /** The trust matrix (D6), public: Beta honesty H × calibration C = trust T. "Writers" is a working name (X3). */
 export default function ReputationPanel({ records, run, full, presenter = false, onReset }: { records: ReputationRecord[]; run?: RunSnapshot; full?: RunSnapshot; presenter?: boolean; onReset?: () => void }) {
+  const [local, setLocal] = useState<{ slug: string; origin: string }[]>([])
+  useEffect(() => { let active = true; void fetch('/api/local-writers').then(r => r.ok ? r.json() : { writers: [] }).then(data => { if (active) setLocal(data.writers ?? []) }).catch(() => {}); return () => { active = false } }, [])
   const list = rows(records, run, full)
   return <section className="ra-panel ra-rep" aria-label="Writers">
     <div className="ra-panel-h"><h2>Writers</h2>{presenter && onReset && <button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button>}</div>
-    <p className="ra-note">All writers and articles are fictional.</p>
+    <p className="ra-note">Built-in examples are fictional. Local notes carry their author's provenance label.</p>
+    {local.length > 0 && <div><h3>Writers · local · Testnet</h3><ul>{local.map(writer => <li key={writer.slug}><a href={`${writer.origin}/w/${writer.slug}/`} target="_blank" rel="noreferrer">{writer.slug}</a> · Testnet · no real value</li>)}</ul></div>}
     {list.length === 0 ? <p>No history yet.</p> : <div className="ra-table-scroll"><table>
       <thead><tr><th scope="col">Writer</th><th scope="col" title="Articles found in this run">Articles</th><th scope="col">Trust</th><th scope="col">Checked / failed</th><th scope="col">Status</th></tr></thead>
       {list.map(row => <PublisherRow key={row.slug} row={row} />)}

@@ -48,10 +48,12 @@ export function sharesRun(a: string, b: string, n = ABSTRACT_LEAK_WORDS): boolea
 }
 
 /** Rule violations for one article; empty when valid. `relaxWordLimits` is for test fixtures only. */
-export function articleProblems(article: Article, publisher: Publisher | undefined, options: { relaxWordLimits?: boolean } = {}): string[] {
+export function articleProblems(article: Article, publisher: Publisher | undefined, options: { relaxWordLimits?: boolean; realWriter?: boolean } = {}): string[] {
   const problems: string[] = []
   const words = countWords(article.body)
-  if (!options.relaxWordLimits && (words < MIN_WORDS || words > MAX_WORDS)) problems.push(`body has ${words} words, outside ${MIN_WORDS}–${MAX_WORDS}`)
+  const real = options.realWriter || publisher?.synthetic === false
+  const min = real ? 150 : MIN_WORDS, max = real ? 3000 : MAX_WORDS
+  if (!(options.relaxWordLimits && (real || !options.realWriter)) && (words < min || words > max)) problems.push(`body: ${words} words; ${real ? 'real-writer' : 'fictional corpus / benchmark'} limit ${min}–${max}. Example: ${min} words in 4 paragraphs.${real ? ' Use --relax to waive only this real-writer length check.' : ''}`)
   if (article.passages.length < 4) problems.push('needs at least 4 passages')
   for (const p of article.passages) if (!article.body.includes(p.text)) problems.push(`passage ${p.id} is not an exact substring of the body`)
   if (new Set(article.passages.map(p => p.id)).size !== article.passages.length) problems.push('passage ids must be unique')
@@ -65,7 +67,7 @@ export function articleProblems(article: Article, publisher: Publisher | undefin
 }
 
 /** Parses and validates a whole corpus; throws with every problem listed. Replaces publisher/corpus.ts validateCorpus rules. */
-export function validateWriterCorpus(input: unknown, options: { relaxWordLimits?: boolean } = {}): WriterCorpus {
+export function validateWriterCorpus(input: unknown, options: { relaxWordLimits?: boolean; realWriter?: boolean } = {}): WriterCorpus {
   const corpus = z.object({ publishers: z.array(PublisherSchema), writers: z.array(WriterSchema), articles: z.array(ArticleSchema) }).parse(input)
   const publishers = new Map(corpus.publishers.map(p => [p.slug, p]))
   const writers = new Map(corpus.writers.map(w => [w.slug, w]))

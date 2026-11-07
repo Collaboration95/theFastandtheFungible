@@ -30,7 +30,7 @@ export async function fundTestnetWallet(wallet: Wallet): Promise<void> {
 }
 
 export type PublishOptions = {
-  folder: string; slug: string; name?: string; rail?: Rail; port?: number; root?: string
+  relax?: boolean; folder: string; slug: string; name?: string; rail?: Rail; port?: number; root?: string
   credential?: typeof issueWriterCredential; env?: NodeJS.ProcessEnv; fund?: (wallet: Wallet) => Promise<void>; log?: (line: string) => void
 }
 export async function publishSite(options: PublishOptions) {
@@ -38,8 +38,10 @@ export async function publishSite(options: PublishOptions) {
   const log = options.log ?? console.log
   const env = options.env ?? process.env
   const rail = options.rail ?? 'xrpl-testnet'
+  if (options.port === 8790) throw new Error('--port: 8790 is reserved; omit --port for an ephemeral port')
   const root = resolve(options.root ?? localWriterRoot())
-  const corpus = await markdownCorpus(resolve(options.folder), options.slug, options.name ?? options.slug)
+  const corpus = await markdownCorpus(resolve(options.folder), options.slug, options.name ?? options.slug, { relax: options.relax })
+  log(`Word limits: ${corpus.publishers[0].synthetic ? 'fictional corpus · 600–1,400' : options.relax ? 'real-writer · --relax length waiver' : 'real-writer · 150–3,000'} words`)
   // Refuse an installed roster collision before creating or funding a wallet.
   if (existsSync(new URL(`../../data/writers/${options.slug}.json`, import.meta.url))) throw new Error('Writer slug already belongs to the built-in roster; choose --slug')
   const dir = join(root, options.slug)
@@ -86,9 +88,9 @@ export async function publishSite(options: PublishOptions) {
     app = createPublisherApp({ writers: corpus, rail, env: { ...env, ...(rail === 'xrpl-testnet' ? { ESCROW_MODE: env.ESCROW_MODE === 'payment' ? 'payment' : 'key-reveal', ESCROW_WRITERS: [env.ESCROW_WRITERS, options.slug].filter(Boolean).join(',') } : {}), ...saved, ...(wallet ? { [variable]: wallet.seed } : {}) },
       journal: join(dir, 'publisher.db'), embeddings })
     await app.locals.ready
-    const server = app.listen(options.port ?? 8790 + Number(env.OFFSET || 0), '127.0.0.1')
+    const server = app.listen(options.port ?? 0, '127.0.0.1')
     try { await once(server, 'listening') }
-    catch { throw new Error('Publisher port is unavailable; choose --port or OFFSET=800') }
+    catch { throw new Error('Publisher port is unavailable; choose --port N') }
     const baseUrl = `http://127.0.0.1:${(server.address() as { port: number }).port}`
     server.once('close', () => { app!.locals.journal.close(); void app!.locals.ledger?.close?.() })
     try {
@@ -106,6 +108,10 @@ export async function publishSite(options: PublishOptions) {
       }
       log(`Published ${corpus.articles.length} articles · ${credential ? "Testnet credential issued" : "unverified writer"} · ${corpus.publishers[0].synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED'}`)
       log(`Site ${baseUrl}/w/${options.slug}/`)
+      await writeFile(join(dir, 'registry.json.tmp'), JSON.stringify({ slug: options.slug, origin: baseUrl, rail, pid: process.pid }), { mode: 0o600 })
+      await chmod(join(dir, 'registry.json.tmp'), 0o600)
+      await rename(join(dir, 'registry.json.tmp'), join(dir, 'registry.json'))
+      log(`Writers · local · Testnet: ${options.name ?? options.slug}`)
       log(`Registry ${baseUrl}/registry · registered locally for the next engine start`)
       log(`UI/MCP: PUBLISHER_URL=${baseUrl} (keep this command running)`)
       log(`Folder → searchable, payable writer: ${seconds.toFixed(2)} s${seconds >= 60 ? ' · over the 60 s target' : ''}`)

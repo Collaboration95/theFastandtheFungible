@@ -1,11 +1,12 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
+import { homedir } from 'node:os'
 import { resolve, join } from 'node:path'
 import { parse } from 'dotenv'
 import type { EmbeddingCache } from './search.js'
 import { validateWriterCorpus, type WriterCorpus } from '../shared/contracts/writers.js'
 
-export const localWriterRoot = () => resolve(process.env.LOCAL_WRITERS_DIR || 'data/local-writers')
+export const localWriterRoot = () => resolve(process.env.LOCAL_WRITERS_DIR || join(process.env.XDG_STATE_HOME || join(homedir(), '.local/state'), 'researchagent/writers'))
 export const localWriterEnv = (slug: string, root = localWriterRoot()): NodeJS.ProcessEnv => {
   const file = join(root, slug, '.env.writer')
   return existsSync(file) ? parse(readFileSync(file)) : {}
