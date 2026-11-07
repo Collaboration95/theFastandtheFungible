@@ -78,28 +78,28 @@ for (const tab of TABS) {
 
 test('ledger: live-check progress replaces the stale snapshot text within 3 s', async ({ page }) => {
   const initial = await (await page.request.get(`${base}/ledger/`)).text()
-  expect(initial).toContain('Checking 45 hashes live… 0/45')
+  expect(initial).toContain('Checking 61 hashes live… 0/61')
   expect(initial).not.toContain('Principal amount not recorded in this evidence</td><td>12 drops')
   await page.goto(`${base}/ledger/`)
   await page.waitForTimeout(3000)
   await expect(page.locator('body')).not.toContainText('not freshly verified')
-  await expect(page.getByRole('status')).toContainText(/Read-only check finished: \d+\/45/)
+  await expect(page.getByRole('status')).toContainText(/Read-only check finished: \d+\/61/)
   await expect(page.getByText('Memo = audit head 2861e38da5e3…; answer anchor')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Real writers' })).toBeVisible()
   await expect(page.getByText('real person · Testnet · no real value', { exact: true })).toBeVisible()
   await expect(page.getByText('No consenting writers listed yet.')).toBeVisible()
 })
 
-test('ledger validates 45/45 within six seconds on multiplexed fixture sockets', async ({ page }, info) => {
+test('ledger validates 61/61 within six seconds on multiplexed fixture sockets', async ({ page }, info) => {
   await stubLedger(page)
   const started = performance.now()
   await page.goto(`${base}/ledger/`)
-  await expect(page.getByRole('status')).toContainText('45/45 validated', { timeout: Math.max(1, 6000 - (performance.now() - started)) })
+  await expect(page.getByRole('status')).toContainText('61/61 validated', { timeout: Math.max(1, 6000 - (performance.now() - started)) })
   const elapsed = performance.now() - started
   expect(elapsed).toBeLessThanOrEqual(6000)
-  await info.attach('ledger-fixture-timing', { body: JSON.stringify({ elapsedMs: elapsed, verified: 45, mode: 'stubbed sockets; no live ledger' }), contentType: 'application/json' })
-  console.log(`L4 CI ledger: ${elapsed.toFixed(0)} ms, 45/45`)
-  await expect(page.locator('tbody tr')).toHaveCount(45)
+  await info.attach('ledger-fixture-timing', { body: JSON.stringify({ elapsedMs: elapsed, verified: 61, mode: 'stubbed sockets; no live ledger' }), contentType: 'application/json' })
+  console.log(`L4 CI ledger: ${elapsed.toFixed(0)} ms, 61/61`)
+  await expect(page.locator('tbody tr')).toHaveCount(61)
   await expect(page.locator('tbody')).not.toContainText(/\b[A-F0-9]{40}\b/)
   await expect(page.locator('tbody')).toContainText('RLUSD')
   await expect(page.locator('tbody tr').first()).toContainText('key published')

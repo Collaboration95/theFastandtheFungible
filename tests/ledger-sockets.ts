@@ -6,8 +6,8 @@ export async function stubLedger(page: Page) {
  await page.routeWebSocket(/wss:\/\/.*/,ws=>ws.onMessage(async raw=>{
   const request=JSON.parse(String(raw)), r=data.rows.find((r:{hash:string})=>r.hash===request.transaction)
   expect(request.command).toBe('tx')
-  if (r.source.includes('round3-r2')) {
-   const retained=JSON.parse(await readFile('docs/evidence/round3-r2/ledger-responses.json','utf8'))
+  if (r.source.includes('round3-r2') || r.source.includes('r5-r')) {
+   const retained=JSON.parse(await readFile(r.source,'utf8'))
    ws.send(JSON.stringify({id:request.id,result:retained.find((x:{hash:string})=>x.hash===r.hash).response})); return
   }
   const t:Record<string,unknown>={TransactionType:r.operation ?? 'Payment',Fee:r.feeDrops,Account:r.from,Destination:r.to,InvoiceID:r.invoiceId,Amount:r.deliveredAmount??r.amountDrops}
