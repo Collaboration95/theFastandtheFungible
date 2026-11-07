@@ -56,7 +56,7 @@ export function toSearchHit(article: Article, relevance: number, searchMode: Sea
     publisherSlug: article.publisherSlug, writerSlug: article.writerSlug, articleId: article.articleId, version: article.version,
     url: `/w/${article.publisherSlug}/articles/${article.articleId}`, title: article.title, abstract: article.abstract, tags: article.tags,
     tier: article.tier, priceMinor: article.priceMinor, relevance, publishedAt: article.publishedAt, family: article.family,
-    derivedFrom: article.derivedFrom, manifest, searchMode,
+    derivedFrom: article.derivedFrom, ...(article.sources ? { sources: article.sources } : {}), manifest, searchMode,
   })
 }
 /** The app stays synchronous; locals.ready exposes asynchronous corpus loading to startup/tests. */

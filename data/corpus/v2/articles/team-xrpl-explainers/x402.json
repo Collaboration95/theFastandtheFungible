@@ -1,0 +1,59 @@
+{
+  "articleId": "xrpl-x402",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does HTTP 402 and x402 actually standardize?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to what does http 402 and x402 actually standardize?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "x402",
+    "HTTP 402",
+    "PAYMENT-REQUIRED",
+    "PAYMENT-SIGNATURE",
+    "facilitator"
+  ],
+  "family": "xrpl-x402",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/payment-types/partial-payments",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]\n\nThe v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]\n\nFor an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]\n\nTest missing authorization, a malformed payload, the wrong network and a replayed business request. Separate protocol parsing failures from ledger settlement failures in the evidence. These are integration recommendations based on the x402 specification and payment semantics. They do not imply that the upstream specification supplies client budgets, content-quality judgments, escrow refunds or every XRPL-specific scheme used by an application. [1] [2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Test missing authorization, a malformed payload, the wrong network and a replayed business request. Separate protocol parsing failures from ledger settlement failures in the evidence. These are integration recommendations based on the x402 specification and payment semantics. They do not imply that the upstream specification supplies client budgets, content-quality judgments, escrow refunds or every XRPL-specific scheme used by an application. [1] [2]"
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "settlement"
+    },
+    "p4": {
+      "entity": "XRPL",
+      "measure": "settlement"
+    }
+  }
+}

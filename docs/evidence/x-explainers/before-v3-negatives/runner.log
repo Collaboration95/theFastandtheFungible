@@ -1,0 +1,29 @@
+N01 ABSTAIN answersIt 0 DONE violations 0
+N02 ABSTAIN answersIt 0 DONE violations 0
+N03 NEGATIVE_BUY answersIt 0 DONE violations 0
+N04 ABSTAIN answersIt 0 DONE violations 0
+N05 ABSTAIN answersIt 0 DONE violations 0
+N06 ABSTAIN answersIt 0 DONE violations 0
+N07 ABSTAIN answersIt 0 DONE violations 0
+N08 NEGATIVE_BUY answersIt 0 DONE violations 0
+N09 ABSTAIN answersIt 0 DONE violations 0
+N10 ABSTAIN answersIt 0 DONE violations 0
+{"bankSha256":"8bae3dcefc7561dd524466d1d1668658068057ef13fefcfda149544389faa7c9","artifactSha256":"6490f720cdf9aa1465695acaf17d2cc736db91137c09d5786e742382c2ecf982","completed":10,"total":10,"buyAndCite":{"n":2,"N":10},"answersIt":{"n":0,"N":0},"negativeBuys":{"n":2,"N":10},"valueHistograms":{"relevant":{"count":0,"min":null,"max":null,"bins":[{"lower":0,"upper":0.05,"upperInclusive":false,"count":0},{"lower":0.05,"upper":0.1,"upperInclusive":false,"count":0},{"lower":0.1,"upper":0.15,"upperInclusive":false,"count":0},{"lower":0.15,"upper":0.2,"upperInclusive":false,"count":0},{"lower":0.2,"upper":0.3,"upperInclusive":false,"count":0},{"lower":0.3,"upper":0.5,"upperInclusive":false,"count":0},{"lower":0.5,"upper":1,"upperInclusive":true,"count":0}]},"negative":{"count":30,"min":0.000014326767624889181,"max":0.2807242360210443,"bins":[{"lower":0,"upper":0.05,"upperInclusive":false,"count":27},{"lower":0.05,"upper":0.1,"upperInclusive":false,"count":0},{"lower":0.1,"upper":0.15,"upperInclusive":false,"count":0},{"lower":0.15,"upper":0.2,"upperInclusive":false,"count":0},{"lower":0.2,"upper":0.3,"upperInclusive":false,"count":3},{"lower":0.3,"upper":0.5,"upperInclusive":false,"count":0},{"lower":0.5,"upper":1,"upperInclusive":true,"count":0}]}}}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Negative purchases fail the bank
+
+2 !== 0
+
+    at <anonymous> (/Users/speedpowermac/.t3/worktrees/tftf/t3-e362fa09/scripts/judge-bank-testnet.ts:92:9) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.3.1

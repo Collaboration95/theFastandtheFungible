@@ -1,0 +1,54 @@
+{
+  "articleId": "xrpl-fees",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How do XRPL transaction fees and fee escalation work?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to how do xrpl transaction fees and fee escalation work?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "fees",
+    "drops",
+    "fee escalation",
+    "EscrowFinish"
+  ],
+  "family": "xrpl-fees",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/transaction-cost",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load. The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish. A quoted article price, a token transfer charge and the XRP network fee are different costs; none should be inferred from another. [1]\n\nServers apply a local load threshold and an open-ledger threshold. A transaction can be rejected for an insufficient local fee or queued when it does not meet the current open-ledger cost. Paying a fee is not paying a validator. Conditional EscrowFinish also depends on fulfillment size, so estimating every escrow operation as a plain Payment would understate its requirements. [1]\n\nFor agent operations, I recommend querying current fee information and applying an explicit maximum before signing. Separate the maximum allowed fee from the amount offered for content. Stop if congestion requires a fee beyond that maximum. Retrying a request should retain the original business intent and reconcile an earlier submission before creating a replacement obligation; fee escalation alone does not establish whether an earlier transaction validated. [1]\n\nAn informative fee experiment should record the transaction type, offered Fee, validated result and observed network state. Compare uncomplicated Payment, escrow creation and conditional finish without declaring one observation a universal benchmark. Include an insufficient-fee case and an uncertain submission result. These are suggested tests based on the documented fee model; no throughput, future price or completion-time promise follows from them. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load. The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish. A quoted article price, a token transfer charge and the XRP network fee are different costs; none should be inferred from another. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Servers apply a local load threshold and an open-ledger threshold. A transaction can be rejected for an insufficient local fee or queued when it does not meet the current open-ledger cost. Paying a fee is not paying a validator. Conditional EscrowFinish also depends on fulfillment size, so estimating every escrow operation as a plain Payment would understate its requirements. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "For agent operations, I recommend querying current fee information and applying an explicit maximum before signing. Separate the maximum allowed fee from the amount offered for content. Stop if congestion requires a fee beyond that maximum. Retrying a request should retain the original business intent and reconcile an earlier submission before creating a replacement obligation; fee escalation alone does not establish whether an earlier transaction validated. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "An informative fee experiment should record the transaction type, offered Fee, validated result and observed network state. Compare uncomplicated Payment, escrow creation and conditional finish without declaring one observation a universal benchmark. Include an insufficient-fee case and an uncertain submission result. These are suggested tests based on the documented fee model; no throughput, future price or completion-time promise follows from them. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "EscrowFinish",
+      "measure": "price"
+    },
+    "p2": {
+      "entity": "EscrowFinish",
+      "measure": "cost"
+    }
+  }
+}

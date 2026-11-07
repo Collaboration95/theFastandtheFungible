@@ -1,0 +1,71 @@
+{
+  "articleId": "xrpl-rlusd",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Who issues RLUSD and what does NYDFS oversight mean?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to who issues rlusd and what does nydfs oversight mean?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "RLUSD",
+    "NYDFS",
+    "stablecoin",
+    "Standard Custody",
+    "issuer"
+  ],
+  "family": "xrpl-rlusd",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/tokens/fungible-tokens",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://ripple.com/solutions/stablecoin/",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://ripple.com/insights/ripple-mint/",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide. Identify the legal issuer separately from the blockchain address and the application accepting the asset. [1] [2] [3]\n\nRipple describes RLUSD as backed by dollar reserves and publishes independent reserve attestations. Those materials address the issuer and reserve framework. They do not turn a token ticker into verified issuer identity on every network, and they do not establish that a particular agent application has satisfied local licensing or customer-identification requirements. [1] [2] [3]\n\nI recommend checking Ripple's official asset identifiers, current terms and reserve disclosures before enabling RLUSD. Keep test tokens and substitute dollar assets distinct from the issuer's real product. For compliance review, state which entity issues the token, which entity operates the application and which entity provides custody or conversion. Avoid carrying a regulatory claim across those boundaries without supporting evidence. [1] [2] [3]\n\nTest a counterfeit asset using the same currency name and reject it by issuer identity. Evaluate redemption access separately from exchange liquidity; a market route and an issuer relationship are different operational arrangements. These are integration recommendations based on the token model and Ripple's disclosures. They are not a determination that RLUSD is MAS-regulated or that holding it eliminates counterparty, operational or jurisdictional risk. [1] [2] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide. Identify the legal issuer separately from the blockchain address and the application accepting the asset. [1] [2] [3]"
+    },
+    {
+      "id": "p2",
+      "text": "Ripple describes RLUSD as backed by dollar reserves and publishes independent reserve attestations. Those materials address the issuer and reserve framework. They do not turn a token ticker into verified issuer identity on every network, and they do not establish that a particular agent application has satisfied local licensing or customer-identification requirements. [1] [2] [3]"
+    },
+    {
+      "id": "p3",
+      "text": "I recommend checking Ripple's official asset identifiers, current terms and reserve disclosures before enabling RLUSD. Keep test tokens and substitute dollar assets distinct from the issuer's real product. For compliance review, state which entity issues the token, which entity operates the application and which entity provides custody or conversion. Avoid carrying a regulatory claim across those boundaries without supporting evidence. [1] [2] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Test a counterfeit asset using the same currency name and reject it by issuer identity. Evaluate redemption access separately from exchange liquidity; a market route and an issuer relationship are different operational arrangements. These are integration recommendations based on the token model and Ripple's disclosures. They are not a determination that RLUSD is MAS-regulated or that holding it eliminates counterparty, operational or jurisdictional risk. [1] [2] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "RLUSD",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "RLUSD",
+      "measure": "identity"
+    },
+    "p3": {
+      "entity": "RLUSD",
+      "measure": "issuer"
+    },
+    "p4": {
+      "entity": "market",
+      "measure": "risk"
+    }
+  }
+}

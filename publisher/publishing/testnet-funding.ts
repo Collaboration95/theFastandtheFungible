@@ -8,7 +8,7 @@ export const FAUCET = 'https://faucet.altnet.rippletest.net/accounts'
 import { testnetUrl } from '../../shared/xrpl.js'
 import { RLUSD_CURRENCY } from '../../shared/contracts/asset.js'
 
-export const DEFAULT_WRITERS = ['buyer', 'team-builder-notes', 'alphaleak', 'the-fab-floor', 'notfinancialtimes', 'basis-points', 'load-factor', 'kopi-contrarian', 'marketpulse-digest', 'open-records', 'grid-operators-report'].filter(s => s !== 'buyer')
+export const DEFAULT_WRITERS = ['buyer', 'team-builder-notes', 'team-xrpl-explainers', 'alphaleak', 'the-fab-floor', 'notfinancialtimes', 'basis-points', 'load-factor', 'kopi-contrarian', 'marketpulse-digest', 'open-records', 'grid-operators-report'].filter(s => s !== 'buyer')
 async function prepareWallets(file: string, faucet: typeof fetch, ledger: ReturnType<typeof testnetLedger>, allowedRoot: string, asset?: string, writers = DEFAULT_WRITERS, signal?: AbortSignal) {
   signal?.throwIfAborted()
   file = resolve(file)

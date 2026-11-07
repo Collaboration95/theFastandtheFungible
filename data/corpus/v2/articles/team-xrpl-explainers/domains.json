@@ -1,0 +1,58 @@
+{
+  "articleId": "xrpl-domains",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What do Permissioned Domains restrict?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to what do permissioned domains restrict?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "Permissioned Domains",
+    "Credentials",
+    "permissioned DEX",
+    "compliance"
+  ],
+  "family": "xrpl-domains",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/tokens/decentralized-exchange/permissioned-domains",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "Permissioned Domains define accepted credentials for access checks; a domain alone does not restrict every action on XRPL. A consuming feature must actually enforce domain membership. The documentation describes domains as an abstraction between credentials and restricted resources, rather than a private copy of the whole ledger. [1]\n\nAccepted credentials are described by issuer and type. An account with a matching accepted, unexpired credential can qualify without a separate membership application. Domain owners can update the accepted set or delete a domain. A domain therefore expresses a changing authorization rule whose meaning depends on the credentials and the feature that references it. [1]\n\nFor a regulated trading integration, I recommend tracing exactly where the domain is enforced: offer placement, matching, settlement or another operation. Verify the applicable transaction and feature documentation before assuming one check covers all routes. Domain membership should not be presented as a universal licence, a guarantee of token redemption or evidence that public transaction data has become confidential. [1]\n\nTest a qualifying credential, an expired credential, a different issuer with the same type and a change to the owner's accepted set. Save the domain identifier and relevant policy state with the experiment. These recommendations follow the documented access abstraction. They deliberately make no claim that an arbitrary AMM, payment endpoint or lending implementation automatically enforces a domain simply because the domain exists. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "Permissioned Domains define accepted credentials for access checks; a domain alone does not restrict every action on XRPL. A consuming feature must actually enforce domain membership. The documentation describes domains as an abstraction between credentials and restricted resources, rather than a private copy of the whole ledger. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Accepted credentials are described by issuer and type. An account with a matching accepted, unexpired credential can qualify without a separate membership application. Domain owners can update the accepted set or delete a domain. A domain therefore expresses a changing authorization rule whose meaning depends on the credentials and the feature that references it. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "For a regulated trading integration, I recommend tracing exactly where the domain is enforced: offer placement, matching, settlement or another operation. Verify the applicable transaction and feature documentation before assuming one check covers all routes. Domain membership should not be presented as a universal licence, a guarantee of token redemption or evidence that public transaction data has become confidential. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Test a qualifying credential, an expired credential, a different issuer with the same type and a change to the owner's accepted set. Save the domain identifier and relevant policy state with the experiment. These recommendations follow the documented access abstraction. They deliberately make no claim that an arbitrary AMM, payment endpoint or lending implementation automatically enforces a domain simply because the domain exists. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    },
+    "p2": {
+      "entity": "Credentials",
+      "measure": "issuer"
+    },
+    "p4": {
+      "entity": "policy",
+      "measure": "payment"
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "articleId": "xrpl-aml",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Do Credentials replace KYC and AML controls?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to do credentials replace kyc and aml controls?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "KYC",
+    "AML",
+    "CFT",
+    "PSN02",
+    "Singapore",
+    "MAS"
+  ],
+  "family": "xrpl-aml",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/decentralized-storage/credentials",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://www.mas.gov.sg/regulation/notices/psn02-aml-cft-notice---digital-payment-token-service",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "On-ledger Credentials can carry attestations, but they do not replace the underlying customer due diligence and AML controls required of an in-scope service provider. The issuer defines the credential's meaning. A verifier must decide whether that issuer and assertion satisfy the purpose for which access is being granted. [1] [2]\n\nMAS Notice PSN02 describes AML/CFT requirements for digital payment token service providers, including customer due diligence, record keeping and suspicious-transaction controls. The existence of a reusable attestation does not itself demonstrate that those operational duties have been performed. Identity evidence and ongoing transaction monitoring concern different parts of a service's risk management. [1] [2]\n\nMy recommendation is to document the trust contract behind each accepted credential: who investigated the customer, what was checked, how expiry and deletion are handled, and what the relying service still does itself. Keep sensitive supporting evidence outside public transaction fields. A credential type string should not become an unrestricted permission for any future activity or jurisdiction. [1] [2]\n\nTest an expired assertion, an issuer no longer accepted by policy and a valid credential attached to an unrelated account. Review monitoring and record-retention behavior separately from that access test. These recommendations are derived from the Credentials roles and the MAS notice summary. They do not claim that any credential scheme automatically meets statutory reliance requirements or that the ledger performs sanctions screening for its users. [1] [2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "On-ledger Credentials can carry attestations, but they do not replace the underlying customer due diligence and AML controls required of an in-scope service provider. The issuer defines the credential's meaning. A verifier must decide whether that issuer and assertion satisfy the purpose for which access is being granted. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "MAS Notice PSN02 describes AML/CFT requirements for digital payment token service providers, including customer due diligence, record keeping and suspicious-transaction controls. The existence of a reusable attestation does not itself demonstrate that those operational duties have been performed. Identity evidence and ongoing transaction monitoring concern different parts of a service's risk management. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "My recommendation is to document the trust contract behind each accepted credential: who investigated the customer, what was checked, how expiry and deletion are handled, and what the relying service still does itself. Keep sensitive supporting evidence outside public transaction fields. A credential type string should not become an unrestricted permission for any future activity or jurisdiction. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Test an expired assertion, an issuer no longer accepted by policy and a valid credential attached to an unrelated account. Review monitoring and record-retention behavior separately from that access test. These recommendations are derived from the Credentials roles and the MAS notice summary. They do not claim that any credential scheme automatically meets statutory reliance requirements or that the ledger performs sanctions screening for its users. [1] [2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "Credentials",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "MAS",
+      "measure": "risk"
+    },
+    "p3": {
+      "entity": "contract",
+      "measure": "credential"
+    },
+    "p4": {
+      "entity": "MAS",
+      "measure": "issuer"
+    }
+  }
+}
