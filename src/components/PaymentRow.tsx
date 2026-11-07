@@ -22,10 +22,11 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
     <p className="ra-payment-title">{source?.title ?? intent.resourceId}</p>
     {testnet && intent.quote?.payment?.asset && intent.quote.payment?.asset !== 'XRP' && <p>{settlementAssetLabel(intent.quote.payment?.asset)}</p>}
     <p style={intent.escrow?.mode === 'key-reveal' ? { overflowWrap: 'anywhere' } : undefined} key={intent.status} className={`ra-payment-status${intent.escrow?.mode === 'key-reveal' && !refunded ? ' ra-key-line' : ''}${state.ok ? ' is-ok' : state.failed || state.quarantined && !refunded ? ' is-bad' : ''}`}>{status}{refunded && <span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(intent.quote?.payment?.asset) : 'simulated'}</span>}{elapsed !== undefined && state.ok && ` · ${elapsed.toFixed(1)} s`}</p>
-    {intent.escrow?.mode === 'key-reveal' && intent.refund && <><p>Refund · writer-signed · fixture writer cooperates (a real writer could refuse)</p><p>Trust score drops · credential revocation recommended</p><button className="ra-link" onClick={() => { void saveReceipts(run.runId, 'fraud-proof.json', b => (b.fraudProofs as { intentId: string }[] | undefined)?.find(p => p.intentId === intent.intentId)) }}>Fraud proof ↗</button></>}
     {state.phase === 'submitted' && <PendingTime since={state.pendingSince} />}
     {state.failed && <button className="ra-btn ra-btn-go" onClick={() => onRetry(intent.intentId)}>Retry delivery</button>}
     {intent.escrow?.mode === 'key-reveal' && <KeyRevealLifecycle escrow={intent.escrow} />}
+    {/* Escrow → key first, then the writer-signed refund it led to; promise checks follow. */}
+    {intent.escrow?.mode === 'key-reveal' && intent.refund && <div className="ra-refund-detail"><p>Refund · writer-signed · fixture writer cooperates (a real writer could refuse)</p><p>Trust score drops · credential revocation recommended</p><button className="ra-link" onClick={() => { void saveReceipts(run.runId, 'fraud-proof.json', b => (b.fraudProofs as { intentId: string }[] | undefined)?.find(p => p.intentId === intent.intentId)) }}>Fraud proof ↗</button></div>}
     <Verification run={run} intent={intent} />
     <p className="ra-payment-links">{[
       testnet && typeof refundUrl === 'string' && refundUrl.startsWith('https://testnet.xrpl.org/') && <a key="refund" href={refundUrl} target="_blank" rel="noreferrer">Refund tx {shortHash(intent.refund?.txHash ?? '')} ↗</a>,

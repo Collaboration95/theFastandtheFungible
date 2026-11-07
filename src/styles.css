@@ -822,3 +822,74 @@ html[data-record=true] .ra-env { display: block; }
 .owner-caps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
 .owner-panel .ra-set h3 { font-size: 15px; margin: 0 0 12px; }
 @media(max-width: 800px) { .owner-caps { grid-template-columns: 1fr; } }
+
+/* U1 polish (7 Nov): one reversible block. Layout, type and affordance only; no label is hidden or moved off the first screen. */
+/* Disclosures: a thin chevron instead of the heavy native triangle; Export and "Why ▸" carry their own affordance. */
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
+details:not(.ra-export):not(.ra-why-not) > summary::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 9px 0 2px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-2px) rotate(-45deg); vertical-align: middle; }
+details[open]:not(.ra-export):not(.ra-why-not) > summary::before { transform: translateY(-4px) rotate(45deg); }
+/* Citations sit above the line without stretching it: the lead finding keeps an even rhythm. */
+.ra-vtext sup, .ra-claim sup, .ra-group sup { position: relative; top: -.45em; vertical-align: baseline; line-height: 0; }
+.ra-vtext sup .ra-cite, .ra-claim sup .ra-cite { line-height: 1; padding: 0 2px; }
+/* Activity: done ✓, in progress ○, upcoming · in muted text. */
+.ra-activity-list li > span { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.ra-activity-list li > span > i { flex: none; width: 12px; font-style: normal; text-align: center; }
+.ra-activity-list li.is-now { font-weight: 500; }
+.ra-activity-list li.is-todo { color: var(--muted); }
+.ra-activity-list small { flex: none; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* Loading: the answer placeholder is visible on the paper background, static (no shimmer). */
+.ra-vtext.is-skel i { height: 12px; background: var(--rule); }
+.ra-vtext.is-skel i:nth-child(2) { width: 86%; }
+.ra-vtext.is-skel i:nth-child(3) { width: 58%; }
+/* Declined run: one line, then the policy rows as a quiet table. */
+.ra-verdict > p:first-of-type:not(.ra-vtext) { margin: 8px 0 4px; font-size: 15px; line-height: 22px; }
+.ra-why-not { margin: 8px 0 16px; }
+.ra-why-not > summary { width: fit-content; padding: 4px 0; font-size: 13px; font-weight: 500; }
+.ra-why-not ul { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid var(--rule); }
+.ra-why-not li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: 13px; line-height: 18px; }
+.ra-why-not li b { grid-column: 1; grid-row: 1; font-weight: 500; }
+.ra-why-not li p { grid-column: 1; grid-row: 2; margin: 0; color: var(--muted); font-size: 12px; }
+.ra-why-verdict { grid-column: 2; grid-row: 1; justify-self: end; font-weight: 500; }
+.ra-why-value { grid-column: 2; grid-row: 2; justify-self: end; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ra-verdict > a { display: inline-block; margin-top: 8px; font-size: 13px; }
+/* Export: a quiet button that opens a menu of rows, not a stack of form buttons. */
+.ra-export > summary { display: inline-flex; align-items: center; height: 28px; min-height: 28px; padding: 0 10px; border: 1px solid var(--rule-2); border-radius: 6px; background: var(--surface); font-weight: 500; }
+.ra-export > summary:hover, .ra-export[open] > summary { border-color: var(--ink); }
+.ra-export > div { top: calc(100% + 6px); display: grid; gap: 2px; width: 300px; padding: 6px; }
+.ra-export .ra-btn { min-height: 36px; padding: 0 10px; border: 0; background: none; color: var(--ink); font-weight: 500; }
+.ra-export .ra-btn:hover:not(:disabled) { background: var(--hover); }
+.ra-export small { display: block; margin: 2px 10px 8px; color: var(--muted); font-size: 12px; }
+.ra-export > div > * { min-width: 0; }
+.ra-export small code { display: block; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); color: var(--ink); white-space: normal; overflow-wrap: anywhere; line-height: 18px; }
+@media (max-width: 779px) { .ra-export .ra-btn { min-height: 44px; } .ra-export > summary { min-height: 44px; } }
+/* Key-reveal escrow: a numbered ledger of steps, tx links aligned right. */
+.ra-key-reveal { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--rule); }
+.ra-key-reveal > small { display: block; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
+.ra-key-reveal ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; counter-reset: step; }
+.ra-key-reveal li { counter-increment: step; display: flex; align-items: baseline; gap: 0 8px; line-height: 18px; }
+.ra-key-reveal li:has(> small) { flex-wrap: wrap; }
+.ra-key-reveal li > a { flex: none; }
+.ra-key-reveal li::before { content: counter(step); flex: none; width: 16px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ra-key-reveal li > a { margin-left: auto; font-size: 12px; }
+.ra-key-reveal li > small { flex-basis: 100%; padding-left: 24px; color: var(--muted); font-size: 12px; }
+.ra-refund-detail { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--rule); }
+.ra-refund-detail p { margin: 0 0 4px; }
+/* What's real here: compact, so it covers less of the examples. */
+.ra-env-pop { padding: 20px; }
+.ra-env-pop h2 { margin: 0 0 6px; font-size: 15px; line-height: 20px; font-weight: 600; }
+.ra-env-pop p { margin: 0 0 14px; line-height: 19px; }
+.ra-env-pop dl { gap: 6px 12px; grid-template-columns: 80px minmax(0, 1fr); margin: 0 0 16px; line-height: 18px; }
+/* Settings: one page heading; section titles a step down; fields sized to their content; one primary action. */
+.owner-panel h2, .owner-welcome h2 { margin: 4px 0 12px; font-size: 20px; line-height: 28px; letter-spacing: -.01em; }
+.owner-panel .owner-field, .owner-welcome .owner-field { max-width: 420px; }
+.owner-caps .owner-field { max-width: none; }
+.owner-keys { margin: 12px 0 4px; padding: 12px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.owner-keys b { font-weight: 500; }
+.owner-settings button.owner-primary { border-color: var(--ink); background: var(--ink); color: var(--paper); font-weight: 600; }
+.owner-settings button.owner-primary:hover:not(:disabled) { background: #000; }
+/* Mobile citations keep a 44 px hit area on an invisible layer, so the visible number no longer stretches its line. */
+@media (max-width: 779px) {
+  .ra-vtext sup .ra-cite, .ra-claim sup .ra-cite { position: relative; min-width: 20px; min-height: 0; height: auto; display: inline; }
+  .ra-vtext sup .ra-cite::after, .ra-claim sup .ra-cite::after { content: ""; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); }
+}
