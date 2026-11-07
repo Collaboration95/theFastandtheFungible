@@ -1,4 +1,10 @@
 ---
+# Required: title, abstract, tier, price. Scalars only; no YAML lists.
+# Optional: tags, synthetic, questions, entity, measure.
+# questions: What changes? | What evidence exists?
+# entity: electricity
+# measure: share
+# Real notes: synthetic: false, 150–3,000 words in at least 4 paragraphs.
 title: Malaysia grid planning notes
 tier: PAID
 price: 0.10

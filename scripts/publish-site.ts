@@ -3,29 +3,31 @@ import 'dotenv/config'
 import { parseArgs } from 'node:util'
 import { basename, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { publishSite } from '../publisher/publishing/publish.js'
+import { markdownCorpus } from '../publisher/publishing/markdown.js'
 
 export async function main(args = process.argv.slice(2)) {
   try {
     const { values, positionals } = parseArgs({ args, allowPositionals: true, options: {
-      testnet: { type: 'boolean' }, slug: { type: 'string' }, name: { type: 'string' }, port: { type: 'string' }, rail: { type: 'string' }, help: { type: 'boolean' },
+      relax: { type: 'boolean' }, testnet: { type: 'boolean' }, slug: { type: 'string' }, name: { type: 'string' }, port: { type: 'string' }, rail: { type: 'string' }, help: { type: 'boolean' },
     } })
     if (values.help) {
-      console.log('Usage: npm run publish:site -- ./my-notes [--slug my-notes] [--name "My Notes"] [--port 9590] [--testnet | --rail simulated]\nDefault (--testnet): XRPL Testnet faucet wallet + Testnet writer Credential + key-reveal escrow. Never pass seeds as arguments. Ctrl-C stops the site; rerun to update it.')
+      console.log('Usage: npm run publish:site -- ./my-notes [--slug my-notes] [--name "My Notes"] [--port 9590] [--testnet | --rail simulated] [--relax]\nDefault (--testnet): XRPL Testnet faucet wallet + Testnet writer Credential + key-reveal escrow. Never pass seeds as arguments. Ctrl-C stops the site; rerun to update it.')
       return
     }
-    if (positionals.length !== 1) throw new Error('Give one Markdown folder. Try: npm run publish:site -- examples/writer-starter')
+    if (positionals.length !== 1) throw new Error('Give one Markdown folder. Start with init my-notes, then publish my-notes --testnet')
     const rail = values.testnet || values.rail === 'testnet' ? 'xrpl-testnet' : values.rail ?? 'xrpl-testnet'
     if (rail !== 'simulated' && rail !== 'xrpl-testnet') throw new Error('--rail must be xrpl-testnet or simulated; Mainnet is disabled')
-    const port = Number(values.port ?? 8790 + Number(process.env.OFFSET || 0))
+    const port = Number(values.port ?? 0)
     if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('--port must be an integer from 0 to 65535')
     const folder = resolve(positionals[0])
+    await markdownCorpus(folder, values.slug ?? basename(folder), values.name ?? basename(folder), { relax: values.relax })
+    const { publishSite } = await import('../publisher/publishing/publish.js')
     const running: { site?: Awaited<ReturnType<typeof publishSite>>; stopping: boolean } = { stopping: false }
     const shutdown = () => { running.stopping = true; running.site?.server.close(); running.site?.server.closeAllConnections() }
     // Install before readiness output: a terminal/host may stop us immediately on ready.
     process.once('SIGINT', shutdown)
     process.once('SIGTERM', shutdown)
-    running.site = await publishSite({ folder, slug: values.slug ?? basename(folder), name: values.name, port, rail })
+    running.site = await publishSite({ folder, slug: values.slug ?? basename(folder), name: values.name, port, rail, relax: values.relax })
     if (running.stopping) shutdown()
   } catch (error) {
     // Library failures can include submitted credentials. Only our actionable messages leave this boundary.
@@ -38,3 +40,6 @@ export async function main(args = process.argv.slice(2)) {
   }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) void main()
+
+// Reuse this existing portable entry so slim packages need no separate init asset.
+export { main as initMain } from '../publisher/publishing/init.js'

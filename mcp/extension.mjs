@@ -5,6 +5,9 @@ delete process.env.RA_BACKEND_URL
 delete process.env.XRPL_CALLER_SEED
 if (process.argv[2] === 'try') {
   await (await import('./try.ts')).runTry(process.argv.slice(3))
+} else if (process.argv[2] === 'init') {
+  const { initMain } = await import('../scripts/publish-site.js')
+  await initMain(process.argv.slice(3))
 } else if (process.argv[2] === 'publish') {
   const { main } = await import('../scripts/publish-site.js')
   await main(process.argv.slice(3))

@@ -1,4 +1,5 @@
 import { ownerSettingsRouter } from './owner-settings.js'
+import { localWriterRegistrations } from './local-writer-discovery.js'
 import { AnswerAnchors } from './anchor.js'
 import { ActiveWork, OverloadedError } from './agents/active-work.js'
 import { providersRouter } from './api/providers.js'
@@ -148,6 +149,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   app.use(operationsRouter(context))
   app.use(auditRouter(context))
   // Trust matrix (D6): public, engine-side, persisted across runs.
+  app.get('/api/local-writers', (_req, res) => res.json({ writers: config.SETTLEMENT_RAIL === 'xrpl-testnet' ? localWriterRegistrations() : [] }))
   app.get('/api/reputation', (_req, res) => res.json({ publishers: reputation.list() }))
   app.post('/api/reputation/reset', (_req, res) => { reputation.reset(); res.json({ publishers: [] }) })
   app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', labels, faults: faultsAvailable }))

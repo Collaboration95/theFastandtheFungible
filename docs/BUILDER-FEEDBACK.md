@@ -872,3 +872,16 @@ idempotency keys. Suggested tooling fix: stage acceptance packages outside the
 frontend build output and persist artifact identity before launch. Severity:
 low (local evidence capture interrupted; no new purchase needed for recovery).
 Mainnet impact: no ledger defect observed and no mainnet execution attempted.
+### 2026-11-07 — Repeated npm tarball resolution delays writer validation (observed, J3)
+
+Evidence: `docs/evidence/round4-j3/timings.json` and `README.md`. A fresh-cache
+init took 37.364 s; the next tarball malformed-note command took 45.903 s,
+while the installed executable rejected the same input in 0.428 s. Workaround:
+reuse an installed executable for retries. Suggested fix: reduce the portable
+runtime/package dependency footprint and provide a small stable install path.
+Severity: high first-touch friction. Mainnet impact: none observed; public Testnet
+only, no changes to spending authority or settlement validation.
+
+J3 re-measurement after J2 #387: fresh-cache init 1.396 s, malformed-note
+rejection 1.510 s, and publish-to-Credential 32.491 s. The bundled package fixes
+the observed retry latency; initial misses remain historical evidence.

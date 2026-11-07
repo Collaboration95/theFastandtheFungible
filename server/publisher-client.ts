@@ -1,3 +1,4 @@
+import { localWriterRegistrations } from './local-writer-discovery.js'
 import { writerVerification } from './writer-credentials.js'
 import { WriterVerificationSchema } from '../shared/writer-verification.js'
 import { deriveAddress } from 'ripple-keypairs'
@@ -30,8 +31,11 @@ export class PublisherClient {
     const raw = this.options.baseUrls ?? (!this.options.baseUrl && loadConfig().PUBLISHER_URLS ? loadConfig().PUBLISHER_URLS!.split(',').map(s => s.trim()) : [this.origin])
     if (!raw.length || raw.length > 3) throw new Error('At most three publisher origins')
     const urls = raw.map(approvedPublisherOrigin)
+    if (loadConfig().SETTLEMENT_RAIL === 'xrpl-testnet') for (const entry of localWriterRegistrations()) {
+      if (urls.length < 3 && !urls.includes(entry.origin)) urls.push(entry.origin)
+    }
     if (new Set(urls).size !== urls.length) throw new Error('Duplicate publisher origin')
-    return urls.map(baseUrl => Object.assign(Object.create(this) as PublisherClient, { sellerKeys: new Map<string,Promise<string>>(), sellerWallets: new Map<string,string>(), options: { ...this.options, baseUrls: undefined, baseUrl, federated: Boolean(this.options.baseUrls || loadConfig().PUBLISHER_URLS || this.options.federated), deadline: Date.now() + 2000 } }))
+    return urls.map(baseUrl => Object.assign(Object.create(this) as PublisherClient, { sellerKeys: new Map<string,Promise<string>>(), sellerWallets: new Map<string,string>(), options: { ...this.options, baseUrls: undefined, baseUrl, federated: Boolean(urls.length > 1 || this.options.baseUrls || loadConfig().PUBLISHER_URLS || this.options.federated), deadline: Date.now() + 2000 } }))
   }
   forSource(source?: SourceIdentity, recovery = false): PublisherClient {
     if (!source) { if (this.options.baseUrls || this.options.federated || loadConfig().PUBLISHER_URLS) throw new Error('Historical origin unresolved'); return this }
