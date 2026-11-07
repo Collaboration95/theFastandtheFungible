@@ -70,8 +70,13 @@ if (testnet) {
   // @ts-expect-error Dependency-free browser JavaScript shared with the ledger page.
   const { refresh } = await import('../site/ledger/ledger.js')
   const rows = active === modules['./traces/UC3-key-reveal.json'] ? (await import('../docs/evidence/lane-b3/transactions.json')).default.transactions : active === modules['./traces/UC-key-reveal.json'] ? (await import('../site/ledger/transactions.json')).default.rows.filter(r => r.source === 'docs/evidence/round2-v1/transactions.json') : (await import('../docs/evidence/round2-p2/transactions.json')).default.transactions
-  const panel = document.createElement('details'); panel.open = true; panel.className = 'demo-transactions'
-  const summary = document.createElement('summary'); summary.textContent = active.run.intents.some(i => i.escrow?.mode === 'key-reveal') ? 'Recorded key-reveal escrows · read-only live checks' : 'Recorded Testnet payments and refund · read-only live checks'; panel.append(summary)
+  const panel = document.createElement('details'); panel.open = false; panel.className = 'demo-transactions'
+  const summary = document.createElement('summary')
+  const summaryText = document.createElement('span'), toggle = document.createElement('span')
+  summaryText.textContent = `Checking ${rows.length} Testnet hashes live…`
+  toggle.textContent = ' · show'; summary.append(summaryText, toggle); panel.append(summary)
+  panel.ontoggle = () => { toggle.textContent = panel.open ? ' · hide' : ' · show' }
+  let verified = 0, checked = 0
   const states = new Map<string, HTMLElement>()
   for (const row of rows) {
     const p = document.createElement('p'), a = document.createElement('a'), state = document.createElement('span')
@@ -79,5 +84,11 @@ if (testnet) {
     state.textContent = ' · Recorded validated tesSUCCESS; checking live…'; states.set(row.hash, state); p.append(a, state); panel.append(p)
   }
   controls.after(panel)
-  void refresh(rows, WebSocket, (hash: string, status: string) => { states.get(hash)!.textContent = ` · ${status}` })
+  void refresh(rows, WebSocket, (hash: string, status: string) => {
+    states.get(hash)!.textContent = ` · ${status}`
+    checked++; if (status.startsWith('validated')) verified++
+    summaryText.textContent = checked === rows.length
+      ? `${verified}/${rows.length} Testnet hashes verified live${verified === rows.length ? ' ✓' : ' · historical evidence available'}`
+      : `Checking Testnet hashes live… ${checked}/${rows.length}`
+  })
 }

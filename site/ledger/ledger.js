@@ -32,30 +32,60 @@ export function classify(row, body) {
 }
 const sameAmount = (a, b) => typeof b === 'object' ? a && ['currency', 'issuer', 'value'].every(k => a[k] === b[k]) : a === b
 export const endpoints = ['wss://s.altnet.rippletest.net:51233', 'wss://clio.altnet.rippletest.net:51233', 'wss://testnet.xrpl-labs.com']
-// One response, one allowlisted tx command; no account, wallet, signing or submission API.
+// A refresh owns one connection per allowlisted endpoint. Only read-only tx RPCs.
+export function connection(endpoint, Socket = WebSocket, timeout = 5000) {
+  if (!endpoints.includes(endpoint)) throw Error('Not allowlisted')
+  const pending = new Map()
+  let socket, opened = false, closed = false, sequence = 0
+  const close = (error = Error('connection closed')) => {
+    if (closed) return
+    closed = true
+    for (const request of pending.values()) { clearTimeout(request.timer); request.reject(error) }
+    pending.clear()
+    if (socket) { socket.onopen = socket.onmessage = socket.onerror = socket.onclose = null; socket.close() }
+  }
+  const send = (id, request) => socket.send(JSON.stringify({id, command: 'tx', transaction: request.hash, binary: false, api_version: 2}))
+  const query = hash => {
+    if (!/^[A-F0-9]{64}$/.test(hash)) throw Error('Not allowlisted')
+    return new Promise((resolve, reject) => {
+      if (closed) { reject(Error('connection closed')); return }
+      const id = ++sequence
+      const request = { hash, resolve, reject, timer: setTimeout(() => close(Error('timeout')), timeout) }
+      pending.set(id, request)
+      try {
+        if (!socket) {
+          socket = new Socket(endpoint)
+          socket.onopen = () => { opened = true; for (const [id, request] of pending) send(id, request) }
+          socket.onmessage = e => {
+            try {
+              if (typeof e.data !== 'string' || new TextEncoder().encode(e.data).byteLength > 262144) throw Error('oversized or malformed response')
+              const body = JSON.parse(e.data)
+              if (body.type === 'serverStatus') return
+              const request = pending.get(body.id)
+              if (!request) throw Error('response identity mismatch')
+              pending.delete(body.id); clearTimeout(request.timer); request.resolve(body)
+            } catch (error) { close(error) }
+          }
+          socket.onerror = () => close(Error('connection unavailable (browser transport/CORS policy)'))
+          socket.onclose = () => close()
+        } else if (opened) send(id, request)
+      } catch (error) { close(error) }
+    })
+  }
+  return { query, close }
+}
 export function lookup(hash, endpoint, Socket = WebSocket, timeout = 5000) {
   if (!/^[A-F0-9]{64}$/.test(hash) || !endpoints.includes(endpoint)) throw Error('Not allowlisted')
-  return new Promise((resolve, reject) => {
-    let socket
-    const finish = (error, body) => { clearTimeout(timer); if (socket) { socket.onopen = socket.onmessage = socket.onerror = socket.onclose = null; socket.close() } error ? reject(error) : resolve(body) }
-    const timer = setTimeout(() => finish(Error('timeout')), timeout)
-    try {
-      socket = new Socket(endpoint)
-      socket.onopen = () => socket.send(JSON.stringify({id: hash, command: 'tx', transaction: hash, binary: false, api_version: 2}))
-      socket.onmessage = e => {
-        try {
-          if (typeof e.data !== 'string' || new TextEncoder().encode(e.data).byteLength > 262144) throw Error('oversized or malformed response')
-          const body = JSON.parse(e.data)
-          // rippled sends small unsolicited serverStatus notifications.
-          if (body.type === 'serverStatus') return
-          if (body.id !== hash) throw Error('response identity mismatch')
-          finish(null, body)
-        } catch (error) { finish(error) }
-      }
-      socket.onerror = () => finish(Error('connection unavailable (browser transport/CORS policy)'))
-      socket.onclose = () => finish(Error('connection closed'))
-    } catch (error) { finish(error) }
-  })
+  const client = connection(endpoint, Socket, timeout)
+  return client.query(hash).finally(() => client.close())
+}
+export function currencyLabel(currency) {
+  if (/^[A-Fa-f0-9]{40}$/.test(currency)) {
+    const bytes = currency.match(/../g).map(byte => parseInt(byte, 16))
+    currency = bytes.filter(byte => byte !== 0).every(byte => byte >= 32 && byte <= 126)
+      ? String.fromCharCode(...bytes).replace(/\0+$/, '') : 'Nonstandard issued currency'
+  }
+  return currency === 'SGT' ? 'TEST-SGD IOU (SGT; stand-in for RLUSD)' : currency
 }
 // Public post-grant envelope only. No engine, wallet or transaction submission code.
 const hexBytes = value => {
@@ -87,16 +117,21 @@ export async function fairExchange(row, finishBody, createBody) {
 }
 export async function refresh(rows, Socket = WebSocket, update = () => {}) {
   let next = 0
-  await Promise.all(Array.from({length: 8}, async () => {
+  const clients = new Map()
+  const query = (hash, endpoint) => {
+    if (!clients.has(endpoint)) clients.set(endpoint, connection(endpoint, Socket))
+    return clients.get(endpoint).query(hash)
+  }
+  try { await Promise.all(Array.from({length: 16}, async () => {
     while (next < rows.length) {
       const row = rows[next++]
       let status = 'Historical; unavailable'
       for (const endpoint of endpoints) {
         try {
-          const body = await lookup(row.hash, endpoint, Socket)
+          const body = await query(row.hash, endpoint)
           status = classify(row, body)
           if (status.startsWith('validated') && row.keyReveal) {
-            const proof = await fairExchange(row, body, await lookup(row.keyReveal.create.hash, endpoint, Socket))
+            const proof = await fairExchange(row, body, await query(row.keyReveal.create.hash, endpoint))
             status = proof.startsWith('Key published') ? `${status} · ${proof}` : proof
           }
         }
@@ -105,7 +140,7 @@ export async function refresh(rows, Socket = WebSocket, update = () => {}) {
       }
       update(row.hash, status)
     }
-  }))
+  })) } finally { for (const client of clients.values()) client.close() }
 }
 if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   const data = await (await fetch('transactions.json')).json()
@@ -114,7 +149,7 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   for (const row of data.rows) {
     const tr = document.createElement('tr')
     const amount = row.deliveredAmount ?? row.amountDrops ?? (row.group === 'anchor' ? `Memo = audit head ${row.head.slice(0, 12)}…; answer anchor` : 'principal amount not recorded in this evidence')
-    for (const text of [`${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${row.date}`, `${typeof amount === 'object' ? amount.value + ' ' + (amount.currency === 'SGT' ? 'TEST-SGD IOU (SGT; stand-in for RLUSD)' : amount.currency) + ' · issuer ' + amount.issuer : amount + (row.deliveredAmount || row.amountDrops ? ' drops' : '')} · fee ${row.feeDrops} drops`]) { const td = document.createElement('td'); td.textContent = text; tr.append(td) }
+    for (const text of [`${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${row.date}`, `${typeof amount === 'object' ? amount.value + ' ' + currencyLabel(amount.currency) + ' · issuer ' + amount.issuer : amount + (row.deliveredAmount || row.amountDrops ? ' drops' : '')} · fee ${row.feeDrops} drops`]) { const td = document.createElement('td'); td.textContent = text; tr.append(td) }
     const source = document.createElement('td'); const a = document.createElement('a'); a.href = 'https://github.com/Collaboration95/theFastandtheFungible/blob/' + (row.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943') + '/' + row.source; a.textContent = `Ledger ${row.ledgerIndex} · committed source`; source.append(a); tr.append(source)
     const td = document.createElement('td'); const link = document.createElement('a'); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.textContent = row.hash; const state = document.createElement('span'); state.className='state'; state.textContent='Checking live…'; td.append(link,state); cells.set(row.hash,state); tr.append(td); document.querySelector('#rows').append(tr)
   }

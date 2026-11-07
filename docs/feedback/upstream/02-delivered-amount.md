@@ -1,6 +1,6 @@
 # Exact issued amount must mean delivered amount
 
-**draft, not filed** — owner-only filing.
+**Final filing body · not filed.** Offline reproduction and limitations are included below.
 
 ## Reproduce
 

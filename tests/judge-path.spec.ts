@@ -1,3 +1,4 @@
+import { stubLedger } from './ledger-sockets'
 // Headless first-touch walk: landing → every demo tab → ledger → release link.
 // Run with `npm run test:judge` (builds the demo first). Hermetic: XRPL sockets and GitHub are stubbed.
 import { test, expect, type Page } from '@playwright/test'
@@ -87,4 +88,29 @@ test('ledger: live-check progress replaces the stale snapshot text within 3 s', 
   await expect(page.getByRole('heading', { name: 'Real writers' })).toBeVisible()
   await expect(page.getByText('real person · Testnet · no real value', { exact: true })).toBeVisible()
   await expect(page.getByText('No consenting writers listed yet.')).toBeVisible()
+})
+
+test('ledger validates 45/45 within six seconds on multiplexed fixture sockets', async ({ page }, info) => {
+  await stubLedger(page)
+  const started = performance.now()
+  await page.goto(`${base}/ledger/`)
+  await expect(page.getByRole('status')).toContainText('45/45 validated', { timeout: Math.max(1, 6000 - (performance.now() - started)) })
+  const elapsed = performance.now() - started
+  expect(elapsed).toBeLessThanOrEqual(6000)
+  await info.attach('ledger-fixture-timing', { body: JSON.stringify({ elapsedMs: elapsed, verified: 45, mode: 'stubbed sockets; no live ledger' }), contentType: 'application/json' })
+  console.log(`L4 CI ledger: ${elapsed.toFixed(0)} ms, 45/45`)
+  await expect(page.locator('tbody tr')).toHaveCount(45)
+  await expect(page.locator('tbody')).not.toContainText(/\b[A-F0-9]{40}\b/)
+  await expect(page.locator('tbody')).toContainText('RLUSD')
+  await expect(page.locator('tbody tr').first()).toContainText('key published')
+})
+test('demo proof strip is collapsed by default and expands on demand', async ({ page }) => {
+  await page.goto(`${base}/demo/`)
+  const strip = page.locator('.demo-transactions')
+  await expect(strip).not.toHaveAttribute('open', '')
+  await expect(strip.locator('summary')).toContainText('show')
+  await expect(strip.locator('p').first()).not.toBeVisible()
+  await strip.locator('summary').click()
+  await expect(strip.locator('p').first()).toBeVisible()
+  await expect(strip.locator('summary')).toContainText('hide')
 })

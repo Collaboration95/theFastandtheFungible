@@ -20,7 +20,7 @@
     "testing": "npm run test:unit && playwright test",
     "readme:check": "node scripts/readme-scorecard.mjs --check && node scripts/readme-architecture.mjs --check",
     "site:publish": "python3 scripts/site-publish.py",
-    "hygiene": "npm run check:naming && node scripts/repo-hygiene.mjs && node scripts/site-header.mjs --check",
+    "hygiene": "npm run check:naming && node scripts/repo-hygiene.mjs && node scripts/check-feedback-ids.mjs && node scripts/site-header.mjs --check",
     "release": "node scripts/release.mjs",
     "check:fast": "npm run hygiene && npm run lint && npm run typecheck && npm run test:unit && npm run chaos:smoke",
     "verify": "npm run lint && npm run typecheck && npm run testing && npm run build",
