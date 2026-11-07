@@ -26,19 +26,34 @@ it('SQL selectors match the previous mixed-history predicates, without hydration
   } finally { s.close() }
 })
 
-import { mkdtempSync } from 'node:fs'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createApiApp } from '../server/routes.js'
 it('startup, recovery, metrics and drain never call listRuns', async () => {
-  const path=join(mkdtempSync(join(tmpdir(),'history-select-')),'app.db')
-  const store=new Store(path)
-  for(let n=0;n<40;n++) {const run=store.createRun('SYNTHETIC',0);store.updateRun(run.runId,{phase:'DONE'})}
-  store.close()
-  const guard=vi.spyOn(Store.prototype,'listRuns').mockImplementation(()=>{throw new Error('hydration forbidden')})
+  const root=mkdtempSync(join(tmpdir(),'history-select-'))
   try {
-    const api=await createApiApp({dbPath:path,publisherUrl:'http://127.0.0.1:1'})
-    try {await api.reconcileOnce();expect(metrics(api.store,api.purchases).modelUsageByRun).toHaveLength(40);await api.drain()}
-    finally {await api.close()}
-  } finally {guard.mockRestore()}
+    const path=join(root,'app.db')
+    const store=new Store(path)
+    try {for(let n=0;n<40;n++) {const run=store.createRun('SYNTHETIC',0);store.updateRun(run.runId,{phase:'DONE'})}}
+    finally {store.close()}
+    const guard=vi.spyOn(Store.prototype,'listRuns').mockImplementation(()=>{throw new Error('hydration forbidden')})
+    try {
+      const api=await createApiApp({dbPath:path,publisherUrl:'http://127.0.0.1:1'})
+      try {await api.reconcileOnce();expect(metrics(api.store,api.purchases).modelUsageByRun).toHaveLength(40);await api.drain()}
+      finally {await api.close()}
+    } finally {guard.mockRestore()}
+  } finally {rmSync(root,{recursive:true,force:true})}
+})
+
+it('sidebar never calls getRun, even for pinned paid histories', () => {
+  const store = new Store(':memory:')
+  try {
+    const run = store.createRun('SYNTHETIC', 100)
+    store.setRunMeta(run.runId, { pinned: true })
+    vi.spyOn(store, 'getRun').mockImplementation(() => { throw new Error('premium hydration forbidden') })
+    expect(store.listPastRuns(0).map(r => r.runId)).toEqual([run.runId])
+    store.setRunMeta(run.runId, { hidden: true })
+    expect(store.listPastRuns()).toEqual([])
+  } finally { store.close() }
 })

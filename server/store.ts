@@ -1,3 +1,4 @@
+import { pastRunSummaries } from './history-query.js'
 import { ExactCache } from './exact-cache.js'
 import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
 import { AgentKeys, AgentDenied } from './agent-keys.js'
@@ -375,15 +376,9 @@ export class Store {
   listRuns(): RunSnapshot[] { return this.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => this.getRun(row.id as string)) }
   /** Sidebar history, newest first: every pinned run, then the `recent` latest others. Deleting only hides a run: its receipts and ledger rows stay (one charge per intent). */
   listPastRuns(recent = 4): { runId: string; question: string; phase: RunSnapshot['phase']; stopped: boolean; budgetMinor: number; spentMinor: number; at: string; pinned: boolean }[] {
-    const meta = new Map(this.prepare('SELECT run_id, pinned, hidden FROM run_meta').all().map(row => [row.run_id as string, row]))
-    let others = 0
-    return this.prepare('SELECT id FROM runs ORDER BY rowid DESC').all().flatMap(row => {
-      const id = row.id as string, m = meta.get(id)
-      if (m?.hidden || (!m?.pinned && others++ >= recent)) return []
-      const run = this.getRun(id)
-      return [{ runId: id, question: run.question, phase: run.phase, stopped: run.stopped, budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, at: run.events[0]?.at ?? '', pinned: !!m?.pinned }]
-    })
+    return pastRunSummaries(this.db, { recent })
   }
+
   setRunMeta(runId: string, change: { pinned?: boolean; hidden?: boolean }): void {
     this.rawRun(runId)
     this.prepare('INSERT OR IGNORE INTO run_meta (run_id) VALUES (?)').run(runId)
