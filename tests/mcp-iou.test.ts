@@ -42,7 +42,8 @@ test.each([false, true])('IOU MCP clamps, labels, retries and cancels an absent 
   expect(first.budgetMinor).toBeLessThanOrEqual(200)
   if (noShow) {
    expect(first.spentMinor).toBe(0)
-   expect([...c.txs.values()].some(t=>t.tx_json.TransactionType==='EscrowCancel')).toBe(true)
+   // A failed delivery can return before the existing automatic recovery tick.
+   await vi.waitFor(() => expect([...c.txs.values()].some(t=>t.tx_json.TransactionType==='EscrowCancel')).toBe(true))
    expect(api.store.getRun(first.run_id).grants).toHaveLength(0)
    const snapshot = api.store.getRun(first.run_id)
    expect(snapshot.contents.filter(c=>snapshot.candidates.some(p=>p.tier==='PAID' && p.resourceId===c.resourceId))).toHaveLength(0)
