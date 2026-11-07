@@ -1,0 +1,46 @@
+{
+  "ok": false,
+  "runId": "fbe963bf-d2b7-4ed3-97a3-420203baa75c",
+  "checks": [
+    {
+      "check": "writer credentials",
+      "status": "SKIP",
+      "detail": "Unsigned advisory identity; requires online check"
+    },
+    {
+      "check": "legacy dispatch",
+      "status": "PASS",
+      "detail": "v1/v2 retain original semantics; contribution extensions require v3"
+    },
+    {
+      "check": "historical origin",
+      "status": "SKIP",
+      "detail": "v1 origin unresolved; original singleton semantics"
+    },
+    {
+      "check": "identities",
+      "status": "PASS",
+      "detail": "Unambiguous source, proof and intent identities"
+    },
+    {
+      "check": "audit chain",
+      "status": "PASS",
+      "detail": "2 links; head 05f2174bb2cd7fa61a720fd3ca97a4a7acade85638b0f4604e59dcff84e27a2b"
+    },
+    {
+      "check": "audit anchor",
+      "status": "FAIL",
+      "detail": "No ledger anchor in export"
+    },
+    {
+      "check": "receipt coverage",
+      "status": "PASS",
+      "detail": "Every charge/refund has its payment row; no omitted audit settlements"
+    },
+    {
+      "check": "testnet coverage",
+      "status": "PASS",
+      "detail": "All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof"
+    }
+  ]
+}
