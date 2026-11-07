@@ -20,7 +20,7 @@ export async function runTry(argv: string[]) {
     console.log(setup.labels.join(' · '))
     engine = await startEngine({ dataDir: testnetStateDir(), live: false, env: { ...setup.env, DOTENV_CONFIG_PATH: '.try-no-env', MCP_MAX_BUDGET_MINOR: process.env.MCP_MAX_BUDGET_MINOR ?? '200', MCP_DAILY_CAP_MINOR: process.env.MCP_DAILY_CAP_MINOR ?? '500', WALLET_DAILY_CAP_MINOR: process.env.WALLET_DAILY_CAP_MINOR ?? '500' } })
     const client = createClient({ baseUrl: engine.apiUrl, token: engine.apiToken })
-    const answer = await client.ask(DEMO_QUESTIONS.find(q => q.id === 'UC3')!.text, { budgetSgd: 2, idempotencyKey: 'researchagent-try-uc3-v1', escrow: setup.testnet })
+    const answer = await client.ask(DEMO_QUESTIONS.find(q => q.id === 'UC3')!.text, { budgetSgd: 2, idempotencyKey: `researchagent-try-uc3-${setup.testnet ? 'testnet' : 'simulated'}-v1`, escrow: setup.testnet })
     if (answer.phase !== 'DONE') throw Error('UC3 did not finish')
     let bundle = await client.receipts(answer.run_id)
     if (setup.testnet) {
