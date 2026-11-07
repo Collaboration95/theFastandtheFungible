@@ -16,8 +16,8 @@ if (process.env.RA_ACCEPT_TESTNET !== '1') throw Error('RA_ACCEPT_TESTNET=1 requ
 const scope = new ResourceScope()
 try {
 const tgz = resolve(process.argv[2]), scratch = process.env.J1_STATE_DIR || scope.evidenceDir('j1-judge-', 'Testnet wallets and potentially signed obligations; retain for manual reconciliation')
-const out = resolve('docs/evidence/round4-j1'); mkdirSync(out,{recursive:true})
-const bankBytes=readFileSync('eval/questions/judge-xrpl.v1.json');const bank=JSON.parse(bankBytes.toString())
+const out = resolve(process.env.JUDGE_OUT_DIR || 'docs/evidence/round4-j1'); mkdirSync(out,{recursive:true})
+const bankBytes=readFileSync(process.env.JUDGE_BANK || 'eval/questions/judge-xrpl.v1.json');const bank=JSON.parse(bankBytes.toString())
 const resume = process.env.J1_RESUME === '1'
 if (resume && !process.env.J1_STATE_DIR) throw Error('Resume requires the original private J1_STATE_DIR')
 const previous = resume ? JSON.parse(readFileSync(join(out,'results.json'),'utf8')) : undefined
@@ -34,13 +34,18 @@ try {
  const wallet=await call('wallet_status');assert.equal(wallet.rail,'xrpl-testnet','Simulated fallback is not acceptance')
  for(const q of bank.questions){
   if (results.some(r=>r.id===q.id)) continue
-  let a=await call('ask_expert',{question:q.question,budget_sgd:2,idempotency_key:'j1-'+q.id})
+  let a=await call('ask_expert',{question:q.question,budget_sgd:2,idempotency_key:(process.env.JUDGE_INTENT_PREFIX || 'j1-')+q.id})
   const deadline=Date.now()+180000
   while(!['DONE','STOPPED','FAILED'].includes(a.phase)&&Date.now()<deadline) a=await call('get_run',{run_id:a.run_id})
   const store=new Store(join(scratch,'researchagent/testnet/app.db'))
-  const run=store.getRun(a.run_id);const bundle=receiptBundle(store,a.run_id);store.close()
+  let run=store.getRun(a.run_id), bundle=receiptBundle(store,a.run_id)
+  // DONE can precede the asynchronous audit anchor. Observe the same run, within the existing deadline.
+  while (!bundle.ledgerAnchor && run.intents.some(i=>i.status==='VERIFIED') && Date.now()<deadline) {
+   await new Promise(done=>setTimeout(done,500)); run=store.getRun(a.run_id);bundle=receiptBundle(store,a.run_id)
+  }
+  store.close()
   writeFileSync(join(out,q.id+'.receipts.json'),JSON.stringify(bundle,null,2)+'\n')
-  const verification=await verifyAnswer(bundle,{testnet:true})
+  const verification=await verifyAnswer(bundle,{testnet:true,onlineLedger:true})
   writeFileSync(join(out,q.id+'.verification.json'),JSON.stringify(verification,null,2)+'\n')
   const violations=auditRuns([run],await loadWriterCorpus()).violations
   const cited=run.answers.at(-1)?.claims.flatMap(c=>c.citations)??[]

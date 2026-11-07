@@ -80,8 +80,8 @@ grep -rn '{{' docs/submission/ --include='*.md' --include='*.html'
 | `{{UPSTREAM_FILED_ANSWER}}` | "Yes, three, on <date>", or the fallback line in Q13 | owner task B1 | qa Q13 |
 | `{{VIDEO_URL}}` | the unlisted video link | owner, after recording | deck slide 12, form |
 
-Already filled from merged work on 7 Nov: the release tag, version and wheel version (v1.0.0), the J3 first-try time (33.9 s), the J1 judge-bank rate (**15/20**,
-[#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390)) and
+Already filled from merged work on 7 Nov: the release tag, version and wheel version (v1.0.0), the J3 first-try time (33.9 s), the J5 judge-bank rate (**v2 held-out 8/20; v1 dev 16/20 buy-and-cite**,
+[evidence](../evidence/j5-coverage/README.md)) and
 the S1b Settings page ([#386](https://github.com/Collaboration95/theFastandtheFungible/pull/386)).
 
 **If J3 has not merged:** change deck slide 8's writer card to

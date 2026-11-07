@@ -16,5 +16,5 @@ it('a completed uncited run has an honest answer and publishing link', () => {
 it('team corpus retains ordinary identity, disclosure and word-limit validation', async()=>{
  const c=await loadWriterCorpus();const p=c.publishers.find(p=>p.slug==='team-builder-notes')!
  expect(p.synthetic).toBe(false);expect(p.verification?.status).toBe('unverified');expect(p.bio).toBe('team-authored · real content · not an independent writer · Testnet')
- expect(c.articles.filter(a=>a.publisherSlug===p.slug)).toHaveLength(8)
+ expect(c.articles.filter(a=>a.publisherSlug===p.slug)).toHaveLength(10)
 })

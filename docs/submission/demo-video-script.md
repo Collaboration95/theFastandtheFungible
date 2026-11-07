@@ -152,7 +152,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
   payer address and the caps. The browser opens on `127.0.0.1:<port>`.
 - **Ask:** *"Can RLUSD be escrowed with key reveal today?"* with budget S$2.
   Backup question: *"How much does EscrowFinish with a fulfillment cost on XRPL
-  Testnet?"* Both were bought and cited in the frozen judge bank
+  Testnet?"* Both were bought and cited in the frozen v1 development bank
   ([round4-j1](../evidence/round4-j1/README.md), J03 and J01).
 - **On screen:** the answer cites the team builder notes. The source card shows
   "team-authored · real content · not an independent writer · Testnet". Open
@@ -160,11 +160,11 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 - **Edit:** speed up waiting (×3), with the clock.
 - **Caption:** "Local app, no clone · XRPL Testnet · team-authored writer · real
   content · not an independent writer"
-- **VO (52 words):** "No MCP client? The same package runs the full app on
+- **VO:** "No MCP client? The same package runs the full app on
   your machine. Ask it something about XRPL. It buys from a writer made of our
   own build notes. It's labelled as ours, not independent. On twenty judge
-  questions we froze in advance, fifteen came back bought
-  and cited."
+  development questions, 16 came back bought and cited. On twenty new held-out
+  questions, 8 did. Both used fixture models and Testnet."
 
 ### Shot 6 · A stablecoin escrow, from Claude Code (1:48–2:08)
 
@@ -248,3 +248,5 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
    `node docs/submission/deck/export.mjs`.
 4. Attach the MP4 to the release (`gh release upload v1.0.0 video.mp4`),
    not to git.
+
+J5 measurement for recording: v2 held-out 8/20; v1 dev 16/20 buy-and-cite; zero blanks and terminal gate violations per bank. Online receipt verification: 16/20 dev, 8/20 held-out; no-purchase anchors are missing and remain failed checks. [Evidence](../evidence/j5-coverage/README.md).
