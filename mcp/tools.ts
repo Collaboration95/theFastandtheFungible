@@ -21,7 +21,8 @@ export function createMcpServer(endpoint: string | Endpoint | Promise<Endpoint>,
     if (typeof value !== 'string') { apiUrl = value.apiUrl; token = value.token; labels = value.labels ?? []; client = createClient({ baseUrl: apiUrl, token }) }
   })
   void ready.catch(() => {})
-  const result = (data: Record<string, unknown>) => ({ content: [{ type: 'text' as const, text: JSON.stringify(data) }], structuredContent: data })
+  const amountLabels = (data: Record<string, unknown>) => labels.some(label => label.includes('TEST-SGD')) ? { ...data, amountUnit: 'TEST-SGD', amountLabel: 'TEST-SGD · stand-in for RLUSD · no real value', minorUnitsPerToken: 100, priceMapping: 'SGD budget units map 1:1 to TEST-SGD; no backing or peg claim' } : data
+  const result = (data: Record<string, unknown>) => ({ content: [{ type: 'text' as const, text: JSON.stringify(amountLabels(data)) }], structuredContent: amountLabels(data) })
   const guarded = async (action: () => Promise<Record<string, unknown>>) => {
     try { await ready; const data = await action(); return result(labels.length ? { ...data, startupLabels: labels } : data) }
     catch (error) { if (error instanceof ResearchAgentError) return { ...result(errorEnvelope(error.code, error.status ?? 503, error.runId)), isError: true }; return { ...result({ error: 'ResearchAgent command failed. Check backend availability, arguments and idempotency key. No automatic retry of a new purchase.', labels: ['mode unavailable; no evidence returned'] }), isError: true } }

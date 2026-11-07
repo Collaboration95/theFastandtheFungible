@@ -8,6 +8,7 @@ import type { Citation, DecisionRow, RunSnapshot } from '../shared/contracts/ind
 export const settlementAssetLabel = (asset?: Asset) => !asset || asset === 'XRP' ? 'XRPL Testnet' : asset.issuer === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : asset.label
 
 export const money = (minor: number) => `S$${(minor / 100).toFixed(2)}`
+export const assetMoney = (minor: number, asset?: Asset) => asset && asset !== 'XRP' && asset.currency === 'SGT' ? `TEST-SGD ${(minor / 100).toFixed(2)} · stand-in for RLUSD · no real value` : money(minor)
 export const shortHash = (hash: string) => hash.length > 14 ? `${hash.slice(0, 6)}…${hash.slice(-5)}` : hash
 export const candidateOf = (run: RunSnapshot, ref: SourceRef) => run.candidates.find(item => sameSource(item, ref))
 export const citationKey = (citation: Citation) => JSON.stringify([sourceKey(citation), citation.spanId])

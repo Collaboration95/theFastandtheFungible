@@ -561,3 +561,5 @@ Significant product, design and process decisions, newest first. One line each: 
 
 - 2026-11-04 — Lane E: opt-in TEST-SGD key-reveal XLS-85 escrow (public-faucet issuer, no real value, stand-in for RLUSD), 3 happy + no-show ledger runs, 224/224 TS/Python conformance; RLUSD flag-gated control refreshed. MCP IOU and Lane C ledger rows follow up.
 - 2026-11-04 — Feasibility / UX (Lane C3): `publish --testnet` (repo bin + MCP tgz) puts a faucet writer live with a Testnet Credential and key-reveal escrow in 43.8 s cold (buyer key-reveal sale by 67.7 s), a "Real writers" list (empty until consent) on README and /ledger/, `per_call_cap` clamp reason, first-touch polish sweep and the `npm run test:judge` headless judge path. Evidence: [docs/evidence/round3-c/](evidence/round3-c/README.md).
+
+- 2026-11-07 — M1: zero-clone MCP and app Testnet IOU opt-in, cached TEST-SGD issuer/trust lines, labelled token amounts and IOU receipt evidence (stand-in for RLUSD; no real value).

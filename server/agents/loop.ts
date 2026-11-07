@@ -440,7 +440,11 @@ export class RunLoop {
           break
         }
         const candidate = decision.rows.find(row => decision.selectedSourceKey ? sourceKey(row.candidate) === decision.selectedSourceKey : row.candidate.resourceId === decision.selectedResourceId)!.candidate
-        const intentId = candidate.source ? (process.env.ESCROW_MODE === 'key-reveal' ? createHash('sha256').update(JSON.stringify([runId, round, sourceKey(candidate)])).digest('hex') : JSON.stringify([runId, round, sourceKey(candidate)])) : `${runId}:${round}:${candidate.resourceId}:${candidate.version}`
+        // Full SHA-256 in base64url keeps IOU quote memos below XRPL's 1 KiB
+        // serialized Memo limit without dropping any identity or asset commitment.
+        const intentId = process.env.ESCROW_ASSET === 'test-iou'
+          ? createHash('sha256').update(JSON.stringify([runId, round, sourceKey(candidate)])).digest('base64url')
+          : candidate.source ? (process.env.ESCROW_MODE === 'key-reveal' ? createHash('sha256').update(JSON.stringify([runId, round, sourceKey(candidate)])).digest('hex') : JSON.stringify([runId, round, sourceKey(candidate)])) : `${runId}:${round}:${candidate.resourceId}:${candidate.version}`
         this.trace(runId, 'BUY', 'Policy selected one purchase within budget.', { intentId })
         // No await between the Stop gate and handing off to the transactional ledger.
         if (this.stopped(runId)) return

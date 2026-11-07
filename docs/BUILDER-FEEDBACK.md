@@ -808,3 +808,22 @@ No upstream report filed (owner-only).
 - Workaround: reload the answer. RC.2 preparation adds a bounded read-only run poll and browser success/timeout regressions (`tests/ux2.spec.ts`).
 - Suggested fix: expose the post-run anchoring lifecycle to clients until validation or timeout; do not treat DONE as completion of asynchronous audit anchoring.
 - Severity: medium UX/evidence discoverability. Mainnet impact: the same client lifecycle failure could hide an existing anchor; this observation was Testnet only, with no mainnet test.
+
+### 2026-11-07 — Zero-clone TEST-SGD bootstrap and submission (observed)
+
+Cold public-faucet IOU provisioning took 92.19 s; cached setup took 12.83 s.
+Evidence: M1 IOU probe and docs/evidence/m1-iou/. Existing bootstrap repeated
+AccountSet/TrustSet on every restart; this lane queries validated flags and
+lines and submits only missing setup. Suggested tooling fix: expose a batched,
+idempotent Testnet token-escrow wallet bootstrap. Severity: low (demo latency).
+Mainnet impact: not tested; this uses faucet funds and a labelled stand-in only.
+
+The live MCP IOU attempt was rejected with invalidTransaction:
+"fails local checks: The memo exceeds the maximum allowed size."
+MemoData alone was 997 bytes; MemoType and serialization pushed it over
+XRPL's 1 KiB Memo limit. No principal applied and no grant was issued.
+Workaround: encode the full SHA-256 intent identity in base64url for IOU runs,
+retaining all 256 bits and all signed quote fields. Suggested SDK fix:
+check serialized Memo size before signing and expose the rejection reason.
+Severity: integration blocker until fixed. Mainnet impact: the same Memo
+size limit applies; mainnet execution was not attempted.

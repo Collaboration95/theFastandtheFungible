@@ -39,3 +39,14 @@ test('provisions wallets directly inside a private state root', async () => {
   expect((await stat(`${root}/wallets.private.json`)).mode & 0o777).toBe(0o600)
  } finally { await rm(root, { recursive: true, force: true }) }
 })
+test.each(['test-iou', undefined])('IOU asset selection %s reaches provisioning without process mutation', async asset => {
+ vi.spyOn(console, 'error').mockImplementation(() => {})
+ vi.mocked(provision).mockResolvedValue({ buyer: 'private-buyer', issuer: 'private-issuer', alphaleak: 'private-writer' })
+ vi.mocked(isolatedEnv).mockReturnValue({ ESCROW_ASSET: 'test-iou', TESTNET_IOU_ISSUER: 'public-issuer', SETTLEMENT_RAIL: 'xrpl-testnet' })
+ process.env.ESCROW_ASSET = 'test-iou'
+ const setup = await prepareMcpTestnet(undefined, asset)
+ expect(provision).toHaveBeenLastCalledWith(expect.stringContaining('wallets.private.json'), fetch, undefined, testnetStateDir(), 'test-iou')
+ expect(setup.env).toMatchObject({ESCROW_ASSET:'test-iou',TESTNET_IOU_ISSUER:'public-issuer',ESCROW_WRITERS:'alphaleak',ESCROW_MODE:'key-reveal',ANCHOR_RAIL:'xrpl-testnet'})
+ expect(setup.labels.join()).toContain('stand-in for RLUSD')
+ expect(process.env.TESTNET_IOU_ISSUER).toBeUndefined()
+})
