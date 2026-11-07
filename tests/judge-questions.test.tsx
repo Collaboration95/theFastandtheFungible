@@ -10,11 +10,16 @@ it('numeric reductions support a shorter lead-time question despite incidental d
  expect(stance('Lead times moved from 18 weeks to 26 weeks.', 'Are lead times getting shorter?')).toBe('CHALLENGES')
 })
 it('a completed uncited run has an honest answer and publishing link', () => {
- const html=renderToStaticMarkup(<Answer run={{...offlineZeroBudgetRun,phase:'DONE',answers:[],events:[]}} view="latest" onView={()=>{}} compare={false} onCompare={()=>{}} />)
+ const html=renderToStaticMarkup(<Answer run={{...offlineZeroBudgetRun,phase:'DONE',candidates:[],decisions:[],answers:[],events:[]}} view="latest" onView={()=>{}} compare={false} onCompare={()=>{}} />)
  expect(html).toContain('No listed writer covers this yet · nothing bought');expect(html).toContain('Publish a note on this →');expect(html).not.toContain('is-skel')
 })
 it('team corpus retains ordinary identity, disclosure and word-limit validation', async()=>{
  const c=await loadWriterCorpus();const p=c.publishers.find(p=>p.slug==='team-builder-notes')!
  expect(p.synthetic).toBe(false);expect(p.verification?.status).toBe('unverified');expect(p.bio).toBe('team-authored · real content · not an independent writer · Testnet')
  expect(c.articles.filter(a=>a.publisherSlug===p.slug)).toHaveLength(10)
+})
+
+it('introductory prose is uncertain even when it says only', () => {
+ expect(stance('I cover only semiconductor companies.')).toBe('UNCERTAIN')
+ expect(stance('Only verified payment grants access.')).toBe('UNCERTAIN')
 })

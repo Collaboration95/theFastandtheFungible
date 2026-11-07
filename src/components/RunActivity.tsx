@@ -1,3 +1,4 @@
+import { declineSummary } from '../../shared/decline.js'
 import { sameSource, sourceKey } from '../../shared/source-identity.js'
 import { useEffect, useState } from 'react'
 import type { RunSnapshot } from '../../shared/contracts'
@@ -15,8 +16,10 @@ export default function RunActivity({ run, actualTerminal, onStop, stopping, onS
     if (buyIndex >= 0) activity.splice(buyIndex + 1, 0, { key: 'todo-proof', kind: 'proof', title: 'Check the article against the writer’s promises', state: 'todo', meta: '' })
   }
   const bought = run.receipts.length
-  const elapsed = run.events.length > 1 ? Math.max(0, (Date.parse(run.events.at(-1)!.at) - Date.parse(run.events[0].at)) / 1000) : 0
-  return <section className="ra-run-activity" aria-label="Run activity"><div className="ra-run-status"><p role="status">{!done && spinning && <i className="ra-spinner" aria-hidden="true" />}{labels[state.phase]}{state.phase === 'done' && ` · ${bought ? `${run.intents.filter(i => i.status === 'VERIFIED').length} kept${run.intents.some(i => i.status === 'REFUNDED') ? ` · ${run.intents.filter(i => i.status === 'REFUNDED').length} refunded` : ''} · net ${money(run.spentMinor - (run.refundedMinor ?? 0))}` : run.answers.some(a => a.claims.length) ? 'answered from free sources · S$0.00' : 'No listed writer covers this yet · nothing bought'} · ${import.meta.env.MODE === 'browser-demo' && elapsed > 120 ? '2 min wait skipped (replay)' : `${elapsed.toFixed(1)} s`}`}</p>{!done && !actualTerminal && <button className="ra-link" disabled={stopping} onClick={onStop}>Stop buying ⌘.</button>}<button className="ra-link" onClick={onShowWork}>Show work</button></div>
+  const firstDraft = run.events.find(e => e.type === 'FREE_DRAFT' && typeof e.data?.elapsedMs === 'number')
+  const start = firstDraft ? Date.parse(firstDraft.at) - Number(firstDraft.data!.elapsedMs) : run.events[0] ? Date.parse(run.events[0].at) : undefined
+  const elapsed = start !== undefined ? Math.max(0, (Date.parse(run.events.at(-1)!.at) - start) / 1000) : 0
+  return <section className="ra-run-activity" aria-label="Run activity"><div className="ra-run-status"><p role="status">{!done && spinning && <i className="ra-spinner" aria-hidden="true" />}{labels[state.phase]}{state.phase === 'done' && ` · ${bought ? `${run.intents.filter(i => i.status === 'VERIFIED').length} kept${run.intents.some(i => i.status === 'REFUNDED') ? ` · ${run.intents.filter(i => i.status === 'REFUNDED').length} refunded` : ''} · net ${money(run.spentMinor - (run.refundedMinor ?? 0))}` : run.answers.some(a => a.claims.length) ? 'answered from free sources · S$0.00' : declineSummary(run)} · ${import.meta.env.MODE === 'browser-demo' && elapsed > 120 ? '2 min wait skipped (replay)' : elapsed > 0 ? `${elapsed.toFixed(1)} s` : 'duration unavailable'}`}</p>{!done && !actualTerminal && <button className="ra-link" disabled={stopping} onClick={onStop}>Stop buying ⌘.</button>}<button className="ra-link" onClick={onShowWork}>Show work</button></div>
     <details key={run.runId} className="ra-activity-details" open={!done}><summary>Activity</summary><ol className="ra-activity-list">{activity.map((row, index, rows) => {
       const next = rows[index + 1]?.event?.at
       const seconds = row.event && next ? Math.max(0, (Date.parse(next) - Date.parse(row.event.at)) / 1000).toFixed(1) : undefined

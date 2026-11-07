@@ -10,7 +10,10 @@ export function leadFinding(question: string, claims: Claim[]): { text: string; 
   const terms = words(question)
   const ranked = claims.flatMap((claim, ci) => claim.text.split(/(?<=[.!?])\s+(?=[A-Z])/).map((text, si) => {
     const lower = text.toLowerCase(), tokens = words(text)
-    let score = terms.filter(term => tokens.includes(term)).length * 3
+    if (/^(?:This is a team-authored|This team-authored|The implementation record|For a reader assessing|Reproduction requires|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return { text, claim, score: 0, ci, si }
+    const overlap = terms.filter(term => tokens.includes(term)).length
+    if (!overlap && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return { text, claim, score: 0, ci, si }
+    let score = overlap / Math.max(1, terms.length) * 20
     if (/lead[- ]times?|shorter/i.test(question)) score += /\bweeks?\b/.test(lower) ? 12 : 0
     if (/analyst|outlook|margin/i.test(question)) score += /estimate|broker|analyst|consensus/.test(lower) ? 12 : 0
     if (/change|meeting/i.test(question)) score += /policy rate|increase from/.test(lower) ? 9 : 0

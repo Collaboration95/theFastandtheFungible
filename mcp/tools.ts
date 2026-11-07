@@ -1,3 +1,5 @@
+import { declineSummary } from '../shared/decline.js'
+import { RunSnapshotSchema } from '../shared/contracts/run.js'
 import pkg from '../package.json' with { type: 'json' }
 import { ResearchAgentError } from '../sdk/index.js'
 import { errorEnvelope } from '../shared/contracts/errors.js'
@@ -28,8 +30,14 @@ export function createMcpServer(endpoint: string | Endpoint | Promise<Endpoint>,
     catch (error) { if (error instanceof ResearchAgentError) return { ...result(errorEnvelope(error.code, error.status ?? 503, error.runId)), isError: true }; return { ...result({ error: 'ResearchAgent command failed. Check backend availability, arguments and idempotency key. No automatic retry of a new purchase.', labels: ['mode unavailable; no evidence returned'] }), isError: true } }
   }
   const withLedger = async (data: Awaited<ReturnType<typeof client.getRun>>) => {
-    if (!labels.includes('Testnet · no real value') || !['DONE', 'STOPPED', 'FAILED'].includes(data.phase)) return data
-    const deadline = Date.now() + 20_000
+    if (data.phase === 'DONE' && !data.answer?.claims.length && !data.purchases.length) {
+      const response = await fetch(new URL(`/api/mcp/runs/${data.run_id}`, apiUrl), { headers: token ? { Authorization: `Bearer ${token}` } : {}, redirect: 'error', signal: AbortSignal.timeout(15_000) })
+      if (response.ok) {
+        const run = RunSnapshotSchema.parse(await response.json())
+        if (data.answer) data = { ...data, answer: { ...data.answer, conclusion: declineSummary(run) } }
+      }
+    }
+    if (!labels.includes('Testnet · no real value') || !['DONE', 'STOPPED', 'FAILED'].includes(data.phase)) return data    const deadline = Date.now() + 20_000
     let bundle = await client.receipts(data.run_id)
     while (!bundle.ledgerAnchor && (data.phase === 'DONE' || bundle.receipts.length > 0) && Date.now() < deadline) {
       await new Promise(done => setTimeout(done, 500))
