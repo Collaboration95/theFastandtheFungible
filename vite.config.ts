@@ -37,7 +37,7 @@ export default defineConfig({
       })
     },
   }],
-  build: { manifest: true, rollupOptions: { input: { app: 'index.html', cast: 'design/cast/qa.html' }, output: { onlyExplicitManualChunks: true, manualChunks: id => id.endsWith('/components/CommandPalette.tsx') ? 'command-palette' : undefined } } },
+  build: { manifest: true, rollupOptions: { input: { app: 'index.html' }, output: { onlyExplicitManualChunks: true, manualChunks: id => id.endsWith('/components/CommandPalette.tsx') ? 'command-palette' : undefined } } },
   server: {
     allowedHosts: clientHosts,
     host: process.env.RA_CLIENT_LAN === '1' ? '0.0.0.0' : '127.0.0.1',
