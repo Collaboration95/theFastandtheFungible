@@ -70,3 +70,11 @@ checks normal Settings after confirmed onboarding and relaunch explicitly.
 Earlier shared-host retries included an unchanged key-reveal refund failure,
 fact-menu and release fixture 5 s timeouts. The subsequent default gate passed unchanged. Native runs that shared
 the standard desktop MCP port conflicted; sequential native checks passed.
+
+Coverage repair: nine Settings behavior tests cover guarded cap/payment saves,
+transient key clearing on refusal, onboarding, labelled unavailable/unverified data,
+reset confirmation and zero-cap agent commands. Full coverage passed 156 files /
+1,306 tests; `node scripts/check-coverage.mjs` passed unchanged floors (web branches
+1,445/1,817). Component counts are in `coverage-components.json`. The inherited
+recovery status substring assertion was tightened to the full shared-UI error
+message; all 13 native recovery cases passed. No floor or assertion was weakened.

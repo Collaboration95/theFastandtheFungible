@@ -45,7 +45,7 @@ for (const fault of ['fresh-start', 'missing-key', 'deleted-key', 'locked-key', 
       await prefs.getByLabel('Research provider').scrollIntoViewIfNeeded()
       await prefs.screenshot({ path: join(dirname(output), 'settings.png') })
       await prefs.getByRole('button', { name: 'Test connection', exact: true }).click()
-      await expect(prefs.locator('.owner-status')).toContainText('Engine unavailable')
+      await expect(prefs.locator('.owner-status')).toHaveText('Engine unavailable. Unlock Keychain, check configuration or retry from Recovery.')
       await mkdir(join(data, 'testnet'), { recursive: true })
       await writeFile(join(data, 'testnet', 'uncertain-intent-canary'), 'preserve-live-work')
       await main.getByRole('button', { name: 'Open offline demo', exact: true }).click()
