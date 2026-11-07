@@ -40,7 +40,7 @@ function stubBrowser(onRun: (body: Record<string, unknown>) => void) {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined
     calls.push({ path, body })
     const json = (data: unknown, status = 200) => ({ ok: status < 400, status, json: async () => data })
-    if (path === '/api/settings') return json({csrf:'fixture-csrf', values:{MCP_MAX_BUDGET_MINOR:0,MCP_DAILY_CAP_MINOR:0,WALLET_DAILY_CAP_MINOR:2000,SETTLEMENT_RAIL:'simulated',ESCROW_MODE:'key-reveal',ESCROW_ASSET:'XRP',ANCHOR_RAIL:'off'},keys:{},version:'1.0.0'})
+    if (path === '/api/settings') return json({csrf:'fixture-csrf', values:{MCP_MAX_BUDGET_MINOR:0,MCP_DAILY_CAP_MINOR:0,WALLET_DAILY_CAP_MINOR:2000,SETTLEMENT_RAIL:'simulated',ESCROW_MODE:'key-reveal',ESCROW_ASSET:'XRP',ANCHOR_RAIL:'off'},keys:{},version:'1.0.1'})
     if (path === '/api/settings/prompt-budget') return json({saved:true})
     if (path === '/api/health') return json({ status: 'ok', labels: exampleRun.labels, faults: false })
     if (path === '/api/scope') return json(body.clarify === 'never' ? { ...uc2Scope, questions: [], label: 'fixture · scope-fixture' } : { ...uc2Scope, label: 'fixture · scope-fixture' })

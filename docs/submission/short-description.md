@@ -28,7 +28,7 @@ a stablecoin-style test token. Two independent verifiers, one of them Python wit
 no Node, re-check every receipt against the ledger.
 
 Try it with no clone:
-`npx -y <release>/researchagent-mcp-1.0.0.tgz try --testnet`. It
+`npx -y <release>/researchagent-mcp-1.0.1.tgz try --testnet`. It
 finished in 84 s from an empty cache, with six Testnet links and `RESULT PASS`.
 
 Everything runs on XRPL Testnet (no real money). The research writers are
@@ -43,7 +43,7 @@ decision model judges what is worth buying, but only deterministic policy code c
 spend, and never past your budget. Five hard gates hold on every run, and a
 read-only audit checks them.
 
-What's new since SingHacks (183 merged pull requests, 11 tagged releases):
+What's new since SingHacks (183 merged pull requests, 12 tagged releases):
 
 - **Key-reveal escrow.** The buyer locks payment in a native XRPL Escrow whose
   condition is the hash of the article's key. To get paid, the writer must
@@ -57,12 +57,12 @@ What's new since SingHacks (183 merged pull requests, 11 tagged releases):
   against the ledger. Our public ledger page lists 61 historical transactions with live read-only checks.
 - **Zero clone.** One line runs the whole judge path on Testnet in 84 s and ends
   with `RESULT PASS`:
-  `npx -y <release>/researchagent-mcp-1.0.0.tgz try --testnet`.
+  `npx -y <release>/researchagent-mcp-1.0.1.tgz try --testnet`.
   The same package is an MCP server for Claude Code and a local web app.
 - **Writers in one command.** A Markdown folder becomes a Testnet writer with an
   XRPL Credential in a measured 33.9 s (J3, #389).
 
-Proof: [release v1.0.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0) ·
+Proof: [release v1.0.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.1) ·
 [browser replay](https://collaboration95.github.io/theFastandtheFungible/demo/) ·
 [live ledger check](https://collaboration95.github.io/theFastandtheFungible/ledger/).
 
@@ -77,7 +77,7 @@ instance: everything runs on your machine. Mainnet is disabled in code.
 | Claim | Label | Source |
 |---|---|---|
 | "183 merged pull requests" | 21 Sep–7 Nov 2026 SGT, `main` | `gh pr list --state merged` filtered to after 20 Sep |
-| "11 tagged releases" | v0.1.0–v0.8.0, v1.0.0-rc.1, rc.2 (pre-releases), v1.0.0 | `gh release list` |
+| "12 tagged releases" | v0.1.0–v0.8.0, v1.0.0-rc.1, rc.2 (pre-releases), v1.0.0, v1.0.1 | `gh release list` |
 | Key-reveal escrow, refund | XRPL Testnet, fixture models, fictional writers; the refund after a finish is writer-signed (the fixture writer cooperates) | [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377), [#379](https://github.com/Collaboration95/theFastandtheFungible/pull/379), [key-reveal-escrow.md](../key-reveal-escrow.md) |
 | Stablecoin escrow | TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381), [#384](https://github.com/Collaboration95/theFastandtheFungible/pull/384), [m1-iou](../evidence/m1-iou/README.md) |
 | "Official RLUSD payments work on Testnet" | Official Testnet RLUSD issuer, UC2 0.90 paid, UC3 0.30 refunded, 3 Nov | [rlusd.md](../evidence/rlusd.md) |
@@ -85,4 +85,4 @@ instance: everything runs on your machine. Mainnet is disabled in code.
 | 61 historical transactions | 61/61 validated in 1.65 s, read-only, 7 Nov | [retained live check](../evidence/r5-r/live-ledger.json) |
 | "84 s … `RESULT PASS`" | One cold run (empty npm cache, fresh faucet wallets), 84.2 s, 7 Nov. Two of four cold attempts finished under the 90 s deadline | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
 | "Credential in 33.9 s" | Cold init plus publish 33.888 s, generated test note, public faucet | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389), [J3](../evidence/round4-j3/slim-onboarding.json) |
-| Team-authored writer | team-authored · real content · not an independent writer · Testnet; v2 held-out 8/20; v1 dev 16/20 buy-and-cite | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390), [J5 evidence](../evidence/j5-coverage/README.md) |
+| Team-authored writer | team-authored · real content · not an independent writer · Testnet; v4 held-out 7/20 bought and cited, 0/10 off-topic purchases, key fact leads 2/20 (fixture decision model, Testnet); dev: v1 16/20, v3 7/20 | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390), [v4 evidence](../evidence/v4-heldout/README.md) |

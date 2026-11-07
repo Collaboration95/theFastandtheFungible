@@ -46,8 +46,9 @@ Node, re-check every receipt against the ledger. Our ledger page lists 61 histor
 **[1:22 · slide 8]**
 The same package is an MCP server for Claude Code and a local app. Ask about
 XRPL and it can buy from our labelled team build notes. With fixture models
-on Testnet, eight of twenty held-out questions were bought and cited;
-sixteen of twenty on the development set. [J5](../evidence/j5-coverage/README.md).
+on Testnet, seven of twenty blind held-out questions were bought and cited,
+and on ten off-topic questions it bought nothing. Development sets are
+reported separately. [v4](../evidence/v4-heldout/README.md).
 
 **[1:36 · slide 9]**
 Our measured key-reveal purchase used 435 drops in network fees. The model only

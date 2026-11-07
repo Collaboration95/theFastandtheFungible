@@ -7,7 +7,7 @@ import { once } from 'node:events'
 import { mkdir, cp } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 
-const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0'
+const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.1'
 const SIMULATED: Record<string, RegExp> = { 'Testnet UC3 · payment': /^Malaysia packaging lead times/, 'Simulated UC1': /^Bank of Japan decision/, 'Simulated UC2': /^Kestrel–TSMC outlook/, 'Simulated UC3': /^Malaysia packaging lead times/ }
 const TABS = ['Testnet UC3 · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
 let server: ChildProcess, base: string
@@ -69,7 +69,7 @@ for (const tab of TABS) {
     if (tab === TABS[0]) {
       const banner = page.locator('.demo-banner')
       await banner.locator('summary').click()
-      await expect(banner).toContainText('researchagent-mcp-1.0.0.tgz')
+      await expect(banner).toContainText('researchagent-mcp-1.0.1.tgz')
       await expect(banner.getByRole('link', { name: /Release/ })).toHaveAttribute('href', TAG)
       expect(await banner.locator('a[href*="releases/latest"]').count()).toBe(0)
     }

@@ -1,6 +1,6 @@
 # Changelog
 
-7 Nov honesty correction: local post-release J5 measured held-out 8/20 and dev 16/20 buy-and-cite (fixture models, Testnet); no-purchase online verification failures remain recorded. [Evidence](docs/evidence/j5-coverage/README.md).
+7 Nov honesty correction: local post-release J5 measured held-out 8/20 and dev 16/20 buy-and-cite (fixture models, Testnet); no-purchase online verification failures remain recorded. [Evidence](docs/evidence/j5-coverage/README.md). Superseded 7 Nov by the single v4 held-out measurement in v1.0.1 below; v2 is observed development data, not held-out.
 
 All notable changes to ResearchAgent. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Tagged releases are
@@ -12,6 +12,35 @@ Packages are built and consumer-tested but **not published** to npm, PyPI or
 the MCP Registry; that is an owner step tracked in #265.
 
 ## Unreleased
+
+## v1.0.1 — 7 Nov 2026
+
+Patch release after v1.0.0 (#398–#413): cited answers lead with the purchased fact, abstentions are anchored, the judge-facing numbers are rebuilt on a blind held-out bank, and 1,012 lines of frozen proof tooling are retired. Fixture decision model, team-authored writers, XRPL Testnet with faucet funds; nothing here uses real money, and nothing is published to npm, PyPI or the MCP Registry.
+
+### Added
+
+- Anchored abstentions (#403): a DONE Testnet run that buys nothing now carries the 12-drop audit anchor, so every DONE Testnet run verifies online. Frozen-bank online verification 16/20 → 20/20 dev and 8/20 → 20/20 on the then-held-out v2; simulated, STOPPED and FAILED runs stay unanchored. IOU provisioning progress is shown (cold 122.885 s, which missed the 100 s target; warm 21.452 s).
+- 22 sourced XRPL explainers (#407) from a disclosed "team-authored explainer · sources cited · not an independent writer · Testnet" writer, 227–265 words each, answer-first, citing primary references. Two more sourced team notes earlier (#398).
+- Blind judge banks: v3 held-out, dev and negatives (#401); v4 held-out and negatives written blind, with v3 reclassified as dev (#406); measurement tooling with bank hashes, purchased-passage answers-it scoring and recorded decision-value distributions (#405).
+- 61-row Testnet ledger, up from 45; 61/61 validated read-only in 1.65 s (#402).
+- Pixel agent v2 and matching deck crops (#399, #400).
+
+### Changed
+
+- Answer-first team notes and lead selection (#404, #410): the lead finding cites delivered purchased passages, and named facts from them are surfaced. Filler 50 → 0 and the premium-leak audit is 0. On the dev bank v3, answers-it moved 1/20 → 4/20 (#410) with buy-and-cite unchanged at 7/20.
+- Honest decline "Why" (#404): only zero candidates say "No listed writer covers this"; other declines name each policy reason, in the app and over MCP.
+- UX polish (#408, #409): no Activity step is ticked before it happens, declines list each policy decision, the payment card reads escrow → key → refund, repeated answer text is gone, receipt timestamps are clear, and rationale shows only after a purchase. Judge-walk issues 10 → 2 open.
+- Honesty sweep (#402): judge-facing claims corrected, and the README leads with the `try --testnet` command before both GIFs.
+- Fixture buy threshold kept at 0.20 (#413): a constrained dev sweep found no value that clears every constraint (dev wasted gross spend 30.30% at every point against the ≤18.75% requirement). No threshold changed.
+
+### Removed
+
+- 1,012 executable lines of frozen proof tooling across twelve generators (#412); outputs are retained and historical reproduction is pinned to the original tree. The Cast QA page and component (#411, 68 net source LOC).
+
+### Measured
+
+- **v4 held-out: 7/20 bought and cited; the key fact leads the answer in 2/20; 0 gate violations. v4-negatives: 0/10 purchases, all ten abstained.** Run once on `main` `bdc30f97` against the packed MCP tgz, fixture decision model at threshold 0.20, team-authored writers, Testnet. v4 is now used; any future held-out claim needs a new blind bank (v5). [Evidence](docs/evidence/v4-heldout/README.md).
+- Dev, not held-out: v1 16/20 and v3 7/20 bought and cited.
 
 ## v1.0.0 — 7 Nov 2026
 

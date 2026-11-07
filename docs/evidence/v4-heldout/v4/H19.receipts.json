@@ -1,0 +1,1593 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "B79DEEB016A58CD023F08DDB4824690235BA6945AB64F8B29B92A9E5D8BFE4DE",
+    "account": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+    "head": "b2f7e7e3bc84774faf0b8cf23abb56a87d7305de1b38739c7d4652d5dfda3d5a",
+    "runIdHash": "3975b4f3475485f365c4af6af356134ac1e0ac8752a5fb8ae2bc049f7f8d33ce",
+    "ledgerIndex": 22135679,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "sourceKey": "xrpl-multisign@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-multisign\",\"v1\",\"p1\"]",
+            "claim": "XRPL multi-signing authorizes a transaction when signatures meet the configured signer-list quorum; it does not evaluate the business purpose of that transaction. Signer weights and quorum define which combinations can authorize spending. This separates a ledger authorization rule from the application decision about whether to buy evidence. [1]",
+            "citation": "[\"xrpl-multisign@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "XRPL multi-signing authorizes a transaction when signatures meet the configured signer-list quorum; it does not evaluate the business purpose of that transaction. Signer weights and quorum define which combinations can authorize spending. This separates a ledger authorization rule from the application decision about whether to buy evidence. [1]",
+            "manifestRoot": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+            "grantIntentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-multisign\",\"v1\",\"p2\"]",
+            "claim": "The multi-signing documentation describes a signer list associated with an account and multiple signatures on a transaction. Multi-signed transactions have a different fee calculation from single-signed transactions. An integration must therefore account for signature count as well as quorum. Installing a signer list is also distinct from deciding which other account authorization paths remain enabled. [1]",
+            "citation": "[\"xrpl-multisign@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The multi-signing documentation describes a signer list associated with an account and multiple signatures on a transaction. Multi-signed transactions have a different fee calculation from single-signed transactions. An integration must therefore account for signature count as well as quorum. Installing a signer list is also distinct from deciding which other account authorization paths remain enabled. [1]",
+            "manifestRoot": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+            "grantIntentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-multisign\",\"v1\",\"p3\"]",
+            "claim": "I recommend separating policy evaluation from key custody: approve a bounded transaction description before asking independent signing components to sign. Those components should verify destination, asset, amount, network and expiration themselves. A second signer that automatically signs anything the first signer proposes provides less operational independence than its existence might suggest. That is a design judgment, not a guarantee made by the ledger. [1]",
+            "citation": "[\"xrpl-multisign@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "I recommend separating policy evaluation from key custody: approve a bounded transaction description before asking independent signing components to sign. Those components should verify destination, asset, amount, network and expiration themselves. A second signer that automatically signs anything the first signer proposes provides less operational independence than its existence might suggest. That is a design judgment, not a guarantee made by the ledger. [1]",
+            "manifestRoot": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+            "grantIntentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-multisign\",\"v1\",\"p4\"]",
+            "claim": "Test insufficient weight, an unauthorized signer, enough valid signatures and recovery after a signer becomes unavailable. Verify account configuration before disabling another signing path so recovery is deliberate. Record whether the test changes key configuration or merely exercises transaction signatures. These suggested checks are derived from quorum authorization; they do not imply that multisigning supplies customer identification, content verification or an application spending budget. [1]",
+            "citation": "[\"xrpl-multisign@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Test insufficient weight, an unauthorized signer, enough valid signatures and recovery after a signer becomes unavailable. Verify account configuration before disabling another signing path so recovery is deliberate. Record whether the test changes key configuration or merely exercises transaction signatures. These suggested checks are derived from quorum authorization; they do not imply that multisigning supplies customer identification, content verification or an application spending budget. [1]",
+            "manifestRoot": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+            "grantIntentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "How can an account owner stop the master key from signing so that only a separate agent key can"
+    }
+  ],
+  "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on reserve margins.",
+          "tags": [
+            "reserve-margins"
+          ]
+        },
+        {
+          "text": "No accessible evidence on capacity auctions.",
+          "tags": [
+            "capacity-auctions"
+          ]
+        },
+        {
+          "text": "No accessible evidence on grid.",
+          "tags": [
+            "grid"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XRPL.",
+          "tags": [
+            "XRPL"
+          ]
+        },
+        {
+          "text": "No accessible evidence on multi signing.",
+          "tags": [
+            "multi-signing"
+          ]
+        },
+        {
+          "text": "No accessible evidence on SignerList.",
+          "tags": [
+            "SignerList"
+          ]
+        },
+        {
+          "text": "No accessible evidence on quorum.",
+          "tags": [
+            "quorum"
+          ]
+        },
+        {
+          "text": "No accessible evidence on wallet keys.",
+          "tags": [
+            "wallet keys"
+          ]
+        },
+        {
+          "text": "No accessible evidence on EscrowFinish fulfillment fees and XRP drops.",
+          "tags": [
+            "EscrowFinish fulfillment fees and XRP drops"
+          ]
+        },
+        {
+          "text": "No accessible evidence on fees.",
+          "tags": [
+            "fees"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Testnet.",
+          "tags": [
+            "Testnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on agent spending controls.",
+          "tags": [
+            "agent spending controls"
+          ]
+        },
+        {
+          "text": "No accessible evidence on budget.",
+          "tags": [
+            "budget"
+          ]
+        },
+        {
+          "text": "No accessible evidence on policy.",
+          "tags": [
+            "policy"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402.",
+          "tags": [
+            "x402"
+          ]
+        },
+        {
+          "text": "No accessible evidence on authorization.",
+          "tags": [
+            "authorization"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402 headers.",
+          "tags": [
+            "x402 headers"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  budgets and one charge per intent.",
+          "tags": [
+            " budgets and one charge per intent"
+          ]
+        },
+        {
+          "text": "No accessible evidence on drops.",
+          "tags": [
+            "drops"
+          ]
+        },
+        {
+          "text": "No accessible evidence on fee escalation.",
+          "tags": [
+            "fee escalation"
+          ]
+        },
+        {
+          "text": "No accessible evidence on EscrowFinish.",
+          "tags": [
+            "EscrowFinish"
+          ]
+        },
+        {
+          "text": "No accessible evidence on mainnet.",
+          "tags": [
+            "mainnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on compliance.",
+          "tags": [
+            "compliance"
+          ]
+        },
+        {
+          "text": "No accessible evidence on KYC.",
+          "tags": [
+            "KYC"
+          ]
+        },
+        {
+          "text": "No accessible evidence on verification.",
+          "tags": [
+            "verification"
+          ]
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "conclusion": "XRPL multi-signing authorizes a transaction when signatures meet the configured signer-list quorum; it does not evaluate the business purpose of that transaction. Signer weights and quorum define which combinations can authorize spending. This separates a ledger authorization rule from the application decision about whether to buy evidence. [1] The multi-signing documentation describes a signer list associated with an account and multiple signatures on a transaction. Multi-signed transactions have a different fee calculation from single-signed transactions. An integration must therefore account for signature count as well as quorum. Installing a signer list is also distinct from deciding which other account authorization paths remain enabled. [1] I recommend separating policy evaluation from key custody: approve a bounded transaction description before asking independent signing components to sign. Those components should verify destination, asset, amount, network and expiration themselves. A second signer that automatically signs anything the first signer proposes provides less operational independence than its existence might suggest. That is a design judgment, not a guarantee made by the ledger. [1] Test insufficient weight, an unauthorized signer, enough valid signatures and recovery after a signer becomes unavailable. Verify account configuration before disabling another signing path so recovery is deliberate. Record whether the test changes key configuration or merely exercises transaction signatures. These suggested checks are derived from quorum authorization; they do not imply that multisigning supplies customer identification, content verification or an application spending budget. [1]",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-multisign\",\"v1\",\"p1\"]",
+          "text": "XRPL multi-signing authorizes a transaction when signatures meet the configured signer-list quorum; it does not evaluate the business purpose of that transaction. Signer weights and quorum define which combinations can authorize spending. This separates a ledger authorization rule from the application decision about whether to buy evidence. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-multisign",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-multisign\",\"v1\",\"p2\"]",
+          "text": "The multi-signing documentation describes a signer list associated with an account and multiple signatures on a transaction. Multi-signed transactions have a different fee calculation from single-signed transactions. An integration must therefore account for signature count as well as quorum. Installing a signer list is also distinct from deciding which other account authorization paths remain enabled. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-multisign",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-multisign\",\"v1\",\"p3\"]",
+          "text": "I recommend separating policy evaluation from key custody: approve a bounded transaction description before asking independent signing components to sign. Those components should verify destination, asset, amount, network and expiration themselves. A second signer that automatically signs anything the first signer proposes provides less operational independence than its existence might suggest. That is a design judgment, not a guarantee made by the ledger. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-multisign",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-multisign\",\"v1\",\"p4\"]",
+          "text": "Test insufficient weight, an unauthorized signer, enough valid signatures and recovery after a signer becomes unavailable. Verify account configuration before disabling another signing path so recovery is deliberate. Record whether the test changes key configuration or merely exercises transaction signatures. These suggested checks are derived from quorum authorization; they do not imply that multisigning supplies customer identification, content verification or an application spending budget. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-multisign",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on reserve margins.",
+          "tags": [
+            "reserve-margins"
+          ]
+        },
+        {
+          "text": "No accessible evidence on capacity auctions.",
+          "tags": [
+            "capacity-auctions"
+          ]
+        },
+        {
+          "text": "No accessible evidence on grid.",
+          "tags": [
+            "grid"
+          ]
+        },
+        {
+          "text": "No accessible evidence on EscrowFinish fulfillment fees and XRP drops.",
+          "tags": [
+            "EscrowFinish fulfillment fees and XRP drops"
+          ]
+        },
+        {
+          "text": "No accessible evidence on fees.",
+          "tags": [
+            "fees"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Testnet.",
+          "tags": [
+            "Testnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on agent spending controls.",
+          "tags": [
+            "agent spending controls"
+          ]
+        },
+        {
+          "text": "No accessible evidence on budget.",
+          "tags": [
+            "budget"
+          ]
+        },
+        {
+          "text": "No accessible evidence on policy.",
+          "tags": [
+            "policy"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402.",
+          "tags": [
+            "x402"
+          ]
+        },
+        {
+          "text": "No accessible evidence on authorization.",
+          "tags": [
+            "authorization"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402 headers.",
+          "tags": [
+            "x402 headers"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  budgets and one charge per intent.",
+          "tags": [
+            " budgets and one charge per intent"
+          ]
+        },
+        {
+          "text": "No accessible evidence on drops.",
+          "tags": [
+            "drops"
+          ]
+        },
+        {
+          "text": "No accessible evidence on fee escalation.",
+          "tags": [
+            "fee escalation"
+          ]
+        },
+        {
+          "text": "No accessible evidence on EscrowFinish.",
+          "tags": [
+            "EscrowFinish"
+          ]
+        },
+        {
+          "text": "No accessible evidence on mainnet.",
+          "tags": [
+            "mainnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on compliance.",
+          "tags": [
+            "compliance"
+          ]
+        },
+        {
+          "text": "No accessible evidence on KYC.",
+          "tags": [
+            "KYC"
+          ]
+        },
+        {
+          "text": "No accessible evidence on verification.",
+          "tags": [
+            "verification"
+          ]
+        },
+        {
+          "text": "No accessible evidence on destination tags.",
+          "tags": [
+            "destination tags"
+          ]
+        },
+        {
+          "text": "No accessible evidence on source tags.",
+          "tags": [
+            "source tags"
+          ]
+        },
+        {
+          "text": "No accessible evidence on exchange.",
+          "tags": [
+            "exchange"
+          ]
+        },
+        {
+          "text": "No accessible evidence on refund.",
+          "tags": [
+            "refund"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Hooks.",
+          "tags": [
+            "Hooks"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Xahau.",
+          "tags": [
+            "Xahau"
+          ]
+        },
+        {
+          "text": "No accessible evidence on smart contracts.",
+          "tags": [
+            "smart contracts"
+          ]
+        },
+        {
+          "text": "No accessible evidence on amendments.",
+          "tags": [
+            "amendments"
+          ]
+        }
+      ],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-multisign",
+      "version": "v1",
+      "title": "How does XRPL multi-signing protect an agent wallet?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "XRPL multi-signing authorizes a transaction when signatures meet the configured signer-list quorum; it does not evaluate the business purpose of that transaction. Signer weights and quorum define which combinations can authorize spending. This separates a ledger authorization rule from the application decision about whether to buy evidence. [1]\n\nThe multi-signing documentation describes a signer list associated with an account and multiple signatures on a transaction. Multi-signed transactions have a different fee calculation from single-signed transactions. An integration must therefore account for signature count as well as quorum. Installing a signer list is also distinct from deciding which other account authorization paths remain enabled. [1]\n\nI recommend separating policy evaluation from key custody: approve a bounded transaction description before asking independent signing components to sign. Those components should verify destination, asset, amount, network and expiration themselves. A second signer that automatically signs anything the first signer proposes provides less operational independence than its existence might suggest. That is a design judgment, not a guarantee made by the ledger. [1]\n\nTest insufficient weight, an unauthorized signer, enough valid signatures and recovery after a signer becomes unavailable. Verify account configuration before disabling another signing path so recovery is deliberate. Record whether the test changes key configuration or merely exercises transaction signatures. These suggested checks are derived from quorum authorization; they do not imply that multisigning supplies customer identification, content verification or an application spending budget. [1]",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "XRPL multi-signing authorizes a transaction when signatures meet the configured signer-list quorum; it does not evaluate the business purpose of that transaction. Signer weights and quorum define which combinations can authorize spending. This separates a ledger authorization rule from the application decision about whether to buy evidence. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "The multi-signing documentation describes a signer list associated with an account and multiple signatures on a transaction. Multi-signed transactions have a different fee calculation from single-signed transactions. An integration must therefore account for signature count as well as quorum. Installing a signer list is also distinct from deciding which other account authorization paths remain enabled. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "I recommend separating policy evaluation from key custody: approve a bounded transaction description before asking independent signing components to sign. Those components should verify destination, asset, amount, network and expiration themselves. A second signer that automatically signs anything the first signer proposes provides less operational independence than its existence might suggest. That is a design judgment, not a guarantee made by the ledger. [1]"
+        },
+        {
+          "id": "p4",
+          "text": "Test insufficient weight, an unauthorized signer, enough valid signatures and recovery after a signer becomes unavailable. Verify account configuration before disabling another signing path so recovery is deliberate. Record whether the test changes key configuration or merely exercises transaction signatures. These suggested checks are derived from quorum authorization; they do not imply that multisigning supplies customer identification, content verification or an application spending budget. [1]"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+      "version": "v1",
+      "title": "Reserve Margins and Capacity Auctions: Lessons from 2025",
+      "publisher": "Load Factor",
+      "preview": "A close look at the capacity auction results from last year reveals a surprising arithmetic that every grid planner should understand.",
+      "price": {
+        "amountMinor": 60,
+        "currency": "SGD"
+      },
+      "wallet": "rEiHvDao5RrLxrgnGLkeEHCx3xjYLTmx3x",
+      "family": "reserve-margins-capacity-auctions",
+      "facets": [
+        "reserve-margins",
+        "capacity-auctions",
+        "grid"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Load Factor"
+      },
+      "publisherSlug": "load-factor",
+      "writerSlug": "load-factor",
+      "url": "/w/load-factor/articles/load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+      "relevance": 0.41036467016210537,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "load-factor",
+        "articleId": "load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+        "version": "v1",
+        "wallet": "rEiHvDao5RrLxrgnGLkeEHCx3xjYLTmx3x",
+        "pubKey": "ED4152194E6022AEA24EF3ECFDE7841ABB442C517D72C60437E1BB5CF045EA6142",
+        "priceMinor": 60,
+        "leaves": [
+          "09a1faf77197b67858d01e0060268f5480825aa4b70d7df3926d6ef79516b0e8",
+          "151f00028d34df22e3fd82b6bde446aba93bdba33fe5a897b4b5b1b27b14614b",
+          "abef1ee8718dab538ac0ebe5eb7c7ad2c1d523c4b2458db5aa2c2a9f1005f77d",
+          "9de96dcd29bdb01f688452dbe9ea548aaee3f27840d92f36cdf739138fdbf3c7",
+          "fc960f85cda215c5660d1e59257b1059229309bdf40eda70353d7a307faeda8e",
+          "b75d6dfc01d6ed6087c4d3f948506946e38bbe5362e1ce9939c3eb19732ae39e",
+          "642d5173c18d27c49d14b08536cbff12a35ab0963803324439810649f70b3919",
+          "efe564ac15ef693229e10764203d789af021f62e08ab5750c0d4e8d363514b16",
+          "e62fa173103471c68ddd0543fddbc3b27e0009072b12a17671549c08aba4dfc9"
+        ],
+        "root": "ed9996f68da823f1f7fe753c1acde317b3c1fc39e3c2153566f4c375f9cab659",
+        "claims": [
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "151f00028d34df22e3fd82b6bde446aba93bdba33fe5a897b4b5b1b27b14614b",
+            "covers": {
+              "entity": "auction",
+              "measure": "capacity",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p2:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "151f00028d34df22e3fd82b6bde446aba93bdba33fe5a897b4b5b1b27b14614b",
+            "covers": {
+              "entity": "auction",
+              "measure": "capacity",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "abef1ee8718dab538ac0ebe5eb7c7ad2c1d523c4b2458db5aa2c2a9f1005f77d",
+            "covers": {
+              "entity": "auction",
+              "measure": "capacity",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p3:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "abef1ee8718dab538ac0ebe5eb7c7ad2c1d523c4b2458db5aa2c2a9f1005f77d",
+            "covers": {
+              "entity": "auction",
+              "measure": "capacity",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "fc960f85cda215c5660d1e59257b1059229309bdf40eda70353d7a307faeda8e",
+            "covers": {
+              "entity": "auction",
+              "measure": "capacity",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p7:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "642d5173c18d27c49d14b08536cbff12a35ab0963803324439810649f70b3919",
+            "covers": {
+              "entity": "auction",
+              "measure": "capacity",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p9:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "e62fa173103471c68ddd0543fddbc3b27e0009072b12a17671549c08aba4dfc9",
+            "covers": {
+              "entity": "grid",
+              "measure": "reserve margin",
+              "period": "twenty twenty five"
+            }
+          }
+        ],
+        "wordCount": 916,
+        "publishedAt": "2026-07-05",
+        "relevance": 0.41036467016210537,
+        "sig": "8640ACBDD0CC8E5F4F42AB5A8296D58E0648AC6B4317531412426C20CCD07E4F0993433D2DAC4BF2377D28D757EB3AD7A5938A68888AF1AE3495EB32F3FF340D"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-multisign",
+      "version": "v1",
+      "title": "How does XRPL multi-signing protect an agent wallet?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to how does xrpl multi-signing protect an agent wallet?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+      "family": "xrpl-multisign",
+      "facets": [
+        "XRPL",
+        "multi-signing",
+        "SignerList",
+        "quorum",
+        "wallet keys"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-multisign",
+      "relevance": 0.5897442612113066,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-multisign",
+        "version": "v1",
+        "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+        "priceMinor": 40,
+        "leaves": [
+          "36918c6bf0c023d504d22ebd5fc7bd0d954da112263a05f67a515291d620536e",
+          "faeb1f8dc979ab1fd0c3f29ae0349a715378432338a3c15c37ef777e605d0e6e",
+          "0c4891ffcef0325204652424885ce7e5f7d7195473d197c137d840b4c525e8e0",
+          "c6bae436f1734f12f98b58c48200b5275fcf300e69a5e92aad0f39c63f075243"
+        ],
+        "root": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+        "claims": [],
+        "wordCount": 238,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5897442612113066,
+        "sig": "A1EA5BAF58D1B20EEAC285841C737EBA7EFAE238789D0A62E9D8F350A8800A2CFA3580219828F5E0FF1D4697A71A094DDAED7AAED2B368BC3F84A78CC3F0F303"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-fees",
+      "version": "v2",
+      "title": "EscrowFinish fulfillment fees: XRP drops and SGD prices in the app",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Measured Testnet costs and accounting: how XRP drops differ from the SGD price shown in the app, including principal and fees.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rErnuT62auabdyjnGGijWFxZEGvjZkT83R",
+      "family": "team-fees",
+      "facets": [
+        "EscrowFinish fulfillment fees and XRP drops",
+        "fees",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-fees",
+      "relevance": 0.2815869111191634,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-fees",
+        "version": "v2",
+        "wallet": "rErnuT62auabdyjnGGijWFxZEGvjZkT83R",
+        "pubKey": "ED247BA306429563022D97E0F159770898BEFFE1BA3D5686659C913EB0D7C3EB88",
+        "priceMinor": 40,
+        "leaves": [
+          "cbb724785dba4bce7cb5d5454a692b49782fb04c5fb06402f88954e34ae767b6",
+          "c25f9a45e6897ac6866808cfe7a5f33283e34da0034cad3098a243f8d438560c",
+          "a44cee8783ba2d4d44b793916a855269337730f8867048ea58013eaf8a333694",
+          "bd2af595d3a4a10f4e950ae28f4f3949c7693ad4d2fcb7354e8a0cf773144b4c",
+          "27ccc1933eaa0ced39663aad511b3e7f20d469b75fdae1454597337bd88fe6df",
+          "f2270561d2dcf26662a5995eeb90ffa8ce9b41739ed7086e49c3bcb619d46dfe"
+        ],
+        "root": "3e18c8a8ca6ba6bb4dcb0d2bc7c25dbed81885da23ee9c016b4c2cf1efe5e718",
+        "claims": [],
+        "wordCount": 463,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.2815869111191634,
+        "sig": "AE3A3C2BDB72433008C82D3C413BE5189C6623A8609993AB7A9FD7DD0D5BCC5CB4CA2B44FF850BF43E50CB04F5DAA4BCD0D2084EC2786BB16E6EFC6BBBD53203"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-spending",
+      "version": "v1",
+      "title": "Where should agent spending controls live?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to where should agent spending controls live?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+      "family": "xrpl-spending",
+      "facets": [
+        "XRPL",
+        "agent spending controls",
+        "budget",
+        "policy",
+        "x402",
+        "authorization"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-spending",
+      "relevance": 0.4283390735442037,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-spending",
+        "version": "v1",
+        "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+        "priceMinor": 40,
+        "leaves": [
+          "50e4e78b057b28c1480d9936b15fc880ebac1ea9e236d11237314d2a748bc12b",
+          "cae179bedea0cdd446d361a302e9cb865c6cc7aef329f6815b18f8ef7b3b4032",
+          "67ebe48b7e7703118828fae9fd7bb9d197970527e0a1aec92de460f904a44798",
+          "f55568352280f57ff15767f1aaa40c1de74f3ff1d64a3661af3339db3df16445"
+        ],
+        "root": "e39f8212c001bbdf15d23e0647d640ba1dcca1be6bdcaecb10231e2b8ba6ead7",
+        "claims": [],
+        "wordCount": 239,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.4283390735442037,
+        "sig": "29BB68B345E609AE185F7E381DBC88C41E42262D6BB1BEC36D31B9F826BA8C654B3FE147B26F79DF059B17945AF7F30F54F28A38820EF4E7F9E907BCE8103E02"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v2",
+      "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "What x402 headers an XRPL buyer sends, payment and delivery failure modes, policy spending authority and retry idempotency.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rErnuT62auabdyjnGGijWFxZEGvjZkT83R",
+      "family": "team-x402",
+      "facets": [
+        "x402 headers",
+        " budgets and one charge per intent",
+        "x402",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-x402",
+      "relevance": 0.1555745597838198,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-x402",
+        "version": "v2",
+        "wallet": "rErnuT62auabdyjnGGijWFxZEGvjZkT83R",
+        "pubKey": "ED247BA306429563022D97E0F159770898BEFFE1BA3D5686659C913EB0D7C3EB88",
+        "priceMinor": 40,
+        "leaves": [
+          "cce5fd1f97e33972920453b8d26a663e687de32e7ae448b2b9f7b521fc03f247",
+          "35c4eb597b0a73b22fa23bc1ea80a657c3d2b74359c8ebe1542479aa4cbdcc75",
+          "fd9c3de12975cf5381545e8e6df544d83a7669978fc58487b6055fede421445a",
+          "ef5bd340da7b495b12814899f157d627217913fb7043b131204343a18f72cf9b",
+          "84d9299a8cdadd55539f0bc4f5950f9f6ffa051d3ab41b73ddf78cce565c9cdf",
+          "275c92eb8b5adccbfdfcb15108d0b59e2933f21c3090ba283b847ed4793bdf90",
+          "ac5eb950aa80397c9abda6d9585bcd6cce10b6b84030290f1fa4978a6e4c1d47"
+        ],
+        "root": "33b5dd310ba45dd173303d6e818d21d140ca7f66c00a78a67562511b70bd60ae",
+        "claims": [],
+        "wordCount": 528,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.1555745597838198,
+        "sig": "101AFEF24A33EFF3B9A216A9FCE2BCC024B076314157F85274FB42C505E5FED7FB3088D3734E4B37EC0177EC0B459BF904E483067CB3E332E8E50585DA2D5409"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-fees",
+      "version": "v1",
+      "title": "How do XRPL transaction fees and fee escalation work?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to how do xrpl transaction fees and fee escalation work?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+      "family": "xrpl-fees",
+      "facets": [
+        "XRPL",
+        "fees",
+        "drops",
+        "fee escalation",
+        "EscrowFinish"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-fees",
+      "relevance": 0.10596960791174148,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-fees",
+        "version": "v1",
+        "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+        "priceMinor": 40,
+        "leaves": [
+          "ba951def5f4cd78db238d3af80d892818292cb9e6f125b28d419918ceee6bddc",
+          "a9ca9d367690845b18276b3a9465efdbf731743f4f24fff5c51368a1d241a536",
+          "a65633b0034e010bf084547792fad5bd3a85a59775b32b53ac1514369ccca2cc",
+          "303867e9d080d5dad9962709bee864637257be340b85fb6e91c3c9d619c374fd"
+        ],
+        "root": "9ac338063711999cd00b2d17a4ce884ce7dc64ae4f722468930a46323e42420e",
+        "claims": [],
+        "wordCount": 254,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.10596960791174148,
+        "sig": "2A969C3EF0DB138166DD69B7DFB9C4A5BB3763A6B05D96CB4E1959D319224FF047A62BAB50612DAFBDA66A3803D2DA9B55F33FFC8104D0F8D525232814C4CC08"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-readiness",
+      "version": "v2",
+      "title": "Mainnet readiness: real money, compliance and KYC boundaries",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "What Testnet evidence supports, what remains unimplemented for real money, and why identity credentials do not establish regulatory approval.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rErnuT62auabdyjnGGijWFxZEGvjZkT83R",
+      "family": "team-readiness",
+      "facets": [
+        "mainnet",
+        "compliance",
+        "KYC",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-readiness",
+      "relevance": 0.11177122066363336,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-readiness",
+        "version": "v2",
+        "wallet": "rErnuT62auabdyjnGGijWFxZEGvjZkT83R",
+        "pubKey": "ED247BA306429563022D97E0F159770898BEFFE1BA3D5686659C913EB0D7C3EB88",
+        "priceMinor": 40,
+        "leaves": [
+          "318fca87ac44a5ad50e6eabad31179f5f63e7ad6dbace4cc18391fc99ee8d4c9",
+          "8b0e006a27b12897e77c9b6c6fa22eb6a4223e13dd8caa9efc152f386f85c18a",
+          "79c03682134e80eb351b4a3a4672a2c4d6c8f1e502ca1a9248454649b02c1f27",
+          "b3078db5a8023c545755ce94023cf0ce47f6f581d8e4b812cbe98996cb3fe9d5",
+          "ad5b8b418ce2658b31e9bc53fb6fd05ad783731801e54af467a9b4c7547a6c46",
+          "df6389851fe52659cdb92d1d0eef51c19a8d51cac9e0173a40ec95d497176cab",
+          "505239cb6ddd94a2db60e3b2cb2b1701de28523c1b8baa682b09890e58310ad1",
+          "79896925340c6131e16f145386432b04ccf0627124fe752b87132c571bf241a2"
+        ],
+        "root": "81de60468146c2ad1ae8a0d783d0caeb03bc1c6355504b04531bebb1e7bfef66",
+        "claims": [],
+        "wordCount": 640,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.11177122066363336,
+        "sig": "F5955EF6260E6B990835F350F8DC83F293CFEC92B16913E35D9355CA947E6ADC714421019D4A37BE684A95E899E72F063A39BCF7A575BF6AAC32828EE84F280D"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-verification",
+      "version": "v2",
+      "title": "Verifying cited answers: signed manifests, content hashes and ledger evidence",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "An independent verification workflow for a cited answer against ledger evidence, with a distinction between cryptographic consistency and validated settlement.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rErnuT62auabdyjnGGijWFxZEGvjZkT83R",
+      "family": "team-verification",
+      "facets": [
+        "verification",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-verification",
+      "relevance": 0.0990374925761866,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-verification",
+        "version": "v2",
+        "wallet": "rErnuT62auabdyjnGGijWFxZEGvjZkT83R",
+        "pubKey": "ED247BA306429563022D97E0F159770898BEFFE1BA3D5686659C913EB0D7C3EB88",
+        "priceMinor": 40,
+        "leaves": [
+          "b2cd6d6ddd0fc613da09c43f8c9ef17bb28b1eb86a23361fc75a8d494e11b671",
+          "542384884291efbe3f3b21792a89aaa4c7f2d987eba7c45730368444e1dfb587",
+          "b369161a138a7531766057c5433cb37713c989e3047f84739c6012a54abdb4a0",
+          "ff12dc9aa707fafc8c64a93516255816e2425994738aaf993f9695000c2753f0",
+          "5b8e934195be209b0e1a380384f90768c9245e3f3da1dde780ba0fdbb844f7b3",
+          "9fb1e86928210bcdab998f24427b25e980e247e5ef5f828bb4fa2451bac4f96b",
+          "619e9f74ca11afdacc9c6f4720b3d674bed053c0d7860c4c87da523e4dde7871",
+          "94c7985f0b14c933b488ddfa975b721864f15e6b18a1f48dc837d9fdc5dc9640",
+          "2c2709ea13bc5757c3ce4cbcb828e5f8bcf233ea3fffa5a595489a2fee7395ea"
+        ],
+        "root": "7065ef4688abb7157b25d9f7c4c60e0342b5a37ac6212eabb230abcceb31e617",
+        "claims": [],
+        "wordCount": 617,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.0990374925761866,
+        "sig": "CD116205E9CC9E7E9514F1A299E8A197D54627D646F6D3E43FC15CFB79C6B6908FF76138DB2E328636F126A62DA058D99BDA954C761512CA4164152D6825B40A"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tags",
+      "version": "v1",
+      "title": "Why do XRPL payments need destination tags?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to why do xrpl payments need destination tags?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+      "family": "xrpl-tags",
+      "facets": [
+        "XRPL",
+        "destination tags",
+        "source tags",
+        "exchange",
+        "refund"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tags",
+      "relevance": 0.0906441744653447,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tags",
+        "version": "v1",
+        "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+        "priceMinor": 40,
+        "leaves": [
+          "abe8b2c879b4dede9b9a9debffcb7f63b664fc787a2c2fb287af6c7241a59fd5",
+          "f6cf5156de65cdc2020e97acda5e83d0c1fb9c8ad3d70b68d23f729ed26bcf0f",
+          "c2ab2790b4d42c7eb93333fd92de4915952d07ec08067bb07865758f3beea587",
+          "8a0f0181c63c8ca33981e1223b6f2ac5f269b90c2d509739a37af5e5b88a8dfe"
+        ],
+        "root": "1ed7f61b41fb49b21f16d0b5fa43346a95a6c7f557a8d96538b2605e7a880ca8",
+        "claims": [],
+        "wordCount": 251,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.0906441744653447,
+        "sig": "62CDEE6E6D18653265F7265E58CA463F264B0528FC7521A480BAAB6980238798D51B35ADC7BA7D2EB653DB9EFC069B7106B5211514A8822756AC95509FA31A06"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-hooks",
+      "version": "v1",
+      "title": "How should builders verify Hooks availability?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to how should builders verify hooks availability?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+      "family": "xrpl-hooks",
+      "facets": [
+        "XRPL",
+        "Hooks",
+        "Xahau",
+        "smart contracts",
+        "amendments"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-hooks",
+      "relevance": 0.07252310790709877,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-hooks",
+        "version": "v1",
+        "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+        "priceMinor": 40,
+        "leaves": [
+          "6ff66c89482c292de6516a5d14ae93fbc78eca25ef688362e4d3b7d6b6f34694",
+          "eef6897e5d2b4f374961c542a30dcc1bb1d3d97c1a5f2e79ac86b12416622bea",
+          "1397a101b12ba12297bb3343b124b88d8bf234273d5fd3d815e7a238bead3e76",
+          "adabf1976dab0fbd47d353b2842155c3451f8223d62d2ceabf038556f8c8e268"
+        ],
+        "root": "1e98663542429134bb72ddce695a36042e8be98b1d377ffb29f3d807659c9ae2",
+        "claims": [],
+        "wordCount": 228,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.07252310790709877,
+        "sig": "923383258ABB7865ABFE5740DD0DCD0F562CAB2AE0E8BC90754A1CC361C263725923CA386C333F30CD599474C8C715EB69ED4514A0DB042F8C7ACA8CE90C470F"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22135677,
+        "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+        "cancelAfter": 847363811,
+        "createSequence": 22135586,
+        "createHash": "E6B3F35229D20678C77E95E9B534840F17A3C292F77516C9C2ADFF9B97387A10",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+        "proofOk": true
+      },
+      "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+      "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-multisign",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-07T10:48:16.726Z",
+      "submittingAt": "2026-11-07T10:48:16.727Z",
+      "settledAt": "2026-11-07T10:48:32.446Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-multisign",
+        "version": "v1",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-multisign\",\"asset\":\"XRP\",\"cancelAfter\":847363811,\"condition\":\"A02580208257F44E951C021FF90C2A6C04D1EDEFDE222074DB3F5CDA7CA275B55E91BF28810120\",\"intentId\":\"4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1\",\"keyReveal\":{\"ciphertextHash\":\"d767405376a9849a1129057875a31e82627fbff7a2e1a702bf57846f31661765\",\"iv\":\"348734DDD4395F24CECA3805\",\"plaintextHash\":\"fbd726f6d9c6f3821746e5a3c0d79f62a345b455e429090493b21fa38bca6118\",\"tag\":\"5156259BF7179538AD9E3F705801EBE8\"},\"manifestRoot\":\"5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5\",\"network\":\"xrpl:1\",\"payTo\":\"rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP\",\"payer\":\"rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"9306fd77-0671-4353-89cf-fdc0a3f2aaa0\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "6165F92267043CA78E3AEF4A84DE2A7A5FFE55E696FD5F6441CA564A698B1945",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-07T10:49:16.724Z",
+        "contentDigest": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "amountDrops": "40000",
+          "invoiceId": "6165F92267043CA78E3AEF4A84DE2A7A5FFE55E696FD5F6441CA564A698B1945"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-multisign",
+      "receiptId": "escrow-991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+      "txHash": "991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+      "resourceId": "xrpl-multisign",
+      "version": "v1",
+      "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+      "contentDigest": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+      "grantedAt": "2026-11-07T10:48:32.442Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22135677,
+        "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+        "cancelAfter": 847363811,
+        "createSequence": 22135586,
+        "createHash": "E6B3F35229D20678C77E95E9B534840F17A3C292F77516C9C2ADFF9B97387A10",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+        "proofOk": true
+      },
+      "receiptId": "escrow-991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+      "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+      "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+      "resourceId": "xrpl-multisign",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-07T10:48:32.446Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+        "ledgerIndex": 22135677,
+        "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+        "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "d767405376a9849a1129057875a31e82627fbff7a2e1a702bf57846f31661765",
+          "plaintextHash": "fbd726f6d9c6f3821746e5a3c0d79f62a345b455e429090493b21fa38bca6118",
+          "iv": "348734DDD4395F24CECA3805",
+          "tag": "5156259BF7179538AD9E3F705801EBE8"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "9306fd77-0671-4353-89cf-fdc0a3f2aaa0",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-multisign",
+        "version": "v1",
+        "manifestRoot": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+        "amount": "40000",
+        "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+        "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "condition": "A02580208257F44E951C021FF90C2A6C04D1EDEFDE222074DB3F5CDA7CA275B55E91BF28810120",
+        "cancelAfter": 847363811
+      },
+      "escrowCreateHash": "E6B3F35229D20678C77E95E9B534840F17A3C292F77516C9C2ADFF9B97387A10",
+      "escrowCreateSequence": 22135586,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+      "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-multisign",
+      "version": "v1",
+      "payee": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+      "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+      "invoiceId": "6165F92267043CA78E3AEF4A84DE2A7A5FFE55E696FD5F6441CA564A698B1945",
+      "ledgerIndex": 22135677,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-07T10:48:16.726Z",
+      "settledAt": "2026-11-07T10:48:32.446Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "xrpl-multisign",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-multisign",
+        "version": "v1",
+        "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+        "priceMinor": 40,
+        "leaves": [
+          "36918c6bf0c023d504d22ebd5fc7bd0d954da112263a05f67a515291d620536e",
+          "faeb1f8dc979ab1fd0c3f29ae0349a715378432338a3c15c37ef777e605d0e6e",
+          "0c4891ffcef0325204652424885ce7e5f7d7195473d197c137d840b4c525e8e0",
+          "c6bae436f1734f12f98b58c48200b5275fcf300e69a5e92aad0f39c63f075243"
+        ],
+        "root": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+        "claims": [],
+        "wordCount": 238,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5897442612113066,
+        "sig": "A1EA5BAF58D1B20EEAC285841C737EBA7EFAE238789D0A62E9D8F350A8800A2CFA3580219828F5E0FF1D4697A71A094DDAED7AAED2B368BC3F84A78CC3F0F303"
+      },
+      "salts": [
+        "960c4204ed04ef23a6acf211be19c4f3",
+        "7400ec6402b9e81135f6e9edbdf88b42",
+        "e3de90b4b1076b8d6b5874e81cdf7a00",
+        "d99f3b991f05656b9a50feeb478297cd"
+      ],
+      "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "A7385C197342C930BC1B69DC093A999EDD8DD43534407C9BB15AB0CE8931F34D14AC858A4E8CC4F181CE1DBD3C8204657E8D48D2AEB93F26BF5ACBC64D9EE78D1D3B71587FD92A46AD7C68ECE7175ADB3AC06E621503E46E7F382DFCCF368BF1611AF5E84655943459F029E8099DDC6396082E5FFCD03CA66A5493B0902BAE35FA14CFEF32EFB795C8F167A321C152396D02A554767DD946B5EC6D2ED35FEFA2568EFC522AEDA690AFF8F0ED6814E285B777D1A108D74CB1818DD99B450E65863636287FA7E02F0B29CEF8EBB91370980554FE38FA9126A799EEBF21203B31BE9BCF87019A6E3DFF3ECF3478FFDA2D71FFFC4F6F86AF3793BE7062C6E6833E361D67173D1E611DB61DA0BAB4D53AF4BD07D66FB08F238C8632B760525899332888EFC1FF43625BE2553CDCC53122FE8378C0DA641C9D4610C1ABEC82BF350EAD72AC4F22ABAB3AFEC7FBD153C232EC12D59D654079EF7C7449AC39F84F9F6BE0C17C59C3B2F817CEC00CC722F78E77CE41E9C041593DD1FDA29C089DAC772FBD36636BFA51DEDF1B56FB636CEC84589D36AC7B8C9BF5F8E19E0E69F9E9D5B8FB6B2B49D08DCE2BB795054CFEA0D27F51FCBBF9B5DEF682109DB5140B17375BB67EBE16F5C2548D9ADD00EADB6A9A8C27632B3184985E30022BE62EE2B1DD7C5AE16DC120540370C36B606CDEA7A5B28579EBAEFA17D6B463B69A461C33943149991DF4A7595DA368C927C026BDCEDDA3CF9F07EB1AED9EE460ADA93C51405D692AA414FED68C6CB75D40BEE728EA8D5075BB08EA0B36E6BC840296EA9BDC3C01EA9C2A169D7D18C3812F73C1C44BABD58EFF4E2F50EDC3E50280A83EBB9909A46157C87023ED0657FC178098181FF282163394736C34ECD97B24E7F5BDDCC3D0E683E950AA0737AA49E439B946EF308E10066553203B729D1E3DA13CD506631BDB48D4974A854CF51AD259D33503962706477FDE440CDEB1EF1BA0337809DA3AA0DE59602305FFD878E20546F25F57A5DA11C1811B03346DD72F470602D9974ABBF4BEFB89CA280CEA3EE8FB3836A037F07B971CC7DD0FB33C340676D386488494427E3A476B66E2D89B3C994CE52C20B09BE4A5599063A04681869B98C794A7A4F01B550C06D79AD804944D8805BFF425662A7F05F1146A193243602E33A9C4DA6C8CF80B60792E041F883755AD8F7ECE7B1D8FDDDFD7765F5343AAF96C3E62D3BC94D4A9C0DA29CEBDF1470E06754376EC23D901D819994911F76BD543BBAB31FB425561FD0DE5195003A99FB3505588D011BF9FCD3E6EC5749BF45575FFBCF316462E3F953577415310984C663D08DA2E1EA090F6A4C9F07D7393835D404493EA27237D811D3C36A773867E3478B50893B8107167755619711803D6809E6AB98268C51B731D3D0E18F8B6194750BD5F958B06698DFF32E089AFD977A3C7CB205617816B5C64E725ADB32219F57509B5D7F3E8643950ED353066D44A0BC722CE16E2EF09D0A9520052111FA4E18079C14DA3AFCB1DFBD79B0D2CB6D28E6A6DC659A929B3F1C12096745FBCADEEC8E8C8526109EC5CED5DA043D58CAA7D48BA961C66CBA8EB44905C01181EF93C242B0EA22993760E5D411C73A1CC620E36EBAD3471737B8DAF1F4F43C9681FD96C51F053F023BEF297C768C168F2996B8266AB5213290793DD1AB5AC3D0C781CC9D74DAC9BD70052C04B05A8493C81835BD66082421B909AC3107FE90808C2CA8574AF4C183AD11164F3E1700B50F98E718C73B938751320F43F3774B59F856D270FAC4C2604A6B0372426B23D318F4729CDEA49B1CADF1A6FEA9AA312AE757F1A55898A189B2C7D15BEAD238DFEB4DDEEAEB71E1953F24768DE0A2F0646C79EAD8E8E804A5541195D2D0B35778A74B527985BCEA564766A7C4B368D0B39724301BBC831EE2505816980F83F281F722AD13447AE6B756DCCF357FC5B3AED4557FAC47E65C1ED6B87E05A3BB87B7494FF6E450E68906F879491735EF424DE1801C635D950DF2BB5D4E4ED333F31A4612AA578DF840554E6D0AFA237A702FF4F50FD72B6129F14E6562A9EF1CB792155FDF9D7FDE3F03BB093972849F9823AE0DE991A53E2AB13226003CD5B2CDB7CDD9A2767EDC4F6D67F0A37C6461FA10F608812FF29D473CF2E29F48D3B026FE9CF90763AEC3DD2FDB47526F5788C3F1991BD9DFEC538E542D8D116E653044E5D4EE6F7F04847D9EA7AE0BEE7EF1A5572044812F91C6C626FA86EAE5A1DED7286F6E98360B96669E351098C163F481CBCD0474B6984082C00948E749C4DAEAA290DEBF1E6294FF70C197D050328CEE9B893A274E037F276A9C11BB5BE92E4E70D590A8343B5FA2BDCFF7C1D3D992CE554A73B78C6F70C40129525037A234AA60F21A8C7CE0D339FD21E89A53DACA69ADA5A37B8A5205B8AA2DF5C12F2B9853B901D2AB1DF54705CAFC36C3DA3B84B59756876D75C26F2FBC4AC8139D46231587D62763341E2AA32620F2770A38D7C0906B24344452844180C8710463C0773556B47496341B26DA6FB2176771FBE4E840AAF2BA84F3D1AF05D950839A1ADD433EFC8415AC6DC56A58807A0C31C713EF6FFD916B132F5810E41FEBD3D75EB21ABD73EFC9FD5A0D10DF381BC1AD78206B38A7AA43FF31F6FD46900B3DAED32106E42CAB27099D49554B5555CAD137DE71759B9B90EFDC40FB215A0B19E091612801B0FFAB48517D55C4FB3738483288F9B2DBAAFC4378F78CBCB26601FBCBA4D6AE820CB9DD05AFFFBCFD288445100205BB63727EBD24A3019C6D608A1422F68405D152E6517A114DE3DCD5F3EB711086B8304B47ACD5ACB1855473F7AFBB9CC3F866628E5FA22D04EE1B43370BD32E951BCE67B081D3501F3CD671E6C495110C6B3C84B701F2ED7BECF975A3C94371C31CAF92961FE2F1B8ED5B73348991EDFBCCBA4038427E6B60685F5E6D62C0E59BA5BB99F2C406D1F4B6773047DE92673CD12092CE581E76219AF75BF78F9D9D97858A7A99039196267BD1B3ED2078A9A5CBF6D0856ED370906EF5421929DC5D25961A5812EFCB365E46D7BA0624D65F7B42CE41AC52D62734939D35E2CA49E5E3557058045D0B1E1FC9AA3A8E734B639F586374FF96F888290DD6C4B5C41180B2CDEEE2CA97B9C015BF75033057A9AF28DA089992FBFE9723A7A820F96A0B553E21B2649AEEF2179805CD0BB2728A4B50F5A8AB5213D19142EE2F9C388F65A74ED3F6DB1E2DEADAA31381D0D49CAB34968C9E445B664AEE7C5D13B6A0B4F68318FEBF393F364E7671731D37EF7F9694998ABB905756C1CC9DC5EAA78254922CF685E7BFA4FB2720978A4B305EDC8A58B836A2F0215F7E033E999C512E11C1411E64131058A95F0D6CEB6EA4D7392380256A81A0EB6A7A3344DD38587916B32DD238CD2A7A6BDE664F44B1DCE9AC249A152167E02D59C6B42D79134993BCFE4C0DDC84B190DD12DD6AD9D5AD82192BC1D2FE268F5592F880D37C896AA39ABE715B606D5CFBB8E1348E1BA8ED67C5A1545BF392DD794108876F87933F43AF7B1925F8090624350DB2D54099CB38A86B99440D123424DDB3F4D8DFE86198EF85D80C3BE73BADA1B0652073622C90662DB5CD937B562C59F4D7634CCF9CDD1AD491024648BE706B2140E4ED73264121A814AC04C874200B4F154D50DA4678679C48556E5DB983C9E5A7D59043F0C8CD861DBDB6E283F9D7F4A1533440C4EBE7B0F1E3A2C6A214F215F492F010599E64C182D057ED93160BDEDA574DB85B4ACEDC4950330138CBF74289A532787948ADC7876B8C28CEDDE518879969192A64F609959D7793386DE7DC9F7ABE135DF77CE14CA4F3994875699A6698CEA01B77CD2896432B4328019F29ABB9A93C3C94D8CF515DE933DE84CD04633EB0E8258C1349A5104B0B98ECF2F90FB3E218014D66904C4E858FCB7D035C814429B371A9B4A258C1DD01A6DBF404ABBB5650487E1D1A3C527E63FD3B94B9A04B42C0B93264C52361CA6DECDA35E73A732CACC5749DBA40BF7C59AFB07576E9C572AFD69A1617E243DAF436385B54BDB3AAEE22B8664A3793DB9738654AE30963B1F3F672D41335BBD092262F804DAE28370A7EF25F8478EF469259B34B65F743C053B055046F1CC17B10F22206F7A7C80FE9BB3B6C0A307B63A9FEE65F06E256B2BC195C958175906B3654A63FDC4361860FE572118C5E2872080DBE64B3A22FEB4CB63811DDF2796DEC893928860A5251B1D73A4E00444D64C3415FB5BA1D2713F37ECA70B5EE5ED396498093411293E4348A4B58D26381F3AB9A49F02A5E19C1B82C7D525EB6C4B947C1AC05EEC0BE0F8B5072886F46ACF0572202BE1074945305A425DB7C6B8B354FA791BDCF79291794D94B8CED4C300E1B9EC0FA0405AAA44E693A3B0A6206BC8DB3F0D7AC8D1138AFAC6C4578ACEDE51A84341A581CEC11CF9E2748BE2BF54AFAC4243EAF56973607AF626B2620B2CD8A3F0CB8B699A716DCC35A54AE9CBC6C560D5F12C54A4BA76BD2066D6C72B3542ACE94877523E35F1085BB7B120FA0E6886B517C988EE2D96542AF2CAF50892CDB224C5820D994003E535385255D9444482D79C53CBD798873373FE40572534B55BECC682F96C4C92BDEE6D0FDE6A16A138B298E1AEC87B6B656F3681ADE90906A90EC570D50D04B30D5E688F9F6ED9D7E86CCBF11DD5F3D4EF1201DDB851FDD920C2AFF04E59DE67B80A84CFDF23FCA37063228CA2DA68FC394709E706D6C81ACAC1FD09D4B44978E697595B7E9C55FBC4D3416B0FFAC43EF24D76418F5590D60D3A5631354C27E38B811EBBDACAD7C17CBC4331469DA6983617F537AE2D16B267A2AB4E128E6762A05B699C8BBB8BDE85C8869A3DD04822FE0E2E429C91499CECF3B1B151EA3E5F3BC686ECC484D98E5DBC666F91D3B9DF79C396A826569FDA0B80E6BF85ABB8FB13EA6345D3B6D7366C2EEDCE1576A804ED51553171DAECE64B9166585777998B21BC6A0EDAF9D51354642E25B5365005C90C239AAC289A3025B022BA9F0AFEA30AB13F54A3864590B63E73FDE4007E829371A85379639BE379A0C68F87A5FFD358B8A5EAE9334DEAE5905719986A4ADDA93FB464D72B3D6A5CCAA376B2D00D79D3009F20A5C1B712654B74C4CA91D8E62E6F521EC8F69BFFD97ECE757C2F6519BA6D7533104F7277E0840B9D53129C6549C9533D0C776F9C9ECFC865A93C2BFB401ABEC1D91C7C4774FA62194F2650D00ACD7614D35F7D75C5518638279A889DDE28DD75CE2A82414CC3658F1649E3F60A03D1BD59ED29B4AB1EF164BABA75085EF69491E56BE88E102BD5A8B55DBB3C50C80AB5ABB24A43261A2E45C41CC714F644334D305DE36AE21E99BA5D038CEA577114C9BD660389A0B76521F9D581DA7C01055C755F66FD365E2EF0ECC9B5D92BDF9F31CA3071555FFFAE3A2B1749F8DDF2E7E0F1E3B4EB6B318E8FE136E08A129C3DF5038CFACDDE5D8E24243D37A9CDCCC53FB5E1788445E0A2F6E8FFC78BDD062C",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "d767405376a9849a1129057875a31e82627fbff7a2e1a702bf57846f31661765",
+              "plaintextHash": "fbd726f6d9c6f3821746e5a3c0d79f62a345b455e429090493b21fa38bca6118",
+              "iv": "348734DDD4395F24CECA3805",
+              "tag": "5156259BF7179538AD9E3F705801EBE8"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "9306fd77-0671-4353-89cf-fdc0a3f2aaa0",
+            "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-multisign",
+            "version": "v1",
+            "manifestRoot": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+            "amount": "40000",
+            "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+            "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+            "condition": "A02580208257F44E951C021FF90C2A6C04D1EDEFDE222074DB3F5CDA7CA275B55E91BF28810120",
+            "cancelAfter": 847363811
+          },
+          "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+          "sig": "983CFDF3E10295D11DE0E5663D8724A88BB1F80D16FF9C5DBA05881188E04BA2B24C97D7A1BEE8E9F40BEF05F1F26CB7E81EE46A2D24984DBB6B1CAD4D65EB0D"
+        },
+        "key": "555A7697BBFD82F42A8D80A51F9996E109699187A8898357F62375695324EC42",
+        "finishHash": "991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+        "ledgerIndex": 22135677,
+        "createHash": "E6B3F35229D20678C77E95E9B534840F17A3C292F77516C9C2ADFF9B97387A10"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 125,
+      "hash": "2a7a7a2b20c6e42ceaff7117f7730466a873de0f4d16201baf8f0391fa0ac05b"
+    },
+    "entries": [
+      {
+        "seq": 126,
+        "at": "2026-11-07T10:48:16.249Z",
+        "prevHash": "2a7a7a2b20c6e42ceaff7117f7730466a873de0f4d16201baf8f0391fa0ac05b",
+        "hash": "9a02536b4ef1f2cb6b988ee9f94f8f536998a4189c2309f521b9288b0918d5c5",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-07",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "bd9d7e5a8e0ac6cdfab13c0a1ed47116f05c8d07b79a8c90ce344ec7d33f7116",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4640,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1640
+        }
+      },
+      {
+        "seq": 127,
+        "at": "2026-11-07T10:48:16.285Z",
+        "prevHash": "9a02536b4ef1f2cb6b988ee9f94f8f536998a4189c2309f521b9288b0918d5c5",
+        "hash": "f2b427f808b2fe17005cdfab00ebed3548f32feaedfe63eb7043e6a39a68af62",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 10,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-multisign",
+          "selectedSourceKey": "xrpl-multisign@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 1,
+            "SKIP_LOW_VALUE": 9
+          }
+        }
+      },
+      {
+        "seq": 128,
+        "at": "2026-11-07T10:48:16.726Z",
+        "prevHash": "f2b427f808b2fe17005cdfab00ebed3548f32feaedfe63eb7043e6a39a68af62",
+        "hash": "6c11d09de430993b26832d01ba79fc2941062b3a2ced36419377539273298ddb",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "6165F92267043CA78E3AEF4A84DE2A7A5FFE55E696FD5F6441CA564A698B1945",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-multisign",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 129,
+        "at": "2026-11-07T10:48:18.603Z",
+        "prevHash": "6c11d09de430993b26832d01ba79fc2941062b3a2ced36419377539273298ddb",
+        "hash": "4b773d863204a0cbb246b7c0194493f8b544935aaeee3843967ea22e8b2ee6cc",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22135586,
+          "invoiceHash": "6165F92267043CA78E3AEF4A84DE2A7A5FFE55E696FD5F6441CA564A698B1945",
+          "lastLedgerSequence": 22135694,
+          "operation": "create",
+          "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "proofOk": false,
+          "txHash": "E6B3F35229D20678C77E95E9B534840F17A3C292F77516C9C2ADFF9B97387A10"
+        }
+      },
+      {
+        "seq": 130,
+        "at": "2026-11-07T10:48:26.541Z",
+        "prevHash": "4b773d863204a0cbb246b7c0194493f8b544935aaeee3843967ea22e8b2ee6cc",
+        "hash": "0b97cf194ddd461b2eaf735f807b71cfebef8a4ec8efc2d5bbcc5ee3878e12a0",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847363811,
+          "createSequence": 22135586,
+          "invoiceHash": "6165F92267043CA78E3AEF4A84DE2A7A5FFE55E696FD5F6441CA564A698B1945",
+          "ledgerIndex": 22135675,
+          "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "result": "tesSUCCESS",
+          "txHash": "E6B3F35229D20678C77E95E9B534840F17A3C292F77516C9C2ADFF9B97387A10"
+        }
+      },
+      {
+        "seq": 131,
+        "at": "2026-11-07T10:48:32.443Z",
+        "prevHash": "0b97cf194ddd461b2eaf735f807b71cfebef8a4ec8efc2d5bbcc5ee3878e12a0",
+        "hash": "7d260b93433d6ff104df1f5b181a86561e9b345a653a6b15ec4a0b15889a4749",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "5fd838657941b64cdf0ea37976f18d46223cab2a7c9b07cb8a5f2655260891b5",
+          "passageCount": 4,
+          "resourceId": "xrpl-multisign",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 132,
+        "at": "2026-11-07T10:48:32.445Z",
+        "prevHash": "7d260b93433d6ff104df1f5b181a86561e9b345a653a6b15ec4a0b15889a4749",
+        "hash": "9efe713c51878ef91b47c101472d63dde763ec0a62b8ff7cf06f10e79415a71b",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 133,
+        "at": "2026-11-07T10:48:32.446Z",
+        "prevHash": "9efe713c51878ef91b47c101472d63dde763ec0a62b8ff7cf06f10e79415a71b",
+        "hash": "28046743062307cb11be2351c41c6582bbfbbd08af1c2c5d18f06cd7eb1dec8f",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "E6B3F35229D20678C77E95E9B534840F17A3C292F77516C9C2ADFF9B97387A10",
+          "createSequence": 22135586,
+          "ledgerIndex": 22135677,
+          "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC"
+        }
+      },
+      {
+        "seq": 134,
+        "at": "2026-11-07T10:48:32.446Z",
+        "prevHash": "28046743062307cb11be2351c41c6582bbfbbd08af1c2c5d18f06cd7eb1dec8f",
+        "hash": "188be65cc35c3d1a7e6a417c219f33fcb14e2355ba60abed8b3aee3a4ffb8c3b",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": "4bd8b309-88ee-4370-a933-78f23fda133d:1:xrpl-multisign:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22135677,
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+          "receiptId": "escrow-991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "991E06CD45DF02C453D90858F08E5191D729A94447507AEDBAF16605F94CBFDC"
+        }
+      },
+      {
+        "seq": 135,
+        "at": "2026-11-07T10:48:32.479Z",
+        "prevHash": "188be65cc35c3d1a7e6a417c219f33fcb14e2355ba60abed8b3aee3a4ffb8c3b",
+        "hash": "a42b0c0021df7e7eb2fbbbdf8f20f9e381923e9157a4981b951dfd907257ba0f",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 10,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 2,
+          "selectedResourceId": null,
+          "selectedSourceKey": null,
+          "threshold": 0.2,
+          "verdicts": {
+            "SKIP_LOW_VALUE": 9,
+            "SKIP_REWRITE": 1
+          }
+        }
+      },
+      {
+        "seq": 136,
+        "at": "2026-11-07T10:48:32.490Z",
+        "prevHash": "a42b0c0021df7e7eb2fbbbdf8f20f9e381923e9157a4981b951dfd907257ba0f",
+        "hash": "b2f7e7e3bc84774faf0b8cf23abb56a87d7305de1b38739c7d4652d5dfda3d5a",
+        "runId": "4bd8b309-88ee-4370-a933-78f23fda133d",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "6312563c9732bc43fafd0ca6b6c64e4fd9041b8743c7403b1da2588639341525"
+        }
+      }
+    ],
+    "head": "b2f7e7e3bc84774faf0b8cf23abb56a87d7305de1b38739c7d4652d5dfda3d5a"
+  }
+}
