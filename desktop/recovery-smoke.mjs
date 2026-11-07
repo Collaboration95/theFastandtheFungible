@@ -1,5 +1,5 @@
-import { register } from 'node:module'
-register('tsx/esm', import.meta.url)
+import { register } from 'tsx/esm/api'
+register()
 const { ResourceScope } = await import('../shared/resource-scope.ts')
 import { _electron as electron, expect } from '@playwright/test'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'

@@ -1,5 +1,5 @@
-import { register } from 'node:module'
-register('tsx/esm', import.meta.url)
+import { register } from 'tsx/esm/api'
+register()
 const { ResourceScope } = await import('../shared/resource-scope.ts')
 // Run with node --import tsx; never send dotenv credentials to the Electron parent env.
 import 'dotenv/config'

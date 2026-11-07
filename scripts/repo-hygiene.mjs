@@ -4,7 +4,8 @@
 //   2. relative Markdown links and #anchors in README.md and docs/ resolve;
 //   3. README badges point at workflows that exist;
 //   4. no tracked file over 5 MB outside design/;
-//   5. no seed-shaped or API-key-shaped strings in tracked text files.
+//   5. no seed-shaped or API-key-shaped strings in tracked text files;
+//   6. scripts load tsx through tsx/esm/api: tsx rejects module.register('tsx/esm') on every Node.
 // Prints one line per problem and exits 1 if there is any.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, statSync } from 'node:fs'
@@ -99,6 +100,13 @@ for (const f of files) {
     const m = text.match(re)
     if (m) bad(`${f}: looks like a ${name} (${m[0].slice(0, 4)}…); never commit keys or seeds`)
   }
+}
+
+// tsx 4 throws "must be loaded with --import instead of --loader" for module.register('tsx/esm').
+const TSX_REGISTER = /register\(\s*['"]tsx\/esm['"]/
+for (const f of files) {
+  if (!/\.(mjs|cjs|js|ts)$/.test(f) || f === 'scripts/repo-hygiene.mjs') continue
+  if (TSX_REGISTER.test(readFileSync(join(root, f), 'utf8'))) bad(`${f}: module.register('tsx/esm') fails at startup; use import { register } from 'tsx/esm/api' and register()`)
 }
 
 if (problems.length) {
