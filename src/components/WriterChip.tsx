@@ -39,7 +39,7 @@ export default function WriterChip({ candidate, reputation, variant = 'full' }: 
   if (variant === 'row') return trust
   const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer's site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
   const verification = <WriterVerification value={candidate.verification} />
-  const authorship = candidate.publisherSlug === 'team-builder-notes' && <span className="ra-chip">team-authored · real content · not an independent writer · Testnet</span>
+  const authorship = candidate.publisherSlug === 'team-builder-notes' && <span className="ra-chip" style={{ whiteSpace: 'normal', lineHeight: 1.4 }}>team-authored · real content · not an independent writer · Testnet</span>
   const synthetic = candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>
   if (variant === 'card') return <span className="ra-writer">{writer !== candidate.publisher && link}{authorship}{synthetic}{verification}{trust}</span>
   return <span className="ra-writer">
