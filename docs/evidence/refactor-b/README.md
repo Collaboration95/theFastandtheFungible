@@ -1,5 +1,12 @@
 # Lane B: parallel browser admission
 
+Final configuration: **350 → 221 s** five-run CI median (historical audit
+baseline 355 s). Browser **326 → 107 s**; critical job is verify at **162 s**.
+Both timing targets pass. Replay builds **2 → 1**, zero failures and zero reported
+flaky browser tests in five final runs. The >=50 net LOC deletion target is
+missed: implementation/config/tests/lockfile net **+2 LOC**, excluding evidence.
+No gate, test, timeout, observation window or threshold was loosened.
+
 Fixture app and judge checks; replay observations retain live read-only Testnet
 hash checks and both full 60-second observation windows. No spending authorized.
 
@@ -27,8 +34,10 @@ finished in about two seconds; there is no measured net-saving case for another
 cache restore/upload. Consumers continue installing clean.
 
 Package review found no source imports for Bricolage Grotesque or Newsreader;
-Geist and Geist Mono remain. The private root bin pointed at a nonexistent .mjs
-file (the supported publisher command uses .ts) and was removed with lock data.
+Geist and Geist Mono remain. The unused bin mapping in the private root package was removed with lock data.
+The .mjs source wrapper exists and remains covered by its direct test; the
+supported npm publisher command uses .ts. No wrapper or packaged MCP bin was
+removed. Repository docs and scripts do not invoke the root bin name.
 
 ## Measurements
 
@@ -39,7 +48,9 @@ Local judge: 10/10 passed, 57.2 s. Local demo: 4/4 passed, about 63 s;
 both minute observations ran concurrently. Local packed consumer acceptance uses
 exact generated manifests; generated sizes: MCP tgz 3,462,192 bytes, MCPB
 3,291,559 bytes, SDK tgz 89,744, wheel 113,069, sdist 107,473. All below 8 MB.
-After measurements are recorded in after.json with run IDs, SHA, job/step timings, replay build counts and reported flaky counts.
+The initial cache experiment is recorded in after.json; final measurements are
+in final-after.json. Both pin run IDs, SHA, job/step timings, replay build counts
+and reported flaky counts.
 The >=50 net LOC deletion target is not met; no unrelated build code was deleted
 to manufacture a count. No portable shared-chunk changes were made in C's lane.
 
@@ -61,7 +72,7 @@ job durations overlap and must not be summed. The latest 20 completed main
 outcomes at capture were 15 success, 3 failure and 2 cancelled. This observational
 window does not attribute those failures to this lane, nor prove a flake rate.
 
-Code/config/tests/lockfile net change: **+8 LOC**, excluding documentation and
+Initial cache-experiment code/config/tests/lockfile net change: **+8 LOC**, excluding documentation and
 measurement evidence. The >=50 net LOC reduction target is missed.
 
 The exact concurrent shell was also exercised locally (macOS shasum equivalent
@@ -114,3 +125,43 @@ remain available in before.json and after.json.
 
 The final workflow removes the unsuccessful Chromium cache experiment. A fresh
 five-run sample of that final configuration follows in final-after.json.
+
+## Final five successful Actions runs (no added caches)
+
+Implementation head `64cb0b1e5a443c8d2dcb7c57187bd07e25d83d76` (full SHA in final-after.json). The later
+commit adds evidence and corrects the package-review wording only.
+
+| Run | End-to-end seconds | Browser seconds | Replay builds | Reported flaky tests |
+| --- | ---: | ---: | ---: | ---: |
+| 42348554020 | 185 | 127 | 1 | 0 |
+| 42348561995 | 228 | 117 | 1 | 0 |
+| 42348564511 | 278 | 94 | 1 | 0 |
+| 42348566496 | 178 | 107 | 1 | 0 |
+| 42348568587 | 221 | 96 | 1 | 0 |
+
+| Job | Before median (s) | Final median (s) |
+| --- | ---: | ---: |
+| changes | 8 | 8 |
+| verify | 227 | 162 |
+| chaos | 135 | 106 |
+| browser | 326 | 107 |
+| python | 83 | 57 |
+| artifacts | 112 | 66 |
+| check | 7 | 6 |
+
+Browser range: 94–127 s. All five runs succeed,
+with all 36 browser checks required and one replay build each. The final
+end-to-end median is 49 s below the 270 s target; one individual run took 278 s.
+The final browser median is 113 s below the 220 s target. No samples or queue
+time were excluded. The five post-change measurements are branch/PR attempts,
+not five post-merge main observations.
+
+The unmodified verify job also varies substantially (initial experiment median
+267 s, final sample 162 s). Total wall-time improvement is observational and
+includes warmed npm downloads, runner/queue variance and the independent-browser
+change; it is not a controlled causal attribution to cache removal. Chromium
+cache removal follows its separate measured negative result, not that total.
+
+Final CI release artifacts were independently downloaded and hash/size checked;
+final-ci-package-sizes.json pins sourceSha `4e89c84dabb2867a6198c98e91002eea203f45b9`.
+Largest package: 3,476,119 bytes. Clean consumer installs remain required.
