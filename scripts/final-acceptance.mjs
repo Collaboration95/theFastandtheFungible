@@ -20,16 +20,19 @@ Object.assign(env,{DOTENV_CONFIG_PATH:'.no-final-env',LLM_PROVIDER:'fixture',DEC
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim()
 const report={schema:1,acceptanceEligible:!quick&&!skipSoak,mode:skipSoak?'fixture rehearsal; soak explicitly skipped':quick?'quick fixture rehearsal; RSS slope diagnostic only; not full acceptance':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
 const save=()=>{writeFileSync(join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');mkdirSync(destination,{recursive:true});cpSync(join(out,'acceptance.json'),join(destination,'acceptance.json'))}
-report.schedule={mode:serial?'serial':isolatedSoak?'isolated soak then DAG':'bounded DAG including soak',concurrency:4,localArchitectures:allArch?['arm64','x64']:['arm64'],hostedArchitectures:['arm64','x64']}
+report.schedule={mode:serial?'serial':isolatedSoak?'isolated soak then DAG':'bounded DAG including soak',concurrency:4,siblingNiceness:10,localArchitectures:allArch?['arm64','x64']:['arm64'],hostedArchitectures:['arm64','x64']}
 const step=createStepRunner(report,save,failFast)
 const tasks=[]
 const schedule=(name,action,after=[])=>tasks.push({name,run:action,after})
 async function run(name,cmd,args,extra={},dependencies=[]) {
  return step(name,async row=>{
-  row.command=[cmd,...args];save()
+  // Give the timing-sensitive soak priority over sibling compiler/packaging work.
+  const command=name==='soak'?cmd:'/usr/bin/nice'
+  const argv=name==='soak'?args:['-n','10',cmd,...args]
+  row.command=[command,...argv];save()
   const log=join(out,name+'.log')
   const {openSync,closeSync}=await import('node:fs');const fd=openSync(log,'w')
-  try {const code=await new Promise((done,fail)=>{const child=spawn(cmd,args,{env:Object.fromEntries(Object.entries({...env,...extra}).filter(([,v])=>v!==null)),stdio:['ignore',fd,fd]});child.on('error',fail);child.on('exit',done) });row.exitCode=code;row.pass=code===0;if(!row.pass)throw Error(name+' failed; see '+log)}
+  try {const code=await new Promise((done,fail)=>{const child=spawn(command,argv,{env:Object.fromEntries(Object.entries({...env,...extra}).filter(([,v])=>v!==null)),stdio:['ignore',fd,fd]});child.on('error',fail);child.on('exit',done) });row.exitCode=code;row.pass=code===0;if(!row.pass)throw Error(name+' failed; see '+log)}
   finally {closeSync(fd);row.finishedAt=new Date().toISOString();row.logSha256=digest(log);save()}
  },dependencies)
 }
@@ -37,6 +40,7 @@ const artifact=(p)=>({file:p,bytes:statSync(p).size,sha256:digest(p)})
 try {
   if(platform()!=='darwin'||arch()!=='arm64')throw Error('Full unsigned arm64 acceptance requires an Apple Silicon Mac')
   const ts=new Date().toISOString().replace(/[^0-9]/g,'')
+  const browserResults=resolve('test-results','final-acceptance-'+ts);report.browserResults=browserResults
   const soak=join(out,'soak-same-engine.json');mkdirSync('scratch',{recursive:true})
   schedule('soak',async()=> {if(skipSoak){report.gates.push({name:'soak',pass:false,status:'skipped (requested)'});save();return}
   await run('soak','caffeinate',['-dims','node','scripts/soak-same-engine.mjs','--runs',quick?'200':'2000','--warmup',quick?'20':'200','--concurrency','1','--seed','279','--history-runs','10000','--events-per-run','60','--data-dir','scratch/finals-soak-279-'+ts,'--output',soak,'--burst',...(quick?['--diagnostic-slope']:[])])
@@ -75,10 +79,10 @@ try {
   report.dmgs=readdirSync('desktop/out').filter(f=>f.endsWith('.dmg')).map(f=>artifact(join('desktop/out',f)))
   },['desktop-x64']),['desktop-x64'])
   } else report.x64='deferred to hosted desktop release matrix; native acceptance pending'
-  schedule('browser',()=>run('browser','npx',['playwright','test','--output',join(out,'browser-results')]),['coverage'])
+  schedule('browser',()=>run('browser','npx',['playwright','test','--output',join(browserResults,'app')]),['coverage'])
   schedule('demo-build',()=>run('demo-build','npm',['run','build:demo']),[])
-  schedule('browser-demo',()=>run('browser-demo','npx',['playwright','test','--config','playwright.demo.config.ts','--output',join(out,'demo-results')],{},['demo-build']),['demo-build'])
-  schedule('browser-ledger',()=>run('browser-ledger','npx',['playwright','test','--config','playwright.ledger.config.ts','--output',join(out,'ledger-results')]),[])
+  schedule('browser-demo',()=>run('browser-demo','npx',['playwright','test','--config','playwright.demo.config.ts','--output',join(browserResults,'demo')],{},['demo-build']),['demo-build'])
+  schedule('browser-ledger',()=>run('browser-ledger','npx',['playwright','test','--config','playwright.ledger.config.ts','--output',join(browserResults,'ledger')]),[])
   report.site=[]
   for(const page of ['demo','ledger']) schedule('site-'+page,()=>step('site-'+page,async()=>{
     const url='https://collaboration95.github.io/theFastandtheFungible/'+page+'/'

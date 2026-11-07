@@ -3,6 +3,8 @@
 `node scripts/final-acceptance.mjs` retains the schema-1 report, exact artifact
 hashes, installed consumer receipts, independent verifiers and native arm64
 recovery evidence. It uses four concurrent tasks on the declared local host.
+Sibling subprocesses use niceness 10; the timing-sensitive soak retains normal
+priority. This is scheduling priority, not an exemption from any measured gate.
 All providers are fixtures and settlement is simulated. This does not publish
 or sign anything. `scripts/release.mjs` requires a successful `local-gate` status
 for the merged SHA; the hosted tag workflow independently admits its exact
@@ -23,7 +25,8 @@ on a fresh checkout. Coverage's MCP bundle test,
 the app browser build, desktop staging, and release artifact construction all
 write under `dist`. They run in that order. Other tasks, including full chaos,
 Python and replay browsers, can overlap. Browser groups use separate output
-directories. Failed semantic dependencies skip their consumers and remain
+directories under the existing excluded test-results area, so generated bundles
+cannot enter a concurrent source lint scan. Failed semantic dependencies skip their consumers and remain
 failed; an ordering edge alone does not suppress independent evidence.
 Fail-fast drains all work already started before writing the final result.
 
