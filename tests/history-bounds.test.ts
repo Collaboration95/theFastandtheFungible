@@ -32,16 +32,18 @@ import { join } from 'node:path'
 import { createApiApp } from '../server/routes.js'
 it('startup, recovery, metrics and drain never call listRuns', async () => {
   const root=mkdtempSync(join(tmpdir(),'history-select-'))
-  const path=join(root,'app.db')
-  const store=new Store(path)
-  for(let n=0;n<40;n++) {const run=store.createRun('SYNTHETIC',0);store.updateRun(run.runId,{phase:'DONE'})}
-  store.close()
-  const guard=vi.spyOn(Store.prototype,'listRuns').mockImplementation(()=>{throw new Error('hydration forbidden')})
   try {
-    const api=await createApiApp({dbPath:path,publisherUrl:'http://127.0.0.1:1'})
-    try {await api.reconcileOnce();expect(metrics(api.store,api.purchases).modelUsageByRun).toHaveLength(40);await api.drain()}
-    finally {await api.close()}
-  } finally {guard.mockRestore();rmSync(root,{recursive:true,force:true})}
+    const path=join(root,'app.db')
+    const store=new Store(path)
+    try {for(let n=0;n<40;n++) {const run=store.createRun('SYNTHETIC',0);store.updateRun(run.runId,{phase:'DONE'})}}
+    finally {store.close()}
+    const guard=vi.spyOn(Store.prototype,'listRuns').mockImplementation(()=>{throw new Error('hydration forbidden')})
+    try {
+      const api=await createApiApp({dbPath:path,publisherUrl:'http://127.0.0.1:1'})
+      try {await api.reconcileOnce();expect(metrics(api.store,api.purchases).modelUsageByRun).toHaveLength(40);await api.drain()}
+      finally {await api.close()}
+    } finally {guard.mockRestore()}
+  } finally {rmSync(root,{recursive:true,force:true})}
 })
 
 it('sidebar never calls getRun, even for pinned paid histories', () => {
