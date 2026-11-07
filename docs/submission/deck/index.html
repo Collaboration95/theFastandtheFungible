@@ -161,9 +161,9 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
 .seq span { display: block; font: 400 21px/1.42 var(--f); color: var(--muted); margin-top: 8px; }
 .seq code { font: 400 19px/1.3 var(--m); color: var(--ink); background: var(--hover); border-radius: 5px; padding: 1px 6px; }
 
-/* pixel agent: one cell of design/character/sprite-sheet.png (48 x 32), integer scale */
-.agent { width: 288px; height: 192px; background-image: url('../../../design/character/sprite-sheet.png'); background-size: 1152px 1536px; background-repeat: no-repeat; image-rendering: pixelated; image-rendering: crisp-edges; }
-.agent.s3 { width: 144px; height: 96px; background-size: 576px 768px; }
+/* pixel agent: one cell of design/character/sprite-sheet.png (64 x 48), integer scale */
+.agent { width: 256px; height: 192px; background-image: url('../../../design/character/sprite-sheet.png'); background-size: 1024px 1536px; background-repeat: no-repeat; image-rendering: pixelated; image-rendering: crisp-edges; }
+.agent.s3 { width: 128px; height: 96px; background-size: 512px 768px; }
 .agent-strip { display: grid; grid-template-columns: repeat(5, 136px); gap: 0; margin-top: 20px; overflow: hidden; }
 .agent-strip .agent { margin-left: -4px; }
 .agent-strip figure { margin: 0; }
@@ -176,7 +176,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
 <section class="slide" data-title="ResearchAgent">
   <div style="display:flex;justify-content:space-between;align-items:flex-start">
     <img class="lockup" src="../../../design/brand/lockup.svg" alt="ResearchAgent">
-    <div class="agent" role="img" aria-label="The ResearchAgent pixel agent carrying a verified page" style="background-position:-864px -1152px;margin:-24px -12px 0 0"></div>
+    <div class="agent" role="img" aria-label="The ResearchAgent pixel agent carrying a verified page" style="background-position:-256px -1152px;margin:-24px -12px 0 0"></div>
   </div>
   <h1 class="hero" style="margin-top:28px">Research with a wallet.</h1>
   <p class="lead" style="font-size:38px;max-width:1540px">An agent that answers from free sources first, then buys the one missing article from its writer, <b>over x402 on the XRP Ledger</b>, inside a budget you set. The writer is paid only by publishing the article’s key on the ledger.</p>
@@ -440,9 +440,9 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
       </ul>
       <div class="agent-strip" aria-label="The pixel agent's states: search, pay into escrow, key revealed, verified, refund">
         <figure><div class="agent s3" style="background-position:0 -192px"></div><figcaption>search</figcaption></figure>
-        <figure><div class="agent s3" style="background-position:-288px -384px"></div><figcaption>pay</figcaption></figure>
-        <figure><div class="agent s3" style="background-position:-144px -480px"></div><figcaption>key</figcaption></figure>
-        <figure><div class="agent s3" style="background-position:-144px -576px"></div><figcaption>verified</figcaption></figure>
+        <figure><div class="agent s3" style="background-position:-256px -384px"></div><figcaption>pay</figcaption></figure>
+        <figure><div class="agent s3" style="background-position:-128px -480px"></div><figcaption>key</figcaption></figure>
+        <figure><div class="agent s3" style="background-position:-128px -576px"></div><figcaption>verified</figcaption></figure>
         <figure><div class="agent s3" style="background-position:0 -672px"></div><figcaption>refund</figcaption></figure>
       </div>
     </div>
