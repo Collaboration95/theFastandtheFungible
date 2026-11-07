@@ -26,6 +26,11 @@ try {
   page.on('pageerror', error => errors.push(error.message))
   await expect(page.getByRole('textbox').first()).toBeVisible()
   await expect(page.getByRole('button', { name: /^Bank of Japan decision/ })).toBeEnabled()
+  const onboarding = app.windows().find(window => window.url().includes('onboarding=1'))
+  if (onboarding) {
+    await expect(onboarding.getByRole('heading', { name: 'Make this workspace yours' })).toBeVisible()
+    await onboarding.close()
+  }
   const coldStartMs = Math.round(performance.now() - start)
   const state = await app.evaluate(async ({ app, BrowserWindow }) => ({ versions: process.versions,
     preferences: BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences(), path: app.getPath('userData') }))
@@ -67,7 +72,7 @@ try {
     if (index === 1) { expect(run.spentMinor).toBeGreaterThan(0); expect(run.grants.length).toBeGreaterThan(0) }
     if (index === 2) { expect(run.refundedMinor).toBeGreaterThan(0); expect(run.intents.some(intent => intent.status === 'REFUNDED')).toBe(true) }
     runs.push({ useCase: `UC${index + 1}`, phase: run.phase, spentMinor: run.spentMinor, refundedMinor: run.refundedMinor, grants: run.grants.length })
-    await expect(page.getByRole('complementary', { name: 'Budget and purchases' }).getByText(`S$${(run.budgetMinor / 100).toFixed(2)} budget · S$${((run.budgetMinor - run.spentMinor - run.reservedMinor) / 100).toFixed(2)} left`, { exact: true })).toBeVisible()
+    await expect(page.getByRole('complementary', { name: 'Budget and purchases' }).getByText(`S$${(run.budgetMinor / 100).toFixed(2)} budget · S$${((run.budgetMinor - run.spentMinor - run.reservedMinor) / 100).toFixed(2)} budget left · refunds don't restore budget`, { exact: true })).toBeVisible()
     await page.screenshot({ animations: 'disabled', path: `desktop/evidence/uc${index + 1}.png` })
   }
   await page.getByText('Export ⋯', { exact: true }).click()
@@ -78,9 +83,10 @@ try {
   await expect(report.getByText('ResearchAgent evidence report').first()).toBeVisible()
   await report.close()
   const preferencesReady = app.waitForEvent('window')
-  await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Desktop Settings…').click())
+  await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Settings…').click())
   const preferences = await preferencesReady
-  await expect(preferences.getByRole('heading', { name: 'Desktop settings' })).toBeVisible()
+  await expect(preferences.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible()
+  await expect(preferences.getByRole('heading', { name: 'Make this workspace yours' })).toHaveCount(0)
   const safeState = await preferences.evaluate(() => window.desktop.state())
   expect(JSON.stringify(safeState)).not.toContain(canary)
   expect(safeState.wallet.wallet.dailyMinor).toBe(2000)

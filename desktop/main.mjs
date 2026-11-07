@@ -1,3 +1,4 @@
+import { receiptBundle } from '../server/receipt-bundle.js'
 import { Store } from '../server/store.js'
 import { startMcpHttp } from '../mcp/http.js'
 import { app, BrowserWindow, Menu, protocol, session, ipcMain, utilityProcess, shell, clipboard } from 'electron'
@@ -24,6 +25,7 @@ let mcpHttp, agentStore
 let engine, child, mainWindow, preferencesWindow, quitting = false
 let preferences = { ...defaults }
 let coldStartMs, configError = false
+let windowBounds = { width: 1280, height: 828 }
 let engineStatus = 'starting', restartAttempts = 0, restartTimer
 let localEnv, recovering = false, connectRequested = false, bootSequence = 0
 const emergencyPaused = process.env.SPENDING_PAUSED === '1'
@@ -88,6 +90,8 @@ async function stopEngine() {
 async function boot() {
   await app.whenReady()
   await mkdir(userData, { recursive: true })
+  try { const b = JSON.parse(await readFile(join(userData, 'window.json'), 'utf8')); if (Number.isFinite(b.width) && Number.isFinite(b.height)) windowBounds = { width: Math.max(800, Math.min(2560, b.width)), height: Math.max(600, Math.min(1600, b.height)), ...(Number.isFinite(b.x) && Number.isFinite(b.y) ? { x: b.x, y: b.y } : {}) } } catch { /* first run */ }
+  app.setAboutPanelOptions({ applicationName: 'ResearchAgent', applicationVersion: app.getVersion(), copyright: 'MIT licence · ResearchAgent' })
   try { preferences = settings(JSON.parse(await readFile(join(userData, 'desktop.json'), 'utf8'))) } catch (error) { configError = error.code !== 'ENOENT' }
   session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))
   session.defaultSession.setPermissionCheckHandler(() => false)
@@ -103,7 +107,7 @@ async function boot() {
         return new Response(response.body, { status: response.status, headers: { ...Object.fromEntries(response.headers), ...headers } })
       } catch { return new Response('Local engine unavailable', { status: 503, headers }) }
     }
-    const pathname = url.pathname === '/recovery' ? '/desktop/recovery.html' : url.pathname === '/preferences' ? '/desktop/preferences.html' : url.pathname === '/desktop/preferences.js' || url.pathname === '/desktop/preferences.css' || url.pathname === '/desktop/recovery.js' ? url.pathname : url.pathname === '/' ? '/ui/index.html' : `/ui${url.pathname}`
+    const pathname = url.pathname === '/recovery' ? '/desktop/recovery.html' : url.pathname === '/preferences' ? '/ui/index.html' : url.pathname === '/desktop/preferences.js' || url.pathname === '/desktop/preferences.css' || url.pathname === '/desktop/recovery.js' ? url.pathname : url.pathname === '/' ? '/ui/index.html' : `/ui${url.pathname}`
     const file = resolve(root, `.${decodeURIComponent(pathname)}`)
     if (!file.startsWith(root + sep) || !['.html', '.js', '.css', '.svg', '.png', '.ico', '.woff2', '.webmanifest'].includes(extname(file))) return new Response(null, { status: 403 })
     try {
@@ -114,13 +118,20 @@ async function boot() {
     } catch { return new Response(null, { status: 404 }) }
   })
   const secureHandler = (name, handler) => ipcMain.handle(name, async (event, ...args) => {
-    if (!trustedSender(event) || event.sender !== preferencesWindow?.webContents || new URL(event.senderFrame.url).pathname !== '/preferences') throw new Error('Forbidden')
+    if (!trustedSender(event) || !(event.sender === preferencesWindow?.webContents || event.sender === mainWindow?.webContents) || !(new URL(event.senderFrame.url).pathname === '/preferences' || new URL(event.senderFrame.url).searchParams.has('settings') || new URL(event.senderFrame.url).searchParams.has('onboarding'))) throw new Error('Forbidden')
     try { return await handler(...args) } catch { throw new Error('Desktop action failed; check settings and Keychain access') }
   })
+  secureHandler('desktop:prompt-budget', input => { if (!agentStore || !Number.isInteger(input?.budgetMinor) || input.budgetMinor < 0 || input.budgetMinor > 500 || typeof input.universal !== 'boolean') throw new Error('Invalid prompt budget'); agentStore.audit.append({ kind: 'policy', surface: 'owner-ui', principal: 'human', data: { action: 'prompt-budget-change', budgetMinor: input.budgetMinor, universal: input.universal } }); return { saved: true } })
+  secureHandler('desktop:receipts', id => { if (!agentStore || typeof id !== 'string') throw Error('Run unavailable'); return receiptBundle(agentStore, id) })
+  secureHandler('desktop:export', async () => { if (!agentStore) throw new Error('Engine unavailable'); return { label: preferences.live ? 'XRPL TESTNET' : 'SIMULATED', runs: agentStore.listRuns().map(r => receiptBundle(agentStore, r.runId)), audit: agentStore.auditEntries() } })
+  secureHandler('desktop:reset', async confirmation => { if (confirmation !== 'RESET SETTINGS') throw new Error('Confirmation required'); if (!agentStore) throw new Error('Engine unavailable'); agentStore.audit.append({ kind: 'policy', surface: 'owner-ui', principal: 'human', data: { action: 'settings-reset' } }); preferences = settings({ ...defaults, onboarded: false }); await writeFile(join(userData, 'desktop.json'), JSON.stringify(preferences), { mode: 0o600 }); await connectEngine() })
+  secureHandler('desktop:updates', () => checkUpdates())
   secureHandler('desktop:state', async () => ({ ...preferences, engineStatus, restartAttempts, remoteEnabled: true, coldStartMs,
-    emergencyPaused, wallet: engine ? await createClient({ baseUrl: engine.apiUrl, token: engine.apiToken }).wallet().catch(() => undefined) : undefined, versions: engine?.versions }))
+    runs: agentStore?.listRuns().map(r => ({runId:r.runId, question:r.question})) || [], version: app.getVersion(), storage: userData, emergencyPaused, wallet: engine ? await createClient({ baseUrl: engine.apiUrl, token: engine.apiToken }).wallet().catch(() => undefined) : undefined, versions: engine?.versions }))
   secureHandler('desktop:save', async input => {
     const next = settings({ ...preferences, ...input })
+    if (agentStore) agentStore.audit.append({ kind: 'policy', surface: 'owner-ui', principal: 'human', data: { action: 'desktop-settings-save', before: preferences, after: next } })
+    else { const auditStore = new Store(join(userData, preferences.live ? 'testnet' : 'fixture', 'app.db')); try { auditStore.audit.append({ kind: 'policy', surface: 'owner-ui', principal: 'human', data: { action: 'desktop-settings-save', before: preferences, after: next } }) } finally { auditStore.close() } }
     await writeFile(join(userData, 'desktop.json'), JSON.stringify(next), { mode: 0o600 })
     preferences = next; configError = false
     await connectEngine()
@@ -214,7 +225,7 @@ async function boot() {
   })
   const shortcut = (label, accelerator, key, code) => ({ label, accelerator, click: () => mainWindow?.webContents.sendInputEvent({ type: 'keyDown', keyCode: key, modifiers: ['meta'], ...(code ? { code } : {}) }) })
   Menu.setApplicationMenu(Menu.buildFromTemplate([
-    { label: 'ResearchAgent', submenu: [{ role: 'about' }, { label: 'Check for Updates…', click: () => void checkUpdates() }, { label: 'Desktop Settings…', accelerator: 'Cmd+,', click: openPreferences }, { type: 'separator' }, { role: 'hide' }, { role: 'quit' }] },
+    { label: 'ResearchAgent', submenu: [{ role: 'about' }, { label: 'Check for Updates…', click: () => void checkUpdates() }, { label: 'Settings…', accelerator: 'Cmd+,', click: () => openPreferences() }, { type: 'separator' }, { role: 'hide' }, { role: 'quit' }] },
     { label: 'File', submenu: [shortcut('New Question', 'Cmd+N', 'N'), { label: 'Print…', accelerator: 'Cmd+P', click: () => BrowserWindow.getFocusedWindow()?.webContents.print() }, { role: 'close' }] },
     { role: 'editMenu' },
     { label: 'View', submenu: [shortcut('Run', 'Cmd+1', '1'), shortcut('Writers', 'Cmd+2', '2'), shortcut('Command Menu', 'Cmd+K', 'K'),
@@ -222,9 +233,11 @@ async function boot() {
       { label: 'Leave Record Mode', click: () => { void mainWindow.loadURL(`${ORIGIN}/`) } }] },
     { label: 'Run', submenu: [shortcut('Submit / Go Now', 'Cmd+Return', 'Return'), shortcut('Stop Buying', 'Cmd+.', '.')] }, { role: 'windowMenu' },
   ]))
-  mainWindow = makeWindow({ width: 1280, height: 828 })
+  mainWindow = makeWindow(windowBounds)
+  mainWindow.on('close', () => { void writeFile(join(userData, 'window.json'), JSON.stringify(mainWindow.getBounds()), { mode: 0o600 }).catch(() => {}) })
   await mainWindow.loadURL(`${ORIGIN}/recovery`)
   mainWindow.show()
+  if (!preferences.onboarded && !process.env.RA_DESKTOP_KEYCHAIN_SERVICE) openPreferences(true)
   if (!process.env.RA_DESKTOP_KEYCHAIN_SERVICE) { const timer = setTimeout(() => void checkUpdates({ quiet: true }), 10000); timer.unref() }
   coldStartMs = Math.round(performance.now() - started)
   console.log(`ResearchAgent shell ready in ${coldStartMs} ms · ${preferences.backend === 'remote' ? 'REMOTE' : preferences.live ? 'XRPL TESTNET' : 'SIMULATED'} · Electron ${process.versions.electron} · Node ${process.versions.node}`)
@@ -293,17 +306,18 @@ function makeWindow(options) {
       const report = makeWindow({ width: 900, height: 900 })
       void report.loadURL(url).then(() => report.show())
     }
+    if (/^https:\/\/github.com\/Collaboration95\/theFastandtheFungible\/releases(?:\/tag\/v[0-9A-Za-z.-]+)?$/.test(url)) void shell.openExternal(url)
     // Explicit explorer links only; never load remote content inside Electron.
     if (/^https:\/\/testnet.xrpl.org\/(?:transactions|accounts)\/[a-zA-Z0-9]+$/.test(url)) void shell.openExternal(url)
     return { action: 'deny' }
   })
   return window
 }
-function openPreferences() {
+function openPreferences(onboarding = false) {
   if (preferencesWindow && !preferencesWindow.isDestroyed()) { preferencesWindow.focus(); return }
-  preferencesWindow = makeWindow({ width: 660, height: 800, parent: mainWindow })
+  preferencesWindow = makeWindow({ width: 1280, height: 800, parent: mainWindow })
   preferencesWindow.on('closed', () => { preferencesWindow = undefined })
-  void preferencesWindow.loadURL(`${ORIGIN}/preferences`).then(() => preferencesWindow.show())
+  void preferencesWindow.loadURL(`${ORIGIN}/?settings=1${onboarding ? '&onboarding=1' : ''}`).then(() => preferencesWindow.show())
 }
 if (!app.requestSingleInstanceLock()) app.quit()
 else void boot().catch(() => { void showRecovery() })

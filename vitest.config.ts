@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     // D22: tracing is never on in tests, whatever the shell exports.
     env: { LANGFUSE_ENABLED: '0', DOTENV_CONFIG_PATH: '.playwright/no-env' },
-    maxWorkers: 3,
+    maxWorkers: process.env.RA_TEST_WORKERS ? Math.max(1, Number(process.env.RA_TEST_WORKERS)) : 3,
     coverage: { provider: 'v8', reporter: ['json', 'json-summary', 'text'],
       include: ['server/**/*.{ts,mjs}', 'shared/**/*.{ts,mjs}', 'publisher/**/*.{ts,mjs}', 'sdk/**/*.{ts,mjs}', 'mcp/**/*.{ts,mjs}', 'src/**/*.{ts,tsx}', 'desktop/**/*.mjs'],
       exclude: ['**/*.d.ts', '**/*.test.*', 'desktop/build.mjs', 'desktop/out/**', 'desktop/dist/**'],

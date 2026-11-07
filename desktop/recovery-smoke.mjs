@@ -16,9 +16,9 @@ const ports = new Set()
 const launch = data => electron.launch({ executablePath, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_KEYCHAIN_SERVICE: service, RA_DESKTOP_DATA: data, RA_DESKTOP_RECOVERY_TEST: '1' }, timeout: 30000 })
 async function settings(app) {
   const next = app.waitForEvent('window')
-  await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(x => x.label === 'Desktop Settings…').click())
+  await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(x => x.label === 'Settings…').click())
   const page = await next
-  await expect(page.getByRole('heading', { name: 'Desktop settings' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible()
   return page
 }
 for (const fault of ['fresh-start', 'missing-key', 'deleted-key', 'locked-key', 'denied-key', 'corrupt-key', 'incomplete-config', 'remote-token-absent', 'remote-outage', 'boot-timeout', 'port-conflict']) {
@@ -42,10 +42,10 @@ for (const fault of ['fresh-start', 'missing-key', 'deleted-key', 'locked-key', 
     expect(ipc.at(-1).mainRendererDenied).toBe(true)
     if (fault === 'missing-key') {
       await main.screenshot({ path: join(dirname(output), 'missing-key.png') })
-      await prefs.locator('#provider').scrollIntoViewIfNeeded()
+      await prefs.getByLabel('Research provider').scrollIntoViewIfNeeded()
       await prefs.screenshot({ path: join(dirname(output), 'settings.png') })
       await prefs.getByRole('button', { name: 'Test connection', exact: true }).click()
-      await expect(prefs.locator('#testResult')).toHaveText('Engine unavailable')
+      await expect(prefs.locator('.owner-status')).toHaveText('Engine unavailable. Unlock Keychain, check configuration or retry from Recovery.')
       await mkdir(join(data, 'testnet'), { recursive: true })
       await writeFile(join(data, 'testnet', 'uncertain-intent-canary'), 'preserve-live-work')
       await main.getByRole('button', { name: 'Open offline demo', exact: true }).click()

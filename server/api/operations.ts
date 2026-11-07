@@ -8,6 +8,7 @@ import { bounded } from '../dependencies.js'
 
 export function operationsRouter({ store, client, payer, purchases, labels }: ApiContext) {
   const router = Router()
+  router.get('/api/writers/status', async (_req, res) => { try { res.json({ publishers: (await client.registry()).map(p => ({ name:p.name, address:p.wallet, credential:p.verification, followed:false })) }) } catch { res.status(503).json({ error:'Writer status unavailable' }) } })
   router.get('/api/metrics', (_req, res) => res.json(metrics(store, purchases)))
   let probe: Promise<unknown> | undefined
   const deep = async () => {

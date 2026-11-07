@@ -4,7 +4,7 @@ import { request } from 'node:http'
 import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { APP_DAILY_CAP_MINOR, localOrigin, parseAppArgs, runApp } from '../mcp/app.js'
+import { APP_DAILY_CAP_MINOR, localOrigin, parseAppArgs, runApp, settingsHeaders } from '../mcp/app.js'
 vi.mock('../mcp/testnet.js', () => ({ prepareMcpTestnet: vi.fn(), testnetStateDir: () => `${process.env.XDG_STATE_HOME}/researchagent/testnet` }))
 import { prepareMcpTestnet } from '../mcp/testnet.js'
 import { BUDGET } from '../shared/contracts/run.js'
@@ -135,3 +135,37 @@ test('IOU app ready block denominates prompt and daily caps in the labelled stan
   expect(app.out).toContain('wallet daily cap TEST-SGD 5.00 · stand-in for RLUSD · no real value')
  } finally {app.stop.abort(); await app.done; app.restore()}
 },30000)
+
+
+test('Settings metadata is allowlisted and never forwarded to other routes', () => {
+  const headers = { origin: 'http://127.0.0.1:1234', 'sec-fetch-site': 'same-origin', 'x-settings-ui': 'http://127.0.0.1:1234', 'x-settings-csrf': 'csrf', authorization: 'Bearer agent', cookie: 'private' }
+  expect(settingsHeaders('/api/settings/key', headers)).toEqual(Object.fromEntries(Object.entries(headers).slice(0, 4)))
+  for (const path of ['/runs', '/api/mcp/status', '/w/example']) expect(settingsHeaders(path, headers)).toEqual({})
+  expect(settingsHeaders('/api/settings', { 'x-settings-ui': ['ambiguous', 'origin'] })).toEqual({})
+})
+
+test('zero-clone proxy supports audited owner Settings while cross-origin and agent requests cannot change caps, keys or network', async () => {
+  const app = await boot(['--port', '0'], { DEEPSEEK_API_KEY: 'synthetic-settings-canary' })
+  try {
+    const headers = { 'X-Settings-UI': app.url, Origin: app.url, 'Sec-Fetch-Site': 'same-origin', 'Content-Type': 'application/json' }
+    const response = await fetch(app.url + '/api/settings', { headers })
+    expect(response.status).toBe(200)
+    const text = await response.text(); expect(text).not.toContain('synthetic-settings-canary')
+    const state = JSON.parse(text)
+    expect(state.keys.DEEPSEEK_API_KEY).toBe('••••••••')
+    const owner = { ...headers, 'X-Settings-CSRF': state.csrf }
+    const next = { ...state.values, MCP_MAX_BUDGET_MINOR: 123 }
+    expect((await fetch(app.url + '/api/settings', { method: 'POST', headers: owner, body: JSON.stringify(next) })).status).toBe(200)
+    for (const denied of [{}, { Authorization: 'Bearer mcp-or-llm' }, { ...owner, Origin: 'https://attacker.invalid' }, { ...owner, 'Sec-Fetch-Site': 'cross-site' }, headers] as Record<string, string>[]) {
+      for (const [path, body] of [['', { ...next, MCP_MAX_BUDGET_MINOR: 500 }], ['', { ...next, SETTLEMENT_RAIL: 'xrpl-testnet' }], ['/key', { account: 'OPENAI_API_KEY', value: 'synthetic-attack' }]] as const) {
+        expect((await fetch(app.url + '/api/settings' + path, { method: 'POST', headers: denied, body: JSON.stringify(body) })).status).toBe(403)
+      }
+    }
+    const saved = await (await fetch(app.url + '/api/settings', { headers })).json()
+    expect(saved.values).toEqual(next)
+    const exported = await (await fetch(app.url + '/api/settings/export', { headers })).json()
+    const saves = exported.audit.filter((e: { data: { action: string } }) => e.data.action === 'settings-save')
+    expect(saves).toHaveLength(1)
+    expect(saves[0]).toMatchObject({ principal: 'human', data: { after: next, applies: 'restart' } })
+  } finally { app.stop.abort(); await app.done; app.restore() }
+}, 60_000)

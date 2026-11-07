@@ -64,3 +64,10 @@ describe('authenticated desktop transport', () => {
     for (const value of ['http://backend.example', 'https://user:secret@backend.example', 'https://backend.example/path', 'https://backend.example/?token=secret']) expect(() => remoteOrigin(value)).toThrow()
   })
 })
+
+
+it('fixture Settings never enables escrow while Testnet retains the selected mode', () => {
+  const preferences = { live: false, paused: false, maxMinor: 0, dailyMinor: 0, ESCROW_MODE: 'key-reveal' }
+  expect(engineEnv({ userData: '/tmp/desktop-test', preferences }).ESCROW_MODE).toBe('payment')
+  expect(engineEnv({ userData: '/tmp/desktop-test', preferences: { ...preferences, live: true } }).ESCROW_MODE).toBe('key-reveal')
+})

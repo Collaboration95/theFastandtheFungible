@@ -1,8 +1,10 @@
+import { applyOwnerConfig } from './owner-config.js'
 import { loadConfig } from './config.js'
 import 'dotenv/config'
 import { startTelemetry } from './telemetry.js'
 import { SIMULATED_LABEL, XRPL_LABEL } from '../shared/contracts/index.js'
 // Start tracing before the app so the first run is captured; a no-op unless LANGFUSE_ENABLED=1.
+applyOwnerConfig(process.env)
 const stopTelemetry = await startTelemetry()
 const { createApiApp } = await import('./routes.js')
 const api = await createApiApp()
