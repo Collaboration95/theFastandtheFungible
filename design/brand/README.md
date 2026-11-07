@@ -2,7 +2,7 @@
 
 The open index: a route to evidence, framed by two source boundaries. Ink on
 Paper, a sparse Editorial Salmon layout accent, no gradients. The one character
-is the pixel agent in `design/character/` (its head is this mark);
+is the pixel agent in `design/character/` (its antenna and satchel carry this mark);
 see its README for where it may move.
 The mark shares the cast's 24-unit grid and 1.5-unit stroke. Geist Regular is
 outlined into paths so exports do not depend on fonts installed on a machine.
