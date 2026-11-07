@@ -3,7 +3,7 @@
 Historical hosted evidence, frozen at `369dd0e2` before the current CI changes.
 Window: **25 October 2026 00:00:00 UTC through 7 November 2026 11:57:59 UTC**.
 All GitHub access used authenticated `gh` CLI. No tests or benchmarks were run by
-this audit lane. [Parent measurements](#parent-measurements) are separate.
+this audit lane. [Local measurements](#local-measurements-on-this-mac) are separate.
 
 The retained history contains **397 ci.yml runs, 4 desktop.yml runs and 137 merged
 PRs**, plus **9 release parent runs** invoking these workflows. All **418 attempts**,
