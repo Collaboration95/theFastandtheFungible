@@ -1,27 +1,11 @@
 import { sameSource } from '../shared/source-identity.js'
-import { XRPL_LABEL, type PurchaseIntent, type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
+import { type RunSnapshot, type TraceEvent } from '../shared/contracts/index.js'
 import { candidateOf, money } from './format'
 import { isTerminal, runEvents } from './stage'
 
 export type AgentPhase = 'idle' | 'clarifying' | 'planning' | 'searching' | 'deciding' | 'buying' | 'verifying' | 'refunding' | 'writing' | 'done' | 'stopped' | 'failed' | 'recovering'
-export type PaymentPhase = 'quoted' | 'approved by policy' | 'submitted' | 'validated' | 'delivered' | 'verified' | 'challenged' | 'refunded' | 'failed' | 'skipped'
-const PAYMENT: Record<PurchaseIntent['status'], PaymentPhase> = { DECIDED: 'approved by policy', QUOTED: 'quoted', RESERVED: 'approved by policy', SUBMITTING: 'submitted', SETTLED: 'validated', DELIVERY_PENDING: 'delivered', VERIFIED: 'verified', CLAIM_FAILED: 'challenged', CHALLENGED: 'challenged', REFUNDED: 'refunded', CHALLENGE_REJECTED: 'challenged', CHALLENGE_REFUSED: 'challenged', DELIVERY_FAILED: 'failed', FAILED_NOT_SETTLED: 'failed', SKIPPED: 'skipped' }
-const LEVEL: Record<PurchaseIntent['status'], number> = { DECIDED: 0, QUOTED: 1, RESERVED: 2, SUBMITTING: 2, SETTLED: 3, DELIVERY_PENDING: 4, VERIFIED: 5, DELIVERY_FAILED: 3, FAILED_NOT_SETTLED: 2, SKIPPED: 0, CLAIM_FAILED: 4, CHALLENGED: 4, REFUNDED: 4, CHALLENGE_REJECTED: 4, CHALLENGE_REFUSED: 4 }
-export const railLabel = (label?: string) => label === XRPL_LABEL ? 'XRPL TESTNET' : 'SIMULATED'
-export function purchaseState(run: RunSnapshot, intent: PurchaseIntent) {
-  const receipt = run.receipts.find(item => item.intentId === intent.intentId)
-  const phase = PAYMENT[intent.status]
-  const quarantined = phase === 'challenged' || phase === 'refunded'
-  const failed = intent.status === 'DELIVERY_FAILED', notSettled = intent.status === 'FAILED_NOT_SETTLED'
-  const ok = phase === 'verified', level = LEVEL[intent.status], amount = money(intent.amountMinor)
-  const line = ok ? `Paid ${amount} · delivered · verified` : quarantined ? `Paid ${amount} · delivered · ✗ claim failed` : failed ? `Paid ${amount} · delivery failed` : notSettled ? 'Not settled · nothing charged' : phase === 'skipped' ? 'Skipped · nothing charged' : level >= 4 ? `Paid ${amount} · delivered · checking` : level === 3 ? `Paid ${amount} · checking delivery` : level === 2 ? `Paying ${amount}` : `Quoted ${amount}`
-  return { intent, receipt, phase, level, quarantined, failed, notSettled, ok, line,
-    title: ok ? 'Bought' : quarantined ? 'Proof failed' : failed ? 'Paid, not delivered' : notSettled || phase === 'skipped' ? 'Not bought' : 'Buying',
-    fill: ok || quarantined ? 100 : level >= 4 ? 75 : level >= 3 ? 50 : level >= 2 ? 25 : 0,
-    rail: railLabel(run.labels.settlement), ledgerIndex: receipt?.xrpl?.ledgerIndex, txHash: receipt?.xrpl?.txHash,
-    explorerUrl: receipt?.xrpl?.explorerUrl, pendingSince: run.events.find(event => event.type === 'PURCHASE' && event.data?.intentId === intent.intentId && event.data?.status === 'SUBMITTING')?.at,
-  }
-}
+export { railLabel, purchaseState } from '../shared/presentation.js'
+import { railLabel, purchaseState } from '../shared/presentation.js'
 const SCOUT_POSE = { idle: 'idle', clarifying: 'clarifying', planning: 'clarifying', searching: 'searching', deciding: 'weighing', buying: 'paying', verifying: 'verifying', refunding: 'caught-a-lie', writing: 'verifying', done: 'done', stopped: 'stopped', failed: 'stopped', recovering: 'verifying' } as const
 export function deriveRunState(run?: RunSnapshot, pending?: 'clarify' | 'plan') {
   const purchases = run?.intents.map(intent => purchaseState(run, intent)) ?? []
@@ -54,16 +38,6 @@ const noteState = (event: TraceEvent): TapeState => event.type === 'MANIFEST_DRO
 
 /** Trust and manifest bookkeeping never become the now-line; the segments still show them. */
 const QUIET = new Set(['manifest_dropped', 'reputation'])
-/** Proof, challenge, refund and trust updates, and a later round's repeat steps, sit in the bar as slim, unlabelled segments; the now line narrates them. */
-export const SUBSTEPS = new Set(['manifest_dropped', 'proof', 'challenge', 'refund', 'reputation'])
-/** One segment per step: repeats in a row (a challenge and its outcome, two trust updates) share a segment; a failure wins. */
-export const segments = (rows: TapeRow[]) => rows.reduce<TapeRow[]>((list, row) => {
-  const last = list.at(-1)
-  if (last?.title === row.title) list[list.length - 1] = { ...row, state: last.state === 'fail' ? 'fail' : row.state }
-  else list.push(row)
-  return list
-}, [])
-
 /** The run as steps. Built from the trace, so a second purchase round adds rows. */
 export function tapeRows(run: RunSnapshot): TapeRow[] {
   const rows: TapeRow[] = []
