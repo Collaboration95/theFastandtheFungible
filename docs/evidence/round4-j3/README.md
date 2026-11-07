@@ -6,7 +6,40 @@ not a consenting external writer or evidence of adoption. Its `synthetic: false`
 exercises the author-supplied contract; the text explicitly labels its generated
 acceptance purpose. Built-in models remain labelled fixtures.
 
-## Observed timings
+## Current zero-clone timing after J2 integration
+
+Fresh npm cache, newly packed slim MCP tgz (about 3.3 MB), fresh XDG state:
+
+- `npx -y <tgz> init notes`: **1.396 s**, including cold installation.
+- `npx -y <tgz> publish bad --testnet`: **1.510 s**, exit 1, field-level hints.
+- `npx -y <tgz> publish notes --testnet`: **32.491 s** to validated Credential,
+  first try with the retained 300-word author-contract acceptance note.
+- Cold init plus publish: **33.888 s** (the separate malformed-note probe excluded).
+
+All timing targets pass with the integrated slim package. The historical misses
+below remain retained rather than being relabelled or omitted. Init reuses the
+existing bundled publish entry and imports the starter snapshot statically; no
+separate init file or JSON asset has to be copied by the slim release builder.
+The bundled-extension test executes init after unpacking the MCPB and checks both
+notes against the source examples byte for byte.
+
+## Current slim-package buyer proof
+
+The fresh-cache `npx <tgz> app --testnet` listed the new writer under
+Writers · local · Testnet. The same scope query bought exactly one note by key
+reveal. `slim-verify.txt` reports **PASS testnet 6/6; PASS audit anchor; RESULT PASS**.
+The app's SDK/API surface was used, with explicit S$1/S$5 caps; no manual browser
+acceptance or external-writer adoption is claimed.
+
+- [CredentialCreate](https://testnet.xrpl.org/transactions/4AA1A23B93937026333CCE9EAB446823F06457D9771C5208C06C8B8C082E2CB7)
+- [EscrowCreate](https://testnet.xrpl.org/transactions/5636C68E82096B570820608B9B4078C1E579568558BE8D6C876E98D716AE48F8)
+- [EscrowFinish](https://testnet.xrpl.org/transactions/0FA6A2834B3EDBC721E648CB43EFF20A43AC6B035A566EF73896BB3403D7B0CF)
+- [Answer anchor](https://testnet.xrpl.org/transactions/48E9DE629990CBC8F841B78B543E3C0B4C07438A043286A726CE41CE4E1237DB)
+
+Current receipts: `slim-receipts.json`; timings and transaction details:
+`slim-onboarding.json`. `slim-malformed.txt` retains all field-level hints.
+
+## Historical timings before J2 integration
 
 - Fresh-cache `npx -y file://<local MCP tgz> init notes`: **37.364 s**, including
   installation. Two commented examples were written successfully.
@@ -29,7 +62,7 @@ surface (no manual browser acceptance), explicit S$1 per-call / S$5 daily MCP ca
 and the unchanged fixture decision threshold. `mcp/policy.ts`'s zero default is
 unchanged. The UI budget/modal path remains covered by the existing suite.
 
-## Buyer result
+## Historical buyer result
 
 Question: `Quasar thermal drift calibration instrument readings observation methodology uncertainty measurement`
 
@@ -58,7 +91,7 @@ with a S$1 budget. Export receipts after the answer anchor appears.
 In a clone, verify this retained proof:
 
 ```sh
-npm run verify:answer -- docs/evidence/round4-j3/receipts.json --ledger
+npm run verify:answer -- docs/evidence/round4-j3/slim-receipts.json --ledger
 ```
 
 The portable runtime used for the live proof includes the new scaffold, validation,

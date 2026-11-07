@@ -1,6 +1,6 @@
 import { it, expect } from 'vitest'
 import { execFileSync } from 'node:child_process'
-import { readFileSync, mkdtempSync, rmSync, existsSync } from 'node:fs'
+import { readFileSync, readdirSync, mkdtempSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { resolve, join } from 'node:path'
 import { Ajv } from 'ajv'
@@ -12,6 +12,11 @@ it('ships a validated extension that lists tools and clamps user-config caps ove
   execFileSync('npm', ['run', 'build:mcpb'], { stdio: 'pipe' })
   const dir = mkdtempSync(join(tmpdir(), 'mcpb-'))
   execFileSync('unzip', ['-q', resolve('dist/ResearchAgent.mcpb'), '-d', dir])
+  // Exercise the shipped dispatch: the slim builder must retain init and both templates.
+  const starter = join(dir, 'starter')
+  execFileSync(process.execPath, [join(dir, 'mcp/extension.mjs'), 'init', starter], { stdio: 'pipe' })
+  expect(readdirSync(starter)).toEqual(['1-capacity.md', '2-allocation.md'])
+  for (const file of readdirSync(starter)) expect(readFileSync(join(starter, file), 'utf8')).toBe(readFileSync(join('examples/writer-starter', file), 'utf8'))
   const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8'))
   const schema = JSON.parse(readFileSync('node_modules/@anthropic-ai/mcpb/dist/mcpb-manifest-v0.3.schema.json', 'utf8'))
   const ajv = new Ajv({ strict: false, validateFormats: false })

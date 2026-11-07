@@ -881,3 +881,7 @@ reuse an installed executable for retries. Suggested fix: reduce the portable
 runtime/package dependency footprint and provide a small stable install path.
 Severity: high first-touch friction. Mainnet impact: none observed; public Testnet
 only, no changes to spending authority or settlement validation.
+
+J3 re-measurement after J2 #387: fresh-cache init 1.396 s, malformed-note
+rejection 1.510 s, and publish-to-Credential 32.491 s. The bundled package fixes
+the observed retry latency; initial misses remain historical evidence.
