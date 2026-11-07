@@ -27,7 +27,7 @@ The form link is in the organisers' email and in the local, untracked
       [#265](https://github.com/Collaboration95/theFastandtheFungible/issues/265)).
 - [ ] **Mon 9 Nov:** ask Tenity whether the pitch is 2 or 3 minutes, and decide
       who presents.
-- [ ] **Tue 10 – Wed 11 Nov:** once J3 has merged and {{RELEASE_TAG}} is
+- [ ] **Tue 10 – Wed 11 Nov:** once J3 has merged and v1.0.0 is
       published, an agent fills the placeholders below and
       re-exports the deck.
 - [ ] **Wed 11 Nov:** record the video ([script](demo-video-script.md)). Check
@@ -54,7 +54,7 @@ The form link is in the organisers' email and in the local, untracked
 If the form has a free-text notes field, paste this (54 words):
 
 > Judges can run the whole path on XRPL Testnet with one line, no clone:
-> `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/{{RELEASE_TAG}}/researchagent-mcp-{{RELEASE_VERSION}}.tgz try --testnet`
+> `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz try --testnet`
 > (Node ≥ 22.13). It ends with six Testnet links and `RESULT PASS`. Replay:
 > https://collaboration95.github.io/theFastandtheFungible/demo/ · Live ledger
 > check: https://collaboration95.github.io/theFastandtheFungible/ledger/ ·
@@ -71,16 +71,16 @@ grep -rn '{{' docs/submission/ --include='*.md' --include='*.html'
 
 | Placeholder | Fill with | Comes from | Where it appears |
 |---|---|---|---|
-| `{{RELEASE_TAG}}` | the tag carrying `try`, expected `v1.0.0` | release lane, after J3 | short-description (150, 300), deck slides 2, 3, 12, video script (prereqs, shots 2, 7, 8), this README |
-| `{{RELEASE_VERSION}}` | npm version, expected `1.0.0` | release | short-description, deck slides 3 and 7, video script, this README |
-| `{{RELEASE_PY_VERSION}}` | wheel version: `1.0.0`, or `1.0.0rcN` for an RC (PEP 440) | release | video shot 8 |
-| `{{J3_FIRST_TRY_SECONDS}}` | seconds from `init` to a validated Credential, first try | J3 ([#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389)) `docs/evidence/round4-j3/timings.json` | deck slide 8, video shot 7, qa Q2 |
+| `{{RELEASE_TAG}}` | the tag carrying `try`, expected `v1.0.0` | release lane, after J3. **Filled `v1.0.0` (7 Nov).** | short-description (150, 300), deck slides 2, 3, 12, video script (prereqs, shots 2, 7, 8), this README |
+| `{{RELEASE_VERSION}}` | npm version, expected `1.0.0` | release. **Filled `1.0.0` (7 Nov).** | short-description, deck slides 3 and 7, video script, this README |
+| `{{RELEASE_PY_VERSION}}` | wheel version: `1.0.0`, or `1.0.0rcN` for an RC (PEP 440) | release. **Filled `1.0.0` (7 Nov).** | video shot 8 |
+| `{{J3_FIRST_TRY_SECONDS}}` | seconds from `init` to a validated Credential, first try | J3 ([#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389)) `docs/evidence/round4-j3/slim-onboarding.json`. **Filled `33.9 s` (7 Nov; cold init 1.396 s + publish to Credential 32.491 s = 33.888 s).** | deck slide 8, video shot 7, qa Q2 |
 | `{{REGISTRY_STATUS}}` | "also on npm, PyPI and the MCP Registry", or "not yet on npm or PyPI" | owner decision A3 | deck slide 8 |
 | `{{UPSTREAM_FILED_URLS}}` | the filed issue URLs, or "not yet (drafts in docs/feedback/upstream/)" | owner task B1 | deck slide 11 |
 | `{{UPSTREAM_FILED_ANSWER}}` | "Yes, three, on <date>", or the fallback line in Q13 | owner task B1 | qa Q13 |
 | `{{VIDEO_URL}}` | the unlisted video link | owner, after recording | deck slide 12, form |
 
-Already filled from merged work on 7 Nov: the J1 judge-bank rate (**15/20**,
+Already filled from merged work on 7 Nov: the release tag, version and wheel version (v1.0.0), the J3 first-try time (33.9 s), the J1 judge-bank rate (**15/20**,
 [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390)) and
 the S1b Settings page ([#386](https://github.com/Collaboration95/theFastandtheFungible/pull/386)).
 

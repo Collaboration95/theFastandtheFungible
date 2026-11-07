@@ -7,7 +7,7 @@ import { once } from 'node:events'
 import { mkdir, cp } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 
-const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.2'
+const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0'
 const SIMULATED: Record<string, RegExp> = { 'Testnet UC3 · payment': /^Malaysia packaging lead times/, 'Simulated UC1': /^Bank of Japan decision/, 'Simulated UC2': /^Kestrel–TSMC outlook/, 'Simulated UC3': /^Malaysia packaging lead times/ }
 const TABS = ['Testnet UC3 · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
 let server: ChildProcess, base: string
@@ -49,7 +49,7 @@ async function walk(page: Page, tab: string) {
 }
 const contrast = async (page: Page) => !(await page.locator('.ra-payment').count()) ? [] : new AxeBuilder({ page }).include('.ra-payment').withRules(['color-contrast']).analyze().then(r => r.violations)
 
-test('landing points at the release candidate, never the stale Latest', async ({ page }) => {
+test('landing points at the release, never the stale Latest', async ({ page }) => {
   await page.goto(`${base}/`)
   await expect(page.locator('body')).not.toContainText('v0.8.0')
   expect(await page.locator('a[href*="releases/latest"]').count()).toBe(0)
@@ -69,8 +69,8 @@ for (const tab of TABS) {
     if (tab === TABS[0]) {
       const banner = page.locator('.demo-banner')
       await banner.locator('summary').click()
-      await expect(banner).toContainText('researchagent-mcp-1.0.0-rc.2.tgz')
-      await expect(banner.getByRole('link', { name: /Release candidate/ })).toHaveAttribute('href', TAG)
+      await expect(banner).toContainText('researchagent-mcp-1.0.0.tgz')
+      await expect(banner.getByRole('link', { name: /Release/ })).toHaveAttribute('href', TAG)
       expect(await banner.locator('a[href*="releases/latest"]').count()).toBe(0)
     }
   })

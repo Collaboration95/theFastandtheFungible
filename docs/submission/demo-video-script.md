@@ -8,13 +8,13 @@ of judges' time. Nine shots. Voice-over is about 370 words at 135 words a minute
 
 **Recording is a human task.** Track it on
 [#265](https://github.com/Collaboration95/theFastandtheFungible/issues/265).
-Record on Wed 11 or Thu 12 Nov, **after {{RELEASE_TAG}} is published**
-(shot 2 needs the `try` subcommand, which is not in rc.2). Upload by Thu 12 Nov.
+Record on Wed 11 or Thu 12 Nov, **after v1.0.0 is published**
+(shot 2 needs the `try` subcommand, which is in v1.0.0). Upload by Thu 12 Nov.
 
 ## Before you press record
 
-1. **The release exists.** `gh release view {{RELEASE_TAG}}` lists
-   `researchagent-mcp-{{RELEASE_VERSION}}.tgz` and the Python wheel.
+1. **The release exists.** `gh release view v1.0.0` lists
+   `researchagent-mcp-1.0.0.tgz` and the Python wheel.
 2. **The public site is current.** Open
    <https://collaboration95.github.io/theFastandtheFungible/ledger/>. The first
    rows must read "RLUSD", not `524C5553…`. On
@@ -26,8 +26,8 @@ Record on Wed 11 or Thu 12 Nov, **after {{RELEASE_TAG}} is published**
 3. **A fresh, private terminal.** Light theme, 18 pt font, 1920×1080, window
    title hidden. Run these first, off camera:
    ```sh
-   export REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/{{RELEASE_TAG}}
-   export TGZ=$REL/researchagent-mcp-{{RELEASE_VERSION}}.tgz
+   export REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0
+   export TGZ=$REL/researchagent-mcp-1.0.0.tgz
    export npm_config_cache=$(mktemp -d)   # empty npm cache: what a judge gets
    export XDG_STATE_HOME=$(mktemp -d)     # fresh faucet wallets, mode 0600, never printed
    clear
@@ -95,7 +95,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 - **Edit:** speed up the install and faucet wait (×4 or more), with the
   real-time clock in the corner. Play the six numbered lines and RESULT at 1×.
   The cold run took 84.2 s in our measurement; show whatever your run took.
-- **Captions:** first "`npx -y …/releases/download/{{RELEASE_TAG}}/researchagent-mcp-{{RELEASE_VERSION}}.tgz try --testnet`"
+- **Captions:** first "`npx -y …/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz try --testnet`"
   (full URL, 3 s), then "XRPL Testnet · no real value · fixture models ·
   fictional writers · sped up ×N".
 - **Fallback:** if the faucet fails, `try` prints a labelled SIMULATED run with
@@ -204,10 +204,10 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
   will appear as EscrowFinish`. ⌘-click the Credential link.
 - **Caption:** "XRPL Testnet · starter notes, not a real writer · public faucet"
 - **If J3 (`init`) has not merged:** skip `init`, and use
-  `curl -L https://github.com/Collaboration95/theFastandtheFungible/archive/refs/tags/{{RELEASE_TAG}}.tar.gz | tar xz --strip-components=2 '*/examples/writer-starter'`
+  `curl -L https://github.com/Collaboration95/theFastandtheFungible/archive/refs/tags/v1.0.0.tar.gz | tar xz --strip-components=2 '*/examples/writer-starter'`
   then `publish ./writer-starter --testnet`.
 - **VO (30 words):** "Writers join with one command. A Markdown folder becomes
-  a Testnet writer with an XRPL credential. Ours took {{J3_FIRST_TRY_SECONDS}}
+  a Testnet writer with an XRPL credential. Ours took 33.9 s
   from a fresh folder."
 
 ### Shot 8 · Don't trust us, verify it (2:22–2:40)
@@ -215,8 +215,8 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 - **Type:**
   ```sh
   python3 -m venv /tmp/ra && . /tmp/ra/bin/activate
-  pip install -q $REL/researchagent-{{RELEASE_PY_VERSION}}-py3-none-any.whl
-  curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/{{RELEASE_TAG}}/docs/evidence/lane-b3/UC3.receipts.json
+  pip install -q $REL/researchagent-1.0.0-py3-none-any.whl
+  curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.0.0/docs/evidence/lane-b3/UC3.receipts.json
   researchagent verify UC3.receipts.json --ledger
   ```
   Four lines, ending `PASS testnet 12/12 (read-only, s.altnet)` and `RESULT PASS`.
@@ -246,5 +246,5 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 3. Replace `{{VIDEO_URL}}` in `docs/submission/deck/index.html` (slide 12),
    `docs/submission/README.md` and the form. Then re-export:
    `node docs/submission/deck/export.mjs`.
-4. Attach the MP4 to the release (`gh release upload {{RELEASE_TAG}} video.mp4`),
+4. Attach the MP4 to the release (`gh release upload v1.0.0 video.mp4`),
    not to git.

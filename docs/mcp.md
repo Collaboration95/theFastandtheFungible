@@ -1,9 +1,9 @@
 # Use ResearchAgent from Claude Code, Codex or any MCP client
 
-[Release candidate v1.0.0-rc.2](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0-rc.2): release candidate · not yet on npm/PyPI/MCP Registry. Install without cloning.
+[Release v1.0.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.2/researchagent-mcp-1.0.0-rc.2.tgz
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz
 ```
 
 
@@ -270,13 +270,13 @@ labelled not independently verified. See [receipt contribution contract](contrac
 and [offline fixture evidence](evidence/round2-g/README.md). Python callers can use
 `Client.receipts(run_id)`; the existing offline verifier accepts v1/v2/v3.
 
-## Zero-clone Testnet MCP (v1.0.0-rc.2)
+## Zero-clone Testnet MCP (v1.0.0)
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0-rc.2/researchagent-mcp-1.0.0-rc.2.tgz --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz --testnet
 ```
 
-Release candidate · not yet on npm/PyPI/MCP Registry. Alternatively use the
+Release · not yet on npm/PyPI/MCP Registry. Alternatively use the
 local `dist/release/researchagent-mcp-*.tgz` from `make release-artifacts`. `node scripts/install-snippets.mjs --tag <tag> --testnet`
 prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots its own engine and fixture publisher.
 
