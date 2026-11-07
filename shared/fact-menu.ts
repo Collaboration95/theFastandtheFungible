@@ -32,16 +32,19 @@ const measures = [
   'draw', 'generation', 'transmission', 'throughput', 'spreads', 'spread', 'shortage', 'shares', 'share',
   'inflows', 'holdings', 'instalments', 'installments', 'volume', 'quote', 'weeks', 'slots', 'lead', 'carbon', 'deals', 'flow',
 ]
+const teamEntities = [...entities, 'EscrowFinish', 'EscrowCreate', 'XRPL', 'XRP', 'RLUSD', 'Testnet', 'writer', 'buyer', 'engine', 'policy', 'Credentials']
+const teamMeasures = [...measures, 'fee', 'fees', 'drops', 'fulfillment', 'settlement', 'delivery', 'payment', 'key', 'identity', 'budget', 'funds']
 const years: Record<string, string> = { '2023': 'twenty twenty three', '2024': 'twenty twenty four', '2025': 'twenty twenty five', '2026': 'twenty twenty six', '2027': 'twenty twenty seven', '2028': 'twenty twenty eight', '2029': 'twenty twenty nine', '2030': 'twenty thirty' }
 export const menuText = (text: string) => text.toLowerCase().replace(/[’']s\b/g, '').replace(/[’']/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
 export const mentionsMenuPhrase = (text: string, phrase: string) => ` ${menuText(text)} `.includes(` ${menuText(phrase)} `)
 
 /** No values: entity/measure are vocabulary entries; the optional period is a spelled-out year. */
-export function deriveFactMenu(article: Pick<Article, 'tier' | 'passages'>): Record<string, FactCover> {
+export function deriveFactMenu(article: Pick<Article, 'tier' | 'passages'> & Partial<Pick<Article, 'publisherSlug'>>): Record<string, FactCover> {
   if (article.tier !== 'PAID') return {}
   return Object.fromEntries(article.passages.flatMap(p => {
-    const entity = entities.find(e => mentionsMenuPhrase(p.text, e))
-    const measure = measures.find(m => mentionsMenuPhrase(p.text, m))
+    const team = article.publisherSlug === 'team-builder-notes'
+    const entity = (team ? teamEntities : entities).find(e => mentionsMenuPhrase(p.text, e))
+    const measure = (team ? teamMeasures : measures).find(m => mentionsMenuPhrase(p.text, m))
     const year = p.text.match(/\b(?:fiscal|FY)\s*(20(?:2[3-9]|30))\b/i)?.[1] ?? p.text.match(/\b20(?:2[3-9]|30)\b/)?.[0]
     return entity && measure ? [[p.id, { entity, measure, ...(year ? { period: years[year] } : {}) }]] : []
   }))

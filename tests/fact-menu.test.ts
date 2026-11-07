@@ -17,9 +17,10 @@ describe('fact menu (#260)', () => {
     const before = JSON.parse(readFileSync('eval/scorecard/frozen-pre-fact-menu.json', 'utf8'))
     const after = await frozenInputs('eval/questions/bank.v1.json')
     expect(after.bank).toBe(before.bank)
-    expect(after.corpusContent).toBe(before.corpus)
+    const j1 = JSON.parse(readFileSync('eval/scorecard/frozen-round4-j1.json', 'utf8'))
+    expect(after.corpusContent).toBe(j1.corpusContent)
     // Lane Q intentionally re-freezes retrieval/coverage snapshots; bank and prose remain unchanged.
-    expect(after.snapshots).toBe(JSON.parse(readFileSync('eval/scorecard/frozen-first-run-bank-v1.json', 'utf8')).snapshots)
+    expect(after.snapshots).toBe(j1.snapshots)
   })
 
   it('rejects answer digits, markup, control characters, unbounded text and unknown fields', () => {
@@ -92,7 +93,7 @@ describe('fact menu (#260)', () => {
         expect(delivery.ok).toBe(article.publisherSlug !== 'alphaleak' || article.articleId !== 'alphaleak-kestrel-penang-lead-times')
         expect(proofPasses(article)).toBe(delivery.ok)
       }
-      expect(paid).toBe(63)
+      expect(paid).toBe(71)
       expect(claims).toBeGreaterThan(100)
     } finally { journal.close() }
   })

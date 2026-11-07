@@ -55,7 +55,7 @@ export async function generate({ llm, root, out, only, dryRun = false, cap = CAL
     }
   }
 
-  const publishers = roster.filter(f => !only || f.publisher.slug === only)
+  const publishers = roster.filter(f => f.publisher.synthetic && (!only || f.publisher.slug === only))
   const goldenFor = slug => golden.filter(a => a.publisherSlug === slug)
   const isGolden = id => golden.some(a => a.articleId === id)
 

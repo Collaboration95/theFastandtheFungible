@@ -49,6 +49,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
     const source = candidateOf(run, citation)
     return <sup key={citationKey(citation)}><button className="ra-cite" type="button" disabled={!onCitation} aria-label={`Citation ${number}: ${source?.title ?? citation.resourceId}, exact passage`} onClick={() => onCitation?.(citation)}>{number}</button></sup>
   })
+  if (!answer && run.phase === 'DONE') return <section className="ra-verdict" aria-label="Research answer"><h2 className="ra-caption">Answer</h2><p>{run.receipts.length ? 'No verified answer is available from these purchases.' : 'No listed writer covers this yet · nothing bought'}</p><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Publish a note on this →</a></section>
   if (!answer) return <section className="ra-verdict" aria-label="Research answer" aria-busy={!['FAILED','STOPPED'].includes(run.phase)}><h2 className="ra-caption">Answer</h2>{['FAILED','STOPPED'].includes(run.phase) ? <p>No verified answer is available. Ask again to begin a new run.</p> : <div className="ra-vtext is-skel" aria-hidden="true"><i /><i /><i /></div>}</section>
   const lead = leadFinding(run.question, answer.claims)
   const added = answer.claims.filter(c => !baseline?.claims.some(b => b.text === c.text))

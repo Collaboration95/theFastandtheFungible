@@ -15,7 +15,7 @@ export function receiptBundle(store: Store, runId: string): ReceiptBundle {
       return { intentId: i.intentId, manifest: e.manifest, quote: e.quote, key: e.key, finishHash: e.finishHash, ledgerIndex: e.ledgerIndex, ciphertextHash: e.quote.terms.keyReveal!.ciphertextHash, failedClaimIds: i.failedClaimIds! }
     }),
     ledgerAnchor: run.ledgerAnchor,
-    schemaVersion: run.receipts.length ? 3 : run.candidates.some(c => c.source) ? 2 : 1, identityVersion: run.receipts.length ? (run.candidates.some(c => c.source) ? 2 : 1) : undefined, contributions: run.receipts.length ? contributions({ ...run, sources: run.contents }) : undefined, runId, label: `${run.labels.settlement}; ${run.labels.research}; writer identity unverified`,
+    schemaVersion: run.receipts.length ? 3 : run.candidates.some(c => c.source) ? 2 : 1, identityVersion: run.receipts.length ? (run.candidates.some(c => c.source) ? 2 : 1) : undefined, contributions: run.receipts.length ? contributions({ ...run, sources: run.contents }) : undefined, runId, label: `${run.labels.settlement}; ${run.labels.research}; writer identity unverified${run.candidates.some(c => c.publisherSlug === 'team-builder-notes') ? '; team-authored · real content · not an independent writer · Testnet' : ''}`,
     requirements: run.checkpoint.requirements ?? [], answers: run.answers, sources: run.contents, candidates: run.candidates.map(candidate => ({ ...candidate, verification: undefined })), intents: run.intents,
     grants: run.grants.filter(g => run.intents.some(i => i.intentId === g.intentId && i.status === 'VERIFIED')),
     receipts: run.receipts, payments: store.receiptRows().filter(r => r.runId === runId),

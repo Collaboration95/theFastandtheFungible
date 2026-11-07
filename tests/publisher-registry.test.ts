@@ -38,11 +38,11 @@ describe('multi-publisher host (#122)', () => {
     }
   })
 
-  it('lists all 8 roster publishers from data/writers/, even before the v2 articles land', async () => {
+  it('lists all 9 roster publishers from data/writers/, even before the v2 articles land', async () => {
     const base = await servePublishers({ writers: undefined })
     const { publishers } = await (await fetch(`${base}/registry`)).json() as { publishers: { slug: string }[] }
     expect(publishers.map(p => p.slug).sort()).toEqual(readdirSync('data/writers').map(f => f.replace(/\.json$/, '')).sort())
-    expect(publishers).toHaveLength(8)
+    expect(publishers).toHaveLength(9)
   })
 
   it('serves a discovery doc whose pubKey derives to its wallet', async () => {

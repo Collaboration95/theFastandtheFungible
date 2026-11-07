@@ -29,6 +29,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page.getByText('Draft · free sources only', { exact: true })).toBeVisible()
     await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
     await expect(page.getByText('Updated with paid evidence', { exact: true })).toBeVisible()
+    await expect(page.locator('.ra-group').filter({ has: page.getByRole('heading', { name: /^Supports/ }) })).toContainText('26 weeks to 18 weeks')
     await expect(page.getByRole('region', { name: /Purchase: AlphaLeak/ })).toContainText('Refunded S$0.30')
     await expect(page.getByRole('region', { name: 'Purchase: The Fab Floor' })).toContainText('Paid by key reveal')
     await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 kept · 1 refunded')
@@ -87,7 +88,7 @@ test('key reveal tab autoplays and preserves quarantine disclosure', async ({ pa
   await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC-key-reveal`)
   await expect(page.getByText(/ciphertext before grant stays quarantined/)).toBeVisible()
   for (const name of ['Testnet UC3 · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show']) await expect(page.getByRole('link',{name,exact:true})).toBeVisible()
-  await expect(page.locator('.demo-transactions p')).toHaveCount(4)
+  await expect(page.locator('.demo-transactions p')).toHaveCount(5)
   await expect(page.locator('.demo-transactions')).toContainText('EscrowFinish (key published)')
   await expect(page.locator('.demo-transactions')).toContainText('EscrowCancel (writer no-show)')
   await expect(page.locator('.demo-transactions')).toContainText('Historical')
@@ -96,7 +97,7 @@ test('key reveal tab autoplays and preserves quarantine disclosure', async ({ pa
 })
 
 // The first minute of every Testnet replay: no failure frame, ever, and every recorded hash live-green quickly.
-for (const [name, query, rows] of [['default key-reveal UC3', '', 6], ['writer no-show', '?scenario=UC-key-reveal', 4]] as const) test(`${name} replay never shows a failure and its hashes go live-green`, async ({ page }, info) => {
+for (const [name, query, rows] of [['default key-reveal UC3', '', 6], ['writer no-show', '?scenario=UC-key-reveal', 5]] as const) test(`${name} replay never shows a failure and its hashes go live-green`, async ({ page }, info) => {
   test.setTimeout(150_000)
   const root = info.outputPath('pages')
   await mkdir(`${root}/theFastandtheFungible`, { recursive: true })

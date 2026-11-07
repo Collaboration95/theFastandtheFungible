@@ -44,7 +44,7 @@ export function favicon(state: 'idle' | 'work' | 'done' | 'alert'): string {
 }
 
 export function keyRevealLabel(e: import('../shared/contracts/escrow').EscrowStatus): ReactNode {
-  if (e.state === 'CANCELLED') return 'Cancelled · refunded'
+  if (e.state === 'CANCELLED') return 'Cancelled · principal returned'
   if (e.state !== 'RELEASED') return 'Escrow locked · waiting for writer to reveal key'
   const hash = e.finishHash ?? ''
   return <>Paid by key reveal · EscrowFinish {/^[a-f0-9]{64}$/i.test(hash) ? <a href={`https://testnet.xrpl.org/transactions/${hash}`} target="_blank" rel="noreferrer">{shortHash(hash)} ↗</a> : shortHash(hash)} · key published in ledger {e.revealLedger}</>

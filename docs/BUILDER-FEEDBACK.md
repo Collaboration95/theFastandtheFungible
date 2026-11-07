@@ -860,3 +860,15 @@ verification, and overlap independent proof checks. Suggested tooling fix:
 provide a cold-start timing breakdown and batched validated transaction reads.
 Severity: medium onboarding latency. Mainnet impact: not tested; these runs used
 only faucet XRP on Testnet, with fixture models and fictional writers.
+### 7 Nov 2026 · J1 observed local packaging friction
+
+Observed: a concurrent web UI build cleared `dist/release/` during the packed
+judge-bank Testnet acceptance. Question 19 had completed and its public receipt
+was exported, but rereading the tgz digest then failed with ENOENT. Evidence:
+`docs/evidence/round4-j1/README.md` and `scripts/judge-bank-testnet.ts`.
+Workaround: retain the original unpacked package and private durable state,
+record the artifact digest once, and resume the frozen bank with the same
+idempotency keys. Suggested tooling fix: stage acceptance packages outside the
+frontend build output and persist artifact identity before launch. Severity:
+low (local evidence capture interrupted; no new purchase needed for recovery).
+Mainnet impact: no ledger defect observed and no mainnet execution attempted.

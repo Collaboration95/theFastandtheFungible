@@ -457,6 +457,7 @@ Significant product, design and process decisions, newest first. One line each: 
 ## Changelog
 
 - 7 Nov: Shared owner Settings adds nine sections, guarded/audited local changes, macOS Keychain controls, onboarding and window persistence; fixture screenshots and axe evidence in [settings](evidence/settings/README.md). PR #386 completes the guarded zero-clone proxy; packed Testnet Settings cap/audit proof and unsigned arm64 DMG fixture recovery/smoke acceptance are recorded alongside the screenshots.
+- 7 Nov — J1: frozen XRPL judge bank, eight disclosed team-authored builder notes, cited Testnet purchases, honest empty answers, corrected UC3 stance/plurals/cancellation labels; replay traces and goldens refreshed (docs/evidence/round4-j1).
 
 - 3 Nov: Pitch materials moved to the audited fresh-set headline (93.15% [81.25–100.00], 48 questions): slide 7 and PDF, 2-minute pitch with speaker-note caveats, Q&A (waste answer replaced, new overfitting answer from the rule audit), gate-audit and model-cost figures aligned to the fresh scorecard. 80.05% and 52.9% → 40.7% kept only as labelled history.
 - 3 Nov: Lane B generalisation audit: four fresh domains, one LIVE run per policy, used spend 90.07% → 93.15%, paired CI touches zero; waste 6.85% [0.00–18.75], uplift +66.67 pts [45.83–83.33], zero gate violations, US$0.1800611 models. README/SFF tables and #321 slide-7 source note updated; simulated payments, no `src/` or deck HTML edits.
