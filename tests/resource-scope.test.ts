@@ -71,3 +71,29 @@ it('wrapper enforces an actual invocation timeout and removes scratch', async ()
   expect(() => execFileSync(process.execPath, ['scripts/test-resources.mjs', process.execPath, '-e', "require('node:fs').writeFileSync(process.argv[1],process.env.RA_RESOURCE_INVOCATION);setInterval(()=>{},1000)", record], { env: { ...process.env, RA_TEST_TIMEOUT_MS: '250' }, stdio: 'pipe' })).toThrow()
   expect(existsSync(readFileSync(record, 'utf8'))).toBe(false)
 })
+it('retains private synthetic evidence with a reason while timers close', async () => {
+  const { resources } = await import('./helpers/resource-scope.js')
+  const { join } = await import('node:path')
+  const { readFileSync, statSync } = await import('node:fs')
+  const parent = resources().tempDir('synthetic-retention-'), old = process.env.XDG_STATE_HOME
+  process.env.XDG_STATE_HOME = parent
+  const scope = new ResourceScope()
+  try {
+    expect(() => scope.evidenceDir('proof-', '')).toThrow(/reason/)
+    const evidence = scope.evidenceDir('proof-', 'SYNTHETIC retention regression; no live obligation')
+    let fired = false
+    scope.timer(setTimeout(() => { fired = true }, 20))
+    await scope.close()
+    await new Promise(r => setTimeout(r, 30))
+    expect(fired).toBe(false)
+    expect(existsSync(evidence)).toBe(true)
+    expect(statSync(evidence).mode & 0o777).toBe(0o700)
+    expect(statSync(join(evidence, 'retention.json')).mode & 0o777).toBe(0o600)
+    expect(JSON.parse(readFileSync(join(evidence, 'retention.json'), 'utf8')).reason).toContain('SYNTHETIC')
+    expect(() => scope.tempDir()).toThrow(/closed/)
+    expect(() => scope.spawn(process.execPath, [])).toThrow(/closed/)
+  } finally {
+    if (old === undefined) delete process.env.XDG_STATE_HOME; else process.env.XDG_STATE_HOME = old
+    await scope.close()
+  }
+})

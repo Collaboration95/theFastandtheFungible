@@ -14,7 +14,10 @@ No host-wide purge was performed. The audit independently identified at least
 The after run uses `node scripts/test-resources.mjs npm run check:fast`:
 80.72 s, exit 0, zero new host TMPDIR entries, zero unexpected entries inside the
 private invocation and zero live owned groups. See after.json and check-fast.log.
-These single local runs do not establish a causal speedup or the CI coverage
+After rebasing over T1 (#393), the check passed again in 94.73 s with zero
+private invocation entries/groups. That host window saw 34 new directories from
+concurrent activity outside the owned root (rebased.json); these were not purged.
+These local runs do not establish a causal speedup or the CI coverage
 wall-time target (100 s versus the audit's 121.57 s baseline).
 
 ## API for lanes B, C and D

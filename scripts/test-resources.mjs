@@ -52,7 +52,8 @@ if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.m
   const finish = beginResources()
   let child
   const shutdown = signal => { if (child?.pid) { try { process.kill(-child.pid, signal) } catch { /* already exited */ } } }
-  const interrupted = () => shutdown('SIGTERM')
+  let escalation
+  const interrupted = () => { process.exitCode = 1; shutdown('SIGTERM'); escalation ??= setTimeout(() => shutdown('SIGKILL'), 1500) }
   process.once('SIGTERM', interrupted); process.once('SIGINT', interrupted)
   let timer
   try {
@@ -63,11 +64,11 @@ if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.m
       writeFileSync(join(process.env.RA_RESOURCE_REGISTRY, `${child.pid}.json`), JSON.stringify({ group: child.pid }))
     }
     const timeout = Number(process.env.RA_TEST_TIMEOUT_MS || 600000)
-    timer = setTimeout(() => { process.exitCode = 1; shutdown('SIGKILL') }, timeout)
+    timer = setTimeout(interrupted, timeout)
     const code = await new Promise((done, fail) => { child.once('error', fail); child.once('exit', done) })
     process.exitCode ||= code ?? 1
   } finally {
-    clearTimeout(timer)
+    clearTimeout(timer); clearTimeout(escalation)
     process.off('SIGTERM', interrupted); process.off('SIGINT', interrupted)
     await finish()
   }
