@@ -1,79 +1,89 @@
 # Short description: three lengths
 
 For the SingHacks finals form (Ripple track). Pick the tier that fits the field.
-Every claim here is merged and dated in [the evidence files](../evidence/); the
-precise labels are below each tier. Facts as of **3 Nov 2026**; refresh the
-numbers on 11 Nov if a later release changes them.
+Every claim is merged and dated; the label check at the bottom maps each one to
+its PR or evidence file. Facts as of **7 Nov 2026**.
+
+`{{…}}` marks a number or link from work still landing. Replace each one before
+pasting, or delete the sentence it sits in (see [README](README.md#placeholders)).
 
 ## ~50 words
 
-ResearchAgent is research with a wallet. It answers from free sources first,
-then buys the one missing article straight from its writer over x402 on XRPL,
-inside a budget you set. Only policy code can spend, never the LLM. Broken
-promises are refunded. It runs on XRPL Testnet with fictional writers.
+ResearchAgent is research with a wallet. It answers from free sources, then buys
+the missing article from its writer over x402 on XRPL, inside your budget. Only
+policy code can spend. The writer is paid only by publishing the article key on
+the ledger. One command runs it on XRPL Testnet and verifies the result.
 
 ## ~150 words
 
-ResearchAgent is an AI agent that does research with a wallet. You set a budget; it
-answers from free sources first, then buys only the article that fills the
-gap, paying the writer directly over x402 on the XRP Ledger. The model judges
-what is worth buying, but only deterministic policy code can spend, and never
-past your budget. Each article is checked against the writer's signed
-promises; a broken promise is refunded, optionally enforced by native XRPL
-Escrow.
+ResearchAgent is an AI agent that does research with a wallet. It answers from
+free sources first, then buys only the article that fills the gap, paying the
+writer over x402 on the XRP Ledger. A model judges what is worth buying, but only
+deterministic policy code can spend, and never past your budget.
 
-Since SingHacks we shipped five tagged releases: an MCP server for Claude Code
-and other agents, a Mac app, a TypeScript SDK, one-command publishing for
-writers, and "hire the agent", where other agents pay ResearchAgent and it pays
-royalties to every writer it cites.
+Since SingHacks we have merged 183 pull requests. The writer is now paid by
+*key reveal*: their EscrowFinish publishes the article's decryption key on the
+ledger, so delivery and payment are one transaction. The same escrow settles in
+a stablecoin-style test token. Two independent verifiers, one of them Python with
+no Node, re-check every receipt against the ledger.
 
-Payments settle on **XRPL Testnet** (no real money). The writers and articles
-are fictional. The offline demo labels its simulated payments.
+Try it with no clone:
+`npx -y <release>/researchagent-mcp-{{RELEASE_VERSION}}.tgz try --testnet`. It
+finished in 84 s from an empty cache, with six Testnet links and `RESULT PASS`.
+
+Everything runs on XRPL Testnet (no real money). The research writers are
+fictional; the TEST-SGD token stands in for RLUSD.
 
 ## ~300 words
 
-ResearchAgent is an AI agent that researches with a wallet. You ask a question and set a
-budget (S$0 to S$5). It answers from free sources first. Then it buys the one
-article that fills the gap, paying the writer directly over x402 on the XRP
-Ledger. A decision model judges what is worth buying. Only deterministic policy code can make a purchase, and
-never beyond your budget. Five hard gates hold on every run: no premium bytes
-before payment, the budget is the only spending authority, one charge per
-intent, real citations, and labels on anything simulated. Tests and a
-read-only audit enforce them (0 violations across 10 runs on 3 Nov).
+ResearchAgent is an AI agent that does research with a wallet. You ask a question
+and set a budget. It answers from free sources first, then buys only the article
+that fills the gap, paying the writer directly over x402 on the XRP Ledger. A
+decision model judges what is worth buying, but only deterministic policy code can
+spend, and never past your budget. Five hard gates hold on every run, and a
+read-only audit checks them.
 
-Each delivered article is checked against the writer's signed promises. A
-broken promise is refunded. With native XRPL Escrow the ledger enforces that
-refund, not the writer's goodwill: on Testnet a failed proof cancelled the
-escrow and returned the full amount with the writer offline.
+What's new since SingHacks (183 merged pull requests, 10 tagged releases):
 
-Since SingHacks we shipped five tagged releases and more than 40 merged pull
-requests:
+- **Key-reveal escrow.** The buyer locks payment in a native XRPL Escrow whose
+  condition is the hash of the article's key. To get paid, the writer must
+  publish that key in the EscrowFinish, so delivery and payment are one ledger
+  event. The buyer decrypts and checks every promised passage; a broken promise
+  is refunded.
+- **Stablecoin escrow.** The same flow settles in TEST-SGD, our Testnet token,
+  through XLS-85 token escrow. Official RLUSD payments work on Testnet; RLUSD
+  escrow waits on one issuer flag, which we document as builder feedback.
+- **Verify, don't trust.** TypeScript and Python verifiers re-check receipts
+  against the ledger. Our public ledger page re-validates 45 transactions in
+  about 2 seconds.
+- **Zero clone.** One line runs the whole judge path on Testnet in 84 s and ends
+  with `RESULT PASS`:
+  `npx -y <release>/researchagent-mcp-{{RELEASE_VERSION}}.tgz try --testnet`.
+  The same package is an MCP server for Claude Code and a local web app.
+- **Writers in one command.** A Markdown folder becomes a Testnet writer with an
+  XRPL Credential in 44 s.
 
-- an MCP server, so Claude Code or any agent can buy research inside caps that
-  a human sets;
-- a Mac app;
-- a TypeScript SDK;
-- per-agent allowances from one wallet;
-- one-command publishing, which turns a Markdown folder into a paid writer in
-  under 19 seconds;
-- "hire the agent", where another agent pays ResearchAgent over x402 and it
-  pays a citation royalty to every writer it cites, free writers included.
-
-Settlement works in XRP and in an issued test-USD token. We also keep a
-dated log of 35 builder-feedback items and a mainnet-readiness checklist.
+Proof: [release {{RELEASE_TAG}}](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/{{RELEASE_TAG}}) ·
+[browser replay](https://collaboration95.github.io/theFastandtheFungible/demo/) ·
+[live ledger check](https://collaboration95.github.io/theFastandtheFungible/ledger/).
 
 What is real and what is not: payments settle on **XRPL Testnet**, with no real
-money. The eight writers and their articles are fictional. The offline demo
-simulates payments and says so. The test USD is a stand-in, because the
-official RLUSD Testnet faucet required authentication. Mainnet is disabled in
-code.
+money. The research writers are fictional. A team-authored writer answers XRPL
+questions from our own build notes; it is labelled and is not an independent
+writer. TEST-SGD is our own token, a stand-in for RLUSD. There is no hosted
+instance: everything runs on your machine. Mainnet is disabled in code.
 
 ## Label check (for whoever pastes these)
 
 | Claim | Label | Source |
 |---|---|---|
-| x402 payments, escrow, hire, test USD, agent allowances | XRPL Testnet, real validated transactions; fixture research | [evidence](../evidence/) |
-| "0 violations across 10 runs" | Live decision/coverage models, fixture research, simulated payments; 48 fresh questions, 568 observations, 3 Nov | [README scorecard](../../README.md#proof) |
-| "under 19 seconds" | 18.90 s, one Testnet run, synthetic starter content | [publish-site-277](../evidence/publish-site-277.md) |
-| "five tagged releases", "more than 40 PRs" | v0.1.0–v0.5.0; 40 merged 2–3 Nov SGT | `gh release list`, `gh pr list --state merged` |
-| "35 items" | 20 findings from building plus 15 September research submissions | [BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md) |
+| "183 merged pull requests" | 21 Sep–7 Nov 2026 SGT, `main` | `gh pr list --state merged` filtered to after 20 Sep |
+| "10 tagged releases" | v0.1.0–v0.8.0, v1.0.0-rc.1, rc.2 (pre-releases) | `gh release list` |
+| Key-reveal escrow, refund | XRPL Testnet, fixture models, fictional writers; the refund after a finish is writer-signed (the fixture writer cooperates) | [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377), [#379](https://github.com/Collaboration95/theFastandtheFungible/pull/379), [key-reveal-escrow.md](../key-reveal-escrow.md) |
+| Stablecoin escrow | TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381), [#384](https://github.com/Collaboration95/theFastandtheFungible/pull/384), [m1-iou](../evidence/m1-iou/README.md) |
+| "Official RLUSD payments work on Testnet" | Official Testnet RLUSD issuer, UC2 0.90 paid, UC3 0.30 refunded, 3 Nov | [rlusd.md](../evidence/rlusd.md) |
+| "RLUSD escrow waits on one issuer flag" | Issuer flags 2174353408 lack AllowTrustLineLocking; predicted refusal, never submitted | [BUILDER-FEEDBACK §1](../BUILDER-FEEDBACK.md#1-issuer-permission-blocks-rlusd-escrow) |
+| "45 transactions in about 2 seconds" | 45/45 in 1.97 s, one read-only measurement, 7 Nov | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388), [live-ledger.json](../evidence/round4-l4/live-ledger.json) |
+| "84 s … `RESULT PASS`" | One cold run (empty npm cache, fresh faucet wallets), 84.2 s, 7 Nov. Two of four cold attempts finished under the 90 s deadline | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
+| "Credential in 44 s" | 43.8 s cold, synthetic starter notes, public faucet | [#378](https://github.com/Collaboration95/theFastandtheFungible/pull/378), [round3-c](../evidence/round3-c/README.md) |
+| Team-authored writer | team-authored · real content · not an independent writer · Testnet; 15/20 frozen judge questions bought and cited | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390), [round4-j1](../evidence/round4-j1/README.md) |

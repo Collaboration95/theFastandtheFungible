@@ -1,99 +1,128 @@
 # Two-minute pitch · Wed 18 Nov, 11:30 SGT, Swiss Pavilion
 
-Spoken at about 140 words a minute. The judges know the problem, so we skip it
-and lead with what we built and what changed since SingHacks. The slide numbers
-refer to [the deck](ResearchAgent-SFF-deck.pdf). If the slot is three minutes,
-use the [3-minute variant](#three-minute-variant).
+Tenity's emails say both 2 and 3 minutes, so this script is **2:00** and the
+[3-minute variant](#three-minute-variant) adds three beats. Ask Tenity which it
+is (open item in the organiser brief). Spoken at about 140 words a minute.
 
-Rules for the speaker: say "Testnet" once, early, and plainly. Every number
-below is in the deck with its source. Don't round up.
+The brief says to skip the problem statement and cover the solution, key
+developments, and what we achieved since SingHacks. So we open on the
+mechanism, not the problem. Slide numbers refer to
+[the deck](ResearchAgent-SFF-deck.pdf) (12 slides).
 
-## Script (~290 words)
+**Rules for the speaker:**
+- Say "Testnet" in the first 20 seconds, and never say "live service",
+  "hosted" or "mainnet".
+- Every number below is on a slide with its source. Don't round up.
+- Fill any `{{…}}` placeholders from the [README list](README.md#placeholders)
+  before rehearsing. If one is still empty on the day, drop that sentence.
+
+## Script (~265 words)
 
 **[0:00 · slide 1]**
-ResearchAgent is research with a wallet. You give it a question and a budget.
-It answers from free sources first, then buys the one article it is missing,
-straight from the writer, over x402 on the XRP Ledger. Everything you'll see
-settled on XRPL Testnet.
+ResearchAgent is research with a wallet. Give it a question and a budget. It
+answers from free sources, then buys the one article it's missing, straight from
+the writer, over x402 on the XRP Ledger. Everything you'll see runs on XRPL
+Testnet, on your own machine.
 
-**[0:20 · slide 2]**
-The model decides what is worth buying, but it can never spend. Only
-deterministic policy code can pay, inside your budget, one charge per intent.
-Our gate audit found zero violations across ten runs.
+**[0:18 · slide 5]**
+Here's what's new. The writer only gets paid by publishing the article's key on
+the ledger. We lock payment in a native XRPL escrow whose condition is the hash
+of that key. Delivery and payment become one ledger event. No smart contract.
 
-**[0:35 · slide 3]**
-At SingHacks, a human approved every purchase. Since then we've shipped five
-releases and forty pull requests, and other agents can now use it.
+**[0:36 · slide 6]**
+It works in a stablecoin-style token too, through XLS-85 token escrow. Official
+RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
-**[0:45 · slide 4]**
-Claude Code adds it with one command, and the caps stay in human hands. There's
-a Mac app, an SDK, per-agent allowances, and one command that turns a Markdown
-folder into a paid writer. That took 19 seconds on Testnet.
+**[0:48 · slide 3]**
+At SingHacks, a human approved every purchase. Since then: 183 merged pull
+requests. Today a judge runs one line. No clone, no account. In 84 seconds it
+buys, catches a broken promise, gets refunded, re-buys, anchors the answer and
+prints "result: pass" with six Testnet links.
 
-**[1:05 · slide 5]**
-The part we're proudest of: other agents can hire ResearchAgent over x402. It
-buys what it needs, returns the change, and pays a royalty to every writer it
-cites, even the free ones. The citation list becomes a payment instruction.
-Five hops, every drop accounted for on the ledger.
+**[1:08 · slide 7]**
+Don't trust us, verify it. Two independent verifiers, one in Python with no
+Node, re-check every receipt against the ledger. Our ledger page re-validates 45
+transactions in two seconds.
 
-**[1:25 · slide 6]**
-And when a writer lies, the ledger enforces the refund. With native XRPL
-Escrow, a failed proof cancelled and returned the full amount, with the writer
-offline.
+**[1:22 · slide 8]**
+The same package is an MCP server for Claude Code and a local app. Ask about
+XRPL and it buys from our own labelled build notes: fifteen of twenty
+questions we froze in advance.
 
-**[1:40 · slides 7 and 9]**
-Model calls cost less than half a US cent per question, and network fees are
-twelve drops. On 48 questions we hadn't tuned on, 93% of article spend bought a
-fact in the final cited answer. We also logged 35 pieces of builder feedback
-for XRPL and x402.
+**[1:36 · slide 9]**
+A key-reveal purchase costs 435 drops in network fees. The model only
+recommends; policy code spends, and our gate audit found zero violations.
 
-**[1:52 · slide 10]**
-Every claim here has a Testnet transaction you can check. ResearchAgent: an
-open market where agents pay the people who know.
+**[1:48 · slide 12]**
+Every claim has a Testnet hash. ResearchAgent: agents pay the people who know,
+and the ledger keeps them honest.
 
 **[2:00]**
 
 ## Three-minute variant
 
-Use the script above, and add these three beats at the marked points (about
-+120 words, ~2:55 total).
+Add these beats at the marked points (about +125 words, ~2:55 in total).
 
-**After slide 3 (+0:20)** · *What it learned:* "We also measure whether it buys
-the *right* thing. We froze 48 new questions before running anything. 93% of
-article spend bought a fact in the final answer, and the confidence interval
-runs from 81 to 100. Our earlier 80% was on a set we had looked at too often,
-so we no longer use it."
+**After slide 6 (+0:20) · What the ledger can't do:** "Key reveal makes
+*delivery* atomic, not *quality*. If the article breaks its promise after the
+key is out, the refund is writer-signed. Our test writer cooperates; a real one
+could refuse. So the buyer gets a fraud proof anyone can check, and the writer's
+trust score drops. We label that on every refund."
 
-**After slide 6 (+0:20)** · *Why XRPL:* "XRPL let us do this without a single
-smart contract. Escrow, issued currencies, invoice IDs and memos are native,
-fees are twelve drops, and ledgers close in seconds. That's what makes paying
-per article viable."
+**After slide 8 (+0:20) · Writers:** "Writers join with one command. A Markdown
+folder becomes a Testnet writer with an XRPL credential in 44 seconds. Our
+research writers are fictional, and we have no independent writers yet. That
+list stays empty until a real person consents."
 
-**Before slide 10 (+0:20)** · *Honest limits:* "What's not done: payer keys in a
-KMS, the official RLUSD issuer and live FX, KYB and sanctions screening. We
-wrote a mainnet checklist rather than claim readiness."
+**Before slide 12 (+0:15) · Honest limits:** "What's not done: payer keys in a
+KMS, RLUSD escrow until the issuer allows it, and KYB and sanctions screening.
+We wrote a mainnet checklist instead of claiming readiness."
 
-## Speaker notes: the 93% sentence
+## Timing marks for rehearsal
 
-Say it as written, and keep these caveats ready. They are also on slide 7.
+| Mark | Slide | Beat | Words |
+|---|---:|---|---:|
+| 0:00 | 1 | What it is, Testnet | 46 |
+| 0:18 | 5 | Key reveal | 42 |
+| 0:36 | 6 | Stablecoin escrow, RLUSD flag | 26 |
+| 0:48 | 3 | Since SingHacks, one line, 84 s | 46 |
+| 1:08 | 7 | Verify | 29 |
+| 1:22 | 8 | Reachability, judge bank | 34 |
+| 1:36 | 9 | Fees, gates | 23 |
+| 1:48 | 12 | Close | 19 |
 
-- **Exact claim:** "On 48 fresh synthetic questions, 93.15% of gross article
-  spend bought a requested fact retained in the final cited answer (95% CI
-  81.25–100.00%)." Say "93%", not "93% of facts" or "93% accurate".
-- **What it is not:** live decision models, but a fixture research corpus and
-  simulated payments. It is not a production result or a customer ROI.
-- **Not a significant improvement:** the paired gain over the previous policy
-  is +3.08 points (95% CI 0.00–9.43), which includes zero. Don't say "better".
-- **Limits:** the policy and the questions were written by the same agent and
-  frozen before one run each. The labels are from the same model vendor as the
-  decision model and await human review. The questions follow templates.
-- **Historical, don't quote as current:** 80.05% (a reused holdout) and the
-  52.9% → 40.7% waste figures.
-- Source: `eval/scorecard/fresh-results.json`, `eval/FRESH-AUDIT.md`, PR #327.
+Running out of time? Cut slide 6 (the stablecoin beat) first, then slide 9.
+Never cut the "Testnet" line on slide 1.
 
-## If the live demo is allowed
+## Speaker notes: numbers to say exactly
 
-Swap the slide-5 beat for a 25-second clip: `make clip UC=UC3` (refund scene),
-or the hire-the-agent terminal from the [video script](demo-video-script.md) (scene 5).
-The venue fallback is the Mac app offline, where payments are simulated and the
-header says so.
+- **"84 seconds"**: one cold run, empty npm cache and fresh faucet wallets, 7
+  Nov. If asked, two of four cold attempts finished under 90 s (73.8 s and 84.2
+  s); two overran. Source: `docs/evidence/round4-j2/`.
+- **"Fifteen of twenty"**: frozen 20-question XRPL judge bank, bought and
+  cited on Testnet with 0 blank answers and 0 gate-audit violations; the five
+  misses abstained honestly. Team-authored writer, fixture models. Source:
+  `docs/evidence/round4-j1/`.
+- **"183 merged pull requests"**: 21 Sep–7 Nov 2026. Say "since SingHacks", not
+  "in a week".
+- **"435 drops"**: 12 for EscrowCreate plus 423 for the conditional
+  EscrowFinish, measured on Testnet. At an assumed S$2 per XRP that is S$0.00087,
+  a projection.
+- **"Zero violations"**: the read-only gate audit, 10 runs and 568 observations
+  on the fresh-question evaluation, 3 Nov, with simulated payments.
+- **The 93% number is not in the 2-minute script.** If asked, say it exactly:
+  "On 48 fresh synthetic questions, 93.15% of gross article spend bought a
+  requested fact retained in the final cited answer (95% CI 81.25–100.00%)."
+  Live decision models, fixture research, simulated payments. Not a production
+  result; the paired gain over the old policy (+3.08 pts, 0.00–9.43) is not
+  significant. See [qa-prep.md](qa-prep.md#19-does-it-actually-buy-the-right-things).
+
+## If a live demo is allowed
+
+Run shot 2 of the [video script](demo-video-script.md) on stage, started before
+you speak, so the 84 s wait runs under the first beats. If you rerun on wallets
+that already ran it, `try` reuses that run and prints the same six links without
+buying again; say it is a rerun. Fallback
+with no network: the [browser replay](https://collaboration95.github.io/theFastandtheFungible/demo/)
+from a cached tab. It is a replay of a recorded Testnet run, and the banner
+says so.

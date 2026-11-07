@@ -1,176 +1,250 @@
-# Demo video: run-through script (2:45)
+# Demo video: shot list for the owner (2:50)
 
-The form's demo link is "a video run-through of what the team has built".
-Judges watch it before the pitch, so it carries the detail the 2-minute pitch
-can't. **Recording is a human task.** It is tracked on
-[issue #265](https://github.com/Collaboration95/theFastandtheFungible/issues/265),
-with a target recording date of **Wed 11 Nov** and upload by Thu 12 Nov.
+The form's "Demo link" field asks for "a video run-through of what we built".
+Judges watch it **before** the pitch, and their view counts toward the final
+score. The organiser brief gives no length limit, so we aim for **2:50 and never
+go over 3:00**. That way it fits a 3-minute slot and still reads as respectful
+of judges' time. Nine shots. Voice-over is about 370 words at 135 words a minute.
 
-## Ground rules
+**Recording is a human task.** Track it on
+[#265](https://github.com/Collaboration95/theFastandtheFungible/issues/265).
+Record on Wed 11 or Thu 12 Nov, **after {{RELEASE_TAG}} is published**
+(shot 2 needs the `try` subcommand, which is not in rc.2). Upload by Thu 12 Nov.
 
-- **Labels.** Each scene's caption says what is real. "XRPL Testnet" is used
-  only where a validated transaction is on screen. Fixture scenes keep the app's
-  header indicator ("Demo · simulated payments") in frame. That covers hard
-  gate 5.
-- **No new spending to make the video.** The live evidence scripts replay their
-  journals idempotently, so rerunning them shows the same hashes without paying
-  again. Don't delete `data/hire-demo-live/` or `scratch/*` state to "get a
-  fresh run".
-- **Ports.** Use the given `OFFSET`s so nothing collides with a main demo
-  (5100/8788/8790).
-- **Never show** `.env`, `.env.writer`, `caller.private.json` or a terminal
-  that has echoed a seed. Close editors before recording the terminal.
-- **Capture.** App scenes come from `make clip` (Playwright, 1920×1080).
-  Terminal and explorer scenes come from a QuickTime screen recording at
-  1920×1080, terminal font 18 pt, light theme. Cut in any editor and add
-  captions in Geist.
-- **Voice.** Either the owner records the voice-over (recommended; sounds like
-  a team) or we use a TTS track. That is the owner's decision on #265. Keep the
-  VO under 330 words.
+## Before you press record
 
-## Clips that already exist (release assets)
+1. **The release exists.** `gh release view {{RELEASE_TAG}}` lists
+   `researchagent-mcp-{{RELEASE_VERSION}}.tgz` and the Python wheel.
+2. **The public site is current.** Open
+   <https://collaboration95.github.io/theFastandtheFungible/ledger/>. The first
+   rows must read "RLUSD", not `524C5553…`. On
+   <https://collaboration95.github.io/theFastandtheFungible/demo/>, the hashes
+   must be collapsed into "6/6 Testnet hashes verified live ✓ · show", and the
+   lead finding must sit under "Supports". If not, gh-pages has not been
+   republished since #388/#390; ask an agent on #265 before recording.
+   (On 7 Nov the live site still showed the old hex and hash wall.)
+3. **A fresh, private terminal.** Light theme, 18 pt font, 1920×1080, window
+   title hidden. Run these first, off camera:
+   ```sh
+   export REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/{{RELEASE_TAG}}
+   export TGZ=$REL/researchagent-mcp-{{RELEASE_VERSION}}.tgz
+   export npm_config_cache=$(mktemp -d)   # empty npm cache: what a judge gets
+   export XDG_STATE_HOME=$(mktemp -d)     # fresh faucet wallets, mode 0600, never printed
+   clear
+   ```
+   Then type the commands below in full on camera. The `$TGZ` variable only
+   hides the long URL; shot 2 shows the full URL once as a caption.
+4. **Never show** `.env`, `.env.writer`, any `*.private.json`, or a shell
+   history containing a seed. Nothing in this script prints a seed.
+5. **No real money, and no extra spending.** Everything is XRPL Testnet faucet
+   XRP. `try` uses a stable intent key: running it again on the same wallets
+   reuses the run instead of buying again.
+6. **Ports:** the commands pick ephemeral ports. Don't use 5100, 8788 or 8790.
 
-| Asset | Release | Usable? |
-|---|---|---|
-| `uc3-2026-11-03.mp4` (refund scene, UX-1 UI) | [v0.5.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.5.0) | **Yes**, for scene 3 if it isn't re-recorded |
-| `before-after.png` (UX-1 before/after) | v0.5.0 | Yes, as a still in scene 8 |
-| `ResearchAgent-0.5.0-arm64.dmg` | v0.5.0 | The installer for scene 7 |
-| `uc2-2026-11-02.mp4` / `.webm` | [v0.2.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.2.0) | **No.** It shows the pre-UX-1 interface; re-record scene 2 |
-| `macos-uc2.png`, `macos-uc3.png` | [v0.4.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v0.4.0) | No, pre-UX-1 |
+## Label rules (hard gate 5)
 
-If #312 (UX part 2) merges before 11 Nov, re-record scenes 2 and 3 on the new
-`main`.
+Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 
-## Scenes
+- **"XRPL Testnet · no real value"** only when a validated Testnet transaction
+  or a live command against Testnet is on screen.
+- **"Fixture models · fictional writers"** whenever the Kestrel, AlphaLeak or
+  Fab Floor writers appear.
+- **"Team-authored writer · real content · not an independent writer"**
+  whenever the XRPL builder-notes writer appears (shot 5).
+- **"TEST-SGD · our Testnet IOU · no real value · stand-in for RLUSD"** in
+  shot 6. Never call it RLUSD.
+- **"Replay of a recorded Testnet run · no backend"** on `/demo/`.
+- **"Sped up ×N · real time shown"** whenever footage is accelerated, with a
+  real-time clock in the corner.
+- Never say or caption "hosted", "live service" or "mainnet".
 
-### Scene 1 · Cold open (0:00–0:10)
+## Shots
 
-- **On screen:** the deck's title slide (`docs/submission/ResearchAgent-SFF-deck.pdf`, page 1), then a cut.
-- **Caption:** "XRPL Testnet · no real money · fictional writers"
-- **VO:** "This is ResearchAgent: research with a wallet. It buys the one article
-  it's missing, straight from the writer, over x402 on the XRP Ledger, inside a
-  budget you set."
+| # | Time | Length | What |
+|---:|---|---:|---|
+| 1 | 0:00–0:08 | 8 s | Title |
+| 2 | 0:08–0:40 | 32 s | One line: `try --testnet` |
+| 3 | 0:40–0:58 | 18 s | The key on the ledger (explorer) |
+| 4 | 0:58–1:20 | 22 s | The product view: `/demo/` replay |
+| 5 | 1:20–1:48 | 28 s | Your own question: zero-clone app |
+| 6 | 1:48–2:08 | 20 s | Stablecoin escrow over MCP |
+| 7 | 2:08–2:22 | 14 s | A writer in one command |
+| 8 | 2:22–2:40 | 18 s | Verify it: Python verifier and `/ledger/` |
+| 9 | 2:40–2:50 | 10 s | Close |
 
-### Scene 2 · Ask, plan, pay, cite (0:10–0:35)
+### Shot 1 · Title (0:00–0:08)
 
-- **Command:** `make clip UC=UC2 VIEWPORT=1920x1080` (starts its own ephemeral
-  servers, drives ⌘K → question → clarification → plan → paid, cited answer, and
-  saves `clips/uc2-<date>.mp4`). To drive it by hand instead:
-  `make record OFFSET=300` and open the printed `?record=1` URL.
-- **On screen:** the 5-second plan sheet, the Spend panel, one payment row
-  turning Verified, and the answer with citations.
-- **Caption:** "Offline demo · simulated payments (header indicator)"
-- **VO:** "You ask a question and set a budget. It answers from free sources
-  first, shows a five-second plan, then buys one article. The model only
-  recommends. Deterministic policy code makes the payment, and every citation
-  points at a delivered passage."
+- **On screen:** deck slide 1 (`docs/submission/ResearchAgent-SFF-deck.pdf`,
+  page 1).
+- **Caption:** "XRPL Testnet · no real money · runs on your machine"
+- **VO (18 words):** "This is ResearchAgent: research with a wallet. It buys
+  the one article it's missing, straight from the writer, on the XRP Ledger."
 
-### Scene 3 · A broken promise is refunded (0:35–0:55)
+### Shot 2 · One line, the whole judge path (0:08–0:40)
 
-- **Command:** `make clip UC=UC3 VIEWPORT=1920x1080`, or reuse v0.5.0's
-  `uc3-2026-11-03.mp4`.
-- **On screen:** the AlphaLeak row: "didn't contain what it promised ·
-  Refunded S$0.30". Open the receipt side sheet.
-- **Caption:** "Offline demo · simulated refund"
-- **VO:** "Each article is checked against the writer's signed promises. This
-  one lied, so the money came back, and the article is never cited."
-
-### Scene 4 · Claude Code buys research over MCP (0:55–1:20)
-
-- **Commands** (fresh clone, fixture mode, no keys):
+- **Type, on camera:**
   ```sh
-  claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- node --import "$PWD/node_modules/tsx/dist/loader.mjs" "$PWD/mcp/server.ts"
+  npx -y $TGZ try --testnet
+  ```
+- **On screen:** npm installs. Faucet wallets are made. Then the numbered
+  lines appear: `1. Create`, `2. Finish · sha256(K) = Condition ✓`,
+  `3. Refund · writer-signed · fixture writer cooperates (a real writer could refuse)`,
+  `4. Re-buy create`, `5. Re-buy finish`, `6. Anchor`, then the verifier block
+  ending `PASS testnet 12/12 (read-only, s.altnet)` and `RESULT PASS`. Hold 2 s
+  on `RESULT PASS`.
+- **Edit:** speed up the install and faucet wait (×4 or more), with the
+  real-time clock in the corner. Play the six numbered lines and RESULT at 1×.
+  The cold run took 84.2 s in our measurement; show whatever your run took.
+- **Captions:** first "`npx -y …/releases/download/{{RELEASE_TAG}}/researchagent-mcp-{{RELEASE_VERSION}}.tgz try --testnet`"
+  (full URL, 3 s), then "XRPL Testnet · no real value · fixture models ·
+  fictional writers · sped up ×N".
+- **Fallback:** if the faucet fails, `try` prints a labelled SIMULATED run with
+  its reason. Don't use that take. Wait and rerun with a new `XDG_STATE_HOME`.
+  If Testnet stays down, use the committed run in
+  [`docs/evidence/round4-j2/try-output.txt`](../evidence/round4-j2/try-output.txt)
+  (create
+  [9126E19D…](https://testnet.xrpl.org/transactions/9126E19D7BE8356061F7F44756E64FE6FB12C6B5F99621661D00DEA9B015B8CD)),
+  captioned "recorded 7 Nov".
+- **VO (58 words):** "No clone, no account, one line. It installs, gets Testnet
+  wallets from the faucet, and asks a question with a two-dollar budget. It buys
+  an article, catches a broken promise, gets a refund, buys a better one and
+  anchors the answer. Then it verifies all of it against the ledger. Six
+  transactions. Result: pass."
+
+### Shot 3 · The key is on the ledger (0:40–0:58)
+
+- **Do:** ⌘-click link **2 (Finish)** from shot 2's output. It opens
+  `https://testnet.xrpl.org/transactions/<hash>`.
+- **On screen:** the explorer page. Zoom to *TransactionType: EscrowFinish*,
+  *Fulfillment*, *Condition* and *validated*. Then ⌘-click link **3 (Refund)**
+  and zoom to the Payment from the writer.
+- **Caption:** "XRPL Testnet · EscrowFinish · the Fulfillment is the article key"
+  → "Refund is writer-signed: the fixture writer cooperates; a real writer could
+  refuse".
+- **VO (46 words):** "This is the trick. The buyer locks payment in a native
+  XRPL escrow. To get paid, the writer has to publish the article's key, right
+  here in the fulfilment. Delivery and payment are one ledger event. This
+  article broke its promise, so the money came back."
+
+### Shot 4 · What a person sees: the browser replay (0:58–1:20)
+
+- **Open:** <https://collaboration95.github.io/theFastandtheFungible/demo/>
+  (default tab "Testnet UC3 · key reveal").
+- **On screen:** the run plays. Show the plan sheet, the Spend panel, the AlphaLeak row turning
+  "Refund · writer-signed", the Fab Floor row with "sha256(K) = Condition ✓ ·
+  ciphertext decrypts ✓", and the cited answer with the lead finding under
+  Supports. Finish on "6/6 Testnet hashes verified live ✓ · show". Click
+  *show* once.
+- **Caption:** "Replay of a recorded Testnet run · no backend · fixture models ·
+  fictional writers"
+- **VO (45 words):** "Here's the same story as a person sees it. A five-second
+  plan, then every payment changes state in place. Your browser re-checks the
+  key against the ledger and decrypts the article itself. The model only
+  recommends what to buy. Policy code spends, inside your budget."
+
+### Shot 5 · Your own question, in the real app (1:20–1:48)
+
+- **Type:**
+  ```sh
+  npx -y $TGZ app --testnet --open
+  ```
+  The ready line prints `fixture models · XRPL TESTNET · no real value`, the
+  payer address and the caps. The browser opens on `127.0.0.1:<port>`.
+- **Ask:** *"Can RLUSD be escrowed with key reveal today?"* with budget S$2.
+  Backup question: *"How much does EscrowFinish with a fulfillment cost on XRPL
+  Testnet?"* Both were bought and cited in the frozen judge bank
+  ([round4-j1](../evidence/round4-j1/README.md), J03 and J01).
+- **On screen:** the answer cites the team builder notes. The source card shows
+  "team-authored · real content · not an independent writer · Testnet". Open
+  the payment row's `tx ↗`.
+- **Edit:** speed up waiting (×3), with the clock.
+- **Caption:** "Local app, no clone · XRPL Testnet · team-authored writer · real
+  content · not an independent writer"
+- **VO (52 words):** "No MCP client? The same package runs the full app on
+  your machine. Ask it something about XRPL. It buys from a writer made of our
+  own build notes. It's labelled as ours, not independent. On twenty judge
+  questions we froze in advance, fifteen came back bought
+  and cited."
+
+### Shot 6 · A stablecoin escrow, from Claude Code (1:48–2:08)
+
+- **Type:**
+  ```sh
+  claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y $TGZ --testnet --iou
   claude
   ```
-  Prompt: *"Search the writers, then ask_expert: What's the analyst outlook on
-  Kestrel Semiconductor's latest deal with TSMC (pricing & margins)? Request
-  budget_sgd=2. Show citations, purchases and all mode labels."*
-- **Then cut to** the Testnet proof of the same MCP path:
-  [D65FDA44…2FC9F9](https://testnet.xrpl.org/transactions/D65FDA447AAC788BA7451615FCB6BDD62960AB066DC5A0BB150980B9E32FC9F9)
-  on the explorer (validated, 0.09 XRP).
-- **Caption:** "Claude Code: fixture mode, simulated payment" → "Same MCP tools,
-  stdio client, XRPL Testnet, 3 Nov"
-- **VO:** "Any agent can use it. Claude Code adds it with one command. The
-  spending caps live in the environment, so the calling model can't raise
-  them. Over MCP on Testnet, a question became a paid, cited answer in 23
-  seconds, and a retry didn't charge twice."
-- **Honesty note:** the Testnet purchase was driven by the MCP SDK stdio client,
-  not by Claude Code ([write-up](../../eval/mcp/testnet-2026-11-03.md)). The
-  caption must not say "Claude Code paid on Testnet".
+  Prompt: *"Use researchagent: wallet_status, then ask_expert 'What did the
+  Kestrel–TSMC deal do to margins?' with budget_sgd=2. Show the purchases, the
+  explorer links and every label."*
+- **On screen:** `wallet_status` with `rail: xrpl-testnet`, then an
+  `ask_expert` result with a TEST-SGD amount and the label "TEST-SGD · IOU
+  issued by our Testnet issuer · no real value · stand-in for RLUSD", then
+  the EscrowCreate on the explorer.
+- **Honesty note:** our committed evidence for TEST-SGD over MCP comes from the
+  stdio probe ([m1-iou](../evidence/m1-iou/README.md)), not from Claude Code.
+  This shot is only true if Claude Code itself paid on camera. If it fails
+  (first-run IOU setup took 92 s on our probe), use the app instead:
+  `npx -y $TGZ app --testnet --iou --open`, same question, and change the
+  caption to "Local app".
+- **Caption:** "Claude Code over MCP · XRPL Testnet · TEST-SGD · our Testnet IOU
+  · no real value · stand-in for RLUSD"
+- **VO (44 words):** "Any agent can use it. Claude Code adds it with one line.
+  The spending caps live in the environment, where the model can't raise them.
+  Add one flag and the escrow settles in a stablecoin-style test token. Official
+  RLUSD needs one issuer flag."
 
-### Scene 5 · Hire the agent (x402 agent-to-agent) (1:20–1:45)
+### Shot 7 · A writer in one command (2:08–2:22)
 
-- **Command** (replays the recorded live run; same hashes, no new payment):
+- **Type:**
   ```sh
-  OFFSET=1300 node --import tsx scripts/hire-demo.mjs --live
+  npx -y $TGZ init my-notes
+  npx -y $TGZ publish ./my-notes --testnet
   ```
-  Fallback with no Testnet access: `node --import tsx scripts/hire-demo.mjs`
-  (labelled fake ledger).
-- **On screen:** the five-hop money chain in the terminal, then the explorer
-  for the caller payment
-  [8AD6FD7B…](https://testnet.xrpl.org/transactions/8AD6FD7B05EF9BCA0C738101102EC8094949CBB29CD44A6875D8CDFB24296134)
-  and the free-writer royalty
-  [48C600E3…](https://testnet.xrpl.org/transactions/48C600E3E5DE212BA38AA60A9FA7855DD91AFF3DAC7D153ECED4E373E68BD95E).
-  Overlay the deck's slide-5 table as a still.
-- **Caption:** "XRPL Testnet · fixture research · fictional writers"
-- **VO:** "Other agents can hire ResearchAgent over x402. It buys what it needs,
-  returns the change, and pays a royalty to every writer it cites, including
-  free writers. 220,000 drops in, and every drop is accounted for on the
-  ledger."
+- **On screen:** `Writer live · address r… · CredentialCreate tx ↗ · first sale
+  will appear as EscrowFinish`. ⌘-click the Credential link.
+- **Caption:** "XRPL Testnet · starter notes, not a real writer · public faucet"
+- **If J3 (`init`) has not merged:** skip `init`, and use
+  `curl -L https://github.com/Collaboration95/theFastandtheFungible/archive/refs/tags/{{RELEASE_TAG}}.tar.gz | tar xz --strip-components=2 '*/examples/writer-starter'`
+  then `publish ./writer-starter --testnet`.
+- **VO (30 words):** "Writers join with one command. A Markdown folder becomes
+  a Testnet writer with an XRPL credential. Ours took {{J3_FIRST_TRY_SECONDS}}
+  from a fresh folder."
 
-### Scene 6 · The ledger enforces the refund (1:45–2:05)
+### Shot 8 · Don't trust us, verify it (2:22–2:40)
 
-- **On screen:** explorer pages for the failed-proof pair:
-  [EscrowCreate EAA86976…](https://testnet.xrpl.org/transactions/EAA86976171D6238EF53947AA33D7D2FF8C4B328823F5575720FD72444F60A72)
-  → [EscrowCancel C007A296…](https://testnet.xrpl.org/transactions/C007A2966C71ADAE1743612E3386BB2F53FB0AF5F4B0B03D6ED67856E78408FA).
-  Then the honest-proof finish
-  [7367BA10…](https://testnet.xrpl.org/transactions/7367BA104561692202D04DBC1D15F8FB08FAD7ABA6BA5C76C82BEA1D02BD4846).
-  Optional: `OFFSET=1600 node --import tsx scripts/evidence/escrow-273.ts`,
-  which only reconciles and reads the completed intents.
-- **Caption:** "XRPL Testnet escrow · synthetic article"
-- **VO:** "With native XRPL Escrow, the refund doesn't depend on the writer's
-  goodwill. Proof passed, and the escrow released in 12 seconds. Proof failed,
-  and it cancelled and returned the full amount, with the writer offline."
-
-### Scene 7 · Writers publish in one command; the Mac app (2:05–2:25)
-
-- **Commands:**
+- **Type:**
   ```sh
-  cp -R examples/writer-starter my-notes
-  OFFSET=800 npm run publish:site -- ./my-notes
+  python3 -m venv /tmp/ra && . /tmp/ra/bin/activate
+  pip install -q $REL/researchagent-{{RELEASE_PY_VERSION}}-py3-none-any.whl
+  curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/{{RELEASE_TAG}}/docs/evidence/lane-b3/UC3.receipts.json
+  researchagent verify UC3.receipts.json --ledger
   ```
-  Show the printed "Folder → searchable, payable writer" time, then the
-  recorded Testnet read
-  [ED26E003…](https://testnet.xrpl.org/transactions/ED26E003037BC6BD3F1E580F3C5E019F30E170535C9E034F45DFE1EB08F15FA5)
-  (18.90 s folder → paid read).
-- **Then:** open `ResearchAgent-0.5.0-arm64.dmg` from v0.5.0, drag to
-  Applications, right-click → Open (unsigned), and press ⌘K.
-- **Caption:** "Testnet wallet funded from the faucet · synthetic starter
-  articles" → "Mac app · offline demo"
-- **VO:** "Writers join with one command: a Markdown folder becomes a paid
-  writer on Testnet in 19 seconds. And the whole thing ships as a Mac app that
-  works offline."
+  Four lines, ending `PASS testnet 12/12 (read-only, s.altnet)` and `RESULT PASS`.
+- **Then open:** <https://collaboration95.github.io/theFastandtheFungible/ledger/>
+  and let "Read-only check finished: 45/45 validated" appear (about 2 s).
+- **Caption:** "Python verifier · no Node · read-only XRPL Testnet lookups" →
+  "45 historical Testnet transactions · checked live from your browser"
+- **VO (40 words):** "Don't trust us. Verify it. A Python verifier with no
+  Node re-checks every receipt against the ledger. Our ledger page re-validates
+  forty-five transactions from your browser in about two seconds. Every number
+  in this video has a hash."
 
-### Scene 8 · Check it yourself (2:25–2:45)
+### Shot 9 · Close (2:40–2:50)
 
-- **Commands:**
-  ```sh
-  npm run audit:verify -- --testnet                         # hash chain + read-only Testnet lookups
-  npm run gate:audit -- --db data/hire-demo-live/app.db     # the five gates on the hire run
-  npm run verify:answer -- docs/evidence/verify-278/report.pdf --testnet # signed citations + payment/refund proofs
-  npm run verify                                            # lint, types, the test suites, build (speed up 8×)
-  ```
-- **On screen:** `RESULT PASS`, `0 violations`, the test summary, then the
-  deck's slide 10 (the Testnet transactions), then the repo URL.
-- **Caption:** "github.com/Collaboration95/theFastandtheFungible"
-- **VO:** "Don't trust us. Verify it. The audit chain re-checks every receipt
-  against the ledger, the gate audit finds zero violations, and every number in
-  this video links to a validated Testnet transaction. That's ResearchAgent."
+- **On screen:** deck slide 12 (links, before-mainnet list, the agent strip).
+- **Caption:** "github.com/Collaboration95/theFastandtheFungible · XRPL Testnet
+  only · no hosted instance"
+- **VO (21 words):** "ResearchAgent. An open market where agents pay the
+  people who know, and the ledger keeps everyone honest. Thank you."
 
 ## After recording
 
-1. Export 1080p MP4, under 3:00, with burned-in captions. Upload as unlisted
-   (YouTube or Drive; the owner chooses) and paste the link into the form,
-   deck slide 10 (replace the TODO) and `README.md`.
-2. Attach the MP4 to the next release (`gh release upload`), not to git.
-3. Re-export the deck: `node docs/submission/deck/export.mjs`.
+1. Export 1080p MP4, **under 3:00**, with burned-in captions. Check every
+   caption against the label rules above.
+2. Upload as **unlisted** (YouTube or Drive; Drive must be "anyone with the
+   link"). Open the link in a private window to check it plays.
+3. Replace `{{VIDEO_URL}}` in `docs/submission/deck/index.html` (slide 12),
+   `docs/submission/README.md` and the form. Then re-export:
+   `node docs/submission/deck/export.mjs`.
+4. Attach the MP4 to the release (`gh release upload {{RELEASE_TAG}} video.mp4`),
+   not to git.
