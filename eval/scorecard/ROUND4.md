@@ -13,3 +13,8 @@ before evaluating. The original `frozen.json`, history and regression thresholds
 remain intact. Input hashes differ: before/after is descriptive only, not a
 paired improvement or a passed same-input regression gate. A subsequent run
 using this snapshot can use the existing same-input comparison guard.
+
+Fresh output is retained as `latest-round4-fixture.json` and appended to history.
+`latest.json` remains the published LIVE fresh-set result so J2's README numbers
+and its `readme:check` contract stay consistent. This fixture result does not
+replace or rebrand that LIVE evidence. The SFF tracker includes both classes.
