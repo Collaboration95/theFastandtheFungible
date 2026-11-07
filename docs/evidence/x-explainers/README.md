@@ -73,3 +73,5 @@ Final measurements are recorded in `summary.json` and the table below.
 | v3-negatives | 2/10 → 2/10 | unavailable → unavailable | 10/10 → 10/10 | 0 → 0 |
 
 Negative buys remain 2/10: N03 and N08; no newly buying negatives. Both negative-bank exits remain failures. The answer-quality target is missed: v3 answersIt is only 1/20 and v3-dev only 2/20. Coverage gains do not establish general answer quality or live-model performance. No threshold tuning is included.
+
+Per-question receipt bundles and online verification reports are preserved byte-for-byte in each bank’s `receipts-and-verifications.tar.gz`. `receipt-archives.json` pins every member hash and each archive hash. Summaries, decision rows, logs and raw gate audits stay unpacked. This packaging keeps the PR below GitHub’s 300-file diff limit. Extract an archive into a separate directory to inspect or rerun verification; no wallet data is included.
