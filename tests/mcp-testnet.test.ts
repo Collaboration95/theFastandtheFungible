@@ -50,3 +50,39 @@ test.each(['test-iou', undefined])('IOU asset selection %s reaches provisioning 
  expect(setup.labels.join()).toContain('stand-in for RLUSD')
  expect(process.env.TESTNET_IOU_ISSUER).toBeUndefined()
 })
+
+// Fixture-only IOU provisioning exercises the extracted adapter without faucet or ledger access.
+test('funding leaf keeps TEST-SGD issuer, trust-line and issuance order serial and reuses warm wallets', async () => {
+ const { resources } = await import('./helpers/resource-scope.js')
+ const { Client, Wallet } = await import('xrpl')
+ const { TestnetProvisioner } = await import('../publisher/publishing/testnet-funding.js')
+ const root = resources().tempDir('ra-provision-iou-')
+ const file = `${root}/wallets.private.json`
+ const submitted: string[] = []
+ let warm = false
+ const connect = vi.spyOn(Client.prototype, 'connect').mockResolvedValue()
+ vi.spyOn(Client.prototype, 'disconnect').mockResolvedValue()
+ vi.spyOn(Client.prototype, 'request').mockImplementation((async (r: { command: string }) => {
+   if (r.command === 'account_info') {
+     if (!warm && submitted.length === 0) throw Error('fixture issuer not funded')
+     return { result: { account_data: { Flags: warm ? 0x40000000 : 0 } } }
+   }
+   return { result: { lines: warm ? [{ currency: 'SGT', limit: '1000000', balance: '10000' }] : [] } }
+ }) as never)
+ vi.spyOn(Client.prototype, 'autofill').mockImplementation((async (tx: { TransactionType: string }) => { submitted.push(tx.TransactionType); return { ...tx, Fee: '12' } }) as never)
+ vi.spyOn(Wallet.prototype, 'sign').mockReturnValue({ tx_blob: 'fixture-only', hash: 'fixture-only' })
+ vi.spyOn(Client.prototype, 'submitAndWait').mockResolvedValue({ result: { meta: { TransactionResult: 'tesSUCCESS' } } } as never)
+ const ledger = { request: async (r: Record<string, unknown>) => ({ result: r.command === 'server_info' ? { info: { network_id: 1 } } : { account_data: { Balance: '50000000' } } }), close: async () => {} }
+ const faucet = vi.fn()
+ const provisioner = new TestnetProvisioner({ ledger, faucet, walletStore: { file, allowedRoot: root } })
+ const cold = await provisioner.prepare({ asset: 'test-iou', writers: ['alphaleak'] })
+ expect(submitted).toEqual(['Payment', 'AccountSet', 'TrustSet', 'TrustSet', 'Payment'])
+ expect(cold.issuer).toBeTruthy()
+ warm = true; submitted.length = 0
+ const reused = await provisioner.prepare({ asset: 'test-iou', writers: ['alphaleak'] })
+ expect(reused).toEqual(cold)
+ expect(submitted).toEqual([])
+ expect(faucet).not.toHaveBeenCalled()
+ expect(connect).toHaveBeenCalledTimes(2)
+ vi.restoreAllMocks()
+})
