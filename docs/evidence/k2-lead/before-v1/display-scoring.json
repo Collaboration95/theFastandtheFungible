@@ -1,0 +1,426 @@
+{
+  "artifactSha256": "31f8713e696e1b9f2000a512252e6a6f56e549f4cb8d8abcad0bcfbd07d6e974",
+  "bankSha256": "eb03dde7d387193ff32af5c95ef6161546b7c35b91a2ff14b2040f3d2fe26dfc",
+  "answersIt": {
+    "n": 0,
+    "N": 0
+  },
+  "results": [
+    {
+      "id": "J01",
+      "lead": [
+        {
+          "text": "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment.",
+          "citations": [
+            {
+              "resourceId": "team-fees",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J02",
+      "lead": [
+        {
+          "text": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish.",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant.",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J03",
+      "lead": [
+        {
+          "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase.",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "A relay can submit the same fulfillment; funds still go to the original destination.",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v2",
+              "spanId": "p6"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J04",
+      "lead": [],
+      "answersIt": 0
+    },
+    {
+      "id": "J05",
+      "lead": [
+        {
+          "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "Every writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops).",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J06",
+      "lead": [
+        {
+          "text": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount.",
+          "citations": [
+            {
+              "resourceId": "xrpl-partial-payments",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer.",
+          "citations": [
+            {
+              "resourceId": "xrpl-partial-payments",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J07",
+      "lead": [
+        {
+          "text": "XRPL Credentials attest to writer identity under an operator-trusted issuer.",
+          "citations": [
+            {
+              "resourceId": "team-credentials",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "Issuer trust is operator policy.",
+          "citations": [
+            {
+              "resourceId": "team-credentials",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J08",
+      "lead": [
+        {
+          "text": "The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key.",
+          "citations": [
+            {
+              "resourceId": "team-recovery",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "EscrowCancel returns the original principal when the writer never completes delivery.",
+          "citations": [
+            {
+              "resourceId": "team-recovery",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J09",
+      "lead": [
+        {
+          "text": "A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "text": "A timeout can mean unavailable history, an unvalidated finish, a writer outage or incomplete local reconciliation.",
+          "citations": [
+            {
+              "resourceId": "team-recovery",
+              "version": "v2",
+              "spanId": "p9"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J10",
+      "lead": [
+        {
+          "text": "The #278 UC3 runner created its first run using Store's default SIMULATED label while injecting a real Testnet payer; the gate audit refused the inconsistent snapshot (missing_rail_label).",
+          "citations": [
+            {
+              "resourceId": "team-settlement",
+              "version": "v2",
+              "spanId": "p6"
+            }
+          ]
+        },
+        {
+          "text": "Mainnet impact: none observed; no value funds.",
+          "citations": [
+            {
+              "resourceId": "team-settlement",
+              "version": "v2",
+              "spanId": "p6"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J11",
+      "lead": [],
+      "answersIt": 0
+    },
+    {
+      "id": "J12",
+      "lead": [
+        {
+          "text": "The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom.",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p8"
+            }
+          ]
+        },
+        {
+          "text": "Buyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence).",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p7"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J13",
+      "lead": [],
+      "answersIt": 0
+    },
+    {
+      "id": "J14",
+      "lead": [
+        {
+          "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase.",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J15",
+      "lead": [
+        {
+          "text": "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment.",
+          "citations": [
+            {
+              "resourceId": "team-fees",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "A price displayed in SGD is an application accounting unit; it is not the network fee and it is not a market exchange rate.",
+          "citations": [
+            {
+              "resourceId": "team-fees",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J16",
+      "lead": [
+        {
+          "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required.",
+          "citations": [
+            {
+              "resourceId": "xrpl-x402",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity).",
+          "citations": [
+            {
+              "resourceId": "team-delivery",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J17",
+      "lead": [],
+      "answersIt": 0
+    },
+    {
+      "id": "J18",
+      "lead": [
+        {
+          "text": "A writer-signed refund after EscrowFinish is a different operation.",
+          "citations": [
+            {
+              "resourceId": "team-recovery",
+              "version": "v2",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "text": "EscrowCancel returns the original principal when the writer never completes delivery.",
+          "citations": [
+            {
+              "resourceId": "team-recovery",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J19",
+      "lead": [
+        {
+          "text": "Passage verification uses salted hashes committed under a manifest root.",
+          "citations": [
+            {
+              "resourceId": "team-verification",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    },
+    {
+      "id": "J20",
+      "lead": [
+        {
+          "text": "ResearchAgent is a Testnet prototype, with no mainnet readiness claim.",
+          "citations": [
+            {
+              "resourceId": "team-readiness",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "text": "Testnet transactions can demonstrate that a particular payment mechanism settled on that network; they do not establish suitability for handling real customer funds.",
+          "citations": [
+            {
+              "resourceId": "team-readiness",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "answersIt": 0
+    }
+  ]
+}

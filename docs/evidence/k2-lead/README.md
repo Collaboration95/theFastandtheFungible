@@ -36,3 +36,16 @@ The #405 runner’s raw results are preserved unchanged. It scores local claim t
 Private wallet/state directories stay outside Git. Receipt/verification archives contain only the exported bundles and verifier reports. All original per-question files can be recovered with `tar -xzf receipts-and-verifications.tar.gz`. `receipt-archives.json` pins every member and archive hash. No v1 gold is invented; v1 answersIt remains unavailable.
 
 The packed live UC3 consumer used a fresh state directory, fixture models and Testnet faucet funds. `live-uc3.log` records online verification and RESULT PASS, `live-uc3.lead.json` retains the exact Supports lead and `live-uc3.gate-audit.json` audits raw persisted state. Static browser replays pass all four Playwright tests; unit checks cover UC1, UC2 and UC3 delivered lead extraction and UC3 Supports. UC1/UC2 preserve existing uncertainty rather than manufacturing agreement. No fixture goldens or recorded traces were changed. No gate, test, threshold or timeout was loosened.
+
+## Final measurements
+
+| Bank | answersIt before → after | Buy-and-cite before → after | Online DONE verification | Raw gate violations before → after |
+|---|---:|---:|---:|---:|
+| v1 | unavailable (0/0) | 16/20 → 16/20 | 20/20 → 20/20 | 0 → 0 |
+| v3 | 1/20 → 4/20 | 7/20 → 7/20 | 20/20 → 20/20 | 0 → 0 |
+| v3-dev | 2/20 → 2/20 | 6/20 → 6/20 | 20/20 → 20/20 | 0 → 0 |
+| v3-negatives | unavailable (0/0) | 2/10 → 2/10 | 10/10 → 10/10 | 0 → 0 |
+
+Negative buys remain **2/10 → 2/10**, N03/N08; both negative runner exits are failures, preserved in runner.log. All six positive runner exits are zero. `summary.json` links the display reconstruction to the original purchases/verification/audits. All 140 archive-extracted bundles also pass independent offline verification; this supplements their original online reports. Fresh final-code tgz is byte-identical to measured after (`artifacts.json`).
+
+The three recovered v3 cases are V04, V16 and V17, exactly the three delivered-fact ranking misses. V3-dev has no improvement: four bought misses lack the literal gold in purchased bodies. Across both positive banks, seven bought misses remain coverage failures; selecting unrelated articles and unpurchased facts remains outside this display fix. Scores establish literal gold/citation inclusion, not a semantic endorsement of the full answer. No held-out performance claim is made.
