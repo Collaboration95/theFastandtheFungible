@@ -1,19 +1,13 @@
-import { ResourceScope } from '../shared/resource-scope.js'
+import { packedArtifact, withPackedSession } from './packed-consumer.js'
 // Explicit network opt-in. Simulated fallback never satisfies live admission.
 import assert from 'node:assert/strict'
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { writeFileSync, mkdirSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { stopProcess } from './release-processes.js'
-if (process.env.RA_ACCEPT_TESTNET !== '1') throw Error('RA_ACCEPT_TESTNET=1 required')
-const manifestFile = resolve(process.argv[2] ?? 'dist/release/manifest.json')
-const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
-const tgz = resolve(dirname(manifestFile), manifest.artifacts.find((a: { kind: string }) => a.kind === 'mcp-tgz').file)
-const scope = new ResourceScope()
-try {
-const scratch = scope.evidenceDir('ra-try-consumer-', 'Testnet wallets and potentially signed obligations; retain for manual reconciliation')
+const { manifest, tgz } = packedArtifact(process.argv[2])
+await withPackedSession(true, async ({ spawnPacked }) => {
 const started = performance.now()
-const child = scope.spawn('npx', ['-y', '--cache', join(scratch, 'cache'), pathToFileURL(tgz).href, 'try', '--testnet'], { cwd: scratch, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, XDG_STATE_HOME: join(scratch, 'state') } })
+const child = spawnPacked(tgz, ['try', '--testnet'])
 let output = ''
 child.stdout.on('data', data => { output += data })
 child.stderr.resume()
@@ -32,4 +26,4 @@ try {
   console.log(output)
 } finally { clearTimeout(timer); await stopProcess(child);  }
 
-} finally { await scope.close() }
+})

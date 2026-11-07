@@ -11,6 +11,7 @@ add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
 - 7 Nov: Prepare v1.0.1: versions bumped from 1.0.0 across packages, MCPB, registry metadata, live docs and the deck (install lines regenerated); the v4 held-out measurement is committed (7/20 bought and cited, answers-it 2/20, v4-negatives 0/10 purchases, fixture decision model, Testnet) and replaces the v2 8/20 headline everywhere; dev is labelled v1 16/20, v3 7/20; v4 is used, so a new held-out claim needs a v5 bank. Tag follows orchestrator acceptance. [Evidence](evidence/v4-heldout/README.md).
+- 7 Nov: Lane B consolidates packed-consumer lifecycle and bank execution, retires the historical r5-k runner/scorer with pinned recipes, and retains live wallet state before startup; ≥100 net source lines removed, frozen results unchanged.
 - 7 Nov: Lane A retires twelve frozen proof generators atomically; evidence bytes retained and historical recipes pinned to the complete `b0a67ffa` tree ([recovery index](historical-tools.md), [#412](https://github.com/Collaboration95/theFastandtheFungible/pull/412)).
 - 7 Nov: U2 removes duplicate lead/claim rows with stance retained, uses ISO UTC receipt dates, removes the unsourced Articles column, and hides purchase rationale until a receipt exists.
 - 7 Nov: Lane R corrects dev/held-out claims, README first screen, dated CI/cold timings, v1.0.0 release copy and duplicate DMGs; refreshes ledger and builder filing kits. No version bump; release acceptance remains with the orchestrator. Evidence: `docs/evidence/r5-r/`.

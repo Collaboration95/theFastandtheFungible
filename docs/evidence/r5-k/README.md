@@ -8,7 +8,7 @@ Pre-A shipping snapshot: V1 development **9/20 answers-it**, **17/20 buy-and-cit
 
 The shipping artifact is `/tmp/r5-k-shipping-artifact/researchagent-mcp-1.0.0.tgz`. `shipping-v1/results.json` and `shipping-v3/results.json` pin its SHA-256 and each bank SHA-256. V3 arrived on main in #401 before the final runs. V1 is development data and has no upstream gold field: `v1-gold.json` states this lane's literal key phrases. V3 uses its frozen `gold` fields without changes. No policy, question, threshold or timeout was tuned.
 
-Commands:
+Historical commands (retired tools; run from the complete `b0a67ffa` tree in a separate checkout, with its dependencies and packed artifact):
 
 ```
 RA_ACCEPT_TESTNET=1 J1_STATE_DIR=<private-state> JUDGE_OUT_DIR=docs/evidence/r5-k/shipping-v1 JUDGE_BANK=eval/questions/judge-xrpl.v1.json npx tsx scripts/r5-k-bank-testnet.ts <tgz>
@@ -16,6 +16,8 @@ RA_ACCEPT_TESTNET=1 J1_STATE_DIR=<private-state> JUDGE_OUT_DIR=docs/evidence/r5-
 npx tsx scripts/r5-k-score.ts docs/evidence/r5-k/shipping-v1/results.json
 npx tsx scripts/r5-k-score.ts docs/evidence/r5-k/shipping-v3/results.json
 ```
+
+For a new measurement, use `scripts/judge-bank-testnet.ts` as documented in `docs/eval-judge-banks.md`. Original v1 legacy acceptance requires `JUDGE_ACCEPTANCE=1` and retains ≥12/20 buy-and-cite. The historical scorer mutates `results.json` with v1-gold fallback; the current lead scorer emits separate display scoring. They are not interchangeable: do not overwrite these frozen results with a new scorer.
 
 The scorer uses the final screen/export lead selector on purchased, cited claims in the exported receipt bundle. It checks literal case-insensitive gold inclusion in the first two sentences and a purchased citation. `capturedLead` retains the original harness extraction. Receipt/verification files retain all misses. This measures reading the purchased evidence, not independent semantic truth. Earlier diagnostic artifacts are retained in `v1/`, `v1-final/` and `v3/`; they are not the shipping result. Disclosure cleanup and complementary-sentence extraction happened during those diagnostics. No V3 question or gold was changed and no content was added to fit V3.
 
