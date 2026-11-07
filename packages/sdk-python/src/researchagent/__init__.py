@@ -1,6 +1,15 @@
 """ResearchAgent: server policy alone authorizes research spending."""
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("researchagent")
+except PackageNotFoundError:  # Source checkout without an installed distribution.
+    import tomllib
+    from pathlib import Path as _VersionPath
+    __version__ = tomllib.loads((_VersionPath(__file__).parents[2] / "pyproject.toml").read_text())["project"]["version"]
+
 import json
 import math
 import subprocess

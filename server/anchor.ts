@@ -20,6 +20,7 @@ export class AnswerAnchors {
   }
   private async perform(runId: string) {
     const run = this.store.getRun(runId)
+    if (!run.receipts.length) return // Nothing bought: no anchor transaction or fee.
     if (!['DONE','STOPPED','FAILED'].includes(run.phase) || !run.answers.length || run.labels.settlement !== 'XRPL TESTNET · no real value') return
     const answersHash = hash(canonical(run.answers))
     let row = this.store.anchorRows().filter(r => r.runId === runId).at(-1)

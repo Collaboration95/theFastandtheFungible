@@ -145,3 +145,21 @@ a dedicated permissioned issuer and trust lines; seeds stay in the existing 0600
 scratch store. The launcher refuses IOU execution if provisioning fails.
 The issuer has zero transfer fees. MCP IOU mode is a follow-up.
 See [key reveal](key-reveal-escrow.md) for the asset matrix and safety checks.
+
+### One-shot judge path (next candidate)
+
+`npx -y <mcp-tgz> try --testnet` provisions through the same MCP Testnet setup,
+asks UC3 with an explicit S$2 cap, and verifies the exported receipts using the
+bundled TypeScript verifier with `--ledger`. It prints six numbered explorer
+links: create, key reveal, writer-signed cooperative refund, re-buy create and
+finish, then the answer anchor. Fixture models and fictional writers remain
+labelled. The command exits after `RESULT PASS`; verification failure exits
+nonzero. Faucet/network provisioning failures instead run and verify a clearly
+labelled SIMULATED path, with the reason and no explorer links.
+
+Wallets and daily accounting are reused under the existing Testnet state
+directory. Operator caps still apply; the command does not change MCP's zero
+budget default for other entry points. No-purchase runs skip the anchor fee.
+The portable stdio bundle does not load the web UI. Browser tooling is omitted;
+report export uses the existing HTML fallback when Chromium is unavailable.
+Release URLs remain pinned to rc.2 until the next candidate is published.

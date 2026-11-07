@@ -478,6 +478,7 @@ Significant product, design and process decisions, newest first. One line each: 
 - 3 Nov: Lane D #287 live payment reconciliation, reserve precheck, protected deep health/metrics, JSON money logs and ops runbook; synthetic queued-payment p95 307.91→6.24 ms under 300 ms writer delay; one verified 0.06 XRP Testnet payment ([evidence](evidence/payment-ops-287.md)).
 - 3 Nov: #274 adds x402 hired answers, generic `sdk/x402` buyer, optional remote MCP hire, durable capped royalties/change and a separate caller demo; fixture and live chain evidence in `docs/evidence/hire-274.md`.
 
+- 2026-11-07 — J2 (Reachability / Feasibility): bundled MCP 21.44 → 3.41 MB; cold initialize 3.6 s, Testnet app 25.3 s, UC3 try + ledger PASS 73.8 s; compact Python verification and no-purchase anchor guard. Evidence: docs/evidence/round4-j2/. No release cut.
 - 2026-11-03: #286 shared admission, wallet cap/pause, bearer and rebinding guards, capped decision inputs and adversarial injection pack; native token contract posted on #259.
 - 3 Nov: Lane C #261 standalone Testnet escrow spike: clean release 14.492 s / 435 drops, cancel 54.871 s / 24 normal-path drops, nine validated txs including negative probes; #273 build contract and live builder feedback ([evidence](spikes/escrow.md)).
 

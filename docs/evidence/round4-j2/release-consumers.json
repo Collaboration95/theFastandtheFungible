@@ -1,0 +1,94 @@
+{
+  "sourceSha": "5a0f48fe40f78da0cd539c361210865e2ea4e094",
+  "manifestSha256": "8fa9aadee3a3e4bc8b2299ed4313c9f73880a2346be256bcd22dc48397da3d38",
+  "mode": "fixture providers; simulated settlement",
+  "runtime": {
+    "node": "v26.3.1",
+    "python": "Python 3.14.7"
+  },
+  "verifiers": {
+    "receiptSha256": "e57910fe27832a9ec1f3b81680215447698ab10fb155f6411cef98c1ba3b5493",
+    "typescript": {
+      "command": "npm run verify:answer -- accepted-receipt.json --json",
+      "pass": true
+    },
+    "python": {
+      "command": "python -m researchagent verify accepted-receipt.json --json",
+      "installation": "exact wheel in clean venv",
+      "pass": true
+    }
+  },
+  "consumers": [
+    {
+      "kind": "tgz",
+      "sha256": "fc865ac96e27fbe2a8eed80e788c7bac5a6a9008b80d08514ec049a164cb3b0c",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "timing": "TypeScript",
+      "seconds": 1.2330682499999999
+    },
+    {
+      "kind": "wheel",
+      "sha256": "17e736b9456d011dc269a400b6c7997708a0698b653b42f3d9a3e6a5c0774159",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "timing": "Python",
+      "seconds": 2.3462645839999996
+    },
+    {
+      "kind": "sdist",
+      "sha256": "a20634fa835f7183bed08f6ada3aeba880f474773d3ca2c674fd005744bf05d9",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "kind": "mcpb",
+      "sha256": "423061a22e97767830f431cda553239ac3f29c5f8b01687c1c43248a6ac3c832",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "kind": "mcp-tgz",
+      "sha256": "5783ef071439800a5d80e7bc520c47f589a8fbafa8ebae85586458b3ff49b325",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "timing": "MCP npx",
+      "seconds": 2.108654042
+    },
+    {
+      "kind": "app",
+      "sha256": "5783ef071439800a5d80e7bc520c47f589a8fbafa8ebae85586458b3ff49b325",
+      "citations": 8,
+      "receipts": 1,
+      "intents": 1,
+      "idempotent": true,
+      "capPreserved": true
+    },
+    {
+      "timing": "app (simulated)",
+      "readySeconds": 1.6333042079999995,
+      "seconds": 1.9284596659999989
+    }
+  ]
+}

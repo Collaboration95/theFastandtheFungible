@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Add the one-shot `try --testnet` judge path with six ledger links and verification.
+- Bundle the portable MCP runtime and load app UI only on the app path.
+- Expose Python `__version__`; compact verification by default, with `--verbose`.
+- Skip anchor transactions on no-purchase runs and refresh install instructions.
+
 All notable changes to ResearchAgent. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Tagged releases are
 feature-day milestones (v0.x). Package versions follow the release tag.
