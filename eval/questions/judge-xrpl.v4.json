@@ -1,0 +1,127 @@
+{
+  "version": 4,
+  "frozenBeforeIngestion": true,
+  "methodology": "Single-use held-out bank, v4. Written blind: the author did not open the product article corpus, writers, evidence or builder notes. Gold phrases are well-established public XRPL / x402 facts. v4 supersedes v3 as the single-use held-out set; v3 is now development data. Frozen at commit; no post-run question or gold edits.",
+  "questions": [
+    {
+      "id": "H01",
+      "topic": "payments-fees",
+      "question": "What account-level counter stops an XRPL payment from being replayed or applied out of order?",
+      "gold": "Sequence"
+    },
+    {
+      "id": "H02",
+      "topic": "payments-fees",
+      "question": "My payment agent wants to prepare several XRPL transactions and submit them in any order. Which transaction reserves sequence numbers for that?",
+      "gold": "TicketCreate"
+    },
+    {
+      "id": "H03",
+      "topic": "payments-fees",
+      "question": "Where in an XRPL transaction can a sender attach an invoice reference or other free-form data?",
+      "gold": "Memos"
+    },
+    {
+      "id": "H04",
+      "topic": "escrow",
+      "question": "Which transaction returns an expired escrow's XRP to the account that created it?",
+      "gold": "EscrowCancel"
+    },
+    {
+      "id": "H05",
+      "topic": "escrow",
+      "question": "Which XLS standard extends XRPL escrow from XRP to issued tokens?",
+      "gold": "XLS-85"
+    },
+    {
+      "id": "H06",
+      "topic": "escrow",
+      "question": "What must a stablecoin issuer enable on its account before holders can lock that issuer's trust line tokens in an escrow?",
+      "gold": "AllowTrustLineLocking"
+    },
+    {
+      "id": "H07",
+      "topic": "rlusd-stablecoin",
+      "question": "Which AccountSet flag lets a token issuer freeze every holder of its currency at once?",
+      "gold": "GlobalFreeze"
+    },
+    {
+      "id": "H08",
+      "topic": "rlusd-stablecoin",
+      "question": "Which 2025 US federal law created a licensing framework for payment stablecoins?",
+      "gold": "GENIUS Act"
+    },
+    {
+      "id": "H09",
+      "topic": "trust-lines-reserves",
+      "question": "Which issuer AccountSet flag makes new trust lines allow rippling, so holders of its token can pay each other through the issuer?",
+      "gold": "DefaultRipple"
+    },
+    {
+      "id": "H10",
+      "topic": "trust-lines-reserves",
+      "question": "Which transaction deletes an XRPL account and sweeps its remaining XRP to another account?",
+      "gold": "AccountDelete"
+    },
+    {
+      "id": "H11",
+      "topic": "credentials-did",
+      "question": "Which field of an XRPL Credential records what kind of attestation it is, such as a KYC check?",
+      "gold": "CredentialType"
+    },
+    {
+      "id": "H12",
+      "topic": "credentials-did",
+      "question": "Which XLS standard defines the native XRPL decentralized identifier ledger entry?",
+      "gold": "XLS-40"
+    },
+    {
+      "id": "H13",
+      "topic": "x402",
+      "question": "Which company created the x402 payment protocol?",
+      "gold": "Coinbase"
+    },
+    {
+      "id": "H14",
+      "topic": "x402",
+      "question": "What does the HTTP specification itself say about status code 402?",
+      "gold": "reserved"
+    },
+    {
+      "id": "H15",
+      "topic": "amm-dex",
+      "question": "Which transaction creates a new AMM pool for a pair of assets on the XRP Ledger?",
+      "gold": "AMMCreate"
+    },
+    {
+      "id": "H16",
+      "topic": "amm-dex",
+      "question": "Which transaction bids for an AMM pool's auction slot to trade at a discounted fee?",
+      "gold": "AMMBid"
+    },
+    {
+      "id": "H17",
+      "topic": "mainnet-kyc-mas",
+      "question": "Which US Treasury bureau do crypto money transmitters register with under the Bank Secrecy Act?",
+      "gold": "FinCEN"
+    },
+    {
+      "id": "H18",
+      "topic": "mainnet-kyc-mas",
+      "question": "Which MAS-led Singapore initiative pilots asset tokenisation and DeFi use cases with financial institutions?",
+      "gold": "Project Guardian"
+    },
+    {
+      "id": "H19",
+      "topic": "spending-controls",
+      "question": "How can an account owner stop the master key from signing so that only a separate agent key can?",
+      "gold": "DisableMaster"
+    },
+    {
+      "id": "H20",
+      "topic": "spending-controls",
+      "question": "Which XRPL transaction lets an account grant another account permission to submit specific transaction types on its behalf?",
+      "gold": "DelegateSet"
+    }
+  ]
+}
