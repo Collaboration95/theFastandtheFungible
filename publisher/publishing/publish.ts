@@ -111,8 +111,8 @@ export async function publishSite(options: PublishOptions) {
       await writeFile(join(dir, 'registry.json.tmp'), JSON.stringify({ slug: options.slug, origin: baseUrl, rail, pid: process.pid }), { mode: 0o600 })
       await chmod(join(dir, 'registry.json.tmp'), 0o600)
       await rename(join(dir, 'registry.json.tmp'), join(dir, 'registry.json'))
-      log(`Writers · local · Testnet: ${options.name ?? options.slug}`)
-      log(`Registry ${baseUrl}/registry · registered locally for the next engine start`)
+      log(`Writers · local · ${rail === 'xrpl-testnet' ? 'Testnet' : 'SIMULATED'}: ${options.name ?? options.slug}`)
+      log(`Registry ${baseUrl}/registry · registered locally; Testnet discovery refreshes on search`)
       log(`UI/MCP: PUBLISHER_URL=${baseUrl} (keep this command running)`)
       log(`Folder → searchable, payable writer: ${seconds.toFixed(2)} s${seconds >= 60 ? ' · over the 60 s target' : ''}`)
       return { server, app, corpus, baseUrl, seconds, dir }
