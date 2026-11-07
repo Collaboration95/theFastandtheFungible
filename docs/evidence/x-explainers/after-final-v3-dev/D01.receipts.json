@@ -1,0 +1,1818 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "685624E94B56C25149761C9B168EDF29AAA58AB3AB8B6A5440F8CDAE837D4111",
+    "account": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+    "head": "bf0be17d38bb6f063545ec8e6555cf4e87299f616300ccb58e4d102d5d8b5b21",
+    "runIdHash": "ee84a44ce233dbfbd192670153d1577906e18795df2627e2fd3f2a7219bb5c39",
+    "ledgerIndex": 22133452,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "sourceKey": "xrpl-partial-payments@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p1\"]",
+            "claim": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]",
+            "citation": "[\"xrpl-partial-payments@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]",
+            "manifestRoot": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+            "grantIntentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p3\"]",
+            "claim": "My integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1]",
+            "citation": "[\"xrpl-partial-payments@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "My integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1]",
+            "manifestRoot": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+            "grantIntentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p4\"]",
+            "claim": "Build a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1]",
+            "citation": "[\"xrpl-partial-payments@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Build a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1]",
+            "manifestRoot": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+            "grantIntentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p2\"]",
+            "claim": "The partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1]",
+            "citation": "[\"xrpl-partial-payments@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1]",
+            "manifestRoot": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+            "grantIntentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "Which flag lets a Payment deliver less than the stated amount"
+    },
+    {
+      "id": "r2",
+      "text": "What field shows what the recipient actually got"
+    }
+  ],
+  "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "conclusion": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors. On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named. Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator. On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument. When a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure. The timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current. For the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions. I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here.",
+      "claims": [
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p2\"]",
+          "text": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p9\"]",
+          "text": "On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p9"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p11\"]",
+          "text": "Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p11"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p1\"]",
+          "text": "On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p3\"]",
+          "text": "When a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p4\"]",
+          "text": "The timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p5\"]",
+          "text": "For the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p5"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"bp-boj-september-recap\",\"v1\",\"p1\"]",
+          "text": "I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "bp-boj-september-recap",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on advanced packaging.",
+          "tags": [
+            "advanced-packaging"
+          ]
+        },
+        {
+          "text": "No accessible evidence on lead times.",
+          "tags": [
+            "lead-times"
+          ]
+        },
+        {
+          "text": "No accessible evidence on 2026 q1.",
+          "tags": [
+            "2026-q1"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XRPL.",
+          "tags": [
+            "XRPL"
+          ]
+        },
+        {
+          "text": "No accessible evidence on partial payments.",
+          "tags": [
+            "partial payments"
+          ]
+        },
+        {
+          "text": "No accessible evidence on delivered_amount.",
+          "tags": [
+            "delivered_amount"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DeliverMax.",
+          "tags": [
+            "DeliverMax"
+          ]
+        },
+        {
+          "text": "No accessible evidence on payment security.",
+          "tags": [
+            "payment security"
+          ]
+        },
+        {
+          "text": "No accessible evidence on recovery.",
+          "tags": [
+            "recovery"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Testnet.",
+          "tags": [
+            "Testnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on penang.",
+          "tags": [
+            "penang"
+          ]
+        },
+        {
+          "text": "No accessible evidence on osat.",
+          "tags": [
+            "osat"
+          ]
+        },
+        {
+          "text": "No accessible evidence on capacity.",
+          "tags": [
+            "capacity"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD escrow blockers and the TEST SGD substitute.",
+          "tags": [
+            "RLUSD escrow blockers and the TEST-SGD substitute"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rlusd.",
+          "tags": [
+            "rlusd"
+          ]
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "conclusion": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1] My integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1] Build a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1] The partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1] The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors. On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named. Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator. I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here.",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p1\"]",
+          "text": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-partial-payments",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p3\"]",
+          "text": "My integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-partial-payments",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p4\"]",
+          "text": "Build a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-partial-payments",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p2\"]",
+          "text": "The partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-partial-payments",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p2\"]",
+          "text": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p9\"]",
+          "text": "On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p9"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"or-wafer-capacity-prepayment-explainer\",\"v1\",\"p11\"]",
+          "text": "Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "or-wafer-capacity-prepayment-explainer",
+              "version": "v1",
+              "spanId": "p11"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"bp-boj-september-recap\",\"v1\",\"p1\"]",
+          "text": "I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "bp-boj-september-recap",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on advanced packaging.",
+          "tags": [
+            "advanced-packaging"
+          ]
+        },
+        {
+          "text": "No accessible evidence on lead times.",
+          "tags": [
+            "lead-times"
+          ]
+        },
+        {
+          "text": "No accessible evidence on 2026 q1.",
+          "tags": [
+            "2026-q1"
+          ]
+        },
+        {
+          "text": "No accessible evidence on recovery.",
+          "tags": [
+            "recovery"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Testnet.",
+          "tags": [
+            "Testnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on penang.",
+          "tags": [
+            "penang"
+          ]
+        },
+        {
+          "text": "No accessible evidence on osat.",
+          "tags": [
+            "osat"
+          ]
+        },
+        {
+          "text": "No accessible evidence on capacity.",
+          "tags": [
+            "capacity"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD escrow blockers and the TEST SGD substitute.",
+          "tags": [
+            "RLUSD escrow blockers and the TEST-SGD substitute"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rlusd.",
+          "tags": [
+            "rlusd"
+          ]
+        }
+      ],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "open-records",
+      "resourceId": "or-wafer-capacity-prepayment-explainer",
+      "version": "v1",
+      "title": "What a wafer-capacity prepayment is",
+      "publisher": "Open Records",
+      "body": "## What a wafer-capacity prepayment is\n\nOn 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument.\n\nThe practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors.\n\n## How the money is recorded\n\nWhen a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure.\n\nThe timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current.\n\n## Why customers and foundries use them\n\nFor the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions.\n\nThe arrangement carries risks for both sides. If the customer's end-market demand falls, the customer may be obligated to take wafers it cannot use, or it may forfeit a portion of the deposit. If the foundry fails to deliver, the customer may have a claim for refund or damages, but recovery can take years. Public filings occasionally disclose disputes over prepayment terms, though most are resolved without litigation.\n\n## Recent examples in public records\n\nIn recent years, several foundries have disclosed prepayment arrangements in their annual reports. TSMC, the world's largest contract chipmaker, has reported advance payments from customers in its financial statements, though it does not name them. In 2021 and 2022, during a global chip shortage, multiple automakers and electronics firms announced prepayments to secure capacity. The amounts varied widely. Some were in the hundreds of millions of dollars; others were smaller.\n\nIn Japan, the Bank of Japan (BoJ) has published research on corporate prepayment behavior, noting that such arrangements can affect cash-flow statistics. The BoJ's reports do not single out semiconductors, but the pattern is consistent with other capital-intensive industries. The U.S. Securities and Exchange Commission has brought enforcement actions against companies that misclassified prepayments as revenue, which underscores the importance of the deposit treatment.\n\nOn 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named.\n\n## What to watch in future filings\n\nThe Desk will continue to monitor quarterly reports for changes in deposit balances. A sharp increase in deposits may indicate that customers are locking in capacity ahead of a expected demand surge. A sharp decrease may indicate that wafers are being delivered and revenue is being recognized. Neither trend is inherently positive or negative; both are facts to be recorded.\n\nInvestors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator.\n\nFor now, the wafer-capacity prepayment remains a standard tool in the semiconductor supply chain. It is a deposit, not revenue, until wafers are delivered. That is the fact. The Desk will report further developments as they appear in public filings.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument.",
+          "label": "What a wafer-capacity prepayment is"
+        },
+        {
+          "id": "p2",
+          "text": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors.",
+          "label": "What a wafer-capacity prepayment is"
+        },
+        {
+          "id": "p3",
+          "text": "When a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure.",
+          "label": "How the money is recorded"
+        },
+        {
+          "id": "p4",
+          "text": "The timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current.",
+          "label": "How the money is recorded"
+        },
+        {
+          "id": "p5",
+          "text": "For the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions.",
+          "label": "Why customers and foundries use them"
+        },
+        {
+          "id": "p6",
+          "text": "The arrangement carries risks for both sides. If the customer's end-market demand falls, the customer may be obligated to take wafers it cannot use, or it may forfeit a portion of the deposit. If the foundry fails to deliver, the customer may have a claim for refund or damages, but recovery can take years. Public filings occasionally disclose disputes over prepayment terms, though most are resolved without litigation.",
+          "label": "Why customers and foundries use them"
+        },
+        {
+          "id": "p7",
+          "text": "In recent years, several foundries have disclosed prepayment arrangements in their annual reports. TSMC, the world's largest contract chipmaker, has reported advance payments from customers in its financial statements, though it does not name them. In 2021 and 2022, during a global chip shortage, multiple automakers and electronics firms announced prepayments to secure capacity. The amounts varied widely. Some were in the hundreds of millions of dollars; others were smaller.",
+          "label": "Recent examples in public records"
+        },
+        {
+          "id": "p8",
+          "text": "In Japan, the Bank of Japan (BoJ) has published research on corporate prepayment behavior, noting that such arrangements can affect cash-flow statistics. The BoJ's reports do not single out semiconductors, but the pattern is consistent with other capital-intensive industries. The U.S. Securities and Exchange Commission has brought enforcement actions against companies that misclassified prepayments as revenue, which underscores the importance of the deposit treatment.",
+          "label": "Recent examples in public records"
+        },
+        {
+          "id": "p9",
+          "text": "On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named.",
+          "label": "Recent examples in public records"
+        },
+        {
+          "id": "p10",
+          "text": "The Desk will continue to monitor quarterly reports for changes in deposit balances. A sharp increase in deposits may indicate that customers are locking in capacity ahead of a expected demand surge. A sharp decrease may indicate that wafers are being delivered and revenue is being recognized. Neither trend is inherently positive or negative; both are facts to be recorded.",
+          "label": "What to watch in future filings"
+        },
+        {
+          "id": "p11",
+          "text": "Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator.",
+          "label": "What to watch in future filings"
+        },
+        {
+          "id": "p12",
+          "text": "For now, the wafer-capacity prepayment remains a standard tool in the semiconductor supply chain. It is a deposit, not revenue, until wafers are delivered. That is the fact. The Desk will report further developments as they appear in public filings.",
+          "label": "What to watch in future filings"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "open-records",
+          "articleId": "or-wafer-capacity-prepayment-explainer",
+          "version": "v1",
+          "wallet": "rwdU3cC18UonX9ccVH8FFfsn7NANAwSdSH",
+          "pubKey": "ED8A69239B9DB7305F649229575AD4BE38A08C220F3DF7E9D886084B4119936D25",
+          "priceMinor": 0,
+          "leaves": [
+            "bdc5d739d21dc6454eeb323f4e4241e7bb508adcb268915baeb59140c8045af3",
+            "1a5835c361b4d096773f8d40878fc58f2f4a3d8484a3f891c118f9220839d43c",
+            "42f6ef917edefbf9f19aaced00a51b0663deafc3f40c350d9d07943e8ffe17be",
+            "65de17aa34057c58e6484028b8b8f9ebbcb5ee59b7d067e2bba0d50239356c6d",
+            "58de31a52a160d7ad2f267598de0ed29cacf0e416330b6fe783eab116cf63c66",
+            "5c7b38469a4f6facd2add36d70787349539ea8beabd281920cbfd18f79696fb5",
+            "6d69471026f4dce612aa10a8712661803957ae5562726a12f0431d17502bdf52",
+            "7ea34e1ce08d0f983bd1071fa7eabb2e90975ef33e8949bf9e9aee6d3ff847c3",
+            "62dc11a6afab868588586e2adfb43e5ffa4c2778fea7a102c2c09076c7ebb712",
+            "ab764fb9b8485e544b9000f7eead11d95bad2158d3b4b19283fe45466eda36cf",
+            "cce5700758324ac35af24cd769387d3fda7c93730fad0bd0047a01ce4f9c0a03",
+            "e36a25cbeb1ff9df5b83ee8bd90fb8415bf935e4e9e43998b7d35b1bb8e73d22"
+          ],
+          "root": "def253aa5a2bb2efc78483a2844d85ef7b163da456f57485bbfe619b566c72a1",
+          "claims": [],
+          "wordCount": 898,
+          "publishedAt": "2026-08-14",
+          "relevance": 1,
+          "sig": "92408A1ACE388861C0FE244393046AAC191F86B6EA707FEDD241BADACC56A2F3C5199275D2E9608588A98542A013F5A1A7FF496F36C859D5F66FE3FA8E913505"
+        },
+        "salts": [
+          "7b802de97832cce59630c03cc0064294",
+          "f06c31fc86367cc417605c7f4cbd2a04",
+          "353baf77aea545bc185a119012a44d66",
+          "46f9f17817e0b1c03178fbc44787159e",
+          "638cce05d0f0e1cf11214b5fe0adac18",
+          "9c13075d421d97d471f8bc51fe42e93d",
+          "2fb70ce7f42c4d2ddeeedf46c6f6b081",
+          "0ad1d1065b12bc6805557fdf9a7719b1",
+          "bf42457a84578507ead8899f50d3d9a3",
+          "5b62d560d51b8bfc48d160a8f92fa24f",
+          "7dad981014d40d8aa7263659622176bd",
+          "8bfbab32934f2ca0cd0d753424942ddb"
+        ]
+      }
+    },
+    {
+      "profileId": "basis-points",
+      "resourceId": "bp-boj-september-recap",
+      "version": "v1",
+      "title": "The September BoJ meeting: what the Bank of Japan changed and how 10-year JGB yields reacted",
+      "publisher": "Basis Points",
+      "body": "## The September BoJ meeting: what was priced, what was new\n\nI spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here.\n\nLet me be careful about what I mean by priced. Overnight index swaps had been leaning toward a move for weeks, and the tone from the BoJ's communications had shifted just enough that the residual uncertainty was about timing and language, not direction. When the announcement came, the statement itself was almost anticlimactic. The vote was not unanimous, which I read as a signal that the board is still uncomfortable with the pace rather than the destination. The Governor's press conference then did the heavier lifting, and that is where the real information content sat.\n\n## What the statement said, and what it did not\n\nThe statement language was, as usual, carefully hedged. It noted that underlying inflation was moving toward target in a manner consistent with the bank's projections, but it also flagged that the outlook for global demand remained unusually uncertain. I want to stress that second clause, because it is the part that gets stripped out in the wire copy. The bank is not declaring victory. It is saying that the conditions it set out in previous meetings have been met, and that it will continue to adjust the degree of monetary accommodation as needed. That is a conditional sentence, not a promise.\n\nThe Governor, in the press conference, was asked directly whether this was the start of a series. His answer, as I transcribed it, was that the bank does not pre-commit to a path and that every meeting will be judged on the data available at the time. He also said something that I think deserves more attention than it received: that the bank is paying close attention to the functioning of the JGB market, particularly at the longer end. That is not a throwaway line. It is a signal that the bank is aware that its own balance sheet and the shape of the curve are now intertwined in ways that make the exit harder than the entry.\n\n## What the market did, and what it told us\n\nThe market reaction was instructive precisely because it was so contained. The 10-year JGB yield rose 9 bp on 18 September 2026, which is a move, but not a dramatic one given the context. The 2-year yield moved more, which is consistent with a repricing of the near-term policy path rather than a reassessment of the terminal rate. The curve flattened slightly, which is what you would expect if the market believes the bank is serious about normalising but also believes it will stop well short of anything that could be called restrictive.\n\nWhat I found more interesting was the lack of follow-through in the following sessions. If the market had been genuinely surprised, we would have seen a sustained repricing, with the 10-year pushing through recent ranges and the yen strengthening sharply. That did not happen. Instead, the move faded, and By week's end the 10-year was back within a few basis points of where it started. That tells me the market's baseline was already close to the bank's baseline, and the meeting simply confirmed it.\n\nI should also note the global backdrop. The Federal Reserve's own path was, at that point, still a source of uncertainty, and the ECB had been signalling caution. The BoJ is not operating in a vacuum, and the Governor was explicit that the bank is watching overseas developments. That is not just diplomatic language. It reflects a genuine constraint: if the Fed is cutting and the BoJ is hiking, the yen dynamics could become disorderly, and that is something the bank wants to avoid.\n\n## The TSMC angle, and why I mention it\n\nI want to bring in something that might seem tangential but is not. TSMC's capital expenditure plans for the coming year were released around the same time, and they pointed to continued strong demand for advanced semiconductors. For Japan, that matters because it feeds into the export outlook and, more importantly, into the investment cycle that the BoJ is hoping will sustain domestic demand. If TSMC is spending, Japanese equipment makers and materials suppliers benefit, and that shows up in the corporate surveys that the bank watches closely.\n\nThe reason I raise this is that the BoJ's decision was not made in a domestic vacuum. The bank's assessment of the output gap and the inflation outlook depends on external demand holding up. The Governor was asked about this and gave a careful answer, noting that while the semiconductor cycle was supportive, the bank was not relying on it. I read that as a hedge. The bank knows that if the global tech cycle turns, the case for further normalisation weakens considerably.\n\n## What I am watching from here\n\nThe next few months will be about two things: wages and the curve. On wages, the shunto negotiations will start to come into focus, and the bank will be looking for evidence that last year's gains are being repeated. If they are, the case for another move strengthens. If they are not, the bank has cover to wait. On the curve, I am watching the long end. The bank's purchases have kept a lid on yields, but as it normalises, that lid will lift, and the question is whether the market can absorb the supply without a disorderly move.\n\nI am also watching the communication. The bank has been careful to avoid surprising the market, and that has worked well. But as it moves further into normalisation, the room for gradualism shrinks. At some point, the bank will have to say something that is not fully priced. When that happens, the reaction will be larger than 9 bp. That is not a prediction, just an observation about how these cycles tend to end.\n\nFor now, the September meeting was a confirmation, not a turning point. The market got what it expected, and the bank got the space it wanted. That is a good outcome for both. But it does not tell us much about the next meeting, and anyone who claims otherwise is selling something.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here.",
+          "label": "The September BoJ meeting: what was priced, what was new"
+        },
+        {
+          "id": "p2",
+          "text": "Let me be careful about what I mean by priced. Overnight index swaps had been leaning toward a move for weeks, and the tone from the BoJ's communications had shifted just enough that the residual uncertainty was about timing and language, not direction. When the announcement came, the statement itself was almost anticlimactic. The vote was not unanimous, which I read as a signal that the board is still uncomfortable with the pace rather than the destination. The Governor's press conference then did the heavier lifting, and that is where the real information content sat.",
+          "label": "The September BoJ meeting: what was priced, what was new"
+        },
+        {
+          "id": "p3",
+          "text": "The statement language was, as usual, carefully hedged. It noted that underlying inflation was moving toward target in a manner consistent with the bank's projections, but it also flagged that the outlook for global demand remained unusually uncertain. I want to stress that second clause, because it is the part that gets stripped out in the wire copy. The bank is not declaring victory. It is saying that the conditions it set out in previous meetings have been met, and that it will continue to adjust the degree of monetary accommodation as needed. That is a conditional sentence, not a promise.",
+          "label": "What the statement said, and what it did not"
+        },
+        {
+          "id": "p4",
+          "text": "The Governor, in the press conference, was asked directly whether this was the start of a series. His answer, as I transcribed it, was that the bank does not pre-commit to a path and that every meeting will be judged on the data available at the time. He also said something that I think deserves more attention than it received: that the bank is paying close attention to the functioning of the JGB market, particularly at the longer end. That is not a throwaway line. It is a signal that the bank is aware that its own balance sheet and the shape of the curve are now intertwined in ways that make the exit harder than the entry.",
+          "label": "What the statement said, and what it did not"
+        },
+        {
+          "id": "p5",
+          "text": "The market reaction was instructive precisely because it was so contained. The 10-year JGB yield rose 9 bp on 18 September 2026, which is a move, but not a dramatic one given the context. The 2-year yield moved more, which is consistent with a repricing of the near-term policy path rather than a reassessment of the terminal rate. The curve flattened slightly, which is what you would expect if the market believes the bank is serious about normalising but also believes it will stop well short of anything that could be called restrictive.",
+          "label": "What the market did, and what it told us"
+        },
+        {
+          "id": "p6",
+          "text": "What I found more interesting was the lack of follow-through in the following sessions. If the market had been genuinely surprised, we would have seen a sustained repricing, with the 10-year pushing through recent ranges and the yen strengthening sharply. That did not happen. Instead, the move faded, and By week's end the 10-year was back within a few basis points of where it started. That tells me the market's baseline was already close to the bank's baseline, and the meeting simply confirmed it.",
+          "label": "What the market did, and what it told us"
+        },
+        {
+          "id": "p7",
+          "text": "I should also note the global backdrop. The Federal Reserve's own path was, at that point, still a source of uncertainty, and the ECB had been signalling caution. The BoJ is not operating in a vacuum, and the Governor was explicit that the bank is watching overseas developments. That is not just diplomatic language. It reflects a genuine constraint: if the Fed is cutting and the BoJ is hiking, the yen dynamics could become disorderly, and that is something the bank wants to avoid.",
+          "label": "What the market did, and what it told us"
+        },
+        {
+          "id": "p8",
+          "text": "I want to bring in something that might seem tangential but is not. TSMC's capital expenditure plans for the coming year were released around the same time, and they pointed to continued strong demand for advanced semiconductors. For Japan, that matters because it feeds into the export outlook and, more importantly, into the investment cycle that the BoJ is hoping will sustain domestic demand. If TSMC is spending, Japanese equipment makers and materials suppliers benefit, and that shows up in the corporate surveys that the bank watches closely.",
+          "label": "The TSMC angle, and why I mention it"
+        },
+        {
+          "id": "p9",
+          "text": "The reason I raise this is that the BoJ's decision was not made in a domestic vacuum. The bank's assessment of the output gap and the inflation outlook depends on external demand holding up. The Governor was asked about this and gave a careful answer, noting that while the semiconductor cycle was supportive, the bank was not relying on it. I read that as a hedge. The bank knows that if the global tech cycle turns, the case for further normalisation weakens considerably.",
+          "label": "The TSMC angle, and why I mention it"
+        },
+        {
+          "id": "p10",
+          "text": "The next few months will be about two things: wages and the curve. On wages, the shunto negotiations will start to come into focus, and the bank will be looking for evidence that last year's gains are being repeated. If they are, the case for another move strengthens. If they are not, the bank has cover to wait. On the curve, I am watching the long end. The bank's purchases have kept a lid on yields, but as it normalises, that lid will lift, and the question is whether the market can absorb the supply without a disorderly move.",
+          "label": "What I am watching from here"
+        },
+        {
+          "id": "p11",
+          "text": "I am also watching the communication. The bank has been careful to avoid surprising the market, and that has worked well. But as it moves further into normalisation, the room for gradualism shrinks. At some point, the bank will have to say something that is not fully priced. When that happens, the reaction will be larger than 9 bp. That is not a prediction, just an observation about how these cycles tend to end.",
+          "label": "What I am watching from here"
+        },
+        {
+          "id": "p12",
+          "text": "For now, the September meeting was a confirmation, not a turning point. The market got what it expected, and the bank got the space it wanted. That is a good outcome for both. But it does not tell us much about the next meeting, and anyone who claims otherwise is selling something.",
+          "label": "What I am watching from here"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "basis-points",
+          "articleId": "bp-boj-september-recap",
+          "version": "v1",
+          "wallet": "rP5SPDbxx1LkkwjZGrw7A6eLwREQry4X3L",
+          "pubKey": "EDF302C783D60FA459DB2E91FC77A5B7BD1309C1584AC1804B3B52C0C33201CC88",
+          "priceMinor": 0,
+          "leaves": [
+            "d199aa5fcb81c5269f449ef1775e6256bc055e24b97ba25cf324855b201507ed",
+            "8ef31d054d16a2d16e2b502dd2502fa529a1aafbf261895b232ef7ed112a8806",
+            "bf439589fac2f75c2fef343f251a2a36bc8076541cc711903526722eb4b89795",
+            "97c17305a8e01ae77b49eed06e2c49d4bfaa5a8827f3a60114159e7d273fd95c",
+            "6b28c2350d5553b38247adc1d81490e95bab9511bae0bb5152c04c9b7ddb268b",
+            "55015e41d91ef4ab817c40307baf28a9fe281279ef1d56e40f94357e5293f5b5",
+            "20a1ce558a951076bfd2afde3a3e1feb23a0cd004a0b5baefd13b8c4389a9681",
+            "878437615de06c0406fd294f07a44522e3fb780bd32b5b2ebd62c4e068705e75",
+            "ac196e4e727c34557098c70ebafa9c7c4169ddd3196ca0e5ba98239f45fa2ff3",
+            "53e9235e8be2183c2ba3c87d7dcb601b439e31c4aecb32cc6be937c6441e6949",
+            "95b61ab48d588fdbf3faef20980fce616db56a3874b9a76f87c97ceb4c89deec",
+            "a5f8b4343fc5d66a24f5da919b1c7d3a5652e4771a71e30c1dbc95d1269eba8a"
+          ],
+          "root": "f2c5fae3cd64a41458959175a81c10e72c0574a889d08490f30cd129532a3f9a",
+          "claims": [
+            {
+              "id": "p1:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "d199aa5fcb81c5269f449ef1775e6256bc055e24b97ba25cf324855b201507ed"
+            },
+            {
+              "id": "p5:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "6b28c2350d5553b38247adc1d81490e95bab9511bae0bb5152c04c9b7ddb268b"
+            }
+          ],
+          "wordCount": 1112,
+          "publishedAt": "2026-09-19",
+          "relevance": 1,
+          "sig": "3407932235BD2E032DC9BBE8625A64E65CFBF7A8F692873E14B9275AEB1D6803D704DB67EBC3370A99259F74398577C7D4F51AA3AD288807BC879CA653CDDB08"
+        },
+        "salts": [
+          "49d503ef7b59e8d238454fd8d8be1c73",
+          "5ae1815e6389d3bf3a0b44eb10c158bb",
+          "b5c310abb477bbf5051b9f1a65543cc5",
+          "7c05d4fdfde7a2eef14f6f23806142b5",
+          "b42c9a96a85aef106807bc75904f1e5f",
+          "126ddf8722a7fdd2138ad68824368275",
+          "7b94b3ef14b56cef3ccf6f8931ee5ecb",
+          "6d414e4deec910ccea63775c15cd80eb",
+          "954e2dfdad48d0d5e8bd180790fdf14b",
+          "3b280c364ae8ec69cbe9fb76729541c4",
+          "d84f586d7bb5be3b66ff655a639b6fdd",
+          "2fa9d32c5a222beca958a257e1691105"
+        ]
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-partial-payments",
+      "version": "v1",
+      "title": "Why must integrations check delivered_amount?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]\n\nThe partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1]\n\nMy integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1]\n\nBuild a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1]",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "The partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "My integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1]"
+        },
+        {
+          "id": "p4",
+          "text": "Build a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1]"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "the-fab-floor",
+      "resourceId": "the-2026-q1-advanced-packaging-lead-times-a-reality-check",
+      "version": "v1",
+      "title": "Advanced packaging lead times in early 2026: a reality check",
+      "publisher": "The Fab Floor",
+      "preview": "My Q1 2026 lead-time data shows the packaging bottleneck is shifting in ways most buyers haven't priced in yet.",
+      "price": {
+        "amountMinor": 25,
+        "currency": "SGD"
+      },
+      "wallet": "r365enAnMg2nygvsnp7NRH61NqSvdjg5X1",
+      "family": "advanced-packaging",
+      "facets": [
+        "advanced-packaging",
+        "lead-times",
+        "2026-q1"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "The Fab Floor"
+      },
+      "publisherSlug": "the-fab-floor",
+      "writerSlug": "the-fab-floor",
+      "url": "/w/the-fab-floor/articles/the-2026-q1-advanced-packaging-lead-times-a-reality-check",
+      "relevance": 0.15085231520966885,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "the-fab-floor",
+        "articleId": "the-2026-q1-advanced-packaging-lead-times-a-reality-check",
+        "version": "v1",
+        "wallet": "r365enAnMg2nygvsnp7NRH61NqSvdjg5X1",
+        "pubKey": "ED9C47BD8A42E7C12C9FA8261F2DFDFAEB7C8C49790881874C24E0A5E00786D128",
+        "priceMinor": 25,
+        "leaves": [
+          "0fbf5bde054d0a0d6db83cad62d1cd5c0b583d6b38fdcd2ac75e85c1aa82de79",
+          "d42fc217faf5ec2f8b72dab2afcd75e127f46553bc6fb78bfbe603746bfdc5c0",
+          "368b194536652bf84657d299d769092d778f5a45378bb409a23f0dce809c1724",
+          "100ebdd57654936cf045ea7c4fb40ea2a9b178f36dcb367357244173df5df869",
+          "c2ca66ae4c1c25b7906dd2ac76946f16755e302b828f25f68164e04d18fa2ed7",
+          "0b479ba3a198c13628fe2eed7e8729d2ac2c9bccc86644fd6c401489d38a3f1b",
+          "e0ea1c64446456eb53a9fb6adad67ac0dd9661d5653ec58bf6f9567512bb4a7d",
+          "c8b017c943d53f3caf5839c7dc39f3d2c5e5bb17bedd633b0281f62184d14ebf",
+          "d95706562aebeaf8af176605722575c779d6f50f90f4e59f3db192fda47170b0",
+          "8757a1479de64e6f9b4ecc06a9de39979ecc9f28ccb8fceb654479da09019b26"
+        ],
+        "root": "4ffa7c34171f9f0ac47a8b45bc53eed12c50ddbf1e6d5dddf1f9e6c8d0cb729d",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "0fbf5bde054d0a0d6db83cad62d1cd5c0b583d6b38fdcd2ac75e85c1aa82de79",
+            "covers": {
+              "entity": "TSMC",
+              "measure": "lead time",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "d42fc217faf5ec2f8b72dab2afcd75e127f46553bc6fb78bfbe603746bfdc5c0",
+            "covers": {
+              "entity": "CoWoS",
+              "measure": "lead times",
+              "period": "twenty twenty three"
+            }
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "368b194536652bf84657d299d769092d778f5a45378bb409a23f0dce809c1724",
+            "covers": {
+              "entity": "TSMC",
+              "measure": "lead time",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "c2ca66ae4c1c25b7906dd2ac76946f16755e302b828f25f68164e04d18fa2ed7",
+            "covers": {
+              "entity": "OSAT",
+              "measure": "inventory",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p7:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "e0ea1c64446456eb53a9fb6adad67ac0dd9661d5653ec58bf6f9567512bb4a7d",
+            "covers": {
+              "entity": "CoWoS",
+              "measure": "price",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p7:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "e0ea1c64446456eb53a9fb6adad67ac0dd9661d5653ec58bf6f9567512bb4a7d",
+            "covers": {
+              "entity": "CoWoS",
+              "measure": "price",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p8:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "c8b017c943d53f3caf5839c7dc39f3d2c5e5bb17bedd633b0281f62184d14ebf",
+            "covers": {
+              "entity": "yield",
+              "measure": "yield"
+            }
+          },
+          {
+            "id": "p10:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "8757a1479de64e6f9b4ecc06a9de39979ecc9f28ccb8fceb654479da09019b26",
+            "covers": {
+              "entity": "TSMC",
+              "measure": "lead times",
+              "period": "twenty twenty six"
+            }
+          }
+        ],
+        "wordCount": 853,
+        "publishedAt": "2026-04-10",
+        "relevance": 0.15085231520966885,
+        "sig": "D7E0632D5D33BFF6BEB1810E6E5F01FBA34FEDA6C0D9C8831F277D36456676DA14405A2B11D6209FAF3B0BCF051042E4C3D8A35FEE3EFC713972F0FF61FF9F08"
+      }
+    },
+    {
+      "profileId": "open-records",
+      "resourceId": "or-wafer-capacity-prepayment-explainer",
+      "version": "v1",
+      "title": "What a wafer-capacity prepayment is",
+      "publisher": "Open Records",
+      "preview": "A dated explainer on how chipmakers book future factory space and how the money is recorded before any silicon ships.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "prepayment-explainer",
+      "facets": [
+        "TSMC",
+        "explainer",
+        "prepayment"
+      ],
+      "authority": 2,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Open Records"
+      },
+      "publisherSlug": "open-records",
+      "writerSlug": "open-records",
+      "url": "/w/open-records/articles/or-wafer-capacity-prepayment-explainer",
+      "relevance": 0.13462375847019672
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-partial-payments",
+      "version": "v1",
+      "title": "Why must integrations check delivered_amount?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to why must integrations check delivered_amount?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+      "family": "xrpl-partial-payments",
+      "facets": [
+        "XRPL",
+        "partial payments",
+        "delivered_amount",
+        "DeliverMax",
+        "payment security"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-partial-payments",
+      "relevance": 0.6514280040176795,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-partial-payments",
+        "version": "v1",
+        "wallet": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "pubKey": "EDBDF115817BF9ED99C946E456CE8EA07F6C3095DE03CA3FF563042355C6A53559",
+        "priceMinor": 40,
+        "leaves": [
+          "bcd4547a4c0a705f5f2abb3d8e0d9e194aa2ddbc19248e420af4a7d9d45eef19",
+          "262334895e418ff4655c56261ba2ccf5305ace550a46e8ffc3219588371064c2",
+          "5cbffa1a50077019d86e5897e3367cf09e246dc9d5761f75da9959b9265570bc",
+          "5236caae16a0bc227c6848f92bec9792e2d404fa76b5adbe80179b713a352803"
+        ],
+        "root": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+        "claims": [],
+        "wordCount": 250,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.6514280040176795,
+        "sig": "379B1157909DD9FF117A794E203ABBB0D9A04C95569AC177592FB46CA07DF55F55D5F94E0DADC82F20AB5AF5F7FAE95F6C66E6A59FD83E92BCFF9EB7B9C02702"
+      }
+    },
+    {
+      "profileId": "basis-points",
+      "resourceId": "bp-boj-september-recap",
+      "version": "v1",
+      "title": "The September BoJ meeting: what the Bank of Japan changed and how 10-year JGB yields reacted",
+      "publisher": "Basis Points",
+      "preview": "A careful read of what the Bank of Japan changed at its September meeting, and why the 10-year JGB yield's reaction was smaller than the headlines suggested.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "boj-recap-sep-2026",
+      "facets": [
+        "BoJ",
+        "JGB",
+        "10-year yield",
+        "policy meeting",
+        "recap"
+      ],
+      "authority": 1,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Basis Points"
+      },
+      "publisherSlug": "basis-points",
+      "writerSlug": "basis-points",
+      "url": "/w/basis-points/articles/bp-boj-september-recap",
+      "relevance": 0.055246818629456934
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-recovery",
+      "version": "v2",
+      "title": "Writer no-show: EscrowCancel, key deadlines and writer-signed refunds",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "When a writer never reveals the key, policy can cancel after expiry. A writer can refuse a refund after EscrowFinish; these are different protections.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r49TF8VJiLE61aNj8hSbw2xwWHiYA3VyXj",
+      "family": "team-recovery",
+      "facets": [
+        "recovery",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-recovery",
+      "relevance": 0.06940319046145392,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-recovery",
+        "version": "v2",
+        "wallet": "r49TF8VJiLE61aNj8hSbw2xwWHiYA3VyXj",
+        "pubKey": "EDA909E90E9C23363FC8D9DC0E7FAFEA72987B5302E0FED9E2ED18F820D2455A7A",
+        "priceMinor": 40,
+        "leaves": [
+          "e373b42e215c9ef38cc387c783417b0b5915e0d90f9ec7f7cee7e187a455180d",
+          "a51e735a528bd1a81f24c849839694acaf1a7561da0706f7f9552fda4df144e1",
+          "a894c3c985653a395715024366d491bb6a812682f26d94d4d5ae561684fbb69c",
+          "f7eee78cf984f97b7dc2d19556bb78c2bb3703cac273cd2a5045c69a55f168bd",
+          "f77648872274fee80a69681d292c9b6a95405030138fd4243230107ffa688a36",
+          "d742cc1b63b9550a6303536e65f3576d14567bcdd1740df35dc377dd4f276410",
+          "cec2cb2fb4459b1125b2767d736c9892d9c3a628643a4b736149394534ec7aab",
+          "5913b0a2b5bc5a47cfae06f5d796fd726a9182170c2788e635510898ecbc0861",
+          "6459b162bde13f70bbc179b207d5b8cda25b1be26db2830126cb88440cdd9a5d"
+        ],
+        "root": "6c6d7fd22617e54019db437cd041f8eca2be3b10e7d7c9dffd184e95e8ae57e6",
+        "claims": [],
+        "wordCount": 622,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.06940319046145392,
+        "sig": "62EEAB980D5E02D2F6261F79DB23A77940F2D88CFD7ACAC2F949362E7DD7F38F435ADE1EDB39C279BB3570CC47B4CA0DE707F424CB15B5DA297FB3FA44CEC206"
+      }
+    },
+    {
+      "profileId": "the-fab-floor",
+      "resourceId": "the-penang-osat-capacity-2026-outlook-and-opportunities",
+      "version": "v1",
+      "title": "Penang OSAT Capacity: 2026 Outlook and Opportunities",
+      "publisher": "The Fab Floor",
+      "preview": "A blunt insider's view on why Penang's OSAT capacity is the hidden lever for 2026 chip supply, with dated figures and week counts you won't find in public decks.",
+      "price": {
+        "amountMinor": 25,
+        "currency": "SGD"
+      },
+      "wallet": "r365enAnMg2nygvsnp7NRH61NqSvdjg5X1",
+      "family": "penang-osat",
+      "facets": [
+        "penang",
+        "osat",
+        "capacity"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "The Fab Floor"
+      },
+      "publisherSlug": "the-fab-floor",
+      "writerSlug": "the-fab-floor",
+      "url": "/w/the-fab-floor/articles/the-penang-osat-capacity-2026-outlook-and-opportunities",
+      "relevance": 0.03015389083407926,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "the-fab-floor",
+        "articleId": "the-penang-osat-capacity-2026-outlook-and-opportunities",
+        "version": "v1",
+        "wallet": "r365enAnMg2nygvsnp7NRH61NqSvdjg5X1",
+        "pubKey": "ED9C47BD8A42E7C12C9FA8261F2DFDFAEB7C8C49790881874C24E0A5E00786D128",
+        "priceMinor": 25,
+        "leaves": [
+          "f09d46b312840e63f9854d6f54b0863a6002723fc014330c9eb11a462bbdc942",
+          "323b10a5826f18052dc8df1fa69f2a5d31020a668372897538e2b401725c688a",
+          "44170b35959d648a708cedc6b3ab639c8ebcb203793f54d7a3b34ea10a4829cf",
+          "1da5c00fb4f627342568eae08b304ae2097f8f939c6cc680ec96765e9c9ecb93",
+          "47a803215d014a5eb711dccd914c6a50b516d2006484419d6ede9b439be5108f",
+          "32cd6f760f63dc2c71a323e9550110a3b662e7b54ca1ad16b15e365e652cf9be",
+          "afbdd1de8eeada55ab816c9e8c13c30b923325dd764b49352d31245bef1b2233",
+          "b7865c104880f1496b9a5a170fc35231c291a1210f7f2043d2728d5f09abe1f3",
+          "3e8090dd1b74ba14af36c9f132684bc35d00bc4eda496acd291cc37eb2c0175c",
+          "aa4d01fa3c51855560956457a6b49d1a222c8dfba2cfc8e932d54dcce76786ab",
+          "8928ae2847b7f260d17fd3f1793af8f448bb3b6a6413720614efdd209e55b773",
+          "da86799b9fd1f580388a962c8fac6407c68e943feb4fdfce3df19624f6410cb9",
+          "82f07c361fb00e1f0a6859da1f81720c173aff0d016743c7dfb5eabb26b13e02"
+        ],
+        "root": "b72df182aa70ef21cf3cbb13c1ec35516e437d62e5bda84dc6b05a768cc4daf9",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "f09d46b312840e63f9854d6f54b0863a6002723fc014330c9eb11a462bbdc942",
+            "covers": {
+              "entity": "Penang",
+              "measure": "lead times",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "323b10a5826f18052dc8df1fa69f2a5d31020a668372897538e2b401725c688a",
+            "covers": {
+              "entity": "Penang",
+              "measure": "packaging",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "44170b35959d648a708cedc6b3ab639c8ebcb203793f54d7a3b34ea10a4829cf",
+            "covers": {
+              "entity": "Penang",
+              "measure": "power",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "47a803215d014a5eb711dccd914c6a50b516d2006484419d6ede9b439be5108f",
+            "covers": {
+              "entity": "Penang",
+              "measure": "capacity",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p6:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "32cd6f760f63dc2c71a323e9550110a3b662e7b54ca1ad16b15e365e652cf9be",
+            "covers": {
+              "entity": "QFN",
+              "measure": "volume",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p6:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "32cd6f760f63dc2c71a323e9550110a3b662e7b54ca1ad16b15e365e652cf9be",
+            "covers": {
+              "entity": "QFN",
+              "measure": "volume",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p8:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "b7865c104880f1496b9a5a170fc35231c291a1210f7f2043d2728d5f09abe1f3",
+            "covers": {
+              "entity": "Penang",
+              "measure": "capacity",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p12:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "da86799b9fd1f580388a962c8fac6407c68e943feb4fdfce3df19624f6410cb9",
+            "covers": {
+              "entity": "QFN",
+              "measure": "lead times",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p13:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "82f07c361fb00e1f0a6859da1f81720c173aff0d016743c7dfb5eabb26b13e02",
+            "covers": {
+              "entity": "Malaysia",
+              "measure": "capacity",
+              "period": "twenty twenty six"
+            }
+          }
+        ],
+        "wordCount": 908,
+        "publishedAt": "2026-05-01",
+        "relevance": 0.03015389083407926,
+        "sig": "EA9F68F1B33805F5637AF9E91186132772B99FBEC9DCE6587E2D38CE32DC76E1319A1D108D6ACC731D96660B8C75051704B198B5D9E1B522CBF7312A17607807"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-rlusd",
+      "version": "v2",
+      "title": "RLUSD escrow today: AllowTrustLineLocking issuer permission and TEST-SGD",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Why RLUSD cannot be escrowed today without issuer permission, and what AllowTrustLineLocking means for token escrow experiments.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r49TF8VJiLE61aNj8hSbw2xwWHiYA3VyXj",
+      "family": "team-rlusd",
+      "facets": [
+        "RLUSD escrow blockers and the TEST-SGD substitute",
+        "rlusd",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-rlusd",
+      "relevance": 0.0514069518068118,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-rlusd",
+        "version": "v2",
+        "wallet": "r49TF8VJiLE61aNj8hSbw2xwWHiYA3VyXj",
+        "pubKey": "EDA909E90E9C23363FC8D9DC0E7FAFEA72987B5302E0FED9E2ED18F820D2455A7A",
+        "priceMinor": 40,
+        "leaves": [
+          "13a6e8429c0d282595465f1faceec991f41aa4cafb0e8fa74aef805d3a8df135",
+          "9df428d856e7c19ba4ab31f7e1deacf581eb546ac4b6a302058a07163a982cc9",
+          "b0960bc3b48ec54a762e782dbdbdb9584d132a331fe9000643363545e5174692",
+          "8abb6b52b1b83ccf37143ced6e01a787bd5f9c51c42a734093df34ef4bdc55c9",
+          "2ea5aee3d9404c77b77e0eb727d7f3449daa742a02045574c605612dd56beb67"
+        ],
+        "root": "695ac28b4fe4b0424b814c9b086fdb6ff6f469323677cf7069e2ce3c22edf589",
+        "claims": [],
+        "wordCount": 543,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.0514069518068118,
+        "sig": "020349D9070BF6152F4C0A17EB6BAC2871A675F3B01701B61DBF65DE83FCFA6812B6746486D4DB663DA0FABC6CF0875079E2E73E093D1BA11C83867E8F9BBC0D"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22133450,
+        "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+        "cancelAfter": 847356380,
+        "createSequence": 22133450,
+        "createHash": "43B080F74DAF27E836081AE2D87D74367F67BC44F54154FE8E6461B868E8654B",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+        "proofOk": true
+      },
+      "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+      "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-partial-payments",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-07T08:44:22.962Z",
+      "submittingAt": "2026-11-07T08:44:22.963Z",
+      "settledAt": "2026-11-07T08:44:36.038Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-partial-payments",
+        "version": "v1",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-partial-payments\",\"asset\":\"XRP\",\"cancelAfter\":847356380,\"condition\":\"A025802039201E2CC6A35DB71852D5D068BF83C81AA5903BFC76612270159651E5F15CDB810120\",\"intentId\":\"ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1\",\"keyReveal\":{\"ciphertextHash\":\"85b0cd6efdbfe865b87c9acb21273dd252c1b4d7526508160c2b45486cf90ff0\",\"iv\":\"1DB9C8AC843CE99E73271AB2\",\"plaintextHash\":\"b21cb6bdacb4cbc7e278f2e11ff48c418fe1640b000b07734281f37879925387\",\"tag\":\"B7EB00CED016BDD4A10CF506FA9C7687\"},\"manifestRoot\":\"de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92\",\"network\":\"xrpl:1\",\"payTo\":\"rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx\",\"payer\":\"r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"60c3e995-254a-4ecd-b828-ae0015b54f9e\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "E69C3EFC0B855D069D4DC09814B7CAE6EAD9869DCC1A254CDB33E0DA1F7B0560",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-07T08:45:22.961Z",
+        "contentDigest": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "amountDrops": "40000",
+          "invoiceId": "E69C3EFC0B855D069D4DC09814B7CAE6EAD9869DCC1A254CDB33E0DA1F7B0560"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-partial-payments",
+      "receiptId": "escrow-4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+      "txHash": "4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+      "resourceId": "xrpl-partial-payments",
+      "version": "v1",
+      "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+      "contentDigest": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+      "grantedAt": "2026-11-07T08:44:36.035Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22133450,
+        "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+        "cancelAfter": 847356380,
+        "createSequence": 22133450,
+        "createHash": "43B080F74DAF27E836081AE2D87D74367F67BC44F54154FE8E6461B868E8654B",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+        "proofOk": true
+      },
+      "receiptId": "escrow-4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+      "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+      "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+      "resourceId": "xrpl-partial-payments",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-07T08:44:36.038Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+        "ledgerIndex": 22133450,
+        "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+        "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "85b0cd6efdbfe865b87c9acb21273dd252c1b4d7526508160c2b45486cf90ff0",
+          "plaintextHash": "b21cb6bdacb4cbc7e278f2e11ff48c418fe1640b000b07734281f37879925387",
+          "iv": "1DB9C8AC843CE99E73271AB2",
+          "tag": "B7EB00CED016BDD4A10CF506FA9C7687"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "60c3e995-254a-4ecd-b828-ae0015b54f9e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-partial-payments",
+        "version": "v1",
+        "manifestRoot": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+        "amount": "40000",
+        "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+        "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "condition": "A025802039201E2CC6A35DB71852D5D068BF83C81AA5903BFC76612270159651E5F15CDB810120",
+        "cancelAfter": 847356380
+      },
+      "escrowCreateHash": "43B080F74DAF27E836081AE2D87D74367F67BC44F54154FE8E6461B868E8654B",
+      "escrowCreateSequence": 22133450,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+      "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-partial-payments",
+      "version": "v1",
+      "payee": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+      "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+      "invoiceId": "E69C3EFC0B855D069D4DC09814B7CAE6EAD9869DCC1A254CDB33E0DA1F7B0560",
+      "ledgerIndex": 22133450,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-07T08:44:22.962Z",
+      "settledAt": "2026-11-07T08:44:36.038Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "or-wafer-capacity-prepayment-explainer",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "open-records",
+        "articleId": "or-wafer-capacity-prepayment-explainer",
+        "version": "v1",
+        "wallet": "rwdU3cC18UonX9ccVH8FFfsn7NANAwSdSH",
+        "pubKey": "ED8A69239B9DB7305F649229575AD4BE38A08C220F3DF7E9D886084B4119936D25",
+        "priceMinor": 0,
+        "leaves": [
+          "bdc5d739d21dc6454eeb323f4e4241e7bb508adcb268915baeb59140c8045af3",
+          "1a5835c361b4d096773f8d40878fc58f2f4a3d8484a3f891c118f9220839d43c",
+          "42f6ef917edefbf9f19aaced00a51b0663deafc3f40c350d9d07943e8ffe17be",
+          "65de17aa34057c58e6484028b8b8f9ebbcb5ee59b7d067e2bba0d50239356c6d",
+          "58de31a52a160d7ad2f267598de0ed29cacf0e416330b6fe783eab116cf63c66",
+          "5c7b38469a4f6facd2add36d70787349539ea8beabd281920cbfd18f79696fb5",
+          "6d69471026f4dce612aa10a8712661803957ae5562726a12f0431d17502bdf52",
+          "7ea34e1ce08d0f983bd1071fa7eabb2e90975ef33e8949bf9e9aee6d3ff847c3",
+          "62dc11a6afab868588586e2adfb43e5ffa4c2778fea7a102c2c09076c7ebb712",
+          "ab764fb9b8485e544b9000f7eead11d95bad2158d3b4b19283fe45466eda36cf",
+          "cce5700758324ac35af24cd769387d3fda7c93730fad0bd0047a01ce4f9c0a03",
+          "e36a25cbeb1ff9df5b83ee8bd90fb8415bf935e4e9e43998b7d35b1bb8e73d22"
+        ],
+        "root": "def253aa5a2bb2efc78483a2844d85ef7b163da456f57485bbfe619b566c72a1",
+        "claims": [],
+        "wordCount": 898,
+        "publishedAt": "2026-08-14",
+        "relevance": 1,
+        "sig": "92408A1ACE388861C0FE244393046AAC191F86B6EA707FEDD241BADACC56A2F3C5199275D2E9608588A98542A013F5A1A7FF496F36C859D5F66FE3FA8E913505"
+      },
+      "salts": [
+        "7b802de97832cce59630c03cc0064294",
+        "f06c31fc86367cc417605c7f4cbd2a04",
+        "353baf77aea545bc185a119012a44d66",
+        "46f9f17817e0b1c03178fbc44787159e",
+        "638cce05d0f0e1cf11214b5fe0adac18",
+        "9c13075d421d97d471f8bc51fe42e93d",
+        "2fb70ce7f42c4d2ddeeedf46c6f6b081",
+        "0ad1d1065b12bc6805557fdf9a7719b1",
+        "bf42457a84578507ead8899f50d3d9a3",
+        "5b62d560d51b8bfc48d160a8f92fa24f",
+        "7dad981014d40d8aa7263659622176bd",
+        "8bfbab32934f2ca0cd0d753424942ddb"
+      ]
+    },
+    {
+      "resourceId": "bp-boj-september-recap",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "basis-points",
+        "articleId": "bp-boj-september-recap",
+        "version": "v1",
+        "wallet": "rP5SPDbxx1LkkwjZGrw7A6eLwREQry4X3L",
+        "pubKey": "EDF302C783D60FA459DB2E91FC77A5B7BD1309C1584AC1804B3B52C0C33201CC88",
+        "priceMinor": 0,
+        "leaves": [
+          "d199aa5fcb81c5269f449ef1775e6256bc055e24b97ba25cf324855b201507ed",
+          "8ef31d054d16a2d16e2b502dd2502fa529a1aafbf261895b232ef7ed112a8806",
+          "bf439589fac2f75c2fef343f251a2a36bc8076541cc711903526722eb4b89795",
+          "97c17305a8e01ae77b49eed06e2c49d4bfaa5a8827f3a60114159e7d273fd95c",
+          "6b28c2350d5553b38247adc1d81490e95bab9511bae0bb5152c04c9b7ddb268b",
+          "55015e41d91ef4ab817c40307baf28a9fe281279ef1d56e40f94357e5293f5b5",
+          "20a1ce558a951076bfd2afde3a3e1feb23a0cd004a0b5baefd13b8c4389a9681",
+          "878437615de06c0406fd294f07a44522e3fb780bd32b5b2ebd62c4e068705e75",
+          "ac196e4e727c34557098c70ebafa9c7c4169ddd3196ca0e5ba98239f45fa2ff3",
+          "53e9235e8be2183c2ba3c87d7dcb601b439e31c4aecb32cc6be937c6441e6949",
+          "95b61ab48d588fdbf3faef20980fce616db56a3874b9a76f87c97ceb4c89deec",
+          "a5f8b4343fc5d66a24f5da919b1c7d3a5652e4771a71e30c1dbc95d1269eba8a"
+        ],
+        "root": "f2c5fae3cd64a41458959175a81c10e72c0574a889d08490f30cd129532a3f9a",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "d199aa5fcb81c5269f449ef1775e6256bc055e24b97ba25cf324855b201507ed"
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "6b28c2350d5553b38247adc1d81490e95bab9511bae0bb5152c04c9b7ddb268b"
+          }
+        ],
+        "wordCount": 1112,
+        "publishedAt": "2026-09-19",
+        "relevance": 1,
+        "sig": "3407932235BD2E032DC9BBE8625A64E65CFBF7A8F692873E14B9275AEB1D6803D704DB67EBC3370A99259F74398577C7D4F51AA3AD288807BC879CA653CDDB08"
+      },
+      "salts": [
+        "49d503ef7b59e8d238454fd8d8be1c73",
+        "5ae1815e6389d3bf3a0b44eb10c158bb",
+        "b5c310abb477bbf5051b9f1a65543cc5",
+        "7c05d4fdfde7a2eef14f6f23806142b5",
+        "b42c9a96a85aef106807bc75904f1e5f",
+        "126ddf8722a7fdd2138ad68824368275",
+        "7b94b3ef14b56cef3ccf6f8931ee5ecb",
+        "6d414e4deec910ccea63775c15cd80eb",
+        "954e2dfdad48d0d5e8bd180790fdf14b",
+        "3b280c364ae8ec69cbe9fb76729541c4",
+        "d84f586d7bb5be3b66ff655a639b6fdd",
+        "2fa9d32c5a222beca958a257e1691105"
+      ]
+    },
+    {
+      "resourceId": "xrpl-partial-payments",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-partial-payments",
+        "version": "v1",
+        "wallet": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "pubKey": "EDBDF115817BF9ED99C946E456CE8EA07F6C3095DE03CA3FF563042355C6A53559",
+        "priceMinor": 40,
+        "leaves": [
+          "bcd4547a4c0a705f5f2abb3d8e0d9e194aa2ddbc19248e420af4a7d9d45eef19",
+          "262334895e418ff4655c56261ba2ccf5305ace550a46e8ffc3219588371064c2",
+          "5cbffa1a50077019d86e5897e3367cf09e246dc9d5761f75da9959b9265570bc",
+          "5236caae16a0bc227c6848f92bec9792e2d404fa76b5adbe80179b713a352803"
+        ],
+        "root": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+        "claims": [],
+        "wordCount": 250,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.6514280040176795,
+        "sig": "379B1157909DD9FF117A794E203ABBB0D9A04C95569AC177592FB46CA07DF55F55D5F94E0DADC82F20AB5AF5F7FAE95F6C66E6A59FD83E92BCFF9EB7B9C02702"
+      },
+      "salts": [
+        "cf33059ef2f91a2476abba4c52327ec4",
+        "3440d0c1a9768da2ab98255cbe980ed9",
+        "1697478b00eb52e033eb8e41d83154fe",
+        "07f5b9841ce2fa819b7eae28238e9ba8"
+      ],
+      "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "3805D95D929B30383F04CF2FA98D09DD876873518BA8C127CBC70E3CFED938F9F99D97C3ABB7FA10C556DF28B23F8B1DC6334FFA266DBB4BEC5E49BA9C28EF926D095A44BE142A00EB8C97A30F934E607FD51BD48789CB7E7389B4F33AB0C4D621168BD5AF537C84DC9B8BE584AA53266BA08E9BF0A51ED9BF0E55B1366086FEAA8D46149A643481591AC749FD55F317DB13206E9C77B972978D9286C463320C8547677011E4FDDD5009F22A27DF6DC3C893608C4121E2E29863F8AD985B969ACAB689D6A4C65470ED8383BEA32B1D8C9107AE61D9A9DB73823FE3B4D83344EB50280E6101C28D634C878833E9067276C217A880B5D58CA3808CBBB1B9A59F100A8FF63F6429BD6D41B7DE954D683EF6D6590B73D0AFEF2D8972BE86FBBE44C3F729DD3474A59AAAE1C25FE440736CF21CC328D30C2B0F7E740560D3F99E36326681A8D9251CA2BBF96E063A113C283BD573819A59EEF6F5E6C35F61EBE80B8B1F0CA20808C958B83DAE5795630389381001B0BC68971648651DA68A620CA29A506A5EFAFFC8A1777D20F182B03269D38A473C95D1C9CDB02A990ECF81999CB645B64CAC94353C54FFC259B8DC837FDD672B603FA94F703C8C537641B83920A0DEB595FB6DF7F6EF8446864ECBE509D4D43AC352390E3AE555E212B5901B2D0C5438C3BE228B97B97609C5CB8CC5BCCA0155B9ED0E8CE4FE2C70116679FF6B68BBD093A118DD433F7B06ECB207F76754ACBCE33818E04DCC291FC86F6E66AF99F29195E808A1ECCF499112FA9F75BA7D75827F8EA68FAA00BFDFB18A93DE413203F24B83F907DCEB6B2BE0A9013D6087BAC4F70DADF8058E597EF5D33E69AB450C8854C9F6DFDBF382757E836F2A447E4FA8271C2FE8815B9637182E1D7D4072DCE779DEBDB4690AC83C5BD52CD946D0B667F2C246F6D21F84CFB4260D157CEC32C134239D09B7CE5C83DBC662C2998E28AA32EE44622B3C5CEC52CCFB457515AB44F8B2E7FD43DD2F13952E3A81E735521076B5A803A42CC3511413275F509B6819B067ECE019054167219A3CCE196F65A24C54BC0CA470104940C0475B617E7A6772EB262D30C7683DD6C0D16E956D9B8747FDAE292389F4FD94C49FE5591EFC0CBCD70407C48293B9BCC4896A76A17D53BF001145AF095A6CDE5038C9E33864CF9C459AB319FA7817D7E3C32C3327EDE5564A3D38D886DF9960A2411A6D6D01DF844412956B23911785AB918F6BD8C491440944D6B4D8B74985EE21013AB094F15F5088D223BCD7F8DE15EFD1BDDBD58DCC6A2AAAAB7A7BD76E87444CB53B58EB662C8682DFAE58DD1DCD8624BD65DF8A70B5B448F368204B6C20F3F21C8557AD86BE9C1E6362C561DFD6E2DB0266E2FCC26B4A53F3402E41474E53110BB3B256F8FB7C3D44D43EF9F704FE7A99FEA9C198E32FAF48006FA4E0CC19C7A3441FB314529E9934D59C8A5670C510A8089E718B0ABF4CEE2C7FF734B32720A46700309EE4DD3008314B01E56112E0F2AE2DB6775EC371D93BBD66268E22101E7D9AB58BD5754E9FEB06B9857B435AF1DED08D3F81AAF5FDAF4480910ADC7FD03ECBADBAFF88B4C7353DF66DEEB5E476E99721A678E56E66B7897C1EF52AC99DB856D0AF9C4B74E7DDAF7E29E7AA257CC7FC07806110261CB8C848393EB090F5A4CCACAEA61F9E0C58DEAD0D6273F0B5D97018A8950CD1120332D6AEA32887167CB1C98079F49D274C5BCA2E33277C9B5D75E2743FF3AE05AFFFFD8999A886299A8BEFE75F5CECBE8626065B24CE20E8C8BC48F7D0C5116104EFF5D39F82A51946A4536259E54F8D7F2DA1C23664E73CC725EB64BCFF7CF8EE1D6F2CCE30212A8A1AC4D132F1BCFE53F23A90F847903C18159B18943327D97D12DB270D44537397456567B601F4FE3A8312CCC35B11D85F004EE9CE30BC63BEF97C2540348AECC9548D14F1BF375D6AC8AE328EC93F48DC3BED0893FD97184121F4E1FD4A754BC7779C0D660738BB4BC7E24578D66D44486A9415C2BF54B6C1EC2153A5DBEF69B28B64E26226D675F3B380384657682B57EC926232C350DE879A947E38CBFA3AE52EBC9023F496BF5E7F55009F763EEA40CF4CEA03D4EAD190E6CCD3D398DB93A6AAD4E217B04D75E0E337088748981E3304B1E195E6B8E4476FC6D01B1AC6B4689C94ABC04E8E8F2F78B44B4F29B3DC618B0A5AD71BDC600C8A3204E49A518D0E107CB095C9D043C2292955DBE1BE95D94ED2A61A76EDC61CAF860EF9E55005556B3502325A78D03B13886E1BB46834A761F66ECE56ED6FD04914DA78A1261E50E8BBDBEB89C0448327FD5B9A6A0C3E18C9BCD03D91BADEA8279F7D2B174DD64203C174452503FD2F07D96C86880B2E1B7F0F880FFF059DC990A48A07A11CC101721C1BA7B2604D7C4F890C8C64546AA44147E6BE24068D0A2D938888ED31166E93A7681545F15BEDAD994C5EAAFBE7DB4DFF1BC9E7C7D2505E6E07561431B4FA40AEE18BEA6FDE4CD4C4654B2A7F2EFB4BAE4ED67759D9D0A4BA4B1612E20E24A42B4BEDFBCE837460CE04C4AF80252FB30F87A5FA3E810C243B74ED236A9E6CCA34EA5AEE29A02C0525C0C171E92BCC48223124200A321DF77406FA818FA5DF76A191957C315713667003521C349691B1647EDF33B8502BAC7015BBCEBB93F0E5DE10C9E9C3A1789BC0261882E7F9D36E48623C4D186DE320E80E1A256E2CCC7BFE575B7675DA76F9A26A01A5CCC4266F73AE08CF4CCAC14CB31F893EBA1943DF2B68E446114CD55284AAF2645C33BB91BE57F9641FF645036899B94F5ACD10F4A550C42FBB1DB6DBC868974F4C0122D291CC0D0CEF9D94B282670F71199C9DBF891B5FA87950C5B12D8B8F66922B9002A569F4557EC59046A9D6BCB8B6789CC227B2FC4C0AE8063EC5108F24CB26E69FFD938538D3CEA9AFADBB421216A3B5FDF0FA920A809778504CA96ABD7DE49ED211927330F4D78270975357C7C6390704E37D096E3D8F65770B66386FB8EAEF53934AC3810A31A54CE0ADE02E3C4615774A4CA443B26B0762E8367A66FF59186822C87FAE3B54F677F819A135BB2398FE2102E93ECC2F4AE67B93EE595834CB255CF174CCA96C7015982995605CEFFC9C72EF2D4622899B1EE027BDC4A65F0353B7836B69EB5796A32DB1476F4E6BAA1D1C4072698113E06C0B7B6F629679EF50FA3D653E5E0B17795547CDA111176E6E71278EAA6CD0427152FE244ED50E051725D9450CEC50885E1833AE6A8D373D7DAF5FC3982DC16E5DA5C8A5BBB716179959BBC3F377A90BDCAF13D7FB6797519997805E6EB5778F89678805EF31F5D0A730905740E679EA2DBD37FDF68191BF492A383BD806E88894C13056E5C21D7F2AA1ACBDCBB597500CBE28732E463E3C933554F1520C4CDC25033F0DB34F737FA366D2E6CF6A2B629C4901A83F73D74EAA6DAF5CC0947402E178A720931863DCE8EB535BBFCC3E9646B33C398366F81EBC88760FBDA73259B975C87A356E9A54396D55677F3A2BB9C880A6C13AB3C46683080908AE01511B02C336F1478EFA8209FD0432DC58AAEF5885ED223091B4A337C2BF55C35A76EA3DD2F1B16513C91A040A4E07B939294186A297A72FA13A410042CA9064CA7110AC03456954F1E34750745EB108AF134CC8FA3FAC3C4FF37E39DF42AAF9CB0F9105C8528D4E46BD3BDB49C147477D0B05BE543EB2DF08073BC326A3AFDF741DEAB427699895CC090F3E98D1807A559BDA51A0E3CD0C6160D89D719046399E470517063A6F8EA56A22E130CE024B12B137A582EA54EAA7081A0DEAE1E3D0CB2EF4F77F8BA67D4F0413014A1237F4B7A184C4226C615D734742F848D44344B312DA60AE6B63B54F4E4593A67719EDFABCE059362C59385A9884721B89FF85CDD793742E1ECD6062EF954780F9FAC734E649E660A48B67621C69E65A3729B653E51A83AE0ADF09A36C6AEFAE9EC7CAED77BB3A4BDB20781FA661390AB1AA5BBC82DDEBCB24D01FABB69B589D43E2DD508E1F7BC36BC4BBD66552A43E71DABF1B41E0C3EB04F232F9DDB5E3A4C925822F0698E778A75AA3CDAD3CCE043E0C35DAF31D34E6BFAA0212B73A8D143B5D92A863C8753D5BF26D930656248D51CCBF2742E77DDBF46AC9B3C1325A6361CFF5FEF6A4BC5CAC5BA1E6F9E0324474318B7E3A7DB049020D0FC158D69394FC075EE0E6C6CD969DB158BF297C5627B3D280E127061976F83E7C63B65FC9269C1727A08E98957620F45FA9BDD7478E7E1F329B025714E7461C39D1E583B265D7C4B455047D6E3F9141E2EBD965C610085B3A43C8E40358FD4F82201FFACAC6A3289ADB9D9270256677F7F08553991CE7F13785C37251C351E59AE223940CA752E1656D72E6F793BECC80F06AB0C431C47E23BDD7FDE3BF395D6DEA1F4A9E85AF1F82245100BD9B0AA06ABD20275EACBF578D93D2DA3C905FA23B8F0C94A89B372B8EF782B12084E4570B5756C376565963655BAA82D29CA1AF81203BE8340A1E5FBD40C64F4B2BE094D15E29FBA050B3689FFF550C090B178B96900B2C25CC85276D7AAF2C3E1DB898E26284A398959F65D4E5C13537FA236B42A6C89D70A338B430AEB32185A50CD535EE5C45F4517314F6A6D0C3FB5E5775F2104143D413EA322B7A742A6778589C0BF3825E964463503FFB7365546FCECB4D3843F19C4FD4FDE01E952F854D03C79DE4BB604D41E510CC25A6DFD953041214B7C0FBCF7BDEB80E6F6DEEFB326BFD50D05F609C824DAF4A514A0F29D42D869E1207D4D00FBE47EDAB06DC2AB2E30B006E2F726A8EC329073178B00C6D80808AABC2622374D45C2684842321DDD446824369D81462E9F1B1ACFDAFC4B38DB089F16CB503655B79F9A978660C802402A41C93590093463B2E426120991436070A22D2DBF910210B1B9F5D5CBF61A4604A87BDC29B7ABB95B8938FAC53E72C6CCD9D5FD72C4DB47D86C89E00D60D52D5D8A0214C5D67124A6DE90AA3F70AEE1EF29C0FDBB08354DC8BACFDF21CC9ECBA6620A7A8CB7E3E27808A296AB41A8DE2A3013A0465CB7B66B1F09E0EAF3BB5D31CDA3AE90492D49DAD7D107F0A027DDE6D14EF91A9BE4F1350C9F85861579E3D7B3C810875BC9CF30A0AB177258DE9E77478AEDFF55C261A74BCDDD49611BFCBDE90D09D3B2E7EE965BB655752B56E768CB5A210C7F4DCC06D8A0204C2A114EAEC5D3C75DB7DF6B2B43850E5D0501296FD1433FB94AE38EBCBD1817883624218D0D6352D5B2AE4FF6A4AE2E1A565E9000D83E4D0506285D245017E55D1F28799D964C8668AB7D649A6AE7A1CF3D8E81CA306C63402CB005C87E9740DA93F250CE339E66045D838794995A890FF5931E47C731B2C99EB5FD259FD15B96FBF8D2ABAF930084741AB63A5500BE54B0B78955A0F5E7D7B4D55187FD57FC418E05EB67E5652C5185E5EB07A8528EECA7ACFBB878CEDD57FA61A",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "85b0cd6efdbfe865b87c9acb21273dd252c1b4d7526508160c2b45486cf90ff0",
+              "plaintextHash": "b21cb6bdacb4cbc7e278f2e11ff48c418fe1640b000b07734281f37879925387",
+              "iv": "1DB9C8AC843CE99E73271AB2",
+              "tag": "B7EB00CED016BDD4A10CF506FA9C7687"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "60c3e995-254a-4ecd-b828-ae0015b54f9e",
+            "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-partial-payments",
+            "version": "v1",
+            "manifestRoot": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+            "amount": "40000",
+            "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+            "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+            "condition": "A025802039201E2CC6A35DB71852D5D068BF83C81AA5903BFC76612270159651E5F15CDB810120",
+            "cancelAfter": 847356380
+          },
+          "pubKey": "EDBDF115817BF9ED99C946E456CE8EA07F6C3095DE03CA3FF563042355C6A53559",
+          "sig": "5F80E3E53719F34808D3ACF2A54DB99FA6C703B0E963BC82CF42B91852ED361F8C353BFCE262CB132E22D93622C4BE6CACFAF2E60E884ED6076DBC0432860C04"
+        },
+        "key": "24C4FC550B574F5B9EB9D0465F52F8016726B817ECC6BA812A0A2ADA9D845C79",
+        "finishHash": "4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+        "ledgerIndex": 22133450,
+        "createHash": "43B080F74DAF27E836081AE2D87D74367F67BC44F54154FE8E6461B868E8654B"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 2,
+      "hash": "b795c5331b1877738f939c5e1920501f421843efa12d87ca79533db6579da66d"
+    },
+    "entries": [
+      {
+        "seq": 3,
+        "at": "2026-11-07T08:44:20.033Z",
+        "prevHash": "b795c5331b1877738f939c5e1920501f421843efa12d87ca79533db6579da66d",
+        "hash": "7534529ab2d0eb58d606af2e159dd0fbc4c3d74f53144f188ffae1f22652282b",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-07",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "0321960d3d9bd84764a0450763c4abaf04b85694630135e99ce470b593e64b4c",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 5000,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 2000
+        }
+      },
+      {
+        "seq": 4,
+        "at": "2026-11-07T08:44:20.148Z",
+        "prevHash": "7534529ab2d0eb58d606af2e159dd0fbc4c3d74f53144f188ffae1f22652282b",
+        "hash": "885a55c69f78973befa914403176edab85cda7a9dec8e8d2c01f9e7ab2266eeb",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 5,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-partial-payments",
+          "selectedSourceKey": "xrpl-partial-payments@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 1,
+            "SKIP_LOW_VALUE": 4
+          }
+        }
+      },
+      {
+        "seq": 5,
+        "at": "2026-11-07T08:44:22.963Z",
+        "prevHash": "885a55c69f78973befa914403176edab85cda7a9dec8e8d2c01f9e7ab2266eeb",
+        "hash": "8acd33850ee8e11695c6da596b3d8df810f68e6052f936e7e0a0ee6a30384791",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "E69C3EFC0B855D069D4DC09814B7CAE6EAD9869DCC1A254CDB33E0DA1F7B0560",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-partial-payments",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 6,
+        "at": "2026-11-07T08:44:24.309Z",
+        "prevHash": "8acd33850ee8e11695c6da596b3d8df810f68e6052f936e7e0a0ee6a30384791",
+        "hash": "7eb4011a32300fd1024b925fb2a4308a8c71e710d1573c766e8b6e53902dd0cc",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22133450,
+          "invoiceHash": "E69C3EFC0B855D069D4DC09814B7CAE6EAD9869DCC1A254CDB33E0DA1F7B0560",
+          "lastLedgerSequence": 22133467,
+          "operation": "create",
+          "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "proofOk": false,
+          "txHash": "43B080F74DAF27E836081AE2D87D74367F67BC44F54154FE8E6461B868E8654B"
+        }
+      },
+      {
+        "seq": 7,
+        "at": "2026-11-07T08:44:29.967Z",
+        "prevHash": "7eb4011a32300fd1024b925fb2a4308a8c71e710d1573c766e8b6e53902dd0cc",
+        "hash": "844210598fef1f86bf2cd04ee952f39511b0b27722da148c8122e644f95a1a41",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847356380,
+          "createSequence": 22133450,
+          "invoiceHash": "E69C3EFC0B855D069D4DC09814B7CAE6EAD9869DCC1A254CDB33E0DA1F7B0560",
+          "ledgerIndex": 22133448,
+          "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "result": "tesSUCCESS",
+          "txHash": "43B080F74DAF27E836081AE2D87D74367F67BC44F54154FE8E6461B868E8654B"
+        }
+      },
+      {
+        "seq": 8,
+        "at": "2026-11-07T08:44:36.036Z",
+        "prevHash": "844210598fef1f86bf2cd04ee952f39511b0b27722da148c8122e644f95a1a41",
+        "hash": "d5c9b5305a68eb712bca66db86fdd11dbb7b17bc140e57a68400d1283c28491c",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+          "passageCount": 4,
+          "resourceId": "xrpl-partial-payments",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 9,
+        "at": "2026-11-07T08:44:36.038Z",
+        "prevHash": "d5c9b5305a68eb712bca66db86fdd11dbb7b17bc140e57a68400d1283c28491c",
+        "hash": "e887a5914c99572953ab6fcd6a0f6d691ec6cad9546ec96451fd275aa466e880",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 10,
+        "at": "2026-11-07T08:44:36.039Z",
+        "prevHash": "e887a5914c99572953ab6fcd6a0f6d691ec6cad9546ec96451fd275aa466e880",
+        "hash": "e0e93cb9e40649ccc07126fe6dd86862612dcfa0273a684fd6441e8690e6267f",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "43B080F74DAF27E836081AE2D87D74367F67BC44F54154FE8E6461B868E8654B",
+          "createSequence": 22133450,
+          "ledgerIndex": 22133450,
+          "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88"
+        }
+      },
+      {
+        "seq": 11,
+        "at": "2026-11-07T08:44:36.039Z",
+        "prevHash": "e0e93cb9e40649ccc07126fe6dd86862612dcfa0273a684fd6441e8690e6267f",
+        "hash": "cd564c988df4241367410a5db83a45c2ed18a3a105f7e73ea8726cc07bd5f31b",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e:1:xrpl-partial-payments:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22133450,
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+          "receiptId": "escrow-4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "4371E4433BFB28553102D90C39E12FD2C8A5EB62DDB16A227536F8F005D46B88"
+        }
+      },
+      {
+        "seq": 12,
+        "at": "2026-11-07T08:44:36.064Z",
+        "prevHash": "cd564c988df4241367410a5db83a45c2ed18a3a105f7e73ea8726cc07bd5f31b",
+        "hash": "19d5b0b3b174061fbd173f7fa7cae65d47107c35964b909403f03ed48e386044",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 5,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 2,
+          "selectedResourceId": null,
+          "selectedSourceKey": null,
+          "threshold": 0.2,
+          "verdicts": {
+            "SKIP_LOW_VALUE": 4,
+            "SKIP_REWRITE": 1
+          }
+        }
+      },
+      {
+        "seq": 13,
+        "at": "2026-11-07T08:44:36.077Z",
+        "prevHash": "19d5b0b3b174061fbd173f7fa7cae65d47107c35964b909403f03ed48e386044",
+        "hash": "bf0be17d38bb6f063545ec8e6555cf4e87299f616300ccb58e4d102d5d8b5b21",
+        "runId": "ee344754-5dc6-4735-a08d-bf8a4bfe4d7e",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "a5183b701e1aa60e818375f62feadd7635f88230a71b3589954f6f5ce929acb0"
+        }
+      }
+    ],
+    "head": "bf0be17d38bb6f063545ec8e6555cf4e87299f616300ccb58e4d102d5d8b5b21"
+  }
+}

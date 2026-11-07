@@ -1,0 +1,2515 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "99E924FF74561A26030993273B0B0AC8EDDBE6AC2DD4732F0BBD1FBDF7293469",
+    "account": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+    "head": "4325939ef9a0c4e0315f8045fffcb27db94aacbf4a7663fc0f3950eec8e83f83",
+    "runIdHash": "c0fafd647e0fb237bbce3a5f17e087fee08eb55ccdb84ffb8bea987d1cb54d66",
+    "ledgerIndex": 22133492,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "sourceKey": "xrpl-clawback@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-clawback\",\"v1\",\"p1\"]",
+            "claim": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1]",
+            "citation": "[\"xrpl-clawback@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1]",
+            "manifestRoot": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+            "grantIntentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-clawback\",\"v1\",\"p2\"]",
+            "claim": "For trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1]",
+            "citation": "[\"xrpl-clawback@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "For trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1]",
+            "manifestRoot": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+            "grantIntentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-clawback\",\"v1\",\"p3\"]",
+            "claim": "For an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1]",
+            "citation": "[\"xrpl-clawback@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "For an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1]",
+            "manifestRoot": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+            "grantIntentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-clawback\",\"v1\",\"p4\"]",
+            "claim": "Exercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1]",
+            "citation": "[\"xrpl-clawback@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Exercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1]",
+            "manifestRoot": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+            "grantIntentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "Which issuer setting lets a stablecoin issuer claw back tokens from a holder"
+    },
+    {
+      "id": "r2",
+      "text": "When must it be enabled"
+    }
+  ],
+  "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "conclusion": "Take a hall with an IT load of 4.2 MW. Suppose the operators run a conventional chilled-water plant with a design PUE of 1.45. That gives a total facility load of 6.09 MW, of which 1.89 MW is cooling and losses. Now suppose they decide to economise by admitting outside air at 32 degrees Celsius and 80 percent relative humidity, which is a typical afternoon in Kuala Lumpur or Jakarta. When I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models. A 4.2 MW hall typically needs around 200 cubic metres per second of supply air, which is about 240 kilograms of dry air per second. Multiply by 15 grams and you get 3.6 kilograms of condensate per second. That is 3.6 litres per second, or about 311,000 litres per day. Three hundred and eleven cubic metres of water, every day, just to keep the air dry enough to cool the servers. I have seen designs imported wholesale from European reference architectures that specify indirect evaporative cooling, only to discover that the wet-bulb temperature in April is 28 degrees Celsius. Evaporative cooling cannot reach a supply temperature below the wet-bulb, so the design is dead on arrival. The fix is mechanical refrigeration, which means more electricity, which means a higher PUE, which means the facility looks worse on a scorecard that was never designed for this climate. TSMC's 2023 sustainability report offers a useful comparison from a different industry. The company reported total water withdrawal of about 220 million cubic metres in 2022, with a recycling rate above 85 percent. That is a semiconductor fab, not a data hall, but the scale is instructive. A single large data centre campus in the tropics can withdraw tens of millions of litres per year for cooling, and unlike TSMC, most operators have not yet built the recycling infrastructure to match. Let me start with the basics. A typical hyperscale data centre today draws between 30 and 100 megawatts of continuous power. That’s not the nameplate capacity of the servers; it’s the actual load after cooling and losses. For a 50 MW facility, that’s 50 MW times 24 hours times 365 days, or about 438 gigawatt-hours per year. To put that in perspective, Johor’s total electricity demand in 2025 was roughly 6,500 GWh. So one 50 MW data centre adds about 6.7 percent to the state’s annual consumption. That’s a big number for a single building. Now, how many such facilities are coming? As of March 2026, the Malaysian Investment Development Authority has approved 18 data-centre projects in Johor, with a combined planned capacity of 1.2 gigawatts. That’s 1,200 MW. If they all run at a 70 percent load factor, which is typical for enterprise and cloud facilities, the average draw is 840 MW. Over a year, that’s 840 MW times 8,760 hours, or 7,358 GWh. Add that to the 2025 baseline of 6,500 GWh, and you get 13,858 GWh by 2030, assuming no other demand growth. That’s more than doubling the state’s load in five years. Of course, demand doesn’t exist in a vacuum. The grid must supply it. Peninsular Malaysia’s installed capacity in 2025 was about 27,000 MW, with a reserve margin of 32 percent. That sounds comfortable, but the reserve margin is calculated against peak demand, not energy. Data centres run flat out, so they stress the energy balance more than the peak. Still, 840 MW of new average demand is roughly 3 percent of the peninsula’s total capacity. That’s manageable in aggregate, but the transmission constraints are another story.",
+      "claims": [
+        {
+          "id": "evidence-[\"load-cooling-load-dynamics-in-southeast-asian-data-halls\",\"v1\",\"p4\"]",
+          "text": "Take a hall with an IT load of 4.2 MW. Suppose the operators run a conventional chilled-water plant with a design PUE of 1.45. That gives a total facility load of 6.09 MW, of which 1.89 MW is cooling and losses. Now suppose they decide to economise by admitting outside air at 32 degrees Celsius and 80 percent relative humidity, which is a typical afternoon in Kuala Lumpur or Jakarta.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-projected-data-centre-load-growth-in-johor-by-2030\",\"v1\",\"p1\"]",
+          "text": "When I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-cooling-load-dynamics-in-southeast-asian-data-halls\",\"v1\",\"p6\"]",
+          "text": "A 4.2 MW hall typically needs around 200 cubic metres per second of supply air, which is about 240 kilograms of dry air per second. Multiply by 15 grams and you get 3.6 kilograms of condensate per second. That is 3.6 litres per second, or about 311,000 litres per day. Three hundred and eleven cubic metres of water, every day, just to keep the air dry enough to cool the servers.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+              "version": "v1",
+              "spanId": "p6"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-cooling-load-dynamics-in-southeast-asian-data-halls\",\"v1\",\"p10\"]",
+          "text": "I have seen designs imported wholesale from European reference architectures that specify indirect evaporative cooling, only to discover that the wet-bulb temperature in April is 28 degrees Celsius. Evaporative cooling cannot reach a supply temperature below the wet-bulb, so the design is dead on arrival. The fix is mechanical refrigeration, which means more electricity, which means a higher PUE, which means the facility looks worse on a scorecard that was never designed for this climate.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+              "version": "v1",
+              "spanId": "p10"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-cooling-load-dynamics-in-southeast-asian-data-halls\",\"v1\",\"p15\"]",
+          "text": "TSMC's 2023 sustainability report offers a useful comparison from a different industry. The company reported total water withdrawal of about 220 million cubic metres in 2022, with a recycling rate above 85 percent. That is a semiconductor fab, not a data hall, but the scale is instructive. A single large data centre campus in the tropics can withdraw tens of millions of litres per year for cooling, and unlike TSMC, most operators have not yet built the recycling infrastructure to match.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+              "version": "v1",
+              "spanId": "p15"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-projected-data-centre-load-growth-in-johor-by-2030\",\"v1\",\"p2\"]",
+          "text": "Let me start with the basics. A typical hyperscale data centre today draws between 30 and 100 megawatts of continuous power. That’s not the nameplate capacity of the servers; it’s the actual load after cooling and losses. For a 50 MW facility, that’s 50 MW times 24 hours times 365 days, or about 438 gigawatt-hours per year. To put that in perspective, Johor’s total electricity demand in 2025 was roughly 6,500 GWh. So one 50 MW data centre adds about 6.7 percent to the state’s annual consumption. That’s a big number for a single building.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-projected-data-centre-load-growth-in-johor-by-2030\",\"v1\",\"p3\"]",
+          "text": "Now, how many such facilities are coming? As of March 2026, the Malaysian Investment Development Authority has approved 18 data-centre projects in Johor, with a combined planned capacity of 1.2 gigawatts. That’s 1,200 MW. If they all run at a 70 percent load factor, which is typical for enterprise and cloud facilities, the average draw is 840 MW. Over a year, that’s 840 MW times 8,760 hours, or 7,358 GWh. Add that to the 2025 baseline of 6,500 GWh, and you get 13,858 GWh by 2030, assuming no other demand growth. That’s more than doubling the state’s load in five years.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-projected-data-centre-load-growth-in-johor-by-2030\",\"v1\",\"p4\"]",
+          "text": "Of course, demand doesn’t exist in a vacuum. The grid must supply it. Peninsular Malaysia’s installed capacity in 2025 was about 27,000 MW, with a reserve margin of 32 percent. That sounds comfortable, but the reserve margin is calculated against peak demand, not energy. Data centres run flat out, so they stress the energy balance more than the peak. Still, 840 MW of new average demand is roughly 3 percent of the peninsula’s total capacity. That’s manageable in aggregate, but the transmission constraints are another story.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on XRPL.",
+          "tags": [
+            "XRPL"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Clawback.",
+          "tags": [
+            "Clawback"
+          ]
+        },
+        {
+          "text": "No accessible evidence on issuer controls.",
+          "tags": [
+            "issuer controls"
+          ]
+        },
+        {
+          "text": "No accessible evidence on freeze.",
+          "tags": [
+            "freeze"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XRP.",
+          "tags": [
+            "XRP"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD.",
+          "tags": [
+            "RLUSD"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XLS 85.",
+          "tags": [
+            "XLS-85"
+          ]
+        },
+        {
+          "text": "No accessible evidence on stablecoin.",
+          "tags": [
+            "stablecoin"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DEX.",
+          "tags": [
+            "DEX"
+          ]
+        },
+        {
+          "text": "No accessible evidence on reserve.",
+          "tags": [
+            "reserve"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Malaysia.",
+          "tags": [
+            "Malaysia"
+          ]
+        },
+        {
+          "text": "No accessible evidence on renewable energy.",
+          "tags": [
+            "renewable energy"
+          ]
+        },
+        {
+          "text": "No accessible evidence on grid.",
+          "tags": [
+            "grid"
+          ]
+        },
+        {
+          "text": "No accessible evidence on partial payments.",
+          "tags": [
+            "partial payments"
+          ]
+        },
+        {
+          "text": "No accessible evidence on delivered_amount.",
+          "tags": [
+            "delivered_amount"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DeliverMax.",
+          "tags": [
+            "DeliverMax"
+          ]
+        },
+        {
+          "text": "No accessible evidence on payment security.",
+          "tags": [
+            "payment security"
+          ]
+        },
+        {
+          "text": "No accessible evidence on crypto.",
+          "tags": [
+            "crypto"
+          ]
+        },
+        {
+          "text": "No accessible evidence on regulation.",
+          "tags": [
+            "regulation"
+          ]
+        },
+        {
+          "text": "No accessible evidence on markets.",
+          "tags": [
+            "markets"
+          ]
+        },
+        {
+          "text": "No accessible evidence on wholesale.",
+          "tags": [
+            "wholesale"
+          ]
+        },
+        {
+          "text": "No accessible evidence on price spread.",
+          "tags": [
+            "price-spread"
+          ]
+        },
+        {
+          "text": "No accessible evidence on term premium.",
+          "tags": [
+            "term-premium"
+          ]
+        },
+        {
+          "text": "No accessible evidence on estimation.",
+          "tags": [
+            "estimation"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rates.",
+          "tags": [
+            "rates"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Japan.",
+          "tags": [
+            "Japan"
+          ]
+        },
+        {
+          "text": "No accessible evidence on JGB.",
+          "tags": [
+            "JGB"
+          ]
+        },
+        {
+          "text": "No accessible evidence on yields.",
+          "tags": [
+            "yields"
+          ]
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "conclusion": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1] For trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1] For an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1] Exercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1] Take a hall with an IT load of 4.2 MW. Suppose the operators run a conventional chilled-water plant with a design PUE of 1.45. That gives a total facility load of 6.09 MW, of which 1.89 MW is cooling and losses. Now suppose they decide to economise by admitting outside air at 32 degrees Celsius and 80 percent relative humidity, which is a typical afternoon in Kuala Lumpur or Jakarta. When I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models. A 4.2 MW hall typically needs around 200 cubic metres per second of supply air, which is about 240 kilograms of dry air per second. Multiply by 15 grams and you get 3.6 kilograms of condensate per second. That is 3.6 litres per second, or about 311,000 litres per day. Three hundred and eleven cubic metres of water, every day, just to keep the air dry enough to cool the servers. I have seen designs imported wholesale from European reference architectures that specify indirect evaporative cooling, only to discover that the wet-bulb temperature in April is 28 degrees Celsius. Evaporative cooling cannot reach a supply temperature below the wet-bulb, so the design is dead on arrival. The fix is mechanical refrigeration, which means more electricity, which means a higher PUE, which means the facility looks worse on a scorecard that was never designed for this climate.",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-clawback\",\"v1\",\"p1\"]",
+          "text": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-clawback",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-clawback\",\"v1\",\"p2\"]",
+          "text": "For trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-clawback",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-clawback\",\"v1\",\"p3\"]",
+          "text": "For an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-clawback",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-clawback\",\"v1\",\"p4\"]",
+          "text": "Exercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-clawback",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-cooling-load-dynamics-in-southeast-asian-data-halls\",\"v1\",\"p4\"]",
+          "text": "Take a hall with an IT load of 4.2 MW. Suppose the operators run a conventional chilled-water plant with a design PUE of 1.45. That gives a total facility load of 6.09 MW, of which 1.89 MW is cooling and losses. Now suppose they decide to economise by admitting outside air at 32 degrees Celsius and 80 percent relative humidity, which is a typical afternoon in Kuala Lumpur or Jakarta.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-projected-data-centre-load-growth-in-johor-by-2030\",\"v1\",\"p1\"]",
+          "text": "When I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-cooling-load-dynamics-in-southeast-asian-data-halls\",\"v1\",\"p6\"]",
+          "text": "A 4.2 MW hall typically needs around 200 cubic metres per second of supply air, which is about 240 kilograms of dry air per second. Multiply by 15 grams and you get 3.6 kilograms of condensate per second. That is 3.6 litres per second, or about 311,000 litres per day. Three hundred and eleven cubic metres of water, every day, just to keep the air dry enough to cool the servers.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+              "version": "v1",
+              "spanId": "p6"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-cooling-load-dynamics-in-southeast-asian-data-halls\",\"v1\",\"p10\"]",
+          "text": "I have seen designs imported wholesale from European reference architectures that specify indirect evaporative cooling, only to discover that the wet-bulb temperature in April is 28 degrees Celsius. Evaporative cooling cannot reach a supply temperature below the wet-bulb, so the design is dead on arrival. The fix is mechanical refrigeration, which means more electricity, which means a higher PUE, which means the facility looks worse on a scorecard that was never designed for this climate.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+              "version": "v1",
+              "spanId": "p10"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on RLUSD.",
+          "tags": [
+            "RLUSD"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XLS 85.",
+          "tags": [
+            "XLS-85"
+          ]
+        },
+        {
+          "text": "No accessible evidence on stablecoin.",
+          "tags": [
+            "stablecoin"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DEX.",
+          "tags": [
+            "DEX"
+          ]
+        },
+        {
+          "text": "No accessible evidence on reserve.",
+          "tags": [
+            "reserve"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Malaysia.",
+          "tags": [
+            "Malaysia"
+          ]
+        },
+        {
+          "text": "No accessible evidence on renewable energy.",
+          "tags": [
+            "renewable energy"
+          ]
+        },
+        {
+          "text": "No accessible evidence on grid.",
+          "tags": [
+            "grid"
+          ]
+        },
+        {
+          "text": "No accessible evidence on partial payments.",
+          "tags": [
+            "partial payments"
+          ]
+        },
+        {
+          "text": "No accessible evidence on delivered_amount.",
+          "tags": [
+            "delivered_amount"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DeliverMax.",
+          "tags": [
+            "DeliverMax"
+          ]
+        },
+        {
+          "text": "No accessible evidence on payment security.",
+          "tags": [
+            "payment security"
+          ]
+        },
+        {
+          "text": "No accessible evidence on crypto.",
+          "tags": [
+            "crypto"
+          ]
+        },
+        {
+          "text": "No accessible evidence on regulation.",
+          "tags": [
+            "regulation"
+          ]
+        },
+        {
+          "text": "No accessible evidence on markets.",
+          "tags": [
+            "markets"
+          ]
+        },
+        {
+          "text": "No accessible evidence on wholesale.",
+          "tags": [
+            "wholesale"
+          ]
+        },
+        {
+          "text": "No accessible evidence on price spread.",
+          "tags": [
+            "price-spread"
+          ]
+        },
+        {
+          "text": "No accessible evidence on term premium.",
+          "tags": [
+            "term-premium"
+          ]
+        },
+        {
+          "text": "No accessible evidence on estimation.",
+          "tags": [
+            "estimation"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rates.",
+          "tags": [
+            "rates"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Japan.",
+          "tags": [
+            "Japan"
+          ]
+        },
+        {
+          "text": "No accessible evidence on JGB.",
+          "tags": [
+            "JGB"
+          ]
+        },
+        {
+          "text": "No accessible evidence on yields.",
+          "tags": [
+            "yields"
+          ]
+        }
+      ],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+      "version": "v1",
+      "title": "Cooling Load Dynamics in Southeast Asian Data Halls",
+      "publisher": "Load Factor",
+      "body": "## The humidity tax nobody budgets for\n\nLast month I spent three days in a colocation facility on the outskirts of Singapore, watching a 4.2 MW data hall breathe. The operators were proud of their power usage effectiveness, a number they quote to prospective tenants the way a hotel quotes its star rating. But what struck me was not the PUE. It was the water.\n\nIn temperate climates, cooling a data hall is mostly a sensible-heat problem. You move air, you reject heat, you occasionally run a chiller. In the tropics, it is a latent-heat problem wearing a sensible-heat costume. Every cubic metre of outside air you admit carries water vapour, and that vapour must be condensed out before the air can do useful work. Condensation is not free. It is, in fact, the single largest hidden load in most Southeast Asian facilities I have audited.\n\nLet me show you the arithmetic, because the arithmetic is where the argument lives.\n\n## A worked example from a 4.2 MW hall\n\nTake a hall with an IT load of 4.2 MW. Suppose the operators run a conventional chilled-water plant with a design PUE of 1.45. That gives a total facility load of 6.09 MW, of which 1.89 MW is cooling and losses. Now suppose they decide to economise by admitting outside air at 32 degrees Celsius and 80 percent relative humidity, which is a typical afternoon in Kuala Lumpur or Jakarta.\n\nAt those conditions, the air holds roughly 24 grams of water per kilogram of dry air. To bring it to a supply condition of 13 degrees Celsius and 95 percent relative humidity, you must reduce that to about 9 grams per kilogram. That is 15 grams of water condensed for every kilogram of dry air you push through the hall.\n\nA 4.2 MW hall typically needs around 200 cubic metres per second of supply air, which is about 240 kilograms of dry air per second. Multiply by 15 grams and you get 3.6 kilograms of condensate per second. That is 3.6 litres per second, or about 311,000 litres per day. Three hundred and eleven cubic metres of water, every day, just to keep the air dry enough to cool the servers.\n\nThat water does not appear in the PUE. It appears in the water bill, and increasingly in the sustainability report, but it is invisible to the metric that the industry uses to compare facilities. This is a problem of measurement, not just of engineering.\n\n## Why the standard playbook underperforms here\n\nThe standard playbook for efficient data centres was written in Oregon and Ireland. It assumes cool, dry outside air for much of the year. It assumes free cooling hours in the thousands. It assumes that water is cheap and abundant, or at least that its cost is second-order.\n\nIn Southeast Asia, none of those assumptions hold. Free cooling hours are close to zero in the lowlands. Water is a political resource, not just a utility. And the latent load is not a seasonal nuisance; it is the baseline.\n\nI have seen designs imported wholesale from European reference architectures that specify indirect evaporative cooling, only to discover that the wet-bulb temperature in April is 28 degrees Celsius. Evaporative cooling cannot reach a supply temperature below the wet-bulb, so the design is dead on arrival. The fix is mechanical refrigeration, which means more electricity, which means a higher PUE, which means the facility looks worse on a scorecard that was never designed for this climate.\n\nThis is not a failure of engineering. It is a failure of benchmarking. We are comparing apples to durians and pretending the difference is a matter of skill.\n\n## what the primary data really say\n\nI want to tread carefully here, because there is a lot of hand-waving in this space. Let me cite what I can verify.\n\nThe International Energy Agency's 2024 report on data centres and networks estimates that data centres consumed about 460 terawatt-hours globally in 2022, roughly 1.5 percent of total electricity demand. That number is contested, and the IEA itself notes the uncertainty. But the direction is not contested: demand is rising, and it is rising fastest in regions where cooling is hardest.\n\nCloser to home, Singapore's Energy Market Authority reported in its 2023 Singapore Energy Statistics that the information and communications sector accounted for about 7 percent of the country's electricity consumption, with data centres making up the bulk of that. The government has since imposed a pause on new data centre construction, not because of electricity alone, but because of water and land.\n\nTSMC's 2023 sustainability report offers a useful comparison from a different industry. The company reported total water withdrawal of about 220 million cubic metres in 2022, with a recycling rate above 85 percent. That is a semiconductor fab, not a data hall, but the scale is instructive. A single large data centre campus in the tropics can withdraw tens of millions of litres per year for cooling, and unlike TSMC, most operators have not yet built the recycling infrastructure to match.\n\nThe Bank of Japan's 2024 Financial System Report included a chapter on climate-related risks to financial stability, noting that water stress in Southeast Asia poses a material risk to the region's industrial output. The BoJ is not an energy regulator, but its analysts are paying attention to the same physics I am describing.\n\n## The path forward is unglamorous\n\nThe solutions are not exotic. They are, in fact, boring, which is why they are often overlooked.\n\nFirst, stop admitting outside air when you do not need to. A sealed hall with a dedicated dehumidification loop can cut latent load by half or more. The trade-off is that you must handle internal moisture sources, which means better sealing and better monitoring. But the arithmetic favours sealing in almost every tropical case I have modelled.\n\nSecond, raise the supply temperature. Every degree you raise the chilled-water supply temperature reduces the lift on the compressor and improves the chiller's coefficient of performance. Modern servers can tolerate 27 degrees Celsius inlet air, and some can go higher. The ASHRAE TC 9.9 guidelines have been moving in this direction for a decade. The industry has been slow to follow.\n\nThird, measure water separately from electricity. A PUE that ignores water is a half-truth. I would like to see a water usage effectiveness metric reported alongside PUE, with the same prominence. Some operators already do this. Most do not.\n\nNone of this is glamorous. It will not win a design award. But it will keep the lights on, the servers cool, and the water in the reservoir where it belongs. That seems like a reasonable trade to me.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "Last month I spent three days in a colocation facility on the outskirts of Singapore, watching a 4.2 MW data hall breathe. The operators were proud of their power usage effectiveness, a number they quote to prospective tenants the way a hotel quotes its star rating. But what struck me was not the PUE. It was the water.",
+          "label": "The humidity tax nobody budgets for"
+        },
+        {
+          "id": "p2",
+          "text": "In temperate climates, cooling a data hall is mostly a sensible-heat problem. You move air, you reject heat, you occasionally run a chiller. In the tropics, it is a latent-heat problem wearing a sensible-heat costume. Every cubic metre of outside air you admit carries water vapour, and that vapour must be condensed out before the air can do useful work. Condensation is not free. It is, in fact, the single largest hidden load in most Southeast Asian facilities I have audited.",
+          "label": "The humidity tax nobody budgets for"
+        },
+        {
+          "id": "p3",
+          "text": "Let me show you the arithmetic, because the arithmetic is where the argument lives.",
+          "label": "The humidity tax nobody budgets for"
+        },
+        {
+          "id": "p4",
+          "text": "Take a hall with an IT load of 4.2 MW. Suppose the operators run a conventional chilled-water plant with a design PUE of 1.45. That gives a total facility load of 6.09 MW, of which 1.89 MW is cooling and losses. Now suppose they decide to economise by admitting outside air at 32 degrees Celsius and 80 percent relative humidity, which is a typical afternoon in Kuala Lumpur or Jakarta.",
+          "label": "A worked example from a 4.2 MW hall"
+        },
+        {
+          "id": "p5",
+          "text": "At those conditions, the air holds roughly 24 grams of water per kilogram of dry air. To bring it to a supply condition of 13 degrees Celsius and 95 percent relative humidity, you must reduce that to about 9 grams per kilogram. That is 15 grams of water condensed for every kilogram of dry air you push through the hall.",
+          "label": "A worked example from a 4.2 MW hall"
+        },
+        {
+          "id": "p6",
+          "text": "A 4.2 MW hall typically needs around 200 cubic metres per second of supply air, which is about 240 kilograms of dry air per second. Multiply by 15 grams and you get 3.6 kilograms of condensate per second. That is 3.6 litres per second, or about 311,000 litres per day. Three hundred and eleven cubic metres of water, every day, just to keep the air dry enough to cool the servers.",
+          "label": "A worked example from a 4.2 MW hall"
+        },
+        {
+          "id": "p7",
+          "text": "That water does not appear in the PUE. It appears in the water bill, and increasingly in the sustainability report, but it is invisible to the metric that the industry uses to compare facilities. This is a problem of measurement, not just of engineering.",
+          "label": "A worked example from a 4.2 MW hall"
+        },
+        {
+          "id": "p8",
+          "text": "The standard playbook for efficient data centres was written in Oregon and Ireland. It assumes cool, dry outside air for much of the year. It assumes free cooling hours in the thousands. It assumes that water is cheap and abundant, or at least that its cost is second-order.",
+          "label": "Why the standard playbook underperforms here"
+        },
+        {
+          "id": "p9",
+          "text": "In Southeast Asia, none of those assumptions hold. Free cooling hours are close to zero in the lowlands. Water is a political resource, not just a utility. And the latent load is not a seasonal nuisance; it is the baseline.",
+          "label": "Why the standard playbook underperforms here"
+        },
+        {
+          "id": "p10",
+          "text": "I have seen designs imported wholesale from European reference architectures that specify indirect evaporative cooling, only to discover that the wet-bulb temperature in April is 28 degrees Celsius. Evaporative cooling cannot reach a supply temperature below the wet-bulb, so the design is dead on arrival. The fix is mechanical refrigeration, which means more electricity, which means a higher PUE, which means the facility looks worse on a scorecard that was never designed for this climate.",
+          "label": "Why the standard playbook underperforms here"
+        },
+        {
+          "id": "p11",
+          "text": "This is not a failure of engineering. It is a failure of benchmarking. We are comparing apples to durians and pretending the difference is a matter of skill.",
+          "label": "Why the standard playbook underperforms here"
+        },
+        {
+          "id": "p12",
+          "text": "I want to tread carefully here, because there is a lot of hand-waving in this space. Let me cite what I can verify.",
+          "label": "what the primary data really say"
+        },
+        {
+          "id": "p13",
+          "text": "The International Energy Agency's 2024 report on data centres and networks estimates that data centres consumed about 460 terawatt-hours globally in 2022, roughly 1.5 percent of total electricity demand. That number is contested, and the IEA itself notes the uncertainty. But the direction is not contested: demand is rising, and it is rising fastest in regions where cooling is hardest.",
+          "label": "what the primary data really say"
+        },
+        {
+          "id": "p14",
+          "text": "Closer to home, Singapore's Energy Market Authority reported in its 2023 Singapore Energy Statistics that the information and communications sector accounted for about 7 percent of the country's electricity consumption, with data centres making up the bulk of that. The government has since imposed a pause on new data centre construction, not because of electricity alone, but because of water and land.",
+          "label": "what the primary data really say"
+        },
+        {
+          "id": "p15",
+          "text": "TSMC's 2023 sustainability report offers a useful comparison from a different industry. The company reported total water withdrawal of about 220 million cubic metres in 2022, with a recycling rate above 85 percent. That is a semiconductor fab, not a data hall, but the scale is instructive. A single large data centre campus in the tropics can withdraw tens of millions of litres per year for cooling, and unlike TSMC, most operators have not yet built the recycling infrastructure to match.",
+          "label": "what the primary data really say"
+        },
+        {
+          "id": "p16",
+          "text": "The Bank of Japan's 2024 Financial System Report included a chapter on climate-related risks to financial stability, noting that water stress in Southeast Asia poses a material risk to the region's industrial output. The BoJ is not an energy regulator, but its analysts are paying attention to the same physics I am describing.",
+          "label": "what the primary data really say"
+        },
+        {
+          "id": "p17",
+          "text": "The solutions are not exotic. They are, in fact, boring, which is why they are often overlooked.",
+          "label": "The path forward is unglamorous"
+        },
+        {
+          "id": "p18",
+          "text": "First, stop admitting outside air when you do not need to. A sealed hall with a dedicated dehumidification loop can cut latent load by half or more. The trade-off is that you must handle internal moisture sources, which means better sealing and better monitoring. But the arithmetic favours sealing in almost every tropical case I have modelled.",
+          "label": "The path forward is unglamorous"
+        },
+        {
+          "id": "p19",
+          "text": "Second, raise the supply temperature. Every degree you raise the chilled-water supply temperature reduces the lift on the compressor and improves the chiller's coefficient of performance. Modern servers can tolerate 27 degrees Celsius inlet air, and some can go higher. The ASHRAE TC 9.9 guidelines have been moving in this direction for a decade. The industry has been slow to follow.",
+          "label": "The path forward is unglamorous"
+        },
+        {
+          "id": "p20",
+          "text": "Third, measure water separately from electricity. A PUE that ignores water is a half-truth. I would like to see a water usage effectiveness metric reported alongside PUE, with the same prominence. Some operators already do this. Most do not.",
+          "label": "The path forward is unglamorous"
+        },
+        {
+          "id": "p21",
+          "text": "None of this is glamorous. It will not win a design award. But it will keep the lights on, the servers cool, and the water in the reservoir where it belongs. That seems like a reasonable trade to me.",
+          "label": "The path forward is unglamorous"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "load-factor",
+          "articleId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+          "version": "v1",
+          "wallet": "rpS5m8PsGvzvTceK2L87SM6uXZZHUvBWQ7",
+          "pubKey": "ED438A54228513A180E25834F07687D410C5C347186155947BD09B7ACAF2BA9FD2",
+          "priceMinor": 0,
+          "leaves": [
+            "a778428fef01cb278f05615202189e780c73d96670199d1f483711af9bc95f57",
+            "43b797f3d19bce67d3bf0ec1d37dd9ab4271341619eb777dfb36440640f6c426",
+            "5350ce2264da5c177f12037955fe877e1c71158e9c3fb86d7937f5f4c565fc44",
+            "6992c872322ba3d6d680544d310154ed3bfb5bbaffb68d95f95dc7997201cc92",
+            "60e36c57e988ecd47c90b64a4b140445b748798549c9a318d9a25956dca7acc1",
+            "0f941c5dd05ab1897886cfebcf678824c247d9913312f064ce68c28ddf189c15",
+            "7eac0a08053a716bff16a3d37b16ed8035a6f04656dff25699ad86c721a7dd15",
+            "7a9be72ff0d19738df0a83746805080a71426cf1f8b4a49ecb6ca36a4a07de37",
+            "8f16d794369d2ebf333f5cd7682dc621566289122e24afc868a440de9d38039e",
+            "dab4accbd373bb5447a777965a3c7a71963c3b5d3cf9503e19fe00e103fed2d3",
+            "cb2afa86429eec7daa7bf06f0f4b118815dcf006b1ea5b2a7d2780f068f06ca7",
+            "95e411d63591236a335a237d365ba05ac6ee435e36dc8402045d143ecbfbe929",
+            "b22fdd6cf19898eeb864ff9b6047517d63d16ea2c65cca94a749ebdbdab389ff",
+            "9413e8a85230d6e2bee1e9aa1ac625b359a853297c57adee855144490fe67eba",
+            "40d8f13f65b9acf41d47fecc447de73c12284e7020e7c445d68a4430c3359a0d",
+            "54069bcd88ff4189bee752953fb07035c235de6acd58cf4b4369b3e516e0fd7b",
+            "fa1863b6340dc9d055aca7db3e0321879c75bd1dd643d172f8d95033a14ceded",
+            "ba4d32e00145a5a92c320b3f0e86eb3eff8a40ebff41828e19c7252f1c59e3e6",
+            "ffc15cc98841bb4497fa4cd84e510dd0804eb42f3d68d27f363684dae1d5c8b3",
+            "6aa60ef324b8c3414218b70a90274056071b0298eb6757a0f42d7d707d50cb66",
+            "020318cfc00cdd7a6c4ea269e348f7bb96817a47bda89c2f6ce8dc781aff87d7"
+          ],
+          "root": "9a7a7e9d5267aec6fb0448e2cadf9fe3600a3580d2cc40291a928a70e1b52b39",
+          "claims": [
+            {
+              "id": "p4:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "6992c872322ba3d6d680544d310154ed3bfb5bbaffb68d95f95dc7997201cc92"
+            },
+            {
+              "id": "p13:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "b22fdd6cf19898eeb864ff9b6047517d63d16ea2c65cca94a749ebdbdab389ff"
+            },
+            {
+              "id": "p14:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "9413e8a85230d6e2bee1e9aa1ac625b359a853297c57adee855144490fe67eba"
+            },
+            {
+              "id": "p15:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "40d8f13f65b9acf41d47fecc447de73c12284e7020e7c445d68a4430c3359a0d"
+            }
+          ],
+          "wordCount": 1137,
+          "publishedAt": "2026-05-20",
+          "relevance": 1,
+          "sig": "2D6BFA2DC476A1C025118702C6B9BCA99A7EFBDCE8B6AEFAA23FA7B42ACBD6B0E5BBD879155307DAC227DF073E84B620BAE8AC4A9E310F5FD5C644A912EF3C01"
+        },
+        "salts": [
+          "89f0bee84529726859f94a34dc8a27ec",
+          "18b2ab97ee60d851241130034b6771e1",
+          "61e78eecbc0ceb66c135c2ffd1a6aadd",
+          "23ee3b63ef2550f755dd93ad108dad98",
+          "c83a14e58a01c9744c9353a2003d71ff",
+          "c9b46f6465192b0b8856f6b989567665",
+          "f2a4bd98243e53f661cb51cb4839f253",
+          "b345440155a31c1707fa14f8ecb9bdfd",
+          "fe8e7dc4b3a0612125d1847ba8538fc9",
+          "ea75ccb582e016e7664a2f8422af816d",
+          "ff11795a3edfdfe1d4d4928709abac93",
+          "d6729fa49f0f31f1f258ad34bc332722",
+          "64ba2065c994f7e883e84aa8052404c9",
+          "ff8934862533e854d14625754aac4942",
+          "fe8981788f42753209abec8eef4f9755",
+          "da506db0f60a227f776d4b45549793f8",
+          "d59d662a2345ac1eb075bc8dee6eed37",
+          "25d71080651b90af9cd5c265a5e9a23a",
+          "4e8482134901032c3d970eaec54a78d6",
+          "5e1676889a738f5ed07e537f3d4baf61",
+          "b354f7d4aee1be5775de5e55849af654"
+        ]
+      }
+    },
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+      "version": "v1",
+      "title": "Projected Data‑Centre Load Growth in Johor by 2030",
+      "publisher": "Load Factor",
+      "body": "## The Johor data-centre boom in context\n\nWhen I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models.\n\nLet me start with the basics. A typical hyperscale data centre today draws between 30 and 100 megawatts of continuous power. That’s not the nameplate capacity of the servers; it’s the actual load after cooling and losses. For a 50 MW facility, that’s 50 MW times 24 hours times 365 days, or about 438 gigawatt-hours per year. To put that in perspective, Johor’s total electricity demand in 2025 was roughly 6,500 GWh. So one 50 MW data centre adds about 6.7 percent to the state’s annual consumption. That’s a big number for a single building.\n\nNow, how many such facilities are coming? As of March 2026, the Malaysian Investment Development Authority has approved 18 data-centre projects in Johor, with a combined planned capacity of 1.2 gigawatts. That’s 1,200 MW. If they all run at a 70 percent load factor, which is typical for enterprise and cloud facilities, the average draw is 840 MW. Over a year, that’s 840 MW times 8,760 hours, or 7,358 GWh. Add that to the 2025 baseline of 6,500 GWh, and you get 13,858 GWh by 2030, assuming no other demand growth. That’s more than doubling the state’s load in five years.\n\n## The supply side: what can actually be built\n\nOf course, demand doesn’t exist in a vacuum. The grid must supply it. Peninsular Malaysia’s installed capacity in 2025 was about 27,000 MW, with a reserve margin of 32 percent. That sounds comfortable, but the reserve margin is calculated against peak demand, not energy. Data centres run flat out, so they stress the energy balance more than the peak. Still, 840 MW of new average demand is roughly 3 percent of the peninsula’s total capacity. That’s manageable in aggregate, but the transmission constraints are another story.\n\nJohor’s grid is connected to the rest of the peninsula via a few 275 kV and 500 kV lines. The state itself has about 3,000 MW of local generation, mostly gas and some coal. To serve 840 MW of new data-centre load, you either build new generation locally or import more power. The Energy Commission’s 2026 generation plan includes a 1,200 MW combined-cycle gas turbine in Johor, scheduled for 2029. That would cover the data-centre load, but it’s a single point of failure. If that plant is delayed, the reserve margin in the south could drop below 15 percent, which is the threshold for reliable operation.\n\nI ran a simple sensitivity: if only half the announced projects materialise, average data-centre load is 420 MW, or 3,679 GWh per year. That’s still a 57 percent increase over the 2025 baseline. Even the low case is transformative. And if all 1.2 GW is built and runs at 80 percent load factor, the average draw is 960 MW, or 8,410 GWh per year. That would make data centres the single largest consumer class in Johor, ahead of manufacturing.\n\n## The Singapore factor and regional dynamics\n\nWhy Johor? The answer is partly Singapore’s moratorium, which was imposed in 2019 and lifted in 2022 with strict conditions. Singapore now requires new data centres to meet a power usage effectiveness of 1.3 or better and to use renewable energy. That’s expensive. Johor offers land, water, and electricity at a fraction of the cost. The Singaporean grid operator, EMA, has also been slow to approve new connections. So operators go to Johor, where the Energy Commission is more accommodating.\n\nBut there’s a catch. Singapore is still the primary customer for many of these facilities. The data centres in Johor serve Singaporean businesses, which means the load is driven by Singapore’s digital economy, not Malaysia’s. That creates a dependency: if Singapore’s demand grows, Johor’s load grows. If Singapore builds more of its own capacity, Johor’s load could stagnate. I model this as a coupled system. My baseline assumes 70 percent of Johor’s data-centre load serves Singaporean demand. That’s based on interviews with operators and a review of interconnection applications.\n\nThere’s also the question of water. Data centres use water for cooling, and Johor has had water stress issues. The Energy Commission doesn’t regulate water, but the state does. I’ve seen estimates that a 50 MW data centre uses 1.5 million litres per day. For 1.2 GW, that’s 36 million litres per day, or about 13 billion litres per year. That’s a significant fraction of Johor’s water supply. If water constraints bite, some projects may not get built, which would lower the load growth.\n\n## What the numbers mean for planning\n\nLet me be clear about the arithmetic. The 1.2 GW of announced capacity is not a forecast; it’s a pipeline. My job is to translate that into expected load. I use a probability-weighted approach: 60 percent chance for projects with approved permits, 30 percent for those in the pipeline, and 10 percent for speculative announcements. That gives an expected capacity of about 800 MW by 2030. At a 70 percent load factor, that’s 560 MW average, or 4,906 GWh per year. Add the 2025 baseline of 6,500 GWh, and you get 11,406 GWh. That’s a 75 percent increase in total state demand.\n\nIs that feasible? The transmission system would need upgrades. The Energy Commission’s 2026 plan includes a new 500 kV line from Johor to Melaka, but it’s not scheduled until 2031. That’s a problem. Without it, the 275 kV network could be overloaded during contingency events. I’ve modelled the power flows, and a single outage of the 275 kV line from Yong Peng to Johor Bahru would cause voltage collapse if data-centre load exceeds 600 MW. So the grid operator, TNB, needs to accelerate that line or build local generation.\n\nOn the generation side, the 1,200 MW gas plant in 2029 is a start, but it’s not enough if load grows beyond 800 MW. You’d need another 400 MW, likely from solar plus storage. Johor has good solar potential, but land is scarce. A 400 MW solar farm needs about 800 hectares. That’s a lot of land in a state with a growing population.\n\n## My take: watch the load factor, not the nameplate\n\nThe headline number is 1.2 GW, but the number that matters is the average load. That depends on the load factor, which depends on the mix of enterprise, cloud, and AI workloads. AI training clusters can run at 90 percent load factor for weeks, then drop to 20 percent. That variability is hard on the grid. I’ve seen early data from one Johor facility showing a load factor of 85 percent, much higher than the 70 percent I assumed. If that becomes the norm, my expected load rises to 680 MW average, or 5,957 GWh per year. That would push total demand to 12,457 GWh, nearly double the 2025 level.\n\nSo what should planners do? First, treat the pipeline as a range, not a point. Second, invest in transmission before generation, because the lines take longer to build. Third, monitor the load factor of existing facilities; it’s the best leading indicator. And fourth, remember that Johor’s load growth is not just a Malaysian issue. It’s a Singaporean issue too, because the two grids are coupled. As an energy-systems professor, I tell my students to always check the units and the assumptions. Here, the units are megawatts and gigawatt-hours, and the assumptions are load factor and project realisation. Get those wrong, and you’ll be off by a factor of two. That’s the difference between a manageable grid and a crisis.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "When I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models.",
+          "label": "The Johor data-centre boom in context"
+        },
+        {
+          "id": "p2",
+          "text": "Let me start with the basics. A typical hyperscale data centre today draws between 30 and 100 megawatts of continuous power. That’s not the nameplate capacity of the servers; it’s the actual load after cooling and losses. For a 50 MW facility, that’s 50 MW times 24 hours times 365 days, or about 438 gigawatt-hours per year. To put that in perspective, Johor’s total electricity demand in 2025 was roughly 6,500 GWh. So one 50 MW data centre adds about 6.7 percent to the state’s annual consumption. That’s a big number for a single building.",
+          "label": "The Johor data-centre boom in context"
+        },
+        {
+          "id": "p3",
+          "text": "Now, how many such facilities are coming? As of March 2026, the Malaysian Investment Development Authority has approved 18 data-centre projects in Johor, with a combined planned capacity of 1.2 gigawatts. That’s 1,200 MW. If they all run at a 70 percent load factor, which is typical for enterprise and cloud facilities, the average draw is 840 MW. Over a year, that’s 840 MW times 8,760 hours, or 7,358 GWh. Add that to the 2025 baseline of 6,500 GWh, and you get 13,858 GWh by 2030, assuming no other demand growth. That’s more than doubling the state’s load in five years.",
+          "label": "The Johor data-centre boom in context"
+        },
+        {
+          "id": "p4",
+          "text": "Of course, demand doesn’t exist in a vacuum. The grid must supply it. Peninsular Malaysia’s installed capacity in 2025 was about 27,000 MW, with a reserve margin of 32 percent. That sounds comfortable, but the reserve margin is calculated against peak demand, not energy. Data centres run flat out, so they stress the energy balance more than the peak. Still, 840 MW of new average demand is roughly 3 percent of the peninsula’s total capacity. That’s manageable in aggregate, but the transmission constraints are another story.",
+          "label": "The supply side: what can actually be built"
+        },
+        {
+          "id": "p5",
+          "text": "Johor’s grid is connected to the rest of the peninsula via a few 275 kV and 500 kV lines. The state itself has about 3,000 MW of local generation, mostly gas and some coal. To serve 840 MW of new data-centre load, you either build new generation locally or import more power. The Energy Commission’s 2026 generation plan includes a 1,200 MW combined-cycle gas turbine in Johor, scheduled for 2029. That would cover the data-centre load, but it’s a single point of failure. If that plant is delayed, the reserve margin in the south could drop below 15 percent, which is the threshold for reliable operation.",
+          "label": "The supply side: what can actually be built"
+        },
+        {
+          "id": "p6",
+          "text": "I ran a simple sensitivity: if only half the announced projects materialise, average data-centre load is 420 MW, or 3,679 GWh per year. That’s still a 57 percent increase over the 2025 baseline. Even the low case is transformative. And if all 1.2 GW is built and runs at 80 percent load factor, the average draw is 960 MW, or 8,410 GWh per year. That would make data centres the single largest consumer class in Johor, ahead of manufacturing.",
+          "label": "The supply side: what can actually be built"
+        },
+        {
+          "id": "p7",
+          "text": "Why Johor? The answer is partly Singapore’s moratorium, which was imposed in 2019 and lifted in 2022 with strict conditions. Singapore now requires new data centres to meet a power usage effectiveness of 1.3 or better and to use renewable energy. That’s expensive. Johor offers land, water, and electricity at a fraction of the cost. The Singaporean grid operator, EMA, has also been slow to approve new connections. So operators go to Johor, where the Energy Commission is more accommodating.",
+          "label": "The Singapore factor and regional dynamics"
+        },
+        {
+          "id": "p8",
+          "text": "But there’s a catch. Singapore is still the primary customer for many of these facilities. The data centres in Johor serve Singaporean businesses, which means the load is driven by Singapore’s digital economy, not Malaysia’s. That creates a dependency: if Singapore’s demand grows, Johor’s load grows. If Singapore builds more of its own capacity, Johor’s load could stagnate. I model this as a coupled system. My baseline assumes 70 percent of Johor’s data-centre load serves Singaporean demand. That’s based on interviews with operators and a review of interconnection applications.",
+          "label": "The Singapore factor and regional dynamics"
+        },
+        {
+          "id": "p9",
+          "text": "There’s also the question of water. Data centres use water for cooling, and Johor has had water stress issues. The Energy Commission doesn’t regulate water, but the state does. I’ve seen estimates that a 50 MW data centre uses 1.5 million litres per day. For 1.2 GW, that’s 36 million litres per day, or about 13 billion litres per year. That’s a significant fraction of Johor’s water supply. If water constraints bite, some projects may not get built, which would lower the load growth.",
+          "label": "The Singapore factor and regional dynamics"
+        },
+        {
+          "id": "p10",
+          "text": "Let me be clear about the arithmetic. The 1.2 GW of announced capacity is not a forecast; it’s a pipeline. My job is to translate that into expected load. I use a probability-weighted approach: 60 percent chance for projects with approved permits, 30 percent for those in the pipeline, and 10 percent for speculative announcements. That gives an expected capacity of about 800 MW by 2030. At a 70 percent load factor, that’s 560 MW average, or 4,906 GWh per year. Add the 2025 baseline of 6,500 GWh, and you get 11,406 GWh. That’s a 75 percent increase in total state demand.",
+          "label": "What the numbers mean for planning"
+        },
+        {
+          "id": "p11",
+          "text": "Is that feasible? The transmission system would need upgrades. The Energy Commission’s 2026 plan includes a new 500 kV line from Johor to Melaka, but it’s not scheduled until 2031. That’s a problem. Without it, the 275 kV network could be overloaded during contingency events. I’ve modelled the power flows, and a single outage of the 275 kV line from Yong Peng to Johor Bahru would cause voltage collapse if data-centre load exceeds 600 MW. So the grid operator, TNB, needs to accelerate that line or build local generation.",
+          "label": "What the numbers mean for planning"
+        },
+        {
+          "id": "p12",
+          "text": "On the generation side, the 1,200 MW gas plant in 2029 is a start, but it’s not enough if load grows beyond 800 MW. You’d need another 400 MW, likely from solar plus storage. Johor has good solar potential, but land is scarce. A 400 MW solar farm needs about 800 hectares. That’s a lot of land in a state with a growing population.",
+          "label": "What the numbers mean for planning"
+        },
+        {
+          "id": "p13",
+          "text": "The headline number is 1.2 GW, but the number that matters is the average load. That depends on the load factor, which depends on the mix of enterprise, cloud, and AI workloads. AI training clusters can run at 90 percent load factor for weeks, then drop to 20 percent. That variability is hard on the grid. I’ve seen early data from one Johor facility showing a load factor of 85 percent, much higher than the 70 percent I assumed. If that becomes the norm, my expected load rises to 680 MW average, or 5,957 GWh per year. That would push total demand to 12,457 GWh, nearly double the 2025 level.",
+          "label": "My take: watch the load factor, not the nameplate"
+        },
+        {
+          "id": "p14",
+          "text": "So what should planners do? First, treat the pipeline as a range, not a point. Second, invest in transmission before generation, because the lines take longer to build. Third, monitor the load factor of existing facilities; it’s the best leading indicator. And fourth, remember that Johor’s load growth is not just a Malaysian issue. It’s a Singaporean issue too, because the two grids are coupled. As an energy-systems professor, I tell my students to always check the units and the assumptions. Here, the units are megawatts and gigawatt-hours, and the assumptions are load factor and project realisation. Get those wrong, and you’ll be off by a factor of two. That’s the difference between a manageable grid and a crisis.",
+          "label": "My take: watch the load factor, not the nameplate"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "load-factor",
+          "articleId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+          "version": "v1",
+          "wallet": "rpS5m8PsGvzvTceK2L87SM6uXZZHUvBWQ7",
+          "pubKey": "ED438A54228513A180E25834F07687D410C5C347186155947BD09B7ACAF2BA9FD2",
+          "priceMinor": 0,
+          "leaves": [
+            "7739025b9ccb026f91552122134fa29c66740d055e3e28059f24c8bfeec42f5f",
+            "7d33df12ebdde90917d5d9614691d6058ce02ec28be4d0f60bedbaf8efccc30d",
+            "658311bfd94227626a4858ca8509ac1c79ab6f4d52a90d2f858f4c7d19cd5080",
+            "5513a7abb66218f46564f38c1be4da3d512b2b02a7b0efa689bed15c7313ebae",
+            "15c2ca15d0d8f3069cb8779c73c8db43291f13ce289446ac6127a4615dd9d23f",
+            "4c16ee12e01c0e81381854fcd5c3936d35f83f9a8daf9ae0540dab273ddd0ed7",
+            "50a85f8da3282a2a48ac816904d4dd94cea5b4f7873f7b66bb5f16bc3c2bb18f",
+            "1f82269823581cf53a412584ad488901e5f08b50964f6a175b137d468e69fe5e",
+            "cb55b213dce2ea756402507536a57bcfd919d3df07acc2178b88c9046748cf6f",
+            "e1257c21c0a86cff1a6ed503324f4886fc9fd42ede68ab782a360780f7557064",
+            "234555d26846065a1f651e925a93e7505da6ea1355d319bdb64deb7b070bc16f",
+            "0ceaf2eb2358178df95b075779b0a307cd297cfafb8e2af058aec710b1e6b544",
+            "e5fd72699599c44f547b1b2eed00bb03242f58d84fb1b48e1d2c65a6c19d193f",
+            "9b5a4147419792c73adf1a02020cbcdd20e3d37f54c48d8019e1fee4fc98114f"
+          ],
+          "root": "41d0a342a37cbef6305d18f4e404823deea4496e4c1a9a17e289fc23f5489b79",
+          "claims": [
+            {
+              "id": "p2:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "7d33df12ebdde90917d5d9614691d6058ce02ec28be4d0f60bedbaf8efccc30d"
+            },
+            {
+              "id": "p2:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "7d33df12ebdde90917d5d9614691d6058ce02ec28be4d0f60bedbaf8efccc30d"
+            },
+            {
+              "id": "p3:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "658311bfd94227626a4858ca8509ac1c79ab6f4d52a90d2f858f4c7d19cd5080"
+            },
+            {
+              "id": "p3:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "658311bfd94227626a4858ca8509ac1c79ab6f4d52a90d2f858f4c7d19cd5080"
+            },
+            {
+              "id": "p4:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "5513a7abb66218f46564f38c1be4da3d512b2b02a7b0efa689bed15c7313ebae"
+            },
+            {
+              "id": "p4:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "5513a7abb66218f46564f38c1be4da3d512b2b02a7b0efa689bed15c7313ebae"
+            },
+            {
+              "id": "p5:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "15c2ca15d0d8f3069cb8779c73c8db43291f13ce289446ac6127a4615dd9d23f"
+            },
+            {
+              "id": "p5:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "15c2ca15d0d8f3069cb8779c73c8db43291f13ce289446ac6127a4615dd9d23f"
+            },
+            {
+              "id": "p6:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "4c16ee12e01c0e81381854fcd5c3936d35f83f9a8daf9ae0540dab273ddd0ed7"
+            },
+            {
+              "id": "p6:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "4c16ee12e01c0e81381854fcd5c3936d35f83f9a8daf9ae0540dab273ddd0ed7"
+            },
+            {
+              "id": "p9:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "cb55b213dce2ea756402507536a57bcfd919d3df07acc2178b88c9046748cf6f"
+            },
+            {
+              "id": "p10:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "e1257c21c0a86cff1a6ed503324f4886fc9fd42ede68ab782a360780f7557064"
+            },
+            {
+              "id": "p10:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "e1257c21c0a86cff1a6ed503324f4886fc9fd42ede68ab782a360780f7557064"
+            },
+            {
+              "id": "p11:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "234555d26846065a1f651e925a93e7505da6ea1355d319bdb64deb7b070bc16f"
+            },
+            {
+              "id": "p12:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "0ceaf2eb2358178df95b075779b0a307cd297cfafb8e2af058aec710b1e6b544"
+            },
+            {
+              "id": "p12:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "0ceaf2eb2358178df95b075779b0a307cd297cfafb8e2af058aec710b1e6b544"
+            },
+            {
+              "id": "p13:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "e5fd72699599c44f547b1b2eed00bb03242f58d84fb1b48e1d2c65a6c19d193f"
+            },
+            {
+              "id": "p13:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "e5fd72699599c44f547b1b2eed00bb03242f58d84fb1b48e1d2c65a6c19d193f"
+            }
+          ],
+          "wordCount": 1351,
+          "publishedAt": "2026-04-15",
+          "relevance": 1,
+          "sig": "E9C92C1D78A56D108FEF8525FDB81B880F8A0DB6C5392317CFA346F7543A1957C4512A8CD9B16C60C12C40F75FBD4DDE58EA3932B3029A79595C0E5FD96A460E"
+        },
+        "salts": [
+          "b16c7f3c441ea7910465db532e110a66",
+          "376517ccfbc479f3d2d1684f52ea6ec1",
+          "3cc1b66788406069995001ee63f1a85b",
+          "e2e6e167a70e026ca67a7fce57185a30",
+          "e6d6f79f475b6d4aeb37bc10dedfc8d2",
+          "93c1b28c13910ef447aae918b572964c",
+          "114e561b3130fa3e92a777420b976a4f",
+          "6a52124328894d0ebe8307c5178694f6",
+          "41f1c1f6a71724cab86ec4616a9ef0c0",
+          "5f6d25a7be0fafd35483c55296f6bfd7",
+          "c94b690134ab225f4e919ae46ec59f32",
+          "e60a0a876d26c2c14fb58447379a1907",
+          "427a4d73d2adcdcbda8c5a1ec688a74b",
+          "ddbeefa212e62946c28eb5afa015269a"
+        ]
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-clawback",
+      "version": "v1",
+      "title": "Can an XRPL issuer claw back XRP or tokens?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1]\n\nFor trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1]\n\nFor an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1]\n\nExercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1]",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "For trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "For an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1]"
+        },
+        {
+          "id": "p4",
+          "text": "Exercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1]"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-clawback",
+      "version": "v1",
+      "title": "Can an XRPL issuer claw back XRP or tokens?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to can an xrpl issuer claw back xrp or tokens?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+      "family": "xrpl-clawback",
+      "facets": [
+        "XRPL",
+        "Clawback",
+        "issuer controls",
+        "freeze",
+        "XRP"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-clawback",
+      "relevance": 0.7407158283411122,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-clawback",
+        "version": "v1",
+        "wallet": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "pubKey": "EDBDF115817BF9ED99C946E456CE8EA07F6C3095DE03CA3FF563042355C6A53559",
+        "priceMinor": 40,
+        "leaves": [
+          "0edbab9339d726fd150e2c5f1345fd831c0fd766a1e685d473456edc0c0d0b6f",
+          "0ba24664eebd08c8a0f5ba2fc4c028521330e0aa3abbdce590dbdcb2696e9a36",
+          "7296809ba44e1bc005d971829085f9f95356faec7f22eec9f694556f8dcd6db6",
+          "3e9b263e64b944a1920b270251b4241e8729a09191c043c48c43443e8fbf256b"
+        ],
+        "root": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+        "claims": [],
+        "wordCount": 233,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7407158283411122,
+        "sig": "0B13D573F0D84D258493F473701246620AC7910EE17D352DBE2B1F48A74B72D7E5062CE935B793BAF51372CE3D2BD19C22C7F8DE34AFB16179551F7931645204"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v2",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r49TF8VJiLE61aNj8hSbw2xwWHiYA3VyXj",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.03737851154440652,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v2",
+        "wallet": "r49TF8VJiLE61aNj8hSbw2xwWHiYA3VyXj",
+        "pubKey": "EDA909E90E9C23363FC8D9DC0E7FAFEA72987B5302E0FED9E2ED18F820D2455A7A",
+        "priceMinor": 40,
+        "leaves": [
+          "31e1f5ffaa1a33b65793d6737ba4cfc42e1a1f652caa11ba1ee7e904ce3340ef",
+          "5c9ec7d7f09001b07c5ee20f2201796eb87f5c60727168bc0c24b3ae6fae08c0",
+          "095e910a9e2a6645e0c3b6302dc2824121b03e40a493f17de39de4748e604592",
+          "735ccb762378c47d1cd6bc157a44e6db3c820c22c9cc8cb84910f43286b79959",
+          "6b969e827b123433cbbbc0fcb63d1ba59561693dddc927f0193160cdf52d7e66",
+          "0216643f5632ca767dbda9ae9925641ac51d11c7e20300aff9bbcc4a455e0409",
+          "b069bc876e203ac45d960e962e9f050ef9cbaa36896dd0ab79c344bcd5eb333a",
+          "a1ed100c83f95436995aa55d967256ff8eeabcfe3b6d4530dd906485a4091106"
+        ],
+        "root": "d938158c3feef086a5b1ed88f4198d773758fc25de3b49dfdcc8f78692bde60b",
+        "claims": [],
+        "wordCount": 667,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.03737851154440652,
+        "sig": "CDE047A4310BAD1C603EC7582D3C8684F9FAACB8EB97FA3AEC83037C13C50D5DDB02B5490E91F10AD7D690BCBC048D5592AD52B43DFD15ADAA913B19990BBE06"
+      }
+    },
+    {
+      "profileId": "notfinancialtimes",
+      "resourceId": "notfinancialtimes-malaysia-renewable-energy-integration-into-grid-challenges",
+      "version": "v1",
+      "title": "Malaysia Renewable Energy Integration into Grid: Challenges",
+      "publisher": "NotFinancialTimes",
+      "preview": "Malaysia grapples with balancing rapid renewable growth against grid stability, as experts warn of hidden bottlenecks and costly upgrades.",
+      "price": {
+        "amountMinor": 90,
+        "currency": "SGD"
+      },
+      "wallet": "rf6s6cR6hYtB2VjzYDNdVmUbAJDztrR9zZ",
+      "family": "malaysia-renewable-grid",
+      "facets": [
+        "Malaysia",
+        "renewable energy",
+        "grid"
+      ],
+      "authority": 1.5,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "NotFinancialTimes"
+      },
+      "publisherSlug": "notfinancialtimes",
+      "writerSlug": "farah-ismail",
+      "url": "/w/notfinancialtimes/articles/notfinancialtimes-malaysia-renewable-energy-integration-into-grid-challenges",
+      "relevance": 0.037718772260171216,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "notfinancialtimes",
+        "articleId": "notfinancialtimes-malaysia-renewable-energy-integration-into-grid-challenges",
+        "version": "v1",
+        "wallet": "rf6s6cR6hYtB2VjzYDNdVmUbAJDztrR9zZ",
+        "pubKey": "ED178150498B5234296ACA0518CA00410E1A179605586DF41E4D5F6C1141AA1A10",
+        "priceMinor": 90,
+        "leaves": [
+          "7da2fb19d3a04a31871cbe810bfb95cd5e7710a764ef0a52e14a63487d76cb61",
+          "7ec14dd8aa868903dfa517f3f317b401f96db57b95b3e3b8c212c1a80f74ff2c",
+          "9b9e4d94f074f3e71b41d322b48f39c602b0658a5db0a00b7418557df3c25310",
+          "cd35df655ee28d4766a65b6c941488f2e2f554e3548c2d412d134bb41838207c",
+          "f70fe6d09f97e30112578e46f94a9d24dc90d692c7b12cd4513ecdb7fcf1ad86"
+        ],
+        "root": "5b5f4fec8c10ca47473a6a7d9fc96109fa6c54fb650ef10f64ae6673f116dec3",
+        "claims": [
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "7ec14dd8aa868903dfa517f3f317b401f96db57b95b3e3b8c212c1a80f74ff2c",
+            "covers": {
+              "entity": "solar",
+              "measure": "capacity",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p2:named-source",
+            "kind": "named-source",
+            "leaf": "7ec14dd8aa868903dfa517f3f317b401f96db57b95b3e3b8c212c1a80f74ff2c",
+            "covers": {
+              "entity": "solar",
+              "measure": "capacity",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p2:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "7ec14dd8aa868903dfa517f3f317b401f96db57b95b3e3b8c212c1a80f74ff2c",
+            "covers": {
+              "entity": "solar",
+              "measure": "capacity",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p4:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "cd35df655ee28d4766a65b6c941488f2e2f554e3548c2d412d134bb41838207c",
+            "covers": {
+              "entity": "grid",
+              "measure": "solar",
+              "period": "twenty twenty seven"
+            }
+          }
+        ],
+        "wordCount": 608,
+        "publishedAt": "2026-05-05",
+        "relevance": 0.037718772260171216,
+        "sig": "F864C8E1D1A85D62D8D3290B534F7B984DD567394F391E8E4C7C53981A751A1F586EDE56CD2B1B7F61F96CDC9A0F2EB26A8F816F61606C614ABEC479E522B60E"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-partial-payments",
+      "version": "v1",
+      "title": "Why must integrations check delivered_amount?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to why must integrations check delivered_amount?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+      "family": "xrpl-partial-payments",
+      "facets": [
+        "XRPL",
+        "partial payments",
+        "delivered_amount",
+        "DeliverMax",
+        "payment security"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-partial-payments",
+      "relevance": 0.46435598068475314,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-partial-payments",
+        "version": "v1",
+        "wallet": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "pubKey": "EDBDF115817BF9ED99C946E456CE8EA07F6C3095DE03CA3FF563042355C6A53559",
+        "priceMinor": 40,
+        "leaves": [
+          "bcd4547a4c0a705f5f2abb3d8e0d9e194aa2ddbc19248e420af4a7d9d45eef19",
+          "262334895e418ff4655c56261ba2ccf5305ace550a46e8ffc3219588371064c2",
+          "5cbffa1a50077019d86e5897e3367cf09e246dc9d5761f75da9959b9265570bc",
+          "5236caae16a0bc227c6848f92bec9792e2d404fa76b5adbe80179b713a352803"
+        ],
+        "root": "de3ebd61c2ab50e868ea4c5feeb6675f84418746ca6bd0621ed8e451840aaa92",
+        "claims": [],
+        "wordCount": 250,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.46435598068475314,
+        "sig": "EE4A1352ED79A9E72B2813E9C67D4B2566F5A217BDA544DF160540DFE2A720A8CD4A1C036386711A0982AFE2556A5F8B1D922808873D4E9DB3730C296F97C005"
+      }
+    },
+    {
+      "profileId": "alphaleak",
+      "resourceId": "alphaleak-cryptocurrency-regulation-in-2026-impact-on-digital-asset-ma",
+      "version": "v1",
+      "title": "Cryptocurrency Regulation in 2026: Impact on Digital Asset Markets",
+      "publisher": "AlphaLeak",
+      "preview": "Insiders whisper that the digital asset landscape is about to be reshaped by forces few see coming.",
+      "price": {
+        "amountMinor": 30,
+        "currency": "SGD"
+      },
+      "wallet": "r3GBzb7Qx9E2cdprMqALehbV2wdcAPhnEu",
+      "family": "crypto-regulation",
+      "facets": [
+        "crypto",
+        "regulation",
+        "markets"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "AlphaLeak"
+      },
+      "publisherSlug": "alphaleak",
+      "writerSlug": "alphaleak",
+      "url": "/w/alphaleak/articles/alphaleak-cryptocurrency-regulation-in-2026-impact-on-digital-asset-ma",
+      "relevance": 0.96,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "alphaleak",
+        "articleId": "alphaleak-cryptocurrency-regulation-in-2026-impact-on-digital-asset-ma",
+        "version": "v1",
+        "wallet": "r3GBzb7Qx9E2cdprMqALehbV2wdcAPhnEu",
+        "pubKey": "EDA16CD0812194C9EED46099813E08B554CE3CCBD740ECA5978245F0B792EF10D4",
+        "priceMinor": 30,
+        "leaves": [
+          "746b0e6ccc04c9d16842d603ffb4b0e047f58b2594b58806013e9082c26fed2d",
+          "71648db371d2f147cf45ad5bfedf46e65f14ed94e9bacae1c6b1ef4b0a19ee16",
+          "04e640aebfdc8d4e759f208eb501b3687655871be68faaf4f565798089d8c78b",
+          "d8d1be7b3c2a025043d23009c46d2c791df2ed123cd19b31018e3f2e56fd8fd6",
+          "b5523b24d267ff1f9f6a4ed7ae92664ebbbdf4720e9bcfdc645197ec27a7ab43",
+          "c6446dbf6866296ab36e25fc93047264d8cb644082bde77df8297aadf8dd0085",
+          "c7f76e30fbb28e4d4fed5971bf23ad664995cdfa538c00115e14e4d84410206c"
+        ],
+        "root": "77cf8a03cc22dbf2d930040616523ea6831124ab22a24ab104f1c978846df751",
+        "claims": [],
+        "wordCount": 992,
+        "publishedAt": "2026-09-01",
+        "relevance": 0.96,
+        "sig": "0679FBCD536EF51F1609D81A6B8E1606A0AF59B9FC36E7C1ADD690CD8D5C6A324012E88EAB292AD21252AC5AF60813D03E2CE5CA45EAD5F626EDE8A4CD082C0B"
+      }
+    },
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-analyzing-singapore-s-wholesale-price-spreads-for-2026",
+      "version": "v1",
+      "title": "Analyzing Singapore’s Wholesale Price Spreads for 2026",
+      "publisher": "Load Factor",
+      "preview": "A close look at Singapore's wholesale electricity market reveals a widening spread that should concern anyone modeling data centre loads.",
+      "price": {
+        "amountMinor": 60,
+        "currency": "SGD"
+      },
+      "wallet": "rpS5m8PsGvzvTceK2L87SM6uXZZHUvBWQ7",
+      "family": "wholesale-price-spreads",
+      "facets": [
+        "wholesale",
+        "price-spread",
+        "Singapore"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Load Factor"
+      },
+      "publisherSlug": "load-factor",
+      "writerSlug": "load-factor",
+      "url": "/w/load-factor/articles/load-analyzing-singapore-s-wholesale-price-spreads-for-2026",
+      "relevance": 0.016693474497054876,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "load-factor",
+        "articleId": "load-analyzing-singapore-s-wholesale-price-spreads-for-2026",
+        "version": "v1",
+        "wallet": "rpS5m8PsGvzvTceK2L87SM6uXZZHUvBWQ7",
+        "pubKey": "ED438A54228513A180E25834F07687D410C5C347186155947BD09B7ACAF2BA9FD2",
+        "priceMinor": 60,
+        "leaves": [
+          "a83190e7aaa1bae5bcf0b1d52131eba7453ff8abbc4d00d905c86ac4c3470a9c",
+          "d79f9d77e522a82133ab1c69928d5faed52dfc40959ec233f154cbdf5eb6dd65",
+          "94da8a8db9515800335a49546b734a205bd669927ecb0bc3c26573831dde955f",
+          "364b1679ab28dc1480e9077e46fc3c7ede640eed96ccfd7fcdc6fe7b85865ec9",
+          "b916c894c4bfcf6689cf11bb73c4c39cde74cc52239bb26fcd3a544b6c9ba786"
+        ],
+        "root": "ecd7aecff1dba4e5526dbec7447668eabbb38a6e35d3d2534e87d1fade9d1815",
+        "claims": [
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "d79f9d77e522a82133ab1c69928d5faed52dfc40959ec233f154cbdf5eb6dd65",
+            "covers": {
+              "entity": "Singapore",
+              "measure": "spread",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "94da8a8db9515800335a49546b734a205bd669927ecb0bc3c26573831dde955f",
+            "covers": {
+              "entity": "Singapore",
+              "measure": "spread",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p3:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "94da8a8db9515800335a49546b734a205bd669927ecb0bc3c26573831dde955f",
+            "covers": {
+              "entity": "Singapore",
+              "measure": "spread",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p4:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "364b1679ab28dc1480e9077e46fc3c7ede640eed96ccfd7fcdc6fe7b85865ec9",
+            "covers": {
+              "entity": "EMA",
+              "measure": "spread",
+              "period": "twenty twenty five"
+            }
+          },
+          {
+            "id": "p4:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "364b1679ab28dc1480e9077e46fc3c7ede640eed96ccfd7fcdc6fe7b85865ec9",
+            "covers": {
+              "entity": "EMA",
+              "measure": "spread",
+              "period": "twenty twenty five"
+            }
+          }
+        ],
+        "wordCount": 821,
+        "publishedAt": "2026-05-01",
+        "relevance": 0.016693474497054876,
+        "sig": "EF6F69767E21EEB8693F4581FCF29514D2B726A6BB3F5488AFC6EE135224917634DFD04041AF96C7B7EF18F9A606F9705C1E585913256C79398D9348BC992A07"
+      }
+    },
+    {
+      "profileId": "basis-points",
+      "resourceId": "basis-estimating-term-premiums-in-the-current-low-rate-environment",
+      "version": "v1",
+      "title": "Estimating Term Premiums in the Current Low-Rate Environment",
+      "publisher": "Basis Points",
+      "preview": "A careful look at how term premiums behave when policy rates are low, and why the usual models may mislead.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rP5SPDbxx1LkkwjZGrw7A6eLwREQry4X3L",
+      "family": "term-premium-estimates",
+      "facets": [
+        "term-premium",
+        "estimation",
+        "rates"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Basis Points"
+      },
+      "publisherSlug": "basis-points",
+      "writerSlug": "basis-points",
+      "url": "/w/basis-points/articles/basis-estimating-term-premiums-in-the-current-low-rate-environment",
+      "relevance": 0.031663904029102616,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "basis-points",
+        "articleId": "basis-estimating-term-premiums-in-the-current-low-rate-environment",
+        "version": "v1",
+        "wallet": "rP5SPDbxx1LkkwjZGrw7A6eLwREQry4X3L",
+        "pubKey": "EDF302C783D60FA459DB2E91FC77A5B7BD1309C1584AC1804B3B52C0C33201CC88",
+        "priceMinor": 40,
+        "leaves": [
+          "ce7fd6db61ca3d87317e4fc6aabce4e1497ca918ff8657f3b2887f3fcd105835",
+          "445a29ea813401213b6cbc783d49239073d513d7b1cec37e36243a52008830ee",
+          "3087d4a0ec9303cab000402fa1756c8deb846c73c0bd7dbc71310f4a3f6faa70",
+          "c08673fbb69e7ab673277637c20a6ad8422bcfbe741c51fd980deeba3e032d0a",
+          "187fe8d93f92a9ecbfbbb014edfb88f0ac94a0da0c7ba9c1bbb3fd35dea31e72",
+          "2b177829fee8f00b3a6b20ea610a363750e9faf13944ffb67fc2f41cc4ee36b8",
+          "82aa6b026350fab02a24efa2ef7ea2e6b0621b9ea8d1a08e7dfc028f5678797d",
+          "8548b7f0e45e006e3b133d5aca018b7672a9378233f0321a6122a19dee69f806",
+          "55a31551be9711fbee6623c6e37161e4131a743d7a2716ad1df4e2dcb82debc8",
+          "a0a16affdc3835e4aaf5fdd139729eff248f1a0e616423d6704b755903556ab8",
+          "7309bb20cc95f808a83babfb0e68ae6755cb6e3fab9ed61e4b07ef14d73e8e82",
+          "c4f0de390aa3950e5fd5f1324fc86b18add10acd36b46a011687df7a09bf8a5d",
+          "f43f8f14690d1a7d249b83bc9960bc066512569d14ef525ef1ec1d89c213495a",
+          "349b1155a7b037fa306f007198cde4199abc64cd176c3b4b07de5f088c2048aa",
+          "09a6da1362a4f4be0db6bfbbfe6a44fb2216e020ab6b26496efbd539800fbdd5",
+          "91c86e358445dd305c815b60c37cb029761ca48f95a7d752a0ccfd970688355a",
+          "ad5d61048a636dfa9644b425979b8657c740f4205c8e1c33a206b18520dc211c",
+          "ea81a92780bfa88a8c2b62154257128f5fc09a880f6fe493712862a967f3b9b4",
+          "fa94f22491f306fc17651c035344bb8e17dfff652a12c95246055e425955977a",
+          "c8406af669b60491f5c72af80015bcb217b36227e225203b2fc3ff72fc8ee23f"
+        ],
+        "root": "f7b178f8b253d678b21abca26d727747765d691b79f6aff9616921f413baf5b5",
+        "claims": [],
+        "wordCount": 1216,
+        "publishedAt": "2026-09-01",
+        "relevance": 0.031663904029102616,
+        "sig": "34613EF9276C9D827D99BB6E1BDF9C62437ADDFADD737EEB1CBAD9D2CDA490FB963E3CD957F128A6ED93EB0F945FBA5F87FBA6BC3BEDE9B0E2B433048DECDB0C"
+      }
+    },
+    {
+      "profileId": "notfinancialtimes",
+      "resourceId": "notfinancialtimes-jgb-yields-trend-2026-outlook",
+      "version": "v1",
+      "title": "JGB Yields Trend: 2026 Outlook",
+      "publisher": "NotFinancialTimes",
+      "preview": "A quiet shift in Tokyo's bond market is forcing global funds to rethink their hedging playbook for the year ahead.",
+      "price": {
+        "amountMinor": 90,
+        "currency": "SGD"
+      },
+      "wallet": "rf6s6cR6hYtB2VjzYDNdVmUbAJDztrR9zZ",
+      "family": "jgb-yields-2026",
+      "facets": [
+        "Japan",
+        "JGB",
+        "yields"
+      ],
+      "authority": 1.5,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "NotFinancialTimes"
+      },
+      "publisherSlug": "notfinancialtimes",
+      "writerSlug": "daniel-koh",
+      "url": "/w/notfinancialtimes/articles/notfinancialtimes-jgb-yields-trend-2026-outlook",
+      "relevance": 0.031816588623953576,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "notfinancialtimes",
+        "articleId": "notfinancialtimes-jgb-yields-trend-2026-outlook",
+        "version": "v1",
+        "wallet": "rf6s6cR6hYtB2VjzYDNdVmUbAJDztrR9zZ",
+        "pubKey": "ED178150498B5234296ACA0518CA00410E1A179605586DF41E4D5F6C1141AA1A10",
+        "priceMinor": 90,
+        "leaves": [
+          "47fca8c89f8a02e78e8db69ab62824347926d800846f7f93a02823c311673c44",
+          "9d5d91205ed15e59ba1e10f67b1cf990e08f38b2633ec1124ca7704ac6d2548e",
+          "8e8d5a031b12d8b3ac95a410ad288c30d1245eeb10efdac4131febf45894eb8b",
+          "5894f3d2369da3894a11634f667d1c38a93743a1cc80767ee95f1e23d7a47e7a",
+          "d0bee810737efe506a61beaf01d15a1a7c413480b3e7ac8b0cfe322312b53f27",
+          "a0a634d210a6e635056cffe50f9604d183aada6ce1ab92c387f078ce6a622b40",
+          "a3df6eb5004dc596037ac4b0f51b9457eab75dc27946413c1dab24a4f0c40e2f",
+          "c0d935af895461e1ad787f85ba8a0597df7e8959c89c498e6b1686187b725100",
+          "01c0b036fbfb0d031fbde70d6e69ae8ab72a045d98d6652db9ade966fcf32e8a",
+          "9d57417212ccbc93e27a3e2118259ba0f5e0d95f56a6fc57d6b06762995d53f6",
+          "f7097fb1e0102adc575b45e9ac99e2d01e166ae32f9855012fe301d7c17d8a96",
+          "13529e25380c2f7d00decaec69235ee7f80c989f33162ca25fd400ebc3067cc3",
+          "752cd98635cba43eb97a6aa344dc130940a4868d301efd16637718441f13641f",
+          "2587b7b8a95311853a1f3afb21f6f64024a7960941fb8c01c5559f2c3ccd1b93"
+        ],
+        "root": "0a4171d2a318feebe34ccdee262410109e904e53bc967e7fde952ce98601804e",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "47fca8c89f8a02e78e8db69ab62824347926d800846f7f93a02823c311673c44",
+            "covers": {
+              "entity": "Japan",
+              "measure": "policy rate",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p1:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "47fca8c89f8a02e78e8db69ab62824347926d800846f7f93a02823c311673c44",
+            "covers": {
+              "entity": "Japan",
+              "measure": "policy rate",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "8e8d5a031b12d8b3ac95a410ad288c30d1245eeb10efdac4131febf45894eb8b",
+            "covers": {
+              "entity": "Bank of Japan",
+              "measure": "policy rate",
+              "period": "twenty twenty four"
+            }
+          },
+          {
+            "id": "p4:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "5894f3d2369da3894a11634f667d1c38a93743a1cc80767ee95f1e23d7a47e7a",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "yields"
+            }
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "d0bee810737efe506a61beaf01d15a1a7c413480b3e7ac8b0cfe322312b53f27",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "policy rate",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p5:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "d0bee810737efe506a61beaf01d15a1a7c413480b3e7ac8b0cfe322312b53f27",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "policy rate",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p6:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "a0a634d210a6e635056cffe50f9604d183aada6ce1ab92c387f078ce6a622b40",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "inflation",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p6:named-source",
+            "kind": "named-source",
+            "leaf": "a0a634d210a6e635056cffe50f9604d183aada6ce1ab92c387f078ce6a622b40",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "inflation",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p6:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "a0a634d210a6e635056cffe50f9604d183aada6ce1ab92c387f078ce6a622b40",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "inflation",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p7:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "a3df6eb5004dc596037ac4b0f51b9457eab75dc27946413c1dab24a4f0c40e2f",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "inflation",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p8:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "c0d935af895461e1ad787f85ba8a0597df7e8959c89c498e6b1686187b725100",
+            "covers": {
+              "entity": "Japan",
+              "measure": "yield",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p9:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "01c0b036fbfb0d031fbde70d6e69ae8ab72a045d98d6652db9ade966fcf32e8a",
+            "covers": {
+              "entity": "investors",
+              "measure": "bonds",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p9:named-source",
+            "kind": "named-source",
+            "leaf": "01c0b036fbfb0d031fbde70d6e69ae8ab72a045d98d6652db9ade966fcf32e8a",
+            "covers": {
+              "entity": "investors",
+              "measure": "bonds",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p10:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "9d57417212ccbc93e27a3e2118259ba0f5e0d95f56a6fc57d6b06762995d53f6",
+            "covers": {
+              "entity": "European",
+              "measure": "duration",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p10:named-source",
+            "kind": "named-source",
+            "leaf": "9d57417212ccbc93e27a3e2118259ba0f5e0d95f56a6fc57d6b06762995d53f6",
+            "covers": {
+              "entity": "European",
+              "measure": "duration",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p12:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "13529e25380c2f7d00decaec69235ee7f80c989f33162ca25fd400ebc3067cc3",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "inflation",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p13:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "752cd98635cba43eb97a6aa344dc130940a4868d301efd16637718441f13641f",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "yield",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p13:named-source",
+            "kind": "named-source",
+            "leaf": "752cd98635cba43eb97a6aa344dc130940a4868d301efd16637718441f13641f",
+            "covers": {
+              "entity": "BoJ",
+              "measure": "yield",
+              "period": "twenty twenty six"
+            }
+          }
+        ],
+        "wordCount": 954,
+        "publishedAt": "2026-04-12",
+        "relevance": 0.031816588623953576,
+        "sig": "7BBA1578145C914EA17EC2CB75CAE7EF6FAAC05A3242B68CAA3EB8038C4DA933FAD4E36557AEBA0DCCA41E12AE02760B3F20824BF8C50B527513BBA652DA7F0B"
+      }
+    },
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+      "version": "v1",
+      "title": "Cooling Load Dynamics in Southeast Asian Data Halls",
+      "publisher": "Load Factor",
+      "preview": "A close look at how tropical humidity quietly rewrites the energy budget of our region's server halls.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "cooling-load-dynamics",
+      "facets": [
+        "cooling",
+        "water-use",
+        "data-halls"
+      ],
+      "authority": 1,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Load Factor"
+      },
+      "publisherSlug": "load-factor",
+      "writerSlug": "load-factor",
+      "url": "/w/load-factor/articles/load-cooling-load-dynamics-in-southeast-asian-data-halls",
+      "relevance": 0.012992071007127336
+    },
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+      "version": "v1",
+      "title": "Projected Data‑Centre Load Growth in Johor by 2030",
+      "publisher": "Load Factor",
+      "preview": "A professor of energy systems walks through the arithmetic of Johor's data-centre boom and what it means for the grid.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "data-centre-load-growth",
+      "facets": [
+        "data-centre",
+        "load-growth",
+        "Johor",
+        "Singapore"
+      ],
+      "authority": 1,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Load Factor"
+      },
+      "publisherSlug": "load-factor",
+      "writerSlug": "load-factor",
+      "url": "/w/load-factor/articles/load-projected-data-centre-load-growth-in-johor-by-2030",
+      "relevance": 0.012522607177894225
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22133490,
+        "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+        "cancelAfter": 847356512,
+        "createSequence": 22133459,
+        "createHash": "D0992BBDD1A063CC1FD543CDB981D5482B93F6E561E076EEB58CD9F5566861BA",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+        "proofOk": true
+      },
+      "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+      "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-clawback",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-07T08:46:37.577Z",
+      "submittingAt": "2026-11-07T08:46:37.578Z",
+      "settledAt": "2026-11-07T08:46:50.257Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-clawback",
+        "version": "v1",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-clawback\",\"asset\":\"XRP\",\"cancelAfter\":847356512,\"condition\":\"A0258020E650512C14521B44C72FEDFCF8363E9865DDB12663B3C829F6A6A43ECF5E1C60810120\",\"intentId\":\"b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1\",\"keyReveal\":{\"ciphertextHash\":\"21f290ea6d4a506a6460566fd07706d14cfaafaa6169c497e07984e948b2e8e3\",\"iv\":\"0C0AFA8AFBFCFFEA3A0BB4C9\",\"plaintextHash\":\"38955c32580384779d62fa42a5deee9bfb15a2b3b9af9e90f1096058745bb780\",\"tag\":\"AA04E3DEB3C85A92CB54C052F28FC4A2\"},\"manifestRoot\":\"bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93\",\"network\":\"xrpl:1\",\"payTo\":\"rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx\",\"payer\":\"r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"84242459-59d6-4c5f-8252-2d2294558201\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "2195D395C8DB1735B473697B87838A0C7A6E67913EC147F9F671F4BD772C155D",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-07T08:47:37.576Z",
+        "contentDigest": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "amountDrops": "40000",
+          "invoiceId": "2195D395C8DB1735B473697B87838A0C7A6E67913EC147F9F671F4BD772C155D"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-clawback",
+      "receiptId": "escrow-474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+      "txHash": "474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+      "resourceId": "xrpl-clawback",
+      "version": "v1",
+      "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+      "contentDigest": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+      "grantedAt": "2026-11-07T08:46:50.253Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22133490,
+        "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+        "cancelAfter": 847356512,
+        "createSequence": 22133459,
+        "createHash": "D0992BBDD1A063CC1FD543CDB981D5482B93F6E561E076EEB58CD9F5566861BA",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+        "proofOk": true
+      },
+      "receiptId": "escrow-474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+      "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+      "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+      "resourceId": "xrpl-clawback",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-07T08:46:50.257Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+        "ledgerIndex": 22133490,
+        "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+        "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "21f290ea6d4a506a6460566fd07706d14cfaafaa6169c497e07984e948b2e8e3",
+          "plaintextHash": "38955c32580384779d62fa42a5deee9bfb15a2b3b9af9e90f1096058745bb780",
+          "iv": "0C0AFA8AFBFCFFEA3A0BB4C9",
+          "tag": "AA04E3DEB3C85A92CB54C052F28FC4A2"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "84242459-59d6-4c5f-8252-2d2294558201",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-clawback",
+        "version": "v1",
+        "manifestRoot": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+        "amount": "40000",
+        "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+        "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "condition": "A0258020E650512C14521B44C72FEDFCF8363E9865DDB12663B3C829F6A6A43ECF5E1C60810120",
+        "cancelAfter": 847356512
+      },
+      "escrowCreateHash": "D0992BBDD1A063CC1FD543CDB981D5482B93F6E561E076EEB58CD9F5566861BA",
+      "escrowCreateSequence": 22133459,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+      "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-clawback",
+      "version": "v1",
+      "payee": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+      "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+      "invoiceId": "2195D395C8DB1735B473697B87838A0C7A6E67913EC147F9F671F4BD772C155D",
+      "ledgerIndex": 22133490,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-07T08:46:37.577Z",
+      "settledAt": "2026-11-07T08:46:50.257Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "load-factor",
+        "articleId": "load-cooling-load-dynamics-in-southeast-asian-data-halls",
+        "version": "v1",
+        "wallet": "rpS5m8PsGvzvTceK2L87SM6uXZZHUvBWQ7",
+        "pubKey": "ED438A54228513A180E25834F07687D410C5C347186155947BD09B7ACAF2BA9FD2",
+        "priceMinor": 0,
+        "leaves": [
+          "a778428fef01cb278f05615202189e780c73d96670199d1f483711af9bc95f57",
+          "43b797f3d19bce67d3bf0ec1d37dd9ab4271341619eb777dfb36440640f6c426",
+          "5350ce2264da5c177f12037955fe877e1c71158e9c3fb86d7937f5f4c565fc44",
+          "6992c872322ba3d6d680544d310154ed3bfb5bbaffb68d95f95dc7997201cc92",
+          "60e36c57e988ecd47c90b64a4b140445b748798549c9a318d9a25956dca7acc1",
+          "0f941c5dd05ab1897886cfebcf678824c247d9913312f064ce68c28ddf189c15",
+          "7eac0a08053a716bff16a3d37b16ed8035a6f04656dff25699ad86c721a7dd15",
+          "7a9be72ff0d19738df0a83746805080a71426cf1f8b4a49ecb6ca36a4a07de37",
+          "8f16d794369d2ebf333f5cd7682dc621566289122e24afc868a440de9d38039e",
+          "dab4accbd373bb5447a777965a3c7a71963c3b5d3cf9503e19fe00e103fed2d3",
+          "cb2afa86429eec7daa7bf06f0f4b118815dcf006b1ea5b2a7d2780f068f06ca7",
+          "95e411d63591236a335a237d365ba05ac6ee435e36dc8402045d143ecbfbe929",
+          "b22fdd6cf19898eeb864ff9b6047517d63d16ea2c65cca94a749ebdbdab389ff",
+          "9413e8a85230d6e2bee1e9aa1ac625b359a853297c57adee855144490fe67eba",
+          "40d8f13f65b9acf41d47fecc447de73c12284e7020e7c445d68a4430c3359a0d",
+          "54069bcd88ff4189bee752953fb07035c235de6acd58cf4b4369b3e516e0fd7b",
+          "fa1863b6340dc9d055aca7db3e0321879c75bd1dd643d172f8d95033a14ceded",
+          "ba4d32e00145a5a92c320b3f0e86eb3eff8a40ebff41828e19c7252f1c59e3e6",
+          "ffc15cc98841bb4497fa4cd84e510dd0804eb42f3d68d27f363684dae1d5c8b3",
+          "6aa60ef324b8c3414218b70a90274056071b0298eb6757a0f42d7d707d50cb66",
+          "020318cfc00cdd7a6c4ea269e348f7bb96817a47bda89c2f6ce8dc781aff87d7"
+        ],
+        "root": "9a7a7e9d5267aec6fb0448e2cadf9fe3600a3580d2cc40291a928a70e1b52b39",
+        "claims": [
+          {
+            "id": "p4:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "6992c872322ba3d6d680544d310154ed3bfb5bbaffb68d95f95dc7997201cc92"
+          },
+          {
+            "id": "p13:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "b22fdd6cf19898eeb864ff9b6047517d63d16ea2c65cca94a749ebdbdab389ff"
+          },
+          {
+            "id": "p14:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "9413e8a85230d6e2bee1e9aa1ac625b359a853297c57adee855144490fe67eba"
+          },
+          {
+            "id": "p15:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "40d8f13f65b9acf41d47fecc447de73c12284e7020e7c445d68a4430c3359a0d"
+          }
+        ],
+        "wordCount": 1137,
+        "publishedAt": "2026-05-20",
+        "relevance": 1,
+        "sig": "2D6BFA2DC476A1C025118702C6B9BCA99A7EFBDCE8B6AEFAA23FA7B42ACBD6B0E5BBD879155307DAC227DF073E84B620BAE8AC4A9E310F5FD5C644A912EF3C01"
+      },
+      "salts": [
+        "89f0bee84529726859f94a34dc8a27ec",
+        "18b2ab97ee60d851241130034b6771e1",
+        "61e78eecbc0ceb66c135c2ffd1a6aadd",
+        "23ee3b63ef2550f755dd93ad108dad98",
+        "c83a14e58a01c9744c9353a2003d71ff",
+        "c9b46f6465192b0b8856f6b989567665",
+        "f2a4bd98243e53f661cb51cb4839f253",
+        "b345440155a31c1707fa14f8ecb9bdfd",
+        "fe8e7dc4b3a0612125d1847ba8538fc9",
+        "ea75ccb582e016e7664a2f8422af816d",
+        "ff11795a3edfdfe1d4d4928709abac93",
+        "d6729fa49f0f31f1f258ad34bc332722",
+        "64ba2065c994f7e883e84aa8052404c9",
+        "ff8934862533e854d14625754aac4942",
+        "fe8981788f42753209abec8eef4f9755",
+        "da506db0f60a227f776d4b45549793f8",
+        "d59d662a2345ac1eb075bc8dee6eed37",
+        "25d71080651b90af9cd5c265a5e9a23a",
+        "4e8482134901032c3d970eaec54a78d6",
+        "5e1676889a738f5ed07e537f3d4baf61",
+        "b354f7d4aee1be5775de5e55849af654"
+      ]
+    },
+    {
+      "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "load-factor",
+        "articleId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+        "version": "v1",
+        "wallet": "rpS5m8PsGvzvTceK2L87SM6uXZZHUvBWQ7",
+        "pubKey": "ED438A54228513A180E25834F07687D410C5C347186155947BD09B7ACAF2BA9FD2",
+        "priceMinor": 0,
+        "leaves": [
+          "7739025b9ccb026f91552122134fa29c66740d055e3e28059f24c8bfeec42f5f",
+          "7d33df12ebdde90917d5d9614691d6058ce02ec28be4d0f60bedbaf8efccc30d",
+          "658311bfd94227626a4858ca8509ac1c79ab6f4d52a90d2f858f4c7d19cd5080",
+          "5513a7abb66218f46564f38c1be4da3d512b2b02a7b0efa689bed15c7313ebae",
+          "15c2ca15d0d8f3069cb8779c73c8db43291f13ce289446ac6127a4615dd9d23f",
+          "4c16ee12e01c0e81381854fcd5c3936d35f83f9a8daf9ae0540dab273ddd0ed7",
+          "50a85f8da3282a2a48ac816904d4dd94cea5b4f7873f7b66bb5f16bc3c2bb18f",
+          "1f82269823581cf53a412584ad488901e5f08b50964f6a175b137d468e69fe5e",
+          "cb55b213dce2ea756402507536a57bcfd919d3df07acc2178b88c9046748cf6f",
+          "e1257c21c0a86cff1a6ed503324f4886fc9fd42ede68ab782a360780f7557064",
+          "234555d26846065a1f651e925a93e7505da6ea1355d319bdb64deb7b070bc16f",
+          "0ceaf2eb2358178df95b075779b0a307cd297cfafb8e2af058aec710b1e6b544",
+          "e5fd72699599c44f547b1b2eed00bb03242f58d84fb1b48e1d2c65a6c19d193f",
+          "9b5a4147419792c73adf1a02020cbcdd20e3d37f54c48d8019e1fee4fc98114f"
+        ],
+        "root": "41d0a342a37cbef6305d18f4e404823deea4496e4c1a9a17e289fc23f5489b79",
+        "claims": [
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "7d33df12ebdde90917d5d9614691d6058ce02ec28be4d0f60bedbaf8efccc30d"
+          },
+          {
+            "id": "p2:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "7d33df12ebdde90917d5d9614691d6058ce02ec28be4d0f60bedbaf8efccc30d"
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "658311bfd94227626a4858ca8509ac1c79ab6f4d52a90d2f858f4c7d19cd5080"
+          },
+          {
+            "id": "p3:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "658311bfd94227626a4858ca8509ac1c79ab6f4d52a90d2f858f4c7d19cd5080"
+          },
+          {
+            "id": "p4:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "5513a7abb66218f46564f38c1be4da3d512b2b02a7b0efa689bed15c7313ebae"
+          },
+          {
+            "id": "p4:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "5513a7abb66218f46564f38c1be4da3d512b2b02a7b0efa689bed15c7313ebae"
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "15c2ca15d0d8f3069cb8779c73c8db43291f13ce289446ac6127a4615dd9d23f"
+          },
+          {
+            "id": "p5:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "15c2ca15d0d8f3069cb8779c73c8db43291f13ce289446ac6127a4615dd9d23f"
+          },
+          {
+            "id": "p6:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "4c16ee12e01c0e81381854fcd5c3936d35f83f9a8daf9ae0540dab273ddd0ed7"
+          },
+          {
+            "id": "p6:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "4c16ee12e01c0e81381854fcd5c3936d35f83f9a8daf9ae0540dab273ddd0ed7"
+          },
+          {
+            "id": "p9:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "cb55b213dce2ea756402507536a57bcfd919d3df07acc2178b88c9046748cf6f"
+          },
+          {
+            "id": "p10:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "e1257c21c0a86cff1a6ed503324f4886fc9fd42ede68ab782a360780f7557064"
+          },
+          {
+            "id": "p10:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "e1257c21c0a86cff1a6ed503324f4886fc9fd42ede68ab782a360780f7557064"
+          },
+          {
+            "id": "p11:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "234555d26846065a1f651e925a93e7505da6ea1355d319bdb64deb7b070bc16f"
+          },
+          {
+            "id": "p12:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "0ceaf2eb2358178df95b075779b0a307cd297cfafb8e2af058aec710b1e6b544"
+          },
+          {
+            "id": "p12:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "0ceaf2eb2358178df95b075779b0a307cd297cfafb8e2af058aec710b1e6b544"
+          },
+          {
+            "id": "p13:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "e5fd72699599c44f547b1b2eed00bb03242f58d84fb1b48e1d2c65a6c19d193f"
+          },
+          {
+            "id": "p13:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "e5fd72699599c44f547b1b2eed00bb03242f58d84fb1b48e1d2c65a6c19d193f"
+          }
+        ],
+        "wordCount": 1351,
+        "publishedAt": "2026-04-15",
+        "relevance": 1,
+        "sig": "E9C92C1D78A56D108FEF8525FDB81B880F8A0DB6C5392317CFA346F7543A1957C4512A8CD9B16C60C12C40F75FBD4DDE58EA3932B3029A79595C0E5FD96A460E"
+      },
+      "salts": [
+        "b16c7f3c441ea7910465db532e110a66",
+        "376517ccfbc479f3d2d1684f52ea6ec1",
+        "3cc1b66788406069995001ee63f1a85b",
+        "e2e6e167a70e026ca67a7fce57185a30",
+        "e6d6f79f475b6d4aeb37bc10dedfc8d2",
+        "93c1b28c13910ef447aae918b572964c",
+        "114e561b3130fa3e92a777420b976a4f",
+        "6a52124328894d0ebe8307c5178694f6",
+        "41f1c1f6a71724cab86ec4616a9ef0c0",
+        "5f6d25a7be0fafd35483c55296f6bfd7",
+        "c94b690134ab225f4e919ae46ec59f32",
+        "e60a0a876d26c2c14fb58447379a1907",
+        "427a4d73d2adcdcbda8c5a1ec688a74b",
+        "ddbeefa212e62946c28eb5afa015269a"
+      ]
+    },
+    {
+      "resourceId": "xrpl-clawback",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-clawback",
+        "version": "v1",
+        "wallet": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+        "pubKey": "EDBDF115817BF9ED99C946E456CE8EA07F6C3095DE03CA3FF563042355C6A53559",
+        "priceMinor": 40,
+        "leaves": [
+          "0edbab9339d726fd150e2c5f1345fd831c0fd766a1e685d473456edc0c0d0b6f",
+          "0ba24664eebd08c8a0f5ba2fc4c028521330e0aa3abbdce590dbdcb2696e9a36",
+          "7296809ba44e1bc005d971829085f9f95356faec7f22eec9f694556f8dcd6db6",
+          "3e9b263e64b944a1920b270251b4241e8729a09191c043c48c43443e8fbf256b"
+        ],
+        "root": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+        "claims": [],
+        "wordCount": 233,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7407158283411122,
+        "sig": "0B13D573F0D84D258493F473701246620AC7910EE17D352DBE2B1F48A74B72D7E5062CE935B793BAF51372CE3D2BD19C22C7F8DE34AFB16179551F7931645204"
+      },
+      "salts": [
+        "d2fdacce4dc496f8ccbfb2286185c892",
+        "c98c77e5763d6c761df1f6474d00f6a9",
+        "ecf24fa94c66d2fcaccfff48ba576c60",
+        "d15b0945f0485fee8dddf90d66e541ea"
+      ],
+      "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "C418C99CC3F1FA36E05BA13020BF4217FCD4A79202E5B4FE1DB7C329CA8BA93F14FF57EBB92C57CA8BC6156B3F37E7D703946F4D80DA2AF362AEE6F467710BB0E1444B30B0DAEDA9F4785559F0A373D164BD44E6F84452E690DA71C74D3EBC9B943425BAA57B44B3613E102277C1695D8B3EF1CC9F7A451EAB55CC73A8F7565F9C3CE1225263DB00F4194DED07FF1487F9E999CBFA5DAEC1C077730776424B0B394BE4EBAEDAFA24FAC83BB00843DF876A6974EEB391AE8E8E72B03DCC8EA24921C0CA747209FBBEF64ACAA637BAA493424DB7D11C47153566D1266E82DCEC76E78BFEB67F32730D44E423DB0E58205687161ECF7505C72A9647A6338FFA17346A5648297D8560AEDB7B0E64F64F98FFEDC4938DCE5E3A32A0224F238F9783FD28777925A483C85A6C9903EAAF5E43A53306E9CB1041354C650865CAFF0546A3F2F14F0AE4381B64D4FDFE9E72C5B536808EFDE153F17CC33C5F8CBEA5CC6473F545384DBE052BF1701A58F8CC968949EC7A2C280B49AA12227345C0A442DFF4A6AAD540279403BC3735ACB79328A5C82F478BDD13F02DEF2785379C6B220DDF9896469E2F385C04D0FA5D0CA7E900F3634EECB2D5BE3EE5D411DC9D049D1CDB92F07D3EB43CE3304B7FC5382FC0FB0961B87599B17574FCC9A11CCCD03C72E0A61EA78E9A2D0F9AB26CE4D19018493355F0ABC714E10237455C71CC683B6C7B541E7CC45888BF64C715383C36AEB186F98D2F1DBAAC4119E820A27A290B77BFB4D1E39AE45928B8D2CF78FA94D58E626600A14703273F6A442E16A6EEDE13CE59E69B171F390B5F70A00750643911E86565958AFBDBB0376847E0250541645CA08D8A7DA4FA6CB9BF9E610D4566CB3992E34AF2367E94C52B6222094F87292331EB8909078517BB73FB0CCB104F7A5BA2532A8707E245836F085EA7F6D2594BEB745F299CC60D9F90E190707427D2EE71ADA51CD55D8AE258D6D6DF9F2A90A62DCCB91DA50DEE2E41757988529518142FA0585EE407170E3136F1613AFF75527673747C7D4AABBD1528ABE7DE3B0D59A220792EA1C5262AADC22AF8413355BFD725433ED5B30FB1D1881FDD33F58B59500C3C2384C6B61AAAD75BC76A9CDA83D35447072F02EEF34774259C97C4BD030D7DD12653F5BF29FFECC288F872A384CCC620D6913B2864430DD4F01E62496691EA642191FCC50A66848285866943AE6736BD115739865C1AC07AD89135AFC74BE55C4CB90906B3E976A019E2520158CBAF51ACA154961EA79F2F23A44828C68D24BFF0745E36FA79F1C84FC2E8508C1148DF1920DDE0A75C2FD84F7DAE86F1CF4E3C33D2BA68FA4A09658F0DE1A7FE38C4802194BB22C871E5F420F85A82A18D907FC681F47480DFDFE9CBBDCACBB2A89AEB85B228E2A2E0567C0DDEE2E5D13C4024C596A362E8BD72A419087A08E3F36EFF3D8CE78409AFEFB6F547316BC3183E40A854A66854ADBEB2B97C7926F6888C63A16DF1D8F13D3916F22DE55CE5286C3D2C0A45B89E2FBEF3E4E2CD24D411292DA0A8D79BEFF956A97708C99F51A91AF4713935054525FBD720E04222406172E860A97171440F064347ECA50EAB48F9C7F665D7698C4F1072DBEF5F6041410A13B44FD3B1B724737D18FC1464E9CC8B2364C2EAC8127339B69BAFCDDB9598D7C2485BADE4D7600E92F0FF4BD8B1D53C3D4CE17DD0A59F74D21AAEC650E29EC41DA8801F8C73BEB2C1A6CB52B01563402E9C5D6BE7C31AAE98EDC70A5DE558C8D42020A5C8E1BB4AECFB10999095BA36245C105D20885FA0A13954B7EDE0667111ECA4F809A660BB8248931D6C54E8CACC8C8FCCEDBBF5FE2F3F1B1F39904F672B39A3B10E52D6538F02E4D291E5BDEE91CCE9F5104ECE749AC87E922D0935834C4C045CC476B30ECAC29DEEB40DDC3339E3CA9B057B1002E636E5E73A250B8F168D34D3CABDA620F5B966F4A68D60243FD74C8D2ADDEE507D424F3F1AB569919F0FB6FFA72A3D3DB8799CF1B177BBD7FFD9CBEBFB8EA4807AB69DDB01419B7623A4C77878286157F9E65578ECEEA6B7AF65501DBF502DA7FBA3125930BE4753FBF36302F76A59723863F36581639A78F853959F1E4C20AD39F17D521C60BDC965F6A3DF76DF1FC2B258BFD60BEE08A8AC12837C9CF17E3FE25FB4204ACD82F53F5716C3D8C0790EE7E19272CA2968175C5D25636DBD89186EB0BE4D54C7DD4B35A87F9567BF2903FE745C73F131D2D9EBFE8CE9A02DF04A097447944F79A154101FFD260190780B581E73BA98F84B8EFBAD1857E01A10C15FB629A7597E4F6D20C5E70E0F2261E8B98E9C5A1011690FB7DF40EE06DB2524EA745F00E24F28D0C488EE14176A9509585EDB90E763BCF1F93C0624F328C0789F629159027A5A3DBB7E2FA1B4E204764F58873C4284B42472EEBACBA4983FA0E4AC222B3D9EC1EB617C78BB6298746D6CA0ED2EDE015F7440B40FDD353D5B027214C0808541C5C9365CBF14CAED8E79747F8F6499BAA0BB0788B27478346F46F0503C75D2F6AA9BDBB6FF45B59FD64546607A0B585EEE75CEA35B38A301F22C51C42D48540DA7508334FA6E843B12F1816ABFF41296FB6283F12B3839C167B65ABC7424CCB90E2C4A3FC525CC94D494C88D84DA142F4FEABF9F77C4F5A7C3C1AD513510501B502ED9001AB30D11AE58F884F804D5EE9911E7B43B3EAECDB3E5733F83BEF725831FD1104DA3400473448D9406F54D62FAE45A147EF818CEAB968B1184A0A60B0EE045B7BC83B0858DB666D1BC4FA8B6D6F310543D37BE183B3387EFA1EBA6371BD803D6319DB2E090B976FC6989F0012BB8FD2C7DBDEF4533FDD62A2D99AB9B2FF1353244CA83F5BF4C28D7215AD79B61D5F5FA4EB278373F1B5BD5A0DC39925FAC067C12DE12B0B4D931FEF2B9C188B95C7DA3A6E1EDCC5275AD84C124A1E3EB01559AF74ACC02A0E8874008828BA49929E6380AED51DE877D4E88A9E9D92F54C3587C4625C2E12C396232BBD5BAD2D87E977D0A0C69948E9511372B25F8AE2783C5733B6A71D897D9520790287FFFCE3C709B1184443588CD5965460033DCADD7333A068739A81D6E4DE1368113D963F1736EC498F5623E972276D5879EA496313EE7FBC4996CFCAB04B09DDC0A6FBDD4590C6BE27CE44AEFA0AF87AC67EE52506D135601BA5754254EC92E0D8A54B905928552D7B1EAEF907D1F1FE2CD0F63D210D077C8CFBFBE0547741EB2E1D562CEF38CCA4F44CB6EEA3DE2293A6D1216D772DD9E8913C7989B94F264DA6A66BE2A4CFCB66FB542EECBE1C0F60E20FFC27B3299616E1C9FC40B9D98AB4AE73AE0CEAB709CF1239E5D37D97783A79B2F07447942EEA955D86E7BE7744D2D21E17D9C36185DA5BF13013CC5B101B375FC19C1932284C79FA4662A471C97D0AB0AD72E6101856A84F05E74A732DA6D38937BECA21A171EE7C35EAFFC2C610B870E58D7C4747AB61F191891DFF55BD8CC0CBD521BCFF1659260D6ADC5BCB646A34347E1B2B74E72965AFDADCCC72858DDA4AEC466F7279F40BC56D2CC75490F2488BBB7846E220C902A4A44DD7614A7C01FAE919BDB59CA4B9703DFCEAE31B8F230181FB59582E4B967253E92AD295681902E6FEBFB1834DE620DC2E92134558C6F2B603CBBF6E5D79A45579692A389D1CF59D1550C3A3E6B55CE3C48FDAB80E28EF7A53E349E40C5BFCA82D15D05AB2905503605971E9BF8E29ADB0B499CBA4F51F5DFA23AD1DD3F1C060E0F54FD23747373C7F79A79C8655B755C832911436BC4AE30B36D0308A430E84981058EC1029AA584907CC4C2747BAB927DE22D55FCD03E00F155FC235B3349ECC22CB13B1C61F61995622106A2E1C0C7277091D44FD71AF91DCD8657C374E912BCFECA7DB09AA025EC4B067ED3F777E9B04017BCF5DD7E346410B98E071C94A6CE889A7308889F02D16EA9C1F1B147300C25002C3C90DAD138B00C6A7E6C886F9387B713082A9A9D4866EED0A8C1AEB5D4DC184EAB3AA49BE2946D5F64070EF22DDF591E52A3748900116E2C97DC74013FD1BB86E1AE98CAFABDB4F0677BBE94C6DACAAE65373D3C955AE0ABE710EA14094075ED3F3468E715D3573F448FBA2CE2110E0F5B19AC0B10EB4E84525BA6AFC8F83F840CE9A7061D54CB886A8873D1D170877DD2A029933FABF12278AC0EDE14D93F865D1F2FA411BE95C835E3AF36457B3EBB7803E215C725F7426A203552262AEB6E3ED15C3F172965C3221A364E384AD7A9BA168810E9C7BE8CD61A539ED7E993C9C86BAE57B4FF6FA2361412BC9F82148195BF5006C85B9FB980CBD96071B2F91711D1427AC069AA913905AEA720D596BE2D8F4DE29D8DD3698AA6B724872F88BEDDBBF9E35F849AEE2B6A003AD8A30E765755AC963CD3024F5D6DED9601AF787031EABBDE3D85F3217A3C8EEF93C081600B506DA1B6AD3F0A2AF2E899B3A6ECA04F74760B542B4F148ED1C843C176B71A33A229F95AE824C6A2C0ECCFAE5EBAE8AB9CE97D47A59953D657EC626E08FA2AD2FD542A0722F149B3242CD4F017A354B3AEE937E216038B4A1F8ABF7BE312ACEA0165CF2B6590D5372F5F3C0A0A7D909CDF2298B6A43E81DAE765F174C616B1EF5A5AB0DFFA7FD18A69B5E463FD47527D1A042B1BA74E8B26CC7BB71050925FD0D86D6017E7ACAE5F4A66BD5F6EE1891A22534218481B4DD023525E6FB758A058ED1F95DEA26D6262FBB43EE9358FF9DB060A693F7132FB592F019F3E9AC087124123A30CA289E461D854BAEEEA087E95E333C208DD1DF38101F9E8984BB547C8FF2ADBA1D9F8826895A336AEC9F90D2E7CEC18445CB9C4B40EBA89D3E0157990D81538A217A01FFB820E1A8F7DD7D51BEE9A4D0D5B051187F4845D9F1B5A791670A32A280EE5BDB820FFD29E81B7E06E498CD8E056EBD56A968FD58E155885534F578416AC73066CB82B4F3B7238B6785A85DF9FCE22B605EA0EA44E42E567EFD1D751DE0365A56F",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "21f290ea6d4a506a6460566fd07706d14cfaafaa6169c497e07984e948b2e8e3",
+              "plaintextHash": "38955c32580384779d62fa42a5deee9bfb15a2b3b9af9e90f1096058745bb780",
+              "iv": "0C0AFA8AFBFCFFEA3A0BB4C9",
+              "tag": "AA04E3DEB3C85A92CB54C052F28FC4A2"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "84242459-59d6-4c5f-8252-2d2294558201",
+            "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-clawback",
+            "version": "v1",
+            "manifestRoot": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+            "amount": "40000",
+            "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+            "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+            "condition": "A0258020E650512C14521B44C72FEDFCF8363E9865DDB12663B3C829F6A6A43ECF5E1C60810120",
+            "cancelAfter": 847356512
+          },
+          "pubKey": "EDBDF115817BF9ED99C946E456CE8EA07F6C3095DE03CA3FF563042355C6A53559",
+          "sig": "1E138F3F59A14EA571C37B0FE7100C7F93B8EC041A052959E387348822D508E95F2C6E44D39D757BB33B8D5832D345B651673F9C8AE94AB27183A061FDD04B05"
+        },
+        "key": "0AA9A5A7F5BF0CAC75255CCB566B9AE3B626E03991B17E39F9192E3FDB0B4BA8",
+        "finishHash": "474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+        "ledgerIndex": 22133490,
+        "createHash": "D0992BBDD1A063CC1FD543CDB981D5482B93F6E561E076EEB58CD9F5566861BA"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 36,
+      "hash": "deac9a47f5dd48ee9eeb47633b8598ada44124beb9c25bce108053be7358c30f"
+    },
+    "entries": [
+      {
+        "seq": 37,
+        "at": "2026-11-07T08:46:37.031Z",
+        "prevHash": "deac9a47f5dd48ee9eeb47633b8598ada44124beb9c25bce108053be7358c30f",
+        "hash": "15c9e197de55afecccfe161f47f641b5da6dbee903a53608ee961a55f47e8227",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-07",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "03c32de9d5cd4e424912951fa4d2ffd82644a55f7ccbe3a6e72e1cb52417aef0",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4960,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1960
+        }
+      },
+      {
+        "seq": 38,
+        "at": "2026-11-07T08:46:37.150Z",
+        "prevHash": "15c9e197de55afecccfe161f47f641b5da6dbee903a53608ee961a55f47e8227",
+        "hash": "a71d7e9e0add0f9db986707cdb25aa7c52483a8724de2944d4cd9a57aa1fa1b6",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 8,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-clawback",
+          "selectedSourceKey": "xrpl-clawback@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 1,
+            "SKIP_LOW_VALUE": 7
+          }
+        }
+      },
+      {
+        "seq": 39,
+        "at": "2026-11-07T08:46:37.577Z",
+        "prevHash": "a71d7e9e0add0f9db986707cdb25aa7c52483a8724de2944d4cd9a57aa1fa1b6",
+        "hash": "5f36f561524700a76b3bcbe26ab4354bb79cd4c15db0bff1e115cf92f53c6892",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "2195D395C8DB1735B473697B87838A0C7A6E67913EC147F9F671F4BD772C155D",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-clawback",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 40,
+        "at": "2026-11-07T08:46:39.267Z",
+        "prevHash": "5f36f561524700a76b3bcbe26ab4354bb79cd4c15db0bff1e115cf92f53c6892",
+        "hash": "266210817b4b65cb0f193312a9b01987a45cc5407d20ec2a6cdffd5c7892c40a",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22133459,
+          "invoiceHash": "2195D395C8DB1735B473697B87838A0C7A6E67913EC147F9F671F4BD772C155D",
+          "lastLedgerSequence": 22133507,
+          "operation": "create",
+          "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "proofOk": false,
+          "txHash": "D0992BBDD1A063CC1FD543CDB981D5482B93F6E561E076EEB58CD9F5566861BA"
+        }
+      },
+      {
+        "seq": 41,
+        "at": "2026-11-07T08:46:45.037Z",
+        "prevHash": "266210817b4b65cb0f193312a9b01987a45cc5407d20ec2a6cdffd5c7892c40a",
+        "hash": "73450d1dc095468845d6015d955a2e1ae104c4f93fb75fcdc7048c00eac16347",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847356512,
+          "createSequence": 22133459,
+          "invoiceHash": "2195D395C8DB1735B473697B87838A0C7A6E67913EC147F9F671F4BD772C155D",
+          "ledgerIndex": 22133488,
+          "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "result": "tesSUCCESS",
+          "txHash": "D0992BBDD1A063CC1FD543CDB981D5482B93F6E561E076EEB58CD9F5566861BA"
+        }
+      },
+      {
+        "seq": 42,
+        "at": "2026-11-07T08:46:50.253Z",
+        "prevHash": "73450d1dc095468845d6015d955a2e1ae104c4f93fb75fcdc7048c00eac16347",
+        "hash": "6d0a692287a08b4f750b01cc6eafd272fec1feb2155b48b8c1637e93a41422f0",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "bfbc9cac7208fd292d577c4f6740ac49148e74926801ee822b8ed2b0dc57cc93",
+          "passageCount": 4,
+          "resourceId": "xrpl-clawback",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 43,
+        "at": "2026-11-07T08:46:50.256Z",
+        "prevHash": "6d0a692287a08b4f750b01cc6eafd272fec1feb2155b48b8c1637e93a41422f0",
+        "hash": "d4678776a94495df9d244ac21185d2a4ebcbe175839b3d1368d1d2cd4bc557cf",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 44,
+        "at": "2026-11-07T08:46:50.257Z",
+        "prevHash": "d4678776a94495df9d244ac21185d2a4ebcbe175839b3d1368d1d2cd4bc557cf",
+        "hash": "31e19b3f060aa2a6d34c9b61706ac2ae1856ac77928c3451dfa6f3ff4611eca7",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "D0992BBDD1A063CC1FD543CDB981D5482B93F6E561E076EEB58CD9F5566861BA",
+          "createSequence": 22133459,
+          "ledgerIndex": 22133490,
+          "owner": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D"
+        }
+      },
+      {
+        "seq": 45,
+        "at": "2026-11-07T08:46:50.257Z",
+        "prevHash": "31e19b3f060aa2a6d34c9b61706ac2ae1856ac77928c3451dfa6f3ff4611eca7",
+        "hash": "127a407298c1389ba2c221d6a32150768616127da016ca31bdb99e343ad3b016",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19:1:xrpl-clawback:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22133490,
+          "payTo": "rPUekZcVT4bddbJFeEJ2RnNRJa1NTb5oTx",
+          "payer": "r9xZx27MX9g9aCY9raKX7dJyeJf2QJLqVG",
+          "receiptId": "escrow-474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "474DF6D2781077B9080CF3E9996807EC56248B60A0442495398C93FEFB55013D"
+        }
+      },
+      {
+        "seq": 46,
+        "at": "2026-11-07T08:46:50.294Z",
+        "prevHash": "127a407298c1389ba2c221d6a32150768616127da016ca31bdb99e343ad3b016",
+        "hash": "4325939ef9a0c4e0315f8045fffcb27db94aacbf4a7663fc0f3950eec8e83f83",
+        "runId": "b3a2b4e0-138b-4c85-a359-dd9bb47fbf19",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "2e8919599efd487c88cf45b624d0d855c31cb3125ddc7e9b4f91b8602a8b3490"
+        }
+      }
+    ],
+    "head": "4325939ef9a0c4e0315f8045fffcb27db94aacbf4a7663fc0f3950eec8e83f83"
+  }
+}

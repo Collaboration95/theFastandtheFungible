@@ -1,0 +1,912 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "6EDE76ABD80BAB9CE47FBFCA30AFD90552CAE3862821D0CADE897FF54520CA03",
+    "account": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+    "head": "accb5876e92efc2ee2f048a394fa81d84f8ccd8758e23a47192b2d853e39291d",
+    "runIdHash": "0debde09ea448bd5287e3a82c8cd80d0c9727f7fffa00f7306d9a40711f4f5e9",
+    "ledgerIndex": 22133470,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "sourceKey": "xrpl-token-escrow@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p1\"]",
+            "claim": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2]",
+            "citation": "[\"xrpl-token-escrow@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2]",
+            "manifestRoot": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+            "grantIntentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p2\"]",
+            "claim": "The XLS defines AllowTrustLineLocking for trust-line issuers and escrow/transfer permissions for MPT issuances. Authorization and freeze or lock conditions can prevent creation or completion. These constraints mean that adding an issued-currency Amount object to an XRP escrow request is insufficient. The issuer's permissions and the sender's actual token holdings also participate in transaction validity. [1] [2]",
+            "citation": "[\"xrpl-token-escrow@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The XLS defines AllowTrustLineLocking for trust-line issuers and escrow/transfer permissions for MPT issuances. Authorization and freeze or lock conditions can prevent creation or completion. These constraints mean that adding an issued-currency Amount object to an XRP escrow request is insufficient. The issuer's permissions and the sender's actual token holdings also participate in transaction validity. [1] [2]",
+            "manifestRoot": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+            "grantIntentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p3\"]",
+            "claim": "I recommend a capability check for the complete asset identity, sender, recipient and network before quoting a purchase. Pin the issuer and inspect required permissions. Do not infer RLUSD escrow availability from the existence of an RLUSD trust line or from another token's successful transaction. Read the TokenEscrow documentation and XLS together, then validate against the deployed server's behavior. [1] [2]",
+            "citation": "[\"xrpl-token-escrow@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "I recommend a capability check for the complete asset identity, sender, recipient and network before quoting a purchase. Pin the issuer and inspect required permissions. Do not infer RLUSD escrow availability from the existence of an RLUSD trust line or from another token's successful transaction. Read the TokenEscrow documentation and XLS together, then validate against the deployed server's behavior. [1] [2]",
+            "manifestRoot": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+            "grantIntentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p4\"]",
+            "claim": "Exercise disabled issuer locking, missing authorization, frozen holdings and expiry recovery using a testing asset. Record which cases are observed and which are specification-derived. A successful native XRP escrow does not establish success for an issued token. This recommended test matrix follows XLS-85's failure conditions and intentionally avoids asserting a current activation date or claiming that a named stablecoin issuer has enabled every required flag. [1] [2]",
+            "citation": "[\"xrpl-token-escrow@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Exercise disabled issuer locking, missing authorization, frozen holdings and expiry recovery using a testing asset. Record which cases are observed and which are specification-derived. A successful native XRP escrow does not establish success for an issued token. This recommended test matrix follows XLS-85's failure conditions and intentionally avoids asserting a current activation date or claiming that a named stablecoin issuer has enabled every required flag. [1] [2]",
+            "manifestRoot": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+            "grantIntentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "What additional issuer permission does XLS-85 token escrow need"
+    }
+  ],
+  "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on XRPL.",
+          "tags": [
+            "XRPL"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XLS 85.",
+          "tags": [
+            "XLS-85"
+          ]
+        },
+        {
+          "text": "No accessible evidence on TokenEscrow.",
+          "tags": [
+            "TokenEscrow"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD.",
+          "tags": [
+            "RLUSD"
+          ]
+        },
+        {
+          "text": "No accessible evidence on IOU.",
+          "tags": [
+            "IOU"
+          ]
+        },
+        {
+          "text": "No accessible evidence on MPT.",
+          "tags": [
+            "MPT"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD escrow blockers and the TEST SGD substitute.",
+          "tags": [
+            "RLUSD escrow blockers and the TEST-SGD substitute"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rlusd.",
+          "tags": [
+            "rlusd"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Testnet.",
+          "tags": [
+            "Testnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on stablecoin.",
+          "tags": [
+            "stablecoin"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DEX.",
+          "tags": [
+            "DEX"
+          ]
+        },
+        {
+          "text": "No accessible evidence on reserve.",
+          "tags": [
+            "reserve"
+          ]
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "conclusion": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2] The XLS defines AllowTrustLineLocking for trust-line issuers and escrow/transfer permissions for MPT issuances. Authorization and freeze or lock conditions can prevent creation or completion. These constraints mean that adding an issued-currency Amount object to an XRP escrow request is insufficient. The issuer's permissions and the sender's actual token holdings also participate in transaction validity. [1] [2] I recommend a capability check for the complete asset identity, sender, recipient and network before quoting a purchase. Pin the issuer and inspect required permissions. Do not infer RLUSD escrow availability from the existence of an RLUSD trust line or from another token's successful transaction. Read the TokenEscrow documentation and XLS together, then validate against the deployed server's behavior. [1] [2] Exercise disabled issuer locking, missing authorization, frozen holdings and expiry recovery using a testing asset. Record which cases are observed and which are specification-derived. A successful native XRP escrow does not establish success for an issued token. This recommended test matrix follows XLS-85's failure conditions and intentionally avoids asserting a current activation date or claiming that a named stablecoin issuer has enabled every required flag. [1] [2]",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p1\"]",
+          "text": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-token-escrow",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p2\"]",
+          "text": "The XLS defines AllowTrustLineLocking for trust-line issuers and escrow/transfer permissions for MPT issuances. Authorization and freeze or lock conditions can prevent creation or completion. These constraints mean that adding an issued-currency Amount object to an XRP escrow request is insufficient. The issuer's permissions and the sender's actual token holdings also participate in transaction validity. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-token-escrow",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p3\"]",
+          "text": "I recommend a capability check for the complete asset identity, sender, recipient and network before quoting a purchase. Pin the issuer and inspect required permissions. Do not infer RLUSD escrow availability from the existence of an RLUSD trust line or from another token's successful transaction. Read the TokenEscrow documentation and XLS together, then validate against the deployed server's behavior. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-token-escrow",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p4\"]",
+          "text": "Exercise disabled issuer locking, missing authorization, frozen holdings and expiry recovery using a testing asset. Record which cases are observed and which are specification-derived. A successful native XRP escrow does not establish success for an issued token. This recommended test matrix follows XLS-85's failure conditions and intentionally avoids asserting a current activation date or claiming that a named stablecoin issuer has enabled every required flag. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-token-escrow",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on RLUSD escrow blockers and the TEST SGD substitute.",
+          "tags": [
+            "RLUSD escrow blockers and the TEST-SGD substitute"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rlusd.",
+          "tags": [
+            "rlusd"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Testnet.",
+          "tags": [
+            "Testnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on stablecoin.",
+          "tags": [
+            "stablecoin"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DEX.",
+          "tags": [
+            "DEX"
+          ]
+        },
+        {
+          "text": "No accessible evidence on reserve.",
+          "tags": [
+            "reserve"
+          ]
+        }
+      ],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-token-escrow",
+      "version": "v1",
+      "title": "What does XLS-85 add to token escrow?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2]\n\nThe XLS defines AllowTrustLineLocking for trust-line issuers and escrow/transfer permissions for MPT issuances. Authorization and freeze or lock conditions can prevent creation or completion. These constraints mean that adding an issued-currency Amount object to an XRP escrow request is insufficient. The issuer's permissions and the sender's actual token holdings also participate in transaction validity. [1] [2]\n\nI recommend a capability check for the complete asset identity, sender, recipient and network before quoting a purchase. Pin the issuer and inspect required permissions. Do not infer RLUSD escrow availability from the existence of an RLUSD trust line or from another token's successful transaction. Read the TokenEscrow documentation and XLS together, then validate against the deployed server's behavior. [1] [2]\n\nExercise disabled issuer locking, missing authorization, frozen holdings and expiry recovery using a testing asset. Record which cases are observed and which are specification-derived. A successful native XRP escrow does not establish success for an issued token. This recommended test matrix follows XLS-85's failure conditions and intentionally avoids asserting a current activation date or claiming that a named stablecoin issuer has enabled every required flag. [1] [2]",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2]"
+        },
+        {
+          "id": "p2",
+          "text": "The XLS defines AllowTrustLineLocking for trust-line issuers and escrow/transfer permissions for MPT issuances. Authorization and freeze or lock conditions can prevent creation or completion. These constraints mean that adding an issued-currency Amount object to an XRP escrow request is insufficient. The issuer's permissions and the sender's actual token holdings also participate in transaction validity. [1] [2]"
+        },
+        {
+          "id": "p3",
+          "text": "I recommend a capability check for the complete asset identity, sender, recipient and network before quoting a purchase. Pin the issuer and inspect required permissions. Do not infer RLUSD escrow availability from the existence of an RLUSD trust line or from another token's successful transaction. Read the TokenEscrow documentation and XLS together, then validate against the deployed server's behavior. [1] [2]"
+        },
+        {
+          "id": "p4",
+          "text": "Exercise disabled issuer locking, missing authorization, frozen holdings and expiry recovery using a testing asset. Record which cases are observed and which are specification-derived. A successful native XRP escrow does not establish success for an issued token. This recommended test matrix follows XLS-85's failure conditions and intentionally avoids asserting a current activation date or claiming that a named stablecoin issuer has enabled every required flag. [1] [2]"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-token-escrow",
+      "version": "v1",
+      "title": "What does XLS-85 add to token escrow?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what does xls-85 add to token escrow?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+      "family": "xrpl-token-escrow",
+      "facets": [
+        "XRPL",
+        "XLS-85",
+        "TokenEscrow",
+        "RLUSD",
+        "IOU",
+        "MPT"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-token-escrow",
+      "relevance": 0.7487408943930849,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-token-escrow",
+        "version": "v1",
+        "wallet": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+        "pubKey": "EDD8B52AE076421117D60251283FB1F9FE43EAC3D8399A1DF5FF3B24F3F23F3D9C",
+        "priceMinor": 40,
+        "leaves": [
+          "efb9e2db10c851ea2111944ef4559c8574690d0f051834e9e3690c481b6746dd",
+          "b1c86434dffcc59a7ec94255c70705f4bc89643da55fc838d08ad18909185ac7",
+          "d4c43fddbc0dfd401aec5e878859d04b9c6d5471853716625070582afd8ea036",
+          "4d1908eda9cf7e44d397b735342ba848fd0b6a7051db493f4fc3566c0ce484aa"
+        ],
+        "root": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+        "claims": [],
+        "wordCount": 242,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7487408943930849,
+        "sig": "E2DFC83591AAEBE02EBA5B14F92B83793E85B8BC0478A91919517A77831E68726C4696F9BB17F854855C27B1E811EF2DE5743590EAB80EC64F5809AC6646CB0C"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-rlusd",
+      "version": "v2",
+      "title": "RLUSD escrow today: AllowTrustLineLocking issuer permission and TEST-SGD",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Why RLUSD cannot be escrowed today without issuer permission, and what AllowTrustLineLocking means for token escrow experiments.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rP4jAcqbq2ZjVxDD5DtvqbXBEZgRs3EeEb",
+      "family": "team-rlusd",
+      "facets": [
+        "RLUSD escrow blockers and the TEST-SGD substitute",
+        "rlusd",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-rlusd",
+      "relevance": 0.666584743394671,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-rlusd",
+        "version": "v2",
+        "wallet": "rP4jAcqbq2ZjVxDD5DtvqbXBEZgRs3EeEb",
+        "pubKey": "ED1B57DFC2C25C552F85A6787FD83E12ABE329E2F632475E332C5F7848344FC56C",
+        "priceMinor": 40,
+        "leaves": [
+          "bb429086cabbbd756a5b318cf7342c0da522906ce7cee2e72c4faa2dba925c96",
+          "c069208ee8c3080657d826922c16f6ef168d44634a2124f0468b8d75870dfb44",
+          "44cee60775eeb22391718695b2f946dbf44eb36afa196d80982fb708333e19e3",
+          "265b8c890d47b15b920768d5270d7db0c750a2da506d6fd66bb0c895c62e12df",
+          "c4e0950d5857af2682bdda9ff1fb467d7fffa2ff68189b1ac8783a45d4a8ccb4"
+        ],
+        "root": "839097b11fb10e070ea09ef1b70e585c63704fb4b05a6a3c9b5470d48757fa94",
+        "claims": [],
+        "wordCount": 543,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.666584743394671,
+        "sig": "8D0F99A1CA0482527068868F63745893536C5A516FC93B8F5DA99141CA104E07155ECE9BF8FB82D37E5A1E1C069617BDC773DFE0924940741FA5D13B701BC801"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v2",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rP4jAcqbq2ZjVxDD5DtvqbXBEZgRs3EeEb",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.5155650947784808,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v2",
+        "wallet": "rP4jAcqbq2ZjVxDD5DtvqbXBEZgRs3EeEb",
+        "pubKey": "ED1B57DFC2C25C552F85A6787FD83E12ABE329E2F632475E332C5F7848344FC56C",
+        "priceMinor": 40,
+        "leaves": [
+          "45f45c6d161bba684c9f936738afa3d97f2ef3936034848676abf62d0b32666e",
+          "4730d2c9e845e332d386a4561471b0f35d15966be3edb04900237e2f26870d63",
+          "9ea21c533823dc3b3d975b1d481ec08e49b9600c6ea605f351e3bfe1c11256c5",
+          "feaff37b45b52652bf653a533be4ff2710afcc1c86db5b4ae012edd74d228774",
+          "922fb4c0c6d36fa54d242b8a32e856250a5d1662f8e897cc581ac7e1b57c188f",
+          "398ef8eaf2e2a4a4f4342f4943c8c3283e63b4c3fd1fd13c79cb013636dc41af",
+          "3a4f20e1cb2d102e2570740cda3e1195a408d174726296e2fbe5ce28467c44e9",
+          "e6b869a6df281594e64a099463ce781fdda089702b9f87c458407992abeb6690"
+        ],
+        "root": "18ef92f5dc061d056e97d5fb59d9a09bf835f5afa13af9ca5811b536fae68d6f",
+        "claims": [],
+        "wordCount": 667,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5155650947784808,
+        "sig": "4FA1CE07D50214D637D5AC95EF72BFBEB1507C01CB1EEDDA03BAA566F69FAAA907EE854ABB390448AFBFC2C89B2586EA2045BD3CAC41C45ACB4CBB13B85C8906"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22133468,
+        "owner": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+        "cancelAfter": 847356441,
+        "createSequence": 22133454,
+        "createHash": "9A629127945C3D91666302B42221F0876E3215ECD722AC61FAF99829A6A496DE",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+        "proofOk": true
+      },
+      "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+      "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-token-escrow",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-07T08:45:25.169Z",
+      "submittingAt": "2026-11-07T08:45:25.170Z",
+      "settledAt": "2026-11-07T08:45:38.251Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-token-escrow",
+        "version": "v1",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-token-escrow\",\"asset\":\"XRP\",\"cancelAfter\":847356441,\"condition\":\"A0258020F5319A2B076FE4173BF6526CCD8FF06CF4D0C043698476E03D434EA3CBB2F60B810120\",\"intentId\":\"336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1\",\"keyReveal\":{\"ciphertextHash\":\"45b881c1d195121ff237cb338fa5224d6cc1932289c590ca22fb703faa06d901\",\"iv\":\"A6ED8925B6377B4A1E4568D1\",\"plaintextHash\":\"711f329a359379f3ba39b70c38ac17aa7ecd216a9bf069e6eae9b9f9daef54df\",\"tag\":\"FE77B556A196C9A0D0565982AE88C670\"},\"manifestRoot\":\"7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4\",\"network\":\"xrpl:1\",\"payTo\":\"rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg\",\"payer\":\"rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"f9c738ff-3a74-4174-a94e-08333a18797d\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "8B8DB825088AD8AB798E5F8956680C2302AA7B69A3B84E1D5EB307A6CF103A49",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-07T08:46:25.168Z",
+        "contentDigest": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+          "amountDrops": "40000",
+          "invoiceId": "8B8DB825088AD8AB798E5F8956680C2302AA7B69A3B84E1D5EB307A6CF103A49"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-token-escrow",
+      "receiptId": "escrow-46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+      "txHash": "46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+      "resourceId": "xrpl-token-escrow",
+      "version": "v1",
+      "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+      "contentDigest": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+      "grantedAt": "2026-11-07T08:45:38.248Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22133468,
+        "owner": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+        "cancelAfter": 847356441,
+        "createSequence": 22133454,
+        "createHash": "9A629127945C3D91666302B42221F0876E3215ECD722AC61FAF99829A6A496DE",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+        "proofOk": true
+      },
+      "receiptId": "escrow-46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+      "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+      "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+      "resourceId": "xrpl-token-escrow",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-07T08:45:38.251Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+        "ledgerIndex": 22133468,
+        "payer": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+        "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "45b881c1d195121ff237cb338fa5224d6cc1932289c590ca22fb703faa06d901",
+          "plaintextHash": "711f329a359379f3ba39b70c38ac17aa7ecd216a9bf069e6eae9b9f9daef54df",
+          "iv": "A6ED8925B6377B4A1E4568D1",
+          "tag": "FE77B556A196C9A0D0565982AE88C670"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "f9c738ff-3a74-4174-a94e-08333a18797d",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-token-escrow",
+        "version": "v1",
+        "manifestRoot": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+        "amount": "40000",
+        "payer": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+        "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+        "condition": "A0258020F5319A2B076FE4173BF6526CCD8FF06CF4D0C043698476E03D434EA3CBB2F60B810120",
+        "cancelAfter": 847356441
+      },
+      "escrowCreateHash": "9A629127945C3D91666302B42221F0876E3215ECD722AC61FAF99829A6A496DE",
+      "escrowCreateSequence": 22133454,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+      "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-token-escrow",
+      "version": "v1",
+      "payee": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+      "payer": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+      "invoiceId": "8B8DB825088AD8AB798E5F8956680C2302AA7B69A3B84E1D5EB307A6CF103A49",
+      "ledgerIndex": 22133468,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-07T08:45:25.169Z",
+      "settledAt": "2026-11-07T08:45:38.251Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "xrpl-token-escrow",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-token-escrow",
+        "version": "v1",
+        "wallet": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+        "pubKey": "EDD8B52AE076421117D60251283FB1F9FE43EAC3D8399A1DF5FF3B24F3F23F3D9C",
+        "priceMinor": 40,
+        "leaves": [
+          "efb9e2db10c851ea2111944ef4559c8574690d0f051834e9e3690c481b6746dd",
+          "b1c86434dffcc59a7ec94255c70705f4bc89643da55fc838d08ad18909185ac7",
+          "d4c43fddbc0dfd401aec5e878859d04b9c6d5471853716625070582afd8ea036",
+          "4d1908eda9cf7e44d397b735342ba848fd0b6a7051db493f4fc3566c0ce484aa"
+        ],
+        "root": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+        "claims": [],
+        "wordCount": 242,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7487408943930849,
+        "sig": "E2DFC83591AAEBE02EBA5B14F92B83793E85B8BC0478A91919517A77831E68726C4696F9BB17F854855C27B1E811EF2DE5743590EAB80EC64F5809AC6646CB0C"
+      },
+      "salts": [
+        "e85cfa81d3afcddb6df6065c40078f79",
+        "058813484f1b491cd08701b1239dc55e",
+        "e8fd1592750f5400fbefa405a8583ef8",
+        "531a703d1adeed643951c3a1a456fe9b"
+      ],
+      "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "B39243B323AC77C3A2C27007F7BE8867DACE68D72B6B4C82A658F1F3C19A875A2EC9E4B001EE968F763BF60F732957296F675CF0502A94D92BE5B4F4EE418758C307149C845866C0FF77D8FF2A936B9F253488D80EBFFCE7D91435F6AD379E1A1F32F0E47CFF6E8E4BD35BD3A8924BD7E1E951A660AB32891B15F1AD6CC217750F1027BB657044285C7FE4663657AD63A52864877A869BA242D2245F0BEA0E750CC106495838BCAE1BACF0EBBEBAC9FABDA2BFD07F21F8C1C2F337061F4439453ECD5E0CF2D64BE574B8559A8878F3AC680BA2769AF81FA289CA83F89C3C18191EF277AC4E8C55448B366011F8515576145EB0C9490FFB4C67D67E912671CCDBF8E308FE4E4742BA95858D877BD9479B539612D67BC6809B324F31C7FF05E4527E6303BC9C96F8985A2097926054E0005C50E91C3FAAD58B0E131636FDC5B7FCB0CBE9DD9355CBDAA1DF3A914F8FE13DA1426ABA234E2E5E042B2FC479DCBD82F77B6D042E35DBD8AC1BE100AF658647FA068E736BE6508D46DD1DB73DD239149A1DA3518A6381827519E34A9A04017AF6E99DA5023EF79E993AC999BAD8A3E783BD0987D104FBDCCBA2E0986F6F430B6BAF103A411CD3C02CB97A1EAD831308CA7B368B5FC438DCA83124D71A990C9D5042B5CBFDE7F54244F11A8184C3802D2331B4F28FC58C5FBA28EF04EAA35A082F0D7978CFBC270680C451592C6FE06057DCCA0CAFF063683A1875E48E00A03EBE859D8ABE5A014EAE895702AA3A13BC1AD88ABCD9A64A4FD80FF537C9F58210A20D853B9A00326FABCB5AC8C29AEACA1474BD45A4E76523C4568F61DCB02A4FFFFAF8DAC396492F9BF9E3E2976B13B72DF006C8010004AA1B51E2F652322BA7A9EBBC6E7F686D2C01F37AE1DFB1119BE063D00A51E944170405E780DB2A771D2C52C764DE4465AF41323B8000BAD68231D60338353DA2A63CB6FAEB7A42D07A25F0A1EFAE50010D49960E221144146E1B644255B52514B61685D3C2BCAA40F5B4216CD21981270139F402B47E0CB1FCEA20C7C9164329FF1BB360DA8F76D4ECE73A4BEAF258AE83B87604E3C8F211C71AAF713A9BFE993C32050C9FB7D37C05C65235D3F32380793DD440502BAA1FAD681D51EBAE8BE878E339EEA9B30850D48E67A76A86D5BE6ECECAFA6028E2A35027F394BDDE7EC2645AC3D2E74B4E8A8F7A382657D683CB605E2A2BBB214133E2E69243D8D435F75CAA20A0814A10CDBD17F1004E1C34581983CEC09FD45B3A08A2E6F36D304E6FDB8C2FA2A6B42814731B755268D79FB116793748044A1BF44C094961E590E1C7074EDED2AD12F0F9095AA25FB8A04D5287C196047CC686E4C767A4D2E3D53C743F82EC669A114B1098A0A97C75F652D7C3C32EC589B631D6C4C9033C223B4CAB1033D0BCF7EB7DC111FDA1FD12BB021E21923C5AC0C918B433EB38A545D4E7EE023A2472F1B857312BD13CE245EB223749C86179B1CAA1BFACD5DDD11D1E2425ED5ECBC658230058A5E6B52A2A2F70EC4A78E79501FFC1CBA091476BC5A4160BD6EF573C01F218BCAFB77C0AB68B1F63A2F59B50EB83CD1DAB9B7C530B0C0D9B91F72A1B028CB44CDCC738CE2238C64F66CD6A68F18589A2E8664578A6FF0C6341604440770FE11844663E34956FD320BEF63D5274F652DBECCDD222BAB7EFA8C06C12818EE61405AADA96BE59D52D43266181061239C50F4C034AE9FEDB8130405F6834A449115C728F9218033B409877B5917EFB99A6CA03691021FC4E7D9490D71D5305BFAECCB63E0E8569E8F3B3C4D092E612067EC6409895269206432A5C6158224784BCA49C94052F608B46AF85CA7BAC0671ECCC3B780182DEC204813BB57D5B1D0AB1A7534536AB6F33BB95998F7078EB42C7D45D53ED0AC18D2B3618223B976906953DAEBFADF0EFD2E82D4C11CB254D3C400B66E4FDC5F0DB8B7807118D0F100728DCF866507E5D2B5894BDD57CADFBFEAA9CAE1C256CDA080C15085EE341B192C4CDC454CDC67BE560C480DBF9123063CF44AF278AB9905F86C0929289EB9E1437D49D796A085AE0621820F717640DD30016A2C18085FA95F82533B8BD59D7DF8F4DDD7F31FA817EBD451BE6819EF3EF6A547A878B571D1D724728A656A77CB03BA5487CC314B2836A0E940347FFBA0A6C3B616D7161C42314ADE5B0F7BF01C79017EC3D3D808F0AA35F4743D9BF2039DA75F179E8415B146566D78EB36F1BD5F989B251565711140E64F87FEE44F0190D821994892D38EC24F749F2315E130577B3AB81EC2CB480AC441449BC9F86B84DC26965DE4ADA4FD909C549EA347920E2972282F45C657222FD934849B3685FA5424BBEC768F1DC655B6EE2A22BCDA7D8A9896FB1E2F4A16E7DE9C90F91AF5047CC9351FD8AF24877201002886ADC0C0625F4712B2B103A88B15F84AF38BD1F232E14DA43D0876D5D77F3510E69C17CD1E2E6B3C83A6FA28413676FFD049927E1C7764AB354C74B37F42EB3480E600F6A59C41A2ABD6FBAFDD83D4EF85781B4F43764442A5E6A31E99F531BF966EA4C21B9A291BD2BD6910F0F8DFCBE055B06C8123896E6848316E50D29312CCC504D267762A8E67BED540FE86793248A6BEF4452649521E4A1BDDF6FBC1622704CBA335844057D1E2607C158054678E6ABF52518F84EBE7E09DA0107CD2772F05DDFC224FF91095BF36FEC2ACFCE2FA3E0EC5400541B0B3F3DC058EE2EDC13566FC56F830E37F798DBCB7DBDA2571143DF61CABA7BDC3A9AC0F24B9C015BB7D6CE65F3364FCA69CA822ED22EBFF5B40BA276EF2346CA8B5231ACC7E16EEC7DC0BB6F93345DCB45D8190EA2B4E900F08972CA9098327CB112FF02E8208F03F66D9DD550D6C8EA64653A5EF1D122CCC38AAB5FD8AF74BC9F47DA2611BB910CD16996693B469DFF4053F7E398A0EFB877052FDA50281B359BC5458B260F749635ED23FD12A7B65E82DD2F5DFAB40E772A7BB5E9A11E3779D7CA86759C2D4BB32C709409A6FE67943238E63BD489F41BF76C2AF8C0AB2450F6E3FC5F65D0DE926A7E62A708DDABCFB5185479829CF02587701251BCCB1208FD3167FFA6A6DD34C9DC411B51C500AE01B17BC9E568C75251B1D3F31CE80B1272B3DC0DF098F300CA6611B28F79F2518478FF1BF5E1A7C4B2F417F952EF65B342C60706870509268478586F70C89FF670CB3E95D64D5A9F1C867148258936CF8BCB0661B35EB99F37FE70F6E8F26F5A86943B26B4A0857C954AF5E1ED6A5C5FEB380CBAD92C3DDBFA4B07B18B4FB6AEA86CA28C6997623A6839AC771826757AC288B7FCA601CF368423367F8A5097868466C13513338089ABEA8BA2B58F10713F5CFB024E44CB893A8FD57E8C12E1E674EFCBF81C56C30AC3F08A4A6C973365312728B01286794CE9EADE120F4EB30993225CB54AD438C8DE592EF9D6EAA8D6D2368CC8DDB2CA1BBD3C2CCA414F3C2BA26BFC07621DEA11B65E5667325458916627AE99A356F207762C0363BE0327A0826E3472D868C66F14C02CC8355F0658AC2ACF616E9A7D7CF467BE9694FEB030029E5BF464CFAABA5D4A4BB6CA22B34383E607081FC698DD21E19BE0922C6E0EFFAFAEDA3ADB553C02CD3176E86EFDABF2D693877FD4E33E4AAEBB7DBC46EE42B02946B1C31C47AA990666C0791AC1F30FF6339323B75FAE00AC94E24BD9D7CD5B6721630D870E88FA9C4246E9813D00699E0549A03110882AC945ED11512F9B5C75D35D55135770D27DDB49B9E1B60E61BC38EFF8A46CDC469245AD855BAFE94F6B748B30C253705AEBC32B2815930260BEA82C231A7AFDC746A6C63427D23DF4C6A12BEC5206E2471BBB7E6F42DF5969302306EED4B54CC28C0F647398B445B4FA5725ADE57E5D3065C8D6727E280CFF538FD596AE9F0CD448308A02F91182EA45518A25F7DD1DA9E619869F1B24DF88DBFF6063EED1C717BA0BD446EA7EB28B481A0DA0743CA3E3CF060B070EAA01F62B7C13CBCAB6D673A26445530D18C67854A44430802C54C867B0D2EDB0085870054AAA780B443A020F0E486AAC9F735C645FB5F3B8C568B04C65D5D77F0BE91CCA899963336AEB1D00B66331A01BFFA80C9C66E56256BE74DB70428F9F48AA36491D57837B7AC771E065298C4E5884365F4A09D7AAE49E8084100881DB9DB722B89549556B90344170152C70DFF6DE3633CD9B3FCD726D893D661A0FAF5C038A777B42660C670EE554A422C73961A156816CE282E5705C69814EA351DF0E14E0ED79BC6292BE12F8DA52A574C175C999185BC3745D94DE3B3585594EF9A8443F232B48BAF233AF989236A99362461A93E55B7CA77E83DAF742F42C8BE8E35325F476CD476CFC9B751383CEDDBD67AAFF51B326817B8EA56C45F79CF5D707AA68E460DED7FA85B3348C97DB0080C4C2304FD5B9844DDF2FD3045F8D99B779EF0B2103A10D69AB4235334571E53853A9F50704EB61701AC6A296325A15EE50258295207C763C4242037803BCF6D04311D13685B8544D71B97FAC3E63E958B732C8319F4AB120865E0720EDBE3ABC92272DEC41722E8551FA3F2BEAC054F7C3E1A766433B755B54EE9EF043370D6B426659C0A0A3482DD659A9405DD2665E329EE61E9E53A3B10CCBC56A6F71A66D46A280E7BABB4EBAAE21F7BACED2B2C03FA536F5AD791779199F4B52F441A11DA529480DFBEB4FBA487AF0370BDFC7F46514BA1634D4A4BB675AC50F01FA4242BFCA70392490343A9FCB4F870131B810751C09F555B0EDB9A15BBA163584D0254446ACDF4377571DA9790C952E24EC53B82B5AD3E8FD8FC671B38474BD3B9566C1EFEAAE8CF024DFDCA677A2C538C2BD008BC68CF2A44143D1A143F9F2B06BE1F0BD8B651C522F9F0DBFEA15E2DA255178F607F2619AFA266DD588BCF09A341435EE12CF812336C8AE2CA9330BA5F7D7DFBD522C6AAF67A352085E63E4775BEDFCEC9C3F1217ED641B1736E9093C5A5E9EF7F5A4A11A7F12C38D9053405F0158AFCCD45F8766C5BEB9BAAB946142AD7A843B5B9F6D1C152473B207F702ABAC2D566EDC85B968B893F25D998288CEE72187A3EC58529A87C7CC3914DE5FDA49077255CA55E0862845B9EB5616AFF05BC6DF5F83EDEBE94B3AC76AA1C60B1C24A8EA8DDD0930A3B996BB6ABC4F55DE74535D035C764BD38749D3A455D12F3DE722B6A97B01FBABABF372C8ADAB0C331E60BF7B64A7B7ADB3DA22636594495EE6CD21FA067B210CC4741E14D72E090711D71B6E5D3A6DB567610B0240775291E6E96D34",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "45b881c1d195121ff237cb338fa5224d6cc1932289c590ca22fb703faa06d901",
+              "plaintextHash": "711f329a359379f3ba39b70c38ac17aa7ecd216a9bf069e6eae9b9f9daef54df",
+              "iv": "A6ED8925B6377B4A1E4568D1",
+              "tag": "FE77B556A196C9A0D0565982AE88C670"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "f9c738ff-3a74-4174-a94e-08333a18797d",
+            "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-token-escrow",
+            "version": "v1",
+            "manifestRoot": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+            "amount": "40000",
+            "payer": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+            "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+            "condition": "A0258020F5319A2B076FE4173BF6526CCD8FF06CF4D0C043698476E03D434EA3CBB2F60B810120",
+            "cancelAfter": 847356441
+          },
+          "pubKey": "EDD8B52AE076421117D60251283FB1F9FE43EAC3D8399A1DF5FF3B24F3F23F3D9C",
+          "sig": "0589C52CFCC4BEC1EE9B9641B8AD2E2BAE461BAF35553312E84EC4E66047958F052CC0D7C0F08AB1C1D1FA140E76A0602596AA45940A76D81F7672A4A758EC0A"
+        },
+        "key": "82BF55824F75AC1738AA512CDAD603C570A77A10839FA5CA4A6DFFE292AF5CC7",
+        "finishHash": "46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+        "ledgerIndex": 22133468,
+        "createHash": "9A629127945C3D91666302B42221F0876E3215ECD722AC61FAF99829A6A496DE"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 25,
+      "hash": "7d966f4f5a42414d0b3cdcef0d2b4d1ccd6152144947fe2db630a4cb0ec6de53"
+    },
+    "entries": [
+      {
+        "seq": 26,
+        "at": "2026-11-07T08:45:24.715Z",
+        "prevHash": "7d966f4f5a42414d0b3cdcef0d2b4d1ccd6152144947fe2db630a4cb0ec6de53",
+        "hash": "c3628d7a152af5e20971e672f16162a0cadc7f006673379eecb243fd12f0568f",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-07",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "09ce708bc727ebc2767cfff61f42a9b8bec6f6e14bd01928393eb6ec164329d5",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4920,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1920
+        }
+      },
+      {
+        "seq": 27,
+        "at": "2026-11-07T08:45:24.742Z",
+        "prevHash": "c3628d7a152af5e20971e672f16162a0cadc7f006673379eecb243fd12f0568f",
+        "hash": "5394f5783a9624650a74d2bc6d78a9a40f3bb3a85da1378c03a9f67a956b2f7b",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 3,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-token-escrow",
+          "selectedSourceKey": "xrpl-token-escrow@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 2,
+            "SKIP_LOW_VALUE": 1
+          }
+        }
+      },
+      {
+        "seq": 28,
+        "at": "2026-11-07T08:45:25.169Z",
+        "prevHash": "5394f5783a9624650a74d2bc6d78a9a40f3bb3a85da1378c03a9f67a956b2f7b",
+        "hash": "ffd08befbd3b941a1cc2d9b2da99be4fb592ba615482bcc8b701afb5948d1803",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "8B8DB825088AD8AB798E5F8956680C2302AA7B69A3B84E1D5EB307A6CF103A49",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-token-escrow",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 29,
+        "at": "2026-11-07T08:45:27.042Z",
+        "prevHash": "ffd08befbd3b941a1cc2d9b2da99be4fb592ba615482bcc8b701afb5948d1803",
+        "hash": "bd2596d6d68862e6e81bb554734573421a12b0e8ce4c21452bebdb76d1ba2eae",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22133454,
+          "invoiceHash": "8B8DB825088AD8AB798E5F8956680C2302AA7B69A3B84E1D5EB307A6CF103A49",
+          "lastLedgerSequence": 22133485,
+          "operation": "create",
+          "owner": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+          "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+          "proofOk": false,
+          "txHash": "9A629127945C3D91666302B42221F0876E3215ECD722AC61FAF99829A6A496DE"
+        }
+      },
+      {
+        "seq": 30,
+        "at": "2026-11-07T08:45:33.071Z",
+        "prevHash": "bd2596d6d68862e6e81bb554734573421a12b0e8ce4c21452bebdb76d1ba2eae",
+        "hash": "93e93dbbf5ac9267bf7e548b075081845d1494e89d7070eed825f44de62d76e4",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847356441,
+          "createSequence": 22133454,
+          "invoiceHash": "8B8DB825088AD8AB798E5F8956680C2302AA7B69A3B84E1D5EB307A6CF103A49",
+          "ledgerIndex": 22133466,
+          "owner": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+          "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+          "result": "tesSUCCESS",
+          "txHash": "9A629127945C3D91666302B42221F0876E3215ECD722AC61FAF99829A6A496DE"
+        }
+      },
+      {
+        "seq": 31,
+        "at": "2026-11-07T08:45:38.248Z",
+        "prevHash": "93e93dbbf5ac9267bf7e548b075081845d1494e89d7070eed825f44de62d76e4",
+        "hash": "968bd7cdfb2985dc0dc635d9fb82fb66eaccb7eaa85fb4e952434b7363ddad12",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "7b656ef6d26ddf0d94dae0ce411de7f80e5f79fba6f85d6bc57ee9847cd9fbf4",
+          "passageCount": 4,
+          "resourceId": "xrpl-token-escrow",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 32,
+        "at": "2026-11-07T08:45:38.250Z",
+        "prevHash": "968bd7cdfb2985dc0dc635d9fb82fb66eaccb7eaa85fb4e952434b7363ddad12",
+        "hash": "28a64999163710ccde9ba8462bcb6a6859e05bd77fd7284ae8b3869c53480595",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 33,
+        "at": "2026-11-07T08:45:38.251Z",
+        "prevHash": "28a64999163710ccde9ba8462bcb6a6859e05bd77fd7284ae8b3869c53480595",
+        "hash": "efa5ca8a697d0066841e7053e9372ab25635f2b3231174aa6b68b6b05331c7e6",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "9A629127945C3D91666302B42221F0876E3215ECD722AC61FAF99829A6A496DE",
+          "createSequence": 22133454,
+          "ledgerIndex": 22133468,
+          "owner": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+          "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2"
+        }
+      },
+      {
+        "seq": 34,
+        "at": "2026-11-07T08:45:38.251Z",
+        "prevHash": "efa5ca8a697d0066841e7053e9372ab25635f2b3231174aa6b68b6b05331c7e6",
+        "hash": "06dec410205745095c68c910ce77e589529ce7d3d5525ae0ccbdabea5b2c7d24",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": "336883d6-c305-4b28-ba3f-fb17880fa036:1:xrpl-token-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22133468,
+          "payTo": "rnwu7usenexHo7hdVBoN5YkMsjitaw5pSg",
+          "payer": "rBA3CbjQ8Y4skipmzL4nm8UZMJ9US7EeCC",
+          "receiptId": "escrow-46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "46BFEDEEEB9CBFE30509DDF0C3AF6029389B0086EE27B9981D3C9901149593A2"
+        }
+      },
+      {
+        "seq": 35,
+        "at": "2026-11-07T08:45:38.271Z",
+        "prevHash": "06dec410205745095c68c910ce77e589529ce7d3d5525ae0ccbdabea5b2c7d24",
+        "hash": "accb5876e92efc2ee2f048a394fa81d84f8ccd8758e23a47192b2d853e39291d",
+        "runId": "336883d6-c305-4b28-ba3f-fb17880fa036",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "8b4e114c94aac61c2317aabe890e826f292d1e7724b8fa9041689b613bd7da45"
+        }
+      }
+    ],
+    "head": "accb5876e92efc2ee2f048a394fa81d84f8ccd8758e23a47192b2d853e39291d"
+  }
+}

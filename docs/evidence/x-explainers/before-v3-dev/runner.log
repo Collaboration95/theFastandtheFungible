@@ -1,0 +1,54 @@
+D01 MISS answersIt 0 DONE violations 0
+D02 MISS answersIt 0 DONE violations 0
+D03 MISS answersIt 0 DONE violations 0
+D04 MISS answersIt 0 DONE violations 0
+D05 MISS answersIt 0 DONE violations 0
+D06 MISS answersIt 0 DONE violations 0
+D07 MISS answersIt 0 DONE violations 0
+D08 MISS answersIt 0 DONE violations 0
+D09 MISS answersIt 0 DONE violations 0
+D10 MISS answersIt 0 DONE violations 0
+D11 MISS answersIt 0 DONE violations 0
+D12 MISS answersIt 0 DONE violations 0
+D13 MISS answersIt 0 DONE violations 0
+D14 BUY+CITE answersIt 1 DONE violations 0
+D15 MISS answersIt 0 DONE violations 0
+/Users/speedpowermac/.t3/worktrees/tftf/t3-e362fa09/shared/contracts/writers.ts:71
+export function validateWriterCorpus(input: unknown, options: { relaxWordLimits?: boolean; realWriter?: boolean } = {}): WriterCorpus {
+                                                                                                                                      ^
+
+ZodError: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$/u",
+    "path": [
+      "articles",
+      100,
+      "factMenu",
+      "p4",
+      "entity"
+    ],
+    "message": "Invalid string: must match pattern /^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$/u"
+  },
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$/u",
+    "path": [
+      "articles",
+      104,
+      "factMenu",
+      "p1",
+      "entity"
+    ],
+    "message": "Invalid string: must match pattern /^[\\p{L}]+(?:[ -][\\p{L}]+){0,5}$/u"
+  }
+]
+    at validateWriterCorpus (/Users/speedpowermac/.t3/worktrees/tftf/t3-e362fa09/shared/contracts/writers.ts:71:135)
+    at loadWriterCorpus (/Users/speedpowermac/.t3/worktrees/tftf/t3-e362fa09/publisher/corpus.ts:42:12)
+    at async <anonymous> (/Users/speedpowermac/.t3/worktrees/tftf/t3-e362fa09/scripts/judge-bank-testnet.ts:71:36)
+
+Node.js v26.3.1

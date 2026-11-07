@@ -1,0 +1,1172 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "97F8FBD126A10A459E6AE4052C0F6370D28A0F0DB5041E5D51CF699DEBC9DB57",
+    "account": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+    "head": "0f5263c875dcd7504d7b7cbf570b733dd3b36d90584b4b47415218b8cc7a8a3f",
+    "runIdHash": "04a3519a96910f3310e0193cacaff0aac6fc83a6897c07fbe8fc821418466038",
+    "ledgerIndex": 22133419,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "sourceKey": "team-x402@v2",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-x402\",\"v2\",\"p6\"]",
+            "claim": "EscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation.",
+            "citation": "[\"team-x402@v2\",\"p6\"]",
+            "spanId": "p6",
+            "passage": "EscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation.",
+            "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+            "grantIntentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-x402\",\"v2\",\"p7\"]",
+            "claim": "Buyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds.",
+            "citation": "[\"team-x402@v2\",\"p7\"]",
+            "spanId": "p7",
+            "passage": "Buyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds.",
+            "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+            "grantIntentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-x402\",\"v2\",\"p1\"]",
+            "claim": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.",
+            "citation": "[\"team-x402@v2\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.",
+            "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+            "grantIntentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-x402\",\"v2\",\"p3\"]",
+            "claim": "Every writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts.",
+            "citation": "[\"team-x402@v2\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "Every writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts.",
+            "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+            "grantIntentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-x402\",\"v2\",\"p4\"]",
+            "claim": "Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.",
+            "citation": "[\"team-x402@v2\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.",
+            "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+            "grantIntentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-x402\",\"v2\",\"p5\"]",
+            "claim": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.",
+            "citation": "[\"team-x402@v2\",\"p5\"]",
+            "spanId": "p5",
+            "passage": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.",
+            "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+            "grantIntentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"team-x402\",\"v2\",\"p8\"]",
+            "claim": "LOCKED principal stays reservedMinor; only RELEASED becomes spent. A CANCELLED receipt records zero spent principal and the cancel hash, rather than inventing a refund Payment. Cancelled authority cannot be reused inside the run or wallet day. Public API/SDK intents and receipts carry escrow.state, owner, create Sequence, deadline, transaction hashes and proofOk; no secret or blob. src/ is unchanged. The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom. After creation, refreshed validated balance already excludes principal; it is not deducted twice.",
+            "citation": "[\"team-x402@v2\",\"p8\"]",
+            "spanId": "p8",
+            "passage": "LOCKED principal stays reservedMinor; only RELEASED becomes spent. A CANCELLED receipt records zero spent principal and the cancel hash, rather than inventing a refund Payment. Cancelled authority cannot be reused inside the run or wallet day. Public API/SDK intents and receipts carry escrow.state, owner, create Sequence, deadline, transaction hashes and proofOk; no secret or blob. src/ is unchanged. The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom. After creation, refreshed validated balance already excludes principal; it is not deducted twice.",
+            "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+            "grantIntentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "How can an XRPL account require more than one approver before an agent's payment is released"
+    }
+  ],
+  "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on x402 headers.",
+          "tags": [
+            "x402 headers"
+          ]
+        },
+        {
+          "text": "No accessible evidence on  budgets and one charge per intent.",
+          "tags": [
+            " budgets and one charge per intent"
+          ]
+        },
+        {
+          "text": "No accessible evidence on x402.",
+          "tags": [
+            "x402"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XRPL.",
+          "tags": [
+            "XRPL"
+          ]
+        },
+        {
+          "text": "No accessible evidence on Testnet.",
+          "tags": [
+            "Testnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD.",
+          "tags": [
+            "RLUSD"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XLS 85.",
+          "tags": [
+            "XLS-85"
+          ]
+        },
+        {
+          "text": "No accessible evidence on stablecoin.",
+          "tags": [
+            "stablecoin"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DEX.",
+          "tags": [
+            "DEX"
+          ]
+        },
+        {
+          "text": "No accessible evidence on reserve.",
+          "tags": [
+            "reserve"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD escrow blockers and the TEST SGD substitute.",
+          "tags": [
+            "RLUSD escrow blockers and the TEST-SGD substitute"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rlusd.",
+          "tags": [
+            "rlusd"
+          ]
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "conclusion": "EscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation. Buyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds. The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase. Every writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts. Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt. Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings. LOCKED principal stays reservedMinor; only RELEASED becomes spent. A CANCELLED receipt records zero spent principal and the cancel hash, rather than inventing a refund Payment. Cancelled authority cannot be reused inside the run or wallet day. Public API/SDK intents and receipts carry escrow.state, owner, create Sequence, deadline, transaction hashes and proofOk; no secret or blob. src/ is unchanged. The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom. After creation, refreshed validated balance already excludes principal; it is not deducted twice.",
+      "claims": [
+        {
+          "id": "evidence-[\"team-x402\",\"v2\",\"p6\"]",
+          "text": "EscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p6"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-x402\",\"v2\",\"p7\"]",
+          "text": "Buyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p7"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-x402\",\"v2\",\"p1\"]",
+          "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-x402\",\"v2\",\"p3\"]",
+          "text": "Every writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-x402\",\"v2\",\"p4\"]",
+          "text": "Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-x402\",\"v2\",\"p5\"]",
+          "text": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p5"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"team-x402\",\"v2\",\"p8\"]",
+          "text": "LOCKED principal stays reservedMinor; only RELEASED becomes spent. A CANCELLED receipt records zero spent principal and the cancel hash, rather than inventing a refund Payment. Cancelled authority cannot be reused inside the run or wallet day. Public API/SDK intents and receipts carry escrow.state, owner, create Sequence, deadline, transaction hashes and proofOk; no secret or blob. src/ is unchanged. The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom. After creation, refreshed validated balance already excludes principal; it is not deducted twice.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-x402",
+              "version": "v2",
+              "spanId": "p8"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "No accessible evidence on RLUSD.",
+          "tags": [
+            "RLUSD"
+          ]
+        },
+        {
+          "text": "No accessible evidence on XLS 85.",
+          "tags": [
+            "XLS-85"
+          ]
+        },
+        {
+          "text": "No accessible evidence on stablecoin.",
+          "tags": [
+            "stablecoin"
+          ]
+        },
+        {
+          "text": "No accessible evidence on DEX.",
+          "tags": [
+            "DEX"
+          ]
+        },
+        {
+          "text": "No accessible evidence on reserve.",
+          "tags": [
+            "reserve"
+          ]
+        },
+        {
+          "text": "No accessible evidence on RLUSD escrow blockers and the TEST SGD substitute.",
+          "tags": [
+            "RLUSD escrow blockers and the TEST-SGD substitute"
+          ]
+        },
+        {
+          "text": "No accessible evidence on rlusd.",
+          "tags": [
+            "rlusd"
+          ]
+        },
+        {
+          "text": "No accessible evidence on EscrowFinish fulfillment fees and XRP drops.",
+          "tags": [
+            "EscrowFinish fulfillment fees and XRP drops"
+          ]
+        },
+        {
+          "text": "No accessible evidence on fees.",
+          "tags": [
+            "fees"
+          ]
+        },
+        {
+          "text": "No accessible evidence on mainnet.",
+          "tags": [
+            "mainnet"
+          ]
+        },
+        {
+          "text": "No accessible evidence on compliance.",
+          "tags": [
+            "compliance"
+          ]
+        },
+        {
+          "text": "No accessible evidence on KYC.",
+          "tags": [
+            "KYC"
+          ]
+        }
+      ],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v2",
+      "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
+      "publisher": "ResearchAgent builders (team-authored)",
+      "body": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.\n\nEvery writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts.\n\nSome XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.\n\nRelevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.\n\nEscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation.\n\nBuyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds.\n\nLOCKED principal stays reservedMinor; only RELEASED becomes spent. A CANCELLED receipt records zero spent principal and the cancel hash, rather than inventing a refund Payment. Cancelled authority cannot be reused inside the run or wallet day. Public API/SDK intents and receipts carry escrow.state, owner, create Sequence, deadline, transaction hashes and proofOk; no secret or blob. src/ is unchanged. The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom. After creation, refreshed validated balance already excludes principal; it is not deducted twice.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase."
+        },
+        {
+          "id": "p3",
+          "text": "Every writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts."
+        },
+        {
+          "id": "p4",
+          "text": "Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt."
+        },
+        {
+          "id": "p5",
+          "text": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings."
+        },
+        {
+          "id": "p6",
+          "text": "EscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation."
+        },
+        {
+          "id": "p7",
+          "text": "Buyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds."
+        },
+        {
+          "id": "p8",
+          "text": "LOCKED principal stays reservedMinor; only RELEASED becomes spent. A CANCELLED receipt records zero spent principal and the cancel hash, rather than inventing a refund Payment. Cancelled authority cannot be reused inside the run or wallet day. Public API/SDK intents and receipts carry escrow.state, owner, create Sequence, deadline, transaction hashes and proofOk; no secret or blob. src/ is unchanged. The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom. After creation, refreshed validated balance already excludes principal; it is not deducted twice."
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v2",
+      "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "What x402 headers an XRPL buyer sends, payment and delivery failure modes, policy spending authority and retry idempotency.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+      "family": "team-x402",
+      "facets": [
+        "x402 headers",
+        " budgets and one charge per intent",
+        "x402",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-x402",
+      "relevance": 0.5038558959496166,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-x402",
+        "version": "v2",
+        "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+        "pubKey": "ED909966AEF1703819BBBFB5698349B283C8091380FE7EC09E4E7093E39259936A",
+        "priceMinor": 40,
+        "leaves": [
+          "8afdd7720a0f7064d46e54e11d2a8003da2ec93c9e1465da00c0e32feb6fecad",
+          "88296c1fa1c874bfc0bedf768552952698dff686d8cc5f44f53442729c400926",
+          "15ee05493c74ee7b2648dd817af00be57c0d9acdbdbd376f165b6f96e035a6ef",
+          "b9092b9b7339ae0fd0e8569be423f298e81730b0907d2895e617e3baecefe5a2",
+          "239ba91609c77ce9d52fb5cb1cd25d384458a85a70a2644a9bf9f0cc18b581d8",
+          "72e8de33e1bbe35838adddf9f8fbf4138731f751e289ad403e9c1550846960f1",
+          "7e1009de9a63d84ab390c932c4298428554ddffecc2c21e5886c6a294f20d315"
+        ],
+        "root": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+        "claims": [],
+        "wordCount": 528,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5038558959496166,
+        "sig": "8ADC5D0E818D0A359D81570FC11FF6EA2CDDECD3D793A90BA874D1C3B8BA4D6BE2FC56EA23D6BA4F124A4E98F3DFDD0F61677C1584FEBC7EE96E4A310A66070B"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v2",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.3491824310478862,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v2",
+        "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+        "pubKey": "ED909966AEF1703819BBBFB5698349B283C8091380FE7EC09E4E7093E39259936A",
+        "priceMinor": 40,
+        "leaves": [
+          "624dcb1177a8deae81a3ee7d28c1d0520e639927cedecb717b9857ebd27a1f47",
+          "4c29965e88538eb3f03aef706c711cfa6b50ed94ef4dbf589deb490f4885d397",
+          "3351094c545c536358231bd920dc51ff5c1b1f8e7e066f9e82984e94653ea294",
+          "d047b169a17c575601da1fb7a6800efb317c137001937233efe5e8db21efbe08",
+          "0693bbfc78695811de3c78a4447e75dd5e5b2484125e133816988f8db83e2027",
+          "e5408f217fef9c2ba516c637e7b45d4905993a8cc3cfd2ddd421459af3007b5b",
+          "112136802bb802996daa0ca4b2edb5f1d7ef9b9de732789a52c9fb236db96bcd",
+          "62d979cd99d2d57eeb9db4b4791f12720cc38a84a7f6dd3159146ffbe26a1854"
+        ],
+        "root": "f9fe22fe27eabcf0616615a5ad927ec3d25cbe9161e3a710f6870cec12e6749a",
+        "claims": [],
+        "wordCount": 667,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.3491824310478862,
+        "sig": "3B87E95F6F2BB4D9BCE02FD3130387441EC2F8B4EAF705F50893F8BCD2B60E61B1BAA35B043FF392DAF2FD1A5C7404C612F0B03384A32893D48ED017A6033906"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-rlusd",
+      "version": "v2",
+      "title": "RLUSD escrow today: AllowTrustLineLocking issuer permission and TEST-SGD",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Why RLUSD cannot be escrowed today without issuer permission, and what AllowTrustLineLocking means for token escrow experiments.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+      "family": "team-rlusd",
+      "facets": [
+        "RLUSD escrow blockers and the TEST-SGD substitute",
+        "rlusd",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-rlusd",
+      "relevance": 0.1286859116233681,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-rlusd",
+        "version": "v2",
+        "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+        "pubKey": "ED909966AEF1703819BBBFB5698349B283C8091380FE7EC09E4E7093E39259936A",
+        "priceMinor": 40,
+        "leaves": [
+          "989ff9367c30cdd61283df6c369b0e75d2051ee0cc1f5a6e1be396b49231b059",
+          "51f7404ddd5bd7e81dcdba8faf50f91433db90dccc590b79bffa455c0a3fe919",
+          "768ea82cb88ba20295316ad5063412cd47c6c8063c9a356261f1aea293bb11e7",
+          "0f1dd8cc297dad87c59e01877ab4aeb2c36bf595de0e500206cad6882b7ee23a",
+          "090470869aaa965c5e529995b08b15190f2787e0c0acb7f7fb1d29da2fb3574a"
+        ],
+        "root": "3736051656929082f99a820318159def6edbe53740ec24124b8523623f7a85a0",
+        "claims": [],
+        "wordCount": 543,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.1286859116233681,
+        "sig": "990173400BC22AE2F6FFB91EACF0CA4CBBE10E3C31AE01A6820A23E93FEF98AE4D5EFBD68A473C901F28A829A0029F4DF41BEE8F23C7031491BEC546F842B603"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-fees",
+      "version": "v2",
+      "title": "EscrowFinish fulfillment fees: XRP drops and SGD prices in the app",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Measured Testnet costs and accounting: how XRP drops differ from the SGD price shown in the app, including principal and fees.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+      "family": "team-fees",
+      "facets": [
+        "EscrowFinish fulfillment fees and XRP drops",
+        "fees",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-fees",
+      "relevance": 0.21847478338633197,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-fees",
+        "version": "v2",
+        "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+        "pubKey": "ED909966AEF1703819BBBFB5698349B283C8091380FE7EC09E4E7093E39259936A",
+        "priceMinor": 40,
+        "leaves": [
+          "c5ec238ecf0b73851ed4b4e97ea40a148bdd1586166b8357e6ab59198e732030",
+          "641635e979c0023edb3b939f7ab4827b31c9408a031609a18ccc21c554df4696",
+          "485382c8bfac65c585d8870f84d2bf43fce0d49681a65d8c0ff2923a181fdc5a",
+          "ecba0f691aa5252442b09bdd4047f9360e794a70649076e7b2079e3472456200",
+          "4ef227edab5a2f307bedef060b69f175a3f02216806cd6e491eb016c1de80046",
+          "3ffd385e3118857de9fb932c404ac7a720ff692a629418054069382d0c8301e5"
+        ],
+        "root": "946b01c385319808624d27bf0784231b801694446c072c3517ca24a611c9d5b7",
+        "claims": [],
+        "wordCount": 463,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.21847478338633197,
+        "sig": "D7F4419A87D432951E77CF8A92E0661DCB7C4C2396A7023995C0E48CF13D41BCFAB8A5CB4F3704EB319B2CA06BE6B265BD8C68123A696965EBE3C2C2CD81740C"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-readiness",
+      "version": "v2",
+      "title": "Mainnet readiness: real money, compliance and KYC boundaries",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "What Testnet evidence supports, what remains unimplemented for real money, and why identity credentials do not establish regulatory approval.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+      "family": "team-readiness",
+      "facets": [
+        "mainnet",
+        "compliance",
+        "KYC",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-readiness",
+      "relevance": 0.06695321362690183,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-readiness",
+        "version": "v2",
+        "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+        "pubKey": "ED909966AEF1703819BBBFB5698349B283C8091380FE7EC09E4E7093E39259936A",
+        "priceMinor": 40,
+        "leaves": [
+          "c235b538c97b10ad3cf54312cffb0531d30ac0059ac933a80445b08e0b2520ce",
+          "431665624af37d755b01a9121c95763b21bba202384a5e6493ba6a6cd90ea4ab",
+          "ec452a1bc873daa47e5015ca998a2ede2de3fae25f2824e093f78cd400b04b55",
+          "4610993165bd02f33e3ba22161949c9ede79a68cc419e41827b5379ebb03428b",
+          "5fa38caa826305901d2f85b443c9927fbfd45db370de62cd9f05231eb73c6af4",
+          "d3874fc366a684e2e1285f2fc8ea4d65f6c1beef2212e31dfc3398ffc2a940fa",
+          "1a93910f54880b254af2728889e5bb70c40e7f89902997828dbf4d38feca713a",
+          "6c458d6f6792d70f05c5be8c3630031ba8e55cf649991d9f61292b3975bb6655"
+        ],
+        "root": "8a3eb4538abc8b18381a8c18fb029a7a12fe5582114a7c35989de77e81a495ba",
+        "claims": [],
+        "wordCount": 640,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.06695321362690183,
+        "sig": "051668E474FDABA7510605E2BB529DAE127D11C6F8A4144071BA7B5319D933F91C4B6DDEEF362484BF6378A9BE622D8AE93F77209D2E30493EB31CBBC3EAD60F"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22133417,
+        "owner": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+        "cancelAfter": 847356262,
+        "createSequence": 22133326,
+        "createHash": "BD622BC05A9EFFC23E7C478A00CF3A3ACF7BD341E307AD671796AC6C098D7B5D",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+        "proofOk": true
+      },
+      "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+      "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+      "profileId": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v2",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-07T08:42:26.890Z",
+      "submittingAt": "2026-11-07T08:42:26.892Z",
+      "settledAt": "2026-11-07T08:42:44.734Z",
+      "quote": {
+        "profileId": "team-builder-notes",
+        "resourceId": "team-x402",
+        "version": "v2",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"team-x402\",\"asset\":\"XRP\",\"cancelAfter\":847356262,\"condition\":\"A025802084EDE4CA08DEC873821B7C2E65CA0475E11B190C060A1D410D2D68958C20D7FF810120\",\"intentId\":\"dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2\",\"keyReveal\":{\"ciphertextHash\":\"147036c9025ec808e14ffc5f4d884762ffa82ed9e7eaa6d8b16dc245365a5f1e\",\"iv\":\"A893E81FD6B321D93FA5B2A2\",\"plaintextHash\":\"50ca1938ad5014d5e79a0d7a4d2d8d0cf0bafd87cfa6095879f74abcbc457d81\",\"tag\":\"88489D96F941E6BA833C8B20B6F49D7E\"},\"manifestRoot\":\"5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1\",\"network\":\"xrpl:1\",\"payTo\":\"rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur\",\"payer\":\"rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9\",\"publisherSlug\":\"team-builder-notes\",\"quoteId\":\"8d8aac6d-796a-46e2-b6ba-b38430c6d7af\",\"scheme\":\"escrow-v1\",\"version\":\"v2\"}",
+        "quoteHash": "DA4C70BA92BDF28A8B160CC0ABD8BF889D38F4E0BD96709F31A424C35651D6C8",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-07T08:43:26.889Z",
+        "contentDigest": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+          "amountDrops": "40000",
+          "invoiceId": "DA4C70BA92BDF28A8B160CC0ABD8BF889D38F4E0BD96709F31A424C35651D6C8"
+        }
+      },
+      "paidPath": "/w/team-builder-notes/articles/team-x402",
+      "receiptId": "escrow-9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+      "txHash": "9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+      "resourceId": "team-x402",
+      "version": "v2",
+      "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+      "contentDigest": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+      "grantedAt": "2026-11-07T08:42:44.730Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22133417,
+        "owner": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+        "cancelAfter": 847356262,
+        "createSequence": 22133326,
+        "createHash": "BD622BC05A9EFFC23E7C478A00CF3A3ACF7BD341E307AD671796AC6C098D7B5D",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+        "proofOk": true
+      },
+      "receiptId": "escrow-9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+      "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+      "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+      "resourceId": "team-x402",
+      "version": "v2",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-07T08:42:44.734Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+        "ledgerIndex": 22133417,
+        "payer": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+        "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "147036c9025ec808e14ffc5f4d884762ffa82ed9e7eaa6d8b16dc245365a5f1e",
+          "plaintextHash": "50ca1938ad5014d5e79a0d7a4d2d8d0cf0bafd87cfa6095879f74abcbc457d81",
+          "iv": "A893E81FD6B321D93FA5B2A2",
+          "tag": "88489D96F941E6BA833C8B20B6F49D7E"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "8d8aac6d-796a-46e2-b6ba-b38430c6d7af",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-x402",
+        "version": "v2",
+        "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+        "amount": "40000",
+        "payer": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+        "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+        "condition": "A025802084EDE4CA08DEC873821B7C2E65CA0475E11B190C060A1D410D2D68958C20D7FF810120",
+        "cancelAfter": 847356262
+      },
+      "escrowCreateHash": "BD622BC05A9EFFC23E7C478A00CF3A3ACF7BD341E307AD671796AC6C098D7B5D",
+      "escrowCreateSequence": 22133326,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+      "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v2",
+      "payee": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+      "payer": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+      "invoiceId": "DA4C70BA92BDF28A8B160CC0ABD8BF889D38F4E0BD96709F31A424C35651D6C8",
+      "ledgerIndex": 22133417,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-07T08:42:26.890Z",
+      "settledAt": "2026-11-07T08:42:44.734Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "team-x402",
+      "version": "v2",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-x402",
+        "version": "v2",
+        "wallet": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+        "pubKey": "ED909966AEF1703819BBBFB5698349B283C8091380FE7EC09E4E7093E39259936A",
+        "priceMinor": 40,
+        "leaves": [
+          "8afdd7720a0f7064d46e54e11d2a8003da2ec93c9e1465da00c0e32feb6fecad",
+          "88296c1fa1c874bfc0bedf768552952698dff686d8cc5f44f53442729c400926",
+          "15ee05493c74ee7b2648dd817af00be57c0d9acdbdbd376f165b6f96e035a6ef",
+          "b9092b9b7339ae0fd0e8569be423f298e81730b0907d2895e617e3baecefe5a2",
+          "239ba91609c77ce9d52fb5cb1cd25d384458a85a70a2644a9bf9f0cc18b581d8",
+          "72e8de33e1bbe35838adddf9f8fbf4138731f751e289ad403e9c1550846960f1",
+          "7e1009de9a63d84ab390c932c4298428554ddffecc2c21e5886c6a294f20d315"
+        ],
+        "root": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+        "claims": [],
+        "wordCount": 528,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5038558959496166,
+        "sig": "8ADC5D0E818D0A359D81570FC11FF6EA2CDDECD3D793A90BA874D1C3B8BA4D6BE2FC56EA23D6BA4F124A4E98F3DFDD0F61677C1584FEBC7EE96E4A310A66070B"
+      },
+      "salts": [
+        "6f6a5446c5af1af78c187270a4122189",
+        "53bc1843a8575e23006dd58a4549ce64",
+        "dc92c37a0c1631b72069e7c7632a38b2",
+        "ec6b1acb8febec25ba275f44a102d063",
+        "2e22ccc7857d17fe9c81fca7f7b55ed1",
+        "db7c21a21e3a65a2dae44f9fcaed5bed",
+        "e9eb76ea57ed4355033628414be4973b"
+      ],
+      "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "E09A70F54EDE1D2F022BA926C567D086ED255A5698F70735EFCD41AAA76559EA82ADCE0ADE13E085C47A3522121FE746AC2F05FE2470AE69698CEEB3466B4723833F17DCB8E967F5B4A00608B0F3C84E1FD5BCA7F8542B2059691A27DCD49548B789DBB36E44B6C17804550BBC68C0FE9FD8F6429392230DCD8E770014344E7BFC3DFAB0A78B5217840F1D39441597390AD84DFD8E62123EC7F427B5550EFD62651D5DE8C9412D72529E33402247C47CC44DC063946D69652DE74DFBC1A35F78BC2D3431C1B6D3DE518A1D23425BFBC14500A6148C91E162FB2FF3DFAC0DFD0224A746D18F9BD8A00861563BD8BD73B9B18C3516F43F6C02760265F751FD7C0BF76A063CE967CD37DF09075756B28ABE9F3E8138E3AD50160441A0F4024F107AFB9AA74D4F7CEE54F3EE35727AEDBCEC442AA56008B18533585DE0505A98172D7C4D79EC43F7EBCC15942264DDA808EA6E5F4BA3BE55ED42B16A53E23DCC1A1AEC77FE29EDE4C96C8EE62B1C97AF8397993BCC31175AB1BFE010E6F89333B2C5F4CD66E6975E7A79F967F1862933581266B6FBE375B3A72463055B457E22B1F812C94303DCFDAB4079F704C6E6FD56F082DBF79ED0AA175B1AB528ABEAA08569321C72AC80EB99A6950940D8C925305495C5E56D4308E639749D773D455829E37C5B654F6F5A3F09DE5652E09B7B36F5A8E5DE6CBB57E2DF79C266B3DD76515AA17BAC1FFFEF455BAA4AAC7628EF0245340D4AD0DC6EBCB1A458DD1E25C5E072B3419A947A064DF7E1DC1BCD8C216CA5C038C5D273F2183457521A6105797BCD46A208D7D705231D5AFBE522E64E465673C45D8B54F09FD2C9DD75DF9281288A47F3F60F63010F95CFE5ED268E869A2055B06145E6B7E64C7E45C38943BBBBA88F864127C987601265EF754C313893CD6F595E1C6B123D72064C3E7FCAB4D33D9EE49E39E1B0C6843E2AB2EFAB44F1183E9B6169B93D83C5DE8BCDD48E6BE1095F7C9ED65F0933CB20CEBE8088DCCEFF3DAC0A399D48C6CDE7CD82FE8E94F881F3E9908B94C46E5EBD2B24FA0BF091983BAA1EC94DFA51801D032252026A28FF47AE807729249854FD655CF046E640853162900B514413B488A3AC23CA3BE00A3AF079CDF435299C161A73E66E1DB69B75A2F68D9FD22000E1B782784498A8BBCAC18264942F55F7932E058FF9912CFECA444555AD00C622CCFFB9AFDA89703EE9318B637105B79F1197E98B734732C4AD276ED4CADB599C552E5974052BB7A9E6891EEE7A4FBE903681F81F5DD84CAB3DCE11C04B1A11F746E487859E1B438B93BEB3F68BA17B97317A7292170C7EA084628DAA42A6EA29E16EC52B67445ED37B4948244134CACC0E281B76740E82D71CA76C6217A95B95734A0DF6CB156AD89C6451E0A37DE60636F54D43A98BBA95E49CD01CA3FD4FDA9F6A101A3A5414803D725DDAC0E730737600C1AE729B6DA31C9629F55444CE357D589647D94599CE9DF9481DA91DEA79BA110D78E4FACC882ECF9D27EA3D4D9FC4A3575DCFABCC6E83BE6BE0417FD4E50F8FCC8D111D806ED6BB434E4C3E7896421F377EFBB7340E5F05FEB6A1A173C0367F00CFD67249929DAD75B48A54CE278EA18CC0BB59763E65DE8AB27E2E28A7F6D3DB3837C21C795EE02D4BB3AD03680F445F2CA60578BA8AABAEF085B404F4F350EBC4F976E5FD603F9A360259B577F83EFEB22AFF1CCFB9018EACEB9D80518162EF31048510C150A5A0DA9E8FAD0D65665AB11C94C9692BBF09FD1A7A258D864933322B974D02E74E0ABF1585BC3241775434F67AC717BC06E59A38E72706191402B82995AD28916E1506A0FE1C6281A10A6E08B71E70B1C99AF7E6D0E23ABF6D3E31B56703446F57E9C022DEDE791AA01B0DC3CD5027561E62E451B7EF43372A095147489A8E4256C33EDEEEAD00BAD876B82D4F8FDA44A92CE219981804C2D816D9D6A2B9558D81CD4FA118CD87AF00BAC739F041FB4C38C2559476BF46662204AE270ADFE422DDAD268A225D6479FA0BDD7E920CE9F2CA8CE1E98B6531ACBB97CEA8654DD55F01C0083E98A53C3EF1B6B38F365ECF667DAABAE22FBE3773373182895604E2351FECD23020ADF3FAA2C109810FC1C9DA9EF4C6E0ABF5AEDC8D3F843EFBBC8984B14ADD70A1095BBA2A4C556521C5F5C37E4B296C3C0A610547EC2D0C409BC67D8FE0F30E498F3492036FEC1C5F003C8529C232A909FB424EBC91D916061B33D04ECBEB5E44F2788A02812DBCE16E0130A42A4A6F3F816D3BEDABB3CDB16CEF22D28ADF9ABA18B09E8450A4C0D2489CC5DA526AC751AAB2EA26A5851ACF517DD4C09E94D0153A5033D35478FA170A061222DC5A52E8FD45563A3D23E7292272B189F3056D13358AAB929E1BA09013080094E62BE7144DFDE5B9C353A8D4F10B4D2C672DFFA98A2BEBBBAFA576B472BD9FF207D810731AA563FD261065CC7912EA2670739A69436763331D726650FF134241917236885D4DA8197F2E1C84254DD9BB5ED3C2CA6B3FC1BC98972B07F42857F64BD87E32C71256DDBF50B9F67A8FD77573799A3DF6082D4D6602F2BCF03DDD3F5B29383EFA366637B6E992238B1D51EE3BFDBE7F63E5619B36425961A1B3770591CC218B2C7EF89ABE34CF39F0FF7C074C948846CEDF73A5CF0FEECF16140A5C3CDBC9B1BA178A4F8CA2DA4F27BFCA617A31528D87A5FE70BFEE65620FF968A85D1FB44069CE4AA71563F32FD06F23A1D245671322D6BDAFEE6D28999F73B5BEE3657F6E89D059FE743092DE2209B13538E51FC55384FB837CCD8BEECB811201AC15A947DD13A13392F8A5CA0AC3AB247241B2DC6BB05F30357A790F6A54030BD19BC2CA28916C623E365E80C8F75A2FF77F7150C845C6ACE07F105B156B95BC711A6120FB303B3C8C2D8C4E0B2E9A3259BE3E463AC420CD8CF42C7EF94615844D4755F678496A764D7C5BB2925BEA1F7D27026CFB1066992A966C77EE579A0FAB323BEF34138EDFC517FF44475809D5CB7EF0F0DA4A843B2E9240AE632B46D2AA0260D526C1CA25614DB413054DADFFEC6E8CF7ECA4DB6AB09F5B064D24C2F68240728FF6BD8CBF8123033A66E10E8A2D4B7948667EC5F7BF1920ED146F73527C4BAE071063FA03FF9014A9E685262357E839F51C7CCA8D51E4278448B558D636F7891088F3162B6B8C6572559A0869B805AA4DF95FE4C2E95DD00618B971D0C314A3EC49044422EA781D9A4C5F2B75E52ED21DD586E5E6C56BD277E15A6F3103FC82D2758C35016D6E1D897B94DE2E824313576D69EE983F713BCC354F3D5208D37A1F8F29E49657632CB7B68C0E1802D197A15767E352E0D035B904A49EA90A1597A0DE9F8FC309C892C733624CF14816E43F63A089CA843BF260D523789F49C0AC0F8238B711A001BBA72329D45D48F1B5CAECA9252BEF1362004B9DA5A3E4D3300D51689288B1D08D536887734CE436AB6AB51DDB0B156073C86377D97B380263E0567048BB5F71D18C09667A792C5AC33683DFCE81C83BA9E5566E57E7A83AEE30430B0355BDD0EF24FA84212BA0AE6B615A07C6CA091BB1DD2EE410FD2E902D97AD149C1FD095EC73C378ABA81E2B385FA4BB741C01BE27D79BFA28549869ADA29A4A3DB92004A7E499E2A1F0DE0DA2A2106CCA30BAE6F85305E8A5433E067A4E84C7FC7FEDCCCBB41E1A68AAA3970F9C068C8E768B137127168690BA7460676B58DAEE9143FF716119A95593B589885B31646E71B549F94E9C52E793E48260CA95C581F78BD4F00698C78B17BB1C55AFAD97BA259B4C01305639B9D67B1E073DA41B0A276DF10D3B6034DB920F22B07356F98FE79395BAB16F4B49B721F95E033463D9A3D278B04C615F40CFDFB2CA94A5D0A047AE01E525980E7B502C15E2C90E3535007B7FDDDD538213608761C2C08E64864E2B8E072779AC01DC69CE9CFD2DB3969386D1D49136AC73CDCC94D58ED8E72FBA26F540B08445295FF65D6A2A0E561D175F919FEB7D9E80411ED1E988E4C9F68C9182D85DC31076FA782A270CC09EAFB7EFF763C50B832A0F39956A70D9AE8859528BAA16145CDFCCC6E87F62788F324169B7911E00031F67DC4F50A591D3C18594F48267B6CF9802A99B170696BAD74B881F2E325662BC845F0737CB83899A8819A075AC84EDE1FFB5E8D542A2D8BB597FD7294E8D5CB842F2F973A950C45D36E4474BB134717678F9FA32125171479DEF32FC23E8EB1D18C310D0C4333603F8B7EED692315CEFB93770F37B5731F798A19D962A74EAC4937A8DC131F5E1591F87D3EA468EC4FFE8AC93677D4759C29D27A606C89BF90D225E64D3FABC3EDF95DE403886BFCAB52A65B04E1685F4B65BBAAEBDF15EF67CC93D1CB7452034C31D92690BEC0B5AE4AF590DF158351B62079DE60836B0C3088E6120BC93F65DB4FBF1633BAF3C928121CDEC1397FD7E3661B2516C3494EA297058C8EB9E8EDF161F27C3AC6059C0BAEA4D7399958EFC6E2CCFC06FB12DF43D4C4F5A179DCA0E70F2C671EA374ACAE7F9F7E6BB10BD29F19F69751664495B2845EA4DF32235F378190723CB920F0B1B9C15400226883575B91975B9B73A59F72E84E12EB5512011FA2029718E288428C4148422A9A92594E6C96F8F21F279F64CEDE97ECE4865EFF0C74D6AF4532F4D8922E7261C513AE72000DDFD420994F4A1ABB96E1AD8A555FA457F532A1A9A83DEC028A21056FCDE6E782FB3C1558DAD894CD039092C34D67A0B42605FCEF71832064F1DC40DCB1D89DCE06F58D2524D450D04F5EED80FF7698AD40E358EE8243D9F890803918B3293D92AD6A9F1AF062654A5D55684FA9AFC50DC4E6085A02011B3BDFFDB5F27EB8415AC38E3ABBF3145F228C96D33BAB0FA9B1AC4C924057B2E3574C70A0C583657505130AF53AE42175DF9FBAAC418045588F400E59E448B0FCEED02958E0523550D68F778E606982A5FAF94BFB4ED9ADF529E257C8FE16B58D311923F6ED54ABFB2CE3E4AD97B2F64E7EE691F668C5C2B01A46AE30AD9CEC44AC5A2CAAA9FE80548EF80D333F0CCEC54C62FD43BFB377C15D998855BC92230024D957B7F4D7025BA1E21F38A90EE79AE09C6B8B7F63F75ED2CC67D47311823CB3C0209D285579F6E32BB736DF6D229A36E97099F7D99D1A0F82DFA4C1968D0B79FA1A9A6F50A6E26519CA4B506662726523C21627A761C97AAD1AA8D5A6E1CF2D27F9AB538906942F788E01A9A9EC12959DE3699084AF43C2AB426D757890875917A849366628105DAA562BA64BF17025A8F818B04A05C142D0C88DEC41FB0BA3673141893C958ED04587CD9B7E8EB17C4461292F93425BDC70BA06019CAB53D6430E4ADD254CDAE626E481AE39E1921E8F199FDEF1A7F9E60E408E9FB55089C249E3F353BAF641FB00556EF390E4E68A3DDE496747949F0E36C7B7188AF7234F0C997F58E75C5915CCC74573C02E89B86D28FDFF189D8EDFA663E05979B852552A4F9B74D111598126CB149D5B9AE7AEE920ED985AEE221EBD3A600A8F236577E0F5E64C41A375F7A3C0B043E9D505EBD825A354DEEAE3011DE7FFF0991A57D8476A9F07612E3A2F605CA7E4AFEF636F29AE0BED4B1CAF1D40609524F1D0612F9F77B4A82190E9B36BF0FDCBFBA5B4DE510506181974C545E04EA40F137B5D7F2C59E9827CAA3B18FFE40F96E38F0453DAB7451BB5E6CD3BEB0822616BF5020128EFEA9471B65E158D1D82EC7FEC822841EA07358E0A736E14BCFDD8E0B05B7EA1BD1D1F32EBBE34B9E39913205552F6F946B21EAEA0A26DF1E4F0724BE6B9A42647B94BB8BB081689111B666EDC5A66466B50222262A89213AAAE65964D0869B05294ED40C4A3B788A454A0096BD42B57531ECE4FC2A8BAB70B098079784F63A54E4A159433695C107713893B635C29DB0B4FC782EE88C61A1A26DB1F09E32311E5AD2FAAAF7107830BB895F388056EDBBB770642C4CD55EF129104C48B2DA24AC0314DA8D574C2B65D6840102C76C1260332045629FD712ACE3EEFD752182655FD39BF33E9BDE6B836C9A887B634B9CB4158C431CEAEB8702FCD3EAEE9AC6A4A35353B64D0AF3EB5A9149B8E633BBBACC23CBCBF2ADD95A0805E4A5863439AD808924DFBC7F8C38241712E8967CC73B30CBCA5C46E5491F2E88BB62CA0DFABEAE363889407C9945491337D9241DF20457036D4882FE835C9FF72EBB152E8EF8C24DEB5BE14A648E6B9A99FF7D165CD6247D19A382698F2AA99F535AD6CF95678906175F4F5ED0FC9DFED5ECBF975337AA1500F0612BE74F3CAE3409E00127D39430C29E1EC30292A87A23D3EF7F6632571F9B1CC9C3C7575069FB708E5547F58FC218301A337CABF43ABA781B9A91CC5B681CE6A5546108CC2C542360AC3C65A88EEC51EE93B6FBE808AD4C27BB88564E5440478089609DE80CE1EE249472CEB37DA24AF0158A96A9EAFEAEA939A5B80E4C2E06FDFA25AA491CD034A8ABD805A224E4751B30A4B6F0B09D3355AB7CBC65B50344D7FBBD868BB9577F0FC41EFDAE43B0D35745BA3E5613A033683F831964BADB141E09315BE13270E0D55FD658C2F4379C22D3209F58A7F8BA65A92860B7462377BB51DEC913A97E4C163A6416DC928B13C1E19C977F1A39B71B821F10F051E0066B64A448B296B4F38D12468BAB3211E9D9C207564C2DE5418DB959F7A3B48C95B60101A41E44A1CC639DD5C17E4836BB0DAE7C982339A484F12EAA79AB9074A4142FA6F435D4C79A66AEB2F79D78A97B84EAF99B97DD218EB0288DAAC2073312169C0C19F80361DC4ECC09BFEA2E4C5714E3048F93EB05B699F4279D7A803B3EE67F2EF7EAC8873E9309F1296C6421D35AA66A099FAB8138FD8F9EBE7C6C7F0DA95BFDBD04A7AC4889129D834AB4171CB0238EA50F7F49070DF2EC98498B24A97DF11707F07975862BD575DF805CA3B29C49D1613BEB43F8EF3286B0F8681274BE04DF26DF40A15F4701491A68B38ADC34D0CEF1E4E9025D7EFEC835543C774DC7222E29A8AD6EB287229688D22AEF68E766570F33BB5EE4597E51410D72458E03DE99BDED121366EF5D30BF1B85C6744FEEBF971286767FEA52E921F8F92EA4AA59E0F1804C94A48B0A936CC17F86D57DCAC0313DCA63D2CB488041746FF1537A1C7352EF15E6B2712D450AAD42812F9E5C322DDA689BC4FD76D0FBA168504E04A2B9352B6F71882C39E95A64CD3F11B3975180F3A996326E3FBE110F2B391015A29301F7E8B29199E404A858D47BD92777886932AE9DAE298D9A5B3A158C38C55D66F7CA4F6BB88BECECEAB05E20BD28B6C45F1644DFC2F05B6936BF12805B870EE9ECF2A30FF3850E31DA33490BED0837C1C7B0754E950BEA7BBC841423DD3C989D36539AEBB5CE3304FDAA9D16E3E7FF1CDC5A7EFAD4CD9DD910FB9A28ADCEB5D7F652EA3632A6D43985EB4A54000101E51B3C139544418E3E95A37718E50AB4336F872A4C2664D3F704DE535222655B56503BCEBA6ED2258E64A04038F1349E97F86295650FC45561C412DACF2D559940C82C0FA51704774A575365E79CB4970B5DFEC95429E93D19842A4188B9378B89EC46B1FBCA4D16113D6020F9579AFA5E1F530970C68C3F5D43A1F96DD8FDA05A91A5681F01EC637156893FA767514CCA5AC81FC9915814FFA32F7EBAB5987D6954CF2EAD0A05343643A24AE86358944B8D4A861618B65DA8220B3C9BC8CB4261CCE7BB94A3D8CB6DCF2585D78FE990F6C8D72CBB4E3D46262078AEF1E9C0D7BB973AA37D16AB3FDBD92CB222B8E184930D8DFCC89662CBC4FFCF88DB52CC30A0BBC12B36C13310D82AD52A62A3173A22C1F90AAB2308B9B86AA3B0F65EE14BD5AAC12227BB0C6C4607D849D1DF2F61D8C9749871500A2E41265396AE35F7EA42E46D6A07C3FE5A18FF31E893B83F017B29578D1C5EB03A089FBBD339506E7AEAF845CAAD405359382B5B8502744180DF8D890940CC464D61B73EDEE3BD9A8A28FA9CBDCC1B476EC581B992C8BCA93160AE488E9124C20DC79CCDB91AD54959B44AA2C5777B7F5FEF96EFDD6455C6AC53CFC2EC6E31CE3359120BAB5CDF1AB93E7EA3F574855184B9A55697CA3121E9137642FF4653FD39E53490728C24EF7BA75EDECC3585533FAB59927C2A0BADD649BB216A4CAB8B6EF2ABD545320F5464FE2684F5D0CCC0C03679FFE72FFDD23C83F7E95B6B0993E33A6B017A9462E2A8A9C841D397DA42E6FFAE26281D24EC94F4DE12F16BC0BF29A312A94543001C27DD4C4927FB5D24E9854610709922077D7752FC052D896FBFA2F74CB634DD8BBDF5F9246645AF36088058E9FA327745D51C855311ADA1D9AA463DE591D5A9052F418446DE978DA87D6E2AA75BE43600A59B6F42E9533E4B62A23EF3A7D60815569672783CE3085EB53365ED7837277FDAF612A70CC05CCFEA9C4B6F796638E5801BEFF5770D1853E9E91C6E184C661232804FBF63589EB64BE8EAD29AD70FECC254E10A56BC4BBE1F13A7677492C91DD7B1510687B5D4D6EAADEE7CF2D149E8DE44864B5CDEA8614E050BA76F684EC1C71859EB07757B3D59F63D818451E901350054B190292F955298E2CDD778B013A87875CEAE1AF29BDE6CF4B2443A20A075F36920B7DFB766801564DA4B7576055DD51DCC1D0B0BDCEC77893342CD2296794E37D4B3EEEFC9B0C0FBBED6F4C25839AE57F9F53EA1E06121943425C97AEAEF107793A250CCDBC3C1CFCF7DE15FE945A2392E8845712DD8C362D135B6CC2654BE5A3A526EA1D1E06E4137A2149F33ADA3C626BCF931B79003929BC215EB1E6F9EDC119E3ED8C451B7A0A51B7928410786AE67613411C602F644AFDFFE5438992EDCF0BF35EA9F8B1D0761D4176F1114AC2CACD68F26905C1B1FD79055BFC415B530C5C5A20FC1B72644467DC83964244BE12430ACC4BC048B4947F86DAB2B29AE1CA6019D3B6CEE43225377EAFEF00871D448E7E535674F2AD93C1F80FEFD1D48348A4955B5216470B672D7DA3A8F324879788643C74C1366F3573AA391FCA3BB160C17FC0C88390D1CA2A5D168375D8DF8313E85CE2CB543ED42C51967B75C62688710738AB0CCC4EE61891C2BD372A608822CFED45B49CFDA11BC3C07139DF758137FB6F648C17CBDDF5F39FA6D005ACD7CF79DEF65A8B6999BC28AE103C88FF3345F0A61E48110BDAA54F2ED7490ECBCD44C6825E970A7F74E1C13F4AD7A31F3C8945BD9BE3EC128C7DBE550085E91FBCA3AD767C0C8747BA32474EF8AE6902EDFC7D0A9CA06441F83340E56D56537628651142BD465F911D14C16923F71FC182EEF54CC05CB768E0AC19671DCFB26FFE153932ABD1CD5C6CF83C7308991586AB676675D3D4924999DFE16D6AB9E6E20322262B335B28369B897BCF8DD6294D1214FE446869D2F6D8F468EE2BA4240F0FFA2C55234E67A9EDD597BEB952D5B88A887E0FFCEFD8C9E9747AB9F0CBAEFAA1B55AF454CDF7330ABB36ECB213FACFB5B99087920711528196B050C309CA1C472CD1CA2F4AB5DF246E4252DD46A478982F54B4750BE86C1AE25D83BCC724940B9A3653BF6251AEBBB0C8DEA1802639C0D1A4F2FE069A97FCAAE27AAD085B1A0EF105178A9821008A5DB8E3F73412DB4759C66100D68CB1F55E5A66652D8DE51CDDAA76D5547C09F33183E3B1AA615E58120185A9A701FD8C0D4308FD78E9A53319D4DA6CCB6F1E7F384F849CA54917CC867B1020E9CD3EE15E92AF94B0B127660B8259D768814ABF5527D020BAAA786CAC4921550EFF111FF91249CC9670F7D79E2A2454CC439907C7FEDD733D29AE1A6C7D4DF0E2D22DE4939742A2F3D07C79AE4B3CD5687FB2A47A7C9638C59AA8F272D9397BD04C603D33927C238228ADD693F99B9DF5D285A44B5A8FD32821F55BA7A9338A147FF7C842E41492D625B1FB1E75B1E5F6D982B8FB84860C42EE515A3850895E09E0A9EB47DD52AA6AC980F21BB4F610B24372F97C8C87DE1FBD45B85393A917BB6CC30550E9179BF1BAE36D4BAD63D5F5A530823E6918BF71580AFC32195459950EED396273DA77CA12E821548D02B42783F195F48FA6B22ED59C6F2B859E81634ECC66EA58A1646985406814742A08FA83EF36CCEAA002BD70DD74B89A6E8A69AF19E955641A3ACC9A7106F673B262F581068FB943FB2D86023EED5979AA04D8898E0E01FDFFE25BDB9CAE33A30D980265D37A10A33CD58C055DDC3B3E44E28E4B8BADD632FC2DF476EFA4F8B4DBD850EE67D61C96BB613B2500C8EBAA9B547D13826A5F1520313D51991CC4C92054A4D25E2C3CDCE64EA99098DF6E438B68C3351AF18D47D9E75E9970535B6192CD287498768D7DF4094C4C1D51591695D6D16F136436550BF132F94F40608E6BD1F7A3C68EC3D5BA5394F52316A74C073B5CAD6B41A1CB553AECC2D5C656E74EFD043892095FC171F1C1E0C0AC6A391DC891DB2207DF3EB3AEF7B8AEA582AD5C109F9B9DCAA23FDA05C4790405CAA8179D6EE543A7D5A4396C46073E0406F6052C1EE0DAB51A62DFD37F3BE9C58889512B3BC90C32805BF3C3C9BB6F19C4221B726C0143E04B5B34A333F94743AA367ACD9E79BEB80CE595F806D5B803496E9222C64EBCFFF3E24F2E81F72B91FF56EFAAD167AD37775516B61A9528B9C942805983796C2A244C73B3EE957A8C413EA1BAE69326E08422ABAA031FEC07A1497909A980F0001504C1CDFA64CF3C57D3BE7CD0C68203F711393C01E5897DBCF274F6B45646E58BEBD6DE5C907985B31D340A8A7930B61B02AEB35ED6B327B8F586DE8BB7189E367D986AAFDB5ED249420E3D221ECDB02B3E5C163E6A9C18E284262F4D9BA9BD2471054A62E5C48D82429ACB8F188838E84E0A082CA00DF6C30E45BFAD1B84972157A311CB1387BD3D31D304A0117741F4C3001F42327F62A4E001B65E4F5CF3338E8174CC1BDF2C86876A179837B4A278B90AB1F8341657CF3AD4484ED56D28993B013DC50A6FA2DF4A36C62CF5E91D453E71A1BDBD26F3B36CA2A30ED50D979F2C3047E181BD648E487464470C51B369E23D1DB6A4B3CB7D4D6E71FC0C8AD600002D2C3D4E67F7CF3E5C4689EB9918E4BA8C349338CC93011B0A98AD52FFDA40176612440C8A34FA64116DAC2E557F2A5318D011BDFE26F4C5EB740CB791B",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "147036c9025ec808e14ffc5f4d884762ffa82ed9e7eaa6d8b16dc245365a5f1e",
+              "plaintextHash": "50ca1938ad5014d5e79a0d7a4d2d8d0cf0bafd87cfa6095879f74abcbc457d81",
+              "iv": "A893E81FD6B321D93FA5B2A2",
+              "tag": "88489D96F941E6BA833C8B20B6F49D7E"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "8d8aac6d-796a-46e2-b6ba-b38430c6d7af",
+            "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+            "publisherSlug": "team-builder-notes",
+            "articleId": "team-x402",
+            "version": "v2",
+            "manifestRoot": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+            "amount": "40000",
+            "payer": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+            "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+            "condition": "A025802084EDE4CA08DEC873821B7C2E65CA0475E11B190C060A1D410D2D68958C20D7FF810120",
+            "cancelAfter": 847356262
+          },
+          "pubKey": "ED909966AEF1703819BBBFB5698349B283C8091380FE7EC09E4E7093E39259936A",
+          "sig": "AC6BEC7F5D54ECEF91F3F204F884C59139BC997A900E7C833FE028661285883D46CD7CF0ACEC82215873167CC752919D5D38CE20F542C51D4D46C899E87DD804"
+        },
+        "key": "C314719483641A3065CFC057F3AA6ABE2EF9E25B4B1D9BB50CC49D10DA0703DF",
+        "finishHash": "9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+        "ledgerIndex": 22133417,
+        "createHash": "BD622BC05A9EFFC23E7C478A00CF3A3ACF7BD341E307AD671796AC6C098D7B5D"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 67,
+      "hash": "8fb709968134d59c9e6707a6d3d6ec4945c5107e4b77269d898586e10bfd5cfb"
+    },
+    "entries": [
+      {
+        "seq": 68,
+        "at": "2026-11-07T08:42:25.161Z",
+        "prevHash": "8fb709968134d59c9e6707a6d3d6ec4945c5107e4b77269d898586e10bfd5cfb",
+        "hash": "d81d1593666f4fae4f1b96a9d6d43eef55ce72c0a5c9230f25f0f8e8258504c4",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-07",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "bc230bf48d5c501e4d3dea6f4bf76a10e8cc791448d8032578bd81ee1ee1c07a",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4960,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1960
+        }
+      },
+      {
+        "seq": 69,
+        "at": "2026-11-07T08:42:25.202Z",
+        "prevHash": "d81d1593666f4fae4f1b96a9d6d43eef55ce72c0a5c9230f25f0f8e8258504c4",
+        "hash": "b380bf7da2d41d401c5f1391f35fe898bcded2b1c4c53c68660c2d0c2f46cb7a",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 5,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "team-x402",
+          "selectedSourceKey": "team-x402@v2",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 1,
+            "SKIP_LOW_VALUE": 4
+          }
+        }
+      },
+      {
+        "seq": 70,
+        "at": "2026-11-07T08:42:26.891Z",
+        "prevHash": "b380bf7da2d41d401c5f1391f35fe898bcded2b1c4c53c68660c2d0c2f46cb7a",
+        "hash": "09b7a127bcf622751273816846274417d811dffe473a3a41e23b0b191f6d30d6",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-builder-notes",
+          "quoteHash": "DA4C70BA92BDF28A8B160CC0ABD8BF889D38F4E0BD96709F31A424C35651D6C8",
+          "rail": "xrpl-testnet",
+          "resourceId": "team-x402",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v2",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 71,
+        "at": "2026-11-07T08:42:28.981Z",
+        "prevHash": "09b7a127bcf622751273816846274417d811dffe473a3a41e23b0b191f6d30d6",
+        "hash": "2f92eaee4fce8d6b6dc7dea05a26e24fe238e099223ff70563ec1840a9001b87",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22133326,
+          "invoiceHash": "DA4C70BA92BDF28A8B160CC0ABD8BF889D38F4E0BD96709F31A424C35651D6C8",
+          "lastLedgerSequence": 22133433,
+          "operation": "create",
+          "owner": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+          "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+          "proofOk": false,
+          "txHash": "BD622BC05A9EFFC23E7C478A00CF3A3ACF7BD341E307AD671796AC6C098D7B5D"
+        }
+      },
+      {
+        "seq": 72,
+        "at": "2026-11-07T08:42:36.840Z",
+        "prevHash": "2f92eaee4fce8d6b6dc7dea05a26e24fe238e099223ff70563ec1840a9001b87",
+        "hash": "e2c2ace138813e24e4923df26fd164d2bfdafc52f655befc78357ca0d736787d",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847356262,
+          "createSequence": 22133326,
+          "invoiceHash": "DA4C70BA92BDF28A8B160CC0ABD8BF889D38F4E0BD96709F31A424C35651D6C8",
+          "ledgerIndex": 22133414,
+          "owner": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+          "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+          "result": "tesSUCCESS",
+          "txHash": "BD622BC05A9EFFC23E7C478A00CF3A3ACF7BD341E307AD671796AC6C098D7B5D"
+        }
+      },
+      {
+        "seq": 73,
+        "at": "2026-11-07T08:42:44.731Z",
+        "prevHash": "e2c2ace138813e24e4923df26fd164d2bfdafc52f655befc78357ca0d736787d",
+        "hash": "e77b76ebdb01cc1f79ca62f0f56866bd69eb9230a3fac667713daee03555b8e2",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "5e230de63afae4f82f8db5656a2e285fdc5daf9d3fc2c17d2abae891fc2e8da1",
+          "passageCount": 7,
+          "resourceId": "team-x402",
+          "version": "v2"
+        }
+      },
+      {
+        "seq": 74,
+        "at": "2026-11-07T08:42:44.734Z",
+        "prevHash": "e77b76ebdb01cc1f79ca62f0f56866bd69eb9230a3fac667713daee03555b8e2",
+        "hash": "72526934a444c46987ba6da621475fd896b3442c50cc92c3207383cc6635475f",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 75,
+        "at": "2026-11-07T08:42:44.735Z",
+        "prevHash": "72526934a444c46987ba6da621475fd896b3442c50cc92c3207383cc6635475f",
+        "hash": "bd171a9f739feb23cf47d64d2d656a061fa55f30c42b0473b2030d452bb317b7",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "BD622BC05A9EFFC23E7C478A00CF3A3ACF7BD341E307AD671796AC6C098D7B5D",
+          "createSequence": 22133326,
+          "ledgerIndex": 22133417,
+          "owner": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+          "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E"
+        }
+      },
+      {
+        "seq": 76,
+        "at": "2026-11-07T08:42:44.735Z",
+        "prevHash": "bd171a9f739feb23cf47d64d2d656a061fa55f30c42b0473b2030d452bb317b7",
+        "hash": "cae7d195bc52886d4996f9abe9802be218b869531592842bad659c3f7c372de6",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67:1:team-x402:v2",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22133417,
+          "payTo": "rXvLSu3m3FBdrmtwiFHGb1iuWHKB4gnur",
+          "payer": "rsFEgML71heP8rr1kBMgNtXMZjZ97iZhh9",
+          "receiptId": "escrow-9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "9B1876154058B74890128D70ED109C1144BC9EA9086A485705D4BF114F27807E"
+        }
+      },
+      {
+        "seq": 77,
+        "at": "2026-11-07T08:42:44.766Z",
+        "prevHash": "cae7d195bc52886d4996f9abe9802be218b869531592842bad659c3f7c372de6",
+        "hash": "67d4cfb3f303878e0035aae09a78130c3a96253fc36096b13ca8c44be92efdfc",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 5,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 2,
+          "selectedResourceId": null,
+          "selectedSourceKey": null,
+          "threshold": 0.2,
+          "verdicts": {
+            "SKIP_LOW_VALUE": 4,
+            "SKIP_REWRITE": 1
+          }
+        }
+      },
+      {
+        "seq": 78,
+        "at": "2026-11-07T08:42:44.775Z",
+        "prevHash": "67d4cfb3f303878e0035aae09a78130c3a96253fc36096b13ca8c44be92efdfc",
+        "hash": "0f5263c875dcd7504d7b7cbf570b733dd3b36d90584b4b47415218b8cc7a8a3f",
+        "runId": "dc61ccdc-64c8-41fd-8ff9-165d89d62f67",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "0192ac30265278dc8343c8a46e4e457a30d5ef3eaa57759826d402614e8d1fa7"
+        }
+      }
+    ],
+    "head": "0f5263c875dcd7504d7b7cbf570b733dd3b36d90584b4b47415218b8cc7a8a3f"
+  }
+}
