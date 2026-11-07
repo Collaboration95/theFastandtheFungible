@@ -20,7 +20,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **894 drops** | all six UC3 transactions (two buys, refund, anchor) | Testnet, measured | [judge-path.md](../evidence/round4-l4/judge-path.md) |
 | **S$0.00087** | fees per purchase at an assumed S$2.00/XRP | **projection**, not a quote | README cost card |
 | **US$0.0026** | model cost per question | LIVE models, 48 fresh questions, 3 Nov | [README Numbers](../../README.md#numbers) |
-| **1.97 s** | `/ledger/` re-validates 45/45 Testnet transactions | read-only, one measurement, 7 Nov | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388) |
+| **1.97 s** | Historical `/ledger/` measurement: 45/45 Testnet transactions | read-only, one measurement, 7 Nov | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388) |
 | **12/12** | Testnet checks in `verify --ledger` on the README UC3 receipts | read-only, s.altnet | [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377) |
 | **224** | shared conformance vectors; TypeScript and Python agree on all | offline | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381) |
 | **43.8 s** | Markdown folder → writer Credential validated on Testnet | synthetic starter notes | [#378](https://github.com/Collaboration95/theFastandtheFungible/pull/378) |
@@ -41,7 +41,7 @@ for strangers and run a service we can't support after the event. Instead, one
 Testnet wallets from the faucet, a purchase, a refund and a re-buy, then
 verification against the ledger. The browser replay and the ledger page are
 static pages: the replay plays back a recorded Testnet run, and the ledger page
-re-checks 45 hashes live from your browser."
+re-checks 61 historical hashes from your browser."
 
 **Behind it:** owner decision A1 on #265, 7 Nov: no hosting. The replay is
 labelled "Recorded on XRPL Testnet · no backend". Never say "our hosted demo".
@@ -63,12 +63,12 @@ first-try `init` + `publish` is 33.9 s (J3, #389).
 
 ### 3. I asked my own question. What happens?
 
-**Say:** "If it's about XRPL, x402, RLUSD, escrow or fees, it buys from our
-team-authored notes and cites them. On twenty judge-style questions we froze
-before writing the notes, fifteen were bought and cited on
-Testnet. If nobody covers your question, it says 'No listed writer covers this
-yet, nothing bought' and links to publishing. It doesn't invent an answer or
-spend."
+**Say:** "It can buy and cite our labelled team notes. With fixture models on
+Testnet, eight of twenty held-out questions were bought and cited; sixteen of
+twenty on the development set. If policy declines the available articles, it
+buys nothing. Discovery does not guarantee a purchase. The current release's
+'No listed writer covers this' message can also mean a value-threshold decline;
+Lane K is correcting that wording."
 
 **Behind it:** [J5 evidence](../evidence/j5-coverage/README.md): v2 held-out 8/20; v1 dev 16/20 buy-and-cite; zero blanks and terminal gate violations in each. Online receipt verification passes 16/20 dev and 8/20 held-out; abstentions have no anchor and fail `--ledger`. Policy misses remain. This is fixture-model mechanism evidence, not live-model answer quality. The original v1 baseline was 15/20; the one-question dev gain does not establish generalization.
 

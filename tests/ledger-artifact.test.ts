@@ -8,7 +8,7 @@ import { classify, refresh, lookup, endpoints } from '../site/ledger/ledger.js'
 const row = data.rows.find((r: {deliveredAmount?:unknown}) => r.deliveredAmount)
 function valid() { return {result:{hash:row.hash,ledger_index:row.ledgerIndex,validated:true,tx_json:{TransactionType:"Payment",Account:row.from,Destination:row.to,InvoiceID:row.invoiceId,NetworkID:1,Fee:row.feeDrops,Amount:row.deliveredAmount},meta:{TransactionResult:'tesSUCCESS',delivered_amount:row.deliveredAmount}}} }
 describe('public ledger',()=>{
- it('rebuilds forty-five source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(45); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(45)})
+ it('rebuilds sixty-one source-bound unique rows',()=>{execFileSync('node',['scripts/ledger-artifact.mjs','--check']); expect(data.rows).toHaveLength(61); expect(new Set(data.rows.map((r:{hash:string})=>r.hash)).size).toBe(61)})
  it('only matching validated success is fresh',()=>{
   expect(classify(row,valid())).toContain('validated · tesSUCCESS')
   for(const mutate of [(b: {result: Record<string, any>})=>b.result.validated=false,(b: {result: Record<string, any>})=>b.result.tx_json.NetworkID=0,(b: {result: Record<string, any>})=>b.result.meta.TransactionResult='tecFAILED',(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,value:'9'},(b: {result: Record<string, any>})=>b.result.meta.delivered_amount={...row.deliveredAmount,issuer:'wrong'},(b: {result: Record<string, any>})=>b.result.error='txnNotFound',(b: {result: Record<string, any>})=>delete b.result.meta]){const b=valid();mutate(b);expect(classify(row,b)).not.toContain('validated · tesSUCCESS')}
@@ -87,8 +87,8 @@ it('freshly verifies the answer anchor row and refuses memo edits', () => {
 })
 
 it('binds token escrow amount, issuer, destination and revealed key to retained evidence',()=>{
- const retained=JSON.parse(readFileSync('docs/evidence/round3-r2/ledger-responses.json','utf8'))
- for(const r of data.rows.filter((r:{source:string})=>r.source.includes('round3-r2'))){
+ const retained=[...JSON.parse(readFileSync('docs/evidence/round3-r2/ledger-responses.json','utf8')), ...JSON.parse(readFileSync('docs/evidence/r5-r/ledger-responses.json','utf8'))]
+ for(const r of data.rows.filter((r:{source:string})=>r.source.includes('round3-r2') || r.source.includes('r5-r'))){
   const body={result:retained.find((x:{hash:string})=>x.hash===r.hash).response}
   expect(classify(r,body)).toContain('validated · tesSUCCESS')
   for(const field of r.operation==='create'?['Amount','Destination']:r.fulfillment?['Fulfillment']:[]){

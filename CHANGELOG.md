@@ -1,5 +1,7 @@
 # Changelog
 
+7 Nov honesty correction: local post-release J5 measured held-out 8/20 and dev 16/20 buy-and-cite (fixture models, Testnet); no-purchase online verification failures remain recorded. [Evidence](docs/evidence/j5-coverage/README.md).
+
 All notable changes to ResearchAgent. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Tagged releases are
 feature-day milestones (v0.x). Package versions follow the release tag.
@@ -20,7 +22,7 @@ First stable release. It folds in the rc.1 and rc.2 candidate notes below and ev
 - Opt-in TEST-SGD key-reveal token escrow on the zero-clone MCP and app with `--testnet --iou` (#384). TEST-SGD is our own faucet-funded Testnet IOU, a stand-in for RLUSD, with no real value. Real IOU receipts pass both independent ledger verifiers (6/6).
 - One-shot `try --testnet` judge path (#387): UC3 with a S$2 cap, six numbered ledger links, `--ledger` verification and `RESULT PASS`. 84.2 s with an empty npm cache and fresh faucet wallets; a faucet failure runs a labelled SIMULATED path with the reason. Python `__version__` and compact verification by default, with `--verbose`.
 - Stranger writer onboarding (#389): `init <dir>` scaffolds two commented example notes, validation reports every problem before faucet provisioning, and a locally published Testnet writer is discovered by the running app. Cold `init` 1.396 s; cold init plus `publish --testnet` to validated Credential 33.9 s (33.888 s); malformed note rejected in 1.510 s.
-- Team-authored writer (#390): eight paid builder notes on XRPL, x402, RLUSD, escrow, fees and Credentials, disclosed as "team-authored · real content · not an independent writer · Testnet". Frozen pre-ingestion judge bank: 15/20 buy-and-cite, 0 blank answers, 0 terminal gate-audit violations, 20/20 receipt verifications. Uncovered questions end with "No listed writer covers this yet · nothing bought" and a publish link.
+- Team-authored writer (#390): eight paid builder notes on XRPL, x402, RLUSD, escrow, fees and Credentials, disclosed as "team-authored · real content · not an independent writer · Testnet". Development bank at release time: 15/20 buy-and-cite, 0 blank answers, 0 terminal gate-audit violations, 20/20 receipt verifications. The release uses the overbroad decline message "No listed writer covers this yet · nothing bought" and a publish link.
 - Pixel-art agent (#385): original character with a sprite sheet, atlas, README hero GIF (89.0 KB), site loop and the app's writer-reputation loading state; holds frame 0 under reduced motion.
 - Shared owner Settings and macOS desktop integration (#386): nine sections, guarded and audited owner changes (CSRF and local-origin checks, masked keys), Keychain, first-run onboarding, Cmd+, and persisted window bounds. A packed Testnet launcher audits a 0→125 cap change; the unsigned arm64 DMG recovers one signed submission with one receipt and grant.
 - SFF submission pack refresh (#391): 12-slide deck and PDF, 50/150/300-word descriptions, 9-shot video script, pitch and 20-answer Q&A.

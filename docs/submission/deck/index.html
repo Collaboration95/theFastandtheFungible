@@ -199,17 +199,17 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
     <div><div class="d">2–3 Nov</div><div class="v">v0.1–v0.8</div><div class="t">MCP server, Mac app, escrow, hire the agent, audit trail.</div></div>
     <div><div class="d">4 Nov</div><div class="v">rc.1</div><div class="t">Install without cloning.</div></div>
     <div><div class="d">5 Nov</div><div class="v">rc.2</div><div class="t">Real Testnet without cloning; key reveal by default.</div></div>
-    <div><div class="d">7 Nov</div><div class="v">main</div><div class="t"><span class="mono" style="font-size:20px">try</span>, TEST-SGD escrow, judge questions answered, Settings.</div></div>
-    <div class="next"><div class="d">9–10 Nov</div><div class="v">Lanes</div><div class="t"><span class="mono" style="font-size:20px">init</span> + publish for strangers; final acceptance.</div></div>
-    <div class="next"><div class="d">12 Nov</div><div class="v"><span class="ph">v1.0.0</span></div><div class="t">Release with the one-line judge path.</div></div>
+    <div><div class="d">7 Nov</div><div class="v">v1.0.0</div><div class="t"><span class="mono" style="font-size:20px">try</span>, TEST-SGD escrow, team notes, Settings.</div></div>
+    <div class="next"><div class="d">9–10 Nov · planned</div><div class="v">Lanes</div><div class="t"><span class="mono" style="font-size:20px">Answer and anchor fixes; final acceptance.</div></div>
+    <div class="next"><div class="d">12 Nov</div><div class="v">Finals</div><div class="t">Next release after lane acceptance.</div></div>
   </div>
   <div class="stats">
     <div class="stat"><b>183</b><span>pull requests merged since SingHacks (21 Sep–7 Nov)</span></div>
     <div class="stat"><b>11</b><span>tagged releases, v0.1.0 → v1.0.0</span></div>
-    <div class="stat"><b>1,293</b><span>TypeScript tests plus 258 Python tests on main, every hard gate included</span></div>
+    <div class="stat"><b>1,369</b><span>TypeScript tests at post-#398 integration; 258 Python tests (#393)</span></div>
     <div class="stat"><b>224</b><span>shared receipt-conformance vectors; the TypeScript and Python verifiers agree on all</span></div>
   </div>
-  <div class="src"><span>gh pr list --state merged · gh release list · PRs #381 (vectors), #387 (Python), #388 (TypeScript, check:fast 7 Nov) · docs/SFF-PUSH.md</span><span class="n">2 / 12</span></div>
+  <div class="src"><span>gh pr list --state merged · gh release list · PRs #381 (vectors), #393 (Python), #396 (post-#398 TypeScript count) · docs/SFF-PUSH.md</span><span class="n">2 / 12</span></div>
 </section>
 
 <!-- 3 · Zero clone -->
@@ -339,7 +339,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
     </div>
     <ul class="points" style="margin-top:4px">
       <li><b>Two independent verifiers</b>, TypeScript and Python, agree on all 224 shared vectors, including tampered amounts, issuers, refunds and a missing refund.</li>
-      <li><b>45/45 Testnet transactions re-validated live</b> on our public ledger page in 1.97 s, read-only.</li>
+      <li><b>Historical 45/45 Testnet transactions re-validated live</b> on our public ledger page in 1.97 s, read-only.</li>
       <li><b>Every paid Testnet answer is anchored:</b> an AccountSet whose memo is the audit-chain head, 12 drops. No purchase, no anchor.</li>
       <li><b>Persist before submit.</b> A restart reconciles the same signed hash and never signs twice; a missing transaction is <i>pending</i>, not failed.</li>
       <li><b>Exact delivery.</b> Partial payments rejected before submit; delivered amount, currency and issuer checked after.</li>
@@ -411,7 +411,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
     <div class="row"><div class="i">5</div><div><b>New: a signed IOU quote can overflow the 1 KiB Memo</b><span>Observed 7 Nov on the TEST-SGD path. Fix: check serialized Memo size before signing and return the reason.</span></div></div>
     <div class="row"><div class="i">+</div><div><b>Mainnet readiness: a gap checklist, not a claim</b><span>Key custody (KMS or external signer), FX quotes, facilitator SLA, KYB and sanctions screening.</span></div></div>
   </div>
-  <p class="honest" style="margin-top:20px"><b>7</b> ranked findings with repro scripts · <b>29</b> dated implementation-log entries (B01–B29) · <b>15</b> September submissions · <b>7</b> upstream issue drafts with a filing kit. Filed upstream: <span class="ph">{{UPSTREAM_FILED_URLS}}</span>.</p>
+  <p class="honest" style="margin-top:20px"><b>7</b> ranked findings with repro scripts · <b>33</b> numbered findings (B01–B33) · <b>15</b> September submissions · <b>7</b> upstream issue drafts with a filing kit. Filed upstream: <span class="ph">{{UPSTREAM_FILED_URLS}}</span>.</p>
   <div class="src"><span>docs/BUILDER-FEEDBACK.md (ranked §1–7, living log, 7 Nov entries) · docs/feedback/upstream/ · scripts/repro/</span><span class="n">11 / 12</span></div>
 </section>
 
@@ -425,7 +425,7 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
       <tr><td>Run the judge path</td><td class="h2">npx -y … try --testnet</td></tr>
       <tr><td>Release, every artifact</td><td class="h2"><span class="ph">v1.0.0</span> on GitHub Releases</td></tr>
       <tr><td>Replay of a Testnet run</td><td class="h2"><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">…/theFastandtheFungible/demo/</a></td></tr>
-      <tr><td>45 hashes, checked live</td><td class="h2"><a href="https://collaboration95.github.io/theFastandtheFungible/ledger/">…/theFastandtheFungible/ledger/</a></td></tr>
+      <tr><td>61 hashes, checked on load</td><td class="h2"><a href="https://collaboration95.github.io/theFastandtheFungible/ledger/">…/theFastandtheFungible/ledger/</a></td></tr>
       <tr><td>Demo video</td><td class="h2"><span class="ph">{{VIDEO_URL}}</span></td></tr>
       <tr><td>Code and evidence</td><td class="h2">github.com/Collaboration95/…</td></tr>
     </table>

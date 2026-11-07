@@ -35,22 +35,22 @@ RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
 **[0:48 · slide 3]**
 At SingHacks, a human approved every purchase. Since then: 183 merged pull
-requests. Today a judge runs one line. No clone, no account. In 84 seconds it
+requests. Today a judge runs one line. No clone, no account. In one cold 84-second measurement it
 buys, catches a broken promise, gets refunded, re-buys, anchors the answer and
 prints "result: pass" with six Testnet links.
 
 **[1:08 · slide 7]**
 Don't trust us, verify it. Two independent verifiers, one in Python with no
-Node, re-check every receipt against the ledger. Our ledger page re-validates 45
-transactions in two seconds.
+Node, re-check every receipt against the ledger. Our ledger page lists 61 historical Testnet transactions with live read-only checks.
 
 **[1:22 · slide 8]**
 The same package is an MCP server for Claude Code and a local app. Ask about
-XRPL and it buys from our own labelled build notes: fifteen of twenty
-questions we froze in advance.
+XRPL and it can buy from our labelled team build notes. With fixture models
+on Testnet, eight of twenty held-out questions were bought and cited;
+sixteen of twenty on the development set. [J5](../evidence/j5-coverage/README.md).
 
 **[1:36 · slide 9]**
-A key-reveal purchase costs 435 drops in network fees. The model only
+Our measured key-reveal purchase used 435 drops in network fees. The model only
 recommends; policy code spends, and our gate audit found zero violations.
 
 **[1:48 · slide 12]**
@@ -70,7 +70,7 @@ could refuse. So the buyer gets a fraud proof anyone can check, and the writer's
 trust score drops. We label that on every refund."
 
 **After slide 8 (+0:20) · Writers:** "Writers join with one command. A Markdown
-folder becomes a Testnet writer with an XRPL credential in 44 seconds. Our
+folder becomes a Testnet writer with an XRPL credential in 33.9 seconds (J3, #389). Our
 research writers are fictional, and we have no independent writers yet. That
 list stays empty until a real person consents."
 
