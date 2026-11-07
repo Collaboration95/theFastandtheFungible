@@ -79,7 +79,7 @@ export function tapeRows(run: RunSnapshot): TapeRow[] {
     // The focused free search (#210): its own row (a SEARCH event would overwrite the first search); the result details it.
     else if (followed) { followed.meta = event.label; if (event.data?.failed) followed.state = 'skip' }
     else if (event.type === 'FOLLOW_UP') rows.push({ key, kind: 'follow_up', event, title: 'Search again', state: 'now', meta: event.label })
-    else if (event.type === 'SEARCH') rows.push({ key, kind: 'search', event, title: 'Search', state: 'now', meta: run.candidates.length ? `${run.candidates.length} sources found` : 'Searching…' })
+    else if (event.type === 'SEARCH') rows.push({ key, kind: 'search', event, title: 'Search', state: 'now', meta: run.candidates.length ? `${run.candidates.length} source${run.candidates.length === 1 ? '' : 's'} found` : 'Searching…' })
     else if (event.type === 'READ_FREE') {
       const free = run.candidates.filter(item => item.tier === 'FREE').length
       rows.push({ key, kind: 'read', event, title: 'Read free sources', state: 'now', meta: `${free} free · ${run.candidates.length - free} paywalled` })

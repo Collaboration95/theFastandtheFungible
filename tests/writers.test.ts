@@ -4,28 +4,29 @@ import { validateWriterCorpus, type Publisher, type Writer } from '../shared/con
 
 const read = (path: string) => JSON.parse(readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'))
 const files = readdirSync(new URL('../data/writers', import.meta.url)).filter(f => f.endsWith('.json')).map(f => read(`data/writers/${f}`)) as { publisher: Publisher; writers: Writer[]; topics: { topic: string; lane: string }[] }[]
+const fixtureFiles = files.filter(f => f.publisher.synthetic)
 const publishers = files.map(f => f.publisher)
 
 describe('writer roster (#117)', () => {
   it('has the fixed 8 publishers and validates against the W0 schemas', () => {
-    expect(publishers.map(p => p.slug).sort()).toEqual(['alphaleak', 'basis-points', 'kopi-contrarian', 'load-factor', 'marketpulse-digest', 'notfinancialtimes', 'open-records', 'the-fab-floor'])
+    expect(publishers.map(p => p.slug).sort()).toEqual(['alphaleak', 'basis-points', 'kopi-contrarian', 'load-factor', 'marketpulse-digest', 'notfinancialtimes', 'open-records', 'team-builder-notes', 'the-fab-floor'])
     const corpus = validateWriterCorpus({ publishers, writers: files.flatMap(f => f.writers), articles: [] })
     expect(corpus.writers.filter(w => w.publisherSlug === 'notfinancialtimes').length).toBeGreaterThanOrEqual(2)
     expect(corpus.writers.filter(w => w.publisherSlug === 'notfinancialtimes').length).toBeLessThanOrEqual(3)
   })
   it('gives each publisher 6-10 topics in the three lanes, and every lane at least 3 publishers', () => {
     const lanes = new Set(['rates', 'power', 'semis'])
-    for (const f of files) {
+    for (const f of fixtureFiles) {
       expect(f.topics.length, f.publisher.slug).toBeGreaterThanOrEqual(6)
       expect(f.topics.length, f.publisher.slug).toBeLessThanOrEqual(10)
       expect(f.topics.every(t => lanes.has(t.lane))).toBe(true)
     }
-    for (const lane of lanes) expect(files.filter(f => f.topics.some(t => t.lane === lane)).length, lane).toBeGreaterThanOrEqual(3)
+    for (const lane of lanes) expect(fixtureFiles.filter(f => f.topics.some(t => t.lane === lane)).length, lane).toBeGreaterThanOrEqual(3)
   })
   it('has exactly one records publisher and the FINAL-PUSH §10 prices', () => {
     expect(publishers.filter(p => p.kind === 'records').map(p => p.slug)).toEqual(['open-records'])
     const price = (slug: string) => Math.max(...Object.values(publishers.find(p => p.slug === slug)!.prices))
-    expect(Object.fromEntries(publishers.map(p => [p.slug, price(p.slug)]))).toEqual({ notfinancialtimes: 90, 'load-factor': 60, 'basis-points': 40, 'the-fab-floor': 40, 'kopi-contrarian': 10, 'marketpulse-digest': 20, alphaleak: 30, 'open-records': 0 })
+    expect(Object.fromEntries(publishers.map(p => [p.slug, price(p.slug)]))).toEqual({ notfinancialtimes: 90, 'load-factor': 60, 'basis-points': 40, 'the-fab-floor': 40, 'kopi-contrarian': 10, 'marketpulse-digest': 20, alphaleak: 30, 'open-records': 0, 'team-builder-notes': 40 })
     // Owner, 8 Oct (#204): The Fab Floor's standard posts stay S$0.25; its Penang lead-time article is a S$0.40 data deep-dive.
     expect(publishers.find(p => p.slug === 'the-fab-floor')!.prices).toEqual({ standard: 25, 'data-deep-dive': 40 })
   })

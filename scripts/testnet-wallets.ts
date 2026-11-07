@@ -17,7 +17,7 @@ export async function provision(file = walletFile, faucet = fetch, ledger = test
   try {
     if ((await ledger.request({ command: 'server_info' })).result.info.network_id !== 1) throw Error('Testnet network ID required')
     // One faucet request funds the buyer; it provisions fixture writers to avoid per-IP faucet limits.
-    const slugs = ['buyer', 'alphaleak', 'the-fab-floor', 'notfinancialtimes', 'basis-points', 'load-factor', 'kopi-contrarian', 'marketpulse-digest', 'open-records', 'grid-operators-report']
+    const slugs = ['buyer', 'team-builder-notes', 'alphaleak', 'the-fab-floor', 'notfinancialtimes', 'basis-points', 'load-factor', 'kopi-contrarian', 'marketpulse-digest', 'open-records', 'grid-operators-report']
     for (const slug of slugs) seeds[slug] ||= Wallet.generate().seed!
     await writeFile(file, JSON.stringify(seeds), { mode: 0o600 }); await chmod(file, 0o600)
     const buyer = Wallet.fromSeed(seeds.buyer)

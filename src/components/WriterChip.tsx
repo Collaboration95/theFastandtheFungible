@@ -39,13 +39,14 @@ export default function WriterChip({ candidate, reputation, variant = 'full' }: 
   if (variant === 'row') return trust
   const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer's site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
   const verification = <WriterVerification value={candidate.verification} />
+  const authorship = candidate.publisherSlug === 'team-builder-notes' && <span className="ra-chip">team-authored · real content · not an independent writer · Testnet</span>
   const synthetic = candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>
-  if (variant === 'card') return <span className="ra-writer">{writer !== candidate.publisher && link}{synthetic}{verification}{trust}</span>
+  if (variant === 'card') return <span className="ra-writer">{writer !== candidate.publisher && link}{authorship}{synthetic}{verification}{trust}</span>
   return <span className="ra-writer">
     {link}
     {writer !== candidate.publisher && <span className="ra-writer-p">{candidate.publisher}</span>}
     {card?.domain && <span className="ra-writer-d">{card.domain}</span>}
-    {synthetic}{verification}
+    {authorship}{synthetic}{verification}
     <span className={`ra-tier is-${candidate.tier.toLowerCase()}`}>{candidate.tier === 'FREE' ? 'FREE' : `PAID ${money(candidate.price.amountMinor)}`}</span>
     {trust}
   </span>

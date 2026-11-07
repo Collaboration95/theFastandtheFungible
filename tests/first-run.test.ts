@@ -10,7 +10,7 @@ it('calibrates keyword floor across corpus titles, near misses and off-corpus to
   const corpus = await loadWriterCorpus()
   const index = await buildIndex(corpus.articles)
   for (const a of corpus.articles) expect((await searchIndex(index, a.title, corpus.articles.length)).ranked.map(r => r.articleId)).toContain(a.articleId)
-  for (const q of ['What is the RLUSD trust line requirement?', 'How do Kubernetes pods schedule?', 'How does CRISPR gene editing work?', 'What are sourdough starter feeding ratios?']) expect((await searchIndex(index, q, 10)).ranked, q).toEqual([])
+  for (const q of ['How do Kubernetes pods schedule?', 'How does CRISPR gene editing work?', 'What are sourdough starter feeding ratios?']) expect((await searchIndex(index, q, 10)).ranked, q).toEqual([])
   for (const q of ['Kestrel-TSMC margins', 'Kestrel–TSMC margins', '“Kestrel”—TSMC pricing', "Kestrel’s TSMC wafer agreement", 'BoJ yields', 'Penang electricity']) expect((await searchIndex(index, q, 5)).ranked.length, q).toBeGreaterThan(0)
 })
 it('coverage handles price/pricing and margin/margins without accepting an absent measure', () => {
@@ -46,8 +46,8 @@ it('first run buys, cites paid contribution, reports coverage, and abstains with
       expect(r.citations.length).toBeGreaterThan(0)
       expect(r.answer?.conclusion).toContain('Kestrel')
     }
-    const r = await client.ask('What is the RLUSD trust line requirement?', {budget:1})
+    const r = await client.ask('How do Kubernetes pods schedule?', {budget:1})
     expect(r.citations).toEqual([]); expect(r.receipts).toEqual([]); expect(r.spentMinor).toBe(0)
-    expect(r.answer?.conclusion).toBe('No listed writer covers this; nothing bought')
+    expect(r.answer?.conclusion).toBe('No listed writer covers this yet · nothing bought')
   } finally { await engine.close(); rmSync(dir, {recursive:true, force:true}); vi.unstubAllEnvs() }
 }, 30000)

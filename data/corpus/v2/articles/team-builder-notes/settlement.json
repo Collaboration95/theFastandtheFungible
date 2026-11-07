@@ -1,0 +1,78 @@
+{
+  "articleId": "team-settlement",
+  "version": "v1",
+  "publisherSlug": "team-builder-notes",
+  "writerSlug": "team-builder-notes",
+  "title": "delivered_amount, faucet funding and Testnet endpoint history",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Operational lessons on faucet wallets, partial payments, validated settlement and historical transaction availability.",
+  "tags": [
+    "delivered_amount",
+    " faucet funding and Testnet endpoint history",
+    "settlement",
+    "XRPL",
+    "Testnet"
+  ],
+  "family": "team-settlement",
+  "body": "For XRP Payment settlement, delivered_amount is evidence of what the destination actually received. Checking the requested Amount alone can accept an underpayment when partial-payment semantics apply. Our checks bind destination, currency, amount and invoice identity to the intended purchase. Escrow settlement has its own validation and object checks. Issued-token escrow additionally requires the exact RippleState balance delta, with the correct currency, issuer and sign. A requested amount is never sufficient proof of delivery.\n\nThis is a team-authored adaptation of docs/BUILDER-FEEDBACK.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited.\n\nThe implementation record explains the boundary this way: Original wording below is historical, including any relative freshness wording. #342 diagnostics distinguish the observed 606-second host sleep from inferred runtime risk; see evidence/soak-nov4.md. It is not a new ledger incident. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.\n\nThe implementation record explains the boundary this way: A living record for the SFF judges. 35 catalogued items plus dated tooling incidents: 16 implementation findings and 4 live escrow spike findings below, plus the 15 September research submissions in the appendix. The original source and history audit was recorded on 2 Nov 2026; dated additions below identify live-network observations separately. The original log dates are audit dates; the evidence column dates the original work. The four B17–B20 entries are fresh Testnet observations from 3 Nov 2026. The eight writers and their content are synthetic. Offline settlement is SIMULATED; historical live receipts are XRPL TESTNET · no real value. Neither is evidence of mainnet readiness. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.\n\nThe implementation record explains the boundary this way: The first SDK-lane npm ci failed with ENOTEMPTY while removing an Electron transitive dependency; a retry completed without dependency changes. Evidence: SDK v1 lane check output and scripts/check-sdk-package.mjs for the subsequent clean tarball check. Workaround: retry installation. Suggested fix: make npm ci cleanup tolerate transient nonempty dependency directories. Severity: low; mainnet impact: none observed. This was local npm tooling, not XRPL or x402. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.\n\nThe implementation record explains the boundary this way: The #278 UC3 runner created its first run using Store's default SIMULATED label while injecting a real Testnet payer; the gate audit refused the inconsistent snapshot (missing_rail_label). Evidence: docs/evidence/verify-278.md and verify-278/summary.json. Workaround: pass the explicit Testnet mode labels, correct the harness metadata and re-export/re-check the same durable run; no replacement payment. Suggested fix: require explicit rail labels in standalone Testnet harness constructors. Severity: low (local evidence tooling). Mainnet impact: none observed; no value funds. This was not a ledger or x402 failure. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.\n\nThe implementation record explains the boundary this way: Local scorecard evaluation at 5953559: an initial attempt hit OpenAI Decisions HTTP 503 (\"Decision inference is unavailable\") on one coverage request and correctly refused to publish a baseline. Evidence: eval/scorecard/out/2026-11-02T16-27-35.998Z-live/requests.jsonl and cost.json (local ignored artifacts; US$0.1233354 including all calls). Workaround: one bounded transient retry, with both attempts cached/metered; the next complete run published the pre-menu baseline in eval/scorecard/history.jsonl. Suggested tooling fix: retain per-phase progress and retry transient inference errors without discarding successful calls. Severity: low for local evaluation; mainnet impact: none observed (all settlement SIMULATED). This was a model/tooling incident, not an XRPL, x402, Starter Kit or Testnet failure. Signing the menu with existing XRPL keys required no new wallet/API operation; no signing friction was observed. The local .env key also needs an explicit evaluation mapping; make scorecard LIVE=1 now handles that without loading wallet seeds. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "For XRP Payment settlement, delivered_amount is evidence of what the destination actually received. Checking the requested Amount alone can accept an underpayment when partial-payment semantics apply. Our checks bind destination, currency, amount and invoice identity to the intended purchase. Escrow settlement has its own validation and object checks. Issued-token escrow additionally requires the exact RippleState balance delta, with the correct currency, issuer and sign. A requested amount is never sufficient proof of delivery."
+    },
+    {
+      "id": "p2",
+      "text": "This is a team-authored adaptation of docs/BUILDER-FEEDBACK.md, read alongside docs/key-reveal-escrow.md and docs/x402-xrpl.md. The evidence describes our Testnet implementation and dated observations. It does not establish production readiness, independent writer participation or financial adoption. The authors are the ResearchAgent builders; their involvement must remain visible wherever the article is purchased or cited."
+    },
+    {
+      "id": "p3",
+      "text": "The implementation record explains the boundary this way: Original wording below is historical, including any relative freshness wording. #342 diagnostics distinguish the observed 606-second host sleep from inferred runtime risk; see evidence/soak-nov4.md. It is not a new ledger incident. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe."
+    },
+    {
+      "id": "p4",
+      "text": "The implementation record explains the boundary this way: A living record for the SFF judges. 35 catalogued items plus dated tooling incidents: 16 implementation findings and 4 live escrow spike findings below, plus the 15 September research submissions in the appendix. The original source and history audit was recorded on 2 Nov 2026; dated additions below identify live-network observations separately. The original log dates are audit dates; the evidence column dates the original work. The four B17–B20 entries are fresh Testnet observations from 3 Nov 2026. The eight writers and their content are synthetic. Offline settlement is SIMULATED; historical live receipts are XRPL TESTNET · no real value. Neither is evidence of mainnet readiness. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe."
+    },
+    {
+      "id": "p5",
+      "text": "The implementation record explains the boundary this way: The first SDK-lane npm ci failed with ENOTEMPTY while removing an Electron transitive dependency; a retry completed without dependency changes. Evidence: SDK v1 lane check output and scripts/check-sdk-package.mjs for the subsequent clean tarball check. Workaround: retry installation. Suggested fix: make npm ci cleanup tolerate transient nonempty dependency directories. Severity: low; mainnet impact: none observed. This was local npm tooling, not XRPL or x402. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe."
+    },
+    {
+      "id": "p6",
+      "text": "The implementation record explains the boundary this way: The #278 UC3 runner created its first run using Store's default SIMULATED label while injecting a real Testnet payer; the gate audit refused the inconsistent snapshot (missing_rail_label). Evidence: docs/evidence/verify-278.md and verify-278/summary.json. Workaround: pass the explicit Testnet mode labels, correct the harness metadata and re-export/re-check the same durable run; no replacement payment. Suggested fix: require explicit rail labels in standalone Testnet harness constructors. Severity: low (local evidence tooling). Mainnet impact: none observed; no value funds. This was not a ledger or x402 failure. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe."
+    },
+    {
+      "id": "p7",
+      "text": "The implementation record explains the boundary this way: Local scorecard evaluation at 5953559: an initial attempt hit OpenAI Decisions HTTP 503 (\"Decision inference is unavailable\") on one coverage request and correctly refused to publish a baseline. Evidence: eval/scorecard/out/2026-11-02T16-27-35.998Z-live/requests.jsonl and cost.json (local ignored artifacts; US$0.1233354 including all calls). Workaround: one bounded transient retry, with both attempts cached/metered; the next complete run published the pre-menu baseline in eval/scorecard/history.jsonl. Suggested tooling fix: retain per-phase progress and retry transient inference errors without discarding successful calls. Severity: low for local evaluation; mainnet impact: none observed (all settlement SIMULATED). This was a model/tooling incident, not an XRPL, x402, Starter Kit or Testnet failure. Signing the menu with existing XRPL keys required no new wallet/API operation; no signing friction was observed. The local .env key also needs an explicit evaluation mapping; make scorecard LIVE=1 now handles that without loading wallet seeds. For a reader assessing this result, the operative distinction is between a documented mechanism and a freshly verified transaction. Reproduction requires checking the actual receipt and its ledger evidence, rather than treating this note as a live network probe."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRP",
+      "measure": "settlement"
+    },
+    "p2": {
+      "entity": "XRPL",
+      "measure": "production"
+    },
+    "p4": {
+      "entity": "XRPL",
+      "measure": "source",
+      "period": "twenty twenty six"
+    },
+    "p5": {
+      "entity": "XRPL",
+      "measure": "output"
+    },
+    "p6": {
+      "entity": "Testnet",
+      "measure": "payment"
+    },
+    "p7": {
+      "entity": "US",
+      "measure": "cost",
+      "period": "twenty twenty six"
+    }
+  }
+}

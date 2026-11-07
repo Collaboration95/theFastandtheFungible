@@ -6,6 +6,10 @@ for (const id of ['UC1', 'UC2', 'UC3', 'UC3-testnet', 'UC-key-reveal', 'UC3-key-
   const capture = JSON.parse(readFileSync(`demo/traces/${id}.json`, 'utf8'))
   const run = RunSnapshotSchema.parse(capture.run)
   expect(run.phase).toBe('DONE')
+  if (id.startsWith('UC3') || id === 'UC-key-reveal') {
+    const lead = run.answers.at(-1)?.claims.find(c => /26 weeks to 18 weeks/.test(c.text))
+    expect(lead?.stance).toBe('SUPPORTS')
+  }
   expect(run.labels.research).toMatch(/^fixture/)
   expect(run.labels.settlement).toMatch(id.includes('testnet') || id.includes('key-reveal') ? /XRPL TESTNET/ : /SIMULATED/)
   expect(run.events.some(e => e.type === 'FREE_DRAFT')).toBe(true)
