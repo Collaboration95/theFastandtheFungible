@@ -7,8 +7,8 @@ value; fixture models and fictional writers. No release, tag or version change.
 | --- | ---: | ---: | ---: |
 | stdio initialize | 56.5 s | 6.293 s | ≤15 s |
 | app --testnet ready | 134 s | 26.977 s | ≤60 s |
-| try --testnet + ledger verification | unavailable | 87.149 s | ≤90 s |
-| MCP tgz | 21,438,173 bytes | 3,417,974 bytes | ≤8,000,000 bytes |
+| try --testnet + ledger verification | unavailable | 84.191 s | ≤90 s |
+| MCP tgz | 21,438,173 bytes | 3,418,528 bytes | ≤8,000,000 bytes |
 
 Before timings are the independently observed round-4 measurements in
 `notes/review-nov7/07-mock-judges-r4.md` (outside the repository), not a new
@@ -47,10 +47,12 @@ node22-verifier.txt verifies the README evidence with the actual bundled verifie
 on Node 22.13.0, including all 12 Testnet checks. Final init/app measurements
 were repeated after rebasing onto the character/UI assets.
 
-Final cold retry passed at 87.149 s on the final packed runtime (3.418 MB). The 90 s limit remained unchanged. The runtime now uses a stable judge intent key; repeat invocations reuse the run instead of buying again.
+Final cold retry passed at 84.191 s on the final packed runtime (3.418 MB). The 90 s limit remained unchanged. The runtime now uses a stable judge intent key; repeat invocations reuse the run instead of buying again.
 
 An additional exact-head retry at e30d9711 also exceeded the unchanged 90 s cold
 deadline: the child later printed PASS at 86.6 s runtime, excluding installation.
 try-exact-timeout-output.txt and try-exact-timeout.json preserve that miss.
 The verifier follow-up shares validated transaction reads and runs independent
 payment/escrow verification concurrently; every proof check still runs.
+
+After sharing validated reads, the fresh-cache/fresh-wallet consumer passed at 84.191 s on 7ca6d163. The rebuilt MCP package is 3,418,528 bytes; bundled ledger verification of the README reference took 4.045 s (12/12). The earlier cold boot measurements are retained as observations of the pre-follow-up package.

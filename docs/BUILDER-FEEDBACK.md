@@ -838,3 +838,16 @@ These are observations from the 7 Nov review of `421f5f9f`, not fresh L4 network
 | B27 · 2026-11-07 | MCP tooling | Observed fresh-cache 21.4 MB tgz takes 56.5 s to initialize; review §0/§5 in retained extract. Client timeout risk is an inference. | Retry with warm cache; round-3 warm measurement about 11 s. | Bundle stdio separately and defer app UI dependencies; measure clean-cache startup. | medium | Startup availability risk on either rail; no settlement failure observed. |
 | B28 · 2026-11-07 | Faucet | Observed wallet setup 24.3 s MCP / 19.1 s app; prior README reports 17 s. Evidence: retained review §0/§5; `docs/evidence/round3-a/README.md`. | Persist Testnet wallets and show setup progress; bounded retries. | Document faucet timing and separate provisioning from initialize. | medium | Testnet-only funding; no inference about mainnet funding. |
 | B29 · 2026-11-07 | Devcontainer CI | Observed nightly Testnet jobs green 6/7 Nov, about 130 s job / 43.9 s purchase; evidence: retained review §0/§5, `.github/workflows/codespace-testnet.yml`. | Use devcontainers/ci as the Codespace substitute, labelled explicitly. | Keep validated-hash CI evidence; measure actual Codespace separately. | low | No mainnet measurement; CI is not interactive Codespace acceptance. |
+
+### 2026-11-07 — Cold judge-command latency (observed tooling friction)
+
+Two fresh-cache Testnet judge runs exceeded the unchanged 90 s consumer deadline;
+other runs passed (73.8 s, 87.1 s, and 84.2 s after the verifier follow-up).
+Evidence: docs/evidence/round4-j2/try-timeout.json,
+try-exact-timeout.json and try-timing.json. The precise cause of the slow runs
+was not isolated; concurrent local suites and public Testnet latency varied.
+Workaround: bundle dependencies, reuse validated transaction reads within one
+verification, and overlap independent proof checks. Suggested tooling fix:
+provide a cold-start timing breakdown and batched validated transaction reads.
+Severity: medium onboarding latency. Mainnet impact: not tested; these runs used
+only faucet XRP on Testnet, with fixture models and fictional writers.

@@ -438,7 +438,7 @@ Agents add items there and keep working around them.
 
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
 
-- 2026-11-07 — J2 (Reachability / Feasibility): bundled MCP 21.44 → 3.418 MB; cold initialize 6.3 s, Testnet app 27.0 s, UC3 try + ledger PASS 87.1 s; compact Python verification and no-purchase anchor guard. Evidence: docs/evidence/round4-j2/. No release cut.
+- 2026-11-07 — J2 (Reachability / Feasibility): bundled MCP 21.44 → 3.419 MB; cold initialize 6.3 s, Testnet app 27.0 s, UC3 try + ledger PASS 84.2 s; compact Python verification and no-purchase anchor guard. Evidence: docs/evidence/round4-j2/. No release cut.
 - 3 Nov: Mac app wraps the Day 1 UI with a main-process protocol proxy, isolated utility-process engine and Keychain custody; final rebase included #286, so remote HTTPS mode uses Keychain tokens, bearer forwarding and shared wallet controls. Package real files because utilityProcess needs a real cwd; Developer ID auto-sign/notarise is ready, unsigned until #265. Tag releases build once before attaching their own DMG (#259).
 
 - 3 Nov: Logo direction chosen: open index, because source boundaries and a route to evidence read at 16 px on the cast’s 24-unit grid; Ink/Paper with sparse Salmon layout accents. Explainers source moves into `site/` for one reviewable app/site identity kit (#271).
