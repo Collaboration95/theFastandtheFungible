@@ -64,7 +64,14 @@ live group leak, whole-invocation timeout, and a TERM-ignoring grandchild whose
 leader exits. The process-group teardown regression takes about 1.7 s (<5 s).
 The artifact-admission regression still runs and adds early boot failure coverage.
 Original purchase, refund, RLUSD, anchor, scenario raw-leak/Stop and accounting
-assertions remain intact. Nothing loosened.
+assertions remain intact. Nothing loosened. The new survivor-failure test has a 10 s test timeout to
+exercise the unchanged 1.5 s + 3 s termination bound. Shared coverage floors pass
+unchanged after explicit signal-failure and already-exited readiness tests.
+
+Local full coverage passes (159 files), including the unchanged component floors.
+Packed release artifact admission passes (TypeScript, Python, MCP bundle/tgz and
+app consumers); this is fixture evidence only. Recording now always allocates
+ephemeral ports and drains its child pipes.
 
 The 150 net LOC deletion target is missed: the shared implementation, independent
 regressions and leak runner add code overall. Repeated lifecycle implementations

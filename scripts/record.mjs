@@ -10,11 +10,12 @@ import { allocateDemoPorts } from './demo-ports.mjs'
 const clip = process.argv.includes('--clip')
 const uc = process.env.UC || 'UC2'
 if (!/^UC[1-4]$/.test(uc)) throw new Error('UC must be UC1, UC2, UC3 or UC4')
-const ports = clip ? await allocateDemoPorts() : { web: 5100 + Number(process.env.DEMO_PORT_OFFSET || 300), api: 8788 + Number(process.env.DEMO_PORT_OFFSET || 300), pub: 8790 + Number(process.env.DEMO_PORT_OFFSET || 300) }
+const ports = await allocateDemoPorts()
 try {
 const store = scope.tempDir('researchagent-record-')
 const env = { ...process.env, DOTENV_CONFIG_PATH: '.record-no-env', DEMO_WEB_PORT: String(ports.web), DEMO_API_PORT: String(ports.api), DEMO_PUBLISHER_PORT: String(ports.pub), PUBLISHER_URL: `http://127.0.0.1:${ports.pub}`, APP_DB: `${store}/app.db`, PUBLISHER_DB: `${store}/publisher.db`, REPORT_DIR: `${store}/reports`, SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' }
-const child = scope.spawn(process.execPath, ['scripts/demo.mjs'], { env, stdio: 'inherit' })
+const child = scope.spawn(process.execPath, ['scripts/demo.mjs'], { env })
+child.stdout.pipe(process.stdout); child.stderr.pipe(process.stderr)
 let browser
 scope.defer(() => browser?.close())
 async function cleanup() { await scope.close() }
@@ -61,6 +62,7 @@ if (clip) {
     await rename(await page.video().path(), output)
     if (!(await stat(output)).size) throw new Error('Empty recording')
     const ffmpeg = scope.spawn('ffmpeg', ['-y', '-i', output, '-t', '20', '-vf', 'tpad=stop_mode=clone:stop_duration=18', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', output.replace('.webm', '.mp4')], { stdio: 'ignore' })
+    ffmpeg.stdout.resume(); ffmpeg.stderr.resume()
     ffmpeg.on('error', () => console.log('ffmpeg unavailable; WebM is ready.'))
     await new Promise(done => { ffmpeg.on('error', done); ffmpeg.on('exit', done) })
     console.log(`Clip saved: ${resolve(output)}`)

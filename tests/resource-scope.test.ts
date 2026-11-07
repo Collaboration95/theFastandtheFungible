@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { existsSync } from 'node:fs'
 import { once } from 'node:events'
 import { ResourceScope, withResourceScope, groupMembers } from '../shared/resource-scope.js'
@@ -97,3 +97,39 @@ it('retains private synthetic evidence with a reason while timers close', async 
     await scope.close()
   }
 })
+
+it('reports scratch entries and registered groups without deleting evidence', async () => {
+  const { resources } = await import('./helpers/resource-scope.js')
+  const { resourceLeaks } = await import('../shared/resource-scope.js')
+  const { writeFileSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const root = resources().tempDir(), registry = resources().tempDir()
+  writeFileSync(join(root, 'marker'), 'synthetic')
+  writeFileSync(join(registry, '99999999.json'), '{}')
+  expect(resourceLeaks(root).directories).toEqual(['marker'])
+  expect(resourceLeaks(root, registry).groups).toEqual([])
+})
+it('propagates signal errors and handles readiness after an early exit', async () => {
+  const { stopProcess, waitForOutput } = await import('../shared/resource-scope.js')
+  const scope = new ResourceScope()
+  const child = scope.spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'])
+  try {
+    for (const error of [Object.assign(Error('injected signal failure'), { code: 'EACCES' }), Error('injected signal failure')]) {
+      const mock = vi.spyOn(process, 'kill').mockImplementation(() => { throw error })
+      try { await expect(stopProcess(child)).rejects.toThrow('injected signal failure') }
+      finally { mock.mockRestore() }
+    }
+    const exited = scope.spawn(process.execPath, ['-e', 'process.exit(1)'])
+    await once(exited, 'exit')
+    await expect(waitForOutput(exited, /ready/, 50)).rejects.toThrow(/before readiness/)
+  } finally { await scope.close() }
+})
+// Exercise the unchanged 1.5 s + 3 s failure deadline, then restore real signalling.
+it('reports a group surviving both signals rather than claiming cleanup', async () => {
+  const { stopProcess } = await import('../shared/resource-scope.js')
+  const scope = new ResourceScope()
+  const child = scope.spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'])
+  const mock = vi.spyOn(process, 'kill').mockReturnValue(true)
+  try { await expect(stopProcess(child)).rejects.toThrow(/survived cleanup/) }
+  finally { mock.mockRestore(); await scope.close() }
+}, 10000)
