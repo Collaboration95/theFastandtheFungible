@@ -63,7 +63,7 @@ offline mode; missing dependencies or browsers fail instead of downloading.
 
 ## Content cache and receipts
 
-Cache, logs and receipts live in the current checkout's Git administrative
+Cache, logs and receipts live in the repository's shared Git administrative
 directory under `local-gate/`; `latest.json` points to the latest receipt content.
 This keeps evidence outside the source tree and works with linked worktrees.
 Each step hashes its relevant Git paths, blob IDs and file modes, runtime and

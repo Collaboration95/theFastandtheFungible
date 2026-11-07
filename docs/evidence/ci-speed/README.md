@@ -249,7 +249,7 @@ read the parent-owned artifacts for the final exact outcomes.
 
 ## Capacity and billing context
 
-The owner supplied these GitHub documentation checks on 7 November 2026:
+Verified against current official GitHub documentation on 7 November 2026:
 [GitHub Free concurrency limits](https://docs.github.com/en/actions/reference/limits)
 are 20 total and 5 macOS jobs; [standard hosted runners for public repositories
 are free, while larger runners are billed](https://docs.github.com/en/billing/concepts/product-billing/github-actions);

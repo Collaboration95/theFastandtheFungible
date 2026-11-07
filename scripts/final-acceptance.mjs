@@ -1,24 +1,28 @@
 import { createStepRunner, acceptanceOutcome, runGraph } from './final-acceptance-steps.mjs'
+import { admitReuse, outputProof, reusableGates } from './acceptance-reuse.mjs'
 /** Local fixture rehearsal. No dotenv, publication, signing, or release mutation. */
 import { spawn, execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync, readlinkSync, cpSync } from 'node:fs'
-import { resolve, join } from 'node:path'
+import { resolve, join, dirname } from 'node:path'
 import { createHash, randomUUID } from 'node:crypto'
 import { hostname, platform, release, arch, cpus, loadavg } from 'node:os'
 const quick=process.argv.includes('--quick')
 const failFast=process.argv.includes('--fail-fast')
 const skipSoak=process.argv.includes('--skip-soak')
 const serial=process.argv.includes('--serial')
-const isolatedSoak=process.argv.includes('--isolated-soak')
+const isolatedSoak=!process.argv.includes('--concurrent-soak')
 const allArch=process.argv.includes('--all-arch')
-if(process.argv.slice(2).some(a=>!['--quick','--fail-fast','--skip-soak','--serial','--isolated-soak','--all-arch'].includes(a))) throw Error('Usage: node scripts/final-acceptance.mjs [--quick] [--fail-fast] [--skip-soak] [--serial] [--isolated-soak] [--all-arch]')
+const reuseIndex=process.argv.indexOf('--reuse')
+const reuseFile=reuseIndex<0?null:process.argv[reuseIndex+1]
+if(reuseIndex>=0&&(!reuseFile||reuseFile.startsWith('--'))) throw Error('--reuse requires an acceptance.json path')
+if(process.argv.slice(2).some((a,i)=>!['--quick','--fail-fast','--skip-soak','--serial','--isolated-soak','--concurrent-soak','--all-arch','--reuse'].includes(a)&&i+2!==reuseIndex+1)) throw Error('Unknown acceptance option')
 const out=resolve('scratch/final-acceptance-'+new Date().toISOString().replace(/[^0-9]/g,''));mkdirSync(out,{recursive:true})
 const destination=resolve('dist/final')
 const digest=p=>createHash('sha256').update(readFileSync(p)).digest('hex')
 const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
 Object.assign(env,{DOTENV_CONFIG_PATH:'.no-final-env',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',LANGFUSE_ENABLED:'0',SEARCH_EMBEDDINGS:'off',CSC_IDENTITY_AUTO_DISCOVERY:'false'})
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim()
-const report={schema:1,acceptanceEligible:!quick&&!skipSoak,mode:skipSoak?'fixture rehearsal; soak explicitly skipped':quick?'quick fixture rehearsal; RSS slope diagnostic only; not full acceptance':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
+const report={schema:1,quick,acceptanceEligible:!quick&&!skipSoak,mode:skipSoak?'fixture rehearsal; soak explicitly skipped':quick?'quick fixture rehearsal; RSS slope diagnostic only; not full acceptance':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),supportSha256:createHash('sha256').update(readFileSync('scripts/final-acceptance-steps.mjs')).update(readFileSync('scripts/acceptance-reuse.mjs')).digest('hex'),dependencySha256:digest('node_modules/.package-lock.json'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,python:execFileSync('python3',['--version'],{encoding:'utf8'}).trim(),load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
 const save=()=>{writeFileSync(join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');mkdirSync(destination,{recursive:true});cpSync(join(out,'acceptance.json'),join(destination,'acceptance.json'))}
 report.schedule={mode:serial?'serial':isolatedSoak?'isolated soak then DAG':'bounded DAG including soak',concurrency:4,siblingNiceness:10,localArchitectures:allArch?['arm64','x64']:['arm64'],hostedArchitectures:['arm64','x64']}
 const step=createStepRunner(report,save,failFast)
@@ -60,7 +64,7 @@ try {
   schedule('desktop-download-arm64',()=>run('desktop-download-arm64','node',['desktop/download.mjs'],{DESKTOP_ARCH:'arm64'}),[])
   schedule('desktop-arm64',()=>run('desktop-arm64','node',['desktop/build.mjs','--dmg','--unsigned'],{DESKTOP_ARCH:'arm64'},['desktop-download-arm64']),['desktop-download-arm64', 'browser', 'coverage'])
   schedule('arm64-evidence',()=>step('arm64-evidence',async()=>{
-  report.dmgs=readdirSync('desktop/out').filter(f=>f.endsWith('.dmg')).map(f=>artifact(join('desktop/out',f)));save()
+  report.dmgs=readdirSync('desktop/out').filter(f=>f.endsWith(allArch?'.dmg':'-arm64.dmg')).map(f=>artifact(join('desktop/out',f)));save()
   const app=resolve('desktop/out/mac-arm64/ResearchAgent.app')
   const walkApp=(dir,relative='')=>readdirSync(dir,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name)).flatMap(e=>{
     const p=join(dir,e.name),name=join(relative,e.name)
@@ -99,6 +103,19 @@ try {
   schedule('coverage',()=>run('coverage','npx',['vitest','run','--coverage']),['ui-build'])
   schedule('coverage-gate',()=>run('coverage-gate','node',['scripts/check-coverage.mjs'],{},['coverage']),['coverage'])
   schedule('chaos',()=>run('chaos','npm',['run','chaos','--','--runs','200','--seed','279']),[])
+  if(reuseFile) {
+    const {prior,rows,receiptSha256}=admitReuse(resolve(reuseFile),report)
+    report.reusedFrom={file:resolve(reuseFile),sha256:receiptSha256,sourceSha:prior.sourceSha}
+    for(const key of ['artifacts','dmgs','app','consumers','verifiers','x64','reuseOutputs']) report[key]=prior[key]
+    for(const row of rows) {
+      const task=tasks.find(task=>task.name===row.name)
+      task.run=async()=>{report.gates.push({...row,reused:true,previousDurationMs:row.durationMs,durationMs:0});save()}
+      if(row.logSha256) cpSync(join(dirname(resolve(reuseFile)),row.name+'.log'),join(out,row.name+'.log'))
+    }
+    // Preserve the exact bytes admitted by the consumer receipt, never rebuild them.
+    cpSync(join(dirname(resolve(reuseFile)),'release'),join(out,'release'),{recursive:true})
+    cpSync(join(dirname(resolve(reuseFile)),'desktop-recovery.json'),join(out,'desktop-recovery.json'))
+  }
   if(isolatedSoak) for(const task of tasks) if(!['soak','soak-evidence','render'].includes(task.name)) task.after=[...(task.after??[]),'soak']
   // Start long independent work first; reserve the dist writer chain for coverage → browser → desktop → artifacts.
   const priority=['soak','chaos','ui-build','coverage','demo-build','browser-demo']
@@ -108,5 +125,12 @@ try {
   Object.assign(report,acceptanceOutcome(report.gates,quick||skipSoak));if(!report.checksPass)process.exitCode=1
 } catch(error) {report.error=error.message;process.exitCode=1}
 finally {
+  const generatedEvidence=new Set(['docs/evidence/r5-k/decline-state.png','docs/evidence/settings/about.png','docs/evidence/settings/connect-an-agent.png','docs/evidence/settings/data.png','docs/evidence/settings/writers.png'])
+  const dirty=execFileSync('git',['status','--porcelain','--untracked-files=all'],{encoding:'utf8'}).trimEnd().split('\n').filter(Boolean)
+  report.sourceStable=git('rev-parse','HEAD')===report.sourceSha&&!dirty.some(line=>!line.startsWith(' M ')||!generatedEvidence.has(line.slice(3)))
+  if(!report.sourceStable||report.worktreeDirty){report.pass=false;report.acceptanceEligible=false;report.sourceError='Source changed or worktree was dirty';process.exitCode=1}
+  try {
+    if(reusableGates.every(name=>report.gates.find(row=>row.name===name)?.pass)) report.reuseOutputs=outputProof(['dist/release',report.app.path,report.app.manifest.file,join(out,'desktop-recovery.json'),...report.dmgs.map(row=>row.file)])
+  } catch(error) {if(!report.reusedFrom){report.reuseError=error.message}else{report.pass=false;report.error=error.message;process.exitCode=1}}
   report.finishedAt=new Date().toISOString();report.durationMs=Date.parse(report.finishedAt)-Date.parse(report.timestamp);save();cpSync(out,destination,{recursive:true});if(existsSync(join(out,'release')))cpSync(join(out,'release'),'dist/release',{recursive:true});console.log(JSON.stringify({pass:report.pass,checksPass:report.checksPass,acceptanceEligible:report.acceptanceEligible,error:report.error,output:join(destination,'acceptance.json')}))
 }

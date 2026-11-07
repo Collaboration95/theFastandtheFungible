@@ -299,7 +299,7 @@ export async function main(argv = process.argv.slice(2)) {
   const cpus = Math.max(1, Math.min(MAX_CPUS, availableParallelism())), steps = makeSteps(route, cpus)
   if (options.plan) { console.log(JSON.stringify({ schema: SCHEMA, source: sourceChanges, route, cpuBudget: cpus, noCache: options.noCache, steps }, null, 2)); return 0 }
   const scope = await newScope(), start = performance.now()
-  const store = resolve(root, git(root, ['rev-parse', '--git-path', 'local-gate']))
+  const store = resolve(root, git(root, ['rev-parse', '--git-common-dir']), 'local-gate')
   const receiptPath = join(store, 'runs', `${Date.now()}-${process.pid}-${randomUUID()}.json`)
   const receipt = { schema: SCHEMA, state: 'failure', startedAt: new Date().toISOString(), source: null, route, changes: sourceChanges, cpuBudget: cpus, noCache: options.noCache, steps: [], statuses: [], label: 'Offline local fixtures and simulated settlement; not release, Testnet or native DMG acceptance' }
   let repo, work, runtime, runnerHash, keys, interrupted = false

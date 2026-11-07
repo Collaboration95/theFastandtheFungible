@@ -25,12 +25,20 @@ describe('required CI admission', () => {
   })
 })
 
-it.each((requiredJobs as string[]).flatMap((job: string) => ['failure', 'cancelled', 'skipped', undefined].map(result => [job, result] as const)))('hosted aggregate rejects %s = %s', (failed, state) => {
+// The in-process table above exhausts every job × failure state. Exercise each
+// distinct CLI serialization/exit path once instead of spawning that matrix twice.
+it.each([['verify','failure'], ['browser','cancelled'], ['python','skipped'], ['artifacts',undefined]] as const)('hosted aggregate rejects %s = %s', (failed, state) => {
   const needs: Record<string, { result: string | undefined; outputs?: { full: string } }> = Object.fromEntries(requiredJobs.map((job: string) => [job, { result: job === failed ? state : 'success' }]))
   needs.changes = { result: 'success', outputs: { full: 'true' } }
   const result = spawnSync(process.execPath, ['scripts/ci-contract.mjs', 'aggregate'], { env: { ...process.env, CI_NEEDS: JSON.stringify(needs) }, encoding: 'utf8' })
   expect(result.status).toBe(1)
   expect(result.stderr).toContain('Required verification did not complete successfully')
+})
+
+it.each(['true','false'])('hosted aggregate admits intended full=%s', full => {
+  const needs: Record<string,{result:string;outputs?:{full:string}}> = Object.fromEntries(requiredJobs.map((job: string) => [job,{result:full==='true'?'success':'skipped'}]))
+  needs.changes = {result:'success',outputs:{full}}
+  expect(spawnSync(process.execPath,['scripts/ci-contract.mjs','aggregate'],{env:{...process.env,CI_NEEDS:JSON.stringify(needs)}}).status).toBe(0)
 })
 
 it.each(['none', 'app', 'demo', 'judge'])('browser group failure reaches aggregate: %s', failed => {
