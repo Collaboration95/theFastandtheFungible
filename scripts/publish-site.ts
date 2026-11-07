@@ -11,10 +11,10 @@ export async function main(args = process.argv.slice(2)) {
       relax: { type: 'boolean' }, testnet: { type: 'boolean' }, slug: { type: 'string' }, name: { type: 'string' }, port: { type: 'string' }, rail: { type: 'string' }, help: { type: 'boolean' },
     } })
     if (values.help) {
-      console.log('Usage: npm run publish:site -- ./my-notes [--slug my-notes] [--name "My Notes"] [--port 9590] [--testnet | --rail simulated]\nDefault (--testnet): XRPL Testnet faucet wallet + Testnet writer Credential + key-reveal escrow. Never pass seeds as arguments. Ctrl-C stops the site; rerun to update it.')
+      console.log('Usage: npm run publish:site -- ./my-notes [--slug my-notes] [--name "My Notes"] [--port 9590] [--testnet | --rail simulated] [--relax]\nDefault (--testnet): XRPL Testnet faucet wallet + Testnet writer Credential + key-reveal escrow. Never pass seeds as arguments. Ctrl-C stops the site; rerun to update it.')
       return
     }
-    if (positionals.length !== 1) throw new Error('Give one Markdown folder. Try: npm run publish:site -- examples/writer-starter')
+    if (positionals.length !== 1) throw new Error('Give one Markdown folder. Start with init my-notes, then publish my-notes --testnet')
     const rail = values.testnet || values.rail === 'testnet' ? 'xrpl-testnet' : values.rail ?? 'xrpl-testnet'
     if (rail !== 'simulated' && rail !== 'xrpl-testnet') throw new Error('--rail must be xrpl-testnet or simulated; Mainnet is disabled')
     const port = Number(values.port ?? 0)

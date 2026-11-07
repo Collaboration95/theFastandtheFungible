@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
@@ -174,4 +174,61 @@ describe('Markdown folder → paid writer (#277)', () => {
     // An explicitly attached Testnet key is accepted without being printed.
     expect(seedEnvName('test-writer')).toBe('XRPL_PUBLISHER_TEST_WRITER_SEED')
   })
+})
+
+it('scaffolds two documented notes, preserves existing files, and reports all fields before funding', async () => {
+  const { initNotes } = await import('../publisher/publishing/init.js')
+  const root = await temporary(), folder = join(root, 'notes')
+  await initNotes(folder)
+  const notes = await markdownCorpus(folder, 'newcomer', 'Newcomer')
+  expect(notes.articles).toHaveLength(2)
+  await expect(initNotes(folder)).rejects.toThrow('EEXIST')
+  await writeFile(join(folder, '1-capacity.md'), '---\ntitle: Broken\nprice: nope\n---\nToo short.')
+  await writeFile(join(folder, '2-allocation.md'), '---\nprice: invalid\n---\nAlso short.')
+  const fund = vi.fn(async () => {})
+  const started = performance.now()
+  await expect(publishSite({ folder, slug: 'newcomer', root: join(root, 'state'), fund })).rejects.toThrow(/abstract:[\s\S]*tier:[\s\S]*price:[\s\S]*body:[\s\S]*2-allocation.md/)
+  expect(performance.now() - started).toBeLessThan(3000)
+  expect(fund).not.toHaveBeenCalled()
+})
+
+it('accepts 300 author words, keeps fixture limits and leakage checks, and refuses reserved port', async () => {
+  const root = await temporary()
+  const body = Array.from({ length: 4 }, (_, n) => `Paragraph ${n} ` + Array.from({ length: 73 }, (_, i) => `word${n}x${i}`).join(' ')).join('\n\n')
+  const source = `---\ntitle: Methods\nabstract: Evidence and limitations.\ntier: PAID\nprice: 0.10\nsynthetic: false\n---\n${body}`
+  await writeFile(join(root, 'note.md'), source)
+  const corpus = await markdownCorpus(root, 'author', 'Author')
+  expect(corpus.articles).toHaveLength(1)
+  await writeFile(join(root, 'note.md'), source.replace('synthetic: false', 'synthetic: true'))
+  await expect(markdownCorpus(root, 'author', 'Author', { relax: true })).rejects.toThrow('600–1,400')
+  await expect(publishSite({ folder: root, slug: 'author', port: 8790 })).rejects.toThrow('reserved')
+})
+
+it('discovers private live Testnet origins on an already-created client, and ignores stopped or remote entries', async () => {
+  const { localWriterRegistrations } = await import('../server/local-writer-discovery.js')
+  const root = await temporary()
+  vi.stubEnv('LOCAL_WRITERS_DIR', root)
+  vi.stubEnv('SETTLEMENT_RAIL', 'xrpl-testnet')
+  const client = new PublisherClient({ baseUrl: 'http://127.0.0.1:12345' })
+  expect(client.origins()).toHaveLength(1)
+  const site = await publish('xrpl-testnet')
+  vi.stubEnv('LOCAL_WRITERS_DIR', site.root)
+  expect(localWriterRegistrations()).toMatchObject([{ slug: 'test-writer', origin: site.baseUrl }])
+  expect(client.origins().map(c => c.origin)).toContain(site.baseUrl)
+  expect((await stat(join(site.dir, 'registry.json'))).mode & 0o777).toBe(0o600)
+  await writeFile(join(site.dir, 'registry.json'), JSON.stringify({ slug: 'test-writer', origin: 'https://example.com', rail: 'xrpl-testnet', pid: process.pid }))
+  expect(localWriterRegistrations()).toEqual([])
+})
+
+it('the installed malformed-note CLI fails within three seconds with actionable fields', async () => {
+  const root = await temporary()
+  await writeFile(join(root, 'bad.md'), '---\ntitle: Bad\nprice: nope\n---\nShort.')
+  const started = performance.now()
+  const result = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/publish-site.ts', root, '--slug', 'bad-note', '--testnet'], { env: { ...process.env, DOTENV_CONFIG_PATH: join(root, 'absent') }, encoding: 'utf8' })
+  expect(performance.now() - started).toBeLessThan(3000)
+  expect(result.status).toBe(1)
+  expect(result.stderr).toContain('abstract:')
+  expect(result.stderr).toContain('tier:')
+  expect(result.stderr).toContain('price:')
+  expect(result.stderr).toContain('--relax')
 })

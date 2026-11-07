@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { FactCoverSchema } from '../../shared/contracts/manifest.js'
 import { authorFactMenu } from './fact-menu.js'
 import { sha256 } from '../../shared/manifest.js'
-import { sharesRun, validateWriterCorpus, type Article, type WriterCorpus } from '../../shared/contracts/writers.js'
+import { countWords, sharesRun, validateWriterCorpus, type Article, type WriterCorpus } from '../../shared/contracts/writers.js'
 
 const examples: Record<string, string> = { title: 'My evidence note', abstract: 'A summary of the topic, without the paid answer.', tier: 'PAID (or FREE)', price: '0.10 (FREE uses 0)', tags: 'energy, methodology', synthetic: 'false (true for fictional examples)', questions: 'What changed?', entity: 'electricity', measure: 'share' }
 const Meta = z.object({
@@ -21,7 +21,7 @@ const Meta = z.object({
 }).strict()
 
 /** Deliberately small front matter: scalar key: value lines, no YAML execution/coercion. */
-export function parseMarkdown(text: string, slug: string, id: string, publishedAt = new Date().toISOString(), options: { relax?: boolean } = {}): Article & { synthetic: boolean } {
+export function parseMarkdown(text: string, slug: string, id: string, publishedAt = new Date().toISOString(), options: { relax?: boolean; validateBody?: boolean } = {}): Article & { synthetic: boolean } {
   const match = text.replace(/\r\n/g, '\n').match(/^---\n([\s\S]*?)\n---\n([\s\S]+)$/)
   if (!match) throw new Error('Expected --- front matter, then Markdown body')
   const raw: Record<string, string> = {}
@@ -32,10 +32,10 @@ export function parseMarkdown(text: string, slug: string, id: string, publishedA
   }
   const result = Meta.safeParse(raw)
   const problems = result.success ? [] : result.error.issues.map(i => `${i.path.join('.') || 'front matter'}: ${i.message}. Example: ${String(i.path[0])}: ${examples[String(i.path[0])] ?? 'use only documented fields'}`)
-  const words = match[2].trim().split(/\s+/).length
+  const words = countWords(match[2])
   const real = raw.synthetic !== 'true'
-  if (!(real && options.relax) && (words < (real ? 150 : 600) || words > (real ? 3000 : 1400))) problems.push(`body: ${words} words; ${real ? 'real-writer limit 150–3,000' : 'fictional corpus limit 600–1,400'}. Example: four paragraphs totalling 300 words.${real ? ' Use --relax to waive only this length check.' : ''}`)
-  if (match[2].trim().split(/\n\s*\n/).length < 4) problems.push('body.passages: needs at least 4 paragraphs. Example: separate paragraphs with a blank line.')
+  if (options.validateBody && !(real && options.relax) && (words < (real ? 150 : 600) || words > (real ? 3000 : 1400))) problems.push(`body: ${words} words; ${real ? 'real-writer limit 150–3,000' : 'fictional corpus limit 600–1,400'}. Example: four paragraphs totalling 300 words.${real ? ' Use --relax to waive only this length check.' : ''}`)
+  if (options.validateBody && match[2].trim().split(/\n\s*\n/).length < 4) problems.push('body.passages: needs at least 4 paragraphs. Example: separate paragraphs with a blank line.')
   if (problems.length || !result.success) throw new Error(problems.join('\n'))
   const meta = result.data
   const priceMinor = Math.round(Number(meta.price) * 100)
@@ -66,11 +66,11 @@ export async function markdownCorpus(folder: string, slug: string, name: string,
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 64) throw new Error('Writer slug must be at most 64 lowercase letters, numbers and hyphens')
   const entries = await readdir(folder, { withFileTypes: true })
   const files = entries.filter(e => e.isFile() && e.name.endsWith('.md')).sort((a, b) => a.name.localeCompare(b.name))
-  if (!files.length) throw new Error('No .md articles found; start with examples/writer-starter')
+  if (!files.length) throw new Error('folder: no .md articles found. Example: init my-notes, then publish my-notes --testnet')
   const results = await Promise.allSettled(files.map(async file => {
     const id = basename(file.name, '.md')
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) throw new Error('Markdown filenames must use lowercase letters, numbers and hyphens')
-    try { return parseMarkdown(await readFile(join(folder, file.name), 'utf8'), slug, id, (await stat(join(folder, file.name))).mtime.toISOString(), options) }
+    try { return parseMarkdown(await readFile(join(folder, file.name), 'utf8'), slug, id, (await stat(join(folder, file.name))).mtime.toISOString(), { ...options, validateBody: true }) }
     catch (error) { throw new Error(`${file.name}: ${error instanceof Error ? error.message : 'Invalid Markdown'}`, { cause: error }) }
   }))
   const errors = results.filter(r => r.status === 'rejected').map(r => String(r.reason.message))
@@ -81,7 +81,7 @@ export async function markdownCorpus(folder: string, slug: string, name: string,
   return validateWriterCorpus({
     publishers: [{ slug, name, kind: 'independent', domain: 'localhost', prices: Object.fromEntries(articles.map(a => [a.articleId, a.priceMinor])),
       licence: 'Author supplied; attribution required', accent: '#64748b', heroQuote: 'Expertise for agents',
-      bio: synthetic ? 'SYNTHETIC starter writer' : 'Locally published writer', synthetic, verification: 'unverified writer' }],
+      bio: synthetic ? 'SYNTHETIC starter writer' : options.relax ? 'Locally published writer · real-writer length waiver (--relax)' : 'Locally published writer', synthetic, ...(!synthetic && options.relax ? { realWordLimitsRelaxed: true } : {}), verification: 'unverified writer' }],
     writers: [{ slug, publisherSlug: slug, name, bio: 'Unverified local writer', voice: 'Author supplied' }], articles,
   }, { realWriter: !synthetic, relaxWordLimits: !synthetic && options.relax })
 }

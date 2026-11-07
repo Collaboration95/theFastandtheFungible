@@ -1,3 +1,4 @@
+import { localWriterRegistrations } from '../server/local-writer-discovery.js'
 import { loadLocalWriters } from './local-writers.js'
 import { existsSync } from 'node:fs'
 import { readdir, readFile } from 'node:fs/promises'
@@ -36,7 +37,8 @@ export async function loadWriterCorpus(root = dataDirectory, options: { allowMin
     // Until #120 commits the articles, the full roster is served with no articles.
     if (!articles.length && options.allowMini === false) throw new Error('No v2 articles under data/corpus/v2/')
     if (!articles.length) console.warn('Writer articles not generated yet (#120); serving the roster with no articles')
-    const local = root === dataDirectory ? await loadLocalWriters() : []
+    const active = new Set(localWriterRegistrations().map(w => w.slug))
+    const local = root === dataDirectory ? (await loadLocalWriters()).filter(c => !active.has(c.publishers[0].slug)) : []
     return validateWriterCorpus({ publishers: [...publishers, ...local.flatMap(c => c.publishers)],
       writers: [...writers, ...local.flatMap(c => c.writers)], articles: [...articles, ...local.flatMap(c => c.articles)] })
   }

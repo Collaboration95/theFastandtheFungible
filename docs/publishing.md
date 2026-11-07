@@ -1,26 +1,51 @@
-# Publish your own expertise
+# Publish your own expertise in three steps
 
-From a clone with Node 22.13+ and `npm ci`, turn a Markdown folder into a local
-writer that UI and MCP agents can search and pay:
+Use Node 22.13 or later. `<mcp-tgz>` means the MCP package asset from the release
+that includes `init`; older releases do not include it. No clone is needed.
 
-```sh
-cp -R examples/writer-starter my-notes
-npm run publish:site -- ./my-notes --rail simulated
-# Beside another stack: OFFSET=800 npm run publish:site -- ./my-notes --rail simulated
-```
+1. **Create notes.** Run `npx -y <mcp-tgz> init my-notes`. This writes two
+   commented, fictional examples. Replace their bodies with your own notes and
+   set `synthetic: false`. Every note needs `title`, `abstract`, `tier` and
+   `price`. Comments show optional fields too. Use `tier: FREE` with `price: 0`,
+   or `tier: PAID` with, for example, `price: 0.10` (S$0.10). Keep public titles,
+   abstracts and topic labels separate from paid answer text. Use at least four
+   paragraphs. Real-writer notes allow **150–3,000 words**; fictional examples
+   and benchmarks retain **600–1,400**. `--relax` explicitly waives only the
+   real-writer length check; it never waives privacy, price or passage checks.
+2. **Publish.** Run `npx -y <mcp-tgz> publish my-notes --testnet`. Validation
+   reports field errors together before wallet creation, faucet funding or
+   provisioning. npm itself must install the package before it can execute
+   validation; reuse the same package/cache on retries. The command saves private
+   state under `$XDG_STATE_HOME/researchagent/writers/` (default
+   `~/.local/state/researchagent/writers/`), with wallet and registry files mode
+   0600. It prints a validated CredentialCreate link and an ephemeral local URL.
+   Keep it running. Optional: `--slug my-name`, `--name "My Name"`, `--port N`.
+   Port 8790 is reserved and rejected. `--rail simulated` is labelled offline
+   settlement and does not register a Testnet origin.
+3. **Find and buy.** Run `npx -y <mcp-tgz> app --testnet`, using the same XDG
+   state directory. Open **Writers · local · Testnet** and ask a question within
+   your note's scope. Discovery also picks up writers published after app start
+   (reopen the Writers tab to refresh its list). Budget approval authorizes
+   deterministic policy to buy; the model cannot spend. Paid delivery uses
+   key-reveal escrow. Export receipts and run `researchagent verify receipts.json
+   --ledger` with the Python SDK, or `npm run verify:answer -- receipts.json
+   --ledger` in a clone.
 
-The command serves the site, signed manifests and an x402 facilitator on loopback,
-uses labelled simulated settlement in the command above, and prints the time to ready.
-Testnet is an explicit operator choice; it is not needed for this offline first run.
-Keep it running and use the printed `PUBLISHER_URL` with the UI/MCP engine.
-It also registers the writer in the ignored `data/local-writers/` directory;
-the next normal publisher start includes it alongside the built-in writers.
-Stop that site before starting the normal stack on the same port. Ctrl-C stops
-the host; rerun the same command after edits. Use `--slug my-name`, `--name "My Name"`,
-`--port 9590`, or `--rail simulated` for an explicitly labelled offline run.
-`node scripts/publish-site.mjs ./my-notes` is the equivalent repo-local bin entry.
+In a clone, steps 1 and 2 are `npm run publish:init -- my-notes` and
+`npm run publish:site -- my-notes --testnet` after `npm ci`.
 
-Each top-level `.md` file needs scalar front matter (plain or quoted values):
+Only public XRPL Testnet faucet funds are used: **no real value**. Starter notes
+are synthetic; author-supplied notes remain unverified. A local Testnet Credential
+attests the wallet, not human identity, consent or article truth. The public
+real-writers list is separate and requires consenting writers.
+
+Local federation admits at most three numeric loopback origins, including the
+built-in origin. Stopped registrations are ignored. Keep unused writers stopped
+when the limit is reached. No bearer token or signing key is sent to a writer.
+See [writer verification](writer-verification.md) and
+[the federation evidence](evidence/round2-f/README.md) for the underlying contracts.
+
+Front matter reference (the body below is abbreviated; `init` supplies full notes):
 
 ```markdown
 ---
@@ -35,45 +60,3 @@ synthetic: true
 ## Research scope
 Explain the evidence, methodology and limitations here.
 ```
-
-Use `tier: FREE` and `price: 0` for free articles. The starter folder contains
-complete synthetic examples. Set `synthetic: false` only for your own real work;
-this field labels provenance, not verification of a writer's claims. The parser
-accepts scalar front matter and derives article identity from each filename.
-
-### Independent local origins (Lane F)
-
-`PUBLISHER_URLS=http://127.0.0.1:<port>,http://127.0.0.1:<port>,http://127.0.0.1:<port>` admits at most three operator-configured numeric loopback origins. `PUBLISHER_URL` retains singleton compatibility. This is the labelled pinned-local-origin finals topology; public remote federation is deferred. Discovery/search has one two-second deadline per origin, four HTTP slots, 50 writers/origin and 50 returned hits/query, with healthy partial results.
-
-Federated runtime references carry `source` version 1: origin, signed seller public key, profileId, resourceId and version. `shared/source-identity.ts` supplies the canonical tuple and citation key. TS, Python and MCP preserve that identity; wallet reputation crosses hosts. Receipt bundles dispatch v1/v2 explicitly. Historical missing origins remain unresolved; invoices, signed manifests, blobs, audit entries and intent IDs are unchanged. New obligations save endpoint context before signing; removal prevents new admission while recovery uses the saved endpoint. No engine bearer, delivery token or payment signature is forwarded across origins.
-
-Offline reproduction: `node --import tsx scripts/demo-multi-origin.ts --fixture --output scratch/multi-origin.json`. Evidence and migration handoff: `docs/evidence/round2-f/README.md`. The proof is synthetic, uses simulated payments and an explicit fixture judging/citation rubric, and does not establish adoption or live model quality.
-
-### Get a verified writer identity
-
-Ask the operator for its trusted credential issuer and type. That issuer vouches
-for your seller wallet with Testnet CredentialCreate; accept with CredentialAccept.
-The same seller wallet carries its identity across approved origins. Verification
-attests identity, not article truth, and never changes purchase policy or prices.
-See [writer verification](writer-verification.md) for setup, limits and revocation.
-
-## Supply and buyers
-
-- Supply is anyone with a Markdown folder.
-- Buyers are agents with budgets that already exist (Claude Code / MCP).
-- The first writers are people who already publish free notes: they keep the free version as the free source and attach a paid deep version.
-- Key reveal means a writer needs no payment server trust and no Stripe account, just an XRPL address.
-
-## Faucet writer onboarding
-
-`npm run publish:site -- ./my-notes --rail testnet` (or `--testnet`)
-provisions a public-faucet writer wallet, then the local operator's Testnet
-issuer creates a `researchagent/writer-v1` credential and the writer accepts it.
-The repo bin is also packaged as `npx -y <rc MCP tgz> publish ./writer-starter --testnet`.
-Keep it running; start the buyer engine with the printed PUBLISHER_URL and
-WRITER_CREDENTIAL_ISSUERS. Key reveal is enabled for this writer by default.
-The issuer cache is private and local; this proves wallet onboarding, not a
-human identity check or consent. The owner must approve any issuer used beyond
-this local Testnet demonstration. Wallet and issuer files use mode 0600.
-No seeds are printed. The separate real-writers.json list stays empty until
-consenting writers are supplied by the owner.
