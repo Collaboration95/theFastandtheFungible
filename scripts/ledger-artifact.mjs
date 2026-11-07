@@ -77,7 +77,7 @@ export function artifact() {
   for (const { hash, source, response: r } of refreshed) {
     if (!read(source).includes(hash) || r.hash !== hash || !r.validated || r.meta?.TransactionResult !== 'tesSUCCESS') throw Error('Invalid round-five evidence')
     const t = r.tx_json
-    const row = { hash, ledgerIndex: r.ledger_index, feeDrops: t.Fee, date: r.close_time_iso.slice(0, 10), source: refreshSource, sourceCommit: 'f328764fd9ce1badd41174a7da4383d2af637ef9', label: `${source.includes('j5-coverage') ? 'Team-authored writer · fixture models' : source.includes('m1-iou') ? 'TEST-SGD IOU · stand-in for RLUSD · fictional writer' : 'Local publish onboarding · generated test note'} · ${t.TransactionType}` }
+    const row = { hash, ledgerIndex: r.ledger_index, feeDrops: t.Fee, date: r.close_time_iso.slice(0, 10), source: refreshSource, sourceCommit: 'afb90bf7e027b82aa60d1c8afa047d3483c6608b', label: `${source.includes('j5-coverage') ? 'Team-authored writer · fixture models' : source.includes('m1-iou') ? 'TEST-SGD IOU · stand-in for RLUSD · fictional writer' : 'Local publish onboarding · generated test note'} · ${t.TransactionType}` }
     if (t.TransactionType.startsWith('Escrow')) {
       const create = t.TransactionType === 'EscrowCreate' ? t : refreshed.find(x => x.response.tx_json.TransactionType === 'EscrowCreate' && x.response.tx_json.Account === t.Owner && x.response.tx_json.Sequence === t.OfferSequence)?.response.tx_json
       if (!create) throw Error('Missing round-five create')
