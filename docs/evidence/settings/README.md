@@ -14,12 +14,30 @@ environment file require credentials in their launcher environment.
 Non-secret settings are also applied at restart; no active run gains authority.
 Reset means reset preferences: payment journals, seeds and receipts are preserved.
 
-Integration follow-up: the reserved `mcp/app.ts` proxy currently strips browser
-metadata and CSRF headers. It must forward Origin, Sec-Fetch-Site,
-X-Settings-UI and X-Settings-CSRF only after its existing local Host/Origin checks,
-and retain its local Host/Origin checks. RA_WEB_ORIGIN can pin the UI origin. Until then the
-zero-clone app correctly refuses owner Settings operations with HTTP 403.
-No mcp files or IOU payment paths were changed in this lane.
+Zero-clone integration completed (2026-11-07): `mcp/app.ts` retains its local
+Host/Origin guard and forwards only Origin, Sec-Fetch-Site, X-Settings-UI and
+X-Settings-CSRF on `/api/settings*` through a named helper. The launcher binds an
+ephemeral port before engine startup and pins engine admission to that origin.
+The applied handoff patch has been deleted. Proxy integration tests prove masked
+keys, an audited cap save, rejected cross-origin/metadata-free/CSRF-free cap,
+credential and network changes, and header isolation from other routes.
+
+`zero-clone-proof.json` and `zero-clone-*.png`: packed MCP tgz launched with
+`npx -y file:<absolute-tgz> app --testnet` from an empty temporary directory.
+Fixture models, fictional writers, actual XRPL Testnet rail; a synthetic provider
+key was masked, cap changed from 0 to 125, and the durable human audit exported.
+No research or purchase was initiated. MCP policy's zero default is unchanged.
+
+`desktop-dmg-acceptance.md`: unsigned arm64 DMG mounted read-only, fixture crash
+recovery retained the signed submission and exactly one receipt/grant.
+`desktop-smoke.json`: packaged UC1–UC3, free answer, paid grant, refund, isolation,
+Host/Origin rejection and clean shutdown passed. `desktop-settings-proof.json`
+and desktop screenshots: first-run onboarding, Cmd+, Settings menu accelerator,
+confirmation persistence and 1100×760 bounds across relaunch passed.
+Fixture mode now explicitly uses simulated payment instead of requesting Testnet
+escrow; live mode retains selected escrow. The smoke checks the current exact
+budget wording and closes verified first-run onboarding before testing menu reopen.
+No assertions, timeouts, thresholds or hard gates were loosened.
 
 Native recovery IPC and update checks remain available without engine startup.
 Developer ID signing remains owner work; ci-signing.mjs and desktop.yml unchanged.
@@ -35,9 +53,7 @@ limit. These are tooling observations, not evidence of ledger/provider failures.
 
 The final accessibility pass exposed a keyboard-inaccessible overflow region in
 the writer data view. Wallets and writers now use labelled tables; the command
-region is focusable. The axe rule was retained. The optional MCP-lane handoff is
-an unapplied patch, verified with `git apply --check`; it does not modify the
-reserved checkout files.
+region is focusable. The axe rule was retained. The MCP handoff is now applied and covered by proxy integration tests.
 
 Verified local results (2026-11-07): default `npm run check:fast` passed all
 153 files / 1,284 tests and 20 chaos iterations with zero invariant violations

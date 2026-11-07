@@ -57,6 +57,17 @@ export const localOrigin = (headers: IncomingMessage['headers'], port: number) =
   return !headers.origin || headers.origin === `http://${host}`
 }
 
+/** Preserve browser owner metadata only for Settings, after the local origin guard. */
+export function settingsHeaders(path: string, headers: IncomingMessage['headers']): Record<string, string> {
+  if (!path.startsWith('/api/settings')) return {}
+  const forwarded: Record<string, string> = {}
+  for (const name of ['origin', 'sec-fetch-site', 'x-settings-ui', 'x-settings-csrf']) {
+    const value = headers[name]
+    if (typeof value === 'string') forwarded[name] = value
+  }
+  return forwarded
+}
+
 async function readBody(req: IncomingMessage) {
   const chunks: Buffer[] = []
   let size = 0
@@ -101,13 +112,17 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
     const dailyMinor = Number(config.WALLET_DAILY_CAP_MINOR ?? (setup?.testnet ? String(APP_DAILY_CAP_MINOR) : '2000'))
     const env: NodeJS.ProcessEnv = { ...setup?.env, DOTENV_CONFIG_PATH: '.app-no-env' }
     if (setup?.testnet) env.WALLET_DAILY_CAP_MINOR = String(dailyMinor)
+    // Bind once on an ephemeral port, then pin engine admission to that UI origin.
+    http = createServer()
+    await new Promise<void>((done, fail) => { http!.once('error', fail); http!.listen(options.port, '127.0.0.1', done) })
+    const port = (http.address() as { port: number }).port
+    env.RA_WEB_ORIGIN = `http://127.0.0.1:${port}`
     engine = await startEngine({ dataDir, live: false, env })
     const engineUrl = engine.apiUrl, token = engine.apiToken, publisherUrl = engine.publisherUrl
     // The SDK talks to the bearer-protected engine; the token lives only in this 0600 file, never on screen.
     tokenFile = join(dataDir, 'api-token')
     writeFileSync(tokenFile, token + '\n', { mode: 0o600 })
     const headers = { 'Content-Security-Policy': CSP, 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Referrer-Policy': 'no-referrer' }
-    let port = options.port
 
     const proxy = async (req: IncomingMessage, res: ServerResponse, url: URL) => {
       const publisher = PUBLISHER_PATH.test(url.pathname)
@@ -117,7 +132,7 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
       const body = ['GET', 'HEAD'].includes(method) ? undefined : await readBody(req)
       const upstream = await fetch(new URL(url.pathname + url.search, publisher ? publisherUrl : engineUrl), {
         method, body, redirect: 'error', signal: abort.signal,
-        headers: { ...(req.headers['content-type'] ? { 'Content-Type': req.headers['content-type'] } : {}), ...(req.headers.accept ? { Accept: req.headers.accept } : {}), ...(typeof req.headers['idempotency-key'] === 'string' ? { 'Idempotency-Key': req.headers['idempotency-key'] } : {}), ...(publisher ? {} : { Authorization: `Bearer ${token}` }) },
+        headers: { ...settingsHeaders(url.pathname, req.headers), ...(req.headers['content-type'] ? { 'Content-Type': req.headers['content-type'] } : {}), ...(req.headers.accept ? { Accept: req.headers.accept } : {}), ...(typeof req.headers['idempotency-key'] === 'string' ? { 'Idempotency-Key': req.headers['idempotency-key'] } : {}), ...(publisher ? {} : { Authorization: `Bearer ${token}` }) },
       })
       const out: Record<string, string> = { ...headers, 'Cache-Control': 'no-store' }
       for (const name of ['content-type', 'content-disposition', 'etag']) { const value = upstream.headers.get(name); if (value) out[name] = value }
@@ -126,7 +141,7 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
       Readable.fromWeb(upstream.body as never).on('error', () => res.destroy()).pipe(res)
     }
 
-    http = createServer(async (req, res) => {
+    http.on('request', async (req, res) => {
       try {
         if (!localOrigin(req.headers, port)) { res.writeHead(403, headers); res.end('Forbidden'); return }
         const url = new URL(req.url ?? '/', `http://127.0.0.1:${port}`)
@@ -140,8 +155,6 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
         res.end(req.method === 'HEAD' ? undefined : data)
       } catch { if (!res.headersSent) res.writeHead(502, headers); res.end('Local engine unavailable') }
     })
-    await new Promise<void>((done, fail) => { http!.once('error', fail); http!.listen(options.port, '127.0.0.1', done) })
-    port = (http.address() as { port: number }).port
     const url = `http://127.0.0.1:${port}`
 
     const money = setup?.env.ESCROW_ASSET === 'test-iou' ? (minor: number) => `TEST-SGD ${(minor / 100).toFixed(2)} · stand-in for RLUSD · no real value` : sgd

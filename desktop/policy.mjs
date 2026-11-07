@@ -39,7 +39,7 @@ export function engineEnv({ userData, preferences, secrets = {} }) {
   const live = preferences.live
   // Allowlist, never inherit .env, NODE_OPTIONS, provider URLs, proxy settings or wallet seeds.
   return {
-    ESCROW_MODE: preferences.ESCROW_MODE || 'key-reveal', ESCROW_ASSET: preferences.ESCROW_ASSET || 'XRP', ANCHOR_RAIL: preferences.ANCHOR_RAIL || 'xrpl-testnet',
+    ESCROW_MODE: live ? preferences.ESCROW_MODE || 'key-reveal' : 'payment', ESCROW_ASSET: preferences.ESCROW_ASSET || 'XRP', ANCHOR_RAIL: preferences.ANCHOR_RAIL || 'xrpl-testnet',
     HOST: '127.0.0.1', RA_API_TOKEN: secrets['local-api-token'] || '',
     WALLET_DAILY_CAP_MINOR: String(preferences.walletDailyMinor ?? 2000), SPENDING_PAUSED: process.env.SPENDING_PAUSED === '1' ? '1' : '0',
     PATH: '/usr/bin:/bin:/usr/sbin:/sbin', HOME: userData, TMPDIR: process.env.TMPDIR || '/tmp',
