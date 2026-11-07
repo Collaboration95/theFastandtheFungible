@@ -4,6 +4,8 @@ Real XRPL Testnet settlement; fictional corpus and fixture research/decision pro
 
 Transaction: https://testnet.xrpl.org/transactions/0EDB64594916EF8127B06496919FCC469B3176C943B34423B20EC578CE7278B1
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../historical-tools.md). All generator commands on this page use that tree.
+
 Command: OFFSET=900 node --import tsx scripts/app-mcp-proof.mjs
 
 ```json

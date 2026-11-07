@@ -18,6 +18,8 @@ Terminal transcript (public output excerpt). The demo script calls the same
 `publishSite` implementation as the CLI; its printed shell recipes are shown
 below as comments. The actual CLI is separately exercised by the fixture test:
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../historical-tools.md). All generator commands on this page use that tree.
+
 ```text
 $ node --import tsx scripts/publish-demo.ts --testnet
 # Recipe: cp -R examples/writer-starter scratch/publish-demo-testnet

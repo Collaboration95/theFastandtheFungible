@@ -13,6 +13,8 @@ set DefaultRipple, established trust lines, and minted two test USD to the buyer
 Flags and control risks are recorded in COMPLIANCE.md. Currency hex:
 `524C555344000000000000000000000000000000`.
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../historical-tools.md). All generator commands on this page use that tree.
+
 `OFFSET=1900 node --import tsx scripts/evidence/rlusd-275.mjs` uses durable,
 ignored private journals and ports 10688/10690. Only public allowlisted metadata
 is copied here. It runs the real PurchaseManager, signed manifest/proof checks,

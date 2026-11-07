@@ -26,6 +26,8 @@ This wire count covers search, not captured SSE; the raw store is audited.
 
 Reproduce intentionally (spends Testnet XRP and model calls):
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../historical-tools.md). All generator commands on this page use that tree.
+
 ```sh
 OFFSET=700 node --import tsx scripts/evidence/numbers-v7-testnet.mjs
 ```

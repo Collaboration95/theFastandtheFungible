@@ -159,7 +159,7 @@ Never delete a create to retry a purchase; never copy recovery state to evidence
 A missing history entry with a consumed sequence stays unresolved. Restore node
 history/connectivity rather than guessing that the money returned.
 
-Run the bounded SYNTHETIC mini-corpus demonstration serially with
+Historical recipe ([whole-tree pin and recovery](historical-tools.md), `b0a67ffa` only): run the bounded SYNTHETIC mini-corpus demonstration serially with
 `OFFSET=1600 node --import tsx scripts/evidence/escrow-273.ts`. It loads the
 ignored `.env`, persists state under ignored `scratch/escrow-273/`, caps the two
 principals and resumes the same intents. It needs the existing funded Testnet
@@ -176,7 +176,7 @@ from Ripple's documented https://tryrlusd.com faucet (authentication was require
 on 3 Nov); setup never claims trust lines mint tokens. The evidence runner below
 provisions its own labelled issuer and mints one test USD per required top-up.
 
-Run `OFFSET=1900 node --import tsx scripts/evidence/rlusd-275.mjs`. It uses
+Historical recipe ([whole-tree pin and recovery](historical-tools.md), `b0a67ffa` only): run `OFFSET=1900 node --import tsx scripts/evidence/rlusd-275.mjs`. It uses
 ports 10690/10688, existing Testnet payer/writer seeds, a faucet-funded stand-in
 issuer and caller, fixture research, a SYNTHETIC article purchase through policy,
 and a denylisted free-writer royalty. Public output is allowlisted in

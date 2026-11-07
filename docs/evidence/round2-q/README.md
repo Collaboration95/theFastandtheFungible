@@ -4,6 +4,8 @@ The three examples now use RA_URL (default http://127.0.0.1:8788), budget, and t
 
 ## Timed judge path
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../../historical-tools.md). All generator commands on this page use that tree.
+
 Before: mock-judge report section 0 at f3902008, warm npm cache, same Mac. After: clean temporary clone with the staged changes, Node 22.13.1, Python 3.14.7, warm npm cache, ephemeral UI/API/publisher ports. These are observations with different runtimes and machine load, not a controlled speed benchmark. `retime.mjs` reproduces the install/demo/example steps; `timings.json` records the result. Normal `make run` uses UI 5100, API 8788, publisher 8790; tests never bind these ports.
 
 | Step | Before | After | Result |
