@@ -78,9 +78,9 @@ try {
   await expect(report.getByText('ResearchAgent evidence report').first()).toBeVisible()
   await report.close()
   const preferencesReady = app.waitForEvent('window')
-  await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Desktop Settings…').click())
+  await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Settings…').click())
   const preferences = await preferencesReady
-  await expect(preferences.getByRole('heading', { name: 'Desktop settings' })).toBeVisible()
+  await expect(preferences.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible()
   const safeState = await preferences.evaluate(() => window.desktop.state())
   expect(JSON.stringify(safeState)).not.toContain(canary)
   expect(safeState.wallet.wallet.dailyMinor).toBe(2000)

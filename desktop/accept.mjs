@@ -40,9 +40,9 @@ async function run(live) {
     const coldStartMs = Math.round(performance.now() - start)
     if (process.argv.includes('--launch-only')) return { live: false, data, coldStartMs, arch: await app.evaluate(() => process.arch), launchOnly: true }
     const windowReady = app.waitForEvent('window')
-    await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(i => i.label === 'Desktop Settings…').click())
+    await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(i => i.label === 'Settings…').click())
     const prefs = await windowReady
-    await expect(prefs.getByRole('heading', { name: 'Desktop settings' })).toBeVisible({ timeout: 60000 })
+    await expect(prefs.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible({ timeout: 60000 })
     const { id } = await prefs.evaluate(() => window.desktop.agentCreate('Codex', 100, 100))
     accounts.push(`agent-${id}`)
     const token = await readSecret(`agent-${id}`)

@@ -38,3 +38,9 @@ the writer data view. Wallets and writers now use labelled tables; the command
 region is focusable. The axe rule was retained. The optional MCP-lane handoff is
 an unapplied patch, verified with `git apply --check`; it does not modify the
 reserved checkout files.
+
+Verified local results (2026-11-07): default `npm run check:fast` passed all
+153 files / 1,284 tests and 20 chaos iterations with zero invariant violations
+on code commit `491345c1`. Production build and the final screenshot/axe run
+passed. The subsequent native smoke/recovery harness selector migration retains
+its existing assertions/timeouts; installed-artifact acceptance was not run.
