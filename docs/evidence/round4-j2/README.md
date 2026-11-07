@@ -48,3 +48,9 @@ on Node 22.13.0, including all 12 Testnet checks. Final init/app measurements
 were repeated after rebasing onto the character/UI assets.
 
 Final cold retry passed at 87.149 s on the final packed runtime (3.418 MB). The 90 s limit remained unchanged. The runtime now uses a stable judge intent key; repeat invocations reuse the run instead of buying again.
+
+An additional exact-head retry at e30d9711 also exceeded the unchanged 90 s cold
+deadline: the child later printed PASS at 86.6 s runtime, excluding installation.
+try-exact-timeout-output.txt and try-exact-timeout.json preserve that miss.
+The verifier follow-up shares validated transaction reads and runs independent
+payment/escrow verification concurrently; every proof check still runs.
