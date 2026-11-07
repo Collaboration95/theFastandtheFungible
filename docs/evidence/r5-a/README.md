@@ -33,3 +33,5 @@ One mixed-artifact SDK state audit reports a pre-existing `premium_leak` on the 
 - After rebasing on origin/main: `check:fast` **passes**, 162 files, 1,377 tests pass / one existing skip; 20 chaos scenarios, zero invariant violations. Focused checks cover crash recovery with/without purchases, one fee, budget unchanged, simulated/incomplete skips, visible failure, no-purchase export/label, progress/read overlap, serial signing order, and single try result.
 
 **Loosened:** only the acceptance harness's export observation wait, 20 → 90 s, disclosed above. No product timeout, verifier, gate, test threshold or signing order changed. **Unmet target:** IOU cold 122.885 s exceeds 100 s. **Additional nonzero diagnostic:** UC3 full-state gate audit 1, detailed above.
+
+Browser follow-up: the first CI browser job failed against the previous anchor copy. The two existing UX2 assertions now require the exact new fee/ledger label and unavailable message; href, polling-stop and 90-second-deadline assertions remain intact. Local `npx playwright test tests/ux2.spec.ts`: **4/4 pass**, ephemeral ports. No assertion or timeout was removed or relaxed.
