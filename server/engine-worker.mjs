@@ -25,10 +25,13 @@ try {
   await closeServer(publisher)
   throw error
 }
-parentPort.once('message', async () => {
-  await api.drain()
-  await closeServer(server)
-  await api.close()
-  await closeServer(publisher)
-  parentPort.close()
+parentPort.once('message', () => {
+  void (async () => {
+    try {
+      await api.drain()
+      await closeServer(server)
+      await api.close()
+      await closeServer(publisher)
+    } finally { parentPort.close() }
+  })().catch(() => { process.exitCode = 1; parentPort.close() })
 })

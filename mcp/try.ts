@@ -1,11 +1,10 @@
-import { mkdtemp, writeFile, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { ResourceScope } from '../shared/resource-scope.js'
+import { parseCommand, resolveStartup } from '../shared/startup-plan.js'
+import { writeFile } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 import { DEMO_QUESTIONS } from '../shared/contracts/examples.js'
-import { prepareMcpTestnet, testnetStateDir } from './testnet.js'
+import { prepareMcpTestnet } from './testnet.js'
 import { startEngine } from '../server/engine.js'
 import { createClient } from '../sdk/index.js'
 
@@ -13,12 +12,14 @@ export async function runTry(argv: string[]) {
   if (argv.length !== 1 || argv[0] !== '--testnet') throw Error('Usage: researchagent-mcp try --testnet')
   const started = performance.now()
   process.chdir(fileURLToPath(new URL('..', import.meta.url)))
-  const scratch = await mkdtemp(join(tmpdir(), 'ra-try-'))
+  const scope = new ResourceScope()
+  const scratch = scope.tempDir('ra-try-')
+  const plan = resolveStartup(process.env, parseCommand(['try', ...argv]))
   let engine: Awaited<ReturnType<typeof startEngine>> | undefined
   try {
     const setup = await prepareMcpTestnet()
     console.log(setup.labels.join(' · '))
-    engine = await startEngine({ dataDir: testnetStateDir(), live: false, env: { ...setup.env, DOTENV_CONFIG_PATH: '.try-no-env', MCP_MAX_BUDGET_MINOR: process.env.MCP_MAX_BUDGET_MINOR ?? '200', MCP_DAILY_CAP_MINOR: process.env.MCP_DAILY_CAP_MINOR ?? '500', WALLET_DAILY_CAP_MINOR: process.env.WALLET_DAILY_CAP_MINOR ?? '500' } })
+    engine = await startEngine({ dataDir: plan.stateDir, live: false, env: { ...setup.env, DOTENV_CONFIG_PATH: '.try-no-env', MCP_MAX_BUDGET_MINOR: String(plan.caps.maxMinor), MCP_DAILY_CAP_MINOR: String(plan.caps.dailyMinor), WALLET_DAILY_CAP_MINOR: String(plan.caps.walletDailyMinor) } })
     const client = createClient({ baseUrl: engine.apiUrl, token: engine.apiToken })
     const answer = await client.ask(DEMO_QUESTIONS.find(q => q.id === 'UC3')!.text, { budgetSgd: 2, idempotencyKey: `researchagent-try-uc3-${setup.testnet ? 'testnet' : 'simulated'}-v1`, escrow: setup.testnet })
     if (answer.phase !== 'DONE') throw Error('UC3 did not finish')
@@ -26,7 +27,7 @@ export async function runTry(argv: string[]) {
     if (setup.testnet) {
       const deadline = Date.now() + 30_000
       while (!bundle.ledgerAnchor && Date.now() < deadline) {
-        await new Promise(done => setTimeout(done, 250))
+        await new Promise(done => scope.timer(setTimeout(done, 250)))
         bundle = await client.receipts(answer.run_id)
       }
       const purchases = bundle.payments.filter(p => p.kind === 'purchase')
@@ -40,7 +41,12 @@ export async function runTry(argv: string[]) {
       ]
       // Verification is performed before asserting the cryptographic success label.
       await writeFile(join(scratch, 'receipts.json'), JSON.stringify(bundle))
-      const verification = await promisify(execFile)(process.execPath, [resolve('scripts/verify-answer.js'), join(scratch, 'receipts.json'), '--ledger'], { maxBuffer: 1024 * 1024 })
+      const verifier = scope.spawn(process.execPath, [resolve('scripts/verify-answer.js'), join(scratch, 'receipts.json'), '--ledger'])
+      let stdout = ''
+      verifier.stdout.on('data', data => { stdout += data; if (stdout.length > 1024 * 1024) verifier.kill() })
+      verifier.stderr.resume()
+      await new Promise<void>((done, fail) => { verifier.once('error', fail); verifier.once('exit', code => code === 0 ? done() : fail(Error('Ledger verifier failed'))) })
+      const verification = { stdout }
       rows.forEach(([label, hash], i) => console.log(`${i + 1}. ${label}${label.includes('Finish') || label.includes('finish') ? ' · sha256(K) = Condition ✓' : ''}: https://testnet.xrpl.org/transactions/${hash}`))
       console.log(verification.stdout.trim())
     } else {
@@ -53,7 +59,6 @@ export async function runTry(argv: string[]) {
     console.log(`Finished in ${((performance.now() - started) / 1000).toFixed(1)} s · budget S$2.00 · spent S$${(answer.spentMinor / 100).toFixed(2)}`)
     console.log('RESULT PASS')
   } finally {
-    await engine?.close()
-    await rm(scratch, { recursive: true, force: true })
+    try { await engine?.close() } finally { await scope.close() }
   }
 }

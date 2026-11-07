@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { Client, Wallet } from 'xrpl'
 import { testnetUrl } from '../../shared/xrpl.js'
 import { CredentialIssuerSchema } from '../../shared/writer-verification.js'
-import { fundTestnetWallet } from './publish.js'
+import { fundTestnetWallet } from './testnet-funding.js'
 
 export async function issueWriterCredential(subject: Wallet, root: string) {
   const file = join(root, 'issuer.private.json')

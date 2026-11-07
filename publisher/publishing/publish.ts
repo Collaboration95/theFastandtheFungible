@@ -3,31 +3,18 @@ import { once } from 'node:events'
 import { existsSync } from 'node:fs'
 import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import { Client, Wallet } from 'xrpl'
+import { Wallet } from 'xrpl'
 import { parse } from 'dotenv'
 import { createPublisherApp } from '../routes.js'
 import { localWriterRoot } from '../local-writers.js'
 import { publisherKeys, seedEnvName } from '../registry.js'
 import { markdownCorpus } from './markdown.js'
 import { payeeRefusal } from '../../server/payee-screening.js'
-import { testnetUrl } from '../../shared/xrpl.js'
+import { fundTestnetWallet } from './testnet-funding.js'
+export { fundTestnetWallet } from './testnet-funding.js'
 import type { Rail } from '../../shared/contracts/publisher.js'
 import { buildIndex, cachedVector, EMBEDDING_DIMS, EMBEDDING_MODEL, embedTexts, embeddingKey, embeddingText, embeddingsLive, type EmbeddingCache } from '../search.js'
 import { sha256 } from '../../shared/manifest.js'
-
-/** Faucet provisioning never signs a payment. The fixed Testnet allowlist is checked before connecting. */
-export async function fundTestnetWallet(wallet: Wallet): Promise<void> {
-  const client = new Client(testnetUrl(), { connectionTimeout: 8000, timeout: 12000 })
-  try {
-    await client.connect()
-    try {
-      await client.request({ command: 'account_info', account: wallet.classicAddress, ledger_index: 'validated' })
-      return // Receiving requires no balance top-up for an existing account.
-    } catch (error) { if ((error as { data?: { error?: string } }).data?.error !== 'actNotFound') throw error }
-    await client.fundWallet(wallet)
-  } catch { throw new Error('Testnet wallet funding failed. The key is saved; rerun the same command to retry. Check XRPL_RPC_URL and Testnet faucet availability.') }
-  finally { await client.disconnect() }
-}
 
 export type PublishOptions = {
   relax?: boolean; folder: string; slug: string; name?: string; rail?: Rail; port?: number; root?: string

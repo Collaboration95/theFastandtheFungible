@@ -1,3 +1,4 @@
+import { resources } from './helpers/resource-scope.js'
 import { expect, it } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
@@ -28,4 +29,21 @@ it('boots two isolated fixture engines on ephemeral ports and closes every liste
     await Promise.all(engines.map(e => e.close()))
     rmSync(dir, { recursive: true, force: true })
   }
+}, 30_000)
+
+it('aborts boot, reaches terminal state, and bounds idempotent fixture close to five seconds', async () => {
+  const dir = resources().tempDir('ra-engines-')
+  try {
+    const abort = new AbortController()
+    abort.abort()
+    await expect(startEngine({ dataDir: join(dir, 'aborted'), signal: abort.signal })).rejects.toThrow('aborted')
+    const engine = await startEngine({ dataDir: join(dir, 'ready') })
+    expect(engine.state).toBe('ready')
+    const started = performance.now()
+    const close = engine.close()
+    expect(engine.close()).toBe(close)
+    await close
+    expect(engine.state).toBe('closed')
+    expect(performance.now() - started).toBeLessThanOrEqual(5000)
+  } finally { /* resources owns this root */ }
 }, 30_000)

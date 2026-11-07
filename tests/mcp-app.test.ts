@@ -131,7 +131,7 @@ test('IOU app ready block denominates prompt and daily caps in the labelled stan
  vi.mocked(prepareMcpTestnet).mockResolvedValue({testnet:true,env:{ESCROW_ASSET:'test-iou'},labels:['Testnet · no real value']} as never)
  const app = await boot(['--testnet','--iou'])
  try {
-  expect(prepareMcpTestnet).toHaveBeenLastCalledWith(undefined,'test-iou')
+  expect(prepareMcpTestnet).toHaveBeenLastCalledWith(undefined,'test-iou',app.stop.signal)
   expect(app.out).toContain('wallet daily cap TEST-SGD 5.00 · stand-in for RLUSD · no real value')
  } finally {app.stop.abort(); await app.done; app.restore()}
 },30000)

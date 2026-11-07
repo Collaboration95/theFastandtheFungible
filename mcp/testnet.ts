@@ -23,11 +23,11 @@ const FIXTURE = 'Fixture models and fictional writers'
  * Provisions (or reuses) faucet wallets and returns engine-only environment overrides. The parent
  * process environment is never mutated and operator caps are never touched (hard gate 2).
  */
-export async function prepareMcpTestnet(load: typeof provision = provision, asset = process.env.ESCROW_ASSET) {
+export async function prepareMcpTestnet(load: typeof provision = provision, asset = process.env.ESCROW_ASSET, signal?: AbortSignal) {
   const started = performance.now()
   try {
     const root = testnetStateDir()
-    const seeds = await load(resolve(root, 'wallets.private.json'), fetch, undefined, root, asset)
+    const seeds = await load(resolve(root, 'wallets.private.json'), fetch, undefined, root, asset, ...(signal ? [signal] : []))
     const full = isolatedEnv(seeds, asset)
     const env: NodeJS.ProcessEnv = { ESCROW_MODE: 'key-reveal', ANCHOR_RAIL: 'xrpl-testnet', DOTENV_CONFIG_PATH: '.testnet-no-env' }
     for (const [key, value] of Object.entries(full)) if (value !== undefined && /^(XRPL_|ESCROW_|SETTLEMENT_RAIL$|TESTNET_IOU_ISSUER$)/.test(key)) env[key] = value
