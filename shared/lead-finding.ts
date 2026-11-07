@@ -2,7 +2,13 @@ import { sameSource } from './source-identity.js'
 import type { Claim, ContentEnvelope } from './contracts/index.js'
 
 const STOP = new Set('what when where which how did does are the its and with from that this latest last getting much was were for has have on in of a an to s'.split(' '))
-const words = (text: string) => [...new Set(text.toLowerCase().replace(/lead[- ]times?/g, 'lead time').match(/[a-z0-9]+/g) ?? [])].filter(word => word.length > 2 && !STOP.has(word))
+const words = (text: string) => [...new Set(text.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().replace(/lead[- ]times?/g, 'lead time').match(/[a-z0-9]+/g) ?? [])].filter(word => word.length > 1 && !STOP.has(word))
+/** Use Unicode sentence segmentation rather than an uppercase-only boundary rule.
+ * Keep source bytes (including identifier punctuation) intact for quotation. */
+export function sentences(text: string): string[] {
+  return Array.from(new Intl.Segmenter('en', { granularity: 'sentence' }).segment(text), part => part.segment.trim()).filter(Boolean)
+}
+
 /** Select only exact sentences of validated claims. Never promote an uncited conclusion.
  * Numeric comparisons and question coverage outrank an author's introductory prose.
  * Shared by the screen and export; callers enforce delivered-passage access first.
@@ -14,12 +20,18 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     return span ? [{ ...claim, text: span.text, citations: [ref] }] : []
   }))
   const terms = words(question)
-  const ranked = claims.flatMap((claim, ci) => claim.text.split(/(?<=[.!?])\s+(?=[A-Z])/).map((text, si) => {
+  const ranked = claims.flatMap((claim, ci) => sentences(claim.text).map((text, si) => {
     const lower = text.toLowerCase(), tokens = words(text)
     if (/^(?:This is a team-authored|This team-authored|The implementation record|For a reader assessing|Reproduction requires|The four .*entries|Some .*examples use different headers|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     const overlap = terms.filter(term => tokens.includes(term)).length
-    if (!overlap && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return { text, claim, score: 0, ci, si }
-    let score = overlap / Math.max(1, terms.length) * 20
+    const contextOverlap = terms.filter(term => words(claim.text).includes(term)).length
+    const identifier = /\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/.test(text)
+    if (!overlap && !(contextOverlap && identifier) && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return { text, claim, score: 0, ci, si }
+    let score = overlap / Math.max(1, terms.length) * 20 + contextOverlap / Math.max(1, terms.length) * 4
+    // Technical questions ask for a named field/type as well as topical prose.
+    // Reward identifiers generically, never a bank-specific answer vocabulary.
+    if (/\bfield|flag|setting|type|header|transaction\b/i.test(question) && identifier) score += 12
+    if (/\bstatute|law|regulation\b/i.test(question) && /\bAct|statute|law|regulat/i.test(text)) score += 8
     if (/lead[- ]times?|shorter/i.test(question)) score += /\bweeks?\b/.test(lower) ? 12 : 0
     if (/analyst|outlook|margin/i.test(question)) score += /estimate|broker|analyst|consensus/.test(lower) ? 12 : 0
     if (/change|meeting/i.test(question)) score += /policy rate|increase from/.test(lower) ? 9 : 0
@@ -35,9 +47,9 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   const selected = [first]
   // Include a complementary question term or the adjacent explanation.
   // A complete numeric comparison already states both ends of the change.
-  if (!/\bfrom\b.*\bto\b/i.test(first.text) || /\band\b|, how/i.test(question)) {
+  if (!(/lead[- ]times?|shorter/i.test(question) && /\bfrom\b.*\bto\b/i.test(first.text) && /weeks?/i.test(first.text)) || /\band\b|, how/i.test(question)) {
     const missing = terms.filter(term => !words(first.text).includes(term) && !/kestrel|semiconductor|penang|phase|plant|malaysia/.test(term))
-    const second = ranked.find(item => item.text !== first.text && missing.some(term => words(item.text).includes(term)) && item.text.length + first.text.length < 620)
+    const second = ranked.find(item => item.text !== first.text && (missing.some(term => words(item.text).includes(term)) || (/\bfield|flag|setting|type|header|transaction\b/i.test(question) && /[a-z][A-Z]/.test(item.text))) && item.text.length + first.text.length < 620)
     const adjacent = ranked.find(item => item.claim.id === first.claim.id && item.si === first.si + 1 && item.text.length + first.text.length < 620)
     if (second ?? adjacent) selected.push((second ?? adjacent)!)
   }
