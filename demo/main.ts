@@ -46,7 +46,7 @@ window.fetch = async (input, init) => {
       active = item; showLabel()
       // Only the key-reveal UC3 recording ships its real export; other tabs have no receipts.json (404), never a run snapshot posing as one.
       if (!path.endsWith('/receipts.json')) value = item.run
-      else if (item === modules['./traces/UC3-key-reveal.json']) value = (await import('../docs/evidence/lane-b3/UC3.receipts.json')).default
+      else if (item === modules['./traces/UC3-key-reveal.json']) value = (await import('../docs/evidence/round4-j1/replays/key-reveal/UC3.receipts.json')).default
     }
   } else value = active.cards[path]
   return value === undefined ? Response.json({}, { status: 404 }) : Response.json(value)
@@ -69,7 +69,7 @@ controls.append(pause); document.querySelector('.demo-banner')!.after(controls)
 if (testnet) {
   // @ts-expect-error Dependency-free browser JavaScript shared with the ledger page.
   const { refresh } = await import('../site/ledger/ledger.js')
-  const rows = active === modules['./traces/UC3-key-reveal.json'] ? (await import('../docs/evidence/lane-b3/transactions.json')).default.transactions : active === modules['./traces/UC-key-reveal.json'] ? (await import('../site/ledger/transactions.json')).default.rows.filter(r => r.source === 'docs/evidence/round2-v1/transactions.json') : (await import('../docs/evidence/round2-p2/transactions.json')).default.transactions
+  const rows = active === modules['./traces/UC3-key-reveal.json'] ? (await import('../docs/evidence/round4-j1/replays/key-reveal/transactions.json')).default.transactions : active === modules['./traces/UC-key-reveal.json'] ? (await import('../docs/evidence/round4-j1/replays/no-show/transactions.json')).default.transactions : (await import('../docs/evidence/round4-j1/replays/payment/transactions.json')).default.transactions
   const panel = document.createElement('details'); panel.open = false; panel.className = 'demo-transactions'
   const summary = document.createElement('summary')
   const summaryText = document.createElement('span'), toggle = document.createElement('span')

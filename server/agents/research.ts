@@ -202,7 +202,11 @@ export function sanitizeGaps(raw: unknown, candidates: PublicCandidate[]): Gap[]
 }
 export function stance(text: string, question = ''): Claim['stance'] {
   const movement = text.match(/(?:from\s+)?(\d+)\s*weeks?\s*(?:to|→)\s*(\d+)\s*weeks?/i)
-  if (movement && /shorter|shorten|lead.time|getting.*short|reduc/i.test(question)) return Number(movement[2]) < Number(movement[1]) ? 'SUPPORTS' : Number(movement[2]) > Number(movement[1]) ? 'CHALLENGES' : 'UNCERTAIN'
+  const shorter = /shorter|shorten|reduc|decreas/i.test(question), longer = /longer|lengthen|increas/i.test(question)
+  if (movement && shorter !== longer) {
+    const delta = Number(movement[2]) - Number(movement[1])
+    return delta === 0 ? 'UNCERTAIN' : (shorter ? delta < 0 : delta > 0) ? 'SUPPORTS' : 'CHALLENGES'
+  }
   if (/ahead of schedule|earlier than|on track|fully confirmed/i.test(text)) return 'SUPPORTS'
   if (/only\b|delay|slip|behind|shortfall|unconfirmed|not confirmed/i.test(text)) return 'CHALLENGES'
   return 'UNCERTAIN'

@@ -6,6 +6,7 @@ import { stance } from '../server/agents/research'
 import { loadWriterCorpus } from '../publisher/corpus'
 it('numeric reductions support a shorter lead-time question despite incidental delay wording', () => {
  expect(stance('Lead times fell from 26 weeks to 18 weeks despite a delay.', 'Are lead times getting shorter?')).toBe('SUPPORTS')
+ expect(stance('Lead times moved from 18 weeks to 26 weeks.', 'Are lead times getting longer?')).toBe('SUPPORTS')
  expect(stance('Lead times moved from 18 weeks to 26 weeks.', 'Are lead times getting shorter?')).toBe('CHALLENGES')
 })
 it('a completed uncited run has an honest answer and publishing link', () => {
