@@ -53,6 +53,6 @@ All six /demo/ traces were recaptured: three simulated use cases, Testnet Paymen
 
 The corpus/retrieval golden is frozen-round4-j1.json; original historical goldens remain preserved. Lead evidence for 26 → 18 weeks renders under Supports in live UI and replay tests. The no-show strip includes its newly captured answer anchor (five hashes).
 
-Local validation: npm run check:fast passed (1,298 tests, one skipped; 20 chaos scenarios with zero invariant violations). Live UI regressions passed for UC3 Supports and the uncovered Singapore-bank answer/link. Replay browser checks passed for default UC3, quarantine disclosure and the no-show live-green strip. No thresholds, gates, timeouts or zero-default budget policy were loosened.
+Local validation: npm run check:fast passed (1,300 tests; 20 chaos scenarios with zero invariant violations). Live UI regressions passed for UC3 Supports and the uncovered Singapore-bank answer/link. Replay browser checks passed for default UC3, quarantine disclosure and the no-show live-green strip. No thresholds, gates, timeouts or zero-default budget policy were loosened.
 
 Sources: docs/BUILDER-FEEDBACK.md, docs/x402-xrpl.md, docs/key-reveal-escrow.md and docs/writer-verification.md. Each paid article states its source and evidence limits. Follow-ups: improve retrieval/policy coverage for J04, J11, J13, J17 and J20 while retaining honest abstentions and ordinary trust scoring.

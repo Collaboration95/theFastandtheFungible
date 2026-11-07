@@ -140,6 +140,7 @@ test('keyboard plan cancellation admits zero runs; Go now admits exactly once', 
 
 test('a judge question outside the writer corpus ends with an honest publishing invitation', async ({ page }) => {
   await page.goto('/?pace=real')
+  await page.getByRole('button', { name: 'Got it', exact: true }).click()
   await page.getByLabel('Your question').fill('Which Singapore banks are piloting RLUSD settlement in 2026?')
   await page.getByRole('button', { name: /^Ask/ }).click()
   await page.getByRole('button', { name: 'Start now' }).click()
