@@ -88,12 +88,6 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - id: playwright
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
       - run: npx playwright install --with-deps chromium
       - name: Build replay once and seal exact bytes
         run: |
