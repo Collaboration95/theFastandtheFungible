@@ -60,3 +60,13 @@ Verified local results (2026-11-07): default `npm run check:fast` passed all
 on code commit `491345c1`. Production build and the final screenshot/axe run
 passed. The subsequent native smoke/recovery harness selector migration retains
 its existing assertions/timeouts; installed-artifact acceptance was not run.
+
+Final integration refresh: rebased over #385 with AgentSprite import and loading
+state retained. `npm run check:fast` passed 155 files / 1,297 tests and 20 chaos
+iterations with zero invariant violations. The native menu callback now discards
+Electron's MenuItem argument, so normal Settings no longer shows onboarding.
+Refreshed unsigned DMG fixture recovery and packaged smoke passed; native proof
+checks normal Settings after confirmed onboarding and relaunch explicitly.
+Earlier shared-host retries included an unchanged key-reveal refund failure,
+fact-menu and release fixture 5 s timeouts. The subsequent default gate passed unchanged. Native runs that shared
+the standard desktop MCP port conflicted; sequential native checks passed.

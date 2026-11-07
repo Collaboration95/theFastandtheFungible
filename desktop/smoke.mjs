@@ -86,6 +86,7 @@ try {
   await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Settings…').click())
   const preferences = await preferencesReady
   await expect(preferences.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible()
+  await expect(preferences.getByRole('heading', { name: 'Make this workspace yours' })).toHaveCount(0)
   const safeState = await preferences.evaluate(() => window.desktop.state())
   expect(JSON.stringify(safeState)).not.toContain(canary)
   expect(safeState.wallet.wallet.dailyMinor).toBe(2000)

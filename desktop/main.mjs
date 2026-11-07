@@ -225,7 +225,7 @@ async function boot() {
   })
   const shortcut = (label, accelerator, key, code) => ({ label, accelerator, click: () => mainWindow?.webContents.sendInputEvent({ type: 'keyDown', keyCode: key, modifiers: ['meta'], ...(code ? { code } : {}) }) })
   Menu.setApplicationMenu(Menu.buildFromTemplate([
-    { label: 'ResearchAgent', submenu: [{ role: 'about' }, { label: 'Check for Updates…', click: () => void checkUpdates() }, { label: 'Settings…', accelerator: 'Cmd+,', click: openPreferences }, { type: 'separator' }, { role: 'hide' }, { role: 'quit' }] },
+    { label: 'ResearchAgent', submenu: [{ role: 'about' }, { label: 'Check for Updates…', click: () => void checkUpdates() }, { label: 'Settings…', accelerator: 'Cmd+,', click: () => openPreferences() }, { type: 'separator' }, { role: 'hide' }, { role: 'quit' }] },
     { label: 'File', submenu: [shortcut('New Question', 'Cmd+N', 'N'), { label: 'Print…', accelerator: 'Cmd+P', click: () => BrowserWindow.getFocusedWindow()?.webContents.print() }, { role: 'close' }] },
     { role: 'editMenu' },
     { label: 'View', submenu: [shortcut('Run', 'Cmd+1', '1'), shortcut('Writers', 'Cmd+2', '2'), shortcut('Command Menu', 'Cmd+K', 'K'),
