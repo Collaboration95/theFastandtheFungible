@@ -22,9 +22,15 @@ export default function Settings({ universal, budgetMinor, notify, onBack, onUni
     <button type="button" className="ra-back" onClick={onBack}><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5L6.5 10l5.5 5.5" /></svg>Back<kbd>Esc</kbd></button>
     <h1>Settings</h1>
     {error && <p role="alert">{error}</p>}
-    <OwnerSettings>
+    <OwnerSettings notifications={<section className="ra-set" aria-labelledby="ra-set-notify">
+      <h2 id="ra-set-notify">Notifications</h2>
+      <label className="ra-set-row">
+        <input type="checkbox" checked={notify} onChange={event => onNotify(event.target.checked)} />
+        <span><b>Tell me when it’s done</b><small>A desktop notification when a run finishes in a background tab.</small></span>
+      </label>
+    </section>}>
     <section className="ra-set" aria-labelledby="ra-set-budget">
-      <h2 id="ra-set-budget">Budget</h2>
+      <h3 id="ra-set-budget">Per-prompt budget</h3>
       <label className="ra-set-row">
         <input type="checkbox" checked={universal} onChange={event => void audit(budgetMinor, event.target.checked)} />
         <span><b>Use the same budget for every question</b><small>Set the maximum each question may spend.</small></span>
@@ -34,13 +40,7 @@ export default function Settings({ universal, budgetMinor, notify, onBack, onUni
 
       </div>
     </section>
-    <section className="ra-set" aria-labelledby="ra-set-notify">
-      <h2 id="ra-set-notify">Notifications</h2>
-      <label className="ra-set-row">
-        <input type="checkbox" checked={notify} onChange={event => onNotify(event.target.checked)} />
-        <span><b>Tell me when it’s done</b><small>A desktop notification when a run finishes in a background tab.</small></span>
-      </label>
-    </section>
+
     </OwnerSettings>
   </main>
 }

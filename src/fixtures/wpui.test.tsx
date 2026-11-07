@@ -40,6 +40,8 @@ function stubBrowser(onRun: (body: Record<string, unknown>) => void) {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined
     calls.push({ path, body })
     const json = (data: unknown, status = 200) => ({ ok: status < 400, status, json: async () => data })
+    if (path === '/api/settings') return json({csrf:'fixture-csrf', values:{MCP_MAX_BUDGET_MINOR:0,MCP_DAILY_CAP_MINOR:0,WALLET_DAILY_CAP_MINOR:2000,SETTLEMENT_RAIL:'simulated',ESCROW_MODE:'key-reveal',ESCROW_ASSET:'XRP',ANCHOR_RAIL:'off'},keys:{},version:'1.0.0-rc.2'})
+    if (path === '/api/settings/prompt-budget') return json({saved:true})
     if (path === '/api/health') return json({ status: 'ok', labels: exampleRun.labels, faults: false })
     if (path === '/api/scope') return json(body.clarify === 'never' ? { ...uc2Scope, questions: [], label: 'fixture · scope-fixture' } : { ...uc2Scope, label: 'fixture · scope-fixture' })
     if (path === '/runs') { onRun(body); return json({ ...paidStoryRun, question: body.question }, 201) }
@@ -382,23 +384,27 @@ describe('budget slider and the universal budget in Settings', () => {
     expect(onAsk).toHaveBeenCalledWith({ question: 'Q?', budgetMinor: 45 })
   })
 
-  it('Settings: the tick box turns the universal budget on; its slider is off until then', () => {
+  it('Settings: the tick box turns the universal budget on; its slider is off until then', async () => {
+    const calls = stubBrowser(() => {})
     const onUniversal = vi.fn(), onBudget = vi.fn()
     const { rerender } = render(<Settings universal={false} budgetMinor={200} settlement="SIMULATED SGD · no real funds" notify={false} onBack={() => {}} onNotify={() => {}} onUniversal={onUniversal} onBudget={onBudget} />)
+    fireEvent.click(screen.getByRole('button', {name:'Budget and limits'}))
     expect((screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }) as HTMLInputElement).disabled).toBe(true)
-    fireEvent.click(screen.getByRole('checkbox', { name: /Use the same budget/ }))
+    await act(async () => { fireEvent.click(screen.getByRole('checkbox', { name: /Use the same budget/ })) })
     expect(onUniversal).toHaveBeenCalledWith(true)
     rerender(<Settings universal budgetMinor={200} settlement="SIMULATED SGD · no real funds" notify={false} onBack={() => {}} onNotify={() => {}} onUniversal={onUniversal} onBudget={onBudget} />)
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }), { target: { value: '0.10' } })
+    await act(async () => { fireEvent.change(screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }), { target: { value: '0.10' } }) })
     expect(onBudget).toHaveBeenCalledWith(10)
+    expect(calls.filter(c => c.path === '/api/settings/prompt-budget').at(-1)?.body).toEqual({budgetMinor:10,universal:true})
   })
 
   it('Settings opens from the sidebar, and the universal budget reaches Home', async () => {
     stubBrowser(() => {})
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
-    fireEvent.click(screen.getByRole('checkbox', { name: /Use the same budget/ }))
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }), { target: { value: '0.95' } })
+    fireEvent.click(screen.getByRole('button', {name:'Budget and limits'}))
+    await act(async () => { fireEvent.click(screen.getByRole('checkbox', { name: /Use the same budget/ })) })
+    await act(async () => { fireEvent.change(screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }), { target: { value: '0.95' } }) })
     fireEvent.click(screen.getByRole('button', { name: 'New question' }))
     expect(screen.queryByRole('slider')).toBeNull()
     expect(screen.getByRole('button', { name: 'S$0.95' })).toBeTruthy()

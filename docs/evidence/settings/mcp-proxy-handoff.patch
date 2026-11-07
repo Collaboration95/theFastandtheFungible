@@ -1,0 +1,11 @@
+--- a/mcp/app.ts
++++ b/mcp/app.ts
+@@ -115,7 +115,7 @@
+       const body = ['GET', 'HEAD'].includes(method) ? undefined : await readBody(req)
+       const upstream = await fetch(new URL(url.pathname + url.search, publisher ? publisherUrl : engineUrl), {
+         method, body, redirect: 'error', signal: abort.signal,
+-        headers: { ...(req.headers['content-type'] ? { 'Content-Type': req.headers['content-type'] } : {}), ...(req.headers.accept ? { Accept: req.headers.accept } : {}), ...(typeof req.headers['idempotency-key'] === 'string' ? { 'Idempotency-Key': req.headers['idempotency-key'] } : {}), ...(publisher ? {} : { Authorization: `Bearer ${token}` }) },
++        headers: { ...(url.pathname.startsWith('/api/settings') ? Object.fromEntries(['origin', 'sec-fetch-site', 'x-settings-ui', 'x-settings-csrf'].flatMap(name => typeof req.headers[name] === 'string' ? [[name, req.headers[name]]] : [])) : {}), ...(req.headers['content-type'] ? { 'Content-Type': req.headers['content-type'] } : {}), ...(req.headers.accept ? { Accept: req.headers.accept } : {}), ...(typeof req.headers['idempotency-key'] === 'string' ? { 'Idempotency-Key': req.headers['idempotency-key'] } : {}), ...(publisher ? {} : { Authorization: `Bearer ${token}` }) },
+       })
+       const out: Record<string, string> = { ...headers, 'Cache-Control': 'no-store' }
+       for (const name of ['content-type', 'content-disposition', 'etag']) { const value = upstream.headers.get(name); if (value) out[name] = value }

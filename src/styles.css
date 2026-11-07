@@ -801,7 +801,7 @@ html[data-record=true] .ra-env { display: block; }
 .owner-settings nav button[aria-current] { background: var(--hover, #f3eee4); border-color: var(--rule); font-weight: 600; }
 .owner-panel, .owner-welcome { background: var(--surface, white); border: 1px solid var(--rule); padding: 28px; border-radius: 10px; min-width: 0; }
 .owner-welcome { grid-column: 1/-1; }
-.owner-panel h2 { margin: 8px 0 20px; font-size: 24px; }
+.owner-panel h2 { margin: 8px 0 20px; font-size: 28px; }
 .owner-panel p { line-height: 1.6; margin: 12px 0; }
 .owner-field { display: flex; flex-direction: column; gap: 8px; margin: 18px 0; font-size: 14px; }
 .owner-field input, .owner-field select { padding: 10px; border: 1px solid var(--rule); border-radius: 5px; background: white; color: var(--ink); font: inherit; width: 100%; }
@@ -815,3 +815,10 @@ html[data-record=true] .ra-env { display: block; }
 .owner-keys { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px 24px; font-size: 12px; }
 .owner-keys p { margin: 4px 0; overflow-wrap: anywhere; }
 .owner-panel .ra-set { padding: 12px 0; border: 0; margin-top: 16px; }
+.owner-table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 20px 0; text-align: left; }
+.owner-table th, .owner-table td { padding: 10px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.owner-table th { font-weight: 600; }
+.owner-address { overflow-wrap: anywhere; font-family: var(--f-mono, monospace); font-size: 12px; }
+.owner-caps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.owner-panel .ra-set h3 { font-size: 15px; margin: 0 0 12px; }
+@media(max-width: 800px) { .owner-caps { grid-template-columns: 1fr; } }

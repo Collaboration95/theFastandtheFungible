@@ -20,7 +20,7 @@ export function ownerSettingsRouter({ store, payer }: ApiContext) {
   try { pending = OwnerSettings.partial().parse(JSON.parse(readFileSync(file, 'utf8'))) } catch { /* Missing or invalid settings never grant authority. */ }
   // Browser metadata is forwarded only by the local UI proxy. Agent bearers never acquire owner authority.
   router.use('/api/settings', (req, res, next) => {
-    const origin = (req.get('Origin') || req.get('X-Settings-UI')), expected = config.RA_WEB_ORIGIN || `http://${req.get('Host')}`
+    const origin = (req.get('Origin') || req.get('X-Settings-UI')), expected = config.RA_WEB_ORIGIN || req.get('X-Settings-UI') || `http://${req.get('Host')}`
     let localOrigin = false
     try { localOrigin = Boolean(origin && new URL(origin).protocol === 'http:' && loopback(new URL(origin).hostname)) } catch { /* deny malformed origin */ }
     if (!localOrigin || res.locals.agent || !loopback(req.socket.remoteAddress?.replace(/^::ffff:/, '') || '') || origin !== expected || req.get('Sec-Fetch-Site') !== 'same-origin') return void res.sendStatus(403)

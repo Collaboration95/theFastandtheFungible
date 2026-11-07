@@ -147,16 +147,17 @@ export default function App() {
     } catch { setError('Stop the run before deleting it.') }
   }
   const newQuestion = useCallback(() => {
-    const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
+    const url = new URL(window.location.href); url.searchParams.delete('run'); url.searchParams.delete('settings'); url.searchParams.delete('onboarding'); window.history.replaceState(null, '', url)
     setTab('run'); setDraft(''); setReceipt(undefined); setScreen('home'); setPassage(undefined); setWork(false); setThread([]); setPending(undefined)
   }, [])
   const openSettings = () => {
+    setTab('run')
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
     if (screen !== 'settings') setBackTo(screen === 'run' ? 'run' : screen === 'chat' ? 'chat' : 'home')
     if ((window as unknown as {desktop?:unknown}).desktop) { const url = new URL(location.href); url.searchParams.set('settings','1'); history.replaceState(null,'',url) }
     setScreen('settings'); setPassage(undefined); setWork(false)
   }
-  const closeSettings = () => { if (backTo === 'run' && run) void openRun(run.runId); else if (backTo === 'chat' && thread.length) setScreen('chat'); else setScreen('home') }
+  const closeSettings = () => { const url = new URL(location.href); url.searchParams.delete('settings'); url.searchParams.delete('onboarding'); history.replaceState(null,'',url); if (backTo === 'run' && run) void openRun(run.runId); else if (backTo === 'chat' && thread.length) setScreen('chat'); else setScreen('home') }
 
   const refreshPast = useCallback(() => { void listPastRuns().then(setPast).catch(() => { /* the sidebar keeps its last list */ }) }, [])
   const phase = run?.phase

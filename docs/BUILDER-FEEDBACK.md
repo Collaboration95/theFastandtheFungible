@@ -838,6 +838,15 @@ These are observations from the 7 Nov review of `421f5f9f`, not fresh L4 network
 | B27 · 2026-11-07 | MCP tooling | Observed fresh-cache 21.4 MB tgz takes 56.5 s to initialize; review §0/§5 in retained extract. Client timeout risk is an inference. | Retry with warm cache; round-3 warm measurement about 11 s. | Bundle stdio separately and defer app UI dependencies; measure clean-cache startup. | medium | Startup availability risk on either rail; no settlement failure observed. |
 | B28 · 2026-11-07 | Faucet | Observed wallet setup 24.3 s MCP / 19.1 s app; prior README reports 17 s. Evidence: retained review §0/§5; `docs/evidence/round3-a/README.md`. | Persist Testnet wallets and show setup progress; bounded retries. | Document faucet timing and separate provisioning from initialize. | medium | Testnet-only funding; no inference about mainnet funding. |
 | B29 · 2026-11-07 | Devcontainer CI | Observed nightly Testnet jobs green 6/7 Nov, about 130 s job / 43.9 s purchase; evidence: retained review §0/§5, `.github/workflows/codespace-testnet.yml`. | Use devcontainers/ci as the Codespace substitute, labelled explicitly. | Keep validated-hash CI evidence; measure actual Codespace separately. | low | No mainnet measurement; CI is not interactive Codespace acceptance. |
+## 2026-11-07: Shared-workstation acceptance contention (tooling)
+
+- Class: observed local fixture test timeouts, not a Testnet incident.
+- Evidence: `docs/evidence/settings/README.md`; default-worker verifier/audit CLI tests exceeded existing 5 s limits; combined Playwright build/start exceeded the unchanged 45 s startup limit.
+- Workaround: opt-in `RA_TEST_WORKERS=1` (default remains three); compile before running the settings evidence config. Assertions and timeouts unchanged.
+- Suggested fix: run acceptance on a quiet host and separate build time from server readiness in evidence runners.
+- Severity: medium for local release verification.
+- Mainnet impact: none established; no mainnet request or payment was made.
+
 
 ### 2026-11-07 — Cold judge-command latency (observed tooling friction)
 
