@@ -1,3 +1,4 @@
+import { ownerSettingsRouter } from './owner-settings.js'
 import { AnswerAnchors } from './anchor.js'
 import { ActiveWork, OverloadedError } from './agents/active-work.js'
 import { providersRouter } from './api/providers.js'
@@ -142,6 +143,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
   const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
   app.use(providersRouter(work))
+  app.use(ownerSettingsRouter(context))
   app.use(walletRouter(context))
   app.use(operationsRouter(context))
   app.use(auditRouter(context))

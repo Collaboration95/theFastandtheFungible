@@ -2,6 +2,8 @@ import { register } from 'tsx/esm/api'
 import { parentPort, workerData } from 'node:worker_threads'
 import { once } from 'node:events'
 register()
+const { applyOwnerConfig } = await import('./owner-config.ts')
+applyOwnerConfig(process.env)
 const { startPublisher } = await import('../publisher/server.ts')
 const publisher = await startPublisher({ host: '127.0.0.1' })
 const publisherUrl = `http://127.0.0.1:${publisher.address().port}`

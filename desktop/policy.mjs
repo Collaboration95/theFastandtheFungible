@@ -18,7 +18,9 @@ export function settings(input) {
   const model = input.model ?? ''
   if (typeof model !== 'string' || model.length > 200 || /[\r\n]/.test(model)) throw new Error('Invalid model')
   if (input.live && provider === 'openai-compatible' && (!baseUrl || !model.trim())) throw new Error('Compatible endpoint and model required')
-  return { provider, baseUrl, model, sameKeyDecisions: input.sameKeyDecisions === true, live: input.live, paused: input.paused, maxMinor: input.maxMinor, dailyMinor: input.dailyMinor,
+  const ESCROW_MODE = input.ESCROW_MODE ?? 'key-reveal', ESCROW_ASSET = input.ESCROW_ASSET ?? 'XRP', ANCHOR_RAIL = input.ANCHOR_RAIL ?? 'xrpl-testnet'
+  if (!['key-reveal', 'payment'].includes(ESCROW_MODE) || !['XRP', 'TEST-SGD'].includes(ESCROW_ASSET) || !['off', 'xrpl-testnet'].includes(ANCHOR_RAIL)) throw new Error('Invalid payment settings')
+  return { ESCROW_MODE, ESCROW_ASSET, ANCHOR_RAIL, onboarded: input.onboarded === true, provider, baseUrl, model, sameKeyDecisions: input.sameKeyDecisions === true, live: input.live, paused: input.paused, maxMinor: input.maxMinor, dailyMinor: input.dailyMinor,
     backend, remoteUrl, walletDailyMinor, mcpEnabled: input.mcpEnabled === true }
 
 }
@@ -37,6 +39,7 @@ export function engineEnv({ userData, preferences, secrets = {} }) {
   const live = preferences.live
   // Allowlist, never inherit .env, NODE_OPTIONS, provider URLs, proxy settings or wallet seeds.
   return {
+    ESCROW_MODE: preferences.ESCROW_MODE || 'key-reveal', ESCROW_ASSET: preferences.ESCROW_ASSET || 'XRP', ANCHOR_RAIL: preferences.ANCHOR_RAIL || 'xrpl-testnet',
     HOST: '127.0.0.1', RA_API_TOKEN: secrets['local-api-token'] || '',
     WALLET_DAILY_CAP_MINOR: String(preferences.walletDailyMinor ?? 2000), SPENDING_PAUSED: process.env.SPENDING_PAUSED === '1' ? '1' : '0',
     PATH: '/usr/bin:/bin:/usr/sbin:/sbin', HOME: userData, TMPDIR: process.env.TMPDIR || '/tmp',

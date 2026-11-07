@@ -54,7 +54,7 @@ export default function App() {
   const [writersError, setWritersError] = useState('')
   const [healthError, setHealthError] = useState(false)
   const [run, setRun] = useState<RunSnapshot>()
-  const [screen, setScreen] = useState<'home' | 'run' | 'settings' | 'chat'>('home')
+  const [screen, setScreen] = useState<'home' | 'run' | 'settings' | 'chat'>(new URLSearchParams(location.search).has('settings') || new URLSearchParams(location.search).has('onboarding') ? 'settings' : 'home')
   // Settings' Back returns to the screen it was opened from; the half-typed question lives here so Home remounting keeps it.
   const [backTo, setBackTo] = useState<'home' | 'run' | 'chat'>('home')
   const [draft, setDraft] = useState('')
@@ -153,6 +153,7 @@ export default function App() {
   const openSettings = () => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
     if (screen !== 'settings') setBackTo(screen === 'run' ? 'run' : screen === 'chat' ? 'chat' : 'home')
+    if ((window as unknown as {desktop?:unknown}).desktop) { const url = new URL(location.href); url.searchParams.set('settings','1'); history.replaceState(null,'',url) }
     setScreen('settings'); setPassage(undefined); setWork(false)
   }
   const closeSettings = () => { if (backTo === 'run' && run) void openRun(run.runId); else if (backTo === 'chat' && thread.length) setScreen('chat'); else setScreen('home') }
@@ -319,10 +320,11 @@ export default function App() {
     ...(shown ? [{ id: 'cmd-work', label: 'Show work', hint: 'W', run: () => { switchView('run'); setWork(true) } }] : []),
     ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: item.question, group: 'Recent runs', run: () => { setTab('run'); void openRun(item.runId) } })),
     { id: 'cmd-record', label: recording ? 'Leave record mode' : 'Record mode', run: () => { const url = new URL(window.location.href); url.search = recording ? '' : '?record=1'; window.location.assign(url) } },
-    { id: 'cmd-mcp', label: 'Connect an agent (MCP)', run: () => { void navigator.clipboard.writeText('claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- make mcp').catch(() => setError('Clipboard unavailable. Run: claude mcp add researchagent -- make mcp')) } },
+    { id: 'cmd-mcp', label: 'Connect an agent (MCP)', run: openSettings },
     ...(run && !isTerminal(run) ? [{ id: 'cmd-stop', label: 'Stop buying', hint: `${modifier}.`, run: () => void stopRun() }] : []),
     { id: 'cmd-ask', label: 'Submit question / Go now', hint: `${modifier}↵`, run: () => { if (pending?.step === 'plan') go(pending.scope.plan); else document.querySelector<HTMLFormElement>('.ra-composer')?.requestSubmit() } },
     { id: 'cmd-focus', label: 'Focus question', hint: '/', run: focusAsk },
+    { id: 'cmd-settings', label: 'Settings', hint: '⌘,', run: openSettings },
     { id: 'cmd-shortcuts', label: 'Keyboard shortcuts', hint: '?', run: () => setPalette('shortcuts') },
     { id: 'cmd-presenter', label: 'Presenter controls', hint: '.', run: () => setPresenter(true) },
   ]
@@ -333,6 +335,7 @@ export default function App() {
       const key = event.key.toLowerCase()
       const editing = event.target instanceof HTMLElement && !!event.target.closest('input, textarea, select, [contenteditable="true"]')
       if (mod && key === 'k') { event.preventDefault(); setPalette('commands') }
+      else if (mod && key === ',') { event.preventDefault(); openSettings() }
       else if (mod && key === 'n') { event.preventDefault(); focusAsk() }
       else if (mod && (key === '1' || key === '2')) { event.preventDefault(); switchView(key === '1' ? 'run' : 'writers') }
       else if (mod && key === '.') { event.preventDefault(); void stopRun() }

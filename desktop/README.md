@@ -13,7 +13,7 @@ isolates the existing engine configuration. There is no development web server.
 Use ⌘K for commands, ⌘1/⌘2 for Run/Writers, ⌘N for a new question,
 ⌘Return to submit/confirm the plan, and ⌘. to stop buying. The native View menu
 sets record mode to 1280×800; the original `make record` / `make clip` web workflow
-also remains available. Desktop Settings opens with ⌘,.
+also remains available. Settings opens the shared web Settings page with ⌘,. First run asks for fixture/Testnet and confirms caps. Window bounds persist between launches.
 
 Desktop Settings can create/faucet-fund Testnet buyer and fictional publisher
 wallets, save DeepSeek/OpenAI/Cloudflare credentials to the Keychain, select live
@@ -30,7 +30,7 @@ buyer account `xrpl-payer`, per-writer accounts `XRPL_PUBLISHER_<SLUG>_SEED`,
 and named provider/token accounts. Credentials are never passed as command-line
 arguments. Secret reads and wallet generation occur in main; only public wallet
 addresses return over IPC. User-entered provider credentials exist transiently in
-the separate Settings renderer and are cleared on save. They never enter the
+the shared Settings renderer and are cleared on save. They never enter the
 research renderer. While running live, plaintext secrets exist in main-process
 memory, utility-process/worker environments and signing objects. JavaScript does
 not guarantee erasure of those copies. No seed is written to application data or
