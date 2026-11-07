@@ -45,3 +45,18 @@ it('preserves complete SDK disclosure, receipt identity and citation output for 
   expect(money(90)).toBe('S$0.90'); expect(assetMoney(90)).toBe('S$0.90')
   expect(railLabel()).toBe('SIMULATED')
 })
+
+it('keeps Testnet and substitute asset disclosures exact', async () => {
+  const { settlementAssetLabel } = await import('../../shared/presentation.js')
+  const { RLUSD_CURRENCY, RLUSD_TESTNET_ISSUER, TEST_SGD_LABEL } = await import('../../shared/contracts/asset.js')
+  const testSgd = { currency: 'SGT' as const, issuer: RLUSD_TESTNET_ISSUER, label: TEST_SGD_LABEL } as const
+  const rlusd = { currency: RLUSD_CURRENCY, issuer: RLUSD_TESTNET_ISSUER, label: 'RLUSD (Testnet)' } as const
+  expect(assetMoney(90, testSgd)).toBe('TEST-SGD 0.90 · stand-in for RLUSD · no real value')
+  expect(assetMoney(90, rlusd)).toBe('S$0.90')
+  expect(assetMoney(90, 'XRP')).toBe('S$0.90')
+  expect(settlementAssetLabel(testSgd)).toBe('RLUSD (Testnet)') // Preserve the existing issuer-based label exactly.
+  expect(settlementAssetLabel({ ...testSgd, issuer: 'synthetic-issuer' })).toBe(TEST_SGD_LABEL)
+  expect(settlementAssetLabel(rlusd)).toBe('RLUSD (Testnet)')
+  expect(settlementAssetLabel()).toBe('XRPL Testnet')
+  expect(settlementAssetLabel('XRP')).toBe('XRPL Testnet')
+})

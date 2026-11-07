@@ -32,7 +32,13 @@ intent amounts/statuses and first-event time fail closed. Unselected bodies
 are deliberately outside the projection's validation boundary; it never reads
 grants, receipts, delivered content or snapshot arrays into JS.
 
-The exact 38 dead lines (Cast 26, CSS 3, SUBSTEPS/segments 9) are removed;
-brand assets, generator and pixel sprite stay. The requested 100 net LOC
-reduction is missed: validation and regression coverage add code. No gate,
-test, timeout or threshold was loosened. SDK citation filtering is unchanged.
+Nine dead SUBSTEPS/segments lines are removed. The audit's remaining 29-line
+claim is disproven: design/cast/qa.tsx imports Cast, vite.config.ts builds that
+page, and tests/a11y.spec.ts tests it. Initial CI browser/artifact builds failed
+when Cast/CSS were deleted, so both are retained. Removing that QA dependency
+requires coordinated edits outside Lane D. Brand assets, generator and pixel
+sprite stay. Both deletion targets (38 dead lines and 100 net LOC) are missed;
+validation and regression coverage add code. No gate, test, timeout or threshold
+was loosened. SDK citation filtering is unchanged. Shared component coverage
+initially regressed after moving selectors; explicit asset disclosure cases
+cover the missing paths without lowering the coverage floor.
