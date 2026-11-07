@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { ModeLabels } from '../../shared/contracts'
 import { useDismiss } from '../useDismiss'
 
@@ -26,7 +26,7 @@ export default function EnvIndicator({ labels, recording = false }: { labels?: M
     if (recording || !labels) return
     try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => { if (!interacted.current && (!document.activeElement || document.activeElement === document.body)) setOpen(true) }, 0); return () => clearTimeout(timer) } } catch { /* private mode */ }
   }, [labels, recording])
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) return
     const place = () => setTop(Math.max(trigger.current?.getBoundingClientRect().bottom ?? 0, document.querySelector('button.ra-ask')?.getBoundingClientRect().bottom ?? 0) + 12)
     place()

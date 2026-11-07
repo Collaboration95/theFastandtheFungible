@@ -16,7 +16,9 @@ it('a completed uncited run has an honest answer and publishing link', () => {
 it('team corpus retains ordinary identity, disclosure and word-limit validation', async()=>{
  const c=await loadWriterCorpus();const p=c.publishers.find(p=>p.slug==='team-builder-notes')!
  expect(p.synthetic).toBe(false);expect(p.verification?.status).toBe('unverified');expect(p.bio).toBe('team-authored · real content · not an independent writer · Testnet')
- expect(c.articles.filter(a=>a.publisherSlug===p.slug)).toHaveLength(10)
+ const notes=c.articles.filter(a=>a.publisherSlug===p.slug)
+ expect(notes).toHaveLength(10)
+ for(const note of notes) expect(note.body).not.toMatch(/team-authored|implementation record explains|For a reader assessing|MCP IOU support is a follow-up/i)
 })
 
 it('introductory prose is uncertain even when it says only', () => {

@@ -37,7 +37,8 @@ export function createMcpServer(endpoint: string | Endpoint | Promise<Endpoint>,
         if (data.answer) data = { ...data, answer: { ...data.answer, conclusion: declineSummary(run) } }
       }
     }
-    if (!labels.includes('Testnet · no real value') || !['DONE', 'STOPPED', 'FAILED'].includes(data.phase)) return data    const deadline = Date.now() + 20_000
+    if (!labels.includes('Testnet · no real value') || !['DONE', 'STOPPED', 'FAILED'].includes(data.phase)) return data
+    const deadline = Date.now() + 20_000
     let bundle = await client.receipts(data.run_id)
     while (!bundle.ledgerAnchor && (data.phase === 'DONE' || bundle.receipts.length > 0) && Date.now() < deadline) {
       await new Promise(done => setTimeout(done, 500))

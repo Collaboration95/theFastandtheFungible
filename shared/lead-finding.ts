@@ -10,7 +10,7 @@ export function leadFinding(question: string, claims: Claim[]): { text: string; 
   const terms = words(question)
   const ranked = claims.flatMap((claim, ci) => claim.text.split(/(?<=[.!?])\s+(?=[A-Z])/).map((text, si) => {
     const lower = text.toLowerCase(), tokens = words(text)
-    if (/^(?:This is a team-authored|This team-authored|The implementation record|For a reader assessing|Reproduction requires|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return { text, claim, score: 0, ci, si }
+    if (/^(?:This is a team-authored|This team-authored|The implementation record|For a reader assessing|Reproduction requires|The four .*entries|Some .*examples use different headers|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     const overlap = terms.filter(term => tokens.includes(term)).length
     if (!overlap && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return { text, claim, score: 0, ci, si }
     let score = overlap / Math.max(1, terms.length) * 20
@@ -27,11 +27,13 @@ export function leadFinding(question: string, claims: Claim[]): { text: string; 
   const first = ranked[0]
   if (!first) return []
   const selected = [first]
-  // Multi-part questions need the complementary fact, rather than a second paraphrase.
-  if (/\band\b|, how/i.test(question)) {
+  // Include a complementary question term or the adjacent explanation.
+  // A complete numeric comparison already states both ends of the change.
+  if (!/\bfrom\b.*\bto\b/i.test(first.text) || /\band\b|, how/i.test(question)) {
     const missing = terms.filter(term => !words(first.text).includes(term) && !/kestrel|semiconductor|penang|phase|plant|malaysia/.test(term))
-    const second = ranked.find(item => item.claim.id !== first.claim.id && missing.some(term => words(item.text).includes(term)) && item.text.length + first.text.length < 620)
-    if (second) selected.push(second)
+    const second = ranked.find(item => item.text !== first.text && missing.some(term => words(item.text).includes(term)) && item.text.length + first.text.length < 620)
+    const adjacent = ranked.find(item => item.claim.id === first.claim.id && item.si === first.si + 1 && item.text.length + first.text.length < 620)
+    if (second ?? adjacent) selected.push((second ?? adjacent)!)
   }
   return selected.map(({ text, claim }) => ({ text, claim }))
 }
