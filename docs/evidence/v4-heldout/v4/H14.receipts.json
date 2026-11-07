@@ -1,0 +1,719 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "1FCEDE15195923242B058B75AF897331475A419DE73E42BE59DA1588980F62AF",
+    "account": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+    "head": "5affc8c92e889fa79972ecef916ee03036d145db20b3b44b2438b172a49436c5",
+    "runIdHash": "a218206a2174db0718ae74eff3570bb3ecba6224da05c506753887d37c3ddae0",
+    "ledgerIndex": 22135654,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "sourceKey": "xrpl-x402@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-x402\",\"v1\",\"p1\"]",
+            "claim": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
+            "citation": "[\"xrpl-x402@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
+            "manifestRoot": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+            "grantIntentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-x402\",\"v1\",\"p2\"]",
+            "claim": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]",
+            "citation": "[\"xrpl-x402@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]",
+            "manifestRoot": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+            "grantIntentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-x402\",\"v1\",\"p3\"]",
+            "claim": "For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]",
+            "citation": "[\"xrpl-x402@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]",
+            "manifestRoot": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+            "grantIntentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-x402\",\"v1\",\"p4\"]",
+            "claim": "Test missing authorization, a malformed payload, the wrong network and a replayed business request. Separate protocol parsing failures from ledger settlement failures in the evidence. These are integration recommendations based on the x402 specification and payment semantics. They do not imply that the upstream specification supplies client budgets, content-quality judgments, escrow refunds or every XRPL-specific scheme used by an application. [1] [2]",
+            "citation": "[\"xrpl-x402@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Test missing authorization, a malformed payload, the wrong network and a replayed business request. Separate protocol parsing failures from ledger settlement failures in the evidence. These are integration recommendations based on the x402 specification and payment semantics. They do not imply that the upstream specification supplies client budgets, content-quality judgments, escrow refunds or every XRPL-specific scheme used by an application. [1] [2]",
+            "manifestRoot": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+            "grantIntentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "What does the HTTP specification itself say about status code 402"
+    }
+  ],
+  "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet",
+  "answers": [
+    {
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "claims": [],
+      "openGaps": [],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "conclusion": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2] The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2] For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2] Test missing authorization, a malformed payload, the wrong network and a replayed business request. Separate protocol parsing failures from ledger settlement failures in the evidence. These are integration recommendations based on the x402 specification and payment semantics. They do not imply that the upstream specification supplies client budgets, content-quality judgments, escrow refunds or every XRPL-specific scheme used by an application. [1] [2]",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-x402\",\"v1\",\"p1\"]",
+          "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-x402",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-x402\",\"v1\",\"p2\"]",
+          "text": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-x402",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-x402\",\"v1\",\"p3\"]",
+          "text": "For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-x402",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-x402\",\"v1\",\"p4\"]",
+          "text": "Test missing authorization, a malformed payload, the wrong network and a replayed business request. Separate protocol parsing failures from ledger settlement failures in the evidence. These are integration recommendations based on the x402 specification and payment semantics. They do not imply that the upstream specification supplies client budgets, content-quality judgments, escrow refunds or every XRPL-specific scheme used by an application. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-x402",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-x402",
+      "version": "v1",
+      "title": "What does HTTP 402 and x402 actually standardize?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]\n\nThe v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]\n\nFor an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]\n\nTest missing authorization, a malformed payload, the wrong network and a replayed business request. Separate protocol parsing failures from ledger settlement failures in the evidence. These are integration recommendations based on the x402 specification and payment semantics. They do not imply that the upstream specification supplies client budgets, content-quality judgments, escrow refunds or every XRPL-specific scheme used by an application. [1] [2]",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]"
+        },
+        {
+          "id": "p2",
+          "text": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]"
+        },
+        {
+          "id": "p3",
+          "text": "For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]"
+        },
+        {
+          "id": "p4",
+          "text": "Test missing authorization, a malformed payload, the wrong network and a replayed business request. Separate protocol parsing failures from ledger settlement failures in the evidence. These are integration recommendations based on the x402 specification and payment semantics. They do not imply that the upstream specification supplies client budgets, content-quality judgments, escrow refunds or every XRPL-specific scheme used by an application. [1] [2]"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-x402",
+      "version": "v1",
+      "title": "What does HTTP 402 and x402 actually standardize?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what does http 402 and x402 actually standardize?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+      "family": "xrpl-x402",
+      "facets": [
+        "XRPL",
+        "x402",
+        "HTTP 402",
+        "PAYMENT-REQUIRED",
+        "PAYMENT-SIGNATURE",
+        "facilitator"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-x402",
+      "relevance": 0.6460364481420832,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-x402",
+        "version": "v1",
+        "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+        "priceMinor": 40,
+        "leaves": [
+          "b3db2542b509b03347345f4a643277c20274c84fcc926b2ea01fc3d50c5bc4e0",
+          "90015553ad123681898df77e5e423293f42018739aa4d46d1c094d3d599ae705",
+          "f1861982b3e85da48bf1ef2adafdf9fd394f2f29112f7bbdcb871b84d9eafe05",
+          "5be32f6e9a881b239946589f770eea1bd2a8d4c3c6c5983cedea04fcb7d80025"
+        ],
+        "root": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+        "claims": [],
+        "wordCount": 235,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.6460364481420832,
+        "sig": "BA3BDA3863AC2F523B4ABE6FAFD4C3E9E1C78662FD1FE5F28B1BECB5EB1419CF1DA7C3FB70C50F1C6210EAE8752B59C786998391D99A3C0413CCDBD7DCDD5F03"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22135652,
+        "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+        "cancelAfter": 847363722,
+        "createSequence": 22135580,
+        "createHash": "E272F5534A306A1F9D6B95608EA397E777F76E7A7F1F25ADEDD1796F08388978",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+        "proofOk": true
+      },
+      "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+      "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-x402",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-07T10:46:48.740Z",
+      "submittingAt": "2026-11-07T10:46:48.743Z",
+      "settledAt": "2026-11-07T10:47:06.976Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-x402",
+        "version": "v1",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-x402\",\"asset\":\"XRP\",\"cancelAfter\":847363722,\"condition\":\"A025802026CAED58B2F924A97094519DDB9A4C6A92D351E599DA00EA99F7C62415DC810E810120\",\"intentId\":\"1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1\",\"keyReveal\":{\"ciphertextHash\":\"f0f072fb0cf4dcf5e00c018b651698b9bdef86324092cf02dd709273522b3099\",\"iv\":\"D45D483F10AF4975B8BE47D9\",\"plaintextHash\":\"22091242516ae743a751cb819377714effc36ed9f60fbd440a3d515dd37a1676\",\"tag\":\"C918F31298918B8382048C217564D306\"},\"manifestRoot\":\"26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6\",\"network\":\"xrpl:1\",\"payTo\":\"rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP\",\"payer\":\"rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"3bd9eecc-6ca1-4c40-916a-57bcfac9923f\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "27B2F1D46F04E762D0DAB578CEB8539110A73EE9671EE023F32AD1DD2AF6C62C",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-07T10:47:48.739Z",
+        "contentDigest": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "amountDrops": "40000",
+          "invoiceId": "27B2F1D46F04E762D0DAB578CEB8539110A73EE9671EE023F32AD1DD2AF6C62C"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-x402",
+      "receiptId": "escrow-949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+      "txHash": "949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+      "resourceId": "xrpl-x402",
+      "version": "v1",
+      "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+      "contentDigest": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+      "grantedAt": "2026-11-07T10:47:06.973Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22135652,
+        "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+        "cancelAfter": 847363722,
+        "createSequence": 22135580,
+        "createHash": "E272F5534A306A1F9D6B95608EA397E777F76E7A7F1F25ADEDD1796F08388978",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+        "proofOk": true
+      },
+      "receiptId": "escrow-949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+      "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+      "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+      "resourceId": "xrpl-x402",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-07T10:47:06.976Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+        "ledgerIndex": 22135652,
+        "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+        "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "f0f072fb0cf4dcf5e00c018b651698b9bdef86324092cf02dd709273522b3099",
+          "plaintextHash": "22091242516ae743a751cb819377714effc36ed9f60fbd440a3d515dd37a1676",
+          "iv": "D45D483F10AF4975B8BE47D9",
+          "tag": "C918F31298918B8382048C217564D306"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "3bd9eecc-6ca1-4c40-916a-57bcfac9923f",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-x402",
+        "version": "v1",
+        "manifestRoot": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+        "amount": "40000",
+        "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+        "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "condition": "A025802026CAED58B2F924A97094519DDB9A4C6A92D351E599DA00EA99F7C62415DC810E810120",
+        "cancelAfter": 847363722
+      },
+      "escrowCreateHash": "E272F5534A306A1F9D6B95608EA397E777F76E7A7F1F25ADEDD1796F08388978",
+      "escrowCreateSequence": 22135580,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+      "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-x402",
+      "version": "v1",
+      "payee": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+      "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+      "invoiceId": "27B2F1D46F04E762D0DAB578CEB8539110A73EE9671EE023F32AD1DD2AF6C62C",
+      "ledgerIndex": 22135652,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-07T10:46:48.740Z",
+      "settledAt": "2026-11-07T10:47:06.976Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "xrpl-x402",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-x402",
+        "version": "v1",
+        "wallet": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+        "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+        "priceMinor": 40,
+        "leaves": [
+          "b3db2542b509b03347345f4a643277c20274c84fcc926b2ea01fc3d50c5bc4e0",
+          "90015553ad123681898df77e5e423293f42018739aa4d46d1c094d3d599ae705",
+          "f1861982b3e85da48bf1ef2adafdf9fd394f2f29112f7bbdcb871b84d9eafe05",
+          "5be32f6e9a881b239946589f770eea1bd2a8d4c3c6c5983cedea04fcb7d80025"
+        ],
+        "root": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+        "claims": [],
+        "wordCount": 235,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.6460364481420832,
+        "sig": "BA3BDA3863AC2F523B4ABE6FAFD4C3E9E1C78662FD1FE5F28B1BECB5EB1419CF1DA7C3FB70C50F1C6210EAE8752B59C786998391D99A3C0413CCDBD7DCDD5F03"
+      },
+      "salts": [
+        "cabefc3fa1a05978fe6a118fec5a2263",
+        "d1c1ca2c09455ac25de31326fe216b04",
+        "3d6076125feea43acb87b3f66d064da5",
+        "75cca2a5c5fd8c7efd4c166f8291d10f"
+      ],
+      "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "E93606E06B0262A6B987B54B6C8A5FBFF0DBB2AB2C3C502736F1FA1146F137CEAE83C90C46756C803EBA26113433F75A7B70E507A1843D52D7EECF1E2AE90E11393AA30AD2E25D4E24CF2A9BFBD034C324BED2C1741612911A467EA14354D3DFCA11D2C375C3BF0706149A7701E0DBD3A5E09BBF8F9436338ECD6D8873DC5DE519564B3109C8C3F14B68258192F28DC13E389DCB4DE72658BA939820A93528FA66B40E633CD747BDF659CCCC1BD7BAC83B2236B063CDFCFE345CFCCB33A0F5F48F30157A43594CA571159DDC73F2AA63A4906AEE05BFA81A02CE1D4332BDE1DCF42EAFDEC575DB182D0677AF0DFE31A557BAF92FC14E11F21222729BFEB03E20A959B52A518B77D655B1ABA323A2E85CDAFF0D211DA5973191AF1EBBB3C715E96FF6D4DF46E4792FEA32577C251C81E5DD6FB539A9FBCE1B5ACB32FFD8640F8E461D889569DD2756D3206EB8409B00AF18C4B663862C476E4B31044241F75C8EE4B73482A72A26470974355C5683B4F65BC08BD93B21FBCFC2532F212CBFEA5C300F437F759C640B1578838C3443181319E71306783CE2601106D715372724A6CEC3D164C3A9ADBA8483235997896C2568D18E4743009A202BE0DD9AE69D8747B636C03352A153A716D872307044B764EE544C3E81189D7B3364A0532C12D28C95EC8245D210A8F5299A93B0BA41D90137CCEC1C6B711774D26B2900DBE7A78AD8947618CB8411A4F70C78F8F2B32D48DC501D0A0C4CC637A46D33A83A29CC7F1CF79FC5D88C1DEB0D3541333643871E9A4D7BFEB0A973B04FCEB7770126BD44EDCA94B2EFB286B01332B7B5094193CEA65E72061244007E4656CCE006E90D57EB8BFA76AF942E98314E507568ACA6BFCAF202DC10C68B4BAFE42576392CBA5EAB4BF1920999C1A82DEF402DBD986065A01CBBF84BB753AEF8D41F12BC0271C8C08BD00356D0E8587C51E036796FEC4D8F322FEAB8A81423E3CEA8BC2C397BF56936070567A8726EE80BD52E78411826CAC651FE3C05DA381EF8A7DF916F3C6C3034C9A1125F213E3EB427095387910F0DD06D762237B279B67B3109BAE222A37516F957B8B9AA80B36476F62369E12C2DF166D98437F9A57A8D28262E242CD3E2CCC5DAE472C82472FD2C24C1EC36D3CE70E3C015E380B8DF633E9F6F4FF3310D2C65BC845FEA1141385AAFAEF86C8EFADA410ED554FED24C7557389BB9119F34A972A7BC0797BC4FA86E18EA95F9B119609BB3A9DFD214B0DD73F8F5F8650D68CF9314A172E9DB9518C979721D8FA84C946A38545DA532C3C0D61288519EF082F013F9E82C7A1DF502C24CB7C67EF1813E9620379170654B8C7C69513222BD4B997B90A608AEA70777A507D518A2B16AF362D793E04B357152309B19ECD06DE2D0924DD64EF8098D7B938BEA3305C37FFC254F3BCF6CA6EEE8E8648D670DC72E8711AD26482A3D60066D21141113654D285E8E4A401554F2D0023BA201405A72A531F7709353D3D4D2A45A901BF5A1CE29ABBA2F27515049183CE0CBE6C65E2F7E3C67D0840BC356E0F337F85E0F572E405159EDE52018F300715573606B3C7D084EE8A8429B7EC0ADAA931CC9C4D6950C250B60F92B60F46A0CEB37273B4F5223984F398759BE075C5D9206C219B6DC573049144EBDE174165AC8052EC24521976399D1A566AD78FC360C057CA28D008110FA55419C0BDA4AE0989C047085115E8DFDC3AE41AEB6E93B440D283272E1D616DBA88D92937DEAA1CFC0CD5EDED485EDD28D7691C5D793AD3C64DE8185AE3625F8F8E63D940834260462B9B8B9589C17627D2F9E2544303EB7905E7602D7ECF6D743B6A90E44EF53F46EF718E23E9B9F7B53D4994175C0DC3E1A106EB5BB20D9015BCC1EE3E9E0D28F60699E3EAF7CB1C9FDE049BB6EF80C26A74B3E024041F1453DB837A45A50597A2DB09227F011B13D749B50B57DFBF0A87F2A5ED64BD2781A59685B766FF46D9A0404A643BA1DE3DA1DAFBE4B639D1ACCDA65CFA59A101399570BD5F0241680DB28D3CCE00F64F906B8AE0EBA23482D1EB96A129AC24E56D8FCD2C4847B0B789ADD225A6CEDD58D3A5A3E4D5CE287B65589EB3E851FFFD8B50ECB2E964ED926799624FE2171121041460757C4FBE33B76F6F3570C666F191DF46219359D041A91DCD6FC6F09A6DA7D52625DC47CB8944119A96687DD0994BEF2ECAA2E883351F877C2D092ECCA7C6D7C1DA4B3B525370F57AB21EA44FFA38CA655CF51099CCF38509954DCA8BFA66090462B4D1A66AC92CF775E6B55B365339F1C2034568BD49F5270E4C3A44A48ADC7713A5C1DE2A8E6CEB58F8737FD87647B8E8C88E0ABFD808AFBCC6EEB8DA16FFBFACD7C207669090EC8CC8DC1A1265C34BE30A9426EAFECFD16997B47E30CCCC27AC7FB344F2FE7B845EBE86B0A58EDCFBCE84A34536368DBD07A951CB89CE3CB0CB8AF9F3E13506BCE5940000CEF76FE3A30C9BC2B2CEBAF87C4B9DF3EE3795859107F364FF76F95FB9742B6111AB1E773E246C37AB7DB33CCDA21B20D11F3BE7EC45B368443B015C2447063515199C3C348F6ED5A52CA8D2D5E85082C022364EA4EF1C751B76D693B758B7955210C4616BB2D412BFC28527A5BB26A23143FA5475B668D32FAC2F629733275972820D3B444A0D5ACB74958036BC5ECE55D2F004F33BA888BAA082AF8F2E9F2B99835ACA75DCC3904CDE7CA8611F7028EC7002F15D2EB95A3DB2112E77F275D8EA9E7C616743E9C4A7151A9F3CD2A441BDE08556AE9B9A9469E112E3A883A9232B90621B83F192C3576ADF6D7932452A316EDC45A2655B707F24C5017A2DE71C87EDA3A4E98575BBEECCC1622D1DC223F991E72E466C678F9F033A97421374EE9973C825B646F048412E1DB6E1061F1A518E995826DEEAEA09C32451D9836F13F0E9D4DAF8E4517DFCDA9A2449B6366F21D88B06F01F7B6D51E901CF9C3863428430BAED2606A9A36C7C97CCB9D7A4BBB1172D0B9B78400CCBFF8BB31F02E0E76DA12B03739BED8CB58AA2FF832CFFB1090D7177976D71D056612932773E08E3DF201C7664C124CD235B14A3BEA839385A29056263D030F690E2922F92BAB465AE4322E93C3C4FA8A0D5A1908C0C3DAE41ED763AD33B6F835E3C22E8DC38C831CB0307BA17F48C27617034BBC28A8F17D7DCB348E361687AA1A8827A1CB06DBAD48B64FC28532FB79F0C19237AF9BF198E32B1AF950ADB2E6CF167B743DE232CE8A30D30F657D016722B6B076571EFDBAB7AE87CF0AF6D65A8452F744D8D1238A7C09F5648D346E1A680B700F6033A86438D97521F03D2E53C058DB1D9A02383C52DEDF007742EB0027BA8B31804D7D3C867099EE4BF324B9C4868FE937BA8FE0866B5B124A056E45020798FE3A7B99CDBC28DFCEBAD177D92BBBECE417FB178A5FD31EF7418616E966B4D44B9D9E0CA71CA2329B19CAFB6AE33EBDDC89DE340D8ED7EE9E20FC805C46F3DE2C00A6E52A59BBEED6693C91776AB52C5711008ADB1C56EB8F676B24B6342B0E53858DAEE8FC0D5392CDEB9809F238881791C2392A97B5B0D85E357E9C16777439E4D8B6BA228C45918643B6D0925DFB82B1642E077090FF1B2D4A2F28D3AA7C08B2A918F78607B631BCFB406A3917A3B43882E7AC7CAF9788B16425F3409241961B662CCA4A88D93214A49BE67B0CFDC2EC6EB866C1B6ECD078A49B380BAD7264496757CC5140A30FA0BAB2F22ABD67B2D975277BC4D625A1802FEC767254B4E9328D5148F59E950E4C2CD87D3CE3429E5FC248CEDDA93B183AA2A0AEE04694A6A4D3A95605F6F0F914DCE704D66B7AC1C2E87673573D7F0C16D0EE076E04257F3D6FA2E7754E4C410643B6C3FDBB4B4C609F39FA79BE7D7B06E342E214F75844638BE5A918CEBE9B6348B4C7609737E746BF0A48EFC82807C1D519DCBA45F13F0A8BC271BC5E9E085C88E311CD7247B055C733287DECB6F8370549C1D324631FA3E24723C2AA56F7DA708EE119D0928732919864875ABF41D7D8EEC2D1EBB52939901BE7A8E1A4ECD791024DCF967DF2BDDD8033479E9B482BD3CB3E32370F543B0AB8BAC4D6FC5FBB363A6D053724126A1FA91BF33687DE7180D0616875E6B55F162A2EB5E1ED4DD511AE4408618769B10D41B4F3D59DAC93411C7DA77C28FA2500C04CFB6C0CA24701701C659CC890A8B1AD3CB580D5AAEEEBC9560E2D077B1AD364A6B93556617A232900F9F8369EF38C81D87D6666214763F9D4DB27C14DA013AF9CD7DB9AF083FBFA31FAC04D6B70F76ED3371B88D40F38B63B2C1E1072A09B9545057B4F36F21011863927CD3B274F2704D49F62F169D40049B5A2AB4E892D7C542E12A73649BD29AD8D4E7CA89FFBB9C0A5C666C8F1CA251FE7703189701EC061DB0B4400E975004DFC4FA877C66C67AA028D6DB5343185770C8538A16344C8F29F363E29D8C78AC997BAFE814B30D25DF15E66EC8F492E04C145E551A0DE8F1285E4BE19238065D7395CDE809E4E54D732DCAAC40E09A1E977CA1A6AD9A9AA7349D2BE92C0FD839B860659FF438D52E9466DE50DEFFB5C26E47D0D6FE702406817E35DCF74D017FB6172A812CBBEEC64BF7F2734AEADA6482E8EAAE9270776DAD541CBA19704041171577874EFF16C19B3327591E2D968822B751CB31F6D1BA24F417B8459BD0A3113B84285151D5952EF7D986A279CF268AAA6CC3D5D535BFE127EFBC82D68D4331C5D071E5434DC232B01F62A2BB2F77AB8DF73F07A9AFD3BFB0F814CEE1DBE8AF77F70B66C2195ED9A2ACED421BE8CC3D079BE392CF1D0E967132466B6F8B4027AF8861DFA0955F895BB354D886408EC5115AE3512C65C8837524BC46D31686505300C8B52251D369CF02E861DDA8FB928723AF1C65E4BA81B54B704559610299A43E2132582312FB84CE64022E780097367CE8A7C40A4A39E15FC284D62DAAD45E64E55563F14CBDF3CBA6B1D4DAD523A94DB9A78ED79AB971B2ACB55A9BFFE0A50A6BB6889C3EA6B951EC0BF410CFE201D444162148657D729A0432AFB899C6A9DDC6DFC533B9F39FFABAA7058B5E7FC182907349F163618FA3BEE61F001BB984790C53ABF461D17CD3608B105D9ED9BD13887DB12FBE4E5D1A37063B84FF0999E5C3417BCFAF8F9235197085BD52A5E311938A92D0A7B033E96953CDB56FB22CA9116B70A4B75CB47902D113868E18E9B5B3FF423D6CF54EB9A932B49AA295B6CDED606DBF9988F01D84206187B527340E5C66F96449B42DEEA2971ED7FE174103F9C90596AAB6CAC9013C82E03F6D62E93917391C5B8865D48421DB2A65361A422FDCAE6BD2145D21AD9C84DD7AA0FCE388711ED9246325BF276AD10D1A0BC517B41C79A02318B458E5FB65D6B8FB0AF030B84087D09E4E584B3CABCB1946CDFAB8BFCD9DC28FB8F4C5E3CEA36B04A709EF5DE",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "f0f072fb0cf4dcf5e00c018b651698b9bdef86324092cf02dd709273522b3099",
+              "plaintextHash": "22091242516ae743a751cb819377714effc36ed9f60fbd440a3d515dd37a1676",
+              "iv": "D45D483F10AF4975B8BE47D9",
+              "tag": "C918F31298918B8382048C217564D306"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "3bd9eecc-6ca1-4c40-916a-57bcfac9923f",
+            "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-x402",
+            "version": "v1",
+            "manifestRoot": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+            "amount": "40000",
+            "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+            "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+            "condition": "A025802026CAED58B2F924A97094519DDB9A4C6A92D351E599DA00EA99F7C62415DC810E810120",
+            "cancelAfter": 847363722
+          },
+          "pubKey": "EDCAB00428CE6D9B6144A2824D7D93840F5C169CB848BA5F5FA0D30FF73B0C8562",
+          "sig": "5CDED24B5CB1109A0CA63FFAFEF6A973E83B8822FBFF0225B237DBBF4E0A9D812376FDBACF09A60128CE161B72D311F7EE5BEA609EE496B4A2AC41E8917F4507"
+        },
+        "key": "160E742DD7CCB6187DB533424464FDD0E3982F4B12B427D9D448340248BC3EBD",
+        "finishHash": "949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+        "ledgerIndex": 22135652,
+        "createHash": "E272F5534A306A1F9D6B95608EA397E777F76E7A7F1F25ADEDD1796F08388978"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 102,
+      "hash": "3df467b049dd8adbf972d083450fda24b7322d10f712a8dc1300bcf74ae76e56"
+    },
+    "entries": [
+      {
+        "seq": 103,
+        "at": "2026-11-07T10:46:48.192Z",
+        "prevHash": "3df467b049dd8adbf972d083450fda24b7322d10f712a8dc1300bcf74ae76e56",
+        "hash": "8fe854977619352eda53492ca5f437d6705b0e2ded22f2eb3cba3266f7db0317",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-07",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "fb41ef1061761e46a13b61586f75caa3b5d95ffa97d2bae1823f3ac73ad7e8ca",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4680,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1680
+        }
+      },
+      {
+        "seq": 104,
+        "at": "2026-11-07T10:46:48.212Z",
+        "prevHash": "8fe854977619352eda53492ca5f437d6705b0e2ded22f2eb3cba3266f7db0317",
+        "hash": "fd6b7b119364610378fff838cf086f7376e35760a66847725e7131ccd5759258",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 1,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-x402",
+          "selectedSourceKey": "xrpl-x402@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 1
+          }
+        }
+      },
+      {
+        "seq": 105,
+        "at": "2026-11-07T10:46:48.741Z",
+        "prevHash": "fd6b7b119364610378fff838cf086f7376e35760a66847725e7131ccd5759258",
+        "hash": "db96c93d49951b95108355bd1e17f9d76aef804859c8fc394256f9f6edde210e",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "27B2F1D46F04E762D0DAB578CEB8539110A73EE9671EE023F32AD1DD2AF6C62C",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-x402",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 106,
+        "at": "2026-11-07T10:46:50.611Z",
+        "prevHash": "db96c93d49951b95108355bd1e17f9d76aef804859c8fc394256f9f6edde210e",
+        "hash": "3b6bb12811d4427fafa6ec163b54d7eb50fa2f18804279a4e4306f00ba3662bc",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22135580,
+          "invoiceHash": "27B2F1D46F04E762D0DAB578CEB8539110A73EE9671EE023F32AD1DD2AF6C62C",
+          "lastLedgerSequence": 22135668,
+          "operation": "create",
+          "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "proofOk": false,
+          "txHash": "E272F5534A306A1F9D6B95608EA397E777F76E7A7F1F25ADEDD1796F08388978"
+        }
+      },
+      {
+        "seq": 107,
+        "at": "2026-11-07T10:46:58.164Z",
+        "prevHash": "3b6bb12811d4427fafa6ec163b54d7eb50fa2f18804279a4e4306f00ba3662bc",
+        "hash": "462863b4b9c93be082789a4b380d4b8c1af88289cc501f131f0e105674a0c604",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847363722,
+          "createSequence": 22135580,
+          "invoiceHash": "27B2F1D46F04E762D0DAB578CEB8539110A73EE9671EE023F32AD1DD2AF6C62C",
+          "ledgerIndex": 22135649,
+          "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "result": "tesSUCCESS",
+          "txHash": "E272F5534A306A1F9D6B95608EA397E777F76E7A7F1F25ADEDD1796F08388978"
+        }
+      },
+      {
+        "seq": 108,
+        "at": "2026-11-07T10:47:06.973Z",
+        "prevHash": "462863b4b9c93be082789a4b380d4b8c1af88289cc501f131f0e105674a0c604",
+        "hash": "6d914ba9064e3b10e58887cbd19432e9bfcdf1129a4758e35286855667eab0bf",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "26d928ae87cd4ddba6e2fae2cd8ce4fa36745175e9f473e88d4e892db56784b6",
+          "passageCount": 4,
+          "resourceId": "xrpl-x402",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 109,
+        "at": "2026-11-07T10:47:06.976Z",
+        "prevHash": "6d914ba9064e3b10e58887cbd19432e9bfcdf1129a4758e35286855667eab0bf",
+        "hash": "02ea13410c7d30a8d60bd85e5fc73830d2252152be4aaf77118d461dc592b12d",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 110,
+        "at": "2026-11-07T10:47:06.976Z",
+        "prevHash": "02ea13410c7d30a8d60bd85e5fc73830d2252152be4aaf77118d461dc592b12d",
+        "hash": "b80c046735de6d07ed054fd8d313f47321d8e7c377ba6853705a005c9a0f62e8",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "E272F5534A306A1F9D6B95608EA397E777F76E7A7F1F25ADEDD1796F08388978",
+          "createSequence": 22135580,
+          "ledgerIndex": 22135652,
+          "owner": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721"
+        }
+      },
+      {
+        "seq": 111,
+        "at": "2026-11-07T10:47:06.976Z",
+        "prevHash": "b80c046735de6d07ed054fd8d313f47321d8e7c377ba6853705a005c9a0f62e8",
+        "hash": "93b3ced07d1782348155566ac1f569ab6d1a888949f5169b5f8b57bf92430a3b",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": "1d97d91f-0b15-4504-a883-19a2ef40ecff:1:xrpl-x402:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22135652,
+          "payTo": "rUMMY9Ftk7NoxMw75xrrAfPaHsErNib1BP",
+          "payer": "rLmg3pWCTZq3aMnL25XSphzBFiattXyjvY",
+          "receiptId": "escrow-949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "949B03FE0AE89A187C79096310645F29FEFEF5903D27655468F82B78AB882721"
+        }
+      },
+      {
+        "seq": 112,
+        "at": "2026-11-07T10:47:06.994Z",
+        "prevHash": "93b3ced07d1782348155566ac1f569ab6d1a888949f5169b5f8b57bf92430a3b",
+        "hash": "5c62969489753309bd00d2366caa6d00e20c2d70815ea8413b68ef810b03f270",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 1,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 2,
+          "selectedResourceId": null,
+          "selectedSourceKey": null,
+          "threshold": 0.2,
+          "verdicts": {
+            "SKIP_REWRITE": 1
+          }
+        }
+      },
+      {
+        "seq": 113,
+        "at": "2026-11-07T10:47:07.000Z",
+        "prevHash": "5c62969489753309bd00d2366caa6d00e20c2d70815ea8413b68ef810b03f270",
+        "hash": "5affc8c92e889fa79972ecef916ee03036d145db20b3b44b2438b172a49436c5",
+        "runId": "1d97d91f-0b15-4504-a883-19a2ef40ecff",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "927abc16351aef8eff7c2153544d151a5aa0f886c589a8a095f2285d76ef29ba"
+        }
+      }
+    ],
+    "head": "5affc8c92e889fa79972ecef916ee03036d145db20b3b44b2438b172a49436c5"
+  }
+}

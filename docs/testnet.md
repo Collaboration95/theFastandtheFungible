@@ -62,10 +62,10 @@ only create/finish/refund/re-buy hashes and first-create timing under
 selects a fresh wallet cache. The acceptance script deletes its private scratch.
 Funding, hire ingress, royalties, change and cooperative refunds stay Payments.
 
-## Zero-clone Testnet MCP (v1.0.0)
+## Zero-clone Testnet MCP (v1.0.1)
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.1/researchagent-mcp-1.0.1.tgz --testnet
 ```
 
 Release · not yet on npm/PyPI/MCP Registry. Alternatively use the
@@ -87,10 +87,10 @@ prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots
   stdio with a fresh npm cache, restarts to prove wallet reuse and cap enforcement, and checks each hash on s.altnet.
   Default CI never calls the faucet. Evidence: [round3-a](evidence/round3-a/README.md).
 
-## Zero-clone Testnet app (v1.0.0)
+## Zero-clone Testnet app (v1.0.1)
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz app --testnet     # or without --testnet for the labelled SIMULATED rail
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.1/researchagent-mcp-1.0.1.tgz app --testnet     # or without --testnet for the labelled SIMULATED rail
 ```
 
 Release · not yet on npm/PyPI/MCP Registry. Only Node 22 is needed: the tgz carries the engine,
@@ -114,7 +114,7 @@ ResearchAgent ready: http://127.0.0.1:N · fixture models · XRPL TESTNET · no 
 - **No `.env`.** The app never reads one; models and writers are fixtures. Key reveal and anchoring are on.
 - **SDK.** The printed `baseUrl` is the bearer-protected engine (not the UI port); the token is in `…/api-token` (mode
   0600, removed on exit) and is never printed. The SDK's `ask` is the MCP surface, so also set the operator caps, e.g.
-  `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500 npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz app --testnet` (default zero, as for MCP).
+  `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500 npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.1/researchagent-mcp-1.0.1.tgz app --testnet` (default zero, as for MCP).
   `RA_URL=<baseUrl> RA_API_TOKEN=$(cat <token file>) npx tsx examples/ask.ts` works from a checkout.
 - **Fallback.** A faucet or network failure starts the app on the SIMULATED rail and the ready line says why
   (`SIMULATED fallback · faucet_unavailable | validation_timeout | wallet_cache_unavailable | network_unavailable · no ledger
@@ -162,4 +162,4 @@ directory. Operator caps still apply; the command does not change MCP's zero
 budget default for other entry points. No-purchase runs skip the anchor fee.
 The portable stdio bundle does not load the web UI. Browser tooling is omitted;
 report export uses the existing HTML fallback when Chromium is unavailable.
-Release URLs point at v1.0.0.
+Release URLs point at v1.0.1.

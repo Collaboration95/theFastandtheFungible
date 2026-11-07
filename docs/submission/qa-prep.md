@@ -27,7 +27,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | README Numbers |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
 | **183 / 10** | merged PRs since SingHacks / tagged releases | 21 Sep–7 Nov | `gh pr list`, `gh release list` |
-| **Held-out 8/20; dev 16/20** | separate frozen XRPL banks bought and cited; 0 blanks/gate violations each; online verification 16/20 dev, 8/20 held-out (missing anchors fail) | Testnet, fixture models, team-authored writer, 7 Nov | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390), [J5 evidence](../evidence/j5-coverage/README.md) |
+| **Held-out 7/20; 0/10 off-topic buys** | blind v4 bank bought and cited; the key fact leads the answer in 2/20; all ten v4-negatives abstained; 0 gate violations. Dev (not held-out): v1 16/20, v3 7/20 | Testnet, fixture decision model, team-authored writers, 7 Nov | [v4 evidence](../evidence/v4-heldout/README.md) |
 
 ---
 
@@ -64,13 +64,14 @@ first-try `init` + `publish` is 33.9 s (J3, #389).
 ### 3. I asked my own question. What happens?
 
 **Say:** "It can buy and cite our labelled team notes. With fixture models on
-Testnet, eight of twenty held-out questions were bought and cited; sixteen of
-twenty on the development set. If policy declines the available articles, it
-buys nothing. Discovery does not guarantee a purchase. The current release's
-'No listed writer covers this' message can also mean a value-threshold decline;
-Lane K is correcting that wording."
+Testnet, seven of twenty blind held-out questions were bought and cited, and on
+ten off-topic questions it bought nothing. The key fact leads the answer in two
+of the twenty. If policy declines the available articles, it buys nothing, and
+the decline now lists each policy reason in 'Why'. Discovery does not guarantee
+a purchase. Development sets, which we tuned on, are separate: v1 16/20 and v3
+7/20."
 
-**Behind it:** [J5 evidence](../evidence/j5-coverage/README.md): v2 held-out 8/20; v1 dev 16/20 buy-and-cite; zero blanks and terminal gate violations in each. Online receipt verification passes 16/20 dev and 8/20 held-out; abstentions have no anchor and fail `--ledger`. Policy misses remain. This is fixture-model mechanism evidence, not live-model answer quality. The original v1 baseline was 15/20; the one-question dev gain does not establish generalization.
+**Behind it:** [v4 evidence](../evidence/v4-heldout/README.md): v4 held-out 7/20 bought and cited, answers-it 2/20, 0 gate violations; v4-negatives 0/10 purchases. Run once on `main` `bdc30f97`, fixture decision model at threshold 0.20, team-authored writers, Testnet. v4 is now used; a new held-out claim needs a new blind bank (v5). Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: 13 of 20 held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality.
 
 ### 4. Who pays for this, and who is writer number one?
 
@@ -100,8 +101,8 @@ isn't ours."
 
 **Say:** "Network fees are 435 drops per key-reveal purchase, 12 to create and
 423 to finish, because the finish carries the key. That is about S$0.0009 at an
-assumed two dollars per XRP. The answer anchor is 12 drops, and we skip it when
-nothing was bought. Models cost about a quarter of a US cent per question.
+assumed two dollars per XRP. The answer anchor is 12 drops, and a Testnet run that
+buys nothing is anchored too. Models cost about a quarter of a US cent per question.
 Writers set article prices, S$0.10 to S$0.90 in our corpus, capped at S$1 per
 source. So the real cost is buying the wrong article, and that's what we
 measure."

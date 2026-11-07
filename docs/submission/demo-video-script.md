@@ -8,13 +8,13 @@ of judges' time. Nine shots. Voice-over is about 370 words at 135 words a minute
 
 **Recording is a human task.** Track it on
 [#265](https://github.com/Collaboration95/theFastandtheFungible/issues/265).
-Record on Wed 11 or Thu 12 Nov, **after v1.0.0 is published**
-(shot 2 needs the `try` subcommand, which is in v1.0.0). Upload by Thu 12 Nov.
+Record on Wed 11 or Thu 12 Nov, **after v1.0.1 is published**
+(shot 2 needs the `try` subcommand, which is in v1.0.1). Upload by Thu 12 Nov.
 
 ## Before you press record
 
-1. **The release exists.** `gh release view v1.0.0` lists
-   `researchagent-mcp-1.0.0.tgz` and the Python wheel.
+1. **The release exists.** `gh release view v1.0.1` lists
+   `researchagent-mcp-1.0.1.tgz` and the Python wheel.
 2. **The public site is current.** Open
    <https://collaboration95.github.io/theFastandtheFungible/ledger/>. The first
    rows must read "RLUSD", not `524C5553…`. On
@@ -26,8 +26,8 @@ Record on Wed 11 or Thu 12 Nov, **after v1.0.0 is published**
 3. **A fresh, private terminal.** Light theme, 18 pt font, 1920×1080, window
    title hidden. Run these first, off camera:
    ```sh
-   export REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.0
-   export TGZ=$REL/researchagent-mcp-1.0.0.tgz
+   export REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.1
+   export TGZ=$REL/researchagent-mcp-1.0.1.tgz
    export npm_config_cache=$(mktemp -d)   # empty npm cache: what a judge gets
    export XDG_STATE_HOME=$(mktemp -d)     # fresh faucet wallets, mode 0600, never printed
    clear
@@ -95,7 +95,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 - **Edit:** speed up the install and faucet wait (×4 or more), with the
   real-time clock in the corner. Play the six numbered lines and RESULT at 1×.
   The cold run took 84.2 s in our measurement; show whatever your run took.
-- **Captions:** first "`npx -y …/releases/download/v1.0.0/researchagent-mcp-1.0.0.tgz try --testnet`"
+- **Captions:** first "`npx -y …/releases/download/v1.0.1/researchagent-mcp-1.0.1.tgz try --testnet`"
   (full URL, 3 s), then "XRPL Testnet · no real value · fixture models ·
   fictional writers · sped up ×N".
 - **Fallback:** if the faucet fails, `try` prints a labelled SIMULATED run with
@@ -162,9 +162,10 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
   content · not an independent writer"
 - **VO:** "No MCP client? The same package runs the full app on
   your machine. Ask it something about XRPL. It buys from a writer made of our
-  own build notes. It's labelled as ours, not independent. On twenty judge
-  development questions, 16 came back bought and cited. On twenty new held-out
-  questions, 8 did. Both used fixture models and Testnet."
+  own build notes. It's labelled as ours, not independent. On twenty new
+  blind held-out questions, 7 came back bought and cited, and on ten off-topic
+  questions it bought nothing. That used the fixture decision model and Testnet.
+  Numbers on questions we tuned on are higher; we do not lead with them."
 
 ### Shot 6 · A stablecoin escrow, from Claude Code (1:48–2:08)
 
@@ -204,7 +205,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
   will appear as EscrowFinish`. ⌘-click the Credential link.
 - **Caption:** "XRPL Testnet · starter notes, not a real writer · public faucet"
 - **If J3 (`init`) has not merged:** skip `init`, and use
-  `curl -L https://github.com/Collaboration95/theFastandtheFungible/archive/refs/tags/v1.0.0.tar.gz | tar xz --strip-components=2 '*/examples/writer-starter'`
+  `curl -L https://github.com/Collaboration95/theFastandtheFungible/archive/refs/tags/v1.0.1.tar.gz | tar xz --strip-components=2 '*/examples/writer-starter'`
   then `publish ./writer-starter --testnet`.
 - **VO (30 words):** "Writers join with one command. A Markdown folder becomes
   a Testnet writer with an XRPL credential. Ours took 33.9 s
@@ -215,8 +216,8 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 - **Type:**
   ```sh
   python3 -m venv /tmp/ra && . /tmp/ra/bin/activate
-  pip install -q $REL/researchagent-1.0.0-py3-none-any.whl
-  curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.0.0/docs/evidence/lane-b3/UC3.receipts.json
+  pip install -q $REL/researchagent-1.0.1-py3-none-any.whl
+  curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.0.1/docs/evidence/lane-b3/UC3.receipts.json
   researchagent verify UC3.receipts.json --ledger
   ```
   Four lines, ending `PASS testnet 12/12 (read-only, s.altnet)` and `RESULT PASS`.
@@ -246,7 +247,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 3. Replace `{{VIDEO_URL}}` in `docs/submission/deck/index.html` (slide 12),
    `docs/submission/README.md` and the form. Then re-export:
    `node docs/submission/deck/export.mjs`.
-4. Attach the MP4 to the release (`gh release upload v1.0.0 video.mp4`),
+4. Attach the MP4 to the release (`gh release upload v1.0.1 video.mp4`),
    not to git.
 
-J5 measurement for recording: v2 held-out 8/20; v1 dev 16/20 buy-and-cite; zero blanks and terminal gate violations per bank. Online receipt verification: 16/20 dev, 8/20 held-out; no-purchase anchors are missing and remain failed checks. [Evidence](../evidence/j5-coverage/README.md).
+Measurement for recording: v4 held-out 7/20 bought and cited, answers-it 2/20, 0/10 off-topic purchases, 0 gate violations (fixture decision model, team-authored writers, Testnet, run once on `main` `bdc30f97`). Dev, not held-out: v1 16/20, v3 7/20. [Evidence](../evidence/v4-heldout/README.md).
