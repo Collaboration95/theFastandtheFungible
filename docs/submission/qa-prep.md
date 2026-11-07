@@ -70,7 +70,7 @@ Testnet. If nobody covers your question, it says 'No listed writer covers this
 yet, nothing bought' and links to publishing. It doesn't invent an answer or
 spend."
 
-**Behind it:** [J5 evidence](../evidence/j5-coverage/README.md): v2 held-out 8/20; v1 dev 16/20 buy-and-cite; zero blanks and terminal gate violations in each. Online receipt verification passes 16/20 dev and 8/20 held-out; abstentions have no anchor and fail `--ledger`. Policy misses remain. This is fixture-model mechanism evidence, not live-model answer quality. The original v1 baseline was 15/20; no coverage gain is claimed.
+**Behind it:** [J5 evidence](../evidence/j5-coverage/README.md): v2 held-out 8/20; v1 dev 16/20 buy-and-cite; zero blanks and terminal gate violations in each. Online receipt verification passes 16/20 dev and 8/20 held-out; abstentions have no anchor and fail `--ledger`. Policy misses remain. This is fixture-model mechanism evidence, not live-model answer quality. The original v1 baseline was 15/20; the one-question dev gain does not establish generalization.
 
 ### 4. Who pays for this, and who is writer number one?
 
