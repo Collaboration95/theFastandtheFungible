@@ -53,6 +53,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
 footer a { color: var(--pen); text-underline-offset: 3px; }
 
 
+.agent { display: block; margin: 0 0 16px -6px; image-rendering: pixelated; }
 @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .card, .card.wide, .card.full { grid-column: auto; } header { padding-top: 48px; } }
 @media (prefers-reduced-motion: reduce) { .card, .card::before, .card .go span {   } }
 </style>
@@ -107,6 +108,7 @@ footer a { color: var(--pen); text-underline-offset: 3px; }
 <!-- site-header:end -->
 <main>
   <header>
+    <picture><source media="(prefers-reduced-motion: reduce)" srcset="brand/agent-still.png"><img class="agent" src="brand/agent-loop.gif" width="192" height="108" alt="The agent searches a page, pays into an escrow lock, the writer's key turns and the page is verified"></picture>
     <div class="kick">Explainers</div>
     <h1>Research <span class="hl">with a wallet.</span></h1>
     <p>ResearchAgent searches expertise, buys missing evidence within your budget, and verifies delivery.</p>

@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 7 Nov: Pixel-art agent: head is the open-index mark; generated sprite sheet (8 poses incl. pay, key reveal, refund), README hero GIF (89 KB, transparent, dark/light evidence), site loop and app loading sprite; drift check in `check:fast`. AGENTS.md mascot rule narrowed to this one character.
 - 5 Nov: Lane R2 prepares v1.0.0-rc.2 artifacts and concrete installs, displays completed answer anchors without reload, and expands the read-only Testnet ledger to 45/45 verified hashes, including TEST-SGD IOU (stand-in for RLUSD); all local consumers/browser suites pass. Tagging remains with the orchestrator. [Evidence](evidence/round3-r2/README.md).
 - 4 Nov: Lane R1 prepares v1.0.0-rc.1 versions, PEP 440 wheel names and prerelease/Latest policy; five fixture consumers pass. Final version bump follows 9 Nov acceptance.
 - 4 Nov: Zero-clone release consumers clean up npm/npx process groups with escalation and assert no surviving processes; fixture-only regression covers a SIGTERM-resistant grandchild. [#364](https://github.com/Collaboration95/theFastandtheFungible/pull/364).
