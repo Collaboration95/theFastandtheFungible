@@ -15,6 +15,7 @@ process.chdir(root)
 if (process.argv[2] === 'app') { await (await import('./app.js')).runApp(process.argv.slice(3)); process.exit() }
 // Testnet mode never reads a local .env; the fixture engine gets only provisioned wallet material.
 const testnet = process.argv.includes('--testnet')
+if (process.argv.includes('--iou') && !testnet) throw new Error('--iou requires --testnet')
 if (!testnet) dotenv.config({ path: resolve(root, '.env'), quiet: true })
 let engine: Awaited<ReturnType<typeof startEngine>> | undefined
 try {
@@ -24,7 +25,7 @@ try {
   const dataDir = resolve(config.RA_DATA_DIR ?? testnetModule?.testnetStateDir() ?? resolve(root, 'data/mcp'))
   // Testnet answers stdio `initialize` immediately and provisions wallets in the background; tools wait for it.
   const boot = async () => {
-    const setup = await testnetModule?.prepareMcpTestnet()
+    const setup = await testnetModule?.prepareMcpTestnet(undefined, process.argv.includes('--iou') ? 'test-iou' : process.env.ESCROW_ASSET)
     engine = config.RA_BACKEND_URL ? undefined : await startEngine({ dataDir, live: !testnet && config.RA_LIVE === '1', env: setup?.env })
     return { apiUrl: config.RA_BACKEND_URL || engine!.apiUrl, token: config.RA_API_TOKEN || engine?.apiToken, labels: setup?.labels }
   }

@@ -1,3 +1,4 @@
+import { TEST_SGD_LABEL } from '../shared/contracts/asset.js'
 import { homedir } from 'node:os'
 import { resolve, isAbsolute } from 'node:path'
 import { provision, isolatedEnv } from '../scripts/testnet-wallets.js'
@@ -22,22 +23,22 @@ const FIXTURE = 'Fixture models and fictional writers'
  * Provisions (or reuses) faucet wallets and returns engine-only environment overrides. The parent
  * process environment is never mutated and operator caps are never touched (hard gate 2).
  */
-export async function prepareMcpTestnet(load: typeof provision = provision) {
+export async function prepareMcpTestnet(load: typeof provision = provision, asset = process.env.ESCROW_ASSET) {
   const started = performance.now()
   try {
     const root = testnetStateDir()
-    const seeds = await load(resolve(root, 'wallets.private.json'), fetch, undefined, root)
-    const full = isolatedEnv(seeds)
+    const seeds = await load(resolve(root, 'wallets.private.json'), fetch, undefined, root, asset)
+    const full = isolatedEnv(seeds, asset)
     const env: NodeJS.ProcessEnv = { ESCROW_MODE: 'key-reveal', ANCHOR_RAIL: 'xrpl-testnet', DOTENV_CONFIG_PATH: '.testnet-no-env' }
-    for (const [key, value] of Object.entries(full)) if (value !== undefined && /^(XRPL_|ESCROW_|SETTLEMENT_RAIL$)/.test(key)) env[key] = value
+    for (const [key, value] of Object.entries(full)) if (value !== undefined && /^(XRPL_|ESCROW_|SETTLEMENT_RAIL$|TESTNET_IOU_ISSUER$)/.test(key)) env[key] = value
     env.ESCROW_MODE = 'key-reveal'
-    env.ESCROW_WRITERS = Object.keys(seeds).filter(slug => slug !== 'buyer').join(',')
+    env.ESCROW_WRITERS = Object.keys(seeds).filter(slug => !['buyer', 'issuer'].includes(slug)).join(',')
     const seconds = ((performance.now() - started) / 1000).toFixed(2)
     console.error(`Testnet · no real value · wallets ready in ${seconds} s`)
-    return { testnet: true as const, env, labels: ['Testnet · no real value', FIXTURE] }
+    return { testnet: true as const, env, labels: ['Testnet · no real value', FIXTURE, ...(asset === 'test-iou' ? [TEST_SGD_LABEL] : [])] }
   } catch (error) {
     const label = `SIMULATED fallback · ${reasonClass(error)} · no ledger transactions`
     console.error(label)
-    return { testnet: false as const, env: {} as NodeJS.ProcessEnv, labels: [label, FIXTURE] }
+    return { testnet: false as const, env: {} as NodeJS.ProcessEnv, labels: [label, FIXTURE, ...(asset === 'test-iou' ? [TEST_SGD_LABEL] : [])] }
   }
 }

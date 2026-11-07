@@ -1,13 +1,14 @@
 import KeyRevealLifecycle from './KeyRevealLifecycle'
 import { keyRevealLabel } from '../format'
 import type { PurchaseIntent, Receipt, RunSnapshot } from '../../shared/contracts'
-import { candidateOf, money, shortHash, settlementAssetLabel } from '../format'
+import { candidateOf, assetMoney, shortHash, settlementAssetLabel } from '../format'
 import { purchaseState } from '../runState'
 import { saveReceipts } from '../download'
 import PendingTime from './PendingTime'
 import Verification from './Verification'
 
 export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: RunSnapshot; intent: PurchaseIntent; onRetry: (id: string) => void; onReceipt: (receipt: Receipt) => void }) {
+  const money = (minor: number) => assetMoney(minor, intent.quote?.payment?.asset)
   const source = candidateOf(run, intent), state = purchaseState(run, intent)
   const refunded = intent.status === 'REFUNDED', testnet = run.labels.settlement.startsWith('XRPL')
   const receipt = run.receipts.find(r => r.intentId === intent.intentId)

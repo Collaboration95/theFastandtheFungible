@@ -213,4 +213,5 @@ it('IOU no-show returns principal once and never grants plaintext', async () => 
   expect(s.store.getIntent('escrow-one')?.escrow?.state).toBe('CANCELLED')
   expect(s.store.getRun(s.run.runId).contents).toEqual([])
   expect(s.store.getRun(s.run.runId).spentMinor).toBe(0)
+  expect([...s.c.txs.values()].filter(t=>t.tx_json.TransactionType==='EscrowCancel')).toHaveLength(1)
 })

@@ -13,7 +13,7 @@ import { BUDGET } from '../shared/contracts/run.js'
 
 /** Conservative wallet-wide cap for this mode (SGD minor units): S$5.00. The operator may set WALLET_DAILY_CAP_MINOR. */
 export const APP_DAILY_CAP_MINOR = 500
-const USAGE = 'Usage: researchagent-mcp app [--testnet] [--port N] [--open]'
+const USAGE = 'Usage: researchagent-mcp app [--testnet] [--iou] [--port N] [--open]'
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 const MIME: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json' }
 // Same surface as the Vite proxy and desktop shell: engine API (bearer added here) and the public publisher.
@@ -26,6 +26,7 @@ export function parseAppArgs(argv: string[]) {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (arg === '--testnet') options.testnet = true
+    else if (arg === '--iou') { /* passed to provisioning below */ }
     else if (arg === '--open') options.open = true
     else if (arg === '--port') {
       const port = Number(argv[++i])
@@ -33,6 +34,7 @@ export function parseAppArgs(argv: string[]) {
       options.port = port
     } else throw new Error(`Unknown argument ${JSON.stringify(arg)}. ${USAGE}`)
   }
+  if (argv.includes('--iou') && !options.testnet) throw new Error(`--iou requires --testnet. ${USAGE}`)
   return options
 }
 
@@ -91,7 +93,7 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
   try {
     const ui = uiDirectory(root, uiOverride)
     const testnetModule = options.testnet ? await import('./testnet.js') : undefined
-    const setup = await testnetModule?.prepareMcpTestnet()
+    const setup = await testnetModule?.prepareMcpTestnet(undefined, argv.includes('--iou') ? 'test-iou' : process.env.ESCROW_ASSET)
     const config = loadConfig()
     const dataDir = resolve(config.RA_DATA_DIR ?? (testnetModule ? join(testnetModule.testnetStateDir(), 'app') : join(stateHome(), 'researchagent/app')))
     mkdirSync(dataDir, { recursive: true, mode: 0o700 })
@@ -142,6 +144,7 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
     port = (http.address() as { port: number }).port
     const url = `http://127.0.0.1:${port}`
 
+    const money = setup?.env.ESCROW_ASSET === 'test-iou' ? (minor: number) => `TEST-SGD ${(minor / 100).toFixed(2)} · stand-in for RLUSD · no real value` : sgd
     const rail = setup?.testnet ? 'XRPL TESTNET' : options.testnet ? setup!.labels[0] : 'SIMULATED rail'
     const seconds = ((performance.now() - started) / 1000).toFixed(1)
     const wallet = await createClient({ baseUrl: engineUrl, token }).wallet().catch(() => undefined)
@@ -150,7 +153,7 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
       lines.push(`  payer address: ${wallet?.payerAddress ?? 'unavailable'} (public; seeds stay in ${testnetModule!.testnetStateDir()}, mode 0600)`,
         '  key-reveal escrow and answer anchor on; each receipt links its EscrowCreate / EscrowFinish / anchor on testnet.xrpl.org')
     } else lines.push(options.testnet ? '  settlement is SIMULATED: no ledger transactions' : '  settlement is SIMULATED; add --testnet for real XRPL Testnet transactions')
-    lines.push(`  caps: per-prompt budget set in the UI (max ${sgd(BUDGET.maxMinor)}) · wallet daily cap ${sgd(dailyMinor)}${setup?.testnet && config.WALLET_DAILY_CAP_MINOR === undefined ? ' (app Testnet default; WALLET_DAILY_CAP_MINOR overrides)' : ''}`,
+    lines.push(`  caps: per-prompt budget set in the UI (max ${money(BUDGET.maxMinor)}) · wallet daily cap ${money(dailyMinor)}${setup?.testnet && config.WALLET_DAILY_CAP_MINOR === undefined ? ' (app Testnet default; WALLET_DAILY_CAP_MINOR overrides)' : ''}`,
       `  SDK: createClient({ baseUrl: '${engineUrl}', token: readFileSync('${tokenFile}', 'utf8').trim() })   // from '@researchagent/sdk'`,
       '  verify: await client.verify(await client.receipts(runId), { testnet: true })',
       `  ready in ${seconds} s · Ctrl-C to stop`)

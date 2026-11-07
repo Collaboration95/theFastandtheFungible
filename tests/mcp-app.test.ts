@@ -122,3 +122,16 @@ test('refuses bad arguments and a remote backend before starting anything', asyn
   process.exitCode = undefined; process.env.RA_BACKEND_URL = 'http://127.0.0.1:1'
   await runApp([]); expect(process.exitCode).toBe(1)
 })
+
+test('app accepts IOU opt-in alongside Testnet without changing ports or spending caps', () => {
+ expect(parseAppArgs(['--testnet', '--iou'])).toEqual({testnet:true,open:false,port:0})
+ expect(APP_DAILY_CAP_MINOR).toBe(500)
+})
+test('IOU app ready block denominates prompt and daily caps in the labelled stand-in', async () => {
+ vi.mocked(prepareMcpTestnet).mockResolvedValue({testnet:true,env:{ESCROW_ASSET:'test-iou'},labels:['Testnet · no real value']} as never)
+ const app = await boot(['--testnet','--iou'])
+ try {
+  expect(prepareMcpTestnet).toHaveBeenLastCalledWith(undefined,'test-iou')
+  expect(app.out).toContain('wallet daily cap TEST-SGD 5.00 · stand-in for RLUSD · no real value')
+ } finally {app.stop.abort(); await app.done; app.restore()}
+},30000)

@@ -15,3 +15,9 @@ it('documents generated rc.2 asset installs and registry status across guides', 
   expect(lines[1]).toContain('researchagent-1.0.0rc2-py3-none-any.whl')
   for (const [file, line] of [['docs/sdk.md', lines[0]], ['docs/sdk-python.md', lines[1]], ['docs/mcp.md', lines[2]], ['docs/mcp.md', generate('--testnet')], ['docs/testnet.md', generate('--testnet')], ['docs/testnet.md', generate('--app')]]) expect(readFileSync(file, 'utf8')).toContain(line)
 })
+it('generates the labelled IOU opt-in without changing XRP installs', () => {
+ const generate = (...flags: string[]) => execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', 'v1.0.0-rc.2', ...flags], { encoding: 'utf8' }).trim()
+ expect(generate('--testnet','--iou')).toBe(generate('--testnet')+' --iou')
+ expect(generate('--app','--iou')).toBe(generate('--app')+' --iou')
+ expect(readFileSync('README.md','utf8')).toContain(generate('--testnet','--iou'))
+})
