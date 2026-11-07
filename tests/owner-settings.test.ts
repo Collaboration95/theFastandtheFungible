@@ -1,8 +1,8 @@
+import { resources } from './helpers/resource-scope.js'
 import { it, expect } from 'vitest'
 import express from 'express'
 import { once } from 'node:events'
-import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { writeFileSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { ownerSettingsRouter } from '../server/owner-settings'
 import { Store } from '../server/store'
@@ -10,11 +10,11 @@ import type { ApiContext } from '../server/api/context'
 import { applyOwnerConfig } from '../server/owner-config'
 
 it('requires local browser metadata and CSRF, masks secrets, audits caps and applies only after restart', async () => {
-  const dir = mkdtempSync(join(tmpdir(),'ra-owner-'))
+  const dir = resources().tempDir('ra-owner-')
   const old = {...process.env}
   writeFileSync(join(dir,'.env'), 'LLM_PROVIDER=fixture\n', {mode:0o600})
   Object.assign(process.env,{DOTENV_CONFIG_PATH:join(dir,'.env'),RA_DATA_DIR:dir,RA_WEB_ORIGIN:'http://127.0.0.1:12345',DEEPSEEK_API_KEY:'synthetic-secret-never-returned'})
-  const store = new Store(join(dir,'app.db'))
+  const store = resources().own(new Store(join(dir,'app.db')))
   const app=express(); app.use(express.json()); app.use((req,res,next)=>{ if(req.get('X-Test-Agent')) res.locals.agent={id:'synthetic-agent'}; next() }); app.use(ownerSettingsRouter({store} as ApiContext))
   const server=app.listen(0,'127.0.0.1'); await once(server,'listening')
   const url=`http://127.0.0.1:${(server.address() as {port:number}).port}/api/settings`

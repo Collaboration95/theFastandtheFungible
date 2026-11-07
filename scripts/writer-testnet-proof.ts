@@ -1,10 +1,8 @@
+import { ResourceScope, waitForOutput } from '../shared/resource-scope.js'
 // Opt-in public faucet proof. Outputs only addresses, timings and transaction hashes.
-import { mkdtemp, cp, mkdir, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { cp, mkdir, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { spawn } from 'node:child_process'
-import { once } from 'node:events'
 import { Wallet } from 'xrpl'
 import { fundTestnetWallet } from '../publisher/publishing/publish.js'
 import { PublisherClient } from '../server/publisher-client.js'
@@ -15,21 +13,19 @@ import { XrplPayer } from '../server/xrpl.js'
 import { testnetLedger, lookupTx } from '../shared/xrpl.js'
 if (!process.argv.includes('--testnet')) throw Error('Requires --testnet; public faucet only')
 process.env.ESCROW_MODE = 'key-reveal'
-const root = await mkdtemp(join(tmpdir(), 'writer-testnet-'))
+const scope = new ResourceScope()
+try {
+const root = scope.evidenceDir('writer-testnet-', 'Testnet wallets and potentially signed obligations; retain for manual reconciliation')
 await cp('examples/writer-starter', join(root, 'writer-starter'), { recursive: true })
 const started = performance.now()
 const tgzPath = process.argv.find(a => a.endsWith('.tgz')), tgz = tgzPath && pathToFileURL(resolve(tgzPath)).href
-const child = spawn(tgz ? 'npx' : process.execPath, tgz ? ['-y', tgz, 'publish', './writer-starter', '--testnet', '--port', '0'] : ['--import', join(process.cwd(), 'node_modules/tsx/dist/loader.mjs'), join(process.cwd(), 'scripts/publish-site.ts'), './writer-starter', '--testnet', '--port', '0'], { cwd: root, env: { PATH: process.env.PATH, HOME: process.env.HOME, LOCAL_WRITERS_DIR: join(root, 'private'), DOTENV_CONFIG_PATH: '.no-env', npm_config_cache: join(root, 'npm-cache'), SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' }, stdio: ['ignore', 'pipe', 'pipe'] })
+const child = scope.spawn(tgz ? 'npx' : process.execPath, tgz ? ['-y', tgz, 'publish', './writer-starter', '--testnet', '--port', '0'] : ['--import', join(process.cwd(), 'node_modules/tsx/dist/loader.mjs'), join(process.cwd(), 'scripts/publish-site.ts'), './writer-starter', '--testnet', '--port', '0'], { cwd: root, env: { PATH: process.env.PATH, HOME: process.env.HOME, LOCAL_WRITERS_DIR: join(root, 'private'), DOTENV_CONFIG_PATH: '.no-env', npm_config_cache: join(root, 'npm-cache'), SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0' } })
 let output = ''
 const ledger = testnetLedger(), store = new Store(':memory:')
 try {
-  await new Promise<void>((done, fail) => {
-    const timer = setTimeout(() => fail(Error('Writer onboarding exceeded 90 s')), 90000)
-    child.stdout!.on('data', c => { output += c; if (output.includes('Folder →')) { clearTimeout(timer); done() } })
-    let failure = ''
-    child.stderr!.on('data', c => { failure += c }) // Only our sanitized "Publish failed:" line is ever shown.
-    child.once('exit', () => { clearTimeout(timer); fail(Error(`Writer CLI exited before readiness. ${failure.match(/Publish failed: .*/)?.[0] ?? ''}`)) })
-  })
+  child.stdout.on('data', c => { output += c })
+  child.stderr.resume()
+  await waitForOutput(child, /Folder →/, 90000)
   const readySeconds = (performance.now() - started) / 1000
   const baseUrl = output.match(/PUBLISHER_URL=(http:\/\/127\.0\.0\.1:\d+)/)![1]
   const credentialHash = output.match(/CredentialCreate tx https:\/\/testnet.xrpl.org\/transactions\/([A-F0-9]{64})/)![1]
@@ -58,4 +54,6 @@ try {
   await mkdir('docs/evidence/round3-c', { recursive: true })
   await writeFile('docs/evidence/round3-c/onboarding.json', JSON.stringify(proof, null, 2) + '\n')
   console.log(JSON.stringify(proof))
-} finally { if (child.exitCode === null) { const exited = once(child, 'exit'); child.kill('SIGTERM'); await exited } store.close(); await ledger.close() }
+} finally { store.close(); await ledger.close() }
+
+} finally { await scope.close() }

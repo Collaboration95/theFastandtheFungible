@@ -1,31 +1,26 @@
+import { ResourceScope } from '../shared/resource-scope.js'
 // Explicit opt-in; fresh npx cache, local packed bytes, public Testnet only.
 import assert from 'node:assert/strict'
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, statSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs'
 import { resolve, join, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { ReadBuffer, serializeMessage } from '@modelcontextprotocol/sdk/shared/stdio.js'
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
-import { managedSpawn, stopProcess } from './release-processes.js'
+import { processTransport, stopProcess } from './release-processes.js'
 if (process.env.RA_ACCEPT_TESTNET !== '1') throw Error('Network opt-in required: RA_ACCEPT_TESTNET=1')
 const manifestPath = resolve(process.argv[2] || 'dist/release/manifest.json')
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 const tgz = resolve(dirname(manifestPath), manifest.artifacts.find((a: { kind: string }) => a.kind === 'mcp-tgz').file)
-const scratch = mkdtempSync(join(tmpdir(), 'ra-testnet-consumer-'))
+const scope = new ResourceScope()
+try {
+const scratch = scope.evidenceDir('ra-testnet-consumer-', 'Testnet wallets and potentially signed obligations; retain for manual reconciliation')
 const evidence = resolve('docs/evidence/round3-a'); mkdirSync(evidence, { recursive: true })
 const timings: { payerAddress?: string }[] = []
 try {
  for (let attempt = 1; attempt <= 2; attempt++) {
   const started = performance.now()
-  const child = managedSpawn('npx', ['-y', '--cache', join(scratch, 'npm-cache'), pathToFileURL(tgz).href, '--testnet'], { cwd: scratch, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, XDG_STATE_HOME: join(scratch, 'state'), MCP_MAX_BUDGET_MINOR: '200', MCP_DAILY_CAP_MINOR: '200' } })
-  const buffer = new ReadBuffer()
-  const transport: Transport = {
-   async start() { child.stderr.pipe(process.stderr); child.on('error', e => transport.onerror?.(e)); child.once('exit', () => transport.onclose?.()); child.stdout.on('data', chunk => { buffer.append(chunk); let message; while ((message = buffer.readMessage()) !== null) transport.onmessage?.(message) }) },
-   async send(message) { child.stdin.write(serializeMessage(message)) },
-   async close() { await stopProcess(child) },
-  }
-  const client = new Client({ name: 'testnet-release-consumer', version: '1' })
+  const child = scope.spawn('npx', ['-y', '--cache', join(scratch, 'npm-cache'), pathToFileURL(tgz).href, '--testnet'], { cwd: scratch, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, XDG_STATE_HOME: join(scratch, 'state'), MCP_MAX_BUDGET_MINOR: '200', MCP_DAILY_CAP_MINOR: '200' } })
+  const transport = processTransport(child)
+const client = new Client({ name: 'testnet-release-consumer', version: '1' })
   const call = async (name: string, args = {}) => { const r = await client.callTool({ name, arguments: args }, undefined, { timeout: 180_000 }); assert(!r.isError, `${name} failed`); return JSON.parse((r.content as {text: string}[])[0].text) }
   try {
    await client.connect(transport)
@@ -62,4 +57,6 @@ try {
   } finally { await client.close(); await stopProcess(child) }
  }
  writeFileSync(join(evidence, 'probe.json'), JSON.stringify({ timings }, null, 2) + '\n')
-} finally { rmSync(scratch, { recursive: true, force: true }) }
+} finally { /* outer scope owns scratch and groups */ }
+
+} finally { await scope.close() }

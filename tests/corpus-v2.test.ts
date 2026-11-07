@@ -1,5 +1,5 @@
-import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { resources } from './helpers/resource-scope.js'
+import { cpSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error plain .mjs script, no declarations
@@ -14,7 +14,7 @@ type ArticleJson = { articleId: string; body: string; passages: Passage[] }
 
 /** A copy of the roster and the v2 corpus in a temp dir, so a test can plant problems in it. */
 function corpusCopy() {
-  const copy = mkdtempSync(join(tmpdir(), 'corpus-v2-'))
+  const copy = resources().tempDir('corpus-v2-')
   for (const dir of ['data/writers', 'data/corpus/v2']) cpSync(join(root, dir), join(copy, dir), { recursive: true })
   return copy
 }

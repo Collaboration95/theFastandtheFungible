@@ -1,6 +1,5 @@
+import { resources } from './helpers/resource-scope.js'
 import { expect, it, vi } from 'vitest'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { Wallet } from 'xrpl'
@@ -13,23 +12,23 @@ import { reconcileRefunds } from '../server/challenges.js'
 import type { Ledger } from '../shared/xrpl.js'
 import { PurchaseIntentSchema } from '../shared/contracts/ledger.js'
 it.each(['XRP', 'issued'] as const)('retains and validates a late %s refund once after restart, without signing', async kind => {
-  const path=join(mkdtempSync(join(tmpdir(),'refund-recovery-')),'app.db')
+  const path=join(resources().tempDir('refund-recovery-'),'app.db')
   const buyer=Wallet.generate(), writer=Wallet.generate(), hash='A'.repeat(64), original='B'.repeat(64)
   const asset = kind === 'XRP' ? 'XRP' as const : { currency: RLUSD_CURRENCY, issuer: Wallet.generate().classicAddress, label: 'test USD (substitute for RLUSD)' as const }
   const amount = kind === 'XRP' ? '80000' : '0.8'
-  let s=new Store(path)
+  let s=resources().own(new Store(path))
   const r=s.createRun('SYNTHETIC refund fixture',200)
   s.updateRun(r.runId,{phase:'FAILED'})
   s.close()
-  const db=new DatabaseSync(path)
+  const db=resources().own(new DatabaseSync(path))
   const identity={intentId:'late',runId:r.runId,profileId:'fixture',resourceId:'fixture',version:'1'}
   const intent=PurchaseIntentSchema.parse({...identity,status:'CHALLENGED',amountMinor:80,txHash:original,createdAt:'2020-01-01T00:00:00Z',quote:{...identity,quoteId:'fixture',quoteHash:original,amountMinor:80,currency:'SGD',expiresAt:'2020-01-01T00:00:00Z',contentDigest:'fixture',payment:{rail:'xrpl-testnet',network:'xrpl:1',asset,payTo:writer.classicAddress,amountDrops:amount,invoiceId:original}}})
   db.prepare('INSERT INTO intents VALUES (?,?,?)').run('late',r.runId,JSON.stringify(intent));db.close()
-  s=new Store(path)
+  s=resources().own(new Store(path))
   s.recordRefundCandidate('late',hash)
   s.recordChallengeOutcome('late','CHALLENGE_REFUSED')
   expect(s.prune({olderThanDays:0}).runIds).toEqual([])
-  s.close();s=new Store(path)
+  s.close();s=resources().own(new Store(path))
   let valid=false
   let wrong=false
   const delivered = kind === 'XRP' ? amount : {currency:RLUSD_CURRENCY,issuer:asset === 'XRP' ? '' : asset.issuer,value:amount}

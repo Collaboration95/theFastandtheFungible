@@ -1,6 +1,7 @@
+import { resources } from './helpers/resource-scope.js'
+import { processTransport } from '../scripts/release-processes.js'
 import { expect, it } from 'vitest'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -11,9 +12,8 @@ import { Store } from '../server/store.js'
 import { startEngine } from '../server/engine.js'
 
 async function connect(env: Record<string, string>) {
-  const transport = new StdioClientTransport({ command: process.execPath, args: ['--import', 'tsx', resolve('mcp/server.ts')], env: { PATH: process.env.PATH!, ...env }, stderr: 'pipe' })
-  transport.stderr?.on('data', () => {})
-  const client = new Client({ name: 'fixture-e2e', version: '1' })
+  const transport = processTransport(resources().spawn(process.execPath, ['--import', 'tsx', resolve('mcp/server.ts')], { env: { PATH: process.env.PATH!, ...env } }))
+  const client = resources().own(new Client({ name: 'fixture-e2e', version: '1' }))
   await client.connect(transport)
   return client
 }
@@ -82,7 +82,7 @@ it('stdio search → policy buy → cited answer; cap, daily cap, retry and rest
 
 it('remote backend enforces its own human caps, independent of the caller environment', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'mcp-remote-'))
-  const engine = await startEngine({ dataDir: dir }) // unset caps default to zero
+  const engine = resources().own(await startEngine({ dataDir: dir })) // unset caps default to zero
   const client = await connect({ RA_BACKEND_URL: engine.apiUrl, RA_API_TOKEN: engine.apiToken, MCP_MAX_BUDGET_MINOR: '500', MCP_DAILY_CAP_MINOR: '50000' })
   try {
     const run = await call(client, 'ask_expert', { question: USE_CASES.UC2.question, budget_sgd: 5 })

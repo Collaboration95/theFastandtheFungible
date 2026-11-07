@@ -1,9 +1,10 @@
+import { resources } from './helpers/resource-scope.js'
 import { request } from 'node:http'
 import { expect, it } from 'vitest'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { rmSync } from 'node:fs'
 import { startFixture } from '../.devcontainer/start.js'
 it('accepts the exact forwarded Codespaces origin and rejects other hosts/origins', async () => {
-  const saved = { ...process.env }, dir = mkdtempSync('/tmp/codespace-')
+  const saved = { ...process.env }, dir = resources().tempDir('codespace-')
   const fixture = await startFixture({webPort:0,apiPort:0,publisherPort:0,dataDir:dir,codespace:'fixture-space',domain:'app.github.dev'})
   try {
     const address = fixture.web.httpServer!.address() as {port:number}

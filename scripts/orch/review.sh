@@ -5,6 +5,10 @@
 set -e
 cd "$1" && git fetch -q origin main
 out=$(mktemp -t review-$2)
+cleanup_review() { python3 -c 'import os,sys; os.unlink(sys.argv[1])' "$out"; }
+trap cleanup_review EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 if [ -n "$REVIEW_MODEL" ]; then
   flags=(-m "$REVIEW_MODEL" -c "model_reasoning_effort=\"${REVIEW_EFFORT:-high}\"")
 else
