@@ -12,14 +12,14 @@ is pinned, every seventh hidden; every eleventh lacks normalized events and
 newer optional snapshot fields. Resource IDs collide between intents. Hidden
 runs retain receipts. Three warmups then 30 calls each, old then new; p95 is the
 29th sorted sample. CPU is process user+system time divided by calls. Host was
-shared; targeted parity checks overlapped part of this measurement.
+shared; browser replay checks overlapped part of this measurement.
 
 | Measurement | Old | SQL projection |
 | --- | ---: | ---: |
-| History p95 | 662.48 ms | 76.27 ms |
-| CPU per call | 559.91 ms | 73.08 ms |
+| History p95 | 602.18 ms | 81.15 ms |
+| CPU per call | 601.49 ms | 78.65 ms |
 
-CPU reduction: 86.95%. Both performance targets pass. Raw values: history.json.
+CPU reduction: 86.92%. Both performance targets pass. Raw values: history.json.
 The prior 34.4 s → 313 ms packet is not this lane's baseline.
 
 Parity contract: newest run rowid first, hidden overrides pinned, all visible
@@ -28,7 +28,7 @@ Spend is gross charged intent amounts including refunds and failed proofs,
 never snapshot spentMinor. Event time is the first normalized event by id,
 not minimum time or snapshot event time; absent normalized events produce ''.
 Optional legacy fields stay optional. Selected scalar values, persisted spend,
-intent amounts/statuses and first-event time fail closed. Unselected bodies
+safe-integer intent amounts/statuses and first-event time fail closed. Unselected bodies
 are deliberately outside the projection's validation boundary; it never reads
 grants, receipts, delivered content or snapshot arrays into JS.
 

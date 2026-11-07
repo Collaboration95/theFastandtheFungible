@@ -86,7 +86,8 @@ it('matches every charged, reserved, failed-proof and refund status; rejects mal
       db.prepare("UPDATE intents SET json=json_set(json,'$.status',?) WHERE id=?").run(status, id)
       expect(s.listPastRuns()).toEqual(oracle(s))
     }
-    for (const value of ['null', '"90"', '-1', '1.5']) {
+    db.prepare("UPDATE intents SET json=json_set(json,'$.status','SKIPPED') WHERE id=?").run(id)
+    for (const value of ['null', '"90"', '-1', '1.5', '9007199254740992']) {
       db.prepare("UPDATE intents SET json=json_set(json,'$.amountMinor',json(?)) WHERE id=?").run(value, id)
       expect(() => oracle(s)).toThrow(); expect(() => s.listPastRuns()).toThrow()
     }

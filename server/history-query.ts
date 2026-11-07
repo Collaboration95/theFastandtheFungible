@@ -30,7 +30,7 @@ export function pastRunSummaries(db: DatabaseSync, { recent }: { recent: number 
     (SELECT COALESCE(SUM(CASE WHEN json_extract(i.json,'$.status') IN (${charged}) THEN json_extract(i.json,'$.amountMinor') ELSE 0 END),0)
       FROM intents i WHERE i.run_id=selected.id) AS spent,
     (SELECT count(*) FROM intents i WHERE i.run_id=selected.id AND
-      (COALESCE(json_type(i.json,'$.amountMinor'),'null') NOT IN ('integer','real') OR CAST(json_extract(i.json,'$.amountMinor') AS INTEGER) != json_extract(i.json,'$.amountMinor') OR json_extract(i.json,'$.amountMinor') < 0
+      (COALESCE(json_type(i.json,'$.amountMinor'),'null') NOT IN ('integer','real') OR CAST(json_extract(i.json,'$.amountMinor') AS INTEGER) != json_extract(i.json,'$.amountMinor') OR json_extract(i.json,'$.amountMinor') < 0 OR json_extract(i.json,'$.amountMinor') > 9007199254740991
        OR COALESCE(json_extract(i.json,'$.status'),'') NOT IN (${statuses}))) AS invalid
     FROM selected ORDER BY ord DESC`).all(Number.isFinite(limit) ? limit : -1).map(row => {
       if (row.invalid || (row.hasEvent && row.at === null)) throw new Error('Invalid history intent summary')
