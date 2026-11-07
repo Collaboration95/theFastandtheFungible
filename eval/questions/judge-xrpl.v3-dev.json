@@ -1,0 +1,127 @@
+{
+  "version": 3,
+  "frozenBeforeIngestion": true,
+  "methodology": "Tuning bank, disjoint from the v3 held-out bank. Written blind: the author did not open the product article corpus, writers, evidence or builder notes. Gold phrases are well-established public XRPL / x402 facts. Frozen at commit; do not tune against the held-out bank.",
+  "questions": [
+    {
+      "id": "D01",
+      "topic": "payments-fees",
+      "question": "Which flag lets a Payment deliver less than the stated amount, and what field shows what the recipient actually got?",
+      "gold": "tfPartialPayment"
+    },
+    {
+      "id": "D02",
+      "topic": "payments-fees",
+      "question": "How does an autonomous sender know a submitted XRP payment can no longer succeed and is safe to retry?",
+      "gold": "LastLedgerSequence"
+    },
+    {
+      "id": "D03",
+      "topic": "payments-fees",
+      "question": "Which public WebSocket host should a developer connect to for XRPL Testnet?",
+      "gold": "s.altnet.rippletest.net"
+    },
+    {
+      "id": "D04",
+      "topic": "escrow",
+      "question": "Which field on EscrowFinish reveals the secret that unlocks a conditional escrow?",
+      "gold": "Fulfillment"
+    },
+    {
+      "id": "D05",
+      "topic": "escrow",
+      "question": "Which EscrowCreate field stops an escrow being released before a given time?",
+      "gold": "FinishAfter"
+    },
+    {
+      "id": "D06",
+      "topic": "escrow",
+      "question": "Why would an AI agent use a conditional escrow instead of paying upfront for a document?",
+      "gold": "crypto-condition"
+    },
+    {
+      "id": "D07",
+      "topic": "rlusd-stablecoin",
+      "question": "How is RLUSD backed relative to the US dollar?",
+      "gold": "1:1"
+    },
+    {
+      "id": "D08",
+      "topic": "rlusd-stablecoin",
+      "question": "Besides the XRP Ledger, which other blockchain was RLUSD launched on?",
+      "gold": "Ethereum"
+    },
+    {
+      "id": "D09",
+      "topic": "trust-lines-reserves",
+      "question": "Which issuer setting lets a stablecoin issuer claw back tokens from a holder, and when must it be enabled?",
+      "gold": "AllowTrustLineClawback"
+    },
+    {
+      "id": "D10",
+      "topic": "trust-lines-reserves",
+      "question": "Which AccountSet flag lets an issuer approve each holder before they may hold its token?",
+      "gold": "RequireAuth"
+    },
+    {
+      "id": "D11",
+      "topic": "credentials-did",
+      "question": "Which XRPL feature uses Credentials to decide which senders may pay an account that blocks unknown deposits?",
+      "gold": "DepositPreauth"
+    },
+    {
+      "id": "D12",
+      "topic": "credentials-did",
+      "question": "Which field of an XRPL DID ledger entry holds the DID document?",
+      "gold": "DIDDocument"
+    },
+    {
+      "id": "D13",
+      "topic": "x402",
+      "question": "In x402 v1, which response header does the server return after settlement with the transaction result?",
+      "gold": "X-PAYMENT-RESPONSE"
+    },
+    {
+      "id": "D14",
+      "topic": "x402",
+      "question": "What is the name of the x402 payment scheme for a fixed-amount transfer?",
+      "gold": "exact"
+    },
+    {
+      "id": "D15",
+      "topic": "amm-dex",
+      "question": "Which transaction places a limit order on the XRPL decentralized exchange?",
+      "gold": "OfferCreate"
+    },
+    {
+      "id": "D16",
+      "topic": "amm-dex",
+      "question": "What does a liquidity provider receive when depositing into an XRPL AMM pool?",
+      "gold": "LP token"
+    },
+    {
+      "id": "D17",
+      "topic": "mainnet-kyc-mas",
+      "question": "Which MAS licence category did Ripple obtain in Singapore for its payments business?",
+      "gold": "Major Payment Institution"
+    },
+    {
+      "id": "D18",
+      "topic": "mainnet-kyc-mas",
+      "question": "Under the MAS single-currency stablecoin framework, how quickly must an issuer redeem at par?",
+      "gold": "business days"
+    },
+    {
+      "id": "D19",
+      "topic": "spending-controls",
+      "question": "Which XRPL transaction assigns a regular key so a hot agent key can be rotated without changing the account address?",
+      "gold": "SetRegularKey"
+    },
+    {
+      "id": "D20",
+      "topic": "spending-controls",
+      "question": "Which XRPL primitive suits many small agent micropayments settled with a single on-ledger claim?",
+      "gold": "Payment Channel"
+    }
+  ]
+}
