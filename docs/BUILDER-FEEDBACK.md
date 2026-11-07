@@ -885,3 +885,9 @@ only, no changes to spending authority or settlement validation.
 J3 re-measurement after J2 #387: fresh-cache init 1.396 s, malformed-note
 rejection 1.510 s, and publish-to-Credential 32.491 s. The bundled package fixes
 the observed retry latency; initial misses remain historical evidence.
+
+### 7 Nov 2026 · J5 receipt and content acceptance
+
+Observed tooling incidents, not ledger defects: the first J5 packed-MCP run detected an eight-word overlap because new paid text repeated the public team-authorship label. The unchanged leak gate rejected it; removing the duplicate phrase from paid bodies retains the public disclosure without weakening detection. Evidence: `docs/evidence/j5-coverage/initial-attempt/` and its README. Suggested fix: add a corpus lint against public writer metadata before network acceptance. Severity: acceptance tooling, no mainnet execution.
+
+Observed verifier contract mismatch: a no-purchase Testnet run exports no ledger anchor; `--ledger` then reports `No ledger anchor in export`, while purchased runs verify online. Evidence: `docs/evidence/j5-coverage/initial-attempt/heldout/H01.verification.json`. Workaround: report abstentions separately and preserve the failed check; no verifier or MCP patch in this lane. Suggested fix: align the explicitly labelled no-purchase export and independent verifier semantics in the owning lane. Severity: evidence UX; mainnet impact unmeasured, no funds moved in that abstention.

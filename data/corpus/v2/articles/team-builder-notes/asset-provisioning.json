@@ -1,0 +1,88 @@
+{
+  "articleId": "team-asset-provisioning",
+  "version": "v1",
+  "publisherSlug": "team-builder-notes",
+  "writerSlug": "team-builder-notes",
+  "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+  "abstract": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "tags": [
+    "RLUSD",
+    "XLS-85",
+    "stablecoin",
+    "DEX",
+    "reserve"
+  ],
+  "family": "team-asset-provisioning",
+  "body": "This team-authored adaptation separates asset provisioning from buying research. Its sources are docs/BUILDER-FEEDBACK.md, docs/key-reveal-escrow.md and docs/x402-xrpl.md. The builder feedback records dated Testnet observations rather than a current mainnet survey. That distinction is essential for stablecoins: a successful direct token payment does not prove that the same issuer permits token escrow. A wallet balance does not establish that an agent may spend it, and a price displayed in SGD is not an independently measured foreign exchange rate.\n\nThe basic purchase contract requires an expected network, asset and issuer before policy signs. XRP uses integer drops, with one million drops per XRP. An issued asset also needs the currency and issuer identity; the currency name alone is insufficient. The buyer checks destination, exact amount, invoice binding, expiry and policy limits. Validated settlement must show successful delivery. The requested Amount alone does not prove what arrived, particularly for partial payments. These are payment validation requirements, not decisions delegated to the language model.\n\nToken escrow adds issuer requirements beyond holding an issued balance. The builder feedback's 7 November entry B26 records an earlier validated observation: TokenEscrow was enabled, but the official RLUSD Testnet issuer flags lacked AllowTrustLineLocking. The documented implication was that official RLUSD escrow was blocked by issuer permission. The record distinguishes that code-derived blocker from an actually submitted rejection transaction. A trust line does not supply missing issuer consent. Recheck the issuer and network before claiming present support; this article itself performs no fresh ledger query.\n\nThe available workaround is explicit about substitution. XRP remains the default key-reveal asset, while TEST-SGD is a labelled issued-token stand-in for experiments. TEST-SGD is not official RLUSD and does not demonstrate RLUSD issuer cooperation. Direct RLUSD Testnet payments and conditional token escrow are separate evidence classes. A report should identify which it tested, with the exact transaction hash and issuer, rather than describing every successful token transaction as proof of the same settlement mode. Nothing here is redeemable money or a production stablecoin guarantee.\n\nFunding observations also need labels. The 3 November builder feedback records public RLUSD faucet authentication friction and historical bounded native Testnet DEX provisioning. In those samples, acquisition cost about 25.1 Testnet XRP for two RLUSD. That arbitrary test exchange rate is not economic evidence. The workaround used an exact self-payment, a bounded SendMax and a fee cap, checked validated delivered_amount, and kept provisioning separate from product purchases. It does not establish an automatic exchange strategy for the research agent or an available mainnet funding route.\n\nA DEX provisioning observation likewise does not establish AMM behavior. The cited repository evidence concerns acquiring a test balance, not measuring pool pricing, liquidity provision or agent routing through an AMM. No AMM performance result is claimed here. When evaluating agent payments, ask which asset was already provisioned, which exact asset policy authorized, and whether conversion happened outside the purchase loop. Do not infer a pool mechanism from an exchange label. This boundary prevents a setup workaround from becoming an unsupported product capability claim.\n\nFees and reserves constrain even faucet-funded micropayments. Builder feedback B19 records 12-drop create and cancel fees and a 423-drop conditional finish using xrpl.js 4.7.0. Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment. These are dated measurements, not universal fee quotes. A wallet needs terminal transaction fee headroom and object reserve liquidity as well as purchase principal. The number of concurrent escrow objects can therefore constrain capacity independently of article prices or burned network fees.\n\nRecovery is part of that liquidity story. CancelAfter permits cancellation after the validated ledger deadline; it does not automatically return funds. Policy must submit EscrowCancel and confirm successful validation before describing principal as returned. Fees remain spent. A refund after completed key publication is a different writer-signed Payment and requires writer cooperation. Throughout provisioning, purchase and recovery, the budget remains the spending authority and durable intent identity prevents duplicate principal purchases. These observations support bounded mechanism claims only.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "This team-authored adaptation separates asset provisioning from buying research. Its sources are docs/BUILDER-FEEDBACK.md, docs/key-reveal-escrow.md and docs/x402-xrpl.md. The builder feedback records dated Testnet observations rather than a current mainnet survey. That distinction is essential for stablecoins: a successful direct token payment does not prove that the same issuer permits token escrow. A wallet balance does not establish that an agent may spend it, and a price displayed in SGD is not an independently measured foreign exchange rate."
+    },
+    {
+      "id": "p2",
+      "text": "The basic purchase contract requires an expected network, asset and issuer before policy signs. XRP uses integer drops, with one million drops per XRP. An issued asset also needs the currency and issuer identity; the currency name alone is insufficient. The buyer checks destination, exact amount, invoice binding, expiry and policy limits. Validated settlement must show successful delivery. The requested Amount alone does not prove what arrived, particularly for partial payments. These are payment validation requirements, not decisions delegated to the language model."
+    },
+    {
+      "id": "p3",
+      "text": "Token escrow adds issuer requirements beyond holding an issued balance. The builder feedback's 7 November entry B26 records an earlier validated observation: TokenEscrow was enabled, but the official RLUSD Testnet issuer flags lacked AllowTrustLineLocking. The documented implication was that official RLUSD escrow was blocked by issuer permission. The record distinguishes that code-derived blocker from an actually submitted rejection transaction. A trust line does not supply missing issuer consent. Recheck the issuer and network before claiming present support; this article itself performs no fresh ledger query."
+    },
+    {
+      "id": "p4",
+      "text": "The available workaround is explicit about substitution. XRP remains the default key-reveal asset, while TEST-SGD is a labelled issued-token stand-in for experiments. TEST-SGD is not official RLUSD and does not demonstrate RLUSD issuer cooperation. Direct RLUSD Testnet payments and conditional token escrow are separate evidence classes. A report should identify which it tested, with the exact transaction hash and issuer, rather than describing every successful token transaction as proof of the same settlement mode. Nothing here is redeemable money or a production stablecoin guarantee."
+    },
+    {
+      "id": "p5",
+      "text": "Funding observations also need labels. The 3 November builder feedback records public RLUSD faucet authentication friction and historical bounded native Testnet DEX provisioning. In those samples, acquisition cost about 25.1 Testnet XRP for two RLUSD. That arbitrary test exchange rate is not economic evidence. The workaround used an exact self-payment, a bounded SendMax and a fee cap, checked validated delivered_amount, and kept provisioning separate from product purchases. It does not establish an automatic exchange strategy for the research agent or an available mainnet funding route."
+    },
+    {
+      "id": "p6",
+      "text": "A DEX provisioning observation likewise does not establish AMM behavior. The cited repository evidence concerns acquiring a test balance, not measuring pool pricing, liquidity provision or agent routing through an AMM. No AMM performance result is claimed here. When evaluating agent payments, ask which asset was already provisioned, which exact asset policy authorized, and whether conversion happened outside the purchase loop. Do not infer a pool mechanism from an exchange label. This boundary prevents a setup workaround from becoming an unsupported product capability claim."
+    },
+    {
+      "id": "p7",
+      "text": "Fees and reserves constrain even faucet-funded micropayments. Builder feedback B19 records 12-drop create and cancel fees and a 423-drop conditional finish using xrpl.js 4.7.0. Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment. These are dated measurements, not universal fee quotes. A wallet needs terminal transaction fee headroom and object reserve liquidity as well as purchase principal. The number of concurrent escrow objects can therefore constrain capacity independently of article prices or burned network fees."
+    },
+    {
+      "id": "p8",
+      "text": "Recovery is part of that liquidity story. CancelAfter permits cancellation after the validated ledger deadline; it does not automatically return funds. Policy must submit EscrowCancel and confirm successful validation before describing principal as returned. Fees remain spent. A refund after completed key publication is a different writer-signed Payment and requires writer cooperation. Throughout provisioning, purchase and recovery, the budget remains the spending authority and durable intent identity prevents duplicate principal purchases. These observations support bounded mechanism claims only."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "rate"
+    },
+    "p2": {
+      "entity": "contract",
+      "measure": "drops"
+    },
+    "p3": {
+      "entity": "RLUSD",
+      "measure": "supply"
+    },
+    "p4": {
+      "entity": "XRP",
+      "measure": "production"
+    },
+    "p5": {
+      "entity": "XRP",
+      "measure": "rate"
+    },
+    "p6": {
+      "entity": "policy",
+      "measure": "pricing"
+    },
+    "p7": {
+      "entity": "XRPL",
+      "measure": "capacity"
+    },
+    "p8": {
+      "entity": "writer",
+      "measure": "return"
+    }
+  }
+}

@@ -27,7 +27,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | README Numbers |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
 | **183 / 10** | merged PRs since SingHacks / tagged releases | 21 Sep–7 Nov | `gh pr list`, `gh release list` |
-| **15/20** | frozen 20-question XRPL judge bank bought and cited; 0 blank answers, 0 gate violations, 20/20 receipts verify | Testnet, fixture models, team-authored writer, 7 Nov | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390), [round4-j1](../evidence/round4-j1/README.md) |
+| **Held-out 8/20; dev 16/20** | separate frozen XRPL banks bought and cited; 0 blanks/gate violations each; online verification 16/20 dev, 8/20 held-out (missing anchors fail) | Testnet, fixture models, team-authored writer, 7 Nov | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390), [J5 evidence](../evidence/j5-coverage/README.md) |
 
 ---
 
@@ -70,10 +70,7 @@ Testnet. If nobody covers your question, it says 'No listed writer covers this
 yet, nothing bought' and links to publishing. It doesn't invent an answer or
 spend."
 
-**Behind it:** [round4-j1](../evidence/round4-j1/README.md): 15/20, 0 blank
-answers, 20/20 receipt verifications. The five misses abstained, including the
-Singapore-bank question, where our notes name no banks; it did not invent any.
-Round 4 found a blank answer here; #390 fixed the empty state.
+**Behind it:** [J5 evidence](../evidence/j5-coverage/README.md): v2 held-out 8/20; v1 dev 16/20 buy-and-cite; zero blanks and terminal gate violations in each. Online receipt verification passes 16/20 dev and 8/20 held-out; abstentions have no anchor and fail `--ledger`. Policy misses remain. This is fixture-model mechanism evidence, not live-model answer quality. The original v1 baseline was 15/20; the one-question dev gain does not establish generalization.
 
 ### 4. Who pays for this, and who is writer number one?
 

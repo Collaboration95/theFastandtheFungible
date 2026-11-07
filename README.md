@@ -233,6 +233,8 @@ Counts are from a local run on 7 Nov 2026 at `a4514881` plus the v1.0.0 release-
 
 ## Numbers
 
+**Judge questions, 7 Nov (local packed MCP candidate): v2 held-out 8/20; v1 dev 16/20 buy-and-cite.** Both: 0 blank answers, 0 terminal gate-audit violations. Fixture models; team-authored real content, not an independent writer; faucet-funded XRPL Testnet. Online ledger verification: 16/20 dev, 8/20 held-out; no-purchase exports fail for missing anchors. The development result was previously 15/20. [Per-question evidence](docs/evidence/j5-coverage/README.md). These bytes are not the published v1.0.0 artifact.
+
 Generated from the [committed scorecard](eval/scorecard/latest.json) by
 [`readme-scorecard.mjs`](scripts/readme-scorecard.mjs). LIVE refers to decisions and the separate coverage evaluation;
 research and flow fact scoring are fixtures, the corpus is synthetic and payments are simulated.
