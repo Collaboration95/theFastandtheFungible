@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 7 Nov: Lane A retires twelve frozen proof generators atomically; evidence bytes retained and historical recipes pinned to the complete `b0a67ffa` tree ([recovery index](historical-tools.md), [#412](https://github.com/Collaboration95/theFastandtheFungible/pull/412)).
 - 7 Nov: U2 removes duplicate lead/claim rows with stance retained, uses ISO UTC receipt dates, removes the unsourced Articles column, and hides purchase rationale until a receipt exists.
 - 7 Nov: Lane R corrects dev/held-out claims, README first screen, dated CI/cold timings, v1.0.0 release copy and duplicate DMGs; refreshes ledger and builder filing kits. No version bump; release acceptance remains with the orchestrator. Evidence: `docs/evidence/r5-r/`.
 - 7 Nov: P0 adds arbitrary-size frozen-bank measurement, purchased-passage answers-it scoring, negative-buy failures, bank hashes and recorded decision-value distributions; fixture policy unchanged, v3 held-out reserved. [#405](https://github.com/Collaboration95/theFastandtheFungible/pull/405) · [Usage](eval-judge-banks.md).

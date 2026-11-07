@@ -42,6 +42,8 @@ signature. Honest content became accessible only after proof plus validated
 finish; failed-proof content never entered accessible contents. The cancelled
 receipt records zero principal spent, with the cancel hash and parent object.
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../historical-tools.md). All generator commands on this page use that tree.
+
 Reproduce serially with the ignored `.env` and existing configured wallets:
 `OFFSET=1600 node --import tsx scripts/evidence/escrow-273.ts`. State is private
 under ignored `scratch/escrow-273/`; completed reruns only reconcile/read the

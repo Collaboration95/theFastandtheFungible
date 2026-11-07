@@ -9,6 +9,7 @@ This is a standalone spike, with no product or `src/` changes.
 
 ## What was actually run
 
+Historical recipe ([whole-tree pin and recovery](../historical-tools.md), `b0a67ffa` only):
 `node --import tsx scripts/spikes/escrow-poc.mjs` uses xrpl.js **4.7.0**, fresh
 faucet wallets, the fixed Testnet endpoint and a `server_info.network_id === 1`
 check. It never loads `.env` or an existing wallet. The article is **SYNTHETIC**;

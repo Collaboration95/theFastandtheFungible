@@ -77,6 +77,8 @@ comparison between rendered prose and cited findings. Old PDFs need re-export.
 
 ## Reproduce
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../historical-tools.md). All generator commands on this page use that tree.
+
 `OFFSET=2200 node --import tsx scripts/evidence/verify-278.mjs` loads the ignored
 .env and uses the existing funded Testnet buyer/writer seeds. It persists the run
 id before execution under ignored `scratch/verify-278/`; reruns reuse the same

@@ -31,6 +31,8 @@ The hash chain verifies all two receipts and two signatures.
 
 Reproduce from the repo root with the existing ignored `.env`:
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../historical-tools.md). All generator commands on this page use that tree.
+
 ```sh
 OFFSET=2000 node --import tsx scripts/evidence/agents-280.mjs
 ```

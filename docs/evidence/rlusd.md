@@ -74,6 +74,8 @@ UC3 failed content remained quarantined. No additional purchase approval was add
 [Run summaries](rlusd.json), [UC2 receipts](rlusd-uc2-receipts.json),
 [UC3 receipts](rlusd-uc3-receipts.json) retain the public proof and audit bundles.
 
+Historical reproduction only: run the retired generator in the complete `b0a67ffa` tree; see [pin, runtime and recovery](../historical-tools.md). All generator commands on this page use that tree.
+
 ```sh
 OFFSET=1400 node --import tsx scripts/evidence/rlusd.mjs --testnet
 npm run verify:answer -- docs/evidence/rlusd-uc2-receipts.json --testnet --json
