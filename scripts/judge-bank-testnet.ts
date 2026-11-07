@@ -41,7 +41,7 @@ const save = () => {
  const positive = results.filter(r => r.expect !== 'no_purchase')
  const negatives = results.filter(r => r.expect === 'no_purchase')
  const summary = { bankSha256, artifactSha256, completed: results.length, total: bank.questions.length,
-  buyAndCite: { n: positive.filter(r => r.buyAndCite).length, N: positive.length },
+  buyAndCite: { n: results.filter(r => r.buyAndCite).length, N: results.length },
   answersIt: { n: positive.filter(r => r.answersIt === 1).length, N: positive.filter(r => typeof r.gold === 'string' && r.gold.trim()).length },
   negativeBuys: { n: negatives.filter(r => r.purchased).length, N: negatives.length },
   valueHistograms: valueHistograms(values) }
