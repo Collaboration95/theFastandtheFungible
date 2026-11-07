@@ -419,7 +419,7 @@ export default function App() {
         <SpendPanel run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         {model.budgetBlocked && <p className="ra-note">Budget too small for eligible sources. Raise the budget on a new question.</p>}
         {model.phase === 'stopped' && <p role="status">{model.stopMessage}</p>}
-        <details className="ra-decision-details"><summary>Why this article</summary><DecisionPanel run={shown} fold={!why && (finished || shown.intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>
+        {shown.receipts.length > 0 && <details className="ra-decision-details"><summary>Why this article</summary><DecisionPanel run={shown} fold={!why && (finished || shown.intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>}
       </aside>
 
     </div>

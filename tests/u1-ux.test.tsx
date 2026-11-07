@@ -81,3 +81,20 @@ it('Settings shows readable names but keeps the stored identifiers as values', a
   expect((screen.getByRole('button', { name: 'Confirm caps and start' }) as HTMLButtonElement).className).toContain('owner-primary')
   history.replaceState(null, '', '/')
 })
+
+it('shows an ISO UTC receipt date regardless of the browser locale', async () => {
+  const { default: ReceiptSheet } = await import('../src/components/ReceiptSheet')
+  const run = ucRuns.UC2
+  const receipt = { ...run.receipts[0], settledAt: '2026-11-07T06:16:00Z' }
+  const html = renderToStaticMarkup(<ReceiptSheet run={run} receipt={receipt} onClose={() => {}} />)
+  expect(html).toContain('2026-11-07T06:16:00.000Z')
+  expect(html).not.toContain('07/11/2026')
+})
+
+it('omits the unsourced registry Articles column from Writers', async () => {
+  const { default: ReputationPanel } = await import('../src/components/ReputationPanel')
+  const { uc3Reputation } = await import('../src/fixtures/run')
+  const html = renderToStaticMarkup(<ReputationPanel records={uc3Reputation} run={ucRuns.UC3} />)
+  expect(html).toContain('Checked / failed')
+  expect(html).not.toContain('>Articles<')
+})

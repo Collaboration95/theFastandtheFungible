@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 7 Nov: U2 removes duplicate lead/claim rows with stance retained, uses ISO UTC receipt dates, removes the unsourced Articles column, and hides purchase rationale until a receipt exists.
 - 7 Nov: Lane R corrects dev/held-out claims, README first screen, dated CI/cold timings, v1.0.0 release copy and duplicate DMGs; refreshes ledger and builder filing kits. No version bump; release acceptance remains with the orchestrator. Evidence: `docs/evidence/r5-r/`.
 - 7 Nov: P0 adds arbitrary-size frozen-bank measurement, purchased-passage answers-it scoring, negative-buy failures, bank hashes and recorded decision-value distributions; fixture policy unchanged, v3 held-out reserved. [#405](https://github.com/Collaboration95/theFastandtheFungible/pull/405) · [Usage](eval-judge-banks.md).
 - 7 Nov: Pixel agent v2: a chunkier 32 × 40 researcher (blinking visor face, blush, an expression per state, antenna as the mark's route, satchel with the mark, weighted walk); README hero 672 × 92 (was 120 tall), LinkedIn square/banner/portrait exports in `design/character/social/`, v1-vs-v2 comparisons in [evidence](evidence/character/README.md#v1--v2).

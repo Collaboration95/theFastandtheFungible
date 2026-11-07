@@ -34,3 +34,23 @@ it('extracts the lead from the delivered passage even when a model paraphrases i
  expect(selected[0].claim.citations).toEqual(claim.citations)
  expect(leadFinding('Which x402 headers are used?', [claim], [])).toEqual([])
 })
+
+it('selects a lone Unclear sentence once and retains its stance on the lead', async () => {
+ const { remainingClaims } = await import('../shared/lead-finding')
+ const claim = { id:'only', stance:'UNCERTAIN' as const, text:'The x402 headers carry the challenge and payment proof.', citations:[{resourceId:'headers',version:'v1',spanId:'p1'}] }
+ const lead = leadFinding('Which x402 headers carry payment proof?', [claim])
+ expect(lead).toHaveLength(1)
+ expect(lead[0].claim.stance).toBe('UNCERTAIN')
+ expect(remainingClaims('Which x402 headers carry payment proof?', [claim], lead)).toEqual([])
+ expect(remainingClaims('Which x402 headers carry payment proof?', [claim], [])).toEqual([claim])
+ const { exampleRun } = await import('../shared/contracts/examples')
+ const run = structuredClone(exampleRun)
+ run.question = 'Which x402 headers carry payment proof?'
+ const content = run.contents[0]
+ content.body = claim.text
+ content.spans = [{ id: 'p1', text: claim.text }]
+ run.answers = [{ ...run.answers[0], claims: [{ ...claim, citations: [{ resourceId: content.resourceId, version: content.version, spanId: 'p1' }] }] }]
+ const html = renderToStaticMarkup(<Answer run={run} view="latest" onView={()=>{}} compare={false} onCompare={()=>{}} />)
+ expect(html).toContain('Unclear')
+ expect(html.split(claim.text)).toHaveLength(2)
+})

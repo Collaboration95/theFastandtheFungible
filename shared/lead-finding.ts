@@ -43,3 +43,10 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   }
   return selected.map(({ text, claim }) => ({ text, claim }))
 }
+
+/** Omit a repeated claim row only when its displayed sentence is already in the lead.
+ * Callers must show the lead claim's stance alongside that sentence.
+ */
+export function remainingClaims(question: string, claims: Claim[], lead: ReturnType<typeof leadFinding>): Claim[] {
+  return claims.filter(claim => !lead.some(item => item.claim.id === claim.id && item.text === (leadFinding(question, [claim])[0]?.text ?? claim.text)))
+}
