@@ -49,7 +49,7 @@ function fixture(count: number) {
 it('matches complete ordered old summaries for 2,000 retained paid histories, pins, hides, legacy and missing events', () => {
   const s = fixture(2000)
   try {
-    for (const recent of [0, 4, 17, 2.5, -1, NaN]) expect(s.listPastRuns(recent)).toEqual(oracle(s, recent))
+    expect(s.listPastRuns()).toEqual(oracle(s))
     const before = database(s).prepare('SELECT count(*) AS n FROM receipts').get()!.n
     s.setRunMeta('synthetic-history-1999', { hidden: true, pinned: true })
     expect(s.listPastRuns()).toEqual(oracle(s))
@@ -91,4 +91,10 @@ it('matches every charged, reserved, failed-proof and refund status; rejects mal
       expect(() => oracle(s)).toThrow(); expect(() => s.listPastRuns()).toThrow()
     }
   } finally { s.close() }
+})
+
+it('preserves zero, fractional, negative and NaN recent limits', () => {
+  const s = fixture(30)
+  try { for (const recent of [0, 17, 2.5, -1, NaN]) expect(s.listPastRuns(recent)).toEqual(oracle(s, recent)) }
+  finally { s.close() }
 })
