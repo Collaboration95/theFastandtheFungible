@@ -1,0 +1,63 @@
+{
+  "articleId": "xrpl-spending",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Where should agent spending controls live?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to where should agent spending controls live?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "agent spending controls",
+    "budget",
+    "policy",
+    "x402",
+    "authorization"
+  ],
+  "family": "xrpl-spending",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/accounts/multi-signing",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "Agent spending controls should be enforced by the component that authorizes and signs payments, because a payment protocol does not supply a user's spending policy. The x402 specification explicitly places client-side budget management outside its scope. This is an architectural recommendation: treat model recommendations as input to a bounded authorization decision. [1] [2]\n\nx402 separates payment requirements, authorization, verification and settlement. XRPL signing rules determine whether a transaction is authorized by its account. Neither mechanism decides whether a research result is valuable enough for a particular user's budget. A successful protocol exchange is therefore evidence of payment processing, not evidence that the user's economic objective was achieved. [1] [2]\n\nI recommend checking budget, price, asset, recipient, intent identity and prior settlement before signing. Persist the authorized intent before submission so an interrupted request can be reconciled. Do not replenish gross spending authority merely because a refund is expected. Keep key custody and policy decisions outside the text-generation context, and expose a clear cancellation boundary for work that has not yet created obligations. [1] [2]\n\nExercise repeated requests, simultaneous requests against one remaining budget and an ambiguous submission result. Verify that recovery reconciles the original obligation before making another payment. These proposed checks follow the division between protocol and application responsibility; they are not a claim that x402 standardizes a particular idempotency store, guarantees one charge per business intent or enforces a universal per-prompt cap. [1] [2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "Agent spending controls should be enforced by the component that authorizes and signs payments, because a payment protocol does not supply a user's spending policy. The x402 specification explicitly places client-side budget management outside its scope. This is an architectural recommendation: treat model recommendations as input to a bounded authorization decision. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "x402 separates payment requirements, authorization, verification and settlement. XRPL signing rules determine whether a transaction is authorized by its account. Neither mechanism decides whether a research result is valuable enough for a particular user's budget. A successful protocol exchange is therefore evidence of payment processing, not evidence that the user's economic objective was achieved. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "I recommend checking budget, price, asset, recipient, intent identity and prior settlement before signing. Persist the authorized intent before submission so an interrupted request can be reconciled. Do not replenish gross spending authority merely because a refund is expected. Keep key custody and policy decisions outside the text-generation context, and expose a clear cancellation boundary for work that has not yet created obligations. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Exercise repeated requests, simultaneous requests against one remaining budget and an ambiguous submission result. Verify that recovery reconciles the original obligation before making another payment. These proposed checks follow the division between protocol and application responsibility; they are not a claim that x402 standardizes a particular idempotency store, guarantees one charge per business intent or enforces a universal per-prompt cap. [1] [2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "policy",
+      "measure": "supply"
+    },
+    "p2": {
+      "entity": "XRPL",
+      "measure": "settlement"
+    },
+    "p3": {
+      "entity": "policy",
+      "measure": "price"
+    }
+  }
+}

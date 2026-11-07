@@ -1,0 +1,67 @@
+{
+  "articleId": "xrpl-token-escrow",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XLS-85 add to token escrow?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to what does xls-85 add to token escrow?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "XLS-85",
+    "TokenEscrow",
+    "RLUSD",
+    "IOU",
+    "MPT"
+  ],
+  "family": "xrpl-token-escrow",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/payment-types/escrow",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0085-token-escrow",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2]\n\nThe XLS defines AllowTrustLineLocking for trust-line issuers and escrow/transfer permissions for MPT issuances. Authorization and freeze or lock conditions can prevent creation or completion. These constraints mean that adding an issued-currency Amount object to an XRP escrow request is insufficient. The issuer's permissions and the sender's actual token holdings also participate in transaction validity. [1] [2]\n\nI recommend a capability check for the complete asset identity, sender, recipient and network before quoting a purchase. Pin the issuer and inspect required permissions. Do not infer RLUSD escrow availability from the existence of an RLUSD trust line or from another token's successful transaction. Read the TokenEscrow documentation and XLS together, then validate against the deployed server's behavior. [1] [2]\n\nExercise disabled issuer locking, missing authorization, frozen holdings and expiry recovery using a testing asset. Record which cases are observed and which are specification-derived. A successful native XRP escrow does not establish success for an issued token. This recommended test matrix follows XLS-85's failure conditions and intentionally avoids asserting a current activation date or claiming that a named stablecoin issuer has enabled every required flag. [1] [2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "The XLS defines AllowTrustLineLocking for trust-line issuers and escrow/transfer permissions for MPT issuances. Authorization and freeze or lock conditions can prevent creation or completion. These constraints mean that adding an issued-currency Amount object to an XRP escrow request is insufficient. The issuer's permissions and the sender's actual token holdings also participate in transaction validity. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "I recommend a capability check for the complete asset identity, sender, recipient and network before quoting a purchase. Pin the issuer and inspect required permissions. Do not infer RLUSD escrow availability from the existence of an RLUSD trust line or from another token's successful transaction. Read the TokenEscrow documentation and XLS together, then validate against the deployed server's behavior. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Exercise disabled issuer locking, missing authorization, frozen holdings and expiry recovery using a testing asset. Record which cases are observed and which are specification-derived. A successful native XRP escrow does not establish success for an issued token. This recommended test matrix follows XLS-85's failure conditions and intentionally avoids asserting a current activation date or claiming that a named stablecoin issuer has enabled every required flag. [1] [2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "issuer",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "holdings"
+    },
+    "p3": {
+      "entity": "RLUSD",
+      "measure": "identity"
+    },
+    "p4": {
+      "entity": "XRP",
+      "measure": "recovery"
+    }
+  }
+}

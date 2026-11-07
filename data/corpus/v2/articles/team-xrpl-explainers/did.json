@@ -1,0 +1,66 @@
+{
+  "articleId": "xrpl-did",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Decentralized identifiers and legal identity under XLS-40",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to decentralized identifiers, controller authentication and legal identity checks.",
+  "tags": [
+    "XRPL",
+    "DID",
+    "XLS-40",
+    "identity",
+    "verification"
+  ],
+  "family": "xrpl-did",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/decentralized-storage/decentralized-identifiers",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0040-decentralized-identity",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "An XLS-40 decentralized identifier identifies a controller and supports verifiable associations, but does not by itself prove a person's legal identity. XRPL's DID documentation explicitly distinguishes a self-created identifier from assertions validated by a trusted credential issuer. An identifier's existence and the truth of claims about its owner require separate evidence. [1] [2]\n\nXLS-40 specifies the XRPL DID method and operations for managing DID data. A DID document can supply verification information or refer to externally stored material. The documentation describes resolving a document and checking a credential as distinct steps. A working URI proves neither that an issuer is trustworthy nor that every assertion in the referenced document is current. [1] [2]\n\nFor an agent marketplace, I recommend keeping controller authentication separate from identity verification and reputation. Verify signatures for the operation being requested, then evaluate issuer policy and credential validity for any identity claim. A seller should not gain a credibility boost merely by creating a DID. Handle broken external references as unavailable evidence rather than automatically substituting a self-description. [1] [2]\n\nTest document updates, deleted references and a credential from an issuer the verifier does not trust. Record which public keys and document version were used for verification. Avoid putting sensitive identity evidence in a public ledger simply to make a demonstration easier. These are implementation recommendations grounded in the DID model, not a declaration that a DID constitutes KYC approval or that an identifier owner holds any particular licence. [1] [2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "An XLS-40 decentralized identifier identifies a controller and supports verifiable associations, but does not by itself prove a person's legal identity. XRPL's DID documentation explicitly distinguishes a self-created identifier from assertions validated by a trusted credential issuer. An identifier's existence and the truth of claims about its owner require separate evidence. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "XLS-40 specifies the XRPL DID method and operations for managing DID data. A DID document can supply verification information or refer to externally stored material. The documentation describes resolving a document and checking a credential as distinct steps. A working URI proves neither that an issuer is trustworthy nor that every assertion in the referenced document is current. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "For an agent marketplace, I recommend keeping controller authentication separate from identity verification and reputation. Verify signatures for the operation being requested, then evaluate issuer policy and credential validity for any identity claim. A seller should not gain a credibility boost merely by creating a DID. Handle broken external references as unavailable evidence rather than automatically substituting a self-description. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Test document updates, deleted references and a credential from an issuer the verifier does not trust. Record which public keys and document version were used for verification. Avoid putting sensitive identity evidence in a public ledger simply to make a demonstration easier. These are implementation recommendations grounded in the DID model, not a declaration that a DID constitutes KYC approval or that an identifier owner holds any particular licence. [1] [2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "identity"
+    },
+    "p2": {
+      "entity": "XRPL",
+      "measure": "supply"
+    },
+    "p3": {
+      "entity": "policy",
+      "measure": "identity"
+    },
+    "p4": {
+      "entity": "issuer",
+      "measure": "identity"
+    }
+  }
+}

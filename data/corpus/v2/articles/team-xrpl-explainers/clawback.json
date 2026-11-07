@@ -1,0 +1,62 @@
+{
+  "articleId": "xrpl-clawback",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Can an XRPL issuer claw back XRP or tokens?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to can an xrpl issuer claw back xrp or tokens?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "Clawback",
+    "issuer controls",
+    "freeze",
+    "XRP"
+  ],
+  "family": "xrpl-clawback",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/tokens/fungible-tokens/clawing-back-tokens",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1]\n\nFor trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1]\n\nFor an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1]\n\nExercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "For trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "For an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Exercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "payment"
+    },
+    "p2": {
+      "entity": "issuer",
+      "measure": "issuer"
+    },
+    "p3": {
+      "entity": "issuer",
+      "measure": "risk"
+    },
+    "p4": {
+      "entity": "XRP",
+      "measure": "funds"
+    }
+  }
+}

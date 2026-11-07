@@ -1,0 +1,54 @@
+{
+  "articleId": "xrpl-tags",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Why do XRPL payments need destination tags?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to why do xrpl payments need destination tags?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "destination tags",
+    "source tags",
+    "exchange",
+    "refund"
+  ],
+  "family": "xrpl-tags",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/source-and-destination-tags",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "A destination tag tells a recipient's off-ledger system which beneficiary or purpose to credit when several customers share an XRPL account. It is a 32-bit unsigned integer, not a separate wallet or authorization credential. Source tags identify the originator or return-routing context. The ledger carries these values, while the receiving business interprets them. [1]\n\nHosted accounts can use tags to avoid funding a distinct ledger account for each customer. An X-address encodes a classic address and tag together. A recipient can require destination tags, but that does not prove that any supplied tag belongs to the intended customer. Application-side mapping remains necessary; a syntactically valid payment can still be operationally misrouted. [1]\n\nI recommend treating address and tag as one verified payment destination in an agent's quote and signing policy. Preserve the tag through serialization, display and recovery. Do not let model-generated prose supply a substitute value. For a returned payment, the documentation recommends using the incoming source tag as the outgoing destination tag. Reconcile that routing with the original transaction instead of guessing from the sender's display name. [1]\n\nExercise missing, unknown and correctly mapped tags in integration tests. Distinguish a ledger rejection from a payment accepted by the ledger but not credited to a hosted customer. Avoid publishing a customer directory in tag metadata: the documentation notes that predictable assignment can reveal relationships. These recommendations follow the tag model and should be checked against the receiving service's actual deposit instructions before deployment. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "A destination tag tells a recipient's off-ledger system which beneficiary or purpose to credit when several customers share an XRPL account. It is a 32-bit unsigned integer, not a separate wallet or authorization credential. Source tags identify the originator or return-routing context. The ledger carries these values, while the receiving business interprets them. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Hosted accounts can use tags to avoid funding a distinct ledger account for each customer. An X-address encodes a classic address and tag together. A recipient can require destination tags, but that does not prove that any supplied tag belongs to the intended customer. Application-side mapping remains necessary; a syntactically valid payment can still be operationally misrouted. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "I recommend treating address and tag as one verified payment destination in an agent's quote and signing policy. Preserve the tag through serialization, display and recovery. Do not let model-generated prose supply a substitute value. For a returned payment, the documentation recommends using the incoming source tag as the outgoing destination tag. Reconcile that routing with the original transaction instead of guessing from the sender's display name. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Exercise missing, unknown and correctly mapped tags in integration tests. Distinguish a ledger rejection from a payment accepted by the ledger but not credited to a hosted customer. Avoid publishing a customer directory in tag metadata: the documentation notes that predictable assignment can reveal relationships. These recommendations follow the tag model and should be checked against the receiving service's actual deposit instructions before deployment. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "return"
+    },
+    "p3": {
+      "entity": "policy",
+      "measure": "supply"
+    }
+  }
+}

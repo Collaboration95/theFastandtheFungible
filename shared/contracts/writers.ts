@@ -23,6 +23,7 @@ export const ArticleSchema = z.object({
   articleId: z.string().regex(/^[A-Za-z0-9._-]+$/), version: z.string().min(1), publisherSlug: slug, writerSlug: slug,
   title: z.string().min(1), publishedAt: z.string().min(1), tier: z.enum(['FREE', 'PAID']), priceMinor: z.number().int().nonnegative(),
   abstract: z.string().min(1).max(220), tags: z.array(z.string().min(1)), family: z.string().min(1), derivedFrom: z.string().optional(),
+  sources: z.array(z.object({ url: z.string().url(), accessedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) })).optional(),
   factMenu: z.record(z.string(), FactCoverSchema).optional(),
   body: z.string().min(1), passages: z.array(PassageSchema).min(4),
 })

@@ -1,0 +1,67 @@
+{
+  "articleId": "xrpl-dex",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does the native XRPL DEX provide?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to what does the native xrpl dex provide?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "DEX",
+    "offers",
+    "order book",
+    "exchange",
+    "liquidity"
+  ],
+  "family": "xrpl-dex",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/tokens/decentralized-exchange",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/tokens/fungible-tokens",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0030-automated-market-maker",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "The native XRPL decentralized exchange supports exchanging assets through ledger-based trading mechanisms; it does not guarantee liquidity for every asset pair. Trust-line tokens can participate in exchange and cross-currency payments. Token identity still includes the issuer, so equal currency names do not establish equal economic claims. [1] [2] [3]\n\nThe fungible-token documentation explains that trust-line tokens can trade and can interact through rippling. XLS-30 adds AMM liquidity that can work alongside order books. An available route is consequently evidence of a possible exchange at particular conditions, not evidence of issuer solvency, off-ledger redemption rights or future market depth. [1] [2] [3]\n\nMy recommendation for agents is to quote the exact source asset, destination asset and spending bound before a conversion. Treat conversion as a separate authorized action from buying content. Preserve issuer identity through every route. Inspect the actual delivered amount before fulfilling a downstream purchase, especially where routing or transfer charges mean the amount sent differs from the amount received. [1] [2] [3]\n\nTest an empty route, insufficient liquidity and two issuers sharing a currency code. Compare requested bounds with validated balance changes. Do not treat a successful pathfinding response as a completed trade: retain settlement evidence for the executed transaction. These recommendations combine the documented token and AMM models; they do not claim that a particular pair is currently liquid or that using the native exchange resolves compliance requirements. [1] [2] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "The native XRPL decentralized exchange supports exchanging assets through ledger-based trading mechanisms; it does not guarantee liquidity for every asset pair. Trust-line tokens can participate in exchange and cross-currency payments. Token identity still includes the issuer, so equal currency names do not establish equal economic claims. [1] [2] [3]"
+    },
+    {
+      "id": "p2",
+      "text": "The fungible-token documentation explains that trust-line tokens can trade and can interact through rippling. XLS-30 adds AMM liquidity that can work alongside order books. An available route is consequently evidence of a possible exchange at particular conditions, not evidence of issuer solvency, off-ledger redemption rights or future market depth. [1] [2] [3]"
+    },
+    {
+      "id": "p3",
+      "text": "My recommendation for agents is to quote the exact source asset, destination asset and spending bound before a conversion. Treat conversion as a separate authorized action from buying content. Preserve issuer identity through every route. Inspect the actual delivered amount before fulfilling a downstream purchase, especially where routing or transfer charges mean the amount sent differs from the amount received. [1] [2] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Test an empty route, insufficient liquidity and two issuers sharing a currency code. Compare requested bounds with validated balance changes. Do not treat a successful pathfinding response as a completed trade: retain settlement evidence for the executed transaction. These recommendations combine the documented token and AMM models; they do not claim that a particular pair is currently liquid or that using the native exchange resolves compliance requirements. [1] [2] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "identity"
+    },
+    "p2": {
+      "entity": "market",
+      "measure": "market"
+    },
+    "p3": {
+      "entity": "issuer",
+      "measure": "source"
+    }
+  }
+}

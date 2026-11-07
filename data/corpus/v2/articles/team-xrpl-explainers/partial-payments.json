@@ -1,0 +1,62 @@
+{
+  "articleId": "xrpl-partial-payments",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Why must integrations check delivered_amount?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to why must integrations check delivered_amount?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "partial payments",
+    "delivered_amount",
+    "DeliverMax",
+    "payment security"
+  ],
+  "family": "xrpl-partial-payments",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/payment-types/partial-payments",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]\n\nThe partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1]\n\nMy integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1]\n\nBuild a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "My integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Build a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "payment"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "cost"
+    },
+    "p3": {
+      "entity": "issuer",
+      "measure": "delivery"
+    },
+    "p4": {
+      "entity": "issuer",
+      "measure": "delivery"
+    }
+  }
+}

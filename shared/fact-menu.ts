@@ -42,9 +42,10 @@ export const mentionsMenuPhrase = (text: string, phrase: string) => ` ${menuText
 export function deriveFactMenu(article: Pick<Article, 'tier' | 'passages'> & Partial<Pick<Article, 'publisherSlug'>>): Record<string, FactCover> {
   if (article.tier !== 'PAID') return {}
   return Object.fromEntries(article.passages.flatMap(p => {
-    const team = article.publisherSlug === 'team-builder-notes'
-    const entity = (team ? teamEntities : entities).find(e => mentionsMenuPhrase(p.text, e))
-    const measure = (team ? teamMeasures : measures).find(m => mentionsMenuPhrase(p.text, m))
+    const team = ['team-builder-notes', 'team-xrpl-explainers'].includes(article.publisherSlug ?? '')
+    const explainer = article.publisherSlug === 'team-xrpl-explainers'
+    const entity = (explainer ? [...teamEntities, 'MAS', 'issuer', 'XLS', 'DID'] : team ? teamEntities : entities).find(e => mentionsMenuPhrase(p.text, e))
+    const measure = (explainer ? [...teamMeasures, 'issuer', 'reserves', 'authorization', 'credential', 'transaction', 'requirements', 'controls', 'ledger', 'liquidity', 'signer', 'rules'] : team ? teamMeasures : measures).find(m => mentionsMenuPhrase(p.text, m))
     const year = p.text.match(/\b(?:fiscal|FY)\s*(20(?:2[3-9]|30))\b/i)?.[1] ?? p.text.match(/\b20(?:2[3-9]|30)\b/)?.[0]
     return entity && measure ? [[p.id, { entity, measure, ...(year ? { period: years[year] } : {}) }]] : []
   }))

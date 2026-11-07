@@ -1,0 +1,62 @@
+{
+  "articleId": "xrpl-trust-lines",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What are XRPL trust lines and issuer risk?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to what are xrpl trust lines and issuer risk?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "trust lines",
+    "IOU",
+    "issuer",
+    "stablecoins"
+  ],
+  "family": "xrpl-trust-lines",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/tokens/fungible-tokens",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "An XRPL trust line is a relationship between two accounts for a currency code, used to track trust-line tokens rather than native XRP. A currency code alone does not identify the issuer. Two tokens called USD can represent different counterparties, so a wallet must preserve issuer identity when evaluating balances and payments. [1]\n\nThe fungible-token documentation distinguishes trust-line tokens from Multi-Purpose Tokens. Trust-line tokens support cross-currency payments and exchange trading, and their rippling behavior can move value between issuers sharing a currency code. Issuer settings and trust-line configuration therefore matter to how a token can be held or transferred. XRP does not become a claim against a token issuer merely because it shares the same ledger. [1]\n\nFor an agent wallet, I recommend allowing only explicitly configured currency-and-issuer pairs. Explain a missing trust line as an asset prerequisite, not evidence that the token is counterfeit. Conversely, creating a trust line should not be described as verifying reserves, guaranteeing redemption or completing customer due diligence. Those are separate questions requiring issuer and operational evidence. [1]\n\nTest identical currency codes from different issuers and reject a quote that changes issuer between discovery and settlement. Inspect rippling and authorization settings before enabling automated routes. Keep token balances separate from XRP needed for fees and reserves. These are design recommendations inferred from the documented token model; they do not establish the creditworthiness of any issuer or authorize buying an asset. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "An XRPL trust line is a relationship between two accounts for a currency code, used to track trust-line tokens rather than native XRP. A currency code alone does not identify the issuer. Two tokens called USD can represent different counterparties, so a wallet must preserve issuer identity when evaluating balances and payments. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The fungible-token documentation distinguishes trust-line tokens from Multi-Purpose Tokens. Trust-line tokens support cross-currency payments and exchange trading, and their rippling behavior can move value between issuers sharing a currency code. Issuer settings and trust-line configuration therefore matter to how a token can be held or transferred. XRP does not become a claim against a token issuer merely because it shares the same ledger. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "For an agent wallet, I recommend allowing only explicitly configured currency-and-issuer pairs. Explain a missing trust line as an asset prerequisite, not evidence that the token is counterfeit. Conversely, creating a trust line should not be described as verifying reserves, guaranteeing redemption or completing customer due diligence. Those are separate questions requiring issuer and operational evidence. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Test identical currency codes from different issuers and reject a quote that changes issuer between discovery and settlement. Inspect rippling and authorization settings before enabling automated routes. Keep token balances separate from XRP needed for fees and reserves. These are design recommendations inferred from the documented token model; they do not establish the creditworthiness of any issuer or authorize buying an asset. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "identity"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "shares"
+    },
+    "p3": {
+      "entity": "issuer",
+      "measure": "issuer"
+    },
+    "p4": {
+      "entity": "XRP",
+      "measure": "quote"
+    }
+  }
+}

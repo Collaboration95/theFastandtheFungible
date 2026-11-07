@@ -42,5 +42,5 @@ export function publicLabelStrings(root = process.cwd()): PublicLabel[] {
 export function paidLabelOverlaps(articles: Article[], labels: PublicLabel[]) {
  const index=new Map<string,PublicLabel>()
  for(const label of labels) for(const gram of grams(label.text)) if(!index.has(gram)) index.set(gram,label)
- return articles.filter(a=>a.publisherSlug==='team-builder-notes' && a.tier==='PAID').flatMap(article=>[...new Set(grams(article.body))].flatMap(gram=>index.has(gram) ? [{articleId:article.articleId,words:gram,...index.get(gram)!}] : []))
+ return articles.filter(a=>['team-builder-notes','team-xrpl-explainers'].includes(a.publisherSlug) && a.tier==='PAID').flatMap(article=>[...new Set(grams(article.body))].flatMap(gram=>index.has(gram) ? [{articleId:article.articleId,words:gram,...index.get(gram)!}] : []))
 }

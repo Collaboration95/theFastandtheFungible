@@ -42,7 +42,7 @@ describe('multi-publisher host (#122)', () => {
     const base = await servePublishers({ writers: undefined })
     const { publishers } = await (await fetch(`${base}/registry`)).json() as { publishers: { slug: string }[] }
     expect(publishers.map(p => p.slug).sort()).toEqual(readdirSync('data/writers').map(f => f.replace(/\.json$/, '')).sort())
-    expect(publishers).toHaveLength(9)
+    expect(publishers).toHaveLength(10)
   })
 
   it('serves a discovery doc whose pubKey derives to its wallet', async () => {

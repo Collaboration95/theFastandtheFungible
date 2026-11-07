@@ -1,0 +1,54 @@
+{
+  "articleId": "xrpl-sidechains",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Are XRPL EVM sidechains the same as XRPL Mainnet?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to are xrpl evm sidechains the same as xrpl mainnet?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "sidechains",
+    "EVM",
+    "bridge",
+    "consensus"
+  ],
+  "family": "xrpl-sidechains",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/xrpl-sidechains",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "An XRPL sidechain is a separate ledger with its own rules and consensus, so EVM compatibility on a sidechain does not turn XRPL Mainnet into the same execution environment. The XRPL documentation identifies EVM compatibility as one sidechain use case and emphasizes separate validators and node knowledge. [1]\n\nValue movement between ledgers introduces a bridge boundary. The sidechain's transaction types and operational assumptions can differ from those of the mainchain. A smart contract deployed on an EVM ledger is therefore evidence about that deployment, not proof that a native XRPL account can execute the same contract or that the bridge has the same trust assumptions as either endpoint. [1]\n\nI recommend recording chain identifiers, asset representations and bridge mechanisms independently in an agent's capabilities catalogue. Keep permissions for native payments separate from permissions to bridge or invoke contracts. Before authorizing a cross-chain action, explain which component holds or represents the asset and what evidence establishes completion on the receiving chain. [1]\n\nTest wrong-network configuration and a transfer that has completed on one side but remains pending on the other. Reconcile each ledger independently rather than inferring destination finality from a source hash. These are recommendations drawn from the documented separation of sidechain rules and validators. They make no claim that every bridge is equivalent or that a successful native payment validates a cross-chain custody design. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "An XRPL sidechain is a separate ledger with its own rules and consensus, so EVM compatibility on a sidechain does not turn XRPL Mainnet into the same execution environment. The XRPL documentation identifies EVM compatibility as one sidechain use case and emphasizes separate validators and node knowledge. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Value movement between ledgers introduces a bridge boundary. The sidechain's transaction types and operational assumptions can differ from those of the mainchain. A smart contract deployed on an EVM ledger is therefore evidence about that deployment, not proof that a native XRPL account can execute the same contract or that the bridge has the same trust assumptions as either endpoint. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "I recommend recording chain identifiers, asset representations and bridge mechanisms independently in an agent's capabilities catalogue. Keep permissions for native payments separate from permissions to bridge or invoke contracts. Before authorizing a cross-chain action, explain which component holds or represents the asset and what evidence establishes completion on the receiving chain. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Test wrong-network configuration and a transfer that has completed on one side but remains pending on the other. Reconcile each ledger independently rather than inferring destination finality from a source hash. These are recommendations drawn from the documented separation of sidechain rules and validators. They make no claim that every bridge is equivalent or that a successful native payment validates a cross-chain custody design. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "node",
+      "measure": "ledger"
+    },
+    "p2": {
+      "entity": "contract",
+      "measure": "transaction"
+    }
+  }
+}

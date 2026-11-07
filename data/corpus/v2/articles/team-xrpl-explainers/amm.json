@@ -1,0 +1,63 @@
+{
+  "articleId": "xrpl-amm",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does the XLS-30 AMM interact with the XRPL DEX?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to how does the xls-30 amm interact with the xrpl dex?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "AMM",
+    "XLS-30",
+    "DEX",
+    "liquidity",
+    "LP tokens"
+  ],
+  "family": "xrpl-amm",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/tokens/decentralized-exchange/automated-market-makers",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/tree/master/XLS-0030-automated-market-maker",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "The XLS-30 AMM adds liquidity pools to the XRPL DEX alongside order books, and routing can consider both sources of liquidity. Liquidity providers receive pool interests represented by LP tokens. Providing liquidity is an economic position with risks, not an assurance that every future exchange will have a favorable price. [1] [2]\n\nThe specification describes a geometric-mean market maker, trading fees, LP governance and an auction mechanism for trading advantages. Payment and order operations can combine pool and order-book liquidity. These mechanisms describe how exchange opportunities are formed; they do not make a price quote timeless or remove the importance of token issuer identity. [1] [2]\n\nFor an agent buyer, I recommend separating buying research from supplying liquidity. If conversion is needed, bound source spending and required destination delivery explicitly. Examine trading costs and available liquidity before authorizing a route. Do not infer that an application's stablecoin can be redeemed at par merely because an AMM offers a trading pair for it. [1] [2]\n\nAn integration experiment should compare a bounded trade with its actual validated balance changes and identify the pool and assets involved. Include insufficient liquidity and an adverse price change. LP testing should separately examine deposit and withdrawal behavior rather than reuse a trader's success criterion. These are suggested engineering checks derived from the AMM design, not investment advice, a return forecast or proof that a named production pool has been audited. [1] [2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "The XLS-30 AMM adds liquidity pools to the XRPL DEX alongside order books, and routing can consider both sources of liquidity. Liquidity providers receive pool interests represented by LP tokens. Providing liquidity is an economic position with risks, not an assurance that every future exchange will have a favorable price. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "The specification describes a geometric-mean market maker, trading fees, LP governance and an auction mechanism for trading advantages. Payment and order operations can combine pool and order-book liquidity. These mechanisms describe how exchange opportunities are formed; they do not make a price quote timeless or remove the importance of token issuer identity. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "For an agent buyer, I recommend separating buying research from supplying liquidity. If conversion is needed, bound source spending and required destination delivery explicitly. Examine trading costs and available liquidity before authorizing a route. Do not infer that an application's stablecoin can be redeemed at par merely because an AMM offers a trading pair for it. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "An integration experiment should compare a bounded trade with its actual validated balance changes and identify the pool and assets involved. Include insufficient liquidity and an adverse price change. LP testing should separately examine deposit and withdrawal behavior rather than reuse a trader's success criterion. These are suggested engineering checks derived from the AMM design, not investment advice, a return forecast or proof that a named production pool has been audited. [1] [2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "price"
+    },
+    "p2": {
+      "entity": "market",
+      "measure": "auction"
+    },
+    "p3": {
+      "entity": "buyer",
+      "measure": "costs"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "articleId": "xrpl-multisign",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does XRPL multi-signing protect an agent wallet?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to how does xrpl multi-signing protect an agent wallet?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "multi-signing",
+    "SignerList",
+    "quorum",
+    "wallet keys"
+  ],
+  "family": "xrpl-multisign",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/accounts/multi-signing",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "XRPL multi-signing authorizes a transaction when signatures meet the configured signer-list quorum; it does not evaluate the business purpose of that transaction. Signer weights and quorum define which combinations can authorize spending. This separates a ledger authorization rule from the application decision about whether to buy evidence. [1]\n\nThe multi-signing documentation describes a signer list associated with an account and multiple signatures on a transaction. Multi-signed transactions have a different fee calculation from single-signed transactions. An integration must therefore account for signature count as well as quorum. Installing a signer list is also distinct from deciding which other account authorization paths remain enabled. [1]\n\nI recommend separating policy evaluation from key custody: approve a bounded transaction description before asking independent signing components to sign. Those components should verify destination, asset, amount, network and expiration themselves. A second signer that automatically signs anything the first signer proposes provides less operational independence than its existence might suggest. That is a design judgment, not a guarantee made by the ledger. [1]\n\nTest insufficient weight, an unauthorized signer, enough valid signatures and recovery after a signer becomes unavailable. Verify account configuration before disabling another signing path so recovery is deliberate. Record whether the test changes key configuration or merely exercises transaction signatures. These suggested checks are derived from quorum authorization; they do not imply that multisigning supplies customer identification, content verification or an application spending budget. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "XRPL multi-signing authorizes a transaction when signatures meet the configured signer-list quorum; it does not evaluate the business purpose of that transaction. Signer weights and quorum define which combinations can authorize spending. This separates a ledger authorization rule from the application decision about whether to buy evidence. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The multi-signing documentation describes a signer list associated with an account and multiple signatures on a transaction. Multi-signed transactions have a different fee calculation from single-signed transactions. An integration must therefore account for signature count as well as quorum. Installing a signer list is also distinct from deciding which other account authorization paths remain enabled. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "I recommend separating policy evaluation from key custody: approve a bounded transaction description before asking independent signing components to sign. Those components should verify destination, asset, amount, network and expiration themselves. A second signer that automatically signs anything the first signer proposes provides less operational independence than its existence might suggest. That is a design judgment, not a guarantee made by the ledger. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Test insufficient weight, an unauthorized signer, enough valid signatures and recovery after a signer becomes unavailable. Verify account configuration before disabling another signing path so recovery is deliberate. Record whether the test changes key configuration or merely exercises transaction signatures. These suggested checks are derived from quorum authorization; they do not imply that multisigning supplies customer identification, content verification or an application spending budget. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "authorization"
+    },
+    "p3": {
+      "entity": "policy",
+      "measure": "key"
+    }
+  }
+}

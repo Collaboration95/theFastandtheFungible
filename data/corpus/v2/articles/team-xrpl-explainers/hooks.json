@@ -1,0 +1,58 @@
+{
+  "articleId": "xrpl-hooks",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How should builders verify Hooks availability?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to how should builders verify hooks availability?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "Hooks",
+    "Xahau",
+    "smart contracts",
+    "amendments"
+  ],
+  "family": "xrpl-hooks",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/xrpl-sidechains",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://xrpl.org/resources/known-amendments",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "Builders should verify Hooks against the specific ledger they intend to use, rather than infer XRPL Mainnet support from a Hooks-enabled sidechain demonstration. XRPL's sidechain documentation names Xahau as a smart-contract-layer example. A sidechain's independent rules do not establish which features are enabled on another network. [1] [2]\n\nThe known-amendments catalogue is the relevant starting point for amendment research, while deployed network state is the operational check. A proposal, implementation branch and enabled amendment answer different questions. An example running on a development network establishes only that environment's behavior unless accompanied by evidence for the intended deployment network. [1] [2]\n\nFor agent architecture, I recommend documenting the required execution environment before designing a policy around programmable account behavior. Native escrow conditions and an off-ledger signing service may offer different capabilities from a Hooks program. Choose the mechanism that matches the requirement, then test its failure modes. Do not substitute the word smart contract for a precise description of who can authorize spending. [1] [2]\n\nRecord the network, server version, feature settings and transaction evidence for any demonstration. Include a negative capability check on a network where the required feature has not been established. These suggested checks follow the documented independence of sidechains. This article intentionally makes no unverified assertion about the current Mainnet status of Hooks and gives no activation forecast. [1] [2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "Builders should verify Hooks against the specific ledger they intend to use, rather than infer XRPL Mainnet support from a Hooks-enabled sidechain demonstration. XRPL's sidechain documentation names Xahau as a smart-contract-layer example. A sidechain's independent rules do not establish which features are enabled on another network. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "The known-amendments catalogue is the relevant starting point for amendment research, while deployed network state is the operational check. A proposal, implementation branch and enabled amendment answer different questions. An example running on a development network establishes only that environment's behavior unless accompanied by evidence for the intended deployment network. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "For agent architecture, I recommend documenting the required execution environment before designing a policy around programmable account behavior. Native escrow conditions and an off-ledger signing service may offer different capabilities from a Hooks program. Choose the mechanism that matches the requirement, then test its failure modes. Do not substitute the word smart contract for a precise description of who can authorize spending. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Record the network, server version, feature settings and transaction evidence for any demonstration. Include a negative capability check on a network where the required feature has not been established. These suggested checks follow the documented independence of sidechains. This article intentionally makes no unverified assertion about the current Mainnet status of Hooks and gives no activation forecast. [1] [2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "contract",
+      "measure": "ledger"
+    },
+    "p3": {
+      "entity": "contract",
+      "measure": "ledger"
+    }
+  }
+}

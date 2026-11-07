@@ -1,0 +1,63 @@
+{
+  "articleId": "xrpl-readiness",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What evidence makes an XRPL agent ready for Mainnet?",
+  "publishedAt": "2026-11-07",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Primary-source guide to what evidence makes an xrpl agent ready for mainnet?. Includes integration considerations and evidence boundaries.",
+  "tags": [
+    "XRPL",
+    "mainnet readiness",
+    "rippled",
+    "security",
+    "operations",
+    "compliance"
+  ],
+  "family": "xrpl-readiness",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/xrpl-sidechains",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://github.com/XRPLF/rippled/releases/tag/3.4.1",
+      "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://www.mas.gov.sg/regulation/payments",
+      "accessedAt": "2026-11-07"
+    }
+  ],
+  "body": "A successful testing transaction is insufficient evidence of Mainnet readiness; readiness requires evidence for the intended network, custody model, operational recovery and legal service scope. XRPL networks and sidechains have distinct rules and deployments. A demonstration's transaction hash establishes only the transaction and environment it actually records. [1] [2] [3]\n\nThe rippled 3.4.1 release notes describe a security-sensitive update and amendment-blocking implications for older servers. This illustrates why server maintenance and enabled features belong in deployment review. Release documentation is evidence about software requirements, not proof that a particular application operator has upgraded or validated its own recovery procedures. [1] [2] [3]\n\nI recommend a release record that pins software versions, network configuration, asset identity, signer controls and incident procedures. Reconcile submitted transactions after interruption before allowing another charge for the same intent. Document who can return funds after completion and what happens when a counterparty refuses. Keep regulatory review tied to the actual services and customer relationships, rather than treating a public blockchain as blanket permission. [1] [2] [3]\n\nExercise key loss, uncertain submission, unavailable counterparties and data restoration with a bounded testing budget. Save the evidence needed to repeat those checks and list remaining gaps. These recommendations draw on independent-network behavior, server release requirements and MAS's service-oriented regulatory framing. They are a readiness rubric, not a declaration that this project is approved, audited, insured or fit to handle real customer assets. [1] [2] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "A successful testing transaction is insufficient evidence of Mainnet readiness; readiness requires evidence for the intended network, custody model, operational recovery and legal service scope. XRPL networks and sidechains have distinct rules and deployments. A demonstration's transaction hash establishes only the transaction and environment it actually records. [1] [2] [3]"
+    },
+    {
+      "id": "p2",
+      "text": "The rippled 3.4.1 release notes describe a security-sensitive update and amendment-blocking implications for older servers. This illustrates why server maintenance and enabled features belong in deployment review. Release documentation is evidence about software requirements, not proof that a particular application operator has upgraded or validated its own recovery procedures. [1] [2] [3]"
+    },
+    {
+      "id": "p3",
+      "text": "I recommend a release record that pins software versions, network configuration, asset identity, signer controls and incident procedures. Reconcile submitted transactions after interruption before allowing another charge for the same intent. Document who can return funds after completion and what happens when a counterparty refuses. Keep regulatory review tied to the actual services and customer relationships, rather than treating a public blockchain as blanket permission. [1] [2] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Exercise key loss, uncertain submission, unavailable counterparties and data restoration with a bounded testing budget. Save the evidence needed to repeat those checks and list remaining gaps. These recommendations draw on independent-network behavior, server release requirements and MAS's service-oriented regulatory framing. They are a readiness rubric, not a declaration that this project is approved, audited, insured or fit to handle real customer assets. [1] [2] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "recovery"
+    },
+    "p4": {
+      "entity": "MAS",
+      "measure": "draw"
+    }
+  }
+}
