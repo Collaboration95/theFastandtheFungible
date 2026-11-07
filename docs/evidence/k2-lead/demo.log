@@ -1,0 +1,71 @@
+
+> research-agent@1.0.0 test:demo
+> npm run build:demo && playwright test --config playwright.demo.config.ts
+
+
+> research-agent@1.0.0 build:demo
+> vite build --config vite.demo.config.ts --mode browser-demo
+
+vite v7.3.6 building client environment for browser-demo...
+transforming...
+node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 215 modules transformed.
+rendering chunks...
+computing gzip size...
+../site/demo/index.html                                                   1.80 kB │ gzip:   0.82 kB
+../site/demo/assets/sprite-sheet-CDn5tXfa.png                             5.59 kB
+../site/demo/assets/geist-mono-symbols2-wght-normal-CO5SzqOn.woff2        5.81 kB
+../site/demo/assets/geist-mono-cyrillic-ext-wght-normal-X_5orZeX.woff2    6.18 kB
+../site/demo/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2         7.42 kB
+../site/demo/assets/geist-mono-vietnamese-wght-normal-DadHysG0.woff2      7.70 kB
+../site/demo/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2           8.00 kB
+../site/demo/assets/geist-mono-cyrillic-wght-normal-DiZS0aHC.woff2       12.94 kB
+../site/demo/assets/geist-mono-latin-ext-wght-normal-Bwz-egvJ.woff2      14.70 kB
+../site/demo/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2            15.08 kB
+../site/demo/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2           16.51 kB
+../site/demo/assets/geist-mono-latin-wght-normal-XN7g48iV.woff2          23.13 kB
+../site/demo/assets/geist-latin-wght-normal-BgDaEnEv.woff2               29.40 kB
+../site/demo/assets/index-DES6VCjS.css                                    1.14 kB │ gzip:   0.56 kB
+../site/demo/assets/main-CGVui8cS.css                                    66.32 kB │ gzip:  13.06 kB
+../site/demo/assets/transactions-C297f2Az.js                              1.74 kB │ gzip:   0.79 kB
+../site/demo/assets/ledger-KFXKgQJH.js                                    9.39 kB │ gzip:   3.82 kB
+../site/demo/assets/transactions-DquqC1m6.js                             30.28 kB │ gzip:  16.85 kB
+../site/demo/assets/transactions-8ygj_GXb.js                             30.89 kB │ gzip:  17.02 kB
+../site/demo/assets/receipts-pDgSMYkl.js                                114.32 kB │ gzip:  33.00 kB
+../site/demo/assets/UC3.receipts-z36z671h.js                            267.18 kB │ gzip:  83.69 kB
+../site/demo/assets/main-DJdnilL4.js                                    333.47 kB │ gzip: 105.55 kB
+../site/demo/assets/index-CrqTfx2K.js                                   509.95 kB │ gzip: 380.73 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 708ms
+
+Running 4 tests using 4 workers
+
+(node:20528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20527) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20530) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20529) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser-demo.spec.ts:6:1 › static Pages UC3: draft, verified upgrade, refund, receipt, citation and Writers (13.9s)
+  ✓  4 tests/browser-demo.spec.ts:81:1 › key reveal tab autoplays and preserves quarantine disclosure (20.9s)
+  ✓  3 tests/browser-demo.spec.ts:102:131 › default key-reveal UC3 replay never shows a failure and its hashes go live-green (1.0m)
+  ✓  2 tests/browser-demo.spec.ts:102:131 › writer no-show replay never shows a failure and its hashes go live-green (1.0m)
+
+  4 passed (1.0m)

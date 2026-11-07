@@ -464,6 +464,8 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
+- 2026-11-07 — K2 (UX / Reachability): diagnose all ten bought-but-missed dev questions, rank exact delivered technical sentences with passage context, and retain Supports on UC3; v3 answersIt 1/20 → 4/20, v3-dev 2/20 unchanged, negatives 2/10 unchanged, 140/140 online verifications and zero raw audit violations. [#410](https://github.com/Collaboration95/theFastandtheFungible/pull/410); evidence in docs/evidence/k2-lead/.
+
 - 7 Nov: U1 UX polish: a judge walk at 1280/1440/390 found 10 issues and ranked them; Activity no longer ticks steps that haven't happened, the declined "Why ▸" lists plain-word decisions with value vs the bar, "under 1 s" replaces 0.0 s, the key-reveal card reads escrow → key → refund, plus a calmer Export menu, citations, disclosures and readable Settings names. Presentation only. Critique and before/after: `docs/evidence/u1-ux/`.
 - 7 Nov: Lane X adds 22 primary-source XRPL explainers through ordinary signed menus and Testnet delivery; disclosed team authorship, no trust boost; dev-bank measurements and source catalogue in `docs/evidence/x-explainers/`.
 
