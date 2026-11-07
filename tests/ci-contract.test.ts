@@ -27,7 +27,7 @@ describe('required CI admission', () => {
     expect(workflow).toContain('node scripts/ci-contract.mjs aggregate')
     expect(workflow).toContain('node scripts/ci-contract.mjs detect')
     expect(workflow).toContain('python -m pytest packages/sdk-python')
-    expect(workflow).toContain('npx playwright test tests/e2e.spec.ts tests/a11y.spec.ts tests/settings.spec.ts tests/foundation.spec.ts tests/perf.spec.ts')
+    expect(workflow).toContain('npx playwright test --output=test-results/app')
   })
 })
 

@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -103,7 +103,7 @@ jobs:
         shell: bash
         run: |
           sha256sum --check "$RUNNER_TEMP/replay.sha256"
-          npx playwright test tests/e2e.spec.ts tests/a11y.spec.ts tests/settings.spec.ts tests/foundation.spec.ts tests/perf.spec.ts --output=test-results/app &
+          npx playwright test --output=test-results/app &
           app=$!
           npx playwright test --config playwright.demo.config.ts --output=test-results/demo &
           demo=$!

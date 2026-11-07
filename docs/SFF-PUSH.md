@@ -461,6 +461,7 @@ Significant product, design and process decisions, newest first. One line each: 
 ## Changelog
 
 - 7 Nov: Lane C adds direct portable mode dispatch, sanitized startup plans, a Testnet funding leaf and bounded worker close; three fresh-cache/fresh-wallet packed Testnet runs and unchanged-gate evidence in `docs/evidence/refactor-c/`.
+- 7 Nov: Lane B runs independent app/demo/judge browser groups concurrently, seals one replay build per run, and enables all default browser specs; timings and target misses: `docs/evidence/refactor-b/`.
 
 - 7 Nov: Lane A scopes fixture scratch, handles and process groups; leak gate rejects unowned leftovers, startup failures and TERM-ignoring grandchildren are covered, and live acceptance journals retain an explicit XDG-state reason. Evidence: `docs/evidence/refactor-a/`.
 
