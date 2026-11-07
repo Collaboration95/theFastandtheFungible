@@ -149,4 +149,3 @@ export async function fundTestnetWallet(wallet: Wallet): Promise<void> {
   } catch { throw new Error('Testnet wallet funding failed. The key is saved; rerun the same command to retry. Check XRPL_RPC_URL and Testnet faucet availability.') }
   finally { await client.disconnect() }
 }
-

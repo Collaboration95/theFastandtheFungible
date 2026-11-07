@@ -74,7 +74,7 @@ outside this lane's ownership; no claim of zero cycles across the entire graph.
 See cycles-before.txt and cycles-after.txt. Madge reports static dependency edges,
 including type-only edges, rather than proving runtime reachability.
 
-Production source net LOC: **+97** (git numstat, excluding tests/evidence). The
+Production source net LOC: **+96** (git numstat, excluding tests/evidence). The
 ≥150 deletion target is missed: extraction moves code and explicit lifecycle and
 plan ownership add code. No arbitrary deletion was made to meet the target.
 
