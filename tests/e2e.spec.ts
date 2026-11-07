@@ -150,7 +150,7 @@ test('a judge question with declined matches explains policy and invites publish
   await expect(answer).not.toContainText('No listed writer covers this')
   await answer.getByText('Why ▸', { exact: true }).click()
   await expect(answer.locator('li')).toHaveCount(2)
-  await expect(answer).toContainText('SKIP_LOW_VALUE')
+  await expect(answer).toContainText('Below the value bar')
   await expect(answer.getByRole('link', { name: 'Publish a note on this →' })).toHaveAttribute('href', /docs\/publishing\.md$/)
   await expect(answer.locator('.is-skel')).toHaveCount(0)
   await expect(page.getByRole('status')).not.toContainText('answered from free sources')
