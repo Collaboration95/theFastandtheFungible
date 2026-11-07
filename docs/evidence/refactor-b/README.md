@@ -33,7 +33,11 @@ file (the supported publisher command uses .ts) and was removed with lock data.
 before.json pins the five latest successful main runs before this lane, including
 job and step timestamps. This refresh differs from the audit's historical
 355 s median; preserve that historical figure when comparing the stated target.
-After measurements and package sizes will be recorded after Actions completes.
+Local judge: 10/10 passed, 57.2 s. Local demo: 4/4 passed, about 63 s;
+both minute observations ran concurrently. Local packed consumer acceptance uses
+exact generated manifests; generated sizes: MCP tgz 3,462,192 bytes, MCPB
+3,291,559 bytes, SDK tgz 89,744, wheel 113,069, sdist 107,473. All below 8 MB.
+After measurements will be recorded after Actions completes.
 The >=50 net LOC deletion target is not met; no unrelated build code was deleted
 to manufacture a count. No portable shared-chunk changes were made in C's lane.
 
