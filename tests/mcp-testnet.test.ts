@@ -86,3 +86,36 @@ test('funding leaf keeps TEST-SGD issuer, trust-line and issuance order serial a
  expect(connect).toHaveBeenCalledTimes(2)
  vi.restoreAllMocks()
 })
+
+test('RLUSD leaf keeps reserve, fee and validated-result checks distinct from TEST-SGD issuance', async () => {
+ const { Client, Wallet } = await import('xrpl')
+ const { TestnetProvisioner } = await import('../publisher/publishing/testnet-funding.js')
+ const { RLUSD_CURRENCY } = await import('../shared/contracts/asset.js')
+ const wallet = Wallet.generate(), issuer = Wallet.generate().classicAddress
+ let warm = false, balance = '50000000', fee = '12', valid = true
+ const client = new Client('wss://s.altnet.rippletest.net:51233')
+ const request = vi.spyOn(client, 'request').mockImplementation((async (r: { command: string }) => {
+  if (r.command === 'account_lines') return { result: { lines: warm ? [{ currency: RLUSD_CURRENCY, limit: '10' }] : [] } }
+  if (r.command === 'account_info') return { result: { account_data: { Balance: balance, OwnerCount: 0 } } }
+  return { result: { info: { validated_ledger: { reserve_base_xrp: 1, reserve_inc_xrp: 0.2 } } } }
+ }) as never)
+ const autofill = vi.spyOn(client, 'autofill').mockImplementation((async (tx: unknown) => ({ ...(tx as object), Fee: fee })) as never)
+ const submit = vi.spyOn(client, 'submitAndWait').mockImplementation((async () => ({ result: { validated: valid, meta: { TransactionResult: 'tesSUCCESS' }, hash: 'fixture-hash' } })) as never)
+ vi.spyOn(wallet, 'sign').mockReturnValue({ tx_blob: 'fixture-only', hash: 'fixture-only' })
+ const ledger = { request: vi.fn(), close: vi.fn() }
+ const provisioner = new TestnetProvisioner({ ledger, faucet: vi.fn(), walletStore: { file: '', allowedRoot: '', client, wallets: [wallet], issuer } })
+ expect(await provisioner.prepare({ asset: 'rlusd' })).toEqual({ [wallet.classicAddress]: 'fixture-hash' })
+ expect(autofill.mock.calls[0][0]).toMatchObject({ TransactionType: 'TrustSet', LimitAmount: { currency: RLUSD_CURRENCY, value: '10', issuer } })
+ warm = true
+ expect(await provisioner.prepare({ asset: 'rlusd' })).toEqual({ [wallet.classicAddress]: 'already configured' })
+ expect(submit).toHaveBeenCalledTimes(1)
+ warm = false; balance = '1'
+ await expect(provisioner.prepare({ asset: 'rlusd' })).rejects.toThrow('Insufficient reserve')
+ balance = '50000000'; fee = '2001'
+ await expect(provisioner.prepare({ asset: 'rlusd' })).rejects.toThrow('fee exceeds ceiling')
+ fee = '12'; valid = false
+ await expect(provisioner.prepare({ asset: 'rlusd' })).rejects.toThrow('not validated')
+ expect(request).toHaveBeenCalled()
+ expect(ledger.request).not.toHaveBeenCalled()
+ vi.restoreAllMocks()
+})
