@@ -438,6 +438,7 @@ Agents add items there and keep working around them.
 
 Significant product, design and process decisions, newest first. One line each: date, decision, why, link.
 
+- 2026-11-07 — J2 (Reachability / Feasibility): bundled MCP 21.44 → 3.418 MB; cold initialize 6.3 s, Testnet app 27.0 s, UC3 try + ledger PASS 87.1 s; compact Python verification and no-purchase anchor guard. Evidence: docs/evidence/round4-j2/. No release cut.
 - 3 Nov: Mac app wraps the Day 1 UI with a main-process protocol proxy, isolated utility-process engine and Keychain custody; final rebase included #286, so remote HTTPS mode uses Keychain tokens, bearer forwarding and shared wallet controls. Package real files because utilityProcess needs a real cwd; Developer ID auto-sign/notarise is ready, unsigned until #265. Tag releases build once before attaching their own DMG (#259).
 
 - 3 Nov: Logo direction chosen: open index, because source boundaries and a route to evidence read at 16 px on the cast’s 24-unit grid; Ink/Paper with sparse Salmon layout accents. Explainers source moves into `site/` for one reviewable app/site identity kit (#271).
@@ -478,7 +479,6 @@ Significant product, design and process decisions, newest first. One line each: 
 - 3 Nov: Lane D #287 live payment reconciliation, reserve precheck, protected deep health/metrics, JSON money logs and ops runbook; synthetic queued-payment p95 307.91→6.24 ms under 300 ms writer delay; one verified 0.06 XRP Testnet payment ([evidence](evidence/payment-ops-287.md)).
 - 3 Nov: #274 adds x402 hired answers, generic `sdk/x402` buyer, optional remote MCP hire, durable capped royalties/change and a separate caller demo; fixture and live chain evidence in `docs/evidence/hire-274.md`.
 
-- 2026-11-07 — J2 (Reachability / Feasibility): bundled MCP 21.44 → 3.41 MB; cold initialize 3.6 s, Testnet app 25.3 s, UC3 try + ledger PASS 73.8 s; compact Python verification and no-purchase anchor guard. Evidence: docs/evidence/round4-j2/. No release cut.
 - 2026-11-03: #286 shared admission, wallet cap/pause, bearer and rebinding guards, capped decision inputs and adversarial injection pack; native token contract posted on #259.
 - 3 Nov: Lane C #261 standalone Testnet escrow spike: clean release 14.492 s / 435 drops, cancel 54.871 s / 24 normal-path drops, nine validated txs including negative probes; #273 build contract and live builder feedback ([evidence](spikes/escrow.md)).
 

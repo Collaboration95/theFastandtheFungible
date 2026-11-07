@@ -6,9 +6,9 @@ from importlib.metadata import PackageNotFoundError, version
 try:
     __version__ = version("researchagent")
 except PackageNotFoundError:  # Source checkout without an installed distribution.
-    import tomllib
+    import re as _version_re
     from pathlib import Path as _VersionPath
-    __version__ = tomllib.loads((_VersionPath(__file__).parents[2] / "pyproject.toml").read_text())["project"]["version"]
+    __version__ = _version_re.search(r'^version = "([^"]+)"', (_VersionPath(__file__).parents[2] / "pyproject.toml").read_text(), _version_re.MULTILINE).group(1)
 
 import json
 import math

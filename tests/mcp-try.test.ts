@@ -20,5 +20,10 @@ it('runs and verifies labelled simulated receipts when the faucet is unavailable
   expect(output).toContain('SIMULATED · no explorer links or ledger transactions')
   expect(output).not.toContain('https://testnet.xrpl.org/transactions/')
   expect(output.trim()).toMatch(/RESULT PASS$/)
+  const run = output.match(/VERIFY ([^\n]+)/)?.[1]
+  expect(run).toBeTruthy()
+  log.mockClear()
+  await runTry(['--testnet'])
+  expect(log.mock.calls.flat().join('\n').match(/VERIFY ([^\n]+)/)?.[1]).toBe(run)
  } finally { log.mockRestore(); rmSync(scratch, { recursive: true, force: true }) }
 }, 15000)
