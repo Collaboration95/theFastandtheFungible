@@ -35,7 +35,7 @@ RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
 **[0:48 · slide 3]**
 At SingHacks, a human approved every purchase. Since then: 183 merged pull
-requests. Today a judge runs one line. No clone, no account. In 84 seconds it
+requests. Today a judge runs one line. No clone, no account. In one cold 84-second measurement it
 buys, catches a broken promise, gets refunded, re-buys, anchors the answer and
 prints "result: pass" with six Testnet links.
 
@@ -50,7 +50,7 @@ on Testnet, eight of twenty held-out questions were bought and cited;
 sixteen of twenty on the development set. [J5](../evidence/j5-coverage/README.md).
 
 **[1:36 · slide 9]**
-A key-reveal purchase costs 435 drops in network fees. The model only
+Our measured key-reveal purchase used 435 drops in network fees. The model only
 recommends; policy code spends, and our gate audit found zero violations.
 
 **[1:48 · slide 12]**

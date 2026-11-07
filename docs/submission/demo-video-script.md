@@ -226,7 +226,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
   "61 historical Testnet transactions · checked live from your browser"
 - **VO (40 words):** "Don't trust us. Verify it. A Python verifier with no
   Node re-checks every receipt against the ledger. Our ledger page re-validates
-  forty-five transactions from your browser in about two seconds. Every number
+  sixty-one historical transactions through read-only checks. Every number
   in this video has a hash."
 
 ### Shot 9 · Close (2:40–2:50)

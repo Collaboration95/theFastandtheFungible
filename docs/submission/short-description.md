@@ -48,8 +48,8 @@ What's new since SingHacks (183 merged pull requests, 11 tagged releases):
 - **Key-reveal escrow.** The buyer locks payment in a native XRPL Escrow whose
   condition is the hash of the article's key. To get paid, the writer must
   publish that key in the EscrowFinish, so delivery and payment are one ledger
-  event. The buyer decrypts and checks every promised passage; a broken promise
-  is refunded.
+  event. The buyer decrypts and checks every promised passage. Refunds after a
+  broken promise need the writer’s signature; our fixture writer cooperates.
 - **Stablecoin escrow.** The same flow settles in TEST-SGD, our Testnet token,
   through XLS-85 token escrow. Official RLUSD payments work on Testnet; RLUSD
   escrow waits on one issuer flag, which we document as builder feedback.
@@ -60,7 +60,7 @@ What's new since SingHacks (183 merged pull requests, 11 tagged releases):
   `npx -y <release>/researchagent-mcp-1.0.0.tgz try --testnet`.
   The same package is an MCP server for Claude Code and a local web app.
 - **Writers in one command.** A Markdown folder becomes a Testnet writer with an
-  XRPL Credential in 44 s.
+  XRPL Credential in a measured 33.9 s (J3, #389).
 
 Proof: [release v1.0.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.0) ·
 [browser replay](https://collaboration95.github.io/theFastandtheFungible/demo/) ·
@@ -84,5 +84,5 @@ instance: everything runs on your machine. Mainnet is disabled in code.
 | "RLUSD escrow waits on one issuer flag" | Issuer flags 2174353408 lack AllowTrustLineLocking; predicted refusal, never submitted | [BUILDER-FEEDBACK §1](../BUILDER-FEEDBACK.md#1-issuer-permission-blocks-rlusd-escrow) |
 | 61 historical transactions | 61/61 validated in 1.65 s, read-only, 7 Nov | [retained live check](../evidence/r5-r/live-ledger.json) |
 | "84 s … `RESULT PASS`" | One cold run (empty npm cache, fresh faucet wallets), 84.2 s, 7 Nov. Two of four cold attempts finished under the 90 s deadline | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
-| "Credential in 44 s" | 43.8 s cold, synthetic starter notes, public faucet | [#378](https://github.com/Collaboration95/theFastandtheFungible/pull/378), [round3-c](../evidence/round3-c/README.md) |
+| "Credential in 33.9 s" | Cold init plus publish 33.888 s, generated test note, public faucet | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389), [J3](../evidence/round4-j3/slim-onboarding.json) |
 | Team-authored writer | team-authored · real content · not an independent writer · Testnet; v2 held-out 8/20; v1 dev 16/20 buy-and-cite | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390), [J5 evidence](../evidence/j5-coverage/README.md) |
