@@ -1,6 +1,6 @@
 # Frozen judge-bank measurements
 
-Build a portable MCP tgz with the release artifact pipeline (`node scripts/release-artifacts.mjs`, after `npm run build:sdk`). Pass its path as the sole positional argument. Fixture research/decision models, real XRPL Testnet settlement, faucet funds only; no `.env` is loaded. Each fresh run provisions private state; keep it for reconciliation and never commit wallets.
+Build a portable MCP tgz with the release artifact pipeline (`node scripts/release-artifacts.mjs`, after `npm run build:sdk`). Build it from the same checkout as the runner so lead selection matches the product. Pass its path as the sole positional argument. Fixture research/decision models, real XRPL Testnet settlement, faucet funds only; no `.env` is loaded. Each fresh run provisions private state; keep it for reconciliation and never commit wallets.
 
 ```sh
 RA_ACCEPT_TESTNET=1 JUDGE_BANK=eval/questions/judge-xrpl.v1.json JUDGE_OUT_DIR=/tmp/p0-v1 npx tsx scripts/judge-bank-testnet.ts dist/release/researchagent-mcp-1.0.0.tgz
