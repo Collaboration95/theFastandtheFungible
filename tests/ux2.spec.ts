@@ -56,7 +56,7 @@ test('UX-2: UC4, exact lead citation, export, supporting screens and mobile Spen
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.getByRole('button', { name: 'Show sidebar' }).click()
   await page.getByRole('button', { name: 'Writers', exact: true }).click()
-  await expect(page.getByText('All writers and articles are fictional.')).toBeVisible()
+  await expect(page.getByText('Built-in examples are fictional.')).toBeVisible()
   await writeFile(`${dir}/environment.txt`, 'Local Chromium; offline demo; simulated payments; no live providers or Testnet.\n')
 })
 
