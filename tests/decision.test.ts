@@ -209,3 +209,13 @@ describe('fixture judge: the question\'s named entities (UC3 round 2)', () => {
     expect(round.selectedResourceId).toBe(deepDive.resourceId)
   })
 })
+
+describe('fixture threshold calibration fallback', () => {
+  it('keeps the unfitted fixture at 0.20 and preserves live defaults', () => {
+    expect(new FixtureDecisionProvider().model).toBe('metadata-fixture')
+    expect(buyThreshold('metadata-fixture', '')).toBe(0.20)
+    expect(buyThreshold('gpt-6-luna', '')).toBe(0.20)
+    expect(buyThreshold('@cf/cloudflare/clef', '')).toBe(0.35)
+    expect(buyThreshold('@cf/cloudflare/clef-flash', '')).toBe(0.15)
+  })
+})

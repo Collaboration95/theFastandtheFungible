@@ -634,3 +634,5 @@ Live read-only ledger: **27.5 s → 1.970 s**, 45/45, first verified row 1.143 s
 **128 ms initially / 529 ms after rebase**, 45/45; no historical fixture timing retained. Six-second threshold unchanged.
 - 2026-11-07 — R5 A: anchor DONE Testnet abstentions, expose no-purchase exports/fee labels, and show serial IOU provisioning progress; evidence and measured cold-start target miss: docs/evidence/r5-a/.
 - 2026-11-07 — R5 K (Reachability / UX / Feasibility): answer-first team notes, question-ranked cited findings, relevant Disputes, honest policy declines with reasons and measured duration, and an Ask-clearing environment popover; evidence in docs/evidence/r5-k/.
+
+- 7 Nov: P1 fixture-only threshold dev sweep; UC rows preserved, dev waste ceiling missed (30.30% > 18.75%); keep 0.20, v4 reserved for orchestrator. Evidence: `docs/evidence/p1-threshold/`.

@@ -1,0 +1,9 @@
+# N03 and N08: observed false-positive purchases
+
+Both were purchased in the #407 0.20 baseline and in the new 0.10 packed Testnet run. Candidate rows, not recomputed predictions, are preserved in negative-buy-diagnosis.json. These are negative-bank questions, so even a cited, verified purchase is a failure of the zero-negative-buy constraint.
+
+N03 buys writer `kopi-contrarian`, article `kopi-singapore-home-loans-the-silent-rate-sensitivity-killer`, v1, for 10 displayed SGD minor. The fixed-deposit question overlaps the Singapore/rates metadata of a home-loan article. The heuristic reports addressesGap = relevance = 0.5198596963352672, original = 0.9, credibility = 1, trust = 0.8. Value = 1 × 0.5198596963352672 × 0.9 × 0.75 × 0.8 = 0.2807242360210443, clearing 0.20. Marginal policy independently reports 4.1588775706821375 expected facts per dollar, above its unchanged 0.5 threshold. Broad metadata overlap does not establish the requested bank comparison.
+
+N08 buys writer `alphaleak`, article `alphaleak-jgb-auction-whispers-what-the-2026-bids-reveal-about-japan-s`, v1, for 30 displayed SGD minor. The Tokyo-travel question retrieves a Japan/JGB article with planted inflated relevance 0.96. The heuristic reports addressesGap = 0.48 (the entity-overlap factor halves the claimed relevance), original = 0.9, credibility = 1, trust = 0.8. Value = 1 × 0.48 × 0.9 × 0.75 × 0.8 = 0.25920000000000004, clearing 0.20. Marginal policy reports 1.28 expected facts per dollar, above 0.5. The fixture cannot distinguish an itinerary from a market note on this overlap alone. Verification establishes delivery/payment integrity, not topical usefulness.
+
+The arithmetic explains observed values; the sweep measures actual outcomes after changing the threshold. Lower thresholds cannot exclude either initial candidate. Thresholds above 0.2807242360210443 are included in the grid, without editing the formula or any other spending policy.
