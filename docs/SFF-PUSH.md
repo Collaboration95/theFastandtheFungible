@@ -611,4 +611,4 @@ numbers above remain a separate evidence class.
 
 Live read-only ledger: **27.5 s → 1.970 s**, 45/45, first verified row 1.143 s
 (`docs/evidence/round4-l4/live-ledger.json`). Local CI-style browser fixture:
-**128 ms**, 45/45; no historical fixture timing retained. Six-second threshold unchanged.
+**128 ms initially / 529 ms after rebase**, 45/45; no historical fixture timing retained. Six-second threshold unchanged.
