@@ -13,12 +13,13 @@ import { PublisherJournal } from '../publisher/journal.js'
 import { EVIDENCE } from '../server/agents/openai-decisions.js'
 
 describe('fact menu (#260)', () => {
-  it('preserves the pre-menu bank, prose and constructed coverage snapshots', async () => {
+  it('preserves the pre-menu bank and constructed coverage; pins revised Lane K prose', async () => {
     const before = JSON.parse(readFileSync('eval/scorecard/frozen-pre-fact-menu.json', 'utf8'))
     const after = await frozenInputs('eval/questions/bank.v1.json')
     expect(after.bank).toBe(before.bank)
     const j1 = JSON.parse(readFileSync('eval/scorecard/frozen-j5-coverage.json', 'utf8'))
-    expect(after.corpusContent).toBe(j1.corpusContent)
+    const k = JSON.parse(readFileSync('docs/evidence/r5-k/corpus-golden.json', 'utf8'))
+    expect(after.corpusContent).toBe(k.corpusContent)
     // J5 adds two disclosed notes; historical baseline retained in frozen-round4-j1.json.
     expect(after.snapshots).toBe(j1.snapshots)
   })

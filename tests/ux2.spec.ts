@@ -113,3 +113,37 @@ test('anchor waiting ends after its bounded deadline', async ({ page }) => {
   await page.clock.fastForward(91_000)
   await expect(page.getByText('Anchor unavailable (no validated anchor recorded)', { exact: true }).first()).toBeVisible()
 })
+
+for (const viewport of [{width:1440,height:900},{width:1280,height:800}]) {
+ test(`Lane K popover clears Ask at ${viewport.width}`, async ({page}) => {
+  await page.setViewportSize(viewport)
+  await page.goto('/')
+  const pop=page.locator('#environment-details')
+  await expect(pop).toBeVisible()
+  const a=await page.locator('button.ra-ask').boundingBox(), b=await pop.boundingBox()
+  expect(a && b).toBeTruthy()
+  expect(a!.x < b!.x+b!.width && a!.x+a!.width > b!.x && a!.y < b!.y+b!.height && a!.y+a!.height > b!.y).toBe(false)
+  const h=await page.locator('h1').first().boundingBox()
+  expect(h!.y).toBeGreaterThanOrEqual(0)
+  expect(h!.y+h!.height).toBeLessThan(viewport.height)
+  expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
+  await page.screenshot({path:`docs/evidence/r5-k/popover-${viewport.width}.png`})
+ })
+}
+test('Lane K decline explains three policy decisions', async ({page}) => {
+ const {readFile}=await import('node:fs/promises')
+ const base=JSON.parse(await readFile('src/fixtures/uc/uc2.json','utf8'))
+ const row=base.decisions[0].rows.find((r: {candidate:{tier:string}})=>r.candidate.tier==='PAID')
+ const rows=[1,2,3].map(n=>({...row,candidate:{...row.candidate,resourceId:`tickets-${n}`,title:`Synthetic Tickets note ${n}`},value:0.159,verdict:'SKIP_LOW_VALUE',reason:`Synthetic fixture: insufficient incremental value ${n}`}))
+ const run={...base,contents:[],grants:[],checkpoint:{},spentMinor:0,reservedMinor:0,runId:'tickets-decline',question:'Synthetic Tickets question',phase:'DONE',answers:[],intents:[],receipts:[],candidates:rows.map(r=>r.candidate),decisions:[{...base.decisions[0],threshold:0.2,rows}],events:[{id:1,runId:'tickets-decline',type:'FREE_DRAFT',label:'Synthetic fixture',at:'2026-11-07T00:00:03Z',data:{elapsedMs:3000}},{id:2,runId:'tickets-decline',type:'DONE',label:'Synthetic fixture',at:'2026-11-07T00:00:05Z'}]}
+ await page.addInitScript(()=>localStorage.setItem('researchagent.environment-seen','1'))
+ await page.route('**/runs/tickets-decline/events',route=>route.fulfill({contentType:'text/event-stream',body:': heartbeat\n\n'}))
+ await page.route('**/runs/tickets-decline',route=>route.fulfill({json:run}))
+ await page.goto('/?run=tickets-decline&pace=real')
+ const answer=page.getByRole('region',{name:'Research answer'})
+ await expect(answer).toContainText('Found 3 paid articles; none cleared the value threshold (best 0.16 vs 0.20)')
+ await answer.locator('summary').click()
+ await expect(answer.locator('li')).toHaveCount(3)
+ await expect(page.getByRole('region',{name:'Run activity'})).toContainText('5.0 s')
+ await page.screenshot({path:'docs/evidence/r5-k/decline-state.png',fullPage:true})
+})
