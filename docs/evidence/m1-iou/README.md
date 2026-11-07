@@ -47,3 +47,12 @@ field and asset label. See the dated BUILDER-FEEDBACK entry. Nothing loosened.
 
 The commands are supported by this source/next packed build; this change does
 not replace already published rc.2 release assets.
+
+## Portable entry-point smoke checks
+
+`portable-bin.json` records another actual TEST-SGD purchase and anchor through
+the locally built portable stdio bin (`dist/mcpb/mcp/extension.mjs --testnet --iou`).
+`portable-app.json` records the built app `app --testnet --iou` serving its UI
+over loopback HTTP 200 in 9.50 s and printing the TEST-SGD daily cap label.
+These are local portable-runtime checks, not a fresh npx-cache consumer or
+published-release claim. The app smoke used HTTP, not a browser.
