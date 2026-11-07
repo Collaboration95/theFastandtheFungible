@@ -24,7 +24,8 @@ export function reportHtml(report: Report): string {
     references.set(key(ref), { n, source, span })
     return `<a href="#excerpt-${n}"><sup>[${n}]</sup></a>`
   }).join(' ')
-  const lead = leadFinding(report.question, findings).map(item => `${escape(item.text)} ${cite(item.claim)}`).join(' ')
+  const paidFindings = findings.filter(claim => claim.citations.some(ref => report.access?.candidates.some(c => c.tier === 'PAID' && sameSource(c, ref))))
+  const lead = leadFinding(report.question, paidFindings.length ? paidFindings : findings, report.sources).map(item => `${escape(item.text)} ${cite(item.claim)}`).join(' ')
   const groups = [['SUPPORTS','Supports'],['CHALLENGES','Disputes'],['UNCERTAIN','Unclear']].map(([stance, name]) => {
     const items = findings.filter(c => c.stance === stance)
     return items.length ? `<h3>${name} (${items.length})</h3><ul>${items.map(c => `<li>${escape(leadFinding(report.question, [c])[0]?.text ?? c.text)} ${cite(c)}</li>`).join('')}</ul>` : ''

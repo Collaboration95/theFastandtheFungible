@@ -53,7 +53,7 @@ try {
   const bought=run.intents.filter(i=>i.status==='VERIFIED' && cited.some(c=>c.resourceId===i.resourceId))
   const blank=!a.answer?.conclusion && !run.answers.at(-1)?.conclusion
   const transactions=run.intents.flatMap(i=>[i.escrow?.createHash,i.escrow?.finishHash,i.refund?.txHash]).concat(run.ledgerAnchor?.txHash).filter(Boolean).map(hash=>`https://testnet.xrpl.org/transactions/${hash}`)
-  const lead=leadFinding(run.question,run.answers.at(-1)?.claims.filter(c=>c.citations.some(ref=>bought.some(i=>i.resourceId===ref.resourceId)))??[])
+  const lead=leadFinding(run.question,run.answers.at(-1)?.claims.filter(c=>c.citations.some(ref=>bought.some(i=>i.resourceId===ref.resourceId)))??[],bundle.sources)
   const result={...q,lead:lead.map(l=>({text:l.text,citations:l.claim.citations})),runId:run.runId,phase:run.phase,buyAndCite:bought.length>0,blank,violations,verificationOk:verification.ok,conclusion:run.answers.at(-1)?.conclusion,citations:cited.length,spentMinor:run.spentMinor,transactions}
   results.push(result);writeFileSync(join(out,'results.json'),JSON.stringify({bankSha256:createHash('sha256').update(bankBytes).digest('hex'),artifactSha256,labels:'Fixture models · team-authored real content · not an independent writer · XRPL Testnet · faucet only',results},null,2)+'\n')
   console.log(q.id, result.buyAndCite?'BUY+CITE':'MISS',result.phase,'violations',violations.length)

@@ -1,4 +1,5 @@
-import type { Claim } from './contracts/index.js'
+import { sameSource } from './source-identity.js'
+import type { Claim, ContentEnvelope } from './contracts/index.js'
 
 const STOP = new Set('what when where which how did does are the its and with from that this latest last getting much was were for has have on in of a an to s'.split(' '))
 const words = (text: string) => [...new Set(text.toLowerCase().replace(/lead[- ]times?/g, 'lead time').match(/[a-z0-9]+/g) ?? [])].filter(word => word.length > 2 && !STOP.has(word))
@@ -6,7 +7,12 @@ const words = (text: string) => [...new Set(text.toLowerCase().replace(/lead[- ]
  * Numeric comparisons and question coverage outrank an author's introductory prose.
  * Shared by the screen and export; callers enforce delivered-passage access first.
  */
-export function leadFinding(question: string, claims: Claim[]): { text: string; claim: Claim }[] {
+export function leadFinding(question: string, claims: Claim[], delivered?: ContentEnvelope[]): { text: string; claim: Claim }[] {
+  if (delivered) claims = claims.flatMap(claim => claim.citations.flatMap(ref => {
+    const content = delivered.find(c => sameSource(c, ref))
+    const span = content?.spans.find(s => s.id === ref.spanId && content.body.includes(s.text))
+    return span ? [{ ...claim, text: span.text, citations: [ref] }] : []
+  }))
   const terms = words(question)
   const ranked = claims.flatMap((claim, ci) => claim.text.split(/(?<=[.!?])\s+(?=[A-Z])/).map((text, si) => {
     const lower = text.toLowerCase(), tokens = words(text)

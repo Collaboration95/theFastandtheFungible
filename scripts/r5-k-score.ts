@@ -9,7 +9,7 @@ const v1 = JSON.parse(readFileSync('docs/evidence/r5-k/v1-gold.json', 'utf8')).g
 for (const r of data.results) {
  const bundle = JSON.parse(readFileSync(join(dirname(file), r.id + '.receipts.json'), 'utf8')) as ReceiptBundle
  r.capturedLead ??= r.lead
- r.lead = leadFinding(r.question, bundle.answers.at(-1)?.claims.filter(c => c.citations.some(ref => bundle.intents.some(i => i.status === 'VERIFIED' && i.resourceId === ref.resourceId))) ?? []).map(l => ({text:l.text,citations:l.claim.citations}))
+ r.lead = leadFinding(r.question, bundle.answers.at(-1)?.claims.filter(c => c.citations.some(ref => bundle.intents.some(i => i.status === 'VERIFIED' && i.resourceId === ref.resourceId))) ?? [], bundle.sources).map(l => ({text:l.text,citations:l.claim.citations}))
  const firstTwo = r.lead.map((l: {text:string})=>l.text).join(' ').split(/(?<=[.!?])\s+(?=[A-Z])/).slice(0,2).join(' ')
  r.measuredGold = r.gold ?? v1[r.id]
  r.answersIt = !!r.measuredGold && firstTwo.toLowerCase().includes(r.measuredGold.toLowerCase()) && r.buyAndCite && r.lead.some((l: {citations:unknown[]})=>l.citations.length)

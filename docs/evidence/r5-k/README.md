@@ -44,3 +44,14 @@ The corrected immutable packed tgz is pinned in `fresh-uc3-artifact.json`. Extra
 Rebased fast gate: **164 files, 1,384 tests passed**, 20 chaos iterations and zero invariant violations. An earlier pre-commit attempt passed all tests but exited on an unrelated EPIPE; the complete gate was rerun and passed. Browser coverage includes the changed two-candidate decline contract plus a separate zero-candidate publishing invitation; existing assertions were replaced with the new specified behavior, not removed. The matched case accepts both truthful low-value and policy summaries because prior trust history can change the verdict.
 
 Fresh post-A packed MCP banks are in `post-a-v1/` and `post-a-v3/`; all previous artifact runs remain labelled diagnostics. No question, gold, policy, threshold, verifier or timeout was changed.
+
+## Final bank results after A and the label fix
+
+| Bank | Answers-it | Buy-and-cite | Online verification | Full-state gate violations | Fictional Supports/Disputes |
+|---|---:|---:|---:|---:|---:|
+| V1 development | 9/20 | 17/20 | 20/20 | 0 | 0 |
+| V3 held-out | 0/20 | 2/20 | 20/20 | 0 | 0 |
+
+**The requested ≥12/20 V3 answers-it target is missed.** Eighteen V3 questions supplied no purchased evidence; the two purchased results lacked their frozen gold phrases in the lead. No policy or bank change was made to turn these misses into passes. The V3 harness retains its nonzero exit at the unchanged buy-and-cite acceptance assertion. V1 completes successfully. Results pin the same corrected tgz as the successful UC3 try. `post-a-*/full-state.gate-audit.json` audits raw persisted snapshots and every event; `ui-audit.json` renders each actual run and checks the stance groups.
+
+The final display/export extraction supplies delivered cited passages directly to `leadFinding`; it does not rank a model's paraphrase as if it were source text. Its added regression uses a paraphrased claim with a real passage, and verifies exact passage extraction and withholding when no delivered passage is supplied. The final scorer reconstructs this display from each packed-MCP receipt bundle; `capturedLead` retains the earlier harness extraction. This final display-only call-site change follows the pinned network artifact; payment/corpus/anchor behavior is unchanged. Local report tests (20), lead/stream tests, all four static demo replays, and both viewport/axe plus decline checks pass after that change.
