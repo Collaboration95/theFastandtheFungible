@@ -90,7 +90,7 @@ console.log(await client.verify(await client.receipts(run.run_id), { testnet: tr
 
 `ask` is the MCP surface: it needs `MCP_MAX_BUDGET_MINOR` and `MCP_DAILY_CAP_MINOR` in the environment of the `app`
 command (default zero, so a bare `ask` buys nothing). Browser purchases use the UI's own per-prompt budget and the app's
-wallet-wide daily cap (S$5.00 on Testnet). See [docs/testnet.md](testnet.md#zero-clone-testnet-app-v101).
+wallet-wide daily cap (S$5.00 on Testnet). See [docs/testnet.md](testnet.md#zero-clone-testnet-app-v102).
 
 ### `hire`
 
