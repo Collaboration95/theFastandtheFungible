@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { DEMO_QUESTIONS } from '../shared/contracts/examples'
 import AxeBuilder from '@axe-core/playwright'
+import { evidencePath } from './evidence-path'
 import { mkdir, writeFile } from 'node:fs/promises'
 const dir = process.env.UX2_SCREENSHOTS ?? '.playwright/evidence/ux2'
 test('UX-2: UC4, exact lead citation, export, supporting screens and mobile Spend', async ({ page }) => {
@@ -160,7 +161,7 @@ for (const viewport of [{width:1440,height:900},{width:1280,height:800}]) {
   expect(h!.y).toBeGreaterThanOrEqual(0)
   expect(h!.y+h!.height).toBeLessThan(viewport.height)
   expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
-  await page.screenshot({path:`docs/evidence/r5-k/popover-${viewport.width}.png`})
+  await page.screenshot({path:evidencePath(`r5-k/popover-${viewport.width}.png`)})
  })
 }
 test('Lane K decline explains three policy decisions', async ({page}) => {
@@ -178,5 +179,5 @@ test('Lane K decline explains three policy decisions', async ({page}) => {
  await answer.getByText('Why ▸').click()
  await expect(answer.locator('li')).toHaveCount(3)
  await expect(page.getByRole('region',{name:'Run activity'})).toContainText('5.0 s')
- await page.screenshot({path:'docs/evidence/r5-k/decline-state.png',fullPage:true})
+ await page.screenshot({path:evidencePath('r5-k/decline-state.png'),fullPage:true})
 })

@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, symlinkSync, chmodSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { parseArgs, classify, makeSteps, inputsFor, stepKey, scriptClosure, cacheEntry, changes, snapshot, sameSource,
+import { MAX_CPUS, parseArgs, classify, makeSteps, inputsFor, stepKey, scriptClosure, cacheEntry, changes, snapshot, sameSource,
   publishStatus, originRepo, runGraph, command, fixtureEnv, newScope, git, SCHEMA, main } from './local-gate.mjs'
 import { loaderPrefix, buildPrefix } from './local-gate-smoke.mjs'
 
@@ -47,7 +47,10 @@ test('every product path keeps the entire unit suite, chaos and key-reveal guara
   assert.equal(server.app, true); assert.equal(server.replay, false); assert.equal(server.python, true); assert.equal(server.desktop, true)
   const full = makeSteps(classify([], { full: true }))
   const outputs = full.filter(step => step.id.startsWith('browser-')).map(step => step.args.find(arg => arg.startsWith('--output=')))
-  assert.equal(new Set(outputs).size, 4)
+  assert.equal(new Set(outputs).size, 5)
+  const perf = full.find(step => step.id === 'browser-perf')
+  assert.equal(perf.cpus, MAX_CPUS); assert.deepEqual(perf.deps, ['browser-app'])
+  assert.ok(full.find(step => step.id === 'browser-app').args.includes('--grep-invert'))
   assert.deepEqual(full.find(step => step.id === 'desktop-build').deps, ['browser-app'])
 })
 

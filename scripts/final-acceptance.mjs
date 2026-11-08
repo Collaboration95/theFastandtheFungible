@@ -126,9 +126,8 @@ try {
   Object.assign(report,acceptanceOutcome(report.gates,quick||skipSoak));if(!report.checksPass)process.exitCode=1
 } catch(error) {report.error=error.message;process.exitCode=1}
 finally {
-  const generatedEvidence=new Set(['docs/evidence/r5-k/decline-state.png','docs/evidence/settings/about.png','docs/evidence/settings/connect-an-agent.png','docs/evidence/settings/data.png','docs/evidence/settings/writers.png'])
   const dirty=execFileSync('git',['status','--porcelain','--untracked-files=all'],{encoding:'utf8'}).trimEnd().split('\n').filter(Boolean)
-  report.sourceStable=git('rev-parse','HEAD')===report.sourceSha&&!dirty.some(line=>!line.startsWith(' M ')||!generatedEvidence.has(line.slice(3)))
+  report.sourceStable=git('rev-parse','HEAD')===report.sourceSha&&dirty.length===0
   if(!report.sourceStable||report.worktreeDirty){report.pass=false;report.acceptanceEligible=false;report.sourceError='Source changed or worktree was dirty';process.exitCode=1}
   try {
     if(reusableGates.every(name=>report.gates.find(row=>row.name===name)?.pass)) report.reuseOutputs=outputProof(['dist/release',report.app.path,report.app.manifest.file,join(out,'desktop-recovery.json'),...report.dmgs.map(row=>row.file)])

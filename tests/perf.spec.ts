@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test'
 import { readFile, mkdir, writeFile } from 'node:fs/promises'
 import { gzipSync } from 'node:zlib'
 
-test('production preview: initial JS, interactive, input → paint, and full UC2 replay CLS budgets', async ({ page }, info) => {
+// @perf: timing budgets; the local gate runs this alone (browser-perf) so sibling load cannot skew CLS or latency.
+test('production preview: initial JS, interactive, input → paint, and full UC2 replay CLS budgets', { tag: '@perf' }, async ({ page }, info) => {
   test.setTimeout(45_000)
   const manifest = JSON.parse(await readFile('dist/.vite/manifest.json', 'utf8')) as Record<string, { file: string; imports?: string[] }>
   const files = new Set<string>()
