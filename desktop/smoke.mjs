@@ -87,10 +87,11 @@ try {
   await report.waitForLoadState()
   await expect(report.getByText('ResearchAgent evidence report').first()).toBeVisible()
   await report.close()
-  const preferencesReady = app.waitForEvent('window')
+  // Match the Settings window by URL, not by "next window opened" (races under load).
   await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Settings…').click())
-  const preferences = await preferencesReady
-  await expect(preferences.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible()
+  let preferences
+  await expect.poll(() => Boolean(preferences = app.windows().find(w => new URL(w.url(), 'http://local').searchParams.has('settings'))), { timeout: 30000 }).toBe(true)
+  await expect(preferences.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible({ timeout: 15000 })
   await expect(preferences.getByRole('heading', { name: 'Make this workspace yours' })).toHaveCount(0)
   const safeState = await preferences.evaluate(() => window.desktop.state())
   expect(JSON.stringify(safeState)).not.toContain(canary)
