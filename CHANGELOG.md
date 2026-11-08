@@ -12,6 +12,7 @@ Packages are built and consumer-tested but **not published** to npm, PyPI or
 the MCP Registry; that is an owner step tracked in #265.
 
 ## Unreleased
+- 8 Nov: Judge-visible honesty fixes from mock-judge round 6. (1) Anchor pending is no longer a failure: the server says "Anchoring… awaiting validation", retries the lookup (20 × 3 s, stops on shutdown) and only then gives a terminal label; the answer screen keeps polling through pending, so a validated anchor appears without a reload (v1.0.1 regression from #403). (2) Anchored no-purchase runs show "Anchored on XRPL · no purchase · ledger N" and the Export menu; simulated declines stay "not anchored (simulated)". (3) Plan modal and home subtitle state the real rule, "at most one article per round, up to 3 rounds, within your budget", from `PURCHASE_RULE`/`MAX_ROUNDS` shared with the loop (buying policy unchanged). (4) Popover and landing footer name labelled team-authored notes; landing links the SFF deck and relabels the October talk deck; 45/45 ledger counts become 61/61 (1.65 s, 7 Nov); the pitch notes carry the v4 split (7/20, 2/20 key fact leads, 0/10 off-topic buys; dev v1 16/20) instead of "fifteen of twenty"; Testnet examples are three XRPL questions the team-authored writers answer. SFF deck PDF re-exported.
 
 ## v1.0.1 — 7 Nov 2026
 

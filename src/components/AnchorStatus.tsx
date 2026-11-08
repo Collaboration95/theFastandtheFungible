@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { RunSnapshot } from '../../shared/contracts/index.js'
 import { getRun } from '../api'
+import { anchorProgress } from '../../shared/anchor-status.js'
 /** Anchoring completes after DONE. Read the same run for at most 90 seconds. */
 export default function AnchorStatus({ run }: { run: RunSnapshot }) {
   const [now] = useState(Date.now)
@@ -8,7 +9,8 @@ export default function AnchorStatus({ run }: { run: RunSnapshot }) {
   const simulated = run.labels.settlement.includes('SIMULATED')
   const endedAt = Date.parse(run.events.at(-1)?.at ?? '')
   const terminal = run.phase === 'DONE' || (run.receipts.length > 0 && ['STOPPED', 'FAILED'].includes(run.phase))
-  const failure = [...run.events].reverse().find(e => e.label?.startsWith('Anchor unavailable ('))?.label
+  const progress = anchorProgress(run.events)
+  const failure = progress?.kind === 'failed' ? progress.label : undefined
   useEffect(() => {
     if (simulated || failure || run.ledgerAnchor || !terminal || !Number.isFinite(endedAt)) return
     const remaining = endedAt + 90_000 - Date.now()
@@ -23,8 +25,10 @@ export default function AnchorStatus({ run }: { run: RunSnapshot }) {
       try {
         const next = await getRun(run.runId, abort.signal)
         if (abort.signal.aborted) return
-        if (next.runId === run.runId && (next.ledgerAnchor || next.events.some(e => e.label?.startsWith('Anchor unavailable (')))) {
-          setResult({ runId: run.runId, anchor: next.ledgerAnchor, failure: [...next.events].reverse().find(e => e.label?.startsWith('Anchor unavailable ('))?.label })
+        // Only an anchor or a real terminal failure ends the wait; "awaiting validation" keeps polling.
+        const nextProgress = anchorProgress(next.events)
+        if (next.runId === run.runId && (next.ledgerAnchor || nextProgress?.kind === 'failed')) {
+          setResult({ runId: run.runId, anchor: next.ledgerAnchor, failure: nextProgress?.kind === 'failed' ? nextProgress.label : undefined })
           clearTimeout(deadline)
           return
         }
@@ -37,5 +41,5 @@ export default function AnchorStatus({ run }: { run: RunSnapshot }) {
   const current = result?.runId === run.runId ? result : undefined
   const a = run.ledgerAnchor ?? current?.anchor
   const recent = Number.isFinite(endedAt) && now - endedAt < 90_000 && !current?.expired
-  return <p className="ra-caption" aria-live="polite">{a ? <><a href={`https://testnet.xrpl.org/transactions/${a.txHash}`} target="_blank" rel="noopener noreferrer">Anchored on XRPL · {run.receipts.length === 0 ? 'no purchase · ' : ''}anchor fee {a.feeDrops} drops (Testnet) · ledger {a.ledgerIndex}</a></> : simulated ? 'not anchored (simulated)' : failure || current?.failure || (terminal && recent ? 'Anchoring…' : 'Anchor unavailable (no validated anchor recorded)')}</p>
+  return <p className="ra-caption" aria-live="polite">{a ? <><a href={`https://testnet.xrpl.org/transactions/${a.txHash}`} target="_blank" rel="noopener noreferrer">Anchored on XRPL · {run.receipts.length === 0 ? 'no purchase · ' : ''}anchor fee {a.feeDrops} drops (Testnet) · ledger {a.ledgerIndex}</a></> : simulated ? 'not anchored (simulated)' : failure || current?.failure || (terminal && recent ? (progress?.kind === 'pending' ? progress.label : 'Anchoring…') : 'Anchor unavailable (no validated anchor recorded)')}</p>
 }

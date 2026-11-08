@@ -1,4 +1,5 @@
 import type { Answer, ContentEnvelope, PublicCandidate, RunSnapshot } from './index.js'
+import { XRPL_LABEL } from './publisher.js'
 /** Demo use cases (D16). Wording locked by the corpus story bible (data/corpus/v2/story-bible.json). */
 export const DEMO_QUESTIONS = [
   { id: 'UC1', text: 'What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?' },
@@ -6,6 +7,21 @@ export const DEMO_QUESTIONS = [
   { id: 'UC3', text: "Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?" },
   { id: 'UC4', text: "When was Kestrel Semiconductor's Penang Phase 2 packaging plant commissioned, how large a grid connection does it need, and how much of its electricity comes from renewable sources?" },
 ] as const
+/**
+ * Home examples for a Testnet app. The fictional-corpus questions above get no answer from the labelled team-authored XRPL writers,
+ * so a judge's first click would be a decline. These three are bought and cited from those writers on Testnet.
+ */
+export const TESTNET_QUESTIONS = [
+  { id: 'XRPL1', label: 'RLUSD escrow', text: 'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?' },
+  { id: 'XRPL2', label: 'x402 headers', text: 'What HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled?' },
+  { id: 'XRPL3', label: 'Account reserves', text: 'How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?' },
+] as const
+const FIXTURE_LABELS: Record<string, string> = { UC1: 'Bank of Japan decision', UC2: 'Kestrel–TSMC outlook', UC3: 'Malaysia packaging lead times', UC4: 'Penang plant power' }
+/** The three example questions for a rail: Testnet shows XRPL questions; simulated and recorded demos keep the fixture stories. */
+export function exampleQuestions(settlement?: string): { id: string; label: string; text: string }[] {
+  if (settlement === XRPL_LABEL) return TESTNET_QUESTIONS.map(q => ({ ...q }))
+  return DEMO_QUESTIONS.slice(0, 3).map(q => ({ id: q.id, label: FIXTURE_LABELS[q.id] ?? q.id, text: q.text }))
+}
 /** A neutral synthetic question for unit-test fixtures (not a demo use case). */
 const EXAMPLE_QUESTION = "Can a fictional operator's announced 600 MW expansion actually be operating by 2028?"
 export const exampleCandidate: PublicCandidate = { profileId: 'public-records', resourceId: 'example-free', version: 'v1', title: 'Synthetic demand record', publisher: 'Fictional Public Records', preview: 'A synthetic primary record of contracted demand.', price: { amountMinor: 0, currency: 'SGD' }, family: 'demand-record', facets: ['demand'], authority: 2, tier: 'FREE', license: { kind: 'SYNTHETIC', attribution: 'ResearchAgent fictional demo corpus' } }

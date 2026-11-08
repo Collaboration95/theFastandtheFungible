@@ -20,7 +20,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **894 drops** | all six UC3 transactions (two buys, refund, anchor) | Testnet, measured | [judge-path.md](../evidence/round4-l4/judge-path.md) |
 | **S$0.00087** | fees per purchase at an assumed S$2.00/XRP | **projection**, not a quote | README cost card |
 | **US$0.0026** | model cost per question | LIVE models, 48 fresh questions, 3 Nov | [README Numbers](../../README.md#numbers) |
-| **1.97 s** | Historical `/ledger/` measurement: 45/45 Testnet transactions | read-only, one measurement, 7 Nov | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388) |
+| **1.65 s** | Historical `/ledger/` measurement: 61/61 Testnet transactions (45/45 in 1.97 s earlier on 7 Nov) | read-only, one measurement, 7 Nov | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388) |
 | **12/12** | Testnet checks in `verify --ledger` on the README UC3 receipts | read-only, s.altnet | [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377) |
 | **224** | shared conformance vectors; TypeScript and Python agree on all | offline | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381) |
 | **43.8 s** | Markdown folder → writer Credential validated on Testnet | synthetic starter notes | [#378](https://github.com/Collaboration95/theFastandtheFungible/pull/378) |

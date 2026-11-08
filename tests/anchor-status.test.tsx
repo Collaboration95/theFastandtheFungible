@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen } from '@testing-library/react'
+import { getRun } from '../src/api'
+import { anchorProgress } from '../shared/anchor-status.js'
 import AnchorStatus from '../src/components/AnchorStatus'
 import ReportButton from '../src/components/ReportButton'
 import { Store } from '../server/store.js'
@@ -30,4 +32,46 @@ it('keeps a DONE run visibly unavailable after submission failure', () => {
  render(<AnchorStatus run={run} />)
  expect(screen.getByText('Anchor unavailable (submission or validation failed)')).toBeTruthy()
  expect(run.phase).toBe('DONE')
+})
+const ANCHOR = {version:'anchor-v1',network:'xrpl:1',head:'a'.repeat(64),runIdHash:'b'.repeat(64),account:'rAccount',txHash:'c'.repeat(64),ledgerIndex:123,feeDrops:'12'} as const
+const event = (run: ReturnType<typeof abstention>, id: number, label: string) => ({id,runId:run.runId,at:new Date().toISOString(),type:'SNAPSHOT',label})
+const freshRun = (...labels: string[]) => { const run = abstention(); run.events = labels.map((label, i) => event(run, i + 1, label)); return run }
+
+it('keeps polling through "Anchoring… awaiting validation" and shows the anchor without a reload', async () => {
+ vi.useFakeTimers()
+ try {
+  const pending = freshRun('Anchoring… awaiting validation')
+  const reads: string[][] = []
+  vi.mocked(getRun).mockImplementation(async () => { const next = reads.length < 2 ? pending : { ...pending, ledgerAnchor: ANCHOR }; reads.push(next.events.map(e => e.label)); return next })
+  render(<AnchorStatus run={pending} />)
+  expect(screen.getByText('Anchoring… awaiting validation')).toBeTruthy()
+  await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
+  expect(reads).toHaveLength(2) // Pending is not terminal: the second read happened.
+  expect(screen.getByText('Anchoring… awaiting validation')).toBeTruthy()
+  await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
+  expect(screen.getByText('Anchored on XRPL · no purchase · anchor fee 12 drops (Testnet) · ledger 123')).toBeTruthy()
+  const stopped = reads.length
+  await act(async () => { await vi.advanceTimersByTimeAsync(10_000) })
+  expect(reads).toHaveLength(stopped)
+ } finally { vi.useRealTimers() }
+})
+
+it('stops polling and says so on a real terminal failure', async () => {
+ vi.useFakeTimers()
+ try {
+  const pending = freshRun('Anchoring… awaiting validation')
+  const failed = { ...pending, events: [...pending.events, event(pending, 2, 'Anchor unavailable (validation not confirmed in time)')] }
+  let reads = 0
+  vi.mocked(getRun).mockImplementation(async () => { reads++; return failed })
+  render(<AnchorStatus run={pending} />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
+  expect(screen.getByText('Anchor unavailable (validation not confirmed in time)')).toBeTruthy()
+  await act(async () => { await vi.advanceTimersByTimeAsync(10_000) })
+  expect(reads).toBe(1)
+ } finally { vi.useRealTimers() }
+})
+
+it('a pre-fix interim "(validation pending or unsuccessful)" event is not terminal', () => {
+ expect(anchorProgress(freshRun('Anchor unavailable (validation pending or unsuccessful)').events)).toBeUndefined()
 })

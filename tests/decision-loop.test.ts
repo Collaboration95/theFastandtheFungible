@@ -16,7 +16,7 @@ import type { PublisherClient } from '../server/publisher-client.js'
 import type { PurchaseManager } from '../server/purchases.js'
 import type { Answer, ContentEnvelope, DecisionRound, Impact, PurchaseIntent, RunSnapshot, TraceEvent } from '../shared/contracts/index.js'
 import { exampleAnswer, exampleCandidate, exampleContent, exampleRun } from '../shared/contracts/examples.js'
-import type { PublicCandidate } from '../shared/contracts/index.js'
+import { MAX_ROUNDS, type PublicCandidate } from '../shared/contracts/index.js'
 const paid = (resourceId: string): PublicCandidate => ({ ...exampleCandidate, resourceId, family: resourceId, tier: 'PAID', preview: 'Grid planner energisation queue data.', facets: ['grid-energisation'], price: { amountMinor: 80, currency: 'SGD' } })
 
 function harness(budgetMinor = 200) {
@@ -248,9 +248,10 @@ describe('RunLoop with W0 ledger/research doubles', () => {
     h.retrieve.mockResolvedValue({ candidates: [exampleCandidate, paid('a'), paid('b'), paid('c'), paid('d')], contents: [exampleContent] })
     h.writeAnswer.mockImplementation(async input => ({ answer: { ...structuredClone(exampleAnswer), version: input.version } }))
     await h.loop.start(h.run.runId)
-    expect(h.run.round).toBe(3)
-    expect(h.purchases.purchase).toHaveBeenCalledTimes(3)
-    expect(new Set(h.run.intents.map(intent => intent.resourceId)).size).toBe(3)
+    // The plan modal and home subtitle quote MAX_ROUNDS through PURCHASE_RULE: the cap here is the number they print.
+    expect(h.run.round).toBe(MAX_ROUNDS)
+    expect(h.purchases.purchase).toHaveBeenCalledTimes(MAX_ROUNDS)
+    expect(new Set(h.run.intents.map(intent => intent.resourceId)).size).toBe(MAX_ROUNDS)
     expect(h.run.answers.map(answer => answer.version)).toEqual([1, 2, 3, 4])
   })
   it('#214: the OpenAI Decisions provider reaches the run snapshot labelled as itself', async () => {

@@ -28,6 +28,13 @@ export const RunPhaseSchema = z.enum(['SEARCH', 'READ_FREE', 'ANSWER', 'DECIDE',
 /** Why a run stopped looking (#209): shown next to the requested-facts checklist and in the report. */
 export const STOP_REASONS = ['complete', 'no-eligible-purchase', 'budget-exhausted', 'round-limit', 'decision-unavailable', 'stopped'] as const
 export const StopReasonSchema = z.enum(STOP_REASONS)
+/**
+ * The research loop's round cap (server/agents/loop.ts). Each round judges one requested fact and policy may buy at most one
+ * article for it, so a run buys at most MAX_ROUNDS articles, and never beyond the budget.
+ */
+export const MAX_ROUNDS = 3
+/** The buying rule, worded once for the plan modal, the home subtitle and the docs. Tied to MAX_ROUNDS by a test. */
+export const PURCHASE_RULE = `at most one article per round, up to ${MAX_ROUNDS} rounds, within your budget`
 /** Reader-facing stop reasons, one short line each. */
 export const STOP_LABELS: Record<z.infer<typeof StopReasonSchema>, string> = {
   complete: 'All requested facts answered.',

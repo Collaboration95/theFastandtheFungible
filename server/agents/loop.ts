@@ -8,7 +8,7 @@ import type { PurchaseManager } from '../purchases.js'
 import { revokeBrokenCredential } from '../revoke-credential.js'
 import { challenge } from '../challenges.js'
 import { createHash } from 'node:crypto'
-import { AnswerSchema, COVERAGE_STATUSES, CoverageSchema, PlanSchema, PublicCandidateSchema, RunCheckpointSchema, SEARCH_LABELS, STOP_LABELS, decisionLabel, providerLabels } from '../../shared/contracts/index.js'
+import { AnswerSchema, COVERAGE_STATUSES, MAX_ROUNDS, CoverageSchema, PlanSchema, PublicCandidateSchema, RunCheckpointSchema, SEARCH_LABELS, STOP_LABELS, decisionLabel, providerLabels } from '../../shared/contracts/index.js'
 import type { Answer, ContentEnvelope, Coverage, CoverageStatus, FollowUp, PublicCandidate, PurchaseIntent, Requirement, RunSnapshot, StopReason, TraceEvent } from '../../shared/contracts/index.js'
 import { decide, decisionFailureStatus, DecisionUnavailableError, FixtureDecisionProvider, publicSources } from './decision.js'
 import type { ProofOutcome, Reputation } from '../reputation.js'
@@ -408,7 +408,7 @@ export class RunLoop {
         const legacyGap = requirements || !allowLegacy ? undefined : answer.openGaps[0]
         const nothingOpen = requirements ? !open!.length : !legacyGap?.text.trim()
         if (run.round >= 1 && nothingOpen) { stopReason = 'complete'; break }
-        if (run.round >= 3) { stopReason = 'round-limit'; break }
+        if (run.round >= MAX_ROUNDS) { stopReason = 'round-limit'; break }
         if (run.budgetMinor > 0 && run.spentMinor + run.reservedMinor >= run.budgetMinor) { stopReason = 'budget-exhausted'; break }
         // Every open fact was judged on this evidence and none was worth buying. An empty gap after round 1 has nothing to decide (#206); round 1 still records its table (UC1: "no gap").
         if (run.round >= 1 && requirements && !target) { stopReason = run.decisions.some(d => d.rows.some(r => r.verdict === 'SKIP_OVER_BUDGET')) ? 'budget-exhausted' : 'no-eligible-purchase'; break }
