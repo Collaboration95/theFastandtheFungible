@@ -433,7 +433,7 @@ describe('budget slider and the universal budget in Settings', () => {
     render(<EnvIndicator labels={exampleRun.labels} recording />)
     const dot = screen.getByRole('button', { name: /Demo · simulated payments/ })
     fireEvent.click(dot)
-    expect(screen.getByRole('region', { name: "What's real here" }).textContent).toContain('Fictional (synthetic corpus)')
+    expect(screen.getByRole('region', { name: "What's real here" }).textContent).toContain('fictional demo writers and labelled team-authored notes')
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(dot.getAttribute('aria-expanded')).toBe('false')
   })

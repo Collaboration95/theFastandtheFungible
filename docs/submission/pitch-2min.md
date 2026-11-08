@@ -20,8 +20,9 @@ mechanism, not the problem. Slide numbers refer to
 
 **[0:00 · slide 1]**
 ResearchAgent is research with a wallet. Give it a question and a budget. It
-answers from free sources, then buys the one article it's missing, straight from
-the writer, over x402 on the XRP Ledger. Everything you'll see runs on XRPL
+answers from free sources, then buys the articles it's missing, straight from
+the writer, over x402 on the XRP Ledger: at most one per round, up to three
+rounds, inside your budget. Everything you'll see runs on XRPL
 Testnet, on your own machine.
 
 **[0:18 · slide 5]**
@@ -100,10 +101,12 @@ Never cut the "Testnet" line on slide 1.
 - **"84 seconds"**: one cold run, empty npm cache and fresh faucet wallets, 7
   Nov. If asked, two of four cold attempts finished under 90 s (73.8 s and 84.2
   s); two overran. Source: `docs/evidence/round4-j2/`.
-- **"Fifteen of twenty"**: frozen 20-question XRPL judge bank, bought and
-  cited on Testnet with 0 blank answers and 0 gate-audit violations; the five
-  misses abstained honestly. Team-authored writer, fixture models. Source:
-  `docs/evidence/round4-j1/`.
+- **"Seven of twenty"**: v4 held-out, blind 20-question XRPL bank, bought and
+  cited on Testnet; the key fact leads the answer in 2/20; all ten off-topic
+  v4 negatives abstained (0/10 purchases); 0 gate violations. Say that the
+  development sets are separate (v1 16/20), because we tuned on them. Team-authored
+  writers, fixture decision model. Source: `docs/evidence/v4-heldout/`. Do not
+  say "fifteen of twenty": that was an earlier, tuned bank.
 - **"183 merged pull requests"**: 21 Sep–7 Nov 2026. Say "since SingHacks", not
   "in a week".
 - **"435 drops"**: 12 for EscrowCreate plus 423 for the conditional

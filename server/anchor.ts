@@ -5,11 +5,17 @@ import { canonical } from './audit.js'
 import type { Store } from './store.js'
 import { XrplPayer, type Submission } from './xrpl.js'
 import { lookupTx } from '../shared/xrpl.js'
+import { ANCHOR_PENDING_LABEL } from '../shared/anchor-status.js'
 export type AnchorRecord = { runId: string; head: string; seq: number; answersHash: string; submission?: Submission; failed?: boolean }
 const hash = (s: string) => createHash('sha256').update(s).digest('hex')
 export class AnswerAnchors {
   private jobs = new Map<string, Promise<void>>()
-  constructor(private store: Store, private payer: XrplPayer) {
+  private closing = new AbortController()
+  /** Bounded validation wait: 20 x 3 s stays inside the answer screen's 90 s polling window. */
+  private attempts: number
+  private intervalMs: number
+  constructor(private store: Store, private payer: XrplPayer, opts: { lookupAttempts?: number; lookupIntervalMs?: number } = {}) {
+    this.attempts = Math.max(1, opts.lookupAttempts ?? 20); this.intervalMs = opts.lookupIntervalMs ?? 3000
     payer.restorePending(store.anchorRows().filter(r => r.submission && !r.failed && !store.getRun(r.runId).ledgerAnchor).map(r => r.submission!))
   }
   ensure(runId: string): Promise<void> {
@@ -44,14 +50,30 @@ export class AnswerAnchors {
       if (status.state === 'expired' || status.state === 'failed') { record.failed = true; this.store.saveAnchor(record); this.store.appendEvent(runId, { type: 'SNAPSHOT', label: `Anchor unavailable (${status.state})` }); return }
       if (status.state !== 'success') { try { await this.payer.ledger.request({ command: 'submit', tx_blob: record.submission.txBlob }) } catch { /* hash decides */ } }
     }
-    const found = await lookupTx(this.payer.ledger, record.submission!.txHash)
-    if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS') {
-      this.store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Anchor unavailable (validation pending or unsuccessful)' }); return
-    }
+    const found = await this.awaitValidated(runId, record.submission!.txHash)
+    if (!found) return
+    if (found.meta.TransactionResult !== 'tesSUCCESS') { this.store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Anchor unavailable (failed)' }); return }
     const tx = decode(record.submission!.txBlob)
     this.store.updateRun(runId, { ledgerAnchor: { version: 'anchor-v1', network: 'xrpl:1', head: record.head, runIdHash: hash(runId), account: this.payer.address!, txHash: record.submission!.txHash, ledgerIndex: found.ledgerIndex, feeDrops: String(tx.Fee) } })
     this.store.appendEvent(runId, { type: 'SNAPSHOT', label: `Anchored on XRPL · ${run.receipts.length ? '' : 'no purchase · '}anchor fee ${tx.Fee} drops (Testnet) · ledger ${found.ledgerIndex}` })
   }
+  /** Pending is a progress state, not a failure: say so once, retry within bounds, and only then give a terminal label. */
+  private async awaitValidated(runId: string, txHash: string) {
+    for (let attempt = 1; ; attempt++) {
+      const found = await lookupTx(this.payer.ledger, txHash)
+      if (found.state === 'validated') return found
+      if (attempt === 1) this.store.appendEvent(runId, { type: 'SNAPSHOT', label: ANCHOR_PENDING_LABEL })
+      if (attempt >= this.attempts) break
+      await new Promise<void>(resolve => {
+        const done = () => { clearTimeout(timer); this.closing.signal.removeEventListener('abort', done); resolve() }
+        const timer = setTimeout(done, this.intervalMs)
+        this.closing.signal.addEventListener('abort', done)
+      })
+      if (this.closing.signal.aborted) return undefined // Shutdown: the reconciler resumes it next start.
+    }
+    this.store.appendEvent(runId, { type: 'SNAPSHOT', label: 'Anchor unavailable (validation not confirmed in time)' })
+    return undefined
+  }
   async reconcile() { for (const run of this.store.listRuns()) await this.ensure(run.runId).catch(() => undefined) }
-  async drain() { await Promise.allSettled(this.jobs.values()) }
+  async drain() { this.closing.abort(); await Promise.allSettled(this.jobs.values()) }
 }

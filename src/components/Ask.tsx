@@ -1,6 +1,6 @@
 import { useId, useState, type ReactNode } from 'react'
-import { AskSchema, BUDGET, type Ask as AskInput } from '../../shared/contracts/index.js'
-import { DEMO_QUESTIONS } from '../../shared/contracts/examples.js'
+import { AskSchema, BUDGET, PURCHASE_RULE, type Ask as AskInput } from '../../shared/contracts/index.js'
+import { exampleQuestions } from '../../shared/contracts/examples.js'
 import { money } from '../format'
 import BudgetPopover from './BudgetPopover'
 
@@ -20,10 +20,8 @@ export interface AskProps {
   picked?: number
   onPick?: (minor: number) => void
 }
-/** Short names for the demo question chips; the full question fills the box and shows on hover. */
-const PRESET_LABEL: Record<string, string> = { UC1: 'Bank of Japan decision', UC2: 'Kestrel–TSMC outlook', UC3: 'Malaysia packaging lead times', UC4: 'Penang plant power' }
 /** Home: the question, the budget (the only spending authorisation) and Ask. */
-export default function Ask({ onAsk, busy = false, above, universalMinor, onSettings, draft = '', onDraft, picked = BUDGET.initialMinor, onPick }: AskProps) {
+export default function Ask({ onAsk, busy = false, settlement, above, universalMinor, onSettings, draft = '', onDraft, picked = BUDGET.initialMinor, onPick }: AskProps) {
   const browserDemo = import.meta.env.MODE === 'browser-demo'
   const id = useId()
   // Starts empty: the presets below fill it in one click.
@@ -38,7 +36,7 @@ export default function Ask({ onAsk, busy = false, above, universalMinor, onSett
   const disabled = busy || submitting
   return <section className="ra-home" aria-label="Ask a research question">
     <h1 className="ra-hero">Ask a question. <em>Give it a budget.</em></h1>
-    <p className="ra-home-description">Answers from free sources first; buys one article only if it helps.</p>
+    <p className="ra-home-description">Answers from free sources first; buys only what helps ({PURCHASE_RULE}).</p>
     {browserDemo && <p className="ra-note">Recorded budget: S$2.00. The Kestrel–TSMC replay covers pricing &amp; margins.</p>}
     {above && <p className="ra-pending-question">{question}</p>}
     {above}
@@ -64,8 +62,8 @@ export default function Ask({ onAsk, busy = false, above, universalMinor, onSett
     {/* The demo questions sit under the composer, one per row; a click fills the box. */}
     {!above && <div className="ra-presets" role="group" aria-label="Demo questions">
       <p className="ra-presets-h" aria-hidden="true">Try an example</p>
-      {DEMO_QUESTIONS.slice(0, 3).map((preset) => <button key={preset.id} type="button" className={`ra-preset${question === preset.text ? ' is-on' : ''}`} aria-pressed={question === preset.text} title={preset.text} disabled={disabled} onClick={() => setQuestion(preset.text)}>
-        <i aria-hidden="true">?</i><b>{PRESET_LABEL[preset.id] ?? preset.id}</b><span>{preset.text}</span></button>)}
+      {exampleQuestions(import.meta.env.MODE === 'browser-demo' ? undefined : settlement).map((preset) => <button key={preset.id} type="button" className={`ra-preset${question === preset.text ? ' is-on' : ''}`} aria-pressed={question === preset.text} title={preset.text} disabled={disabled} onClick={() => setQuestion(preset.text)}>
+        <i aria-hidden="true">?</i><b>{preset.label}</b><span>{preset.text}</span></button>)}
     </div>}
   </section>
 }

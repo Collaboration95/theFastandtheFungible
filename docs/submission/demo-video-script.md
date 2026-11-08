@@ -77,8 +77,8 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 - **On screen:** deck slide 1 (`docs/submission/ResearchAgent-SFF-deck.pdf`,
   page 1).
 - **Caption:** "XRPL Testnet · no real money · runs on your machine"
-- **VO (18 words):** "This is ResearchAgent: research with a wallet. It buys
-  the one article it's missing, straight from the writer, on the XRP Ledger."
+- **VO (22 words):** "This is ResearchAgent: research with a wallet. It buys the
+  articles it's missing, one at a time within your budget, straight from the writer, on the XRP Ledger."
 
 ### Shot 2 · One line, the whole judge path (0:08–0:40)
 

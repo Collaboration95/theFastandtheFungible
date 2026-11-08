@@ -34,7 +34,7 @@ This repo, for what's happening in the sprint:
 
 ## The sprint in one paragraph
 
-ResearchAgent is an evidence workspace with a wallet. It answers from free sources first and, when the missing piece is paywalled, buys that one article from the writer over x402 on XRPL Testnet, inside a budget the user sets. It then verifies the writer's promises and refunds on-chain if one is broken. The Fast and the Fungible made the top three of the Ripple track at SingHacks 2026 and present at the finals on **Wed 18 Nov, 11:30 SGT**, at the Swiss Pavilion at the Singapore FinTech Festival. Submission is due Thu 12 Nov. Until then the team ships one notable feature a day (Mac app, MCP server, scorecard, and more), and the owner posts about one a day, two on weekends.
+ResearchAgent is an evidence workspace with a wallet. It answers from free sources first and, when the missing piece is paywalled, buys the article it needs from the writer (at most one per round, up to three rounds) over x402 on XRPL Testnet, inside a budget the user sets. It then verifies the writer's promises and refunds on-chain if one is broken. The Fast and the Fungible made the top three of the Ripple track at SingHacks 2026 and present at the finals on **Wed 18 Nov, 11:30 SGT**, at the Swiss Pavilion at the Singapore FinTech Festival. Submission is due Thu 12 Nov. Until then the team ships one notable feature a day (Mac app, MCP server, scorecard, and more), and the owner posts about one a day, two on weekends.
 
 ## Rules
 

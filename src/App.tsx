@@ -29,7 +29,7 @@ import ReputationPanel from './components/ReputationPanel'
 import CommandPalette, { type Command } from './components/CommandPalette'
 import { deriveRunState } from './runState'
 import { modifier } from './shortcuts'
-import { DEMO_QUESTIONS } from '../shared/contracts/examples'
+import { exampleQuestions } from '../shared/contracts/examples'
 
 const browserDemo = import.meta.env.MODE === 'browser-demo'
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
@@ -316,7 +316,7 @@ export default function App() {
     { id: 'cmd-new', label: 'New question', hint: `${modifier}N`, run: focusAsk },
     { id: 'cmd-run', label: 'Run', hint: `${modifier}1`, run: () => switchView('run') },
     { id: 'cmd-writers', label: 'Writers', hint: `${modifier}2`, run: () => switchView('writers') },
-    ...DEMO_QUESTIONS.slice(0, 3).map(preset => ({ id: `cmd-${preset.id}`, label: preset.text, group: 'Examples', run: () => { newQuestion(); setDraft(preset.text); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()) } })),
+    ...exampleQuestions(browserDemo ? undefined : shown?.labels.settlement ?? health.labels?.settlement).map(preset => ({ id: `cmd-${preset.id}`, label: preset.text, group: 'Examples', run: () => { newQuestion(); setDraft(preset.text); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()) } })),
     { id: 'cmd-budget', label: 'Set budget', run: () => { newQuestion(); requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.ra-budget-chip')?.click()) } },
     ...(shown ? [{ id: 'cmd-work', label: 'Show work', hint: 'W', run: () => { switchView('run'); setWork(true) } }] : []),
     ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: item.question, group: 'Recent runs', run: () => { setTab('run'); void openRun(item.runId) } })),

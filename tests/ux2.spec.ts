@@ -99,6 +99,39 @@ test('completed Testnet answer gets its anchor without a reload and polling stop
   expect(reads).toBe(stoppedAt)
 })
 
+test('"Anchoring… awaiting validation" keeps polling and resolves to the anchor without a reload', async ({ page }) => {
+  const { readFile } = await import('node:fs/promises')
+  const run = JSON.parse(await readFile('src/fixtures/uc/uc2.json', 'utf8'))
+  const { XRPL_LABEL } = await import('../shared/contracts/publisher')
+  run.labels.settlement = XRPL_LABEL
+  run.events.push({ id: 9999, runId: run.runId, type: 'SNAPSHOT', label: 'Anchoring… awaiting validation', at: new Date().toISOString() })
+  let reads = 0
+  await page.route(`**/runs/${run.runId}/events`, route => route.fulfill({ contentType: 'text/event-stream', body: ': heartbeat\n\n' }))
+  await page.route(`**/runs/${run.runId}`, route => {
+    reads++
+    return route.fulfill({ json: { ...run, ...(reads > 3 ? { ledgerAnchor: { version: 'anchor-v1', network: 'xrpl:1', txHash: 'A'.repeat(64), account: 'rNtb7gEMUHyPUR6B39HQLkEhUtrYtY7NNf', head: 'b'.repeat(64), runIdHash: 'c'.repeat(64), ledgerIndex: 456, feeDrops: '12' } } : {}) } })
+  })
+  await page.goto(`/?run=${run.runId}&pace=real`)
+  await expect(page.getByText('Anchoring… awaiting validation', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('Anchor unavailable', { exact: false })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Anchored on XRPL · anchor fee 12 drops (Testnet) · ledger 456' }).first()).toBeVisible({ timeout: 15_000 })
+})
+
+test('an anchored no-purchase decline shows its ledger proof and the Export menu', async ({ page }) => {
+  const { readFile } = await import('node:fs/promises')
+  const run = JSON.parse(await readFile('src/fixtures/uc/uc2.json', 'utf8'))
+  const { XRPL_LABEL } = await import('../shared/contracts/publisher')
+  Object.assign(run, { labels: { ...run.labels, settlement: XRPL_LABEL }, answers: [], receipts: [], intents: [], contents: [], phase: 'DONE', stopped: false, spentMinor: 0, reservedMinor: 0,
+    events: run.events.filter((e: { type: string }) => e.type !== 'FREE_DRAFT'), ledgerAnchor: { version: 'anchor-v1', network: 'xrpl:1', txHash: 'B'.repeat(64), account: 'rNtb7gEMUHyPUR6B39HQLkEhUtrYtY7NNf', head: 'b'.repeat(64), runIdHash: 'c'.repeat(64), ledgerIndex: 22152330, feeDrops: '12' } })
+  await page.route(`**/runs/${run.runId}/events`, route => route.fulfill({ contentType: 'text/event-stream', body: ': heartbeat\n\n' }))
+  await page.route(`**/runs/${run.runId}`, route => route.fulfill({ json: run }))
+  await page.goto(`/?run=${run.runId}&pace=real`)
+  const proof = page.getByRole('link', { name: 'Anchored on XRPL · no purchase · anchor fee 12 drops (Testnet) · ledger 22152330' })
+  await expect(proof).toBeVisible()
+  await expect(proof).toHaveAttribute('href', `https://testnet.xrpl.org/transactions/${'B'.repeat(64)}`)
+  await expect(page.getByText('Export ⋯', { exact: true })).toBeVisible()
+})
+
 test('anchor waiting ends after its bounded deadline', async ({ page }) => {
   const { readFile } = await import('node:fs/promises')
   const { XRPL_LABEL } = await import('../shared/contracts/publisher')
@@ -142,7 +175,7 @@ test('Lane K decline explains three policy decisions', async ({page}) => {
  await page.goto('/?run=tickets-decline&pace=real')
  const answer=page.getByRole('region',{name:'Research answer'})
  await expect(answer).toContainText('Found 3 paid articles; none cleared the value threshold (best 0.16 vs 0.20)')
- await answer.locator('summary').click()
+ await answer.getByText('Why ▸').click()
  await expect(answer.locator('li')).toHaveCount(3)
  await expect(page.getByRole('region',{name:'Run activity'})).toContainText('5.0 s')
  await page.screenshot({path:'docs/evidence/r5-k/decline-state.png',fullPage:true})

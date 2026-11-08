@@ -14,7 +14,7 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   await expect(env).toBeVisible()
   const pop = page.getByRole('region', { name: "What's real here" })
   await expect(pop).toBeVisible()
-  for (const label of ['Fictional (synthetic corpus)', 'Simulated, no ledger entry', 'Keyword only', 'Offline rules']) await expect(pop).toContainText(label)
+  for (const label of ['fictional demo writers and labelled team-authored notes', 'Simulated, no ledger entry', 'Keyword only', 'Offline rules']) await expect(pop).toContainText(label)
   await page.keyboard.press('Escape')
   await shot('01-home')
   const presets = [/^Bank of Japan decision/, /^Kestrel–TSMC outlook/, /^Malaysia packaging lead times/]

@@ -43,12 +43,12 @@ for (const hasPurchase of [true, false]) for (const crash of ['before-submit','a
   throw Error('unexpected '+req.command)
  }}
  if (hasPurchase) purchased(store)
- let anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet))
+ let anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet),{lookupAttempts:1})
  await anchors.ensure(run.runId).catch(()=>undefined)
  const blob=store.anchorRows()[0].submission!.txBlob
  store.close();store=resources().own(new Store(path))
  if (hasPurchase) purchased(store)
- anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet))
+ anchors=new AnswerAnchors(store,new XrplPayer(ledger,wallet),{lookupAttempts:1})
  await Promise.all([anchors.ensure(run.runId),anchors.ensure(run.runId)])
  await anchors.ensure(run.runId)
  expect(store.getRun(run.runId).ledgerAnchor?.ledgerIndex).toBe(101)
