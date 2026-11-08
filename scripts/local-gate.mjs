@@ -86,7 +86,11 @@ export function makeSteps(route, cpuBudget = MAX_CPUS) {
   add('unit', process.execPath, ['node_modules/vitest/vitest.mjs', 'run', '--maxWorkers', String(Math.max(1, Math.min(4, cpuBudget - 1)))], Math.min(5, cpuBudget), ['app-build'])
   add('chaos', process.execPath, ['scripts/chaos.mjs', '--runs', '20', '--seed', '279', '--output', 'scratch/local-gate-chaos.json'], 2)
   add('key-reveal', process.execPath, ['--import', 'tsx', 'scripts/chaos/key-reveal.ts'], 2)
-  if (route.app) add('browser-app', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/app'], 2, ['unit'], 900000)
+  if (route.app) {
+    add('browser-app', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--grep-invert', '@perf', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/app'], 2, ['unit'], 900000)
+    // Timing budgets (CLS, input → paint) need an idle host: claim every CPU slot so nothing runs beside it.
+    add('browser-perf', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--grep', '@perf', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/perf'], cpuBudget, ['browser-app'], 600000)
+  }
   if (route.replay) {
     npm('demo-build', 'build:demo', 2, ['lint'])
     add('browser-demo', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.demo.config.ts', '--workers=2', '--reporter=line', '--output=scratch/local-gate-results/demo'], 3, ['demo-build'], 900000)
@@ -144,7 +148,7 @@ export function inputsFor(id, files, read, unknown = false) {
   else if (id === 'sdk-package') match = file => /^(?:sdk|shared|packages\/sdk)\/|^scripts\/(?:build-sdk|check-sdk-package)\.mjs$|^docs\/sdk\.md$|^LICENSE$/.test(file)
   else if (id === 'desktop-loader') match = file => /^desktop\/(?:smoke|recovery-smoke|accept)\.mjs$|^scripts\/(?:record|mcp-demo|local-gate-smoke)\.mjs$|^shared\/resource-scope\.ts$/.test(file)
   else if (id === 'desktop-build') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|desktop)\/|^index\.html$|^vite\.config|^scripts\/local-gate-smoke/.test(file)
-  else if (id === 'browser-app') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures|design\/cast)\/|^index\.html$|^vite\.config|^playwright\.config|^tests\/.*\.spec\.ts$|^scripts\/(?:demo(?:-ports)?|prepare-e2e-store)\.mjs$/.test(file)
+  else if (id === 'browser-app' || id === 'browser-perf') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures|design\/cast)\/|^index\.html$|^vite\.config|^playwright\.config|^tests\/.*\.spec\.ts$|^scripts\/(?:demo(?:-ports)?|prepare-e2e-store)\.mjs$/.test(file)
   else match = file => /^(?:src|shared|demo|site|design|docs\/evidence)\/|^vite\.demo\.config|^playwright\.(?:demo|judge|ledger)\.config|^tests\/(?:browser-demo|judge-path|ledger-viewer|ledger-sockets)/.test(file)
   const selected = files.filter(file => common(file) || match(file))
   return scriptClosure(files, read, selected)
