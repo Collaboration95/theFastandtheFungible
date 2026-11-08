@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { execFileSync } from 'node:child_process'
 
-for (const [tag, version] of [['v1.0.1', '1.0.1'], ['v1.0.0-rc.2', '1.0.0rc2']]) {
+for (const [tag, version] of [['v1.0.2', '1.0.2'], ['v1.0.0-rc.2', '1.0.0rc2']]) {
   test(`${tag} installs the wheel with its PEP 440 filename`, () => {
     const output = execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', tag], { encoding: 'utf8' })
     expect(output).toContain(`/researchagent-${version}-py3-none-any.whl`)

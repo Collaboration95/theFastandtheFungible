@@ -26,7 +26,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **43.8 s** | Markdown folder → writer Credential validated on Testnet | synthetic starter notes | [#378](https://github.com/Collaboration95/theFastandtheFungible/pull/378) |
 | **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | README Numbers |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
-| **183 / 10** | merged PRs since SingHacks / tagged releases | 21 Sep–7 Nov | `gh pr list`, `gh release list` |
+| **183 / 13** | merged PRs since SingHacks / tagged releases | 21 Sep–7 Nov | `gh pr list`, `gh release list` |
 | **Held-out 7/20; 0/10 off-topic buys** | blind v4 bank bought and cited; the key fact leads the answer in 2/20; all ten v4-negatives abstained; 0 gate violations. Dev (not held-out): v1 16/20, v3 7/20 | Testnet, fixture decision model, team-authored writers, 7 Nov | [v4 evidence](../evidence/v4-heldout/README.md) |
 
 ---

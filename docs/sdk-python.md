@@ -1,9 +1,9 @@
 # Python SDK
 
-[Release v1.0.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.1): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
+[Release v1.0.2](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ```sh
-pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.1/researchagent-1.0.1-py3-none-any.whl
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-1.0.2-py3-none-any.whl
 ```
 
 

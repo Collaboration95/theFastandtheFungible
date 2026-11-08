@@ -1,9 +1,9 @@
 # ResearchAgent SDK v1
 
-[Release v1.0.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.1): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
+[Release v1.0.2](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ```sh
-npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.1/researchagent-sdk-1.0.1.tgz
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-sdk-1.0.2.tgz
 ```
 
 
@@ -77,7 +77,7 @@ repository's `npm run verify:answer` command.
 
 ### Against the local app engine
 
-`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.1/researchagent-mcp-1.0.1.tgz app --testnet` (or without `--testnet`) boots an engine and prints its `baseUrl` and the path of a
+`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --testnet` (or without `--testnet`) boots an engine and prints its `baseUrl` and the path of a
 0600 token file. Point the SDK at it; the browser UI and the SDK share one engine, wallet and cap accounting:
 
 ```ts
