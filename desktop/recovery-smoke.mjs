@@ -16,11 +16,13 @@ await mkdir(dirname(output), { recursive: true })
 const results = [], ipc = []
 const ports = new Set()
 const launch = data => electron.launch({ executablePath, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, RA_DESKTOP_KEYCHAIN_SERVICE: service, RA_DESKTOP_DATA: data, RA_DESKTOP_RECOVERY_TEST: '1' }, timeout: 30000 })
+// Find the Settings window by its URL: under load the main window can open after the click and
+// would win a bare waitForEvent('window') race (seen in parallel final acceptance, 8 Nov).
 async function settings(app) {
-  const next = app.waitForEvent('window')
   await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(x => x.label === 'Settings…').click())
-  const page = await next
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible()
+  let page
+  await expect.poll(() => Boolean(page = app.windows().find(w => new URL(w.url(), 'http://local').searchParams.has('settings'))), { timeout: 30000 }).toBe(true)
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible({ timeout: 15000 })
   return page
 }
 for (const fault of ['fresh-start', 'missing-key', 'deleted-key', 'locked-key', 'denied-key', 'corrupt-key', 'incomplete-config', 'remote-token-absent', 'remote-outage', 'boot-timeout', 'port-conflict']) {
