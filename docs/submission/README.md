@@ -17,6 +17,7 @@ progress since SingHacks. Every file here is written to that brief. Facts as of
 | [demo-video-script.md](demo-video-script.md) | 9-shot, 2:50 video for the owner to record |
 | [pitch-2min.md](pitch-2min.md) | 2:00 pitch script with timing marks, plus a 3-minute variant |
 | [qa-prep.md](qa-prep.md) | numbers card and 20 hard questions from the R / P / Y judges |
+| [compliance-slide.md](compliance-slide.md) | one-slide compliance summary for the deck; the full map is [COMPLIANCE.md](../COMPLIANCE.md) |
 
 ## Owner checklist
 

@@ -1,4 +1,69 @@
-# Compliance posture
+# Compliance map: what a regulated deployment would need, and what we have
+
+**Status in one line:** a Testnet prototype with strong *controls and evidence*
+and no *licences, screening providers, KYB or key custody*. Nothing here is
+legal advice or has been reviewed by a regulator or lawyer. Mainnet is blocked
+in code ([`shared/xrpl.ts:13-16`](../shared/xrpl.ts): only `*.rippletest.net`
+hosts are accepted). Writers, articles and TEST-SGD are fictional or
+substitutes, and labelled as such. "Built" means implemented and tested in this
+repository, never approved by anyone.
+
+**How to read it.** Each row names a need, then what exists (with the file or
+doc that implements it), then what is **not done**. Statements about law are
+marked **Source** (a regulator's page, listed at the end) or
+**Interpretation** (our reading, for counsel to confirm). We invent no
+requirements.
+
+| Area | What a regulated deployment would need | Built today (cited) | Not done / would need |
+|---|---|---|---|
+| **Custody of keys** | Payer and writer signing keys in a KMS or HSM, a RegularKey with the master key offline, multisig for a treasury, rotation, access logs | Keys stay server-side and out of logs, audit rows and the browser: seed read in one place ([`server/xrpl.ts:36`](../server/xrpl.ts)), scrubbed from telemetry ([`server/telemetry.ts:12`](../server/telemetry.ts)), refused by the audit writer ([`server/audit.ts:31-39`](../server/audit.ts)). Agents hold scoped bearer tokens, never the payer key ([`server/agent-keys.ts`](../server/agent-keys.ts)) | Today the payer seed is an env var and writer seeds sit in a 0600 file: **no KMS/HSM, rotation, access log or recovery** ([Key custody](#key-custody)). Hire-the-agent is receive-and-forward, so "we never hold funds" is false for it ([Custody](#custody-what-we-never-hold-funds-means)) |
+| **Spending authority and limits** | A limit set by the operator, enforced outside the model, with pause and revoke | Per-prompt budget max S$5, S$1 per source ([`shared/contracts/run.ts:19`](../shared/contracts/run.ts)); S$20 per wallet per UTC day, default 2000 minor units ([`server/spend-policy.ts:11`](../server/spend-policy.ts), enforced at [`server/store.ts:501`](../server/store.ts)); pause ([`server/store.ts:500`](../server/store.ts)); per-agent caps and revoke ([`server/agent-keys.ts`](../server/agent-keys.ts)); only policy code starts a purchase ([`server/purchases.ts`](../server/purchases.ts)); audit rules `purchase_without_policy`, `over_budget`, `agent_authority` ([`scripts/gate-audit.ts:14`](../scripts/gate-audit.ts)) | Limits are single-operator config, not a maker-checker workflow; no per-counterparty or velocity limits; no cap on *aggregate* exposure to one writer; no approval tiers above the cap |
+| **Audit retention and tamper evidence** | Append-only record of who authorised each spend, independently checkable, retained for the statutory period | Hash-chained `audit_log`, written in the same SQLite transaction as the state change ([`server/audit.ts:58-59`](../server/audit.ts) append-only triggers; [`:101`](../server/audit.ts) `verifyChain`; [`:124`](../server/audit.ts) `--expect-head` pin); money-table cross-check; CSV/JSONL export ([`scripts/audit-export.ts`](../scripts/audit-export.ts)). **Anchored heads:** each finished answer, including a refusal to buy, writes its audit head into an XRPL memo ([`server/anchor.ts:36,44`](../server/anchor.ts), [`server/xrpl.ts:99-100`](../server/xrpl.ts), format in [receipt-spec](receipt-spec.md#xrpl-anchor-v1)); the offline verifier checks head, run and answer commitment ([`sdk/verify.ts:58-60`](../sdk/verify.ts)). Writer-side settlement journal ([`publisher/journal.ts`](../publisher/journal.ts)). Ten rules in `npm run gate:audit` ([`scripts/gate-audit.ts:14`](../scripts/gate-audit.ts)) | Chain is not signed; someone with the database *and* the code can rebuild it ([What the chain does not prove](#audit-trail)). Anchors are on Testnet, which resets, so they are not durable evidence. No WORM storage, backups or off-box copy of the head. **Retention periods are unanswered** (a legal question). `audit:verify` does not itself check anchors; `verify:answer --ledger` does |
+| **Sanctions screening** | A screening provider (lists, fuzzy match, ongoing monitoring) called before any payment, fail-closed | **A hook only.** An operator denylist of exact XRPL addresses, checked before signing for article purchases ([`server/purchases.ts:106`](../server/purchases.ts)), escrow ([`server/escrow.ts:33`](../server/escrow.ts)), SDK x402 pays ([`sdk/x402.ts:45`](../sdk/x402.ts)), hire payouts ([`server/hire/service.ts:74,79`](../server/hire/service.ts)) and writer publishing ([`publisher/publishing/publish.ts:53`](../publisher/publishing/publish.ts)). Implementation and the fail-closed rule: [`server/payee-screening.ts:15-22`](../server/payee-screening.ts); test: `tests/audit.test.ts:256-264` | **No sanctions screening exists.** No provider, no list feed, no fuzzy or owner-level matching, no ongoing re-screening of past payees, a hire caller's *inbound* payment is not screened at all (only payouts, including caller refunds, are) |
+| **KYB/KYC for writers** | Know who is being paid: business verification, beneficial owners, then a way to gate payees on it | Writers are labelled "unverified writer" unless an XRPL Credential from an operator-trusted issuer is accepted on ledger: CredentialCreate/Accept ([`publisher/publishing/credential.ts:34-37`](../publisher/publishing/credential.ts)), read-only check pinned to a validated ledger ([`docs/writer-verification.md`](writer-verification.md)). Status is advisory display; it never changes who can be paid | **No KYB or KYC is performed**; "the engine does not perform KYC" ([writer-verification](writer-verification.md#issuer-runbook)). No onboarding workflow, no credential-gated payouts, **no XRPL Permissioned Domains** (zero code references; the amendment is live on mainnet per [xrpl.org](https://xrpl.org/docs/references/protocol/transactions/types/permissioneddomainset)). A credential is not a compliance decision |
+| **Refunds and disputes** | A defined remedy for non-delivery or a bad delivery, with a record | Key-reveal escrow: the writer is paid only by publishing the decryption key on ledger; no finish means the buyer's policy cancels after `CancelAfter` ([key-reveal-escrow](key-reveal-escrow.md#recovery-and-fraud), policy submits EscrowCancel, [`server/escrow.ts:156`](../server/escrow.ts)). A failed passage proof can be challenged and the writer signs a refund payment, written once ([`publisher/challenge.ts:20`](../publisher/challenge.ts), route [`publisher/routes.ts:247`](../publisher/routes.ts)). Refunds never restore spending authority; audit rules `escrow_finish_without_verified_proof`, `money_chain_reconciliation` | Refunds depend on the writer cooperating (labelled so in the audit rule `missing_rail_label`). **Cooperative, not enforceable**: no arbitration, no loss allocation, no chargeback right ([Disputes gap](BUILDER-FEEDBACK.md#mainnet-readiness-checklist)). Truth of content is not adjudicated |
+| **Data protection** | Collect little, keep it briefly, delete on request, say what is logged | No PII is collected: no accounts or emails; questions are stored in the run and as a **salted hash** in the audit log, never on the ledger ([`server/audit.ts:31-39`](../server/audit.ts) rejects question, seed, token and body keys). `npm run data:prune` deletes bodies, salts, events and question text and keeps receipts and the chain ([`server/retention.ts`](../server/retention.ts)). Detail: [Data and retention](#data-and-retention) | Nothing prunes automatically. No encryption at rest, backups or access control on `app.db` (operator's job). No deletion-request flow. Public Langfuse traces carry question text if enabled. No data-protection assessment (e.g. Singapore PDPA) was done |
+| **Singapore: MAS Payment Services Act, DPT** | Work out whether the service is a licensable payment service and which licence | Controls above (limits, audit, screening hook) are the kind a licensee must evidence. **Source:** MAS regulates digital payment token services under the PS Act and treats stablecoins outside its own framework as DPTs ([MAS 2026 stablecoin consultation](https://www.mas.gov.sg/news/media-releases/2026/mas-consults-on-legislative-amendments-to-implement-stablecoin-regulatory-framework)); merely accepting DPTs without intending to transmit or arrange transfers is not enough to trigger licensing (MAS PS Act FAQ, [April 2024](https://www.mas.gov.sg/-/media/mas-media-library/regulation/faqs/pd/faqs-on-payment-services-act-2019/payment-services-act-faq--19-april-2024.pdf)); since 30 Jun 2025 providers of digital token services *solely to customers outside Singapore* also need a licence, which MAS says it will generally not grant ([MAS](https://www.mas.gov.sg/news/media-releases/2025/mas-clarifies-regulatory-regime-for-digital-token-service-providers)) | **No licence, no legal opinion.** **Interpretation (unconfirmed):** research purchases pay from the operator's own wallet, which looks unlike a service to others; hire-the-agent (receive, forward royalties, return change) is the case most likely to be a transfer or custody service. Questions for MAS or counsel are listed below |
+| **US: GENIUS Act, stablecoin issuer** | If a stablecoin such as RLUSD is the settlement asset, understand that the *issuer* carries the licensing, reserve and AML duties, and what that means for freeze, clawback and redemption | We record the issuer's flags rather than assume them: on 3 Nov the documented Testnet RLUSD issuer had AllowTrustLineClawback on and escrow locking off ([Stablecoin issuer controls](#stablecoin-issuer-controls)); the demo uses a labelled stand-in, TEST-SGD, with no value and no peg ([key-reveal-escrow](key-reveal-escrow.md#threat-model-and-limits)). Before signing, policy checks issuer, trust line, freeze and authorisation state. **Source:** the GENIUS Act is Public Law 119-27 (18 Jul 2025) ([Congress.gov](https://www.congress.gov/119/plaws/publ27/PLAW-119publ27.pdf)); Treasury and FinCEN/OFAC have proposed rules requiring permitted issuers to adopt AML and sanctions programmes ([Treasury, 8 Apr 2026](https://home.treasury.gov/news/press-releases/sb0435)) | **Official RLUSD escrow does not work** until its issuer enables AllowTrustLineLocking; no redemption, FX or peg claim; mainnet issuer behaviour unmeasured. We are a *user* of an issuer's token, not an issuer, so issuer duties are not ours; whether receive-and-forward makes us a money transmitter is **Interpretation**, for counsel. Final rule status and effective dates must be checked at Treasury; we have not tracked them |
+| **Travel Rule** | Originator and beneficiary information must accompany transfers by a regulated provider, with identity checks above a threshold | Not implemented. Per-article payments are S$0.05 to S$1. **Source:** FATF lets countries set a de minimis threshold of at most USD/EUR 1,000 for virtual-asset transfers, and *below* it still expects originator and beneficiary names and a wallet address or reference ([FATF](https://www.fatf-gafi.org/content/dam/fatf-gafi/guidance/Updated-Guidance-VA-VASP.pdf)); MAS notice PSN02 requires four data items at or below S$1,500 and identity verification above it, for licensed DPT providers ([MAS PSN02](https://www.mas.gov.sg/-/media/amld-amendments---30-june-2025/mas-notice-psn02.pdf)) | **Small amounts are not an exemption** (an earlier version of this page implied thresholds that remove obligations; corrected below). No originator/beneficiary data capture, no aggregate monitoring, no structuring detection, no suspicious-activity reporting. **Interpretation:** it applies only if a regulated provider is in the chain, which depends on the licensing answer above |
+| **Mainnet readiness** | Operating, security and compliance sign-off | Testnet restriction in code; per-control checklist with a status for each ([BUILDER-FEEDBACK](BUILDER-FEEDBACK.md#mainnet-readiness-checklist)): decision is **GAP — Testnet demonstration only**. Merge gate described in [`docs/contracts/local-gate.md`](contracts/local-gate.md) (offline fixtures, not mainnet evidence) | Open: KMS/HSM, price units and FX (#163), facilitator SLA, monitoring and alerts, backup and restore, independent security test, legal review, licensing |
+
+## The five hard gates, as a regulated deployment would read them
+
+| Gate | Control it gives a compliance officer | Enforced in | Checked after the fact by |
+|---|---|---|---|
+| No premium bytes before a grant | Content is not released until payment is validated | [`server/escrow.ts`](../server/escrow.ts), [key-reveal-escrow](key-reveal-escrow.md#gate-1-interpretation) | `premium_leak`, `citation_without_verified_grant` |
+| Budget is the only spending authorisation; only policy code purchases | The model cannot move money; limits are operator-set | [`server/purchases.ts`](../server/purchases.ts), [`server/spend-policy.ts`](../server/spend-policy.ts) | `purchase_without_policy`, `over_budget`, `agent_authority` |
+| One charge per intent | No duplicate payments; crash recovery reuses the same signed blob | [`server/store.ts`](../server/store.ts), [key-reveal-escrow](key-reveal-escrow.md#recovery-and-fraud) | `duplicate_settlement`, `money_chain_reconciliation` |
+| Real citations | Every claim traces to a delivered, hashed passage | [receipt-spec](receipt-spec.md) | `citation_without_verified_grant`, offline `verify:answer` |
+| Anything simulated or substituted is labelled | A reader cannot mistake Testnet or fixtures for production | [`shared/contracts/publisher.ts`](../shared/contracts/publisher.ts) labels | `missing_rail_label` |
+
+`npm run gate:audit -- --db <store>` runs all ten rules read-only against a
+database ([`scripts/gate-audit.ts:14`](../scripts/gate-audit.ts)); it exits 1 on a
+violation. Design record: [FINAL-PUSH §12](FINAL-PUSH.md).
+
+## Questions to put to MAS or counsel (not answers)
+
+1. Does paying writers from the operator's own wallet, on a user's behalf, amount to a payment service, or is it the operator's own purchase?
+2. Does hire-the-agent (receive, forward royalties, return change) make us a DPT transfer or custody service, and would safeguarding apply?
+3. Are XRP and an issued stablecoin both "digital payment tokens" for this flow, and does that change if the stablecoin is MAS-regulated or recognised later?
+4. Which of the Travel Rule data items must we collect for S$0.05 to S$1 transfers, and from whom, if a licensed provider sits in the chain?
+5. What retention period applies to receipts and the audit chain, and does an XRPL memo count as a record we may rely on?
+6. Which sanctions lists and screening standard must a payee check meet, and is exact-address matching ever enough?
+
+## Sources used for regulatory statements
+
+- MAS, [Payment Services Act page](https://www.mas.gov.sg/regulation/acts/payment-services-act) and [FAQ, April 2024](https://www.mas.gov.sg/-/media/mas-media-library/regulation/faqs/pd/faqs-on-payment-services-act-2019/payment-services-act-faq--19-april-2024.pdf); [Notice PSN02 (DPT AML/CFT), revised 30 June 2025](https://www.mas.gov.sg/-/media/amld-amendments---30-june-2025/mas-notice-psn02.pdf); [Digital token service providers, 2025](https://www.mas.gov.sg/news/media-releases/2025/mas-clarifies-regulatory-regime-for-digital-token-service-providers); [stablecoin amendments consultation, 2026 (draft; may change)](https://www.mas.gov.sg/news/media-releases/2026/mas-consults-on-legislative-amendments-to-implement-stablecoin-regulatory-framework).
+- FATF, [Updated Guidance on virtual assets and VASPs](https://www.fatf-gafi.org/content/dam/fatf-gafi/guidance/Updated-Guidance-VA-VASP.pdf) and the [June 2025 Recommendation 16 update](https://www.fatf-gafi.org/en/publications/Fatfrecommendations/update-Recommendation-16-payment-transparency-june-2025.html).
+- US: [GENIUS Act, P.L. 119-27](https://www.congress.gov/119/plaws/publ27/PLAW-119publ27.pdf); Treasury, [FinCEN/OFAC proposed rule, 8 Apr 2026](https://home.treasury.gov/news/press-releases/sb0435) and [licensing proposal](https://home.treasury.gov/news/press-releases/sb0605). Proposals can change; check final status before relying on them.
+- XRPL: [PermissionedDomainSet](https://xrpl.org/docs/references/protocol/transactions/types/permissioneddomainset), [XLS-80](https://xls.xrpl.org/xls/XLS-0080-permissioned-domains.html); [RLUSD on the XRPL](https://docs.ripple.com/products/stablecoin/developer-resources/rlusd-on-the-xrpl) (issuer addresses only; we make no claim about the issuer's regulatory status).
+
+Regulatory pages were read on 10 Nov 2026 through search summaries, not the full
+legal text; confirm paragraph-level wording before relying on any of it.
+
+---
+
+## Detailed posture
 
 ResearchAgent is a **Testnet prototype**. It is not a regulated payment service,
 nothing here is legal advice, and no part of it has been reviewed by a regulator
@@ -93,9 +158,14 @@ That database predates the log, so its five receipts are listed in the
 database written by this version, coverage counts every receipt, signed
 payment and refund.
 
-**What the chain does not prove.** It is not signed and not externally
-timestamped. Someone with write access to the database *and* the code can
-rebuild a whole new valid chain. Cutting off the newest entries is caught by
+**What the chain does not prove.** The chain itself is not signed. Since
+the current release (v1.0.2), each finished Testnet answer also writes its audit head into an XRPL
+memo ([anchor-v1](receipt-spec.md#xrpl-anchor-v1)), which gives *that head* an
+external ledger timestamp; `verify:answer --ledger` checks it. `audit:verify`
+does not read anchors, simulated runs have none, and Testnet is reset
+periodically, so an anchor is not durable evidence. Someone with write access
+to the database *and* the code can rebuild a whole new valid chain.
+Cutting off the newest entries is caught by
 the SQLite counter and by pinning the head you saw earlier
 (`audit:verify --expect-head <hash>`; record it somewhere the database owner
 cannot write). Receipts are independently checkable against the ledger. A
@@ -141,12 +211,21 @@ and seed to the Keychain. Never put a seed in an issue, a log or an audit entry.
 
 ## KYC / AML, Travel Rule
 
-None of it is implemented. For the record, as we understand the thresholds (to
-be confirmed by counsel): the FATF Travel Rule applies from USD/EUR 1,000, and
-Singapore's MAS from S$1,500 for digital payment token transfers. Per-article
-payments (S$0.05 to S$1) sit far below both, but that is not an exemption:
-aggregate monitoring across a customer, structuring detection and suspicious
-activity reporting would be needed on mainnet, and we do not have them.
+None of it is implemented. Correction (10 Nov): an earlier version said the
+Travel Rule "applies from" USD/EUR 1,000 and S$1,500, as if smaller amounts
+were out of scope. The sources say otherwise. FATF allows countries a de minimis
+threshold of at most USD/EUR 1,000 for virtual-asset transfers, but below it a
+provider should still collect originator and beneficiary names and a wallet
+address or reference. MAS Notice PSN02 requires four data items at or below
+S$1,500 and identity verification above it, for licensed digital payment token
+service providers ([FATF](https://www.fatf-gafi.org/content/dam/fatf-gafi/guidance/Updated-Guidance-VA-VASP.pdf),
+[MAS PSN02](https://www.mas.gov.sg/-/media/amld-amendments---30-june-2025/mas-notice-psn02.pdf);
+we read them via search summaries, so confirm the paragraphs). Per-article
+payments (S$0.05 to S$1) sit far below both thresholds, which affects what is
+verified, not whether data is collected. **Interpretation:** the rule binds
+regulated providers, so whether it reaches us depends on the licensing answer
+in the map above. We have no originator/beneficiary capture, aggregate
+monitoring, structuring detection or suspicious-activity reporting.
 
 ## Stablecoin issuer controls
 
@@ -214,7 +293,7 @@ not retained. Audit verification checks cancellation-to-refund coverage.
 - That ResearchAgent is licensed, registered or approved in any jurisdiction.
 - That Testnet receipts are financial records, or that XRPL Testnet is durable (it is reset periodically).
 - Sanctions screening, KYC, KYB, AML monitoring, or Travel Rule compliance.
-- That the audit chain is immutable or notarised; it is tamper-evident to the extent above.
+- That the audit chain is immutable or notarised; it is tamper-evident to the extent above (anchored heads are Testnet-only).
 - That "we never hold funds" holds for hire-the-agent.
 - That the denylist is complete, or that a clean `audit:verify` means a payment was lawful or the writer honest.
 - That the fixture-labelled and SIMULATED parts of a run (planner, search mode, decision model, ledger) are live.
