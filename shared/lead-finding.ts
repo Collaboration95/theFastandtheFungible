@@ -43,6 +43,9 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   const capability = /^(?:is|are|can|does|do|will|has|have)\b/i.test(firstFact)
   const naming = /^(?:which|what)\b/i.test(firstFact)
   const fieldValue = naming && /\b(?:field|flag|header|setting|permission)s?\b/i.test(firstFact)
+  const latest = /\b(?:last|latest|recent|recently|today|current(?:ly)?)\b/i.test(firstFact)
+  const yearLimit = new Date().getUTCFullYear()
+  const latestYear = Math.max(0, ...claims.flatMap(c => (c.text.match(/\b20\d{2}\b/g) ?? []).map(Number)).filter(year => year <= yearLimit))
   const transactionName = (name: string) => /(?:Create|Finish|Cancel|Set|Delete|Deposit|Withdraw|Bid|Vote|Accept|Fund|Claim|Cash)$|^Set[A-Z]/.test(name)
   const ranked = claims.flatMap((claim, ci) => {
     const context = words(claim.text)
@@ -69,6 +72,12 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     let score = overlap / Math.max(1, terms.length) * 20 + contextOverlap / Math.max(1, terms.length) * 4
     score += semanticOverlap / Math.max(1, expanded.length) * 8
     score += primary.filter(term => tokens.includes(term)).length / Math.max(1, primary.length) * 12
+    if (latest) {
+      const year = Math.max(0, ...(text.match(/\b20\d{2}\b/g) ?? []).map(Number).filter(y => y <= yearLimit))
+      if (year) score += Math.max(0, 20 - (latestYear - year) * 12)
+      if (/\b(?:next|scheduled|forecast|projected|expected|planned)\b/i.test(text)) score -= 20
+    }
+    if (/\bmeeting\b/i.test(firstFact) && /\b(?:vote|voted|members?|meeting)\b/i.test(text)) score += 12
     const named = firstRequirement?.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/g) ?? []
     score += tokens.filter(t => titleTerms.includes(t) && primary.includes(t)).length * 2
     if (causal) {

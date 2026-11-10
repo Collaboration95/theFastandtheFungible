@@ -399,6 +399,7 @@ describe('fixture-mode use cases, end to end (#142)', () => {
     expect(run.answers[0].openGaps).toEqual([])
     expect(run.intents).toEqual([])
     expect(run.spentMinor).toBe(0)
+    expect(run.answers.at(-1)?.lead?.[0]?.text).toMatch(/policy rate.*25 bp|25 bp.*policy rate/)
     expect(run.phase).toBe('DONE')
     expect(run.events.find(e => e.type === 'SEARCH' && e.data)?.data).toMatchObject({ searchMode: 'keyword only (embeddings unavailable)', perPublisher: { 'open-records': expect.any(Number) } })
   }, 30_000)
@@ -419,6 +420,7 @@ describe('fixture-mode use cases, end to end (#142)', () => {
     // AlphaLeak's 0.96 is now truly inflated against absolute relevance, so it wins round 1 on value per S$.
     expect(run.decisions[0].selectedResourceId).toBe(round1)
     expect(bought(run)).toEqual([`${round1}:REFUNDED`, `${round2}:VERIFIED`])
+    expect(run.answers.at(-1)?.lead?.[0]?.text).toContain('from 26 weeks to 18 weeks')
     const types = run.events.map(e => e.type)
     for (const type of ['SEARCH', 'PROOF', 'CHALLENGE', 'REFUND', 'REPUTATION']) expect(types).toContain(type)
     expect(types.indexOf('REFUND')).toBeLessThan(types.lastIndexOf('BUY'))
