@@ -13,7 +13,7 @@
 :root {
   color-scheme: light;
   --paper: #FBF8F2; --sheet: #FFFFFF; --mist: #EEF0F5; --rule: #E8E2D8; --rule-2: #CDD2DE;
-  --ink: #24211E; --ink-2: #24211E; --muted: #655D55; --faint: #8A90A3;
+  --ink: #24211E; --ink-2: #24211E; --muted: #655D55; --faint: #655D55;
   --pen: #24211E; --pen-deep: #1E2FD0; --pen-wash: #ECEEFF; --pen-wash-2: #D7DCFF;
   --hi: #F3EEE4; --ok: #0B7A50; --ok-bright: #2F6B4F; --ok-wash: #E3F5EC;
   --pay: #24211E; --pay-ink: #B83B0A; --bad: #C8312B; --bad-wash: #FDECEA;
@@ -181,26 +181,22 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 @media(prefers-reduced-motion:no-preference) { .sff-day.sff-enter {  } }
 
 </style>
-<!-- brand:start -->
-<meta name="description" content="Built in public. Measured in receipts.">
-<meta name="theme-color" content="#FBF8F2">
-<link rel="icon" type="image/svg+xml" href="../brand/favicon.svg">
-<link rel="icon" sizes="16x16 32x32 48x48" href="../brand/favicon.ico">
-<link rel="apple-touch-icon" href="../brand/apple-touch-icon.png">
+<!-- site-meta:start -->
+<meta name="description" content="The September–October build archive. For the current finals story, follow Progress since SingHacks.">
+<link rel="icon" href="../brand/favicon.svg">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="ResearchAgent">
-<meta property="og:title" content="ResearchAgent · Evolution">
-<meta property="og:description" content="Built in public. Measured in receipts.">
+<meta property="og:title" content="How ResearchAgent evolved · SFF build log">
+<meta property="og:description" content="The September–October build archive. For the current finals story, follow Progress since SingHacks.">
 <meta property="og:url" content="https://collaboration95.github.io/theFastandtheFungible/evolution/">
 <meta property="og:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/evolution.png">
+<meta property="og:image:alt" content="How ResearchAgent evolved · SFF build log">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ResearchAgent · Evolution — Built in public. Measured in receipts.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ResearchAgent · Evolution">
-<meta name="twitter:description" content="Built in public. Measured in receipts.">
+<meta name="twitter:title" content="How ResearchAgent evolved · SFF build log">
+<meta name="twitter:description" content="The September–October build archive. For the current finals story, follow Progress since SingHacks.">
 <meta name="twitter:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/evolution.png">
-<!-- brand:end -->
+<!-- site-meta:end -->
 </head>
 <body>
 <!-- site-header:start -->
@@ -220,14 +216,15 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 .ra-hdr-end a:hover{color:#24211E}
 .ra-hdr-note{font-family:Geist,system-ui,sans-serif;font-size:12px;color:#655D55;white-space:nowrap}
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
-.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh,.ra-hdr-end a:last-child{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
 @media print{.ra-hdr{display:none}}</style>
 <div class="ra-hdr" role="banner"><div class="ra-hdr-in">
 <a class="ra-hdr-brand" href="../index.html" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
-<nav aria-label="Explainers"><a href="../demo/">Try it</a><a href="../index.html">Explainers</a><a href="../progress/">Progress</a><a href="../talk/">Walkthrough</a><a href="../slides/">Slides</a><a href="../project-map/">Project map</a><a href="../ledger/">Ledger ✓</a><a href="../evolution/" aria-current="page">October log</a></nav>
-<div class="ra-hdr-end"><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
+<nav tabindex="0" aria-label="Explainers · scroll for more pages"><a href="../index.html">Home</a><a href="../demo/">Replay</a><a href="../talk/#key-reveal">How it works</a><a href="../developers/">Developers</a><a href="../proof/">Proof</a><a href="../progress/">Progress</a><a href="../builder-feedback/">Builder feedback</a><a href="../ledger/">Ledger ✓</a><a href="../project-map/">Project map</a><a href="../evolution/" aria-current="page">October log</a><a href="../slides/">Slides</a></nav>
+<div class="ra-hdr-end"><a class="ra-live" href="https://ra-front-651013803640.asia-southeast1.run.app">Try it live</a><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
 </div></div>
 <!-- site-header:end -->
 
@@ -265,7 +262,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
         <div class="big"><span class="num" data-n="prompts">0</span><span class="cap">prompts to the agents</span></div>
         <div class="big"><span class="num" data-n="tokens">0</span><span class="cap">tokens processed</span></div>
       </div>
-      <div class="chart"><div class="sc"><svg viewBox="0 0 1000 294" data-svg role="img" aria-label="Commits per day above the line and prompts to coding agents per day below it, 3 September to 11 October 2026, with twelve milestones"></svg></div><div class="tip" data-tip></div></div>
+      <div class="chart"><div class="sc" tabindex="0" role="region" aria-label="Commits per day above the line and prompts to coding agents per day below it, 3 September to 11 October 2026, with twelve milestones · scroll horizontally"><svg viewBox="0 0 1000 294" data-svg role="group" aria-label="Commits per day above the line and prompts to coding agents per day below it, 3 September to 11 October 2026, with twelve milestones"></svg></div><div class="tip" data-tip></div></div>
       <div class="ticker" data-ticker aria-live="polite"><div class="n" data-tn>12</div><div><div class="what" data-tw></div><div class="when" data-tt></div></div></div>
     </div>
     <p class="foot">Bars above the line: <b>commits per day</b> on any branch. Bars below: <b>prompts typed to the coding agents</b> per day. Numbered dots are milestones; click one to jump there, or drag across the chart to scrub. The shaded band is the final push, 4 to 11 Oct, drawn wider so its days are readable; the replay slows down there.</p>
@@ -282,7 +279,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   <div class="panel" id="w-agents">
     <div class="panel-in">
       <div class="ph"><div class="tag">Prompts per day, by agent</div><button class="replay" data-replay type="button">▶ replay</button></div>
-      <div class="chart"><div class="sc"><svg viewBox="0 0 1000 250" data-svg role="img" aria-label="Prompts per day to Codex and to Claude Code"></svg></div><div class="tip" data-tip></div></div>
+      <div class="chart"><div class="sc" tabindex="0" role="region" aria-label="Prompts per day to Codex and to Claude Code · scroll horizontally"><svg viewBox="0 0 1000 250" data-svg role="img" aria-label="Prompts per day to Codex and to Claude Code"></svg></div><div class="tip" data-tip></div></div>
       <div class="legend"><span style="--c:var(--codex)">Codex</span><span style="--c:var(--claude)">Claude Code</span></div>
       <div class="stats4" data-agentstats></div>
       <div class="two">
@@ -304,7 +301,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   <div class="panel" id="w-clock">
     <div class="panel-in">
       <div class="ph"><div class="tag">Activity by hour · SGT</div><div class="r"><div class="seg" role="group" aria-label="Measure"><button type="button" data-m="commits" aria-pressed="true">Commits</button><button type="button" data-m="prompts" aria-pressed="false">Prompts</button></div><button class="replay" data-replay type="button">▶ replay</button></div></div>
-      <div class="chart"><div class="sc"><svg viewBox="0 0 1000 378" data-svg role="img" aria-label="Heatmap of activity by day and hour"></svg></div><div class="tip" data-tip></div></div>
+      <div class="chart"><div class="sc" tabindex="0" role="region" aria-label="Heatmap of activity by day and hour · scroll horizontally"><svg viewBox="0 0 1000 378" data-svg role="img" aria-label="Heatmap of activity by day and hour"></svg></div><div class="tip" data-tip></div></div>
       <div class="legend" data-scale></div>
     </div>
     <p class="foot">One cell is one hour of one day. Commits count every branch; prompts count both agents. Hover a cell for its count.</p>
@@ -321,7 +318,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   <div class="panel" id="w-shape">
     <div class="panel-in">
       <div class="ph"><div class="tag">Lines in the main branch, end of each day</div><button class="replay" data-replay type="button">▶ replay</button></div>
-      <div class="chart"><div class="sc"><svg viewBox="0 0 1000 330" data-svg role="img" aria-label="Stacked area of lines of code by area of the repository, per day"></svg></div><div class="tip" data-tip></div></div>
+      <div class="chart"><div class="sc" tabindex="0" role="region" aria-label="Stacked area of lines of code by area of the repository, per day · scroll horizontally"><svg viewBox="0 0 1000 330" data-svg role="img" aria-label="Stacked area of lines of code by area of the repository, per day"></svg></div><div class="tip" data-tip></div></div>
       <div class="legend" data-legend></div>
       <div class="stats4" data-shapestats></div>
     </div>
@@ -345,7 +342,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
         <div class="big"><span class="num" data-n="del">0</span><span class="cap">lines deleted</span></div>
         <div class="big"><span class="num" data-n="med">0</span><span class="cap">median open → merge</span></div>
       </div>
-      <div class="chart"><div class="sc"><svg viewBox="0 0 1000 480" data-svg role="img" aria-label="Gantt chart of 23 pull requests opened and merged on the night of 7 October"></svg></div><div class="tip" data-tip></div></div>
+      <div class="chart"><div class="sc" tabindex="0" role="region" aria-label="Gantt chart of 23 pull requests opened and merged on the night of 7 October · scroll horizontally"><svg viewBox="0 0 1000 480" data-svg role="img" aria-label="Gantt chart of 23 pull requests opened and merged on the night of 7 October"></svg></div><div class="tip" data-tip></div></div>
     </div>
     <p class="foot">One row per pull request, from opened to merged; the dot marks the merge. The ticks along the bottom are CI runs: green passed, red failed. Real titles and times from GitHub; hover a row for the full title and its line counts.</p>
   </div>
@@ -385,7 +382,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
           <div class="legend"><span class="ln" style="--c:var(--s1)">Opened</span><span class="ln" style="--c:var(--s2)">Closed</span></div></div>
       </div>
       <h3 data-cih style="font:600 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:26px 0 0">Every CI run, 5 → 11 Oct</h3>
-      <div class="chart" style="margin-top:8px"><div class="sc"><svg viewBox="0 0 1000 96" data-ci role="img" aria-label="Every CI run as a tick, passed or failed"></svg></div><div class="tip" data-tip4></div></div>
+      <div class="chart" style="margin-top:8px"><div class="sc" tabindex="0" role="region" aria-label="Every CI run as a tick, passed or failed · scroll horizontally"><svg viewBox="0 0 1000 96" data-ci role="img" aria-label="Every CI run as a tick, passed or failed"></svg></div><div class="tip" data-tip4></div></div>
       <div class="legend"><span style="--c:var(--ok-bright)">✓ passed</span><span style="--c:var(--bad)">✕ failed</span></div>
     </div>
     <p class="foot">Test cases are <code>it(…)</code> and <code>test(…)</code> calls in test files on the main branch. The long red stretch on 7 Oct is the overnight run, which kept merging while CI failed; a one-line fix turned it green at 10:40.</p>

@@ -255,26 +255,22 @@ body.show-ov #ov { display: grid; }
 #dvd[hidden] { display: none; }
 #dvd svg { position: absolute; left: 0; top: 0; width: clamp(180px, 22vw, 380px); height: auto; color: var(--pen); cursor: pointer; will-change: transform; }
 </style>
-<!-- brand:start -->
-<meta name="description" content="Evidence. Policy. Payment.">
-<meta name="theme-color" content="#FBF8F2">
-<link rel="icon" type="image/svg+xml" href="../brand/favicon.svg">
-<link rel="icon" sizes="16x16 32x32 48x48" href="../brand/favicon.ico">
-<link rel="apple-touch-icon" href="../brand/apple-touch-icon.png">
+<!-- site-meta:start -->
+<meta name="description" content="Archived October AI Tinkerers presentation: research, evidence, spending policy and payment.">
+<link rel="icon" href="../brand/favicon.svg">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="ResearchAgent">
-<meta property="og:title" content="ResearchAgent · Slides">
-<meta property="og:description" content="Evidence. Policy. Payment.">
+<meta property="og:title" content="ResearchAgent · AIT talk">
+<meta property="og:description" content="Archived October AI Tinkerers presentation: research, evidence, spending policy and payment.">
 <meta property="og:url" content="https://collaboration95.github.io/theFastandtheFungible/slides/">
 <meta property="og:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/slides.png">
+<meta property="og:image:alt" content="ResearchAgent · AIT talk">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ResearchAgent · Slides — Evidence. Policy. Payment.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ResearchAgent · Slides">
-<meta name="twitter:description" content="Evidence. Policy. Payment.">
+<meta name="twitter:title" content="ResearchAgent · AIT talk">
+<meta name="twitter:description" content="Archived October AI Tinkerers presentation: research, evidence, spending policy and payment.">
 <meta name="twitter:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/slides.png">
-<!-- brand:end -->
+<!-- site-meta:end -->
 </head>
 <body>
 <!-- site-header:start -->
@@ -294,14 +290,15 @@ body.show-ov #ov { display: grid; }
 .ra-hdr-end a:hover{color:#24211E}
 .ra-hdr-note{font-family:Geist,system-ui,sans-serif;font-size:12px;color:#655D55;white-space:nowrap}
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
-.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh,.ra-hdr-end a:last-child{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
 @media print{.ra-hdr{display:none}}</style>
 <div class="ra-hdr" role="banner"><div class="ra-hdr-in">
 <a class="ra-hdr-brand" href="../index.html" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
-<nav aria-label="Explainers"><a href="../demo/">Try it</a><a href="../index.html">Explainers</a><a href="../progress/">Progress</a><a href="../talk/">Walkthrough</a><a href="../slides/" aria-current="page">Slides</a><a href="../project-map/">Project map</a><a href="../ledger/">Ledger ✓</a><a href="../evolution/">October log</a></nav>
-<div class="ra-hdr-end"><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
+<nav tabindex="0" aria-label="Explainers · scroll for more pages"><a href="../index.html">Home</a><a href="../demo/">Replay</a><a href="../talk/#key-reveal">How it works</a><a href="../developers/">Developers</a><a href="../proof/">Proof</a><a href="../progress/">Progress</a><a href="../builder-feedback/">Builder feedback</a><a href="../ledger/">Ledger ✓</a><a href="../project-map/">Project map</a><a href="../evolution/">October log</a><a href="../slides/" aria-current="page">Slides</a></nav>
+<div class="ra-hdr-end"><a class="ra-live" href="https://ra-front-651013803640.asia-southeast1.run.app">Try it live</a><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
 </div></div>
 <!-- site-header:end -->
 <div id="stage">
@@ -520,7 +517,7 @@ body.show-ov #ov { display: grid; }
   <div class="cols" style="margin-top:36px">
     <div>
       <div class="plabel">The prompt · excerpt</div>
-<pre class="code"><span class="h"># Benchmark OpenAI Decisions vs Cloudflare
+<pre tabindex="0" aria-label="Code example" class="code"><span class="h"># Benchmark OpenAI Decisions vs Cloudflare
 # Clef on our buying decisions. Write it up.</span>
 
 Run unattended: decide, log why, keep going.
@@ -534,7 +531,7 @@ or grade the test data.</mark></pre>
     </div>
     <div>
       <div class="plabel">The pass mark · before the first call</div>
-<pre class="code"><span class="h">Switch from Clef-flash only if ALL hold:</span>
+<pre tabindex="0" aria-label="Code example" class="code"><span class="h">Switch from Clef-flash only if ALL hold:</span>
 
 1 · F1 higher by ≥ 0.05
 2 · Probabilities no less honest
@@ -753,8 +750,8 @@ or grade the test data.</mark></pre>
 
 <div id="hud"><span id="of" class="of" hidden>overflow</span><span id="num"></span></div>
 <div id="bar"></div>
-<div id="notesp"></div>
-<div id="ov" role="dialog" aria-label="All slides"></div>
+<div id="notesp" tabindex="0" role="region" aria-label="Speaker notes"></div>
+<div id="ov" tabindex="0" role="dialog" aria-label="All slides"></div>
 
 <div id="dvd" hidden>
   <svg viewBox="0 0 400 226" role="img" aria-label="TFTF">
