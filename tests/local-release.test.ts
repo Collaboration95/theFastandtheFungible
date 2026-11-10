@@ -1,5 +1,5 @@
 import { it, expect } from 'vitest'
-import { writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { join, resolve } from 'node:path'
 import { resources } from './helpers/resource-scope'
@@ -88,4 +88,41 @@ it('release dry-run refuses dirty, mismatched and lightweight tags before any bu
   expect(run().stderr).toContain('Tag/source changed')
   git('tag','-d','v1.2.3');git('tag','-a','v1.2.3','-m','fixture notes')
   expect(run().stderr).toContain('Tag/package version mismatch')
+})
+
+it('publication CLI refuses a failed acceptance child before pushing a tag or creating a release', () => {
+  // Isolated local Git remote and mocked CLI responses; no GitHub access.
+  const root=resources().tempDir('publisher-refusal-'), bin=join(root,'bin')
+  mkdirSync(bin);mkdirSync(join(root,'scripts'))
+  const env: NodeJS.ProcessEnv={...process.env,PATH:bin+':'+process.env.PATH}
+  for (const key of Object.keys(env)) if (key.startsWith('GIT_')) delete env[key]
+  const git=(...args:string[])=>execFileSync('git',args,{cwd:root,env,encoding:'utf8',stdio:'pipe'}).trim()
+  git('init','-q','-b','main');git('config','user.name','Fixture');git('config','user.email','fixture@example.invalid')
+  writeFileSync(join(root,'package.json'),JSON.stringify({version:'1.2.3'}))
+  writeFileSync(join(root,'.gitignore'),'remote.git/\n')
+  writeFileSync(join(bin,'npm'),`#!${process.execPath}
+console.log('local-gate: success; receipt '+process.cwd()+'/.git/fixture-gate.json')
+`,{mode:0o755})
+  writeFileSync(join(bin,'gh'),`#!${process.execPath}
+const fs=require('node:fs')
+if(process.argv[2]==='api' && process.argv[3].endsWith('/status')) {
+ fs.writeFileSync('.git/status-queried','fixture')
+ console.log(JSON.stringify({statuses:[{context:'local-gate',state:'success'}]}))
+} else {
+ fs.writeFileSync('.git/forbidden-gh-call',process.argv.slice(2).join(' '))
+ process.exit(99)
+}
+`,{mode:0o755})
+  writeFileSync(join(root,'scripts/final-acceptance.mjs'),"import {writeFileSync} from 'node:fs';writeFileSync('.git/acceptance-ran','fixture rejection');process.exit(9)\n")
+  git('add','.');git('commit','-qm','isolated refusal fixture');git('tag','-a','v1.2.3','-m','fixture notes')
+  git('init','--bare','-q',join(root,'remote.git'));git('remote','add','origin',join(root,'remote.git'));git('push','-q','origin','main')
+  const result=spawnSync(process.execPath,[resolve('scripts/release.mjs'),'publish','--tag','v1.2.3'],{cwd:root,env,encoding:'utf8'})
+  expect(result.status).not.toBe(0)
+  expect(result.stderr).toContain('Command failed:')
+  expect(existsSync(join(root,'.git/status-queried'))).toBe(true)
+  expect(existsSync(join(root,'.git/acceptance-ran'))).toBe(true)
+  expect(existsSync(join(root,'.git/forbidden-gh-call'))).toBe(false)
+  expect(existsSync(join(root,'dist/local-release/assets'))).toBe(false)
+  expect(git('ls-remote','--tags','origin','refs/tags/v1.2.3')).toBe('')
+  expect(git('status','--porcelain')).toBe('')
 })
