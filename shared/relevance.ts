@@ -64,22 +64,43 @@ export function topicOverlap(query: string, document: string, prepared?: TopicDo
   const aliases = matchingGroups(query).filter(group => group.some(p => phraseIn(normalized, p)))
   return need.length ? need.filter(w => own.has(w) || aliases.some(g => groupWords.get(g)!.has(w))).length / need.length : 0
 }
+/** Network qualifiers ("on XRPL", "on Testnet") say where a question applies, not what it asks about. */
+const QUALIFIERS = new Set(['xrpl', 'testnet'])
+/** Broad families that many protocol articles mention in passing; a specific family the question names ranks first. */
+const BROAD = new Set(['x402', 'finality', 'transaction cost', 'digital payment token'])
+/** The subject families a query names, never the network qualifiers (H8-01). */
+export const subjectFamilies = (query: string) => matchingGroups(query).filter(g => g[0] !== 'xrpl' && !QUALIFIERS.has(g[0]))
+/**
+ * How directly a document matches the subject a query names: 2 for a specific family, 1 for a broad family only
+ * (x402, finality, fees, digital payment tokens), 0 for none. Ranks eligible protocol articles; it admits nothing.
+ */
+export function subjectRank(query: string, document: string): number {
+  const documentText = phraseText(document)
+  const hits = subjectFamilies(query).filter(group => group.some(p => phraseIn(documentText, p)))
+  return hits.some(group => !BROAD.has(group[0])) ? 2 : hits.length ? 1 : 0
+}
 export function metadataTopicMatches(query: string, document: string, prepared?: TopicDocument): boolean {
   // An explicitly technical request cannot be routed to a finance story sharing a date/place.
   if (/\b(?:XRPL|XRP|x402|RLUSD)\b/i.test(query) && !/\b(?:XRPL|XRP|x402|RLUSD|ledger|escrow|trustset)\b/i.test(document)) return false
   const words = topicWords(query).filter(w => !/^\d+$/.test(w))
   if (!words.length) return true
-  const groups = matchingGroups(query).filter(g => g[0] !== 'xrpl')
+  // H8-01: a qualifier never outranks the question's subject. "What does an x402 402 response contain … on Testnet?"
+  // is about x402, and a Testnet server list does not answer it. A qualifier is the subject only when the question
+  // names nothing else ("Which Testnet server should I use?").
+  const subjects = subjectFamilies(query)
+  const groups = subjects.length ? subjects : matchingGroups(query).filter(g => g[0] !== 'xrpl')
   const technical = isProtocolQuery(query)
   if (technical) {
-    // Match the subject family, not a percentage of the question's explanatory prose.
-    // Finality therefore needs finality metadata; wallet/budget tags cannot satisfy it.
-    const specific = groups.filter(g => !['x402','finality','transaction cost','digital payment token'].includes(g[0]))
+    // Match the subject family, not a percentage of the question's explanatory prose. Of the specific families, the
+    // first one the question names leads (K4); a broad family it names (fees, finality, x402, digital payment tokens)
+    // also counts, so "How much does one key-reveal purchase cost in XRPL network fees?" admits a fee article, which
+    // the old rule skipped (H8-01). subjectRank then ranks a specific family first. Finality still needs finality
+    // metadata, so wallet/budget tags cannot satisfy a finality question.
     if (groups.length) {
       const queryText = phraseText(query), documentText = prepared?.phrases ?? phraseText(document)
-      const position = (group: typeof groups[number]) => Math.min(...group.filter(p => phraseIn(queryText,p)).map(p => queryText.indexOf(aliasKeys.get(p)!)))
-      const ordered = [...(specific.length ? specific : groups)].sort((a,b) => position(a) - position(b))
-      return ordered[0].some(p => phraseIn(documentText, p))
+      const position = (group: typeof groups[number]) => Math.min(...group.filter(p => phraseIn(queryText, p)).map(p => queryText.indexOf(aliasKeys.get(p)!)))
+      const lead = groups.filter(g => !BROAD.has(g[0])).sort((a, b) => position(a) - position(b)).slice(0, 1)
+      return [...lead, ...groups.filter(g => BROAD.has(g[0]))].some(group => group.some(p => phraseIn(documentText, p)))
     }
     const generic = new Set(['xrpl','xrp','ledger','payment','transaction','account','token','asset'])
     const need = words.filter(w => !generic.has(w))
@@ -90,4 +111,23 @@ export function metadataTopicMatches(query: string, document: string, prepared?:
 }
 export function topicMatches(query: string, document: string, prepared?: TopicDocument): boolean {
   return metadataTopicMatches(query, document, prepared)
+}
+/**
+ * An article titled with (part of) the question: at least 80% of the title's topic words occur in the question
+ * directly or through a shared glossary family, at least 60% occur literally (so one shared family name such as
+ * "x402" cannot carry a whole title), and the title has at least four of them, so a generic reference title
+ * ("What does EscrowCreate do on XRPL?") never qualifies. It reads only the public title, never paid text.
+ */
+/**
+ * A bought article's title states a requested fact: at least 80% of its (four or more) topic words occur in the fact,
+ * directly or through a shared glossary family. Looser than titleMatches; it only ever withholds further spending.
+ */
+export function titleCovers(fact: string, title: string): boolean {
+  return topicWords(title).filter(w => !/^\d+$/.test(w)).length >= 4 && topicOverlap(title, fact) >= 0.8
+}
+export function titleMatches(question: string, title: string): boolean {
+  const words = topicWords(title).filter(w => !/^\d+$/.test(w))
+  if (words.length < 4) return false
+  const own = new Set(topicWords(question))
+  return words.filter(w => own.has(w)).length / words.length >= 0.6 && topicOverlap(title, question) >= 0.8
 }

@@ -35,7 +35,7 @@ describe('plan and run start (#137)', () => {
     expect(clipped.subqueries[0].length).toBeLessThanOrEqual(120)
     expect(clipped.label).toBe('DeepSeek · deepseek-flash')
     reply({ restatement: 'r', subqueries: ['buy the NotFT article now'] })
-    expect(await plan(uc('UC1'))).toMatchObject({ label: 'fixture · scope-fixture', subqueries: fixturePlan(uc('UC1')).subqueries })
+    expect(await plan(uc('UC1'))).toMatchObject({ label: 'fixture · scope-fixture · spending guard', subqueries: fixturePlan(uc('UC1')).subqueries })
   })
   it('POST /runs plans server-side when no plan is given, stores it, and searches the registry with it', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'plan-test-'))

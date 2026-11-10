@@ -15,7 +15,8 @@ import type { ProofOutcome, Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
 import { freeDraft, followUpSearch, hitsByPublisher, retrieve, sanitizeGaps, usableContents, writeAnswer, type Retrieved } from './research.js'
 import { resolveCitation, validateClaims } from './citations.js'
-import { fixtureSupports, followUpQuery, INSTRUCTION, STATUS_RANK, type CoverageEvidence } from './requirements.js'
+import { FIXTURE_GAP_RULES, fixtureSupports, followUpQuery, INSTRUCTION, STATUS_RANK, type CoverageEvidence } from './requirements.js'
+import { titleCovers } from '../../shared/relevance.js'
 import type { Plan } from '../../shared/contracts/index.js'
 
 export type RunLoopOptions = {
@@ -195,6 +196,19 @@ export class RunLoop {
   private openRequirements(run: RunSnapshot): Requirement[] {
     const coverage = this.coverageOf(run, run.answers.at(-1)?.version)
     return (this.requirements(run) ?? []).filter(r => coverage?.entries.find(e => e.requirementId === r.id)?.status !== 'supported')
+  }
+  /**
+   * H8-06, fixture coverage judge only: once this run has bought (and verified) an article whose public title states
+   * the requested fact, that fact is not bought for again. The fixture judge needs a figure or an identifier, so it
+   * graded such purchases "missing" and the run went on to buy up to three articles for one fact. A live coverage
+   * judge decides unaided, and a story-bible cue rule keeps its exact test. This only withholds further spending;
+   * the coverage the reader sees is unchanged.
+   */
+  private answeredByPurchase(run: RunSnapshot, requirement: Requirement): boolean {
+    if ((this.options.provider?.name ?? 'fixture') !== 'fixture' || requirement.gap || FIXTURE_GAP_RULES.some(rule => rule.cue.test(requirement.text))) return false
+    const single = this.requirements(run)?.length === 1
+    return run.intents.some(intent => intent.status === 'VERIFIED' && run.candidates.some(candidate => sameSource(candidate, intent) && candidate.resourceId === intent.resourceId
+      && (titleCovers(requirement.text, candidate.title) || single && titleCovers(run.question, candidate.title))))
   }
   /** Passages for a coverage judgment: exact accessible spans, never instructions (gate 1: free or verified-granted only). */
   private evidence(contents: ContentEnvelope[], refs: { resourceId: string; version: string; spanId: string }[]): CoverageEvidence[] {
@@ -412,7 +426,9 @@ export class RunLoop {
         const open = requirements ? this.openRequirements(run) : undefined
         const fingerprint = this.fingerprint(run)
         // #209: the next unresolved requested fact not yet judged on this evidence; a legacy run judges its first free-text gap.
-        const target = open?.find(r => !(run.checkpoint.attempts ?? []).some(a => a.requirementId === r.id && a.fingerprint === fingerprint))
+        // H8-06: a fact a bought passage already answers is not bought for again (fixture coverage judge only).
+        const purchasable = open?.filter(r => !this.answeredByPurchase(run, r))
+        const target = purchasable?.find(r => !(run.checkpoint.attempts ?? []).some(a => a.requirementId === r.id && a.fingerprint === fingerprint))
         // Historical fixture scenarios still exercise the legacy path. Live legacy gaps require operator opt-in.
         const allowLegacy = !this.options.provider || this.options.provider.name === 'fixture' || loadConfig().LEGACY_GAP === '1'
         const legacyGap = requirements || !allowLegacy ? undefined : answer.openGaps[0]
@@ -421,7 +437,7 @@ export class RunLoop {
         if (run.round >= MAX_ROUNDS) { stopReason = 'round-limit'; break }
         if (run.budgetMinor > 0 && run.spentMinor + run.reservedMinor >= run.budgetMinor) { stopReason = 'budget-exhausted'; break }
         // Every open fact was judged on this evidence and none was worth buying. An empty gap after round 1 has nothing to decide (#206); round 1 still records its table (UC1: "no gap").
-        if (run.round >= 1 && requirements && !target) { stopReason = run.decisions.some(d => d.rows.some(r => r.verdict === 'SKIP_OVER_BUDGET')) ? 'budget-exhausted' : 'no-eligible-purchase'; break }
+        if (run.round >= 1 && requirements && !target) { stopReason = purchasable!.length && run.decisions.some(d => d.rows.some(r => r.verdict === 'SKIP_OVER_BUDGET')) ? 'budget-exhausted' : 'no-eligible-purchase'; break }
         // The decision model judges the frozen requirement text (#208), sanitised like a gap; never the LLM-written gap.
         const gap = target ? sanitizeGaps([target.gap ?? target.text], run.candidates)[0]?.text ?? target.text : legacyGap?.text ?? ''
         const round = run.round + 1

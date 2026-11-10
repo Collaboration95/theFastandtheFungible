@@ -1,4 +1,4 @@
-import { isProtocolQuery, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
+import { isProtocolQuery, subjectFamilies, subjectRank, titleMatches, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
 import { alreadyCovered, entityPrecision, probeMetadata } from './precision.js'
 import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'
@@ -111,8 +111,22 @@ export const entityOverlap = (question: string, candidate: PublicCandidate) => {
   const normalized = new Set(topicWords(ownText))
   return Math.min(1, [...entities].filter(entity => own.has(entity) || isProtocolQuery(question) && topicWords(entity).every(t => normalized.has(t)) || entity === 'xrp' && own.has('xrpl') || entity === 'xrpl' && own.has('xrp')).length / Math.min(2, entities.size))
 }
+/**
+ * A protocol question's own explainer: the candidate's public title states (part of) the question (H8-01, H8-05).
+ * Finance questions keep value order: their titles share company and place names, which entity precision already
+ * weighs, and the story-bible decisions (UC1–UC3) depend on value.
+ */
+const titledWithQuestion = (question: string, candidate: Pick<PublicCandidate, 'title'>) => isProtocolQuery(question) && titleMatches(question, candidate.title)
 function purchaseTopicMatches(input: Pick<DecideInput, 'question' | 'gap' | 'requirement'>, candidate: PublicCandidate): boolean {
-  if (input.requirement && isProtocolQuery(`${input.question} ${input.gap}`)) return topicMatches(input.gap, `${candidate.title} ${candidate.facets.join(' ')}`)
+  // H8-05: for a protocol question, an article titled with the question is on topic whatever wording the planner
+  // gave the requested fact, so the same question admits the same article on every run.
+  if (titledWithQuestion(input.question, candidate)) return true
+  if (input.requirement && isProtocolQuery(`${input.question} ${input.gap}`)) {
+    const own = `${candidate.title} ${candidate.facets.join(' ')}`
+    // A requested fact that names only a qualifier ("can my agent pay it with XRP on Testnet") keeps the question's
+    // subject: a Testnet server list does not answer a question about paying an x402 response (H8-01).
+    return topicMatches(input.gap, own) && (subjectFamilies(input.gap).length > 0 || !subjectFamilies(input.question).length || topicMatches(input.question, own))
+  }
   const metadata = publicTopicMetadata(candidate)
   if (topicMatches(input.question, metadata) || topicMatches(input.gap, metadata)) return true
   const own = new Set(topicWords(metadata))
@@ -258,6 +272,16 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const covered = alreadyCovered(input.gap, input.accessibleEvidence ?? [])
   const open = input.gap.trim().length > 0 && !covered
   const { gapMaterial, judgments } = open ? await judgeAll(provider, input, candidates, readSources) : { gapMaterial: 0, judgments: candidates.map(() => NOT_JUDGED) }
+  // H8-05, fixture judge only: a protocol question's own explainer is also scored against the question, and the higher
+  // score counts, so the planner's wording of the fact cannot drop it under the bar (A3 scored 0.197 against 0.20).
+  // The threshold is unchanged; a live judge already reads the question with every candidate.
+  if (open && provider.name === 'fixture' && input.gap !== input.question) {
+    for (const [index, candidate] of candidates.entries()) {
+      if (!titledWithQuestion(input.question, candidate)) continue
+      const asked = await provider.judgeCandidate({ question: input.question, gap: input.question, readSources, candidate: publicCandidate(candidate) })
+      if (asked.addressesGap > judgments[index].addressesGap) judgments[index] = { ...judgments[index], addressesGap: asked.addressesGap }
+    }
+  }
   // #207: a versioned calibrator for this exact (provider, model, prompt version), only with DECISION_CALIBRATION=on.
   // Its threshold is on the calibrated scale; an explicit threshold still wins, and BUY_THRESHOLD (raw scale) never applies to it.
   const calibrator = open && provider.name !== 'compatible' ? activeCalibrator(provider) : undefined
@@ -300,8 +324,17 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     if (verdict === 'BUY' && probe && value < threshold) reason = 'probe purchase · new writer'
     rows.push({ ...(verdict === 'BUY' && probe && value < threshold ? { probe: true } : {}), candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}), ...(marginal ? { marginalValue: { ...marginal, ...(valueFit ? { fitVersion: valueFit.version } : {}) }, reason: verdict === 'BUY' ? `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} >= ${marginal.threshold.toFixed(3)}; spending policy clears.` : reason } : {}) })
   }
-  // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
-  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
-  if (selected && !selected.probe && entityPrecision(input.question, selected.candidate, candidates) > 0) selected.reason += ' Prefers the title or topics naming the requested entity; then value per dollar.'
+  // Order among eligible rows: a protocol question's own explainer first (H8-05: it depends only on the question, so
+  // repeated runs agree), then subject specificity, then entity precision, then value per dollar; equal value per dollar takes a neutral hash
+  // order (#204), never alphabetical and never the claimed relevance. Only BUY rows are ordered: nothing here can
+  // make an ineligible article eligible.
+  const titled = (row: DecisionRound['rows'][number]) => titledWithQuestion(input.question, row.candidate) ? 1 : 0
+  // Then a specific subject family before a broad one (H8-01): a payment-channel explainer before a finality article
+  // for a micropayment question that mentions settling. Protocol questions only, like the title rule.
+  const subjectOf = subjectFamilies(input.gap).length ? input.gap : input.question
+  const subject = (row: DecisionRound['rows'][number]) => isProtocolQuery(input.question) ? subjectRank(subjectOf, `${row.candidate.title} ${row.candidate.facets.join(' ')}`) : 0
+  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => titled(b) - titled(a) || subject(b) - subject(a) || entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
+  if (selected && !selected.probe && titled(selected)) selected.reason += ' Prefers the article whose title matches the question.'
+  else if (selected && !selected.probe && entityPrecision(input.question, selected.candidate, candidates) > 0) selected.reason += ' Prefers the title or topics naming the requested entity; then value per dollar.'
   return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), ...(calibrator ? { calibration: roundCalibration(calibrator) } : {}), threshold, rows, ...(selected ? { selectedSourceKey: sourceKey(selected.candidate), selectedResourceId: selected.candidate.resourceId } : {}) })
 }

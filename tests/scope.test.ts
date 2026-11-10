@@ -45,7 +45,8 @@ describe('scope step (#136)', () => {
     llm({ questions: [], plan: { restatement: 'BoJ change', subqueries: ['BoJ policy statement'] } })
     expect(await scope(uc('UC1'))).toMatchObject({ questions: [], plan: { subqueries: ['BoJ policy statement'] }, label: 'DeepSeek · deepseek-flash' })
     llm({ questions: [{ id: 'b', text: 'How much budget should I spend?', options: ['S$1', 'S$2'] }], plan: { restatement: 'x', subqueries: ['x'] } })
-    expect(await scope(uc('UC1'))).toMatchObject({ questions: [], label: 'fixture · scope-fixture' })
+    // H8-04: the label names the true reason, so the notice never blames an outage for a discarded plan.
+    expect(await scope(uc('UC1'))).toMatchObject({ questions: [], label: 'fixture · scope-fixture · spending guard' })
   })
   it('POST /api/scope answers with questions and a plan, and honours ?clarify=never', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'scope-test-'))
@@ -76,7 +77,7 @@ describe('scope step (#136)', () => {
     expect((await scope('What is the size of our star?', { clarify: 'never' })).chat).toBeDefined()
     llm({ route: 'chat', reply: '   ' })
     const fallback = await scope('What is the size of our star?')
-    expect(fallback).toMatchObject({ label: 'fixture · scope-fixture' })
+    expect(fallback).toMatchObject({ label: 'fixture · scope-fixture · planner unavailable' })
     expect(fallback.chat).toBeUndefined()
     expect(SCOPE_PROMPT).toContain('{"route":"chat","reply":"..."}')
   })

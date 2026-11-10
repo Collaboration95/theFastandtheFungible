@@ -1,6 +1,7 @@
-import { topicMatches } from '../../shared/relevance.js'
+import { topicMatches, topicWords } from '../../shared/relevance.js'
 import { searchText } from '../../publisher/search-text.js'
 import { INSTRUCTION, quotedText } from './untrusted.js'
+import { spendingInstruction } from './spending-guard.js'
 // Requested facts (#208) and their coverage. Requirements are frozen from the question and the clarify answers
 // before any evidence is read; the decision model grades coverage per requirement (#213: 0.938 accuracy vs 0.760 for
 // writer self-grading). This module holds the rubric, the deterministic fixture extraction and the fixture judge.
@@ -56,9 +57,9 @@ export const ruleGap = (rule: (typeof FIXTURE_GAP_RULES)[number], focus?: string
 const STOP = new Set(['what', "what's", 'whats', 'with', 'from', 'that', 'this', 'which', 'their', 'there', 'when', 'where', 'does', 'need', 'needs', 'large', 'much', 'many', 'long', 'comes', 'come', 'getting', 'about', 'have', 'been', 'were', 'will', 'into', 'last', 'latest', 'actually'])
 /** Content words (> 3 letters, no stop words) of a text, lower-cased; possessives split off. */
 export const contentWords = (text: string) => new Set(searchText(text).toLowerCase().match(/[a-z0-9]+/g)?.filter(w => w.length > 3 && !STOP.has(w)) ?? [])
-/** The clauses of a question: "X, how Y, and how Z?" → [X, how Y, how Z]. */
+/** The clauses of a question: "X, how Y, and how Z?" → [X, how Y, how Z]; "X, and can Y?" → [X, can Y] (H8-01). */
 export function splitClauses(question: string): string[] {
-  return question.trim().split(/\?\s+|[;?]\s*|,\s*(?:and\s+)?(?=(?:how|what|when|where|which|who|why|whether|is|are|did|does|do|was|were)\b)|\s+and\s+(?=(?:how|what|when|where|which|who|why)\b)/i)
+  return question.trim().split(/\?\s+|[;?]\s*|,\s*(?:and\s+)?(?=(?:how|what|when|where|which|who|why|whether|is|are|did|does|do|was|were|can|could|should|will|would|must|may)\b)|\s+and\s+(?=(?:how|what|when|where|which|who|why)\b)/i)
     .map(c => c.replace(/^\s*and\s+/i, '').replace(/[?.!\s]+$/, '').trim()).filter(c => /[A-Za-z]{3,}/.test(c))
 }
 /** Capitalised runs after the first word plus acronyms ("Kestrel Semiconductor", "TSMC"): the question's named entities. */
@@ -137,11 +138,17 @@ export function fixtureSupports(requirement: Pick<Requirement, 'text'>, passage:
 export function fixtureCoverage(requirements: Pick<Requirement, 'id' | 'text'>[], evidence: CoverageEvidence[]): Record<string, JudgedStatus> {
   return Object.fromEntries(requirements.map(r => [r.id, (evidence.some(e => fixtureSupports(r, e.text)) || (/\bpric(?:e|es|ing)\b/i.test(r.text) && /\bmargins?\b/i.test(r.text) && fixtureSupports(r, evidence.filter(e => !noNewEvidence.test(e.text)).map(e => e.text).join(' ')))) ? 'supported' : 'missing']))
 }
-/** Requirement text is untrusted model output: one line, ≤ 160 chars, no instructions, never naming a purchase. */
-export function sanitizeRequirement(raw: unknown): string | undefined {
+/**
+ * Requirement text is untrusted model output: one line, ≤ 160 chars, no instructions, never naming a purchase.
+ * `own` is the user's question (and clarify answers): "buy", "purchase" or "pay for" in their own words names the
+ * subject they asked about (H8-04), never a purchase instruction, which `spendingInstruction` still rejects.
+ */
+export function sanitizeRequirement(raw: unknown, own = ''): string | undefined {
   if (typeof raw !== 'string') return undefined
   const clean = raw.replace(/\s+/g, ' ').trim()
-  if (!clean || clean.length > 160 || INSTRUCTION.test(clean) || /\b(?:buy|purchase|pay for)\b/i.test(clean)) return undefined
+  if (!clean || clean.length > 160 || INSTRUCTION.test(clean) || spendingInstruction(clean, own)) return undefined
+  const ownWords = new Set(topicWords(own))
+  if ([...clean.matchAll(/\b(?:buy|purchase|pay for)\b/gi)].some(match => !topicWords(match[0]).every(word => ownWords.has(word)))) return undefined
   return clean
 }
 /**
