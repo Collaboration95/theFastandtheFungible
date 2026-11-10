@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-10T15:08:13.813880+00:00",
+  "state": "blocked-before-PR-and-merge",
+  "testedHead": "db511fccecd81cbd8a62e5204d7c4e066d6391ce",
+  "testedTree": "965793c1932410f3c65de07bdf6b1412799303d8",
+  "runtime": "Node 22.23.4",
+  "gateReceipt": "1794323017285-28097-db4e7f9f-1040-4e97-83c7-6f3d030c879b.json",
+  "unit": {
+    "passed": 1441,
+    "failed": 6,
+    "total": 1447,
+    "timeoutMs": 5000,
+    "failedTests": [
+      {
+        "file": "tests/corpus-v2.test.ts",
+        "case": "self-check",
+        "elapsedMs": 5481
+      },
+      {
+        "file": "tests/corpus-v2.test.ts",
+        "case": "missing golden fact/leaking abstract",
+        "elapsedMs": 5243
+      },
+      {
+        "file": "tests/corpus-v2.test.ts",
+        "case": "contradiction planted in golden-path article",
+        "elapsedMs": 5299
+      },
+      {
+        "file": "tests/corpus-v2.test.ts",
+        "case": "free body repeats paid body",
+        "elapsedMs": 5125
+      },
+      {
+        "file": "tests/fact-menu.test.ts",
+        "case": "bounded signed fact menus",
+        "elapsedMs": 5559
+      },
+      {
+        "file": "src/streamDraft.test.tsx",
+        "case": "UC3 prefixes withhold ungranted passages",
+        "elapsedMs": 6889
+      }
+    ]
+  },
+  "ownLaneTests": "4/4 pass",
+  "nativeProof": "partial paused-shell plus synthetic nginx header/SSE/unreachable tests passed",
+  "cloudMutations": false,
+  "loosened": "nothing",
+  "observedHostLoad": "1-minute load 79.22 at final check; earlier above 100",
+  "inference": "Shifting failures are consistent with host load; no underlying code fault established. No test or timeout changed.",
+  "remaining": [
+    "Green clean-head local gate, PR, publish, merge and post-merge gate",
+    "GF popover merge/rebase if browser-app fails there; browser-app has not yet run because unit dependency failed",
+    "HG config/secret/session names and complete hosted isolation/purchase acceptance",
+    "Exact Linux images and orchestrator-only cloud/Testnet acceptance"
+  ]
+}
