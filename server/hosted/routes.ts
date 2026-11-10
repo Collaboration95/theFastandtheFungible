@@ -53,6 +53,8 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
   router.delete('/api/runs/:id', (req,res) => { const run = store.getRun(String(req.params.id)); if (!run.stopped && !['DONE','FAILED','STOPPED'].includes(run.phase)) return res.status(409).json({error:'Stop the run before deleting it.'}); store.setRunMeta(run.runId,{hidden:true,pinned:false}); res.json(ownHistory(res.locals.hostedSession.principal)) })
   router.post('/runs/:id/stop', (req,res) => { const id = String(req.params.id); queue.cancel(id); loop.stop(id); res.json(store.getRun(id)) })
   router.post('/api/scope', async (req,res) => {
+    const old = limits.existing(res.locals.hostedSession.principal,keyOf(req.get('Idempotency-Key')),'scope',req.body)
+    if(old?.scope_result) return res.json(JSON.parse(old.scope_result))
     if (queue.busy) throw new HostedError(429,'busy')
     if (!(await ready())) throw new HostedError(503,'demo_unavailable')
     const question = questionOf(req.body.question), key = keyOf(req.get('Idempotency-Key'))
@@ -74,12 +76,13 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     const input = AskSchema.parse({...req.body,question:questionOf(req.body.question)})
     const key = keyOf(req.get('Idempotency-Key')), principal = res.locals.hostedSession.principal
     // Read durable identity before queue capacity, including reconnect after a lost response.
-    const hold = limits.reserve(principal,key,input.question,res.locals.hostedIp,input.budgetMinor,'submit',req.body)
-    if (hold.run_id) return res.status(200).json(store.getRun(hold.run_id))
+    const previous = limits.existing(principal,key,'submit',req.body)
+    if (previous?.run_id) return res.status(200).json(store.getRun(previous.run_id))
     queue.capacity(); requireAdmissions(config)
     if (!(await ready())) throw new HostedError(503,'demo_unavailable')
-    const latest = limits.existing(principal,key,'submit',req.body)
-    if (latest?.run_id) return res.status(200).json(store.getRun(latest.run_id))
+    // Reserve after the async readiness probe, then bind and enqueue without another await.
+    const hold = limits.reserve(principal,key,input.question,res.locals.hostedIp,input.budgetMinor,'submit',req.body)
+    if (hold.run_id) return res.status(200).json(store.getRun(hold.run_id))
     const admitted = store.admit({surface:'web',principal,question:input.question,requestedMinor:input.budgetMinor,idempotencyKey:key,maxMinor:LIMITS.questionMinor,labels:context.labels})
     const runId = admitted.run.runId
     limits.update(hold.id,{run_id:runId,state:admitted.reused?'interrupted':'queued'})

@@ -11,7 +11,7 @@ export function sessionGuard(limits: HostedLimits): RequestHandler {
   trusted.addAddress(proxy, isIP(proxy) === 6 ? 'ipv6' : 'ipv4')
   return (req, res, next) => {
     res.set({ 'Cache-Control': 'private, no-store', 'Vary': 'Cookie, Origin', 'X-Content-Type-Options': 'nosniff' })
-    for (const key of Object.keys(req.headers)) if (key === 'authorization' || key === 'forwarded' || key.startsWith('x-principal') || key.startsWith('x-agent') || key.startsWith('x-internal') || key === 'x-forwarded-host' || key === 'x-forwarded-proto') delete req.headers[key]
+    for (const key of Object.keys(req.headers)) if (key === 'authorization' || key === 'forwarded' || key.includes('principal') || key.startsWith('x-agent') || key.startsWith('x-internal') || key === 'x-forwarded-host' || key === 'x-forwarded-proto') delete req.headers[key]
     if (req.headers.host !== origin.host || (req.get('Origin') && req.get('Origin') !== origin.origin)) { res.status(403).json({ error: 'origin_denied' }); return }
     const address = req.socket.remoteAddress?.replace(/^::ffff:/, '') || ''
     let ip = address
