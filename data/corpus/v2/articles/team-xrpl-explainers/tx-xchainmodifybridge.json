@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-xchainmodifybridge",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XChainModifyBridge do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XChainModifyBridge and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XChainModifyBridge",
+    "X Chain Modify Bridge",
+    "transaction"
+  ],
+  "family": "xrpl-tx-xchainmodifybridge",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/xchainmodifybridge",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, XChainModifyBridge changes supported parameters of an existing bridge. [1]\n\nThe caller must have the authority required for that bridge, and only documented mutable settings can change. Review rewards and account-creation parameters together with existing transfer workflows. A configuration update is not a completed cross-chain payment. Parties still need to reconcile commitments and claims under the applicable bridge definition on both networks. [1]\n\nThe XChainModifyBridge reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using XChainModifyBridge, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, XChainModifyBridge changes supported parameters of an existing bridge. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The caller must have the authority required for that bridge, and only documented mutable settings can change. Review rewards and account-creation parameters together with existing transfer workflows. A configuration update is not a completed cross-chain payment. Parties still need to reconcile commitments and claims under the applicable bridge definition on both networks. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The XChainModifyBridge reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using XChainModifyBridge, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "XChainModifyBridge",
+      "measure": "parameters"
+    }
+  }
+}

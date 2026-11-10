@@ -1,0 +1,60 @@
+{
+  "articleId": "xrpl-standard-xls-85",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XLS-85 specify for Token escrow?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XLS-85 and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XLS-85",
+    "Token escrow"
+  ],
+  "family": "xrpl-standard-xls-85",
+  "sources": [
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0085-token-escrow/README.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/resources/known-amendments",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XLS specifications, XLS-85 extends XRPL escrow to supported issued tokens with issuer capabilities and token-specific constraints. [1]\n\nTrust-line token escrow requires AllowTrustLineLocking on the issuer account. MPTs use their own capability flags, and authorization requirements can apply to both parties. TokenEscrow support therefore does not mean every token or every issuer is eligible. Creation, successful release and cancellation remain separate lifecycle events; merely holding a token balance does not demonstrate escrow support. [1]\n\nA published XLS document describes a design and its constraints; it is not by itself evidence that every network has enabled the corresponding amendment. Read the proposal status, dependencies and current network configuration together. Mainnet, Testnet and development networks can differ, and later fixes can change operational behavior. The source for XLS-85 was fetched directly from the public standards repository. [1][2]\n\nThe fetched specification records its status as Final. [1] Author interpretation: use XLS-85 as a specification reference and verify the actual network capability before promising it to a customer. Keep documented design, local tests and validated transactions separate when describing evidence. This article explains the standard rather than claiming a new live deployment. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XLS specifications, XLS-85 extends XRPL escrow to supported issued tokens with issuer capabilities and token-specific constraints. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Trust-line token escrow requires AllowTrustLineLocking on the issuer account. MPTs use their own capability flags, and authorization requirements can apply to both parties. TokenEscrow support therefore does not mean every token or every issuer is eligible. Creation, successful release and cancellation remain separate lifecycle events; merely holding a token balance does not demonstrate escrow support. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "A published XLS document describes a design and its constraints; it is not by itself evidence that every network has enabled the corresponding amendment. Read the proposal status, dependencies and current network configuration together. Mainnet, Testnet and development networks can differ, and later fixes can change operational behavior. The source for XLS-85 was fetched directly from the public standards repository. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "The fetched specification records its status as Final. [1] Author interpretation: use XLS-85 as a specification reference and verify the actual network capability before promising it to a customer. Keep documented design, local tests and validated transactions separate when describing evidence. This article explains the standard rather than claiming a new live deployment. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XLS",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "issuer",
+      "measure": "issuer"
+    },
+    "p3": {
+      "entity": "Testnet",
+      "measure": "source"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-accountdelete",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does AccountDelete do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of AccountDelete and its practical limits.",
+  "tags": [
+    "XRPL",
+    "AccountDelete",
+    "Account Delete",
+    "transaction"
+  ],
+  "family": "xrpl-tx-accountdelete",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountdelete",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, AccountDelete removes an eligible XRPL account and sends its remaining XRP to a destination account. [1]\n\nDeletion has prerequisites involving account history and owned objects; merely spending down the balance does not delete an account. The destination must already exist. Check the reference's special transaction cost and any destination tag before signing: the normal Payment fee is not the deletion fee. [1]\n\nThe AccountDelete reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using AccountDelete, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, AccountDelete removes an eligible XRPL account and sends its remaining XRP to a destination account. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Deletion has prerequisites involving account history and owned objects; merely spending down the balance does not delete an account. The destination must already exist. Check the reference's special transaction cost and any destination tag before signing: the normal Payment fee is not the deletion fee. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The AccountDelete reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using AccountDelete, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "AccountDelete",
+      "measure": "account"
+    }
+  }
+}

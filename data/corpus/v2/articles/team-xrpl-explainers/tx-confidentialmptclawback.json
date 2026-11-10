@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-confidentialmptclawback",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does ConfidentialMPTClawback do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of ConfidentialMPTClawback and its practical limits.",
+  "tags": [
+    "XRPL",
+    "ConfidentialMPTClawback",
+    "ConfidentialMPT Clawback",
+    "transaction"
+  ],
+  "family": "xrpl-tx-confidentialmptclawback",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/confidentialmptclawback",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, ConfidentialMPTClawback removes a holder's confidential MPT balance under the issuance's clawback authority. [1]\n\nThe documented operation acts on the confidential balance and removes it from circulation. Its confidentiality proofs and issuance permissions differ from a public trust-line clawback. Review the holder and issuance identifiers together with the feature's prerequisites. This is a specific issuer capability, not a generic method of reversing anonymous XRP payments. [1]\n\nThe ConfidentialMPTClawback reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using ConfidentialMPTClawback, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, ConfidentialMPTClawback removes a holder's confidential MPT balance under the issuance's clawback authority. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The documented operation acts on the confidential balance and removes it from circulation. Its confidentiality proofs and issuance permissions differ from a public trust-line clawback. Review the holder and issuance identifiers together with the feature's prerequisites. This is a specific issuer capability, not a generic method of reversing anonymous XRP payments. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The ConfidentialMPTClawback reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using ConfidentialMPTClawback, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p2": {
+      "entity": "XRP",
+      "measure": "issuer"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "ConfidentialMPTClawback",
+      "measure": "confidential MPT balance"
+    }
+  }
+}

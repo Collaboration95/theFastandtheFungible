@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-checkcreate",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does CheckCreate do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of CheckCreate and its practical limits.",
+  "tags": [
+    "XRPL",
+    "CheckCreate",
+    "Check Create",
+    "transaction"
+  ],
+  "family": "xrpl-tx-checkcreate",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/checkcreate",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, CheckCreate writes a deferred payment instruction that its destination can later redeem with CheckCash. [1]\n\nSendMax limits what the sender can spend and Expiration can limit the cashing window. Unlike escrow, creating a Check does not reserve its principal. A valid Check can therefore fail when cashed if funds or liquidity are insufficient. Track the instruction separately from actual delivered funds. [1]\n\nThe CheckCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using CheckCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, CheckCreate writes a deferred payment instruction that its destination can later redeem with CheckCash. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "SendMax limits what the sender can spend and Expiration can limit the cashing window. Unlike escrow, creating a Check does not reserve its principal. A valid Check can therefore fail when cashed if funds or liquidity are insufficient. Track the instruction separately from actual delivered funds. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The CheckCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using CheckCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "CheckCreate",
+      "measure": "payment instruction"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

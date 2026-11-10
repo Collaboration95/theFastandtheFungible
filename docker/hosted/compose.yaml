@@ -1,0 +1,42 @@
+name: researchagent-hosted
+x-service: &service
+  restart: unless-stopped
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  stop_grace_period: 120s
+  logging:
+    driver: local
+    options: {max-size: "10m", max-file: "3"}
+services:
+  publisher:
+    <<: *service
+    image: ${PUBLISHER_IMAGE:-researchagent-hosted-publisher:local}
+    env_file: ${HOSTED_ENV_FILE:-/etc/researchagent/env}
+    environment:
+      HOSTED: "1"
+      PUBLISHER_PORT: "8790"
+      PUBLISHER_FAULTS: "0"
+    volumes: ["${HOSTED_STATE_PATH:-/srv/researchagent}/publisher:/state/publisher"]
+  api:
+    <<: *service
+    image: ${API_IMAGE:-researchagent-hosted-api:local}
+    env_file: ${HOSTED_ENV_FILE:-/etc/researchagent/env}
+    environment:
+      HOSTED: "1"
+      PORT: "8788"
+      RAW_API_PORT: "18788"
+      HOST: 127.0.0.1
+      PUBLISHER_URL: http://publisher:8790
+      APP_DB: /state/api/app.db
+      REPORT_DIR: /state/api/reports
+      HOSTED_CONTROL_PATH: /state/control.json
+    depends_on: {publisher: {condition: service_healthy}}
+    volumes: ["${HOSTED_STATE_PATH:-/srv/researchagent}:/state"]
+  web:
+    <<: *service
+    image: ${WEB_IMAGE:-researchagent-hosted-web:local}
+    environment: {HOSTED: "1"}
+    depends_on: {api: {condition: service_healthy}}
+    ports: ["${HOSTED_BIND_IP:-127.0.0.1}:${HOSTED_PORT:-6800}:8080"]

@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-signerlistset",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does SignerListSet do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of SignerListSet and its practical limits.",
+  "tags": [
+    "XRPL",
+    "SignerListSet",
+    "Signer List Set",
+    "transaction"
+  ],
+  "family": "xrpl-tx-signerlistset",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/signerlistset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, SignerListSet defines or removes the weighted signer list used to authorize multisigned XRPL transactions. [1]\n\nSigner weights must meet the configured quorum. A signer list is an authorization arrangement, not shared ownership of each article or payment. Changes affect which combinations can sign future transactions. Review the list, quorum and alternate signing methods together before disabling the master key. [1]\n\nThe SignerListSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using SignerListSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, SignerListSet defines or removes the weighted signer list used to authorize multisigned XRPL transactions. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Signer weights must meet the configured quorum. A signer list is an authorization arrangement, not shared ownership of each article or payment. Changes affect which combinations can sign future transactions. Review the list, quorum and alternate signing methods together before disabling the master key. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The SignerListSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using SignerListSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "SignerListSet",
+      "measure": "signer list"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

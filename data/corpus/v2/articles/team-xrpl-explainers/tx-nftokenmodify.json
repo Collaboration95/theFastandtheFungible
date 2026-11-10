@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-nftokenmodify",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does NFTokenModify do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of NFTokenModify and its practical limits.",
+  "tags": [
+    "XRPL",
+    "NFTokenModify",
+    "NF Token Modify",
+    "transaction"
+  ],
+  "family": "xrpl-tx-nftokenmodify",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/nftokenmodify",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, NFTokenModify changes the URI of an NFT that supports dynamic metadata updates. [1]\n\nThe DynamicNFT feature and token permissions constrain who can modify the token. Updating a URI changes the ledger's pointer, not necessarily the contents or availability of a remote resource. Check the precise token identifier and authority before signing. Buyers should distinguish an immutable token identity from metadata that its authorized party may change. [1]\n\nThe NFTokenModify reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using NFTokenModify, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, NFTokenModify changes the URI of an NFT that supports dynamic metadata updates. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The DynamicNFT feature and token permissions constrain who can modify the token. Updating a URI changes the ledger's pointer, not necessarily the contents or availability of a remote resource. Check the precise token identifier and authority before signing. Buyers should distinguish an immutable token identity from metadata that its authorized party may change. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The NFTokenModify reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using NFTokenModify, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "NFTokenModify",
+      "measure": "NFT"
+    }
+  }
+}

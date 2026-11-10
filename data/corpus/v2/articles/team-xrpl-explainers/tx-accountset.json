@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-accountset",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does AccountSet do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of AccountSet and its practical limits.",
+  "tags": [
+    "XRPL",
+    "AccountSet",
+    "Account Set",
+    "transaction"
+  ],
+  "family": "xrpl-tx-accountset",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, AccountSet changes an XRPL account's settings, including issuer permissions and receiving restrictions. [1]\n\nSetFlag and ClearFlag select account options; the Flags field also has older transaction-level switches. Domain and MessageKey change different properties. Some settings are irreversible or require an unused account, so an apparently small configuration change can permanently affect token holders or signing authority. [1]\n\nThe AccountSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using AccountSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, AccountSet changes an XRPL account's settings, including issuer permissions and receiving restrictions. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "SetFlag and ClearFlag select account options; the Flags field also has older transaction-level switches. Domain and MessageKey change different properties. Some settings are irreversible or require an unused account, so an apparently small configuration change can permanently affect token holders or signing authority. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The AccountSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using AccountSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "AccountSet",
+      "measure": "issuer"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

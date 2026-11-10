@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-ammbid",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does AMMBid do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of AMMBid and its practical limits.",
+  "tags": [
+    "XRPL",
+    "AMMBid",
+    "AMM Bid",
+    "transaction"
+  ],
+  "family": "xrpl-tx-ammbid",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/ammbid",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, AMMBid spends liquidity-provider tokens to bid for an AMM's discounted trading-fee auction slot. [1]\n\nThe auction slot offers a temporary trading-fee advantage rather than ownership of the pool or a guaranteed return. Bid bounds and authorized accounts control who may use the benefit. Compare the LP tokens consumed with the expected fee saving. A winning bid does not protect against price movement or eliminate every trading cost. [1]\n\nThe AMMBid reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using AMMBid, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, AMMBid spends liquidity-provider tokens to bid for an AMM's discounted trading-fee auction slot. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The auction slot offers a temporary trading-fee advantage rather than ownership of the pool or a guaranteed return. Bid bounds and authorized accounts control who may use the benefit. Compare the LP tokens consumed with the expected fee saving. A winning bid does not protect against price movement or eliminate every trading cost. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The AMMBid reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using AMMBid, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "AMMBid",
+      "measure": "trading"
+    },
+    "p2": {
+      "entity": "auction",
+      "measure": "auction"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-ammwithdraw",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does AMMWithdraw do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of AMMWithdraw and its practical limits.",
+  "tags": [
+    "XRPL",
+    "AMMWithdraw",
+    "AMM Withdraw",
+    "transaction"
+  ],
+  "family": "xrpl-tx-ammwithdraw",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/ammwithdraw",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, AMMWithdraw exchanges liquidity-provider tokens for assets from an AMM. [1]\n\nWithdrawal mode controls whether the holder receives proportional assets or a requested single-asset outcome within allowed limits. Pool prices and balances affect the result, so the original deposit is not a guaranteed redemption quote. Check LP ownership and output bounds. A withdrawal changes pool exposure and can have different economics from selling LP tokens elsewhere. [1]\n\nThe AMMWithdraw reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using AMMWithdraw, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, AMMWithdraw exchanges liquidity-provider tokens for assets from an AMM. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Withdrawal mode controls whether the holder receives proportional assets or a requested single-asset outcome within allowed limits. Pool prices and balances affect the result, so the original deposit is not a guaranteed redemption quote. Check LP ownership and output bounds. A withdrawal changes pool exposure and can have different economics from selling LP tokens elsewhere. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The AMMWithdraw reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using AMMWithdraw, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "AMMWithdraw",
+      "measure": "liquidity"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "articleId": "xrpl-tx-escrowcreate",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does EscrowCreate do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of EscrowCreate and its practical limits.",
+  "tags": [
+    "XRPL",
+    "EscrowCreate",
+    "Escrow Create",
+    "transaction"
+  ],
+  "family": "xrpl-tx-escrowcreate",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/escrowcreate",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release. [1]\n\nFinishAfter and CancelAfter use ledger time, and a Condition can require a matching fulfillment. Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags. Holding a token balance alone does not establish escrow eligibility. Creation locks principal but does not pay the recipient. [1]\n\nThe EscrowCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using EscrowCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "FinishAfter and CancelAfter use ledger time, and a Condition can require a matching fulfillment. Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags. Holding a token balance alone does not establish escrow eligibility. Creation locks principal but does not pay the recipient. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The EscrowCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using EscrowCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "EscrowCreate",
+      "measure": "funds"
+    },
+    "p2": {
+      "entity": "issuer",
+      "measure": "fulfillment"
+    },
+    "p3": {
+      "entity": "EscrowCreate",
+      "measure": "cost"
+    },
+    "p4": {
+      "entity": "EscrowCreate",
+      "measure": "report",
+      "period": "twenty twenty six"
+    }
+  }
+}

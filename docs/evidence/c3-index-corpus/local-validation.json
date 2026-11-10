@@ -1,0 +1,408 @@
+{
+  "label": "Local fixtures and simulated settlement; failed checks are not merge admission",
+  "attempts": [
+    {
+      "receipt": "1794321507256-48262-234b45d1-7881-4659-8a2d-85be3591a60a.json",
+      "state": "failure",
+      "source": {
+        "head": "5dc69835a14d39a8509006f9ee142f5c9d41df90",
+        "headTree": "1742618cc7304c88c9b5501690e1ead84645c333",
+        "tree": "1742618cc7304c88c9b5501690e1ead84645c333",
+        "dirty": false
+      },
+      "steps": [
+        {
+          "id": "hygiene",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 1852
+        },
+        {
+          "id": "readme",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 682
+        },
+        {
+          "id": "lint",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 10575
+        },
+        {
+          "id": "typecheck",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 9234
+        },
+        {
+          "id": "gate-tests",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 11558
+        },
+        {
+          "id": "app-build",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 10477
+        },
+        {
+          "id": "unit",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 73855
+        },
+        {
+          "id": "chaos",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 41690
+        },
+        {
+          "id": "key-reveal",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 5039
+        },
+        {
+          "id": "browser-app",
+          "state": "failure",
+          "cacheHit": false,
+          "durationMs": 53357
+        },
+        {
+          "id": "browser-perf",
+          "state": "skipped",
+          "cacheHit": false,
+          "durationMs": 0
+        },
+        {
+          "id": "demo-build",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 1279
+        },
+        {
+          "id": "browser-demo",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 81753
+        },
+        {
+          "id": "browser-judge",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 58336
+        },
+        {
+          "id": "browser-ledger",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 2484
+        },
+        {
+          "id": "python",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 18609
+        },
+        {
+          "id": "sdk-package",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 4739
+        },
+        {
+          "id": "desktop-loader",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 1729
+        },
+        {
+          "id": "desktop-build",
+          "state": "skipped",
+          "cacheHit": false,
+          "durationMs": 0
+        }
+      ],
+      "failures": [
+        {
+          "id": "browser-app",
+          "tail": "[WebServer] ../../../../../../../../Users/speedpowermac/.t3/worktrees/tftf/t3-d57b3b12-feb57305ce09ae83/node_modules/zod/v4/core/util.js (400:0): A comment\n[WebServer] \n[WebServer] \"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle.\"\n[WebServer] \n[WebServer] in \"../../../../../../../../Users/speedpowermac/.t3/worktrees/tftf/t3-d57b3b12-feb57305ce09ae83/node_modules/zod/v4/core/util.js\" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.\n\n[WebServer] ../../../../../../../../Users/speedpowermac/.t3/worktrees/tftf/t3-d57b3b12-feb57305ce09ae83/node_modules/zod/v4/core/regexes.js (74:0): A comment\n[WebServer] \n[WebServer] \"/** Anchors a pattern source. The interpolation lives here rather than at the call site because\n[WebServer]  * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it\n[WebServer]  * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */\"\n[WebServer] \n[WebServer] in \"../../../../../../../../Users/speedpowermac/.t3/worktrees/tftf/t3-d57b3b12-feb57305ce09ae83/node_modules/zod/v4/core/regexes.js\" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.\n\n\nRunning 26 tests using 1 worker\n\n[1/26] tests/a11y.spec.ts:6:1 \u203a ready desk has no serious automated accessibility violations\n[2/26] tests/a11y.spec.ts:13:1 \u203a clarify chips, plan card, finished UC2 run and Writers tab have no serious violations\n[3/26] tests/e2e.spec.ts:15:1 \u203a UC2: clarify chip \u2192 plan card \u2192 paid purchase with proof \u2713 \u2192 STRENGTHENS, PDF\n[4/26] tests/e2e.spec.ts:39:1 \u203a UC3: AlphaLeak bought \u2192 proof fails \u2192 refunded \u2192 quarantined; The Fab Floor bought\n[5/26] tests/e2e.spec.ts:60:3 \u203a writer blog pages never scroll sideways at 1280px\n[6/26] tests/e2e.spec.ts:60:3 \u203a writer blog pages never scroll sideways at 390px\n[7/26] tests/e2e.spec.ts:70:1 \u203a a terminal snapshot above the SSE limit recovers the same browser run without another admission (#345)\n[8/26] tests/e2e.spec.ts:100:1 \u203a migrates stored stage pace, shows terminal purchases immediately and clears reconnect errors\n[9/26] tests/e2e.spec.ts:125:1 \u203a keyboard plan cancellation admits zero runs; Go now admits exactly once\n[10/26] tests/e2e.spec.ts:143:1 \u203a a judge question with declined matches explains policy and invites publishing\n[11/26] tests/e2e.spec.ts:161:1 \u203a zero candidate questions retain the no-writer publishing invitation\n[12/26] tests/foundation.spec.ts:11:1 \u203a UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views, new question\n[13/26] tests/foundation.spec.ts:59:1 \u203a first run, recoverable backend error, record mode and narrow reflow\n[14/26] tests/foundation.spec.ts:70:1 \u203a failure recovery views: labelled fallback, slow Testnet, stopped unused payment and small budget (injected snapshots)\n[15/26] tests/settings.spec.ts:5:1 \u203a owner settings sections and onboarding at 1280x800\n[16/26] tests/ux.spec.ts:6:1 \u203a UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery\n[17/26] tests/ux.spec.ts:81:1 \u203a UX-1 stage screenshots and a single actionable scope error\n[18/26] tests/ux2.spec.ts:7:1 \u203a UX-2: UC4, exact lead citation, export, supporting screens and mobile Spend\n[19/26] tests/ux2.spec.ts:64:1 \u203a paid UC2 export opens the before/after comparison and returns to the answer\n[20/26] tests/ux2.spec.ts:79:1 \u203a completed Testnet answer gets its anchor without a reload and polling stops\n[21/26] tests/ux2.spec.ts:103:1 \u203a \"Anchoring\u2026 awaiting validation\" keeps polling and resolves to the anchor without a reload\n[22/26] tests/ux2.spec.ts:121:1 \u203a an anchored no-purchase decline shows its ledger proof and the Export menu\n[23/26] tests/ux2.spec.ts:136:1 \u203a anchor waiting ends after its bounded deadline\n[24/26] tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1440\n  1) tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1440 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: false\n    Received: true\n\n      157 |   const a=await page.locator('button.ra-ask').boundingBox(), b=await pop.boundingBox()\n      158 |   expect(a && b).toBeTruthy()\n    > 159 |   expect(a!.x < b!.x+b!.width && a!.x+a!.width > b!.x && a!.y < b!.y+b!.height && a!.y+a!.height > b!.y).toBe(false)\n          |                                                                                                          ^\n      160 |   const h=await page.locator('h1').first().boundingBox()\n      161 |   expect(h!.y).toBeGreaterThanOrEqual(0)\n      162 |   expect(h!.y+h!.height).toBeLessThan(viewport.height)\n        at /private/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-local-gate-checkout-dy9GEq/tree/tests/ux2.spec.ts:159:106\n\n    attachment #1: screenshot (image/png) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    scratch/local-gate-results/app/ux2-Lane-K-popover-clears-Ask-at-1440/test-failed-1.png\n    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n    Error Context: scratch/local-gate-results/app/ux2-Lane-K-popover-clears-Ask-at-1440/error-context.md\n\n\n[25/26] tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1280\n  2) tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1280 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: false\n    Received: true\n\n      157 |   const a=await page.locator('button.ra-ask').boundingBox(), b=await pop.boundingBox()\n      158 |   expect(a && b).toBeTruthy()\n    > 159 |   expect(a!.x < b!.x+b!.width && a!.x+a!.width > b!.x && a!.y < b!.y+b!.height && a!.y+a!.height > b!.y).toBe(false)\n          |                                                                                                          ^\n      160 |   const h=await page.locator('h1').first().boundingBox()\n      161 |   expect(h!.y).toBeGreaterThanOrEqual(0)\n      162 |   expect(h!.y+h!.height).toBeLessThan(viewport.height)\n        at /private/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-local-gate-checkout-dy9GEq/tree/tests/ux2.spec.ts:159:106\n\n    attachment #1: screenshot (image/png) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    scratch/local-gate-results/app/ux2-Lane-K-popover-clears-Ask-at-1280/test-failed-1.png\n    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n    Error Context: scratch/local-gate-results/app/ux2-Lane-K-popover-clears-Ask-at-1280/error-context.md\n\n\n[26/26] tests/ux2.spec.ts:167:1 \u203a Lane K decline explains three policy decisions\n  2 failed\n    tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1440 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1280 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  24 passed (52.8s)\n"
+        }
+      ]
+    },
+    {
+      "receipt": "1794321689262-26803-4b1ab3c3-1107-45f3-ab38-a207a3e72109.json",
+      "state": "failure",
+      "source": {
+        "head": "5dc69835a14d39a8509006f9ee142f5c9d41df90",
+        "headTree": "1742618cc7304c88c9b5501690e1ead84645c333",
+        "tree": "1742618cc7304c88c9b5501690e1ead84645c333",
+        "dirty": false
+      },
+      "steps": [
+        {
+          "id": "hygiene",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "readme",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "lint",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "typecheck",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "gate-tests",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "app-build",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "unit",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "chaos",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "key-reveal",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "browser-app",
+          "state": "failure",
+          "cacheHit": false,
+          "durationMs": 39722
+        },
+        {
+          "id": "browser-perf",
+          "state": "skipped",
+          "cacheHit": false,
+          "durationMs": 0
+        },
+        {
+          "id": "demo-build",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "browser-demo",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "browser-judge",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "browser-ledger",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "python",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "sdk-package",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "desktop-loader",
+          "state": "success",
+          "cacheHit": true,
+          "durationMs": 0
+        },
+        {
+          "id": "desktop-build",
+          "state": "skipped",
+          "cacheHit": false,
+          "durationMs": 0
+        }
+      ],
+      "failures": [
+        {
+          "id": "browser-app",
+          "tail": "[WebServer] ../../../../../../../../Users/speedpowermac/.t3/worktrees/tftf/t3-d57b3b12-feb57305ce09ae83/node_modules/zod/v4/core/util.js (400:0): A comment\n[WebServer] \n[WebServer] \"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle.\"\n[WebServer] \n[WebServer] in \"../../../../../../../../Users/speedpowermac/.t3/worktrees/tftf/t3-d57b3b12-feb57305ce09ae83/node_modules/zod/v4/core/util.js\" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.\n[WebServer] ../../../../../../../../Users/speedpowermac/.t3/worktrees/tftf/t3-d57b3b12-feb57305ce09ae83/node_modules/zod/v4/core/regexes.js (74:0): A comment\n[WebServer] \n[WebServer] \"/** Anchors a pattern source. The interpolation lives here rather than at the call site because\n[WebServer]  * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it\n[WebServer]  * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */\"\n[WebServer] \n[WebServer] in \"../../../../../../../../Users/speedpowermac/.t3/worktrees/tftf/t3-d57b3b12-feb57305ce09ae83/node_modules/zod/v4/core/regexes.js\" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.\n\n\n\nRunning 26 tests using 1 worker\n\n[1/26] tests/a11y.spec.ts:6:1 \u203a ready desk has no serious automated accessibility violations\n[2/26] tests/a11y.spec.ts:13:1 \u203a clarify chips, plan card, finished UC2 run and Writers tab have no serious violations\n[3/26] tests/e2e.spec.ts:15:1 \u203a UC2: clarify chip \u2192 plan card \u2192 paid purchase with proof \u2713 \u2192 STRENGTHENS, PDF\n[4/26] tests/e2e.spec.ts:39:1 \u203a UC3: AlphaLeak bought \u2192 proof fails \u2192 refunded \u2192 quarantined; The Fab Floor bought\n[5/26] tests/e2e.spec.ts:60:3 \u203a writer blog pages never scroll sideways at 1280px\n[6/26] tests/e2e.spec.ts:60:3 \u203a writer blog pages never scroll sideways at 390px\n[7/26] tests/e2e.spec.ts:70:1 \u203a a terminal snapshot above the SSE limit recovers the same browser run without another admission (#345)\n[8/26] tests/e2e.spec.ts:100:1 \u203a migrates stored stage pace, shows terminal purchases immediately and clears reconnect errors\n[9/26] tests/e2e.spec.ts:125:1 \u203a keyboard plan cancellation admits zero runs; Go now admits exactly once\n[10/26] tests/e2e.spec.ts:143:1 \u203a a judge question with declined matches explains policy and invites publishing\n[11/26] tests/e2e.spec.ts:161:1 \u203a zero candidate questions retain the no-writer publishing invitation\n[12/26] tests/foundation.spec.ts:11:1 \u203a UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views, new question\n[13/26] tests/foundation.spec.ts:59:1 \u203a first run, recoverable backend error, record mode and narrow reflow\n[14/26] tests/foundation.spec.ts:70:1 \u203a failure recovery views: labelled fallback, slow Testnet, stopped unused payment and small budget (injected snapshots)\n[15/26] tests/settings.spec.ts:5:1 \u203a owner settings sections and onboarding at 1280x800\n[16/26] tests/ux.spec.ts:6:1 \u203a UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery\n[17/26] tests/ux.spec.ts:81:1 \u203a UX-1 stage screenshots and a single actionable scope error\n[18/26] tests/ux2.spec.ts:7:1 \u203a UX-2: UC4, exact lead citation, export, supporting screens and mobile Spend\n[19/26] tests/ux2.spec.ts:64:1 \u203a paid UC2 export opens the before/after comparison and returns to the answer\n[20/26] tests/ux2.spec.ts:79:1 \u203a completed Testnet answer gets its anchor without a reload and polling stops\n[21/26] tests/ux2.spec.ts:103:1 \u203a \"Anchoring\u2026 awaiting validation\" keeps polling and resolves to the anchor without a reload\n[22/26] tests/ux2.spec.ts:121:1 \u203a an anchored no-purchase decline shows its ledger proof and the Export menu\n[23/26] tests/ux2.spec.ts:136:1 \u203a anchor waiting ends after its bounded deadline\n[24/26] tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1440\n  1) tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1440 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: false\n    Received: true\n\n      157 |   const a=await page.locator('button.ra-ask').boundingBox(), b=await pop.boundingBox()\n      158 |   expect(a && b).toBeTruthy()\n    > 159 |   expect(a!.x < b!.x+b!.width && a!.x+a!.width > b!.x && a!.y < b!.y+b!.height && a!.y+a!.height > b!.y).toBe(false)\n          |                                                                                                          ^\n      160 |   const h=await page.locator('h1').first().boundingBox()\n      161 |   expect(h!.y).toBeGreaterThanOrEqual(0)\n      162 |   expect(h!.y+h!.height).toBeLessThan(viewport.height)\n        at /private/var/folders/g8/5_hq0kbs4499lmjhph03mvgc0000gn/T/ra-local-gate-checkout-pKyC1K/tree/tests/ux2.spec.ts:159:106\n\n    attachment #1: screenshot (image/png) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    scratch/local-gate-results/app/ux2-Lane-K-popover-clears-Ask-at-1440/test-failed-1.png\n    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n    Error Context: scratch/local-gate-results/app/ux2-Lane-K-popover-clears-Ask-at-1440/error-context.md\n\n\n[25/26] tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1280\n[26/26] tests/ux2.spec.ts:167:1 \u203a Lane K decline explains three policy decisions\n  1 failed\n    tests/ux2.spec.ts:152:2 \u203a Lane K popover clears Ask at 1440 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  25 passed (39.4s)\n"
+        }
+      ]
+    },
+    {
+      "receipt": "1794321890333-9027-55dbf662-e613-4aeb-bb87-17696c78bb9c.json",
+      "state": "failure",
+      "source": {
+        "head": "43c58796449cb2c320343b7c0e7c6ee2307cd923",
+        "headTree": "0cfdde2779166aef5aa51e14fef5be2b1f70b44b",
+        "tree": "0cfdde2779166aef5aa51e14fef5be2b1f70b44b",
+        "dirty": false
+      },
+      "steps": [
+        {
+          "id": "hygiene",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 1544
+        },
+        {
+          "id": "readme",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 579
+        },
+        {
+          "id": "lint",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 21425
+        },
+        {
+          "id": "typecheck",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 16977
+        },
+        {
+          "id": "gate-tests",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 12201
+        },
+        {
+          "id": "app-build",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 20595
+        },
+        {
+          "id": "unit",
+          "state": "failure",
+          "cacheHit": false,
+          "durationMs": 157666
+        },
+        {
+          "id": "chaos",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 123781
+        },
+        {
+          "id": "key-reveal",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 7079
+        },
+        {
+          "id": "browser-app",
+          "state": "skipped",
+          "cacheHit": false,
+          "durationMs": 0
+        },
+        {
+          "id": "browser-perf",
+          "state": "skipped",
+          "cacheHit": false,
+          "durationMs": 0
+        },
+        {
+          "id": "demo-build",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 3407
+        },
+        {
+          "id": "browser-demo",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 83278
+        },
+        {
+          "id": "browser-judge",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 60603
+        },
+        {
+          "id": "browser-ledger",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 5023
+        },
+        {
+          "id": "python",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 48662
+        },
+        {
+          "id": "sdk-package",
+          "state": "skipped",
+          "cacheHit": false,
+          "durationMs": 0
+        },
+        {
+          "id": "desktop-loader",
+          "state": "success",
+          "cacheHit": false,
+          "durationMs": 1537
+        },
+        {
+          "id": "desktop-build",
+          "state": "skipped",
+          "cacheHit": false,
+          "durationMs": 0
+        }
+      ],
+      "failures": [
+        {
+          "id": "unit",
+          "tail": "n-uc.test.ts (5 tests) 110ms\n \u2713 tests/alphaleak.test.ts (3 tests) 359ms\n \u2713 tests/writer-credential.test.ts (3 tests) 179ms\n \u2713 tests/history-bounds.test.ts (3 tests) 135ms\n \u2713 tests/coverage-payments.test.ts (33 tests) 129ms\n \u2713 tests/builder-feedback.test.ts (15 tests) 147ms\n \u2713 tests/anchor.test.ts (1 test) 170ms\n \u2713 tests/coverage-provider-refusals.test.ts (8 tests) 68ms\n \u2713 tests/judge-bank-scorer.test.ts (8 tests) 120ms\n \u2713 tests/requested-facts.test.ts (12 tests) 283ms\n \u2713 tests/m2-loop-blockers.test.ts (4 tests) 305ms\n \u2713 tests/desktop-recovery.test.ts (20 tests) 55ms\n \u2713 tests/fixtures/live-client.test.ts (10 tests) 161ms\n \u2713 tests/manifest.test.ts (11 tests) 42ms\n \u2713 tests/wallets.test.ts (3 tests) 164ms\n \u2713 tests/stream-recovery.test.ts (6 tests) 128ms\n \u2713 tests/mcp-policy.test.ts (4 tests) 77ms\n \u2713 tests/first-touch-ui.test.tsx (2 tests) 102ms\n \u2713 tests/eval/labels-export.test.ts (3 tests) 42ms\n \u2713 tests/research-agent.test.ts (14 tests) 146ms\n \u2713 tests/final-acceptance.test.ts (6 tests) 44ms\n \u2713 tests/truthful-controls.test.tsx (4 tests) 23ms\n \u2713 src/leadFinding.test.tsx (4 tests) 64ms\n \u2713 tests/routes.test.ts (2 tests) 158ms\n \u2713 tests/clef-transport.test.ts (6 tests) 98ms\n \u2713 tests/eval/bank.test.ts (6 tests) 85ms\n \u2713 tests/real-writers.test.ts (2 tests) 96ms\n \u2713 tests/paid-bodies.test.ts (2 tests) 83ms\n \u2713 tests/r5-k.test.tsx (5 tests) 100ms\n \u2713 tests/telemetry.test.ts (7 tests) 87ms\n \u2713 tests/k2-lead.test.ts (5 tests) 66ms\n \u2713 tests/source-identity-ui.test.tsx (2 tests) 150ms\n \u2713 tests/same-engine-soak.test.ts (13 tests) 24ms\n \u2713 tests/provider-deadline.test.ts (3 tests) 34ms\n \u2713 tests/publisher-startup.test.ts (3 tests) 39ms\n \u2713 tests/decision-uc3-price.test.ts (4 tests) 115ms\n \u2713 tests/revoke-credential.test.ts (2 tests) 28ms\n \u2713 tests/writers.test.ts (9 tests) 109ms\n \u2713 tests/x402.test.ts (4 tests) 26ms\n \u2713 tests/acceptance-reuse.test.ts (1 test) 7ms\n \u2713 tests/distribution-publishing.test.ts (1 test) 90ms\n \u2713 tests/cf-probe.test.ts (4 tests) 14ms\n \u2713 tests/demo-ports.test.js (1 test) 11ms\n \u2713 tests/config.test.ts (3 tests) 8ms\n \u2713 tests/telemetry-off.test.ts (1 test) 8ms\n \u2713 tests/judge-bank-v5.test.ts (5 tests) 3ms\n \u2713 tests/anchor-transport.test.ts (5 tests) 75ms\n \u2713 tests/live-smoke.test.ts (10 tests) 3ms\n \u2713 tests/release-artifacts.test.ts (1 test) 8ms\n \u2713 src/design.test.tsx (1 test) 2ms\n \u2713 tests/scorecard.test.ts (5 tests) 4ms\n \u2713 tests/desktop.test.js (7 tests) 7ms\n \u2713 tests/heap-attribution.test.ts (1 test) 3ms\n \u2713 src/components/KeyRevealLifecycle.test.tsx (2 tests) 9ms\n \u2713 tests/stage-checks.test.ts (11 tests) 6ms\n \u2713 src/fixtures/presentation.test.tsx (2 tests) 14ms\n \u2713 tests/token-escrow.test.ts (1 test) 5ms\n \u2713 tests/hire-source-identity.test.ts (2 tests) 8ms\n \u2713 tests/provider-retry.test.ts (2 tests) 3ms\n \u2713 tests/eval/uncertainty.test.ts (1 test) 6ms\n \u2713 tests/coverage-contract.test.ts (3 tests) 2ms\n \u2713 tests/xrpl-connection.test.ts (1 test) 1ms\n(node:89133) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:89128) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.\n(Use `node --trace-warnings ...` to show where the warning was created)\n \u2713 tests/owner-settings-ui.test.tsx (9 tests) 728ms\n \u2713 src/fixtures/chat.test.tsx (6 tests) 737ms\n \u2713 src/fixtures/wpui.test.tsx (27 tests) 1521ms\n   \u2713 clarify chips and the 5 s plan card (#150) > drives scope \u2192 chips \u2192 plan card \u2192 run with the fixture API  311ms\n \u2713 tests/contribution-ui.test.tsx (8 tests) 403ms\n \u2713 tests/u1-ux.test.tsx (8 tests) 223ms\n(node:89380) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.\n(Use `node --trace-warnings ...` to show where the warning was created)\n \u2713 tests/coverage-environment.test.tsx (6 tests) 241ms\n \u2713 tests/ui-honesty.test.tsx (7 tests) 45ms\n \u2713 tests/anchor-status.test.tsx (6 tests) 65ms\n \u2713 tests/character.test.tsx (3 tests) 6324ms\n   \u2713 agent character > committed exports match the generator  6261ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 6 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/streamDraft.test.tsx > every UC3 replay prefix withholds paid passages and citations until its grant; refunds never become claims\nError: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f src/streamDraft.test.tsx:16:1\n     14|   expect(validatedAnswers({ ...run, contents: [] })).toEqual([])\n     15| })\n     16| it('every UC3 replay prefix withholds paid passages and citations unti\u2026\n       | ^\n     17|   const run = ucRuns.UC3\n     18|   const paid = run.contents.filter(c => run.candidates.some(p => p.tie\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/6]\u23af\n\n FAIL  tests/corpus-v2.test.ts > committed v2 corpus (#120) > catches a missing golden fact and a leaking paid abstract\nError: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f tests/corpus-v2.test.ts:33:3\n     31|   })\n     32| \n     33|   it('catches a missing golden fact and a leaking paid abstract', () =\u2026\n       |   ^\n     34|     const copy = corpusCopy()\n     35|     const file = join(copy, fab), article = JSON.parse(readFileSync(fi\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/6]\u23af\n\n FAIL  tests/corpus-v2.test.ts > golden facts (#198) > fails check-corpus on a contradiction planted in a golden-path article\nError: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f tests/corpus-v2.test.ts:67:3\n     65|   })\n     66| \n     67|   it('fails check-corpus on a contradiction planted in a golden-path a\u2026\n       |   ^\n     68|     const copy = corpusCopy()\n     69|     plant(copy, 'data/corpus/v2/articles/open-records/or-boj-statement\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[3/6]\u23af\n\n FAIL  tests/corpus-v2.test.ts > golden facts (#198) > fails check-corpus when a FREE body repeats 8+ words of a PAID body\nError: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f tests/corpus-v2.test.ts:77:3\n     75|   })\n     76| \n     77|   it('fails check-corpus when a FREE body repeats 8+ words of a PAID b\u2026\n       |   ^\n     78|     const copy = corpusCopy()\n     79|     const sentence = 'Kestrel agreed to advance US$1.1 billion against\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[4/6]\u23af\n\n FAIL  tests/fact-menu.test.ts > fact menu (#260) > signs every corpus claim menu, exposes only bounded promises, and leaks no values or eight-word run\nError: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f tests/fact-menu.test.ts:64:3\n     62|   })\n     63| \n     64|   it('signs every corpus claim menu, exposes only bounded promises, an\u2026\n       |   ^\n     65|     const world = await loadWorld()\n     66|     const journal = new PublisherJournal(':memory:')\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[5/6]\u23af\n\n FAIL  tests/site-leak.test.ts > site leak gate (#146) > the paid page shows abstract and badge, and no HTML page leaks a paid body\nError: Test timed out in 30000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f tests/site-leak.test.ts:17:3\n     15|     expect(sharesRun(paid[0].body, paid[0].body, ABSTRACT_LEAK_WORDS))\u2026\n     16|   })\n     17|   it('the paid page shows abstract and badge, and no HTML page leaks a\u2026\n       |   ^\n     18|     const base = await serve(corpus)\n     19|     const paths = [`/w/`, ...corpus.publishers.flatMap(p => [`/w/${p.s\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[6/6]\u23af\n\n\n Test Files  4 failed | 171 passed (175)\n      Tests  6 failed | 1434 passed (1440)\n   Start at  22:45:13\n   Duration  156.80s (transform 3.02s, setup 4.60s, collect 75.81s, tests 463.17s, environment 4.06s, prepare 17.76s)\n\nResource check: 0 unexpected temp entries; 0 live owned groups\n"
+        }
+      ]
+    }
+  ],
+  "upstreamPopoverBaseline": "1f9df59cd19d9c087f04a5579e8ebdfc9bef4498",
+  "upstreamPopoverResult": "one failed, one passed; same overlap assertion at tests/ux2.spec.ts:159",
+  "upstreamPopoverLog": {
+    "file": "upstream-popover.log.gz",
+    "rawSha256": "e4d87f82150d51855035e6c80bcd3e0a8d28bde119e3394b1403295876a2eddb",
+    "archiveSha256": "9c90cc560df1999130462a1ff30c20f610608900aad39fd99f0e213c6147ee8a"
+  }
+}

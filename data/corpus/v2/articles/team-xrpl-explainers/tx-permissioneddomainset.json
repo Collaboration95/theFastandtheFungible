@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-permissioneddomainset",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does PermissionedDomainSet do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of PermissionedDomainSet and its practical limits.",
+  "tags": [
+    "XRPL",
+    "PermissionedDomainSet",
+    "Permissioned Domain Set",
+    "transaction"
+  ],
+  "family": "xrpl-tx-permissioneddomainset",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/permissioneddomainset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, PermissionedDomainSet creates or updates a credential-based permissioned domain. [1]\n\nAcceptedCredentials defines which issuer and credential-type combinations can qualify an account. The domain's owner chooses these conditions; the ledger checks the specified credentials rather than performing independent KYC. Check acceptance, expiration and issuer trust. Membership is a scoped ledger permission, not a blanket regulatory license or a statement that every member is safe to trade with. [1]\n\nThe PermissionedDomainSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using PermissionedDomainSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, PermissionedDomainSet creates or updates a credential-based permissioned domain. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "AcceptedCredentials defines which issuer and credential-type combinations can qualify an account. The domain's owner chooses these conditions; the ledger checks the specified credentials rather than performing independent KYC. Check acceptance, expiration and issuer trust. Membership is a scoped ledger permission, not a blanket regulatory license or a statement that every member is safe to trade with. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The PermissionedDomainSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using PermissionedDomainSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "PermissionedDomainSet",
+      "measure": "credential"
+    },
+    "p2": {
+      "entity": "Credentials",
+      "measure": "statement"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-xchaincreateclaimid",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XChainCreateClaimID do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XChainCreateClaimID and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XChainCreateClaimID",
+    "X Chain Create ClaimID",
+    "transaction"
+  ],
+  "family": "xrpl-tx-xchaincreateclaimid",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/xchaincreateclaimid",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, XChainCreateClaimID reserves the identifier used to link a later cross-chain commitment and claim. [1]\n\nThe bridge and other-chain source account bind the intended transfer context. Allocating an identifier does not itself move the transfer principal. Keep claim preparation, source commitment, witness attestations and destination delivery as separate records. Reusing an unrelated claim identifier can break the binding even when the displayed destination looks familiar. [1]\n\nThe XChainCreateClaimID reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using XChainCreateClaimID, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, XChainCreateClaimID reserves the identifier used to link a later cross-chain commitment and claim. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The bridge and other-chain source account bind the intended transfer context. Allocating an identifier does not itself move the transfer principal. Keep claim preparation, source commitment, witness attestations and destination delivery as separate records. Reusing an unrelated claim identifier can break the binding even when the displayed destination looks familiar. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The XChainCreateClaimID reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using XChainCreateClaimID, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XChainCreateClaimID",
+      "measure": "claim"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

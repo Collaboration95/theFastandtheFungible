@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-flag-accounttxnid",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does the XRPL AccountTxnID account flag mean?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of AccountTxnID and its practical limits.",
+  "tags": [
+    "XRPL",
+    "AccountTxnID",
+    "asfAccountTxnID",
+    "account flags"
+  ],
+  "family": "xrpl-flag-accounttxnid",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/ledger-data/ledger-entry-types/accountroot",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, AccountTxnID makes the account track its most recent transaction hash for transaction chaining. [1]\n\nIt is an opt-in account property rather than an ordinary permission to transfer funds. The common AccountTxnID field can bind a transaction to an expected predecessor. A Ticket-based transaction cannot combine that mechanism in the same way. Treat a stale predecessor as a reason to reconcile account history rather than guessing a replacement hash. [1][2]\n\nXRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for AccountTxnID and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]\n\nAuthor interpretation: document why AccountTxnID is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, AccountTxnID makes the account track its most recent transaction hash for transaction chaining. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "It is an opt-in account property rather than an ordinary permission to transfer funds. The common AccountTxnID field can bind a transaction to an expected predecessor. A Ticket-based transaction cannot combine that mechanism in the same way. Treat a stale predecessor as a reason to reconcile account history rather than guessing a replacement hash. [1][2]"
+    },
+    {
+      "id": "p3",
+      "text": "XRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for AccountTxnID and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: document why AccountTxnID is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "AccountTxnID",
+      "measure": "account"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    }
+  }
+}

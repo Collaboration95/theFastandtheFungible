@@ -1,6 +1,6 @@
 {
   "articleId": "team-delivery",
-  "version": "v2",
+  "version": "v3",
   "publisherSlug": "team-builder-notes",
   "writerSlug": "team-builder-notes",
   "title": "Key reveal: paid research delivery, manifest signatures and content hashes",
@@ -16,38 +16,38 @@
     "Testnet"
   ],
   "family": "team-delivery",
-  "body": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation.\n\nThe writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage.\n\nA refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection.\n\nA writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state.\n\nOne charge per intent depends on durable state, rather than a retry counter in the user interface. The engine persists the signed transaction blob before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization.\n\nIndependent verification checks several different things. Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding. A ledger lookup separately establishes successful validated settlement. Historical endpoints can disagree about availability; a transaction not found on one endpoint is not proof of failure. Readers should retain the transaction hash, network, ledger index and receipt bundle when reporting evidence.\n\nFaucet funds and public Testnet endpoints are suitable for reproducing this prototype without real money. Wallet seeds stay in private local storage and never enter model prompts, article text, receipts or public logs. Testnet balances have no real value. The displayed application prices do not imply a redeemable SGD balance or a guaranteed conversion into XRP. Network availability and faucet funding time remain operational dependencies.\n\nThe purchase receipt is an evidence bundle, not a quality endorsement. Readers should resolve each citation to the delivered passage, check that its exact text appears in the authenticated body, and keep the associated grant and settlement identifiers. Public search abstracts help decide what to investigate; they cannot substitute for paid evidence. A signed promise describes what a writer offers, whereas the delivered passage establishes what the buyer may actually cite. These boundaries apply equally to our own notes and to outside writers.",
+  "body": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation.\n\nThe writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage.\n\nA refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection.\n\nA writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state.\n\nOne charge per intent depends on a persistent purchase record, rather than a retry counter in the user interface. The engine persists the signed transaction before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization.\n\nIndependent verification checks several different things. Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding. A ledger lookup separately establishes successful validated settlement. Historical endpoints can disagree about availability; a transaction not found on one endpoint is not proof of failure. Readers should retain the transaction hash, network, ledger index and receipt bundle when reporting evidence.\n\nFaucet funds and public Testnet endpoints are suitable for reproducing this prototype without real money. Wallet seeds stay in private local storage and never enter model prompts, article text, receipts or public logs. Testnet balances have no real value. The displayed application prices do not imply a redeemable SGD balance or a guaranteed conversion into XRP. Network availability and faucet funding time remain operational dependencies.\n\nThe purchase receipt is an evidence bundle, not a quality endorsement. Readers should resolve each citation to the delivered passage, check that its exact text appears in the authenticated body, and keep the associated grant and settlement identifiers. Public search abstracts help decide what to investigate; they cannot substitute for paid evidence. A signed promise describes what a writer offers, whereas the delivered passage establishes what the buyer may actually cite. These boundaries apply equally to our own notes and to outside writers.",
   "passages": [
     {
       "id": "p1",
       "text": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation."
     },
     {
-      "id": "p3",
+      "id": "p2",
       "text": "The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage."
     },
     {
-      "id": "p4",
+      "id": "p3",
       "text": "A refund after successful key publication is a separate writer-signed Payment. The ledger does not decide whether prose is useful, truthful or worth its price. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. This limitation belongs beside the transaction evidence so that a reader does not mistake a cooperative recovery for unilateral buyer protection."
     },
     {
-      "id": "p5",
+      "id": "p4",
       "text": "A writer no-show follows a different path. CancelAfter permits cancellation after the ledger deadline; it does not automatically return principal. Policy must submit EscrowCancel and observe a validated successful transaction before reporting principal returned. Fees remain spent. This is why a cancelled purchase and a refunded completed sale need separate labels and separate accounting. A pending reservation remains exposure until recovery proves the terminal state."
     },
     {
-      "id": "p6",
-      "text": "One charge per intent depends on durable state, rather than a retry counter in the user interface. The engine persists the signed transaction blob before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization."
+      "id": "p5",
+      "text": "One charge per intent depends on a persistent purchase record, rather than a retry counter in the user interface. The engine persists the signed transaction before submission and reuses the same obligation during recovery. It must not manufacture another principal purchase merely because a response was lost. The authorized budget remains the spending boundary across retries, replacements and refunds. Refunds do not replenish gross spending authorization."
     },
     {
-      "id": "p7",
+      "id": "p6",
       "text": "Independent verification checks several different things. Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding. A ledger lookup separately establishes successful validated settlement. Historical endpoints can disagree about availability; a transaction not found on one endpoint is not proof of failure. Readers should retain the transaction hash, network, ledger index and receipt bundle when reporting evidence."
     },
     {
-      "id": "p8",
+      "id": "p7",
       "text": "Faucet funds and public Testnet endpoints are suitable for reproducing this prototype without real money. Wallet seeds stay in private local storage and never enter model prompts, article text, receipts or public logs. Testnet balances have no real value. The displayed application prices do not imply a redeemable SGD balance or a guaranteed conversion into XRP. Network availability and faucet funding time remain operational dependencies."
     },
     {
-      "id": "p9",
+      "id": "p8",
       "text": "The purchase receipt is an evidence bundle, not a quality endorsement. Readers should resolve each citation to the delivered passage, check that its exact text appears in the authenticated body, and keep the associated grant and settlement identifiers. Public search abstracts help decide what to investigate; they cannot substitute for paid evidence. A signed promise describes what a writer offers, whereas the delivered passage establishes what the buyer may actually cite. These boundaries apply equally to our own notes and to outside writers."
     }
   ],
@@ -56,27 +56,27 @@
       "entity": "EscrowFinish",
       "measure": "delivery"
     },
-    "p3": {
+    "p2": {
       "entity": "XRP",
       "measure": "quote"
     },
-    "p4": {
+    "p3": {
       "entity": "writer",
       "measure": "price"
     },
-    "p5": {
+    "p4": {
       "entity": "writer",
       "measure": "return"
     },
-    "p6": {
+    "p5": {
       "entity": "engine",
       "measure": "recovery"
     },
-    "p8": {
+    "p7": {
       "entity": "XRP",
       "measure": "funds"
     },
-    "p9": {
+    "p8": {
       "entity": "writer",
       "measure": "settlement"
     }

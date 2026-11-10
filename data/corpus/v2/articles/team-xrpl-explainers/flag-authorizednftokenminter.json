@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-flag-authorizednftokenminter",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does the XRPL AuthorizedNFTokenMinter account flag mean?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of AuthorizedNFTokenMinter and its practical limits.",
+  "tags": [
+    "XRPL",
+    "AuthorizedNFTokenMinter",
+    "asfAuthorizedNFTokenMinter",
+    "account flags"
+  ],
+  "family": "xrpl-flag-authorizednftokenminter",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/ledger-data/ledger-entry-types/accountroot",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, AuthorizedNFTokenMinter lets an issuer designate another account to mint NFTs on its behalf. [1]\n\nNFTokenMinter identifies that authorized account. The documented removal procedure enables the option while omitting the minter field. This is a narrowly defined minting relationship, not transfer of the issuer's master key. Check both the account option and designated minter when deciding who may create tokens carrying that issuer identity. [1][2]\n\nXRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for AuthorizedNFTokenMinter and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]\n\nAuthor interpretation: document why AuthorizedNFTokenMinter is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, AuthorizedNFTokenMinter lets an issuer designate another account to mint NFTs on its behalf. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "NFTokenMinter identifies that authorized account. The documented removal procedure enables the option while omitting the minter field. This is a narrowly defined minting relationship, not transfer of the issuer's master key. Check both the account option and designated minter when deciding who may create tokens carrying that issuer identity. [1][2]"
+    },
+    {
+      "id": "p3",
+      "text": "XRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for AuthorizedNFTokenMinter and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: document why AuthorizedNFTokenMinter is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "AuthorizedNFTokenMinter",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "issuer",
+      "measure": "key"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    }
+  }
+}

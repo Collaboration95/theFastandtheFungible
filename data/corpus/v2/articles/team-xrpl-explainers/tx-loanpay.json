@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-loanpay",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does LoanPay do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of LoanPay and its practical limits.",
+  "tags": [
+    "XRPL",
+    "LoanPay",
+    "Loan Pay",
+    "transaction"
+  ],
+  "family": "xrpl-tx-loanpay",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/loanpay",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, LoanPay makes a repayment against an active loan under its configured terms. [1]\n\nThe loan's schedule, asset and payment rules determine how the amount affects outstanding obligations. An ordinary transfer to a broker is not automatically equivalent to this loan-specific operation. Check the resulting balance and status in validated metadata. Repayment evidence supports the named loan only and should not be generalized to the broker's entire credit portfolio. [1]\n\nThe LoanPay reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using LoanPay, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, LoanPay makes a repayment against an active loan under its configured terms. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The loan's schedule, asset and payment rules determine how the amount affects outstanding obligations. An ordinary transfer to a broker is not automatically equivalent to this loan-specific operation. Check the resulting balance and status in validated metadata. Repayment evidence supports the named loan only and should not be generalized to the broker's entire credit portfolio. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The LoanPay reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using LoanPay, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "LoanPay",
+      "measure": "loan"
+    }
+  }
+}

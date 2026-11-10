@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-mptokenauthorize",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does MPTokenAuthorize do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of MPTokenAuthorize and its practical limits.",
+  "tags": [
+    "XRPL",
+    "MPTokenAuthorize",
+    "MP Token Authorize",
+    "transaction"
+  ],
+  "family": "xrpl-tx-mptokenauthorize",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/mptokenauthorize",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, MPTokenAuthorize establishes MPT holding permission or changes a holder's authorization for an issuance. [1]\n\nA holder can establish the ledger entry needed to receive an MPT, while an issuer can authorize or unauthorize a holder where the issuance requires it. These roles have different semantics. The issuance identifier determines the asset; a familiar token name does not. Authorization does not itself mint a balance or attest to a customer's real-world identity. [1]\n\nThe MPTokenAuthorize reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using MPTokenAuthorize, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, MPTokenAuthorize establishes MPT holding permission or changes a holder's authorization for an issuance. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "A holder can establish the ledger entry needed to receive an MPT, while an issuer can authorize or unauthorize a holder where the issuance requires it. These roles have different semantics. The issuance identifier determines the asset; a familiar token name does not. Authorization does not itself mint a balance or attest to a customer's real-world identity. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The MPTokenAuthorize reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using MPTokenAuthorize, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "MPTokenAuthorize",
+      "measure": "authorization"
+    },
+    "p2": {
+      "entity": "issuer",
+      "measure": "identity"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}
