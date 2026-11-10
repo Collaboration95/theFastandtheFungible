@@ -57,6 +57,24 @@ The 16 cited purchases spent S$12.40 in total (31 purchases at S$0.40–S$1.20 p
   - H02, H04, H05, H09, H13, H14, H18, H19 and H20.
   - Typically the lead states a correct but generic sentence about the transaction type, rather than the specific flag, condition type, amendment, currency code or recommendation number asked for.
 
+## Paid versus free (Arm B, run once)
+
+Also decided before the run: the same 20 v5 questions, the same tgz (`35b85e40…1d1a`) and the same fixture models, with **a zero budget**. The MCP schema accepts `budget_sgd: 0`. The only change is a runner setting, `JUDGE_BUDGET_SGD` (default 2; see `v5-free-runner.diff`, now in `scripts/judge-bank-testnet.ts`). The product artifact is untouched. It ran once, after Arm A, in 3.6 min.
+
+| Measure (20 v5 questions) | S$2 budget (Arm A) | zero budget (Arm B) |
+| --- | --- | --- |
+| bought and cited | 16/20 | 0/20 |
+| the key fact leads the answer (`answersIt`) | 7/20 | 0/20 |
+| the gold phrase appears anywhere in the answer | 9/20 | 0/20 |
+| median answer length | 98 words | 9 words |
+| gate violations | 0 | 0 |
+
+With no budget, every answer is "Matched articles supplied no citable answer · nothing bought" (or "No listed writer covers this yet") and nothing is spent.
+
+**Caveat:** in fixture mode the corpus is the listed writers' paid notes, and no open web search runs. So this shows that the facts sit in the paid passages the agent bought. It does not compare against a free web search.
+
+Files: `v5-free/` (results, values, receipts, verification) and `v5-free.log`.
+
 ## Files
 
 - `bank-sha256.txt`, `main-sha.txt`: the pinned inputs.

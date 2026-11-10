@@ -1,0 +1,1268 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "BEE7C5AA5A874F3A350B54FEEC77B48DB76D0A350ABB7FB3E569ECB87D4B2774",
+    "account": "r9KnXMcvRw5qyaLE5R2LrXGPxpHGHA87yt",
+    "head": "e19bebff880e68dde07e31d36f65bc5cef15aab04a84ab0a49423223746032cf",
+    "runIdHash": "7077c347319ba6d8be0c8b4038578610b04f1354ceb7a3dcb7a228b77fbdaa0d",
+    "ledgerIndex": 22223313,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 1,
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "Which OfferCreate flag makes an XRPL offer fill completely or not at all"
+    }
+  ],
+  "runId": "c741965c-7233-451a-aab3-924b29257366",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "lead": [],
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "Which OfferCreate flag makes an XRPL offer fill completely or not at all"
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+      "version": "v1",
+      "title": "Projected Data‑Centre Load Growth in Johor by 2030",
+      "publisher": "Load Factor",
+      "body": "## The Johor data-centre boom in context\n\nWhen I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models.\n\nLet me start with the basics. A typical hyperscale data centre today draws between 30 and 100 megawatts of continuous power. That’s not the nameplate capacity of the servers; it’s the actual load after cooling and losses. For a 50 MW facility, that’s 50 MW times 24 hours times 365 days, or about 438 gigawatt-hours per year. To put that in perspective, Johor’s total electricity demand in 2025 was roughly 6,500 GWh. So one 50 MW data centre adds about 6.7 percent to the state’s annual consumption. That’s a big number for a single building.\n\nNow, how many such facilities are coming? As of March 2026, the Malaysian Investment Development Authority has approved 18 data-centre projects in Johor, with a combined planned capacity of 1.2 gigawatts. That’s 1,200 MW. If they all run at a 70 percent load factor, which is typical for enterprise and cloud facilities, the average draw is 840 MW. Over a year, that’s 840 MW times 8,760 hours, or 7,358 GWh. Add that to the 2025 baseline of 6,500 GWh, and you get 13,858 GWh by 2030, assuming no other demand growth. That’s more than doubling the state’s load in five years.\n\n## The supply side: what can actually be built\n\nOf course, demand doesn’t exist in a vacuum. The grid must supply it. Peninsular Malaysia’s installed capacity in 2025 was about 27,000 MW, with a reserve margin of 32 percent. That sounds comfortable, but the reserve margin is calculated against peak demand, not energy. Data centres run flat out, so they stress the energy balance more than the peak. Still, 840 MW of new average demand is roughly 3 percent of the peninsula’s total capacity. That’s manageable in aggregate, but the transmission constraints are another story.\n\nJohor’s grid is connected to the rest of the peninsula via a few 275 kV and 500 kV lines. The state itself has about 3,000 MW of local generation, mostly gas and some coal. To serve 840 MW of new data-centre load, you either build new generation locally or import more power. The Energy Commission’s 2026 generation plan includes a 1,200 MW combined-cycle gas turbine in Johor, scheduled for 2029. That would cover the data-centre load, but it’s a single point of failure. If that plant is delayed, the reserve margin in the south could drop below 15 percent, which is the threshold for reliable operation.\n\nI ran a simple sensitivity: if only half the announced projects materialise, average data-centre load is 420 MW, or 3,679 GWh per year. That’s still a 57 percent increase over the 2025 baseline. Even the low case is transformative. And if all 1.2 GW is built and runs at 80 percent load factor, the average draw is 960 MW, or 8,410 GWh per year. That would make data centres the single largest consumer class in Johor, ahead of manufacturing.\n\n## The Singapore factor and regional dynamics\n\nWhy Johor? The answer is partly Singapore’s moratorium, which was imposed in 2019 and lifted in 2022 with strict conditions. Singapore now requires new data centres to meet a power usage effectiveness of 1.3 or better and to use renewable energy. That’s expensive. Johor offers land, water, and electricity at a fraction of the cost. The Singaporean grid operator, EMA, has also been slow to approve new connections. So operators go to Johor, where the Energy Commission is more accommodating.\n\nBut there’s a catch. Singapore is still the primary customer for many of these facilities. The data centres in Johor serve Singaporean businesses, which means the load is driven by Singapore’s digital economy, not Malaysia’s. That creates a dependency: if Singapore’s demand grows, Johor’s load grows. If Singapore builds more of its own capacity, Johor’s load could stagnate. I model this as a coupled system. My baseline assumes 70 percent of Johor’s data-centre load serves Singaporean demand. That’s based on interviews with operators and a review of interconnection applications.\n\nThere’s also the question of water. Data centres use water for cooling, and Johor has had water stress issues. The Energy Commission doesn’t regulate water, but the state does. I’ve seen estimates that a 50 MW data centre uses 1.5 million litres per day. For 1.2 GW, that’s 36 million litres per day, or about 13 billion litres per year. That’s a significant fraction of Johor’s water supply. If water constraints bite, some projects may not get built, which would lower the load growth.\n\n## What the numbers mean for planning\n\nLet me be clear about the arithmetic. The 1.2 GW of announced capacity is not a forecast; it’s a pipeline. My job is to translate that into expected load. I use a probability-weighted approach: 60 percent chance for projects with approved permits, 30 percent for those in the pipeline, and 10 percent for speculative announcements. That gives an expected capacity of about 800 MW by 2030. At a 70 percent load factor, that’s 560 MW average, or 4,906 GWh per year. Add the 2025 baseline of 6,500 GWh, and you get 11,406 GWh. That’s a 75 percent increase in total state demand.\n\nIs that feasible? The transmission system would need upgrades. The Energy Commission’s 2026 plan includes a new 500 kV line from Johor to Melaka, but it’s not scheduled until 2031. That’s a problem. Without it, the 275 kV network could be overloaded during contingency events. I’ve modelled the power flows, and a single outage of the 275 kV line from Yong Peng to Johor Bahru would cause voltage collapse if data-centre load exceeds 600 MW. So the grid operator, TNB, needs to accelerate that line or build local generation.\n\nOn the generation side, the 1,200 MW gas plant in 2029 is a start, but it’s not enough if load grows beyond 800 MW. You’d need another 400 MW, likely from solar plus storage. Johor has good solar potential, but land is scarce. A 400 MW solar farm needs about 800 hectares. That’s a lot of land in a state with a growing population.\n\n## My take: watch the load factor, not the nameplate\n\nThe headline number is 1.2 GW, but the number that matters is the average load. That depends on the load factor, which depends on the mix of enterprise, cloud, and AI workloads. AI training clusters can run at 90 percent load factor for weeks, then drop to 20 percent. That variability is hard on the grid. I’ve seen early data from one Johor facility showing a load factor of 85 percent, much higher than the 70 percent I assumed. If that becomes the norm, my expected load rises to 680 MW average, or 5,957 GWh per year. That would push total demand to 12,457 GWh, nearly double the 2025 level.\n\nSo what should planners do? First, treat the pipeline as a range, not a point. Second, invest in transmission before generation, because the lines take longer to build. Third, monitor the load factor of existing facilities; it’s the best leading indicator. And fourth, remember that Johor’s load growth is not just a Malaysian issue. It’s a Singaporean issue too, because the two grids are coupled. As an energy-systems professor, I tell my students to always check the units and the assumptions. Here, the units are megawatts and gigawatt-hours, and the assumptions are load factor and project realisation. Get those wrong, and you’ll be off by a factor of two. That’s the difference between a manageable grid and a crisis.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "When I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models.",
+          "label": "The Johor data-centre boom in context"
+        },
+        {
+          "id": "p2",
+          "text": "Let me start with the basics. A typical hyperscale data centre today draws between 30 and 100 megawatts of continuous power. That’s not the nameplate capacity of the servers; it’s the actual load after cooling and losses. For a 50 MW facility, that’s 50 MW times 24 hours times 365 days, or about 438 gigawatt-hours per year. To put that in perspective, Johor’s total electricity demand in 2025 was roughly 6,500 GWh. So one 50 MW data centre adds about 6.7 percent to the state’s annual consumption. That’s a big number for a single building.",
+          "label": "The Johor data-centre boom in context"
+        },
+        {
+          "id": "p3",
+          "text": "Now, how many such facilities are coming? As of March 2026, the Malaysian Investment Development Authority has approved 18 data-centre projects in Johor, with a combined planned capacity of 1.2 gigawatts. That’s 1,200 MW. If they all run at a 70 percent load factor, which is typical for enterprise and cloud facilities, the average draw is 840 MW. Over a year, that’s 840 MW times 8,760 hours, or 7,358 GWh. Add that to the 2025 baseline of 6,500 GWh, and you get 13,858 GWh by 2030, assuming no other demand growth. That’s more than doubling the state’s load in five years.",
+          "label": "The Johor data-centre boom in context"
+        },
+        {
+          "id": "p4",
+          "text": "Of course, demand doesn’t exist in a vacuum. The grid must supply it. Peninsular Malaysia’s installed capacity in 2025 was about 27,000 MW, with a reserve margin of 32 percent. That sounds comfortable, but the reserve margin is calculated against peak demand, not energy. Data centres run flat out, so they stress the energy balance more than the peak. Still, 840 MW of new average demand is roughly 3 percent of the peninsula’s total capacity. That’s manageable in aggregate, but the transmission constraints are another story.",
+          "label": "The supply side: what can actually be built"
+        },
+        {
+          "id": "p5",
+          "text": "Johor’s grid is connected to the rest of the peninsula via a few 275 kV and 500 kV lines. The state itself has about 3,000 MW of local generation, mostly gas and some coal. To serve 840 MW of new data-centre load, you either build new generation locally or import more power. The Energy Commission’s 2026 generation plan includes a 1,200 MW combined-cycle gas turbine in Johor, scheduled for 2029. That would cover the data-centre load, but it’s a single point of failure. If that plant is delayed, the reserve margin in the south could drop below 15 percent, which is the threshold for reliable operation.",
+          "label": "The supply side: what can actually be built"
+        },
+        {
+          "id": "p6",
+          "text": "I ran a simple sensitivity: if only half the announced projects materialise, average data-centre load is 420 MW, or 3,679 GWh per year. That’s still a 57 percent increase over the 2025 baseline. Even the low case is transformative. And if all 1.2 GW is built and runs at 80 percent load factor, the average draw is 960 MW, or 8,410 GWh per year. That would make data centres the single largest consumer class in Johor, ahead of manufacturing.",
+          "label": "The supply side: what can actually be built"
+        },
+        {
+          "id": "p7",
+          "text": "Why Johor? The answer is partly Singapore’s moratorium, which was imposed in 2019 and lifted in 2022 with strict conditions. Singapore now requires new data centres to meet a power usage effectiveness of 1.3 or better and to use renewable energy. That’s expensive. Johor offers land, water, and electricity at a fraction of the cost. The Singaporean grid operator, EMA, has also been slow to approve new connections. So operators go to Johor, where the Energy Commission is more accommodating.",
+          "label": "The Singapore factor and regional dynamics"
+        },
+        {
+          "id": "p8",
+          "text": "But there’s a catch. Singapore is still the primary customer for many of these facilities. The data centres in Johor serve Singaporean businesses, which means the load is driven by Singapore’s digital economy, not Malaysia’s. That creates a dependency: if Singapore’s demand grows, Johor’s load grows. If Singapore builds more of its own capacity, Johor’s load could stagnate. I model this as a coupled system. My baseline assumes 70 percent of Johor’s data-centre load serves Singaporean demand. That’s based on interviews with operators and a review of interconnection applications.",
+          "label": "The Singapore factor and regional dynamics"
+        },
+        {
+          "id": "p9",
+          "text": "There’s also the question of water. Data centres use water for cooling, and Johor has had water stress issues. The Energy Commission doesn’t regulate water, but the state does. I’ve seen estimates that a 50 MW data centre uses 1.5 million litres per day. For 1.2 GW, that’s 36 million litres per day, or about 13 billion litres per year. That’s a significant fraction of Johor’s water supply. If water constraints bite, some projects may not get built, which would lower the load growth.",
+          "label": "The Singapore factor and regional dynamics"
+        },
+        {
+          "id": "p10",
+          "text": "Let me be clear about the arithmetic. The 1.2 GW of announced capacity is not a forecast; it’s a pipeline. My job is to translate that into expected load. I use a probability-weighted approach: 60 percent chance for projects with approved permits, 30 percent for those in the pipeline, and 10 percent for speculative announcements. That gives an expected capacity of about 800 MW by 2030. At a 70 percent load factor, that’s 560 MW average, or 4,906 GWh per year. Add the 2025 baseline of 6,500 GWh, and you get 11,406 GWh. That’s a 75 percent increase in total state demand.",
+          "label": "What the numbers mean for planning"
+        },
+        {
+          "id": "p11",
+          "text": "Is that feasible? The transmission system would need upgrades. The Energy Commission’s 2026 plan includes a new 500 kV line from Johor to Melaka, but it’s not scheduled until 2031. That’s a problem. Without it, the 275 kV network could be overloaded during contingency events. I’ve modelled the power flows, and a single outage of the 275 kV line from Yong Peng to Johor Bahru would cause voltage collapse if data-centre load exceeds 600 MW. So the grid operator, TNB, needs to accelerate that line or build local generation.",
+          "label": "What the numbers mean for planning"
+        },
+        {
+          "id": "p12",
+          "text": "On the generation side, the 1,200 MW gas plant in 2029 is a start, but it’s not enough if load grows beyond 800 MW. You’d need another 400 MW, likely from solar plus storage. Johor has good solar potential, but land is scarce. A 400 MW solar farm needs about 800 hectares. That’s a lot of land in a state with a growing population.",
+          "label": "What the numbers mean for planning"
+        },
+        {
+          "id": "p13",
+          "text": "The headline number is 1.2 GW, but the number that matters is the average load. That depends on the load factor, which depends on the mix of enterprise, cloud, and AI workloads. AI training clusters can run at 90 percent load factor for weeks, then drop to 20 percent. That variability is hard on the grid. I’ve seen early data from one Johor facility showing a load factor of 85 percent, much higher than the 70 percent I assumed. If that becomes the norm, my expected load rises to 680 MW average, or 5,957 GWh per year. That would push total demand to 12,457 GWh, nearly double the 2025 level.",
+          "label": "My take: watch the load factor, not the nameplate"
+        },
+        {
+          "id": "p14",
+          "text": "So what should planners do? First, treat the pipeline as a range, not a point. Second, invest in transmission before generation, because the lines take longer to build. Third, monitor the load factor of existing facilities; it’s the best leading indicator. And fourth, remember that Johor’s load growth is not just a Malaysian issue. It’s a Singaporean issue too, because the two grids are coupled. As an energy-systems professor, I tell my students to always check the units and the assumptions. Here, the units are megawatts and gigawatt-hours, and the assumptions are load factor and project realisation. Get those wrong, and you’ll be off by a factor of two. That’s the difference between a manageable grid and a crisis.",
+          "label": "My take: watch the load factor, not the nameplate"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "load-factor",
+          "articleId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+          "version": "v1",
+          "wallet": "rpVhVgDkiuxUdfaR6BWhntMhfYkNMqYy2v",
+          "pubKey": "ED2EE1C4E562BB7ED6A6E8F23B06A783CAAA771CBFE69CD1BA4576940FB1142EAF",
+          "priceMinor": 0,
+          "leaves": [
+            "524a17ceffaeedba8b761e0c6090a1184dee9723c0ad07326d8a476e3d4cf9bf",
+            "0364c4d1f21708bc6eb1b471dfccdbd1fea1e32dfb779800c724a1527374cac7",
+            "bd02e7478eb8a8f8d4ab66378eea822830fc936ee030ea582c740ca18e88458c",
+            "189934fbd7f329b78f63729fc5fcc0cfedb65b21988f523ddfe54e46a393977d",
+            "95a03a7ef365960bffef259021ae81f29d2dbb868ae8195fddc807d493fb1fb5",
+            "5ba076ce1dcf14dcd737fbe8757608b955148b5a4d3a399381f19b1fe20e6a22",
+            "e48db61cf1e079abb1f1f1935174885073b2ac330a2733487ee1c5658826160a",
+            "74cc7d8eb75e75bb21f4c7c78300abc55b8aea8622faac8e75b72f5a83798c42",
+            "fd2ef6dd0791f0c3485b6c13a5d08bb2501c8c17278695c46aa3811656959b33",
+            "9d4bedad317bb798b6c48d36b9d09f4e9117b02bcee01360e38e3dd9c8f754a1",
+            "b7bed6ae37c9048f80ccaa5bda2ed3f3ed925510a59c197fdc1a32c656ad2ba7",
+            "eb9d2516220664f8b7ddff1a90971c65312b5d972cbbf6686050e872f0cb63a5",
+            "18955ec38834a55bcdb28e9c607a3a5e91a9f24513e8eb1f51914d9387464b9d",
+            "ed398fb7d062b98c521ce823666cf262c5aebe3aa1fdd87449daefb90ec0ab43"
+          ],
+          "root": "edd6bf7195ee500ddeb7779d7d071775b3801893f8e2dd7f53ad18ba7c668f97",
+          "claims": [
+            {
+              "id": "p2:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "0364c4d1f21708bc6eb1b471dfccdbd1fea1e32dfb779800c724a1527374cac7"
+            },
+            {
+              "id": "p2:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "0364c4d1f21708bc6eb1b471dfccdbd1fea1e32dfb779800c724a1527374cac7"
+            },
+            {
+              "id": "p3:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "bd02e7478eb8a8f8d4ab66378eea822830fc936ee030ea582c740ca18e88458c"
+            },
+            {
+              "id": "p3:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "bd02e7478eb8a8f8d4ab66378eea822830fc936ee030ea582c740ca18e88458c"
+            },
+            {
+              "id": "p4:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "189934fbd7f329b78f63729fc5fcc0cfedb65b21988f523ddfe54e46a393977d"
+            },
+            {
+              "id": "p4:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "189934fbd7f329b78f63729fc5fcc0cfedb65b21988f523ddfe54e46a393977d"
+            },
+            {
+              "id": "p5:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "95a03a7ef365960bffef259021ae81f29d2dbb868ae8195fddc807d493fb1fb5"
+            },
+            {
+              "id": "p5:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "95a03a7ef365960bffef259021ae81f29d2dbb868ae8195fddc807d493fb1fb5"
+            },
+            {
+              "id": "p6:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "5ba076ce1dcf14dcd737fbe8757608b955148b5a4d3a399381f19b1fe20e6a22"
+            },
+            {
+              "id": "p6:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "5ba076ce1dcf14dcd737fbe8757608b955148b5a4d3a399381f19b1fe20e6a22"
+            },
+            {
+              "id": "p9:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "fd2ef6dd0791f0c3485b6c13a5d08bb2501c8c17278695c46aa3811656959b33"
+            },
+            {
+              "id": "p10:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "9d4bedad317bb798b6c48d36b9d09f4e9117b02bcee01360e38e3dd9c8f754a1"
+            },
+            {
+              "id": "p10:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "9d4bedad317bb798b6c48d36b9d09f4e9117b02bcee01360e38e3dd9c8f754a1"
+            },
+            {
+              "id": "p11:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "b7bed6ae37c9048f80ccaa5bda2ed3f3ed925510a59c197fdc1a32c656ad2ba7"
+            },
+            {
+              "id": "p12:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "eb9d2516220664f8b7ddff1a90971c65312b5d972cbbf6686050e872f0cb63a5"
+            },
+            {
+              "id": "p12:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "eb9d2516220664f8b7ddff1a90971c65312b5d972cbbf6686050e872f0cb63a5"
+            },
+            {
+              "id": "p13:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "18955ec38834a55bcdb28e9c607a3a5e91a9f24513e8eb1f51914d9387464b9d"
+            },
+            {
+              "id": "p13:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "18955ec38834a55bcdb28e9c607a3a5e91a9f24513e8eb1f51914d9387464b9d"
+            }
+          ],
+          "wordCount": 1351,
+          "publishedAt": "2026-04-15",
+          "relevance": 1,
+          "sig": "3064BFED6E947222975DB5C7ED7DD2B63745AFC62DD06A0E2DB9952ED2EFA90BC8627B8E2CA11D0B9E627F6A22A41F8FDED5625B3484E044782ED3AC9C6CB301"
+        },
+        "salts": [
+          "11511013f2365c0026e6f76dcbf0b90a",
+          "57182559bfd064037a5a6be40c83f349",
+          "fbb6c259397882838396d1db75a5cbc0",
+          "0b961bcab04621345335f1e8b6f08880",
+          "50a46e5206f5ed694be46fecbb979ecc",
+          "e88990c84462dc2cc25706064ce4382a",
+          "adab36d7053afb157947dfeeff356455",
+          "dff8834c2464e32994e1e8a8596e0af5",
+          "dbb36d2ace3309f77c8459e37a6dfe41",
+          "602022f064885f771b05ec248ee1720c",
+          "30dc99719a358651b461f2822aff23d8",
+          "c1f3be1b24e9a23ad5d06a08d82f6a11",
+          "4fdfcd22ac06b4e1c7609dedd9bdfd48",
+          "89a260920093a9597984bf8b296b570a"
+        ]
+      }
+    },
+    {
+      "profileId": "basis-points",
+      "resourceId": "basis-boj-meeting-recap-market-reactions-to-unexpected-signals",
+      "version": "v1",
+      "title": "BoJ Meeting Recap: Market Reactions to Unexpected Signals",
+      "publisher": "Basis Points",
+      "body": "## Introduction\n\nSpeaking as an ex-central banker, I've learned to be wary of over-reading any single policy meeting. The Bank of Japan's gathering on 2026-09-30 was no exception. The statement itself was, in many ways, a masterclass in continuity. Yet the market's reaction was anything but continuous. In this newsletter, I will try to separate what the Bank actually said from what the market heard, and I will flag where my own interpretation remains uncertain.\n\nThe BoJ kept its policy rate unchanged at 0.5 percent, as most analysts expected. It also maintained its yield curve control framework, with the target range for 10-year JGB yields at plus or minus 0.5 percent around zero. The vote was 8-1, with one member dissenting in favor of a small hike. That dissent was not new; it has been a feature for several meetings. What was new, or at least seemed new to some, was the language in the outlook report.\n\n## What the Bank Said\n\nThe key sentence, in my reading, was this: \"The Bank will not hesitate to adjust the degree of monetary accommodation if underlying inflation dynamics warrant it.\" That is a conditional statement, not a commitment. It is also a phrase that has appeared in slightly different forms before. In April, the Bank said it would \"consider adjusting\" policy if needed. In July, it said it would \"respond appropriately\" to developments. The September wording is marginally more assertive, but it is still hedged by the word \"if.\"\n\nGovernor Ueda's press conference reinforced the cautious tone. He noted that wage growth is broadening but remains uneven across small and medium-sized enterprises. He said the Bank is watching the yen's fluctuations but does not target the exchange rate. He also mentioned that the BoJ is in close contact with the government, which is standard. When asked directly about a possible move in October or December, he said the Bank does not pre-commit to a timeline. That is exactly what one would expect.\n\nSo, from a central-bank communication perspective, the message was: we are data-dependent, we see some progress, but we are not in a hurry. The dissent is a reminder that the board is not monolithic, but it is not a signal of imminent action.\n\n## What the Market Did\n\nMarkets, however, often trade the path, not the level. Within minutes of the release, the yen strengthened from around 148.50 to 147.20 against the dollar. The 10-year JGB yield ticked up to 0.48 percent, still within the target band but near the upper end. The Nikkei 225 fell about 1.2 percent, with banks outperforming and exporters lagging. That pattern is consistent with a modest tightening of financial conditions, not a regime change.\n\nWhat struck me was the speed and magnitude of the move in the yen. A 130-pip swing on a statement that was largely as expected suggests that positioning was stretched. Many investors had been short the yen, and the slightly more assertive language was enough to trigger a squeeze. I would not read this as a fundamental reassessment of the BoJ's reaction function. It is more likely a technical adjustment.\n\nThe JGB market was more measured. The 10-year yield rose, but the 20-year and 30-year yields were little changed. That tells me that the market does not expect a sustained tightening cycle. If it did, the long end would have sold off more. The curve steepened slightly, which is typical when the market prices a small chance of a near-term hike.\n\n## The Global Context\n\nIt is impossible to analyze the BoJ in isolation. The Federal Reserve has been on hold since June, and the European Central Bank has signaled that it is done hiking for now. The Bank of England is in a similar position. In that context, the BoJ remains the odd one out, with negative real rates and a large balance sheet. But the gap is narrowing, slowly.\n\nOne factor that often gets overlooked is the behavior of Japanese institutional investors. Life insurers and pension funds have been increasing their allocations to domestic bonds as yields rise. That creates a natural demand for JGBs at higher yields, which may limit the upside in long-term rates. At the same time, Japanese banks have been reducing their foreign bond holdings, which reduces outward flow and supports the yen. These flows are gradual, but they matter.\n\nAnother factor is the semiconductor cycle. TSMC's recent guidance suggested a slower recovery in chip demand, which is relevant for Japan's exports. A weaker export outlook could make the BoJ more cautious, not less. So the market's hawkish interpretation of the statement may be overdone.\n\n## My Take\n\nI think the BoJ is in a difficult spot. Inflation is above target, but it is driven partly by cost-push factors that may fade. Wage growth is improving, but the Bank wants to see it sustained. The yen is weak, but the Bank does not want to be seen as targeting it. In that environment, the Bank will likely move slowly and communicate carefully.\n\nFor investors, the lesson is to distinguish between what the Bank says and what the market does. The September meeting did not signal a policy shift. It signaled a slightly higher probability of a future shift, which is not the same thing. I would not be surprised to see the yen give back some of its gains in the coming weeks, especially if U.S. yields rise again.\n\nThat said, I am not dogmatic. If the October services inflation print comes in hot, or if the winter wage negotiations show a stronger-than-expected outcome, the Bank could move earlier than I expect. I will be watching the data, not the headlines.\n\n## Conclusion\n\nThe BoJ meeting on 2026-09-30 was a reminder that central-bank communication is an art, not a science. The Bank said what it needed to say: it is vigilant, it is flexible, but it is not pre-committed. The market heard a slightly more hawkish tone and reacted accordingly. As an ex-central-bank economist, I find that reaction understandable but probably excessive. The fundamentals have not changed enough to justify a sustained repricing. I will continue to monitor the data and the flows, and I will try to keep my own biases in check. After all, the market is often right, but not always in the way we expect.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "Speaking as an ex-central banker, I've learned to be wary of over-reading any single policy meeting. The Bank of Japan's gathering on 2026-09-30 was no exception. The statement itself was, in many ways, a masterclass in continuity. Yet the market's reaction was anything but continuous. In this newsletter, I will try to separate what the Bank actually said from what the market heard, and I will flag where my own interpretation remains uncertain.",
+          "label": "Introduction"
+        },
+        {
+          "id": "p2",
+          "text": "The BoJ kept its policy rate unchanged at 0.5 percent, as most analysts expected. It also maintained its yield curve control framework, with the target range for 10-year JGB yields at plus or minus 0.5 percent around zero. The vote was 8-1, with one member dissenting in favor of a small hike. That dissent was not new; it has been a feature for several meetings. What was new, or at least seemed new to some, was the language in the outlook report.",
+          "label": "Introduction"
+        },
+        {
+          "id": "p3",
+          "text": "The key sentence, in my reading, was this: \"The Bank will not hesitate to adjust the degree of monetary accommodation if underlying inflation dynamics warrant it.\" That is a conditional statement, not a commitment. It is also a phrase that has appeared in slightly different forms before. In April, the Bank said it would \"consider adjusting\" policy if needed. In July, it said it would \"respond appropriately\" to developments. The September wording is marginally more assertive, but it is still hedged by the word \"if.\"",
+          "label": "What the Bank Said"
+        },
+        {
+          "id": "p4",
+          "text": "Governor Ueda's press conference reinforced the cautious tone. He noted that wage growth is broadening but remains uneven across small and medium-sized enterprises. He said the Bank is watching the yen's fluctuations but does not target the exchange rate. He also mentioned that the BoJ is in close contact with the government, which is standard. When asked directly about a possible move in October or December, he said the Bank does not pre-commit to a timeline. That is exactly what one would expect.",
+          "label": "What the Bank Said"
+        },
+        {
+          "id": "p5",
+          "text": "So, from a central-bank communication perspective, the message was: we are data-dependent, we see some progress, but we are not in a hurry. The dissent is a reminder that the board is not monolithic, but it is not a signal of imminent action.",
+          "label": "What the Bank Said"
+        },
+        {
+          "id": "p6",
+          "text": "Markets, however, often trade the path, not the level. Within minutes of the release, the yen strengthened from around 148.50 to 147.20 against the dollar. The 10-year JGB yield ticked up to 0.48 percent, still within the target band but near the upper end. The Nikkei 225 fell about 1.2 percent, with banks outperforming and exporters lagging. That pattern is consistent with a modest tightening of financial conditions, not a regime change.",
+          "label": "What the Market Did"
+        },
+        {
+          "id": "p7",
+          "text": "What struck me was the speed and magnitude of the move in the yen. A 130-pip swing on a statement that was largely as expected suggests that positioning was stretched. Many investors had been short the yen, and the slightly more assertive language was enough to trigger a squeeze. I would not read this as a fundamental reassessment of the BoJ's reaction function. It is more likely a technical adjustment.",
+          "label": "What the Market Did"
+        },
+        {
+          "id": "p8",
+          "text": "The JGB market was more measured. The 10-year yield rose, but the 20-year and 30-year yields were little changed. That tells me that the market does not expect a sustained tightening cycle. If it did, the long end would have sold off more. The curve steepened slightly, which is typical when the market prices a small chance of a near-term hike.",
+          "label": "What the Market Did"
+        },
+        {
+          "id": "p9",
+          "text": "It is impossible to analyze the BoJ in isolation. The Federal Reserve has been on hold since June, and the European Central Bank has signaled that it is done hiking for now. The Bank of England is in a similar position. In that context, the BoJ remains the odd one out, with negative real rates and a large balance sheet. But the gap is narrowing, slowly.",
+          "label": "The Global Context"
+        },
+        {
+          "id": "p10",
+          "text": "One factor that often gets overlooked is the behavior of Japanese institutional investors. Life insurers and pension funds have been increasing their allocations to domestic bonds as yields rise. That creates a natural demand for JGBs at higher yields, which may limit the upside in long-term rates. At the same time, Japanese banks have been reducing their foreign bond holdings, which reduces outward flow and supports the yen. These flows are gradual, but they matter.",
+          "label": "The Global Context"
+        },
+        {
+          "id": "p11",
+          "text": "Another factor is the semiconductor cycle. TSMC's recent guidance suggested a slower recovery in chip demand, which is relevant for Japan's exports. A weaker export outlook could make the BoJ more cautious, not less. So the market's hawkish interpretation of the statement may be overdone.",
+          "label": "The Global Context"
+        },
+        {
+          "id": "p12",
+          "text": "I think the BoJ is in a difficult spot. Inflation is above target, but it is driven partly by cost-push factors that may fade. Wage growth is improving, but the Bank wants to see it sustained. The yen is weak, but the Bank does not want to be seen as targeting it. In that environment, the Bank will likely move slowly and communicate carefully.",
+          "label": "My Take"
+        },
+        {
+          "id": "p13",
+          "text": "For investors, the lesson is to distinguish between what the Bank says and what the market does. The September meeting did not signal a policy shift. It signaled a slightly higher probability of a future shift, which is not the same thing. I would not be surprised to see the yen give back some of its gains in the coming weeks, especially if U.S. yields rise again.",
+          "label": "My Take"
+        },
+        {
+          "id": "p14",
+          "text": "That said, I am not dogmatic. If the October services inflation print comes in hot, or if the winter wage negotiations show a stronger-than-expected outcome, the Bank could move earlier than I expect. I will be watching the data, not the headlines.",
+          "label": "My Take"
+        },
+        {
+          "id": "p15",
+          "text": "The BoJ meeting on 2026-09-30 was a reminder that central-bank communication is an art, not a science. The Bank said what it needed to say: it is vigilant, it is flexible, but it is not pre-committed. The market heard a slightly more hawkish tone and reacted accordingly. As an ex-central-bank economist, I find that reaction understandable but probably excessive. The fundamentals have not changed enough to justify a sustained repricing. I will continue to monitor the data and the flows, and I will try to keep my own biases in check. After all, the market is often right, but not always in the way we expect.",
+          "label": "Conclusion"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "basis-points",
+          "articleId": "basis-boj-meeting-recap-market-reactions-to-unexpected-signals",
+          "version": "v1",
+          "wallet": "r3RXFkYt2GXtLBekLrknJDoseaT8LPVqTV",
+          "pubKey": "ED8CC0A81FE7B19A366D72079A0A7D394866B09F81E65D49AAE3F889E8C7C4E429",
+          "priceMinor": 0,
+          "leaves": [
+            "7dc68ca038900e38af2ef2bc303f956bc0b11936fee72130bee29d8f567612ed",
+            "2100e0bf3053296080d7020ab4dcebd22ebe66b2a548cac59b2ed4c6ebd119d8",
+            "0c6db0ad1c794f3221c557fe30ca29a6bfe7ec338ab289f3fe2ae83840125600",
+            "b67f5344683ab85484043ec7d6a8e75143d471c6d59e10c2deda58afa13663f1",
+            "7f1a16da6b51294e105ccf881a94c260587ecd6b9b6114ece591035541551fd0",
+            "b24b2469988670c53969798a785317e280755ea2d2c65ad7bd97e96d1a76f8d9",
+            "463475f9fe27f9974c2bfe0f92e97dbb912c7cd239194554eece29052c6b51eb",
+            "915a08e49065722b8fbb993549697c71f85e65c44214a87a47c007fdc19af6d7",
+            "1a358264e1bd27d6ee2ecd678b09ed6d0ee397a249bbe5d015b111fd92809f85",
+            "0f4c08798026e274999a221918d9758499336207a53335355127954a4cdf7fac",
+            "5b7909ac2b9bc983fbe50c11d4840b4d01390567b4d9b253fdb23d66869a6ddb",
+            "0e455e0931518c9759a0936b762c062b2654b8f01f95dafb16b031623d59f345",
+            "2c829f0518d5ab01d0606687b4f8bef8c26aa5840162c4d8b7854aa19b1a914d",
+            "42b2ae24e00dabd1210f3aacf17e64d4d77c4c597650e75b292fda8f88120348",
+            "9f4c0dc5061bd0014f3da96a0b3f1449d99a133387b34cb4f9aa327d2c101f8e"
+          ],
+          "root": "20f540605e82a2f9ac93feb0ec537ef5aa08c5233c0b26d2c9b408bc94855cf2",
+          "claims": [],
+          "wordCount": 1082,
+          "publishedAt": "2026-10-01",
+          "relevance": 1,
+          "sig": "97185E3D293C77CD7A1D27C9B7F0A8ECECF76C26BF4475B07AF2CE72AB07722C4A17BD683F4BE6CD18B28BB26F96B92F7F6FE8374FA20D89DB1EBDDC35925607"
+        },
+        "salts": [
+          "0e363a47891cdc39d709b0f799727872",
+          "2bf2321fbe90cd5e6db8ffe880777d8a",
+          "0f96b4512d716e1c51fc7e4c717a4ad7",
+          "5daa0f9d001c7b97e56180eb721c64ec",
+          "2ffc3fe7b70c257afeef806ba83556ea",
+          "b109488d8e6de837564b4be2d105ee6a",
+          "0f7b0e2b59b4a31f65cd8575e57333c5",
+          "018648f4b40adbfaeca7f03ff0214bf6",
+          "7a5b1f2ad73edba6dd3f00a6a62836d6",
+          "71191593b10587e0916e36438c4b4049",
+          "7c84a10aa45d41b4ef4e13a600d3187c",
+          "ac471d2b66348749ce47d1f79699dabc",
+          "cc9545f38ee91a98670708b9efb0492a",
+          "f4fac5aed27421cd038822e92bc8497a",
+          "d9cfbc47cdf48c338120e53516eac62f"
+        ]
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+      "version": "v1",
+      "title": "Projected Data‑Centre Load Growth in Johor by 2030",
+      "publisher": "Load Factor",
+      "preview": "A professor of energy systems walks through the arithmetic of Johor's data-centre boom and what it means for the grid.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "data-centre-load-growth",
+      "facets": [
+        "data-centre",
+        "load-growth",
+        "Johor",
+        "Singapore"
+      ],
+      "authority": 1,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Load Factor"
+      },
+      "publisherSlug": "load-factor",
+      "writerSlug": "load-factor",
+      "url": "/w/load-factor/articles/load-projected-data-centre-load-growth-in-johor-by-2030",
+      "relevance": 0.027267580525682827
+    },
+    {
+      "profileId": "basis-points",
+      "resourceId": "basis-boj-meeting-recap-market-reactions-to-unexpected-signals",
+      "version": "v1",
+      "title": "BoJ Meeting Recap: Market Reactions to Unexpected Signals",
+      "publisher": "Basis Points",
+      "preview": "A careful read of the BoJ's latest meeting and the market's sometimes surprising response.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "boj-market-reaction",
+      "facets": [
+        "BoJ",
+        "meeting",
+        "market-reaction"
+      ],
+      "authority": 1,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Basis Points"
+      },
+      "publisherSlug": "basis-points",
+      "writerSlug": "basis-points",
+      "url": "/w/basis-points/articles/basis-boj-meeting-recap-market-reactions-to-unexpected-signals",
+      "relevance": 0.0932077411687793
+    },
+    {
+      "profileId": "marketpulse-digest",
+      "resourceId": "marketpulse-asian-central-bank-rate-paths-comparative-analysis",
+      "version": "v1",
+      "title": "Asian Central Bank Rate Paths – Comparative Analysis",
+      "publisher": "MarketPulse Digest",
+      "preview": "A fresh look at how Asia's central banks are steering borrowing costs, with one major economy standing apart from the pack.",
+      "price": {
+        "amountMinor": 20,
+        "currency": "SGD"
+      },
+      "wallet": "r9pWiXx8fARrn31c2ELKtWYTQsaFJfT7jr",
+      "family": "asia-rate-paths",
+      "derivedFrom": "notfinancialtimes-asian-central-bank-rate-paths-a-comparative-analysis",
+      "facets": [
+        "rates",
+        "asia-rate-paths"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "MarketPulse Digest"
+      },
+      "publisherSlug": "marketpulse-digest",
+      "writerSlug": "marketpulse-digest",
+      "url": "/w/marketpulse-digest/articles/marketpulse-asian-central-bank-rate-paths-comparative-analysis",
+      "relevance": 0.10955655287071082,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "marketpulse-digest",
+        "articleId": "marketpulse-asian-central-bank-rate-paths-comparative-analysis",
+        "version": "v1",
+        "wallet": "r9pWiXx8fARrn31c2ELKtWYTQsaFJfT7jr",
+        "pubKey": "EDE76C01FD69DB0E0E38B3E412C30EB15837C40EEE0220BEDF2DC88BF290798E99",
+        "priceMinor": 20,
+        "leaves": [
+          "0e3436bc83fe2baf8e80f07a04d7c694ccfdc5ae7f9ff8ac8da7e16f6b76072f",
+          "1fd556efaaab6321eaf823d764150bff94ea8449f5405fad7fb440548e6177c8",
+          "d82734ca2b6ffd3c0803027c2db9797ce4096126792c9eb597e1e1e837269c31",
+          "3bf9f604840dde96319395b92fe9cc135e078453adeecbdd5949b62b2c3480da",
+          "9ade96c38922dc7dae18933ed03a485dd562c13d4ad9b58bc57a0d4810fb1307",
+          "02474225f5bf22d6a1c495f13871f05f2b09479214cabb761da852312ac19fe0",
+          "eb879e15015f4cddf529185d8015105e1ae5e240799c215d48300963c29d15ab",
+          "8b80d48e4f167dc9066c7f81b1eb8dd0ee287a199d5db1d222e4349ead98a4c1",
+          "4ddfd7d9358bc462df45b475b13046df8c84df90fdf6e6f637b3aafbecbc5f64",
+          "b0a9e970361b108e1a3d59de8a230e90172fade3ee39ec5d05471f247b3838a2"
+        ],
+        "root": "622894bef6e70baea44d67806fb755b62e435faabd9444a1a62663d6868ac612",
+        "claims": [],
+        "wordCount": 850,
+        "publishedAt": "2026-05-01",
+        "relevance": 0.10955655287071082,
+        "sig": "E085EF57AD74A64FAC044725B626393879D52C766DAABFD49886EB704E97E9D660A777A721C922510EA74730C8A9195259506FF602CC72C3193B67DE45C00406"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-offercancel",
+      "version": "v1",
+      "title": "What does OfferCancel do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of OfferCancel and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+      "family": "xrpl-tx-offercancel",
+      "facets": [
+        "XRPL",
+        "OfferCancel",
+        "Offer Cancel",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-offercancel",
+      "relevance": 0.8204999005532615,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-offercancel",
+        "version": "v1",
+        "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+        "pubKey": "ED9A6D37A5DF7DAFB9072A7ED8AC098F4E244F4B5A4FDC504482773A54F9D815AF",
+        "priceMinor": 40,
+        "leaves": [
+          "1ad8b082ad3b2ced62d7b8794251e2cb23aec085586174b9eabf4c5f251928f9",
+          "ce5f7be2b4a968186e4b6c21b0e8a846cd70501cb83c493f49435fe4111db26c",
+          "115dce35ef9afbbf6620ff08f138f6930634f5944eb14bd148a3cca759ae70d1",
+          "134f93b09d7a50c88e1086fc84cbd2cdbe082e4c25b0aef38afd43e73e294157"
+        ],
+        "root": "90e66e1cee8881997cda3ceb8567d35574d3474948d3e05cbb9b36c7e6c13dac",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "1ad8b082ad3b2ced62d7b8794251e2cb23aec085586174b9eabf4c5f251928f9",
+            "covers": {
+              "entity": "OfferCancel",
+              "measure": "offer"
+            }
+          }
+        ],
+        "wordCount": 189,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.8204999005532615,
+        "sig": "07AD1A86CB9749EA963C5ABF83E7A9ECD00EE27424A1E83B9147835D146974E7BDA53D2B503F33F1A4D8059719A941CFF9D8CF1CDDC123D270B1C946D1D7880E"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v3",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rhiNxcSMPjZZS1uiaHjJhDeZBCT9t6bjer",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.45404090073035214,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v3",
+        "wallet": "rhiNxcSMPjZZS1uiaHjJhDeZBCT9t6bjer",
+        "pubKey": "EDDD7F6BD8FBBCCC7A605F5760BD5560E28266284ED8ADD90AE29D7F92D1C08E0E",
+        "priceMinor": 40,
+        "leaves": [
+          "57750e210ccbd2f5259bbd90f4d51bc7db1443ed4ee72c2423e69f541b1e6997",
+          "562ace2d639f144514a156731eb6954594b9388eb5e7fe3cd90aaf0b4922ed27",
+          "ab29d5c01112d2caf0207fda17494b7dee3fc61ed8a7fd0fe66cf4c7c131e4ff",
+          "cdbe70de5745dfaafc5e1875eb4c522bf0e0819f7a0a1e54e31d63bacc31d540",
+          "736ca1d9812ec2ef2690a35972c945a8014922e50c3c252d04cf5e8aa8559661",
+          "85cdb1f705b329c86ef1613fb4f014759666759d117a76738d849b7b68031c4c",
+          "ea8167d4ca103dc10f1f2778c68db05ddcc9b4b6667c8a686edfa3fa307af3b8",
+          "758d0d66f0202d50f5947519754ae5f0f1677d24fdc0d86bc7532a6a9367f877"
+        ],
+        "root": "a016cc30c69ed4aff4c0e2ade468805db84d8946e1ddc605345d90575e3afb72",
+        "claims": [],
+        "wordCount": 666,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.45404090073035214,
+        "sig": "02E1CB6FFDD7EB14780E84C635F7BA3A1836C1AD3D4C796957C073DB890384EF146006F7366143731A82421D46BB187726DEFBF529C45E3621077855DA860708"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-offercreate",
+      "version": "v1",
+      "title": "What does OfferCreate do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of OfferCreate and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+      "family": "xrpl-tx-offercreate",
+      "facets": [
+        "XRPL",
+        "OfferCreate",
+        "Offer Create",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-offercreate",
+      "relevance": 0.8152708861436666,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-offercreate",
+        "version": "v1",
+        "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+        "pubKey": "ED9A6D37A5DF7DAFB9072A7ED8AC098F4E244F4B5A4FDC504482773A54F9D815AF",
+        "priceMinor": 40,
+        "leaves": [
+          "861f215e9bbe4a7c4d638736bd190435139940af73bc12ed297cb86ab3f49848",
+          "4c078f0b02ce51ee801269462d16f0119a1c6f346b36dbd1efe8bc33e2460f44",
+          "f196416828b7a341ee6551fa292d227f2d82332592bb4451bfad7be19b23e811",
+          "7f3f1ee29041410c64deb501f737629e53ab1e80acc057fbd74d4fadc66adfea"
+        ],
+        "root": "af9f39f4bce8069617832a4e22fd5d881f36b087d574bbe2de73455e4f892dee",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "861f215e9bbe4a7c4d638736bd190435139940af73bc12ed297cb86ab3f49848",
+            "covers": {
+              "entity": "OfferCreate",
+              "measure": "liquidity"
+            }
+          }
+        ],
+        "wordCount": 193,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.8152708861436666,
+        "sig": "9A9598A1EE52170939F422AA55CFDBC7313C7DCE5B13AC3097C963713078E49DC1DCFA82AC8EEE0FA28E07BBC6E2F37939F38F87523E1832D32FB15A3466F807"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-dex",
+      "version": "v1",
+      "title": "What does the native XRPL DEX provide?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what does the native xrpl dex provide?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+      "family": "xrpl-dex",
+      "facets": [
+        "XRPL",
+        "DEX",
+        "offers",
+        "order book",
+        "exchange",
+        "liquidity"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-dex",
+      "relevance": 0.7070580723119264,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-dex",
+        "version": "v1",
+        "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+        "pubKey": "ED9A6D37A5DF7DAFB9072A7ED8AC098F4E244F4B5A4FDC504482773A54F9D815AF",
+        "priceMinor": 40,
+        "leaves": [
+          "f5b29804a9ddaa7def4f35f1792c5a9aabd8f165dcafe280fc1ed0499a101f8c",
+          "68cd546fd8e6e839a375e2aff875a72d75fb9b3d27ea7b3c2814a1960f198961",
+          "663382c9245e566dff9fc1a380d59d6232bbdfd45fdc59de253b96e5eef041d2",
+          "f704a416bf8da31c0bcb784924058489df81074abc486cfe41a4017c77c29b99"
+        ],
+        "root": "6a496e337c49fe23febe802a323aba8705534b711cce44b48de916a3446a313f",
+        "claims": [],
+        "wordCount": 241,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7070580723119264,
+        "sig": "25B538FD6881666186092D51D238CEAAD52ABE1F853EEF71789DFB6CA36C157CD2300788FC3AE068EFE4A9694BE57073F124CFAC1B1131E37204BF27259FE602"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-amm",
+      "version": "v1",
+      "title": "How does the XLS-30 AMM interact with the XRPL DEX?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to how does the xls-30 amm interact with the xrpl dex?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+      "family": "xrpl-amm",
+      "facets": [
+        "XRPL",
+        "AMM",
+        "XLS-30",
+        "DEX",
+        "liquidity",
+        "LP tokens"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-amm",
+      "relevance": 0.5582354894119145,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-amm",
+        "version": "v1",
+        "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+        "pubKey": "ED9A6D37A5DF7DAFB9072A7ED8AC098F4E244F4B5A4FDC504482773A54F9D815AF",
+        "priceMinor": 40,
+        "leaves": [
+          "3989edf53bf04cd01da5f6b1966d5a3019f76a7b36befa36e779a8d3653f6371",
+          "20611a3a8e4dd9dde2b3d987642ce4ab3400a328d78b071a963552a03e2cb9e2",
+          "b4afb99dac71f258fb6ce0c8867377695eb6c4a67b1f5801d253b3a8dbb920da",
+          "e27ba8c8a857cc83eada925e18425d683d77df18312e2f73e43c582fa3cbbfbd"
+        ],
+        "root": "2c8673aabacd0e76eaf0e225681490108ab03c9914bd7451ca09507cfb991eb2",
+        "claims": [],
+        "wordCount": 240,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5582354894119145,
+        "sig": "B5F692DA97AFB0BC8C932C40FA1BD34EA8E782B1E18ECF803213205C1BF01F4D34C13B52967AE7E50AE1A0C8631340810EB22128553AE99E4C748DFE44972C0C"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-standard-xls-81",
+      "version": "v1",
+      "title": "What does XLS-81 specify for Permissioned DEX?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of XLS-81 and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+      "family": "xrpl-standard-xls-81",
+      "facets": [
+        "XRPL",
+        "XLS-81",
+        "Permissioned DEX"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-standard-xls-81",
+      "relevance": 0.5293628965848334,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-standard-xls-81",
+        "version": "v1",
+        "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+        "pubKey": "ED9A6D37A5DF7DAFB9072A7ED8AC098F4E244F4B5A4FDC504482773A54F9D815AF",
+        "priceMinor": 40,
+        "leaves": [
+          "024fd08fa3ed97e24461f99f9ccb2b2ec89a618a022d64715d518a2b088c477c",
+          "0d93948af3fe6d1359d42c40d1038889e5929a79c7325101ab6e83f45e54f954",
+          "41310d14e4249aaa52b44dae9406b5141f52022d538ee29b363375ad2182eb35",
+          "197f3cf335eb15407d8e413569ffd087c0b335315c94778164dfe13eeac74552"
+        ],
+        "root": "27898e57db3040479036a2b75cbef561bea18e4efa4c99f45e445d8846429b89",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "024fd08fa3ed97e24461f99f9ccb2b2ec89a618a022d64715d518a2b088c477c",
+            "covers": {
+              "entity": "XLS",
+              "measure": "trading"
+            }
+          }
+        ],
+        "wordCount": 198,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.5293628965848334,
+        "sig": "4725E1EAFA5DCC95AAD86C9E794CB235EC772E26583DEFFFFBF37F6A509DDE2CB38A37F993ED4AD0CBBA0F15A3701107AAB490802F0215E1A4B26184B6C37B0B"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-flag-disallowincomingtrustline",
+      "version": "v1",
+      "title": "What does the XRPL DisallowIncomingTrustline account flag mean?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of DisallowIncomingTrustline and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+      "family": "xrpl-flag-disallowincomingtrustline",
+      "facets": [
+        "XRPL",
+        "DisallowIncomingTrustline",
+        "asfDisallowIncomingTrustline",
+        "lsfDisallowIncomingTrustline",
+        "account flags"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-flag-disallowincomingtrustline",
+      "relevance": 0.4676225948129334,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-flag-disallowincomingtrustline",
+        "version": "v1",
+        "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+        "pubKey": "ED9A6D37A5DF7DAFB9072A7ED8AC098F4E244F4B5A4FDC504482773A54F9D815AF",
+        "priceMinor": 40,
+        "leaves": [
+          "32e1e5873deb029f3e0e54360b2ee9917d8e688b47bd71c4634d691d9003af8e",
+          "101109dc3679b309bccf28de80cdec45f0b7b4f5dab22293842e701d6b341ed2",
+          "9f6c878b156be6d1d453c67820628137e40b8f5bf2a6c4cdb5e67821bc777565",
+          "d8d2429a5bf6280ae9cb40103c7929d84e0af6482b340a9aaa70b6c613c58f3c"
+        ],
+        "root": "0b92bdf2b7d5b229a83e620d7f954dbbf2f9df0f0323004fbe90b85c2e9087bf",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "32e1e5873deb029f3e0e54360b2ee9917d8e688b47bd71c4634d691d9003af8e",
+            "covers": {
+              "entity": "DisallowIncomingTrustline",
+              "measure": "creation"
+            }
+          }
+        ],
+        "wordCount": 186,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.4676225948129334,
+        "sig": "6C4753B07126B763F7D0636BDEEAECB69FAECB651E1CFCF0B8B4ED94FDECC24DD0E0E959EBFC6CCF876720D52029C43EA75DD3B58F41DC717C7C8BB049DEA800"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-domains",
+      "version": "v1",
+      "title": "What do Permissioned Domains restrict?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what do permissioned domains restrict?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+      "family": "xrpl-domains",
+      "facets": [
+        "XRPL",
+        "Permissioned Domains",
+        "Credentials",
+        "permissioned DEX",
+        "compliance"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-domains",
+      "relevance": 0.27805925161048195,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-domains",
+        "version": "v1",
+        "wallet": "rDSbJVhmCnqJP581qk7JQADXfee7aYkBhs",
+        "pubKey": "ED9A6D37A5DF7DAFB9072A7ED8AC098F4E244F4B5A4FDC504482773A54F9D815AF",
+        "priceMinor": 40,
+        "leaves": [
+          "362e0cceecde6c895dfe9f45f6c0003dd98a5427f46cd53baabb38ca7299e734",
+          "e65a28e43d3204ec8caab2e3de218e8eb6b1fc589ab82104794338de134e93cf",
+          "c79d59b8ebf27f99bcbbb87a22ee9ef33f974627cbcf4e636fa592511437d14c",
+          "c13eaee08dcd17b93d5a299693a0559fe5c66ab7c72da2f61723cd78aba3c8ee"
+        ],
+        "root": "f3c5ae4dafd14eba18f34d24e833aeec7ed9aa567838fd8a54e019dfe65e0659",
+        "claims": [],
+        "wordCount": 227,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.27805925161048195,
+        "sig": "BFFDCBB66757752234F4D3611BC52AB7DB789F9652985432C8BF1AA4ED2DD1A22CBF10F5A78029358E1B1BCA94E88A3B2C75894B08BEB88D8F6B5089FC61720F"
+      }
+    }
+  ],
+  "intents": [],
+  "grants": [],
+  "receipts": [],
+  "payments": [],
+  "proofs": [
+    {
+      "resourceId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "load-factor",
+        "articleId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+        "version": "v1",
+        "wallet": "rpVhVgDkiuxUdfaR6BWhntMhfYkNMqYy2v",
+        "pubKey": "ED2EE1C4E562BB7ED6A6E8F23B06A783CAAA771CBFE69CD1BA4576940FB1142EAF",
+        "priceMinor": 0,
+        "leaves": [
+          "524a17ceffaeedba8b761e0c6090a1184dee9723c0ad07326d8a476e3d4cf9bf",
+          "0364c4d1f21708bc6eb1b471dfccdbd1fea1e32dfb779800c724a1527374cac7",
+          "bd02e7478eb8a8f8d4ab66378eea822830fc936ee030ea582c740ca18e88458c",
+          "189934fbd7f329b78f63729fc5fcc0cfedb65b21988f523ddfe54e46a393977d",
+          "95a03a7ef365960bffef259021ae81f29d2dbb868ae8195fddc807d493fb1fb5",
+          "5ba076ce1dcf14dcd737fbe8757608b955148b5a4d3a399381f19b1fe20e6a22",
+          "e48db61cf1e079abb1f1f1935174885073b2ac330a2733487ee1c5658826160a",
+          "74cc7d8eb75e75bb21f4c7c78300abc55b8aea8622faac8e75b72f5a83798c42",
+          "fd2ef6dd0791f0c3485b6c13a5d08bb2501c8c17278695c46aa3811656959b33",
+          "9d4bedad317bb798b6c48d36b9d09f4e9117b02bcee01360e38e3dd9c8f754a1",
+          "b7bed6ae37c9048f80ccaa5bda2ed3f3ed925510a59c197fdc1a32c656ad2ba7",
+          "eb9d2516220664f8b7ddff1a90971c65312b5d972cbbf6686050e872f0cb63a5",
+          "18955ec38834a55bcdb28e9c607a3a5e91a9f24513e8eb1f51914d9387464b9d",
+          "ed398fb7d062b98c521ce823666cf262c5aebe3aa1fdd87449daefb90ec0ab43"
+        ],
+        "root": "edd6bf7195ee500ddeb7779d7d071775b3801893f8e2dd7f53ad18ba7c668f97",
+        "claims": [
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "0364c4d1f21708bc6eb1b471dfccdbd1fea1e32dfb779800c724a1527374cac7"
+          },
+          {
+            "id": "p2:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "0364c4d1f21708bc6eb1b471dfccdbd1fea1e32dfb779800c724a1527374cac7"
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "bd02e7478eb8a8f8d4ab66378eea822830fc936ee030ea582c740ca18e88458c"
+          },
+          {
+            "id": "p3:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "bd02e7478eb8a8f8d4ab66378eea822830fc936ee030ea582c740ca18e88458c"
+          },
+          {
+            "id": "p4:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "189934fbd7f329b78f63729fc5fcc0cfedb65b21988f523ddfe54e46a393977d"
+          },
+          {
+            "id": "p4:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "189934fbd7f329b78f63729fc5fcc0cfedb65b21988f523ddfe54e46a393977d"
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "95a03a7ef365960bffef259021ae81f29d2dbb868ae8195fddc807d493fb1fb5"
+          },
+          {
+            "id": "p5:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "95a03a7ef365960bffef259021ae81f29d2dbb868ae8195fddc807d493fb1fb5"
+          },
+          {
+            "id": "p6:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "5ba076ce1dcf14dcd737fbe8757608b955148b5a4d3a399381f19b1fe20e6a22"
+          },
+          {
+            "id": "p6:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "5ba076ce1dcf14dcd737fbe8757608b955148b5a4d3a399381f19b1fe20e6a22"
+          },
+          {
+            "id": "p9:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "fd2ef6dd0791f0c3485b6c13a5d08bb2501c8c17278695c46aa3811656959b33"
+          },
+          {
+            "id": "p10:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "9d4bedad317bb798b6c48d36b9d09f4e9117b02bcee01360e38e3dd9c8f754a1"
+          },
+          {
+            "id": "p10:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "9d4bedad317bb798b6c48d36b9d09f4e9117b02bcee01360e38e3dd9c8f754a1"
+          },
+          {
+            "id": "p11:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "b7bed6ae37c9048f80ccaa5bda2ed3f3ed925510a59c197fdc1a32c656ad2ba7"
+          },
+          {
+            "id": "p12:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "eb9d2516220664f8b7ddff1a90971c65312b5d972cbbf6686050e872f0cb63a5"
+          },
+          {
+            "id": "p12:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "eb9d2516220664f8b7ddff1a90971c65312b5d972cbbf6686050e872f0cb63a5"
+          },
+          {
+            "id": "p13:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "18955ec38834a55bcdb28e9c607a3a5e91a9f24513e8eb1f51914d9387464b9d"
+          },
+          {
+            "id": "p13:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "18955ec38834a55bcdb28e9c607a3a5e91a9f24513e8eb1f51914d9387464b9d"
+          }
+        ],
+        "wordCount": 1351,
+        "publishedAt": "2026-04-15",
+        "relevance": 1,
+        "sig": "3064BFED6E947222975DB5C7ED7DD2B63745AFC62DD06A0E2DB9952ED2EFA90BC8627B8E2CA11D0B9E627F6A22A41F8FDED5625B3484E044782ED3AC9C6CB301"
+      },
+      "salts": [
+        "11511013f2365c0026e6f76dcbf0b90a",
+        "57182559bfd064037a5a6be40c83f349",
+        "fbb6c259397882838396d1db75a5cbc0",
+        "0b961bcab04621345335f1e8b6f08880",
+        "50a46e5206f5ed694be46fecbb979ecc",
+        "e88990c84462dc2cc25706064ce4382a",
+        "adab36d7053afb157947dfeeff356455",
+        "dff8834c2464e32994e1e8a8596e0af5",
+        "dbb36d2ace3309f77c8459e37a6dfe41",
+        "602022f064885f771b05ec248ee1720c",
+        "30dc99719a358651b461f2822aff23d8",
+        "c1f3be1b24e9a23ad5d06a08d82f6a11",
+        "4fdfcd22ac06b4e1c7609dedd9bdfd48",
+        "89a260920093a9597984bf8b296b570a"
+      ]
+    },
+    {
+      "resourceId": "basis-boj-meeting-recap-market-reactions-to-unexpected-signals",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "basis-points",
+        "articleId": "basis-boj-meeting-recap-market-reactions-to-unexpected-signals",
+        "version": "v1",
+        "wallet": "r3RXFkYt2GXtLBekLrknJDoseaT8LPVqTV",
+        "pubKey": "ED8CC0A81FE7B19A366D72079A0A7D394866B09F81E65D49AAE3F889E8C7C4E429",
+        "priceMinor": 0,
+        "leaves": [
+          "7dc68ca038900e38af2ef2bc303f956bc0b11936fee72130bee29d8f567612ed",
+          "2100e0bf3053296080d7020ab4dcebd22ebe66b2a548cac59b2ed4c6ebd119d8",
+          "0c6db0ad1c794f3221c557fe30ca29a6bfe7ec338ab289f3fe2ae83840125600",
+          "b67f5344683ab85484043ec7d6a8e75143d471c6d59e10c2deda58afa13663f1",
+          "7f1a16da6b51294e105ccf881a94c260587ecd6b9b6114ece591035541551fd0",
+          "b24b2469988670c53969798a785317e280755ea2d2c65ad7bd97e96d1a76f8d9",
+          "463475f9fe27f9974c2bfe0f92e97dbb912c7cd239194554eece29052c6b51eb",
+          "915a08e49065722b8fbb993549697c71f85e65c44214a87a47c007fdc19af6d7",
+          "1a358264e1bd27d6ee2ecd678b09ed6d0ee397a249bbe5d015b111fd92809f85",
+          "0f4c08798026e274999a221918d9758499336207a53335355127954a4cdf7fac",
+          "5b7909ac2b9bc983fbe50c11d4840b4d01390567b4d9b253fdb23d66869a6ddb",
+          "0e455e0931518c9759a0936b762c062b2654b8f01f95dafb16b031623d59f345",
+          "2c829f0518d5ab01d0606687b4f8bef8c26aa5840162c4d8b7854aa19b1a914d",
+          "42b2ae24e00dabd1210f3aacf17e64d4d77c4c597650e75b292fda8f88120348",
+          "9f4c0dc5061bd0014f3da96a0b3f1449d99a133387b34cb4f9aa327d2c101f8e"
+        ],
+        "root": "20f540605e82a2f9ac93feb0ec537ef5aa08c5233c0b26d2c9b408bc94855cf2",
+        "claims": [],
+        "wordCount": 1082,
+        "publishedAt": "2026-10-01",
+        "relevance": 1,
+        "sig": "97185E3D293C77CD7A1D27C9B7F0A8ECECF76C26BF4475B07AF2CE72AB07722C4A17BD683F4BE6CD18B28BB26F96B92F7F6FE8374FA20D89DB1EBDDC35925607"
+      },
+      "salts": [
+        "0e363a47891cdc39d709b0f799727872",
+        "2bf2321fbe90cd5e6db8ffe880777d8a",
+        "0f96b4512d716e1c51fc7e4c717a4ad7",
+        "5daa0f9d001c7b97e56180eb721c64ec",
+        "2ffc3fe7b70c257afeef806ba83556ea",
+        "b109488d8e6de837564b4be2d105ee6a",
+        "0f7b0e2b59b4a31f65cd8575e57333c5",
+        "018648f4b40adbfaeca7f03ff0214bf6",
+        "7a5b1f2ad73edba6dd3f00a6a62836d6",
+        "71191593b10587e0916e36438c4b4049",
+        "7c84a10aa45d41b4ef4e13a600d3187c",
+        "ac471d2b66348749ce47d1f79699dabc",
+        "cc9545f38ee91a98670708b9efb0492a",
+        "f4fac5aed27421cd038822e92bc8497a",
+        "d9cfbc47cdf48c338120e53516eac62f"
+      ]
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 7,
+      "hash": "546dc111ee0e29b786468b0e9b8967ea0e0f78d85e5dc1483317bf79e4cb65db"
+    },
+    "entries": [
+      {
+        "seq": 8,
+        "at": "2026-11-10T19:07:13.054Z",
+        "prevHash": "546dc111ee0e29b786468b0e9b8967ea0e0f78d85e5dc1483317bf79e4cb65db",
+        "hash": "5ca5ea01767f9314035867a6fe17689900cd010f5dfd6d798e4a88a1ff31057a",
+        "runId": "c741965c-7233-451a-aab3-924b29257366",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 0,
+          "agentMaxMinor": null,
+          "day": "2026-11-10",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "6c31ef5ee139bc9ec10628c98b979464bba968e7a2a905a073068fce14288432",
+          "requestedMinor": 0,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 5000,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 2000
+        }
+      },
+      {
+        "seq": 9,
+        "at": "2026-11-10T19:07:13.054Z",
+        "prevHash": "5ca5ea01767f9314035867a6fe17689900cd010f5dfd6d798e4a88a1ff31057a",
+        "hash": "aed555ff524e66319c8be64a9951c8331e1916dc8ab92acc945673d6a97ed986",
+        "runId": "c741965c-7233-451a-aab3-924b29257366",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "refusal",
+        "data": {
+          "policyVersion": "wallet-v1",
+          "reason": "No budget left under the wallet or surface caps; nothing can be spent",
+          "stage": "admission"
+        }
+      },
+      {
+        "seq": 10,
+        "at": "2026-11-10T19:07:13.148Z",
+        "prevHash": "aed555ff524e66319c8be64a9951c8331e1916dc8ab92acc945673d6a97ed986",
+        "hash": "9c7c105f5aca65ae9cbd8e9c15022f4596dedb52e2faad35bbfd8094547b88db",
+        "runId": "c741965c-7233-451a-aab3-924b29257366",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 9,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": null,
+          "selectedSourceKey": null,
+          "threshold": 0.2,
+          "verdicts": {
+            "SKIP_LOW_VALUE": 3,
+            "SKIP_OVER_BUDGET": 5,
+            "SKIP_REWRITE": 1
+          }
+        }
+      },
+      {
+        "seq": 11,
+        "at": "2026-11-10T19:07:13.159Z",
+        "prevHash": "9c7c105f5aca65ae9cbd8e9c15022f4596dedb52e2faad35bbfd8094547b88db",
+        "hash": "e19bebff880e68dde07e31d36f65bc5cef15aab04a84ab0a49423223746032cf",
+        "runId": "c741965c-7233-451a-aab3-924b29257366",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "827df088ab4742c3cac061f5b9c093afb3ccad8c20ef6efd700bed15338a3c9d"
+        }
+      }
+    ],
+    "head": "e19bebff880e68dde07e31d36f65bc5cef15aab04a84ab0a49423223746032cf"
+  }
+}
