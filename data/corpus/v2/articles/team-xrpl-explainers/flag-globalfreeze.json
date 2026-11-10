@@ -1,0 +1,62 @@
+{
+  "articleId": "xrpl-flag-globalfreeze",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does the XRPL GlobalFreeze account flag mean?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of GlobalFreeze and its practical limits.",
+  "tags": [
+    "XRPL",
+    "GlobalFreeze",
+    "asfGlobalFreeze",
+    "lsfGlobalFreeze",
+    "account flags"
+  ],
+  "family": "xrpl-flag-globalfreeze",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/ledger-data/ledger-entry-types/accountroot",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, GlobalFreeze freezes an issuer's trust-line tokens according to XRPL's freeze rules. [1]\n\nIt concerns assets issued by the account, not the XRP balances of everyone connected to it. Freezing differs from clawback: restricting movement is not the same as reclaiming a balance. Interactions with NoFreeze and individual line settings matter. Inspect issuer and line state before interpreting a failed transfer as proof that a holder has no funds. [1][2]\n\nXRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for GlobalFreeze and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]\n\nAuthor interpretation: document why GlobalFreeze is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, GlobalFreeze freezes an issuer's trust-line tokens according to XRPL's freeze rules. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "It concerns assets issued by the account, not the XRP balances of everyone connected to it. Freezing differs from clawback: restricting movement is not the same as reclaiming a balance. Interactions with NoFreeze and individual line settings matter. Inspect issuer and line state before interpreting a failed transfer as proof that a holder has no funds. [1][2]"
+    },
+    {
+      "id": "p3",
+      "text": "XRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for GlobalFreeze and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: document why GlobalFreeze is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "GlobalFreeze",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "funds"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    }
+  }
+}

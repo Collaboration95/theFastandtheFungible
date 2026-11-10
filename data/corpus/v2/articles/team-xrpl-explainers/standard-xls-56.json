@@ -1,0 +1,65 @@
+{
+  "articleId": "xrpl-standard-xls-56",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XLS-56 specify for Batch transactions?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XLS-56 and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XLS-56",
+    "Batch transactions"
+  ],
+  "family": "xrpl-standard-xls-56",
+  "sources": [
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0056-batch/README.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/resources/known-amendments",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/batch",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XLS specifications, XLS-56 specifies batch transaction execution with modes controlling how grouped operations succeed or stop. [1]\n\nThe current transaction reference identifies BatchV1_1 as a prerequisite for its documented operation. [3] Modes include all-or-nothing and alternatives with different failure behavior. Always inspect inner transaction outcomes rather than assuming an outer success means all inner operations completed. A design specification and a usable feature on a particular network are separate claims. [1]\n\nThe public XLS-56 specification describes a design, its dependencies and its intended ledger behavior. A published standard is not proof that a feature is enabled on every XRPL network. Check the target network and any associated fixes before relying on the capability. Testnet, Mainnet and development networks can support different amendment sets, and examples in a proposal are explanatory rather than records of validated transactions. [1][2]\n\nThe fetched specification records its status as Final. [1] Author interpretation: compare the proposed use of XLS-56 with the actual network capability and preserve the resulting evidence. Keep a design reference separate from a deployment claim and from a successful transaction receipt. This article makes no fresh network-activation claim. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XLS specifications, XLS-56 specifies batch transaction execution with modes controlling how grouped operations succeed or stop. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The current transaction reference identifies BatchV1_1 as a prerequisite for its documented operation. [3] Modes include all-or-nothing and alternatives with different failure behavior. Always inspect inner transaction outcomes rather than assuming an outer success means all inner operations completed. A design specification and a usable feature on a particular network are separate claims. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The public XLS-56 specification describes a design, its dependencies and its intended ledger behavior. A published standard is not proof that a feature is enabled on every XRPL network. Check the target network and any associated fixes before relying on the capability. Testnet, Mainnet and development networks can support different amendment sets, and examples in a proposal are explanatory rather than records of validated transactions. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "The fetched specification records its status as Final. [1] Author interpretation: compare the proposed use of XLS-56 with the actual network capability and preserve the resulting evidence. Keep a design reference separate from a deployment claim and from a successful transaction receipt. This article makes no fresh network-activation claim. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XLS",
+      "measure": "execution"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    },
+    "p4": {
+      "entity": "XLS",
+      "measure": "transaction",
+      "period": "twenty twenty six"
+    }
+  }
+}

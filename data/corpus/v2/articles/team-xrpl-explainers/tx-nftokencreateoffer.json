@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-nftokencreateoffer",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does NFTokenCreateOffer do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of NFTokenCreateOffer and its practical limits.",
+  "tags": [
+    "XRPL",
+    "NFTokenCreateOffer",
+    "NF Token Create Offer",
+    "transaction"
+  ],
+  "family": "xrpl-tx-nftokencreateoffer",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/nftokencreateoffer",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, NFTokenCreateOffer creates an on-ledger offer to buy or sell a particular NFT. [1]\n\nOffer flags distinguish buying from selling, and optional destination and expiration fields constrain acceptance. An offer records trading terms; it does not transfer the NFT immediately. Check the NFT identifier and payment asset together. A zero-price transfer offer is still an ownership operation with permission and acceptance requirements. [1]\n\nThe NFTokenCreateOffer reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using NFTokenCreateOffer, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, NFTokenCreateOffer creates an on-ledger offer to buy or sell a particular NFT. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Offer flags distinguish buying from selling, and optional destination and expiration fields constrain acceptance. An offer records trading terms; it does not transfer the NFT immediately. Check the NFT identifier and payment asset together. A zero-price transfer offer is still an ownership operation with permission and acceptance requirements. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The NFTokenCreateOffer reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using NFTokenCreateOffer, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "NFTokenCreateOffer",
+      "measure": "NFT"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

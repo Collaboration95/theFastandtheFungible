@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-xchaincommit",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XChainCommit do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XChainCommit and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XChainCommit",
+    "X Chain Commit",
+    "transaction"
+  ],
+  "family": "xrpl-tx-xchaincommit",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/xchaincommit",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, XChainCommit starts a cross-chain transfer by committing value to a configured bridge. [1]\n\nThe destination side relies on witness attestations and claim processing rather than assuming every source submission is final. Check the bridge, asset, amount and claim identifier. A validated source commitment is useful evidence of the first stage, but the recipient's final delivery needs its own destination-chain confirmation. [1]\n\nThe XChainCommit reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using XChainCommit, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, XChainCommit starts a cross-chain transfer by committing value to a configured bridge. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The destination side relies on witness attestations and claim processing rather than assuming every source submission is final. Check the bridge, asset, amount and claim identifier. A validated source commitment is useful evidence of the first stage, but the recipient's final delivery needs its own destination-chain confirmation. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The XChainCommit reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using XChainCommit, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "XChainCommit",
+      "measure": "value"
+    }
+  }
+}

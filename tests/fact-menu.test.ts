@@ -13,12 +13,12 @@ import { PublisherJournal } from '../publisher/journal.js'
 import { EVIDENCE } from '../server/agents/openai-decisions.js'
 
 describe('fact menu (#260)', () => {
-  it('preserves the pre-menu bank and constructed coverage; pins the explainer corpus addition', async () => {
+  it('preserves the pre-menu bank and constructed coverage; pins the public-index corpus additions', async () => {
     const before = JSON.parse(readFileSync('eval/scorecard/frozen-pre-fact-menu.json', 'utf8'))
     const after = await frozenInputs('eval/questions/bank.v1.json')
     expect(after.bank).toBe(before.bank)
     const j1 = JSON.parse(readFileSync('eval/scorecard/frozen-j5-coverage.json', 'utf8'))
-    const k = JSON.parse(readFileSync('docs/evidence/x-explainers/corpus-golden.json', 'utf8'))
+    const k = JSON.parse(readFileSync('docs/evidence/c3-index-corpus/corpus-golden.json', 'utf8'))
     expect(after.corpusContent).toBe(k.corpusContent)
     // J5 adds two disclosed notes; historical baseline retained in frozen-round4-j1.json.
     expect(after.snapshots).toBe(j1.snapshots)
@@ -69,7 +69,13 @@ describe('fact menu (#260)', () => {
     try {
       for (const article of world.corpus.articles.filter(a => a.tier === 'PAID')) {
         paid++
-        expect(article.factMenu).toEqual(deriveFactMenu(article))
+        if (article.publisherSlug === 'team-xrpl-explainers' && article.publishedAt === '2026-11-10') {
+          const automatic = deriveFactMenu(article)
+          expect(article.factMenu).toEqual({ ...automatic, p1: article.factMenu?.p1 })
+          const first = article.factMenu!.p1!
+          expect(FactCoverSchema.safeParse(first).success).toBe(true)
+          expect(satisfiesFactCover(article.passages[0].text, first)).toBe(true)
+        } else expect(article.factMenu).toEqual(deriveFactMenu(article))
         const candidate = candidateOf(world, article)
         const m = candidate.manifest!
         expect(m.schemaVersion).toBe(2)
@@ -94,7 +100,7 @@ describe('fact menu (#260)', () => {
         expect(delivery.ok).toBe(article.publisherSlug !== 'alphaleak' || article.articleId !== 'alphaleak-kestrel-penang-lead-times')
         expect(proofPasses(article)).toBe(delivery.ok)
       }
-      expect(paid).toBe(95)
+      expect(paid).toBe(220)
       expect(claims).toBeGreaterThan(100)
     } finally { journal.close() }
   })

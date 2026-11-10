@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-sponsorshiptransfer",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does SponsorshipTransfer do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of SponsorshipTransfer and its practical limits.",
+  "tags": [
+    "XRPL",
+    "SponsorshipTransfer",
+    "Sponsorship Transfer",
+    "transaction"
+  ],
+  "family": "xrpl-tx-sponsorshiptransfer",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/sponsorshiptransfer",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, SponsorshipTransfer changes who bears reserve responsibility for an account or ledger object. [1]\n\nCreating, transferring or ending sponsorship can change the XRP liquidity each party needs without transferring the object's economic ownership. Account and object sponsorship must be identified precisely. Review the consent and reserve requirements for the requested transition; a successful sponsorship update is not a payment to the beneficiary. [1]\n\nThe SponsorshipTransfer reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using SponsorshipTransfer, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, SponsorshipTransfer changes who bears reserve responsibility for an account or ledger object. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Creating, transferring or ending sponsorship can change the XRP liquidity each party needs without transferring the object's economic ownership. Account and object sponsorship must be identified precisely. Review the consent and reserve requirements for the requested transition; a successful sponsorship update is not a payment to the beneficiary. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The SponsorshipTransfer reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using SponsorshipTransfer, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "SponsorshipTransfer",
+      "measure": "account"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "payment"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

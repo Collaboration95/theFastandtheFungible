@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-didset",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does DIDSet do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of DIDSet and its practical limits.",
+  "tags": [
+    "XRPL",
+    "DIDSet",
+    "DID Set",
+    "transaction"
+  ],
+  "family": "xrpl-tx-didset",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/didset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, DIDSet creates or updates an account's decentralized identifier and associated references. [1]\n\nDIDDocument, URI and Data provide different ways to carry or reference identifier information within the transaction's limits. A DID helps publish an identity relationship but does not itself perform customer due diligence. Check controller authority and current resolution. A pointer to a document is not a ledger guarantee that its claims are accurate or its host remains available. [1]\n\nThe DIDSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using DIDSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, DIDSet creates or updates an account's decentralized identifier and associated references. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "DIDDocument, URI and Data provide different ways to carry or reference identifier information within the transaction's limits. A DID helps publish an identity relationship but does not itself perform customer due diligence. Check controller authority and current resolution. A pointer to a document is not a ledger guarantee that its claims are accurate or its host remains available. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The DIDSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using DIDSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p2": {
+      "entity": "DID",
+      "measure": "identity"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "DIDSet",
+      "measure": "account"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-setregularkey",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does SetRegularKey do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of SetRegularKey and its practical limits.",
+  "tags": [
+    "XRPL",
+    "SetRegularKey",
+    "Set Regular Key",
+    "transaction"
+  ],
+  "family": "xrpl-tx-setregularkey",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/setregularkey",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, SetRegularKey assigns, replaces or removes the regular signing key for an XRPL account. [1]\n\nUsing a regular key keeps the master key out of routine signing. A regular key does not create a new funded account or restrict transaction types by itself. If it is compromised, an authorized remaining signing method can replace it. Removing the last usable signing method is restricted to avoid locking out the account. [1]\n\nThe SetRegularKey reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using SetRegularKey, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, SetRegularKey assigns, replaces or removes the regular signing key for an XRPL account. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Using a regular key keeps the master key out of routine signing. A regular key does not create a new funded account or restrict transaction types by itself. If it is compromised, an authorized remaining signing method can replace it. Removing the last usable signing method is restricted to avoid locking out the account. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The SetRegularKey reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using SetRegularKey, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "SetRegularKey",
+      "measure": "signing key"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

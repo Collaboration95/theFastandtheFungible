@@ -1,0 +1,51 @@
+{
+  "articleId": "xrpl-concept-memos",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does Memos work on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of Memos and its practical limits.",
+  "tags": [
+    "XRPL",
+    "Memos"
+  ],
+  "family": "xrpl-concept-memos",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, XRPL Memos attach optional application data to a transaction; they do not change the transfer's payment semantics. [1]\n\nEach Memo can contain MemoType, MemoFormat and MemoData, encoded as hexadecimal strings. Encoding is not encryption, so published memo content is visible to ledger readers. A hash can commit to an external document without publishing the document itself, but proving the commitment requires the exact original bytes and hashing method. Do not place wallet secrets or personal customer records in public memo fields. [1]\n\nThe public XRPL reference describes Memos as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1]\n\nAuthor interpretation: preserve the evidence needed to explain Memos to another reader and keep pending outcomes visible until they are resolved. Use the same meaning in customer messages and exported receipts. This recommendation follows the documented lifecycle and does not claim a fresh network experiment. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, XRPL Memos attach optional application data to a transaction; they do not change the transfer's payment semantics. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Each Memo can contain MemoType, MemoFormat and MemoData, encoded as hexadecimal strings. Encoding is not encryption, so published memo content is visible to ledger readers. A hash can commit to an external document without publishing the document itself, but proving the commitment requires the exact original bytes and hashing method. Do not place wallet secrets or personal customer records in public memo fields. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The public XRPL reference describes Memos as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: preserve the evidence needed to explain Memos to another reader and keep pending outcomes visible until they are resolved. Use the same meaning in customer messages and exported receipts. This recommendation follows the documented lifecycle and does not claim a fresh network experiment. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "data"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "transaction"
+    }
+  }
+}

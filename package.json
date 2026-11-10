@@ -23,7 +23,7 @@
     "site:publish": "python3 scripts/site-publish.py",
     "hygiene": "npm run check:naming && node scripts/repo-hygiene.mjs && node scripts/check-feedback-ids.mjs && node scripts/site-header.mjs --check && node scripts/render-progress.mjs --check",
     "release": "node scripts/release.mjs",
-    "check:fast": "npm run hygiene && npm run lint && npm run typecheck && npm run test:unit && npm run chaos:smoke",
+    "check:fast": "npm run hygiene && npm run check:paid-bodies && npm run lint && npm run typecheck && npm run test:unit && npm run chaos:smoke",
     "gate": "node scripts/local-gate.mjs",
     "verify": "npm run lint && npm run typecheck && npm run testing && npm run build",
     "preview": "vite preview",
@@ -59,7 +59,8 @@
     "build:demo": "vite build --config vite.demo.config.ts --mode browser-demo",
     "demo:capture": "tsx scripts/capture-browser-demo.ts",
     "test:demo": "npm run build:demo && playwright test --config playwright.demo.config.ts",
-    "test:judge": "npm run build:demo && playwright test --config playwright.judge.config.ts"
+    "test:judge": "npm run build:demo && playwright test --config playwright.judge.config.ts",
+    "check:paid-bodies": "node scripts/check-paid-bodies.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

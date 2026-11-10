@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-permissioneddomaindelete",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does PermissionedDomainDelete do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of PermissionedDomainDelete and its practical limits.",
+  "tags": [
+    "XRPL",
+    "PermissionedDomainDelete",
+    "Permissioned Domain Delete",
+    "transaction"
+  ],
+  "family": "xrpl-tx-permissioneddomaindelete",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/permissioneddomaindelete",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, PermissionedDomainDelete removes an owner's permissioned-domain definition. [1]\n\nThe domain defines credential-based membership for supported ledger operations, not an internet domain name or a custodial account. Deleting it changes future membership checks and does not delete each member's credentials. Identify DomainID and the owning account. Review dependent trading arrangements before removal because historical authorization is not current eligibility. [1]\n\nThe PermissionedDomainDelete reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using PermissionedDomainDelete, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, PermissionedDomainDelete removes an owner's permissioned-domain definition. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The domain defines credential-based membership for supported ledger operations, not an internet domain name or a custodial account. Deleting it changes future membership checks and does not delete each member's credentials. Identify DomainID and the owning account. Review dependent trading arrangements before removal because historical authorization is not current eligibility. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The PermissionedDomainDelete reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using PermissionedDomainDelete, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p2": {
+      "entity": "Credentials",
+      "measure": "authorization"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "PermissionedDomainDelete",
+      "measure": "definition"
+    }
+  }
+}

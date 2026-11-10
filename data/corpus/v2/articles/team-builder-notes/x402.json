@@ -1,6 +1,6 @@
 {
   "articleId": "team-x402",
-  "version": "v2",
+  "version": "v3",
   "publisherSlug": "team-builder-notes",
   "writerSlug": "team-builder-notes",
   "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
@@ -16,35 +16,35 @@
     "Testnet"
   ],
   "family": "team-x402",
-  "body": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.\n\nEvery writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts.\n\nSome XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.\n\nRelevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.\n\nEscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation.\n\nBuyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds.\n\nLOCKED principal stays reservedMinor; only RELEASED becomes spent. A CANCELLED receipt records zero spent principal and the cancel hash, rather than inventing a refund Payment. Cancelled authority cannot be reused inside the run or wallet day. Public API/SDK intents and receipts carry escrow.state, owner, create Sequence, deadline, transaction hashes and proofOk; no secret or blob. src/ is unchanged. The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom. After creation, refreshed validated balance already excludes principal; it is not deducted twice.",
+  "body": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.\n\nEach writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. A valid payment for another article or another recipient does not unlock this delivery. Testnet funds have no real value.\n\nSome XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.\n\nRelevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.\n\nThe escrow purchase binds the buyer, writer, article version, amount, condition and deadline in signed terms. The writer checks the validated create and escrow object before providing the encrypted delivery. Locked funds are not completed settlement. Premium plaintext stays inaccessible until a verified grant follows successful release and authenticated delivery. Cancellation is distinct from a post-sale refund.\n\nA restarted buyer reconciles the original purchase before submitting another payment. A timeout cannot authorize a second principal charge. If a finish might already have reached the ledger, recovery checks that outcome before cancellation. Missing transaction history alone does not prove that principal returned. Expiry permits a cancellation transaction; it does not automatically return funds.\n\nLocked principal remains reserved against the budget until its terminal outcome is proven. A successful release counts as spending; a validated cancellation records returned principal and the cancellation hash. A refund does not restore gross spending authority. Wallet balance checks must also allow for reserves and transaction fees, separately from the quoted article price.",
   "passages": [
     {
       "id": "p1",
       "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase."
     },
     {
-      "id": "p3",
-      "text": "Every writer is a facilitator: the publisher host serves /w/:slug/..., and the buyer pays the writer's own wallet on XRPL Testnet (xrpl:1, scheme exact, asset XRP in integer drops). Code: publisher/routes.ts, publisher/facilitator.ts, publisher/challenge.ts, shared/x402.ts, server/purchases.ts."
+      "id": "p2",
+      "text": "Each writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. A valid payment for another article or another recipient does not unlock this delivery. Testnet funds have no real value."
     },
     {
-      "id": "p4",
+      "id": "p3",
       "text": "Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt."
     },
     {
-      "id": "p5",
+      "id": "p4",
       "text": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings."
     },
     {
+      "id": "p5",
+      "text": "The escrow purchase binds the buyer, writer, article version, amount, condition and deadline in signed terms. The writer checks the validated create and escrow object before providing the encrypted delivery. Locked funds are not completed settlement. Premium plaintext stays inaccessible until a verified grant follows successful release and authenticated delivery. Cancellation is distinct from a post-sale refund."
+    },
+    {
       "id": "p6",
-      "text": "EscrowCreate has no InvoiceID. Its only memo uses MemoType = HEX(\"researchagent/escrow-v1\") and MemoData = HEX(UTF8(canonical signed terms)). The facilitator validates the whole memo, signature, account, amount, destination, condition, deadline, LastLedgerSequence and fee. /facilitator/verify checks binding; /facilitator/settle and paid GET confirm the validated create and object, then journal a conditional exact-version grant. Response success: false, escrowState: \"LOCKED\" explicitly distinguishes locked funds from settlement. Only the private proof worker receives these bytes. A passed proof alone never makes them accessible: a validated finish is also required. Direct-payment challenge/refund logic does not apply to escrow cancellation."
+      "text": "A restarted buyer reconciles the original purchase before submitting another payment. A timeout cannot authorize a second principal charge. If a finish might already have reached the ledger, recovery checks that outcome before cancellation. Missing transaction history alone does not prove that principal returned. Expiry permits a cancellation transaction; it does not automatically return funds."
     },
     {
       "id": "p7",
-      "text": "Buyer SQLite stores a separate escrow row and (intent, operation) outbox, with UNIQUE intent/invoice, transaction hash and (owner, create Sequence). The existing direct-payment submissions table is untouched. All three operations share the payer queue. A restart looks up and resubmits the same create; no timeout authorizes another principal. Expired/failed terminal signatures may be archived and replaced only after ledger proof, referencing the same object. An unresolved escaped finish is reconciled before cancellation. A Stop cannot undo a submitted finish. If a revealed fulfillment is relayed by another account, recovery checks the validated object and paginated account history, then confirms the winning terminal hash. Missing object/history alone never means refunded. The live reconciler cancels due objects without writer connectivity; expiry itself does not return funds."
-    },
-    {
-      "id": "p8",
-      "text": "LOCKED principal stays reservedMinor; only RELEASED becomes spent. A CANCELLED receipt records zero spent principal and the cancel hash, rather than inventing a refund Payment. Cancelled authority cannot be reused inside the run or wallet day. Public API/SDK intents and receipts carry escrow.state, owner, create Sequence, deadline, transaction hashes and proofOk; no secret or blob. src/ is unchanged. The balance check includes live base + OwnerCount reserve, one extra owner increment (currently 0.2 XRP), principal and create/terminal fee headroom. After creation, refreshed validated balance already excludes principal; it is not deducted twice."
+      "text": "Locked principal remains reserved against the budget until its terminal outcome is proven. A successful release counts as spending; a validated cancellation records returned principal and the cancellation hash. A refund does not restore gross spending authority. Wallet balance checks must also allow for reserves and transaction fees, separately from the quoted article price."
     }
   ],
   "factMenu": {
@@ -52,25 +52,21 @@
       "entity": "buyer",
       "measure": "settlement"
     },
-    "p3": {
-      "entity": "XRPL",
-      "measure": "purchases"
+    "p2": {
+      "entity": "Testnet",
+      "measure": "delivery"
     },
-    "p5": {
+    "p4": {
       "entity": "XRPL",
       "measure": "quote"
     },
-    "p6": {
-      "entity": "EscrowCreate",
-      "measure": "fee"
-    },
-    "p7": {
+    "p5": {
       "entity": "writer",
-      "measure": "return"
+      "measure": "settlement"
     },
-    "p8": {
-      "entity": "XRP",
-      "measure": "fee"
+    "p6": {
+      "entity": "buyer",
+      "measure": "return"
     }
   }
 }

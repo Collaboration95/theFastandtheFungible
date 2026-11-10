@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-standard-xls-75",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XLS-75 specify for Permission delegation?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XLS-75 and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XLS-75",
+    "Permission delegation"
+  ],
+  "family": "xrpl-standard-xls-75",
+  "sources": [
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0075-permission-delegation/README.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/resources/known-amendments",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XLS specifications, XLS-75 specifies scoped delegation so another account can perform permitted operations without receiving the owner's signing secret. [1]\n\nThe owner records permissions for a delegate rather than transferring the master key. Revocation and permitted transaction types are central to interpreting that authority. The transaction reference identifies amendment and fix dependencies, including a PaymentBurn warning before a cleanup fix. Least privilege depends on the implemented permission semantics, not just a reassuring permission label. [1]\n\nThe public XLS-75 specification describes a design, its dependencies and its intended ledger behavior. A published standard is not proof that a feature is enabled on every XRPL network. Check the target network and any associated fixes before relying on the capability. Testnet, Mainnet and development networks can support different amendment sets, and examples in a proposal are explanatory rather than records of validated transactions. [1][2]\n\nThe fetched specification records its status as Final. [1] Author interpretation: compare the proposed use of XLS-75 with the actual network capability and preserve the resulting evidence. Keep a design reference separate from a deployment claim and from a successful transaction receipt. This article makes no fresh network-activation claim. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XLS specifications, XLS-75 specifies scoped delegation so another account can perform permitted operations without receiving the owner's signing secret. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The owner records permissions for a delegate rather than transferring the master key. Revocation and permitted transaction types are central to interpreting that authority. The transaction reference identifies amendment and fix dependencies, including a PaymentBurn warning before a cleanup fix. Least privilege depends on the implemented permission semantics, not just a reassuring permission label. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The public XLS-75 specification describes a design, its dependencies and its intended ledger behavior. A published standard is not proof that a feature is enabled on every XRPL network. Check the target network and any associated fixes before relying on the capability. Testnet, Mainnet and development networks can support different amendment sets, and examples in a proposal are explanatory rather than records of validated transactions. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "The fetched specification records its status as Final. [1] Author interpretation: compare the proposed use of XLS-75 with the actual network capability and preserve the resulting evidence. Keep a design reference separate from a deployment claim and from a successful transaction receipt. This article makes no fresh network-activation claim. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    },
+    "p4": {
+      "entity": "XLS",
+      "measure": "transaction",
+      "period": "twenty twenty six"
+    },
+    "p1": {
+      "entity": "XLS",
+      "measure": "account"
+    }
+  }
+}

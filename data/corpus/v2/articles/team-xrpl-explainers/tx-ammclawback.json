@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-ammclawback",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does AMMClawback do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of AMMClawback and its practical limits.",
+  "tags": [
+    "XRPL",
+    "AMMClawback",
+    "AMM Clawback",
+    "transaction"
+  ],
+  "family": "xrpl-tx-ammclawback",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/ammclawback",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, AMMClawback lets an eligible token issuer recover its issued assets from a holder's AMM position under the amendment's rules. [1]\n\nThis is separate from a direct holder-balance Clawback because pool assets and liquidity-provider tokens must be reconciled together. Eligibility depends on the issued asset's clawback settings and the supported AMM feature. Check both pool assets and the affected holder. It does not grant an issuer arbitrary control over unrelated pools or XRP balances. [1]\n\nThe AMMClawback reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using AMMClawback, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, AMMClawback lets an eligible token issuer recover its issued assets from a holder's AMM position under the amendment's rules. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "This is separate from a direct holder-balance Clawback because pool assets and liquidity-provider tokens must be reconciled together. Eligibility depends on the issued asset's clawback settings and the supported AMM feature. Check both pool assets and the affected holder. It does not grant an issuer arbitrary control over unrelated pools or XRP balances. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The AMMClawback reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using AMMClawback, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "AMMClawback",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "issuer"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

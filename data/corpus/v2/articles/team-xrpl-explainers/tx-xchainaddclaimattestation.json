@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-xchainaddclaimattestation",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XChainAddClaimAttestation do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XChainAddClaimAttestation and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XChainAddClaimAttestation",
+    "X Chain Add Claim Attestation",
+    "transaction"
+  ],
+  "family": "xrpl-tx-xchainaddclaimattestation",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/xchainaddclaimattestation",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, XChainAddClaimAttestation submits a bridge witness's statement about a cross-chain value commitment. [1]\n\nThe claim identifier and bridge parameters bind the statement to an intended transfer. Completion depends on the bridge's required attestations and destination state. A source-chain transaction hash alone does not establish that the recipient has received funds. Reconcile both sides before labeling a cross-chain transfer as settled. [1]\n\nThe XChainAddClaimAttestation reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using XChainAddClaimAttestation, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, XChainAddClaimAttestation submits a bridge witness's statement about a cross-chain value commitment. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The claim identifier and bridge parameters bind the statement to an intended transfer. Completion depends on the bridge's required attestations and destination state. A source-chain transaction hash alone does not establish that the recipient has received funds. Reconcile both sides before labeling a cross-chain transfer as settled. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The XChainAddClaimAttestation reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using XChainAddClaimAttestation, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XChainAddClaimAttestation",
+      "measure": "witness"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "articleId": "xrpl-tx-nftokenacceptoffer",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does NFTokenAcceptOffer do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of NFTokenAcceptOffer and its practical limits.",
+  "tags": [
+    "XRPL",
+    "NFTokenAcceptOffer",
+    "NF Token Accept Offer",
+    "transaction"
+  ],
+  "family": "xrpl-tx-nftokenacceptoffer",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/nftokenacceptoffer",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, NFTokenAcceptOffer completes an NFT trade by accepting a buy offer, a sell offer or a compatible brokered pair. [1]\n\nThe transaction references existing offer identifiers rather than creating a new asking price. A brokered trade can include a broker fee under the matching rules. Check token identity, currency, issuer, destination restrictions and offer expiration before signing. Acceptance settles the listed trade; an offer's existence alone does not transfer ownership. [1]\n\nThe NFTokenAcceptOffer reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using NFTokenAcceptOffer, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, NFTokenAcceptOffer completes an NFT trade by accepting a buy offer, a sell offer or a compatible brokered pair. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The transaction references existing offer identifiers rather than creating a new asking price. A brokered trade can include a broker fee under the matching rules. Check token identity, currency, issuer, destination restrictions and offer expiration before signing. Acceptance settles the listed trade; an offer's existence alone does not transfer ownership. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The NFTokenAcceptOffer reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using NFTokenAcceptOffer, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p2": {
+      "entity": "issuer",
+      "measure": "price"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "NFTokenAcceptOffer",
+      "measure": "NFT"
+    }
+  }
+}

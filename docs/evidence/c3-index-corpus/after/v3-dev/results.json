@@ -1,0 +1,5087 @@
+{
+  "bankSha256": "6c4b81cda9bbebd3889ddb8e9f709a3a948cb388d6a08be381eab908e85e32f7",
+  "artifactSha256": "5adaa3a79b9ecdafa1f22f7a109fe6ab183db2d65a62927fc9c7fe647269f669",
+  "labels": "Fixture models · XRPL Testnet · faucet only; content provenance in receipts",
+  "summary": {
+    "bankSha256": "6c4b81cda9bbebd3889ddb8e9f709a3a948cb388d6a08be381eab908e85e32f7",
+    "artifactSha256": "5adaa3a79b9ecdafa1f22f7a109fe6ab183db2d65a62927fc9c7fe647269f669",
+    "completed": 20,
+    "total": 20,
+    "buyAndCite": {
+      "n": 9,
+      "N": 20
+    },
+    "answersIt": {
+      "n": 1,
+      "N": 20
+    },
+    "negativeBuys": {
+      "n": 0,
+      "N": 0
+    },
+    "valueHistograms": {
+      "relevant": {
+        "count": 113,
+        "min": 0.000014216540108824165,
+        "max": 0.46240003955860276,
+        "bins": [
+          {
+            "lower": 0,
+            "upper": 0.05,
+            "upperInclusive": false,
+            "count": 63
+          },
+          {
+            "lower": 0.05,
+            "upper": 0.1,
+            "upperInclusive": false,
+            "count": 20
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.15,
+            "upperInclusive": false,
+            "count": 2
+          },
+          {
+            "lower": 0.15,
+            "upper": 0.2,
+            "upperInclusive": false,
+            "count": 9
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.3,
+            "upperInclusive": false,
+            "count": 5
+          },
+          {
+            "lower": 0.3,
+            "upper": 0.5,
+            "upperInclusive": false,
+            "count": 14
+          },
+          {
+            "lower": 0.5,
+            "upper": 1,
+            "upperInclusive": true,
+            "count": 0
+          }
+        ]
+      },
+      "negative": {
+        "count": 0,
+        "min": null,
+        "max": null,
+        "bins": [
+          {
+            "lower": 0,
+            "upper": 0.05,
+            "upperInclusive": false,
+            "count": 0
+          },
+          {
+            "lower": 0.05,
+            "upper": 0.1,
+            "upperInclusive": false,
+            "count": 0
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.15,
+            "upperInclusive": false,
+            "count": 0
+          },
+          {
+            "lower": 0.15,
+            "upper": 0.2,
+            "upperInclusive": false,
+            "count": 0
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.3,
+            "upperInclusive": false,
+            "count": 0
+          },
+          {
+            "lower": 0.3,
+            "upper": 0.5,
+            "upperInclusive": false,
+            "count": 0
+          },
+          {
+            "lower": 0.5,
+            "upper": 1,
+            "upperInclusive": true,
+            "count": 0
+          }
+        ]
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "D01",
+      "topic": "payments-fees",
+      "question": "Which flag lets a Payment deliver less than the stated amount, and what field shows what the recipient actually got?",
+      "gold": "tfPartialPayment",
+      "runId": "fa11b608-6153-4c29-9383-96709b46e818",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 0,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1] My integration recommendation is to require a validated transaction, the expected destination, exact asset identity and sufficient actual delivery before fulfilling a paid request. Parse issued-currency amounts with their issuer rather than comparing only the currency code. Fail closed when delivery metadata cannot be interpreted. Never replace an unavailable delivered amount with an unverified number from a request body or model answer. [1] Build a regression where the requested amount is large and actual delivery is small; the receiver must credit only the latter. Also test the ordinary non-partial case and a mismatched issuer. Retain the relevant metadata as evidence so a reviewer can reproduce the credit calculation. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata. [1] The partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1] The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors. On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named. Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator. I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here.",
+      "citations": 8,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/41B11F8F5067196B2B88B23E56A6BAB56916829C486361376A915000E907A06E",
+        "https://testnet.xrpl.org/transactions/BD520F1FD966BC4E30FE88CD88DD3944366CF11DAC9F2F68BE95289084A38234",
+        "https://testnet.xrpl.org/transactions/19001043642A089637AEA1455791F475A07E2DBFFB822EFEB28EAB5014221499"
+      ]
+    },
+    {
+      "id": "D02",
+      "topic": "payments-fees",
+      "question": "How does an autonomous sender know a submitted XRP payment can no longer succeed and is safe to retry?",
+      "gold": "LastLedgerSequence",
+      "runId": "c9adced3-4dc9-4b2a-9567-2c5811d22a7d",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/32D61F6A59E790351303DECE1D7B3F27B2BC488C2E6D8E6B5CE40139D1893664"
+      ]
+    },
+    {
+      "id": "D03",
+      "topic": "payments-fees",
+      "question": "Which public WebSocket host should a developer connect to for XRPL Testnet?",
+      "gold": "s.altnet.rippletest.net",
+      "runId": "b160d6f4-efd9-4001-93d0-2bd2fd410505",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/ADC99F36D0983B45EE7A9066E12A9F70F4274B7F4C7C3B0EC8066E9D8CA85127"
+      ]
+    },
+    {
+      "id": "D04",
+      "topic": "escrow",
+      "question": "Which field on EscrowFinish reveals the secret that unlocks a conditional escrow?",
+      "gold": "Fulfillment",
+      "runId": "6332df7a-1b82-4414-a694-f5cc015c2290",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 0,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. [1] A conditional escrow needs the matching fulfillment, and time restrictions still apply. The finishing account does not choose a replacement destination. Conditional fulfillment increases transaction cost relative to a simple payment. Inspect the validated finish and original escrow together; a published secret by itself is not proof that release succeeded. [1] The EscrowFinish reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2] Author interpretation: before using EscrowFinish, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+      "citations": 4,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/9C5C9D162471F51EF5390F6B99334738B7F75A6E4F33CB33F68A0399D6B1C9B9",
+        "https://testnet.xrpl.org/transactions/316C0DEDCCBC5AED2420059287CAA9447DB75A1038FC5D5C4743F899A4AA5C25",
+        "https://testnet.xrpl.org/transactions/C91C93306AB5BE6FBA8A91B837C193E471185ABA089C1FE5843F6B42EF0F03DD"
+      ]
+    },
+    {
+      "id": "D05",
+      "topic": "escrow",
+      "question": "Which EscrowCreate field stops an escrow being released before a given time?",
+      "gold": "FinishAfter",
+      "runId": "2029c328-2cf9-4dea-b1d9-700ee80beb4d",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? My honest answer, as of the close on 17 September 2026, was most of it. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. That distinction matters more than the headline number, and it is the thing I want to unpack here. Let me be careful about what I mean by priced. Overnight index swaps had been leaning toward a move for weeks, and the tone from the BoJ's communications had shifted just enough that the residual uncertainty was about timing and language, not direction. When the announcement came, the statement itself was almost anticlimactic. The vote was not unanimous, which I read as a signal that the board is still uncomfortable with the pace rather than the destination. The Governor's press conference then did the heavier lifting, and that is where the real information content sat. The statement language was, as usual, carefully hedged. It noted that underlying inflation was moving toward target in a manner consistent with the bank's projections, but it also flagged that the outlook for global demand remained unusually uncertain. I want to stress that second clause, because it is the part that gets stripped out in the wire copy. The bank is not declaring victory. It is saying that the conditions it set out in previous meetings have been met, and that it will continue to adjust the degree of monetary accommodation as needed. That is a conditional sentence, not a promise. The Governor, in the press conference, was asked directly whether this was the start of a series. His answer, as I transcribed it, was that the bank does not pre-commit to a path and that every meeting will be judged on the data available at the time. He also said something that I think deserves more attention than it received: that the bank is paying close attention to the functioning of the JGB market, particularly at the longer end. That is not a throwaway line. It is a signal that the bank is aware that its own balance sheet and the shape of the curve are now intertwined in ways that make the exit harder than the entry. The market reaction was instructive precisely because it was so contained. The 10-year JGB yield rose 9 bp on 18 September 2026, which is a move, but not a dramatic one given the context. The 2-year yield moved more, which is consistent with a repricing of the near-term policy path rather than a reassessment of the terminal rate. The curve flattened slightly, which is what you would expect if the market believes the bank is serious about normalising but also believes it will stop well short of anything that could be called restrictive. What I found more interesting was the lack of follow-through in the following sessions. If the market had been genuinely surprised, we would have seen a sustained repricing, with the 10-year pushing through recent ranges and the yen strengthening sharply. That did not happen. Instead, the move faded, and By week's end the 10-year was back within a few basis points of where it started. That tells me the market's baseline was already close to the bank's baseline, and the meeting simply confirmed it. I should also note the global backdrop. The Federal Reserve's own path was, at that point, still a source of uncertainty, and the ECB had been signalling caution. The BoJ is not operating in a vacuum, and the Governor was explicit that the bank is watching overseas developments. That is not just diplomatic language. It reflects a genuine constraint: if the Fed is cutting and the BoJ is hiking, the yen dynamics could become disorderly, and that is something the bank wants to avoid. I want to bring in something that might seem tangential but is not. TSMC's capital expenditure plans for the coming year were released around the same time, and they pointed to continued strong demand for advanced semiconductors. For Japan, that matters because it feeds into the export outlook and, more importantly, into the investment cycle that the BoJ is hoping will sustain domestic demand. If TSMC is spending, Japanese equipment makers and materials suppliers benefit, and that shows up in the corporate surveys that the bank watches closely.",
+      "citations": 8,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/324537F30BD42F0E2C65C22BC9A04E1EAAE613ACF9C8DB0689A2B7E8E5299AE3"
+      ]
+    },
+    {
+      "id": "D06",
+      "topic": "escrow",
+      "question": "Why would an AI agent use a conditional escrow instead of paying upfront for a document?",
+      "gold": "crypto-condition",
+      "runId": "f87408ad-5938-426a-8ff0-f8d78c911753",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/84CB3D530E0129B28B761D69C9222E11173D61AFC926D7CCAB8C1103F09D24E1"
+      ]
+    },
+    {
+      "id": "D07",
+      "topic": "rlusd-stablecoin",
+      "question": "How is RLUSD backed relative to the US dollar?",
+      "gold": "1:1",
+      "runId": "ded2dd82-11cc-4956-bea0-a215806adacb",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/5C74B77FEAF433725B09846C99595AABDB8CD91591C72C0EA1FD5662CEA632B4"
+      ]
+    },
+    {
+      "id": "D08",
+      "topic": "rlusd-stablecoin",
+      "question": "Besides the XRP Ledger, which other blockchain was RLUSD launched on?",
+      "gold": "Ethereum",
+      "runId": "50321957-4436-4434-beac-1c8bda3516da",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/05AEBFCD6820BAC65350EF4E5F3CBFC088C99D1BC6E868F47354E1FEEA4E1017"
+      ]
+    },
+    {
+      "id": "D09",
+      "topic": "trust-lines-reserves",
+      "question": "Which issuer setting lets a stablecoin issuer claw back tokens from a holder, and when must it be enabled?",
+      "gold": "AllowTrustLineClawback",
+      "runId": "d045dc48-2a9c-4ea6-9df7-0573f359867b",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 0,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1] For trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. MPTs use an issuance-level capability. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. [1] For an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset. Separate a seller refund from an issuer clawback and from expiration-based escrow cancellation. A service should not promise automatic recovery merely because the token standard includes a clawback feature. Whether an issuer can or will act in a particular dispute needs separate legal and operational evidence. [1] Exercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1] Take a hall with an IT load of 4.2 MW. Suppose the operators run a conventional chilled-water plant with a design PUE of 1.45. That gives a total facility load of 6.09 MW, of which 1.89 MW is cooling and losses. Now suppose they decide to economise by admitting outside air at 32 degrees Celsius and 80 percent relative humidity, which is a typical afternoon in Kuala Lumpur or Jakarta. When I first started modelling grid load for Southeast Asian data centres, Johor was barely a blip on the radar. That changed around 2022, when Singapore’s moratorium on new data-centre construction pushed operators across the causeway. By early 2026, the scale of announced projects in Johor is staggering. I'll walk through the arithmetic of what this means for the grid by 2030, using primary data from Malaysia’s Energy Commission and my own load models. A 4.2 MW hall typically needs around 200 cubic metres per second of supply air, which is about 240 kilograms of dry air per second. Multiply by 15 grams and you get 3.6 kilograms of condensate per second. That is 3.6 litres per second, or about 311,000 litres per day. Three hundred and eleven cubic metres of water, every day, just to keep the air dry enough to cool the servers. I have seen designs imported wholesale from European reference architectures that specify indirect evaporative cooling, only to discover that the wet-bulb temperature in April is 28 degrees Celsius. Evaporative cooling cannot reach a supply temperature below the wet-bulb, so the design is dead on arrival. The fix is mechanical refrigeration, which means more electricity, which means a higher PUE, which means the facility looks worse on a scorecard that was never designed for this climate.",
+      "citations": 8,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/548B9AD2A5BE3489580741C492E87B0002284A56D0F304C0922C6CF6A54850DE",
+        "https://testnet.xrpl.org/transactions/45D51858ABD08FD4C3FA76C90509387EA7D9997E3DBC7CF27C24813F2E316B12",
+        "https://testnet.xrpl.org/transactions/5F73C8AB1EFC297581583796C89AD45476208BD22EFEA96F63C87B63E40AA31A"
+      ]
+    },
+    {
+      "id": "D10",
+      "topic": "trust-lines-reserves",
+      "question": "Which AccountSet flag lets an issuer approve each holder before they may hold its token?",
+      "gold": "RequireAuth",
+      "runId": "ca323849-2ef8-45c9-92f3-b2800b325688",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/4FD3ABAC3BFB6A6920A6E36AF07BBB0F47EEF062E327525C651AF986B52E644D"
+      ]
+    },
+    {
+      "id": "D11",
+      "topic": "credentials-did",
+      "question": "Which XRPL feature uses Credentials to decide which senders may pay an account that blocks unknown deposits?",
+      "gold": "DepositPreauth",
+      "runId": "330ddc7a-f640-4175-bc70-a0b4acd72820",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/13944514A5C568390FC8B55D7624FBE45D2C4F18034ECD60C4EB8919F4FF7356"
+      ]
+    },
+    {
+      "id": "D12",
+      "topic": "credentials-did",
+      "question": "Which field of an XRPL DID ledger entry holds the DID document?",
+      "gold": "DIDDocument",
+      "runId": "f0285492-5660-40a2-a904-58d1c4bbceab",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 0,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "According to XRPL documentation, a closed XRPL ledger becomes final for a client when the client can establish that trusted validators have validated it. [1] A proposed transaction, a server's preliminary result and a closed ledger are distinct stages. Consensus determines the agreed transaction set and deterministic execution produces ledger state. Applications should use validated results and the transaction's actual outcome before delivering paid goods. Validation authenticates the ledger result; it does not certify the economic value, legal status or editorial truth of an attached document. [1] The public XRPL reference describes Ledger validation as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1] Author interpretation: preserve the evidence needed to explain Ledger validation to another reader and keep pending outcomes visible until they are resolved. Use the same meaning in customer messages and exported receipts. This recommendation follows the documented lifecycle and does not claim a fresh network experiment. Sources accessed 10 November 2026.",
+      "citations": 4,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/440A96D8701627D4D230507229C0322180A1CF85CC4D3B7AB20CD809B77578B9",
+        "https://testnet.xrpl.org/transactions/DA71347C3C5375EE8CC9B7271A4720F85DB064FDBFD557DE75E1BE1891F94945",
+        "https://testnet.xrpl.org/transactions/48E4243413E6774EE0702B30B13341823D6265EF8406B60E505D4F1FC426D4F6"
+      ]
+    },
+    {
+      "id": "D13",
+      "topic": "x402",
+      "question": "In x402 v1, which response header does the server return after settlement with the transaction result?",
+      "gold": "X-PAYMENT-RESPONSE",
+      "runId": "04161d0f-1800-4818-9de8-79bd6dfc2568",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 0,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "For XRP Payment settlement, delivered_amount is evidence of what the destination actually received. Checking the requested Amount alone can accept an underpayment when partial-payment semantics apply. Our checks bind destination, currency, amount and invoice identity to the intended purchase. Escrow settlement has its own validation and object checks. Issued-token escrow additionally requires the exact RippleState balance delta, with the correct currency, issuer and sign. A requested amount is never sufficient proof of delivery. Faucet funding supplies test assets for experiments and is separate from settling a purchase. A faucet balance is not revenue or evidence of customer adoption. The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction. Testnet balances have no redeemable value. When a public server cannot find an older transaction, retain its hash and check an appropriate history endpoint. Missing history is an availability problem, not proof of failed settlement. A reader should see whether verification succeeded, failed or remains unresolved. Do not replace a missing result with a fresh payment simply to produce a successful receipt. Author interpretation: reconcile each purchase using its exact asset, intended recipient and validated outcome. Keep setup funding out of purchase totals and preserve transaction evidence for independent verification. These boundaries make it possible to inspect a demonstration without confusing Testnet activity with real-world commercial settlement.",
+      "citations": 4,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/DC3598C679B4DF9C9581C6801D267AA6DCEAEAC8EA0404965287E71E0646EE24",
+        "https://testnet.xrpl.org/transactions/362685ED5C83170F1AC4340D495B5EEE2998639271B6B1BF2D0652D9D62F7CF0",
+        "https://testnet.xrpl.org/transactions/3E8582E57D84FC9E82AD887F4C5D89D0E6F1D09A4A4A1EC128595721B2FCA477"
+      ]
+    },
+    {
+      "id": "D14",
+      "topic": "x402",
+      "question": "What is the name of the x402 payment scheme for a fixed-amount transfer?",
+      "gold": "exact",
+      "runId": "95007ed1-f387-4f16-be48-ad6f7acdcee9",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "The practice is not new. Foundries and their largest customers have used advance payments for decades, particularly when a customer needs assurance that a new process node will be available in volume. The prepayment can cover a portion of the total contract value or the entire amount. It can be refundable or non-refundable, depending on the terms. Public disclosures rarely include the full contract, so the exact terms are often known only to the parties and their auditors. On 2026-08-14, no new prepayment announcements were pending in the public record. The most recent disclosure reviewed by the Desk was a quarterly filing from a mid-sized foundry, which reported a deposit balance of approximately $400 million, up from $350 million in the prior quarter. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. The customer was not named. Investors and analysts often ask whether prepayments are a sign of strength or weakness. The public record does not support a single answer. A prepayment can reflect a customer's confidence in future demand, or it can reflect a foundry's need for cash. The only way to know is to read the contract, which is rarely public. Absent that, the deposit line on the balance sheet is the most reliable indicator. On 2026-08-14, the Open Records Desk reviewed public filings and company statements describing a common arrangement in the semiconductor supply chain: the wafer-capacity prepayment. Under this arrangement, a customer pays a foundry in advance for the right to receive a fixed volume of wafers at a future date. The payment is not a loan and not an equity investment. It is a contractual claim on manufacturing capacity. A prepayment secures future wafer capacity and is carried as a deposit until wafers are delivered. That single sentence, drawn from standard accounting guidance, is the core of the instrument. When a customer makes a prepayment, the foundry does not record the cash as revenue. Instead, the amount is recorded as a deposit, which appears on the foundry's balance sheet as a liability. The customer records the payment as a prepaid asset. As wafers are delivered and accepted, the foundry reduces the deposit liability and recognizes revenue. The customer reduces its prepaid asset and records inventory or cost of goods sold. This matching of cash flow to physical delivery is the accounting logic behind the structure. The timing of recognition depends on the contract. If the prepayment is tied to specific wafer starts, revenue may be recognized when the wafers are shipped. If the prepayment is tied to capacity reservation alone, revenue may be recognized over the reservation period. Auditors examine whether the deposit is refundable, whether the customer has a right to cancel, and whether the foundry has an obligation to deliver. Those factors determine whether the deposit is classified as current or non-current. For the customer, a prepayment can secure priority access to a constrained process. During periods of high demand, foundries allocate capacity to customers who have committed capital in advance. The prepayment also can lock in a price or a price formula, reducing exposure to spot-market increases. For the foundry, the prepayment provides cash to fund equipment and facility expansion without issuing debt or equity. It also signals demand, which can support internal investment decisions. The arrangement carries risks for both sides. If the customer's end-market demand falls, the customer may be obligated to take wafers it cannot use, or it may forfeit a portion of the deposit. If the foundry fails to deliver, the customer may have a claim for refund or damages, but recovery can take years. Public filings occasionally disclose disputes over prepayment terms, though most are resolved without litigation.",
+      "citations": 8,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/F8D9421B2BB9B32B984B32E9AC5611679A87CDCBA2FB1A53B80DF61DE06D666B"
+      ]
+    },
+    {
+      "id": "D15",
+      "topic": "amm-dex",
+      "question": "Which transaction places a limit order on the XRPL decentralized exchange?",
+      "gold": "OfferCreate",
+      "runId": "0b50fabd-8b7b-4e9c-92ca-110d80775aa1",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 0,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "The fungible-token documentation explains that trust-line tokens can trade and can interact through rippling. XLS-30 adds AMM liquidity that can work alongside order books. An available route is consequently evidence of a possible exchange at particular conditions, not evidence of issuer solvency, off-ledger redemption rights or future market depth. [1] [2] [3] The native XRPL decentralized exchange supports exchanging assets through ledger-based trading mechanisms; it does not guarantee liquidity for every asset pair. Trust-line tokens can participate in exchange and cross-currency payments. Token identity still includes the issuer, so equal currency names do not establish equal economic claims. [1] [2] [3] My recommendation for agents is to quote the exact source asset, destination asset and spending bound before a conversion. Treat conversion as a separate authorized action from buying content. Preserve issuer identity through every route. Inspect the actual delivered amount before fulfilling a downstream purchase, especially where routing or transfer charges mean the amount sent differs from the amount received. [1] [2] [3] Test an empty route, insufficient liquidity and two issuers sharing a currency code. Compare requested bounds with validated balance changes. Do not treat a successful pathfinding response as a completed trade: retain settlement evidence for the executed transaction. These recommendations combine the documented token and AMM models; they do not claim that a particular pair is currently liquid or that using the native exchange resolves compliance requirements. [1] [2] [3]",
+      "citations": 4,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/F5781C98C39280581344BE9E984ABEF7CBF67A340CA9E7C51D379FC1C0B12275",
+        "https://testnet.xrpl.org/transactions/4AFFE94FFA3372F8A28D6DC0ED3E9A12A6AB3949E6BA7D4DDC2CE4FAABDD4056",
+        "https://testnet.xrpl.org/transactions/72BD1BAF1B0AD438F93932ED6EC3FF0621A006271BB63B181637DB62A65E5384"
+      ]
+    },
+    {
+      "id": "D16",
+      "topic": "amm-dex",
+      "question": "What does a liquidity provider receive when depositing into an XRPL AMM pool?",
+      "gold": "LP token",
+      "runId": "d9d8402e-d2d4-4b89-980e-cfa02609b5c8",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 0,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "According to XRPL documentation, AMMCreate initializes an automated market maker for an asset pair by depositing both pool assets. [1] The creator receives liquidity-provider tokens representing its pool share. Initial amounts establish the starting price, while the trading fee and asset eligibility affect operation. Creating a pool is not evidence that other traders will supply liquidity. Check issuer controls, deposit amounts and special transaction cost before authorizing the initial commitment. [1] The AMMCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2] Author interpretation: before using AMMCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+      "citations": 4,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/AA61A40722C94CDE096EB0157D0654B2BBA090DE54F6E6F02C6596B9328C192D",
+        "https://testnet.xrpl.org/transactions/6FF8AC463BDC4A49600956B7CA8B5D6D23A42FCC3D06FF3DC59915E23CA95C5B",
+        "https://testnet.xrpl.org/transactions/628355FD19F81E7EC5C21BA2DD0D1C1ACD20EBC67791A71920EE173193A70D22"
+      ]
+    },
+    {
+      "id": "D17",
+      "topic": "mainnet-kyc-mas",
+      "question": "Which MAS licence category did Ripple obtain in Singapore for its payments business?",
+      "gold": "Major Payment Institution",
+      "runId": "56723190-c448-4cc4-9480-cc7268ddb42c",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 0,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. [1] [2] [3] MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. A consultation proposal should not be reported as a licence already granted to a particular issuer. [1] [2] [3] For a builder, my recommendation is to map the actual activities: custody, exchange, transfer, issuance and who serves which customers. Associate each activity with the responsible entity and applicable legal review. Do not label a stablecoin MAS-regulated solely because it tracks USD, runs on XRPL or has supervision elsewhere. Keep product claims bounded by dated official evidence. [1] [2] [3] Before deployment, prepare a service-flow description that identifies asset control and customer relationships. Check current legislation, MAS guidance and the relevant entity's permissions against that flow. These are compliance-scoping recommendations rather than a legal conclusion about this project. The article does not identify an approved bank partner, promise a regulatory exemption or claim that a successful testing transaction demonstrates production authorization. [1] [2] [3]",
+      "citations": 4,
+      "spentMinor": 40,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/C161BD27D892F9723065CB1637FD7A523072A8D9DB4D47CE3F7C6BB8693DC505",
+        "https://testnet.xrpl.org/transactions/94D754B540E430F975FED48F4D88D0C8F3ACE300F1FE5D07BD9A010816CEF342",
+        "https://testnet.xrpl.org/transactions/6E86AB52092A5C0309AD3363749DFD89C35F866D18596D0AF7115C6CA64E5F41"
+      ]
+    },
+    {
+      "id": "D18",
+      "topic": "mainnet-kyc-mas",
+      "question": "Under the MAS single-currency stablecoin framework, how quickly must an issuer redeem at par?",
+      "gold": "business days",
+      "runId": "30a93a27-bea0-4894-8fc2-05847c6e671d",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/4D407364756E8703A6BF2B9043BCD25148028F917EEAC97361D518D5B9A86593"
+      ]
+    },
+    {
+      "id": "D19",
+      "topic": "spending-controls",
+      "question": "Which XRPL transaction assigns a regular key so a hot agent key can be rotated without changing the account address?",
+      "gold": "SetRegularKey",
+      "runId": "3a154b65-ef84-4e57-867b-2a6d931628c4",
+      "phase": "DONE",
+      "buyAndCite": true,
+      "answersIt": 1,
+      "purchased": true,
+      "expectationPass": true,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "According to XRPL documentation, PasswordSpent records whether an account has used its free regular-key reset transaction. [1] This is an AccountRoot state flag with no matching AccountSet toggle. It must not be treated as a web password status, a seed-exposure signal or a general permission to reset signing authority without cost. The account still needs a valid signing method. Inspect current signing configuration and transaction-cost rules when planning a regular-key change. [1][2] XRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for PasswordSpent and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2] Author interpretation: document why PasswordSpent is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026. According to XRPL documentation, SetRegularKey assigns, replaces or removes the regular signing key for an XRPL account. [1] Using a regular key keeps the master key out of routine signing. A regular key does not create a new funded account or restrict transaction types by itself. If it is compromised, an authorized remaining signing method can replace it. Removing the last usable signing method is restricted to avoid locking out the account. [1] The SetRegularKey reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2] Author interpretation: before using SetRegularKey, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+      "citations": 8,
+      "spentMinor": 80,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/F0236C0573DB009FCDF085987589B3AA675B13665F11D3DEE4FD8140031B28FC",
+        "https://testnet.xrpl.org/transactions/1D731B25378B648481EB0E21DDCF78EF50B127C10AAC78673C543CE5EE12BC7D",
+        "https://testnet.xrpl.org/transactions/0F2EEA2039AEF8253A45472BC26C9BB6B799E4C217D77D1246FD9D4959A3E94D",
+        "https://testnet.xrpl.org/transactions/76D52A69C697E0408AC324150895C8F7CBF121E84FB36786C6ECD06D05796659",
+        "https://testnet.xrpl.org/transactions/FD021ACA03E63DCD6739E5325B0CCB55C0F19D8B952220A60DDEC778CEBEC9C4"
+      ]
+    },
+    {
+      "id": "D20",
+      "topic": "spending-controls",
+      "question": "Which XRPL primitive suits many small agent micropayments settled with a single on-ledger claim?",
+      "gold": "Payment Channel",
+      "runId": "f97f0ca6-537a-4969-a0a6-55612e6f81b7",
+      "phase": "DONE",
+      "buyAndCite": false,
+      "answersIt": 0,
+      "purchased": false,
+      "expectationPass": false,
+      "blank": false,
+      "violations": [],
+      "verificationOk": true,
+      "conclusion": "No listed writer covers this yet · nothing bought",
+      "citations": 0,
+      "spentMinor": 0,
+      "transactions": [
+        "https://testnet.xrpl.org/transactions/DEDB205A61DDCB3366B07C2453D057B8ED7A96A175E846536D91A3CBCB44F605"
+      ]
+    }
+  ],
+  "values": [
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "the-fab-floor",
+      "article": "the-2026-q1-advanced-packaging-lead-times-a-reality-check",
+      "version": "v1",
+      "relevance": 0.15085231520966885,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0037713078802417213,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 6,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0037713078802417213,
+        "expectedFacts": 0.0030170463041933773,
+        "factsPerDollar": 0.01206818521677351,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0020365062553305293,
+      "valuePerDollar": 0.008146025021322117,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-partial-payments",
+      "version": "v1",
+      "relevance": 0.7443988521349689,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7443988521349689,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.7443988521349689,
+        "expectedFacts": 0.5955190817079752,
+        "factsPerDollar": 1.4887977042699378,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.40197538015288325,
+      "valuePerDollar": 1.004938450382208,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.489 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-disallowincomingcheck",
+      "version": "v1",
+      "relevance": 0.07398672039063245,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.018496680097658112,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.018496680097658112,
+        "expectedFacts": 0.01479734407812649,
+        "factsPerDollar": 0.036993360195316224,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.00998820725273538,
+      "valuePerDollar": 0.02497051813183845,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "team-builder-notes",
+      "article": "team-recovery",
+      "version": "v3",
+      "relevance": 0.06580257672270806,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0016450644180677017,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0016450644180677017,
+        "expectedFacts": 0.0013160515344541614,
+        "factsPerDollar": 0.0032901288361354033,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0008883347857565588,
+      "valuePerDollar": 0.002220836964391397,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 4,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-disallowincomingpaychan",
+      "version": "v1",
+      "relevance": 0.07357940568527367,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.018394851421318418,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.018394851421318418,
+        "expectedFacts": 0.014715881137054736,
+        "factsPerDollar": 0.036789702842636836,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.009933219767511945,
+      "valuePerDollar": 0.02483304941877986,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 5,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-payment",
+      "version": "v1",
+      "relevance": 0.6296349250291904,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3148174625145952,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3148174625145952,
+        "expectedFacts": 0.25185397001167614,
+        "factsPerDollar": 0.6296349250291903,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.17000142975788143,
+      "valuePerDollar": 0.42500357439470354,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 6,
+      "writer": "the-fab-floor",
+      "article": "the-penang-osat-capacity-2026-outlook-and-opportunities",
+      "version": "v1",
+      "relevance": 0.03015389083407926,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0007538472708519816,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 7,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0007538472708519816,
+        "expectedFacts": 0.0006030778166815852,
+        "factsPerDollar": 0.002412311266726341,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0004070775262600701,
+      "valuePerDollar": 0.0016283101050402803,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 0,
+      "writer": "the-fab-floor",
+      "article": "the-2026-q1-advanced-packaging-lead-times-a-reality-check",
+      "version": "v1",
+      "relevance": 0.15085231520966885,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.03771307880241721,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 6,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.03771307880241721,
+        "expectedFacts": 0.03017046304193377,
+        "factsPerDollar": 0.12068185216773508,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.020365062553305297,
+      "valuePerDollar": 0.08146025021322119,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-partial-payments",
+      "version": "v1",
+      "relevance": 0.7443988521349689,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.03721994260674845,
+        "originality": {
+          "original": 0.05,
+          "rewrite": 0.05,
+          "overlap": 0.9
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.03721994260674845,
+        "expectedFacts": 0.031016618838957042,
+        "factsPerDollar": 0.0775415470973926,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.001163123206460889,
+      "valuePerDollar": 0.0029078080161522224,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-disallowincomingcheck",
+      "version": "v1",
+      "relevance": 0.07398672039063245,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0018496680097658113,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0018496680097658113,
+        "expectedFacts": 0.001541390008138176,
+        "factsPerDollar": 0.00385347502034544,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.001040438255493269,
+      "valuePerDollar": 0.002601095638733172,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 3,
+      "writer": "team-builder-notes",
+      "article": "team-recovery",
+      "version": "v3",
+      "relevance": 0.06580257672270806,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0016450644180677017,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0016450644180677017,
+        "expectedFacts": 0.0013160515344541614,
+        "factsPerDollar": 0.0032901288361354033,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0008883347857565588,
+      "valuePerDollar": 0.002220836964391397,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 4,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-disallowincomingpaychan",
+      "version": "v1",
+      "relevance": 0.07357940568527367,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.001839485142131842,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.001839485142131842,
+        "expectedFacts": 0.0015329042851098683,
+        "factsPerDollar": 0.0038322607127746705,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0010347103924491612,
+      "valuePerDollar": 0.002586775981122903,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 5,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-payment",
+      "version": "v1",
+      "relevance": 0.6296349250291904,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.03148174625145952,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.03148174625145952,
+        "expectedFacts": 0.02623478854288293,
+        "factsPerDollar": 0.06558697135720733,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.01770848226644598,
+      "valuePerDollar": 0.04427120566611495,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D01",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 6,
+      "writer": "the-fab-floor",
+      "article": "the-penang-osat-capacity-2026-outlook-and-opportunities",
+      "version": "v1",
+      "relevance": 0.03015389083407926,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0007538472708519816,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 7,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0007538472708519816,
+        "expectedFacts": 0.0006030778166815852,
+        "factsPerDollar": 0.002412311266726341,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0004070775262600701,
+      "valuePerDollar": 0.0016283101050402803,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D03",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-standard-xls-46",
+      "version": "v1",
+      "relevance": 0.11291174024853703,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.04234190259320139,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.04234190259320139,
+        "expectedFacts": 0.03528491882766783,
+        "factsPerDollar": 0.08821229706916957,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.023817320208675784,
+      "valuePerDollar": 0.059543300521689456,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D04",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-escrowfinish",
+      "version": "v1",
+      "relevance": 0.7965398408210687,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7965398408210687,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.7965398408210687,
+        "expectedFacts": 0.6637832006842239,
+        "factsPerDollar": 1.6594580017105598,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.4480536604618511,
+      "valuePerDollar": 1.1201341511546277,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.659 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D04",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-escrowfinish",
+      "version": "v1",
+      "relevance": 0.7965398408210687,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7965398408210687,
+        "originality": {
+          "original": 0.05,
+          "rewrite": 0.05,
+          "overlap": 0.9
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 1,
+        "novelty": 0,
+        "probability": 0.7965398408210687,
+        "expectedFacts": 0,
+        "factsPerDollar": 0,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.025572367191827476,
+      "valuePerDollar": 0.06393091797956868,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D05",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "kopi-contrarian",
+      "article": "kopi-why-central-banks-are-always-late-to-the-party",
+      "version": "v1",
+      "relevance": 0.17173382884878693,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.042933457212196734,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.042933457212196734,
+        "expectedFacts": 0.03434676576975739,
+        "factsPerDollar": 0.34346765769757387,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.023184066894586238,
+      "valuePerDollar": 0.23184066894586236,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D07",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "marketpulse-digest",
+      "article": "mp-boj-hike-digest",
+      "version": "v1",
+      "relevance": 0.04738846702941388,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.001184711675735347,
+        "originality": {
+          "original": 0.02,
+          "rewrite": 0.96,
+          "overlap": 0.02
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 2,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.001184711675735347,
+        "expectedFacts": 0.0009477693405882776,
+        "factsPerDollar": 0.004738846702941388,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.000014216540108824165,
+      "valuePerDollar": 0.00007108270054412082,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D07",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "daniel-koh",
+      "article": "notfinancialtimes-singapore-s-fiscal-policy-and-its-effect-on-bond-yields",
+      "version": "v1",
+      "relevance": 0.05593230022152258,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0013983075055380646,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1.5
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 7,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0013983075055380646,
+        "expectedFacts": 0.0011186460044304517,
+        "factsPerDollar": 0.001242940004922724,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0008809337284889807,
+      "valuePerDollar": 0.0009788152538766453,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D08",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-token-escrow",
+      "version": "v1",
+      "relevance": 0.32123595658673254,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.012046348372002472,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.012046348372002472,
+        "expectedFacts": 0.01031306083646255,
+        "factsPerDollar": 0.02578265209115637,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0069613160646122205,
+      "valuePerDollar": 0.01740329016153055,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D08",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-builder-notes",
+      "article": "team-rlusd",
+      "version": "v3",
+      "relevance": 0.3797182293774636,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.014239433601654887,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.014239433601654887,
+        "expectedFacts": 0.01139154688132391,
+        "factsPerDollar": 0.028478867203309773,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.00768929414489364,
+      "valuePerDollar": 0.0192232353622341,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D08",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-builder-notes",
+      "article": "team-asset-provisioning",
+      "version": "v3",
+      "relevance": 0.2026579035871437,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0075996713845178894,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0075996713845178894,
+        "expectedFacts": 0.0060797371076143115,
+        "factsPerDollar": 0.015199342769035779,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.004103822547639661,
+      "valuePerDollar": 0.010259556369099152,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D08",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-token-escrow",
+      "version": "v1",
+      "relevance": 0.32123595658673254,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.1204634837200247,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.1204634837200247,
+        "expectedFacts": 0.10313060836462547,
+        "factsPerDollar": 0.25782652091156366,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.06961316064612219,
+      "valuePerDollar": 0.17403290161530546,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D08",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 1,
+      "writer": "team-builder-notes",
+      "article": "team-rlusd",
+      "version": "v3",
+      "relevance": 0.3797182293774636,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.14239433601654883,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.14239433601654883,
+        "expectedFacts": 0.11391546881323907,
+        "factsPerDollar": 0.28478867203309766,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.07689294144893638,
+      "valuePerDollar": 0.19223235362234095,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D08",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 2,
+      "writer": "team-builder-notes",
+      "article": "team-asset-provisioning",
+      "version": "v3",
+      "relevance": 0.2026579035871437,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.07599671384517889,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.07599671384517889,
+        "expectedFacts": 0.060797371076143115,
+        "factsPerDollar": 0.15199342769035779,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0410382254763966,
+      "valuePerDollar": 0.1025955636909915,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-builder-notes",
+      "article": "team-asset-provisioning",
+      "version": "v3",
+      "relevance": 0.03278060446442534,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.01639030223221267,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.01639030223221267,
+        "expectedFacts": 0.013112241785770138,
+        "factsPerDollar": 0.03278060446442534,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.008850763205394843,
+      "valuePerDollar": 0.022126908013487104,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "farah-ismail",
+      "article": "notfinancialtimes-malaysia-renewable-energy-integration-into-grid-challenges",
+      "version": "v1",
+      "relevance": 0.037718772260171216,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0018859386130085608,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1.5
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 2,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0018859386130085608,
+        "expectedFacts": 0.0015087508904068486,
+        "factsPerDollar": 0.0016763898782298317,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0011881413261953934,
+      "valuePerDollar": 0.0013201570291059925,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-partial-payments",
+      "version": "v1",
+      "relevance": 0.5533559316009629,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.027667796580048143,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.027667796580048143,
+        "expectedFacts": 0.02368681865486136,
+        "factsPerDollar": 0.0592170466371534,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.015988602592031418,
+      "valuePerDollar": 0.03997150648007854,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "alphaleak",
+      "article": "alphaleak-cryptocurrency-regulation-in-2026-impact-on-digital-asset-ma",
+      "version": "v1",
+      "relevance": 0.96,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.048,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.048,
+        "expectedFacts": 0.038400000000000004,
+        "factsPerDollar": 0.12800000000000003,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.02592,
+      "valuePerDollar": 0.0864,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 4,
+      "writer": "load-factor",
+      "article": "load-analyzing-singapore-s-wholesale-price-spreads-for-2026",
+      "version": "v1",
+      "relevance": 0.016693474497054876,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0008346737248527439,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 3,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0008346737248527439,
+        "expectedFacts": 0.0006677389798821951,
+        "factsPerDollar": 0.0011128982998036586,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0004507238114204818,
+      "valuePerDollar": 0.0007512063523674697,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 5,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-clawback",
+      "version": "v1",
+      "relevance": 0.8001693806242861,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.8001693806242861,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.8001693806242861,
+        "expectedFacts": 0.6850370956423745,
+        "factsPerDollar": 1.7125927391059361,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.46240003955860276,
+      "valuePerDollar": 1.156000098896507,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.713 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 6,
+      "writer": "basis-points",
+      "article": "basis-estimating-term-premiums-in-the-current-low-rate-environment",
+      "version": "v1",
+      "relevance": 0.031663904029102616,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.001583195201455131,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.001583195201455131,
+        "expectedFacts": 0.001266556161164105,
+        "factsPerDollar": 0.0031663904029102623,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0008549254087857707,
+      "valuePerDollar": 0.0021373135219644266,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 7,
+      "writer": "team-builder-notes",
+      "article": "team-x402",
+      "version": "v3",
+      "relevance": 0.01,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0005,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0005,
+        "expectedFacts": 0.0004,
+        "factsPerDollar": 0.001,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.00027,
+      "valuePerDollar": 0.0006749999999999999,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 8,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-clawback",
+      "version": "v1",
+      "relevance": 0.6521483575649374,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.03260741787824687,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.03260741787824687,
+        "expectedFacts": 0.027915703075621422,
+        "factsPerDollar": 0.06978925768905356,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.01884309957604446,
+      "valuePerDollar": 0.04710774894011115,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 9,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-ammclawback",
+      "version": "v1",
+      "relevance": 0.3350145167813578,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.01675072583906789,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.01675072583906789,
+        "expectedFacts": 0.01434054945934589,
+        "factsPerDollar": 0.03585137364836472,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.009679870885058476,
+      "valuePerDollar": 0.024199677212646188,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 10,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-vaultclawback",
+      "version": "v1",
+      "relevance": 0.3246317857919532,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.01623158928959766,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.01623158928959766,
+        "expectedFacts": 0.013896108816274256,
+        "factsPerDollar": 0.03474027204068564,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.009379873450985123,
+      "valuePerDollar": 0.023449683627462806,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D09",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 11,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-allowtrustlineclawback",
+      "version": "v1",
+      "relevance": 0.23278062003516364,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.011639031001758183,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8561151079136691,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.011639031001758183,
+        "expectedFacts": 0.009964350282080746,
+        "factsPerDollar": 0.024910875705201865,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.006725936440404505,
+      "valuePerDollar": 0.01681484110101126,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D10",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-allowtrustlinelocking",
+      "version": "v1",
+      "relevance": 0.4763423329888271,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.11908558324720678,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.11908558324720678,
+        "expectedFacts": 0.1039202749699439,
+        "factsPerDollar": 0.25980068742485973,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.07014618560471213,
+      "valuePerDollar": 0.1753654640117803,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D10",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-builder-notes",
+      "article": "team-verification",
+      "version": "v3",
+      "relevance": 0.0988811434913408,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0024720285872835202,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0024720285872835202,
+        "expectedFacts": 0.001977622869826816,
+        "factsPerDollar": 0.00494405717456704,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.001334895437133101,
+      "valuePerDollar": 0.0033372385928327523,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D10",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-requireauth",
+      "version": "v1",
+      "relevance": 0.46363591618104066,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.11590897904526017,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.11590897904526017,
+        "expectedFacts": 0.10114820489113598,
+        "factsPerDollar": 0.2528705122278399,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0682750383015168,
+      "valuePerDollar": 0.17068759575379197,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D10",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-allowtrustlineclawback",
+      "version": "v1",
+      "relevance": 0.45259196409110647,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.11314799102277662,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.11314799102277662,
+        "expectedFacts": 0.0987388231115666,
+        "factsPerDollar": 0.2468470577789165,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.06664870560030746,
+      "valuePerDollar": 0.16662176400076864,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D10",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 4,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-disallowincomingnftokenoffer",
+      "version": "v1",
+      "relevance": 0.4424652666278656,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.1106163166569664,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.1106163166569664,
+        "expectedFacts": 0.09652955235808498,
+        "factsPerDollar": 0.24132388089521245,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.06515744784170736,
+      "valuePerDollar": 0.1628936196042684,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D10",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 5,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-globalfreeze",
+      "version": "v1",
+      "relevance": 0.4417460180070516,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.1104365045017629,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.1104365045017629,
+        "expectedFacts": 0.09637263891732956,
+        "factsPerDollar": 0.2409315972933239,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.06505153126919745,
+      "valuePerDollar": 0.16262882817299362,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D12",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-concept-ledger-validation",
+      "version": "v1",
+      "relevance": 0.6425218627029466,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.48189139702720996,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.48189139702720996,
+        "expectedFacts": 0.420523501831131,
+        "factsPerDollar": 1.0513087545778275,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.28385336373601344,
+      "valuePerDollar": 0.7096334093400336,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.051 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D12",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-sidechains",
+      "version": "v1",
+      "relevance": 0.2510913743952138,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.09415926539820517,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.09415926539820517,
+        "expectedFacts": 0.0821682733067432,
+        "factsPerDollar": 0.205420683266858,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.05546358448205166,
+      "valuePerDollar": 0.13865896120512913,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D12",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-diddelete",
+      "version": "v1",
+      "relevance": 0.1676382534849492,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0838191267424746,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0838191267424746,
+        "expectedFacts": 0.07314493040468732,
+        "factsPerDollar": 0.18286232601171828,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.04937282802316395,
+      "valuePerDollar": 0.12343207005790988,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D12",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-oracledelete",
+      "version": "v1",
+      "relevance": 0.1301154452747373,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.048793291978026496,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.048793291978026496,
+        "expectedFacts": 0.04257956488754239,
+        "factsPerDollar": 0.10644891221885597,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.028741206299091104,
+      "valuePerDollar": 0.07185301574772776,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D12",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 4,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-loandelete",
+      "version": "v1",
+      "relevance": 0.12268546264992784,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.04600704849372294,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8726520216491563,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.04600704849372294,
+        "expectedFacts": 0.0401481438781581,
+        "factsPerDollar": 0.10037035969539525,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.027099997117756718,
+      "valuePerDollar": 0.0677499927943918,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-builder-notes",
+      "article": "team-x402",
+      "version": "v3",
+      "relevance": 0.56173693344989,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0280868466724945,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0280868466724945,
+        "expectedFacts": 0.022469477337995602,
+        "factsPerDollar": 0.056173693344989,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.015166897203147033,
+      "valuePerDollar": 0.03791724300786758,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-x402",
+      "version": "v1",
+      "relevance": 0.6058627415498198,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3029313707749099,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3029313707749099,
+        "expectedFacts": 0.26815115053352756,
+        "factsPerDollar": 0.6703778763338188,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.1810020266101311,
+      "valuePerDollar": 0.45250506652532774,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-builder-notes",
+      "article": "team-verification",
+      "version": "v3",
+      "relevance": 0.16955161244448647,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.08477580622224323,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.08477580622224323,
+        "expectedFacts": 0.0678206449777946,
+        "factsPerDollar": 0.16955161244448647,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.04577893536001135,
+      "valuePerDollar": 0.11444733840002837,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "team-builder-notes",
+      "article": "team-asset-provisioning",
+      "version": "v3",
+      "relevance": 0.0424776418797018,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0021238820939850902,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0021238820939850902,
+        "expectedFacts": 0.0016991056751880724,
+        "factsPerDollar": 0.0042477641879701804,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0011468963307519487,
+      "valuePerDollar": 0.0028672408268798715,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 4,
+      "writer": "team-builder-notes",
+      "article": "team-credentials",
+      "version": "v3",
+      "relevance": 0.038701672782699405,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0019350836391349704,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0019350836391349704,
+        "expectedFacts": 0.0015480669113079764,
+        "factsPerDollar": 0.003870167278269941,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.001044945165132884,
+      "valuePerDollar": 0.0026123629128322096,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 5,
+      "writer": "team-builder-notes",
+      "article": "team-delivery",
+      "version": "v3",
+      "relevance": 0.036199909119645865,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0018099954559822934,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0018099954559822934,
+        "expectedFacts": 0.0014479963647858348,
+        "factsPerDollar": 0.0036199909119645868,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0009773975462304383,
+      "valuePerDollar": 0.0024434938655760957,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 6,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-readiness",
+      "version": "v1",
+      "relevance": 0.17492954708002764,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.008746477354001383,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.008746477354001383,
+        "expectedFacts": 0.007742274956837086,
+        "factsPerDollar": 0.019355687392092712,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.005226035595865034,
+      "valuePerDollar": 0.013065088989662584,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 7,
+      "writer": "team-builder-notes",
+      "article": "team-settlement",
+      "version": "v3",
+      "relevance": 0.3974839677270961,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3974839677270961,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3974839677270961,
+        "expectedFacts": 0.3179871741816769,
+        "factsPerDollar": 0.7949679354541922,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.2146413425726319,
+      "valuePerDollar": 0.5366033564315797,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 0.795 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 8,
+      "writer": "team-builder-notes",
+      "article": "team-recovery",
+      "version": "v3",
+      "relevance": 0.20709190553463372,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.10354595276731686,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.10354595276731686,
+        "expectedFacts": 0.0828367622138535,
+        "factsPerDollar": 0.20709190553463375,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.05591481449435111,
+      "valuePerDollar": 0.13978703623587777,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 9,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-concept-sequence",
+      "version": "v1",
+      "relevance": 0.10077531090772547,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.050387655453862736,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.050387655453862736,
+        "expectedFacts": 0.044602537360450056,
+        "factsPerDollar": 0.11150634340112514,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.030106712718303792,
+      "valuePerDollar": 0.07526678179575948,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 0,
+      "writer": "team-builder-notes",
+      "article": "team-x402",
+      "version": "v3",
+      "relevance": 0.56173693344989,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0280868466724945,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0280868466724945,
+        "expectedFacts": 0.023405705560412084,
+        "factsPerDollar": 0.058514263901030206,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.015798851253278158,
+      "valuePerDollar": 0.03949712813319539,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-x402",
+      "version": "v1",
+      "relevance": 0.6058627415498198,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3029313707749099,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3029313707749099,
+        "expectedFacts": 0.26815115053352756,
+        "factsPerDollar": 0.6703778763338188,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.1810020266101311,
+      "valuePerDollar": 0.45250506652532774,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 2,
+      "writer": "team-builder-notes",
+      "article": "team-verification",
+      "version": "v3",
+      "relevance": 0.16955161244448647,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.08477580622224323,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.08477580622224323,
+        "expectedFacts": 0.0706465051852027,
+        "factsPerDollar": 0.17661626296300673,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.04768639100001182,
+      "valuePerDollar": 0.11921597750002955,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 3,
+      "writer": "team-builder-notes",
+      "article": "team-asset-provisioning",
+      "version": "v3",
+      "relevance": 0.0424776418797018,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0021238820939850902,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0021238820939850902,
+        "expectedFacts": 0.0017699017449875753,
+        "factsPerDollar": 0.004424754362468938,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0011946836778666133,
+      "valuePerDollar": 0.002986709194666533,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 4,
+      "writer": "team-builder-notes",
+      "article": "team-credentials",
+      "version": "v3",
+      "relevance": 0.038701672782699405,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0019350836391349704,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0019350836391349704,
+        "expectedFacts": 0.001612569699279142,
+        "factsPerDollar": 0.004031424248197855,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.001088484547013421,
+      "valuePerDollar": 0.002721211367533552,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 5,
+      "writer": "team-builder-notes",
+      "article": "team-delivery",
+      "version": "v3",
+      "relevance": 0.036199909119645865,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0018099954559822934,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0018099954559822934,
+        "expectedFacts": 0.0015083295466519111,
+        "factsPerDollar": 0.0037708238666297775,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.00101812244399004,
+      "valuePerDollar": 0.0025453061099751,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 6,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-readiness",
+      "version": "v1",
+      "relevance": 0.17492954708002764,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.008746477354001383,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.008746477354001383,
+        "expectedFacts": 0.007742274956837086,
+        "factsPerDollar": 0.019355687392092712,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.005226035595865034,
+      "valuePerDollar": 0.013065088989662584,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 7,
+      "writer": "team-builder-notes",
+      "article": "team-settlement",
+      "version": "v3",
+      "relevance": 0.3974839677270961,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3974839677270961,
+        "originality": {
+          "original": 0.05,
+          "rewrite": 0.05,
+          "overlap": 0.9
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3974839677270961,
+        "expectedFacts": 0.3312366397725801,
+        "factsPerDollar": 0.8280915994314503,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.012421373991471753,
+      "valuePerDollar": 0.031053434978679382,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 8,
+      "writer": "team-builder-notes",
+      "article": "team-recovery",
+      "version": "v3",
+      "relevance": 0.20709190553463372,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.10354595276731686,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8333333333333334,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.10354595276731686,
+        "expectedFacts": 0.08628829397276405,
+        "factsPerDollar": 0.21572073493191013,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.05824459843161574,
+      "valuePerDollar": 0.14561149607903934,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D13",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 9,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-concept-sequence",
+      "version": "v1",
+      "relevance": 0.10077531090772547,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.050387655453862736,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.050387655453862736,
+        "expectedFacts": 0.044602537360450056,
+        "factsPerDollar": 0.11150634340112514,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.030106712718303792,
+      "valuePerDollar": 0.07526678179575948,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-dex",
+      "version": "v1",
+      "relevance": 0.5259870578604292,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.5259870578604292,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.5259870578604292,
+        "expectedFacts": 0.4655973211695549,
+        "factsPerDollar": 1.1639933029238871,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.31427819178944955,
+      "valuePerDollar": 0.7856954794736238,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.164 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-offercreate",
+      "version": "v1",
+      "relevance": 0.3010057088822684,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3010057088822684,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3010057088822684,
+        "expectedFacts": 0.26644657813902944,
+        "factsPerDollar": 0.6661164453475735,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.1798514402438449,
+      "valuePerDollar": 0.4496286006096122,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-offercancel",
+      "version": "v1",
+      "relevance": 0.2768138977094938,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.2768138977094938,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.2768138977094938,
+        "expectedFacts": 0.2450322822776427,
+        "factsPerDollar": 0.6125807056941067,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.16539679053740883,
+      "valuePerDollar": 0.413491976343522,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-standard-xls-81",
+      "version": "v1",
+      "relevance": 0.20626570890279494,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.10313285445139747,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.10313285445139747,
+        "expectedFacts": 0.09129194347949518,
+        "factsPerDollar": 0.22822985869873794,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.061622061848659246,
+      "valuePerDollar": 0.1540551546216481,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 4,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-spending",
+      "version": "v1",
+      "relevance": 0.09112817265326109,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.045564086326630546,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8851877897214369,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.045564086326630546,
+        "expectedFacts": 0.04033277286614684,
+        "factsPerDollar": 0.1008319321653671,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.027224621684649116,
+      "valuePerDollar": 0.06806155421162279,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-dex",
+      "version": "v1",
+      "relevance": 0.5259870578604292,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.5259870578604292,
+        "originality": {
+          "original": 0.05,
+          "rewrite": 0.05,
+          "overlap": 0.9
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.5259870578604292,
+        "expectedFacts": 0.4707617320304254,
+        "factsPerDollar": 1.1769043300760633,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.01765356495114095,
+      "valuePerDollar": 0.04413391237785237,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-offercreate",
+      "version": "v1",
+      "relevance": 0.3010057088822684,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3010057088822684,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3010057088822684,
+        "expectedFacts": 0.2694020066593793,
+        "factsPerDollar": 0.6735050166484482,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.18184635449508105,
+      "valuePerDollar": 0.4546158862377026,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-offercancel",
+      "version": "v1",
+      "relevance": 0.2768138977094938,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.2768138977094938,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.2768138977094938,
+        "expectedFacts": 0.2477501831811097,
+        "factsPerDollar": 0.6193754579527742,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.16723137364724905,
+      "valuePerDollar": 0.4180784341181226,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 3,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-standard-xls-81",
+      "version": "v1",
+      "relevance": 0.20626570890279494,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.10313285445139747,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.10313285445139747,
+        "expectedFacts": 0.09230455477036596,
+        "factsPerDollar": 0.23076138692591489,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.06230557446999702,
+      "valuePerDollar": 0.15576393617499254,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D15",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 4,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-spending",
+      "version": "v1",
+      "relevance": 0.09112817265326109,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.045564086326630546,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.045564086326630546,
+        "expectedFacts": 0.04078014444834522,
+        "factsPerDollar": 0.10195036112086305,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.027526597502633025,
+      "valuePerDollar": 0.06881649375658255,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-ammcreate",
+      "version": "v1",
+      "relevance": 0.7030201180457244,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7030201180457244,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.7030201180457244,
+        "expectedFacts": 0.6292074367184493,
+        "factsPerDollar": 1.573018591796123,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.4247150197849533,
+      "valuePerDollar": 1.0617875494623832,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.573 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-ammclawback",
+      "version": "v1",
+      "relevance": 0.7014376948531831,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7014376948531831,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.7014376948531831,
+        "expectedFacts": 0.627791157987265,
+        "factsPerDollar": 1.5694778949681625,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.4237590316414039,
+      "valuePerDollar": 1.0593975791035097,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.569 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-ammvote",
+      "version": "v1",
+      "relevance": 0.7013127862686702,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7013127862686702,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.7013127862686702,
+        "expectedFacts": 0.6276793640168394,
+        "factsPerDollar": 1.5691984100420986,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.42368357071136664,
+      "valuePerDollar": 1.0592089267784166,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.569 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-ammdeposit",
+      "version": "v1",
+      "relevance": 0.7010744659148345,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7010744659148345,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.7010744659148345,
+        "expectedFacts": 0.6274660657980463,
+        "factsPerDollar": 1.5686651644951157,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.4235395944136814,
+      "valuePerDollar": 1.0588489860342034,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.569 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 4,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-ammwithdraw",
+      "version": "v1",
+      "relevance": 0.700900663445917,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.700900663445917,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.700900663445917,
+        "expectedFacts": 0.6273105114929051,
+        "factsPerDollar": 1.5682762787322626,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.423434595257711,
+      "valuePerDollar": 1.0585864881442775,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.568 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 5,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-ammbid",
+      "version": "v1",
+      "relevance": 0.6952291824956747,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.6952291824956747,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.6952291824956747,
+        "expectedFacts": 0.6222345002956446,
+        "factsPerDollar": 1.5555862507391116,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.4200082876995601,
+      "valuePerDollar": 1.0500207192489002,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.556 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 6,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-ammdelete",
+      "version": "v1",
+      "relevance": 0.6927521386202674,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.6927521386202674,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.6927521386202674,
+        "expectedFacts": 0.6200175304145882,
+        "factsPerDollar": 1.5500438260364704,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.418511833029847,
+      "valuePerDollar": 1.0462795825746174,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.550 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 7,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-amm",
+      "version": "v1",
+      "relevance": 0.5886317403373935,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.5886317403373935,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.5886317403373935,
+        "expectedFacts": 0.526829117690658,
+        "factsPerDollar": 1.317072794226645,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.35560965444119413,
+      "valuePerDollar": 0.8890241361029853,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.317 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D16",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 8,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-standard-xls-30",
+      "version": "v1",
+      "relevance": 0.5798724286763403,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.5798724286763403,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8950063029028789,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.5798724286763403,
+        "expectedFacts": 0.5189894785449246,
+        "factsPerDollar": 1.2974736963623115,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.3503178980178241,
+      "valuePerDollar": 0.8757947450445602,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.297 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D17",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-singapore",
+      "version": "v1",
+      "relevance": 0.7341085096733181,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7341085096733181,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.902895295122288,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.7341085096733181,
+        "expectedFacts": 0.6628231194932735,
+        "factsPerDollar": 1.6570577987331838,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.44740560565795967,
+      "valuePerDollar": 1.118514014144899,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 1.657 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D17",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-compliance-mas-psa",
+      "version": "v1",
+      "relevance": 0.576893336681663,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.2163350012556236,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.902895295122288,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.2163350012556236,
+        "expectedFacts": 0.19532785480397682,
+        "factsPerDollar": 0.488319637009942,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.13184630199268435,
+      "valuePerDollar": 0.32961575498171086,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D17",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-singapore",
+      "version": "v1",
+      "relevance": 0.7341085096733181,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.7341085096733181,
+        "originality": {
+          "original": 0.05,
+          "rewrite": 0.05,
+          "overlap": 0.9
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.7341085096733181,
+        "expectedFacts": 0.6675725172566481,
+        "factsPerDollar": 1.6689312931416203,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.025033969397124305,
+      "valuePerDollar": 0.06258492349281077,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D17",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-compliance-mas-psa",
+      "version": "v1",
+      "relevance": 0.576893336681663,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.2163350012556236,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.2163350012556236,
+        "expectedFacts": 0.1967274584832208,
+        "factsPerDollar": 0.49181864620805193,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.13279103447617405,
+      "valuePerDollar": 0.3319775861904351,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D18",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-singapore",
+      "version": "v1",
+      "relevance": 0.6315988441567743,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3157994220783871,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3157994220783871,
+        "expectedFacts": 0.28717691235983506,
+        "factsPerDollar": 0.7179422808995876,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.19384441584288867,
+      "valuePerDollar": 0.4846110396072216,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D18",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-rlusd",
+      "version": "v1",
+      "relevance": 0.5842414841729989,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.14606037104324973,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.14606037104324973,
+        "expectedFacts": 0.13282217585540979,
+        "factsPerDollar": 0.33205543963852446,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.08965496870240161,
+      "valuePerDollar": 0.224137421756004,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D18",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "kopi-contrarian",
+      "article": "kopi-singapore-s-monetary-policy-a-case-study-in-rate-lag",
+      "version": "v1",
+      "relevance": 0.20095713607481494,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.005023928401870374,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.005023928401870374,
+        "expectedFacts": 0.004019142721496299,
+        "factsPerDollar": 0.04019142721496299,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0027129213370100025,
+      "valuePerDollar": 0.027129213370100023,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D18",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "daniel-koh",
+      "article": "notfinancialtimes-singapore-s-2026-government-bond-auction-schedule",
+      "version": "v1",
+      "relevance": 0.07826840575721367,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0019567101439303416,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1.5
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0019567101439303416,
+        "expectedFacts": 0.0015653681151442734,
+        "factsPerDollar": 0.0017392979057158592,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0012327273906761152,
+      "valuePerDollar": 0.0013696971007512392,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D18",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-singapore",
+      "version": "v1",
+      "relevance": 0.6315988441567743,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.03157994220783871,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.03157994220783871,
+        "expectedFacts": 0.028717691235983504,
+        "factsPerDollar": 0.07179422808995875,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.019384441584288866,
+      "valuePerDollar": 0.04846110396072216,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D18",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-rlusd",
+      "version": "v1",
+      "relevance": 0.5842414841729989,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.14606037104324973,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.14606037104324973,
+        "expectedFacts": 0.13282217585540979,
+        "factsPerDollar": 0.33205543963852446,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.08965496870240161,
+      "valuePerDollar": 0.224137421756004,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D18",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 2,
+      "writer": "kopi-contrarian",
+      "article": "kopi-singapore-s-monetary-policy-a-case-study-in-rate-lag",
+      "version": "v1",
+      "relevance": 0.20095713607481494,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.005023928401870374,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.005023928401870374,
+        "expectedFacts": 0.004019142721496299,
+        "factsPerDollar": 0.04019142721496299,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0027129213370100025,
+      "valuePerDollar": 0.027129213370100023,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D18",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 3,
+      "writer": "daniel-koh",
+      "article": "notfinancialtimes-singapore-s-2026-government-bond-auction-schedule",
+      "version": "v1",
+      "relevance": 0.07826840575721367,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0019567101439303416,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1.5
+      },
+      "trust": 0.8,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0019567101439303416,
+        "expectedFacts": 0.0015653681151442734,
+        "factsPerDollar": 0.0017392979057158592,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0012327273906761152,
+      "valuePerDollar": 0.0013696971007512392,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-setregularkey",
+      "version": "v1",
+      "relevance": 0.439631373240193,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.439631373240193,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.439631373240193,
+        "expectedFacts": 0.39978534321793285,
+        "factsPerDollar": 0.9994633580448321,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.26985510667210466,
+      "valuePerDollar": 0.6746377666802617,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 0.999 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-passwordspent",
+      "version": "v1",
+      "relevance": 0.4268260677100304,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.4268260677100304,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.4268260677100304,
+        "expectedFacts": 0.38814064773440654,
+        "factsPerDollar": 0.9703516193360163,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.2619949372207244,
+      "valuePerDollar": 0.654987343051811,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 0.970 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tags",
+      "version": "v1",
+      "relevance": 0.24080752861548452,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.12040376430774226,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.12040376430774226,
+        "expectedFacts": 0.10949095803543318,
+        "factsPerDollar": 0.27372739508858296,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.0739063966739174,
+      "valuePerDollar": 0.18476599168479346,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 3,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-clawback",
+      "version": "v1",
+      "relevance": 0.1896051011401074,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0948025505700537,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9093649078577242,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0948025505700537,
+        "expectedFacts": 0.08621011266381412,
+        "factsPerDollar": 0.2155252816595353,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.05819182604807453,
+      "valuePerDollar": 0.1454795651201863,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-setregularkey",
+      "version": "v1",
+      "relevance": 0.439631373240193,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.439631373240193,
+        "originality": {
+          "original": 0.05,
+          "rewrite": 0.05,
+          "overlap": 0.9
+        },
+        "credibility": 1
+      },
+      "trust": 0.9147600723464003,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 1,
+        "novelty": 0,
+        "probability": 0.439631373240193,
+        "expectedFacts": 0,
+        "factsPerDollar": 0,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.015080896004660487,
+      "valuePerDollar": 0.03770224001165121,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-passwordspent",
+      "version": "v1",
+      "relevance": 0.4268260677100304,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.4268260677100304,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9147600723464003,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.4268260677100304,
+        "expectedFacts": 0.390443444577757,
+        "factsPerDollar": 0.9761086114443924,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.26354932508998596,
+      "valuePerDollar": 0.6588733127249649,
+      "verdict": "BUY",
+      "reason": "Expected missing facts per S$ 0.976 >= 0.500; spending policy clears."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tags",
+      "version": "v1",
+      "relevance": 0.24080752861548452,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.12040376430774226,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9147600723464003,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.12040376430774226,
+        "expectedFacts": 0.11014055614892924,
+        "factsPerDollar": 0.2753513903723231,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.07434487540052724,
+      "valuePerDollar": 0.18586218850131808,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 2,
+      "candidateIndex": 3,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-clawback",
+      "version": "v1",
+      "relevance": 0.1896051011401074,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0948025505700537,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9147600723464003,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0948025505700537,
+        "expectedFacts": 0.08672158801808559,
+        "factsPerDollar": 0.21680397004521396,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.058537071912207785,
+      "valuePerDollar": 0.14634267978051946,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 3,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tx-setregularkey",
+      "version": "v1",
+      "relevance": 0.439631373240193,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.439631373240193,
+        "originality": {
+          "original": 0.05,
+          "rewrite": 0.05,
+          "overlap": 0.9
+        },
+        "credibility": 1
+      },
+      "trust": 0.9193223842226884,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 1,
+        "novelty": 0,
+        "probability": 0.439631373240193,
+        "expectedFacts": 0,
+        "factsPerDollar": 0,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.015156111083485083,
+      "valuePerDollar": 0.03789027770871271,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 3,
+      "candidateIndex": 1,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-flag-passwordspent",
+      "version": "v1",
+      "relevance": 0.4268260677100304,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.4268260677100304,
+        "originality": {
+          "original": 0.05,
+          "rewrite": 0.05,
+          "overlap": 0.9
+        },
+        "credibility": 1
+      },
+      "trust": 0.9193223842226884,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 1,
+        "novelty": 0,
+        "probability": 0.4268260677100304,
+        "expectedFacts": 0,
+        "factsPerDollar": 0,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.014714653433084243,
+      "valuePerDollar": 0.03678663358271061,
+      "verdict": "SKIP_REWRITE",
+      "reason": "Already acquired or a rewrite of existing evidence."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 3,
+      "candidateIndex": 2,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-tags",
+      "version": "v1",
+      "relevance": 0.24080752861548452,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.12040376430774226,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9193223842226884,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.12040376430774226,
+        "expectedFacts": 0.11068987567278024,
+        "factsPerDollar": 0.2767246891819506,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.07471566607912666,
+      "valuePerDollar": 0.18678916519781666,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D19",
+      "group": "relevant",
+      "round": 3,
+      "candidateIndex": 3,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-clawback",
+      "version": "v1",
+      "relevance": 0.1896051011401074,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.0948025505700537,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9193223842226884,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 0,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.0948025505700537,
+        "expectedFacts": 0.08715410682045376,
+        "factsPerDollar": 0.21788526705113437,
+        "threshold": 0.5,
+        "eligible": false
+      },
+      "value": 0.05882902210380629,
+      "valuePerDollar": 0.1470725552595157,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    },
+    {
+      "questionId": "D20",
+      "group": "relevant",
+      "round": 1,
+      "candidateIndex": 0,
+      "writer": "team-xrpl-explainers",
+      "article": "xrpl-compliance-project-guardian",
+      "version": "v1",
+      "relevance": 0.3109498273648634,
+      "provider": "fixture",
+      "model": "metadata-fixture",
+      "threshold": 0.2,
+      "gapMaterial": 1,
+      "judgment": {
+        "addressesGap": 0.3109498273648634,
+        "originality": {
+          "original": 0.9,
+          "rewrite": 0.03,
+          "overlap": 0.07
+        },
+        "credibility": 1
+      },
+      "trust": 0.9193223842226884,
+      "calibrated": null,
+      "marginalValue": {
+        "policy": "receipt-value/v1",
+        "menuEntries": 1,
+        "coveredEntries": 0,
+        "novelty": 1,
+        "probability": 0.3109498273648634,
+        "expectedFacts": 0.28586313666669955,
+        "factsPerDollar": 0.7146578416667488,
+        "threshold": 0.5,
+        "eligible": true
+      },
+      "value": 0.19295761725002222,
+      "valuePerDollar": 0.4823940431250555,
+      "verdict": "SKIP_LOW_VALUE",
+      "reason": "Value is below the model threshold."
+    }
+  ]
+}
