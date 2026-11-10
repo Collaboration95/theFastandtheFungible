@@ -38,13 +38,13 @@ try {
   if(Number(info.result.info.network_id)!==1) throw Error('Server did not confirm XRPL Testnet network_id=1')
   for(const {name,wallet} of wallets) {
     let balance='0'
-    try {balance=await client.getXrpBalance(wallet.classicAddress)} catch(e) {if((e as {data?:{error?:string}}).data?.error!=='actNotFound') throw Error('Balance lookup unavailable')}
+    try {balance=String(await client.getXrpBalance(wallet.classicAddress))} catch(e) {if((e as {data?:{error?:string}}).data?.error!=='actNotFound') throw Error('Balance lookup unavailable')}
     let funding='unchanged'
     if(Number(balance)<20 && args.includes('--fund')) {
       // Durable attempt marker prevents a retry from looping on an uncertain faucet.
       const marker=join(dir,`${name}.faucet-attempt`)
       if(existsSync(marker)) funding='previous-attempt-check-manually'
-      else {writeFileSync(marker,new Date().toISOString(),{flag:'wx',mode:0o600});const fd=openSync(marker,'r');fsyncSync(fd);closeSync(fd);syncDirectory(dir);await client.fundWallet(wallet);funding='one-attempt';balance=await client.getXrpBalance(wallet.classicAddress)}
+      else {writeFileSync(marker,new Date().toISOString(),{flag:'wx',mode:0o600});const fd=openSync(marker,'r');fsyncSync(fd);closeSync(fd);syncDirectory(dir);await client.fundWallet(wallet);funding='one-attempt';balance=String(await client.getXrpBalance(wallet.classicAddress))}
     }
     publicRows.push({name,address:wallet.classicAddress,balanceXrp:balance,funding})
   }
