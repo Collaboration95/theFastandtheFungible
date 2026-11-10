@@ -131,6 +131,31 @@ control only while pausing, never silently during resume.
 evidence links, CSRF token, and own queue positions. `src/api.ts` exports the typed
 client; HU owns screen rendering and mutation headers.
 
+**Hosted UI (HU).** The web app requests this status before its first render. A 404
+means local or desktop, which render unchanged. Otherwise the app shows the
+judge shell:
+
+- an orientation line, then the visitor's own question (budget capped at
+  S$2.00, remaining questions shown);
+- one environment indicator with details on demand;
+- a single state card for paused (exact copy), ended, allowance used up, on
+  hold, offline or not responding;
+- a wait card with Cancel for `busy`;
+- after Stop, one true line for each purchase.
+
+The run page adds **Verify on XRPL in your browser**: `sdk/verify.ts`, run
+client-side against public Testnet nodes, read-only.
+
+Owner controls are not rendered: Settings, BYOK, faucet, Presenter, Record,
+⌘, and PDF. The sidebar lists only the visitor's runs, with **Clear my
+history**. Mutations send `X-CSRF-Token` and an `Idempotency-Key` (fresh for
+each question, reused on retry). Gateway refusals map from codes to plain
+sentences in `src/hosted.ts`.
+
+Locally: `npx playwright test --config playwright.hosted.config.ts`
+(local-gate step `browser-hosted`). Evidence:
+[evidence/hosted-ui](evidence/hosted-ui/README.md).
+
 `/livez` reports process liveness. `/startupz` requires writable DB, initialized
 recovery and reachable corpus registry. `/readyz` additionally requires current
 funding/ledger headroom, caps, provider preflight freshness, queue capacity,

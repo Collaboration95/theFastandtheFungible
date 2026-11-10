@@ -9,6 +9,8 @@ const clamp = (width: number) => Math.round(Math.min(NAV_WIDTH.max, Math.max(NAV
 export interface SidebarProps {
   onView?: (view: 'run' | 'writers') => void; runs: PastRun[]; activeId?: string; busy: boolean; open: boolean; width?: number; settingsOn?: boolean
   onResize?: (width: number) => void; onSettings?: () => void; onNew: () => void; onOpenRun: (runId: string) => void; onPin: (runId: string, pinned: boolean) => void; onDelete: (runId: string) => void
+  /** Hosted demo: the list is this visitor's own runs (24 h); Clear hides every finished one. Settings is not offered. */
+  hosted?: { onClear: () => Promise<void> | void }
 }
 const over = (run: PastRun) => run.stopped || ['DONE', 'FAILED', 'STOPPED'].includes(run.phase)
 const dotOf = (run: PastRun) => !over(run) ? 'work' : run.phase === 'DONE' ? 'done' : run.phase === 'FAILED' ? 'alert' : 'idle'
@@ -22,8 +24,10 @@ export function NavToggle({ open, onToggle }: { open: boolean; onToggle: () => v
 }
 
 /** The left sidebar: New question and past runs. A run's ⋯ menu pins it or removes it from the list (receipts stay in the ledger). Drag its edge to widen it. */
-export default function Sidebar({ onView, runs, activeId, busy, open, width = NAV_WIDTH.initial, settingsOn = false, onResize, onSettings, onNew, onOpenRun, onPin, onDelete }: SidebarProps) {
+export default function Sidebar({ onView, runs, activeId, busy, open, width = NAV_WIDTH.initial, settingsOn = false, onResize, onSettings, onNew, onOpenRun, onPin, onDelete, hosted }: SidebarProps) {
   const [menu, setMenu] = useState<{ id: string; confirm: boolean; x: number; y: number }>()
+  const [clearing, setClearing] = useState<'confirm' | 'busy'>()
+  const finished = runs.filter(over).length
   const [drag, setDrag] = useState<number>()
   const start = useRef({ x: 0, width })
   useEffect(() => {
@@ -50,9 +54,14 @@ export default function Sidebar({ onView, runs, activeId, busy, open, width = NA
   return <nav className={`ra-nav${open ? '' : ' is-rail'}${drag === undefined ? '' : ' is-resizing'}`} aria-label="Questions" style={open ? { '--nav-w': `${shown}px` } as CSSProperties : undefined}>
     <button type="button" className="ra-newq" onClick={onNew} disabled={busy} title={busy ? 'Finish or stop the run first.' : undefined} aria-label="New question"><span aria-hidden="true">+</span>{open && <>New question<kbd>{modifier}N</kbd></>}</button>
     {open && onView && <div className="ra-mobile-views"><button type="button" className="ra-link" onClick={() => onView('run')}>Run</button><button type="button" className="ra-link" onClick={() => onView('writers')}>Writers</button></div>}
-    {open && <div className="ra-nav-list">{runs.length === 0 && open && <p className="ra-nav-empty">No runs yet.</p>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
+    {open && <div className="ra-nav-list">{runs.length === 0 && open && <p className="ra-nav-empty">{hosted ? 'Your questions appear here. They’re private to this browser and kept for 24 hours.' : 'No runs yet.'}</p>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
       {open && <p className="ra-nav-sec">{name}</p>}<ul>{list.map(row)}</ul>
     </section>)}</div>}
+    {open && hosted && finished > 0 && <div className="ra-nav-clear">{clearing === undefined
+      ? <button type="button" className="ra-link" onClick={() => setClearing('confirm')}>Clear my history</button>
+      : <div role="group" aria-label="Clear my history"><p>Hide your {finished} finished question{finished === 1 ? '' : 's'}? Payment records stay until each payment is settled.</p>
+        <button type="button" className="ra-btn ra-menu-danger" disabled={clearing === 'busy'} onClick={async () => { setClearing('busy'); try { await hosted.onClear() } finally { setClearing(undefined) } }}>Clear</button>
+        <button type="button" className="ra-btn" disabled={clearing === 'busy'} onClick={() => setClearing(undefined)}>Cancel</button></div>}</div>}
     {open && onSettings && <button type="button" className={`ra-nav-set${settingsOn ? ' is-on' : ''}`} onClick={onSettings} aria-current={settingsOn ? 'page' : undefined} aria-label="Settings" title={open ? undefined : 'Settings'}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>{open && 'Settings'}
     </button>}

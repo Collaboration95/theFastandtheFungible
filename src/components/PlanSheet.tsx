@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { money } from '../format'
 import { PlanSchema, PURCHASE_RULE, type Plan } from '../../shared/contracts/index.js'
+import { useHosted } from '../hosted'
 
 const PLAN_MS = 5000
 
@@ -20,6 +21,9 @@ export default function PlanSheet({ plan, writers, budgetMinor = 200, capMinor =
   const start = useRef<HTMLButtonElement>(null)
   useEffect(() => { dialog.current?.showModal(); start.current?.focus(); const el = dialog.current; return () => el?.close() }, [])
   const [editing, setEditing] = useState(false)
+  // The hosted gateway plans the search itself from the question, so an edited search would not be used: no Edit there.
+  const hosted = useHosted()
+  const editable = import.meta.env.MODE !== 'browser-demo' && !hosted
   const [subqueries, setSubqueries] = useState(plan.subqueries)
   const fired = useRef(false)
   const go = () => {
@@ -38,13 +42,13 @@ export default function PlanSheet({ plan, writers, budgetMinor = 200, capMinor =
   }, [editing])
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (import.meta.env.MODE !== 'browser-demo' && event.key.toLowerCase() === 'e' && !(event.target instanceof HTMLInputElement)) { event.preventDefault(); setEditing(true) }
+      if (editable && event.key.toLowerCase() === 'e' && !(event.target instanceof HTMLInputElement)) { event.preventDefault(); setEditing(true) }
       if (event.key === 'Escape') { event.preventDefault(); latest.current.cancel() }
       else if (event.key === 'Enter' && !event.shiftKey && ((event.metaKey || event.ctrlKey) || !(event.target instanceof HTMLButtonElement))) { event.preventDefault(); latest.current.go() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [editable])
   const who = writers ? `${writers} writer${writers === 1 ? '' : 's'}` : 'every listed writer'
   return <dialog ref={dialog} className={`ra-plan${editing ? ' is-editing' : ''}`} aria-label="Search plan" aria-describedby="ra-plan-what" onCancel={event => { event.preventDefault(); cancel() }}>
     <h2>Ready to start</h2><p className="ra-plan-question">{plan.restatement}</p>
@@ -56,6 +60,6 @@ export default function PlanSheet({ plan, writers, budgetMinor = 200, capMinor =
     <p>Budget <strong>{money(budgetMinor)}</strong> · up to {money(capMinor)} per article</p>
     <p className="ra-note">Nothing is spent until step 3, and never more than {money(budgetMinor)}.</p>
     <div className="ra-plan-bar" role="timer" aria-label="Starting in 5 seconds"><i /></div>
-    <div className="ra-plan-act">{editing ? <span>Paused while you edit.</span> : <button className="ra-btn" disabled={import.meta.env.MODE === 'browser-demo'} onClick={() => setEditing(true)}>Edit</button>}<button className="ra-btn" onClick={cancel}>Cancel</button><button ref={start} className="ra-btn ra-btn-go" onClick={go}>Start now</button></div>
+    <div className="ra-plan-act">{editing ? <span>Paused while you edit.</span> : (editable || import.meta.env.MODE === 'browser-demo') && <button className="ra-btn" disabled={!editable} onClick={() => setEditing(true)}>Edit</button>}<button className="ra-btn" onClick={cancel}>Cancel</button><button ref={start} className="ra-btn ra-btn-go" onClick={go}>Start now</button></div>
   </dialog>
 }

@@ -4,13 +4,35 @@ import type { Ask, LedgerView, ReputationRecord, RunSnapshot, Scope, TraceEvent 
 
 const runPath = (runId: string) => `/runs/${encodeURIComponent(runId)}`
 
-async function request(path: string, body?: unknown, signal?: AbortSignal): Promise<unknown> {
-  const response = await fetch(path, { ...(body === undefined ? { method: 'GET' } : {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-  }), ...(signal ? { signal } : {}) })
-  // Do not reflect arbitrary server error bodies (which may contain secrets).
-  if (!response.ok) throw new Error(`ResearchAgent request failed (HTTP ${response.status})`)
-  return response.json()
+/** A failed request: the HTTP status and, for the hosted gateway, its short error code. Never the raw body. */
+export class ApiError extends Error {
+  constructor(readonly status: number, readonly code?: string, readonly retryAfter?: number) { super(`ResearchAgent request failed (HTTP ${status})`) }
+}
+// Hosted gateway session (server-authoritative). Local and desktop never set it, so their requests are unchanged.
+let hostedCsrf: string | undefined
+export const isHostedSession = () => hostedCsrf !== undefined
+const CODE = /^[a-z][a-z_]{1,39}$/
+async function failure(response: Response): Promise<ApiError> {
+  // Do not reflect arbitrary server error bodies (which may contain secrets): only a short known-shape code.
+  let code: string | undefined
+  try { const body = await response.json() as { error?: unknown; code?: unknown }; const value = typeof body.code === 'string' ? body.code : body.error; if (typeof value === 'string' && CODE.test(value)) code = value } catch { /* not JSON */ }
+  const after = Number(response.headers?.get?.('Retry-After'))
+  return new ApiError(response.status, code, Number.isFinite(after) && after > 0 ? after : undefined)
+}
+type Send = { body?: unknown; method?: 'GET' | 'POST' | 'DELETE'; signal?: AbortSignal; key?: string }
+async function send(path: string, { body, method = body === undefined ? 'GET' : 'POST', signal, key }: Send, retried = false): Promise<Response> {
+  const headers: Record<string, string> = {}
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  if (hostedCsrf !== undefined && method !== 'GET') { headers['X-CSRF-Token'] = hostedCsrf; if (key) headers['Idempotency-Key'] = key }
+  const response = await fetch(path, { method, ...(Object.keys(headers).length ? { headers } : {}), ...(body === undefined ? {} : { body: JSON.stringify(body) }), ...(signal ? { signal } : {}) })
+  if (response.ok) return response
+  const error = await failure(response)
+  // A hosted session can expire (24 h): the gateway issues a new cookie, so fetch its token once and repeat the same request.
+  if (hostedCsrf !== undefined && !retried && error.status === 403 && error.code === 'csrf_denied') { await getDemoStatus(); return send(path, { body, method, signal, key }, true) }
+  throw error
+}
+async function request(path: string, body?: unknown, signal?: AbortSignal, key?: string): Promise<unknown> {
+  return (await send(path, { body, signal, key })).json()
 }
 
 export async function getLedger(): Promise<LedgerView> {
@@ -18,8 +40,8 @@ export async function getLedger(): Promise<LedgerView> {
 }
 /** Clarify step (D8): questions and a plan, never a purchase. `writers` is optional until the server sends a count. */
 export type ScopeResult = Scope & { label?: string; writers?: number }
-export async function scope(question: string, clarify?: 'never'): Promise<ScopeResult> {
-  return ScopeSchema.extend({ label: z.string().optional(), writers: z.number().int().nonnegative().optional() }).parse(await request('/api/scope', { question, ...(clarify ? { clarify } : {}) }))
+export async function scope(question: string, clarify?: 'never', key?: string): Promise<ScopeResult> {
+  return ScopeSchema.extend({ label: z.string().optional(), writers: z.number().int().nonnegative().optional() }).parse(await request('/api/scope', { question, ...(clarify ? { clarify } : {}) }, undefined, key))
 }
 const ReputationListSchema = z.object({ publishers: z.array(ReputationRecordSchema) })
 export async function getReputation(): Promise<ReputationRecord[]> {
@@ -28,23 +50,24 @@ export async function getReputation(): Promise<ReputationRecord[]> {
 export async function resetReputation(): Promise<ReputationRecord[]> {
   return ReputationListSchema.parse(await request('/api/reputation/reset', {})).publishers
 }
-export async function ask(input: Ask): Promise<RunSnapshot> {
-  return RunSnapshotSchema.parse(await request('/runs', AskSchema.parse(input)))
+/** `key` (hosted only) is the question's Idempotency-Key: the same key as its scope, kept across network retries. */
+export async function ask(input: Ask, key?: string): Promise<RunSnapshot> {
+  return RunSnapshotSchema.parse(await request('/runs', AskSchema.parse(input), undefined, key))
 }
 export const PastRunSchema = z.object({ runId: z.string(), question: z.string(), phase: z.string(), stopped: z.boolean(), budgetMinor: z.number(), spentMinor: z.number(), at: z.string(), pinned: z.boolean() })
 export type PastRun = z.infer<typeof PastRunSchema>
-const pastRuns = async (response: Response) => { if (!response.ok) throw new Error(`ResearchAgent request failed (HTTP ${response.status})`); return z.array(PastRunSchema).parse(await response.json()) }
-export const listPastRuns = async () => pastRuns(await fetch('/api/runs'))
-export const pinRun = async (runId: string, pinned: boolean) => pastRuns(await fetch(`/api${runPath(runId)}/pin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pinned }) }))
-export const deleteRun = async (runId: string) => pastRuns(await fetch(`/api${runPath(runId)}`, { method: 'DELETE' }))
+const pastRuns = async (response: Response) => z.array(PastRunSchema).parse(await response.json())
+export const listPastRuns = async () => pastRuns(await send('/api/runs', {}))
+export const pinRun = async (runId: string, pinned: boolean) => pastRuns(await send(`/api${runPath(runId)}/pin`, { body: { pinned } }))
+export const deleteRun = async (runId: string) => pastRuns(await send(`/api${runPath(runId)}`, { method: 'DELETE' }))
 export async function getRun(runId: string, signal?: AbortSignal): Promise<RunSnapshot> {
   return RunSnapshotSchema.parse(await request(runPath(runId), undefined, signal))
 }
 export async function stop(runId: string): Promise<RunSnapshot> {
   return RunSnapshotSchema.parse(await request(`${runPath(runId)}/stop`, {}))
 }
-export async function retryDelivery(runId: string, intentId: string): Promise<RunSnapshot> {
-  return RunSnapshotSchema.parse(await request(`${runPath(runId)}/retry-delivery`, { intentId }))
+export async function retryDelivery(runId: string, intentId: string, key = hostedCsrf === undefined ? undefined : crypto.randomUUID()): Promise<RunSnapshot> {
+  return RunSnapshotSchema.parse(await request(`${runPath(runId)}/retry-delivery`, { intentId }, undefined, key))
 }
 export async function createReport(runId: string): Promise<{ format: 'PDF' | 'HTML'; url: string }> {
   const report = z.object({ format: z.enum(['PDF', 'HTML']), url: z.string().min(1) }).parse(await request(`${runPath(runId)}/report`, {}))
@@ -133,15 +156,35 @@ export function streamRun(runId: string, handlers: {
 }
 
 /** Server-authoritative hosted capabilities. HU owns presentation and mutation headers. */
-export type HostedDemoStatus = {
-  state: 'ready' | 'paused' | 'busy' | 'degraded' | 'ended'
-  capabilities: { ask: boolean; scope: boolean; history: boolean; receipts: boolean; pdf: false; settings: false; faultControls: false }
-  remaining: { questions: number; minor: number }
-  labels: { models: string; rail: string }
-  links: { repo: string; deck: string; video: string; progress: string; replay: string }
-  csrfToken?: string
-  queue?: { runId: string; position: number | null; expiresAt: string }[]
+const HostedDemoStatusSchema = z.object({
+  state: z.enum(['ready', 'paused', 'busy', 'degraded', 'ended']),
+  capabilities: z.object({ ask: z.boolean(), scope: z.boolean(), history: z.boolean(), receipts: z.boolean(), pdf: z.literal(false), settings: z.literal(false), faultControls: z.literal(false) }),
+  remaining: z.object({ questions: z.number().int().nonnegative(), minor: z.number().int().nonnegative() }),
+  labels: z.object({ models: z.string().max(200), rail: z.string().max(200) }),
+  links: z.object({ repo: z.string().max(500), deck: z.string().max(500), video: z.string().max(500), progress: z.string().max(500), replay: z.string().max(500) }),
+  csrfToken: z.string().max(200).optional(),
+  queue: z.array(z.object({ runId: z.string(), position: z.number().int().nonnegative().nullable(), expiresAt: z.string() })).max(16).optional(),
+})
+export type HostedDemoStatus = z.infer<typeof HostedDemoStatusSchema>
+export async function getDemoStatus(signal?: AbortSignal): Promise<HostedDemoStatus> {
+  const response = await fetch('/api/demo/status', signal ? { signal } : undefined)
+  // The paused shell answers 503 with the same bounded status body.
+  let body: unknown
+  try { body = await response.json() } catch { throw new ApiError(response.status) }
+  const status = HostedDemoStatusSchema.safeParse(body)
+  if (!status.success) throw new ApiError(response.ok ? 502 : response.status)
+  if (status.data.csrfToken) hostedCsrf = status.data.csrfToken
+  else hostedCsrf ??= ''
+  return status.data
 }
-export async function getDemoStatus(): Promise<HostedDemoStatus> {
-  return await request('/api/demo/status') as HostedDemoStatus
+/** Boot: is this a hosted gateway? 404 means local or desktop. A transient failure is retried briefly, then reported. */
+export async function detectHosted(attempts = 3): Promise<{ status?: HostedDemoStatus; failed: boolean }> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try { return { status: await getDemoStatus(AbortSignal.timeout(4000)), failed: false } }
+    catch (error) {
+      if (error instanceof ApiError && [404, 405].includes(error.status)) return { failed: false }
+      if (attempt < attempts - 1) await new Promise(resolve => setTimeout(resolve, 400 * (attempt + 1)))
+    }
+  }
+  return { failed: true }
 }

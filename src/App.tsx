@@ -1,11 +1,17 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { BUDGET, ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
-import { ask, createReport, deleteRun, getReputation, getRun, listPastRuns, pinRun, resetReputation, retryDelivery, scope, stop, streamRun, type PastRun, type ScopeResult } from './api'
+import { ApiError, ask, createReport, deleteRun, getDemoStatus, getReputation, getRun, listPastRuns, pinRun, resetReputation, retryDelivery, scope, stop, streamRun, type HostedDemoStatus, type PastRun, type ScopeResult } from './api'
+import { canAsk, homeState, HostedContext, HOSTED_QUESTION_MINOR, refusal, type Hosted } from './hosted'
 import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from './stage'
 import { candidateOf, favicon, leadSentence, money } from './format'
 import Layout from './components/Layout'
 import Sidebar, { NAV_WIDTH, NavToggle } from './components/Sidebar'
-import EnvIndicator from './components/EnvIndicator'
+import EnvIndicator, { EnvNote } from './components/EnvIndicator'
+import { environmentSeen, markEnvironmentSeen } from './environment'
+import HostedEnv from './components/hosted/HostedEnv'
+import { HostedComposerNote, HostedFooter, HostedIntro, HostedWaiting } from './components/hosted/HostedHome'
+import HostedRunNotice from './components/hosted/HostedRunNotice'
+import VerifyInBrowser from './components/hosted/VerifyInBrowser'
 import Notice from './components/Notice'
 import Ask from './components/Ask'
 import AgentSprite from './components/AgentSprite'
@@ -40,21 +46,23 @@ const prefs = {
   get(key: string) { try { return localStorage.getItem(key) } catch { return null } },
   set(key: string, value: string) { try { localStorage.setItem(key, value) } catch { /* private mode */ } },
 }
-const recording = new URLSearchParams(window.location.search).get('record') === '1'
-function initialPace(): Pace {
+const recordRequested = () => new URLSearchParams(window.location.search).get('record') === '1'
+function initialPace(recording: boolean): Pace {
   if (recording || browserDemo) return 'stage'
   // Old staged preferences must not delay financial truth in normal use.
   prefs.set(paceKey, 'real')
   return 'real'
 }
 
-export default function App() {
+/** `hosted`: the server's demo status when this is the hosted judge demo (read once at boot in main.tsx). */
+export default function App({ hosted: boot, bootFailed = false }: { hosted?: HostedDemoStatus; bootFailed?: boolean } = {}) {
+  const [recording] = useState(() => !boot && recordRequested())
   const [palette, setPalette] = useState<'commands' | 'shortcuts'>()
   const [writersLoading, setWritersLoading] = useState(false)
   const [writersError, setWritersError] = useState('')
   const [healthError, setHealthError] = useState(false)
   const [run, setRun] = useState<RunSnapshot>()
-  const [screen, setScreen] = useState<'home' | 'run' | 'settings' | 'chat'>(new URLSearchParams(location.search).has('settings') || new URLSearchParams(location.search).has('onboarding') ? 'settings' : 'home')
+  const [screen, setScreen] = useState<'home' | 'run' | 'settings' | 'chat'>(!boot && new URLSearchParams(location.search).has('settings') || new URLSearchParams(location.search).has('onboarding') ? 'settings' : 'home')
   // Settings' Back returns to the screen it was opened from; the half-typed question lives here so Home remounting keeps it.
   const [backTo, setBackTo] = useState<'home' | 'run' | 'chat'>('home')
   const [draft, setDraft] = useState('')
@@ -67,7 +75,7 @@ export default function App() {
     window.addEventListener('demo-pause', pause)
     return () => window.removeEventListener('demo-pause', pause)
   }, [])
-  const [pace, setPace] = useState<Pace>(initialPace)
+  const [pace, setPace] = useState<Pace>(() => initialPace(recording))
   const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean }>({ faults: false })
   const [notify, setNotify] = useState(() => !recording && prefs.get(notifyKey) === '1')
   const [sending, setSending] = useState(false)
@@ -100,20 +108,56 @@ export default function App() {
   const [navWidth, setNavWidth] = useState(() => { const saved = Number(prefs.get(navWidthKey)); return saved >= NAV_WIDTH.min && saved <= NAV_WIDTH.max ? saved : NAV_WIDTH.initial })
   const [why, setWhy] = useState(false)
   const [past, setPast] = useState<PastRun[]>([])
+  // Hosted judge demo: server-authoritative status, polled; the first-visit environment note is local-only and inline.
+  const [demo, setDemo] = useState<HostedDemoStatus | undefined>(boot)
+  const [connection, setConnection] = useState<Hosted['connection']>()
+  const [detecting, setDetecting] = useState(bootFailed)
+  const [waiting, setWaiting] = useState<{ input: AskInput; since: number }>()
+  const [envNote, setEnvNote] = useState(() => !boot && !recording && !browserDemo && !environmentSeen() && !new URLSearchParams(location.search).has('run'))
+  // One Idempotency-Key per hosted question: its scope and its submit share it, and re-asking the same text reuses it.
+  const draftKey = useRef<{ question: string; key: string }>(undefined)
+  const keyFor = (question: string) => { if (draftKey.current?.question !== question) draftKey.current = { question, key: crypto.randomUUID() }; return draftKey.current.key }
+  const onStatus = useRef<(status: HostedDemoStatus) => void>(undefined)
+  const refreshDemo = useCallback(async () => {
+    try { const next = await getDemoStatus(); setDemo(next); setConnection(undefined); setDetecting(false); onStatus.current?.(next) }
+    catch (failure) {
+      if (failure instanceof ApiError && [404, 405].includes(failure.status)) { setDetecting(false); return }
+      setConnection(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'unreachable')
+    }
+  }, [])
+  const hosted = useMemo<Hosted | undefined>(() => demo && { status: demo, connection }, [demo, connection])
+  const ownQueued = !!demo?.queue?.some(item => (item.position ?? 0) > 0)
+  useEffect(() => {
+    if (!demo && !detecting) return
+    const tick = () => { if (!document.hidden) void refreshDemo() }
+    const timer = setInterval(tick, waiting || ownQueued || connection || detecting ? 3000 : 15000)
+    const offline = () => setConnection('offline')
+    window.addEventListener('online', tick); window.addEventListener('offline', offline); document.addEventListener('visibilitychange', tick)
+    return () => { clearInterval(timer); window.removeEventListener('online', tick); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', tick) }
+  }, [demo, detecting, waiting, ownQueued, connection, refreshDemo])
 
   useEffect(() => {
     let cancelled = false
     void fetch('/api/health').then(response => response.json()).then(data => { if (!cancelled) setHealth({ labels: ModeLabelsSchema.safeParse(data.labels).data, faults: data.faults === true }) }).catch(() => { if (!cancelled) setHealthError(true) })
     // Home is the default; a run opens only when the URL names it (a refresh keeps it). Past runs live in the sidebar.
     const id = new URLSearchParams(window.location.search).get('run')
-    if (id) void getRun(id).then(value => { if (!cancelled) { setRun(value); setScreen('run') } }).catch(() => { /* unknown run: stay on Home */ })
+    if (id) void getRun(id).then(value => { if (!cancelled) { setRun(value); setScreen('run') } }).catch(() => {
+      // Unknown run: stay on Home. A hosted run opens only in the browser that asked it, for 24 hours.
+      if (cancelled || !boot) return
+      const url = new URL(window.location.href); url.searchParams.delete('run'); window.history.replaceState(null, '', url)
+      setError('That question isn’t available here. Questions on the shared demo are private to the browser that asked them and kept for 24 hours.')
+    })
     return () => { cancelled = true }
-  }, [])
+  }, [boot])
   const runId = run?.runId
   useEffect(() => {
     if (!runId) return
-    return streamRun(runId, { onSnapshot: value => { setRun(value); setError(current => current === 'Connection lost. Reconnecting…' ? '' : current) }, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
-  }, [runId])
+    let phaseSeen = ''
+    return streamRun(runId, { onSnapshot: value => {
+      // The hosted allowance and queue move with the run; re-read them when its phase changes.
+      if (boot && value.phase + value.stopped !== phaseSeen) { phaseSeen = value.phase + value.stopped; void refreshDemo() }
+      setRun(value); setError(current => current === 'Connection lost. Reconnecting…' ? '' : current) }, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
+  }, [runId, boot, refreshDemo])
 
   // Stage pacing: reveal one trace event at a time, holding each for its dwell.
   const events = run ? runEvents(run) : []
@@ -139,6 +183,15 @@ export default function App() {
       setPassage(undefined); setReceipt(undefined); setWork(false); setCompare(false); setView('latest'); setWhy(false); setToasts([]); setError('')
       setCursor(Infinity); setRun(value); setScreen('run')
     } catch { setError('That run could not be opened.') }
+  }
+  /** Hosted "Clear my history": hides every finished run of this visitor. Unresolved payments keep their journals. */
+  const clearHistory = async () => {
+    let list = past
+    for (const item of past.filter(item => item.stopped || ['DONE', 'FAILED', 'STOPPED'].includes(item.phase))) {
+      try { list = await deleteRun(item.runId) } catch { /* a run still settling stays listed */ }
+      if (item.runId === run?.runId) { setRun(undefined); newQuestion() }
+    }
+    setPast(list)
   }
   const deletePast = async (id: string) => {
     try {
@@ -242,14 +295,24 @@ export default function App() {
     link.href = favicon(icon)
   })
 
+  /** A hosted request the gateway refused: wait for a turn, show the server's state, or say plainly what happened. */
+  const refused = (failure: unknown, input: AskInput) => {
+    const outcome = refusal(failure)
+    if (outcome.kind === 'wait') { setWaiting(current => current ?? { input, since: Date.now() }); return }
+    if (outcome.kind === 'retry-new-key') draftKey.current = undefined
+    void refreshDemo()
+    setError(outcome.kind === 'state' ? '' : outcome.text)
+  }
   // Clarify (D8): questions as chips, then the 5 s plan card; the run starts only from the card.
   const sendAsk = async (input: AskInput) => {
     setSending(true); setError('')
+    if (envNote) { setEnvNote(false); markEnvironmentSeen() }
+    const key = demo ? keyFor(input.question) : undefined
     try {
-      const result = await scope(input.question, clarifyNever ? 'never' : undefined)
+      const result = await scope(input.question, clarifyNever ? 'never' : undefined, key)
       if (result.chat) { setThread([{ id: 1, question: input.question, reply: result.chat.reply, label: result.label }]); setDraft(''); setScreen('chat'); return }
       setPending({ input, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
-    } catch { setError("Can't reach the ResearchAgent server."); throw new Error('scope failed') }
+    } catch (failure) { if (demo) { refused(failure, input); return } setError("Can't reach the ResearchAgent server."); throw new Error('scope failed', { cause: failure }) }
     finally { setSending(false) }
   }
   // A follow-up on the chat page: a chat reply joins the thread; a research question opens the plan card there,
@@ -259,10 +322,10 @@ export default function App() {
     const settle = (patch: Partial<ChatMessage>) => setThread(list => list.map(item => item.id === id ? { ...item, ...patch } : item))
     setThread(list => [...list, { id, question }]); setSending(true)
     try {
-      const result = await scope(question, clarifyNever ? 'never' : undefined)
+      const result = await scope(question, clarifyNever ? 'never' : undefined, demo ? keyFor(question) : undefined)
       if (result.chat) settle({ reply: result.chat.reply, label: result.label })
       else setPending({ input: { question, budgetMinor: universal ? universalMinor : picked }, scope: result, answers: {}, step: result.questions.length ? 'clarify' : 'plan' })
-    } catch { settle({ error: 'Can’t reach the server. Try again.' }) }
+    } catch (failure) { settle({ error: demo ? refusal(failure).text || 'The shared demo can’t take a question right now.' : 'Can’t reach the server. Try again.' }) }
     finally { setSending(false) }
   }
   // Cancelling a plan card on the chat page drops the unanswered message with it.
@@ -282,11 +345,12 @@ export default function App() {
     if (recording && (!health.labels?.research.startsWith('fixture') || !health.labels.decision.startsWith('fixture') || health.labels.settlement === XRPL_LABEL)) { setError('Record mode requires fixture providers and simulated settlement. Start make record.'); return }
     setSending(true); setError(''); setPassage(undefined); setCompare(false); setView('latest'); setWhy(false); setToasts([])
     try {
-      const created = await ask(input)
+      const created = await ask(input, demo ? keyFor(input.question) : undefined)
+      draftKey.current = undefined
       const url = new URL(window.location.href); url.searchParams.set('run', created.runId); window.history.replaceState(null, '', url)
       setCursor(pace === 'real' ? Infinity : 0)
       setRun(created); setTab('run'); setScreen('run'); setDraft('')
-    } catch { setError("Can't reach the ResearchAgent server."); throw new Error('ask failed') }
+    } catch (failure) { if (demo) { const { plan: _plan, answers: _answers, ...retry } = input; refused(failure, retry); return } setError("Can't reach the ResearchAgent server."); throw new Error('ask failed', { cause: failure }) }
     finally { setSending(false) }
   }
   const stopRun = async () => {
@@ -297,6 +361,15 @@ export default function App() {
     setStopping(true); setError('')
     try { setRun(await stop(run.runId)) } catch { setError('Stop request failed. Try Stop again.') } finally { setStopping(false) }
   }
+  useEffect(() => {
+    onStatus.current = next => {
+      if (!waiting) return
+      if (Date.now() - waiting.since > 180_000) { setWaiting(undefined); setError('The shared demo stayed busy for three minutes. Your question is still here; ask again in a moment.'); return }
+      if (next.state !== 'ready' || !next.capabilities.scope) return
+      setWaiting(undefined)
+      void sendAsk(waiting.input).catch(() => { /* refusal copy already shown */ })
+    }
+  })
   const reputationEvents = shown?.events.filter(event => event.type === 'REPUTATION').length ?? 0
   useEffect(() => {
     if (tab !== 'writers') return
@@ -320,14 +393,14 @@ export default function App() {
     { id: 'cmd-budget', label: 'Set budget', run: () => { newQuestion(); requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.ra-budget-chip')?.click()) } },
     ...(shown ? [{ id: 'cmd-work', label: 'Show work', hint: 'W', run: () => { switchView('run'); setWork(true) } }] : []),
     ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: item.question, group: 'Recent runs', run: () => { setTab('run'); void openRun(item.runId) } })),
-    { id: 'cmd-record', label: recording ? 'Leave record mode' : 'Record mode', run: () => { const url = new URL(window.location.href); url.search = recording ? '' : '?record=1'; window.location.assign(url) } },
-    { id: 'cmd-mcp', label: 'Connect an agent (MCP)', run: openSettings },
+    ...(demo ? [] : [{ id: 'cmd-record', label: recording ? 'Leave record mode' : 'Record mode', run: () => { const url = new URL(window.location.href); url.search = recording ? '' : '?record=1'; window.location.assign(url) } },
+    { id: 'cmd-mcp', label: 'Connect an agent (MCP)', run: openSettings }]),
     ...(run && !isTerminal(run) ? [{ id: 'cmd-stop', label: 'Stop buying', hint: `${modifier}.`, run: () => void stopRun() }] : []),
     { id: 'cmd-ask', label: 'Submit question / Go now', hint: `${modifier}↵`, run: () => { if (pending?.step === 'plan') go(pending.scope.plan); else document.querySelector<HTMLFormElement>('.ra-composer')?.requestSubmit() } },
     { id: 'cmd-focus', label: 'Focus question', hint: '/', run: focusAsk },
-    { id: 'cmd-settings', label: 'Settings', hint: '⌘,', run: openSettings },
+    ...(demo ? [] : [{ id: 'cmd-settings', label: 'Settings', hint: '⌘,', run: openSettings }]),
     { id: 'cmd-shortcuts', label: 'Keyboard shortcuts', hint: '?', run: () => setPalette('shortcuts') },
-    { id: 'cmd-presenter', label: 'Presenter controls', hint: '.', run: () => setPresenter(true) },
+    ...(demo ? [] : [{ id: 'cmd-presenter', label: 'Presenter controls', hint: '.', run: () => setPresenter(true) }]),
   ]
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -336,7 +409,7 @@ export default function App() {
       const key = event.key.toLowerCase()
       const editing = event.target instanceof HTMLElement && !!event.target.closest('input, textarea, select, [contenteditable="true"]')
       if (mod && key === 'k') { event.preventDefault(); setPalette('commands') }
-      else if (mod && key === ',') { event.preventDefault(); openSettings() }
+      else if (mod && key === ',') { event.preventDefault(); if (!demo) openSettings() }
       else if (mod && key === 'n') { event.preventDefault(); focusAsk() }
       else if (mod && (key === '1' || key === '2')) { event.preventDefault(); switchView(key === '1' ? 'run' : 'writers') }
       else if (mod && key === '.') { event.preventDefault(); void stopRun() }
@@ -345,7 +418,7 @@ export default function App() {
       else if (!mod && !event.altKey && !editing) {
         if (key === '/') { event.preventDefault(); if (screen !== 'home') focusAsk(); else document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus() }
         else if (key === '?') { event.preventDefault(); setPalette('shortcuts') }
-        else if (key === '.' && !recording) setPresenter(open => !open)
+        else if (key === '.' && !recording && !demo) setPresenter(open => !open)
         else if (key === 'w' && shown) setWork(open => !open)
         else if (key === 'n') focusAsk()
       }
@@ -353,11 +426,11 @@ export default function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-  const labels = <>{(replaying || recording || browserDemo) && <span className="ra-caption">Replay</span>}<nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={screen !== 'settings' && tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={screen !== 'settings' && tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav>{!browserDemo && <EnvIndicator labels={shown?.labels ?? health.labels} recording={recording} autoOpen={screen === 'home' && !new URLSearchParams(location.search).has('run')} />}<button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><kbd>{modifier}K</kbd></button></>
+  const labels = <>{(replaying || recording || browserDemo) && <span className="ra-caption">Replay</span>}<nav role="tablist" className="ra-main-views" aria-label="Workspace views"><button role="tab" aria-selected={screen !== 'settings' && tab === 'run'} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button role="tab" aria-selected={screen !== 'settings' && tab === 'writers'} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav>{!browserDemo && (hosted ? <HostedEnv hosted={hosted} /> : <EnvIndicator labels={shown?.labels ?? health.labels} recording={recording} />)}<button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><kbd>{modifier}K</kbd></button></>
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: model.phase === 'recovering' ? 'READ_PAID' : finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
-  const nav = <Sidebar onView={view => { switchView(view); setNavOpen(false) }} runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={screen === 'settings' ? closeSettings : openSettings} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
+  const nav = <Sidebar onView={view => { switchView(view); setNavOpen(false) }} runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={demo ? undefined : screen === 'settings' ? closeSettings : openSettings} hosted={demo ? { onClear: clearHistory } : undefined} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
     onOpenRun={id => void openRun(id)} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
   // A run's toast seen from another screen (Home, or another run) gets a way back to that run.
   // A toast about the run in view repeats the screen, so it waits until you leave it.
@@ -365,39 +438,51 @@ export default function App() {
   const overlays = <>
     <Toasts toasts={recording ? [] : wayBack} onDismiss={dismiss} />
     {palette && <CommandPalette commands={commands} sheet={palette === 'shortcuts'} onClose={() => setPalette(undefined)} />}
-    {presenter && !recording && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onSkip={replaying ? () => setCursor(Infinity) : undefined} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
+    {presenter && !recording && !demo && <Presenter pace={pace} onPace={choosePace} faults={health.faults} busy={!!shown && !finished} onSkip={replaying ? () => setCursor(Infinity) : undefined} onClose={() => setPresenter(false)} clarifyNever={clarifyNever} onClarifyNever={chooseClarifyNever} onResetReputation={() => resetReputation().then(setReputation)} />}
   </>
 
   const pendingCard = pending && (pending.step === 'clarify'
     ? <ClarifyChips questions={pending.scope.questions} answers={pending.answers} onAnswer={answer} onSkip={() => setPending({ ...pending, step: 'plan' })} />
     : <PlanSheet budgetMinor={pending.input.budgetMinor} plan={pending.scope.plan} writers={pending.scope.writers} onGo={go} onCancel={cancelPending} />)
   const settlement = shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'
-  if (tab === 'writers') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main className="ra-writers-view">{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>
-  if (screen === 'settings') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
+  const provide = (node: ReactNode) => <HostedContext.Provider value={hosted}>{node}</HostedContext.Provider>
+  // Hosted errors are specific and retry on their own; the local banner keeps its reload.
+  const banner = hosted ? error && <p className="ra-banner" role="alert">{error}</p>
+    : (error || healthError) && <p className="ra-banner" role="alert">{error || "Can't reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>
+  const state = hosted && homeState(hosted)
+  if (tab === 'writers') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main className="ra-writers-view">{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>)
+  if (screen === 'settings' && !hosted) return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
       onUniversal={on => { setUniversal(on); prefs.set(universalKey, on ? '1' : '0') }} onBudget={minor => { setUniversalMinor(minor); prefs.set(universalMinorKey, String(minor)) }} />
     {overlays}
-  </Layout>
+  </Layout>)
 
-  if (screen === 'chat') return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
-    <ChatThread messages={thread} busy={sending || !!pending} onSend={sendChat} above={pendingCard} />
+  if (screen === 'chat') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
+    <ChatThread messages={thread} busy={sending || !!pending || (!!state && !canAsk(state))} onSend={sendChat} above={pendingCard} />
     {overlays}
-  </Layout>
+  </Layout>)
 
-  if (screen === 'home' || !shown) return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
-    <main className="ra-home-wrap">
-      {(error || healthError) && <p className="ra-banner" role="alert">{error || "Can't reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>}
-      <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked} />
+  if (screen === 'home' || screen === 'settings' || !shown) return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
+    <main className={`ra-home-wrap${hosted ? ' is-hosted' : ''}`}>
+      {banner}
+      {hosted && state
+        ? <Ask onAsk={sendAsk} busy={!canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, HOSTED_QUESTION_MINOR)} onPick={setPicked}
+            intro={<HostedIntro hosted={hosted} state={state} />} budgetMax={HOSTED_QUESTION_MINOR} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
+            placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} examplesLabel="Questions that answer well today" />
+        : <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
+            note={envNote && !recording ? <EnvNote labels={health.labels} onDone={() => setEnvNote(false)} /> : undefined} />}
+      {hosted && <HostedFooter hosted={hosted} />}
     </main>
     {overlays}
-  </Layout>
+  </Layout>)
 
-    return <Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
+  return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <div className="ra-ws">
       <main className="ra-brief">
         <h1 className="ra-q">{shown.question}</h1>
         <MobileSpend run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         <RunActivity run={shown} actualTerminal={!!run && isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
+        {hosted && <HostedRunNotice hosted={hosted} run={shown} stopping={stopping} onCancel={() => void stopRun()} />}
         {/* Replace the draft reading surface when the activity timeline closes. */}
         <Fragment key={`${shown.runId}:${finished ? 'final' : 'draft'}`}>
         {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}
@@ -408,7 +493,7 @@ export default function App() {
         {shown.labels.decision.startsWith('fixture') && !!health.labels && !health.labels.decision.startsWith('fixture') && <Notice tone="warn">Decided by offline rules: the decision model was unavailable.</Notice>}
         {shown.labels.search?.startsWith('keyword') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Keyword search only: embeddings were unavailable.</Notice>}
         {shown.intents.filter(i => i.status === 'REFUNDED').map(i => <Notice key={i.intentId}>{candidateOf(shown, i)?.publisher ?? 'The writer'}'s article didn't contain what it promised, so it was refunded and not used.</Notice>)}
-        {(error || healthError) && <p className="ra-banner" role="alert">{error || "Can't reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>}
+        {banner}
         {!compare && <Sources run={shown} onOpen={candidate => setPassage({ candidate })} />}
         <Answer run={shown} view={view} onView={setView} compare={compare} onCompare={() => { setView('latest'); setCompare(!compare) }}
           onCitation={citation => { const candidate = candidateOf(shown, citation); if (candidate) setPassage({ candidate, citation }) }}
@@ -418,7 +503,8 @@ export default function App() {
       <aside className="ra-side" aria-label="Budget and purchases">
         <SpendPanel run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         {model.budgetBlocked && <p className="ra-note">Budget too small for eligible sources. Raise the budget on a new question.</p>}
-        {model.phase === 'stopped' && <p role="status">{model.stopMessage}</p>}
+        {model.phase === 'stopped' && !hosted && <p role="status">{model.stopMessage}</p>}
+        {hosted && finished && <VerifyInBrowser run={shown} />}
         {shown.receipts.length > 0 && <details className="ra-decision-details"><summary>Why this article</summary><DecisionPanel run={shown} fold={!why && (finished || shown.intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>}
       </aside>
 
@@ -427,5 +513,5 @@ export default function App() {
     {receipt && <ReceiptSheet run={shown} receipt={receipt} onClose={() => setReceipt(undefined)} />}
     {work && <ShowWork run={shown} configured={health.labels} onClose={() => setWork(false)} />}
     {overlays}
-  </Layout>
+  </Layout>)
 }
