@@ -174,19 +174,22 @@ The app runs on one Singapore Compute Engine VM with a persistent ext4 disk.
 Cloud Run runs only nginx. Its stable `run.app` origin forwards to the VM's
 internal address over Direct VPC egress. SQLite WAL stays on the VM; there is
 no Firestore, GCS, Cloud Build bucket, instance-overlap deployment or visitor faucet.
-This lane supplies deployment tooling, **not an advertised live service**.
+First deployed on 11 Nov 2026 to project `researchagent-sff`:
+https://ra-front-651013803640.asia-southeast1.run.app (see
+[Deployment record](#deployment-record-11-nov-2026)).
 
 | Component | Setting |
 | --- | --- |
 | VM | `ra-app`, `e2-standard-2`, `asia-southeast1-b`, Debian 12, Docker Compose |
 | State | `ra-state`, 30 GB `pd-balanced`, ext4; `/srv/researchagent`; daily snapshots at 18:00 UTC, seven-day retention |
 | Roles | web nginx + production Vite, API, publisher; non-root, tini, read-only images, private tmpfs, restart unless stopped |
+| Identities | VM `ra-app-vm` (registry reader, its own named secrets); front `ra-front` (no secrets); IDs must be 6-30 characters |
 | Runtime state | buyer `/state/api/app.db`, reports `/state/api/reports`, publisher `/state/publisher/data/publisher.db`, control `/state/control.json` |
 | Permissions | state directories 0700, files 0600, UID/GID 1000; operator env `/etc/researchagent/env` 0600 root-only |
 | Network | `ra-vpc`, `ra-egress` `10.77.0.0/24`; VM `10.77.0.10:8080`; only that subnet may reach app; SSH only IAP `35.235.240.0/20` |
 | Front | `ra-front`, min 1, max 2 stateless instances, concurrency 32, 3600 s timeout, private-ranges-only Direct VPC egress |
 | Updates | pull first, compose **down completes before up**; lock prevents simultaneous deploy scripts; never two API/publisher processes |
-| Models | DeepSeek + OpenAI Decisions `gpt-6-luna`; lexical search; fixture fallback must be explicitly selected and labelled |
+| Models | DeepSeek + OpenAI Decisions `gpt-6-luna`; lexical search; fixture fallback must be explicitly selected and labelled (11 Nov: `DECISION_PROVIDER=fixture` until the OpenAI key is rotated) |
 | Settlement | native XRP key-reveal, XRPL Testnet only, answer anchors on; pre-funded shared payer/writers |
 | Event | admissions end `2026-11-19T16:00:00Z` (20 Nov midnight SGT); teardown 20 Nov after recovery/archive checks |
 | Alerts | public `/ready` uptime check (front alias of the VM's `/readyz`) + readiness alert; about US$50 billing budget in the billing account's own currency (S$70 on the SGD account) at 50/90/100%; this alert is not a spending cap |
@@ -228,7 +231,13 @@ its container; public traffic is forwarded only when `/api/demo/status` returns
 the hosted contract. Without HG it serves paused status/503 and rejects asks,
 while the publisher and recovery process can initialize. It never falls through
 to local owner routes. The original `docker/Dockerfile.publisher` K_SERVICE guard is
-unchanged; new stateful roles also refuse K_SERVICE.
+unchanged; new stateful roles also refuse K_SERVICE. The guard probes HG over
+`node:http` with the visitor's exact `Host` (`fetch()` drops `Host`, and HG
+answers `origin_denied` to any other host). `PublisherClient` accepts only a
+numeric-loopback publisher origin, so in compose the API supervisor relays
+`127.0.0.1:8790` to `HOSTED_PUBLISHER_UPSTREAM` (`publisher:8790`). Startup
+derives `ESCROW_WRITERS` from the deployed writer seeds; without it the
+publisher quotes no escrow and every policy purchase is skipped.
 
 ## Health and acceptance contract
 
@@ -269,7 +278,9 @@ Use a clean gated checkout and an approved existing billing account. The budget
 is stated in that account's currency: the script reads `currencyCode` and uses
 50USD or 70SGD, or an explicit `--budget-amount <amount><CURRENCY>` (a USD
 amount on an SGD account is rejected by Cloud Billing). Supply public
-identifiers and private output paths outside the repository.
+identifiers and private output paths outside the repository. The deploy runs
+its own publishing gate, which refuses a dirty tree, so run it from a separate
+clean worktree detached at the release SHA rather than a checkout you are editing.
 
 A project that already exists (for example one the orchestrator created and
 linked) is adopted only with `--adopt-project`, and only when it carries the
@@ -332,7 +343,7 @@ The script builds from `git archive SHA` locally, uses each Dockerfile's own
 ignore file, pushes immutable full-SHA tags, resolves and records digests, then
 deploys those digests. It creates the project/billing link/APIs/registry, identities,
 secrets, VPC/subnet/firewall, disk/snapshot schedule, VM/startup, Cloud Run front,
-uptime check/readiness alert and project-filtered US$50 budget. No GCS source
+uptime check/readiness alert and a project-filtered budget in the billing currency. No GCS source
 bucket or Developer Connect connection is used. Initial startup is paused with a
 placeholder origin; after Run returns its stable URL, metadata is updated and the
 VM renders the exact origin and restarts while still paused. Retries preserve
@@ -378,6 +389,13 @@ back the stateless front, `gcloud run deploy ra-front --image <accepted-digest>`
 with the same network/service settings, or direct all traffic to its accepted
 revision. Never split traffic across two stateful VM stacks. Run readiness,
 isolation, Testnet receipt and explorer checks again before resuming.
+
+Dry-run on 11 Nov: the previous release's digests (`a5884cea`) were written to
+a root-only temporary env file on the VM; `docker compose config --images`
+rendered all three digests and `docker compose pull` fetched them with the VM
+identity, while `/etc/researchagent/images` and the running stack stayed
+unchanged. Earlier `ra-front` revisions remain listed for a front rollback.
+An actual rollback has not been executed.
 
 ## Caddy / sslip.io fallback
 
@@ -457,7 +475,8 @@ HG/HM crash/concurrency/abuse and HU visual evidence is still required.
 See [local evidence](evidence/hosted-ops/README.md). Docker daemon unavailable:
 production Vite build + bundled API/publisher ran natively with HOSTED=1, fixture
 models/simulated rail, ports 6800/10488/10490 (OFFSET 1700), raw API 10489 and
-front 6801. That historical HO proof predates HG; normal deployed isolation/purchase probes remain unqualified.
+front 6801. That historical HO proof predates HG; deployed isolation and purchase probes
+were first qualified in cloud on 11 Nov (see the deployment record below).
 No cloud deployment, provider call, wallet provisioning or Testnet transaction
 was performed by HO. A local proxy probe separately checks header stripping,
 one XFF hop, SSE and VM-unreachable paused behavior. All listeners are cleaned up.
@@ -470,9 +489,38 @@ obligations. Explicit fixture mode uses actual fixture labels; a recording is
 chosen separately and never substituted for an arbitrary typed question. If
 qualification misses the deadline, publish the dated recorded walkthrough.
 
+## Deployment record (11 Nov 2026)
+
+The first cloud deployment ran on 11 Nov SGT from `f77ae141` against an
+orchestrator-created project (adopted with `--adopt-project`) on an SGD billing
+account (budget `70SGD`). Eleven cloud failures were fixed and retried with the
+same manifest; the table, sanitized smoke results and screenshots are in
+[evidence/hosted-deploy-nov11](evidence/hosted-deploy-nov11/README.md).
+
+Qualified on the deployed digests: paused smoke (`--expect-paused`), then after
+resume the live acceptance smoke (two cookie jars, every foreign read and
+mutation 404, a real policy purchase with SDK-verified receipts and ledger
+anchor, four Testnet transactions with reachable explorer links, paused probe
+503). Also checked: 1440 and 390 px screenshots of the served home page, alert
+email delivery for the readiness policy, budget thresholds and recipient,
+VM-unreachable paused page and recovery, rollback and teardown dry-runs.
+
+Not yet qualified: buyer/writer crash and recovery and snapshot restore in
+cloud, the limit measurements of check 5, zoom/keyboard/reduced motion on the
+served UI, an executed rollback, and deck/video/progress links (empty in status).
+The decision model runs as the labelled fixture until the OpenAI key is
+rotated. The uptime alert fires whenever the service is paused, including
+during every redeploy. The project's auto-created `default` network keeps its
+open SSH/RDP rules; it has no instances.
+
+Every redeploy and reboot ends paused. The provider-preflight deadline in
+`env.local` must be moved forward at each release, or readiness turns
+`degraded` when it passes. Resume with
+`node scripts/hosted-control.mjs resume --project researchagent-sff --execute`
+after the paused smoke, then run the live smoke.
+
 Reference commands were checked against official documentation for
 [Direct VPC egress](https://docs.cloud.google.com/run/docs/configuring/vpc-direct-vpc),
 [Run deploy](https://docs.cloud.google.com/sdk/gcloud/reference/run/deploy),
 [uptime checks](https://docs.cloud.google.com/monitoring/uptime-checks) and
 [billing budgets](https://docs.cloud.google.com/sdk/gcloud/reference/billing/budgets/create).
-Cloud execution remains unverified.
