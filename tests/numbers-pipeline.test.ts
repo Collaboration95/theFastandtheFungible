@@ -18,7 +18,12 @@ it.each(['Q07', 'Q48'])('retains the bought requested span in %s, with valid exa
   const v1 = (await writeAnswer({ ...input, contents: base.contents, version: 1 })).answer
   vi.stubEnv('DECISION_NUMBERS_POLICY', 'off')
   const old = (await writeAnswer({ ...input, contents, previous: v1, version: 2 })).answer
-  expect(supportedFacts(old, contents, q)).not.toContain(q.requested[0].id)
+  // K3 can recover a formerly omitted purchased fact as the extracted lead,
+  // even with the older requested-passage selector disabled.
+  if (id === 'Q07') {
+    expect(supportedFacts(old, contents, q)).toContain(q.requested[0].id)
+    expect(old.lead?.some(l => l.claim.citations.some(r => r.resourceId === article.articleId && r.spanId === 'p1'))).toBe(true)
+  } else expect(supportedFacts(old, contents, q)).not.toContain(q.requested[0].id)
   vi.stubEnv('DECISION_NUMBERS_POLICY', 'on')
   const v2 = (await writeAnswer({ ...input, contents, previous: v1, version: 2 })).answer
   expect(supportedFacts(v2, contents, q)).toContain(q.requested[0].id)

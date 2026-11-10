@@ -9,6 +9,12 @@ const free = miniCorpus.articles.find(a => a.tier === 'FREE' && a.publisherSlug 
 const paid = miniCorpus.articles.find(a => a.tier === 'PAID')!
 
 describe('blog pages', () => {
+  it('keeps author-supplied provenance on Contact', async () => {
+    const base=await serve({...miniCorpus,publishers:miniCorpus.publishers.map(p=>({...p,synthetic:false}))})
+    const {text}=await get(`${base}/w/load-factor/contact`)
+    expect(text).toContain('AUTHOR SUPPLIED · unverified writer')
+    expect(text).not.toContain('fictional writer')
+  })
   it('renders home, free article, paid article, about, contact and index (snapshots)', async () => {
     const base = await serve(miniCorpus)
     const pages = {

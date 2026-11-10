@@ -1,3 +1,4 @@
+import { summarizeAnswer } from '../../shared/answer-summary.js'
 import { declineSummary } from '../../shared/decline.js'
 import { keywordCoverage, searchWords } from '../../publisher/search-text.js'
 import AnchorStatus from './AnchorStatus'
@@ -21,7 +22,7 @@ export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): Answe
   }))
   if (!claims.length) return undefined
   // Never retain unsupported synthesis after dropping an invalid claim.
-  return claims.length === parsed.data.claims.length ? parsed.data : { ...parsed.data, claims, conclusion: 'Some claims were withheld because their evidence could not be verified.', openGaps: [] }
+  return claims.length === parsed.data.claims.length ? parsed.data : { ...parsed.data, lead: undefined, claims, conclusion: 'Some claims were withheld because their evidence could not be verified.', openGaps: [] }
 }
 /** Every validated answer, oldest first. */
 export function validatedAnswers(run: RunSnapshot): AnswerData[] {
@@ -54,9 +55,11 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   })
   if (!answer && run.phase === 'DONE') return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{run.decisions.length > 0 && <details className="ra-why-not"><summary>Why ▸</summary><ul>{run.decisions.flatMap(round => round.rows.map((row, i) => <li key={`${round.round}-${i}`}><b>{row.candidate.title}</b><span className="ra-why-verdict">{DECLINE_VERDICT[row.verdict] ?? row.verdict}</span><span className="ra-why-value">value {row.value.toFixed(2)} vs {round.threshold.toFixed(2)}</span><p>{row.reason}</p></li>))}</ul></details>}<AnchorStatus run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Publish a note on this →</a></section>
   if (!answer) return <section className="ra-verdict" aria-label="Research answer" aria-busy={!['FAILED','STOPPED'].includes(run.phase)}><h2 className="ra-caption">Answer</h2>{['FAILED','STOPPED'].includes(run.phase) ? <p>No verified answer is available. Ask again to begin a new run.</p> : <div className="ra-vtext is-skel" aria-hidden="true"><i /><i /><i /></div>}</section>
-  const paidClaims = answer.claims.filter(c => c.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID'))
   const delivered = run.candidates.flatMap(candidate => { const content = getAccessibleContent(run, candidate); return content ? [content] : [] })
-  const lead = leadFinding(run.question, paidClaims.length ? paidClaims : answer.claims, delivered)
+  const summary = answer.lead ? answer : summarizeAnswer(run.question, answer, delivered.filter(c => answer.claims.some(claim => claim.citations.some(ref => sameSource(c, ref)))), run.candidates)
+  const lead = summary.lead ?? []
+  const leadText = lead.map(item => item.text).join(' ')
+  const context = summary.conclusion.startsWith(leadText) ? summary.conclusion.slice(leadText.length).trim() : summary.conclusion
   const added = answer.claims.filter(c => !baseline?.claims.some(b => b.text === c.text))
   const dropped = baseline?.claims.filter(c => !answer.claims.some(b => b.text === c.text)) ?? []
   const hasPaidEvidence = answer.claims.some(claim => claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID'))
@@ -65,14 +68,18 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   return <>
     <section className="ra-verdict" aria-label="Research answer">
       <div className="ra-answer-heading"><h2 className="ra-caption">{draft ? hasPaidEvidence ? 'Draft · verified evidence' : 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>
-      {lead.length ? <p className="ra-vtext">{lead.map(item => <span key={item.text}><small>{GROUPS.find(([stance]) => stance === item.claim.stance)?.[1]} · </small>{item.text}{cites(item.claim)}{' '}</span>)}</p> : <p>No concise finding could be selected from the verified evidence.</p>}
-      {hasPaidEvidence && <details className="ra-answer-update"><summary>Updated with paid evidence</summary><p>{added.length} added claims, {dropped.length} removed. Only verified passages are included.</p><button type="button" className="ra-link" onClick={onCompare}>See what changed after the purchase</button></details>}
-      {answer.openGaps.length > 0 && <details className="ra-answer-context"><summary>Still unanswered ({answer.openGaps.length})</summary><ul>{answer.openGaps.map(gap => <li key={gap.text}>{gap.text}</li>)}</ul></details>}
+      {lead.length ? <p className="ra-vtext">{lead.map(item => <span key={item.text}>{!item.claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID') && <small>{GROUPS.find(([stance]) => stance === item.claim.stance)?.[1]} · </small>}{item.text}{cites(item.claim)}{' '}</span>)}</p> : <p>No concise finding could be selected from the verified evidence.</p>}
+      {context && <p>{context}</p>}
       <AnchorStatus run={run} />
     </section>
+    <details className="ra-answer-work" open={compare || undefined}><summary>Show work</summary>
+      {hasPaidEvidence && <details className="ra-answer-update"><summary>Updated with paid evidence</summary><p>{added.length} added claims, {dropped.length} removed. Only verified passages are included.</p><button type="button" className="ra-link" onClick={onCompare}>See what changed after the purchase</button></details>}
+      {answer.openGaps.length > 0 && <details className="ra-answer-context"><summary>Still unanswered ({answer.openGaps.length})</summary><ul>{answer.openGaps.map(gap => <li key={gap.text}>{gap.text}</li>)}</ul></details>}
+
     {!compare && <RequestedFacts run={run} version={answer.version} />}
     {compare && <button type="button" className="ra-link" onClick={onCompare}>Back to answer</button>}
     <section className="ra-claims" aria-label={compare ? 'What changed after the purchase' : 'Claims'}>{groups.map(([name, items]) => items.length ? <div className="ra-group" key={name}><h3>{name} ({items.length})</h3><ul>{items.map(claim => <li key={claim.id} className="ra-claim"><p>{leadFinding(run.question, [claim])[0]?.text ?? claim.text}{cites(claim)}</p></li>)}</ul></div> : null)}{compare && !added.length && !dropped.length && <p>The cited claims are unchanged.</p>}</section>
+    </details>
   </>
 }
 

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { SourceIdentitySchema } from '../source-identity.js'
-import { ClaimSchema, CoverageStatusSchema, ImpactSchema, LlmProviderSchema } from './answer.js'
+import { AnswerSchema, ClaimSchema, CoverageStatusSchema, ImpactSchema, LlmProviderSchema } from './answer.js'
 import { DecisionRoundSchema } from './decision.js'
 import { ReceiptSchema } from './publisher.js'
 import { PublicCandidateSchema, ContentEnvelopeSchema } from './corpus.js'
@@ -10,7 +10,7 @@ import { ModeLabelsSchema } from './run.js'
 export const ReportSchema = z.object({
   title: z.string(), question: z.string(),
   budgetMinor: z.number().int().nonnegative(), spentMinor: z.number().int().nonnegative(),
-  executiveAnswer: z.string(), findings: z.array(ClaimSchema),
+  answer: AnswerSchema.optional(), executiveAnswer: z.string(), findings: z.array(ClaimSchema),
   purchasesChanged: z.string(), impact: ImpactSchema.optional(),
   openQuestions: z.array(z.string()), method: z.string(), disclaimer: z.string(),
   decisions: z.array(DecisionRoundSchema), receipts: z.array(ReceiptSchema),

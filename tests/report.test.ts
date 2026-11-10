@@ -26,6 +26,37 @@ beforeEach(async () => { vi.clearAllMocks(); vi.mocked(isLlmConfigured).mockRetu
 afterEach(async () => { await rm(directory, { recursive: true, force: true }) })
 
 describe('report evidence and drafting', () => {
+  it('numbers a purchased lead from a delivered span absent from legacy findings', async () => {
+    const snapshot = paidRun()
+    snapshot.question = 'Which transaction creates tickets?'
+    const text = 'TicketCreate is the transaction that creates tickets.'
+    snapshot.contents[0].body += `\n${text}`
+    snapshot.contents[0].spans.push({ id: 'ticket-type', text })
+    const report = await buildReport(snapshot)
+    delete report.answer
+    const html = reportHtml(report)
+    expect(html).toContain(text)
+    expect(html).not.toContain('excerpt-undefined')
+    const lead = html.split('<p class="lead">')[1].split('</p>')[0]
+    const number = lead.match(/href="#excerpt-(\d+)"/)?.[1]
+    expect(number).toBeDefined()
+    expect(html).toContain(`id="excerpt-${number}"`)
+    expect(html).toContain('Exact synthetic passage · ticket-type')
+  })
+  it('labels mixed author-supplied and synthetic passages without calling every writer fictional', async () => {
+    const snapshot=run()
+    snapshot.candidates[0].license.kind='AUTHOR SUPPLIED'
+    snapshot.candidates.push({...exampleRun.candidates[0],resourceId:'synthetic-copy',license:{...exampleRun.candidates[0].license}})
+    snapshot.contents.push({...exampleRun.contents[0],resourceId:'synthetic-copy'})
+    snapshot.answers[0].claims.push({...exampleRun.answers[0].claims[0],id:'synthetic-copy',citations:exampleRun.answers[0].claims[0].citations.map(c=>({...c,resourceId:'synthetic-copy'}))})
+    const report=await buildReport(snapshot), html=reportHtml(report)
+    expect(report.disclaimer).toContain('author-supplied material')
+    expect(report.disclaimer).not.toContain('exact passages are fictional')
+    expect(html).toContain('Exact author-supplied passage')
+    expect(html).toContain('Exact synthetic passage')
+    expect(html).not.toContain('All writers and articles are fictional')
+    expect(reportHtml(await buildReport(run()))).toContain('Exact synthetic passage')
+  })
   it('builds a schema-valid labelled fixture from examples without a provider call', async () => {
     const report = await buildReport(run())
     expect(ReportSchema.parse(report).findings).toEqual(exampleRun.answers[0].claims)

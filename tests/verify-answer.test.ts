@@ -38,6 +38,7 @@ it('names the exact citation for a one-byte passage tamper; refuses amount, cita
   const mutations: ((copy: ReceiptBundle) => void)[] = [
     c => { const ref = c.answers.at(-1)!.claims[0].citations[0]; const s = c.sources.find(s => s.resourceId === ref.resourceId)!; s.spans.find(s => s.id === ref.spanId)!.text += 'X' },
     c => { c.payments[0].amountDrops = '1' },
+    c => { c.answers.at(-1)!.lead![0].text = 'A fabricated answer line.' },
     c => { c.answers.at(-1)!.claims[0].citations[0].spanId = 'missing' },
     c => { c.proofs[0].manifest.sig = 'AA' },
     c => { const refunded = c.intents.find(i => i.refund)!; c.candidates.find(c => c.resourceId === refunded.resourceId)!.manifest!.sig = 'AA' },

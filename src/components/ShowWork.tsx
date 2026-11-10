@@ -33,7 +33,7 @@ export default function ShowWork({ run, configured, onClose }: { run: RunSnapsho
       {tab === 'Wire' && <Wire run={run} />}
       {tab === 'Policy' && <DecisionTable run={run} />}
       {tab === 'Receipts' && (receipts.length === 0 ? <p>No receipts in this run.</p> : <ol className="ra-receipt-list">{receipts.map(receipt => <li key={receipt.receiptId}>
-        <b>{candidateOf(run, receipt)?.publisher ?? receipt.resourceId}</b> · {money(receipt.amountMinor)} · {receipt.label}<br />
+        <b>{candidateOf(run, receipt)?.publisher ?? receipt.resourceId}</b> · {money(receipt.amountMinor)} · {receipt.label}{run.intents.find(i => i.intentId === receipt.intentId)?.purchaseKind && ` · ${run.intents.find(i => i.intentId === receipt.intentId)!.purchaseKind}`}<br />
         <span className="mono">receipt {receipt.receiptId} · intent {shortHash(receipt.intentId)} · settled {receipt.settledAt}</span>
       </li>)}</ol>)}
       {tab === 'Models' && <div className="ra-models"><ModelLabels labels={run.labels} configured={configured} /></div>}

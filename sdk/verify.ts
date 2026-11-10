@@ -97,6 +97,15 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
       add(`grant ${key(s)}`, Boolean(intent?.status === 'VERIFIED' && grant?.runId === b.runId && grant.contentDigest === p?.manifest.root && key(grant) === key(s) && intent.profileId === s.profileId && payment?.payee === p?.manifest.wallet && p.manifest.priceMinor === intent.amountMinor && entries.some(e => e.kind === 'proof' && e.intentId === intent.intentId && e.data.verified === true && (intent.escrow ? e.data.scheme === 'escrow-v1' : e.data.contentDigest === p.manifest.root))), 'Paid source requires verified grant, matching manifest and writer receipt')
     }
   }
+  for (const answer of b.answers) for (const lead of answer.lead ?? []) {
+    const exact = lead.claim.citations.every(ref => {
+      const source = b.sources.find(s => key(s) === key(ref))
+      const span = source?.spans.find(s => s.id === ref.spanId)
+      return !!span && span.text.includes(lead.text) && !!source?.body.includes(span.text)
+        && answer.claims.some(c => c.citations.some(r => key(r) === key(ref) && r.spanId === ref.spanId))
+    })
+    add(`citation lead v${answer.version}`, exact && lead.text.trim().split(/\s+/).length <= 40, 'Lead is an exact extract of a cited delivered passage')
+  }
   const claimSets = b.answers.map(a => ({ name: `answer v${a.version}`, claims: a.claims }))
   if (exportedReport !== undefined) {
     const report = ReportSchema.safeParse(exportedReport)

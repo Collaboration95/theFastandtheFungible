@@ -16,11 +16,12 @@ it('UC2 selects the analyst estimate and preserves decimal percentages', () => {
   const run = ucRuns.UC2
   expect(leadFinding(run.question, validatedAnswers(run).at(-1)!.claims)[0].text).toContain('55.2% from 58.5%')
 })
-it('UC1 answers both the policy change and yield reaction', () => {
+it('UC1 keeps its extracted lead within the 40-word answer budget', () => {
   const run = ucRuns.UC1
   const text = leadFinding(run.question, validatedAnswers(run).at(-1)!.claims).map(i => i.text).join(' ')
+  expect(text.split(/\s+/).length).toBeLessThanOrEqual(40)
   expect(text).toContain('0.75% to 1.00%')
-  expect(text).toContain('+9 bp')
+  expect(validatedAnswers(run).at(-1)!.claims.map(c => c.text).join(' ')).toContain('+9 bp')
 })
 it('cannot select a paid finding after its grant is removed or its proof fails', () => {
   for (const change of ['grant','proof']) {

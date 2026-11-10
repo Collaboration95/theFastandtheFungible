@@ -7,7 +7,7 @@ export const CitationSchema = z.object({ source: SourceIdentitySchema.optional()
 export const ClaimSchema = z.object({ id: z.string(), text: z.string().min(1), stance: z.enum(['SUPPORTS', 'CHALLENGES', 'UNCERTAIN']), citations: z.array(CitationSchema).min(1) })
 /** A free-text gap (D10): what is missing, never what to buy. */
 export const GapSchema = z.object({ text: z.string().min(1).max(160), tags: z.array(z.string()).optional() })
-export const AnswerSchema = z.object({ conclusion: z.string().min(1), claims: z.array(ClaimSchema), openGaps: z.array(GapSchema), version: z.number().int().positive(), provider: LlmProviderSchema, model: z.string() })
+export const AnswerSchema = z.object({ lead: z.array(z.object({ text: z.string(), claim: ClaimSchema })).optional(), conclusion: z.string().min(1), claims: z.array(ClaimSchema), openGaps: z.array(GapSchema), version: z.number().int().positive(), provider: LlmProviderSchema, model: z.string() })
 export const ImpactSchema = z.object({ classification: z.enum(['STRENGTHENS', 'QUALIFIES', 'CONTRADICTS', 'UNCHANGED']), explanation: z.string(), claimChanges: z.array(z.object({ fromClaimId: z.string().optional(), toClaimId: z.string().optional(), change: z.enum(['ADDED', 'REVISED', 'REMOVED', 'UNCHANGED']) })) })
 /**
  * Requested facts (#208): frozen from the question and the clarify answers before any evidence is read, with stable

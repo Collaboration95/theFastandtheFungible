@@ -1,4 +1,5 @@
 import { sameSource } from '../../shared/source-identity.js'
+import { sentences } from '../../shared/lead-finding.js'
 import type { Answer, Citation, Claim, ContentEnvelope } from '../../shared/contracts/index.js'
 export function resolveCitation(citation: Citation, contents: ContentEnvelope[]) {
   const matches = contents.filter(c => sameSource(c, citation))
@@ -10,8 +11,11 @@ export function validateClaims(claims: Claim[], contents: ContentEnvelope[]): Cl
   return claims.filter(claim => claim.citations.length > 0 && claim.citations.every(c => Boolean(resolveCitation(c, contents))))
 }
 
-/** Conclusions have no citation binding: display only the surviving cited claims. */
+/** Only whole delivered sentences enter the summary; a citation does not prove a paraphrase. */
 export function validateAnswer(answer: Answer, contents: ContentEnvelope[]): Answer {
   const claims = validateClaims(answer.claims, contents)
-  return { ...answer, claims, conclusion: claims.map(c => c.text).join(' ') || 'No verifiable evidence is available.' }
+  const bound = [...new Set(claims.flatMap(c => c.citations.flatMap(ref => sentences(resolveCitation(ref, contents)!.text))))]
+  let remaining = 120
+  const selected = bound.filter(text => { const n = text.split(/\s+/).length; if (n > remaining) return false; remaining -= n; return true })
+  return { ...answer, claims, conclusion: selected.join(' ') || 'No verifiable evidence is available.' }
 }

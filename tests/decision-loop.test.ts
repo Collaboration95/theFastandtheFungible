@@ -24,6 +24,7 @@ function harness(budgetMinor = 200) {
   const content: ContentEnvelope = { ...exampleContent, resourceId: candidate.resourceId, title: candidate.title }
   const run: RunSnapshot = structuredClone({ ...exampleRun, budgetMinor, phase: 'SEARCH', answers: [], candidates: [], contents: [], round: 0 })
   const store = {
+    probeAvailable: () => false,
     getRun: vi.fn(() => structuredClone(run)),
     updateRunState: vi.fn((id: string, patch: Partial<RunSnapshot>): void => { store.updateRun(id, patch) }),
     updateRun: vi.fn((_id: string, patch: Partial<RunSnapshot>) => { Object.assign(run, structuredClone(patch)); return structuredClone(run) }),

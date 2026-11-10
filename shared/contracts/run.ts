@@ -34,7 +34,7 @@ export const StopReasonSchema = z.enum(STOP_REASONS)
  */
 export const MAX_ROUNDS = 3
 /** The buying rule, worded once for the plan modal, the home subtitle and the docs. Tied to MAX_ROUNDS by a test. */
-export const PURCHASE_RULE = `at most one article per round, up to ${MAX_ROUNDS} rounds, within your budget`
+export const PURCHASE_RULE = `at most one article per round, up to ${MAX_ROUNDS} rounds, within your budget; prefer a matching title or topic and stop when the gap is covered`
 /** Reader-facing stop reasons, one short line each. */
 export const STOP_LABELS: Record<z.infer<typeof StopReasonSchema>, string> = {
   complete: 'All requested facts answered.',
