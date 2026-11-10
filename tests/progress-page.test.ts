@@ -70,7 +70,7 @@ describe('progress page', () => {
   it('links the October archive and the ledger, and is linked from every page header', () => {
     expect(html).toContain('href="../evolution/"')
     expect(html).toContain('href="../ledger/"')
-    for (const page of ['site/index.html', 'site/ledger/index.html', 'site/evolution/index.html']) expect(readFileSync(page, 'utf8')).toMatch(/<nav aria-label="Explainers">.*href="(\.\.\/)?progress\/"/)
+    for (const page of ['site/index.html', 'site/ledger/index.html', 'site/evolution/index.html']) expect(readFileSync(page, 'utf8')).toMatch(/<nav tabindex="0" aria-label="Explainers · scroll for more pages">.*href="(\.\.\/)?progress\/"/)
     expect(readFileSync('site/index.html', 'utf8')).not.toContain('39 days')
   })
 })
