@@ -1,0 +1,36 @@
+{
+ "note": "Development measurement, fixture models, SIMULATED payments. v5 and v5-negatives are used (dev) banks.",
+ "before": {
+  "main": "f4a8fb939e0d0118500747f7cffd3dcdb562762c",
+  "tree": "unmodified main (K4 #442 + M5 #448); harness scripts/k5-dev-measure.ts copied over without product changes"
+ },
+ "after": {
+  "base": "f4a8fb939e0d0118500747f7cffd3dcdb562762c",
+  "measuredFiles": {
+   "shared/lead-finding.ts": "f41277771d6fc6a377a307d4e06055563803107cf24a4c5a28c03fa93fb6903a",
+   "shared/answer-entity.ts": "cdb52a1bd710cf50f306ec8f286edf7d16efc46a7ffa3353b0f225cc600cdf96",
+   "shared/answer-summary.ts": "5a461e147ac22a9377de7a5a8657c09d62ab54f85800f29924fe1f297b29395a"
+  }
+ },
+ "harness": {
+  "scripts/k5-dev-measure.ts": "eea7d9492c8bce9652d1e41b7a8b8b87a22feb7ce9d306b23f2802e257a40221",
+  "scripts/k5-compare-runs.ts": "1761163321a38c7ca26910536caf2dcf2e88508f3b1553adf1e4585e639ef2bd",
+  "scripts/k5-replay-leads.ts": "097dfb2e8d30000953e9ff0212137b9ce2fafcc84ebdac766f98cb79d1818b91"
+ },
+ "archives": {
+  "before-runs.tar.gz": "feead0f3e45fe26b381b8022a41955e1616c9bb8cb970c4362fcc35d8a483d60",
+  "after-runs.tar.gz": "20dff98025ff923cee4a792cbe6c90b633ae05cc2949df4007f367b8f1fb657a",
+  "before-summary.json": "cebdd88366a1719218aa51dee96b654a77283117a00b79e5f346de263ab039d6",
+  "after-summary.json": "f676454afaa90467f32f8db31c1d6f2f971de2cbaa64c3692df6e51d273991e2",
+  "comparison.json": "be3b3817f6cda09d8e5e4b2d0c3c839cab9b76c2d577745298219c195ccde67c",
+  "bank-hashes.json": "44747041a1251a2aff0d70c1832165a40cbbcc02642f87989159777f9c302c7b"
+ },
+ "env": {
+  "OFFSET": "3400",
+  "LLM_PROVIDER": "fixture",
+  "DECISION_PROVIDER": "fixture",
+  "SETTLEMENT_RAIL": "simulated",
+  "SEARCH_EMBEDDINGS": "off",
+  "LANGFUSE_ENABLED": "0"
+ }
+}

@@ -1,5 +1,5 @@
 import { topicMatches } from './relevance.js'
-import { answerBoilerplate, leadFinding, sentences } from './lead-finding.js'
+import { answerBoilerplate, leadFinding, onTopicSentence, sentences } from './lead-finding.js'
 import { sameSource } from './source-identity.js'
 import type { Answer, Claim, ContentEnvelope, PublicCandidate } from './contracts/index.js'
 
@@ -35,8 +35,11 @@ export function summarizeAnswer(question: string, answer: Answer, contents: Cont
   }
   let count = 0
   const texts: string[] = []
+  const leadTexts = new Set(chosen.map(c => c.text))
   for (const text of [...chosen.map(c => c.text), ...extracts.filter(e => claims.some(c => c.citations.some(ref => e.citations.some(r => sameSource(r, ref) && r.spanId === ref.spanId)))).flatMap(c => sentences(c.text)).filter(text => !questionTerms(question).length || questionTerms(question).some(t => questionTerms(text).includes(t)))]) {
     if (text.length > 1800 || answerBoilerplate(text) || /^Test missing/i.test(text)) continue
+    // The context paragraph obeys the same floor as the lead: an unrelated sentence stays out.
+    if (!leadTexts.has(text) && !onTopicSentence(question, text, firstRequirement)) continue
     if (texts.some(t => t.includes(text) || text.includes(t))) continue
     const n = text.split(/\s+/).length
     if (count + n > 120) continue
