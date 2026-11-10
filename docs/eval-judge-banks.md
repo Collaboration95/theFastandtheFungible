@@ -12,6 +12,8 @@ Development only: v1, v2, v3, v3-dev, v3-negatives, v4 and v4-negatives are obse
 
 Used (historical): `eval/questions/judge-xrpl.v4.json` and `eval/questions/judge-xrpl.v4-negatives.json` were the single-use held-out banks and were measured once on 7 Nov (see `docs/evidence/v4-heldout/README.md`). They are now development data: never report v4 as held-out again.
 
+`JUDGE_BUDGET_SGD` (default 2) sets the per-question budget passed to `ask_expert`; `0` gives the free-only arm used once for v5 (see `evidence/v5-heldout/README.md`).
+
 Single-use held-out: `eval/questions/judge-xrpl.v5.json` (20 positives) and `eval/questions/judge-xrpl.v5-negatives.json` (10 `no_purchase` negatives), frozen 10 Nov and written blind to the corpus, writers, evidence, explainers and team notes. Implementers must never open, read or execute either file. After the coverage and answer-quality lanes have landed and the artifact is frozen, the orchestrator alone runs the single authorised measurement, with fresh private state/output directories per bank. Do not use these banks for smoke tests, threshold selection or retries with a changed policy. `tests/judge-bank-v5.test.ts` pins the hashes and checks the schema without running the bank.
 
 | File | SHA-256 of the exact bytes |
