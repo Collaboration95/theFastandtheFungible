@@ -18,12 +18,13 @@ const decoded = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/&amp;/g
 describe('buying rule copy', () => {
   it('the rule states the loop cap, and the loop reads the same constant', () => {
     expect(MAX_ROUNDS).toBe(3)
-    expect(PURCHASE_RULE).toBe(`at most one article per round, up to ${MAX_ROUNDS} rounds, within your budget`)
+    expect(PURCHASE_RULE).toBe(`at most one article per round, up to ${MAX_ROUNDS} rounds, within your budget; prefer a matching title or topic and stop when the gap is covered`)
     expect(readFileSync('server/agents/loop.ts', 'utf8')).toMatch(/run\.round >= MAX_ROUNDS/)
   })
   it('the plan modal prints the rule from policy, not a hand-written claim', () => {
     const text = decoded(renderToStaticMarkup(<PlanSheet plan={uc2Scope.plan} writers={8} onGo={() => {}} onCancel={() => {}} />))
     expect(text).toContain(`Buy only if an article fills a gap: ${PURCHASE_RULE}`)
+    expect(text).toContain("A new writer's top matching article may get one probe purchase, up to S$0.30, within this budget.")
     expect(text).not.toMatch(/at most one article if/i)
   })
   it('the home subtitle prints the same rule', () => {

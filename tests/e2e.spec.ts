@@ -48,7 +48,7 @@ test('UC3: AlphaLeak bought → proof fails → refunded → quarantined; The Fa
   await expect(leak.getByText(/Refunded S\$0.30/).first()).toBeVisible()
   await expect(page.getByRole('region', { name: 'Purchase: The Fab Floor' })).toContainText('Verified')
   await expect(page.locator('.ra-vtext')).toContainText('26 weeks to 18 weeks')
-  await expect(page.locator('.ra-vtext')).toContainText('Supports')
+  await expect(page.locator('.ra-vtext')).not.toContainText('Supports')
   await expect(page.locator('.ra-claim').filter({ hasText: '26 weeks to 18 weeks' })).toHaveCount(0)
   await page.getByRole('tab', { name: 'Writers' }).click()
   await expect(page.getByText(/quarantined/i).first()).toBeVisible()

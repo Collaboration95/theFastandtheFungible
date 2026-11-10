@@ -20,6 +20,8 @@ test('UX-2: UC4, exact lead citation, export, supporting screens and mobile Spen
   await page.locator('.ra-activity-details > summary').click()
   await expect(page.locator('.ra-vtext')).toContainText('15 August 2026')
   await expect(page.getByRole('region', { name: 'Requested facts' })).toHaveCount(0) // native details, not a redundant landmark
+  await expect(page.getByText('3 of 3 answered', { exact: false })).not.toBeVisible()
+  await page.locator('.ra-answer-work > summary').click()
   await expect(page.getByText('3 of 3 answered', { exact: false })).toBeVisible()
   await page.screenshot({ path: `${dir}/uc4.jpg`, quality: 70 })
   await page.locator('.ra-vtext .ra-cite').first().click()

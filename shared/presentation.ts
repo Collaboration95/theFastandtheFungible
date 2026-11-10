@@ -16,7 +16,7 @@ export function purchaseState(run: RunSnapshot, intent: PurchaseIntent) {
   const failed = intent.status === 'DELIVERY_FAILED', notSettled = intent.status === 'FAILED_NOT_SETTLED'
   const ok = phase === 'verified', level = LEVEL[intent.status], amount = money(intent.amountMinor)
   const line = ok ? `Paid ${amount} · delivered · verified` : quarantined ? `Paid ${amount} · delivered · ✗ claim failed` : failed ? `Paid ${amount} · delivery failed` : notSettled ? 'Not settled · nothing charged' : phase === 'skipped' ? 'Skipped · nothing charged' : level >= 4 ? `Paid ${amount} · delivered · checking` : level === 3 ? `Paid ${amount} · checking delivery` : level === 2 ? `Paying ${amount}` : `Quoted ${amount}`
-  return { intent, receipt, phase, level, quarantined, failed, notSettled, ok, line,
+  return { intent, receipt, phase, level, quarantined, failed, notSettled, ok, line: intent.purchaseKind ? `${line} · ${intent.purchaseKind}` : line,
     title: ok ? 'Bought' : quarantined ? 'Proof failed' : failed ? 'Paid, not delivered' : notSettled || phase === 'skipped' ? 'Not bought' : 'Buying',
     fill: ok || quarantined ? 100 : level >= 4 ? 75 : level >= 3 ? 50 : level >= 2 ? 25 : 0,
     rail: railLabel(run.labels.settlement), ledgerIndex: receipt?.xrpl?.ledgerIndex, txHash: receipt?.xrpl?.txHash,
@@ -25,7 +25,7 @@ export function purchaseState(run: RunSnapshot, intent: PurchaseIntent) {
 }
 
 export function receiptView(intent: PurchaseIntent, receipt: Receipt | undefined, candidate: PublicCandidate | undefined, settlement: RunSnapshot['labels']['settlement']) {
-  return { source: intent.source, intentId: intent.intentId, resourceId: intent.resourceId, writer: candidate?.publisher ?? intent.profileId,
+  return { purchaseKind: intent.purchaseKind, source: intent.source, intentId: intent.intentId, resourceId: intent.resourceId, writer: candidate?.publisher ?? intent.profileId,
         writerVerification: candidate?.verification ?? { status: 'unverified' }, credentialNotice: 'unsigned advisory; requires online check', asset: receipt?.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', settlementAmount: receipt?.xrpl?.amountDrops ?? null, escrow: intent.escrow ?? null, priceMinor: intent.amountMinor, status: intent.status, verified: intent.status === 'VERIFIED', refunded: intent.status === 'REFUNDED', txHash: receipt?.xrpl?.txHash ?? null, explorerUrl: receipt?.xrpl?.explorerUrl ?? null, label: receipt?.label ?? settlement }
 }
 

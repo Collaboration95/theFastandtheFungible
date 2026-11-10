@@ -13,7 +13,8 @@ export function requestedPassageScores(requirement: string, passages: string[]):
   const terms = [...contentWords(requirement)]
   const phrases = terms.slice(1).map((w, i) => `${terms[i]} ${w}`)
   const weights = new Map([...need].map(w => [w, Math.log(1 + passages.length / (1 + own.filter(p => p.has(w)).length))]))
-  return passages.map((p, i) => !/\b\d+(?:[.,]\d+)?\b/.test(p) || noNewEvidence.test(p) || scopes.some(w => !own[i].has(w)) ? 0
+  const namedType = /\b(?:transaction|field|flag|header|scheme|protocol|setting|permission|type|identifier|credential)s?\b/i.test(requirement)
+  return passages.map((p, i) => !namedType && !/\b\d+(?:[.,]\d+)?\b/.test(p) || /\bundisclosed\b/i.test(p) || noNewEvidence.test(p) || scopes.some(w => !own[i].has(w)) ? 0
     : [...need].filter(w => own[i].has(w)).reduce((score, w) => score + weights.get(w)!, 0)
       + 0.25 * phrases.filter(phrase => searchText(p).toLowerCase().includes(phrase)).length)
 }

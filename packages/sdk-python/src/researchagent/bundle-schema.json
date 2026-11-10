@@ -595,6 +595,108 @@
       "items": {
         "type": "object",
         "properties": {
+          "lead": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "claim": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "stance": {
+                      "type": "string",
+                      "enum": [
+                        "SUPPORTS",
+                        "CHALLENGES",
+                        "UNCERTAIN"
+                      ]
+                    },
+                    "citations": {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "source": {
+                            "type": "object",
+                            "properties": {
+                              "schemaVersion": {
+                                "type": "number",
+                                "const": 1
+                              },
+                              "origin": {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              "sellerKey": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "profileId": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "resourceId": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "version": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "schemaVersion",
+                              "origin",
+                              "sellerKey",
+                              "profileId",
+                              "resourceId",
+                              "version"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "resourceId": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          },
+                          "spanId": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "resourceId",
+                          "version",
+                          "spanId"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "text",
+                    "stance",
+                    "citations"
+                  ]
+                }
+              },
+              "required": [
+                "text",
+                "claim"
+              ]
+            }
+          },
           "conclusion": {
             "type": "string",
             "minLength": 1
@@ -1416,6 +1518,10 @@
       "items": {
         "type": "object",
         "properties": {
+          "purchaseKind": {
+            "type": "string",
+            "const": "probe purchase · new writer"
+          },
           "source": {
             "type": "object",
             "properties": {

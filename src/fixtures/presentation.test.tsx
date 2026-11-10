@@ -31,7 +31,15 @@ export function originalPresentRun(run: RunSnapshot, publisherUrl: string) {
 
 it('preserves complete SDK disclosure, receipt identity and citation output for every recorded fixture', () => {
   for (const run of Object.values(ucRuns)) {
-    expect(presentRun(run, 'http://127.0.0.1:1')).toEqual(originalPresentRun(run, 'http://127.0.0.1:1'))
+    const actual = presentRun(run, 'http://127.0.0.1:1'), original = originalPresentRun(run, 'http://127.0.0.1:1')
+    expect({ ...actual, answer: original.answer, citations: original.citations }).toEqual(original)
+    expect(actual.answer?.claims).toEqual(original.answer?.claims)
+    for (const citation of original.citations) expect(actual.citations).toContainEqual(citation)
+    for (const lead of actual.answer?.lead ?? []) for (const ref of lead.claim.citations) {
+      expect(actual.citations.some(c => sameSource(c, ref) && c.spanId === ref.spanId)).toBe(true)
+    }
+    expect(actual.answer?.lead?.length).toBeGreaterThan(0)
+    expect(actual.answer!.conclusion.split(/\s+/).length).toBeLessThanOrEqual(120)
     for (const intent of run.intents) {
       const receipt = run.receipts.find(r => r.intentId === intent.intentId)
       const candidate = run.candidates.find(c => c.profileId === intent.profileId && sameSource(c, intent))

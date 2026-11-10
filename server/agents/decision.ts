@@ -1,3 +1,4 @@
+import { alreadyCovered, entityPrecision, probeMetadata } from './precision.js'
 import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'
 import { sourceKey } from '../../shared/source-identity.js'
@@ -145,6 +146,8 @@ export type DecideInput = {
   accessibleEvidence?: ContentEnvelope[]
   /** Trust by publisher wallet (D6, D21). A wallet with no entry is a newcomer. */
   reputation?: Record<string, ReputationSummary>
+  /** Wallets with no sale, reservation, or earlier probe, read from the durable ledger. */
+  probeWallets?: string[]
   /** Abandons the round from outside (e.g. Stop); the round's own controller also aborts siblings on the first failure (#206). */
   signal?: AbortSignal
   /**
@@ -237,7 +240,8 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   const cap = z.number().int().nonnegative().parse(input.perSourceCapMinor)
   const provider: DecisionProvider = input.provider ?? new FixtureDecisionProvider()
   // An empty gap makes no model call for any provider (#214): nothing is worth buying, and Luna refused or scored it 0.87.
-  const open = input.gap.trim().length > 0
+  const covered = alreadyCovered(input.gap, input.accessibleEvidence ?? [])
+  const open = input.gap.trim().length > 0 && !covered
   const { gapMaterial, judgments } = open ? await judgeAll(provider, input, candidates, readSources) : { gapMaterial: 0, judgments: candidates.map(() => NOT_JUDGED) }
   // #207: a versioned calibrator for this exact (provider, model, prompt version), only with DECISION_CALIBRATION=on.
   // Its threshold is on the calibrated scale; an explicit threshold still wins, and BUY_THRESHOLD (raw scale) never applies to it.
@@ -257,6 +261,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     const value = gapMaterial * (calibrated?.addressesGap ?? judgment.addressesGap) * (calibrated?.original ?? judgment.originality.original) * (0.5 + 0.25 * judgment.credibility) * trust
     const marginal = useValuePolicy ? marginalValue({ candidate, evidence: input.accessibleEvidence!, probability: judgment.addressesGap, trust, model: valueFit?.model, minFactsPerDollar: valueFit?.minFactsPerDollar }) : undefined
     const price = candidate.price.amountMinor
+    const probe = open && input.probeWallets?.includes(candidate.wallet ?? '') && probeMetadata(input.question, candidate, input.candidates[0])
     // A zero-price PAID resource ranks by value, avoiding Infinity in JSON.
     const valuePerDollar = value / (Math.max(price, 1) / 100)
     // With no model call, a rewrite is known from its public metadata only (derivedFrom, set by retrieval for a shared family).
@@ -268,17 +273,19 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     if (provider.name === 'compatible') { verdict = 'SKIP_LOW_VALUE'; reason = 'UNCALIBRATED generic judge: purchases disabled.' }
     else if (reputation && reputation.status !== 'active') { verdict = 'SKIP_LOW_TRUST'; reason = `Publisher ${reputation.status}: never bought or cited.` }
     else if (acquired.has(candidate.source ? sourceKey(candidate) : candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || rewrite) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
-    else if (!open) { verdict = 'SKIP_NO_GAP'; reason = NO_GAP_NOT_CALLED }
+    else if (!open) { verdict = 'SKIP_NO_GAP'; reason = covered ? 'Earlier delivered evidence already covers this gap; no further purchase.' : NO_GAP_NOT_CALLED }
     else if (gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
     else if (process.env.DECISION_SCOPE_POLICY !== 'off' && input.requirement && scopeContradiction(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Public source scope contradicts the requested country; model confidence cannot authorize this purchase.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
-    else if (value < threshold) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
+    else if (value < threshold && !probe) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
     else if (process.env.DECISION_NUMBERS_POLICY !== 'off' && input.requirement && factMenuMismatch(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Signed fact menu does not offer the requested fact key and entity/period scope.' }
     else if (marginal && !marginal.eligible) { verdict = 'SKIP_LOW_VALUE'; reason = `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} < ${marginal.threshold.toFixed(3)} (covered menu entries ${marginal.coveredEntries}/${marginal.menuEntries}).` }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }
-    rows.push({ candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}), ...(marginal ? { marginalValue: { ...marginal, ...(valueFit ? { fitVersion: valueFit.version } : {}) }, reason: verdict === 'BUY' ? `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} >= ${marginal.threshold.toFixed(3)}; spending policy clears.` : reason } : {}) })
+    if (verdict === 'BUY' && probe && value < threshold) reason = 'probe purchase · new writer'
+    rows.push({ ...(verdict === 'BUY' && probe && value < threshold ? { probe: true } : {}), candidate, judgment, value, valuePerDollar, verdict, reason, wouldBuy: verdict === 'BUY' || (input.budgetMinor === 0 && verdict === 'SKIP_OVER_BUDGET'), ...(reputation ? { reputation } : {}), ...(calibrated ? { calibrated } : {}), ...(marginal ? { marginalValue: { ...marginal, ...(valueFit ? { fitVersion: valueFit.version } : {}) }, reason: verdict === 'BUY' ? `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} >= ${marginal.threshold.toFixed(3)}; spending policy clears.` : reason } : {}) })
   }
   // Equal value per dollar: a neutral hash order (#204), never alphabetical and never the claimed relevance.
-  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
+  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
+  if (selected && !selected.probe && entityPrecision(input.question, selected.candidate, candidates) > 0) selected.reason += ' Prefers the title or topics naming the requested entity; then value per dollar.'
   return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), ...(calibrator ? { calibration: roundCalibration(calibrator) } : {}), threshold, rows, ...(selected ? { selectedSourceKey: sourceKey(selected.candidate), selectedResourceId: selected.candidate.resourceId } : {}) })
 }
