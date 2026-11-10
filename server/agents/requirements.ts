@@ -1,3 +1,4 @@
+import { topicMatches } from '../../shared/relevance.js'
 import { searchText } from '../../publisher/search-text.js'
 import { INSTRUCTION, quotedText } from './untrusted.js'
 // Requested facts (#208) and their coverage. Requirements are frozen from the question and the clarify answers
@@ -124,7 +125,9 @@ export function fixtureSupports(requirement: Pick<Requirement, 'text'>, passage:
   const canonical = (text: string) => new Set([...contentWords(text)].map(w => w.replace(/^(?:pricing|prices?)$/, 'pric').replace(/^margins?$/, 'marg')))
   const need = canonical(requirement.text)
   const own = canonical(passage)
-  return /\d/.test(passage) && need.size > 0 && [...need].filter(w => own.has(w)).length / need.size >= 0.5
+  const namedType = /\b(?:transaction|field|flag|header|scheme|permission|setting|type)\b/i.test(requirement.text)
+  const identifier = /\b[A-Za-z]+[A-Z][A-Za-z]+\b|\b[A-Z]+(?:-[A-Z0-9]+)+\b/.test(passage)
+  return (/\d/.test(passage) || namedType && identifier) && topicMatches(requirement.text, passage) && need.size > 0 && [...need].filter(w => own.has(w)).length / need.size >= 0.5
 }
 /** Fixture coverage: supported when one passage establishes the requirement, otherwise missing. Never partial or conflicting. */
 export function fixtureCoverage(requirements: Pick<Requirement, 'id' | 'text'>[], evidence: CoverageEvidence[]): Record<string, JudgedStatus> {

@@ -12,7 +12,7 @@ export interface ChatThreadProps {
   above?: ReactNode
 }
 /** The model name alone ("DeepSeek · deepseek-flash" → "deepseek-flash"); a fixture label stays whole (gate 5). */
-const modelName = (label = 'model') => /^fixture\b/.test(label) ? label : label.replace(/^[^·]*·\s*/, '')
+const modelName = (label = 'model') => /^fixture\b/.test(label) ? 'Demo reply' : label.replace(/^[^·]*·\s*/, '')
 /**
  * The chat page (owner, 9 Oct): a question that needs no research opens a plain conversation, with no budget,
  * no suggested questions and no hero. Replies carry no citations, so each says so (gate 5). Text only; never HTML.

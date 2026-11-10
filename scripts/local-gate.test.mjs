@@ -267,3 +267,18 @@ test('entry HTML and packed SDK paths route to consumers; unit proof has built U
   const steps=makeSteps(classify(['server/store.ts']));assert.ok(steps.find(step=>step.id==='unit').deps.includes('app-build'))
   assert.ok(inputsFor('unit',['demo/traces/UC3.json'],()=>Buffer.from('{}')).includes('demo/traces/UC3.json'))
 })
+
+test('development-only bank access is explicit in the fixture environment and cache identity', () => {
+  const old = process.env.RA_DEV_BANKS_ONLY
+  try {
+    process.env.RA_DEV_BANKS_ONLY = '1'
+    assert.equal(fixtureEnv('/tmp/synthetic-k4').RA_DEV_BANKS_ONLY, '1')
+    const step = { id: 'unit', command: 'node', args: [] }
+    const files = ['vitest.config.ts']
+    const read = () => 'synthetic config'
+    assert.notEqual(stepKey(step, files, read, { bankAccess: 'development-only; held-out schema tests excluded' }, 'runner').key,
+      stepKey(step, files, read, { bankAccess: 'all-schema-checks' }, 'runner').key)
+    delete process.env.RA_DEV_BANKS_ONLY
+    assert.equal(fixtureEnv('/tmp/synthetic-k4').RA_DEV_BANKS_ONLY, undefined)
+  } finally { if (old === undefined) delete process.env.RA_DEV_BANKS_ONLY; else process.env.RA_DEV_BANKS_ONLY = old }
+})

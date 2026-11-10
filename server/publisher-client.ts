@@ -3,7 +3,7 @@ import { writerVerification } from './writer-credentials.js'
 import { WriterVerificationSchema } from '../shared/writer-verification.js'
 import { deriveAddress } from 'ripple-keypairs'
 import { validateProviderUrl } from './agents/compatible.js'
-import { verifyManifestSignature } from '../shared/manifest.js'
+import { verifyDelivery, verifyManifestSignature } from '../shared/manifest.js'
 import type { SourceIdentity } from '../shared/source-identity.js'
 import { boundedBody } from './body-limit.js'
 import { EscrowQuoteSchema } from '../shared/contracts/escrow.js'
@@ -152,6 +152,12 @@ export class PublisherClient {
     if (hit.tier !== 'FREE') throw new Error('Only FREE articles are read without a grant')
     const article = FreeArticleSchema.parse(await this.getJson(hit.url))
     if (article.articleId !== hit.articleId || article.version !== hit.version || article.publisherSlug !== hit.publisherSlug || article.passages.some(p => !article.body.includes(p.text))) throw new Error('Publisher article identity or passages invalid')
+    const proof = article.verification
+    // Local unsigned legacy FREE articles remain explicit legacy input. Any supplied
+    // envelope must pass in full, even when federation is off.
+    if (proof && (proof.manifest.priceMinor !== 0 || new Set(article.passages.map(p => p.id)).size !== article.passages.length || !verifyManifestSignature(proof.manifest) || proof.manifest.wallet !== this.sellerWallets.get(hit.publisherSlug)
+      || proof.manifest.articleId !== hit.articleId || proof.manifest.version !== hit.version || proof.manifest.publisherSlug !== hit.publisherSlug
+      || proof.salts.length !== article.passages.length || !verifyDelivery(article.body, article.passages, proof.salts, proof.manifest).ok)) throw new Error('Free source delivery proof invalid')
     if (hit.source) {
       if (!article.verification || !verifyManifestSignature(article.verification.manifest) || article.verification.manifest.wallet !== this.sellerWallets.get(hit.publisherSlug) || article.verification.manifest.articleId !== hit.articleId || article.verification.manifest.version !== hit.version || article.verification.manifest.publisherSlug !== hit.publisherSlug) throw new Error('Free source requires signed identity')
       hit.source = { ...hit.source, sellerKey: article.verification.manifest.pubKey }

@@ -249,7 +249,7 @@ export function snapshot(root, scope) {
 
 export function fixtureEnv(scratch, cpus = MAX_CPUS) {
   const env = Object.fromEntries(['PATH', 'HOME', 'USER', 'LOGNAME', 'LANG', 'LC_ALL', 'SYSTEMROOT'].filter(key => process.env[key] !== undefined).map(key => [key, process.env[key]]))
-  return { ...env, TMPDIR: scratch, TMP: scratch, TEMP: scratch, DOTENV_CONFIG_PATH: '/dev/null', LANGFUSE_ENABLED: '0',
+  return { ...env, ...(process.env.RA_DEV_BANKS_ONLY === '1' ? { RA_DEV_BANKS_ONLY: '1' } : {}), TMPDIR: scratch, TMP: scratch, TEMP: scratch, DOTENV_CONFIG_PATH: '/dev/null', LANGFUSE_ENABLED: '0',
     LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture', SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off',
     ELECTRON_SKIP_BINARY_DOWNLOAD: '1', npm_config_offline: 'true', npm_config_audit: 'false', npm_config_fund: 'false',
     PYTHONDONTWRITEBYTECODE: '1', PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1', RA_TEST_WORKERS: String(Math.max(1, Math.min(4, cpus - 1))),
@@ -287,7 +287,7 @@ function runtimeInfo(root, steps) {
     if (!existsSync(path)) throw Error(`Missing installed dependency ${name}; run npm ci first`)
     return [name, JSON.parse(readFileSync(path, 'utf8')).version]
   }))
-  const info = { node: process.version, execPath: process.execPath, platform: process.platform, arch: process.arch, os: release(), versions,
+  const info = { bankAccess: process.env.RA_DEV_BANKS_ONLY === '1' ? 'development-only; held-out schema tests excluded' : 'all-schema-checks', node: process.version, execPath: process.execPath, platform: process.platform, arch: process.arch, os: release(), versions,
     installedLock: hash(readFileSync(join(root, 'node_modules/.package-lock.json'))),
     npm: execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim(), git: git(root, ['--version']) }
   if (steps.some(step => step.id === 'python' || step.id.startsWith('browser-'))) info.python = execFileSync('python3', ['-c',

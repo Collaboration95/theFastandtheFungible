@@ -81,3 +81,17 @@ describe('scope step (#136)', () => {
     expect(SCOPE_PROMPT).toContain('{"route":"chat","reply":"..."}')
   })
 })
+
+it('keeps protocol questions on research even when a model attempts the chat route', async () => {
+ llm({route:'chat',reply:'An unsupported direct answer.'})
+ const result=await scope('How does XRPL Payment finality work?')
+ expect(result.chat).toBeUndefined()
+ expect(result.plan.subqueries.join(' ')).toContain('Payment')
+})
+
+it('rejects a live research plan that changes an XRPL question to an unrelated finance subject',async()=>{
+ llm({questions:[],plan:{restatement:'Central bank rates',subqueries:['Bank of Japan policy rate']}})
+ const result=await scope('When is an XRPL Payment final?')
+ expect(result.plan.subqueries.join(' ')).toContain('XRPL')
+ expect(result.label).toContain('fixture')
+})

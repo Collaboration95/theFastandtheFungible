@@ -1,11 +1,10 @@
 import type { RunSnapshot } from './contracts/index.js'
 
-/** Public decision metadata only: no passage or preview is used to explain a decline. */
+/** Public policy metadata only; numerical diagnostics belong under Why. */
 export function declineSummary(run: Pick<RunSnapshot, 'candidates' | 'decisions'>): string {
-  if (!run.candidates.length) return 'No listed writer covers this yet · nothing bought'
-  const paid = run.candidates.filter(c => c.tier === 'PAID')
-  const scored = run.decisions.flatMap(round => round.rows.map(row => ({ row, threshold: round.threshold })))
-  const best = scored.reduce<typeof scored[number] | undefined>((best, item) => !best || item.row.value > best.row.value ? item : best, undefined)
-  const lowValue = scored.length > 0 && scored.every(({ row }) => row.verdict === 'SKIP_LOW_VALUE')
-  return `Found ${paid.length} paid article${paid.length === 1 ? '' : 's'}; ${lowValue ? 'none cleared the value threshold' : 'none selected by policy'}${best ? ` (best ${best.row.value.toFixed(2)} vs ${best.threshold.toFixed(2)})` : ''}`
+  if (!run.candidates.length) return 'No source covers this question yet. Nothing was bought.'
+  const rows = run.decisions.flatMap(round => round.rows)
+  if (rows.some(row => row.verdict === 'SKIP_OVER_BUDGET')) return 'Nothing was bought: the relevant articles exceed the budget left.'
+  if (rows.length && rows.every(row => row.verdict === 'SKIP_LOW_TRUST')) return 'Nothing was bought: these writers could not meet the trust checks.'
+  return 'Nothing was bought: the available articles do not add enough relevant evidence.'
 }
