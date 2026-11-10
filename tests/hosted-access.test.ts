@@ -9,8 +9,8 @@ import { loadConfig } from '../server/config.js'
 import { resources } from './helpers/resource-scope.js'
 const cleanup: (()=>unknown)[] = []
 afterEach(async()=>{ for(const f of cleanup.splice(0).reverse()) await f(); vi.unstubAllEnvs() })
-const wire = (url:string, method='GET', headers:Record<string,string>={}, body?:unknown) => new Promise<{status:number; headers:import('node:http').IncomingHttpHeaders; text:string; json:()=>any}>((resolve,reject)=>{
-  const req=http(url,{method,headers:{Host:'demo.example','Content-Type':'application/json',...headers}},res=>{let text='';res.on('data',c=>text+=c);res.on('end',()=>resolve({status:res.statusCode!,headers:res.headers,text,json:()=>JSON.parse(text)}))});req.on('error',reject);req.end(body===undefined?undefined:JSON.stringify(body))
+const wire = (url:string, method='GET', headers:Record<string,string>={}, body?:unknown) => new Promise<{status:number; headers:import('node:http').IncomingHttpHeaders; text:string; json:<T=Record<string,unknown>>()=>T}>((resolve,reject)=>{
+  const req=http(url,{method,headers:{Host:'demo.example','Content-Type':'application/json',...headers}},res=>{let text='';res.on('data',c=>text+=c);res.on('end',()=>resolve({status:res.statusCode!,headers:res.headers,text,json:<T>()=>JSON.parse(text) as T}))});req.on('error',reject);req.end(body===undefined?undefined:JSON.stringify(body))
 })
 async function setup() {
   const dir=resources().tempDir('hg-access-')
@@ -21,7 +21,7 @@ async function setup() {
   const server=api.app.listen(0,'127.0.0.1');await once(server,'listening')
   cleanup.push(async()=>{server.closeAllConnections();await new Promise<void>(done=>server.close(()=>done()));await api.close()})
   const url=`http://127.0.0.1:${(server.address() as {port:number}).port}`
-  const jar=async()=>{const r=await wire(url+'/api/demo/status');const cookie=r.headers['set-cookie']![0]; expect(cookie).toContain('__Host-ra_session=');for(const bit of ['Secure','HttpOnly','SameSite=Lax','Path=/','Max-Age=86400']) expect(cookie).toContain(bit);return {Cookie:cookie.split(';')[0],Origin:'https://demo.example','X-CSRF-Token':r.json().csrfToken}}
+  const jar=async()=>{const r=await wire(url+'/api/demo/status');const cookie=r.headers['set-cookie']![0]; expect(cookie).toContain('__Host-ra_session=');for(const bit of ['Secure','HttpOnly','SameSite=Lax','Path=/','Max-Age=86400']) expect(cookie).toContain(bit);return {Cookie:cookie.split(';')[0],Origin:'https://demo.example','X-CSRF-Token':r.json<{csrfToken:string}>().csrfToken}}
   const a=await jar(),b=await jar()
   const limits=new HostedLimits(api.store,loadConfig())
   const principal=(jar:Record<string,string>)=>limits.session(jar.Cookie.split('=')[1]).principal
@@ -35,8 +35,8 @@ it('isolates every run, intent, SSE, export and mutation route for independent c
   ] as [string,string,unknown?][]) {
     const r=await wire(url+path,method,b,body);expect(r.status,path).toBe(404);expect(r.json()).toEqual({error:'Not found.'});expect(r.headers['cache-control']).toContain('no-store')
   }
-  expect((await wire(url+'/api/runs','GET',a)).json().map((r:any)=>r.runId)).toEqual([id])
-  expect((await wire(url+'/api/runs','GET',b)).json().map((r:any)=>r.runId)).toEqual([other])
+  expect((await wire(url+'/api/runs','GET',a)).json<{runId:string}[]>().map(r=>r.runId)).toEqual([id])
+  expect((await wire(url+'/api/runs','GET',b)).json<{runId:string}[]>().map(r=>r.runId)).toEqual([other])
   expect((await wire(url+`/runs/${id}`)).status).toBe(404)
   expect((await wire(url+`/runs/${id}`,'GET',{...b,Authorization:'Bearer owner','X-Principal':store.runPrincipal(id)!.principal})).status).toBe(404)
   expect((await wire(url+`/api/runs/${id}`,'DELETE',a)).status).toBe(200)
@@ -92,4 +92,18 @@ it('coalesces simultaneous submits before asynchronous readiness returns',async(
   expect(all.filter(r=>r.status===201)).toHaveLength(1)
   await new Promise<void>(resolve=>setImmediate(resolve))
   expect(start).toHaveBeenCalledTimes(1)
+})
+
+it('binds nested real intent IDs and makes delivery retries durable and idempotent',async()=>{
+  const {url,a,b,seed,store,api}=await setup(),id=seed(a,'retry-a'),other=seed(b,'retry-b')
+  const intent=(runId:string,intentId:string)=>({runId,intentId,profileId:'writer',resourceId:'article',version:'v1',amountMinor:0,status:'DELIVERY_FAILED'})
+  store.hostedState(db=>{ for(const [runId,intentId] of [[id,'intent-a'],[other,'intent-b']]) db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intentId,runId,JSON.stringify(intent(runId,intentId))) })
+  for(const [path,body] of [[`/runs/${id}/retry-delivery`,{intentId:'intent-b'}],[`/runs/${other}/retry-delivery`,{intentId:'intent-a'}]] as const) expect((await wire(url+path,'POST',{...a,'Idempotency-Key':'retry'},body)).status).toBe(404)
+  expect((await wire(url+`/runs/${id}/intents/intent-b/key-reveal-proof.json`,'GET',a)).status).toBe(404)
+  const retry=vi.spyOn(api.loop,'retryDelivery').mockResolvedValue(undefined)
+  const headers={...a,'Idempotency-Key':'retry-once'}
+  expect((await wire(url+`/runs/${id}/retry-delivery`,'POST',headers,{intentId:'intent-a'})).status).toBe(202)
+  expect((await wire(url+`/runs/${id}/retry-delivery`,'POST',headers,{intentId:'intent-a'})).status).toBe(202)
+  expect((await wire(url+`/runs/${id}/retry-delivery`,'POST',headers,{intentId:'intent-a',changed:true})).status).toBe(409)
+  await new Promise<void>(resolve=>setImmediate(resolve));expect(retry).toHaveBeenCalledTimes(1)
 })

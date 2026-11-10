@@ -63,9 +63,9 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     limits.update(hold.id,{state:'active'})
     await new Promise<void>((resolve,reject) => {
       queue.enqueue(hold.id,async () => {
-        const release = context.work.acquire()
-        try { const result = await execute(hold,() => scope(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal })); limits.update(hold.id,{scope_result:JSON.stringify(result),state:'draft'}); res.json(result); resolve() }
-        catch(error) { reject(error) } finally { release(); limits.update(hold.id,{state:'draft'}) }
+        let release: (()=>void) | undefined
+        try { release=context.work.acquire(); const result = await execute(hold,() => scope(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal })); limits.update(hold.id,{scope_result:JSON.stringify(result),state:'draft'}); res.json(result); resolve() }
+        catch(error) { reject(error) } finally { release?.(); limits.update(hold.id,{state:'draft'}) }
       },()=>reject(new HostedError(503,'queue_expired')))
     })
   })
@@ -106,11 +106,11 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     const intentId = z.string().min(1).parse(req.body.intentId), intent = store.getIntent(intentId)!
     if (!['SETTLED','DELIVERY_PENDING','DELIVERY_FAILED','VERIFIED'].includes(intent.status)) return res.status(409).json({error:'No settled delivery can be retried for this run.'})
     const identity = `retry:${runId}:${key}`
-    // Durable retry digest; no automatic purchase and no new model envelope.
+    // Durable retry digest; reuse the remaining per-question envelope, never a new purchase.
     const saved = store.hostedState(db => {db.exec('CREATE TABLE IF NOT EXISTS hosted_retries (id TEXT PRIMARY KEY, intent TEXT NOT NULL)');return db.prepare('SELECT intent FROM hosted_retries WHERE id=?').get(identity)})
     if(!saved) { queue.capacity(); limits.reserveRetry(hold.id) }
     const reused = store.hostedState(db => { db.exec('CREATE TABLE IF NOT EXISTS hosted_retries (id TEXT PRIMARY KEY, intent TEXT NOT NULL)'); const old = db.prepare('SELECT intent FROM hosted_retries WHERE id=?').get(identity); if(old && old.intent!==digest(req.body)) throw new HostedError(409,'idempotency_conflict'); if(!old) {requireAdmissions(config); queue.capacity(); db.prepare('INSERT INTO hosted_retries VALUES (?,?)').run(identity,digest(req.body))} return Boolean(old) })
-    if(!reused && !retryJobs.has(identity)) { queue.capacity(); queue.enqueue(runId,()=>execute(hold,async()=>{try { await context.launch(runId,()=>loop.retryDelivery(runId,intentId)) } finally { limits.update(hold.id,{state:'done'});limits.settle(hold.id) }}),()=>{}); retryJobs.set(identity,Promise.resolve()) }
+    if(!reused && !retryJobs.has(identity)) { queue.capacity(); queue.enqueue(runId,()=>execute(hold,async()=>{try { await context.launch(runId,()=>loop.retryDelivery(runId,intentId)) } finally { limits.update(hold.id,{state:'done'});limits.settle(hold.id) }}),()=>{limits.update(hold.id,{state:'expired'});limits.settle(hold.id)}); retryJobs.set(identity,Promise.resolve()) }
     res.status(202).json(store.getRun(runId))
   })
   return router
