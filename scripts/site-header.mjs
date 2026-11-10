@@ -5,22 +5,22 @@
 // Presentation tools reserve 52 px for the same header.
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { execFileSync } from 'node:child_process'
 
+import { HOSTED_APP_URL } from './site-config.mjs'
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 // Discover every page, including future verify pages, instead of silently skipping new routes.
 const siteRoot = join(import.meta.dirname, '..', 'site')
-const keys = { 'index.html': 'home', 'progress/index.html': 'progress', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build', 'ledger/index.html': 'ledger' }
-const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html') && !file.startsWith('demo/')).map(file => ({ file, key: keys[file] ?? 'none' }))
+const keys = { 'index.html': 'home', 'progress/index.html': 'progress', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build', 'ledger/index.html': 'ledger', 'proof/index.html': 'proof', 'developers/index.html': 'developers', 'builder-feedback/index.html': 'feedback' }
+const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html') && !file.startsWith('demo/')).map(file => ({ file, key: keys[file] ?? 'none' })).concat([{ file: '../demo/index.html', key: 'demo' }])
 
 const NAV = [
-  ['demo', 'demo/', 'Try it'],
-  ['home', '', 'Explainers'],
-  ['progress', 'progress/', 'Progress'],
-  ['talk', 'talk/', 'Walkthrough'],
-  ['slides', 'slides/', 'Slides'],
-  ['map', 'project-map/', 'Project map'],
-  ['ledger', 'ledger/', 'Ledger ✓'],
-  ['build', 'evolution/', 'October log'],
+  ['home', '', 'Home'], ['demo', 'demo/', 'Replay'],
+  ['talk', 'talk/#key-reveal', 'How it works'], ['developers', 'developers/', 'Developers'],
+  ['proof', 'proof/', 'Proof'], ['progress', 'progress/', 'Progress'],
+  ['feedback', 'builder-feedback/', 'Builder feedback'],
+  ['ledger', 'ledger/', 'Ledger ✓'], ['map', 'project-map/', 'Project map'],
+  ['build', 'evolution/', 'October log'], ['slides', 'slides/', 'Slides'],
 ]
 const START = '<!-- site-header:start -->'
 const END = '<!-- site-header:end -->'
@@ -41,16 +41,17 @@ const CSS = `@font-face{font-family:Geist;src:url("__UP__brand/geist-latin-wght-
 .ra-hdr-end a:hover{color:#24211E}
 .ra-hdr-note{font-family:Geist,system-ui,sans-serif;font-size:12px;color:#655D55;white-space:nowrap}
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
-.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh,.ra-hdr-end a:last-child{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
 @media print{.ra-hdr{display:none}}`
 
 // The mark: 24-unit grid, 1.5 stroke (design/brand/mark.svg).
 const MARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>'
 
 function block(page) {
-  const depth = page.file.split('/').length - 1
+  const depth = page.key === 'demo' ? 1 : page.file.split('/').length - 1
   const up = '../'.repeat(depth)
   // One navigation on every page, including the ledger (F-10).
   const nav = NAV.map(([key, href, label]) =>
@@ -58,10 +59,10 @@ function block(page) {
   const note = page.note ? `<span class="ra-hdr-note">${page.note}</span>` : ''
   return `${START}
 <style>${CSS.replaceAll('__UP__', up)}</style>
-<div class="ra-hdr" role="banner"><div class="ra-hdr-in">
+<div class="ra-hdr" role="${page.key === 'demo' ? 'region' : 'banner'}"${page.key === 'demo' ? ' aria-label="Site navigation"' : ''}><div class="ra-hdr-in">
 <a class="ra-hdr-brand" href="${up}index.html" aria-label="ResearchAgent explainers">${MARK}<span>ResearchAgent</span></a>
-<nav aria-label="Explainers">${nav}</nav>
-<div class="ra-hdr-end">${note}<a class="ra-hdr-gh" href="${REPO}#readme">README</a><a href="${REPO}/releases">Releases</a></div>
+<nav tabindex="0" aria-label="Explainers · scroll for more pages">${nav}</nav>
+<div class="ra-hdr-end">${note}<a class="ra-live" href="${HOSTED_APP_URL}">Try it live</a><a class="ra-hdr-gh" href="${REPO}#readme">README</a><a href="${REPO}/releases">Releases</a></div>
 </div></div>
 ${END}`
 }
@@ -92,3 +93,5 @@ for (const page of PAGES) {
 }
 if (check && stale) process.exit(1)
 console.log(check ? 'site-header: ok' : `site-header: updated ${stale} page${stale === 1 ? '' : 's'}`)
+
+if (check) execFileSync(process.execPath, [join(import.meta.dirname, 'site-meta.mjs'), '--check'], { stdio: 'inherit' })

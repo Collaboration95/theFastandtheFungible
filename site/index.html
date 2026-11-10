@@ -56,27 +56,24 @@ footer a { color: var(--pen); text-underline-offset: 3px; }
 .agent { display: block; margin: 0 0 16px -6px; image-rendering: pixelated; }
 @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .card, .card.wide, .card.full { grid-column: auto; } header { padding-top: 48px; } }
 @media (prefers-reduced-motion: reduce) { .card, .card::before, .card .go span {   } }
+.live-cta{display:inline-block;background:#24211E;color:#fff;text-decoration:none;padding:11px 18px;border-radius:8px;font-weight:600}
 </style>
-<!-- brand:start -->
-<meta name="description" content="Research with a wallet.">
-<meta name="theme-color" content="#FBF8F2">
-<link rel="icon" type="image/svg+xml" href="brand/favicon.svg">
-<link rel="icon" sizes="16x16 32x32 48x48" href="brand/favicon.ico">
-<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<!-- site-meta:start -->
+<meta name="description" content="Search expertise. Buy missing evidence within your budget. Try the hosted sandbox, replay key reveal, or inspect the proof.">
+<link rel="icon" href="brand/favicon.svg">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="ResearchAgent">
 <meta property="og:title" content="ResearchAgent explainers">
-<meta property="og:description" content="Research with a wallet.">
+<meta property="og:description" content="Search expertise. Buy missing evidence within your budget. Try the hosted sandbox, replay key reveal, or inspect the proof.">
 <meta property="og:url" content="https://collaboration95.github.io/theFastandtheFungible/">
 <meta property="og:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/index.png">
+<meta property="og:image:alt" content="ResearchAgent explainers">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ResearchAgent explainers — Research with a wallet.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ResearchAgent explainers">
-<meta name="twitter:description" content="Research with a wallet.">
+<meta name="twitter:description" content="Search expertise. Buy missing evidence within your budget. Try the hosted sandbox, replay key reveal, or inspect the proof.">
 <meta name="twitter:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/index.png">
-<!-- brand:end -->
+<!-- site-meta:end -->
 </head>
 <body>
 <!-- site-header:start -->
@@ -96,26 +93,29 @@ footer a { color: var(--pen); text-underline-offset: 3px; }
 .ra-hdr-end a:hover{color:#24211E}
 .ra-hdr-note{font-family:Geist,system-ui,sans-serif;font-size:12px;color:#655D55;white-space:nowrap}
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
-.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh,.ra-hdr-end a:last-child{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
 @media print{.ra-hdr{display:none}}</style>
 <div class="ra-hdr" role="banner"><div class="ra-hdr-in">
 <a class="ra-hdr-brand" href="index.html" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
-<nav aria-label="Explainers"><a href="demo/">Try it</a><a href="index.html" aria-current="page">Explainers</a><a href="progress/">Progress</a><a href="talk/">Walkthrough</a><a href="slides/">Slides</a><a href="project-map/">Project map</a><a href="ledger/">Ledger ✓</a><a href="evolution/">October log</a></nav>
-<div class="ra-hdr-end"><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
+<nav tabindex="0" aria-label="Explainers · scroll for more pages"><a href="index.html" aria-current="page">Home</a><a href="demo/">Replay</a><a href="talk/#key-reveal">How it works</a><a href="developers/">Developers</a><a href="proof/">Proof</a><a href="progress/">Progress</a><a href="builder-feedback/">Builder feedback</a><a href="ledger/">Ledger ✓</a><a href="project-map/">Project map</a><a href="evolution/">October log</a><a href="slides/">Slides</a></nav>
+<div class="ra-hdr-end"><a class="ra-live" href="https://ra-front-651013803640.asia-southeast1.run.app">Try it live</a><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
 </div></div>
 <!-- site-header:end -->
 <main>
   <header>
     <picture><source media="(prefers-reduced-motion: reduce)" srcset="brand/agent-still.png"><img class="agent" src="brand/agent-loop.gif" width="160" height="108" alt="The agent searches a page, pays into an escrow lock, the writer's key turns and the page is verified"></picture>
-    <div class="kick">Explainers</div>
+    <div class="kick">ResearchAgent</div>
     <h1>Research <span class="hl">with a wallet.</span></h1>
     <p>ResearchAgent searches expertise, buys missing evidence within your budget, and verifies delivery.</p>
+    <!-- live-cta:start --><p><a class="live-cta" href="https://ra-front-651013803640.asia-southeast1.run.app">Try it live</a> · live 13–19 Nov 2026. If unavailable: <a href="demo/?scenario=UC3-key-reveal">Replay · 7 Nov 2026</a>.</p><!-- live-cta:end -->
     <p><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2">Releases</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2">Download for Mac</a></p>
-    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy articles straight from the writer, at most one per round and up to three rounds, inside a budget you set. Start with what changed since SingHacks, or go straight to a two-minute replay, the full system map or the public ledger.</p>
+    <p class="lede">Start with the recorded key-reveal purchase, then inspect the receipts or explore what changed since SingHacks.</p><p style="font-size:14px;color:var(--muted)">Environment: XRPL Testnet · fixture models · fictional demo writers · no real value.</p>
   </header>
 
+  <p><a href="developers/">Developers</a> · <a href="proof/">Proof</a> · <a href="progress/">Progress</a> · <a href="builder-feedback/">Builder feedback</a></p>
   <div class="grid">
     <!-- progress-card:start -->
 <a class="card full progress-card" href="progress/" style="--c: var(--ink); --i: 0">
@@ -125,10 +125,10 @@ footer a { color: var(--pen); text-underline-offset: 3px; }
     </a>
 <!-- progress-card:end -->
     <a class="card wide" href="ledger/" style="--c: var(--ok); --i: 0"><h2>61 Testnet evidence rows</h2><p>Historical XRPL Testnet evidence; 61/61 validated in 1.65 s on 7 Nov. Rechecked on load. Unavailable history stays labelled; no real value.</p><span class="go">Ledger ✓</span></a>
-    <a class="card wide" href="talk/" style="--c: var(--pen); --i: 0">
+    <a class="card wide" href="demo/?scenario=UC3-key-reveal" style="--c: var(--pen); --i: 0">
       <div class="tag">Start here</div>
-      <div><h2>Inside ResearchAgent</h2><p style="margin-top:10px">Replays a real run from its event log: free search, a purchase, a proof that fails, an on-chain refund, then a second buy that answers the question.</p></div>
-      <div class="go">Open the walkthrough <span>→</span></div>
+      <div><h2>Watch a key-reveal purchase</h2><p style="margin-top:10px">Replay the 7 November Testnet run: payment locked, writer’s key revealed, grant verified, evidence cited. Recorded receipts stay inspectable.</p></div>
+      <div class="go">Open Replay <span>→</span></div>
     </a>
     <a class="card wide" href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf" style="--c: var(--pay); --i: 1">
       <div class="tag">SingHacks finals</div>
