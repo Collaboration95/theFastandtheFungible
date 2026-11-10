@@ -98,6 +98,32 @@ it('hosted: says the page is public, who can open it, how long it stays and that
   expect(create).not.toHaveBeenCalled()
 })
 
+it('local and desktop: the proof link is this computer’s alone, so it is neither shown nor copyable; the card is what you send', async () => {
+  const writeText = vi.fn(async () => undefined)
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
+  status.mockResolvedValue({ eligible: true, proof: PROOF })
+  render(<ShareProof run={decline} />)
+  expect(await screen.findByText('Proof page ready')).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Copy link' })).toBeNull()
+  expect(document.querySelector('.ra-share-url')).toBeNull()
+  expect(document.body.textContent).not.toContain(PROOF.path)
+  expect(screen.getByRole('link', { name: 'Open proof page' }).getAttribute('target')).toBe('_blank')
+  expect(screen.getByRole('link', { name: 'Download proof card' }).getAttribute('href')).toBe(`${PROOF.path}/card.html`)
+  expect(writeText).not.toHaveBeenCalled()
+})
+
+it('hosted: shows the public link and copies exactly that address', async () => {
+  const writeText = vi.fn(async () => undefined)
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
+  status.mockResolvedValue({ eligible: true, proof: PROOF })
+  render(asHosted(<ShareProof run={decline} />))
+  expect(await screen.findByText('Proof page ready')).toBeTruthy()
+  expect(document.querySelector('.ra-share-url')?.textContent).toBe(new URL(PROOF.path, window.location.href).href)
+  fireEvent.click(screen.getByRole('button', { name: 'Copy link' }))
+  await waitFor(() => expect(writeText).toHaveBeenCalledWith(new URL(PROOF.path, window.location.href).href))
+  expect(await screen.findByText('Link copied.')).toBeTruthy()
+})
+
 it('Escape closes the step without sharing; an existing proof shows its link straight away', async () => {
   status.mockResolvedValueOnce({ eligible: true })
   const first = render(<ShareProof run={decline} />)

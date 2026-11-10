@@ -13,6 +13,8 @@ const HELD = '<svg class="held" viewBox="0 0 24 24" width="28" height="28" aria-
 
 export const LEDGER_HOSTS = ['wss://s.altnet.rippletest.net:51233', 'wss://clio.altnet.rippletest.net:51233']
 export const VERIFY_MODULE = '/verify/proof-verify.js'
+/** The environment chip on a phone: every proof is an XRPL Testnet record with test funds, whichever surface shared it. */
+const ENV_SHORT = 'Testnet demo · no real value'
 
 const CSS = `
 :root{--paper:#FBF8F2;--surface:#fff;--ink:#24211E;--muted:#655D55;--rule:#E8E2D8;--rule-2:#C9BFB2;--hover:#F3EEE4;--ok:#2F6B4F;--bad:#9B3E35}
@@ -22,7 +24,7 @@ a{color:var(--ink);text-underline-offset:3px}:focus-visible{outline:2.5px solid 
 .top{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 16px;background:var(--surface);border-bottom:1px solid var(--rule)}
 .brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;letter-spacing:-.015em;text-decoration:none}
 .chip{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);font-size:12px;font-weight:500;line-height:1.2}
-.chip i{flex:none;width:6px;height:6px;border-radius:6px;background:var(--ok)}
+.chip i{flex:none;width:6px;height:6px;border-radius:6px;background:var(--ok)}.chip{min-width:0}.chip .short{display:none}
 main{max-width:760px;margin:0 auto;padding:40px 16px 48px}
 .eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .held{flex:none;color:var(--ink)}
@@ -59,7 +61,7 @@ p{margin:0 0 10px}
 .note{color:var(--muted);font-size:13px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.two section{padding:16px 20px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}.two h3{margin:0 0 6px;font-size:14px}.two ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}.two li{margin:4px 0}
 footer{max-width:760px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:13px}
-@media (max-width:620px){h1{font-size:30px;line-height:36px}.stats{grid-template-columns:1fr 1fr}.stats div:nth-child(3){border-left:0}.stats div:nth-child(n+3){border-top:1px solid var(--rule)}.facts div{grid-template-columns:1fr;gap:2px}.two{grid-template-columns:1fr}.items li{flex-direction:column;gap:2px}.items .why{max-width:none;text-align:left}.chip{display:none}main{padding-top:28px}}
+@media (max-width:620px){h1{font-size:30px;line-height:36px}.stats{grid-template-columns:1fr 1fr}.stats div:nth-child(3){border-left:0}.stats div:nth-child(n+3){border-top:1px solid var(--rule)}.facts div{grid-template-columns:1fr;gap:2px}.two{grid-template-columns:1fr}.items li{flex-direction:column;gap:2px}.items .why{max-width:none;text-align:left}.chip .full{display:none}.chip .short{display:inline}main{padding-top:28px}}
 @media print{.verify .btn,.row{display:none}}
 `
 
@@ -70,6 +72,7 @@ const mark = { PASS: '✓', FAIL: '✕', SKIP: '–' }
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e }
 const draw = result => {
   const passed = result.checks.filter(c => c.status === 'PASS').length, failed = result.checks.filter(c => c.status === 'FAIL').length
+  const total = result.checks.length, skipped = result.checks.filter(c => c.status === 'SKIP').map(c => c.check)
   const groups = el('ul', 'vgroups')
   for (const g of result.groups) {
     const li = el('li', g.status.toLowerCase()), d = el('details'), s = el('summary'), ul = el('ul')
@@ -78,8 +81,10 @@ const draw = result => {
     for (const c of g.checks) { const row = el('li'); row.append(el('span', '', mark[c.status]), el('span', '', c.check + ' — ' + c.detail)); ul.append(row) }
     d.append(s, ul); li.append(d); groups.append(li)
   }
-  out.replaceChildren(el('p', 'vhead ' + (result.ok ? 'ok' : 'bad'), result.ok ? 'All ' + passed + ' checks passed' : failed + ' of ' + result.checks.length + ' checks failed'), groups,
-    el('p', 'note', 'Ran in this browser' + (result.endpoint ? ', reading ' + result.endpoint + ' (read-only)' : '') + '. Same checks as the open-source verifier; the result doesn’t rely on our server.'))
+  const headline = !result.ok ? failed + ' of ' + total + ' checks failed' : passed === total ? 'All ' + total + ' checks passed' : passed + ' of ' + total + ' checks passed'
+  const skippedNote = skipped.length ? ' Skipped here: ' + skipped.join(' and ') + '. ' + (skipped.length === 1 ? 'It' : 'They') + ' can’t be checked from the receipts alone.' : ''
+  out.replaceChildren(el('p', 'vhead ' + (result.ok ? 'ok' : 'bad'), headline), groups,
+    el('p', 'note', 'Ran in this browser' + (result.endpoint ? ', reading ' + result.endpoint + ' (read-only)' : '') + '.' + skippedNote + ' Same checks as the open-source verifier; the result doesn’t rely on our server.'))
 }
 btn.addEventListener('click', async () => {
   btn.disabled = true; out.textContent = 'Downloading the receipts…'
@@ -126,13 +131,13 @@ export function renderProofPage(snapshot: ProofSnapshot, { mode, origin = '', no
 <div id="vout" role="status" aria-live="polite"></div></div>`
     : `<div class="verify"><p class="label">Check it yourself</p>
 <p>This card carries the receipts. Save them and run the open-source verifier: <span class="mono">npm run verify:answer -- receipts.json --ledger --testnet</span>. Or open the anchor transaction above on the explorer.</p>
-<div class="row"><a class="btn" download="refusal-proof-${id.slice(0, 8)}.receipts.json" href="data:application/json;base64,${Buffer.from(bundleJson).toString('base64')}">Save receipts.json</a><a class="btn alt" href="${esc(link)}">Open the live page</a></div></div>`
+<div class="row"><a class="btn" download="refusal-proof-${id.slice(0, 8)}.receipts.json" href="data:application/json;base64,${Buffer.from(bundleJson).toString('base64')}">Save receipts.json</a>${origin ? `<a class="btn alt" href="${esc(link)}">Open the live page</a>` : ''}</div></div>`
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)} · ResearchAgent</title>${meta}
 <style${nonce ? ` nonce="${nonce}"` : ''}>${CSS}</style></head>
 <body>
-<header class="top"><a class="brand" href="/">${MARK}<span>ResearchAgent</span></a><span class="chip"><i></i>${esc(env.label)}</span></header>
+<header class="top"><a class="brand" href="/">${MARK}<span>ResearchAgent</span></a><span class="chip"><i></i><span class="full">${esc(env.label)}</span><span class="short">${ENV_SHORT}</span></span></header>
 <main>
 <p class="eyebrow">${HELD}<span>Proof of refusal</span></p>
 <h1>Refused to spend.</h1>
@@ -147,7 +152,7 @@ ${items ? `<ul class="items" aria-label="Paid articles considered">${items}</ul>
 <div><dt>Anchored on</dt><dd><a href="${esc(explorerTx(anchor.txHash))}" target="_blank" rel="noopener noreferrer">XRPL Testnet transaction ${esc(short(anchor.txHash))}</a> <span class="note">· ledger ${anchor.ledgerIndex}</span></dd></div>
 <div><dt>Anchor account</dt><dd class="mono">${esc(anchor.account)}</dd></div>
 <div><dt>Audit log head</dt><dd class="mono">${esc(anchor.head)}</dd></div>
-<div><dt>Checked when shared</dt><dd><span class="ok">${verification.passed} checks passed</span> <span class="note">· ${verification.skipped} need the ledger or a writer lookup</span></dd></div>
+<div><dt>Checks</dt><dd><span class="ok">${verification.passed} of ${verification.total} checks passed</span> <span class="note">when shared${verification.skipped ? ` · ${verification.skipped} more need the ledger or a writer lookup${mode === 'page' ? '; the browser check below runs the ledger ones' : ''}` : ''}</span></dd></div>
 <div><dt>Where</dt><dd>${esc(env.label)}</dd></div>
 </dl>
 ${verify}

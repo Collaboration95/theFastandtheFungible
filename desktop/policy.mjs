@@ -1,5 +1,69 @@
 export const ORIGIN = 'app://researchagent'
-export const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+/**
+ * The only hosts the renderer may reach besides the app itself: the two public XRPL Testnet nodes the in-browser verifier
+ * reads (src/verify/browser.ts, server/proof-page.ts). Exact origins, no wildcard, WebSocket only. The verifier sends
+ * read-only `tx` lookups and holds no keys.
+ */
+export const LEDGER_ORIGINS = Object.freeze(['wss://s.altnet.rippletest.net:51233', 'wss://clio.altnet.rippletest.net:51233'])
+/** The app shell's policy: no inline script, no remote content, and the verifier's two Testnet nodes as the only network. */
+export const CSP = ["default-src 'none'", "script-src 'self'", "style-src 'self' 'unsafe-inline'", "img-src 'self' data:", "font-src 'self'",
+  `connect-src 'self' ${LEDGER_ORIGINS.join(' ')}`, "object-src 'none'", "base-uri 'none'", "form-action 'none'", "frame-ancestors 'none'"].join('; ')
+
+/** Every request from a renderer is cancelled unless it targets the app itself or one of the two Testnet nodes. */
+export function allowedRequest(raw) {
+  if (raw.startsWith(`${ORIGIN}/`)) return true
+  let url; try { url = new URL(raw) } catch { return false }
+  return url.protocol === 'wss:' && !url.username && !url.password && !url.search && !url.hash && url.pathname === '/' && LEDGER_ORIGINS.includes(`${url.protocol}//${url.host}`)
+}
+
+// The public proof page (GET /proof/<id>) brings its own nonce-based policy and one inline script that runs the in-browser
+// check. The shell keeps that policy untouched, but only while it is at least as strict as the shell's own guarantees.
+const PROOF_PAGE = /^\/proof\/[A-Za-z0-9-]+$/
+const PROOF_WINDOW = /^\/proof\/[a-f0-9]{32}$/
+const NONCE = /^'nonce-[A-Za-z0-9+/=_-]{16,}'$/
+const SELF = "'self'", NONE = "'none'"
+const PROOF_RULES = {
+  'default-src': sources => sources.length === 1 && sources[0] === NONE,
+  'script-src': sources => sources.includes(SELF) && sources.every(source => source === SELF || NONCE.test(source)),
+  'style-src': sources => sources.length > 0 && sources.every(source => source === SELF || NONCE.test(source)),
+  'img-src': sources => sources.every(source => source === SELF || source === 'data:'),
+  'font-src': sources => sources.every(source => source === SELF),
+  'connect-src': sources => sources.every(source => source === SELF || LEDGER_ORIGINS.includes(source)),
+  'base-uri': sources => sources.length === 1 && sources[0] === NONE,
+  'form-action': sources => sources.length === 1 && sources[0] === NONE,
+  'frame-ancestors': sources => sources.length === 1 && sources[0] === NONE,
+}
+/** True only for a policy that denies by default and allows just this document, a nonce, data images and the Testnet nodes. */
+export function acceptableProofCsp(value) {
+  if (typeof value !== 'string' || value.includes(',')) return false
+  const directives = new Map()
+  for (const part of value.split(';')) {
+    const [name, ...sources] = part.trim().split(/\s+/)
+    if (!name) continue
+    if (directives.has(name) || !Object.hasOwn(PROOF_RULES, name)) return false
+    directives.set(name, sources)
+  }
+  return directives.has('default-src') && directives.has('script-src') && [...directives].every(([name, sources]) => PROOF_RULES[name](sources))
+}
+export const isProofPage = pathname => PROOF_PAGE.test(pathname)
+/** The URL of a proof page the app may open in its own window: this origin, `/proof/<32 hex>`, nothing else. */
+export function proofWindowUrl(raw) {
+  let url; try { url = new URL(raw) } catch { return undefined }
+  return url.protocol === 'app:' && url.host === 'researchagent' && !url.username && !url.password && !url.search && !url.hash && PROOF_WINDOW.test(url.pathname) ? url : undefined
+}
+
+/**
+ * Headers for a response the shell serves. Every response gets the shell policy, so a backend's own policy can only narrow it
+ * (the browser applies both). The one exception is a proof page whose own policy passes `acceptableProofCsp`: it is served with
+ * that policy alone, because the shell's `script-src 'self'` would block the page's nonce'd script.
+ */
+export function responseHeaders(pathname, backend) {
+  const headers = new Headers(backend)
+  headers.set('X-Content-Type-Options', 'nosniff'); headers.set('Cache-Control', 'no-store')
+  if (isProofPage(pathname) && acceptableProofCsp(headers.get('Content-Security-Policy'))) return headers
+  headers.append('Content-Security-Policy', CSP)
+  return headers
+}
 export const SECRET_ACCOUNTS = ['deepseek', 'openai', 'cloudflare', 'cloudflare-account', 'api-token', 'compatible']
 export const defaults = { live: false, paused: false, maxMinor: 200, dailyMinor: 500, walletDailyMinor: 2000, backend: 'local', remoteUrl: '', mcpEnabled: false, provider: 'deepseek', baseUrl: '', model: '', sameKeyDecisions: false }
 export function settings(input) {

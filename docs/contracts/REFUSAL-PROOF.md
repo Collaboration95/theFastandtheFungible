@@ -60,11 +60,21 @@ Hosted: the owner routes go through the gateway's run-ownership check, so anothe
 no session and set no cookie, accept only `GET`/`HEAD` with no query, and share the writer pages' 120 reads per minute per address.
 `/proof/` is routed to the API by Vite, both nginx configs, the app server and the desktop shell.
 
+Desktop shell (11 Nov): `GET /proof/<id>` is served with the page's own policy and nothing added, so its nonce'd script runs (the shell's
+`script-src 'self'` would block it); the policy is passed through only if `acceptableProofCsp` (`desktop/policy.mjs`) finds it deny-by-default
+with the page, a nonce, data images and the two Testnet nodes as its only allowances, otherwise the shell's policy is added as for any
+other response. The app shell's own policy gains exactly those two `wss://` origins (so the in-app "Verify in your browser" works on Testnet
+runs) and its request filter lets exactly those through. "Open proof page" opens `/proof/<32 hex>` in its own window, which cannot navigate
+away. Without a public address a proof has no link worth copying: the app shows no URL and no "Copy link", only the card to send.
+
 ## The page
 
 Server-rendered (works for link previews, screen readers and phones without our app). "Verify on XRPL in your browser" loads
 `/verify/proof-verify.js`, the same lazy verifier the app uses (own stable entry in `vite.config.ts`, no app boot), fetches
-`receipts.json` and runs `sdk/verify.ts` client-side with read-only `tx` lookups on public Testnet nodes. Link preview:
+`receipts.json` and runs `sdk/verify.ts` client-side with read-only `tx` lookups on public Testnet nodes. The page states one total: the
+ledger-record row reads "13 of 17 checks passed when shared" and the button's result "15 of 17 checks passed", naming what the browser
+skips (writer credentials: they cannot be checked from the receipts alone). The header chip stays on a phone in a short form
+("Testnet demo · no real value"). Link preview:
 `og:title` "Refused to spend · verified on XRPL", a per-proof `og:description` with the question, and one static card,
 `public/og/refusal-proof.png` (`node design/brand/build-proof-og.mjs`).
 

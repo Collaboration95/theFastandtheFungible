@@ -5,7 +5,7 @@ import { app, BrowserWindow, Menu, protocol, session, ipcMain, utilityProcess, s
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { join, extname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ORIGIN, CSP, defaults, settings, trustedSender, engineEnv, SECRET_ACCOUNTS, remoteOrigin } from './policy.mjs'
+import { ORIGIN, defaults, settings, trustedSender, engineEnv, SECRET_ACCOUNTS, remoteOrigin, allowedRequest, responseHeaders, proofWindowUrl } from './policy.mjs'
 import { bootSecrets } from './recovery.mjs'
 import { readSecret, writeSecret, secretPresence, deleteSecret } from './keychain.mjs'
 import { backendRequest, testProvider } from './backend.mjs'
@@ -95,17 +95,18 @@ async function boot() {
   try { preferences = settings(JSON.parse(await readFile(join(userData, 'desktop.json'), 'utf8'))) } catch (error) { configError = error.code !== 'ENOENT' }
   session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))
   session.defaultSession.setPermissionCheckHandler(() => false)
-  session.defaultSession.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !details.url.startsWith(`${ORIGIN}/`) }))
+  // The app itself and the two public Testnet nodes the in-browser verifier reads; everything else is cancelled.
+  session.defaultSession.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !allowedRequest(details.url) }))
   await protocol.handle('app', async request => {
     const url = new URL(request.url)
     if (url.host !== 'researchagent') return new Response(null, { status: 403 })
-    const headers = { 'Content-Security-Policy': CSP, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' }
     if (/^\/(?:health|runs(?:\/|$)|api(?:\/|$)|proof(?:\/|$)|w(?:\/|$))/.test(url.pathname)) {
       try {
         const response = await backendRequest(engine, url.pathname + url.search, { method: request.method,
           ...(!['GET', 'HEAD'].includes(request.method) ? { body: await request.text() } : {}), signal: request.signal })
-        return new Response(response.body, { status: response.status, headers: { ...Object.fromEntries(response.headers), ...headers } })
-      } catch { return new Response('Local engine unavailable', { status: 503, headers }) }
+        // A proof page keeps its own nonce-based policy (policy.mjs); every other backend response also gets the shell's.
+        return new Response(response.body, { status: response.status, headers: responseHeaders(url.pathname, response.headers) })
+      } catch { return new Response('Local engine unavailable', { status: 503, headers: responseHeaders(url.pathname) }) }
     }
     const pathname = url.pathname === '/recovery' ? '/desktop/recovery.html' : url.pathname === '/preferences' ? '/ui/index.html' : url.pathname === '/desktop/preferences.js' || url.pathname === '/desktop/preferences.css' || url.pathname === '/desktop/recovery.js' || url.pathname === '/desktop/tokens.css' || url.pathname === '/desktop/geist.woff2' ? url.pathname : url.pathname === '/' ? '/ui/index.html' : `/ui${url.pathname}`
     const file = resolve(root, `.${decodeURIComponent(pathname)}`)
@@ -114,7 +115,8 @@ async function boot() {
       const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json' }
       let body = await readFile(file)
       if (file === join(root, 'ui/index.html') && preferences.backend === 'remote') body = body.toString().replace('<head>', `<head><meta name="researchagent-backend" content="${new URL(engine.apiUrl).host}">`)
-      return new Response(body, { headers: { ...headers, 'Content-Type': mime[extname(file)] } })
+      const fileHeaders = responseHeaders(url.pathname); fileHeaders.set('Content-Type', mime[extname(file)])
+      return new Response(body, { headers: fileHeaders })
     } catch { return new Response(null, { status: 404 }) }
   })
   const secureHandler = (name, handler) => ipcMain.handle(name, async (event, ...args) => {
@@ -297,21 +299,37 @@ async function connectEngine() {
     await showRecovery()
   } finally { recovering = false; if (connectRequested && !quitting) { connectRequested = false; void connectEngine() } }
 }
-function makeWindow(options) {
+const proofWindows = new Map()
+/** `pinned`: a document window (proof page) that can reload itself but never navigates anywhere else, not even into the app. */
+function makeWindow(options, pinned) {
   const window = new BrowserWindow({ ...options, show: false, title: 'ResearchAgent', backgroundColor: '#FBF8F2',
     webPreferences: { preload: join(root, 'desktop', 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true } })
-  window.webContents.on('will-navigate', (event, url) => { if (!url.startsWith(`${ORIGIN}/`) || (!url.startsWith(`${ORIGIN}/?`) && url !== `${ORIGIN}/`)) event.preventDefault() })
+  window.webContents.on('will-navigate', (event, url) => {
+    const allowed = pinned ? url === pinned : url.startsWith(`${ORIGIN}/`) && (url.startsWith(`${ORIGIN}/?`) || url === `${ORIGIN}/`)
+    if (!allowed) event.preventDefault()
+  })
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith(`${ORIGIN}/`) && /^\/runs\/[a-f0-9-]+\/report\.html$/.test(new URL(url).pathname)) {
       const report = makeWindow({ width: 900, height: 900 })
       void report.loadURL(url).then(() => report.show())
     }
+    // A shared proof opens in its own window, like the report. Same engine, same origin, no query string.
+    const proof = proofWindowUrl(url)
+    if (proof && !pinned) openProof(proof.href)
     if (/^https:\/\/github.com\/Collaboration95\/theFastandtheFungible\/releases(?:\/tag\/v[0-9A-Za-z.-]+)?$/.test(url)) void shell.openExternal(url)
     // Explicit explorer links only; never load remote content inside Electron.
     if (/^https:\/\/testnet.xrpl.org\/(?:transactions|accounts)\/[a-zA-Z0-9]+$/.test(url)) void shell.openExternal(url)
     return { action: 'deny' }
   })
   return window
+}
+function openProof(url) {
+  const open = proofWindows.get(url)
+  if (open && !open.isDestroyed()) { open.show(); open.focus(); return }
+  const window = makeWindow({ width: 1000, height: 900 }, url)
+  proofWindows.set(url, window)
+  window.once('closed', () => proofWindows.delete(url))
+  void window.loadURL(url).then(() => window.show())
 }
 function openPreferences(onboarding = false) {
   if (preferencesWindow && !preferencesWindow.isDestroyed()) { preferencesWindow.focus(); return }

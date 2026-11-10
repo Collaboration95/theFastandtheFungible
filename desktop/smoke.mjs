@@ -5,6 +5,15 @@ if (process.argv.includes('--recovery')) {
   await import('./recovery-smoke.mjs')
   process.exit(0)
 }
+const proofStep = { executablePath: process.env.DESKTOP_EXECUTABLE || '/Applications/ResearchAgent.app/Contents/MacOS/ResearchAgent', appPath: process.env.DESKTOP_APP_PATH, evidenceDir: process.env.DESKTOP_EVIDENCE_DIR || 'desktop/evidence' }
+if (process.argv.includes('--proof')) {
+  // Only the proof step: share a refusal, open it in its own window and run the in-browser check (see proof-smoke.mjs).
+  const proof = await import('./proof-smoke.mjs')
+  await proof.proofSmoke(proofStep)
+  // Opt-in: also reach the real public Testnet node from the shell (read-only, needs the network).
+  if (process.env.DESKTOP_PROOF_LIVE === '1') await proof.liveLedgerSmoke(proofStep)
+  process.exit(0)
+}
 import { _electron as electron, expect } from '@playwright/test'
 import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -80,9 +89,9 @@ try {
     await expect(page.getByRole('complementary', { name: 'Budget and purchases' }).getByText(`S$${(run.budgetMinor / 100).toFixed(2)} budget · S$${((run.budgetMinor - run.spentMinor - run.reservedMinor) / 100).toFixed(2)} budget left · refunds don't restore budget`, { exact: true })).toBeVisible()
     await page.screenshot({ animations: 'disabled', path: `desktop/evidence/uc${index + 1}.png` })
   }
-  await page.getByText('Export ⋯', { exact: true }).click()
+  await page.locator('details.ra-export > summary').click()
   const reportReady = app.waitForEvent('window')
-  await page.getByRole('button', { name: /Download report/ }).click()
+  await page.getByRole('button', { name: 'Export report' }).click()
   const report = await reportReady
   await report.waitForLoadState()
   await expect(report.getByText('ResearchAgent evidence report').first()).toBeVisible()
@@ -115,4 +124,6 @@ try {
   if (publisherUrl) await expect(fetch(`${publisherUrl}/health`)).rejects.toThrow()
 }
 
+// The proof step runs in its own app launch and data directory, so the UC runs above stay as they were.
+await (await import('./proof-smoke.mjs')).proofSmoke(proofStep)
 } finally { await scope.close() }

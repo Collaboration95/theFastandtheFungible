@@ -47,6 +47,13 @@ in the research renderer only after a verified grant, just as in the web app.
 Offline reports use the existing labelled HTML print fallback; no second Chromium
 download is bundled. Remote pages/scripts never load inside an app window.
 
+The research renderer may open exactly two network endpoints besides the app itself: the public XRPL Testnet nodes
+`wss://s.altnet.rippletest.net:51233` and `wss://clio.altnet.rippletest.net:51233`, for the read-only `tx` lookups of "Verify on XRPL in
+your browser" (named in `connect-src` and the request filter in `policy.mjs`; no wildcard, no other port or path, no plain `ws:`).
+A shared proof of refusal opens at `app://researchagent/proof/<id>` in its own window and keeps the page's own nonce-based policy.
+`node desktop/smoke.mjs --proof` (also the last step of `make desktop-smoke`) shares a refusal, opens it and runs the check against a
+local stand-in Testnet node; `DESKTOP_PROOF_LIVE=1` adds one read-only lookup against the real node.
+
 The Settings MCP button copies a Claude Code command pointing at this installed
 app's adapter. It needs system Node ≥22.13 and the app open; it uses the same
 engine and durable MCP caps. The research renderer cannot invoke desktop actions:
