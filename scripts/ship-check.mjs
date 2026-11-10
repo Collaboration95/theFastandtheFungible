@@ -21,10 +21,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     else if (['--mode', '--base'].includes(flag) && argv[0] && !argv[0].startsWith('-')) options[flag.slice(2)] = argv.shift()
     else throw Error('Unknown or incomplete ship-check option: ' + flag)
   }
-  const plan = shipPlan(options), initial = sourceIdentity()
+  const plan = shipPlan(options), initial = options.publish || (options.mode && options.mode !== 'change') ? sourceIdentity() : null
   for (const [cmd, args] of plan) {
-    if (JSON.stringify(sourceIdentity()) !== JSON.stringify(initial)) throw Error('Source changed during ship-check')
+    if (initial && JSON.stringify(sourceIdentity()) !== JSON.stringify(initial)) throw Error('Source changed during ship-check')
     execFileSync(cmd, args, { stdio: 'inherit' })
   }
-  if (JSON.stringify(sourceIdentity()) !== JSON.stringify(initial)) throw Error('Source changed during ship-check')
+  if (initial && JSON.stringify(sourceIdentity()) !== JSON.stringify(initial)) throw Error('Source changed during ship-check')
 }

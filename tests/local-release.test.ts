@@ -1,6 +1,7 @@
 import { it, expect } from 'vitest'
-import { writeFileSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { writeFileSync, mkdirSync } from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { join, resolve } from 'node:path'
 import { resources } from './helpers/resource-scope'
 // @ts-expect-error local CLI helper
 import { shipPlan } from '../scripts/ship-check.mjs'
@@ -47,12 +48,44 @@ it('local admission rejects stale, partial, quick, contended and tampered releas
   expect(() => admitLocalRelease(args)).toThrow('hash changed')
 })
 
-it('publisher keeps dry-run remote writes behind admission and exact-tag preflight', () => {
-  const text=readFileSync('scripts/release-publish.mjs','utf8')
-  expect(text).toContain("git('cat-file', '-t', tagObject) !== 'tag'")
-  expect(text).toContain("git('rev-parse', `${tag}^{commit}`) !== initial.sha")
-  expect(text).toContain("if (dryRun) console.log('DRY RUN: no tag push or release creation.")
-  expect(text.indexOf("finalCheck(); git('push'")).toBeGreaterThan(text.indexOf('if (dryRun)'))
-  expect(text).toContain("'--verify-tag'")
-  expect(text).toContain("'--latest=".slice(1))
+it('default ship-check forwards to the gate for uncommitted work; publication requires clean source', () => {
+  const root = resources().tempDir('ship-check-cli-'), bin=join(root,'bin')
+  mkdirSync(bin)
+  const env: NodeJS.ProcessEnv = {...process.env, PATH:bin+':'+process.env.PATH}
+  for (const key of Object.keys(env)) if (key.startsWith('GIT_')) delete env[key]
+  const git = (...args: string[]) => execFileSync('git',args,{cwd:root,env,stdio:'pipe'})
+  git('init','-q');git('config','user.name','Fixture');git('config','user.email','fixture@example.invalid')
+  writeFileSync(join(root,'tracked'),'original');git('add','.');git('commit','-qm','fixture')
+  writeFileSync(join(root,'tracked'),'uncommitted')
+  writeFileSync(join(bin,'npm'),`#!${process.execPath}
+console.log(JSON.stringify(process.argv.slice(2)))
+`,{mode:0o755})
+  const cli=resolve('scripts/ship-check.mjs')
+  const run=(args:string[])=>spawnSync(process.execPath,[cli,...args],{cwd:root,env,encoding:'utf8'})
+  const ordinary=run([])
+  expect(ordinary.status).toBe(0)
+  expect(JSON.parse(ordinary.stdout.trim())).toEqual(['run','gate','--','--base','origin/main'])
+  const publish=run(['--publish'])
+  expect(publish.status).toBe(1)
+  expect(publish.stderr).toContain('clean worktree')
+  expect(publish.stdout).toBe('')
+})
+
+it('release dry-run refuses dirty, mismatched and lightweight tags before any builds or remote access', () => {
+  const root=resources().tempDir('release-preflight-')
+  const env: NodeJS.ProcessEnv={...process.env}
+  for (const key of Object.keys(env)) if (key.startsWith('GIT_')) delete env[key]
+  const git=(...args:string[])=>execFileSync('git',args,{cwd:root,env,stdio:'pipe'})
+  git('init','-q');git('config','user.name','Fixture');git('config','user.email','fixture@example.invalid')
+  writeFileSync(join(root,'package.json'),JSON.stringify({version:'1.2.3'}))
+  git('add','.');git('commit','-qm','fixture');git('tag','v1.2.3')
+  const run=()=>spawnSync(process.execPath,[resolve('scripts/release.mjs'),'publish','--tag','v1.2.3','--dry-run'],{cwd:root,env,encoding:'utf8'})
+  expect(run().stderr).toContain('annotated release tag')
+  git('tag','-d','v1.2.3');git('tag','-a','v1.2.3','-m','fixture notes')
+  writeFileSync(join(root,'package.json'),JSON.stringify({version:'9.9.9'}))
+  expect(run().stderr).toContain('clean worktree')
+  git('add','.');git('commit','-qm','different source')
+  expect(run().stderr).toContain('Tag/source changed')
+  git('tag','-d','v1.2.3');git('tag','-a','v1.2.3','-m','fixture notes')
+  expect(run().stderr).toContain('Tag/package version mismatch')
 })
