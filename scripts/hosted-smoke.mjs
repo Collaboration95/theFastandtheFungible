@@ -66,9 +66,16 @@ try {
       await new Promise(r=>setTimeout(r,1000))
     }
     record('completed own question',run?.phase==='DONE','bounded 240-second completion')
-    const r=await a.request(`/runs/${id}/receipts.json`);record('own receipt export',r.ok,'private no-store export')
+    // The answer anchor is submitted after DONE and validates a few seconds later; wait for it
+    // (bounded) instead of verifying an export that does not carry the anchor yet.
+    let r,bundle
+    for(const until=Date.now()+90000;;) {
+      r=await a.request(`/runs/${id}/receipts.json`);record('own receipt export',r.ok,'private no-store export')
+      bundle=await r.json()
+      if(offline||bundle.ledgerAnchor?.txHash||Date.now()>until) break
+      await new Promise(done=>setTimeout(done,3000))
+    }
     record('no shared receipt cache',/no-store/.test(r.headers.get('cache-control')||''),'Cache-Control no-store')
-    const bundle=await r.json()
     record('real policy purchase',bundle.payments?.some(p=>p.kind==='purchase')&&bundle.receipts?.length>0,'at least one purchase and receipt')
     // Use the same offline verifier as SDK users. No raw receipt/questions saved in evidence.
     const {verifyAnswer}=await import('../sdk/verify.ts')
