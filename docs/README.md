@@ -61,7 +61,7 @@ Start with the [judging criteria](JUDGING-CRITERIA.md), the [progress page](http
 
 | Packet | Shows |
 |---|---|
-| [v4-heldout](evidence/v4-heldout/README.md) | Blind held-out bank: <!--f:heldout-->7/20<!--/f--> bought and cited, <!--f:offtopic-->0/10<!--/f--> off-topic purchases, run once |
+| [v4-heldout](evidence/v4-heldout/README.md) | Blind held-out bank: <!--f:heldout-->16/20<!--/f--> bought and cited, <!--f:offtopic-->0/10<!--/f--> off-topic purchases, run once |
 | [round4-j2](evidence/round4-j2/README.md) | One line, no clone: cold `try --testnet` timings, with the runs that overran kept |
 | [round4-j3](evidence/round4-j3/README.md) | A Markdown folder to a Testnet writer Credential in <!--f:writer_s-->33.9<!--/f--> s |
 | [m1-iou](evidence/m1-iou/README.md) | TEST-SGD token escrow on Testnet (stand-in for RLUSD) |

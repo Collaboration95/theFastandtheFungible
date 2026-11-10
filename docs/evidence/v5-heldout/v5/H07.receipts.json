@@ -1,0 +1,1199 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "131F60A656B9EE8A7B6D7B36CEBB029770704F38046049A4CFA8BD97EC21DEBB",
+    "account": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+    "head": "5c7c2a367ea7e21cd3a4e78d2605164685b7a5c8b40c131b1df72d76e0411473",
+    "runIdHash": "13446dc2405f97ce013c244cc3b3f7c45e927667236dc2a65dc6dadf2aff3198",
+    "ledgerIndex": 22222686,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "sourceKey": "xrpl-tx-offercreate@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p1\"]",
+            "claim": "According to XRPL documentation, OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity. [1]",
+            "citation": "[\"xrpl-tx-offercreate@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "According to XRPL documentation, OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity. [1]",
+            "manifestRoot": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+            "grantIntentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p2\"]",
+            "claim": "TakerGets describes what the offer creator sells, while TakerPays describes what it wants to receive. Flags select behaviors such as immediate execution or fill-or-kill. Any remaining offer depends on those rules and balances. Inspect executed amounts and residual state rather than assuming every submitted order becomes a fully funded standing listing. [1]",
+            "citation": "[\"xrpl-tx-offercreate@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "TakerGets describes what the offer creator sells, while TakerPays describes what it wants to receive. Flags select behaviors such as immediate execution or fill-or-kill. Any remaining offer depends on those rules and balances. Inspect executed amounts and residual state rather than assuming every submitted order becomes a fully funded standing listing. [1]",
+            "manifestRoot": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+            "grantIntentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p3\"]",
+            "claim": "The OfferCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "citation": "[\"xrpl-tx-offercreate@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The OfferCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "manifestRoot": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+            "grantIntentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p4\"]",
+            "claim": "Author interpretation: before using OfferCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "citation": "[\"xrpl-tx-offercreate@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Author interpretation: before using OfferCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "manifestRoot": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+            "grantIntentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "Which transaction type places an order on the XRPL decentralized exchange"
+    }
+  ],
+  "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "lead": [],
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "Which transaction type places an order on the XRPL decentralized exchange"
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "lead": [
+        {
+          "text": "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
+          "claim": {
+            "id": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p1\"]",
+            "text": "According to XRPL documentation, OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity. [1]",
+            "stance": "UNCERTAIN",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-offercreate",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "TakerGets describes what the offer creator sells, while TakerPays describes what it wants to receive.",
+          "claim": {
+            "id": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p2\"]",
+            "text": "TakerGets describes what the offer creator sells, while TakerPays describes what it wants to receive. Flags select behaviors such as immediate execution or fill-or-kill. Any remaining offer depends on those rules and balances. Inspect executed amounts and residual state rather than assuming every submitted order becomes a fully funded standing listing. [1]",
+            "stance": "UNCERTAIN",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-offercreate",
+                "version": "v1",
+                "spanId": "p2"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity. TakerGets describes what the offer creator sells, while TakerPays describes what it wants to receive. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result.",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p1\"]",
+          "text": "According to XRPL documentation, OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-offercreate",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p2\"]",
+          "text": "TakerGets describes what the offer creator sells, while TakerPays describes what it wants to receive. Flags select behaviors such as immediate execution or fill-or-kill. Any remaining offer depends on those rules and balances. Inspect executed amounts and residual state rather than assuming every submitted order becomes a fully funded standing listing. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-offercreate",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p3\"]",
+          "text": "The OfferCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-offercreate",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p4\"]",
+          "text": "Author interpretation: before using OfferCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-offercreate",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-offercreate",
+      "version": "v1",
+      "title": "What does OfferCreate do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "According to XRPL documentation, OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity. [1]\n\nTakerGets describes what the offer creator sells, while TakerPays describes what it wants to receive. Flags select behaviors such as immediate execution or fill-or-kill. Any remaining offer depends on those rules and balances. Inspect executed amounts and residual state rather than assuming every submitted order becomes a fully funded standing listing. [1]\n\nThe OfferCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using OfferCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "According to XRPL documentation, OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "TakerGets describes what the offer creator sells, while TakerPays describes what it wants to receive. Flags select behaviors such as immediate execution or fill-or-kill. Any remaining offer depends on those rules and balances. Inspect executed amounts and residual state rather than assuming every submitted order becomes a fully funded standing listing. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "The OfferCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+        },
+        {
+          "id": "p4",
+          "text": "Author interpretation: before using OfferCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-dex",
+      "version": "v1",
+      "title": "What does the native XRPL DEX provide?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what does the native xrpl dex provide?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-dex",
+      "facets": [
+        "XRPL",
+        "DEX",
+        "offers",
+        "order book",
+        "exchange",
+        "liquidity"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-dex",
+      "relevance": 0.7119494762996489,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-dex",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "07697ce6fd37b2495fb3e6a3dfec080e17ec9d6ed7cb91dea36460a658002722",
+          "1be1c490bf17f463c79701c6486b990278ac2b5dc572b23fb57db4f7a9697d09",
+          "4a2edf2c247675d5516132c5d500c1dc4d1337a048ee752169b40973638c4b4a",
+          "020abe523a5fc5441c1e2dfeeb678cd00d3cff5b39c3512b11ac0cc48b612e9a"
+        ],
+        "root": "5a3c30eb139c958cee6baad64377953e6b5eb25f9d3976ef8007acd499fefecd",
+        "claims": [],
+        "wordCount": 241,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7119494762996489,
+        "sig": "B1C043447BB8F706583024B2CB39E8124B823B43553960707C60B3D9F2F78C42C46528456A72FD5E032A91768A401341E950EA4E516848C5B957248158F1BA0D"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v3",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.39403363327013524,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "819ceb2a7e6b731e0e7398b552dc3831d0d8e47ae365706836f554179626b1cc",
+          "4b54a29aac2255d1f1b54f3274fe7038b44869f31d3c94cdb4a9bb36ba459b12",
+          "de1ac50db42d47fd754e360a5c12380ad8299eb2093d348c1153548df7b7c6d6",
+          "57483f6199add9192ec744cd3a95331312fb79746bda4933d3c70f1c379fbf17",
+          "e1d26d222f85a3f808fc574a4d0987c32e532e1ae60872142ea7493930f6eb45",
+          "40c2e140d82faa748ea1250bc431b0def1b108951997e60b80f92d8e1b5d9717",
+          "692cf99b25c244648c1e26574f972a8091caa9c243779fdcf30f957988f4cbf2",
+          "f4382a891d116f554f262e7db9ca96aa88b5b485b2b7a1ca2b4394cb5e68ae92"
+        ],
+        "root": "236aaaccd64c74d013b89507629384b14ca57305840518b3c6c428b4f0a7ce90",
+        "claims": [],
+        "wordCount": 666,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.39403363327013524,
+        "sig": "238D7FF5C89427320406A8FE86383C589A49951C3BCFF51FC1FE70A3BDCB9792D687D3A06B750B40EAD739958820D57A6316D5968EB774C7F50063A8EF2B9900"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-offercreate",
+      "version": "v1",
+      "title": "What does OfferCreate do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of OfferCreate and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-offercreate",
+      "facets": [
+        "XRPL",
+        "OfferCreate",
+        "Offer Create",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-offercreate",
+      "relevance": 0.7044945304566496,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-offercreate",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "4205db81c0d398647e27ee05ec448e7796479ac63ec693a42e29e29ad4ce7f06",
+          "40fb6876422ffcd7034d9e8634bb9172572df7f91d49e5e319d52c6e23ac94ad",
+          "9f25f9ea8c2c1e0d9c1cd6e265e642560de102aa3736d2cc98cf1f725fff5191",
+          "1b6a051f58f0fc28961001d2d9925819c03d49d607aec1320dce9b9d81028779"
+        ],
+        "root": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "4205db81c0d398647e27ee05ec448e7796479ac63ec693a42e29e29ad4ce7f06",
+            "covers": {
+              "entity": "OfferCreate",
+              "measure": "liquidity"
+            }
+          }
+        ],
+        "wordCount": 193,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.7044945304566496,
+        "sig": "D88681567409FBA0E1F967F7813C0383FC392A505B34C679C825DD69EFD7A1F44E56FCA1D80A982B6A1430AE3FEE3EB29892778787C51DCF6E85EFC8917B3F03"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-offercancel",
+      "version": "v1",
+      "title": "What does OfferCancel do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of OfferCancel and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-offercancel",
+      "facets": [
+        "XRPL",
+        "OfferCancel",
+        "Offer Cancel",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-offercancel",
+      "relevance": 0.7013738960882455,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-offercancel",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "a15b668dd4136bcbfcc5ffe4ac1e8ec03d356f2c5168e2578db89997b7ad4581",
+          "e76440bff2e7e902290856973df52a62b72870354df8bcc00f52b68a6adbf161",
+          "03e72c1e7ce5e398f006156f6a4796ba19c75a6aeb27b5fa71e985210695d5ff",
+          "51b8e23d1cbe2d707cab9e9bf867c764e8b85b27851a375ba651cb34a5f76096"
+        ],
+        "root": "491af211399b56163703fb5d9da7eced844e4a9b07d768c1e0fd7ceb4277bfb6",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "a15b668dd4136bcbfcc5ffe4ac1e8ec03d356f2c5168e2578db89997b7ad4581",
+            "covers": {
+              "entity": "OfferCancel",
+              "measure": "offer"
+            }
+          }
+        ],
+        "wordCount": 189,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.7013738960882455,
+        "sig": "BD648AA336992794D460ABD109EE71B691E7695743171D39A2E615EC488F91A30B0C88D14047E2E1AE7F8B3ABFBF57C4C472127A7AEDA1424ACAD9ED2D54480E"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-amm",
+      "version": "v1",
+      "title": "How does the XLS-30 AMM interact with the XRPL DEX?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to how does the xls-30 amm interact with the xrpl dex?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-amm",
+      "facets": [
+        "XRPL",
+        "AMM",
+        "XLS-30",
+        "DEX",
+        "liquidity",
+        "LP tokens"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-amm",
+      "relevance": 0.5591423404646535,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-amm",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "d97b125ec01a466640edf816173b8f8889c5c586a6f1ed0ae3d7818c81f4b6ab",
+          "3a3bd287427441fcc903640478893a76a8f440fc8b0486539ad2e51a78a622ed",
+          "cccdd7c42aa16076d3680de624bcd9979544fb0cb3acabe9a6e759d2f27ecce6",
+          "107b567f3db68df4bcef3b995f53b9e42787f375a5476dd1aac9f4f07c78279a"
+        ],
+        "root": "6d64468173b17e696ac703bcbe1cdb01a348f8c0619ebe53b45829592c826232",
+        "claims": [],
+        "wordCount": 240,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5591423404646535,
+        "sig": "822C6BF8FBDC6E2010A87B561D11CCFFD9919698EC4DF14D7150D2791DAAC64A85B2A4396646C37FF15FBDFA4B99619959FE5D469EC0F8E032D893811CB25001"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-standard-xls-81",
+      "version": "v1",
+      "title": "What does XLS-81 specify for Permissioned DEX?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of XLS-81 and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-standard-xls-81",
+      "facets": [
+        "XRPL",
+        "XLS-81",
+        "Permissioned DEX"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-standard-xls-81",
+      "relevance": 0.55429626372735,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-standard-xls-81",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "40513b78e1de740e07af24982f39c1a80e1554f1cac9a80ccaf770bda3cdad83",
+          "a5370090d98743c2e94b2c45a87e1981dd60c2303705f99c0e3b7c6fd54df6f8",
+          "44f181acbe20a588f78f37f7cdaa7be0dbd374dca7a4a3560d91c98328ca734e",
+          "8283a90dea5a025c8819d8600bfa16f629a2ef3511c5995a78793b2c6af69409"
+        ],
+        "root": "5547754eb861e4a2b28117bac7f447ad5ae26f24bb0926e4d0caf6b4cf685bb2",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "40513b78e1de740e07af24982f39c1a80e1554f1cac9a80ccaf770bda3cdad83",
+            "covers": {
+              "entity": "XLS",
+              "measure": "trading"
+            }
+          }
+        ],
+        "wordCount": 198,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.55429626372735,
+        "sig": "6A1664F924CE79877B6EAF81AE998727966D45415438F543D31A485FB7BFBB2DBEB9E4CE63B071462CB0CD7CA654163959C92EB0808F6D75F6DCD7FC1E21A708"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-domains",
+      "version": "v1",
+      "title": "What do Permissioned Domains restrict?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what do permissioned domains restrict?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-domains",
+      "facets": [
+        "XRPL",
+        "Permissioned Domains",
+        "Credentials",
+        "permissioned DEX",
+        "compliance"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-domains",
+      "relevance": 0.279601964242437,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-domains",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "434f51472e7b442fba511fcad01611f628df7114b21077091fb65fde017f9275",
+          "80590f10bf2f338f661dff267dc855b494b1df7796e310bb54c5f0344f0b39d6",
+          "6dc4f2b81bcc0f791a6ccb8ed5b2fcc65fe3a345747de6e2895d82b1da931295",
+          "7b33f62d5053659e69cf14a38063ab2e20a696bae882f74cf63f1de5584f71de"
+        ],
+        "root": "8d62592ee7326388f4bd1547159504d4008b349b8778eb21f0fd2e6795607416",
+        "claims": [],
+        "wordCount": 227,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.279601964242437,
+        "sig": "23B7F3443B5B3083049F7A7DA816FB6A84D1ADEF1E18051C869091E5822AC879D20D5A7AAE8507ECB9D87D2DE72243BECCFF7876095CFC5CDBE2BAFE186C1E02"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-flag-disallowincomingtrustline",
+      "version": "v1",
+      "title": "What does the XRPL DisallowIncomingTrustline account flag mean?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of DisallowIncomingTrustline and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-flag-disallowincomingtrustline",
+      "facets": [
+        "XRPL",
+        "DisallowIncomingTrustline",
+        "asfDisallowIncomingTrustline",
+        "lsfDisallowIncomingTrustline",
+        "account flags"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-flag-disallowincomingtrustline",
+      "relevance": 0.1502402608432834,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-flag-disallowincomingtrustline",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "fe9a51aad1934e2c3741e32660497797706ff822e695bfa8bc5893a16c5ba10d",
+          "3077631d55fcedc1d4d502413884859d992c36323622b9348797ba07a1798adc",
+          "42533bf0dd94bb3f72138f1c89bd6569973d7ee4c7ffdbde7535fc9338981907",
+          "ecdf159da16b0af55b192d93a3859a2f7d14c16eb64b53f8318ef1fbd8d40b78"
+        ],
+        "root": "75ded081d8f63be994c3d1d3e34d2a5aea5f8712238260b30ab04d91d411214e",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "fe9a51aad1934e2c3741e32660497797706ff822e695bfa8bc5893a16c5ba10d",
+            "covers": {
+              "entity": "DisallowIncomingTrustline",
+              "measure": "creation"
+            }
+          }
+        ],
+        "wordCount": 186,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.1502402608432834,
+        "sig": "4975E3C066ECFD4ACC0CEBDEDB741402E36E85754F477E28D33E01FC8DE9F12024F8EA84E823341FE71EB04FA1EEDBCC92FF6FAA81DA45166B68CD08AD6FAA0E"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-spending",
+      "version": "v1",
+      "title": "Where should agent spending controls live?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to where should agent spending controls live?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-spending",
+      "facets": [
+        "XRPL",
+        "agent spending controls",
+        "budget",
+        "policy",
+        "x402",
+        "authorization"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-spending",
+      "relevance": 0.10104907118318594,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-spending",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "3cd3edeb5f6191ab9944428e0dca0457f95d4a6788ac94adf07d1814e5c470af",
+          "98968cc1e5602b095544df29af88c737a3c528dbfdbde965e1e0fdd6b00a1f45",
+          "f729ebcb54338999cd49e4d5ddc7d7196938a1c9e1d6858e978eb96243cc1ed5",
+          "cec2e295664ad0cf84ec020a7cdde55e1109515ffeed04fe9faed1e419d4a54d"
+        ],
+        "root": "f08951c90cf550ec23a42801d768f4cfc106484847bf1f3d83b0a6e9789fcd67",
+        "claims": [],
+        "wordCount": 239,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.10104907118318594,
+        "sig": "DAC66DDCF415FE8A9D2C94926664BD1FF15E70D942682DEE07CA225F053EC1A43A536A8ACE4EEA6F0717325FC20ECD9157A4FE5002D1DF843D9837D625A90E09"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222684,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847650750,
+        "createSequence": 22222640,
+        "createHash": "9207B1F88478E36C6AF3218D4DF8236BA6FE6458A3DC02615ADDE606F4A27AD2",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+        "proofOk": true
+      },
+      "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+      "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-offercreate",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-10T18:30:32.911Z",
+      "submittingAt": "2026-11-10T18:30:32.912Z",
+      "settledAt": "2026-11-10T18:30:47.273Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-tx-offercreate",
+        "version": "v1",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-tx-offercreate\",\"asset\":\"XRP\",\"cancelAfter\":847650750,\"condition\":\"A02580200FB7F89F920C81A2046C3C9D2B7606238C940CE6ABB88ECAEC5B32846D57902D810120\",\"intentId\":\"28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1\",\"keyReveal\":{\"ciphertextHash\":\"23c47bc0ad1e5699ba171755c42643ca1f514a8c7503ef5e008fa914aa01f1a6\",\"iv\":\"3EA2E301D662E81BE84B25B1\",\"plaintextHash\":\"1f3715cf6cdb0104fb68c729f2e55ee35fa0f131817dee7b58cb25b8d1ad078a\",\"tag\":\"2071561256C7A1F1F1C664DA81BF419D\"},\"manifestRoot\":\"305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770\",\"network\":\"xrpl:1\",\"payTo\":\"r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb\",\"payer\":\"rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"1543585a-b673-4af9-9730-68701192995a\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "F159CBD75E4E6AE504E64FB557097744BAF1A271CCB4D51BC4DFA8EB7D4076CB",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-10T18:31:32.910Z",
+        "contentDigest": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "amountDrops": "40000",
+          "invoiceId": "F159CBD75E4E6AE504E64FB557097744BAF1A271CCB4D51BC4DFA8EB7D4076CB"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-tx-offercreate",
+      "receiptId": "escrow-D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+      "txHash": "D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+      "resourceId": "xrpl-tx-offercreate",
+      "version": "v1",
+      "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+      "contentDigest": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+      "grantedAt": "2026-11-10T18:30:47.270Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222684,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847650750,
+        "createSequence": 22222640,
+        "createHash": "9207B1F88478E36C6AF3218D4DF8236BA6FE6458A3DC02615ADDE606F4A27AD2",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+        "proofOk": true
+      },
+      "receiptId": "escrow-D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+      "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+      "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+      "resourceId": "xrpl-tx-offercreate",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-10T18:30:47.273Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+        "ledgerIndex": 22222684,
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "23c47bc0ad1e5699ba171755c42643ca1f514a8c7503ef5e008fa914aa01f1a6",
+          "plaintextHash": "1f3715cf6cdb0104fb68c729f2e55ee35fa0f131817dee7b58cb25b8d1ad078a",
+          "iv": "3EA2E301D662E81BE84B25B1",
+          "tag": "2071561256C7A1F1F1C664DA81BF419D"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "1543585a-b673-4af9-9730-68701192995a",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-offercreate",
+        "version": "v1",
+        "manifestRoot": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+        "amount": "40000",
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "condition": "A02580200FB7F89F920C81A2046C3C9D2B7606238C940CE6ABB88ECAEC5B32846D57902D810120",
+        "cancelAfter": 847650750
+      },
+      "escrowCreateHash": "9207B1F88478E36C6AF3218D4DF8236BA6FE6458A3DC02615ADDE606F4A27AD2",
+      "escrowCreateSequence": 22222640,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+      "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-offercreate",
+      "version": "v1",
+      "payee": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+      "invoiceId": "F159CBD75E4E6AE504E64FB557097744BAF1A271CCB4D51BC4DFA8EB7D4076CB",
+      "ledgerIndex": 22222684,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-10T18:30:32.911Z",
+      "settledAt": "2026-11-10T18:30:47.273Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "xrpl-tx-offercreate",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-offercreate",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "4205db81c0d398647e27ee05ec448e7796479ac63ec693a42e29e29ad4ce7f06",
+          "40fb6876422ffcd7034d9e8634bb9172572df7f91d49e5e319d52c6e23ac94ad",
+          "9f25f9ea8c2c1e0d9c1cd6e265e642560de102aa3736d2cc98cf1f725fff5191",
+          "1b6a051f58f0fc28961001d2d9925819c03d49d607aec1320dce9b9d81028779"
+        ],
+        "root": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "4205db81c0d398647e27ee05ec448e7796479ac63ec693a42e29e29ad4ce7f06",
+            "covers": {
+              "entity": "OfferCreate",
+              "measure": "liquidity"
+            }
+          }
+        ],
+        "wordCount": 193,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.7044945304566496,
+        "sig": "D88681567409FBA0E1F967F7813C0383FC392A505B34C679C825DD69EFD7A1F44E56FCA1D80A982B6A1430AE3FEE3EB29892778787C51DCF6E85EFC8917B3F03"
+      },
+      "salts": [
+        "2e8148c0ff111f6f2dc8b8a4a08dbcbd",
+        "ab73b64344d75532a9b38aa0c7e895e8",
+        "6c97062926ead572bf0f1e364c067058",
+        "566bd1af39573f6adaa10e162fab4b5b"
+      ],
+      "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "F09D5E64F3B8DEC397DEB6D3B6FAA6CC5C535FF07C9E2BDC7AA0D8CF6B2D056A23C81B49A6F80BF19BB6D98325E36187D3785E28F5F3FA721E94734D097E3AAE623D208A631F33D2DF0E146DFCDD824F20523072E8EA25C39D6DED3EF8A835FDC747D10B2E0A7D83FD105ED98B942B187A857048260545F5A8297E2A67758C6BBD20D51DA09778C05E3A917E42463B35D49AEA92C1804FA20A016406F4536CAE6CFF876DE3ADC3A7C52341919522D8CBE1B86CE58854E3778697A1DB2C5937716CF37EF69861C1CAE44734823BC6D7CE1F00F2D6847CBEC1485EA9F3B716FAA5CA9902290E4DEAC0AEFA9BF1EFB97D38618184EDAFC6D6C683417C73E5AF0E0952A7D008F1FDB34D8ABEDE7FD7BCE88CB8EEB9DC3D8018E96D4867B48CF6B40ADEC5F0952556AF1285851275405DA6589DE2BC49DA0AE5B73587BE4052DAD0B2967D6503434E37E9DED59B471EF2C30A60347B9024AC2BC8E540EFF254E56E6DDB8B4EF0AF7F22BE65E58731E7E3B49F8B3020F020741B6647530B22314E3C731FB1364AEE52AAAFFC2B4F1F51EFD238464EE362209143CB842F27E4E76897A823E3C24BE8802066F9B49D04307E5C67C0A0C9E73ACEC668D352E340A761BD0C087B552A0E6E768F64E977943D54A2A0EE14DD6AE11CAFEE04F1EE381805BC0700EA395E196B59A69A7E8AFD32EDFED9E109D1193B83F89F40DD28EC6A14D48C4EFEB56FAE4082E92F01377B91A86465137A32CA11BAD05CAF763EFAE6CA78AEE3690599D46F72FB53421D97913E6F7402417A9AE41961C563DEFCB812F5C1B4073A6C9E6903326B60BBD83E6806C7E510C037D1F87FDA19915E17B55952FF919E3FB6175C1AEEF6862986F00EAD7A957A9B89CAE2252D62267573BCBAFB5CB4CE88CBD5CC4C22ACE1E2284B78C7E61CBF705F1ECE23D241D5093FA9BE40872333CDDA2D7CFC34BF5B49F216187E1D1FA10A8EDCA64AC5E7842E773B9FD1735ADEDB410A7CD3C0010932DDEE50532B842CC6027F2829FE28D2147EB8F47968BC81286EEF96FC6565764FA97FCDA7FD3EB2CF8796B806EC7BCBC9B6DE31DC9BA87366F5A7B487ADC1B9E809F1D40AFC15F60D72FFD935420512F2F0928A979EB1B847CE86BF6CEE9C5E989F79EB5F19B60DF013A70593219F03DA7E105C8B17D09C9648F0805344DDA7B9AAF0A811CA26C2C9EC902059D4FB0268460BB79215E2E1641DEC2AE545556AC508053C64E357D84B9A710D7D40316CCB928BE49F1C36FCF77624A865A1DBBB1A20C5D5C0ACF230172ECDAE5945F7F45B6CBDA47F3A13BF83DBEF71294E4F942D351D9FC068214289D845961BEC098A1316F9071999ADB6814F68D62DB21CA68E150B4B644356A61705E49365E1DF76F2896454879195DDD23FE27A816D50E438D0C786491BD94296FA5816305EC03AC62A53ED6149E94EC9E2944F4C34FF848834214665976DAE93A9966A64E033F33A55A925EC6A822E1FF6F0B6B97A8913610D8B236A9086B9DAE7767BB98A3E70D56D8EBA09D402AD3E7AB1C71528A91B967896CF9CF31C7AFCF1AE7C946C7261AB4D30629099491BA7864281F4BBC062B7931D9DF520F2062346974EFCD05288C7496C0163A3BF4FB8190CCAB826C439ADEE548985AFC5020C8CC56D0E21A099404E0B47ABFB0BE173311ADCE53B6C7644A1437BEAF57392D259296731A31CD888F1A009EE4337DAD849C05034FEB5DE496E0A142E9874E448C4EA3A73C35D3F2BC583422D11A8596847BAE87D11236AA3B648B4535730B534341E60C29B9509528357D58013F832FB6A62AFBE06B8104CEC332151F62C48444DBA9B26186C9D9BB8D83AB7EACC9A76E9DC196015A761B36BE2C8A05ACC38617BD0524E2CD369FE93B095191D96EF7B8CDC60DF583D0A3759CBF938C11E48E19387F52526567548BD91A14A7CA3F12016290D24074A5C130145E8527683E6C2D1A83D9D223659792726170DB496A3D71E5E4F475D99E4C0DE9E053630B47A2600CD52DEF8BA17BFFB1FFCA2BC0EBDF6E1B759A6840EC01FE4D84AC0418CDED692B23EB02121451939AF2E810804B1DCBD3544D31C152C1D45FB4A67E43116BE28BC6E06A525B1352DF5DDA679962DE13BD437D27BA357BEB42B40590872851AC5601DAFBF841BF62A90EB8D8674962AAF27F0E0C0D79D6EF1E770220F84578F9495D3FC377FDF047F7037EC01FE5D84E936C100568B256AFC29E165D9ADD5C2618F8D3087C30A6B2579ADF0024D0D2C62A00F71B8C2050F37B06BCCBD11D361EE51A41DFF8942C0B2B44E4650B9E5E779E2C1010DC339570EA5C97364E779AD1B65FA47C16094B3E1652CE78053D515AC3AB08F8A068676F4BEE294F71C4643C334ED2298B7EFE0B7CAEB2D83031CFF01CDB0C9867EC7CDB800BA5598744167ABB21A3ECF99762316DC26E00B7FE64227CC1A74025C2CB7C419CB9351A1D80767B324771C40C0EE4482FBFC836D571D4EAA6064C9FEC7993384A9F73CFEB6EE28984B32DEAAF2926DCFB23B9C11DBF7DF0A24B4631B902D63566DE4DEBFF4197E2F258872B0590853BD7B4D5F8236BCFC51CFBA8B77F80D1E9F25C886BD2BABABD70AB7209EFE542E9D7A19540FDBDC8CEABC8DD604534ECE983A66E44E4B11EE927878292E4A2E86CB9511EAF25914E77B52B073D0A8F8A40E89DD58ADC1A5B895F45E56DD73353AA57D619E15CA4C2CB5EEB75BC7E9F7AB10DD3D23A977F114ED8E7234A5BBF4AF599D7CF8A86DA634BDB7BDB994DA44866B7FC5D0C36FA119F663E67797DFFC0B7D3500759BBEB3CB8A9718CCE4E900FFE654D10FF38E73810742C2193A0C7137DB980AB5EE606DF041A68D9507CC736FD99DDEFD41B5580B5964BFA878171648AD7A29A37D82A341AE6E3BEBF0B525817450C68620EB39AD595CBFC067C285748901BAFEA35FE15172B99CA6D7D92E88CFC97A6DCF0FA571D981084D914E9F0DE004CA78B66F22870BE7B5EBF0454736CB98E44B6D2492F7ADD768E56194C3C825EC50764F48E1FCA58B6878DAE95C789B641A54BBEEFE372015FA47A63E9E3F64026F361124AE35B8582D77A6A6A782A1630F8BC33FD6B14686DF6BB9AE92ADE5330A69EFD135744C0BE77B89377EE6354D6DB1393BAC37EC5700B6B4C28F7BB4FE2BDB3D7E19BBC2E551D29EDEAEB7163203C25ACE28EF1EF17E0910F65EAC5988DE97FD8AB08E7E5BA3B94C07C9CF90F202D060874A3CAB8938CFCD247E044BD6F4C24B36959D69D05658E5CECF9ABC2A5CA834E1D84B37DE1CA58D5B0A70736F3599EC8FAAAFAD3603669E24B193B62F6801FD72C06F70E5118A5ADE0887A3BA5D58F6D994058003FFD0AF4935A3BFCC9DD759C02593B078ABD9DB3793B9FCDAE047B5EFEF52BDD8B9B51B3872746F9E0DBE906269FE2370CC4DA34EC71CFCA6616BAB6E9A37EFFCF800CBC49382C6ECDC902B8D6B042A8C7327357CC04793CCDF7E9745EE1A420474771ACE7FA63406EB3B2AD2F1B77434948E2811AE62DE4E88D879D0FCF4C888A991163A90B97A7CB3D0795CC5F2EC352B414D8C54395E69EF7D27E63D5B24D75989FD55D37C7154FA3959FE4B9ED21407946E2E586BF670BE4995736026E8D71E821C9832B08931ED9ABE66329B6CA560282C413258E6A0F5AF4F3825875FF648A0681A99DC0267454F2B6181204C4B68CED06313CD4683D850EE4807498D8A60E7072648EC86F527BC60CD3F449607B8F72CF22E030E3B7BA9BA20EB37BF93B6D71AA87207DE9F35C3A1E0267297B209B8399638E6B86F01EFAAFCE305A9A9A4C8B2441C6E5D47A331B2A44E0EF095252B6D620EA213057EC980E04FE36E2FC95A2C94AEAB4F51C3CDEE00AB82F8490C1744861F9627B2CFBDD450DBC1F22B3428230D01CC2250ECA87907C3A7941C00B3E85C61E69187C0711880EFA81BD9990A45EA1EEE588073C67825B098114871FAB95E2EEEFDE1B24F820C59B18BFEE6997AD7448D937D3C10EEC0FED1CF7CBFE7DE3653C944F504AD32B6C4E66D7D98DE1C021F742D8819BDC240CBD8C01BC8A665CDC454033A1B1290658CC4B9E48848EF1AEE5F377AD4FD2D57ABA122C3AAFB9059D592B592D54AB9BD199B307744362119C1DC2ECFD2A2B85049124B89ADCB5397AC0C5F5681115A1C569E8AF773076A5258F402DA2A5C28C0530E3696322E7B59DAB69AF3C1A227CC662EE0C2DFFA11B8D7A7BEBF0D07D9B21B4D894C59711261D37EC90E871D1D449284E4C20D069DA554D8AB7F4438E76F078081837A8D5D1A85E2B9FC45772C53654C8962F065E9A475E9CBF2B4E32F4B066B98BCB9315FF20466E8BD8ACCF4200248430C5F57844BFAE96C9045903BFB915D5501978EB8383B19E315974002A3BDC681B69BCD2A57A79A47492CE44E720006202E6208B5D67653",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "23c47bc0ad1e5699ba171755c42643ca1f514a8c7503ef5e008fa914aa01f1a6",
+              "plaintextHash": "1f3715cf6cdb0104fb68c729f2e55ee35fa0f131817dee7b58cb25b8d1ad078a",
+              "iv": "3EA2E301D662E81BE84B25B1",
+              "tag": "2071561256C7A1F1F1C664DA81BF419D"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "1543585a-b673-4af9-9730-68701192995a",
+            "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-tx-offercreate",
+            "version": "v1",
+            "manifestRoot": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+            "amount": "40000",
+            "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+            "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+            "condition": "A02580200FB7F89F920C81A2046C3C9D2B7606238C940CE6ABB88ECAEC5B32846D57902D810120",
+            "cancelAfter": 847650750
+          },
+          "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+          "sig": "10901962C30975CF3C5DAB8E6A9E071479989E1E41AE6B8A239BF7BB7290745D23F99D8D3BDF1780686646DBECCA332E974D63A50BE53FE23C3561EA0C749D04"
+        },
+        "key": "2868FF752E187A6D34974B59645BA969AB3B1AD3C996F6834FF314EFC680B1F1",
+        "finishHash": "D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+        "ledgerIndex": 22222684,
+        "createHash": "9207B1F88478E36C6AF3218D4DF8236BA6FE6458A3DC02615ADDE606F4A27AD2"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 88,
+      "hash": "d66ff55ee97de2faab8cb15b758a69168588b0f9593470b92e9a8f0e20f57783"
+    },
+    "entries": [
+      {
+        "seq": 89,
+        "at": "2026-11-10T18:30:32.428Z",
+        "prevHash": "d66ff55ee97de2faab8cb15b758a69168588b0f9593470b92e9a8f0e20f57783",
+        "hash": "175ad3c9b9772060ebe3d515b8127fbccfe39decf769b3768f79b7c08d44ae56",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-10",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "e5db11167d6e6c30739bd14673edef88249bb568b9602fbad813d5aa5c712f2d",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4640,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1640
+        }
+      },
+      {
+        "seq": 90,
+        "at": "2026-11-10T18:30:32.482Z",
+        "prevHash": "175ad3c9b9772060ebe3d515b8127fbccfe39decf769b3768f79b7c08d44ae56",
+        "hash": "f25bf2cdb2513010332ea90b7889f4de4c68b7fb9091fc7955b25b0e6e7105ac",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 9,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-tx-offercreate",
+          "selectedSourceKey": "xrpl-tx-offercreate@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 5,
+            "SKIP_LOW_VALUE": 4
+          }
+        }
+      },
+      {
+        "seq": 91,
+        "at": "2026-11-10T18:30:32.911Z",
+        "prevHash": "f25bf2cdb2513010332ea90b7889f4de4c68b7fb9091fc7955b25b0e6e7105ac",
+        "hash": "9058444d3c3f3437374cac8c88ce0c411df41b39f15430c52a648272c4377fe6",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "F159CBD75E4E6AE504E64FB557097744BAF1A271CCB4D51BC4DFA8EB7D4076CB",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-tx-offercreate",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 92,
+        "at": "2026-11-10T18:30:34.634Z",
+        "prevHash": "9058444d3c3f3437374cac8c88ce0c411df41b39f15430c52a648272c4377fe6",
+        "hash": "fb669c83dbcfa131f9328ea6643ded839b45df8ab22bdc82568f3b9620bd32b9",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22222640,
+          "invoiceHash": "F159CBD75E4E6AE504E64FB557097744BAF1A271CCB4D51BC4DFA8EB7D4076CB",
+          "lastLedgerSequence": 22222701,
+          "operation": "create",
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": false,
+          "txHash": "9207B1F88478E36C6AF3218D4DF8236BA6FE6458A3DC02615ADDE606F4A27AD2"
+        }
+      },
+      {
+        "seq": 93,
+        "at": "2026-11-10T18:30:40.545Z",
+        "prevHash": "fb669c83dbcfa131f9328ea6643ded839b45df8ab22bdc82568f3b9620bd32b9",
+        "hash": "ccf053cb0a0689fd6f836475728119ab82a8903676eaf3af04ffa7063bf542d0",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847650750,
+          "createSequence": 22222640,
+          "invoiceHash": "F159CBD75E4E6AE504E64FB557097744BAF1A271CCB4D51BC4DFA8EB7D4076CB",
+          "ledgerIndex": 22222682,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "result": "tesSUCCESS",
+          "txHash": "9207B1F88478E36C6AF3218D4DF8236BA6FE6458A3DC02615ADDE606F4A27AD2"
+        }
+      },
+      {
+        "seq": 94,
+        "at": "2026-11-10T18:30:47.270Z",
+        "prevHash": "ccf053cb0a0689fd6f836475728119ab82a8903676eaf3af04ffa7063bf542d0",
+        "hash": "e5f485a93ccaa82327d66768a4cd6edc4481f24a80876fed2dae956c1bba24c2",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "305a4620a60cc3d7aad10c99777c9fd5a57a542b459376d1322ce7a19fa0d770",
+          "passageCount": 4,
+          "resourceId": "xrpl-tx-offercreate",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 95,
+        "at": "2026-11-10T18:30:47.273Z",
+        "prevHash": "e5f485a93ccaa82327d66768a4cd6edc4481f24a80876fed2dae956c1bba24c2",
+        "hash": "f81470f140db5bc61eb258f6eb0ff3cb6e6a1632d73217678d2a33ccda73c98e",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 96,
+        "at": "2026-11-10T18:30:47.273Z",
+        "prevHash": "f81470f140db5bc61eb258f6eb0ff3cb6e6a1632d73217678d2a33ccda73c98e",
+        "hash": "2d11ddf53869d46afefef9f10cc76f0cbb25278e6e90d3475b0968e9f487cd3a",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "9207B1F88478E36C6AF3218D4DF8236BA6FE6458A3DC02615ADDE606F4A27AD2",
+          "createSequence": 22222640,
+          "ledgerIndex": 22222684,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5"
+        }
+      },
+      {
+        "seq": 97,
+        "at": "2026-11-10T18:30:47.273Z",
+        "prevHash": "2d11ddf53869d46afefef9f10cc76f0cbb25278e6e90d3475b0968e9f487cd3a",
+        "hash": "d1f3512eb15e088a9b0e3bb2e6497eb73f81ed267feecaa4cac04e113718ee99",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3:1:xrpl-tx-offercreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22222684,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "receiptId": "escrow-D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "D1F853C973B65FB1C9CD359D134A6CB3F4CD615FBEDB29BD81D1A498CFACA8D5"
+        }
+      },
+      {
+        "seq": 98,
+        "at": "2026-11-10T18:30:47.295Z",
+        "prevHash": "d1f3512eb15e088a9b0e3bb2e6497eb73f81ed267feecaa4cac04e113718ee99",
+        "hash": "5c7c2a367ea7e21cd3a4e78d2605164685b7a5c8b40c131b1df72d76e0411473",
+        "runId": "28a83c57-0425-4fcb-b63a-d8c037bdcec3",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "2eae5533e0a298c13ae2b9a3e4219b35a0f8dfb051a3c83630e23ef87b49a14d"
+        }
+      }
+    ],
+    "head": "5c7c2a367ea7e21cd3a4e78d2605164685b7a5c8b40c131b1df72d76e0411473"
+  }
+}

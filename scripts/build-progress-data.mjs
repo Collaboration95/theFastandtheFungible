@@ -294,9 +294,15 @@ export function build({ at = 'HEAD' } = {}) {
     { id: 'v1', label: 'v1 · development', n: need(p0.n, 'v1 n'), N: need(p0.N, 'v1 N'), heldout: false, source: 'docs/evidence/r5-p0/summary.json' },
     { id: 'v3', label: 'v3 · development', n: need(v3.n, 'v3 n'), N: need(v3.N, 'v3 N'), heldout: false, source: 'docs/evidence/p1-threshold/sweep-summary.json' },
     { id: 'v4', label: 'v4 · blind held-out', n: need(v4.buyAndCite.n, 'v4 n'), N: need(v4.buyAndCite.N, 'v4 N'), heldout: true, answersIt: v4.answersIt, source: 'docs/evidence/v4-heldout/README.md' },
-    { id: 'v5', label: 'v5 · blind held-out', ...v5, heldout: true, source: 'docs/eval-judge-banks.md' },
+    { id: 'v5', label: 'v5 · blind held-out', ...v5, heldout: true, ...(v5.status === 'measured' ? { answersIt: json(v5Results).summary.answersIt, source: 'docs/evidence/v5-heldout/README.md' } : { source: 'docs/eval-judge-banks.md' }) },
   ]
-  const offTopic = { n: need(v4n.negativeBuys.n, 'negatives n'), N: need(v4n.negativeBuys.N, 'negatives N'), source: 'docs/evidence/v4-heldout/README.md' }
+  // The headline uses the latest blind bank that has been run once: v5 when its results are committed, otherwise v4.
+  const heldBank = v5.status === 'measured' ? 'v5' : 'v4'
+  const heldSource = `docs/evidence/${heldBank}-heldout/README.md`
+  const held = heldBank === 'v5' ? json(v5Results).summary : v4
+  const heldNeg = heldBank === 'v5' ? json('docs/evidence/v5-heldout/v5-negatives/results.json').summary : v4n
+  const heldDay = need(read(heldSource).split('\n')[0].match(/\((\d{1,2} [A-Z][a-z]{2}) \d{4}\)/)?.[1], 'held-out run day')
+  const offTopic = { n: need(heldNeg.negativeBuys.n, 'negatives n'), N: need(heldNeg.negativeBuys.N, 'negatives N'), source: heldSource }
 
   const testSeries = [
     { label: '7 Sep · prototype', day: sgtDay(baseline.date), ...baseline.tests },
@@ -346,7 +352,7 @@ export function build({ at = 'HEAD' } = {}) {
   if (!/submitted on 4–5 September 2026/.test(feedback)) need(null, 'submission dates')
 
   const realWriters = json('site/evidence/real-writers.json').writers.length
-  const next = story.next.map(n => ({ ...n, body: n.id === 'v5' ? (v5.status === 'measured' ? `Measured: ${v5.n}/${v5.N} bought and cited.` : `Frozen ${dayLabel(need(v5.frozen, 'v5 frozen date'))} and written blind; it has not been run yet.`) : n.id === 'writers' ? (realWriters ? `${realWriters} consenting writer${realWriters === 1 ? '' : 's'} listed on the ledger page; the rest are fictional or team-authored.` : 'No consenting outside writer is listed yet; writers are fictional or team-authored and labelled.') : n.body }))
+  const next = story.next.map(n => ({ ...n, ...(n.id === 'v5' && v5.status === 'measured' ? { status: 'Done' } : {}), body: n.id === 'v5' ? (v5.status === 'measured' ? `Measured once on ${heldDay}: ${v5.n}/${v5.N} bought and cited.` : `Frozen ${dayLabel(need(v5.frozen, 'v5 frozen date'))} and written blind; it has not been run yet.`) : n.id === 'writers' ? (realWriters ? `${realWriters} consenting writer${realWriters === 1 ? '' : 's'} listed on the ledger page; the rest are fictional or team-authored.` : 'No consenting outside writer is listed yet; writers are fictional or team-authored and labelled.') : n.body }))
 
   // ---- Latest SFF-PUSH entry (tracker freshness)
   const push = read('docs/SFF-PUSH.md').match(/^- (\d{1,2} Nov): /m)
@@ -366,7 +372,7 @@ export function build({ at = 'HEAD' } = {}) {
       prs: prsSince.length,
       releases: releases.length,
       transactions: ledger.rows.length,
-      heldout: { n: v4.buyAndCite.n, N: v4.buyAndCite.N, offTopic },
+      heldout: { bank: heldBank, n: held.buyAndCite.n, N: held.buyAndCite.N, answersIt: held.answersIt, day: heldDay, source: heldSource, offTopic },
       try: { seconds: tryFinal.seconds, limit: tryLimit },
       tests: today.tests.total,
       commits: commitsSince,
@@ -384,7 +390,7 @@ export function build({ at = 'HEAD' } = {}) {
       { metric: 'Commits', value: commitsSince, definition: `git rev-list --count ${snapshotSha.slice(0, 8)}..${sha.slice(0, 8)} (after the last commit before ${story.SINCE.label})` },
       { metric: 'Releases', value: releases.length, definition: 'gh release list, published, tag reachable from the counted commit (prereleases included)' },
       { metric: 'Testnet transactions', value: ledger.rows.length, definition: 'rows in site/ledger/transactions.json; the ledger page re-checks each one live' },
-      { metric: 'Held-out', value: `${v4.buyAndCite.n}/${v4.buyAndCite.N}`, definition: 'v4 blind bank, bought and cited, run once on 7 Nov (docs/evidence/v4-heldout)' },
+      { metric: 'Held-out', value: `${held.buyAndCite.n}/${held.buyAndCite.N}`, definition: `${heldBank} blind bank, bought and cited, run once on ${heldDay} (docs/evidence/${heldBank}-heldout)` },
       { metric: 'Tests in the repo', value: today.tests.total, definition: 'static count of it()/test() declarations in *.test.* / *.spec.* files plus Python def test_ (not executions)' },
       { metric: 'Lines of code', value: today.codeLines, definition: 'physical nonblank lines in tracked TS/JS/Python/Shell files, tests and tooling included' },
     ],

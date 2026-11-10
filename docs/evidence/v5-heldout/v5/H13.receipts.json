@@ -1,0 +1,2629 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "FAB13CFC18B29B231BE9FCE3BF4784FF8CE198E0F80906A204B129B8FC7BEFFE",
+    "account": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+    "head": "09b52ac789c584be1ab008a2a687efb3cc4f09d5e9317909275422c672cb7e1c",
+    "runIdHash": "1cab855b0d587d3516140f28c24273b094eca9214b8fc0789ca9fc434c77e7f6",
+    "ledgerIndex": 22222764,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "sourceKey": "xrpl-tx-paymentchannelcreate@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+            "claim": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+            "claim": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p3\"]",
+            "claim": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p4\"]",
+            "claim": "Author interpretation: before using PaymentChannelCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Author interpretation: before using PaymentChannelCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": false
+          },
+          {
+            "answerVersion": 3,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+            "claim": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 3,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+            "claim": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 3,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p3\"]",
+            "claim": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 3,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p4\"]",
+            "claim": "Author interpretation: before using PaymentChannelCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Author interpretation: before using PaymentChannelCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": false
+          },
+          {
+            "answerVersion": 4,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+            "claim": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 4,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+            "claim": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 4,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p3\"]",
+            "claim": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "citation": "[\"xrpl-tx-paymentchannelcreate@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "retained": true
+          }
+        ]
+      },
+      {
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "sourceKey": "xrpl-tx-paymentchannelclaim@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 3,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p1\"]",
+            "claim": "According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelclaim@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. [1]",
+            "manifestRoot": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 3,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p2\"]",
+            "claim": "A signed claim authorizes a total amount for that channel, not an additional payment of that amount on every retry. The channel balance and authorized ceiling constrain redemption. Closing and renewal flags have specific permissions and timing rules. Confirm the resulting channel balance and any remaining funds rather than counting signatures as separate settlements. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelclaim@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "A signed claim authorizes a total amount for that channel, not an additional payment of that amount on every retry. The channel balance and authorized ceiling constrain redemption. Closing and renewal flags have specific permissions and timing rules. Confirm the resulting channel balance and any remaining funds rather than counting signatures as separate settlements. [1]",
+            "manifestRoot": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+            "retained": false
+          },
+          {
+            "answerVersion": 3,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p3\"]",
+            "claim": "The PaymentChannelClaim reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "citation": "[\"xrpl-tx-paymentchannelclaim@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The PaymentChannelClaim reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "manifestRoot": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+            "retained": false
+          },
+          {
+            "answerVersion": 3,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p4\"]",
+            "claim": "Author interpretation: before using PaymentChannelClaim, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "citation": "[\"xrpl-tx-paymentchannelclaim@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Author interpretation: before using PaymentChannelClaim, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "manifestRoot": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+            "retained": false
+          },
+          {
+            "answerVersion": 4,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p1\"]",
+            "claim": "According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelclaim@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. [1]",
+            "manifestRoot": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+            "retained": true
+          }
+        ]
+      },
+      {
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "sourceKey": "xrpl-tx-paymentchannelfund@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 4,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelfund\",\"v1\",\"p2\"]",
+            "claim": "The channel's source funds it, using Channel to identify the existing object. Funding increases the available ceiling rather than paying a new recipient. Expiration and SettleDelay constrain closing behavior. Distinguish additional locked funds from already redeemed claims so a repeated funding request cannot be mistaken for a harmless status query. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelfund@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The channel's source funds it, using Channel to identify the existing object. Funding increases the available ceiling rather than paying a new recipient. Expiration and SettleDelay constrain closing behavior. Distinguish additional locked funds from already redeemed claims so a repeated funding request cannot be mistaken for a harmless status query. [1]",
+            "manifestRoot": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 4,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelfund\",\"v1\",\"p1\"]",
+            "claim": "According to XRPL documentation, PaymentChannelFund adds XRP to an existing payment channel and can adjust its expiration under the documented rules. [1]",
+            "citation": "[\"xrpl-tx-paymentchannelfund@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "According to XRPL documentation, PaymentChannelFund adds XRP to an existing payment channel and can adjust its expiration under the documented rules. [1]",
+            "manifestRoot": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 4,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelfund\",\"v1\",\"p3\"]",
+            "claim": "The PaymentChannelFund reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "citation": "[\"xrpl-tx-paymentchannelfund@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The PaymentChannelFund reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+            "manifestRoot": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 4,
+            "claimId": "evidence-[\"xrpl-tx-paymentchannelfund\",\"v1\",\"p4\"]",
+            "claim": "Author interpretation: before using PaymentChannelFund, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "citation": "[\"xrpl-tx-paymentchannelfund@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Author interpretation: before using PaymentChannelFund, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+            "manifestRoot": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+            "grantIntentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "Which XRPL feature lets two parties exchange many signed off-ledger micropayment claims and settle once on the ledger"
+    }
+  ],
+  "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "lead": [],
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "Which XRPL feature lets two parties exchange many signed off-ledger micropayment claims and settle once on the ledger"
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "lead": [
+        {
+          "text": "PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination.",
+          "claim": {
+            "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+            "text": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "stance": "UNCERTAIN",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-paymentchannelcreate",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Off-ledger claims can update authorization without a new ledger transaction for every increment.",
+          "claim": {
+            "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+            "text": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "stance": "CHALLENGES",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-paymentchannelcreate",
+                "version": "v1",
+                "spanId": "p2"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. Off-ledger claims can update authorization without a new ledger transaction for every increment. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules.",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+          "text": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+          "text": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p3\"]",
+          "text": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p4\"]",
+          "text": "Author interpretation: before using PaymentChannelCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "Which XRPL feature lets two parties exchange many signed off-ledger micropayment claims and settle once on the ledger"
+        }
+      ],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "lead": [
+        {
+          "text": "PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination.",
+          "claim": {
+            "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+            "text": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "stance": "UNCERTAIN",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-paymentchannelcreate",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Off-ledger claims can update authorization without a new ledger transaction for every increment.",
+          "claim": {
+            "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+            "text": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "stance": "CHALLENGES",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-paymentchannelcreate",
+                "version": "v1",
+                "spanId": "p2"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. Off-ledger claims can update authorization without a new ledger transaction for every increment. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. A signed claim authorizes a total amount for that channel, not an additional payment of that amount on every retry.",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p1\"]",
+          "text": "According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelclaim",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p2\"]",
+          "text": "A signed claim authorizes a total amount for that channel, not an additional payment of that amount on every retry. The channel balance and authorized ceiling constrain redemption. Closing and renewal flags have specific permissions and timing rules. Confirm the resulting channel balance and any remaining funds rather than counting signatures as separate settlements. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelclaim",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p3\"]",
+          "text": "The PaymentChannelClaim reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelclaim",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p4\"]",
+          "text": "Author interpretation: before using PaymentChannelClaim, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelclaim",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+          "text": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+          "text": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p3\"]",
+          "text": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p4\"]",
+          "text": "Author interpretation: before using PaymentChannelCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "Which XRPL feature lets two parties exchange many signed off-ledger micropayment claims and settle once on the ledger"
+        }
+      ],
+      "version": 3,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "lead": [
+        {
+          "text": "PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination.",
+          "claim": {
+            "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+            "text": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+            "stance": "UNCERTAIN",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-paymentchannelcreate",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Off-ledger claims can update authorization without a new ledger transaction for every increment.",
+          "claim": {
+            "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+            "text": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+            "stance": "CHALLENGES",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-paymentchannelcreate",
+                "version": "v1",
+                "spanId": "p2"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. Off-ledger claims can update authorization without a new ledger transaction for every increment. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. According to XRPL documentation, PaymentChannelFund adds XRP to an existing payment channel and can adjust its expiration under the documented rules.",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelfund\",\"v1\",\"p2\"]",
+          "text": "The channel's source funds it, using Channel to identify the existing object. Funding increases the available ceiling rather than paying a new recipient. Expiration and SettleDelay constrain closing behavior. Distinguish additional locked funds from already redeemed claims so a repeated funding request cannot be mistaken for a harmless status query. [1]",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelfund",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelfund\",\"v1\",\"p1\"]",
+          "text": "According to XRPL documentation, PaymentChannelFund adds XRP to an existing payment channel and can adjust its expiration under the documented rules. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelfund",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelfund\",\"v1\",\"p3\"]",
+          "text": "The PaymentChannelFund reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelfund",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelfund\",\"v1\",\"p4\"]",
+          "text": "Author interpretation: before using PaymentChannelFund, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelfund",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p2\"]",
+          "text": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]",
+          "stance": "CHALLENGES",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelclaim\",\"v1\",\"p1\"]",
+          "text": "According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelclaim",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p1\"]",
+          "text": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-tx-paymentchannelcreate\",\"v1\",\"p3\"]",
+          "text": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-paymentchannelcreate",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "Which XRPL feature lets two parties exchange many signed off-ledger micropayment claims and settle once on the ledger"
+        }
+      ],
+      "version": 4,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelcreate",
+      "version": "v1",
+      "title": "What does PaymentChannelCreate do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]\n\nThe sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]\n\nThe PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using PaymentChannelCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "According to XRPL documentation, PaymentChannelCreate locks XRP in a channel for repeated payments to a specified destination. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "The sender supplies a public key for claim signatures and a SettleDelay for the closure process. Off-ledger claims can update authorization without a new ledger transaction for every increment. Creating a channel does not mean the destination has received its entire funded amount; redemption and final closure determine the actual transfers. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "The PaymentChannelCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+        },
+        {
+          "id": "p4",
+          "text": "Author interpretation: before using PaymentChannelCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+        }
+      ]
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelclaim",
+      "version": "v1",
+      "title": "What does PaymentChannelClaim do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. [1]\n\nA signed claim authorizes a total amount for that channel, not an additional payment of that amount on every retry. The channel balance and authorized ceiling constrain redemption. Closing and renewal flags have specific permissions and timing rules. Confirm the resulting channel balance and any remaining funds rather than counting signatures as separate settlements. [1]\n\nThe PaymentChannelClaim reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using PaymentChannelClaim, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "A signed claim authorizes a total amount for that channel, not an additional payment of that amount on every retry. The channel balance and authorized ceiling constrain redemption. Closing and renewal flags have specific permissions and timing rules. Confirm the resulting channel balance and any remaining funds rather than counting signatures as separate settlements. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "The PaymentChannelClaim reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+        },
+        {
+          "id": "p4",
+          "text": "Author interpretation: before using PaymentChannelClaim, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+        }
+      ]
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelfund",
+      "version": "v1",
+      "title": "What does PaymentChannelFund do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "According to XRPL documentation, PaymentChannelFund adds XRP to an existing payment channel and can adjust its expiration under the documented rules. [1]\n\nThe channel's source funds it, using Channel to identify the existing object. Funding increases the available ceiling rather than paying a new recipient. Expiration and SettleDelay constrain closing behavior. Distinguish additional locked funds from already redeemed claims so a repeated funding request cannot be mistaken for a harmless status query. [1]\n\nThe PaymentChannelFund reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using PaymentChannelFund, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "According to XRPL documentation, PaymentChannelFund adds XRP to an existing payment channel and can adjust its expiration under the documented rules. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "The channel's source funds it, using Channel to identify the existing object. Funding increases the available ceiling rather than paying a new recipient. Expiration and SettleDelay constrain closing behavior. Distinguish additional locked funds from already redeemed claims so a repeated funding request cannot be mistaken for a harmless status query. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "The PaymentChannelFund reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+        },
+        {
+          "id": "p4",
+          "text": "Author interpretation: before using PaymentChannelFund, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v3",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.32726363512924683,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "819ceb2a7e6b731e0e7398b552dc3831d0d8e47ae365706836f554179626b1cc",
+          "4b54a29aac2255d1f1b54f3274fe7038b44869f31d3c94cdb4a9bb36ba459b12",
+          "de1ac50db42d47fd754e360a5c12380ad8299eb2093d348c1153548df7b7c6d6",
+          "57483f6199add9192ec744cd3a95331312fb79746bda4933d3c70f1c379fbf17",
+          "e1d26d222f85a3f808fc574a4d0987c32e532e1ae60872142ea7493930f6eb45",
+          "40c2e140d82faa748ea1250bc431b0def1b108951997e60b80f92d8e1b5d9717",
+          "692cf99b25c244648c1e26574f972a8091caa9c243779fdcf30f957988f4cbf2",
+          "f4382a891d116f554f262e7db9ca96aa88b5b485b2b7a1ca2b4394cb5e68ae92"
+        ],
+        "root": "236aaaccd64c74d013b89507629384b14ca57305840518b3c6c428b4f0a7ce90",
+        "claims": [],
+        "wordCount": 666,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.32726363512924683,
+        "sig": "3607E84E40C1446A4E2BDD41004AA81EED7A204A7F97A0E8F95609B6F512EDF70CB9C95E3B51D68BB92414A128784884ACD9A6AF23DC0AAB30EFF1723846E300"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelcreate",
+      "version": "v1",
+      "title": "What does PaymentChannelCreate do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of PaymentChannelCreate and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-paymentchannelcreate",
+      "facets": [
+        "XRPL",
+        "PaymentChannelCreate",
+        "Payment Channel Create",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-paymentchannelcreate",
+      "relevance": 0.8276065772548828,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelcreate",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "78ad1c4954dbb3fcd2766e339a26479c16e87f7fd28777bd821a932717eae518",
+          "66ad40d42bf7af4c6c74baf749c9dfe5d3ca5b1e5e7121560ec04a76960c0712",
+          "c73f14d033313f6cb113002999a0738c88c57061d1365c8a18a0c9fc5035dff2",
+          "2c5b5a9213bf56f9f4205583fbd19816781e9f9655adca16d5131f663ee4360b"
+        ],
+        "root": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "78ad1c4954dbb3fcd2766e339a26479c16e87f7fd28777bd821a932717eae518",
+            "covers": {
+              "entity": "PaymentChannelCreate",
+              "measure": "XRP"
+            }
+          }
+        ],
+        "wordCount": 192,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.8276065772548828,
+        "sig": "8C0CF31AEF8417F1F2A01650E9C6B4E4D470347EAA8251948B771E565CE3942C03024665D4404AC018E6A7521B4DBE7FE6373BBBCB71A81FBAECA1EC47DF6401"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelclaim",
+      "version": "v1",
+      "title": "What does PaymentChannelClaim do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of PaymentChannelClaim and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-paymentchannelclaim",
+      "facets": [
+        "XRPL",
+        "PaymentChannelClaim",
+        "Payment Channel Claim",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-paymentchannelclaim",
+      "relevance": 0.825758235457938,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelclaim",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "91415214875df0192200a4393256333a85bc92b7c93b87aae6d43f5e4f783f10",
+          "601b893f05513394c90a0fb50e202bca7cfc6cb9b0d0836e957156c65a1e9375",
+          "464e15175175c05c70f8c52c0f7976dea898c4d0839fb53adfb9ee3f099f0d3f",
+          "fa9e93d2039bc8f11a2504e0b0166999f8ac350c16b36291498581afe05f0a58"
+        ],
+        "root": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "91415214875df0192200a4393256333a85bc92b7c93b87aae6d43f5e4f783f10",
+            "covers": {
+              "entity": "PaymentChannelClaim",
+              "measure": "claim"
+            }
+          }
+        ],
+        "wordCount": 195,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.825758235457938,
+        "sig": "557E139C8292634FD72F0C095942C0646459A95D2C7D41F5F3BE44CF8E281B7A5DA1ADC69F1315F9D12E2256C26ADE0E670BF13822A4EBCDD16093E003570803"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelfund",
+      "version": "v1",
+      "title": "What does PaymentChannelFund do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of PaymentChannelFund and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-paymentchannelfund",
+      "facets": [
+        "XRPL",
+        "PaymentChannelFund",
+        "Payment Channel Fund",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-paymentchannelfund",
+      "relevance": 0.8246453420668414,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelfund",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "c7e9ab400535e17d5ed7ce5ec47cced03a906280c17270c043e2baa7d08ced42",
+          "09859dda2e82e3530d13d3557cb1ffee0ed9595d1304f6775bdf40bc35ff9600",
+          "8bee6d60d56e9136d92a7352898929fa3f9bf85e7de033f2e8be441cb68a1dc3",
+          "2ba5d1769fed3aea9bfc0e35a4f58a0990751ba991dccb5bd995ff8595dd288d"
+        ],
+        "root": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "c7e9ab400535e17d5ed7ce5ec47cced03a906280c17270c043e2baa7d08ced42",
+            "covers": {
+              "entity": "PaymentChannelFund",
+              "measure": "XRP"
+            }
+          }
+        ],
+        "wordCount": 194,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.8246453420668414,
+        "sig": "0A7D0774F4DF0CC3105ABE33172812229C48912EC20EC64CF769B646F1E0CEFA4A89BBCA79122FAF6EC535CBF510B744807BE1C55A3D52A21650940AB917690A"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "product-rlusd-xrp",
+      "version": "v1",
+      "title": "Should an agent use RLUSD or XRP for micropayments, and what is TEST-SGD?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide to should an agent use RLUSD or XRP for micropayments, and what is TEST-SGD. Includes evidence limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "product-rlusd-xrp",
+      "facets": [
+        "RLUSD",
+        "XRP",
+        "TEST-SGD",
+        "Testnet",
+        "micropayments",
+        "stablecoin",
+        "trust line"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/product-rlusd-xrp",
+      "relevance": 0.6270677585275057,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "product-rlusd-xrp",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "f0681fbee47b75534a7a36bd7e378214c6aa5cc61f4bc047dc2230e96e132140",
+          "a6897b23b2b5dd78674a2e02cefb4ec445fd95ad279fdc9c1a6b9dc8879b714e",
+          "155c992a82c8747d75a2a7c3f30602f1db5e1248b131f14a3c8d6e446b665429",
+          "9737dcefa306d18364a4dcfa473d689d17739dbbc4a46645f0e215a19a705a8e"
+        ],
+        "root": "73ad592b78a5588ce6f2a46d7c9c60db0c701c9223ef58c46daed75cee4e1dbb",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "f0681fbee47b75534a7a36bd7e378214c6aa5cc61f4bc047dc2230e96e132140",
+            "covers": {
+              "entity": "XRP",
+              "measure": "fees"
+            }
+          }
+        ],
+        "wordCount": 235,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.6270677585275057,
+        "sig": "5E27986AC626E6CEBA8410A4041A269B2A4BF1F2130C9516967A107E81A68EC2422D42BE6B33D256D3F55D4B4368D4E6620F2BED7768CED96CDF10953E79B40E"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "product-micropayment-pricing",
+      "version": "v1",
+      "title": "What does an XRPL micropayment cost besides the article price?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide to what does an XRPL micropayment cost besides the article price. Includes evidence limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "product-micropayment-pricing",
+      "facets": [
+        "XRPL",
+        "micropayment pricing",
+        "fees",
+        "drops",
+        "EscrowFinish",
+        "reserve",
+        "article price"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/product-micropayment-pricing",
+      "relevance": 0.6059015622127999,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "product-micropayment-pricing",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "05125d426394d2757a7be694ef1461136b16fdb74fb5baa9c87314c43a524ef3",
+          "1a48a19b1987bc399b56544488662ac9c411472c0cf0ad3233bc1700bc7579c0",
+          "efe91b55e99606a2e83295a9e09aeecfc533dffea85bd28cb339731213b9344c",
+          "d036875271a107d59de015d206d524a10fe33bb9f79e373ddd6bac920c9e5cd2"
+        ],
+        "root": "3246acd4cb3d664e49f4e3acf97c22c2c36be74bcd623d27c5e564bb163eeff8",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "05125d426394d2757a7be694ef1461136b16fdb74fb5baa9c87314c43a524ef3",
+            "covers": {
+              "entity": "XRPL",
+              "measure": "fee"
+            }
+          }
+        ],
+        "wordCount": 230,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.6059015622127999,
+        "sig": "4E3B9F7ED830EAE3F4E77D3BFC674AD2D9489885C36EFD3557FA6FB5FE29C29AB81B202B5FD67ACD352FF232C2990B1824CB56779894AACFB105D34867BC9507"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-fees",
+      "version": "v3",
+      "title": "EscrowFinish fulfillment fees: XRP drops and SGD prices in the app",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Measured Testnet costs and accounting: how XRP drops differ from the SGD price shown in the app, including principal and fees.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-fees",
+      "facets": [
+        "EscrowFinish fulfillment fees and XRP drops",
+        "fees",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-fees",
+      "relevance": 0.43467910399890464,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-fees",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "925c55fe8f79a8c30fb1a71aa2779aa4066682bc5a4c30628f24a7a82db6f61d",
+          "461748e50492bdc64aea078849ee65821e67681d4649031a9a224de1d07ee43b",
+          "61995126ae2f731326641e1c8d8f353d8c771ab1950b64b672a9188425e13009",
+          "6dd38d934aaea607ead858f4fb8225d0ff7010620fda504c12e3bc42cda0914a",
+          "855863bfb24ce8d7182ed84ae2e457dc4630a16dca6bf3f74079f36ca5d18f73",
+          "fdfd32fb89dd8a355721d3f1eb0bbc2d748a2b9b225c66883384d193180bd67d"
+        ],
+        "root": "bfb049e6cb6fbf5cf2fade83597a0b996b9a9d25aa7f39dd089afecb2e867590",
+        "claims": [],
+        "wordCount": 450,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.43467910399890464,
+        "sig": "57D171C642DE4F5527FCFE67C52E57589C8DB6436B67C12D1D736C3FE6F758330E371A316FB05D98BC85871B35BA43CB1B80A05CD865688919F1F968809E6801"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-payment",
+      "version": "v1",
+      "title": "What does Payment do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of Payment and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-payment",
+      "facets": [
+        "XRPL",
+        "Payment",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-payment",
+      "relevance": 0.6068163860305126,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-payment",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "91e36e526ccced98512a0d8505c17d4f927d2c562203cd81eb5487f3e3191d46",
+          "c86afaed7f0e9ac2878c63d1c8e985623b9f2f6cc73439540f21b1ae68e0d3f2",
+          "75383b8f48b2942b00a67bbec0c66ac1332169fd7acaa5085e56c1a625ead5ee",
+          "1d7900e73f247ae15f0a8a36b33fed4f8158c7c7d367287755156718ed5ac192"
+        ],
+        "root": "01ec501d932fbd3cf2f9066342a44c6a4bab217b9d486c624254fc4adf89cc7e",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "91e36e526ccced98512a0d8505c17d4f927d2c562203cd81eb5487f3e3191d46",
+            "covers": {
+              "entity": "Payment",
+              "measure": "value"
+            }
+          }
+        ],
+        "wordCount": 189,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.6068163860305126,
+        "sig": "21FAA8AF4D4623A0277B706CB5D8FA9F374CCC1365A791A172DBF2EB96F1A07CE56013C3EE92F3A1DCEC69FB01CBF54D71C877132FFE24A0EBC7E64A82D3420A"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-compliance-project-guardian",
+      "version": "v1",
+      "title": "What does Project Guardian mean for agent payments?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of Project Guardian and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-compliance-project-guardian",
+      "facets": [
+        "XRPL",
+        "Project Guardian"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-compliance-project-guardian",
+      "relevance": 0.40223550236946626,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-compliance-project-guardian",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "3cbac0a2b6c0145670a703b8f2b803e5caf085b35bc4e4f041a31998058be169",
+          "adb8dedc5e91a3772a4b2c59fe96c815f539061e74b3be111eceb4a16c274110",
+          "e57bd82de9de7d80f92d5fa2eb7c6082f9bb65547c1abf29bc62c1838d60b1e2",
+          "9e740cce3b86c9f1465dd9c5f02a420e2296ee7c4de10b60d026b47b3bfbf1fe"
+        ],
+        "root": "f529a8d040a80d8f8a2e741c28e288c6f44c43b743ef493a511fa29fb937ce06",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "3cbac0a2b6c0145670a703b8f2b803e5caf085b35bc4e4f041a31998058be169",
+            "covers": {
+              "entity": "MAS",
+              "measure": "initiative"
+            }
+          }
+        ],
+        "wordCount": 200,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.40223550236946626,
+        "sig": "6E8D01E585D1209ADFB776311D6C127802E68B112F2106BBEDB571032EA16091E8BCB67DF678824F72158F6CECF379C94878D0BB02E958FE17902669B6F1BC0F"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-recovery",
+      "version": "v3",
+      "title": "Writer no-show: EscrowCancel, key deadlines and writer-signed refunds",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "When a writer never reveals the key, policy can cancel after expiry. A writer can refuse a refund after EscrowFinish; these are different protections.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-recovery",
+      "facets": [
+        "recovery",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-recovery",
+      "relevance": 0.24382546477995265,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-recovery",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "18adb682a306ccc514f59f895a56ca900687ef9e3b3ad534859dfc8e845fe888",
+          "ad76f64117bd588144e40e3972dde9678266a2a84633c93c79dde1801f58b9a7",
+          "f5c9c929ba98c30fe7f09539491faa108c117963952f7215f99d43333f29b789",
+          "e4668f88218ee99033356d8c6086b1e3a1ce49eb954af4497471c766fd2d9570",
+          "91084282080c61fcf3a294694d7c0d5e2a962352120c08349b77b41f7668f2b4",
+          "d241c8250239894860bdfe07ac74f5a4211c0f72992621dd045818a66f45a33b",
+          "41b43590ec953d875f83b17ed20e998428b40368ce4dfc2f8a890cad7ac7c194",
+          "f338f14fafa858144fad010917e32a111882c8c17ce4ec091dfcb78c6279cb74"
+        ],
+        "root": "a1cd51641ff1d5c32048c0c978ced8b0f3e0fb2b6f0e47952ee6bc4d4615b6b8",
+        "claims": [],
+        "wordCount": 568,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.24382546477995265,
+        "sig": "261199CA513A940DA0B480D9CDC812B3D5B5B8AA4E082FFD23FE3D5138AC30C296E9FFB738AA60CA43E42664446CFECE506800C7A2DF61E27C9F640AD3893003"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222753,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847650982,
+        "createSequence": 22222657,
+        "createHash": "3AF0BE3AAD86E9B92CE2FEE9C2121959A71A0ACF5A63D0CD7003CFF3C8714F4C",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+        "proofOk": true
+      },
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelcreate",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-10T18:34:29.833Z",
+      "submittingAt": "2026-11-10T18:34:29.834Z",
+      "settledAt": "2026-11-10T18:34:43.360Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-tx-paymentchannelcreate",
+        "version": "v1",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-tx-paymentchannelcreate\",\"asset\":\"XRP\",\"cancelAfter\":847650982,\"condition\":\"A02580201E12C326E840DC0AA14C1EA67D9CABD3E0EB3AD8FD4F9DA7A6CAB89DBA6C4181810120\",\"intentId\":\"ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1\",\"keyReveal\":{\"ciphertextHash\":\"96509b64676666db85d02069c8de57f8864f50a1b68ce41934d79aeb45f67571\",\"iv\":\"D6072541D0A93240B314A5DE\",\"plaintextHash\":\"79375a9fcc9f4a025e2579e0f600f6909b6bcb12718f7380718470e9b86ba464\",\"tag\":\"B9B1E76FC3747B69812620B53E72F464\"},\"manifestRoot\":\"f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c\",\"network\":\"xrpl:1\",\"payTo\":\"r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb\",\"payer\":\"rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"7364d515-e03b-4fbc-bba7-98e9dd0f3099\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "19EDA1741B2B876696C21D1FFCFF73F910AD251BE82630A884CE90500DD94AE7",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-10T18:35:29.832Z",
+        "contentDigest": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "amountDrops": "40000",
+          "invoiceId": "19EDA1741B2B876696C21D1FFCFF73F910AD251BE82630A884CE90500DD94AE7"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-tx-paymentchannelcreate",
+      "receiptId": "escrow-379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+      "txHash": "379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+      "failedClaimIds": []
+    },
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222757,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847651001,
+        "createSequence": 22222658,
+        "createHash": "09D927FFFAABBC4D89D8A72D815402CE86E6B7709895F895073063F153627D01",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+        "proofOk": true
+      },
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelclaim",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-10T18:34:43.824Z",
+      "submittingAt": "2026-11-10T18:34:43.825Z",
+      "settledAt": "2026-11-10T18:34:59.149Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-tx-paymentchannelclaim",
+        "version": "v1",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-tx-paymentchannelclaim\",\"asset\":\"XRP\",\"cancelAfter\":847651001,\"condition\":\"A0258020410D93755FE86E669F91FDC39224B994EB6BB3262B4C8FA3CF0EB06DA7C39099810120\",\"intentId\":\"ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1\",\"keyReveal\":{\"ciphertextHash\":\"5c478b552543d7064254427ac02f926b8c748a4364e7a575b1c32da03f64e1cb\",\"iv\":\"A3482F434988208D7D4145D7\",\"plaintextHash\":\"96f6a0ea50d62b2b02be2fef624417091f96c9d311bc90a4690af9a22b83a465\",\"tag\":\"F67E16B3471A1EFA445589ABF42C403B\"},\"manifestRoot\":\"98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04\",\"network\":\"xrpl:1\",\"payTo\":\"r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb\",\"payer\":\"rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"1c7b5825-1dd0-4d71-bb0d-d26b977a100c\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "E3811200C0FEFF0C33FB8342BC3D8C9BE52894DE978A137F15ABB3B5399474E0",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-10T18:35:43.823Z",
+        "contentDigest": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "amountDrops": "40000",
+          "invoiceId": "E3811200C0FEFF0C33FB8342BC3D8C9BE52894DE978A137F15ABB3B5399474E0"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-tx-paymentchannelclaim",
+      "receiptId": "escrow-B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+      "txHash": "B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+      "failedClaimIds": []
+    },
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222762,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847651012,
+        "createSequence": 22222659,
+        "createHash": "2FF1DBCD37E025D95E9BA6B231229304EBCC20096D6A0FAB932401D0AF7BEFDC",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+        "proofOk": true
+      },
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelfund",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-10T18:34:59.622Z",
+      "submittingAt": "2026-11-10T18:34:59.623Z",
+      "settledAt": "2026-11-10T18:35:16.980Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-tx-paymentchannelfund",
+        "version": "v1",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-tx-paymentchannelfund\",\"asset\":\"XRP\",\"cancelAfter\":847651012,\"condition\":\"A0258020352E0F0B6945EEF89EF1CC6E12832A9422F4217347A2E8DBD96361BF3706AF29810120\",\"intentId\":\"ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1\",\"keyReveal\":{\"ciphertextHash\":\"17a90b1e02c7cada1e01e8cb67a0db7715ac3f09750df3500ce52cde190c09a8\",\"iv\":\"DBA896DC9A93D46CD3EDF81D\",\"plaintextHash\":\"6c5f271b589431b912524d5a4dfa1b9bfb3336687110078033c89f1ea95b95b5\",\"tag\":\"851F20969BBD9B1ECD69CDEFBE032943\"},\"manifestRoot\":\"ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541\",\"network\":\"xrpl:1\",\"payTo\":\"r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb\",\"payer\":\"rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"f093112c-7da3-47e3-af32-543da079053c\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "312CFB0B561752B65B7C03227588DB2DCA70950EDEDC7731EED65E269CAFBC6D",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-10T18:35:59.621Z",
+        "contentDigest": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "amountDrops": "40000",
+          "invoiceId": "312CFB0B561752B65B7C03227588DB2DCA70950EDEDC7731EED65E269CAFBC6D"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-tx-paymentchannelfund",
+      "receiptId": "escrow-B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+      "txHash": "B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "resourceId": "xrpl-tx-paymentchannelcreate",
+      "version": "v1",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+      "contentDigest": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+      "grantedAt": "2026-11-10T18:34:43.359Z"
+    },
+    {
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "resourceId": "xrpl-tx-paymentchannelclaim",
+      "version": "v1",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+      "contentDigest": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+      "grantedAt": "2026-11-10T18:34:59.145Z"
+    },
+    {
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "resourceId": "xrpl-tx-paymentchannelfund",
+      "version": "v1",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+      "contentDigest": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+      "grantedAt": "2026-11-10T18:35:16.979Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222753,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847650982,
+        "createSequence": 22222657,
+        "createHash": "3AF0BE3AAD86E9B92CE2FEE9C2121959A71A0ACF5A63D0CD7003CFF3C8714F4C",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+        "proofOk": true
+      },
+      "receiptId": "escrow-379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "resourceId": "xrpl-tx-paymentchannelcreate",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-10T18:34:43.360Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+        "ledgerIndex": 22222753,
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F"
+      }
+    },
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222757,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847651001,
+        "createSequence": 22222658,
+        "createHash": "09D927FFFAABBC4D89D8A72D815402CE86E6B7709895F895073063F153627D01",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+        "proofOk": true
+      },
+      "receiptId": "escrow-B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "resourceId": "xrpl-tx-paymentchannelclaim",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-10T18:34:59.149Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+        "ledgerIndex": 22222757,
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562"
+      }
+    },
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222762,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847651012,
+        "createSequence": 22222659,
+        "createHash": "2FF1DBCD37E025D95E9BA6B231229304EBCC20096D6A0FAB932401D0AF7BEFDC",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+        "proofOk": true
+      },
+      "receiptId": "escrow-B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "resourceId": "xrpl-tx-paymentchannelfund",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-10T18:35:16.980Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+        "ledgerIndex": 22222762,
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "96509b64676666db85d02069c8de57f8864f50a1b68ce41934d79aeb45f67571",
+          "plaintextHash": "79375a9fcc9f4a025e2579e0f600f6909b6bcb12718f7380718470e9b86ba464",
+          "iv": "D6072541D0A93240B314A5DE",
+          "tag": "B9B1E76FC3747B69812620B53E72F464"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "7364d515-e03b-4fbc-bba7-98e9dd0f3099",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelcreate",
+        "version": "v1",
+        "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+        "amount": "40000",
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "condition": "A02580201E12C326E840DC0AA14C1EA67D9CABD3E0EB3AD8FD4F9DA7A6CAB89DBA6C4181810120",
+        "cancelAfter": 847650982
+      },
+      "escrowCreateHash": "3AF0BE3AAD86E9B92CE2FEE9C2121959A71A0ACF5A63D0CD7003CFF3C8714F4C",
+      "escrowCreateSequence": 22222657,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelcreate",
+      "version": "v1",
+      "payee": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+      "invoiceId": "19EDA1741B2B876696C21D1FFCFF73F910AD251BE82630A884CE90500DD94AE7",
+      "ledgerIndex": 22222753,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-10T18:34:29.833Z",
+      "settledAt": "2026-11-10T18:34:43.360Z"
+    },
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "5c478b552543d7064254427ac02f926b8c748a4364e7a575b1c32da03f64e1cb",
+          "plaintextHash": "96f6a0ea50d62b2b02be2fef624417091f96c9d311bc90a4690af9a22b83a465",
+          "iv": "A3482F434988208D7D4145D7",
+          "tag": "F67E16B3471A1EFA445589ABF42C403B"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "1c7b5825-1dd0-4d71-bb0d-d26b977a100c",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelclaim",
+        "version": "v1",
+        "manifestRoot": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+        "amount": "40000",
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "condition": "A0258020410D93755FE86E669F91FDC39224B994EB6BB3262B4C8FA3CF0EB06DA7C39099810120",
+        "cancelAfter": 847651001
+      },
+      "escrowCreateHash": "09D927FFFAABBC4D89D8A72D815402CE86E6B7709895F895073063F153627D01",
+      "escrowCreateSequence": 22222658,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelclaim",
+      "version": "v1",
+      "payee": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+      "invoiceId": "E3811200C0FEFF0C33FB8342BC3D8C9BE52894DE978A137F15ABB3B5399474E0",
+      "ledgerIndex": 22222757,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-10T18:34:43.824Z",
+      "settledAt": "2026-11-10T18:34:59.149Z"
+    },
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "17a90b1e02c7cada1e01e8cb67a0db7715ac3f09750df3500ce52cde190c09a8",
+          "plaintextHash": "6c5f271b589431b912524d5a4dfa1b9bfb3336687110078033c89f1ea95b95b5",
+          "iv": "DBA896DC9A93D46CD3EDF81D",
+          "tag": "851F20969BBD9B1ECD69CDEFBE032943"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "f093112c-7da3-47e3-af32-543da079053c",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelfund",
+        "version": "v1",
+        "manifestRoot": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+        "amount": "40000",
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "condition": "A0258020352E0F0B6945EEF89EF1CC6E12832A9422F4217347A2E8DBD96361BF3706AF29810120",
+        "cancelAfter": 847651012
+      },
+      "escrowCreateHash": "2FF1DBCD37E025D95E9BA6B231229304EBCC20096D6A0FAB932401D0AF7BEFDC",
+      "escrowCreateSequence": 22222659,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-paymentchannelfund",
+      "version": "v1",
+      "payee": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+      "invoiceId": "312CFB0B561752B65B7C03227588DB2DCA70950EDEDC7731EED65E269CAFBC6D",
+      "ledgerIndex": 22222762,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-10T18:34:59.622Z",
+      "settledAt": "2026-11-10T18:35:16.980Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "xrpl-tx-paymentchannelcreate",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelcreate",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "78ad1c4954dbb3fcd2766e339a26479c16e87f7fd28777bd821a932717eae518",
+          "66ad40d42bf7af4c6c74baf749c9dfe5d3ca5b1e5e7121560ec04a76960c0712",
+          "c73f14d033313f6cb113002999a0738c88c57061d1365c8a18a0c9fc5035dff2",
+          "2c5b5a9213bf56f9f4205583fbd19816781e9f9655adca16d5131f663ee4360b"
+        ],
+        "root": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "78ad1c4954dbb3fcd2766e339a26479c16e87f7fd28777bd821a932717eae518",
+            "covers": {
+              "entity": "PaymentChannelCreate",
+              "measure": "XRP"
+            }
+          }
+        ],
+        "wordCount": 192,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.8276065772548828,
+        "sig": "8C0CF31AEF8417F1F2A01650E9C6B4E4D470347EAA8251948B771E565CE3942C03024665D4404AC018E6A7521B4DBE7FE6373BBBCB71A81FBAECA1EC47DF6401"
+      },
+      "salts": [
+        "42012f0195b9c42db052a7c757df3393",
+        "61c2287c7afcd8cf8905b574efe0dae9",
+        "23e63d9403a0766c5ca19f206e9ecd6a",
+        "5f13b7c060916002270cecff0798bc4c"
+      ],
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "1CC23177D6B2DF81A3EB0F0A5926B2EFC3C0F30D9AE4122E6EE08B7B8D222C611404077D3109D69D4ED9932DA38AF3E75CE303024E0D6827C0B888EF1E99431442EC192F44C52358C2F7424D2AD6A620EFA097EF5F78437AB917809B02BAE6A874FF69B1E652F2BCC91F27A8597E601E5FEB56EAD56C6F95C829A7CE60AF902692CD1115E3A2CA4853A6AF43350F802F0FB97BA259758EDD4A43C8C7A9290CA5C847F19324584EA04D5D7EDF3B9396A3D26E96AC59EC563055A09BF349B2404BA9D4F166828BE596F1BCCCC63BF3CAE2785CB74F307FAF6B1ADCFD1FD84DC975635A825B6D76014C7FB63234B9F72CF365CF6656BEDE192A6CA221D8007165EC122313BB77B7913FEBE4C7FCF3B872776842194F6195E3EFE338F7A00780CFB0EE7BC719F55984F28866B5DF94A8BD5DE72ECDC33969B46A45FE4E0E31B6D4FF5DFE2F11F32872941D024BDD95089020DE06B0C442E9F841E0170A64ADD0804352328C72F44912DC90BD997EDC00900C9E0827864E4B02C82E0E775D0A797EC4D562D69A745209A35EE35E3BB839259673B07AAEBDE51C119012EF3D85DCC8791CB4570C222C16BF05B36EBE6F6879C8CAD9C95CB5A6D4A77A78F09FAB463D8E39A224AB4275287E511201B42CF9317A6CB4056EDB0AFFE3A94F612639FE16321F1C808471B670086FA01648A2DB47AE84E98EF7591230E1A9522444776B28844C2D675D60A0FF8B69891DB8B6D04AFB1026743330C57EFFDB84ACB469C5F5D5D8DA0FC49F2F821FEB3AE2C1CD94F4680A2B0221543C61040CCA86C20EE248B8D0E7EEAE615B4831F0954E6746CEB5371D18452629117604A18DC32E370F8464D091A3A8F579CB009D57B93574595448D268ED14619A82D7B94C9D8B078F6D76FCD4F020B3C543BDA737DCE132DC886BEFA5129602C75071FEC89C4E9DD648DF46CF3FD28BB281B4E06A7D03AE5328214D80CB2FB104CEEC1FA03B274E34B6C75A8314815A2F110972FF3B0F7D5857805C7F9FCD292EE4E7D999F00A273812BAC19C89372FA63D03BBCF1CCD6EE70EE24D215283FB9452F686BE91D9CE88EEB763921E102F1F9F692D05535F8F4CE53F42C8A4945CD4B4767C8E481E387B2818E0A49962F32ABCD94D919B0C254797FE3FEF942308E30193BAA3EE8A5C9985ECF8DD9C3C62159AC2B7E6C366FC348FCB9463AC833ADA3EE67AE6CCC7859427E825109CA26DA8802E24CC110D5B52C2119FC196AAB42CD79975D294BC6C53F5ED45865AE52B91841845CE16B543F7F7B3D9887DAA3E3D1187FEE0277139476EEBE081C3A78A4BED6833A9CFDEA7BD17C702213B291CC061AAF0A6378CE09E97B6F6E413DC6851B47B613792151D1DA1D831C675C0F454544BB08496D44BE7EBD01F4148558640DF7B16FB8B81C32C0E3BB36F944D87B2A72E8C0CEDDB160B03640FB97159892EB9259FECBF00B723F38D1823B8822801C38BC6E0A569424489E3B4B114DE37029AE856055E6FE0EE2586253EA539E8F82F49C6AF41C0F7CD638BC75A57D56E2E05AE238D74593D5D0E0789034A5EE2F59C3F658ED5B7CDBFB379288BAA0BD0BEEFBE186D15D4AE123A6316B24C8785A5CDAB09DDC3C13842F7A2FFCA97CBFDD4CC78BD8373EC0820342C49AD571273B94E1635A072F8031020CCD576ED0A4C4CEECD4D59CF23872DEDEC33C38DDE0F9FFE2C308488B68089523A36BE3ABACAF2BCA2353F70E7AFC998D42C8182BA5092C638BE27CEB6B168C8B94D488D2AE24A58CD116C3674DD960FAE1B4CC8BE8D71808D8ACF5157D8D523BBCD0C999D4341D56F8119F4878A84ED2940531B9C41EEF9F9FAF4BE6FDA2C020B11557F0B6E78E87C50ECAFF6B017A6195531FACA9903D90F363B95AF12C2B3D14048034B1576881D2874EBEF2192F0DCE5135154B2A1F5A66610000CF34C919632D192402DBB01F106E9C06A2CA1B21F1AEB0CAEC82F4F4B41B8C027B7C9D226D22DE0013C9CEC44C96312543F7160CBE0BFDFD1995805FB212BF0BE2208BBFFAEF1FA9C52218DFFA05051CA5BD1057A9B9CB4607FD38F35EA7E59C730C1CC7B77904401B9A3FA360E78B60EECB8ED65F4492A7594B94B7E9679C510A1DEEF7328755F3BA85252028C6A002003EF2BFDCC9457B391E85FBE30D5907A156DD3A3A16AD02B3F139CA94E718F9C1B8D7715D164E92DF7F72FB25DC40D837D3D03FD10865A65611A6A0088EFD30EC04B9239647E341F5A2882EE64615ABEABF8DB5FCF5EE7F0EB47F7F137D2022F98EEC27615CE89061F6AE182F461F6D747693549AF96DADB87221C551E2C5922B536B3931EB871838EC43259969EC71938966848A1137332B001A342FE398C6380B088FE583702C87E2A24AC47B5B53D0147FC546311972C46BB91021B28A7C563197E3CCECF5E96CC60E046C3E2F996FCB6A24C01B02F3EE7284E09AD4BB561731FCD9C6995C2C805455C476617CA463624FEF183DD2FF17D259A22D8D87126C8E77F77EFEF0F3BED0D386CC8EECC445EC698CA27C2FB451CCA7C6F2BDDD4F133E4963E3C3941BB3F04D0B0219B27E95FF796701BDEC012882812E772561EC81FF71106078166A08D9B39D231059A7E197228DC392AC2AA0EE4521D87B97165D53AE735BEA2B55E611268876A90EBC72E353343A41714ADC41F33BDEF9D5354599CEB9EAF68FB48D302B881C004885F6FCA426F05F2F495C89E0D83C34FB6CAC04377E0D7FFE92775028F8D3DF821FA489A21E3E1654C2DC3DBC4B3802A76CD61C8463E570D8942DA0548DB9A3525727CF86674CB6917158AB9B6948BB40832B1013DB407D2BE6F473C4980B25505E2359D79F893F158E39A3574B80E5FCA59CC6F9030084236C12C5C9950A46B5C9CF1997162A6393886B06C5108D23EADF910EB74D19872BA2714961342D16F6AF133175FC89C6C78E989D7D55092321E552C1B6BF3A27AF4BF1D6F8A564FE243550ECC6637A984A0421A93BA9E5AFDED231468F35B91CDB8DE864920116FC05C61C5BAEDAC0DEF935BF0C3A189C4EF9A0365EF63FB43CE4E8C63515BD9ED20448E70AC2667B413F0C457D087EF450603E15D26270FE10D55AB33719C5D95726AA5FE388B8BF73380511ABDFAD6CCE3B7D382DA02276E8473B2FA1DA698D16D68CC96F4D84A58E3D2DA12C9F1A4FD48D6A94AE06E1796877303AB44CD01F05E5F53A701EA3E4FBA42923FE4714DEE4C2FC9945757380A3DAC8705226D72DF0A25C374849FA5F9A0C3FA60469037B56F32DDC966EC70DCC6392262B5EF503137E31B873E5467F3346079EA70956361F4693FD299E43E6B7F46BD77B00D06A98C9D01C67EA89B95D2CB78B5C10EC6FDC999F782D298730E6D97C61B0F10BD53F933788F5697614350B01404A75D4F9C18BDF452E7E590B449F2DB0E99B736C7631D1FE1AC12164F8C2E265FCFDE3DC2973F4FFCA69DCF6D4D6E205733569541ED41567C4826ABDF47E29996CF04520EB79C7677A372BCC778720EF4BA9255B92A793C5D6F03DCD3C44EFE4C737B7288AF2F1642B5053F11A94FB1A1DD337150F0C7737B77D47A83344C67504716625276FC17F6181B633F6F81268E418451DDEF692A0C3C18745FCE11CD1A54788D619EECD3E99EE37BF9C25D5D847244E7D6D0D1D4AC19482CE2E2BBDAC502C33EAB9A924674A8E5A4613196A552450335DCDC49D61AD626D22F63EA9845D87FA5553777D9BE41AEBCF899FD016FF73731B94BC0BF5FEB9D64C44BECB2C3C2058119E2F462D5C222C0C3EA5642A1A958E3CD9DD0A043426CF8C8FE9912CC605BB14E27C453C18E08E679E9289AA0E8702B8DD14C6ED4DDC19EBB40E0624EDF199FCCD3E3D193BAC9DBB22000787BBEC8AA7FCC3DE54D4CE306ACE723023872743D5925991AA1521F76AB76C2A7ABD867EBA2A1A29F3AD9B6F9C07599E9CA46C761F06A3133BB55469EC531C43F77761E25F43A75D2EF3F892AFC1A8D7CAF73DB778D553FEDEF1C9F08DE7073DC8773F8AC0783D931E4BA972F02D7F24644D0474C66E408AC90302AEA6097B5EC0C8374449BA23611C2CB481EF7E28198034FBDE3FEBF41B465FF2BAE0D898F50CF524255D1E5DCB84FEDCBFA5FE05B725E0941BC62E3D230ED314DBBC5CF502315C63E6FADCC3F0F77AD0D0ACB8B4A1669C8CAD6B65BC50CFB5E4CDC3F6C8950A4BF2A3E5399256B90DDB22321E43E12F8A32E5D8C58C52CD439E8E3D316FC2CD3DA1A431D7E9FE5B0EA93C89241988E302F3D22C7000EEE6959518C814FA8B6C1118E276CAA17D12F32DA8CCA499AC73D93D07490012DAE516C9141DBA949BEA04F3DF08C64931F5F0C0B94F8B7A7C3FEB35CF9FB425CD3221D6600B00CE17871436F5D6FE8DDF89ECA096AC9BA58B429DEF76F19D8A78304366FF50A2BED850246F89BF9C52EF5915344EEA4E509",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "96509b64676666db85d02069c8de57f8864f50a1b68ce41934d79aeb45f67571",
+              "plaintextHash": "79375a9fcc9f4a025e2579e0f600f6909b6bcb12718f7380718470e9b86ba464",
+              "iv": "D6072541D0A93240B314A5DE",
+              "tag": "B9B1E76FC3747B69812620B53E72F464"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "7364d515-e03b-4fbc-bba7-98e9dd0f3099",
+            "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-tx-paymentchannelcreate",
+            "version": "v1",
+            "manifestRoot": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+            "amount": "40000",
+            "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+            "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+            "condition": "A02580201E12C326E840DC0AA14C1EA67D9CABD3E0EB3AD8FD4F9DA7A6CAB89DBA6C4181810120",
+            "cancelAfter": 847650982
+          },
+          "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+          "sig": "2503F26A9287ED5740F0F63F8CA5814640622D1AEEFF114835E52A7FAB4B43200A372D1EB6AD235E5F5BAEE4544D096B42969E9F066C0CF139A10AABE06D950B"
+        },
+        "key": "4789117B9F2891B7541DD7D0401227B532703F455065A46467E9F3BAA72FC8D4",
+        "finishHash": "379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+        "ledgerIndex": 22222753,
+        "createHash": "3AF0BE3AAD86E9B92CE2FEE9C2121959A71A0ACF5A63D0CD7003CFF3C8714F4C"
+      }
+    },
+    {
+      "resourceId": "xrpl-tx-paymentchannelclaim",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelclaim",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "91415214875df0192200a4393256333a85bc92b7c93b87aae6d43f5e4f783f10",
+          "601b893f05513394c90a0fb50e202bca7cfc6cb9b0d0836e957156c65a1e9375",
+          "464e15175175c05c70f8c52c0f7976dea898c4d0839fb53adfb9ee3f099f0d3f",
+          "fa9e93d2039bc8f11a2504e0b0166999f8ac350c16b36291498581afe05f0a58"
+        ],
+        "root": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "91415214875df0192200a4393256333a85bc92b7c93b87aae6d43f5e4f783f10",
+            "covers": {
+              "entity": "PaymentChannelClaim",
+              "measure": "claim"
+            }
+          }
+        ],
+        "wordCount": 195,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.825758235457938,
+        "sig": "557E139C8292634FD72F0C095942C0646459A95D2C7D41F5F3BE44CF8E281B7A5DA1ADC69F1315F9D12E2256C26ADE0E670BF13822A4EBCDD16093E003570803"
+      },
+      "salts": [
+        "e5c12301ef34bf15fe92b880b8c45c63",
+        "15d7ea4ca3c240fc5e10edbab6f87e89",
+        "af63d551e128e1551ff7663a9d4e4484",
+        "7c04c299aa57e10b5d3b8dba04a08312"
+      ],
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "A999E266DA4624D4D6161F7BAE0C2E462164EA06E9FEFB914B9F769475C7FFB8B997482C9B1FBDAB411BC283444512CACF257BB28876157AF6E9D7C032FF092B1FE63CB28692F410A5BF898944E165BA6D7C0363B03F30DF34BDE426B4D7E7AF5AFFE90B548842F1078D4C51DFBD16DCAAAD721C00C639FB234B110030A841384B401D752169C42C8CEA6363CBF84636930501EB09E7C310579EB99A5E1EBC905C54E95B896453BBCEB3F6EDDF132D0690E007BB9386684F3AB641781B06C04319D3E9BA8367588F058A9CF17B4B55C5DAF268D8BAA9FD58DE5B5868491CD880EBF9E6FD0DF0C968603E67F6B484080CDA764456DD05BE433BFDDFB851BB7B693F4441F53872A59EE88ED590447CD8B3C10AC19F4A13893D5FA3FB0A9A503BE284220AEA44C5E75D2BF7EC0743A83F9AF936D34B23F903B5E5C784FB586DAC014CCC50ED62F6BD077B1DD57826D7D586D96E445056C4CBBC946C2B8DDB37032E485F7B69E28699B6D622B04338290F4C65B4AC294BE3F68DB51235393B969DD6A2857F7507B9072C664BE067AF43232218065F8BDF7AEE5A13C22292D340ED4ADC3C7ED477309B23035729449052AE6E8814BE3C8CD3FCD6BA3195A0FBBA1219A37D9A8B24EAC5164946050D2D960C56F1DD3FF44EBF53F4068A5E5BAC0032FE7E5ECB770C19BFE048EF67C5FF9CE43BD824F685350FCC5251EE861C532AFDB468EE639D9EB82585982BAD7674CE67FB6EFB0EB0C71B1EEF0DCBC627A15155B3BE8F07B43FB055262A585F02CF499E8EC48708CEB7C4DA88559A1AF8FDA42627C1CF08082850B91968D0DC9E95FB238E76DEF17BAEEFDD29DD0381181696703E1AA0CA84A03741BC725A10AEF8A630F2D1D271D52B8D4BE729C7F081B42402762506972B85E159BB9100B916A990F669BF06309948299440F9828AD92254EAD8D835AC278C18809ADD904EDE601757F49AC4B4B3ECB28B405434EF56B76CA98A8D898CD44D9EE329E390FCC9E5AA9197A57C657F3623061E42FFD94330659565F567A2F1E9C9ED3659DD8F7BCF9F68702CCBFA7DE21256B86ABBC5794D2CED19AB3FEF667CFFD8253CFAB260494B1F0B1D663B517612E7C6075F7F539E592339414CA208E43036745456C93BB8F39FF04F3DD18785078B3CB00110773FC32300CDDAB5B1E44B90F509561400BB5D6A62643FCF055E53DF87887FB9A75AF0AE88F6B502D8BC60EEADC51A60F14E52D066ECC32A56A00F662C6F1394F1AEE3010DB0DB4404D0708DA5B1012D00EF03ECDF8DCE599403C5AB87464E58829F1D523BB4BC9B9CF1686EC8791D498221B5704B8913CFB46E6F125EA6B99AA1B287F706CC37F3C938F65E7EDB4D4AF68C2CD80A27D4CA8D63D31DA67DD036E8E5BF968F02D291F63BA80A90DA4B186528225ACB68FA201ED9F1E62169CC59CBA45C9B6E2618276DC94D20A7CAECDBB314A697785323197971A9E4A4B988F3D67E06A6D6BFD544BEE3D60F4D3350BD6D79A50FEF8D79EAC0779BDD46DBE099FDAD78CD853E8D915EC1070406A647673461C9A735AB770E221621471CAE0C40E4753D78235BE700D851F54ECFC7140325E51E74447C9A67F1CFAF4C3771CA115D804581A34EE332FB0795A4158ABEA23B7FE9283C898AF008F9F44D11BB08978F5AE46D2FE7CAC7D2F80594EE99CBCC211EF6F029F8F747AEC0A9DFCF74B78640416DEAE0319CC9465204C0C1A15C89CED1E54572445C36233114AD50CBAA6F63F0F46795017CC997C79B02F91F8A48D8D551030E9142B255A9873EADF3CAAF3ABBD669F515C110BD50E7C6BC5C95AF6107FC2979F0CB8BCAAEF25306372DD6EF8D068379184244CB66AFC6AC3C3FC8A9BAF536268C6D787326D5732C2D40F532B942A94AE69BA6EA4CA9B59AED19BAA075B0480ADF0C8EE63BABF0D8E8BFA0149DB41041192C7488973F6E06B7B7763E4C9F16B5EF5BDF11F3044B65D61702C6EBF3CEF64BC59BCAB69BFD18787326A06F9984BA40249539D7125CB64404BAE976FED5E273D58E2E1E8C7CFF17C68623585BF0DE0ABDA90F7F815F59A9F2FF99892117C2DE8FB449AD594D1054FA1C05DC3D233DCDC66D03928CBBCCAFFBC86A647B40D60FE9192DC52E81B32A5E3073A5E9EF5829BBDBF68A91B6BA282DA67E524BE728B327F03877EFE8D335E02AB6E3F9CE0FC0E234E4F80B63B65AB259B2700586672B7354FA5FA90C4E8E94A24F640141DB14556038EA21794C23C63CB2DFD5852AD7F22E43617B10F68733A29E5B5A9EE5C2120A72CA02B8C88FF91A0EAD9449600836D030146ECBA7A88C362C378CE70E40B9AD74B2AAA03BA6F4B29B8A1AF5C9CEEA13366D0E80ABA209FD8E1476A57C6E6D653C24AA44D6E817489CDBFB551899DAB12E48D53D8DDD74CFE887E81773BFCE4E93D6C38F84C54B859A51576885CECCD3A5A2A568078D99EF29E5DF9A5C173C972D90742BCB9873F4607B84A23E13E90C17A8D8E34E5AFC7CF93396C1AB13EA9B4D37880FD254807F2B4D3D7A57C8B0163CC61D783F67B06A97A3B0CAAB9D60F39F48872F17D367FDAC71CA4D4474365C5F6F2158C79E6C19972EB8643FE84008C73861D88BA110DB2EDA7B0DDDECA8A7EC2E4D8EE5B53C44A2042538ABFF1A36B43B876D6E80A5DFC4CD523D87D683409CA02AC04F00AF0EA9CFB7DF51552E49DA89E5CB0AB2BB1B3BECC8E778DA07029E57F3C0C46AF87378EC28BCF8237B89E493DB8C816AC86E90CB40A82EFE0CB0A624FA66EBC90DC02F1F6C072ED3B59983C393B5E768AC676E42D280F0419D7F5445F7FB0C7BF99D695AB04F9BA5D748121302A0BF557266BCC9B17002B7E8F1C6DC9E9E3808E0F32A514E78E7F177ECDB38F091B699E6E6DDE8B4BBBA6BCE2FACF2302867E0AA73314CCDA86C57BE3CF13BDAA7F37209CB91BD98012B6E16027DB4FD8A84EFE0B28427DC8E0235B6D10796BF2982B074378312EDE4B7C53F57E5A882A6A24932D59FA8372D58E0799A64C6362E2B4D7811ADD1C74884DCB1FF9B65B95BB0BA1BBBA8F8B2C01D07FBA4A513F1C7EF2892FD4E1110807882E8ACC7ED9BF94BD09030914969C2217A76E38111D2AE8A1E26A76434ADC7CA8C03E3CA651DEE6B4BF6375041BD090625C67F718D662300C6B84079E38C0F813FD5D467F620A832E6D7683A38A4F91028F7EE93E29925F0E78C2CD60DE120441A9EF54543B306C8D15A822947BFFD3565FDE43E1CDA33F49A612F0F49CFD94069F4CD5B209665D227EB92745119DABE586BA3AF7B4D99C3133FE230C3B288072FA56268AD61529F5516E39127CD0430EFDD1BC7BF6E5D88F3CF76567EF8482DD548CBCA49D9513F1829C893132F02E875C1854329E115AAA61741386B1E6C35F68B63B45D119968EE466F8AB34BE439E0CA787E611E8BC5349B15545C72FF2BD78FA8713AA3234D3858B0576A06B90BAA1FC1CEA4F15F13803A404DA67C652E1D6700FCCDA1C960150FD13A1A5FF2A6B7267E177CFFC2F04FC6C7E342D011ADF9AE962B02CE0109630C3BB8D54C77C96DC518E4C03E6D88313820B729C219FBDA27DA621CA7CEADBC8B0091FF0152F9CF72167B00ABFF9290BC6583AC98BDC8FE269644F50D9AEA29FE498321542EC4DACEC136B269761C5A52C6D60B9D2A46A70D4B369C4751A77C8DB3A90A1F65B312D20F9E6D5EC289C37F12A74CDCB43FB820490ECDA00C66213DD828F456D4202D96B6C0471EBD5CB59352BA5898635120BC09E5982111045AB403709A5F2F83D745ED10540D65EE4F6FF0888E7A3567FD294BC80AE2427470718E6DEF380B95F2813186786701D2E77976CFE52352A3650103B4A830F4E0C80E7434F8F28DF5888146D0BB6546E1DAF660515AA980FD741B9441639524039E0105C35A43A6D88727B442368706FAAEADDE4AC3054FB2F6E50E839B6320AB1A8AEB114426AB9472A325CC5A48C7CCDE641A1D838753EB2F929405800F90D45B8109A3E7ED51B8B40EE3249951A910C0C0EE02E47D3D719AFB888A6CA9BD4D55EF7BCE7E8DCDB3AD32CE4BE530162345F1E59C6F5DD63D9AED83D9136C2E49902BAEE4B51191E10DDEB6916899E8ADEF5D201463AACC105415A572F49E7EB934B5B43A1B806076665297D4087E838DE67DFCDEBCC70660F5433144DACA20A56BD5B5EE422B81979CF3D7272D018A8A339BD31222865DB1F59F302B9253D14618FBFCE06541D5C82B73BF0114290A64812CE2A81F37D3CBA1C7FF043DE7768A142CAB40EA91A520FC72663040F123B6FF5685D47509ACF59910D42BF5561FD16EC32FE5CC63B61164682F2C63D5682BE00BEB64399AF30F7DE6DF2853071D472FC3F149E02E3CC48F8E344D5DFDE9287B5F003D7491A0154B1A0F64242C9A8113864C72321AB2202C16EFAD0D5B670E1863DA6DD7408E83041ACF586B37CF658740D4D78D13759D14DACED78BBD80368FE22C0F31937B7EF898BF413EFAF2FD2AAA8BD30E99C37C24B6D6893104DD9672AC69D73B87B54E68985E56D67067FDBDC46956AD156E0A12",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "5c478b552543d7064254427ac02f926b8c748a4364e7a575b1c32da03f64e1cb",
+              "plaintextHash": "96f6a0ea50d62b2b02be2fef624417091f96c9d311bc90a4690af9a22b83a465",
+              "iv": "A3482F434988208D7D4145D7",
+              "tag": "F67E16B3471A1EFA445589ABF42C403B"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "1c7b5825-1dd0-4d71-bb0d-d26b977a100c",
+            "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-tx-paymentchannelclaim",
+            "version": "v1",
+            "manifestRoot": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+            "amount": "40000",
+            "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+            "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+            "condition": "A0258020410D93755FE86E669F91FDC39224B994EB6BB3262B4C8FA3CF0EB06DA7C39099810120",
+            "cancelAfter": 847651001
+          },
+          "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+          "sig": "90A9F8477B2616034CEE878627E3E16785EFB5799423BC727A07841FF0AD722624268D6B8ECCE1FA1F2BAFB7BC41C7CDE909E4E2F3433A19AD9E61E2A452F505"
+        },
+        "key": "12F51F4B72853ADBD03B9BD62963EBAFC0AB9F2E2420070BCFC1365866CCCEFA",
+        "finishHash": "B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+        "ledgerIndex": 22222757,
+        "createHash": "09D927FFFAABBC4D89D8A72D815402CE86E6B7709895F895073063F153627D01"
+      }
+    },
+    {
+      "resourceId": "xrpl-tx-paymentchannelfund",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-paymentchannelfund",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "c7e9ab400535e17d5ed7ce5ec47cced03a906280c17270c043e2baa7d08ced42",
+          "09859dda2e82e3530d13d3557cb1ffee0ed9595d1304f6775bdf40bc35ff9600",
+          "8bee6d60d56e9136d92a7352898929fa3f9bf85e7de033f2e8be441cb68a1dc3",
+          "2ba5d1769fed3aea9bfc0e35a4f58a0990751ba991dccb5bd995ff8595dd288d"
+        ],
+        "root": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "c7e9ab400535e17d5ed7ce5ec47cced03a906280c17270c043e2baa7d08ced42",
+            "covers": {
+              "entity": "PaymentChannelFund",
+              "measure": "XRP"
+            }
+          }
+        ],
+        "wordCount": 194,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.8246453420668414,
+        "sig": "0A7D0774F4DF0CC3105ABE33172812229C48912EC20EC64CF769B646F1E0CEFA4A89BBCA79122FAF6EC535CBF510B744807BE1C55A3D52A21650940AB917690A"
+      },
+      "salts": [
+        "0f7c65cf9ff6cb25aa1d81cadf7ab925",
+        "70784af2614f7ff0cb31c61f67e5793c",
+        "87faea86856b504482cebb1158e76ce0",
+        "ce99f86a13f28099c384be1fe158d4f2"
+      ],
+      "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "ECDDD093370AC3D262ADDDA18E1B2737A8550544D4FF007B92F98C471B5736CCA9AB41529F71FA8AFFE29D355E5E385A2D24900D75FC7DF400DF2ABC01F961FFB28B697AB5AA63F3705A325BB700DFF102C3E1928FFFF61D23D8CD64D021E111814D03DB1CD6710E134E3799CB57192200E3F33300C0DF95501733FC10449A02CA0F809B6BFAEC45FAF3CC26D1A5F859BE6CC4F92847769A434EBA64585FDE9D3B5F47128D9F2B0907FA4C7B597945CCEA7F26D7CEEB70603552AF443AF1D6311EDD7D172324E1CB939CC2BBBFBD28C44A4559D6A35188BD035AC8B68660475664A1AAD83EB7D800304F198119D5558016C3EB80E7486EFBF7320E1EFE09C8C336EB87AC9103B2ACFBF7619CBF33D9090E9AFE490FED331A36036ED625843C41F0D975621D8285C789284E8D394C1610C534222DA6F0470F42183F022B8A58A3AB1A09A82B42CE090A8C52C5DC652DE1603AAC296007A48C0AD7CF2EF6B247007A99535A0127CEDF4654E339A6CDAE67BCCDDA0B71B8ABA8DEE7432EAAD382A7468E0E5759B06C955BEAA7D2BD6CE36E9AAF6EF6667F0814ACC8957F73EB73B8AD6490B610213F3D91441698FF93CF73D1D49CA6FA6523DD89E412DFE125B0F91F1552C6B93CFE93C578D3A008D7581C40B7195AF367F796CD71965A3561E81C1ED7C928E0097477FA61EBA426CAE6DB955AFF71F7AC4AF91A87D2680B3050162BCA44403BA995CA684396BE3EB211613C5DD2BD7C7D5B0A2F3867F767FBAC64E017C6E1AA268E35B298E76C3EF2F20705033844ED68EC539238A6C3A75FFBCF5E67502BEB8F1B42E817A51363A9320DE6A0E1E1A5F817235CBB0BF38822B34EBEE6A3BFE3545EB9CA7E151DA84ABDEA046BBD0097EB3FF2CD3AC13BDBB5AEA6B4C4A7539D566B8B37ED1C090F51278C58C4E193E768C9F5DA811AE00FCF92F312E6E0233B328BC1382A08E84C2506AEF78D10D4CC848BC78DD0F694A92F4AD68CDAC15C3867711299419148CFA5B7636CAC42F7BEDFACA4C8772F680FAED4B8C69EB8C449F0508A7D0339928F49035A2598D5CFE85BA06232F8C2F12390E09BB4E9782A76C70B9B2D595091253CD3A9472EF590975BA3B1351DD7CA0441AB08273100A6365B8C9A2C9C28C0DDFE16BA21C8FAD23599B51AC8250B55F5C06FA5F48BB8727876FE423D94AE10B9B36B18150CD1C0D6DE994BD918426DA261D659173F682A145CB8DE149A37C7E33ACC700101F1C4012395A5690B34C55D747F0B721DCC2FABBEFA1BB0AF36B7FBFCD19F3D7FC73022A562224B3D4016187E98EAE9B3FA40CBB99A7B91A731573A59A089B5086427E733E664B7861D62C1CBA25D0350AB0DC8AD898D93FE5EBB2281AFA94B9C1861F1EFBC24BC94922D8203DAE4723E463208051949217FED9F6E830CB0AD1585F6D9D26318AD805DC385C0C31BC4C0C109E3F42ECFC58BFEF77E5AE90F40FE464B2F19E688A61C249477FBB47778D517341CDDDAB48120FE1B5E72E8EE929DFEA0AD22BEA655C559E656636C817540A1AD08A19B3E76F09A727773181EFFD5B38F433F31C18BBC5131C03953ACFD108C79BCE513A5410B5EAA44FB37738623655AC5926561BAECFFACEA3C272BEEEAA2B31F115B1038CAC8DB9F69FC3402B5DEAA29AEA97401B79828AD7CA34CE342CF3AB3665A4D903675F04E1374788A029D26BD48FAF1CA0552BD083938ACBCA4A786B487179A9D63E14A8DF25748F4478DDB67E2E419530F907124CC8E1C2A032D2F6C817FE229982BD0DB3FB7BC1C1CFE6E8D53313CBEC7297C3D06085AE459AF86CA8B74662B532AC87895E1F1157FFDB02500D43A429027BB554D0183ED08A22FB50571F6BFA00EAB4472E47E283C5A8E6A3F1612248EB2CCD1401604E1F42A8236FB09E6F2B5D197C1CF11ED6D646D9A9993661CFB3459D7E11785899AE0F4F79A6A968B391DEF27522A604485A8F3EF86EEA5B546FBD9DC4E136300757443D1DBFD880D930456BF4723C9157CCC744C0B2BE0D626061E376CCAE8870224CC12867A61CB270FBBA8D16DA7B88AA1DBA95F003FB82323063E7B20817A837C97636655EE096AC77B1636D3DD31356C265B29A9E1EBB4AB86A40D3DB06F032EBD06779B674A23046C5C5858FAB35DBE2195541D8B2E3B2961B760B73A9AD02A40CA6FD810BEC4933F3F9EF9E5CF9795E1A06A6A1A9556FF539BCC2089695E60D17A7FEE60377A5BE5E8C7293A938B7E060115358B69AD289F5BF7A0FC338FB061D2A47ECA12E82B3A87DEA8D1F7848369F4A8DDD2B0D8D08931D9623D8CD79DEAA50D4E1193136FF7E1A6E78D08D4FFE206B74EEC6CBB7E35DCCD3025571A5F9AB0DA2799B2BAB7FE50FF42050FDF0B4AFCAED9F5834B2C5F146AE3C676AEEE0B9BA786A15D47ADDD861300E65AA7618CDB84C36FEF065F981E8D667F4AE00CF0F80C3500A97F520EABB98D3767C0F8046A3BAAA01704F4FE30A9DC5D10D957A7747E3D2B98111BCCB57A1A7321BE96AA9EF4897259428348F43795C41875732700E2CDC4D1F5E72FCD69EBA3C2D1F0186CD9A08D6FCAF02F7A2FFF5FD825CBFEA6DB2DA366447D918E7C0BFBA9C01FA0F3D22B67C9D2D450D9526B4A5F73C3A788B3FC3E263663AA26E14D6EB855D49465DD24D4FD29E1322DCA3B16C4074A8BA8B912739800906C1B33FCEFBFE7B3F7E637FC66E0DE09FA0F3E80297E84FBA53935E9B0E79CB55ECF5E6E84B7AFFF7653F317346055FC6CBB7E5A67EE995C75C31F3A66066F4C8580FA7F7136D39F41593E04B804061FB399FFAA549AE4343C40A1227BD8A076560CE7DA3A3095019A9B6A755662721DD054AF1ACAC4EA088E52DCECF4B94FE43B7FBDBF0BBC7D57A6352EA47A43C161FFA89194B5B536B3B7967E0A232E35290F31096630F9120FE76841362E7ABA403A32D96AE16A534A168190D98746DA3DF791FC6029BFEF92AE24539E67CE78D74B3CC331BAD640D4E792A63F31E4B051F690E90CEDF1ABC369C1BFF28AF4A28484EB79FBF02E94ABDD3CE8644759B5237F5F7B061AA18F84414896FFE8C4E27AC167F6BB5DBE7D1F73B8D78DA903948BD8412886B683AE3DA82E20D4A3AD83825367E5BE4512EF54B7D0964F4B44237F22290B1D9D3B213BF8AEC3F7F8A4603F85BD36076423461FE4919C81D46AD75CD7122223BB07D8C0DEA6C96251511615BA1D9B4D4E338595131CBDE1AEAE63FFCA552224E61E915E3FF23A263FB81FBC46BCF2C74E72AC83D046AF6187A357F4C570939A7987508178A437564DC427FF1105477AE6B20A5168FE12CC5C241E0C700485635317AE863539DE382E8AC1F0847602A32CBA903A7C9F15020B4819C040233E30E97108CF378BE2F927E7A40C85D4A57A7CC6FFA9622D670F797CF6BE4B9E00B62182B107EF239F61E3F4B7D451E9A0F7E1323BF0A8FD50D5141277C0503F83FE79B80ACD4599D4058196C857B42C66D1CF543613297EB46AD6584F087D03F82A5005D43EFAF8D1B96554B0BDB05CE53CEDDCF51C9496F3F8CE0CF2B839342728550280BE7C8792841F0C8CEFDDA682B2007B08296ED75F2E70F495AF79692CA443DACDC39990B983456F8EC0720A3B913D791BE483D3915059225AAF9AACA70D5A7B8502EEDB0E65481B93933A0B5695DEBA6865C2BF99F2150003FF0D2D6145F1813FA17794E07EA3F66BD6E4ECF315755E2680FBA41783BE95E4C66BC625893C71FB28499628ACD69E6895C355041C38B35117C5B0EDC25AD048F2A4B84F1ECEDE29B6938028F87393481FE8F6EB10A64BDEE6E50130933EEFCE61E4579C42B458618F53CF370BF9D4981520E93B81B76CA09764B3F4DF88D0622855FFFAF687B1EF2FF4631655EAA009AAAEE6A55F534F6419E6ED5AE0B0B803B5A4E8BE68F3E15382AFFE508166FBD7292C3722327459B8A61D467C9253D1DE200DC32C7D54563430ACA103322FF4D644ADC7DC4AD8FD010BFBB9B6A6A0FFA7143D35E83F71E7DCB6B0296CA5706165BE0D041D1FA7E0617776FFBACDCF664763B82EFFD70DA7D4EBDC39EFF7C1DE59CF08C1BE7AEB14BA0C70F2F5FBC2DF0BF0828FC931270BDD82ABDF9A9EA7F9375EBD1388CD5E7A9100D6ED1E795A2613BF89BBB9CC84896A2C395C90BC0CE9E020DCD05D2C11F098FA436E45FE954ACFCD4AB780B6A842A1313EA87488AAE6286EEE152E9894FE104093AD3444CF772401A1F414FEECA4938ED4822D37796ABB46C845ECFD037026327F303B64167074EFDCFD5A9669ED6781A4AA3DD2BC132CEE9EDA8A3DFD7C0C3BD0B3B52ACBD3FD0C62880FD7F7E75D22A29B339E74E52EB225F4FFFD6B0064C4A29D816605673A31176C56DA9BE6432A2C497B0DE1822B79D3A53A263C3B6D6865082AE93075EE4F4A9174321085F033B23B4D6564F5407DC4B5D151D879A8459064B8BD7AFEF73841065E693E4F16E63BFE04406698B257CA62E428271493E72FB80CEA02734F974D8BBC2C4117A8EDC1C4D8EADE",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "17a90b1e02c7cada1e01e8cb67a0db7715ac3f09750df3500ce52cde190c09a8",
+              "plaintextHash": "6c5f271b589431b912524d5a4dfa1b9bfb3336687110078033c89f1ea95b95b5",
+              "iv": "DBA896DC9A93D46CD3EDF81D",
+              "tag": "851F20969BBD9B1ECD69CDEFBE032943"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "f093112c-7da3-47e3-af32-543da079053c",
+            "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-tx-paymentchannelfund",
+            "version": "v1",
+            "manifestRoot": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+            "amount": "40000",
+            "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+            "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+            "condition": "A0258020352E0F0B6945EEF89EF1CC6E12832A9422F4217347A2E8DBD96361BF3706AF29810120",
+            "cancelAfter": 847651012
+          },
+          "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+          "sig": "A1B6BDFA6B957EC198FE501D2717D2A7BE5AB5555079E60325B88E2AF5F0EE63DB27210A86F09A7EF9CA6245269492E2A5E26D281807E3FFF1074593A6278D0C"
+        },
+        "key": "104E198C16F92D625B07D7FC8099E5644F5469222D31F1A7023C2B6B24B6FAB7",
+        "finishHash": "B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+        "ledgerIndex": 22222762,
+        "createHash": "2FF1DBCD37E025D95E9BA6B231229304EBCC20096D6A0FAB932401D0AF7BEFDC"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 189,
+      "hash": "3c4833eecc9a032ca001af16af3675d82041b7a4582862f67f9b3ff49f67cb77"
+    },
+    "entries": [
+      {
+        "seq": 190,
+        "at": "2026-11-10T18:34:29.314Z",
+        "prevHash": "3c4833eecc9a032ca001af16af3675d82041b7a4582862f67f9b3ff49f67cb77",
+        "hash": "ec41168716eb684d707caeca06cefe209f3c24a0e61066dc8c0073c6ee9aa056",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-10",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "4455b4a89d7124595a582c8de18c153807f1e80a78d6ca1bc6135443aa52e393",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4200,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1200
+        }
+      },
+      {
+        "seq": 191,
+        "at": "2026-11-10T18:34:29.401Z",
+        "prevHash": "ec41168716eb684d707caeca06cefe209f3c24a0e61066dc8c0073c6ee9aa056",
+        "hash": "8bf8ef35245abe683cac6deda25f22b8112d0a17295010c3995e8ac99a3ced2f",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 10,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-tx-paymentchannelcreate",
+          "selectedSourceKey": "xrpl-tx-paymentchannelcreate@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 5,
+            "SKIP_LOW_VALUE": 5
+          }
+        }
+      },
+      {
+        "seq": 192,
+        "at": "2026-11-10T18:34:29.833Z",
+        "prevHash": "8bf8ef35245abe683cac6deda25f22b8112d0a17295010c3995e8ac99a3ced2f",
+        "hash": "3f56e6644dc45bb9c2e24d2d4805f873b378518c8c8fb097228763ad9544655a",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "19EDA1741B2B876696C21D1FFCFF73F910AD251BE82630A884CE90500DD94AE7",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-tx-paymentchannelcreate",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 193,
+        "at": "2026-11-10T18:34:31.543Z",
+        "prevHash": "3f56e6644dc45bb9c2e24d2d4805f873b378518c8c8fb097228763ad9544655a",
+        "hash": "850b8b7acbb2976b96615ca5594bd3611e9ae094702765d883b1b526b38bdf91",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22222657,
+          "invoiceHash": "19EDA1741B2B876696C21D1FFCFF73F910AD251BE82630A884CE90500DD94AE7",
+          "lastLedgerSequence": 22222770,
+          "operation": "create",
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": false,
+          "txHash": "3AF0BE3AAD86E9B92CE2FEE9C2121959A71A0ACF5A63D0CD7003CFF3C8714F4C"
+        }
+      },
+      {
+        "seq": 194,
+        "at": "2026-11-10T18:34:37.340Z",
+        "prevHash": "850b8b7acbb2976b96615ca5594bd3611e9ae094702765d883b1b526b38bdf91",
+        "hash": "458db7f96be6a81d08221593c918a0a101ee22537c91467aeb1936b94b28e4d4",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847650982,
+          "createSequence": 22222657,
+          "invoiceHash": "19EDA1741B2B876696C21D1FFCFF73F910AD251BE82630A884CE90500DD94AE7",
+          "ledgerIndex": 22222751,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "result": "tesSUCCESS",
+          "txHash": "3AF0BE3AAD86E9B92CE2FEE9C2121959A71A0ACF5A63D0CD7003CFF3C8714F4C"
+        }
+      },
+      {
+        "seq": 195,
+        "at": "2026-11-10T18:34:43.359Z",
+        "prevHash": "458db7f96be6a81d08221593c918a0a101ee22537c91467aeb1936b94b28e4d4",
+        "hash": "1e19726b210bb7cc02ed486d7285cfe4da40614929acdb24464548170bf9def4",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "f2db1ff75ef4e940d99ab959def0af1b0c0f5c65a78cf180e604731e0288996c",
+          "passageCount": 4,
+          "resourceId": "xrpl-tx-paymentchannelcreate",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 196,
+        "at": "2026-11-10T18:34:43.360Z",
+        "prevHash": "1e19726b210bb7cc02ed486d7285cfe4da40614929acdb24464548170bf9def4",
+        "hash": "f5887e192d5a23a660a32618ca1515e270442e9e0c7baca211a4ddd49062fd38",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 197,
+        "at": "2026-11-10T18:34:43.361Z",
+        "prevHash": "f5887e192d5a23a660a32618ca1515e270442e9e0c7baca211a4ddd49062fd38",
+        "hash": "1d641634384ca3cbda9403590342d802bb75f0ee4cb7ea9754dac2dcdc361ac5",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "3AF0BE3AAD86E9B92CE2FEE9C2121959A71A0ACF5A63D0CD7003CFF3C8714F4C",
+          "createSequence": 22222657,
+          "ledgerIndex": 22222753,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F"
+        }
+      },
+      {
+        "seq": 198,
+        "at": "2026-11-10T18:34:43.361Z",
+        "prevHash": "1d641634384ca3cbda9403590342d802bb75f0ee4cb7ea9754dac2dcdc361ac5",
+        "hash": "d77da55e58e92d3711a61825f1ac61143002b5fa1d8180bbadf2d9b2ad9bc20e",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:1:xrpl-tx-paymentchannelcreate:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22222753,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "receiptId": "escrow-379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "379129A9AAFA13F62E21C9346FC0C68C0119237C139CA4389262049C76ED2E7F"
+        }
+      },
+      {
+        "seq": 199,
+        "at": "2026-11-10T18:34:43.387Z",
+        "prevHash": "d77da55e58e92d3711a61825f1ac61143002b5fa1d8180bbadf2d9b2ad9bc20e",
+        "hash": "e56d24c4f8c5b26abcea2e444625f946fb58ccf7f2116f4a5f621065d1d27f6e",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 10,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 2,
+          "selectedResourceId": "xrpl-tx-paymentchannelclaim",
+          "selectedSourceKey": "xrpl-tx-paymentchannelclaim@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 4,
+            "SKIP_LOW_VALUE": 5,
+            "SKIP_REWRITE": 1
+          }
+        }
+      },
+      {
+        "seq": 200,
+        "at": "2026-11-10T18:34:43.824Z",
+        "prevHash": "e56d24c4f8c5b26abcea2e444625f946fb58ccf7f2116f4a5f621065d1d27f6e",
+        "hash": "fcc8b4949bd0f850bbfabae3e10fdd08602b0d67a9a90799def1268a17d6a72b",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 40,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "E3811200C0FEFF0C33FB8342BC3D8C9BE52894DE978A137F15ABB3B5399474E0",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-tx-paymentchannelclaim",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 201,
+        "at": "2026-11-10T18:34:45.522Z",
+        "prevHash": "fcc8b4949bd0f850bbfabae3e10fdd08602b0d67a9a90799def1268a17d6a72b",
+        "hash": "437ee25800df672634217fdbd2e0a0a18b5e66525384f918c3fceab6375db98f",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22222658,
+          "invoiceHash": "E3811200C0FEFF0C33FB8342BC3D8C9BE52894DE978A137F15ABB3B5399474E0",
+          "lastLedgerSequence": 22222774,
+          "operation": "create",
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": false,
+          "txHash": "09D927FFFAABBC4D89D8A72D815402CE86E6B7709895F895073063F153627D01"
+        }
+      },
+      {
+        "seq": 202,
+        "at": "2026-11-10T18:34:51.303Z",
+        "prevHash": "437ee25800df672634217fdbd2e0a0a18b5e66525384f918c3fceab6375db98f",
+        "hash": "cf3ecb045d4e23cc6575bfddec8076fb9e8344e9f4be77d98738b0c4b2d40c76",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847651001,
+          "createSequence": 22222658,
+          "invoiceHash": "E3811200C0FEFF0C33FB8342BC3D8C9BE52894DE978A137F15ABB3B5399474E0",
+          "ledgerIndex": 22222755,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "result": "tesSUCCESS",
+          "txHash": "09D927FFFAABBC4D89D8A72D815402CE86E6B7709895F895073063F153627D01"
+        }
+      },
+      {
+        "seq": 203,
+        "at": "2026-11-10T18:34:59.145Z",
+        "prevHash": "cf3ecb045d4e23cc6575bfddec8076fb9e8344e9f4be77d98738b0c4b2d40c76",
+        "hash": "b3d898d0ceebc6d6a9a18abef30d7d9eed68d0f5eaf6070f1df4eec53cee648b",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "98ea3f321727091995921184993445e807ee383a7088829091d435c81ab62b04",
+          "passageCount": 4,
+          "resourceId": "xrpl-tx-paymentchannelclaim",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 204,
+        "at": "2026-11-10T18:34:59.149Z",
+        "prevHash": "b3d898d0ceebc6d6a9a18abef30d7d9eed68d0f5eaf6070f1df4eec53cee648b",
+        "hash": "5b1d6d36a33730b44ec9085fd2b1c4c76429ef51b6dd30f4f57dce15e670ec2f",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 205,
+        "at": "2026-11-10T18:34:59.149Z",
+        "prevHash": "5b1d6d36a33730b44ec9085fd2b1c4c76429ef51b6dd30f4f57dce15e670ec2f",
+        "hash": "3e93b57b900714a0e0260a28639886ddc71ca2ee197b7099f7aa5754684a8dfd",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "09D927FFFAABBC4D89D8A72D815402CE86E6B7709895F895073063F153627D01",
+          "createSequence": 22222658,
+          "ledgerIndex": 22222757,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562"
+        }
+      },
+      {
+        "seq": 206,
+        "at": "2026-11-10T18:34:59.149Z",
+        "prevHash": "3e93b57b900714a0e0260a28639886ddc71ca2ee197b7099f7aa5754684a8dfd",
+        "hash": "8f31d6219d743cdf68e4e51b7dfb324d55a73f89c58a4f8b6134225d42148d92",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:2:xrpl-tx-paymentchannelclaim:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22222757,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "receiptId": "escrow-B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "B458497A99AFCFACCAAF4326B08FD8905106CB286D9E11F33C33A23B410D6562"
+        }
+      },
+      {
+        "seq": 207,
+        "at": "2026-11-10T18:34:59.180Z",
+        "prevHash": "8f31d6219d743cdf68e4e51b7dfb324d55a73f89c58a4f8b6134225d42148d92",
+        "hash": "2cf90ce2838cf4f84f8047d80f4cfa69145f4d32a783d3bd30508ceb291f5748",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 10,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 3,
+          "selectedResourceId": "xrpl-tx-paymentchannelfund",
+          "selectedSourceKey": "xrpl-tx-paymentchannelfund@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 3,
+            "SKIP_LOW_VALUE": 5,
+            "SKIP_REWRITE": 2
+          }
+        }
+      },
+      {
+        "seq": 208,
+        "at": "2026-11-10T18:34:59.622Z",
+        "prevHash": "2cf90ce2838cf4f84f8047d80f4cfa69145f4d32a783d3bd30508ceb291f5748",
+        "hash": "559e3b6fcc0dfc62b884800b40a38633835a4adfad9559908a8aac0654094dc0",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 80,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "312CFB0B561752B65B7C03227588DB2DCA70950EDEDC7731EED65E269CAFBC6D",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-tx-paymentchannelfund",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 209,
+        "at": "2026-11-10T18:35:01.331Z",
+        "prevHash": "559e3b6fcc0dfc62b884800b40a38633835a4adfad9559908a8aac0654094dc0",
+        "hash": "8d90f3d5cb037f227b3d22dcb9c696db4af5c5841ecb353ba56f9936c80ca169",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22222659,
+          "invoiceHash": "312CFB0B561752B65B7C03227588DB2DCA70950EDEDC7731EED65E269CAFBC6D",
+          "lastLedgerSequence": 22222778,
+          "operation": "create",
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": false,
+          "txHash": "2FF1DBCD37E025D95E9BA6B231229304EBCC20096D6A0FAB932401D0AF7BEFDC"
+        }
+      },
+      {
+        "seq": 210,
+        "at": "2026-11-10T18:35:07.452Z",
+        "prevHash": "8d90f3d5cb037f227b3d22dcb9c696db4af5c5841ecb353ba56f9936c80ca169",
+        "hash": "781b8860c4932d10b2b72b625ac8bc98f8bfbcc6ddfc4a50a52de7c05ce54f8e",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847651012,
+          "createSequence": 22222659,
+          "invoiceHash": "312CFB0B561752B65B7C03227588DB2DCA70950EDEDC7731EED65E269CAFBC6D",
+          "ledgerIndex": 22222759,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "result": "tesSUCCESS",
+          "txHash": "2FF1DBCD37E025D95E9BA6B231229304EBCC20096D6A0FAB932401D0AF7BEFDC"
+        }
+      },
+      {
+        "seq": 211,
+        "at": "2026-11-10T18:35:16.979Z",
+        "prevHash": "781b8860c4932d10b2b72b625ac8bc98f8bfbcc6ddfc4a50a52de7c05ce54f8e",
+        "hash": "dd0a3940c7796e0010f665ec9e14be1098fcc0e51ab0d3ba69887fcf9257a729",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "ae6948e5e62436491edcf25cb07c6b737dcfdbb28cc8d26861f686a70f40c541",
+          "passageCount": 4,
+          "resourceId": "xrpl-tx-paymentchannelfund",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 212,
+        "at": "2026-11-10T18:35:16.980Z",
+        "prevHash": "dd0a3940c7796e0010f665ec9e14be1098fcc0e51ab0d3ba69887fcf9257a729",
+        "hash": "f0f05a44160d654f8ed7a7a58a928c486481f58570d8b56b5cf196827435f4fe",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 213,
+        "at": "2026-11-10T18:35:16.980Z",
+        "prevHash": "f0f05a44160d654f8ed7a7a58a928c486481f58570d8b56b5cf196827435f4fe",
+        "hash": "67c5d3b6767f2958d9dd779424fed28ab366878fc2ae85e1d3bebf4ff080d8ba",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "2FF1DBCD37E025D95E9BA6B231229304EBCC20096D6A0FAB932401D0AF7BEFDC",
+          "createSequence": 22222659,
+          "ledgerIndex": 22222762,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01"
+        }
+      },
+      {
+        "seq": 214,
+        "at": "2026-11-10T18:35:16.981Z",
+        "prevHash": "67c5d3b6767f2958d9dd779424fed28ab366878fc2ae85e1d3bebf4ff080d8ba",
+        "hash": "cbeda14cccfa41bfbac868630c55e585fbb79fa74deaaa686ba200cc3b23486f",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": "ebc4bc3a-267c-4087-8add-d93793df57f7:3:xrpl-tx-paymentchannelfund:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22222762,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "receiptId": "escrow-B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "B2307E077742E8FA8E9D86BA95978E3DF6EF3CB82F838CA315110ADB252BCC01"
+        }
+      },
+      {
+        "seq": 215,
+        "at": "2026-11-10T18:35:17.028Z",
+        "prevHash": "cbeda14cccfa41bfbac868630c55e585fbb79fa74deaaa686ba200cc3b23486f",
+        "hash": "09b52ac789c584be1ab008a2a687efb3cc4f09d5e9317909275422c672cb7e1c",
+        "runId": "ebc4bc3a-267c-4087-8add-d93793df57f7",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "4e807308a18bcb1815773821b69a575a144cc8a790dc61b24bb55aeedc19cfe2"
+        }
+      }
+    ],
+    "head": "09b52ac789c584be1ab008a2a687efb3cc4f09d5e9317909275422c672cb7e1c"
+  }
+}

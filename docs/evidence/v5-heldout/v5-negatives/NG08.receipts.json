@@ -1,0 +1,1017 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "D817122AAA7DAAA3CEB3EB7BB4B480481A620FB68CEEA712A7C9F49AD2E9CDAA",
+    "account": "rJx5yVkubyKAnwRfsgr3wK91Tz75WP3dw4",
+    "head": "dbe92a95c0847ffe16b477ece3cb56bf87f89ecefff2889649c29d11973b2d29",
+    "runIdHash": "adee803b6790b2a201f90aa1afab9037ce91d4de807d0b89b7b54492182f61a6",
+    "ledgerIndex": 22222855,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 1,
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "How do I fine-tune a small language model on my own customer emails"
+    }
+  ],
+  "runId": "6b9016cd-a74f-4efc-8965-c14bef941887",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified",
+  "answers": [
+    {
+      "lead": [],
+      "conclusion": "With the explosion of large language models and generative AI, data centre operators are scrambling to understand the electrical load these systems impose. I'll show the arithmetic step by step, so you can follow along and apply it to your own planning. A data centre with 1,000 such racks would draw 10.2 MW, enough to power a small town.",
+      "claims": [
+        {
+          "id": "evidence-[\"load-power-draw-of-ai-accelerator-racks-a-comparative-study\",\"v1\",\"p6\"]",
+          "text": "Let's start with NVIDIA's H100. Each H100 SXM GPU has a thermal design power (TDP) of 700 watts. A typical rack holds eight GPUs, so the GPU power alone is 8 × 700 = 5,600 watts. But that's not the whole story. The rack also includes two CPUs, each around 300 watts, plus memory, storage, and networking. Add another 1,500 watts for those components. Then there's cooling: the facility's cooling overhead is about 30% of IT power, so 0.3 × (5,600 + 1,500) = 2,130 watts. Finally, power conversion losses in the power supply units are about 10%, so 0.1 × (5,600 + 1,500 + 2,130) = 923 watts. Total rack power: 5,600 + 1,500 + 2,130 + 923 = 10,153 watts, or roughly 10.2 kW.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+              "version": "v1",
+              "spanId": "p6"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-power-draw-of-ai-accelerator-racks-a-comparative-study\",\"v1\",\"p7\"]",
+          "text": "Now compare to AMD's MI250X. Each MI250X has a TDP of 560 watts. A rack with eight MI250X GPUs draws 8 × 560 = 4,480 watts for GPUs. CPUs and other components add about 1,200 watts. Cooling at 30% adds 0.3 × (4,480 + 1,200) = 1,704 watts. Conversion losses at 10% add 0.1 × (4,480 + 1,200 + 1,704) = 738 watts. Total: 4,480 + 1,200 + 1,704 + 738 = 8,122 watts, or 8.1 kW.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+              "version": "v1",
+              "spanId": "p7"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-power-draw-of-ai-accelerator-racks-a-comparative-study\",\"v1\",\"p8\"]",
+          "text": "For NVIDIA's A100, each GPU has a TDP of 400 watts. Eight GPUs draw 3,200 watts. CPUs and other components: 1,000 watts. Cooling: 0.3 × (3,200 + 1,000) = 1,260 watts. Conversion: 0.1 × (3,200 + 1,000 + 1,260) = 546 watts. Total: 3,200 + 1,000 + 1,260 + 546 = 6,006 watts, or 6.0 kW.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+              "version": "v1",
+              "spanId": "p8"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-power-draw-of-ai-accelerator-racks-a-comparative-study\",\"v1\",\"p12\"]",
+          "text": "For grid planners, the key is to understand the diversity factor. Not all racks run at peak simultaneously. In my measurements, the average power draw over 24 hours was about 70% of peak for training workloads. So a 10.2 kW rack might average 7.1 kW. That still adds up.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+              "version": "v1",
+              "spanId": "p12"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-power-draw-of-ai-accelerator-racks-a-comparative-study\",\"v1\",\"p1\"]",
+          "text": "Wearing my energy-systems hat, I often get asked about the power draw of AI accelerator racks. With the explosion of large language models and generative AI, data centre operators are scrambling to understand the electrical load these systems impose. In this post, I'll walk through a comparative study of power draw across different accelerator types, using primary data from manufacturer specifications and independent measurements. I'll show the arithmetic step by step, so you can follow along and apply it to your own planning.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-power-draw-of-ai-accelerator-racks-a-comparative-study\",\"v1\",\"p2\"]",
+          "text": "The motivation is simple: grid operators and utilities need to forecast demand accurately. A single rack of AI accelerators can draw as much power as dozens of homes. If we misestimate, we risk overbuilding or underbuilding generation and transmission. So let's dig into the numbers.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-power-draw-of-ai-accelerator-racks-a-comparative-study\",\"v1\",\"p3\"]",
+          "text": "I gathered data from three sources: NVIDIA's published specifications for the H100 and A100 GPUs, AMD's MI250X specifications, and independent power measurements from a colocation facility in Singapore that I visited in early 2026. The facility hosts racks from several tenants, and I was allowed to install power meters on a few representative racks. All measurements were taken over a 24-hour period during typical training workloads.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"load-power-draw-of-ai-accelerator-racks-a-comparative-study\",\"v1\",\"p10\"]",
+          "text": "So what do these numbers mean for the grid? A single H100 rack at 10.2 kW is equivalent to about three average U.S. homes (which draw about 1.2 kW on average). A data centre with 1,000 such racks would draw 10.2 MW, enough to power a small town. And that's just for training; inference racks may draw less per rack but operate continuously.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+              "version": "v1",
+              "spanId": "p10"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "How do I fine-tune a small language model on my own customer emails"
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+      "version": "v1",
+      "title": "Power Draw of AI Accelerator Racks: A Comparative Study",
+      "publisher": "Load Factor",
+      "body": "## Introduction\n\nWearing my energy-systems hat, I often get asked about the power draw of AI accelerator racks. With the explosion of large language models and generative AI, data centre operators are scrambling to understand the electrical load these systems impose. In this post, I'll walk through a comparative study of power draw across different accelerator types, using primary data from manufacturer specifications and independent measurements. I'll show the arithmetic step by step, so you can follow along and apply it to your own planning.\n\nThe motivation is simple: grid operators and utilities need to forecast demand accurately. A single rack of AI accelerators can draw as much power as dozens of homes. If we misestimate, we risk overbuilding or underbuilding generation and transmission. So let's dig into the numbers.\n\n## Methodology and Data Sources\n\nI gathered data from three sources: NVIDIA's published specifications for the H100 and A100 GPUs, AMD's MI250X specifications, and independent power measurements from a colocation facility in Singapore that I visited in early 2026. The facility hosts racks from several tenants, and I was allowed to install power meters on a few representative racks. All measurements were taken over a 24-hour period during typical training workloads.\n\nFor each accelerator, I recorded idle power, typical training power, and peak power. I also noted the number of accelerators per rack and the rack's total power draw, including networking, cooling, and power conversion losses. The facility uses a mix of air and liquid cooling, which affects the overhead.\n\nOne caveat: power draw varies with workload. Training a large model is more power-hungry than inference. I focused on training because it represents the worst-case scenario for grid planning.\n\n## Comparative Power Draw\n\nLet's start with NVIDIA's H100. Each H100 SXM GPU has a thermal design power (TDP) of 700 watts. A typical rack holds eight GPUs, so the GPU power alone is 8 × 700 = 5,600 watts. But that's not the whole story. The rack also includes two CPUs, each around 300 watts, plus memory, storage, and networking. Add another 1,500 watts for those components. Then there's cooling: the facility's cooling overhead is about 30% of IT power, so 0.3 × (5,600 + 1,500) = 2,130 watts. Finally, power conversion losses in the power supply units are about 10%, so 0.1 × (5,600 + 1,500 + 2,130) = 923 watts. Total rack power: 5,600 + 1,500 + 2,130 + 923 = 10,153 watts, or roughly 10.2 kW.\n\nNow compare to AMD's MI250X. Each MI250X has a TDP of 560 watts. A rack with eight MI250X GPUs draws 8 × 560 = 4,480 watts for GPUs. CPUs and other components add about 1,200 watts. Cooling at 30% adds 0.3 × (4,480 + 1,200) = 1,704 watts. Conversion losses at 10% add 0.1 × (4,480 + 1,200 + 1,704) = 738 watts. Total: 4,480 + 1,200 + 1,704 + 738 = 8,122 watts, or 8.1 kW.\n\nFor NVIDIA's A100, each GPU has a TDP of 400 watts. Eight GPUs draw 3,200 watts. CPUs and other components: 1,000 watts. Cooling: 0.3 × (3,200 + 1,000) = 1,260 watts. Conversion: 0.1 × (3,200 + 1,000 + 1,260) = 546 watts. Total: 3,200 + 1,000 + 1,260 + 546 = 6,006 watts, or 6.0 kW.\n\nThese figures are for air-cooled racks. Liquid cooling can reduce the cooling overhead to about 15%, which would lower the H100 rack to around 9.3 kW. But liquid cooling adds complexity and cost.\n\n## Implications for Grid Planning\n\nSo what do these numbers mean for the grid? A single H100 rack at 10.2 kW is equivalent to about three average U.S. homes (which draw about 1.2 kW on average). A data centre with 1,000 such racks would draw 10.2 MW, enough to power a small town. And that's just for training; inference racks may draw less per rack but operate continuously.\n\nIn Singapore, where I did my measurements, the grid is already strained. The Energy Market Authority (EMA) has projected that data centre demand could reach 1.5 GW by 2030, up from about 0.5 GW today. My measurements suggest that if all new racks are H100-class, the demand could be higher. But operators are also adopting liquid cooling and more efficient accelerators, which could mitigate the growth.\n\nFor grid planners, the key is to understand the diversity factor. Not all racks run at peak simultaneously. In my measurements, the average power draw over 24 hours was about 70% of peak for training workloads. So a 10.2 kW rack might average 7.1 kW. That still adds up.\n\n## Conclusion\n\nComparing accelerator racks, the H100 draws the most power per rack, followed by MI250X and A100. But the differences are not enormous; all are in the 6–10 kW range for eight-GPU racks. The bigger story is the scale: thousands of such racks can significantly impact a regional grid. As an educator, I encourage my students to always do the arithmetic themselves, using primary data. Don't rely on vendor marketing or hearsay. Measure, calculate, and verify.\n\nIn future posts, I'll explore the impact of liquid cooling and the potential of on-site generation. For now, I hope this comparative study helps you better understand the power draw of AI accelerator racks. Remember, every watt counts when planning for a sustainable energy future.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "Wearing my energy-systems hat, I often get asked about the power draw of AI accelerator racks. With the explosion of large language models and generative AI, data centre operators are scrambling to understand the electrical load these systems impose. In this post, I'll walk through a comparative study of power draw across different accelerator types, using primary data from manufacturer specifications and independent measurements. I'll show the arithmetic step by step, so you can follow along and apply it to your own planning.",
+          "label": "Introduction"
+        },
+        {
+          "id": "p2",
+          "text": "The motivation is simple: grid operators and utilities need to forecast demand accurately. A single rack of AI accelerators can draw as much power as dozens of homes. If we misestimate, we risk overbuilding or underbuilding generation and transmission. So let's dig into the numbers.",
+          "label": "Introduction"
+        },
+        {
+          "id": "p3",
+          "text": "I gathered data from three sources: NVIDIA's published specifications for the H100 and A100 GPUs, AMD's MI250X specifications, and independent power measurements from a colocation facility in Singapore that I visited in early 2026. The facility hosts racks from several tenants, and I was allowed to install power meters on a few representative racks. All measurements were taken over a 24-hour period during typical training workloads.",
+          "label": "Methodology and Data Sources"
+        },
+        {
+          "id": "p4",
+          "text": "For each accelerator, I recorded idle power, typical training power, and peak power. I also noted the number of accelerators per rack and the rack's total power draw, including networking, cooling, and power conversion losses. The facility uses a mix of air and liquid cooling, which affects the overhead.",
+          "label": "Methodology and Data Sources"
+        },
+        {
+          "id": "p5",
+          "text": "One caveat: power draw varies with workload. Training a large model is more power-hungry than inference. I focused on training because it represents the worst-case scenario for grid planning.",
+          "label": "Methodology and Data Sources"
+        },
+        {
+          "id": "p6",
+          "text": "Let's start with NVIDIA's H100. Each H100 SXM GPU has a thermal design power (TDP) of 700 watts. A typical rack holds eight GPUs, so the GPU power alone is 8 × 700 = 5,600 watts. But that's not the whole story. The rack also includes two CPUs, each around 300 watts, plus memory, storage, and networking. Add another 1,500 watts for those components. Then there's cooling: the facility's cooling overhead is about 30% of IT power, so 0.3 × (5,600 + 1,500) = 2,130 watts. Finally, power conversion losses in the power supply units are about 10%, so 0.1 × (5,600 + 1,500 + 2,130) = 923 watts. Total rack power: 5,600 + 1,500 + 2,130 + 923 = 10,153 watts, or roughly 10.2 kW.",
+          "label": "Comparative Power Draw"
+        },
+        {
+          "id": "p7",
+          "text": "Now compare to AMD's MI250X. Each MI250X has a TDP of 560 watts. A rack with eight MI250X GPUs draws 8 × 560 = 4,480 watts for GPUs. CPUs and other components add about 1,200 watts. Cooling at 30% adds 0.3 × (4,480 + 1,200) = 1,704 watts. Conversion losses at 10% add 0.1 × (4,480 + 1,200 + 1,704) = 738 watts. Total: 4,480 + 1,200 + 1,704 + 738 = 8,122 watts, or 8.1 kW.",
+          "label": "Comparative Power Draw"
+        },
+        {
+          "id": "p8",
+          "text": "For NVIDIA's A100, each GPU has a TDP of 400 watts. Eight GPUs draw 3,200 watts. CPUs and other components: 1,000 watts. Cooling: 0.3 × (3,200 + 1,000) = 1,260 watts. Conversion: 0.1 × (3,200 + 1,000 + 1,260) = 546 watts. Total: 3,200 + 1,000 + 1,260 + 546 = 6,006 watts, or 6.0 kW.",
+          "label": "Comparative Power Draw"
+        },
+        {
+          "id": "p9",
+          "text": "These figures are for air-cooled racks. Liquid cooling can reduce the cooling overhead to about 15%, which would lower the H100 rack to around 9.3 kW. But liquid cooling adds complexity and cost.",
+          "label": "Comparative Power Draw"
+        },
+        {
+          "id": "p10",
+          "text": "So what do these numbers mean for the grid? A single H100 rack at 10.2 kW is equivalent to about three average U.S. homes (which draw about 1.2 kW on average). A data centre with 1,000 such racks would draw 10.2 MW, enough to power a small town. And that's just for training; inference racks may draw less per rack but operate continuously.",
+          "label": "Implications for Grid Planning"
+        },
+        {
+          "id": "p11",
+          "text": "In Singapore, where I did my measurements, the grid is already strained. The Energy Market Authority (EMA) has projected that data centre demand could reach 1.5 GW by 2030, up from about 0.5 GW today. My measurements suggest that if all new racks are H100-class, the demand could be higher. But operators are also adopting liquid cooling and more efficient accelerators, which could mitigate the growth.",
+          "label": "Implications for Grid Planning"
+        },
+        {
+          "id": "p12",
+          "text": "For grid planners, the key is to understand the diversity factor. Not all racks run at peak simultaneously. In my measurements, the average power draw over 24 hours was about 70% of peak for training workloads. So a 10.2 kW rack might average 7.1 kW. That still adds up.",
+          "label": "Implications for Grid Planning"
+        },
+        {
+          "id": "p13",
+          "text": "Comparing accelerator racks, the H100 draws the most power per rack, followed by MI250X and A100. But the differences are not enormous; all are in the 6–10 kW range for eight-GPU racks. The bigger story is the scale: thousands of such racks can significantly impact a regional grid. As an educator, I encourage my students to always do the arithmetic themselves, using primary data. Don't rely on vendor marketing or hearsay. Measure, calculate, and verify.",
+          "label": "Conclusion"
+        },
+        {
+          "id": "p14",
+          "text": "In future posts, I'll explore the impact of liquid cooling and the potential of on-site generation. For now, I hope this comparative study helps you better understand the power draw of AI accelerator racks. Remember, every watt counts when planning for a sustainable energy future.",
+          "label": "Conclusion"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "load-factor",
+          "articleId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+          "version": "v1",
+          "wallet": "rPWBgynnBvmuS3hoWStQxdL1Nshk2iu8vE",
+          "pubKey": "ED7B162236D698F093395923245A8B7CDC4ED6EA3EB82C5F8738486C0C7789C9EE",
+          "priceMinor": 0,
+          "leaves": [
+            "18802ad872caba9574e866858097044d85706684b64fe1a0fe774bfc02130481",
+            "703628d47638e597b3059acca943bb1dead1453d57b48db23dc36aa0d81659b0",
+            "373b932a0d5459c1e259d27d9f9f78dfa25b93a4ed780fe912392a188e429b8b",
+            "c1f3c1ae5428f99c3d6438238179262cdb8c54e7a91ad8f085be4b6f6d5fcbc9",
+            "1598933c8e4e68b87113656c77bc4fa5c2dd12c055bc2c449c0488445ceafa29",
+            "a0d3dcb68a974805d92d864ea0da4621aa46169284afb0178b6247e0f67a497c",
+            "090498d6d903e040182d64578b7025332a20ccc2da6441c09be9314419ba42b7",
+            "a5f3b5a397d9ee2fc94d77ed05af3aadcc0728a90d639219b76698fcfac2cc93",
+            "24190d0aa851c2e837315f3bc7fdcd75d7ea624607dee6cdb2d3f340ef526f7a",
+            "89fe11e0b033dcceedae7a316eb899a2cb1ed3b244ef25cb001169315e9b77e6",
+            "e686261b06db0f8a86105361d9a7c719b7dcba2cbf14c2444297cbc176faf9a0",
+            "3cb46bf952f1fe7c2bad072ff2bf8f5653b6f06128b60a891741fc54fa7ce873",
+            "d098fe9f1d77ae91a4e4cae31398291e9c75a90424701ccd97a256f85dea5316",
+            "ded7095d349ca37a13f70200ec93df584251b1dba2e48b928589f7e2bebeb7c9"
+          ],
+          "root": "250278be2b78c368f37f3efea4d289e82a382856813480aa7d5df8ec21945ba5",
+          "claims": [
+            {
+              "id": "p3:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "373b932a0d5459c1e259d27d9f9f78dfa25b93a4ed780fe912392a188e429b8b"
+            },
+            {
+              "id": "p6:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "a0d3dcb68a974805d92d864ea0da4621aa46169284afb0178b6247e0f67a497c"
+            },
+            {
+              "id": "p6:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "a0d3dcb68a974805d92d864ea0da4621aa46169284afb0178b6247e0f67a497c"
+            },
+            {
+              "id": "p7:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "090498d6d903e040182d64578b7025332a20ccc2da6441c09be9314419ba42b7"
+            },
+            {
+              "id": "p9:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "24190d0aa851c2e837315f3bc7fdcd75d7ea624607dee6cdb2d3f340ef526f7a"
+            },
+            {
+              "id": "p10:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "89fe11e0b033dcceedae7a316eb899a2cb1ed3b244ef25cb001169315e9b77e6"
+            },
+            {
+              "id": "p10:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "89fe11e0b033dcceedae7a316eb899a2cb1ed3b244ef25cb001169315e9b77e6"
+            },
+            {
+              "id": "p11:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "e686261b06db0f8a86105361d9a7c719b7dcba2cbf14c2444297cbc176faf9a0"
+            },
+            {
+              "id": "p12:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "3cb46bf952f1fe7c2bad072ff2bf8f5653b6f06128b60a891741fc54fa7ce873"
+            },
+            {
+              "id": "p13:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "d098fe9f1d77ae91a4e4cae31398291e9c75a90424701ccd97a256f85dea5316"
+            }
+          ],
+          "wordCount": 902,
+          "publishedAt": "2026-07-20",
+          "relevance": 1,
+          "sig": "38881DA94C8EC0157010F31307DAB2E0D786A29280E7F9B7DEB6A0689F700C029EF93F94DA9F45909246C76D3AE7306FB23FA6F70F6616FEACAA08B95B272303"
+        },
+        "salts": [
+          "4a7259ab555e0cf72f98480b06a09d9e",
+          "6e16e9c4f58c314cbed46909326a085e",
+          "db066d884b29fc4a59252bc773713a2d",
+          "2fde3cf97594b936540f0a0a4c2b966e",
+          "e779b3409e039b66c6added72a3d4c07",
+          "0145517b7cef86576c04dfe3de02ba7a",
+          "4caaf44b7d0e2055e1766096c0b5fd3e",
+          "c3d770f2b8cfff6945ab0d0c68b70473",
+          "8cadebe6b744235e774a679946d4a7ba",
+          "85eaa4af439e6d736623732c34eb955f",
+          "83e32d0fd03d684cf671c5334e2ad0f3",
+          "87b08fd2c0a8cc0d297879266a7f90fa",
+          "513839fb168eea3aa8ab6fb66b7c1493",
+          "119df308fc1b28685f1863ed551f0256"
+        ]
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "kopi-contrarian",
+      "resourceId": "kopi-jgb-scare-2-0-why-the-market-still-freaks-out",
+      "version": "v1",
+      "title": "JGB Scare 2.0: Why the Market Still Freaks Out",
+      "publisher": "Kopi Contrarian",
+      "preview": "The bond market's latest tantrum over Japan is a rerun I've seen before, and the ending is always the same.",
+      "price": {
+        "amountMinor": 10,
+        "currency": "SGD"
+      },
+      "wallet": "rMwY4wMipL1a6sEey2dnNGWeB5rK1Np2xo",
+      "family": "jgb-scare-2",
+      "facets": [
+        "rates"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Kopi Contrarian"
+      },
+      "publisherSlug": "kopi-contrarian",
+      "writerSlug": "kopi-contrarian",
+      "url": "/w/kopi-contrarian/articles/kopi-jgb-scare-2-0-why-the-market-still-freaks-out",
+      "relevance": 0.09323169428967633,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "kopi-contrarian",
+        "articleId": "kopi-jgb-scare-2-0-why-the-market-still-freaks-out",
+        "version": "v1",
+        "wallet": "rMwY4wMipL1a6sEey2dnNGWeB5rK1Np2xo",
+        "pubKey": "ED1A6D3C10599472C882A89F8F1728F394173B1921DEF8875D59CF70FEEDA55453",
+        "priceMinor": 10,
+        "leaves": [
+          "983971d1dcd510c0e051c99b8ae25ca70e1ea7aa77be242005d76d2ecc6fadb3",
+          "d2fd1caf29f1eaed8e15e09f11bc0364b94e9d86255bb2104807bda996935e1b",
+          "aaa3394d4f57a2a6cbefbb6f3e465a7e864c383ba230965a1d56e243ed996a52",
+          "4449e46fb9c5fd2c92427e4aff394db565e3d0a73dc7fddbbd962cfc1bf2e88e",
+          "36c1ccda4c4af695f9b19f48dd5f79a162c270e0ba9c35a85cd8da0e8373e707",
+          "bd403b62220205ea97e857b9afe7265fbcb58a7227e520175b08266d7d31474a",
+          "1e2aff68a49eef3db31b02d8ed8647b550cde4822a19f4fd9dda1dff32771e86",
+          "79f4d82bf0e04831a638edbc3675b536ceee57972f9ceea8f515818f34546e53",
+          "f06c52ebd928c6580a0d439b1b9dbba5c5ad61f2767d874e4b822ad5447cfc0e",
+          "568c78658b28af9e53435e9ae30ec9b35d7943413ed63711afbc94fdd4b2a555",
+          "a968e5af2374c45ebff99520e5365628075eaf354d307047b0304999e9c3fddb",
+          "ce967ea2c2bffef8b46d4389e341d7a8b3b233a9dac8976b32d5f14fd7f2a2a0",
+          "91913aa566a911aa3c39eb14c4cf3d04a7f569bb9018157f0bc41cf54fdf8f12"
+        ],
+        "root": "8c07216f51b33d72ac73dada0230af4b2c8dde5ec8f34fa2bfa34546b6e91bd7",
+        "claims": [],
+        "wordCount": 1069,
+        "publishedAt": "2026-06-20",
+        "relevance": 0.09323169428967633,
+        "sig": "879605C3857714FD8CCFDF8A5044148E88DC25825D90679478E8D477C039ACD4E69F14D8E062152C9CCAEC4E3FD65DE435AB2F460B7BC84733E119F65B61F601"
+      }
+    },
+    {
+      "profileId": "notfinancialtimes",
+      "resourceId": "notft-kestrel-tsmc-deal-margins",
+      "version": "v1",
+      "title": "Analysts cut Kestrel margin estimates as the TSMC deal lands",
+      "publisher": "NotFinancialTimes",
+      "preview": "How sell-side analysts revised Kestrel's gross-margin and wafer-pricing estimates after the TSMC N3P deal: which brokerages cut, and the reasoning behind each revision.",
+      "price": {
+        "amountMinor": 90,
+        "currency": "SGD"
+      },
+      "wallet": "rN2cv6XjGWRa4yp75FN7hFNyejJegWr34C",
+      "family": "kestrel-tsmc-analysts",
+      "facets": [
+        "Kestrel Semiconductor",
+        "TSMC",
+        "analyst estimates",
+        "gross margin"
+      ],
+      "authority": 1.5,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "NotFinancialTimes"
+      },
+      "publisherSlug": "notfinancialtimes",
+      "writerSlug": "priya-nair",
+      "url": "/w/notfinancialtimes/articles/notft-kestrel-tsmc-deal-margins",
+      "relevance": 0.14730521560554524,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "notfinancialtimes",
+        "articleId": "notft-kestrel-tsmc-deal-margins",
+        "version": "v1",
+        "wallet": "rN2cv6XjGWRa4yp75FN7hFNyejJegWr34C",
+        "pubKey": "ED71017CBA9492277CCAE05D69B5AF169E1C083FD95639E225564D518451F16294",
+        "priceMinor": 90,
+        "leaves": [
+          "ed6175de38f55d139cf5188fd02cd69b445bae98996f4c48f720612e98437d31",
+          "2a39ccfca19259e0ce9c0896f45f4d06a733eadb2bb54eb55ecd5dfd76aeac9c",
+          "ddc8ad617cdf5e9c92cd10c5961e8cde90da26d238be48c232004eaf4c8783e8",
+          "8841ed7e9e92638c07568d0e7a38fa19ede0e55d76ef58244af204a8d74ad687",
+          "9d81eff8edadd4e3280f2f49a08303cad040ac9be4b3be05cc0d84b5266d3bcc",
+          "f14278a6a5c3436b5bad5e367dc2d3cc01c0f4d132db29eb0d79680d7c78248d",
+          "ebd5b7658d89521a410b9c92faf7617d7117c0519d2c6298b733a6474afd490a",
+          "62024bcea31ca7ec8b369b3a848910e28f7f8e7c40ecca04038685f95a7a8f76",
+          "83750cd15d51713ae87c3ac504319d3c3e592d608a2acf6ac9dfc635f3694851",
+          "589f637458feddaf52bc4e94e154d5e06bd2e43b9a163995bfcbddb213911a61",
+          "94be6b9de25c605c816b22e96631f3d6f69310940f976c1e2433384692a13525",
+          "0407e9d5eb10e57c9698a2249933dea98bd7d565826a3678036419d0ba99e400",
+          "76fc56475f3fd944dec2bf657683d9fb456045c945fb7ad9d049fefcd950228b"
+        ],
+        "root": "6aba4d5478869a5b140ef9a7d713892dc95f55c7ff260051893fa5b8d8a7030a",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "ed6175de38f55d139cf5188fd02cd69b445bae98996f4c48f720612e98437d31",
+            "covers": {
+              "entity": "Kestrel Semiconductor",
+              "measure": "gross margin",
+              "period": "twenty twenty seven"
+            }
+          },
+          {
+            "id": "p1:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "ed6175de38f55d139cf5188fd02cd69b445bae98996f4c48f720612e98437d31",
+            "covers": {
+              "entity": "Kestrel Semiconductor",
+              "measure": "gross margin",
+              "period": "twenty twenty seven"
+            }
+          },
+          {
+            "id": "p2:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "2a39ccfca19259e0ce9c0896f45f4d06a733eadb2bb54eb55ecd5dfd76aeac9c",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "demand"
+            }
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "ddc8ad617cdf5e9c92cd10c5961e8cde90da26d238be48c232004eaf4c8783e8",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "prepayment",
+              "period": "twenty twenty seven"
+            }
+          },
+          {
+            "id": "p4:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "8841ed7e9e92638c07568d0e7a38fa19ede0e55d76ef58244af204a8d74ad687",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "capacity",
+              "period": "twenty twenty seven"
+            }
+          },
+          {
+            "id": "p4:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "8841ed7e9e92638c07568d0e7a38fa19ede0e55d76ef58244af204a8d74ad687",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "capacity",
+              "period": "twenty twenty seven"
+            }
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "9d81eff8edadd4e3280f2f49a08303cad040ac9be4b3be05cc0d84b5266d3bcc",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "gross margin",
+              "period": "twenty twenty eight"
+            }
+          },
+          {
+            "id": "p6:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "f14278a6a5c3436b5bad5e367dc2d3cc01c0f4d132db29eb0d79680d7c78248d",
+            "covers": {
+              "entity": "TSMC",
+              "measure": "revenue",
+              "period": "twenty twenty eight"
+            }
+          },
+          {
+            "id": "p6:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "f14278a6a5c3436b5bad5e367dc2d3cc01c0f4d132db29eb0d79680d7c78248d",
+            "covers": {
+              "entity": "TSMC",
+              "measure": "revenue",
+              "period": "twenty twenty eight"
+            }
+          },
+          {
+            "id": "p7:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "ebd5b7658d89521a410b9c92faf7617d7117c0519d2c6298b733a6474afd490a",
+            "covers": {
+              "entity": "Taipei",
+              "measure": "gross margin",
+              "period": "twenty twenty eight"
+            }
+          },
+          {
+            "id": "p8:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "62024bcea31ca7ec8b369b3a848910e28f7f8e7c40ecca04038685f95a7a8f76",
+            "covers": {
+              "entity": "analysts",
+              "measure": "prepayment",
+              "period": "twenty twenty seven"
+            }
+          },
+          {
+            "id": "p11:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "94be6b9de25c605c816b22e96631f3d6f69310940f976c1e2433384692a13525",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "prepayment",
+              "period": "twenty twenty eight"
+            }
+          },
+          {
+            "id": "p11:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "94be6b9de25c605c816b22e96631f3d6f69310940f976c1e2433384692a13525",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "prepayment",
+              "period": "twenty twenty eight"
+            }
+          },
+          {
+            "id": "p13:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "76fc56475f3fd944dec2bf657683d9fb456045c945fb7ad9d049fefcd950228b",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "revenue",
+              "period": "twenty twenty seven"
+            }
+          }
+        ],
+        "wordCount": 996,
+        "publishedAt": "2026-10-01",
+        "relevance": 0.14730521560554524,
+        "sig": "E40B046542CE0EFCF7BBA06F1226F657FFAA9D884476353C18813307FA21E635F09DC0DF9E13B01395B02DA41288ADEEEB2E50BCC23D89A6C84DF7654DF52F01"
+      }
+    },
+    {
+      "profileId": "the-fab-floor",
+      "resourceId": "fab-floor-kestrel-penang-lead-times",
+      "version": "v1",
+      "title": "Kestrel Semiconductor advanced-packaging lead times in Malaysia: the dated series",
+      "publisher": "The Fab Floor",
+      "preview": "A data deep-dive on whether lead times in Kestrel Semiconductor's Penang advanced-packaging queue in Malaysia are getting shorter, and why the Johor fallback is no longer the obvious hedge.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rM2tvXBuWbw6AcGf3Mw4u5BHDxxttpzFHs",
+      "family": "fab-floor-penang",
+      "facets": [
+        "Kestrel Semiconductor",
+        "Penang",
+        "Malaysia",
+        "lead times",
+        "advanced packaging",
+        "data deep-dive"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "The Fab Floor"
+      },
+      "publisherSlug": "the-fab-floor",
+      "writerSlug": "the-fab-floor",
+      "url": "/w/the-fab-floor/articles/fab-floor-kestrel-penang-lead-times",
+      "relevance": 0.0848019860641927,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "the-fab-floor",
+        "articleId": "fab-floor-kestrel-penang-lead-times",
+        "version": "v1",
+        "wallet": "rM2tvXBuWbw6AcGf3Mw4u5BHDxxttpzFHs",
+        "pubKey": "ED8F51129BDBD05EE5B92390031DE78DD9B96625B202B3D4810C0BF76224DF01E8",
+        "priceMinor": 40,
+        "leaves": [
+          "89189458c94851b5d469f0220cdd079ee05e074d6978bd1f127762dff8bd91c5",
+          "54e7802989e3ef652da032f5b67f0246a5c7c0d35c3229417e3911bbad93be4e",
+          "73069eeaf0da69100b2f08ac95eb5f2814655bfd0eff06766edfa7047057477b",
+          "15897003193c21544d0c73c593ab5e1f5a8fc2c23ba070b9a6e48a0ddc9e8450",
+          "fc1ed693db630a2911d0f1b32edead5468600a96e1c8f122998219c7ed724fdd",
+          "48ef8f0bac43d74e0ba388c4d67deb6022a15e0c3d0235b68cf9c889efc1c753",
+          "8e868ff97a560298c75d1a205500b0f6106dc42b854b3b94783b691e54b582da",
+          "640bcffdd7e47e48ba829b31535c6fc252f864caac928ccdbcb7376935498a71",
+          "df337ef1ebf630a209efbd4f9fa75f6f156b523311c20ab34bb77d5a0f84ef26",
+          "10d82d7ee95492d3c52baacd8f6a2840971852c51d2962aabb45b1715b9279db",
+          "4c6518a7978841320dfcb3fc047cddf6bf97c78728757fb719ebaf0833a09356",
+          "a24480f521c5f4de87ea6698ddafc3daa5d05ac540dc36b1830c31e8e0f8d5ad",
+          "816de1e79147874fdedc153cfe8754a788b7ae6272debf6cf9e425ffcd4a3ed1",
+          "6f411a3bf277769c14139f90b04c5a5c6932c80bec6db5e94f55b50283a4797c"
+        ],
+        "root": "cfc03b43fc9942a03847f3cabce9f167cec286fa7da8c3dea4c9b0021081c93e",
+        "claims": [
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "54e7802989e3ef652da032f5b67f0246a5c7c0d35c3229417e3911bbad93be4e",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "lead time",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "lead-times:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "73069eeaf0da69100b2f08ac95eb5f2814655bfd0eff06766edfa7047057477b",
+            "covers": {
+              "entity": "Penang",
+              "measure": "lead time",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "lead-times:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "73069eeaf0da69100b2f08ac95eb5f2814655bfd0eff06766edfa7047057477b",
+            "covers": {
+              "entity": "Penang",
+              "measure": "lead time",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p4:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "15897003193c21544d0c73c593ab5e1f5a8fc2c23ba070b9a6e48a0ddc9e8450",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "capacity",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p6:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "48ef8f0bac43d74e0ba388c4d67deb6022a15e0c3d0235b68cf9c889efc1c753",
+            "covers": {
+              "entity": "Penang",
+              "measure": "source",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p14:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "6f411a3bf277769c14139f90b04c5a5c6932c80bec6db5e94f55b50283a4797c",
+            "covers": {
+              "entity": "Penang",
+              "measure": "volume",
+              "period": "twenty twenty six"
+            }
+          }
+        ],
+        "wordCount": 1089,
+        "publishedAt": "2026-09-17",
+        "relevance": 0.0848019860641927,
+        "sig": "5D419B3F574B551F8F016BF31F07CE70E0733ABE7A3AD4B57229A95733A429FA51DDCEDA90CA7F643BB8C9DD726CFED9C808BB93DD1A48522255EBCAF7D7E404"
+      }
+    },
+    {
+      "profileId": "load-factor",
+      "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+      "version": "v1",
+      "title": "Power Draw of AI Accelerator Racks: A Comparative Study",
+      "publisher": "Load Factor",
+      "preview": "A professor of energy systems walks through the arithmetic of AI accelerator rack power, comparing real-world measurements and their implications for grid planning.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "ai-accelerator-power-draw",
+      "facets": [
+        "AI",
+        "accelerator",
+        "power-draw"
+      ],
+      "authority": 1,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Load Factor"
+      },
+      "publisherSlug": "load-factor",
+      "writerSlug": "load-factor",
+      "url": "/w/load-factor/articles/load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+      "relevance": 0.0966391462075924
+    },
+    {
+      "profileId": "the-fab-floor",
+      "resourceId": "fab-floor-kestrel-allocation",
+      "version": "v1",
+      "title": "Where Kestrel's 24,000 wafers come from",
+      "publisher": "The Fab Floor",
+      "preview": "Kestrel's monthly wafer slots are locked, and the paperwork tells you exactly who got squeezed to make room.",
+      "price": {
+        "amountMinor": 25,
+        "currency": "SGD"
+      },
+      "wallet": "rM2tvXBuWbw6AcGf3Mw4u5BHDxxttpzFHs",
+      "family": "kestrel-allocation",
+      "facets": [
+        "Kestrel Semiconductor",
+        "TSMC",
+        "allocation"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "The Fab Floor"
+      },
+      "publisherSlug": "the-fab-floor",
+      "writerSlug": "the-fab-floor",
+      "url": "/w/the-fab-floor/articles/fab-floor-kestrel-allocation",
+      "relevance": 0.13279236914170972,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "the-fab-floor",
+        "articleId": "fab-floor-kestrel-allocation",
+        "version": "v1",
+        "wallet": "rM2tvXBuWbw6AcGf3Mw4u5BHDxxttpzFHs",
+        "pubKey": "ED8F51129BDBD05EE5B92390031DE78DD9B96625B202B3D4810C0BF76224DF01E8",
+        "priceMinor": 25,
+        "leaves": [
+          "ac48eb29eca37b79be881fe5ee1a714b45f9e57035d38fd3a559f5d3f3f86059",
+          "6523f5c18a1d1c55d8f95cc6832a5674286fc9eaa9e0c61edc7a3fc6123d3294",
+          "50f14e10573f11ba97848e9e7dbb9e9bec28bc29b88708a18ed143557781f49a",
+          "6c2c22203c5c35c152c382e91d76fd27dd5e7b81cd2ebfe926e1d03a6d5d8c47",
+          "db12c3baca314e1eec1dd56377f97d700f7ecdd3a5dcf337fe70b0522e1902ee",
+          "003297061fc9858e91c41ef4b27e8945b2442aeccda3c262f31aaa553eeee1a3",
+          "9470cbcb31bbc4873ccbb3446467d1cf358d18721457f583d9f3a5ffb5cada92",
+          "b644fb7fa84579e72fa65a648304d311a629fd4a2eed89f565548579b147819d",
+          "e88ee0ef772b5e4ee74aaeb3adca774c0386a7156770bbbd9f63c94fccae1088",
+          "d2d6c6a4bcd6bd6e2e5efb2dca146cdd91f2428c801dd500be1fad7ab4ad5045",
+          "7ef20725a4fc141131c5aa558565a0701838d80e607ba100b5e9644085ec6602",
+          "022d812ded856454f2c6634b0c6ed6ff5d96479408c5a405025d1ff0383e7244",
+          "2f1177ad03a952607093ff76e30953fdb72998af6bdcd73e19b48068cb93da94",
+          "3e057705c3c446021ac1251d573ac87f003c869259034d47ece699a00b9e940d",
+          "2136beb6f4c0962d077cac02f7501652795a7bc8f35859f596aaefc866553e9f"
+        ],
+        "root": "df8024302a674e9257ac2947c9ee80b49c3323d4f60284092cfd918e3fc55937",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "ac48eb29eca37b79be881fe5ee1a714b45f9e57035d38fd3a559f5d3f3f86059",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "allocation",
+              "period": "twenty twenty six"
+            }
+          },
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "6523f5c18a1d1c55d8f95cc6832a5674286fc9eaa9e0c61edc7a3fc6123d3294",
+            "covers": {
+              "entity": "Kestrel",
+              "measure": "capacity",
+              "period": "twenty twenty four"
+            }
+          },
+          {
+            "id": "p5:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "db12c3baca314e1eec1dd56377f97d700f7ecdd3a5dcf337fe70b0522e1902ee",
+            "covers": {
+              "entity": "wafer",
+              "measure": "yield"
+            }
+          },
+          {
+            "id": "p9:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "e88ee0ef772b5e4ee74aaeb3adca774c0386a7156770bbbd9f63c94fccae1088",
+            "covers": {
+              "entity": "chip",
+              "measure": "allocation",
+              "period": "twenty twenty seven"
+            }
+          }
+        ],
+        "wordCount": 1051,
+        "publishedAt": "2026-10-03",
+        "relevance": 0.13279236914170972,
+        "sig": "A1A808D086166258EC339CC2E88CD31D21E34C411E3665DD9F85DDFC7B4F92EBB80D01DD1907FE8488D9B9F03A3BE2D053CCA555490EB196641E066A7CF0090E"
+      }
+    }
+  ],
+  "intents": [],
+  "grants": [],
+  "receipts": [],
+  "payments": [],
+  "proofs": [
+    {
+      "resourceId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "load-factor",
+        "articleId": "load-power-draw-of-ai-accelerator-racks-a-comparative-study",
+        "version": "v1",
+        "wallet": "rPWBgynnBvmuS3hoWStQxdL1Nshk2iu8vE",
+        "pubKey": "ED7B162236D698F093395923245A8B7CDC4ED6EA3EB82C5F8738486C0C7789C9EE",
+        "priceMinor": 0,
+        "leaves": [
+          "18802ad872caba9574e866858097044d85706684b64fe1a0fe774bfc02130481",
+          "703628d47638e597b3059acca943bb1dead1453d57b48db23dc36aa0d81659b0",
+          "373b932a0d5459c1e259d27d9f9f78dfa25b93a4ed780fe912392a188e429b8b",
+          "c1f3c1ae5428f99c3d6438238179262cdb8c54e7a91ad8f085be4b6f6d5fcbc9",
+          "1598933c8e4e68b87113656c77bc4fa5c2dd12c055bc2c449c0488445ceafa29",
+          "a0d3dcb68a974805d92d864ea0da4621aa46169284afb0178b6247e0f67a497c",
+          "090498d6d903e040182d64578b7025332a20ccc2da6441c09be9314419ba42b7",
+          "a5f3b5a397d9ee2fc94d77ed05af3aadcc0728a90d639219b76698fcfac2cc93",
+          "24190d0aa851c2e837315f3bc7fdcd75d7ea624607dee6cdb2d3f340ef526f7a",
+          "89fe11e0b033dcceedae7a316eb899a2cb1ed3b244ef25cb001169315e9b77e6",
+          "e686261b06db0f8a86105361d9a7c719b7dcba2cbf14c2444297cbc176faf9a0",
+          "3cb46bf952f1fe7c2bad072ff2bf8f5653b6f06128b60a891741fc54fa7ce873",
+          "d098fe9f1d77ae91a4e4cae31398291e9c75a90424701ccd97a256f85dea5316",
+          "ded7095d349ca37a13f70200ec93df584251b1dba2e48b928589f7e2bebeb7c9"
+        ],
+        "root": "250278be2b78c368f37f3efea4d289e82a382856813480aa7d5df8ec21945ba5",
+        "claims": [
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "373b932a0d5459c1e259d27d9f9f78dfa25b93a4ed780fe912392a188e429b8b"
+          },
+          {
+            "id": "p6:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "a0d3dcb68a974805d92d864ea0da4621aa46169284afb0178b6247e0f67a497c"
+          },
+          {
+            "id": "p6:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "a0d3dcb68a974805d92d864ea0da4621aa46169284afb0178b6247e0f67a497c"
+          },
+          {
+            "id": "p7:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "090498d6d903e040182d64578b7025332a20ccc2da6441c09be9314419ba42b7"
+          },
+          {
+            "id": "p9:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "24190d0aa851c2e837315f3bc7fdcd75d7ea624607dee6cdb2d3f340ef526f7a"
+          },
+          {
+            "id": "p10:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "89fe11e0b033dcceedae7a316eb899a2cb1ed3b244ef25cb001169315e9b77e6"
+          },
+          {
+            "id": "p10:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "89fe11e0b033dcceedae7a316eb899a2cb1ed3b244ef25cb001169315e9b77e6"
+          },
+          {
+            "id": "p11:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "e686261b06db0f8a86105361d9a7c719b7dcba2cbf14c2444297cbc176faf9a0"
+          },
+          {
+            "id": "p12:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "3cb46bf952f1fe7c2bad072ff2bf8f5653b6f06128b60a891741fc54fa7ce873"
+          },
+          {
+            "id": "p13:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "d098fe9f1d77ae91a4e4cae31398291e9c75a90424701ccd97a256f85dea5316"
+          }
+        ],
+        "wordCount": 902,
+        "publishedAt": "2026-07-20",
+        "relevance": 1,
+        "sig": "38881DA94C8EC0157010F31307DAB2E0D786A29280E7F9B7DEB6A0689F700C029EF93F94DA9F45909246C76D3AE7306FB23FA6F70F6616FEACAA08B95B272303"
+      },
+      "salts": [
+        "4a7259ab555e0cf72f98480b06a09d9e",
+        "6e16e9c4f58c314cbed46909326a085e",
+        "db066d884b29fc4a59252bc773713a2d",
+        "2fde3cf97594b936540f0a0a4c2b966e",
+        "e779b3409e039b66c6added72a3d4c07",
+        "0145517b7cef86576c04dfe3de02ba7a",
+        "4caaf44b7d0e2055e1766096c0b5fd3e",
+        "c3d770f2b8cfff6945ab0d0c68b70473",
+        "8cadebe6b744235e774a679946d4a7ba",
+        "85eaa4af439e6d736623732c34eb955f",
+        "83e32d0fd03d684cf671c5334e2ad0f3",
+        "87b08fd2c0a8cc0d297879266a7f90fa",
+        "513839fb168eea3aa8ab6fb66b7c1493",
+        "119df308fc1b28685f1863ed551f0256"
+      ]
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 24,
+      "hash": "ef3bd361867b69bb8003eafa1bc8c162d7f5147801979f6010eabb824b48f7e8"
+    },
+    "entries": [
+      {
+        "seq": 25,
+        "at": "2026-11-10T18:40:29.894Z",
+        "prevHash": "ef3bd361867b69bb8003eafa1bc8c162d7f5147801979f6010eabb824b48f7e8",
+        "hash": "64d2c94eb161252c04243ef81ae172947dee2318ad0183771ed1803d1067fb80",
+        "runId": "6b9016cd-a74f-4efc-8965-c14bef941887",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-10",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "0512c6a2d053ca6bc921f09cd30fef679db6543fef3f6881aaa42405499fddaf",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 5000,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 2000
+        }
+      },
+      {
+        "seq": 26,
+        "at": "2026-11-10T18:40:29.951Z",
+        "prevHash": "64d2c94eb161252c04243ef81ae172947dee2318ad0183771ed1803d1067fb80",
+        "hash": "24c2db0d27954fff0d14fc954465b45ac2d2a3ced70ddf5cb0162e7347b32cce",
+        "runId": "6b9016cd-a74f-4efc-8965-c14bef941887",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 4,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": null,
+          "selectedSourceKey": null,
+          "threshold": 0.2,
+          "verdicts": {
+            "SKIP_LOW_VALUE": 4
+          }
+        }
+      },
+      {
+        "seq": 27,
+        "at": "2026-11-10T18:40:29.957Z",
+        "prevHash": "24c2db0d27954fff0d14fc954465b45ac2d2a3ced70ddf5cb0162e7347b32cce",
+        "hash": "dbe92a95c0847ffe16b477ece3cb56bf87f89ecefff2889649c29d11973b2d29",
+        "runId": "6b9016cd-a74f-4efc-8965-c14bef941887",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "03db5db847f06d341fb4b55c6648f88b532f42e1721b555a794e012169b49190"
+        }
+      }
+    ],
+    "head": "dbe92a95c0847ffe16b477ece3cb56bf87f89ecefff2889649c29d11973b2d29"
+  }
+}

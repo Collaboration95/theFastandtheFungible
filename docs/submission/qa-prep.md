@@ -2,7 +2,7 @@
 
 Each question has a **Say** (about 20 seconds aloud) and a **Behind it** with
 the source. Counts are generated into [facts.json](facts.json) (as of
-<!--f:as_of-->10 Nov 2026<!--/f-->); read this page rendered on GitHub, where the
+<!--f:as_of-->11 Nov 2026<!--/f-->); read this page rendered on GitHub, where the
 markers that keep them in sync are hidden. Check the [tracker](../SFF-PUSH.md)
 on 17 Nov for anything newer.
 
@@ -27,8 +27,8 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **<!--f:writer_s-->33.9<!--/f--> s** | `init` + `publish`: Markdown folder → writer Credential validated on Testnet | generated starter note, public faucet, one measurement | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389) |
 | **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
-| **<!--f:prs-->217<!--/f--> / <!--f:releases-->13<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->522d32e0<!--/f--> on <!--f:as_of-->10 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
-| **Held-out <!--f:heldout-->7/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v4 blind held-out: 7/20 bought and cited, 0/10 off-topic purchases (run once, 7 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->2/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v4-heldout/README.md) |
+| **<!--f:prs-->235<!--/f--> / <!--f:releases-->13<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->75cc2797<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
+| **Held-out <!--f:heldout-->16/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v4-heldout/README.md) |
 | **SingHacks baseline** | <!--f:singhacks_then-->At SingHacks the prototype let a language model plan each purchase; payment was a fixture by default, with optional Testnet settlement.<!--/f--> | tag `hackathon-baseline` (7 Sep commit) | [prototype README](https://github.com/Collaboration95/theFastandtheFungible/blob/hackathon-baseline/prototypes/ResearchAgent/README.md) |
 
 ---
@@ -69,15 +69,15 @@ first-try `init` + `publish` is <!--f:writer_s-->33.9<!--/f--> s (J3, #389).
 ### 3. I asked my own question. What happens?
 
 **Say:** "It can buy and cite our labelled team notes. With fixture models on
-Testnet, <!--f:heldout_n-->seven<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->
+Testnet, <!--f:heldout_n-->sixteen<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->
 blind held-out questions were bought and cited, and on
 <!--f:offtopic_N-->ten<!--/f--> off-topic questions it bought nothing. The key
-fact leads the answer in <!--f:answers_it-->2/20<!--/f-->. If policy declines the available articles, it buys nothing, and
+fact leads the answer in <!--f:answers_it-->7/20<!--/f-->. If policy declines the available articles, it buys nothing, and
 the decline now lists each policy reason in 'Why'. Discovery does not guarantee
 a purchase. Development sets, which we tuned on, are separate: v1
 <!--f:dev_v1-->16/20<!--/f--> and v3 <!--f:dev_v3-->7/20<!--/f-->."
 
-**Behind it:** [v4 evidence](../evidence/v4-heldout/README.md): <!--f:heldout_line-->v4 blind held-out: 7/20 bought and cited, 0/10 off-topic purchases (run once, 7 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->; answers-it <!--f:answers_it-->2/20<!--/f-->, <!--f:heldout_violations-->0<!--/f--> gate violations. Run once on `main` `bdc30f97`, fixture decision model at threshold 0.20, team-authored writers, Testnet. v4 is now used; a new held-out claim needs a new blind bank (v5). Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: 13 of 20 held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality.
+**Behind it:** [v4 evidence](../evidence/v4-heldout/README.md): <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->; answers-it <!--f:answers_it-->7/20<!--/f-->, <!--f:heldout_violations-->0<!--/f--> gate violations. Run once on `main` `bdc30f97`, fixture decision model at threshold 0.20, team-authored writers, Testnet. v4 is now used; a new held-out claim needs a new blind bank (v5). Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: 13 of 20 held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality.
 
 ### 4. Who pays for this, and who is writer number one?
 

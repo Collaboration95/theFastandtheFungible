@@ -40,7 +40,7 @@ RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
 **[0:48 · slide 3]**
 At SingHacks we had a prototype: a language model planned each purchase, and
-payment was simulated by default. Since then we merged <!--f:prs-->217<!--/f-->
+payment was simulated by default. Since then we merged <!--f:prs-->235<!--/f-->
 pull requests. Today a judge opens one link, or runs one line with no clone and
 no account. It buys, catches a broken promise, gets refunded, re-buys, anchors
 the answer and prints "result: pass" with six Testnet links.
@@ -54,7 +54,7 @@ read-only checks.
 **[1:22 · slide 8]**
 The same package is an MCP server for Claude Code and a local app. Ask about
 XRPL and it can buy from our labelled team build notes. With fixture models
-on Testnet, <!--f:heldout_n-->seven<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->
+on Testnet, <!--f:heldout_n-->sixteen<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->
 blind held-out questions were bought and cited, and on
 <!--f:offtopic_N-->ten<!--/f--> off-topic questions it bought nothing.
 Development sets are reported separately. [Evidence](../evidence/v4-heldout/README.md).
@@ -112,15 +112,15 @@ Never cut the "Testnet" line on slide 1.
   <!--f:try_misses-->2 of 4<!--/f--> cold attempts overran 90 s. Source:
   `docs/evidence/round4-j2/`. It is not in the script any more: the live
   sandbox is the first thing judges use.
-- **"<!--f:heldout_n-->seven<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->"**:
-  <!--f:heldout_line-->v4 blind held-out: 7/20 bought and cited, 0/10 off-topic purchases (run once, 7 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->.
-  The key fact leads the answer in <!--f:answers_it-->2/20<!--/f-->; 0 gate
+- **"<!--f:heldout_n-->sixteen<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->"**:
+  <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->.
+  The key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate
   violations. Say that the development sets are separate (v1
   <!--f:dev_v1-->16/20<!--/f-->), because we tuned on them. Do not say "fifteen
   of twenty": that was an earlier, tuned bank.
-- **"<!--f:prs-->217<!--/f--> pull requests"**: merged into `main` since
-  <!--f:since-->21 Sep<!--/f-->, counted at <!--f:sha-->522d32e0<!--/f--> on
-  <!--f:as_of-->10 Nov 2026<!--/f-->. Say "since SingHacks", not "in a week".
+- **"<!--f:prs-->235<!--/f--> pull requests"**: merged into `main` since
+  <!--f:since-->21 Sep<!--/f-->, counted at <!--f:sha-->75cc2797<!--/f--> on
+  <!--f:as_of-->11 Nov 2026<!--/f-->. Say "since SingHacks", not "in a week".
 - **SingHacks baseline**: the prototype (tag `hackathon-baseline`) let a
   language model plan purchases; payment was a fixture by default with optional
   Testnet settlement. The old deck line about a human approving purchases was wrong; do not repeat it.
