@@ -54,7 +54,7 @@ const aboutPage = (entry: PublisherEntry) => {
 <h2>Licence</h2><p>${esc(publisher.licence)}</p>${wallet}`)
 }
 
-const contactPage = (entry: PublisherEntry) => page(`Contact · ${entry.publisher.name}`, navFor(entry), `<h1>Contact</h1><p class="note">${entry.publisher.synthetic ? 'This is a synthetic publication. There is no inbox behind this page.' : 'No contact inbox is provided by this local site.'}</p>`)
+const contactPage = (entry: PublisherEntry) => entryPage(entry, `Contact · ${entry.publisher.name}`, navFor(entry), `<h1>Contact</h1><p class="note">${entry.publisher.synthetic ? 'This is a synthetic publication. There is no inbox behind this page.' : 'No contact inbox is provided by this local site.'}</p>`)
 
 const indexPage = (entries: PublisherEntry[]) => page('The web the engine searches', `<nav><a class="name" href="/w/">The web the engine searches</a><div class="mid"></div><div class="right"></div></nav>`,
   `<h1>The web the engine searches</h1><p class="note">Every publisher the research agent can search. ${entries.every(e => e.publisher.synthetic) ? 'All fictional.' : 'Testnet · writers are unverified.'}</p><ul class="rows">${entries.map(({ publisher, writers, articles }) => {

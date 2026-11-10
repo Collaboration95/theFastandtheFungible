@@ -45,10 +45,22 @@ class VerificationError(ResearchAgentError):
     pass
 
 
+class AnswerLead(TypedDict):
+    text: str
+    claim: dict[str, Any]
+
+
+class AnswerResult(TypedDict, total=False):
+    lead: list[AnswerLead]
+    conclusion: str
+    claims: list[dict[str, Any]]
+    openGaps: list[dict[str, Any]]
+
+
 class AskResult(TypedDict):
     run_id: str
     phase: str
-    answer: dict[str, Any] | None
+    answer: AnswerResult | None
     citations: list[dict[str, Any]]
     receipts: list[dict[str, Any]]
     labels: dict[str, Any]
@@ -71,6 +83,9 @@ class _NoRedirect(HTTPRedirectHandler):
 
 def _present(run: dict[str, Any]) -> AskResult:
     answer = run['answers'][-1] if run['answers'] else None
+    if answer is not None:
+        answer = {'lead': answer.get('lead', []), 'conclusion': answer['conclusion'],
+                  **{k: v for k, v in answer.items() if k not in ('lead', 'conclusion')}}
     citations = []
     for claim in (answer or {}).get('claims', []):
         for citation in claim['citations']:
@@ -90,8 +105,12 @@ def _present(run: dict[str, Any]) -> AskResult:
                               'writer': content['publisher'], 'writerVerification': candidate.get('verification') if isinstance(candidate.get('verification'), dict) else {'status': 'unverified'},
                               'credentialNotice': 'unsigned advisory; requires online check', 'grantIntentId': grant['intentId'] if grant else None,
                               'passage': next(s['text'] for s in content['spans'] if s['id'] == citation['spanId'])})
+    receipts = []
+    for receipt in run['receipts']:
+        intent = next((i for i in run['intents'] if i['intentId'] == receipt['intentId']), {})
+        receipts.append({**receipt, **({'purchaseKind': intent['purchaseKind']} if intent.get('purchaseKind') else {})})
     return AskResult(run_id=run['runId'], phase=run['phase'], answer=answer, citations=citations,
-                     receipts=run['receipts'], labels=run['labels'], budgetMinor=run['budgetMinor'],
+                     receipts=receipts, labels=run['labels'], budgetMinor=run['budgetMinor'],
                      spentMinor=run['spentMinor'], requestedBudgetMinor=run['budgetMinor'], clamped=False)
 
 

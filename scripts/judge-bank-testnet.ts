@@ -65,14 +65,16 @@ const save = () => {
   const violations=auditRuns([run],corpus).violations
   const cited=run.answers.at(-1)?.claims.flatMap(c=>c.citations)??[]
   const purchasedCitations = cited.filter(c => run.intents.some(i => i.status === 'VERIFIED' && sameSource(i,c)) && run.contents.some(content => sameSource(content,c) && content.spans.some(span => span.id === c.spanId)))
-  const lead = leadFinding(q.question, run.answers.at(-1)?.claims ?? []).map(item => ({text: item.text, citations: item.claim.citations}))
+  const lead = (run.answers.at(-1)?.lead ?? leadFinding(q.question, run.answers.at(-1)?.claims ?? [])).map(item => ({text: item.text, citations: item.claim.citations}))
   const score = answersIt(q.gold, lead, purchasedCitations)
   // A settled/refunded purchase still counts as a negative buy, even without a citation.
   const purchased = run.intents.some(i => Boolean(i.settledAt || i.txHash || i.escrow?.createHash) || ['VERIFIED','SETTLED','REFUNDED'].includes(i.status)) || run.spentMinor > 0
   values.push(...decisionValues(q.id, q.expect === 'no_purchase', run.decisions))
   const blank=!a.answer?.conclusion && !run.answers.at(-1)?.conclusion
   const transactions=run.intents.flatMap(i=>[i.escrow?.createHash,i.escrow?.finishHash,i.refund?.txHash]).concat(run.ledgerAnchor?.txHash).filter(Boolean).map(hash=>`https://testnet.xrpl.org/transactions/${hash}`)
-  const result={...q,runId:run.runId,phase:run.phase,buyAndCite:purchasedCitations.length>0,answersIt:score,purchased,expectationPass:q.expect === 'no_purchase' ? !purchased && run.phase === 'DONE' : purchasedCitations.length>0,blank,violations,verificationOk:verification.ok,conclusion:run.answers.at(-1)?.conclusion,citations:cited.length,spentMinor:run.spentMinor,transactions}
+  const conclusionWords=(run.answers.at(-1)?.conclusion ?? '').trim().split(/\s+/).filter(Boolean).length
+  const purchases=run.intents.filter(i=>Boolean(i.settledAt || i.txHash || i.escrow?.createHash) || ['VERIFIED','SETTLED','REFUNDED'].includes(i.status)).length
+  const result={...q,conclusionWords,purchases,leadWords:lead.map(l=>l.text).join(' ').trim().split(/\s+/).filter(Boolean).length,runId:run.runId,phase:run.phase,buyAndCite:purchasedCitations.length>0,answersIt:score,purchased,expectationPass:q.expect === 'no_purchase' ? !purchased && run.phase === 'DONE' : purchasedCitations.length>0,blank,violations,verificationOk:verification.ok,conclusion:run.answers.at(-1)?.conclusion,citations:cited.length,spentMinor:run.spentMinor,transactions}
   results.push(result);save()
   console.log(q.id, q.expect === 'no_purchase' ? (purchased ? 'NEGATIVE_BUY' : 'ABSTAIN') : (result.buyAndCite ? 'BUY+CITE' : 'MISS'), 'answersIt',score,result.phase,'violations',violations.length)
  }

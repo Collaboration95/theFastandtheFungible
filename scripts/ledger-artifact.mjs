@@ -1,4 +1,4 @@
-import { currencyLabel } from '../site/ledger/ledger.js'
+import { operationLabel, rowContext, rowAmount, shortHash } from '../site/ledger/ledger.js'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -95,11 +95,7 @@ export function artifact() {
 }
 function htmlArtifact(out) {
   const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')
-  const rows = JSON.parse(out).rows.map(r => {
-    const a = r.deliveredAmount ?? r.amountDrops
-    const amount = typeof a === 'object' ? `${a.value} ${currencyLabel(a.currency)} · issuer ${a.issuer}` : a ? `${a} drops` : r.group === 'anchor' ? `Memo = audit head ${r.head.slice(0, 12)}…; answer anchor` : 'Principal amount not recorded in this evidence'
-    return `<tr><td>${escape(r.label ?? `${r.group}: ${r.operation ?? r.kind}`)} · ${r.date}</td><td>${escape(amount)} · fee ${r.feeDrops} drops</td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a href="https://testnet.xrpl.org/transactions/${r.hash}">${r.hash}</a><span class="state">Historical; not freshly verified</span></td></tr>`
-  }).join('')
+  const rows = JSON.parse(out).rows.map(r => `<tr><td><span class="op">${operationLabel(r)}</span><span class="ctx">${escape(rowContext(r))}</span></td><td><span class="amt">${escape(rowAmount(r))}</span><span class="fee">fee ${r.feeDrops} drops</span></td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a class="hash" href="https://testnet.xrpl.org/transactions/${r.hash}" title="${r.hash}" aria-label="Transaction ${r.hash}">${shortHash(r.hash)}</a><span class="state">Historical; not freshly verified</span></td></tr>`).join('')
   return read('site/ledger/index.html').replace(/Checking \d+ hashes live… 0\/\d+/, `Checking ${JSON.parse(out).rows.length} hashes live… 0/${JSON.parse(out).rows.length}`).replace(/<caption>.*?<\/caption>/, `<caption>${JSON.parse(out).rows.length} curated transactions · snapshot ${JSON.parse(out).snapshotDate}</caption>`).replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

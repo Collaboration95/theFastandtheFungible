@@ -38,7 +38,9 @@ it('first run buys, cites paid contribution, reports coverage, and abstains with
     expect(events.filter(e=>e.type==='COVERAGE').at(-1)?.label).toBe('2 of 2 requested facts answered.')
     // The README quick-start question must also buy: "margins" is the gap, not only "change".
     const readme = await client.ask('What did the Kestrel–TSMC deal do to margins?', {budget:1})
-    expect(readme.receipts).toHaveLength(1)
+    expect(readme.receipts).toHaveLength(2)
+    expect(readme.purchases.filter(p => p.purchaseKind === 'probe purchase · new writer').map(p => p.resourceId)).toEqual(['kopi-kestrel-tsmc-hype'])
+    expect(readme.purchases.some(p => p.resourceId === 'notft-kestrel-tsmc-deal-margins')).toBe(true)
     expect(readme.spentMinor).toBeGreaterThan(0)
     for (const dash of ['-', '–', '—']) {
       const r = await client.ask(`How did the Kestrel${dash}TSMC deal change margins?`, {budget:1})

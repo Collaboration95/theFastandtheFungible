@@ -1,3 +1,4 @@
+import { probeMetadata } from './agents/precision.js'
 import { pastRunSummaries } from './history-query.js'
 import { ExactCache } from './exact-cache.js'
 import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
@@ -90,6 +91,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS escrow_attempts (tx_hash TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS escrow_outbox (intent_id TEXT NOT NULL REFERENCES escrows(intent_id), operation TEXT NOT NULL, tx_hash TEXT UNIQUE NOT NULL, json TEXT NOT NULL, PRIMARY KEY(intent_id,operation));
       CREATE TABLE IF NOT EXISTS submissions (intent_id TEXT PRIMARY KEY REFERENCES intents(id), tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL, last_ledger INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS newcomer_probes (wallet TEXT PRIMARY KEY, intent_id TEXT UNIQUE NOT NULL);
       CREATE TABLE IF NOT EXISTS publisher_reputation (wallet TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS credential_revocations (intent_id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS manifests (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL);
@@ -481,6 +483,14 @@ export class Store {
       return next
     })
   }
+  /** A reservation counts as a prior sale here, closing the concurrent-run window. */
+  probeAvailable(wallet: string): boolean {
+    const history = this.getReputation(wallet)
+    if (history && (history.passes > 0 || history.fails > 0)) return false
+    return !this.prepare('SELECT wallet FROM newcomer_probes WHERE wallet=?').get(wallet)
+      && !this.prepare(`SELECT id FROM intents WHERE json_extract(json,'$.quote.payment.payTo')=?
+        AND json_extract(json,'$.status') NOT IN ('SKIPPED','FAILED_NOT_SETTLED') LIMIT 1`).get(wallet)
+  }
   reserveIntent(input: PurchaseIntent): PurchaseIntent {
     const intent = PurchaseIntentSchema.parse(input)
     if (!sourceBinding(intent)) throw new Error('Source identity mismatch')
@@ -491,19 +501,25 @@ export class Store {
         return existing
       }
       const run = this.rawRun(intent.runId)
+      const decision = this.rows<DecisionRound>('SELECT json FROM decisions WHERE run_id=? ORDER BY round', intent.runId).at(-1)
+      const pick = decision?.rows.find(row => row.probe && row.verdict === 'BUY' && sameSource(row.candidate, intent) && decision.selectedResourceId === intent.resourceId)
+      const candidate = pick && run.candidates.find(c => sameSource(c, intent))
+      const probe = !!pick
       const quote = intent.quote
       if (!quote || !sameSource(quote, intent) || quote.intentId !== intent.intentId || quote.runId !== intent.runId || quote.profileId !== intent.profileId || quote.resourceId !== intent.resourceId || quote.version !== intent.version) throw new Error('Quote identity mismatch')
       const intents = this.rows<PurchaseIntent>('SELECT json FROM intents WHERE run_id=?', intent.runId)
       const committed = intents.filter(i => reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED').reduce((sum, i) => sum + i.amountMinor, 0)
       let error: string | undefined
-      if (quote.amountMinor !== intent.amountMinor) error = 'Quoted price differs from evaluated price'
+      if (probe && (!candidate || !probeMetadata(run.question, candidate, run.candidates[0]) || candidate.price.amountMinor !== intent.amountMinor || intent.amountMinor > 30 || !candidate.wallet || !this.probeAvailable(candidate.wallet) || candidate.wallet !== quote.payment?.payTo)) error = 'New-writer probe unavailable'
+      else if (quote.amountMinor !== intent.amountMinor) error = 'Quoted price differs from evaluated price'
       else if (this.isPaused() || this.principalPaused(run.runId)) error = PAUSED
       else if (!this.walletAllows(run, intent.amountMinor)) error = 'Wallet daily cap exceeded'
       else if (run.stopped) error = 'Run stopped'
       else if (run.budgetMinor === 0 || intent.amountMinor > run.perSourceCapMinor || committed + intent.amountMinor > run.budgetMinor) error = 'Budget or per-source cap exceeded'
       else if (Date.parse(quote.expiresAt) <= Date.now() || !Number.isFinite(Date.parse(quote.expiresAt))) error = 'Quote expired'
       else if (intents.some(i => i.profileId === intent.profileId && sameSource(i, intent) && (reservedStatuses.has(i.status) || chargedStatuses.has(i.status) || i.escrow?.state === 'CANCELLED'))) error = 'Resource already purchased or reserved'
-      const result: PurchaseIntent = { ...intent, status: error ? 'SKIPPED' : 'RESERVED', createdAt: new Date().toISOString(), error }
+      if (probe && !error) this.prepare('INSERT INTO newcomer_probes VALUES (?,?)').run(candidate!.wallet!, intent.intentId)
+      const result: PurchaseIntent = { ...intent, ...(probe && !error ? { purchaseKind: 'probe purchase · new writer' as const } : {}), status: error ? 'SKIPPED' : 'RESERVED', createdAt: new Date().toISOString(), error }
       this.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId, intent.runId, JSON.stringify(result))
       const terms = { source: intent.source ?? null, resourceId: intent.resourceId, version: intent.version, profileId: intent.profileId, amountMinor: intent.amountMinor, payTo: quote.payment?.payTo ?? null, rail: quote.payment?.rail ?? null,
         runBudgetMinor: run.budgetMinor, perSourceCapMinor: run.perSourceCapMinor, committedMinor: committed, walletDailyMinor: spendPolicy().walletDailyMinor, policyVersion: run.policyVersion ?? POLICY_VERSION }

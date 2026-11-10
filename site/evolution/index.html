@@ -165,6 +165,8 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .tip, .waffle i {  } .ticker.flash {  } }
 /* SFF additions: restrained cards; movement only on first entry. */
+.archive-note { display:inline-block; margin:0 0 18px; padding:8px 12px; border:1px solid var(--rule); border-radius:10px; background:#fff; font:500 14px/1.4 var(--f-ui); color:var(--muted); }
+.archive-note a { color:var(--ink); }
 .sff-day { margin-top:24px; padding:24px 0; border-top:1px solid var(--rule-2); }
 .sff-day h3 { font:600 20px var(--f-ui); }
 .sff-day li { margin:10px 0; overflow-wrap:anywhere; }
@@ -220,11 +222,11 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
 .ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
 @media print{.ra-hdr{display:none}}</style>
 <div class="ra-hdr" role="banner"><div class="ra-hdr-in">
 <a class="ra-hdr-brand" href="../index.html" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
-<nav aria-label="Explainers"><a href="../demo/">Try it</a><a href="../index.html">Explainers</a><a href="../talk/">Walkthrough</a><a href="../slides/">Slides</a><a href="../project-map/">Project map</a><a href="../evolution/" aria-current="page">Build log</a></nav>
+<nav aria-label="Explainers"><a href="../demo/">Try it</a><a href="../index.html">Explainers</a><a href="../progress/">Progress</a><a href="../talk/">Walkthrough</a><a href="../slides/">Slides</a><a href="../project-map/">Project map</a><a href="../ledger/">Ledger ✓</a><a href="../evolution/" aria-current="page">October log</a></nav>
 <div class="ra-hdr-end"><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
 </div></div>
 <!-- site-header:end -->
@@ -240,7 +242,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
   <a href="#tests">Tests and CI</a>
   <a href="#design">Design</a>
   <a href="#stage">Demo day</a>
-  <a href="#sff">SFF push (Nov)</a>
+  <a href="../progress/">Since SingHacks →</a>
 </nav>
 
 <div class="wrap"><main>
@@ -248,6 +250,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 <!-- HERO -->
 <section id="top" style="padding-top:64px">
   <div class="prose">
+    <p class="archive-note">Archive: the October build, before the finals push. For everything since SingHacks, see <a href="../progress/">Progress</a>.</p>
     <div class="kick">Build log · 3 Sep → 11 Oct 2026</div>
     <h1>39 days, two coding agents, <span class="hl">one demo.</span></h1>
     <p class="lede">ResearchAgent is an evidence workspace with a wallet. This page is how it got built, told only in numbers: every commit, pull request, prompt and token, replayed from git, GitHub and the coding agents' own logs.</p>
@@ -427,18 +430,11 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 </section>
 
 <section id="sff" aria-labelledby="sff-title">
-  <div class="prose"><div class="kick">SFF push · November 2026</div>
-    <h2 id="sff-title">Build, measure, ship.</h2>
-    <p class="lede">The finals chapter, one card per day from our running changelog. Each ship keeps its evidence and any recorded metric move.</p>
-    <p><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/BUILDER-FEEDBACK.md">Builder feedback and mainnet gaps ↗</a></p>
+  <div class="prose"><div class="kick">November 2026</div>
+    <h2 id="sff-title">The finals chapter moved.</h2>
+    <p class="lede">Everything after this archive, from the first release on 3 November to today, lives on one page with a receipt for each claim: releases, Testnet transactions, blind measurements and the misses we kept.</p>
+    <p><a href="../progress/">Open Progress since SingHacks →</a></p>
   </div>
-  <p id="sff-source" class="mono"></p>
-  <div id="sff-days"><p>SFF changelog coming soon.</p></div>
-  <div class="panel panel-in"><h3>Scorecard history</h3>
-    <p id="sff-score-note">Coming soon — the nightly scorecard has not been published.</p>
-    <div id="sff-scorecards"></div>
-  </div>
-  <noscript><p>JavaScript is required for the generated timeline cards. <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/SFF-PUSH.md#changelog">Read the changelog directly.</a></p></noscript>
 </section>
 
 <section class="close" id="close">
@@ -451,7 +447,6 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 </main></div>
 
 <script src="data.js"></script>
-<script src="sff.js"></script>
 <script>
 (() => {
 const D = window.EVO;

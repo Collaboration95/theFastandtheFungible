@@ -9,16 +9,18 @@ import { join } from 'node:path'
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 // Discover every page, including future verify pages, instead of silently skipping new routes.
 const siteRoot = join(import.meta.dirname, '..', 'site')
-const keys = { 'index.html': 'home', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build' }
+const keys = { 'index.html': 'home', 'progress/index.html': 'progress', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build', 'ledger/index.html': 'ledger' }
 const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html') && !file.startsWith('demo/')).map(file => ({ file, key: keys[file] ?? 'none' }))
 
 const NAV = [
   ['demo', 'demo/', 'Try it'],
   ['home', '', 'Explainers'],
+  ['progress', 'progress/', 'Progress'],
   ['talk', 'talk/', 'Walkthrough'],
   ['slides', 'slides/', 'Slides'],
   ['map', 'project-map/', 'Project map'],
-  ['build', 'evolution/', 'Build log'],
+  ['ledger', 'ledger/', 'Ledger ✓'],
+  ['build', 'evolution/', 'October log'],
 ]
 const START = '<!-- site-header:start -->'
 const END = '<!-- site-header:end -->'
@@ -41,7 +43,7 @@ const CSS = `@font-face{font-family:Geist;src:url("__UP__brand/geist-latin-wght-
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
 .ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
 @media print{.ra-hdr{display:none}}`
 
 // The mark: 24-unit grid, 1.5 stroke (design/brand/mark.svg).
@@ -50,9 +52,8 @@ const MARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M1
 function block(page) {
   const depth = page.file.split('/').length - 1
   const up = '../'.repeat(depth)
-  // Ledger is lane E's pinned header; validate its existing navigation until E refreshes it.
-  const links = page.file === 'index.html' ? [...NAV, ['ledger', 'ledger/', 'Ledger ✓']] : NAV
-  const nav = links.filter(([key]) => page.file !== 'ledger/index.html' || key !== 'demo').map(([key, href, label]) =>
+  // One navigation on every page, including the ledger (F-10).
+  const nav = NAV.map(([key, href, label]) =>
     `<a href="${up}${href || 'index.html'}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
   const note = page.note ? `<span class="ra-hdr-note">${page.note}</span>` : ''
   return `${START}

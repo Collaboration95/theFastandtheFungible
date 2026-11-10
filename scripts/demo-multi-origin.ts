@@ -1,3 +1,4 @@
+import { summarizeAnswer } from '../shared/answer-summary.js'
 import { createApiApp } from '../server/routes.js'
 import { createClient } from '../sdk/index.js'
 import { auditRuns } from './gate-audit.js'
@@ -73,7 +74,7 @@ export async function demoMultiOrigin() {
     // Explicit fixture rubric: report each independently granted source's exact first passage.
     answer.claims = current.contents.filter(c => c.source?.profileId === 'collision').map(c => ({ id: sourceKey(c), text: c.spans[0].text, stance: 'SUPPORTS', citations: [{ source: c.source, resourceId: c.resourceId, version: c.version, spanId: c.spans[0].id }] }))
     answer.conclusion = answer.claims.map(c => c.text).join(' ')
-    store.addAnswer(run.runId, answer)
+    store.addAnswer(run.runId, summarizeAnswer(run.question, answer, current.contents.filter(c => c.source?.profileId === 'collision').map(c => ({...c,spans:c.spans.slice(0,1)})), current.candidates))
     const gateAudit = auditRuns([store.getRun(run.runId)], { publishers: [], writers: [], articles: [...(await loadWriterCorpus(new URL('../data/', import.meta.url))).articles, ...a.corpus.articles, ...b.corpus.articles] })
     if (gateAudit.total) throw new Error(JSON.stringify(gateAudit))
     const bundle = receiptBundle(store, run.runId)

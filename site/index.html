@@ -98,11 +98,11 @@ footer a { color: var(--pen); text-underline-offset: 3px; }
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
 .ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
 @media print{.ra-hdr{display:none}}</style>
 <div class="ra-hdr" role="banner"><div class="ra-hdr-in">
 <a class="ra-hdr-brand" href="index.html" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
-<nav aria-label="Explainers"><a href="demo/">Try it</a><a href="index.html" aria-current="page">Explainers</a><a href="talk/">Walkthrough</a><a href="slides/">Slides</a><a href="project-map/">Project map</a><a href="evolution/">Build log</a><a href="ledger/">Ledger ✓</a></nav>
+<nav aria-label="Explainers"><a href="demo/">Try it</a><a href="index.html" aria-current="page">Explainers</a><a href="progress/">Progress</a><a href="talk/">Walkthrough</a><a href="slides/">Slides</a><a href="project-map/">Project map</a><a href="ledger/">Ledger ✓</a><a href="evolution/">October log</a></nav>
 <div class="ra-hdr-end"><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
 </div></div>
 <!-- site-header:end -->
@@ -113,10 +113,17 @@ footer a { color: var(--pen); text-underline-offset: 3px; }
     <h1>Research <span class="hl">with a wallet.</span></h1>
     <p>ResearchAgent searches expertise, buys missing evidence within your budget, and verifies delivery.</p>
     <p><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2">Releases</a> · <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2">Download for Mac</a></p>
-    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy articles straight from the writer, at most one per round and up to three rounds, inside a budget you set. Four ways in, from a two-minute replay to the full system map and the build log.</p>
+    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy articles straight from the writer, at most one per round and up to three rounds, inside a budget you set. Start with what changed since SingHacks, or go straight to a two-minute replay, the full system map or the public ledger.</p>
   </header>
 
   <div class="grid">
+    <!-- progress-card:start -->
+<a class="card full progress-card" href="progress/" style="--c: var(--ink); --i: 0">
+      <div class="tag">Since SingHacks</div>
+      <div><h2>From prototype to proof in 51 days</h2><p style="margin-top:10px">217 pull requests, 13 releases and 61 Testnet transactions since 21 Sep, each with a receipt. Misses included.</p></div>
+      <div class="go">Open the progress page <span>→</span></div>
+    </a>
+<!-- progress-card:end -->
     <a class="card wide" href="ledger/" style="--c: var(--ok); --i: 0"><h2>61 Testnet evidence rows</h2><p>Historical XRPL Testnet evidence; 61/61 validated in 1.65 s on 7 Nov. Rechecked on load. Unavailable history stays labelled; no real value.</p><span class="go">Ledger ✓</span></a>
     <a class="card wide" href="talk/" style="--c: var(--pen); --i: 0">
       <div class="tag">Start here</div>
@@ -139,9 +146,9 @@ footer a { color: var(--pen); text-underline-offset: 3px; }
       <div class="go">Open the map <span>→</span></div>
     </a>
     <a class="card wide" href="evolution/" style="--c: var(--model); --i: 3">
-      <div class="tag">Build log</div>
-      <div><h2>How it evolved</h2><p style="margin-top:10px">39 days in charts: commits, pull requests, coding-agent prompts and tokens, replayed from git, GitHub and the agents' own logs.</p></div>
-      <div class="go">Open the build log <span>→</span></div>
+      <div class="tag">Archive · October</div>
+      <div><h2>October build log</h2><p style="margin-top:10px">How it began, 3 Sep to 11 Oct, before the finals push: commits, pull requests and coding-agent usage in charts, replayed from git, GitHub and the agents' own logs.</p></div>
+      <div class="go">Open the October log <span>→</span></div>
     </a>
   </div>
 

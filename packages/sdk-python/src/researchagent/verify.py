@@ -658,6 +658,15 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
                         for e in entries
                     ),
                 )
+        for answer in b["answers"]:
+            for lead in answer.get("lead", []):
+                exact = bool(lead["text"].strip()) and len(lead["text"].split()) <= 40
+                for ref in lead["claim"]["citations"]:
+                    source = bykey(b["sources"], ref)
+                    span = next((s for s in source.get("spans", []) if s["id"] == ref["spanId"]), {})
+                    exact = exact and lead["text"] in span.get("text", "") and span.get("text", "") in source.get("body", "") and any(
+                        key(r) == key(ref) and r["spanId"] == ref["spanId"] for c in answer["claims"] for r in c["citations"])
+                add("citation lead v" + str(answer["version"]), exact)
         groups = [a["claims"] for a in b["answers"]]
         if "verification" in export and "report" in export:
             report = schema(
