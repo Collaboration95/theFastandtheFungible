@@ -8,7 +8,7 @@ const base=new URL(value('--url','http://127.0.0.1:6801'))
 const offline=argv.includes('--offline'), paused=argv.includes('--expect-paused'), dry=argv.includes('--dry-run')
 if(base.protocol!=='https:' && !['127.0.0.1','localhost'].includes(base.hostname)) throw Error('Public smoke requires HTTPS')
 if(dry) { console.log(JSON.stringify({origin:base.origin,mode:offline?'offline':'real-Testnet',question:value('--question','operator must supply --question for live purchase'),probes:['status','two independent cookies','foreign run/receipt/SSE/history','own purchase','receipt verification','explorer','paused origin']}));process.exit(0) }
-if(!offline && !value('--question')) throw Error('Live smoke requires an operator-supplied own --question (budget 200 minor)')
+if(!offline && !paused && !value('--question')) throw Error('Live smoke requires an operator-supplied own --question (budget 200 minor)')
 const rows=[]
 const record=(name,pass,detail)=>{rows.push({name,pass,detail});if(!pass) throw Error(name)}
 class Jar {
