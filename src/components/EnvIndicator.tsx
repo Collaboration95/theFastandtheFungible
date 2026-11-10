@@ -27,7 +27,7 @@ export default function EnvIndicator({ labels, recording = false, autoOpen = tru
   }, [])
   useEffect(() => {
     if (recording || !labels || !autoOpen) return
-    try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => { if (!interacted.current && (!document.activeElement || document.activeElement === document.body)) auto.current = true; setOpen(true) }, 0); return () => clearTimeout(timer) } } catch { /* private mode */ }
+    try { if (!localStorage.getItem('researchagent.environment-seen')) { const timer = setTimeout(() => { if (!interacted.current && (!document.activeElement || document.activeElement === document.body)) { auto.current = true; setOpen(true) } }, 0); return () => clearTimeout(timer) } } catch { /* private mode */ }
   }, [labels, recording, autoOpen])
   // Leaving Home (a run opened, a deep link resolved) retires an auto-opened note without marking it seen.
   useEffect(() => { if (!autoOpen && auto.current) { auto.current = false; setOpen(false) } }, [autoOpen])
