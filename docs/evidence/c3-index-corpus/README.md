@@ -109,9 +109,9 @@ Raw-audit reproduction uses the unchanged `readRuns`/`auditRuns` helpers with
 `auditAgentAuthority(auditEntries(readOnlyDatabase))`. Using the current worktree
 corpus to audit an older package is not a valid replacement for that context.
 
-## Shipping blocked
+## Earlier shipping failures
 
-No merge admission was obtained. `local-validation.json` retains exact clean
+The first shipping attempt obtained no merge admission. `local-validation.json` retains exact clean
 source identities, successful steps and failure output from the shipping attempts.
 At clean head `5dc69835`, the unit suite and all other executed checks passed,
 but both `tests/ux2.spec.ts:159` popover-overlap checks failed. The unchanged
@@ -127,8 +127,14 @@ checks were not admitted. Other lanes were running full gates concurrently.
 Timeouts remain unchanged, including the existing 5-second and 30-second limits.
 The earlier complete check:fast pass is pre-integration evidence only.
 
-The PR is left in draft for the owning lane to resolve the inherited UI failure
-and rerun the full gate under suitable load. No UI, policy or gate code was
+The first attempt left the PR in draft. The orchestrator subsequently confirmed
+the popover as an intermittent main-branch issue, assigned its permanent fix to
+GF, and authorized a rebase and one gate retry for the named load failures. No UI, policy or gate code was
 edited to clear these failures. Receipt archives and measured artifacts remain
-valid for the isolated C3 corpus comparison. A green current-head gate and an
-exact merged-commit admission are still required before claiming shipment.
+valid for the isolated C3 corpus comparison. Current-head and exact merged-commit admission are recorded in the PR status;
+these historical failed receipts never substitute for either admission.
+
+On resume after #426, `integration-resume.json` records runtime package changes
+from the upstream DX lane separately. All measured corpus bytes are unchanged.
+The original dev-bank measurements describe their pinned artifact, not a new
+measurement of the integrated DX runtime. No judge banks were rerun on resume.
