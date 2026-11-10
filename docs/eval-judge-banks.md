@@ -8,9 +8,16 @@ RA_ACCEPT_TESTNET=1 JUDGE_BANK=eval/questions/judge-xrpl.v3-dev.json JUDGE_OUT_D
 RA_ACCEPT_TESTNET=1 JUDGE_BANK=eval/questions/judge-xrpl.v3-negatives.json JUDGE_OUT_DIR=/tmp/p0-negatives npx tsx scripts/judge-bank-testnet.ts dist/release/researchagent-mcp-1.0.0.tgz
 ```
 
-Development only: v1, v2, v3, v3-dev and v3-negatives are observed development banks. Never report v3 as held-out again.
+Development only: v1, v2, v3, v3-dev, v3-negatives, v4 and v4-negatives are observed development banks. Never report v3 or v4 as held-out again.
 
-Single-use held-out: `eval/questions/judge-xrpl.v4.json` and `eval/questions/judge-xrpl.v4-negatives.json`. The calibration implementer must never open, read or execute either file. After the threshold and artifact are frozen, the orchestrator alone runs the single authorised measurement, with fresh private state/output directories per bank. Do not use these banks for smoke tests, threshold selection or retries with a changed policy.
+Used (historical): `eval/questions/judge-xrpl.v4.json` and `eval/questions/judge-xrpl.v4-negatives.json` were the single-use held-out banks and were measured once on 7 Nov (see `docs/evidence/v4-heldout/README.md`). They are now development data: never report v4 as held-out again.
+
+Single-use held-out: `eval/questions/judge-xrpl.v5.json` (20 positives) and `eval/questions/judge-xrpl.v5-negatives.json` (10 `no_purchase` negatives), frozen 10 Nov and written blind to the corpus, writers, evidence, explainers and team notes. Implementers must never open, read or execute either file. After the coverage and answer-quality lanes have landed and the artifact is frozen, the orchestrator alone runs the single authorised measurement, with fresh private state/output directories per bank. Do not use these banks for smoke tests, threshold selection or retries with a changed policy. `tests/judge-bank-v5.test.ts` pins the hashes and checks the schema without running the bank.
+
+| File | SHA-256 of the exact bytes |
+| --- | --- |
+| `judge-xrpl.v5.json` | `1095c9fac057a85ee59a34a63cb72ea69a0ec909f430c845357958bf38c1701b` |
+| `judge-xrpl.v5-negatives.json` | `a381c46f85676bce13c8f9183370fe4989cc9f38c50dd118702c48bb55067c4b` |
 
 `results.json` records SHA-256 of the exact bank bytes and tgz, per-question outcomes, summary counts and value histograms. `values.jsonl` contains every decision row in every round, including repeated candidates: question, writer/article/source/version, relevance, raw judgment (addressesGap, originality probabilities, credibility), gapMaterial, trust, calibrated/marginal components if present, recorded value, threshold, verdict and reason. Values are copied from decisions, not recomputed. Histograms label positive-bank questions “relevant” and `expect: no_purchase` questions “negative”; these are bank groups, not human candidate-relevance annotations. Bins are left-inclusive and right-exclusive, except the final bin includes 1. Zero-candidate questions have no rows.
 
