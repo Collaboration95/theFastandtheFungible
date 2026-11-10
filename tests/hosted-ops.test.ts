@@ -111,6 +111,9 @@ describe('hosted operator boundaries',()=>{
   expect(front).toContain('error_page 502 504 =503 /paused.html')
   expect(front).toMatch(/location = \/ready \{\s*rewrite \^ \/readyz break;/)
   expect(front).not.toMatch(/gzip_types[^;]*event-stream/)
+  // The VM web role runs with a read-only root: nginx temp paths must all be under /tmp.
+  const vm=readFileSync('docker/hosted/nginx.conf','utf8')
+  for (const kind of ['client_body','proxy','fastcgi','uwsgi','scgi']) expect(vm).toMatch(new RegExp(`${kind}_temp_path /tmp/`))
   expect(readFileSync('docker/Dockerfile.publisher','utf8')).toContain('if (process.env.K_SERVICE) throw')
  })
 })
