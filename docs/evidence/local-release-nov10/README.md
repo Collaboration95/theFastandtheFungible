@@ -30,3 +30,31 @@ commits are reverted before shipping; direct dependency versions remain unchange
 
 The publisher's default path always performs a fresh full gate and full local
 all-architecture acceptance. It stops before publication when any stage fails.
+
+## Completed contended Node 26 attempt
+
+Source `f08939aa`, temporary tag/version `v1.0.3-rc.1200`, Node 26.3.1.
+Full gate passed 19/19. Full acceptance ran to completion (1,642.561 s) and
+**failed**; the publisher exited nonzero before any tag push/release creation
+([actual stdout/stderr](node26-publisher-refusal.log)). Host load at acceptance
+start was 47.70 / 40.68 / 28.10 on ten cores. The orchestrator subsequently
+reported peak host load 93 and mandated a shared heavy-run lock.
+
+Full soak: 2,000 asks, 200 warmups, 20 restarts, zero failed asks; RSS slope
+1.701 MiB/100 asks (limit 5), median delta -7.990 MiB (limit 100), maximum
+881.309 MiB (limit 1536), latency p95 drift -173.317 ms (limit 250) all passed.
+Loop p99 **278.921 ms failed the unchanged 50 ms limit**.
+
+Both unsigned DMGs, native arm64 recovery (13 cases), release artifacts, five
+installed consumers, both receipt verifiers, Python, replay/ledger/site checks
+and full 200-episode chaos passed. Coverage hit a 30 s timeout in unchanged
+`tests/character.test.tsx`; the app browser hit the known popover overlap at
+`tests/ux2.spec.ts:159` owned by lane GF. Coverage floors/check-fast correctly
+remained blocked rather than reporting success. These are retained failures,
+not an accepted release. [Full report](node26-contended-acceptance.json),
+[raw soak](node26-contended-soak.json.gz), [summary](node26-contended-soak-summary.json).
+
+The owner permits lane R to merge with documented host-load performance misses
+only after all non-performance checks pass and refusal is demonstrated. The
+real v1.1.0 release still needs full quiet-host acceptance. No threshold changes.
+All subsequent heavy runs use the orchestrator's shared heavy-lock.sh.
