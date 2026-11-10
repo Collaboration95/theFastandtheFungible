@@ -23,6 +23,16 @@ printf 'deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download
 apt-get update -qq
 apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-compose-plugin
 DISK=/dev/disk/by-id/google-ra-state
+pause_on_disk() {
+  local file=/srv/researchagent/control.json tmp
+  tmp=$(mktemp /srv/researchagent/.control.XXXXXX)
+  sed -e 's/"admissionsPaused":false/"admissionsPaused":true/' -e 's/"spendingPaused":false/"spendingPaused":true/' -e 's/"reasonCode":"[a-z0-9_-]*"/"reasonCode":"deploy"/' "$file" >"$tmp" || true
+  if ! grep -q '"admissionsPaused":true' "$tmp" || ! grep -q '"spendingPaused":true' "$tmp"; then
+    printf '%s\n' '{"admissionsPaused":true,"spendingPaused":true,"reasonCode":"deploy","expiresAt":"2026-11-19T16:00:00Z"}' >"$tmp"
+  fi
+  chown 1000:1000 "$tmp"; chmod 600 "$tmp"; sync
+  mv "$tmp" "$file"; sync
+}
 # Format only a genuinely blank disk. Unknown existing filesystems fail closed.
 if blkid "$DISK"; then :; else
   status=$?
@@ -47,7 +57,9 @@ install -d -m 0700 /etc/researchagent /opt/researchagent
 # Stop before replacing configuration, including secrets.
 if [[ -f /opt/researchagent/compose.yaml && -f /etc/researchagent/images && -f /etc/researchagent/env && -f /srv/researchagent/control.json ]]; then
   # Pause via the current image before stopping; recovery continues during drain.
-  docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml run --rm --no-deps --entrypoint node api /app/scripts/hosted-control.mjs pause --local --execute --path /state/control.json --reason deploy
+  # If the current image cannot run the control CLI (a broken release), pause the
+  # same durable document directly so a fixed release can still replace it.
+  docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml run --rm --no-deps --entrypoint node api /app/scripts/hosted-control.mjs pause --local --execute --path /state/control.json --reason deploy || pause_on_disk
   docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml down --timeout 120
 fi
 meta instance/attributes/ra-bundle | base64 -d | tar -xz -C /opt/researchagent

@@ -79,6 +79,8 @@ describe('hosted operator boundaries',()=>{
   expect(startup).not.toMatch(/env\.local[\s\S]*(SEED|API_KEY|PUBLISHER_SECRET)/)
   expect(startup).toContain('[[ $name != DECISION_PROVIDER || $value =~ ^(openai|cloudflare|fixture)$ ]] || exit 1')
   expect(startup.lastIndexOf('researchagent-startup.done')).toBeGreaterThan(startup.indexOf('bash /opt/researchagent/update.sh'))
+  // A broken current image must not block its replacement: pause falls back to the durable file.
+  expect(startup).toMatch(/hosted-control\.mjs pause --local --execute --path \/state\/control\.json --reason deploy \|\| pause_on_disk/)
  })
  it('keeps final snapshot before deleting the disk and never deletes the project',()=>{
   const output=run('docker/hosted/ops.mjs',['teardown','--project','ra-ho-test','--manifest','/tmp/absent-ho-manifest.json','--dry-run'])

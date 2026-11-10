@@ -169,7 +169,7 @@ function ssh(command, attempts = 1) {
 const probe = 'sudo systemctl show -p ActiveState -p ExecMainExitTimestampMonotonic google-startup-scripts.service; echo "MARKER=$(sudo cat /run/researchagent-startup.done 2>/dev/null)"'
 function startupState(attempts) {
   const fields = Object.fromEntries(ssh(probe, attempts).split('\n').map(line => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]))
-  return { active: fields.ActiveState, ran: fields.ExecMainExitTimestampMonotonic !== '0', marker: fields.MARKER }
+  return { active: fields.ActiveState, ran: fields.ExecMainExitTimestampMonotonic !== '0', exited: fields.ExecMainExitTimestampMonotonic, marker: fields.MARKER }
 }
 function applyStartup(release) {
   if (dry) { ssh(probe); ssh('sudo systemctl restart --no-block google-startup-scripts.service'); return }
@@ -178,14 +178,15 @@ function applyStartup(release) {
   // Wait for the first boot-time run (or any run in progress) to finish before deciding.
   while (state.active === 'activating' || !state.ran) { if (Date.now() > deadline) throw Error('VM startup did not settle within 20 minutes'); sleep(15000); state = startupState(3) }
   if (state.marker === release) return
+  // A new exit timestamp means the restarted run finished, even if it failed too fast to observe.
+  const before = state.exited
   ssh('sudo systemctl restart --no-block google-startup-scripts.service', 3)
-  let seen = false
   for (;;) {
     if (Date.now() > deadline) throw Error('VM startup did not complete this release within 20 minutes')
     sleep(15000); state = startupState(3)
-    if (state.active === 'activating') { seen = true; continue }
+    if (state.active === 'activating' || state.exited === before) continue
     if (state.marker === release) return
-    if (seen) throw Error('VM startup failed for this release; inspect over IAP (startup output is suppressed)')
+    throw Error('VM startup failed for this release; inspect over IAP (startup output is suppressed)')
   }
 }
 const scratch = dry ? '/PRIVATE_BUILD_DIRECTORY' : mkdtempSync(join(tmpdir(),'ra-hosted-'))
