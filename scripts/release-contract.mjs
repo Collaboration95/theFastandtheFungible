@@ -20,7 +20,7 @@ export function admitRelease(manifest, receipt, sha, jobs) {
 
 // Local admission consumes actual local receipts, never synthetic GitHub job states.
 export const localAcceptanceGates = ['soak', 'soak-evidence', 'render', 'artifacts', 'artifact-preservation', 'consumers', 'artifact-evidence', 'desktop-download-arm64', 'desktop-arm64', 'arm64-evidence', 'desktop-recovery', 'desktop-download-x64', 'desktop-x64', 'x64-evidence', 'browser', 'demo-build', 'browser-demo', 'browser-ledger', 'site-demo', 'site-ledger', 'hygiene', 'lint', 'typecheck', 'check-fast', 'python', 'ui-build', 'coverage', 'coverage-gate', 'chaos']
-export const localGateSteps = ['hygiene','readme','lint','typecheck','gate-tests','app-build','unit','chaos','key-reveal','browser-app','browser-perf','demo-build','browser-demo','browser-judge','browser-ledger','python','sdk-package','desktop-loader','desktop-build']
+export const localGateSteps = ['hygiene','readme','lint','typecheck','gate-tests','app-build','unit','chaos','key-reveal','browser-app','browser-perf','browser-hosted','demo-build','browser-demo','browser-judge','browser-ledger','python','sdk-package','desktop-loader','desktop-build']
 export function admitLocalRelease({ manifest, receipt, gate, acceptance, sha, tree, version, root, dmgRoot }) {
   validateManifest(manifest, root)
   if (gate.schema !== 'local-gate-v1' || gate.state !== 'success' || !gate.route?.all || gate.source?.dirty || gate.source?.head !== sha || gate.source?.tree !== tree || gate.finalSource?.head !== sha || gate.finalSource?.tree !== tree || gate.finalSource?.dirty) throw Error('Clean exact-source full local gate required')

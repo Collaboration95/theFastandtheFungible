@@ -8,6 +8,12 @@ import { resources } from './helpers/resource-scope'
 import { shipPlan } from '../scripts/ship-check.mjs'
 // @ts-expect-error local CLI helper
 import { admitLocalRelease, localAcceptanceGates, localGateSteps, sha256 } from '../scripts/release-contract.mjs'
+// @ts-expect-error local CLI helper
+import { classify, makeSteps } from '../scripts/local-gate.mjs'
+
+it('release admission requires every step in the full local gate, including hosted UI', () => {
+  expect([...localGateSteps].sort()).toEqual(makeSteps(classify([], {full:true})).map((row: {id:string})=>row.id).sort())
+})
 
 it('ordinary shipping keeps current routing; full modes publish only after acceptance', () => {
   expect(shipPlan()).toEqual([['npm', ['run','gate','--','--base','origin/main']]])

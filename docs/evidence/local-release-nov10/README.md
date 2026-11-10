@@ -168,3 +168,10 @@ are restored to 1.0.2 before merge, and the local throwaway tag is removed.
 [actual publisher refusal](final-publisher-refusal.log),
 [package manifest](final-manifest.json), [consumers/verifiers](final-consumers.json),
 [coverage floors](final-coverage-gate.log), [chaos](final-chaos.log).
+
+After this rehearsal, HU #438 added `browser-hosted` as the twentieth local-gate
+step. R rebases it before merge, requires that step in release admission, and
+tests that the admission list covers the complete current full-gate plan.
+Final PR checks run on that integrated source; historical 19-step receipts above
+are retained unchanged. Actual release publication always reruns the current
+full gate and exact-source acceptance on the clean release tag.
