@@ -21,10 +21,12 @@ describe('buying rule copy', () => {
     expect(PURCHASE_RULE).toBe(`at most one article per round, up to ${MAX_ROUNDS} rounds, within your budget; prefer a matching title or topic and stop when the gap is covered`)
     expect(readFileSync('server/agents/loop.ts', 'utf8')).toMatch(/run\.round >= MAX_ROUNDS/)
   })
-  it('the plan modal prints the rule from policy, not a hand-written claim', () => {
+  it('the plan modal prints the loop cap from policy, in two short steps, not a hand-written claim', () => {
     const text = decoded(renderToStaticMarkup(<PlanSheet plan={uc2Scope.plan} writers={8} onGo={() => {}} onCancel={() => {}} />))
-    expect(text).toContain(`Buy only if an article fills a gap: ${PURCHASE_RULE}`)
-    expect(text).toContain("A new writer’s top matching article may get one probe purchase, up to S$0.30, within this budget.")
+    expect(text).toContain(`Buy at most one article per round, up to ${MAX_ROUNDS} rounds, only if it fills a gap`)
+    expect(text).toContain('A new writer may get one test purchase (up to S$0.30)')
+    expect(text).toContain('Search 8 writers for your question')
+    expect(text).not.toContain('probe purchase')
     expect(text).not.toMatch(/at most one article if/i)
   })
   it('the home subtitle explains the budget in plain English', () => {

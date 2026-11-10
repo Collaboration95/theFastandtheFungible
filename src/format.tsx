@@ -13,6 +13,14 @@ export const compactAssetMoney: typeof assetMoney = (minor, asset) => assetMoney
 export const shortHash = (hash: string) => hash.length > 14 ? `${hash.slice(0, 6)}…${hash.slice(-5)}` : hash
 export const candidateOf = (run: RunSnapshot, ref: SourceRef) => run.candidates.find(item => sameSource(item, ref))
 export const citationKey = (citation: Citation) => JSON.stringify([sourceKey(citation), citation.spanId])
+/** One counting rule for every surface (the run summary and the sources strip): "bought" means paid, never "kept".
+    An article is paid once its payment settled and a receipt exists, even if the promise check later refunded it. */
+export function purchaseCounts(run: Pick<RunSnapshot, 'intents' | 'receipts'>) {
+  const paid = run.intents.filter(intent => intent.status === 'REFUNDED' || run.receipts.some(receipt => receipt.intentId === intent.intentId)).length
+  const refunded = run.intents.filter(intent => intent.status === 'REFUNDED').length
+  return { paid, refunded }
+}
+export const articleCount = (count: number) => `${count} article${count === 1 ? '' : 's'}`
 /** First sentence of a conclusion: the short answer. */
 export const leadSentence = (text: string) => text.match(/^.*?[.!?](?=\s+[A-Z]|$)/s)?.[0] ?? text
 

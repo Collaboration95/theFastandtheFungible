@@ -39,7 +39,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
   await expect(page.locator('.ra-claim').filter({ hasText: '26 weeks to 18 weeks' })).toHaveCount(0)
     await expect(page.getByRole('region', { name: /Payment: AlphaLeak/ })).toContainText('Refunded S$0.30')
     await expect(page.getByRole('region', { name: 'Payment: The Fab Floor' })).toContainText('Paid by key reveal')
-    await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought · 1 refunded')
+    await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('2 bought · 1 refunded')
     const spend = page.getByRole('region', { name: 'Spend', exact: true }).first()
     await expect(spend).toContainText('S$1.30 budget left · refunds don’t restore budget'.replace('’', "'"))
     // Each key-reveal card lists its own create and finish transactions; the refund links separately.

@@ -19,7 +19,8 @@ export function writersRouter(context: ApiContext, hosted: boolean) {
       const ids = new Set(articles.map(a => a.articleId))
       const sales = intents.filter(i => i.profileId === writer.publisherSlug && ids.has(i.resourceId) && i.escrow?.finishHash && i.escrow.revealLedger && /^[A-F0-9]{64}$/i.test(i.escrow.finishHash)).slice(0, 200)
       const trust = snapshots.flatMap(r => r.events.filter(e => e.type === 'REPUTATION' && e.data?.publisherSlug === writer.publisherSlug).map(e => ({ at: e.at, value: (e.data?.after as { T?: number } | undefined)?.T }))).filter((p): p is { at: string; value: number } => typeof p.value === 'number' && Number.isFinite(p.value)).sort((a,b) => a.at.localeCompare(b.at)).slice(-100)
-      return { slug: writer.slug, publisherSlug: writer.publisherSlug, name: writer.name,
+      // `publisher` is the publication every receipt, source and proof names; `name` is the byline.
+      return { slug: writer.slug, publisherSlug: writer.publisherSlug, name: writer.name, publisher: publisher.name,
         authorship: publisher.synthetic ? 'Fictional writer' : publisher.slug.startsWith('team-') ? 'Team-authored' : 'Author-supplied · unverified',
         verification: snapshots.flatMap(r => r.candidates).find(c => c.publisherSlug === writer.publisherSlug && c.verification?.status === 'verified')?.verification ?? publisher.verification,
         articleCount: articles.length, priceRange: articles.length ? [Math.min(...articles.map(a => a.priceMinor)), Math.max(...articles.map(a => a.priceMinor))] : undefined,

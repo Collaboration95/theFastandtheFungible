@@ -1,5 +1,14 @@
 import type { RunSnapshot } from '../../shared/contracts/index.js'
 import { runEvents } from '../stage'
+/* eslint-disable react-refresh/only-export-components -- A pure label helper shared with its test. */
+
+/** A trace line in words a reader can follow: the retired H and C pairs read as one Trust move (trust = H × C), and the
+    on-ledger invoice mechanics stay in Show work → Wire. The persisted label is untouched. */
+export function traceLabel(label: string): string {
+  return label
+    .replace(/ · H (\d+(?:\.\d+)?)→(\d+(?:\.\d+)?) · C (\d+(?:\.\d+)?)→(\d+(?:\.\d+)?)/, (_all, h0: string, h1: string, c0: string, c1: string) => ` · Trust ${(Number(h0) * Number(c0)).toFixed(2)} → ${(Number(h1) * Number(c1)).toFixed(2)}`)
+    .replace(/ · InvoiceID = (?:sha256\(invoiceId\)|original tx)/, '')
+}
 
 /** The raw persisted trace, with times relative to the first event. Lives in Show work. */
 export default function Activity({ run }: { run: RunSnapshot }) {
@@ -11,7 +20,7 @@ export default function Activity({ run }: { run: RunSnapshot }) {
       {events.map(event => <li key={`${event.runId}:${event.id}`}>
         <time dateTime={event.at}>+{((Date.parse(event.at) - t0) / 1000).toFixed(2)} s</time>
         <span className={`ra-tag t-${event.type.toLowerCase()}`}>{event.type}</span>
-        <span>{event.label}</span>
+        <span>{traceLabel(event.label)}</span>
       </li>)}
     </ol>}
     {run.error && <p role="alert">{run.error}</p>}

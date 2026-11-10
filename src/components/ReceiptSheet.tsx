@@ -23,10 +23,13 @@ function royaltyOf(payouts: Payout[], inbound: boolean): Royalty {
   return inbound ? { tone: 'pending', label: 'Pending', short: 'pending', detail: 'Pending or unresolved; no payout receipt' }
     : { tone: 'none', label: 'Not applicable', short: 'n/a', detail: 'Direct research · no inbound hire' }
 }
-const summary = (use: Use | undefined, royalty: Royalty) => {
+const NOT_ASSESSED: Royalty = { tone: 'none', label: 'Not assessed', short: 'not assessed', detail: 'Separate hire receipts record payouts' }
+/** Direct research has no inbound hire, so there is no royalty to report: the row and its words stay out of the receipt. */
+const hasRoyalty = (royalty?: Royalty): royalty is Royalty => !!royalty && royalty.label !== 'Not applicable'
+const summary = (use: Use | undefined, royalty?: Royalty) => {
   const cited = use?.links.filter(l => l.retained).length ?? 0
   const first = use?.structuralUse === 'cited' ? cited ? `Cited in ${cited} claim${cited === 1 ? '' : 's'}` : 'Cited in the final answer' : 'Not cited in the final answer'
-  return `${first} · Refund ${use?.refundStatus === 'recorded verified refund' ? 'recorded' : use?.refundStatus ?? 'none'} · Royalty ${royalty.short}`
+  return `${first} · Refund ${use?.refundStatus === 'recorded verified refund' ? 'recorded' : use?.refundStatus ?? 'none'}${hasRoyalty(royalty) ? ` · Royalty ${royalty.short}` : ''}`
 }
 const refundTone = (status: string): Tone => status === 'none' ? 'none' : status === 'pending' ? 'pending' : status === 'refused' ? 'bad' : 'recorded'
 function Status({ tone, children }: { tone: Tone; children: string }) { return <span className={`ra-st tone-${tone}`}><i aria-hidden="true" />{children}</span> }
@@ -39,7 +42,7 @@ function Claims({ links }: { links: Use['links'] }) {
     const id = `ra-bc-${n}`, expanded = open === n
     return <li key={n}><button className="ra-bc" aria-expanded={expanded} aria-controls={id} onClick={() => setOpen(expanded ? null : n)}>
       <span className="ra-bc-n" aria-hidden="true">{n + 1}</span><span className="ra-bc-text"><span className="ra-sr">Claim {n + 1}: </span>{link.claim}</span>
-      <span className="ra-bc-state"><Status tone={link.retained ? 'ok' : 'none'}>{link.retained ? 'Retained' : 'Removed'}</Status><small>answer v{link.answerVersion}</small></span>
+      <span className="ra-bc-state"><Status tone={link.retained ? 'ok' : 'none'}>{link.retained ? 'Retained' : 'Removed'}</Status></span>
       <svg className="ra-bc-chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m5 6.5 3 3 3-3" /></svg></button>
       {expanded && <div id={id} className="ra-bc-body"><blockquote>{link.passage}</blockquote><p className="ra-bc-cap">Exact delivered passage · <span className="mono">{link.spanId}</span></p>
         <button className="ra-btn-sm" aria-expanded={verify === n} onClick={() => setVerify(verify === n ? null : n)}>Technical details</button>
@@ -50,15 +53,16 @@ function Claims({ links }: { links: Use['links'] }) {
 
 export default function ReceiptSheet({ run, receipt, onClose }: { run: RunSnapshot; receipt: Receipt; onClose: () => void }) {
   const [copyStatus, setCopyStatus] = useState('')
-  const [royalty, setRoyalty] = useState<Royalty>({ tone: 'none', label: 'Not assessed', short: 'not assessed', detail: 'Separate hire receipts record payouts' })
+  const [royalty, setRoyalty] = useState<Royalty>()
   useEffect(() => {
     const controller = new AbortController()
     void fetch(`/runs/${encodeURIComponent(run.runId)}/receipts.json`, { signal: controller.signal }).then(r => r.ok ? r.json() : null).then(b => {
-      if (!b || controller.signal.aborted) return
+      if (controller.signal.aborted) return
+      if (!b) { setRoyalty(NOT_ASSESSED); return }
       const rows = b.payments as {kind: string; status: string; amountDrops: string; policyVersion: string}[]
       const payouts = rows.filter(r => r.kind === 'royalty')
       setRoyalty(royaltyOf(payouts, rows.some(r => r.kind === 'inbound')))
-    }).catch(() => { /* Unavailable is not zero or confirmed. */ })
+    }).catch(() => { if (!controller.signal.aborted) setRoyalty(NOT_ASSESSED) /* Unavailable is not zero or confirmed. */ })
     return () => controller.abort()
   }, [run.runId])
   const dialog = useRef<HTMLDialogElement>(null)
@@ -72,9 +76,9 @@ export default function ReceiptSheet({ run, receipt, onClose }: { run: RunSnapsh
   return <dialog ref={dialog} className="ra-receipt-sheet" aria-label="Receipt" onCancel={e => { e.preventDefault(); onClose() }}>
     <header><h2>Receipt</h2><button className="ra-btn" onClick={onClose} aria-label="Close receipt"><Icon name="close" /></button></header>
     {intent?.purchaseKind && <p>{intent.purchaseKind}</p>}
-    <p className="ra-net">{compactAssetMoney(receipt.amountMinor, receipt.xrpl?.asset)}</p><p>{refund ? 'Refunded' : intent?.status === 'VERIFIED' ? 'Verified' : 'Paid'} · {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'long' }).format(new Date(receipt.settledAt))}</p>
+    <p className="ra-net">{compactAssetMoney(receipt.amountMinor, receipt.xrpl?.asset)}</p><p>{refund ? 'Refunded' : intent?.status === 'VERIFIED' ? 'Receipt checked' : 'Paid'} · {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'long' }).format(new Date(receipt.settledAt))}</p>
     {receipt.escrow?.mode === 'key-reveal' && <KeyRevealLifecycle escrow={receipt.escrow} />}
-    <dl><dt>Writer</dt><dd>{source?.publisher ?? '—'} <WriterVerification value={source?.verification} /></dd>{source?.source && <><dt>Origin</dt><dd>{source.source.origin}</dd></>}<dt>Article</dt><dd>{source?.title ?? receipt.resourceId}</dd><dt>Network</dt><dd>{testnet ? settlementAssetLabel(receipt.xrpl?.asset) : 'simulated'}</dd><dt>Gross paid</dt><dd>{compactAssetMoney(receipt.amountMinor, receipt.xrpl?.asset)}</dd>{refund > 0 && <><dt>Refunded</dt><dd>{compactAssetMoney(refund, receipt.xrpl?.asset)}<span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(receipt.xrpl?.asset) : 'simulated'}</span></dd></>}<dt>Net cost</dt><dd>{compactAssetMoney(receipt.amountMinor - refund, receipt.xrpl?.asset)}</dd><dt>Charges</dt><dd>{run.receipts.filter(r => r.intentId === receipt.intentId).length}</dd>
+    <dl><dt>Writer</dt><dd>{source?.publisher ?? '—'}</dd><dt>Writer identity</dt><dd>{source?.verification?.status === 'verified' ? <WriterVerification value={source.verification} /> : source?.verification?.status === 'check_failed' ? 'Check unavailable' : 'Not checked'}</dd>{source?.source && <><dt>Origin</dt><dd>{source.source.origin}</dd></>}<dt>Article</dt><dd>{source?.title ?? receipt.resourceId}</dd><dt>Network</dt><dd>{testnet ? settlementAssetLabel(receipt.xrpl?.asset) : 'Simulated'}</dd><dt>Gross paid</dt><dd>{compactAssetMoney(receipt.amountMinor, receipt.xrpl?.asset)}</dd>{refund > 0 && <><dt>Refunded</dt><dd>{compactAssetMoney(refund, receipt.xrpl?.asset)}<span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(receipt.xrpl?.asset) : 'Simulated'}</span></dd></>}<dt>Net cost</dt><dd>{compactAssetMoney(receipt.amountMinor - refund, receipt.xrpl?.asset)}</dd><dt>Charges</dt><dd>{run.receipts.filter(r => r.intentId === receipt.intentId).length}</dd>
     {invoice && <><dt>Invoice</dt><dd><button className="ra-link mono" title={invoice} onClick={async () => { setCopyStatus(''); try { await navigator.clipboard.writeText(invoice); setCopyStatus('Invoice copied') } catch { setCopyStatus('Couldn’t copy the invoice. Try again.') } }}>{shortHash(invoice)} <Icon name="copy" size={16} /></button></dd></>}
     <dt>Transaction</dt><dd>{testnet && tx?.explorerUrl.startsWith('https://testnet.xrpl.org/') ? <a href={tx.explorerUrl} target="_blank" rel="noreferrer"><span className="mono">{shortHash(tx.txHash)}</span> View on XRPL Testnet <Icon name="external" size={16} /></a> : testnet ? 'Awaiting validation' : 'None (simulated)'}</dd>
     {refund > 0 && <><dt>Refund tx</dt><dd>{testnet && typeof refundUrl === 'string' && refundUrl.startsWith('https://testnet.xrpl.org/') ? <a href={refundUrl} target="_blank" rel="noreferrer"><span className="mono">{shortHash(intent?.refund?.txHash ?? '')}</span> View on XRPL Testnet <Icon name="external" size={16} /></a> : testnet ? 'Recorded refund · ledger lookup not run here' : 'None (simulated)'}</dd></>}</dl>
@@ -85,7 +89,7 @@ export default function ReceiptSheet({ run, receipt, onClose }: { run: RunSnapsh
         <Row label="Final answer" tone={use?.structuralUse === 'cited' ? 'ok' : 'none'} value={use?.structuralUse === 'cited' ? 'Cited in the final answer' : 'No final citation use'} />
         <Row label="Usefulness" tone="none" value="Not assessed" note="Not independently verified" />
         <Row label="Refund" tone={refundTone(use?.refundStatus ?? 'none')} value={use?.refundStatus === 'recorded verified refund' ? REFUND_LABEL.refunded : use?.refundStatus === 'pending' ? REFUND_LABEL.pending : use?.refundStatus === 'refused' ? REFUND_LABEL.refused : 'None'} />
-        <Row label="Royalty" tone={royalty.tone} value={royalty.label} note={`Share paid onward to the original writer. ${royalty.detail}`} />
+        {hasRoyalty(royalty) && <Row label="Royalty" tone={royalty.tone} value={royalty.label} note={`Share paid onward to the original writer. ${royalty.detail}`} />}
       </dl>
       {!!use?.links.length && <Claims links={use.links} />}
     </section>

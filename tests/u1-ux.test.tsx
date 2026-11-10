@@ -36,16 +36,17 @@ it('reads sub-second fixture runs as "under 1 s" and drops 0.0 s step timings', 
   expect(html).not.toContain('0.1 s')
 })
 
-it('explains a decline in plain words with value against the bar, and says it once in Payments', () => {
+it('explains a decline in the proof page\u2019s words with no scores, open by default for a short list, and says it once in Payments', () => {
   const candidate = { ...offlineZeroBudgetRun.candidates[0], tier: 'PAID' as const }
   const base = offlineZeroBudgetRun.decisions[0].rows[0]
   const rows = [{ ...base, candidate: { ...candidate, resourceId: 'a', title: 'Note A' }, value: 0.08, verdict: 'SKIP_LOW_VALUE' as const, reason: 'Reason A' }, { ...base, candidate: { ...candidate, resourceId: 'b', title: 'Note B' }, value: 0.01, verdict: 'SKIP_LOW_TRUST' as const, reason: 'Reason B' }]
   const run = { ...offlineZeroBudgetRun, phase: 'DONE' as const, answers: [], intents: [], receipts: [], candidates: rows.map(r => r.candidate), decisions: [{ ...offlineZeroBudgetRun.decisions[0], threshold: 0.2, rows }] }
   const html = renderToStaticMarkup(<Answer run={run} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)
-  expect(html).toContain('<summary>Why nothing was bought</summary>')
-  expect(html).toContain('Skip')
-  expect(html).toContain('Blocked')
-  expect(html).toContain('value 0.08 vs 0.20')
+  expect(html).toContain('<summary><span>Why nothing was bought</span><span class="ra-why-count"> · 2 articles considered</span></summary>')
+  expect(html).toContain('<details class="ra-why-not" open="">')
+  expect(html).toContain('Wouldn’t add enough')
+  expect(html).toContain('Writer didn’t meet the trust checks')
+  expect(html).not.toMatch(/value 0\.\d|vs 0\.20/)
   expect(html).toContain('Reason A')
   expect(html).not.toContain('SKIP_LOW_VALUE')
   const spend = renderToStaticMarkup(<SpendPanel run={run} onRetry={() => {}} onReceipt={() => {}} />)

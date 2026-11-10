@@ -10,7 +10,6 @@ export const useHosted = () => useContext(HostedContext)
 export const questionCap = (status: HostedDemoStatus) => status.questionCapMinor ?? 0
 export const HOSTED_DAILY_QUESTIONS = 5
 export const HOSTED_ENDS = '20 November, 00:00 SGT'
-export const REPO_DOCS = 'https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs'
 
 export type HomeState = 'ready' | 'busy' | 'allowance' | 'paused' | 'ended' | 'degraded' | 'offline' | 'unreachable'
 /** The one state the Home screen shows. Allowance first: the gateway reports a used-up visitor as `degraded`. */
@@ -31,11 +30,13 @@ export function environment(status: HostedDemoStatus, connection?: Hosted['conne
   const testnet = /testnet/i.test(status.labels.rail) && !/simulat/i.test(status.labels.rail)
   const fixture = /fixture|unavailable/i.test(status.labels.models)
   const place = testnet ? 'Shared XRPL Testnet demo' : 'Shared demo · simulated payments'
+  // The phone chip is the same chip, shortened: the same two facts (which rail, no real value), never a second name.
+  const kind = testnet ? 'Testnet demo' : 'Simulated'
   const state = status.state === 'ended' ? 'ended' : connection === 'offline' ? 'offline' : status.state === 'paused' ? 'paused' : undefined
   return {
     testnet, fixture, state,
     full: `${place} · ${state ?? (fixture ? 'fixture models' : 'live models')} · no real value`,
-    short: state ? `Testnet demo · ${state}` : testnet ? 'Testnet demo' : 'Simulated demo',
+    short: `${kind} · ${state ?? 'no real value'}`,
     tone: state ? 'off' : status.state === 'degraded' ? 'warn' : 'live',
   } as const
 }
@@ -86,6 +87,7 @@ export function hostedLinks(hosted: Hosted) {
     deck: links.deck || 'https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf',
     video: links.video,
     progress: links.progress || `${PAGES}/progress/`,
-    verify: `${REPO_DOCS}/receipt-spec.md`,
+    // The README's "Verify it yourself": recorded Testnet transactions, the one-line verifier and the ledger check. receipt-spec.md is the wire-format spec, not a how-to.
+    verify: `${links.repo}#verify-it-yourself`,
   }
 }
