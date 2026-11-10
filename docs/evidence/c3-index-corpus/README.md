@@ -108,3 +108,27 @@ Raw-audit reproduction uses the unchanged `readRuns`/`auditRuns` helpers with
 `loadWriterCorpus` rooted at the measured package's extracted `data/`, plus
 `auditAgentAuthority(auditEntries(readOnlyDatabase))`. Using the current worktree
 corpus to audit an older package is not a valid replacement for that context.
+
+## Shipping blocked
+
+No merge admission was obtained. `local-validation.json` retains exact clean
+source identities, successful steps and failure output from the shipping attempts.
+At clean head `5dc69835`, the unit suite and all other executed checks passed,
+but both `tests/ux2.spec.ts:159` popover-overlap checks failed. The unchanged
+cached-step recheck failed the same checks. The sanitized environment also
+reproduced an overlap failure on upstream baseline `1f9df59c` without C3;
+`upstream-popover.log.gz` preserves that reproduction. An earlier unsanitized
+isolated invocation passed, so it is not a substitute for the gate environment.
+
+After rebasing onto the document-only #424, clean head `43c58796` had six
+timeouts: streamDraft, three corpus-v2 cases, fact-menu and site-leak. It passed
+1,434 tests, with six failed tests across four files; dependent browser-app
+checks were not admitted. Other lanes were running full gates concurrently.
+Timeouts remain unchanged, including the existing 5-second and 30-second limits.
+The earlier complete check:fast pass is pre-integration evidence only.
+
+The PR is left in draft for the owning lane to resolve the inherited UI failure
+and rerun the full gate under suitable load. No UI, policy or gate code was
+edited to clear these failures. Receipt archives and measured artifacts remain
+valid for the isolated C3 corpus comparison. A green current-head gate and an
+exact merged-commit admission are still required before claiming shipment.
