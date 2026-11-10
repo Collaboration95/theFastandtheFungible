@@ -7,7 +7,7 @@ const words = (text: string) => [...new Set(text.replace(/([a-z])([A-Z])/g, '$1 
 /** Use Unicode sentence segmentation rather than an uppercase-only boundary rule.
  * Keep source bytes (including identifier punctuation) intact for quotation. */
 const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' })
-export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation)\b/i.test(text)
+export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Distinguish|Explain|Consider|Avoid|Compare|Query|Estimate|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|^(?:Applications?|Integrations?|Clients?|Developers?)\b[^.!?]{0,60}\bshould\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation)\b/i.test(text)
 export function sentences(text: string): string[] {
   return Array.from(segmenter.segment(text), part => part.segment.trim()).filter(Boolean)
 }
