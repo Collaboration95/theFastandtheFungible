@@ -1,3 +1,4 @@
+import openapi from '../docs/api/openapi.json' with { type: 'json' }
 import { ownerSettingsRouter } from './owner-settings.js'
 import { localWriterRegistrations } from './local-writer-discovery.js'
 import { AnswerAnchors } from './anchor.js'
@@ -82,6 +83,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
   app.use(admissionGuard(config, store))
+  app.get('/openapi.json', (_req, res) => res.json(openapi))
   app.post('/api/verify', express.json({ limit: '8mb' }), async (req, res) => {
     res.json(await verifyAnswer(req.body, { testnet: req.query.testnet === '1', expectHead: typeof req.query.expectHead === 'string' ? req.query.expectHead : undefined }))
   })

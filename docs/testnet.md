@@ -93,17 +93,17 @@ prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots
 npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --testnet     # or without --testnet for the labelled SIMULATED rail
 ```
 
-Release · not yet on npm/PyPI/MCP Registry. Only Node 22 is needed: the tgz carries the engine,
-the fixture corpus and the built web UI (about 0.2 MB gzipped on top of a 21 MB tgz). It boots the same engine as the MCP
+Release · not yet on npm/PyPI/MCP Registry. Only Node ≥22.13 is needed: the tgz carries the engine,
+the fixture corpus and the built web UI (3.43 MiB total for the published v1.0.2 tgz). It boots the same engine as the MCP
 bin, with the same faucet wallets from `$XDG_STATE_HOME/researchagent/testnet/` (shared with `--testnet` MCP; the app's own
-database lives in `testnet/app/`), serves the UI on `127.0.0.1` (ephemeral port, or `--port N`) and prints:
+database lives in `testnet/app/`), serves the UI on `127.0.0.1` (ephemeral port, or `--port N`) and prints its connection details (source-build layout below; published v1.0.2 embeds them in an abbreviated SDK expression):
 
 ```text
 ResearchAgent ready: http://127.0.0.1:N · fixture models · XRPL TESTNET · no real value
   payer address: r… (public; seeds stay in …/researchagent/testnet, mode 0600)
   caps: per-prompt budget set in the UI (max S$5.00) · wallet daily cap S$5.00 (app Testnet default; WALLET_DAILY_CAP_MINOR overrides)
-  SDK: createClient({ baseUrl: 'http://127.0.0.1:M', token: readFileSync('…/api-token', 'utf8').trim() })
-  verify: await client.verify(await client.receipts(runId), { testnet: true })
+  Engine baseUrl: http://127.0.0.1:M
+  Token file: …/api-token (private; read it from your client, never print the token)
 ```
 
 - **Authority.** The UI's per-prompt budget and deterministic policy are the only spending authority; the page never holds
@@ -112,10 +112,7 @@ ResearchAgent ready: http://127.0.0.1:N · fixture models · XRPL TESTNET · no 
   the app adds a wallet-wide **daily cap of S$5.00 in Testnet mode** (S$20 default on the SIMULATED rail; set
   `WALLET_DAILY_CAP_MINOR` to change it).
 - **No `.env`.** The app never reads one; models and writers are fixtures. Key reveal and anchoring are on.
-- **SDK.** The printed `baseUrl` is the bearer-protected engine (not the UI port); the token is in `…/api-token` (mode
-  0600, removed on exit) and is never printed. The SDK's `ask` is the MCP surface, so also set the operator caps, e.g.
-  `MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500 npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --testnet` (default zero, as for MCP).
-  `RA_URL=<baseUrl> RA_API_TOKEN=$(cat <token file>) npx tsx examples/ask.ts` works from a checkout.
+- **SDK.** Use the [complete two-terminal quickstart](sdk.md#start-engine--connect--ask--verify) for caps, platform variants, token-file reading, ask and verification. The engine URL is different from the UI URL. The published v1.0.2 abbreviated SDK expression is not a standalone program; its Testnet-only verification line is inappropriate for simulated exports and does not check the answer anchor. Use default offline verify for simulated runs, or SDK `{ onlineLedger: true }` / Python `--ledger` for read-only settlement **and** anchor checks.
 - **Fallback.** A faucet or network failure starts the app on the SIMULATED rail and the ready line says why
   (`SIMULATED fallback · faucet_unavailable | validation_timeout | wallet_cache_unavailable | network_unavailable · no ledger
   transactions`); the UI labels every figure SIMULATED.
@@ -163,3 +160,5 @@ budget default for other entry points. No-purchase runs skip the anchor fee.
 The portable stdio bundle does not load the web UI. Browser tooling is omitted;
 report export uses the existing HTML fallback when Chromium is unavailable.
 Release URLs point at v1.0.2.
+
+Cold TEST-SGD setup can take about two minutes before the first tool response. For Codex set `tool_timeout_sec = 180` (startup timeout is separate); see [per-client timeout guidance](mcp.md#cold-testnet-calls-and-client-timeouts).

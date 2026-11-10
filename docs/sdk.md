@@ -2,34 +2,61 @@
 
 [Release v1.0.2](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
+## Start engine → connect → ask → verify
+
+<!-- BEGIN generated:sdk-quickstart -->
+Start in an empty folder. Requires Node ≥22.13 (including for the Python engine); Python ≥3.10 for the Python client. Terminal 1, macOS/Linux:
+
 ```sh
+export MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500
+```
+
+Terminal 1, Windows PowerShell:
+
+```powershell
+$env:MCP_MAX_BUDGET_MINOR="200"; $env:MCP_DAILY_CAP_MINOR="500"
+```
+
+Then, in the same terminal on any platform:
+
+```sh
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --port 6400
+```
+
+Keep it running. This uses fixture models, fictional writers and SIMULATED payments (no real value). Caps authorize up to S$2 per ask and S$5 gross per UTC day. For XRPL Testnet append `--testnet`; for TEST-SGD (stand-in for RLUSD, no real value) also append `--iou`. Cold IOU setup can take about two minutes. Use another port if 6400 is busy.
+
+The UI port (6400 here) is **not** the engine port. Copy the printed engine baseUrl and token-file path for Terminal 2. The token is read from its private file; never paste it into source or a URL.
+
+Terminal 2, all platforms:
+
+```sh
+npm init -y
 npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-sdk-1.0.2.tgz
 ```
 
+Save this as `ask.mjs` (plain JavaScript using the typed TypeScript SDK):
 
-Node 22.13+ ESM, with TypeScript declarations. Build with `npm run build:sdk`,
-then `cd packages/sdk && npm pack`. Install the tarball in another project.
-Import `createClient` and `ResearchAgentError` from `@researchagent/sdk`;
-import `openPaymentJournal` from `@researchagent/sdk/journal`.
-No npm publication is performed; the owner decides that in #265.
-
-The separate package excludes the private application and desktop assets. It
-reuses the existing zod, xrpl and ripple-keypairs dependencies; no new runtime
-library is introduced. This release is Node-only (SQLite journals and offline
-verification use Node builtins). Three runnable examples live in examples/:
-`npx tsx examples/ask.ts`, `npx tsx examples/verify.ts receipts.json`, and
-`npx tsx examples/pay.ts https://publisher.example/resource`.
-Set RA_URL and RA_API_TOKEN for the engine. Tests run all three against explicit
-local synthetic fixtures on ephemeral ports, without .env or live providers.
-
-```ts
+```js
+import { readFileSync, writeFileSync } from 'node:fs'
 import { createClient } from '@researchagent/sdk'
-const client = createClient({ baseUrl: 'http://127.0.0.1:6100', token: process.env.RA_API_TOKEN })
-const task = client.ask('How did margins change?', { budget: 2, idempotencyKey: 'deal-1' })
-for await (const event of task.events) console.log(event.type, event.label)
-const run = await task
-console.log(run.answer, run.citations, run.receipts, run.clamped)
+const [baseUrl, tokenFile] = process.argv.slice(2)
+if (!baseUrl || !tokenFile) throw Error('Usage: node ask.mjs ENGINE_URL TOKEN_FILE (copy both from app output)')
+const client = createClient({ baseUrl, token: readFileSync(tokenFile, 'utf8').trim() })
+const run = await client.ask("What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC (pricing & margins)?", { budget: 2, idempotencyKey: 'quickstart-1' })
+console.log(run.answer, run.labels, run.citations)
+const receipts = await client.receipts(run.run_id)
+writeFileSync('receipts.json', JSON.stringify(receipts, null, 2))
+const verified = await client.verify(receipts)
+console.log(verified)
+if (!verified.ok) process.exitCode = 1
 ```
+
+Run `node ask.mjs "ENGINE_URL" "TOKEN_FILE"`, replacing both quoted values with the app output.
+
+Success means an answer with mode labels/citations, a local `receipts.json`, and verification `ok: true` (Python: `True`). Verification above is offline. For read-only Testnet settlement **and anchor** checks use TS `{ onlineLedger: true }` or Python `python -m researchagent verify receipts.json --ledger` with the installed interpreter. Simulated evidence has no ledger proof; SKIP preserves that boundary. Reuse the same idempotency key after an uncertain response; read the retained run rather than buying again.
+<!-- END generated:sdk-quickstart -->
+
+Node-only ESM package with TypeScript declarations. In a clone, `npm run build:sdk` creates `packages/sdk/README.md` from this guide; `cd packages/sdk && npm pack` builds the installable tarball. Checkout-only examples live under `examples/`; they are not installed into a consumer folder.
 
 ## API reference
 
@@ -74,23 +101,6 @@ read-only ledger verification. Offline checks are the default; self-contained
 hashes do not establish independent authenticity. Export with receipts(id), or
 GET /runs/:id/report.json. PDF verification remains available through the
 repository's `npm run verify:answer` command.
-
-### Against the local app engine
-
-`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --testnet` (or without `--testnet`) boots an engine and prints its `baseUrl` and the path of a
-0600 token file. Point the SDK at it; the browser UI and the SDK share one engine, wallet and cap accounting:
-
-```ts
-import { readFileSync } from 'node:fs'
-import { createClient } from '@researchagent/sdk'
-const client = createClient({ baseUrl: 'http://127.0.0.1:PORT', token: readFileSync(TOKEN_FILE, 'utf8').trim() })
-const run = await client.ask('How did margins change?', { budget: 2, idempotencyKey: 'deal-1' })
-console.log(await client.verify(await client.receipts(run.run_id), { testnet: true }))
-```
-
-`ask` is the MCP surface: it needs `MCP_MAX_BUDGET_MINOR` and `MCP_DAILY_CAP_MINOR` in the environment of the `app`
-command (default zero, so a bare `ask` buys nothing). Browser purchases use the UI's own per-prompt budget and the app's
-wallet-wide daily cap (S$5.00 on Testnet). See [docs/testnet.md](testnet.md#zero-clone-testnet-app-v102).
 
 ### `hire`
 
@@ -142,7 +152,7 @@ no real-money operation, and all substituted/fixture modes retain their labels.
 
 Bearer endpoints require HTTPS or exact loopback HTTP, without URL credentials or redirects. HTTP requests have a 15-second bound composed with caller cancellation. SSE uses a separate 30-second idle bound and a 256 KiB incomplete-frame bound; interrupted streams resynchronize via the existing run. `waitMs` bounds observation and returns the latest admitted handle. Interrupted observation errors preserve `runId`; resume with `getRun`, using the original idempotency identity for any admission retry.
 
-`ResearchAgentError` carries `code`, optional `status`, `retryable` and optional `runId`. Codes include `cap_zero`, `paused`, `per_call_cap`, `budget_exhausted`, `overloaded`, `deadline` and `settlement_pending`; overload scheduling itself is deferred. Budget clamps preserve free-only research and expose `clampReason` (`paused`, `cap_zero`, `per_call_cap` when the operator's per-call cap binds, or `budget_exhausted` when the daily budget does). `payAndFetch` requires an explicit durable journal, including with an injected ledger; a network payment never falls back to process-memory identity.
+`ResearchAgentError` carries `code`, optional `status`, `retryable` and optional `runId`. Codes include `cap_zero`, `paused`, `per_call_cap`, `budget_exhausted`, `overloaded`, `deadline` and `settlement_pending`; active work is bounded by `ACTIVE_WORK_LIMIT` (default 4), with immediate overload refusal and no durable queue. Budget clamps preserve free-only research and expose `clampReason` (`paused`, `cap_zero`, `per_call_cap` when the operator's per-call cap binds, or `budget_exhausted` when the daily budget does). `payAndFetch` requires an explicit durable journal, including with an injected ledger; a network payment never falls back to process-memory identity.
 
 ## Exact local release artifacts
 

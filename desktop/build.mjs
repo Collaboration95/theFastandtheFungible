@@ -41,6 +41,9 @@ worker = worker.replace(listener, `createServer((req, res) => {
 await writeFile(join(stage, 'server/engine-worker.mjs'), worker)
 await writeFile(join(stage, 'desktop/report-renderer.mjs'), "export const chromium = { launch: async () => { throw new Error('Desktop uses HTML print fallback') } }\n")
 await cp('dist', join(stage, 'ui'), { recursive: true })
+// Static API discovery is imported by the compiled engine; stage only this public contract.
+await mkdir(join(stage, 'docs/api'), { recursive: true })
+await cp('docs/api/openapi.json', join(stage, 'docs/api/openapi.json'))
 // Only public synthetic corpus input, never databases, reports, env files or calibration output.
 for (const folder of ['writers', 'corpus/v2']) await cp(`data/${folder}`, join(stage, 'data', folder), { recursive: true, filter: file => !file.endsWith('embeddings.json') })
 const roster = (await readdir('data/writers')).filter(name => name.endsWith('.json'))

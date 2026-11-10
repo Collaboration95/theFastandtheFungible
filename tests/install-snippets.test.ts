@@ -21,3 +21,22 @@ it('generates the labelled IOU opt-in without changing XRP installs', () => {
  expect(generate('--app','--iou')).toBe(generate('--app')+' --iou')
  expect(readFileSync('README.md','utf8')).toContain(generate('--testnet','--iou'))
 })
+it('keeps the complete empty-folder SDK and writer quickstarts generated', () => {
+  execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', 'v1.0.2', '--check'])
+  const readme = readFileSync('README.md', 'utf8')
+  expect(readme).toContain(execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', 'v1.0.2', '--writer'], { encoding: 'utf8' }).trim())
+  const py = readFileSync('docs/sdk-python.md', 'utf8')
+  expect(readFileSync('packages/sdk-python/README.md', 'utf8')).toBe(py)
+  for (const file of ['docs/sdk.md', 'docs/sdk-python.md']) {
+    const guide = readFileSync(file, 'utf8')
+    for (const text of ['MCP_MAX_BUDGET_MINOR', 'MCP_DAILY_CAP_MINOR', 'PowerShell', 'SIMULATED', 'receipts.json', 'TOKEN_FILE']) expect(guide).toContain(text)
+  }
+})
+
+it('generates Windows child-process wrapping without changing the POSIX entry', () => {
+  const args = ['scripts/install-snippets.mjs', '--tag', 'v1.0.2', '--testnet']
+  const posix = execFileSync(process.execPath, args, { encoding: 'utf8' }).trim()
+  const windows = execFileSync(process.execPath, [...args, '--powershell'], { encoding: 'utf8' }).trim()
+  expect(windows).toBe(posix.replace('-- npx ', '-- cmd /c npx '))
+  expect(readFileSync('docs/mcp.md', 'utf8')).toContain(windows)
+})

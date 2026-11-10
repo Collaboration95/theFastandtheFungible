@@ -1,0 +1,1487 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ResearchAgent local HTTP API",
+    "version": "1.0.2",
+    "description": "Local operator engine, fixture or XRPL Testnet only. No real value. Supported developer routes are detailed; x-internal routes are UI/owner inventory, not a public integration promise. Use the printed engine URL, never the UI port. Bearer credentials must stay private. All mode labels must remain visible.",
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:{port}",
+      "variables": {
+        "port": {
+          "default": "10088",
+          "description": "Example OFFSET=1300 source API port; zero-clone app prints an ephemeral engine port."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/openapi.json": {
+      "get": {
+        "summary": "Get this OpenAPI document",
+        "operationId": "get_openapi_json",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "security": []
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Read readiness and environment labels",
+        "operationId": "get_health",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/mcp/runs": {
+      "post": {
+        "summary": "Ask within operator caps",
+        "operationId": "post_api_mcp_runs",
+        "responses": {
+          "200": {
+            "description": "Existing run for the same stable identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Admitted once; may still be active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Ask"
+              }
+            }
+          }
+        },
+        "description": "One admission per stable idempotency_key. Same question/key returns original run even if requested budget changes. Different question with same key is refused. Keep the key on uncertainty; poll runId or SSE, never blindly create another intent. Only deterministic policy can buy. Budgets round down to 5 cents, maximum S$5, further limited by caps. Default active work limit 4; overload returns 503, no queue."
+      }
+    },
+    "/api/mcp/runs/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Read an admitted MCP run",
+        "operationId": "get_api_mcp_runs__id",
+        "responses": {
+          "200": {
+            "description": "Existing run, includes durable events and mode labels",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/mcp/status": {
+      "get": {
+        "summary": "Read caps, mode labels and public wallet status",
+        "operationId": "get_api_mcp_status",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/mcp/search": {
+      "get": {
+        "summary": "Search public writer metadata, never premium text",
+        "operationId": "get_api_mcp_search",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          {
+            "name": "k",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ]
+      }
+    },
+    "/runs/{id}/events": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Follow durable trace and snapshot SSE events",
+        "operationId": "get_runs__id__events",
+        "responses": {
+          "200": {
+            "description": "text/event-stream: trace and snapshot JSON frames; reconnect via durable GET. Connection is read-only.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/runs/{id}/receipts.json": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Export receipts and granted passages for verification",
+        "operationId": "get_runs__id__receipts_json",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/runs/{id}/stop": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Stop unsigned work; retain signed obligations",
+        "operationId": "post_runs__id__stop",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/spending/pause": {
+      "post": {
+        "summary": "Pause the authenticated agent or operator wallet",
+        "operationId": "post_api_spending_pause",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 240
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/verify": {
+      "post": {
+        "summary": "Verify an exported receipt bundle",
+        "operationId": "post_api_verify",
+        "responses": {
+          "200": {
+            "description": "Verification result; ok=false means failed evidence, not an HTTP error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "checks"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "checks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "check",
+                          "status",
+                          "detail"
+                        ],
+                        "properties": {
+                          "check": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "enum": [
+                              "PASS",
+                              "FAIL",
+                              "SKIP"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "testnet",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            },
+            "description": "Opt-in read-only settlement lookup; this HTTP option does not perform the whole-run online anchor check. Use SDK onlineLedger or verifier --ledger for both."
+          },
+          {
+            "name": "expectHead",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Independently supplied audit head"
+          }
+        ]
+      }
+    },
+    "/v1/ask": {
+      "post": {
+        "summary": "Hire research over x402 HTTP (not A2A)",
+        "operationId": "post_v1_ask",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            },
+            "headers": {
+              "PAYMENT-RESPONSE": {
+                "description": "Base64 JSON settlement proof",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "402": {
+            "description": "x402 v2 quote; payment is explicit separate caller authority, never inferred from research budget.",
+            "headers": {
+              "PAYMENT-REQUIRED": {
+                "description": "Base64 JSON x402 requirement",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "question",
+                  "budgetMinor"
+                ],
+                "properties": {
+                  "question": {
+                    "type": "string"
+                  },
+                  "budgetMinor": {
+                    "type": "integer",
+                    "enum": [
+                      100,
+                      200,
+                      500
+                    ],
+                    "description": "SGD cents of research; S$0.20 fee is additional."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PAYMENT-SIGNATURE",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "x402 v2 signed payment payload for the exact quote; same stable key on retry."
+          }
+        ],
+        "description": "Optional Testnet x402 hire service. Fixed fee S$0.20 plus research budget. Returns moneyChain for inbound payment, purchases, royalties and caller change. Requires caller signing authority and enabled operator hire configuration. Native XRP exact interop with pinned x402-xrpl 0.3.4 is tested with a synthetic ledger; escrow/TEST-SGD extensions are not generic Starter Kit compatibility. Not A2A."
+      }
+    },
+    "/api/audit/receipts.csv": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_audit_receipts_csv",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/audit/receipts.jsonl": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_audit_receipts_jsonl",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/audit/verify": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_audit_verify",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/providers/test": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_providers_test",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/writers/status": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_writers_status",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/metrics": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_metrics",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_health",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/runs/{id}/intents/{intentId}/key-reveal-proof.json": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "intentId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_runs__id__intents__intentId__key_reveal_proof_json",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/runs/{id}/report.json": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_runs__id__report_json",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/runs/{id}/report": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_runs__id__report",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/runs/{id}/report.pdf": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_runs__id__report_pdf",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/runs/{id}/report.html": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_runs__id__report_html",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/scope": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_scope",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/runs": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_runs",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/runs": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_runs",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/runs/{id}/pin": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_runs__id__pin",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/runs/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "delete": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "delete_api_runs__id",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/runs/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_runs__id",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/runs/{id}/retry-delivery": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_runs__id__retry_delivery",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/ledger": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_ledger",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/wallet/status": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_wallet_status",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/wallet/pause": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_wallet_pause",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_settings",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      },
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_settings",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/settings/prompt-budget": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_settings_prompt_budget",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/settings/key": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_settings_key",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/settings/receipts/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_settings_receipts__id",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/settings/runs": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_settings_runs",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/settings/faucet": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_settings_faucet",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/settings/export": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_settings_export",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/settings/reset": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_settings_reset",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/local-writers": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_local_writers",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/reputation": {
+      "get": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "get_api_reputation",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/reputation/reset": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_reputation_reset",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/api/demo/faults": {
+      "post": {
+        "summary": "Internal UI/owner endpoint; not a stable SDK contract",
+        "operationId": "post_api_demo_faults",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI/owner route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true,
+        "description": "Only registered with PUBLISHER_FAULTS=1 and a loopback publisher."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Operator RA_API_TOKEN or scoped agent token. Agent tokens can access only their own runs. Host/Origin restrictions still apply."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "examples": [
+              "unauthorized",
+              "invalid",
+              "overloaded",
+              "paused",
+              "cap_zero",
+              "per_call_cap",
+              "budget_exhausted",
+              "settlement_pending",
+              "backend_unavailable"
+            ]
+          },
+          "error": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "runId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Labels": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Research/decision/publisher/settlement mode labels; simulated, fixture and substituted evidence remains labelled."
+      },
+      "Run": {
+        "type": "object",
+        "required": [
+          "runId",
+          "phase",
+          "labels"
+        ],
+        "properties": {
+          "runId": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "SEARCH",
+              "READ_FREE",
+              "ANSWER",
+              "DECIDE",
+              "BUY",
+              "READ_PAID",
+              "DONE",
+              "FAILED",
+              "STOPPED"
+            ]
+          },
+          "labels": {
+            "$ref": "#/components/schemas/Labels"
+          },
+          "budgetMinor": {
+            "type": "integer",
+            "description": "Admitted SGD cents (operator clamped)"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "Ask": {
+        "type": "object",
+        "required": [
+          "question",
+          "budget_sgd"
+        ],
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "budget_sgd": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Requested SGD, clamped to human per-call/daily and wallet limits; caps default zero."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "escrow": {
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC (pricing & margins)?",
+          "budget_sgd": 2,
+          "idempotency_key": "http-quickstart-1"
+        }
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "Missing or invalid bearer",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Authority, host or origin refused",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error404": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "Backend unavailable or active-work limit reached; no automatic admission retry",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

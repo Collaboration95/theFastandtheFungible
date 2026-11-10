@@ -13,7 +13,8 @@ Pick the section for your role.
 Build on ResearchAgent from code or an MCP client.
 
 - [TypeScript SDK](sdk.md): `ask`, `getRun`, `verify`, `hire`, `pay`, the kill switch and release artifacts.
-- [Python SDK](sdk-python.md): the same surface in standard-library Python, plus the offline receipt verifier.
+- [Python SDK](sdk-python.md): ask/read/status/receipts/verify/pause (no Python pay/hire) in standard-library Python, plus the offline receipt verifier.
+- [Local HTTP API](api/README.md): OpenAPI 3.1, no-framework fetch, auth/recovery and pinned Starter Kit interoperability.
 - [MCP server](mcp.md): connect Claude Code, Codex or Claude Desktop (stdio, app-hosted HTTP, `.mcpb`); the seven tools, caps and idempotency.
 - [Bring your own key](byok.md): one OpenAI-compatible endpoint for research and a generic judge that is labelled UNCALIBRATED and can never buy; the endpoint boundary and Stop.
 - [Receipt format](receipt-spec.md): v1, v2 and v3 wire fields, canonical bytes, signatures, audit links and offline verification. [Contribution contract](contracts/CONTRIBUTION.md) defines "what your money bought".

@@ -172,6 +172,7 @@ export function verificationText(result: VerificationResult): string {
     if (checks.length) lines.push(`${checks.some(c => c.status === 'FAIL') ? 'FAIL' : checks.every(c => c.status === 'SKIP') ? 'SKIP' : 'PASS'} ${prefix === 'testnet ' ? `testnet ${checks.filter(c => c.status === 'PASS').length}/${checks.length} (read-only, s.altnet)` : `${prefix.trim().toUpperCase().padEnd(10)} ${checks.filter(c => c.status === 'PASS').length}/${checks.length}`}`)
   }
   for (const c of result.checks.filter(c => c.status !== 'PASS' || c.check === 'audit anchor')) lines.push(`${c.status.padEnd(4)} ${c.check}: ${c.detail}`)
+  if (result.checks.some(c => c.status === 'SKIP' && ['writer credentials', 'historical origin'].includes(c.check))) lines.push('Identity/origin SKIPs are limits on attribution, separate from payment and passage checks. PASS does not verify a writer identity.')
   lines.push(`RESULT ${result.ok ? 'PASS' : 'FAIL'}`)
   return lines.join('\n')
 }
