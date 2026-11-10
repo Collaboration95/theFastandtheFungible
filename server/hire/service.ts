@@ -3,7 +3,7 @@ import { deriveAddress } from 'ripple-keypairs'
 import { Router } from 'express'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
-import { hashes } from 'xrpl'
+import { decode, hashes } from 'xrpl'
 import { PublisherJournal } from '../../publisher/journal.js'
 import { Facilitator, requirementsFor, paymentResponse } from '../../publisher/facilitator.js'
 import { decodeHeader, encodeHeader, invoiceIdFor, ledgerInvoiceId } from '../../shared/x402.js'
@@ -15,6 +15,7 @@ import { admit } from '../spend-policy.js'
 import { screenPayee } from '../payee-screening.js'
 import { freezeRequirements, plan as planSearch } from '../agents/scope.js'
 import { SERVICE_FEE_MINOR, royaltyPlan, changePlan } from './policy.js'
+import { XrplPayer } from '../xrpl.js'
 import { HireJournal, type Hire } from './journal.js'
 
 const Input = z.object({ question: z.string().trim().min(1).max(2000), budgetMinor: z.union([z.literal(100), z.literal(200), z.literal(500)]) }).strict()
@@ -32,7 +33,10 @@ export function hireService(context: ApiContext) {
   async function finish(hire: Hire, principal: string) {
     const runId = hire.runId!
     let run = store.getRun(runId)
-    if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) {
+    const recoveryIntent = typeof run.checkpoint.recoveryIntentId === 'string' ? run.checkpoint.recoveryIntentId : run.checkpoint.intentId
+    const needsAnswer = !run.stopped && recoveryIntent && run.checkpoint.answeredIntentId !== recoveryIntent && run.intents.some(i => i.intentId === recoveryIntent && i.status === 'VERIFIED')
+    if (needsAnswer) await context.launch(runId, () => loop.recoverAnswer(runId, recoveryIntent!), () => undefined)
+    else if (!['DONE', 'STOPPED', 'FAILED'].includes(run.phase)) {
       await context.launch(runId, async () => {
         const planned = await planSearch(hire.question, {}, loop.signal(runId))
         const frozen = freezeRequirements(hire.question, planned)
@@ -94,6 +98,13 @@ export function hireService(context: ApiContext) {
         store.confirmPolicyPayment(runId, payment.id, proof.proof.ledgerIndex)
         store.appendEvent(runId, { type: 'XRPL', label: `${payment.kind} · ${XRPL_LABEL}`, data: { kind: payment.kind, txHash: signed.txHash, amountDrops: payment.amountDrops, payTo: payment.payTo, invoiceId: terms.invoiceId } })
       }
+      if (payment.submission) {
+        const outcome = await payer!.status(payment.submission)
+        if (outcome.state === 'expired' || outcome.state === 'failed') {
+          store.retirePolicySubmission(runId, payment.id, payment.submission.txHash, outcome.state)
+          payment.submission = undefined
+        }
+      }
       if (payment.submission) await send(payment.submission)
       else {
         const paid = await payer!.pay(terms, signed => store.recordPolicySubmission(runId, payment.id, signed), send)
@@ -115,6 +126,47 @@ export function hireService(context: ApiContext) {
     store.closeHireReserve(runId)
     return result
   }
+  function recordInbound(hire: Hire, principal: string, txHash: string, inbound: { ledgerIndex?: number; settledAt: string }) {
+    store.recordAudit({ runId: hire.runId, intentId: hire.key, kind: 'inbound', surface: hire.agentId ? 'agent' : 'x402', principal: hire.agentId ?? principal, data: { txHash, payer: principal, payTo: hire.quote.payTo, amountDrops: hire.quote.amount,
+      invoiceId: hire.quote.ledgerInvoiceId, ledgerIndex: inbound.ledgerIndex ?? null, settledAt: inbound.settledAt, policy: 'hire-v1', budgetMinor: hire.budgetMinor, serviceFeeMinor: SERVICE_FEE_MINOR, label: XRPL_LABEL } }, { txHash })
+  }
+  function resume(hire: Hire, principal: string) {
+    let pending = active.get(hire.key)
+    if (!pending) {
+      pending = Promise.resolve().then(() => finish(hires.get(hire.key)!, principal)).finally(() => active.delete(hire.key))
+      active.set(hire.key, pending)
+    }
+    return pending
+  }
+  /** No new inbound payment: only a ledger-proven original blob unlocks recovery. */
+  async function recover(hire: Hire) {
+    if (!payer || !facilitator || hire.quote.payTo !== payer.address) return
+    const signature = decodeHeader('PAYMENT-SIGNATURE', hire.signature!)
+    const txHash = hashes.hashSignedTx(signature.payload.signedTxBlob).toUpperCase()
+    const terms = { rail: 'xrpl-testnet' as const, network: 'xrpl:1' as const, asset: 'XRP' as const, payTo: hire.quote.payTo, amountDrops: hire.quote.amount, invoiceId: hire.quote.ledgerInvoiceId }
+    const proof = await verifyPayment(payer.ledger, txHash, terms)
+    if (proof.state !== 'ok') {
+      const tx = decode(signature.payload.signedTxBlob)
+      const status = await payer.status({ txHash, txBlob: signature.payload.signedTxBlob, lastLedgerSequence: Number(tx.LastLedgerSequence) })
+      if (status.state === 'expired' || status.state === 'failed') {
+        store.updateRun(hire.runId!, { phase: 'FAILED', stopped: true })
+        store.closeHireReserve(hire.runId!)
+        hires.patch(hire.key, { inboundExpired: true })
+      }
+      return
+    }
+    const settled = await facilitator.settle(signature, { articleId: hire.key, version: 'hire-v1' })
+    if (!settled.ok) return
+    recordInbound(hire, proof.proof.payer, txHash, settled.settlement)
+    await resume(hire, proof.proof.payer)
+  }
+  async function reconcile() {
+    if (!(payer instanceof XrplPayer)) return
+    await Promise.allSettled(hires.due().filter(h => !active.has(h.key)).map(async hire => {
+      const release = context.work.acquire()
+      try { await recover(hire) } finally { release() }
+    }))
+  }
   router.post('/v1/ask', async (req, res) => {
     const release = context.work.acquire()
     try {
@@ -130,7 +182,7 @@ export function hireService(context: ApiContext) {
       const invoiceId = invoiceIdFor({ quoteId, articleId: key, version: 'hire-v1', manifestRoot: ledgerInvoiceId(JSON.stringify(input)), amount, payTo: payer.address })
       const quote = { invoiceId, ledgerInvoiceId: ledgerInvoiceId(invoiceId), quoteId, publisherSlug: 'researchagent', articleId: key, version: 'hire-v1', amount, payTo: payer.address, expiresAt: new Date(Date.now() + 60_000).toISOString() }
       journal.saveQuote(quote)
-      hire = hires.save({ ...input, key, quote })
+      hire = hires.save({ ...input, key, quote, agentId })
     }
     if (!hire.result && hire.quote.payTo !== payer.address) return res.status(409).json({ error: 'Hire receiving wallet changed; original intent requires reconciliation' })
     if (hire.question !== input.question || hire.budgetMinor !== input.budgetMinor) return res.status(409).json({ error: 'Idempotency key belongs to another request' })
@@ -165,18 +217,10 @@ export function hireService(context: ApiContext) {
     const settled = await facilitator.settle(decoded, { articleId: key, version: 'hire-v1' })
     res.set('PAYMENT-RESPONSE', encodeHeader('PAYMENT-RESPONSE', paymentResponse(settled)))
     if (!settled.ok) return res.status(402).json({ error: settled.reason, label: XRPL_LABEL })
-    // Written once per settled payment; a request replayed after a crash between settlement and here writes it then.
-    const inbound = settled.settlement
-    store.recordAudit({ runId: hire.runId, intentId: hire.key, kind: 'inbound', surface: agentId ? 'agent' : 'x402', principal: agentId ?? verified.payer, data: { txHash: verified.txHash, payer: verified.payer, payTo: hire.quote.payTo, amountDrops: hire.quote.amount,
-      invoiceId: hire.quote.ledgerInvoiceId, ledgerIndex: inbound?.ledgerIndex ?? null, settledAt: inbound?.settledAt ?? null, policy: 'hire-v1', budgetMinor: hire.budgetMinor, serviceFeeMinor: SERVICE_FEE_MINOR, label: XRPL_LABEL } }, { txHash: verified.txHash })
+    recordInbound(hire, verified.payer, verified.txHash, settled.settlement)
     if (hire.result) { store.closeHireReserve(hire.runId!); return res.json(hire.result) }
-    let pending = active.get(key)
-    if (!pending) {
-      pending = finish(hire, verified.payer).finally(() => active.delete(key))
-      active.set(key, pending)
-    }
-    return res.json(await pending)
+    return res.json(await resume(hire, verified.payer))
     } finally { release() }
   })
-  return { router, close: () => { hires.close(); journal.close() }, drain: () => Promise.allSettled(active.values()) }
+  return { router, reconcile, close: () => { hires.close(); journal.close() }, drain: () => Promise.allSettled(active.values()) }
 }

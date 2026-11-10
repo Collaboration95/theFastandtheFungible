@@ -9,7 +9,7 @@ import { testnetUrl } from '../../shared/xrpl.js'
 import { RLUSD_CURRENCY } from '../../shared/contracts/asset.js'
 
 export const DEFAULT_WRITERS = ['buyer', 'team-builder-notes', 'team-xrpl-explainers', 'alphaleak', 'the-fab-floor', 'notfinancialtimes', 'basis-points', 'load-factor', 'kopi-contrarian', 'marketpulse-digest', 'open-records', 'grid-operators-report'].filter(s => s !== 'buyer')
-async function prepareWallets(file: string, faucet: typeof fetch, ledger: ReturnType<typeof testnetLedger>, allowedRoot: string, asset?: string, writers = DEFAULT_WRITERS, signal?: AbortSignal) {
+async function prepareWallets(file: string, faucet: typeof fetch, ledger: ReturnType<typeof testnetLedger>, allowedRoot: string, asset?: string, writers = DEFAULT_WRITERS, signal?: AbortSignal, fundFreeWriters = false) {
   signal?.throwIfAborted()
   file = resolve(file)
   if (!file.startsWith(resolve(allowedRoot) + sep)) throw Error('Wallet file must be under scratch or the configured private state directory')
@@ -40,7 +40,7 @@ async function prepareWallets(file: string, faucet: typeof fetch, ledger: Return
     }
     // Submit every writer funding payment back to back (the open-ledger Sequence advances), then wait once: ~4 s per writer becomes ~4 s total.
     const submitted: string[] = []
-    const funded = slugs.filter(s => !['buyer','open-records','grid-operators-report'].includes(s))
+    const funded = slugs.filter(s => s !== 'buyer' && (fundFreeWriters || !['open-records','grid-operators-report'].includes(s)))
     const balances = new Map<string, number>()
     for (let i = 0; i < funded.length; i += 4) await Promise.all(funded.slice(i, i + 4).map(async slug => { balances.set(slug, await balanceOf(Wallet.fromSeed(seeds[slug]).classicAddress)) }))
     for (const slug of funded) {
@@ -133,7 +133,7 @@ export async function ensureTrustLine(client: Client, wallet: Wallet, issuer: st
 /** Private provisioning output belongs only in the engine environment or wallet store. */
 export class TestnetProvisioner {
   constructor(private readonly deps: { ledger: ReturnType<typeof testnetLedger>; faucet: typeof fetch; walletStore: { file: string; allowedRoot: string; client?: Client; wallets?: Wallet[]; issuer?: string } }) {}
-  async prepare({ asset, writers = DEFAULT_WRITERS, signal }: { asset?: string; writers?: string[]; signal?: AbortSignal }): Promise<Record<string, string>> {
+  async prepare({ asset, writers = DEFAULT_WRITERS, signal, fundFreeWriters = false }: { asset?: string; writers?: string[]; signal?: AbortSignal; fundFreeWriters?: boolean }): Promise<Record<string, string>> {
     if (asset === 'rlusd') {
       const { client, wallets, issuer } = this.deps.walletStore
       if (!client || !wallets || !issuer) throw Error('RLUSD requires explicit Testnet wallets and issuer')
@@ -141,7 +141,7 @@ export class TestnetProvisioner {
       for (const wallet of wallets) { signal?.throwIfAborted(); results.push(await ensureTrustLine(client, wallet, issuer)) }
       return Object.fromEntries(wallets.map((wallet, i) => [wallet.classicAddress, results[i] ?? 'already configured']))
     }
-    return prepareWallets(this.deps.walletStore.file, this.deps.faucet, this.deps.ledger, this.deps.walletStore.allowedRoot, asset, writers, signal)
+    return prepareWallets(this.deps.walletStore.file, this.deps.faucet, this.deps.ledger, this.deps.walletStore.allowedRoot, asset, writers, signal, fundFreeWriters)
   }
 }
 

@@ -9,7 +9,9 @@ import { startEngine } from '../server/engine.js'
 import { createClient } from '../sdk/index.js'
 
 export async function runTry(argv: string[]) {
-  if (argv.length !== 1 || argv[0] !== '--testnet') throw Error('Usage: researchagent-mcp try --testnet')
+  const command = parseCommand(['try', ...argv])
+  if (!command.options.testnet || argv.some(arg => !['--testnet', '--hire'].includes(arg))) throw Error('Usage: researchagent-mcp try --testnet [--hire]')
+  if (command.options.hire) return (await import('./try-hire.js')).runTryHire()
   const started = performance.now()
   process.chdir(fileURLToPath(new URL('..', import.meta.url)))
   const scope = new ResourceScope()

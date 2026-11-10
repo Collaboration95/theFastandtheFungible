@@ -245,6 +245,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
       reconciliation = (async () => {
         await reconcileRefunds(purchases)
         await anchors?.reconcile()
+        await hire.reconcile()
         if (stopping) return
         // Existing durable runnable rows are retried on the next sweep when saturated;
         // this creates no new durable queue and never blocks signed reconciliation.

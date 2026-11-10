@@ -1168,3 +1168,19 @@ Suggested tooling fix: add daemon availability to the orchestrator preflight and
 run exact Linux images before public launch. Severity: low local tooling blocker;
 mainnet impact: none observed, and native proof does not qualify container
 persistence or a mainnet deployment. No cloud resource or live ledger call ran.
+
+## 2026-11-10 — Hire royalties need funded recipient accounts (code-derived, W3)
+
+- **Class / severity:** code-derived integration constraint · Medium; not a new observed ledger rejection. The normal Testnet provisioner intentionally skipped the two free-source accounts, but hire-v1 also pays citation royalties to free writers. A 2,500-drop first payment cannot create an unfunded XRPL account.
+- **Evidence:** `publisher/publishing/testnet-funding.ts` previously excluded `open-records` and `grid-operators-report`; `server/hire/policy.ts` includes distinct cited free writers. W3's packed Testnet chains and hashes are in `docs/evidence/w3-hire/`.
+- **Workaround:** hire mode explicitly funds free-source accounts and a separate client agent in the existing faucet-funded provisioning batch; normal `try` provisioning is unchanged.
+- **Suggested fix:** x402 agent-to-agent royalty examples should preflight account existence/reserve before promising a small payout, and show durable retry handling.
+- **Mainnet impact:** reserve/funding policy needs an operator decision before onboarding real royalty recipients. W3 is Testnet only, no real value; no mainnet attempt was made.
+
+## 2026-11-10 — Anchor and royalties contend for one payer sequence (observed, W3)
+
+- **Class / severity:** observed Testnet integration interruption · Medium. A packed hire run settled inbound, escrow, change and the first royalty, then delivery returned HTTP 500 while an answer anchor held the payer sequence; the second royalty remained unsigned. No duplicate payment was observed.
+- **Evidence:** W3 development-attempt summary in `docs/evidence/w3-hire/README.md`; the subsequent successful packed runs retain all hashes there. The raw failed output and original signed journals are retained privately for reconciliation.
+- **Workaround:** the background worker resumes the saved obligation; the CLI retries delivery with the same key and original signed inbound blob for up to 180 seconds. The payer still refuses new signing while a previous sequence is ambiguous.
+- **Suggested fix:** agent-to-agent x402 examples should separate temporary response failure from payment failure and expose a durable delivery retry handle.
+- **Mainnet impact:** the same sequencing/response distinction would matter for a real shared signer; no mainnet measurement or transaction was made. No timeout or safety threshold was loosened.

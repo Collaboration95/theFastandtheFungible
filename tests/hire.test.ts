@@ -19,6 +19,7 @@ import { USE_CASES } from './scenarios/use-cases.js'
 import { auditRuns, readRuns } from '../scripts/gate-audit.js'
 import { auditHireRecords } from '../server/hire/audit.js'
 import { royaltyPlan } from '../server/hire/policy.js'
+import { verifyHireChain } from '../mcp/try-hire.js'
 import { verifyOnTestnet } from '../server/audit.js'
 
 const clean: (() => unknown)[] = []
@@ -45,7 +46,7 @@ async function setup() {
   const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer hire-test-token' }
   const body = JSON.stringify({ question: USE_CASES.UC2.question.replace(/\?$/, ' (pricing & margins)?'), budgetMinor: 200 })
   const opts = { wallet: caller, maxDrops: '220000', journal, ledger: chain.ledger, headers, body, method: 'POST', idempotencyKey: 'hire-test' }
-  return { api, chain, corpus, url, opts, options, headers, body, caller }
+  return { api, chain, corpus, url, opts, options, headers, body, caller, wallet }
 }
 it('settles one caller intent, buys, pays every cited writer including free, returns change; replay and restart do not pay again', async () => {
   const s = await setup()
@@ -53,6 +54,8 @@ it('settles one caller intent, buys, pays every cited writer including free, ret
   const result = await first.response.json()
   expect(await concurrent.response.json()).toEqual(result)
   expect(result.phase).toBe('DONE')
+  await verifyHireChain(result, s.chain.ledger)
+  await expect(verifyHireChain({ ...result, moneyChain: { ...result.moneyChain, retainedDrops: '1' } }, s.chain.ledger)).rejects.toThrow('does not balance')
   expect(result.purchases.filter((p: { verified: boolean }) => p.verified)).toHaveLength(1)
   expect(result.citations.some((c: { grantIntentId: string | null }) => !c.grantIntentId)).toBe(true)
   const run = s.api.store.getRun(result.run_id)
@@ -262,3 +265,115 @@ it('labels an unresolved royalty recipient and authorizes no royalty payout', as
   expect(run.events.some(e=>e.type === 'ROYALTY_UNRESOLVED')).toBe(true)
   expect(s.api.store.policyPayments(run.runId).filter(p=>p.kind === 'royalty')).toEqual([])
 })
+
+it.each(['unsigned', 'validated-response-lost', 'expired', 'ambiguous'] as const)('recovers %s payouts after restart without caller replay or double payment', async fault => {
+  const s = await setup()
+  const request = s.chain.ledger.request.bind(s.chain.ledger)
+  let faulted = false, failedBlob = '', allow = false
+  const pay = s.options.payer.pay.bind(s.options.payer)
+  if (fault === 'unsigned') vi.spyOn(s.options.payer, 'pay').mockImplementation((terms, persist, send) => {
+    if (terms.memo) { faulted = true; return Promise.reject(Error('Crash before payout signing')) }
+    return pay(terms, persist, send)
+  })
+  s.chain.ledger.request = async r => {
+    if (r.command === 'submit') {
+      const tx = (await import('xrpl')).decode(String(r.tx_blob))
+      if (tx.Memos && !faulted) {
+        faulted = true; failedBlob = String(r.tx_blob)
+        if (fault === 'validated-response-lost') await request(r)
+        throw Error('Injected crash at payout submission')
+      }
+      if (faulted && !allow && tx.Memos) throw Error('Offline until restart')
+    }
+    return request(r)
+  }
+  const first = await payAndFetch(s.url, s.opts)
+  expect(first.response.status).toBe(500)
+  const run = s.api.store.listRuns()[0]
+  const inboundHash = s.api.store.auditEntries().find(e => e.kind === 'inbound')!.data.txHash
+  const saved = s.api.store.policyPayments(run.runId).find(p => p.submission) ?? s.api.store.policyPayments(run.runId)[0]
+  if (fault === 'unsigned') expect(s.api.store.policyPayments(run.runId).every(p => !p.submission)).toBe(true)
+  else expect(saved.submission!.txBlob).toBe(failedBlob)
+  await s.api.close()
+  let provedExpired = false
+  s.chain.ledger.request = async r => {
+    if (fault === 'expired' && r.command === 'ledger_current') return { result: { ledger_current_index: saved.submission!.lastLedgerSequence + 1 } }
+    if (fault === 'expired' && r.command === 'ledger') return { result: { ledger_index: saved.submission!.lastLedgerSequence + 1 } }
+    if (fault === 'expired' && r.command === 'account_info' && typeof r.ledger_index === 'number') {
+      provedExpired = true
+      const tx = (await import('xrpl')).decode(saved.submission!.txBlob)
+      return { result: { account_data: { Sequence: tx.Sequence } } }
+    }
+    return request(r)
+  }
+  // A missing hash before expiry is ambiguous: retain the original signature, never replace it.
+  allow = true
+  const restarted = await createApiApp({ ...s.options, payer: new XrplPayer(s.chain.ledger, s.wallet, { pollMs: 1, timeoutMs: 100 }) })
+  clean.push(() => restarted.close())
+  await Promise.all([restarted.reconcileOnce(), restarted.reconcileOnce()])
+  const payments = restarted.store.policyPayments(run.runId)
+  expect(payments.every(p => p.confirmedAt)).toBe(true)
+  expect(restarted.store.walletStatus().reservedMinor).toBe(0)
+  expect(restarted.store.auditEntries().filter(e => e.kind === 'inbound')).toHaveLength(1)
+  expect([...s.chain.txs.keys()].filter(hash => hash === inboundHash)).toHaveLength(1)
+  const newPayment = payments.find(p => p.id === saved.id)!
+  if (fault === 'expired') {
+    expect(provedExpired).toBe(true)
+    expect(newPayment.retiredSubmissions).toEqual([saved.submission])
+    expect(newPayment.submission!.txHash).not.toBe(saved.submission!.txHash)
+    expect(s.chain.txs.has(saved.submission!.txHash)).toBe(false)
+  } else if (fault !== 'unsigned') expect(newPayment.submission).toEqual(saved.submission)
+  expect(restarted.store.auditVerify().ok).toBe(true)
+  const before = s.chain.submits
+  await restarted.reconcileOnce()
+  expect(s.chain.submits).toBe(before)
+  expect(s.chain.txs.size).toBe(5)
+}, 30_000)
+
+it('resumes a settled hire after crashing before research, with no caller replay', async () => {
+  const s = await setup()
+  const record = s.api.store.recordAudit.bind(s.api.store)
+  const crash = vi.spyOn(s.api.store, 'recordAudit').mockImplementation((input, identity) => {
+    if (input.kind === 'inbound') throw Error('Crash after inbound settlement, before research')
+    return record(input, identity)
+  })
+  const response = await payAndFetch(s.url, s.opts)
+  expect(response.response.status).toBe(500)
+  expect(s.chain.txs.size).toBe(1)
+  crash.mockRestore()
+  const restarted = await createApiApp({ ...s.options, payer: new XrplPayer(s.chain.ledger, s.wallet, { pollMs: 1, timeoutMs: 100 }) })
+  clean.push(() => restarted.close())
+  const run = restarted.store.listRuns()[0]
+  expect(run.phase).toBe('DONE')
+  expect(restarted.store.policyPayments(run.runId).every(p => p.confirmedAt)).toBe(true)
+  expect(s.chain.txs.size).toBe(5)
+  expect(restarted.store.auditEntries().filter(e => e.kind === 'inbound')).toHaveLength(1)
+  const before = s.chain.submits
+  await restarted.reconcileOnce()
+  expect(s.chain.submits).toBe(before)
+}, 30_000)
+
+it.each(['pending', 'expired'] as const)('does not submit an unpaid %s inbound during background recovery', async state => {
+  const s = await setup(), key = `unpaid-${state}`
+  const challenge = await fetch(s.url, { method: 'POST', headers: { ...s.headers, 'Idempotency-Key': key }, body: s.body })
+  const terms = decodeHeader('PAYMENT-REQUIRED', challenge.headers.get('PAYMENT-REQUIRED')).accepts[0]
+  const signed = signFor(terms, { LastLedgerSequence: 120, Sequence: 1 }, s.caller)
+  const { HireJournal } = await import('../server/hire/journal.js')
+  const hires = new HireJournal(s.options.dbPath)
+  try {
+    const hire = hires.get(key)!
+    const admitted = s.api.store.admit({ surface: 'x402', principal: s.caller.classicAddress, question: hire.question, requestedMinor: hire.budgetMinor, idempotencyKey: hire.quote.invoiceId, maxMinor: 500, reserveMinor: 20 })
+    hires.patch(key, { signature: signed.header, runId: admitted.run.runId })
+    const request = s.chain.ledger.request.bind(s.chain.ledger)
+    s.chain.ledger.request = async r => {
+      if (r.command === 'ledger') return { result: { ledger_index: state === 'expired' ? 121 : 100 } }
+      if (r.command === 'account_info' && typeof r.ledger_index === 'number') return { result: { account_data: { Sequence: 1 } } }
+      return request(r)
+    }
+    await s.api.reconcileOnce()
+    expect(s.chain.submits).toBe(0)
+    expect(s.api.store.policyPayments(admitted.run.runId)).toEqual([])
+    expect(hires.due()).toHaveLength(state === 'expired' ? 0 : 1)
+    if (state === 'expired') expect(s.api.store.walletStatus().reservedMinor).toBe(0)
+  } finally { hires.close() }
+}, 30_000)
