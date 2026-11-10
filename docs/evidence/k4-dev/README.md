@@ -16,7 +16,7 @@ sources. These matched local baselines differ from K3's earlier published runs.
 | Development bank | Buy and cite before → after | Lead `answersIt` before → after | Negative purchases |
 | --- | --- | --- | --- |
 | v1 (20) | 17 → 17 | n/a: no gold strings | n/a |
-| v3 (20) | 11 → 19 | 5 → 10 | n/a |
+| v3 (20) | 11 → 19 | 5 → 11 | n/a |
 | v3-dev (20) | 8 → 14 | 1 → 3 | n/a |
 | v3-negatives (10) | 2 → 0 | n/a | 2 → **0** |
 
@@ -76,7 +76,7 @@ unchanged; engine, proof, policy, browser and hard-gate tests remain enabled.
 
 ## Remaining misses
 
-Canonical v3 misses: V01–V06, V08, V14–V16. Canonical v3-dev misses: D01–D14 and
+Canonical v3 misses: V02–V06, V08, V14–V16. Canonical v3-dev misses: D01–D14 and
 D16–D18. Some leads express the concept without the exact gold string, while
 others still select an incomplete passage or lack a covering source. These remain
 failures; no synonym credit was added to the scorer. Corpus additions belong to
