@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { expandProtocolQuery, topicMatches } from '../shared/relevance.js'
+import { expandProtocolQuery, isProtocolQuery, topicMatches } from '../shared/relevance.js'
 import { buildIndex, searchIndex } from '../publisher/search.js'
 import { miniCorpus } from './fixtures/corpus-mini/index.js'
 import { summarizeAnswer } from '../shared/answer-summary.js'
@@ -20,6 +20,7 @@ it('documents a small glossary and retrieves challenge and injection synonyms wi
  const index=await buildIndex(articles)
  expect(expandProtocolQuery('x402 402 response')).toContain('payment-required')
  expect(expandProtocolQuery('What did the central bank change?')).not.toContain('decentralized identifier')
+ expect(isProtocolQuery('What did the central bank change?')).toBe(false)
  expect(expandProtocolQuery('Which transaction sets a DID?')).toContain('DIDSet')
  expect(topicMatches('Which transaction sets a DID?', 'DIDSet transactions')).toBe(true)
  expect(expandProtocolQuery('automated market maker deposit')).toContain('AMMDeposit')
