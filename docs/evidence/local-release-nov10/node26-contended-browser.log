@@ -1,0 +1,96 @@
+[WebServer] node_modules/zod/v4/core/regexes.js (74:0): A comment
+[WebServer] 
+[WebServer] "/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+[WebServer]  * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+[WebServer]  * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+[WebServer] 
+[WebServer] in "node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[WebServer] node_modules/zod/v4/core/util.js (400:0): A comment
+[WebServer] 
+[WebServer] "// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+[WebServer] 
+[WebServer] in "node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[WebServer] 10:56:38 PM [vite] http proxy error: /api/health
+[WebServer] Error: connect ECONNREFUSED 127.0.0.1:63910
+[WebServer]     at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1706:16)
+
+Running 27 tests using 1 worker
+
+  ✓   1 tests/a11y.spec.ts:6:1 › ready desk has no serious automated accessibility violations (700ms)
+  ✓   2 tests/a11y.spec.ts:13:1 › clarify chips, plan card, finished UC2 run and Writers tab have no serious violations (2.6s)
+  ✓   3 tests/e2e.spec.ts:15:1 › UC2: clarify chip → plan card → paid purchase with proof ✓ → STRENGTHENS, PDF (2.4s)
+  ✓   4 tests/e2e.spec.ts:39:1 › UC3: AlphaLeak bought → proof fails → refunded → quarantined; The Fab Floor bought (4.9s)
+  ✓   5 tests/e2e.spec.ts:60:3 › writer blog pages never scroll sideways at 1280px (214ms)
+  ✓   6 tests/e2e.spec.ts:60:3 › writer blog pages never scroll sideways at 390px (125ms)
+  ✓   7 tests/e2e.spec.ts:70:1 › a terminal snapshot above the SSE limit recovers the same browser run without another admission (#345) (1.5s)
+  ✓   8 tests/e2e.spec.ts:100:1 › migrates stored stage pace, shows terminal purchases immediately and clears reconnect errors (1.9s)
+  ✓   9 tests/e2e.spec.ts:125:1 › keyboard plan cancellation admits zero runs; Go now admits exactly once (1.0s)
+  ✓  10 tests/e2e.spec.ts:143:1 › a judge question with declined matches explains policy and invites publishing (807ms)
+  ✓  11 tests/e2e.spec.ts:161:1 › zero candidate questions retain the no-writer publishing invitation (764ms)
+  ✓  12 tests/foundation.spec.ts:11:1 › UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views, new question (1.2s)
+  ✓  13 tests/foundation.spec.ts:59:1 › first run, recoverable backend error, record mode and narrow reflow (184ms)
+  ✓  14 tests/foundation.spec.ts:70:1 › failure recovery views: labelled fallback, slow Testnet, stopped unused payment and small budget (injected snapshots) (485ms)
+{"initialJsGzip":141006,"paletteJsGzip":1032,"interactiveMs":57.8482499999991,"paletteP95Ms":31.69999998807907,"viewSwitchP95Ms":31.5,"uc2Cls":0.004247117413414849,"environment":"local Chromium, production vite preview, fixture replay, 1280×720"}
+  ✓  15 tests/perf.spec.ts:6:1 › production preview: initial JS, interactive, input → paint, and full UC2 replay CLS budgets @perf (2.4s)
+  ✓  16 tests/settings.spec.ts:5:1 › owner settings sections and onboarding at 1280x800 (2.4s)
+  ✓  17 tests/ux.spec.ts:6:1 › UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery (4.8s)
+  ✓  18 tests/ux.spec.ts:81:1 › UX-1 stage screenshots and a single actionable scope error (950ms)
+  ✓  19 tests/ux2.spec.ts:7:1 › UX-2: UC4, exact lead citation, export, supporting screens and mobile Spend (1.8s)
+  ✓  20 tests/ux2.spec.ts:64:1 › paid UC2 export opens the before/after comparison and returns to the answer (1.4s)
+  ✓  21 tests/ux2.spec.ts:79:1 › completed Testnet answer gets its anchor without a reload and polling stops (4.7s)
+  ✓  22 tests/ux2.spec.ts:103:1 › "Anchoring… awaiting validation" keeps polling and resolves to the anchor without a reload (4.5s)
+  ✓  23 tests/ux2.spec.ts:121:1 › an anchored no-purchase decline shows its ledger proof and the Export menu (200ms)
+  ✓  24 tests/ux2.spec.ts:136:1 › anchor waiting ends after its bounded deadline (235ms)
+  ✘  25 tests/ux2.spec.ts:152:2 › Lane K popover clears Ask at 1440 (189ms)
+  ✘  26 tests/ux2.spec.ts:152:2 › Lane K popover clears Ask at 1280 (224ms)
+  ✓  27 tests/ux2.spec.ts:167:1 › Lane K decline explains three policy decisions (325ms)
+
+
+  1) tests/ux2.spec.ts:152:2 › Lane K popover clears Ask at 1440 ───────────────────────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      157 |   const a=await page.locator('button.ra-ask').boundingBox(), b=await pop.boundingBox()
+      158 |   expect(a && b).toBeTruthy()
+    > 159 |   expect(a!.x < b!.x+b!.width && a!.x+a!.width > b!.x && a!.y < b!.y+b!.height && a!.y+a!.height > b!.y).toBe(false)
+          |                                                                                                          ^
+      160 |   const h=await page.locator('h1').first().boundingBox()
+      161 |   expect(h!.y).toBeGreaterThanOrEqual(0)
+      162 |   expect(h!.y+h!.height).toBeLessThan(viewport.height)
+        at /Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/tests/ux2.spec.ts:159:106
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/final-acceptance-20261110144139364/app/ux2-Lane-K-popover-clears-Ask-at-1440/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/final-acceptance-20261110144139364/app/ux2-Lane-K-popover-clears-Ask-at-1440/error-context.md
+
+  2) tests/ux2.spec.ts:152:2 › Lane K popover clears Ask at 1280 ───────────────────────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      157 |   const a=await page.locator('button.ra-ask').boundingBox(), b=await pop.boundingBox()
+      158 |   expect(a && b).toBeTruthy()
+    > 159 |   expect(a!.x < b!.x+b!.width && a!.x+a!.width > b!.x && a!.y < b!.y+b!.height && a!.y+a!.height > b!.y).toBe(false)
+          |                                                                                                          ^
+      160 |   const h=await page.locator('h1').first().boundingBox()
+      161 |   expect(h!.y).toBeGreaterThanOrEqual(0)
+      162 |   expect(h!.y+h!.height).toBeLessThan(viewport.height)
+        at /Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/tests/ux2.spec.ts:159:106
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/final-acceptance-20261110144139364/app/ux2-Lane-K-popover-clears-Ask-at-1280/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/final-acceptance-20261110144139364/app/ux2-Lane-K-popover-clears-Ask-at-1280/error-context.md
+
+  2 failed
+    tests/ux2.spec.ts:152:2 › Lane K popover clears Ask at 1440 ────────────────────────────────────
+    tests/ux2.spec.ts:152:2 › Lane K popover clears Ask at 1280 ────────────────────────────────────
+  25 passed (1.7m)

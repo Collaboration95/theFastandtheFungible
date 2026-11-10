@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict'
+import { readFileSync, mkdtempSync, cpSync, rmSync, readdirSync, statSync } from 'node:fs'
+import { resolve, join } from 'node:path'
+import { tmpdir } from 'node:os'
+import { pathToFileURL } from 'node:url'
+import { execFileSync } from 'node:child_process'
+const { validateManifest, validateConsumers, admitLocalRelease, localAcceptanceGates, localGateSteps, sha256 } = await import(pathToFileURL(resolve('scripts/release-contract.mjs')))
+const load = p => JSON.parse(readFileSync(p))
+const git = (...args) => execFileSync('git', args, { encoding:'utf8' }).trim()
+const acceptance=load('dist/final/acceptance.json'), manifestFile=resolve('dist/release/manifest.json'), manifest=load(manifestFile), receipt={...load('dist/release/consumer-results.json'),manifestFile}
+const gateFile=process.argv[2], gate=load(gateFile), sha=git('rev-parse','HEAD'), tree=git('rev-parse','HEAD^{tree}'), version=load('package.json').version
+assert.equal(git('status','--porcelain'),'')
+assert.equal(git('rev-parse',`v${version}^{commit}`),sha)
+assert.equal(git('cat-file','-t',`v${version}`),'tag')
+for(const r of [gate.source,gate.finalSource]) {assert.equal(r.head,sha);assert.equal(r.tree,tree);assert.equal(r.dirty,false)}
+assert.equal(gate.state,'success');assert.equal(gate.route.all,true)
+for(const id of localGateSteps) assert.equal(gate.steps.filter(r=>r.id===id&&r.state==='success').length,1,id)
+assert.equal(acceptance.sourceSha,sha);assert.equal(acceptance.sourceTree,tree);assert.equal(acceptance.sourceStable,true);assert.equal(acceptance.worktreeDirty,false);assert.equal(acceptance.quick,false)
+assert.deepEqual(acceptance.schedule.localArchitectures,['arm64','x64'])
+for(const name of localAcceptanceGates.filter(n=>n!=='soak')) assert.equal(acceptance.gates.filter(r=>r.name===name&&r.pass&&r.status==='PASS').length,1,name)
+assert.deepEqual(acceptance.gates.filter(r=>!r.pass).map(r=>r.name),['soak'])
+assert.equal(acceptance.soak.summary.valid,true);assert.equal(acceptance.soak.summary.completed,2000);assert.equal(acceptance.soak.summary.failed,0)
+validateManifest(manifest,resolve('dist/release'));validateConsumers(manifest,receipt,sha)
+assert.equal(receipt.verifiers.typescript.pass,true);assert.equal(receipt.verifiers.python.pass,true);assert.equal(receipt.verifiers.receiptSha256,sha256('dist/release/accepted-receipt.json'))
+assert.deepEqual(acceptance.artifacts,manifest.artifacts)
+const {manifestFile:_file,...acceptedReceipt}=receipt;assert.deepEqual(acceptance.consumers,acceptedReceipt)
+for(const a of manifest.artifacts) assert.equal(a.version,['wheel','sdist'].includes(a.kind)?version.replace(/-rc\.(\d+)$/,'rc$1'):version)
+const stage=mkdtempSync(join(tmpdir(),'ra-alias-proof-'))
+try {
+ for(const name of readdirSync('dist/release')) if(statSync(join('dist/release',name)).isFile()) cpSync(join('dist/release',name),join(stage,name))
+ validateManifest(manifest,stage);validateConsumers(manifest,{...receipt,manifestFile:join(stage,'manifest.json')},sha)
+ assert.ok(git('for-each-ref',`refs/tags/v${version}`,'--format=%(contents)'))
+ for(const arch of ['arm64','x64']) {
+  const file=`ResearchAgent-${version}-${arch}.dmg`, rows=acceptance.dmgs.filter(r=>r.file.endsWith('/'+file));assert.equal(rows.length,1);assert.equal(rows[0].bytes,statSync(join('desktop/out',file)).size);assert.equal(rows[0].sha256,sha256(join('desktop/out',file)));cpSync(join('desktop/out',file),join(stage,file))
+ }
+ execFileSync(process.execPath,['scripts/desktop-release-assets.mjs',stage,sha])
+ const desktop=load(join(stage,'desktop-manifest.json'));assert.equal(desktop.sourceSha,sha);assert.equal(desktop.artifacts.length,4)
+ for(const row of desktop.artifacts) assert.equal(row.sha256,sha256(join(stage,row.file)))
+ for(const arch of ['arm64','x64']) assert.equal(sha256(join(stage,`ResearchAgent-unsigned-${arch}.dmg`)),sha256(join(stage,`ResearchAgent-${version}-${arch}.dmg`)))
+ assert.throws(()=>admitLocalRelease({manifest,receipt,gate,acceptance,sha,tree,version,root:resolve('dist/release'),dmgRoot:resolve('desktop/out')}),/Clean exact-source full all-arch acceptance required/)
+ assert.equal(git('ls-remote','--tags','origin',`refs/tags/v${version}`),'')
+ const assets=readdirSync(stage).sort().map(file=>({file,bytes:statSync(join(stage,file)).size,sha256:sha256(join(stage,file))}))
+ console.log(JSON.stringify({schema:1,sha,tree,version,tag:`v${version}`,nonPerformancePass:true,publicationRefused:true,remoteTagAbsent:true,tagAnnotated:true,tagHeadMatch:true,sourceClean:true,gateFile,gateSha256:sha256(gateFile),manifestSha256:sha256(manifestFile),acceptanceSha256:sha256('dist/final/acceptance.json'),desktop,assets,soak:acceptance.soak.summary,notes:'Read-only non-performance verification; strict publisher admission REFUSED the real failed acceptance. No gate result was substituted or changed.'},null,2))
+} finally {rmSync(stage,{recursive:true,force:true})}

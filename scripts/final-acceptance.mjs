@@ -19,12 +19,12 @@ if(process.argv.slice(2).some((a,i)=>!['--quick','--fail-fast','--skip-soak','--
 const out=resolve('scratch/final-acceptance-'+new Date().toISOString().replace(/[^0-9]/g,''));mkdirSync(out,{recursive:true})
 const destination=resolve('dist/final')
 const digest=p=>createHash('sha256').update(readFileSync(p)).digest('hex')
-const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
+const env=Object.fromEntries(['PATH','HOME','TMPDIR','LANG','DEMO_PORT_OFFSET'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]))
 Object.assign(env,{DOTENV_CONFIG_PATH:'.no-final-env',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',LANGFUSE_ENABLED:'0',SEARCH_EMBEDDINGS:'off',CSC_IDENTITY_AUTO_DISCOVERY:'false'})
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}).trim()
 const report={schema:1,quick,acceptanceEligible:!quick&&!skipSoak,mode:skipSoak?'fixture rehearsal; soak explicitly skipped':quick?'quick fixture rehearsal; RSS slope diagnostic only; not full acceptance':'full fixture workload on a declared local host',sourceSha:git('rev-parse','HEAD'),sourceTree:git('rev-parse','HEAD^{tree}'),worktreeDirty:Boolean(git('status','--porcelain')),runnerSha256:digest('scripts/final-acceptance.mjs'),supportSha256:createHash('sha256').update(readFileSync('scripts/final-acceptance-steps.mjs')).update(readFileSync('scripts/acceptance-reuse.mjs')).digest('hex'),dependencySha256:digest('node_modules/.package-lock.json'),timestamp:new Date().toISOString(),host:{hostname:hostname(),platform:platform(),release:release(),arch:arch(),cpus:cpus().length,node:process.version,python:execFileSync('python3',['--version'],{encoding:'utf8'}).trim(),load:loadavg()},gates:[],artifacts:[],dmgs:[],pass:false}
 const save=()=>{writeFileSync(join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');mkdirSync(destination,{recursive:true});cpSync(join(out,'acceptance.json'),join(destination,'acceptance.json'))}
-report.schedule={mode:serial?'serial':isolatedSoak?'isolated soak then DAG':'bounded DAG including soak',concurrency:4,siblingNiceness:10,localArchitectures:allArch?['arm64','x64']:['arm64'],hostedArchitectures:['arm64','x64']}
+report.schedule={mode:serial?'serial':isolatedSoak?'isolated soak then DAG':'bounded DAG including soak',concurrency:4,siblingNiceness:10,localArchitectures:allArch?['arm64','x64']:['arm64'],hostedArchitectures:[]}
 const step=createStepRunner(report,save,failFast)
 const tasks=[]
 const schedule=(name,action,after=[])=>tasks.push({name,run:action,after})
@@ -83,7 +83,7 @@ try {
   report.x64='built; native acceptance pending'
   report.dmgs=readdirSync('desktop/out').filter(f=>f.endsWith('.dmg')).map(f=>artifact(join('desktop/out',f)))
   },['desktop-x64']),['desktop-x64'])
-  } else report.x64='deferred to hosted desktop release matrix; native acceptance pending'
+  } else report.x64='not built locally (use --all-arch); native acceptance pending'
   schedule('browser',()=>run('browser','npx',['playwright','test','--output',join(browserResults,'app')]),['coverage'])
   schedule('demo-build',()=>run('demo-build','npm',['run','build:demo']),[])
   schedule('browser-demo',()=>run('browser-demo','npx',['playwright','test','--config','playwright.demo.config.ts','--output',join(browserResults,'demo')],{},['demo-build']),['demo-build'])

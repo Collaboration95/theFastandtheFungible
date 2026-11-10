@@ -1,8 +1,5 @@
 name: desktop
 on:
-  push:
-    tags: ['desktop-check-*']
-  workflow_call:
   workflow_dispatch:
     inputs:
       signing_identity:
@@ -55,9 +52,6 @@ jobs:
       - name: Build the requested version
         shell: bash
         run: |
-          if [[ "$GITHUB_REF_NAME" == desktop-check-* ]]; then
-            export DESKTOP_VERSION="${GITHUB_REF_NAME#desktop-check-}"
-          fi
           if [[ "$OWNER_SIGN" == true ]]; then
             node desktop/build.mjs --dmg --sign
           else

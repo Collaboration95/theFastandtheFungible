@@ -1,0 +1,69 @@
+node scripts/release.mjs publish --tag v1.0.3-rc.1200 --dry-run
+
+> research-agent@1.0.3-rc.1200 gate
+> node scripts/local-gate.mjs --full
+
+local-gate: hygiene starting (1 CPU slots)
+local-gate: readme starting (1 CPU slots)
+local-gate: lint starting (1 CPU slots)
+local-gate: typecheck starting (1 CPU slots)
+local-gate: gate-tests starting (1 CPU slots)
+local-gate: app-build starting (2 CPU slots)
+local-gate: chaos starting (2 CPU slots)
+local-gate: desktop-loader starting (1 CPU slots)
+local-gate: readme success 576 ms
+local-gate: desktop-loader success 1457 ms
+local-gate: key-reveal starting (2 CPU slots)
+local-gate: hygiene success 1533 ms
+local-gate: key-reveal success 8506 ms
+local-gate: browser-ledger starting (2 CPU slots)
+local-gate: gate-tests success 11707 ms
+local-gate: python starting (2 CPU slots)
+local-gate: browser-ledger success 3644 ms
+local-gate: typecheck success 16060 ms
+local-gate: lint success 17360 ms
+local-gate: demo-build starting (2 CPU slots)
+local-gate: app-build success 17617 ms
+local-gate: demo-build success 1483 ms
+local-gate: unit starting (5 CPU slots)
+local-gate: python success 30437 ms
+local-gate: browser-demo starting (3 CPU slots)
+local-gate: chaos success 60251 ms
+local-gate: browser-judge starting (2 CPU slots)
+local-gate: unit success 68846 ms
+local-gate: browser-app starting (2 CPU slots)
+local-gate: sdk-package starting (2 CPU slots)
+local-gate: sdk-package success 3369 ms
+local-gate: browser-demo success 82139 ms
+local-gate: browser-app success 37381 ms
+local-gate: desktop-build starting (2 CPU slots)
+local-gate: browser-judge success 70503 ms
+local-gate: desktop-build success 5816 ms
+local-gate: browser-perf starting (10 CPU slots)
+local-gate: browser-perf success 9173 ms
+local-gate: success; receipt /Users/speedpowermac/Documents/ChatGPT/tftf/.git/local-gate/runs/1794321554476-74197-08e3c144-2c86-46bd-a1a8-5e9e52d67be2.json
+{"pass":false,"checksPass":false,"acceptanceEligible":true,"output":"/Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/dist/final/acceptance.json"}
+node:internal/errors:998
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /opt/homebrew/Cellar/node/26.3.1/bin/node scripts/final-acceptance.mjs --all-arch
+    at genericNodeError (node:internal/errors:998:15)
+    at wrappedFn (node:internal/errors:543:14)
+    at checkExecSyncError (node:child_process:926:11)
+    at execFileSync (node:child_process:962:15)
+    at run (file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/release-publish.mjs:39:18)
+    at file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/release-publish.mjs:48:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:646:26)
+    at async file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/release.mjs:2:3 {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 34141,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v26.3.1
+make: *** [release] Error 1

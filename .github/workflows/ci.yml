@@ -1,10 +1,6 @@
 name: ci
 on:
-  workflow_call:
   workflow_dispatch:
-  schedule:
-    - cron: '0 18 * * *' # 02:00 SGT; full release-grade fixture matrix
-  pull_request:
 
 permissions:
   contents: read
@@ -34,7 +30,7 @@ jobs:
           node-version-file: .nvmrc
       - id: detect
         run: node scripts/ci-contract.mjs detect
-      - name: PR sanity (local-gate owns merge admission)
+      - name: Manual sanity (local-gate owns merge admission)
         run: |
           node --check scripts/ci-contract.mjs
           node --check scripts/final-acceptance.mjs

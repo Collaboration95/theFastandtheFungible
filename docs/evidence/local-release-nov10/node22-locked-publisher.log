@@ -1,0 +1,81 @@
+heavy-lock: waiting (queue 2); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-82487dbb-8998f803cad13b3e since 00:16:56: npm run gate
+heavy-lock: waiting (queue 2); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-82487dbb-8998f803cad13b3e since 00:16:56: npm run gate
+heavy-lock: waiting (queue 2); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-82487dbb-8998f803cad13b3e since 00:16:56: npm run gate
+heavy-lock: waiting (queue 1); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+heavy-lock: waiting (queue 1); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+heavy-lock: waiting (queue 1); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+heavy-lock: waiting (queue 1); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+heavy-lock: waiting (queue 2); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+heavy-lock: waiting (queue 2); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+heavy-lock: waiting (queue 2); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+heavy-lock: waiting (queue 2); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+heavy-lock: waiting (queue 2); held by /Users/speedpowermac/.t3/worktrees/tftf/t3-872be272-9cf4373ef2da136c since 00:19:05: env OFFSET=1900 DEMO_PORT_OFFSET=1900 mise exec node@22.23.4 -- npm run gate -- --publish
+node scripts/release.mjs publish --tag v1.0.3-rc.1200 --dry-run
+
+> research-agent@1.0.3-rc.1200 gate
+> node scripts/local-gate.mjs --full
+
+local-gate: hygiene starting (1 CPU slots)
+local-gate: readme starting (1 CPU slots)
+local-gate: lint starting (1 CPU slots)
+local-gate: typecheck starting (1 CPU slots)
+local-gate: gate-tests starting (1 CPU slots)
+local-gate: app-build starting (2 CPU slots)
+local-gate: chaos starting (2 CPU slots)
+local-gate: desktop-loader starting (1 CPU slots)
+local-gate: readme success 240 ms
+local-gate: desktop-loader success 835 ms
+local-gate: key-reveal starting (2 CPU slots)
+local-gate: hygiene success 877 ms
+local-gate: key-reveal success 3747 ms
+local-gate: browser-ledger starting (2 CPU slots)
+local-gate: browser-ledger success 2612 ms
+local-gate: python starting (2 CPU slots)
+local-gate: typecheck success 7756 ms
+local-gate: gate-tests success 9049 ms
+local-gate: app-build success 9061 ms
+local-gate: unit starting (5 CPU slots)
+local-gate: lint success 9536 ms
+local-gate: python success 17066 ms
+local-gate: demo-build starting (2 CPU slots)
+local-gate: demo-build success 1314 ms
+local-gate: browser-demo starting (3 CPU slots)
+local-gate: chaos success 38263 ms
+local-gate: browser-judge starting (2 CPU slots)
+local-gate: unit success 55418 ms
+local-gate: browser-app starting (2 CPU slots)
+local-gate: sdk-package starting (2 CPU slots)
+local-gate: sdk-package success 2232 ms
+local-gate: browser-judge success 59674 ms
+local-gate: browser-app success 38715 ms
+local-gate: desktop-build starting (2 CPU slots)
+local-gate: browser-demo success 81626 ms
+local-gate: desktop-build success 5435 ms
+local-gate: browser-perf starting (10 CPU slots)
+local-gate: browser-perf success 8866 ms
+local-gate: success; receipt /Users/speedpowermac/Documents/ChatGPT/tftf/.git/local-gate/runs/1794327684476-93904-7df0935c-6ac5-44ed-a7d8-402d9f2cdab1.json
+{"pass":false,"checksPass":false,"acceptanceEligible":true,"output":"/Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/dist/final/acceptance.json"}
+node:internal/errors:983
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /Users/speedpowermac/.local/share/mise/installs/node/22.23.4/bin/node scripts/final-acceptance.mjs --all-arch
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:916:11)
+    at execFileSync (node:child_process:952:15)
+    at run (file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/release-publish.mjs:39:18)
+    at file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/release-publish.mjs:48:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+    at async file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/release.mjs:2:3 {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 33712,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v22.23.4
+make: *** [release] Error 1

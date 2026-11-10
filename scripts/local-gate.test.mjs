@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, symlinkSync, chmodSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { MAX_CPUS, parseArgs, classify, makeSteps, inputsFor, stepKey, scriptClosure, cacheEntry, changes, snapshot, sameSource,
-  publishStatus, originRepo, runGraph, command, fixtureEnv, newScope, git, SCHEMA, main } from './local-gate.mjs'
+  publishStatus, originRepo, runGraph, command, fixtureEnv, newScope, git, gh, SCHEMA, main } from './local-gate.mjs'
 import { loaderPrefix, buildPrefix } from './local-gate-smoke.mjs'
 
 async function fixture(run) {
@@ -95,6 +95,24 @@ const mockGh = (calls, transform = value => value) => async args => {
   calls.push(args)
   return JSON.stringify(transform(args.includes('GET') ? { sha: source.head, commit: { tree: { sha: source.tree } } } : { state: args.find(arg => arg.startsWith('state=')).slice(6), context: 'local-gate' }))
 }
+
+test('Git and gh publication accept busy-main responses larger than the default exec buffer', async () => fixture(async ({ root, write, commit }) => {
+  const large = 'x'.repeat(2 * 1024 * 1024)
+  write('large.txt', large); commit()
+  assert.equal(git(root, ['show', 'HEAD:large.txt']), large)
+  write('bin/gh', `#!${process.execPath}
+const args=process.argv.slice(2)
+console.log(JSON.stringify(args.includes('GET')
+ ? {sha:${JSON.stringify(source.head)},commit:{tree:{sha:${JSON.stringify(source.tree)}}},files:[{patch:'x'.repeat(2*1024*1024)}]}
+ : {state:args.find(a=>a.startsWith('state=')).slice(6),context:'local-gate'}))
+`)
+  chmodSync(join(root, 'bin/gh'), 0o755)
+  for (const state of ['pending', 'success', 'failure']) {
+    const result = await publishStatus({ source, repo: 'owner/repo', state, current: async () => source,
+      gh: args => gh(root, args, { PATH: join(root, 'bin') + ':' + process.env.PATH }), description: 'large fixture response' })
+    assert.equal(result.state, state)
+  }
+}))
 
 test('pending, success and failure use gh only on exact clean target; repository override is not inferred', async () => {
   for (const state of ['pending', 'failure', 'success']) {

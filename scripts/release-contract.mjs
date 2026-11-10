@@ -15,7 +15,33 @@ export function validateManifest(manifest, root) {
 export function admitRelease(manifest, receipt, sha, jobs) {
   if (manifest.sourceSha !== sha || receipt.sourceSha !== sha || receipt.manifestSha256 !== sha256(receipt.manifestFile)) throw Error('Stale source or manifest')
   for (const name of releaseJobs) if (jobs[name] !== 'success') throw Error('Required job failed: ' + name)
-  // `app` boots the web UI from the mcp-tgz bytes, so it must carry that artifact's hash.
+  validateConsumers(manifest, receipt, sha)
+}
+
+// Local admission consumes actual local receipts, never synthetic GitHub job states.
+export const localAcceptanceGates = ['soak', 'soak-evidence', 'render', 'artifacts', 'artifact-preservation', 'consumers', 'artifact-evidence', 'desktop-download-arm64', 'desktop-arm64', 'arm64-evidence', 'desktop-recovery', 'desktop-download-x64', 'desktop-x64', 'x64-evidence', 'browser', 'demo-build', 'browser-demo', 'browser-ledger', 'site-demo', 'site-ledger', 'hygiene', 'lint', 'typecheck', 'check-fast', 'python', 'ui-build', 'coverage', 'coverage-gate', 'chaos']
+export const localGateSteps = ['hygiene','readme','lint','typecheck','gate-tests','app-build','unit','chaos','key-reveal','browser-app','browser-perf','browser-hosted','demo-build','browser-demo','browser-judge','browser-ledger','python','sdk-package','desktop-loader','desktop-build']
+export function admitLocalRelease({ manifest, receipt, gate, acceptance, sha, tree, version, root, dmgRoot }) {
+  validateManifest(manifest, root)
+  if (gate.schema !== 'local-gate-v1' || gate.state !== 'success' || !gate.route?.all || gate.source?.dirty || gate.source?.head !== sha || gate.source?.tree !== tree || gate.finalSource?.head !== sha || gate.finalSource?.tree !== tree || gate.finalSource?.dirty) throw Error('Clean exact-source full local gate required')
+  for (const id of localGateSteps) if (gate.steps.filter(row => row.id === id && row.state === 'success').length !== 1) throw Error('Missing local gate step: ' + id)
+  if (!acceptance.pass || !acceptance.checksPass || !acceptance.acceptanceEligible || acceptance.quick || acceptance.worktreeDirty || !acceptance.sourceStable || acceptance.sourceSha !== sha || acceptance.sourceTree !== tree || JSON.stringify(acceptance.schedule?.localArchitectures) !== '["arm64","x64"]' || acceptance.schedule?.mode === 'bounded DAG including soak') throw Error('Clean exact-source full all-arch acceptance required')
+  for (const name of localAcceptanceGates) if (acceptance.gates.filter(row => row.name === name && row.pass === true && row.status === 'PASS').length !== 1) throw Error('Missing acceptance gate: ' + name)
+  // Validate consumers directly instead of supplying invented hosted job results.
+  validateConsumers(manifest, receipt, sha)
+  if (!receipt.verifiers?.typescript?.pass || !receipt.verifiers?.python?.pass || receipt.verifiers?.receiptSha256 !== sha256(resolve(root, 'accepted-receipt.json'))) throw Error('Missing accepted receipt verifiers')
+  const acceptedReceipt = { ...receipt }; delete acceptedReceipt.manifestFile
+  if (JSON.stringify(acceptance.artifacts) !== JSON.stringify(manifest.artifacts) || JSON.stringify(acceptance.consumers) !== JSON.stringify(acceptedReceipt)) throw Error('Acceptance artifacts or consumer receipt changed')
+  for (const a of manifest.artifacts) if (a.version !== (['wheel','sdist'].includes(a.kind) ? version.replace(/-rc\.(\d+)$/, 'rc$1') : version)) throw Error('Artifact version mismatch: ' + a.kind)
+  for (const arch of ['arm64','x64']) {
+    const name = `ResearchAgent-${version}-${arch}.dmg`
+    const rows = acceptance.dmgs.filter(row => row.file.endsWith('/' + name))
+    const file = resolve(dmgRoot, name)
+    if (rows.length !== 1 || rows[0].bytes !== statSync(file).size || rows[0].sha256 !== sha256(file)) throw Error('Accepted DMG changed: ' + arch)
+  }
+}
+export function validateConsumers(manifest, receipt, sha) {
+  if (manifest.sourceSha !== sha || receipt.sourceSha !== sha || receipt.manifestSha256 !== sha256(receipt.manifestFile)) throw Error('Stale source or manifest')
   for (const kind of ['tgz', 'wheel', 'mcpb', 'mcp-tgz', 'app']) {
     const r = receipt.consumers.find(r => r.kind === kind)
     const a = manifest.artifacts.find(a => a.kind === (kind === 'app' ? 'mcp-tgz' : kind))

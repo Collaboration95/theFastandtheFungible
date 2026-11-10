@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error Node CLI helper has no TS declarations
 import { admitted, requiredJobs, hostedFull } from '../scripts/ci-contract.mjs'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 describe('required CI admission', () => {
   const green = Object.fromEntries(requiredJobs.map((job: string) => [job, 'success']))
@@ -53,13 +53,19 @@ npx() { case "$*" in *config.ts*) group=judge;; *demo.config.ts*) group=demo;; *
   expect(workflow.match(/npm run build:demo/g)).toHaveLength(1)
 })
 
-// Hosted admission remains full for releases, nightly and explicit dispatch.
-it('uses local admission on PRs and keeps full hosted release verification', () => {
+// Hosted workflows are dormant manual diagnostics only.
+it('keeps full manual diagnostics and removes every automatic/reusable trigger', () => {
   expect(hostedFull('pull_request')).toBe(false)
   for (const event of ['push','schedule','workflow_dispatch','workflow_call',undefined]) expect(hostedFull(event)).toBe(true)
   const workflow = readFileSync('.github/workflows/ci.yml','utf8')
   expect(workflow).not.toContain('branches: [main]')
-  expect(workflow).toContain('schedule:')
+  for (const file of ['ci', 'codespace-testnet', 'desktop']) {
+    const text = readFileSync(`.github/workflows/${file}.yml`, 'utf8')
+    const triggers = text.split('on:\n')[1].split(/^[^ ]/m)[0]
+    expect(triggers).toContain('  workflow_dispatch:')
+    expect(triggers).not.toMatch(/^ {2}(push|pull_request|schedule|workflow_call):/m)
+  }
+  expect(existsSync('.github/workflows/release.yml')).toBe(false)
   expect(workflow).toContain('cancel-in-progress: true')
   expect(workflow).toContain('npm run chaos -- --runs 200 --seed 279')
 })

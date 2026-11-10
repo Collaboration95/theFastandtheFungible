@@ -7,8 +7,9 @@ Sibling subprocesses use niceness 10; the timing-sensitive soak retains normal
 priority. This is scheduling priority, not an exemption from any measured gate.
 All providers are fixtures and settlement is simulated. This does not publish
 or sign anything. `scripts/release.mjs` requires a successful `local-gate` status
-for the merged SHA; the hosted tag workflow independently admits its exact
-artifact bytes and still publishes both arm64 and x64 DMGs.
+for the merged SHA. `make release TAG=vX.Y.Z` verifies local gate and full
+all-architecture acceptance receipts before uploading the exact accepted bytes.
+See [local releases](../local-releases.md).
 
 The soak invocation and comparator are unchanged: 2,000 measured asks, 200
 warmups, concurrency one, 10,000 historical runs with 60 events each, the burst
@@ -53,6 +54,6 @@ requires hygiene, lint, typecheck, coverage and full chaos to pass. No unit
 assertion or fault is removed. Coverage floors are unchanged.
 
 Local Intel download/packaging is explicit via `--all-arch`; it never provided
-native Intel execution evidence on this arm64 host. Hosted release packaging
-continues to produce both architectures. The report labels Intel native
+native Intel execution evidence on this arm64 host. Local release publishing
+requires both architectures. The report labels Intel native
 acceptance as pending instead of implying that a cross build established it.

@@ -1,3 +1,7 @@
+if (process.argv[2] === 'publish') {
+  await import('./release-publish.mjs')
+  process.exit(0)
+}
 // Owner-only tagging helper. Version changes must already be merged through PR gates.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
@@ -73,7 +77,7 @@ git('tag', '-a', '--cleanup=verbatim', tag, target, '-m', notes)
 console.log(`Created ${tag} at ${git('rev-parse', '--short', target)}.`)
 if (push) {
   git('push', 'origin', tag)
-  console.log(`Pushed ${tag}; the release workflow publishes it.`)
+  console.log(`Pushed ${tag}; publish it locally with make release TAG=${tag}.`)
 } else {
-  console.log(`Publish with: git push origin ${tag}`)
+  console.log(`Publish with: make release TAG=${tag}`)
 }

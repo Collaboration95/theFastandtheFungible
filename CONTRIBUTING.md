@@ -18,7 +18,8 @@ log API keys and wallet seeds.
 1. Branch from `origin/main`. Agents use a git worktree
    (`git worktree add ../tftf-wt/<branch> -b <branch> origin/main`) and check
    `gh pr list` first so two people don't edit the same files.
-2. Run `npm run gate`, commit, push, then `npm run gate -- --publish`. The clean
+2. Run `npm run check:fast`, commit, then `make ship-check`. Push, then
+   `make ship-check PUBLISH=1`. The clean
    PR head must have a successful `local-gate` commit status before merge. See
    [local gate](docs/contracts/local-gate.md) for change routing and cache rules.
 3. Open a PR with the [template](.github/pull_request_template.md). It starts with the
@@ -26,7 +27,7 @@ log API keys and wallet seeds.
    larger rather than many tiny ones.
 4. If you ship something notable, add one line to [docs/SFF-PUSH.md](docs/SFF-PUSH.md).
    The lane that ships a feature day's work cuts its release with
-   `node scripts/release.mjs`.
+   `make release TAG=vX.Y.Z` after merging; see [local releases](docs/local-releases.md).
 
 ## The five hard gates
 
@@ -59,21 +60,28 @@ their checks; unknown paths run everything. Docs-only edits use hygiene and
 applicable generated README checks. `npm run check:fast` remains available as
 the uncached full legacy check.
 
-Hosted PR CI does quick syntax/metadata sanity only. There is no duplicate
-main-push CI. Nightly, manual and reusable release CI retain the complete
-verify/coverage, browser, Python, artifacts and chaos matrix. The release still
-publishes the same package assets and both DMGs. No Mac self-hosted runner is
-registered. Fixture runs do not load developer credentials or spend money.
+All automatic hosted test/release triggers are disabled. CI and Testnet boot
+remain manual diagnostics; desktop's optional owner-dispatched signing inputs
+retain the future Apple Developer ID capability. No workflow publishes releases.
+`npm run site:publish` still builds locally and pushes gh-pages; GitHub Pages
+continues serving the judge site.
 
-Coverage floors (including payments branches ≥85%) remain unchanged. Full
-browser replay, live Testnet hash probes and 200-episode chaos run at release
-and nightly; affected browser paths also run locally. Local release acceptance
-uses a bounded dependency graph and native arm64 packaging. Use `--all-arch`
-for local Intel packaging, `--serial` to diagnose scheduling, or
-`--concurrent-soak` for an explicit contention experiment. The default isolates
-the unchanged soak. `--reuse scratch/final-acceptance-<timestamp>/acceptance.json`
-verifies a prepared exact clean source tree before reusing non-timing checks;
-the full soak always executes again. See [acceptance scheduling](docs/contracts/acceptance-scheduling.md).
+`make ship-check` wraps the existing gate with base `origin/main` (`SHIP_BASE`
+overrides). `SHIP_MODE=release` or `breaking` runs `gate --full` then full final
+acceptance with `--all-arch`. `PUBLISH=1` posts `local-gate` only after all stages
+pass on an unchanged clean commit/tree, using the existing gate publisher.
+Policy/payment/refund, persistence/recovery, public SDK/wire contracts and
+packaging/toolchain/gate changes warrant the full tier. No narrower unit routing
+is introduced: code changes still run every unit test; full release acceptance
+runs at releases or real breaking changes.
+
+Coverage floors (including payments branches ≥85%), 200-episode chaos and the
+2,000-ask isolated soak remain unchanged. Native arm64 recovery and both DMG
+builds are local release responsibilities; cross-building x64 does not prove
+native Intel execution. Python's supported-version matrix and Linux/container
+boot are separate portability checks. Testnet network probes require explicit
+opt-in and are distinct from offline fixture evidence. See [local releases](docs/local-releases.md)
+and [acceptance scheduling](docs/contracts/acceptance-scheduling.md).
 
 ## Licence
 
