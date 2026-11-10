@@ -9,7 +9,7 @@ import './hosted.css'
 
 if (new URLSearchParams(window.location.search).get('record') === '1') document.documentElement.dataset.record = 'true'
 
-// The server decides whether this is the hosted judge demo (GET /api/demo/status; 404 = local or desktop). Asking
+// The server decides whether this is the hosted judge demo (GET /api/demo/status; {hosted:false}, or an older 404 = local or desktop). Asking
 // first, alone, also gives a hosted visitor one session cookie before any other request, and no owner UI ever flashes.
 // The recorded replay and the Mac app (app:) are never hosted.
 const boot = import.meta.env.MODE === 'browser-demo' || window.location.protocol === 'app:' ? Promise.resolve({ status: undefined, failed: false }) : detectHosted()

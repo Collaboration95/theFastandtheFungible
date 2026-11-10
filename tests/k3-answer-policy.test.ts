@@ -118,7 +118,7 @@ it('puts the cited lead before contribution details and keeps paid stance out of
  expect(json.indexOf('"lead"')).toBeLessThan(json.indexOf('"claims"'))
  const html = renderToStaticMarkup(createElement(AnswerCard, {run,view:'latest',onView:()=>{},compare:false,onCompare:()=>{}}))
  expect(html.slice(0, html.indexOf('<details'))).not.toContain('Unclear')
- expect(html).toContain('<summary>Show work</summary>')
+ expect(html).toContain('<summary>Claims and gaps</summary>')
  expect(html).not.toContain('<details class="ra-answer-work" open')
  const freeText = 'Tickets allow parallel submission with preallocated sequence numbers.'
  const free = {...content, resourceId:'free', body:freeText, spans:[{id:'p1',text:freeText}]}

@@ -279,13 +279,15 @@ describe('stage pacing', () => {
     expect(getAccessibleContent(staged(paidStoryRun, at('GRANT')), paid)).toBeDefined()
   })
 
-  it('leads with a short answer and keeps citation numbers across versions', () => {
+  it('leads with a short answer and numbers citations 1…n by first appearance in the answer shown', () => {
     const html = renderToStaticMarkup(<Answer run={paidStoryRun} view="latest" onView={() => {}} compare={false} onCompare={() => {}} onCitation={() => {}} />)
     expect(html).toContain('Lead finding')
     expect(html).not.toContain('ra-impact')
     expect(html).not.toContain('GAP CLOSED')
     expect(html).not.toContain('NEW')
-    expect(html).toMatch(/aria-label="Citation 2: Synthetic grid record, exact passage"/)
+    // The latest answer cites the grid record first (the lead) and the demand record second; v1's numbering does not leak in.
+    expect(html).toMatch(/aria-label="Citation 1: Synthetic grid record, exact passage"/)
+    expect(html).toMatch(/aria-label="Citation 2: Synthetic demand record, exact passage"/)
     const first = renderToStaticMarkup(<Answer run={paidStoryRun} view="baseline" onView={() => {}} compare={false} onCompare={() => {}} />)
     expect(first).toMatch(/aria-label="Citation 1: Synthetic demand record, exact passage"/)
     expect(first).not.toContain('Qualifies the free answer')

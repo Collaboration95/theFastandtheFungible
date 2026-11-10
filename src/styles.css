@@ -391,6 +391,7 @@ dialog::backdrop { background: rgba(36,33,30,.24); }
 .ra-side { display: flex; flex-direction: column; position: sticky; top: 72px; align-self: start; gap: var(--space-4); }
 .ra-run-status { display: flex; align-items: center; gap: var(--space-3); font-size: 13px; color: var(--muted); }
 .ra-run-status p { margin: 0 auto 0 0; }
+.ra-run-status button { flex: none; white-space: nowrap; }
 .ra-activity-list { padding: var(--space-4) 0; margin: 0; list-style: none; display: grid; gap: var(--space-3); }
 .ra-activity-list li { display: flex; justify-content: space-between; font-size: 13px; }
 .ra-spend { border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-md); font-variant-numeric: tabular-nums; }
@@ -524,11 +525,11 @@ html[data-record=true] .ra-env { display: block; }
 .owner-panel .ra-set h3 { font-size: 15px; margin: 0 0 var(--space-3); }
 
 /* U1 polish (7 Nov): one reversible block. Layout, type and affordance only; no label is hidden or moved off the first screen. */
-/* Disclosures: a thin chevron instead of the heavy native triangle; Export and "Why nothing was bought" carry their own affordance. */
+/* Disclosures: a thin chevron instead of the heavy native triangle; Export carries its own affordance. */
 summary { cursor: pointer; list-style: none; }
 summary::-webkit-details-marker { display: none; }
-details:not(.ra-export):not(.ra-why-not) > summary::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 9px 0 2px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-2px) rotate(-45deg); vertical-align: middle; }
-details[open]:not(.ra-export):not(.ra-why-not) > summary::before { transform: translateY(-4px) rotate(45deg); }
+details:not(.ra-export) > summary::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 9px 0 2px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-2px) rotate(-45deg); vertical-align: middle; }
+details[open]:not(.ra-export) > summary::before { transform: translateY(-4px) rotate(45deg); }
 /* Citations sit above the line without stretching it: the lead finding keeps an even rhythm. */
 .ra-vtext sup, .ra-claim sup, .ra-group sup { position: relative; top: -.45em; vertical-align: baseline; line-height: 0; }
 .ra-vtext sup .ra-cite, .ra-claim sup .ra-cite { line-height: 1; padding: 0 2px; }
@@ -551,7 +552,7 @@ details[open]:not(.ra-export):not(.ra-why-not) > summary::before { transform: tr
 .ra-why-not li b { grid-column: 1; grid-row: 1; font-weight: 500; }
 .ra-why-not li p { grid-column: 1; grid-row: 2; margin: 0; color: var(--muted); font-size: 12px; }
 .ra-why-verdict { grid-column: 2; grid-row: 1; justify-self: end; font-weight: 500; }
-.ra-why-value { grid-column: 2; grid-row: 2; justify-self: end; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ra-why-count { color: var(--muted); font-weight: 400; }
 .ra-verdict > a { display: inline-block; margin-top: var(--space-2); font-size: 13px; }
 /* Export: a quiet button that opens a menu of rows, not a stack of form buttons. */
 .ra-export > summary { cursor: pointer; display: inline-flex; align-items: center; height: 28px; min-height: 28px; padding: 0 10px; border: 1px solid var(--rule-2); border-radius: var(--radius-sm); background: var(--surface); font-weight: 500; }
@@ -648,4 +649,25 @@ details[open]:not(.ra-export):not(.ra-why-not) > summary::before { transform: tr
  .ra-receipt-sheet dl { grid-template-columns: 96px minmax(0, 1fr); } .ra-side { order: 2; }
 }
 @media (prefers-reduced-motion: reduce) { .ra-bc-chev { transition: none; } *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } .ra-plan-bar i { width: 100%; } .ra-typing i { animation: none; }
+}
+/* Sweep fixes (11 Nov). */
+/* A citation number follows the full stop and keeps a hair of air, so it never reads as an exponent of the figure before it. */
+.ra-vtext sup, .ra-claim sup { margin-left: 1px; }
+.ra-cite .ra-icon { width: 10px; height: 10px; }
+/* Writers: byline under the publication, one quiet badge, and room between the notes and the grid. */
+.ra-writer-by { margin: 0 0 var(--space-2); }
+.ra-badge { display: inline-block; padding: 1px var(--space-2); border: 1px solid var(--rule); border-radius: var(--radius-lg); font-size: 12px; line-height: 18px; color: var(--muted); }
+.ra-writer-earnings .ra-note { margin-bottom: var(--space-3); }
+.ra-writer-grid { margin-top: var(--space-3); }
+/* The phone drawer dims the page behind it; a tap on the scrim closes it. */
+.ra-nav-scrim { display: none; }
+@media (max-width: 780px) {
+  .ra-nav-scrim { display: block; position: fixed; inset: 56px 0 0 0; z-index: 17; width: auto; padding: 0; border: 0; border-radius: 0; background: color-mix(in srgb, var(--ink) 40%, transparent); cursor: default; }
+  /* Same chip, same height as the search button beside it. */
+  .ra-env-trigger { height: 36px; border-radius: 18px; }
+  .ra-command-trigger { min-width: 36px; height: 36px; border-radius: 18px; }
+  /* Finished run: the lead comes before the plumbing. The spend line above already says the net cost. */
+  .ra-net-cost { display: none; }
+  .ra-run-activity.is-done, .ra-run-activity.is-done .ra-run-status { display: contents; }
+  .ra-run-activity.is-done .ra-show-work, .ra-run-activity.is-done .ra-activity-details { order: 30; align-self: flex-start; }
 }

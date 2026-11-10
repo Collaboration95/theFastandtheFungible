@@ -10,7 +10,7 @@ const clamp = (width: number) => Math.round(Math.min(NAV_WIDTH.max, Math.max(NAV
 
 export interface SidebarProps {
   onView?: (view: 'run' | 'writers') => void; runs: PastRun[]; activeId?: string; busy: boolean; open: boolean; width?: number; settingsOn?: boolean
-  onResize?: (width: number) => void; onSettings?: () => void; onNew: () => void; onOpenRun: (runId: string) => void; onPin: (runId: string, pinned: boolean) => void; onDelete: (runId: string) => void
+  onResize?: (width: number) => void; onSettings?: () => void; /** Phone drawer: a tap on the scrim beside it closes it. */ onClose?: () => void; onNew: () => void; onOpenRun: (runId: string) => void; onPin: (runId: string, pinned: boolean) => void; onDelete: (runId: string) => void
   /** Hosted demo: the list is this visitor's own runs (24 h); Clear hides every finished one. Settings is not offered. */
   hosted?: { onClear: () => Promise<void> | void }
 }
@@ -26,7 +26,7 @@ export function NavToggle({ open, onToggle }: { open: boolean; onToggle: () => v
 }
 
 /** The left sidebar: New question and past runs. A run's ⋯ menu pins it or removes it from the list (receipts stay in the ledger). Drag its edge to widen it. */
-export default function Sidebar({ onView, runs, activeId, busy, open, width = NAV_WIDTH.initial, settingsOn = false, onResize, onSettings, onNew, onOpenRun, onPin, onDelete, hosted }: SidebarProps) {
+export default function Sidebar({ onView, runs, activeId, busy, open, width = NAV_WIDTH.initial, settingsOn = false, onResize, onSettings, onClose, onNew, onOpenRun, onPin, onDelete, hosted }: SidebarProps) {
   const [menu, setMenu] = useState<{ id: string; confirm: boolean; x: number; y: number }>()
   const [clearing, setClearing] = useState<'confirm' | 'busy'>()
   const finished = runs.filter(over).length
@@ -53,10 +53,10 @@ export default function Sidebar({ onView, runs, activeId, busy, open, width = NA
           <button type="button" className="ra-menu-danger" disabled={!over(run)} title={over(run) ? undefined : 'Finish or stop the run first.'} onClick={() => setMenu({ ...menu, confirm: true })}>Delete…</button></>}
     </div>}
   </li>
-  return <nav className={`ra-nav${open ? '' : ' is-rail'}${drag === undefined ? '' : ' is-resizing'}`} aria-label="Questions" style={open ? { '--nav-w': `${shown}px` } as CSSProperties : undefined}>
+  return <>{open && onClose && <button type="button" className="ra-nav-scrim" aria-label="Close sidebar" tabIndex={-1} onClick={onClose} />}<nav className={`ra-nav${open ? '' : ' is-rail'}${drag === undefined ? '' : ' is-resizing'}`} aria-label="Questions" style={open ? { '--nav-w': `${shown}px` } as CSSProperties : undefined}>
     <button type="button" className="ra-newq" onClick={onNew} disabled={busy} title={busy ? 'Finish or stop the run first.' : undefined} aria-label="New question"><Icon name="plus" />{open && <>New question<kbd>{modifier}N</kbd></>}</button>
     {open && onView && <div className="ra-mobile-views"><button type="button" className="ra-link" onClick={() => onView('run')}>Run</button><button type="button" className="ra-link" onClick={() => onView('writers')}>Writers</button></div>}
-    {open && <div className="ra-nav-list">{runs.length === 0 && open && <div className="ra-nav-empty"><AgentSprite animation="idle" still /> <p>{hosted ? 'Your questions appear here. They’re private to this browser and kept for 24 hours.' : 'Ask a question to start your research.'}</p></div>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
+    {open && <div className="ra-nav-list">{runs.length === 0 && open && <div className="ra-nav-empty">{hosted && <AgentSprite animation="idle" still />} <p>{hosted ? 'Your questions appear here. They’re private to this browser and kept for 24 hours.' : 'Ask a question to start your research.'}</p></div>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
       {open && <p className="ra-nav-sec">{name}</p>}<ul>{list.map(row)}</ul>
     </section>)}</div>}
     {open && hosted && finished > 0 && <div className="ra-nav-clear">{clearing === undefined
@@ -74,5 +74,5 @@ export default function Sidebar({ onView, runs, activeId, busy, open, width = NA
       onPointerCancel={() => setDrag(undefined)}
       onDoubleClick={() => onResize(NAV_WIDTH.initial)}
       onKeyDown={event => { const step = event.key === 'ArrowRight' ? 16 : event.key === 'ArrowLeft' ? -16 : 0; if (step) { event.preventDefault(); onResize(clamp(shown + step)) } }} />}
-  </nav>
+  </nav></>
 }

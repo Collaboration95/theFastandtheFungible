@@ -64,8 +64,9 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
     expect(runs).toHaveLength(0)
     fireEvent.click(chip)
     const card = await screen.findByRole('dialog', { name: 'Search plan' })
-    expect(card.textContent).toContain('Search every listed writer for')
-    for (const query of uc2Scope.plan.subqueries) expect(card.textContent).toContain(query)
+    expect(card.textContent).toContain('Search every listed writer for your question')
+    // The stop-word-stripped search words are not read back to the visitor; Edit still shows them.
+    for (const query of uc2Scope.plan.subqueries) expect(card.textContent).not.toContain(query)
     expect(card.textContent).not.toMatch(PURCHASE_APPROVAL)
     expect(runs).toHaveLength(0)
     fireEvent.keyDown(window, { key: 'Enter' })

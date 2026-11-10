@@ -172,6 +172,8 @@ export async function getDemoStatus(signal?: AbortSignal): Promise<HostedDemoSta
   // The paused shell answers 503 with the same bounded status body.
   let body: unknown
   try { body = await response.json() } catch { throw new ApiError(response.status) }
+  // A local or desktop server answers 200 {hosted:false} instead of a 404, so the browser console stays clean; detectHosted reads it as "not hosted".
+  if (typeof body === 'object' && body !== null && (body as { hosted?: unknown }).hosted === false) throw new ApiError(404)
   const status = HostedDemoStatusSchema.safeParse(body)
   if (!status.success) throw new ApiError(response.ok ? 502 : response.status)
   if (status.data.csrfToken) hostedCsrf = status.data.csrfToken

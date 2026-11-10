@@ -5,7 +5,7 @@ import { sourceKey, sameSource } from '../../shared/source-identity.js'
 /* eslint-disable react-refresh/only-export-components -- Shared access boundary for W2 drawer wiring. */
 import { useEffect, useRef, useState } from 'react'
 import type { ContentEnvelope, PublicCandidate, RunSnapshot } from '../../shared/contracts/index.js'
-import { money, plainVerdict } from '../format'
+import { money, plainVerdict, purchaseCounts } from '../format'
 
 const drawerAccess = new WeakMap<ContentEnvelope, string>()
 const identity = (candidate: PublicCandidate) => sourceKey(candidate)
@@ -56,8 +56,9 @@ export default function Sources({ run, onOpen }: SourcesProps) {
   const [all, setAll] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => { if (all) dialog.current?.showModal(); else dialog.current?.close() }, [all])
+  const counts = purchaseCounts(run)
   const cards = run.candidates.map(candidate => ({ candidate, state: cardState(run, candidate) })).sort((a,b) => RANK[a.state.tone] - RANK[b.state.tone])
-  return <section className="ra-strip" aria-label="Sources"><div className="ra-source-summary">{cards.length} source{cards.length === 1 ? '' : 's'} · {run.contents.length} read · {run.intents.filter(i => i.status === 'VERIFIED').length} bought · {run.intents.filter(i => i.status === 'REFUNDED').length} refunded <button type="button" className="ra-link" onClick={() => setAll(true)}>View all</button></div>
+  return <section className="ra-strip" aria-label="Sources"><div className="ra-source-summary">{`${cards.length} source${cards.length === 1 ? '' : 's'} · ${run.contents.length} read · ${counts.paid} bought · ${counts.refunded} refunded`} <button type="button" className="ra-link" onClick={() => setAll(true)}>View all</button></div>
     <dialog ref={dialog} className="ra-receipt-sheet ra-sources-sheet" aria-label="All sources" onCancel={event => { event.preventDefault(); setAll(false) }}><header><h2>Sources</h2><button type="button" className="ra-btn" onClick={() => setAll(false)} aria-label="Close sources"><Icon name="close" /></button></header><table><thead><tr><th>Article</th><th>Writer / access</th></tr></thead><tbody>{cards.map(({ candidate, state }) => <tr key={identity(candidate)}><td><button type="button" className="ra-link" onClick={() => { setAll(false); onOpen?.(candidate) }}>{candidate.title}</button></td><td>{candidate.publisher} <WriterVerification value={candidate.verification} />{candidate.source && <small> · {candidate.source.origin}</small>}<br />{state.label}</td></tr>)}</tbody></table></dialog>
   </section>
 }

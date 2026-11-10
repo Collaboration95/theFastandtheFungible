@@ -54,7 +54,7 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   await expect(receipt).toContainText('None (simulated)')
   await expect(receipt).toContainText('Simulated payment · no ledger entry')
   await expect(receipt).toContainText('Net costS$0.00')
-  await expect(receipt).toContainText('RefundedS$0.30 · simulated')
+  await expect(receipt).toContainText('RefundedS$0.30 · Simulated')
   labels.receipt = await count()
   await expect(receipt).toHaveCSS('opacity', '1')
   await shot('14-receipt-refunded')

@@ -150,9 +150,11 @@ test('a judge question with declined matches explains policy and invites publish
   const answer = page.getByRole('region', { name: 'Research answer' })
   await expect(answer).toContainText('Nothing was bought: the available articles do not add enough relevant evidence.')
   await expect(answer).not.toContainText('No listed writer covers this')
+  // Twelve rows is a long list: closed until asked, then the proof page's verdict words.
+  await expect(answer.locator('details.ra-why-not')).not.toHaveAttribute('open', '')
   await answer.getByText('Why nothing was bought', { exact: true }).click()
   await expect(answer.locator('li')).toHaveCount(12)
-  await expect(answer).toContainText('Skip')
+  await expect(answer).toContainText(/Wouldn’t add enough|Repeats what is already known|Nothing left to fill/)
   await expect(answer.getByRole('link', { name: 'Write about this topic →' })).toHaveAttribute('href', /docs\/publishing\.md$/)
   await expect(answer.locator('.is-skel')).toHaveCount(0)
   await expect(page.getByRole('status')).not.toContainText('answered from free sources')

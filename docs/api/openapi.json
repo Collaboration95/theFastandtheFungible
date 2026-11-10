@@ -754,6 +754,21 @@
         "x-internal": true
       }
     },
+    "/api/demo/status": {
+      "get": {
+        "summary": "Internal UI endpoint; the web app asks it once at boot. A local server answers {hosted:false}; not a stable SDK contract",
+        "operationId": "get_api_demo_status",
+        "responses": {
+          "200": {
+            "description": "Internal response; see the implementing UI route. Not a stable SDK contract."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "x-internal": true
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Internal UI/owner endpoint; not a stable SDK contract",

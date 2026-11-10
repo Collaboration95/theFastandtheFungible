@@ -131,8 +131,9 @@ control only while pausing, never silently during resume.
 evidence links, CSRF token, and own queue positions. `src/api.ts` exports the typed
 client; HU owns screen rendering and mutation headers.
 
-**Hosted UI (HU).** The web app requests this status before its first render. A 404
-means local or desktop, which render unchanged. Otherwise the app shows the
+**Hosted UI (HU).** The web app requests this status before its first render. A local
+or desktop server answers `200 {"hosted":false}` (older builds, a 404), which render
+unchanged and keep the browser console clean. Otherwise the app shows the
 judge shell:
 
 - an orientation line, then the visitor's own question (budget capped at

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { money } from '../format'
-import { PlanSchema, BUDGET, PURCHASE_RULE, type Plan } from '../../shared/contracts/index.js'
+import { PlanSchema, BUDGET, MAX_ROUNDS, type Plan } from '../../shared/contracts/index.js'
 import { useHosted } from '../hosted'
 
 const PLAN_MS = 5000
@@ -64,8 +64,11 @@ export default function PlanSheet({ plan, writers, budgetMinor = BUDGET.initialM
   return <dialog ref={dialog} className={`ra-plan${editing || paused ? ' is-editing' : ''}`} aria-label="Search plan" aria-describedby="ra-plan-what" onCancel={event => { event.preventDefault(); cancel() }}>
     <h2>Review your plan</h2><p className="ra-plan-question">{plan.restatement}</p>
     <p className="ra-caption">Plan</p><ol className="ra-plan-steps">
-      <li id="ra-plan-what">Search {who} for “{subqueries.join(', ')}”</li>
-      <li>Read free sources and draft an answer</li><li>Buy only if an article fills a gap: {PURCHASE_RULE}. A new writer’s top matching article may get one probe purchase, up to S$0.30, within this budget.</li><li>Check the article against the writer’s promises. If one is broken, request an eligible refund. A refund is complete only after verification.</li>
+      <li id="ra-plan-what">{`Search ${who} for your question`}</li>
+      <li>Read free sources and draft an answer</li>
+      <li>{`Buy at most one article per round, up to ${MAX_ROUNDS} rounds, only if it fills a gap`}</li>
+      <li>A new writer may get one test purchase (up to S$0.30)</li>
+      <li>Check the article against the writer’s promises. If one is broken, request an eligible refund. A refund is complete only after verification.</li>
     </ol>
     {editing && <ol className="ra-plan-edit">{subqueries.map((query, index) => <li key={index}><input aria-label={`Search ${index + 1}`} value={query} maxLength={160} onChange={event => setSubqueries(list => list.map((item, i) => i === index ? event.target.value : item))} /></li>)}</ol>}
     <p>Budget <strong>{money(budgetMinor)}</strong> · up to {money(capMinor)} per article</p>

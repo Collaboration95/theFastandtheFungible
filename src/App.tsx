@@ -434,7 +434,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: model.phase === 'recovering' ? 'READ_PAID' : finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
-  const nav = <Sidebar onView={view => { switchView(view); setNavOpen(false) }} runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={demo ? undefined : screen === 'settings' ? closeSettings : openSettings} hosted={demo ? { onClear: clearHistory } : undefined} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
+  const nav = <Sidebar onView={view => { switchView(view); setNavOpen(false) }} runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={demo ? undefined : screen === 'settings' ? closeSettings : openSettings} onClose={() => setNavOpen(false)} hosted={demo ? { onClear: clearHistory } : undefined} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
     onOpenRun={id => void openRun(id)} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
   // A run's toast seen from another screen (Home, or another run) gets a way back to that run.
   // A toast about the run in view repeats the screen, so it waits until you leave it.
@@ -471,7 +471,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
       {banner}
       {hosted && state
         ? <Ask onAsk={sendAsk} busy={!canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, Math.floor(questionCap(hosted.status) / 5) * 5)} onPick={setPicked}
-            intro={<HostedIntro hosted={hosted} state={state} />} budgetMax={Math.floor(questionCap(hosted.status) / 5) * 5} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
+            intro={<HostedIntro hosted={hosted} state={state} />} closed={!canAsk(state)} budgetMax={Math.floor(questionCap(hosted.status) / 5) * 5} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
             placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} examplesLabel="Questions that answer well today" />
         : <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
             note={envNote && !recording ? <EnvNote labels={health.labels} onDone={() => setEnvNote(false)} /> : undefined} />}

@@ -1,10 +1,9 @@
 import Icon from './Icon'
 import { REFUND_LABEL } from '../copy'
-import { declineSummary } from '../../shared/decline.js'
 import { sameSource, sourceKey } from '../../shared/source-identity.js'
 import { useEffect, useState } from 'react'
 import type { RunSnapshot } from '../../shared/contracts'
-import { candidateOf, money } from '../format'
+import { articleCount, candidateOf, money, purchaseCounts } from '../format'
 import { deriveRunState } from '../runState'
 
 /** Steps that have not started read as plans, not results. */
@@ -22,11 +21,17 @@ export default function RunActivity({ run, actualTerminal, onStop, stopping, onS
     const buyIndex = activity.findIndex(row => row.kind === 'buy')
     if (buyIndex >= 0) activity.splice(buyIndex + 1, 0, { key: 'todo-proof', kind: 'proof', title: 'Check the article against the writer’s promises', state: 'todo', meta: '' })
   }
-  const bought = run.receipts.length
+  const { paid: bought, refunded } = purchaseCounts(run)
   const firstDraft = run.events.find(e => e.type === 'FREE_DRAFT' && typeof e.data?.elapsedMs === 'number')
   const start = firstDraft ? Date.parse(firstDraft.at) - Number(firstDraft.data!.elapsedMs) : run.events[0] ? Date.parse(run.events[0].at) : undefined
   const elapsed = start !== undefined ? Math.max(0, (Date.parse(run.events.at(-1)!.at) - start) / 1000) : 0
-  return <section className="ra-run-activity" aria-label="Run activity"><div className="ra-run-status"><p role="status">{!done && spinning && <i className="ra-spinner" aria-hidden="true" />}{state.phase === 'done' ? `Done in ${import.meta.env.MODE === 'browser-demo' && elapsed > 120 ? 'a replay with the 2 min wait skipped' : elapsed >= 1 ? `${elapsed.toFixed(1)} s` : elapsed > 0 ? 'under 1 s' : 'an unrecorded duration'}. ${bought ? `Bought ${run.receipts.length} article${run.receipts.length === 1 ? '' : 's'}, ${run.intents.filter(i => i.status === 'REFUNDED').length} refunded. Net cost ${money(Math.max(0, run.spentMinor - (run.refundedMinor ?? 0)))}.` : run.answers.some(a => a.claims.length) ? 'Answered from free sources. Nothing spent.' : declineSummary(run)}` : labels[state.phase]}</p>{!done && !actualTerminal && <button className="ra-link" disabled={stopping} onClick={onStop}>Stop buying ⌘.</button>}<button className="ra-link" onClick={onShowWork}>Show work</button></div>
+  const took = import.meta.env.MODE === 'browser-demo' && elapsed > 120 ? 'a replay with the 2 min wait skipped' : elapsed >= 1 ? `${elapsed.toFixed(1)} s` : elapsed > 0 ? 'under 1 s' : 'an unrecorded duration'
+  // "Paid for" is the same count as "bought" in the sources strip (purchaseCounts). The net cost drops out on a phone, where the spend line above already says it.
+  const net = money(Math.max(0, run.spentMinor - (run.refundedMinor ?? 0)))
+  // A run that bought nothing says so once, in the answer below ("Nothing was bought: …"); the status line only reports the time.
+  const outcome = bought ? <>{`Paid for ${articleCount(bought)}${refunded ? `, ${refunded} refunded` : ''}.`}<span className="ra-net-cost">{` Net cost ${net}.`}</span></> : run.answers.some(a => a.claims.length) ? 'Answered from free sources. Nothing spent.' : undefined
+  const summary = state.phase !== 'done' ? labels[state.phase] : <>{`Done in ${took}.`}{outcome && ' '}{outcome}</>
+  return <section className={`ra-run-activity${done ? ' is-done' : ''}`} aria-label="Run activity"><div className="ra-run-status"><p role="status">{!done && spinning && <i className="ra-spinner" aria-hidden="true" />}{summary}</p>{!done && !actualTerminal && <button className="ra-link" disabled={stopping} onClick={onStop}>Stop buying ⌘.</button>}<button className="ra-link ra-show-work" onClick={onShowWork}>Show work</button></div>
     <details key={run.runId} className="ra-activity-details" open={!done}><summary>Activity</summary><ol className="ra-activity-list">{activity.map((row, index, rows) => {
       const next = rows[index + 1]?.event?.at
       const span = row.event && next ? Math.max(0, (Date.parse(next) - Date.parse(row.event.at)) / 1000) : 0
