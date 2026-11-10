@@ -145,3 +145,14 @@ release-artifacts:
 .PHONY: testnet
 testnet: ## fixture models + isolated faucet wallets on XRPL Testnet; ARGS=--capture records UC3
 	node --import tsx scripts/testnet-start.ts $(ARGS)
+
+# Hosted operations: dedicated VM + stateless Cloud Run proxy. No mutation by default.
+.PHONY: hosted-build hosted-deploy hosted-smoke hosted-teardown
+hosted-build: ## clean archive images (REF=HEAD); ARGS=--execute to build locally
+	node docker/hosted/build.mjs $(or $(REF),HEAD) $(ARGS)
+hosted-deploy: ## operator command plan; ARGS="--project ... --billing-account ... --manifest ... --notification-channel ..."; --execute opts in
+	bash scripts/hosted-deploy.sh $(ARGS)
+hosted-smoke: ## bounded acceptance: ARGS="--url ... --question ... --paused-url ..."; --offline for fixtures
+	node --import tsx scripts/hosted-smoke.mjs $(if $(filter --execute,$(ARGS)),,--dry-run) $(ARGS)
+hosted-teardown: ## operator teardown plan; ARGS="--project ... --manifest ..."; preserves final disk snapshot
+	bash scripts/hosted-teardown.sh $(ARGS)
