@@ -8,8 +8,8 @@ import { mkdir, cp } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 
 const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2'
-const SIMULATED: Record<string, RegExp> = { 'Testnet UC3 · payment': /^Malaysia packaging lead times/, 'Simulated UC1': /^Bank of Japan decision/, 'Simulated UC2': /^Kestrel–TSMC outlook/, 'Simulated UC3': /^Malaysia packaging lead times/ }
-const TABS = ['Start here · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
+const SIMULATED: Record<string, RegExp> = { 'Plain payment': /^Malaysia packaging lead times/, 'Simulated: decline': /^Bank of Japan decision/, 'Simulated: buy': /^Kestrel–TSMC outlook/, 'Simulated: refund': /^Malaysia packaging lead times/ }
+const TABS = ['Key reveal (start here)', 'Plain payment', 'Writer no-show', 'Simulated: decline', 'Simulated: buy', 'Simulated: refund'] as const
 let server: ChildProcess, base: string
 
 // eslint-disable-next-line no-empty-pattern -- Playwright requires a destructured first argument.
@@ -30,7 +30,8 @@ test.beforeEach(async ({ page }) => {
 /** Watch one replay to completion; report every forbidden string seen on the way. */
 async function walk(page: Page, tab: string) {
   await page.goto(`${base}/demo/`)
-  if (tab !== TABS[0]) await page.getByRole('navigation', { name: 'Recorded scenarios' }).getByRole('link', { name: tab, exact: true }).click()
+  // The scenario picker reloads the replay with the chosen recording.
+  if (tab !== TABS[0]) await Promise.all([page.waitForEvent('load'), page.getByRole('combobox', { name: 'Recorded scenario' }).selectOption({ label: tab })])
   // The payment and simulated replays wait for the judge to pick their recorded question.
   if (SIMULATED[tab]) {
     await page.getByRole('button', { name: SIMULATED[tab] }).click()

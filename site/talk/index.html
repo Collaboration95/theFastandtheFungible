@@ -49,6 +49,8 @@ p { margin: 14px 0 0; }
 .hl { background: none; padding: 0 2px; }
 
 /* panels: the instruments */
+.kr-fig { margin: 28px 0 0; border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+.kr-fig img { display: block; width: 100%; height: auto; }
 .panel { margin-top: 28px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; box-shadow: 0 1px 0 var(--rule), 0 18px 40px -28px rgba(15, 18, 34, .28); overflow: hidden; }
 .panel-in { padding: 22px 24px 20px; }
 .ph { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline; justify-content: space-between; }
@@ -332,8 +334,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
 .ra-hdr a{color:inherit;text-decoration:none}
 .ra-hdr-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em;flex:none}
 .ra-hdr-brand svg{width:22px;height:22px;display:block}
-.ra-hdr nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
-.ra-hdr nav::-webkit-scrollbar{display:none}
+.ra-hdr nav{display:flex;gap:2px;flex:1;min-width:0}
 .ra-hdr nav a{padding:8px 10px;border-radius:6px;color:#655D55;white-space:nowrap}
 .ra-hdr nav a:hover{color:#24211E;background:rgba(36,33,30,.06)}
 .ra-hdr nav a[aria-current=page]{color:#24211E;box-shadow:inset 0 -2px 0 #24211E;border-radius:0}
@@ -343,13 +344,20 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
 .ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 .ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr-menu{display:none;position:relative}
+.ra-hdr-menu summary{list-style:none;cursor:pointer;padding:8px 10px;border:1px solid #C9BFB2;border-radius:6px;color:#24211E;background:#fff}
+.ra-hdr-menu summary::-webkit-details-marker{display:none}
+.ra-hdr-menu div{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;display:grid;padding:8px;background:#FBF8F2;border:1px solid #E8E2D8;border-radius:8px;box-shadow:0 12px 32px -16px rgba(36,33,30,.35)}
+.ra-hdr-menu div a{padding:10px 12px;border-radius:6px;color:#24211E}
+.ra-hdr-menu div a[aria-current=page]{background:rgba(36,33,30,.06)}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh,.ra-hdr-end a:last-child{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
+@media(max-width:940px){.ra-hdr nav,.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr-menu{display:block}.ra-hdr-end{margin-left:auto}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}}
 @media print{.ra-hdr{display:none}}</style>
 <div class="ra-hdr" role="banner"><div class="ra-hdr-in">
-<a class="ra-hdr-brand" href="../index.html" aria-label="ResearchAgent explainers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
-<nav tabindex="0" aria-label="Explainers · scroll for more pages"><a href="../index.html">Home</a><a href="../demo/">Replay</a><a href="../talk/#key-reveal" aria-current="page">How it works</a><a href="../developers/">Developers</a><a href="../proof/">Proof</a><a href="../progress/">Progress</a><a href="../builder-feedback/">Builder feedback</a><a href="../ledger/">Ledger ✓</a><a href="../project-map/">Project map</a><a href="../evolution/">October log</a><a href="../slides/">Slides</a></nav>
-<div class="ra-hdr-end"><a class="ra-live" href="https://ra-front-651013803640.asia-southeast1.run.app">Try it live</a><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></div>
+<a class="ra-hdr-brand" href="../index.html" aria-label="ResearchAgent explainers home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></a>
+<nav aria-label="Explainers"><a href="../demo/">Replay</a><a href="../talk/#key-reveal" aria-current="page">How it works</a><a href="../proof/">Proof</a><a href="../progress/">Progress</a><a href="../developers/">Developers</a><a href="../builder-feedback/">Builder feedback</a></nav>
+<div class="ra-hdr-end"><a class="ra-live" href="https://ra-front-651013803640.asia-southeast1.run.app">Try it live</a><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible">GitHub</a><details class="ra-hdr-menu"><summary>Menu</summary><div><a href="../demo/">Replay</a><a href="../talk/#key-reveal" aria-current="page">How it works</a><a href="../proof/">Proof</a><a href="../progress/">Progress</a><a href="../developers/">Developers</a><a href="../builder-feedback/">Builder feedback</a><a href="https://github.com/Collaboration95/theFastandtheFungible">GitHub</a></div></details></div>
 </div></div>
 <!-- site-header:end -->
 
@@ -374,9 +382,16 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
   <div class="prose">
     <div class="kick">ResearchAgent</div>
     <h1>Research with a wallet.</h1>
-    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy <strong>the article it needs</strong> straight from the writer, for cents, inside a budget you set. If an article fails the writer’s promise, it requests a refund and records the outcome. <strong>A refund after delivery requires the writer’s signature.</strong></p>
+    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy the article it needs straight from the writer, for cents, inside a budget you set. If an article fails the writer’s promise, it requests a refund and records the outcome. <strong>A refund after delivery requires the writer’s signature.</strong></p>
   </div>
 
+</section>
+
+<section id="key-reveal"><div class="prose"><div class="kick">How it works today</div><h2>The writer reveals the key to get paid.</h2><p>Policy code locks the payment in an XRPL escrow that only the article’s key can open. The writer publishes the key on the ledger to finish the escrow and get paid, so delivery and payment are one event. The buyer checks the key against the lock, decrypts the article and checks every promise before citing it.</p><p>If the writer never reveals the key, the buyer reclaims the payment after the escrow’s <code>CancelAfter</code> deadline. If the article breaks a promise after delivery, the refund needs the writer’s signature. Neither return restores the question’s spending budget.</p></div>
+<figure class="kr-fig"><img src="key-reveal.svg" width="840" height="392" alt="Key-reveal escrow in five steps: policy code locks payment to the hash of the article key; the writer publishes the key on the ledger and is paid; the buyer decrypts and checks every promise; a broken promise is refunded by the writer; the answer is anchored on the ledger"></figure>
+<div class="prose"><p><a href="../demo/?scenario=UC3-key-reveal">Watch the recorded key-reveal run →</a> · <a href="../proof/">Check the receipts</a></p></div></section>
+
+<section id="october"><div class="prose"><div class="kick">October talk · 9 Oct</div><h2>The first version: a plain payment, then a refund.</h2><p>The rest of this page is the explainer from our October talk at AI Tinkerers Singapore. It replays the 9 October rehearsal run, which paid writers with a plain XRPL payment, before key-reveal escrow. The seven steps below follow that run.</p></div>
   <div class="panel" id="w-run">
     <div class="panel-in">
       <div class="ph">
@@ -387,7 +402,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
         <div class="big"><span class="num" data-left>S$1.30</span><span class="cap">budget left of S$2.00</span></div>
         <div class="big pay"><span class="num" data-net>S$0.40</span><span class="cap">spent, net of refund</span></div>
         <div class="run-side">
-          <div class="run-btns"><button class="replay" data-toggle type="button">▶ play</button><button class="replay sq" data-replay type="button" aria-label="Replay from the start" title="Replay from the start">↻</button></div>
+          <div class="run-btns"><button class="replay" data-toggle type="button">▶ Play</button><button class="replay sq" data-replay type="button" aria-label="Replay from the start" title="Replay from the start">↻</button></div>
           <div class="mini" data-elapsed>33.6 s · 2 bought · 1 refunded</div>
         </div>
       </div>
@@ -399,8 +414,6 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
     <p class="foot">The question you just watched, <b>"Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?"</b>, with a S$2 budget. This is the live rehearsal run of 9 Oct (DeepSeek writing, OpenAI Decisions judging, XRPL Testnet settling), replayed at 2.4× from its 38 recorded events. <b>The spending display applies today’s policy: S$0.70 charged, S$0.30 refunded, S$0.40 net, S$1.30 budget left. Refunds do not restore the spending budget.</b> <span class="k">Blue</span> bars read and decide, <span style="color:var(--pay-ink)">orange</span> bars pay, <span style="color:var(--bad)">red</span> is the failed proof, <span style="color:var(--ok)">green</span> is the refund and the verified article.</p>
   </div>
 </section>
-
-<section id="key-reveal"><div class="prose"><div class="kick">Start here · current flow</div><h2>The writer reveals the key to get paid.</h2><p>The buyer locks payment in escrow against a cryptographic condition. The writer reveals the key to finish the escrow; the buyer verifies the grant before decrypting and citing the article.</p><p>If the writer never reveals the key, the principal can be reclaimed after the escrow’s <code>CancelAfter</code> deadline. After delivery, a content dispute needs the writer’s signature to refund. Neither return restores the prompt’s spending budget.</p><p><a href="../demo/?scenario=UC3-key-reveal">Replay the recorded key-reveal run · 7 Nov 2026 →</a> · <a href="../proof/">Check the receipts</a></p><p>The animation below preserves the 9 October plain-payment recording; it does not depict today’s escrow protocol.</p></div></section>
 <!-- MAP -->
 <section id="map">
   <div class="prose">
@@ -410,7 +423,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
   </div>
   <div class="panel map" id="w-map">
     <div class="panel-in">
-      <div class="ph"><div class="mstatus"><span class="prev" data-mprev></span><span class="cur"><i class="pulse"></i><span data-mcur></span><span class="caret" data-mcaret hidden></span></span></div><div class="run-btns"><button class="replay" data-toggle type="button">▶ play</button><button class="replay sq" data-replay type="button" aria-label="Replay from the start" title="Replay from the start">↻</button></div></div>
+      <div class="ph"><div class="mstatus"><span class="prev" data-mprev></span><span class="cur"><i class="pulse"></i><span data-mcur></span><span class="caret" data-mcaret hidden></span></span></div><div class="run-btns"><button class="replay" data-toggle type="button">▶ Play</button><button class="replay sq" data-replay type="button" aria-label="Replay from the start" title="Replay from the start">↻</button></div></div>
       <svg viewBox="0 0 1000 560" data-svg role="img" aria-label="Architecture: you, the ResearchAgent engine, eight writers' sites on this laptop, three online model services and the XRPL Testnet ledger"></svg>
       <div class="sub"><div class="say" data-say></div><div class="steps" data-steps></div></div>
     </div>
@@ -427,7 +440,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
   </div>
   <div class="panel" id="w-search">
     <div class="panel-in">
-      <div class="ph"><div class="tag">Fan-out to 8 writers</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">Fan-out to 8 writers</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <div class="search-grid">
         <div>
           <div class="qbox well"><div class="lab">Search query (from the plan)</div><div class="q" data-q></div>
@@ -480,7 +493,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
   </div>
   <div class="panel" id="w-answer">
     <div class="panel-in">
-      <div class="ph"><div class="tag">Answer v1 · free sources</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">Answer v1 · free sources</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <div class="ans-grid">
         <div class="facts well">
           <h3>Requested facts · frozen by the plan</h3>
@@ -510,7 +523,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
   </div>
   <div class="panel" id="w-decide">
     <div class="panel-in">
-      <div class="ph"><div class="tag">Round 1 · 12 paywalled candidates · top 6 shown</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">Round 1 · 12 paywalled candidates · top 6 shown</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <div class="tbl" tabindex="0" role="region" aria-label="Evidence table">
         <table class="dt">
           <thead><tr>
@@ -529,7 +542,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
 
   <div class="panel" id="w-bench">
     <div class="panel-in">
-      <div class="ph"><div class="tag">Why this model · we benchmarked two decision models</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">Why this model · we benchmarked two decision models</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <div class="bench">
         <div class="bm"><h3 class="minor-heading">Buys the right article · F1 ↑</h3>
           <div class="row"><span>gpt-6-luna</span><span class="bar"><i data-b="0.983"></i></span><span>0.983</span></div>
@@ -555,7 +568,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
   </div>
   <div class="panel" id="w-budget">
     <div class="panel-in">
-      <div class="ph"><div class="tag">server/agents/decision.ts · the whole spending decision</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">server/agents/decision.ts · the whole spending decision</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <div class="bud-grid">
 <pre tabindex="0" aria-label="Code example" class="code" data-code><span class="ln"><span class="cm">// trust can only lower value, never the budget or cap</span></span>
 <span class="ln" data-l="trust"><span class="kw">if</span> (status !== <span class="st">'active'</span>) verdict = <span class="st">'SKIP_LOW_TRUST'</span></span>
@@ -593,7 +606,7 @@ pick = rows.filter(BUY).sort(byValuePerDollar)[0]</span></pre>
   </div>
   <div class="panel" id="w-x402">
     <div class="panel-in">
-      <div class="ph"><div class="tag">x402 v2 · scheme exact · network xrpl:1</div><div class="clock" data-xclock>+15.6 s</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">x402 v2 · scheme exact · network xrpl:1</div><div class="clock" data-xclock>+15.6 s</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <svg class="seq" viewBox="0 0 1000 470" data-seq role="img" aria-label="Sequence: the agent requests the article, gets 402 with a price, checks it, signs an XRPL payment, retries with the payment, the writer's facilitator submits it to XRPL Testnet, the ledger validates it, and the writer returns the article"></svg>
       <div class="hdr">
         <div><h3 class="minor-heading">The price tag (decoded header)</h3>
@@ -635,7 +648,7 @@ PAYMENT-RESPONSE: base64({
   </div>
   <div class="panel" id="w-verify">
     <div class="panel-in">
-      <div class="ph"><div class="tag">Checks on both sides of one purchase</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">Checks on both sides of one purchase</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <div class="ver-grid">
         <div class="ck"><h3 class="minor-heading">Agent · before paying<span>Is this writer who it says?</span></h3><ol data-ck="a">
           <li><i>·</i>Manifest signature is valid</li>
@@ -681,7 +694,7 @@ PAYMENT-RESPONSE: base64({
   </div>
   <div class="panel" id="w-refund">
     <div class="panel-in">
-      <div class="ph"><div class="tag">From broken promise to blocked writer</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">From broken promise to blocked writer</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <div class="ref-grid">
         <ol class="tl" data-tl>
           <li class="rv"><span class="tm">+16.1 s</span><span>Agent sends <code>POST /w/alphaleak/challenge</code> with the tx hash and the claim <code>lead-times-dated</code></span></li>
@@ -722,7 +735,7 @@ PAYMENT-RESPONSE: base64({
   </div>
   <div class="panel" id="w-built">
     <div class="panel-in">
-      <div class="ph"><div class="tag">git log · every merged pull request</div><div class="clock" data-bclock>Fri 9 Oct</div><button class="replay" data-replay type="button">↻ replay</button></div>
+      <div class="ph"><div class="tag">git log · every merged pull request</div><div class="clock" data-bclock>Fri 9 Oct</div><button class="replay" data-replay type="button">↻ Replay</button></div>
       <div class="built-top">
         <div class="big"><span class="num" data-bprs>72</span><span class="cap">pull requests merged</span></div>
         <div class="big add"><span class="num" data-badd>+75,352</span><span class="cap">lines added</span></div>
@@ -831,7 +844,9 @@ function widget(id, duration, render) {
   const bars = EVENTS.map(([t, type, label], i) => sv('rect', { x: xs[i] - 2.5, y: BASE - height(type, label), width: 5, height: height(type, label), rx: 1.5, fill: color(type, label) }, strip));
   const marks = [[0.77, 'free answer'], [6.86, 'buys AlphaLeak'], [16.05, 'proof fails'], [22.28, 'refund'], [22.82, 'buys Fab Floor'], [33.6, 'answer v2']];
   let lastX = -1e9;
-  marks.forEach(([t, l], i) => { const x = xAt(t); const anchor = i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle'; const y = x - lastX < 92 ? 164 : 148; lastX = y === 148 ? x : lastX; sv('line', { x1: x, x2: x, y1: BASE + 3, y2: y - 12, stroke: 'var(--rule-2)', 'stroke-dasharray': '2 3' }, strip); const tx = sv('text', { x, y, 'text-anchor': anchor }, strip); tx.textContent = l; });
+  // Two marks closer than 92 units sit either side of their lines (the earlier label left, the later right); otherwise centred.
+  const near = i => i > 0 && xAt(marks[i][0]) - xAt(marks[i - 1][0]) < 92, nearNext = i => i < marks.length - 1 && near(i + 1);
+  marks.forEach(([t, l], i) => { const x = xAt(t); const anchor = i === 0 || near(i) ? 'start' : i === marks.length - 1 || nearNext(i) ? 'end' : 'middle'; const dx = near(i) ? 4 : nearNext(i) ? -4 : 0; const y = 148; lastX = x; sv('line', { x1: x, x2: x, y1: BASE + 3, y2: y - 12, stroke: 'var(--rule-2)', 'stroke-dasharray': '2 3' }, strip); const tx = sv('text', { x: x + dx, y, 'text-anchor': anchor }, strip); tx.textContent = l; });
   const cursor = sv('line', { x1: X0, x2: X0, y1: 6, y2: BASE + 2, stroke: 'var(--ink)', 'stroke-width': 2 }, strip);
   const knob = sv('circle', { cx: X0, cy: 6, r: 6, fill: 'var(--ink)' }, strip);
   const elLeft = $('[data-left]', root), elNet = $('[data-net]', root), elClock = $('[data-clock]', root), elEl = $('[data-elapsed]', root);
@@ -1284,7 +1299,7 @@ const toggle = w => { if (w.state === 'playing') w.seek(w.t); else if (w.state =
 W.forEach(w => {
   const tg = $('[data-toggle]', w.root);
   const prev = w.onstate;
-  w.onstate = s => { if (prev) prev(s); w.root.classList.toggle('is-playing', s === 'playing'); if (tg) tg.textContent = s === 'playing' ? '❚❚ pause' : '▶ play'; };
+  w.onstate = s => { if (prev) prev(s); w.root.classList.toggle('is-playing', s === 'playing'); if (tg) tg.textContent = s === 'playing' ? '❚❚ Pause' : '▶ Play'; };
   if (tg) tg.addEventListener('click', () => toggle(w));
 });
 
@@ -1308,5 +1323,16 @@ const syncToc = () => { const i = current(); toc.forEach((a, j) => a.classList.t
 addEventListener('scroll', syncToc, { passive: true }); syncToc();
 })();
 </script>
+<!-- site-footer:start -->
+<style>.ra-ftr{border-top:1px solid #E8E2D8;margin-top:48px;font:400 14px/1.5 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#655D55}
+.ra-ftr-in{max-width:1180px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
+.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #C9BFB2;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
+.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#C98500}
+.ra-ftr nav{display:flex;flex-wrap:wrap;gap:4px 18px}
+.ra-ftr a{color:inherit;text-decoration:none}.ra-ftr a:hover,.ra-ftr a[aria-current=page]{color:#24211E;text-decoration:underline;text-underline-offset:4px}
+.ra-ftr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+@media print{.ra-ftr{display:none}}</style>
+<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">Testnet · test funds</span><nav aria-label="More pages"><a href="../ledger/">Testnet ledger</a><a href="../project-map/">Project map</a><a href="../evolution/">October build log</a><a href="../slides/">October talk slides</a><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></nav></div></footer>
+<!-- site-footer:end -->
 </body>
 </html>

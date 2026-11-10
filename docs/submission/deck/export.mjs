@@ -2,7 +2,9 @@
 //   node docs/submission/deck/export.mjs                  → docs/submission/ResearchAgent-SFF-deck.pdf
 //                                                           and scratch/deck-png/slide-NN.png (ignored)
 //   node docs/submission/deck/export.mjs --refresh-shots  → first re-captures slide 10's two product
-//                                                           shots from the current app, then exports
+//                                                           shots and the README hero
+//                                                           (docs/media/readme-answer.png) from the
+//                                                           current app, then exports
 //   node docs/submission/deck/export.mjs --no-png         → PDF only
 // Offline: fonts come from node_modules (@fontsource-variable), images from the repo. The shots come
 // from the /demo/ replay build of the current app (src/), served by Vite on an ephemeral loopback port:
@@ -30,11 +32,13 @@ const fail = message => { console.error(`deck: ${message}`); process.exit(1) }
 // The replay trace and viewport behind slide 10. A UI change only needs `--refresh-shots`.
 export const SHOTS = {
   trace: 'demo/traces/UC3-key-reveal.json',
-  transactions: 'docs/evidence/round4-j1/replays/key-reveal/transactions.json',
+  transactions: 'docs/evidence/replay-nov11/key-reveal/transactions.json',
   viewport: { width: 1120, height: 1000 },
   deviceScaleFactor: 2,
   main: { file: 'ux-answer.png', height: 690 },
-  zoom: { file: 'ux-payment.png', region: 'Purchase: The Fab Floor', pad: 18 },
+  zoom: { file: 'ux-payment.png', region: 'Payment: The Fab Floor', pad: 18 },
+  // The README hero: the same replay at the width GitHub shows it, sidebar hidden, the refunded article's promise list collapsed.
+  readme: { file: join(root, 'docs/media/readme-answer.png'), viewport: { width: 1280, height: 1160 }, height: 920, refunded: /Payment: AlphaLeak/ },
 }
 
 /** Capture slide 10's shots from the current app replaying the recorded Testnet key-reveal run. */
@@ -92,10 +96,35 @@ async function refreshShots(browser) {
     }
     writeFileSync(join(assets, 'shots.json'), JSON.stringify(manifest, null, 2) + '\n')
     console.log(`shots → ${SHOTS.main.file}, ${SHOTS.zoom.file} (${blocked.length} outside requests blocked)`)
+    await readmeShot(browser, `http://127.0.0.1:${port}/theFastandtheFungible/demo/`)
   } finally {
     await context.close()
     await vite.close()
   }
+}
+
+/** The README hero from the same replay: 1280 × 920 CSS px from the app header down, at 2x, light theme, nothing edited. */
+async function readmeShot(browser, url) {
+  const context = await browser.newContext({ viewport: SHOTS.readme.viewport, deviceScaleFactor: SHOTS.deviceScaleFactor, reducedMotion: 'reduce', colorScheme: 'light' })
+  try {
+    const page = await context.newPage()
+    await page.route(u => !['127.0.0.1', 'localhost'].includes(u.hostname), route => route.abort())
+    await page.routeWebSocket(/.*/, socket => socket.close())
+    await page.goto(url)
+    await page.waitForFunction(() => /Answer ready/.test(document.title), null, { timeout: 120000 })
+    await page.getByRole('region', { name: SHOTS.zoom.region }).getByText(/Paid by key reveal/).waitFor({ timeout: 30000 })
+    const hide = page.getByRole('button', { name: 'Hide sidebar' })
+    if (await hide.isVisible()) await hide.click()
+    for (const summary of await page.getByRole('region', { name: SHOTS.readme.refunded }).locator('details[open] > summary').all()) await summary.click()
+    await page.mouse.move(0, 0)
+    await page.evaluate(async () => { await document.fonts.ready; window.scrollTo(0, 0) })
+    await page.waitForTimeout(600)
+    const header = await page.locator('header.ra-top').first().boundingBox()
+    if (!header) throw new Error('app header not found: the replay layout changed; update SHOTS.readme in export.mjs')
+    if (header.y + SHOTS.readme.height > SHOTS.readme.viewport.height) throw new Error('README shot is taller than the viewport')
+    await page.screenshot({ path: SHOTS.readme.file, clip: { x: 0, y: header.y, width: SHOTS.readme.viewport.width, height: SHOTS.readme.height } })
+    console.log(`README hero → ${SHOTS.readme.file}`)
+  } finally { await context.close() }
 }
 
 // 1. Source checks: facts current, no template placeholders.

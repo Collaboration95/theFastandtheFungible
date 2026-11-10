@@ -16,7 +16,7 @@ const out = join(here, label)
 mkdirSync(out, { recursive: true })
 const trace = name => JSON.parse(readFileSync(join(root, 'demo/traces', name), 'utf8'))
 const keyReveal = trace('UC3-key-reveal.json')
-const receipts = JSON.parse(readFileSync(join(root, 'docs/evidence/round4-j1/replays/key-reveal/UC3.receipts.json'), 'utf8'))
+const receipts = JSON.parse(readFileSync(join(root, 'docs/evidence/replay-nov11/key-reveal/UC3.receipts.json'), 'utf8'))
 const status = (patch = {}) => ({ questionCapMinor: 200, state: 'ready', csrfToken: 'fix-a', queue: [], capabilities: { ask: true, scope: true, history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining: { questions: 5, minor: 1000 }, labels: { models: 'fixture models', rail: 'SIMULATED · no real value' }, links: { repo: 'https://github.com/Collaboration95/theFastandtheFungible', deck: '', video: '', progress: '', replay: '' }, ...patch })
 // A finished run that bought nothing (the RLUSD question), built from the uc2 fixture the way tests/ux2.spec.ts builds its decline.
 const uc2 = JSON.parse(readFileSync(join(root, 'src/fixtures/uc/uc2.json'), 'utf8'))

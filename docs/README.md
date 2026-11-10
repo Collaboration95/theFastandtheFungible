@@ -99,7 +99,7 @@ Start with the [judging criteria](JUDGING-CRITERIA.md), the [progress page](http
 - [Payment chaos](evidence/chaos-279.md), [escrow](evidence/escrow-273.md), [hire](evidence/hire-274.md), [agents and allowances](evidence/agents-280.md), [RLUSD](evidence/rlusd.md) and [RLUSD refund](evidence/rlusd-275-refund-310.md).
 - [Live reliability](evidence/live-reliability.md), [numbers on Testnet](evidence/numbers-v7-testnet.md), [Starter Kit interop](evidence/starter-kit-interop.md), [publish-site proof](evidence/publish-site-277.md), [streaming](evidence/stream-281.md), [waste analysis](evidence/waste-320.md).
 - [Decision model report](../eval/REPORT-decisions.md) and [coverage report](../eval/REPORT-coverage.md): measured on the real corpus.
-- [Builder feedback](BUILDER-FEEDBACK.md): <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 September submissions (4–5 Sep) · 8 upstream drafts, 0 filed<!--/f-->; plus the mainnet checklist.
+- [Builder feedback](BUILDER-FEEDBACK.md): <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->; plus the mainnet checklist.
 - Release notes: the [changelog](../CHANGELOG.md) (v1.0.x) and early [day-2](releases/day-2.md) notes; every tag is on the [releases page](https://github.com/Collaboration95/theFastandtheFungible/releases).
 
 ## Maintenance rule

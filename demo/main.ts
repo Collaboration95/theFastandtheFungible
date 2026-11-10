@@ -19,9 +19,14 @@ if (active === modules['./traces/UC-key-reveal.json']) {
 }
 const visited = new Map<string, Recording>()
 const pinned = new Set<string>()
+const testnetRun = (recording: Recording) => recording.run.labels.settlement.includes('TESTNET')
+// Recording dates read in Singapore time, as the submission and the site do.
+const recordedOn = (recording: Recording) => { const at = recording.run.events[0]?.at; return at ? new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' }) : 'date unavailable' }
+const scenarioOf = (recording: Recording) => { const key = Object.keys(modules).find(id => modules[id] === recording)?.match(/traces\/(.+)\.json$/)?.[1] ?? ''; return key === 'UC3-key-reveal' ? '' : key }
 const showLabel = () => {
-  const date = active.run.events[0]?.at.slice(0, 10) ?? 'date unavailable'
-  document.querySelector('.demo-banner > span')!.textContent = `Replay · recorded ${date} · ${active.run.labels.settlement.includes('TESTNET') ? 'XRPL Testnet · no real value' : 'fictional writers · simulated payments'}`
+  document.querySelector('.demo-banner > span')!.textContent = `Replay · recorded ${recordedOn(active)} · ${testnetRun(active) ? 'XRPL Testnet' : 'simulated payments'}`
+  const picker = document.querySelector<HTMLSelectElement>('.demo-banner select')
+  if (picker) picker.value = scenarioOf(active)
 }
 visited.set(active.run.runId, active)
 const history = () => [...visited.values()].map(({ run }) => ({ runId: run.runId, question: run.question, phase: run.phase, stopped: false, budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, at: run.events[0].at, pinned: pinned.has(run.runId) }))
@@ -51,51 +56,54 @@ window.fetch = async (input, init) => {
       active = item; showLabel()
       // Only the key-reveal UC3 recording ships its real export; other tabs have no receipts.json (404), never a run snapshot posing as one.
       if (!path.endsWith('/receipts.json')) value = item.run
-      else if (item === modules['./traces/UC3-key-reveal.json']) value = (await import('../docs/evidence/round4-j1/replays/key-reveal/UC3.receipts.json')).default
+      else if (item === modules['./traces/UC3-key-reveal.json']) value = (await import('../docs/evidence/replay-nov11/key-reveal/UC3.receipts.json')).default
     }
   } else value = active.cards[path]
   return value === undefined ? Response.json({}, { status: 404 }) : Response.json(value)
 }
 await import('../src/main')
 
-const testnet = active.run.labels.settlement.includes('TESTNET')
-showLabel()
+const testnet = testnetRun(active)
 const banner = document.querySelector('.demo-banner')!
-const askOwn = document.createElement('a'); askOwn.href = HOSTED_APP_URL; askOwn.textContent = 'Ask your own question'; banner.append(askOwn)
-const controls = document.createElement('nav')
-controls.setAttribute('aria-label', 'Recorded scenarios')
-for (const [label, scenario] of [['Start here · key reveal','testnet'],['Testnet UC3 · payment','UC3-testnet'],['Testnet · writer no-show','UC-key-reveal'],['Simulated UC1','UC1'],['Simulated UC2','UC2'],['Simulated UC3','UC3']]) {
-  const link = document.createElement('a'); link.textContent = label
-  link.href = scenario === 'testnet' ? location.pathname : `${location.pathname}?scenario=${scenario}`
-  controls.append(link)
+const runYourself = banner.querySelector('details')!
+const askOwn = document.createElement('a'); askOwn.href = HOSTED_APP_URL; askOwn.textContent = 'Ask your own question'; askOwn.className = 'demo-ask'
+// One row: what this is, its ledger check, the scenario picker, Pause, then the ways out.
+const controls = document.createElement('div'); controls.className = 'demo-controls'
+const picker = document.createElement('select'); picker.setAttribute('aria-label', 'Recorded scenario')
+for (const [label, scenario] of [['Key reveal (start here)', ''], ['Plain payment', 'UC3-testnet'], ['Writer no-show', 'UC-key-reveal'], ['Simulated: decline', 'UC1'], ['Simulated: buy', 'UC2'], ['Simulated: refund', 'UC3']]) {
+  const option = document.createElement('option'); option.value = scenario; option.textContent = label; picker.append(option)
 }
+picker.onchange = () => { location.href = picker.value ? `${location.pathname}?scenario=${picker.value}` : location.pathname }
 const pause = document.createElement('button'); pause.textContent = 'Pause'
 pause.onclick = () => { const paused = pause.textContent === 'Pause'; pause.textContent = paused ? 'Resume' : 'Pause'; window.dispatchEvent(new CustomEvent('demo-pause', {detail:paused})) }
-controls.append(pause); document.querySelector('.demo-banner')!.append(controls)
+controls.append(picker, pause)
+banner.append(controls, runYourself, askOwn)
+showLabel()
 
 if (testnet) {
   // @ts-expect-error Dependency-free browser JavaScript shared with the ledger page.
   const { refresh } = await import('../site/ledger/ledger.js')
-  const rows = active === modules['./traces/UC3-key-reveal.json'] ? (await import('../docs/evidence/round4-j1/replays/key-reveal/transactions.json')).default.transactions : active === modules['./traces/UC-key-reveal.json'] ? (await import('../docs/evidence/round4-j1/replays/no-show/transactions.json')).default.transactions : (await import('../docs/evidence/round4-j1/replays/payment/transactions.json')).default.transactions
+  const rows = active === modules['./traces/UC3-key-reveal.json'] ? (await import('../docs/evidence/replay-nov11/key-reveal/transactions.json')).default.transactions : active === modules['./traces/UC-key-reveal.json'] ? (await import('../docs/evidence/round4-j1/replays/no-show/transactions.json')).default.transactions : (await import('../docs/evidence/round4-j1/replays/payment/transactions.json')).default.transactions
   const panel = document.createElement('details'); panel.open = false; panel.className = 'demo-transactions'
   const summary = document.createElement('summary')
   const summaryText = document.createElement('span'), toggle = document.createElement('span')
-  summaryText.textContent = `Checking ${rows.length} Testnet hashes live…`
+  summaryText.textContent = `Checking ${rows.length} hashes live…`
   toggle.textContent = ' · show'; summary.append(summaryText, toggle); panel.append(summary)
   panel.ontoggle = () => { toggle.textContent = panel.open ? ' · hide' : ' · show' }
+  const list = document.createElement('div'); list.className = 'demo-tx-list'; panel.append(list)
   let verified = 0, checked = 0
   const states = new Map<string, HTMLElement>()
   for (const row of rows) {
     const p = document.createElement('p'), a = document.createElement('a'), state = document.createElement('span')
     a.href = `https://testnet.xrpl.org/transactions/${row.hash}`; a.textContent = `${'label' in row ? row.label : row.kind}: ${row.hash}`; a.target = '_blank'; a.rel = 'noopener'
-    state.textContent = ' · Recorded validated tesSUCCESS; checking live…'; states.set(row.hash, state); p.append(a, state); panel.append(p)
+    state.textContent = ' · Recorded validated tesSUCCESS; checking live…'; states.set(row.hash, state); p.append(a, state); list.append(p)
   }
-  banner.append(panel)
+  banner.querySelector('.demo-banner > span')!.after(panel)
   void refresh(rows, WebSocket, (hash: string, status: string) => {
     states.get(hash)!.textContent = ` · ${status}`
     checked++; if (status.startsWith('validated')) verified++
     summaryText.textContent = checked === rows.length
-      ? `${verified}/${rows.length} Testnet hashes verified live${verified === rows.length ? ' ✓' : ' · historical evidence available'}`
-      : `Checking Testnet hashes live… ${checked}/${rows.length}`
+      ? `${verified}/${rows.length} hashes verified live${verified === rows.length ? ' ✓' : ' · historical evidence available'}`
+      : `Checking hashes live… ${checked}/${rows.length}`
   })
 }

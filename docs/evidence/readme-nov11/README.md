@@ -1,5 +1,10 @@
 # README screenshot run (11 Nov 2026)
 
+> **Superseded the same day.** The README hero is now captured from the re-recorded default
+> replay by `node docs/submission/deck/export.mjs --refresh-shots`; see
+> [`../replay-nov11/README.md`](../replay-nov11/README.md). This note describes the earlier
+> image and stays as history.
+
 **XRPL Testnet · no real value.** Fixture models (`fixture · extractive-fixture`,
 `fixture · metadata-fixture`), keyword search, fictional writers (AlphaLeak, The Fab
 Floor), faucet-funded wallets. Not a quality or latency benchmark.

@@ -47,7 +47,12 @@ describe('finals deck', () => {
   it('shows the real committed try output on slide 3, links shortened to their hashes', () => {
     const term = slides[2].querySelector('.term[data-evidence]')!
     const source = term.getAttribute('data-evidence')!
-    const evidence = readFileSync(source, 'utf8').trimEnd().split('\n')
+    // A line may be trimmed for space only when the slide names it in data-omit and its footer says so.
+    const omit = (term.getAttribute('data-omit') ?? '').split('|').filter(Boolean)
+    const all = readFileSync(source, 'utf8').trimEnd().split('\n')
+    for (const line of omit) expect(all).toContain(line)
+    if (omit.length) expect(slides[2].querySelector('.src')?.textContent).toMatch(/trimmed/)
+    const evidence = all.filter(line => !omit.includes(line))
     const url = /https:\/\/testnet\.xrpl\.org\/transactions\/([0-9A-F]{64})$/
     expect(lines(term)).toEqual(evidence.map(l => l.replace(url, (_, h) => short(h))))
     const hrefs = [...term.querySelectorAll('a')].map(a => a.getAttribute('href'))

@@ -35,7 +35,7 @@ the answer only from evidence the run actually holds, with citations.
 | A Mac app that recovers | 13 packaged recovery cases pass: missing, locked or corrupt credentials, port conflict, outage and restart. All 13 privileged IPC methods reject the research window. | local, unsigned, fixture | [round2-c2](evidence/round2-c2/README.md) |
 | Testnet ledger page | <!--f:transactions-->61<!--/f--> transactions re-validated live on load; WebSocket checks compare amounts, bindings and credential identity. Unavailable history stays labelled. | Testnet, no real value | [round2-p1](evidence/round2-p1/README.md), [live page](https://collaboration95.github.io/theFastandtheFungible/ledger/) |
 | Hosted sandbox gateway | Opt-in `HOSTED=1`: per-visitor sessions, CSRF, per-question, per-visitor and whole-demo caps, a durable pause switch, owner routes disabled. | source; the public sandbox is open 13–19 Nov 2026 | [hosted-web.md](hosted-web.md) |
-| Ranked builder feedback | <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 September submissions (4–5 Sep) · 8 upstream drafts, 0 filed<!--/f-->. Each has a workaround, a suggested fix and its mainnet consequence. | observed and code-derived, labelled | [BUILDER-FEEDBACK](BUILDER-FEEDBACK.md) |
+| Ranked builder feedback | <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->. Each has a workaround, a suggested fix and its mainnet consequence. | observed and code-derived, labelled | [BUILDER-FEEDBACK](BUILDER-FEEDBACK.md) |
 
 ## XRPL primitives used, and why
 

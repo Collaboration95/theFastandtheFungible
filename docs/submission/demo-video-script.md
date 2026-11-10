@@ -87,9 +87,9 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 - **Ask:** the "Kestrel lead times" example (*"Are Kestrel Semiconductor's
   advanced-packaging lead times in Malaysia getting shorter?"*) with budget S$2.00.
 - **On screen:** the 5-second plan (free sources first; at most one article per round, up
-  to three rounds), then the payment card filling in place: escrow created, writer
-  published key, `sha256(K) = Condition ✓`, ciphertext decrypts ✓, then the lead finding
-  with its citation and "Anchored on XRPL".
+  to three rounds), then the payment card filling in place under "Payment unlocked by the
+  writer's key": Payment locked in escrow, Writer released the key, Key matches the escrow
+  lock ✓, Article unlocked ✓, then the lead finding with its citation and "Anchored on XRPL".
 - **Edit:** speed up waits ×3 with the clock; play the plan and the card at 1×.
 - **Caption:** "Live sandbox · XRPL Testnet · no real value · fictional writers" plus the
   model label shown on the answer.
@@ -100,9 +100,10 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 
 ### Shot 3 · Refund and key reveal, on the ledger (0:42–1:02)
 
-- **On screen:** in the payment card, the AlphaLeak row: "Refund · writer-signed · fixture
-  writer cooperates (a real writer could refuse)". Click its EscrowFinish `tx ↗`; on the
-  explorer zoom to *TransactionType: EscrowFinish*, *Fulfillment* and *validated*.
+- **On screen:** in the payment card, the AlphaLeak row: "Refund signed by the writer. This
+  demo writer agrees to refund; a real writer could refuse." Click the `tx ↗` on its step 2,
+  "Writer released the key"; on the explorer zoom to *TransactionType: EscrowFinish*,
+  *Fulfillment* and *validated*.
 - **Caption:** "XRPL Testnet · the Fulfillment is the article key" → "Refund is
   writer-signed: our fixture writer cooperates; a real writer could refuse"
 - **VO (45 words):** "Here's the key, on the ledger, in the fulfilment. Delivery and
@@ -174,7 +175,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 
 - **On screen:** [BUILDER-FEEDBACK.md](../BUILDER-FEEDBACK.md) top-7 table on GitHub, then
   the mainnet checklist heading.
-- **Caption:** "<!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 September submissions (4–5 Sep) · 8 upstream drafts, 0 filed<!--/f-->"
+- **Caption:** "<!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->"
 - **VO (40 words):** "We wrote down what fought us: seven ranked findings, each with a
   script that reproduces it. The top one: the RLUSD issuer lacks the flag token escrow
   needs, so we use a labelled Testnet token. Mainnet is a checklist, not a claim."

@@ -27,7 +27,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **<!--f:writer_s-->33.9<!--/f--> s** | `init` + `publish`: Markdown folder → writer Credential validated on Testnet | generated starter note, public faucet, one measurement | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389) |
 | **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
-| **<!--f:prs-->236<!--/f--> / <!--f:releases-->13<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->1e2958ce<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
+| **<!--f:prs-->246<!--/f--> / <!--f:releases-->13<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->efa5c847<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
 | **Held-out <!--f:heldout-->16/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v4-heldout/README.md) |
 | **SingHacks baseline** | <!--f:singhacks_then-->At SingHacks a language model proposed each purchase and a person approved every quote before payment; payment was a fixture by default, with optional Testnet settlement.<!--/f--> | tag `hackathon-baseline` (7 Sep commit) | [prototype README](https://github.com/Collaboration95/theFastandtheFungible/blob/hackathon-baseline/prototypes/ResearchAgent/README.md) |
 
@@ -170,8 +170,8 @@ cooperates; a real one could refuse. Then the buyer has a fraud proof anyone can
 verify, and the writer's trust score drops."
 
 **Behind it:** [#379](https://github.com/Collaboration95/theFastandtheFungible/pull/379);
-the refund row reads "Refund · writer-signed · fixture writer cooperates (a real
-writer could refuse)". Hashlock is not fair exchange (B17).
+the refund row reads "Refund signed by the writer. This demo writer agrees to refund; a
+real writer could refuse." Hashlock is not fair exchange (B17).
 
 ### 11. A payment times out, or the server crashes mid-payment?
 
@@ -204,7 +204,7 @@ this week's first job. We have <!--f:ranked-->7<!--/f--> ranked findings,
 <!--f:findings-->35<!--/f--> numbered findings in a dated log, and a mainnet
 checklist. The top one is the RLUSD issuer flag."
 
-**Behind it:** <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 September submissions (4–5 Sep) · 8 upstream drafts, 0 filed<!--/f-->.
+**Behind it:** <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->.
 [BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md), [upstream drafts](../feedback/upstream/),
 [filing kit](../feedback/upstream/FILING-KIT.md). Filing is owner-only (#265 B1).
 Once filed, the count above changes by itself; then say "Yes, N, on <date>" and

@@ -4,7 +4,7 @@ Six weeks of building ResearchAgent on XRPL Testnet with x402, `x402-xrpl` and R
 
 **XRPL TESTNET · no real value.** Offline settlement is **SIMULATED**. Research writers are fictional or labelled team-authored; TEST-SGD is a labelled stand-in for RLUSD. None of this is evidence of mainnet readiness.
 
-**In one line:** 7 ranked findings, each with a runnable offline repro · 35 numbered log items (B01–B35) · 15 September submissions · 8 upstream issue drafts, **0 filed** (filing is owner-only, pinned issue #265 B1).
+**In one line:** 7 ranked findings, each with a runnable offline repro · 35 numbered log items (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream issue drafts, **0 filed** (filing is owner-only, pinned issue #265 B1).
 
 ## Top 7 ranked findings
 
@@ -24,7 +24,7 @@ Just outside the top 7, and also drafted: official RLUSD funding needs an authen
 
 **Newest (10 Nov):** a cold Testnet IOU start takes about 96 s, longer than the documented 60 s MCP tool timeout. See [the 10 Nov entry](#2026-11-10--cold-testnet-iou-start-versus-the-mcp-tool-timeout-observed) and the B32 update.
 
-**Exact strings other surfaces should use** (counts are query-defined, so they cannot drift): "7 ranked findings with runnable repros" · "35 numbered findings (B01–B35)" (`grep -cE '^\| B[0-9]+ ·' docs/BUILDER-FEEDBACK.md`) · "15 September submissions" · "8 upstream drafts, 0 filed" until the owner files, then "N filed" with links in the table above. The ranked order on every slide, Q&A answer and README line is the order of this table.
+**Exact strings other surfaces should use** (counts are query-defined, so they cannot drift): "7 ranked findings with runnable repros" · "35 numbered findings (B01–B35)" (`grep -cE '^\| B[0-9]+ ·' docs/BUILDER-FEEDBACK.md`) · "15 submissions on 4–5 Sep" · "8 upstream drafts, 0 filed" until the owner files, then "N filed" with links in the table above. The ranked order on every slide, Q&A answer and README line is the order of this table.
 
 ## What worked well
 
