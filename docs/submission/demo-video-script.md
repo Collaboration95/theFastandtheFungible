@@ -4,12 +4,14 @@ The form's "Demo link" field asks for "a video run-through of what we built". Ju
 watch it **before** the pitch, and their view counts toward the final score. Judges will
 not install anything first, so the video **leads with the product in the browser**, then
 the same product answering inside Claude Code over MCP, then the proof. Target **2:30**,
-never over 3:00. Eight shots; voice-over about 310 words at 130 words a minute.
+never over 3:00. Eight shots plus one optional insert (3b); voice-over about 330 words.
 
-**Recording is a human task.** Track it on
-[#265](https://github.com/Collaboration95/theFastandtheFungible/issues/265). Record once
-the live sandbox answers (see check 1), upload unlisted, then fill `{{VIDEO_URL}}`
-([placeholders](README.md#placeholders)).
+**Agents have prepared everything except your voice.** The footage is recorded, captioned
+and cut, with a synthetic-voice draft to review timing. You record the voice-over (about
+30 minutes) or approve a text-to-speech track, upload unlisted, then fill `{{VIDEO_URL}}`
+([placeholders](README.md#placeholders)). How to re-record a scene, where your voice
+goes and how to re-assemble: [video/README.md](video/README.md). Track the human steps on
+[#265](https://github.com/Collaboration95/theFastandtheFungible/issues/265).
 
 Numbers below come from [facts.json](facts.json); read this page rendered on GitHub, where
 the markers that keep them in sync are hidden.
@@ -66,12 +68,16 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 |---:|---|---:|---|
 | 1 | 0:00–0:07 | 7 s | Title |
 | 2 | 0:07–0:42 | 35 s | The live sandbox: ask, plan, pay |
-| 3 | 0:42–1:02 | 20 s | Refund and key reveal, on the ledger |
+| 3 | 0:42–1:02 | 20 s | Refund and key reveal, on the ledger (recorded replay) |
+| 3b | optional, +14 s | 14 s | It can say no, and prove it (hosted decline and proof of refusal) |
 | 4 | 1:02–1:30 | 28 s | The same product inside Claude Code (MCP) |
 | 5 | 1:30–1:48 | 18 s | Verify it: Python verifier and `/ledger/` |
 | 6 | 1:48–2:04 | 16 s | One line, no clone: `try --testnet` |
 | 7 | 2:04–2:20 | 16 s | Builder feedback and honest limits |
 | 8 | 2:20–2:30 | 10 s | Close |
+
+Times are the target; the assembled draft in
+[video/timing.csv](video/timing.csv) has the real ones (about 2:40 without 3b, about 2:55 with it).
 
 ### Shot 1 · Title (0:00–0:07)
 
@@ -84,15 +90,20 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 
 - **Open:** <https://ra-front-651013803640.asia-southeast1.run.app>. Pause 1 s on the home
   screen so the environment indicator is readable.
-- **Ask:** the "Kestrel lead times" example (*"Are Kestrel Semiconductor's
-  advanced-packaging lead times in Malaysia getting shorter?"*) with budget S$2.00.
+- **Ask:** type the first example, "RLUSD escrow" (*"Can an XRPL escrow hold RLUSD today,
+  and what must the issuer enable before a buyer can lock it?"*), with budget S$2.00. The
+  hosted examples are the XRPL builder notes, so the writers here are the team-authored
+  ones, not the fictional Kestrel writers.
 - **On screen:** the 5-second plan (free sources first; at most one article per round, up
   to three rounds), then the payment card filling in place under "Payment unlocked by the
   writer's key": Payment locked in escrow, Writer released the key, Key matches the escrow
   lock ✓, Article unlocked ✓, then the lead finding with its citation and "Anchored on XRPL".
-- **Edit:** speed up waits ×3 with the clock; play the plan and the card at 1×.
-- **Caption:** "Live sandbox · XRPL Testnet · no real value · fictional writers" plus the
-  model label shown on the answer.
+  End on "Verify on XRPL in your browser": press **Run the checks** and let it finish.
+- **Edit:** the assembler compresses waits and labels them "Sped up ×N · real time shown"
+  with a clock; the plan and the card play at 1×.
+- **Caption:** "Live sandbox · XRPL Testnet · no real value · team-authored writers", with the
+  model wording from the app's own environment chip (today "live answers, rule-based
+  buying").
 - **VO (60 words):** "Open the link, ask a question, set a budget. A five-second plan
   shows what it will do: free sources first, then at most one article per round. A model
   recommends what to buy, but only policy code can pay. Each payment sits in a native
@@ -100,16 +111,35 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 
 ### Shot 3 · Refund and key reveal, on the ledger (0:42–1:02)
 
-- **On screen:** in the payment card, the AlphaLeak row: "Refund signed by the writer. This
-  demo writer agrees to refund; a real writer could refuse." Click the `tx ↗` on its step 2,
-  "Writer released the key"; on the explorer zoom to *TransactionType: EscrowFinish*,
-  *Fulfillment* and *validated*.
-- **Caption:** "XRPL Testnet · the Fulfillment is the article key" → "Refund is
+- **On screen:** the recorded replay ([/demo/](https://collaboration95.github.io/theFastandtheFungible/demo/),
+  the key-reveal run, which is where the fictional AlphaLeak writer appears). In the payment
+  card, step 2 "Writer released the key": click its `tx ↗`; on the explorer see
+  *EscrowFinish*, *Success* and the *Escrow Fulfillment*, which is the article key. Go back
+  to the replay for the refund line: "Refund signed by the writer. This demo writer agrees
+  to refund; a real writer could refuse."
+- **Caption:** "Replay of a recorded Testnet run · fictional writers · no backend" →
+  "XRPL Testnet · the Fulfillment is the article key" → "Refund is
   writer-signed: our fixture writer cooperates; a real writer could refuse"
 - **VO (45 words):** "Here's the key, on the ledger, in the fulfilment. Delivery and
   payment are one event. This article broke its promise, so the writer signed a refund
   and its trust score dropped. A real writer could refuse; then the buyer keeps a fraud
   proof anyone can check."
+
+### Shot 3b · It can say no, and prove it (optional, about 14 s)
+
+> **Off in the current cut.** On 11 Nov the hosted demo's "Publish proof page" failed twice
+> with "The proof page could not be created", so the shot is disabled in
+> [video/shots.json](video/shots.json) until that works. Re-record it, then flip `enabled`.
+
+- **On screen:** on the live sandbox, ask *"Which Singapore banks are piloting RLUSD
+  settlement in 2026?"*. The agent buys nothing: "Nothing was bought". Press **Share proof of
+  refusal**, read the confirmation ("Publish this proof?"), publish, and open the proof page
+  ("Refused to spend.", S$0.00 spent, an XRPL Testnet transaction).
+- **Caption:** "Live sandbox · XRPL Testnet · no real value" plus the app's model wording.
+- **VO (36 words):** "It can also say no. Here nothing in the paid library was worth
+  buying, so it spent nothing, and the refusal is anchored on XRPL Testnet. Anyone can open
+  the proof page and check it."
+- **Cut this shot first** if the video runs long: nothing else refers to it.
 
 ### Shot 4 · The same product inside Claude Code (1:02–1:30)
 
@@ -119,12 +149,13 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
   claude
   ```
   Prompt: *"Use researchagent: ask_expert 'Can an XRPL escrow hold RLUSD today, and what
-  must the issuer enable before a buyer can lock it?' with budget_sgd=2. Show the answer,
-  its citations, the explorer links and every label."*
+  must the issuer enable before a buyer can lock it?' with budget_sgd=2. Reply briefly: the
+  answer in two sentences, the explorer links, and the labels on one line."* (A short reply
+  keeps the final screen readable; Claude prints the citations and every label itself.)
 - **On screen:** Claude Code's answer with citations to the team builder notes, the
   explorer links for create, finish and anchor, and the labels it returns
   (`rail: xrpl-testnet`, fixture models, team-authored writer).
-- **Edit:** speed up the first cold call ×4 with the clock.
+- **Edit:** the first cold call is compressed and labelled "Sped up ×N · real time shown".
 - **Caption:** "Claude Code over MCP · XRPL Testnet · no real value · team-authored writer
   · real content · not an independent writer"
 - **Honesty note:** only use this shot if Claude Code itself paid on camera. If it
@@ -140,7 +171,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 
 - **Type:**
   ```sh
-  python3 -m venv /tmp/ra && . /tmp/ra/bin/activate
+  python3 -m venv ra && . ra/bin/activate
   pip install -q $REL/researchagent-1.0.2-py3-none-any.whl
   curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.0.2/docs/evidence/lane-b3/UC3.receipts.json
   researchagent verify UC3.receipts.json --ledger
@@ -188,12 +219,14 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 - **VO (21 words):** "ResearchAgent. An open market where agents pay the people who
   know, and the ledger keeps everyone honest. Thank you."
 
-Cut list if long: shot 7 to captions only, then shot 6.
+Cut list if long: shot 3b, then shot 7 to captions only, then shot 6.
 
 ## After recording
 
-1. Export 1080p MP4, **under 3:00**, with burned-in captions. Check every caption against
-   the label rules above.
+1. Export 1080p MP4, **under 3:00**, with burned-in captions: put your per-shot
+   recordings in `scratch/video/voice/owner/` and run `make video-assemble ARGS="--voice owner"`
+   ([video/README.md](video/README.md#your-voice)). Check every caption against the label
+   rules above.
 2. Upload as **unlisted** (YouTube or Drive; Drive must be "anyone with the link"). Open
    the link in a private window to check it plays.
 3. Put the link in the form, the deck (`VIDEO_URL` in `scripts/facts.mjs`, then

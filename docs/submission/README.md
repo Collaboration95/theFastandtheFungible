@@ -22,6 +22,7 @@ rendered page. `npm run hygiene` fails if any marked number is stale.
 | [facts.json](facts.json) | every number and canonical sentence, with its source and definition; the deck reads from it |
 | [ResearchAgent-SFF-deck.pdf](ResearchAgent-SFF-deck.pdf) | 14-slide deck; source [deck/index.html](deck/index.html), numbers from facts.json |
 | [demo-video-script.md](demo-video-script.md) | 8-shot, 2:30 video that leads with the live sandbox and Claude Code |
+| [video/](video/README.md) | the demo video kit: recorded footage, captions, a synthetic-voice draft and a no-voice cut; one command to re-record, one to re-assemble |
 | [pitch-2min.md](pitch-2min.md) | 2:00 pitch script with timing marks, plus a 3-minute variant |
 | [qa-prep.md](qa-prep.md) | numbers card and 20 hard questions from the R / P / Y judges |
 | [compliance-slide.md](compliance-slide.md) | one-slide compliance summary for the deck; the full map is [COMPLIANCE.md](../COMPLIANCE.md) |

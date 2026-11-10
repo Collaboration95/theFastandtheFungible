@@ -125,6 +125,12 @@ record: ## clean fixture recording workspace; OFFSET=300 recommended
 clip: ## keyboard-driven fixture clip; UC=UC2 VIEWPORT=1280x800 (or 1920x1080, 1080x1350)
 	UC=$(or $(UC),UC2) VIEWPORT=$(or $(VIEWPORT),1280x800) node --import tsx scripts/record.mjs --clip
 
+.PHONY: video-record video-assemble
+video-record: ## demo video: record every scene to scratch/video/clips; ARGS="--scenes ledger,try-testnet --target local --wait-hosted"
+	node scripts/video/record.mjs $(ARGS)
+video-assemble: ## demo video: cut the synthetic-voice draft and the no-voice cuts to scratch/video/out; ARGS="--voice owner"
+	node scripts/video/assemble.mjs $(ARGS)
+
 .PHONY: refit
 refit: ## local receipt labels and dev-only calibration; no network or payments
 	npm run calibration:refit -- $(ARGS)
