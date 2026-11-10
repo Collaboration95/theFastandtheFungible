@@ -191,7 +191,10 @@ function applyStartup(release) {
 const scratch = dry ? '/PRIVATE_BUILD_DIRECTORY' : mkdtempSync(join(tmpdir(),'ra-hosted-'))
 try {
   if (!dry) {
-    execFileSync('tar',['-xf','-','-C',scratch],{input:execFileSync('git',['archive',sha],{maxBuffer:128*1024*1024})})
+    // The source archive exceeds Node's spawn buffers (166 MB on 11 Nov); stream it through a file.
+    execFileSync('git',['archive','--format=tar','-o',join(scratch,'.source.tar'),sha])
+    execFileSync('tar',['-xf',join(scratch,'.source.tar'),'-C',scratch])
+    rmSync(join(scratch,'.source.tar'))
     gc(['auth','configure-docker',`${region}-docker.pkg.dev`,'--quiet'])
   }
   const digests = {}
