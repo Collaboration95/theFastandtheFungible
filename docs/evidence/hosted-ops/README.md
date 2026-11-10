@@ -53,11 +53,11 @@ race and nginx regex quoting that fell back to the proxy address. These were
 fixed; the final native run verifies last-hop extraction and resource cleanup.
 No earlier failed check is being counted as acceptance.
 
-Shipping remains **blocked** at tested source `db511fccecd81cbd8a62e5204d7c4e066d6391ce`: after retries the
+The initial shipping attempt was **blocked** at tested source `db511fccecd81cbd8a62e5204d7c4e066d6391ce`: after retries the
 final unit step passed 1,441/1,447 tests, with six unchanged 5 s timeouts in
 `corpus-v2`, `fact-menu` and `streamDraft`. The observed host load was 79.22
 at the final check (earlier above 100); load is an inference, not a proven code
 root cause. HO's four tests passed. No test or timeout was changed. See
 [gate-blocked.json](gate-blocked.json). No PR or merge was attempted through a
 failing gate. The WIP evidence commit changes documentation only after the
-tested source; rerun the gate on the eventual clean PR head.
+tested source; the current shipping result belongs to the clean-head PR status and merge receipt.
