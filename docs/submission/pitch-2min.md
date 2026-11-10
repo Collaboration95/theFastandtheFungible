@@ -39,8 +39,8 @@ It works in a stablecoin-style token too, through XLS-85 token escrow. Official
 RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
 **[0:48 · slide 3]**
-At SingHacks we had a prototype: a language model planned each purchase, and
-payment was simulated by default. Since then we merged <!--f:prs-->235<!--/f-->
+At SingHacks we had a prototype: a language model proposed each purchase, a
+person approved every quote, and payment was simulated by default. Since then we merged <!--f:prs-->236<!--/f-->
 pull requests. Today a judge opens one link, or runs one line with no clone and
 no account. It buys, catches a broken promise, gets refunded, re-buys, anchors
 the answer and prints "result: pass" with six Testnet links.
@@ -118,12 +118,15 @@ Never cut the "Testnet" line on slide 1.
   violations. Say that the development sets are separate (v1
   <!--f:dev_v1-->16/20<!--/f-->), because we tuned on them. Do not say "fifteen
   of twenty": that was an earlier, tuned bank.
-- **"<!--f:prs-->235<!--/f--> pull requests"**: merged into `main` since
-  <!--f:since-->21 Sep<!--/f-->, counted at <!--f:sha-->75cc2797<!--/f--> on
+- **"<!--f:prs-->236<!--/f--> pull requests"**: merged into `main` since
+  <!--f:since-->21 Sep<!--/f-->, counted at <!--f:sha-->1e2958ce<!--/f--> on
   <!--f:as_of-->11 Nov 2026<!--/f-->. Say "since SingHacks", not "in a week".
-- **SingHacks baseline**: the prototype (tag `hackathon-baseline`) let a
-  language model plan purchases; payment was a fixture by default with optional
-  Testnet settlement. The old deck line about a human approving purchases was wrong; do not repeat it.
+- **SingHacks baseline**: in the event build (19–20 Sep, `e16435a3`) a language
+  model proposed each purchase and a person approved every quote
+  (`approvalPolicy: 'MANUAL_APPROVAL_REQUIRED'`); payment was a fixture by
+  default with optional Testnet settlement. The earlier prototype tag
+  `hackathon-baseline` (7 Sep) had no approval step. Today there is no
+  per-purchase approval: policy code buys within the budget after one plan confirmation.
 - **"<!--f:fee_drops-->435<!--/f--> drops"**: 12 for EscrowCreate plus 423 for the conditional
   EscrowFinish, measured on Testnet. At an assumed S$2 per XRP that is S$0.00087,
   a projection.

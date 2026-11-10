@@ -22,7 +22,7 @@ answers from free sources first, then buys only the articles that fill the gap, 
 one per round, paying writers over x402 on the XRP Ledger. A model recommends; only
 deterministic policy code can spend, never past your budget.
 
-New since SingHacks (<!--f:prs-->235<!--/f--> pull requests merged since
+New since SingHacks (<!--f:prs-->236<!--/f--> pull requests merged since
 <!--f:since-->21 Sep<!--/f-->): key-reveal escrow, where a writer is paid only by
 publishing the article's key on the ledger, so delivery and payment are one event;
 writer-signed refunds when an article breaks its promise; answers anchored on the ledger;
@@ -43,7 +43,7 @@ one per round and up to three rounds, paying writers directly over x402 on the X
 A decision model judges what is worth buying, but only deterministic policy code can spend,
 and never past your budget.
 
-New since SingHacks (<!--f:prs-->235<!--/f--> pull requests merged since
+New since SingHacks (<!--f:prs-->236<!--/f--> pull requests merged since
 <!--f:since-->21 Sep<!--/f-->, <!--f:releases-->13<!--/f--> releases):
 
 - **Key-reveal escrow.** Payment is locked in a native XRPL escrow whose condition is the
@@ -75,7 +75,7 @@ Mainnet is disabled in code.
 
 | Claim | Label | Source |
 |---|---|---|
-| "<!--f:prs-->235<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->" | Merged into `main` on or after 21 Sep 2026 SGT, counted at <!--f:sha-->75cc2797<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json) `prs` ← `site/progress/data.json` queries |
+| "<!--f:prs-->236<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->" | Merged into `main` on or after 21 Sep 2026 SGT, counted at <!--f:sha-->1e2958ce<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json) `prs` ← `site/progress/data.json` queries |
 | "<!--f:releases-->13<!--/f--> releases" | Published GitHub releases reachable from the counted commit, prereleases included | same |
 | Live sandbox | Shared XRPL Testnet sandbox, no real value, open 13–19 Nov 2026; one pre-funded Testnet payer, per-visitor caps; each answer labels live or fixture models | [hosted-web.md](../hosted-web.md) |
 | "buys only the articles that fill the gap, at most one per round" | The plan modal's rule: at most one article per round, up to 3 rounds, within the budget; a new writer may get one labelled probe purchase up to S$0.30 | `shared/contracts/run.ts` `PURCHASE_RULE` |
