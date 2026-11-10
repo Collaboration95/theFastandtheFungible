@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 10 Nov: Blind held-out v5 frozen before the coverage and answer-quality lanes: 20 positives with frozen gold phrases plus 10 no-purchase negatives (finance, crypto, AI near-misses), SHA-256 pinned by test, never run or opened by implementers; v4 is now used and historical. [Banks](eval-judge-banks.md).
 - 8 Nov: Prepare v1.0.2: versions bumped from 1.0.1 across packages, MCPB, registry metadata, live docs and the deck (install lines regenerated, deck PDF re-exported); CHANGELOG v1.0.2 carries the #418 anchor-pending fix and honesty sweep plus the #417 dev-loop gate. Tag follows orchestrator acceptance.
 - 8 Nov: Round-6 judge fixes in one PR: anchor pending no longer reads as failure (v1.0.1 regression), anchored no-purchase runs show proof and Export, plan modal and subtitle state the true buy rule (one per round, up to 3 rounds, budget) tied to `MAX_ROUNDS` by test, team-authored label sweep, SFF deck link, 61/61 ledger counts, v4 split in the pitch notes, XRPL Testnet example questions.
 - 7 Nov: Local merge gate replaces repeated hosted waits: synthetic server PR 324.6 → 97.8 s, Markdown 103.6 → 2.4 s; release acceptance 998 → 554.5 s cold / 301.2 s prepared same SHA with a fresh full soak; failed concurrency experiments and all demotions retained. [Evidence](evidence/ci-speed/README.md) · [#417](https://github.com/Collaboration95/theFastandtheFungible/pull/417).
