@@ -27,7 +27,7 @@ def main():
     if not args.verbose:
         counts = {status: sum(c["status"] == status for c in rows) for status in ("PASS", "FAIL", "SKIP")}
         selected = [c for c in rows if c["status"] == "FAIL" or c["check"] == "audit anchor"]
-        rows = [{"status": "PASS" if result["ok"] else "FAIL", "check": "checks", "detail": ", ".join(f"{n} {status}" for status, n in counts.items())}, *selected[:8]]
+        rows = [{"status": "PASS" if result["ok"] else "FAIL", "check": "checks", "detail": ", ".join(f"{n} {word}" for word, n in zip(("passed", "failed", "skipped"), counts.values()))}, *selected[:8]]
         if len(selected) > 8:
             rows.append({"status": "FAIL", "check": "details", "detail": "Use --verbose for all failures"})
     print(
@@ -35,7 +35,7 @@ def main():
         if args.json
         else "\n".join(
             [
-                *(c["status"] + " " + c["check"] + ": " + c["detail"] for c in rows),
+                *(("Skipped" if c["status"] == "SKIP" else c["status"]) + " " + c["check"] + ": " + c["detail"] for c in rows),
                 *(
                     [
                         ("PASS" if all(c["status"] != "FAIL" for c in testnet) else "FAIL")
@@ -44,7 +44,7 @@ def main():
                     if testnet
                     else []
                 ),
-                *(["Identity/origin SKIPs limit attribution; payment and passage checks are separate. PASS does not verify writer identity."] if any(c["status"] == "SKIP" and c["check"] in ("writer credentials", "historical origin") for c in result["checks"]) else []),
+                *(["Skipped checks are not failures. Payments and passages are checked separately; PASS does not prove who a writer is."] if any(c["status"] == "SKIP" and c["check"] in ("writer credentials", "historical origin") for c in result["checks"]) else []),
                 "RESULT " + ("PASS" if result["ok"] else "FAIL"),
             ]
         )

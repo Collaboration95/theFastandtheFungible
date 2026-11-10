@@ -9,8 +9,10 @@ test('missing writer folder points to init before wallet provisioning', async ()
 test('missing engine URL has actionable configuration help without echoing input', () => {
   expect(() => createClient({ baseUrl: '' })).toThrow('set baseUrl (RA_URL) to the engine URL printed by app')
 })
-test('verification explains attribution SKIPs without treating them as identity proof', () => {
-  const output = verificationText({ ok: true, checks: [{ check: 'writer credentials', status: 'SKIP', detail: 'Unsigned advisory identity; requires online check' }] })
-  expect(output).toContain('SKIP writer credentials')
-  expect(output).toContain('PASS does not verify a writer identity')
+test('verification explains skipped attribution checks in plain words without treating them as identity proof', () => {
+  const output = verificationText({ ok: true, checks: [{ check: 'writer credentials', status: 'SKIP', detail: 'the writer’s identity is self-declared; checking it needs an online lookup' }] })
+  expect(output).toContain('Skipped writer credentials')
+  expect(output).not.toMatch(/^SKIP /m)
+  expect(output).toContain('Skipped checks are not failures')
+  expect(output).toContain('PASS does not prove who a writer is')
 })

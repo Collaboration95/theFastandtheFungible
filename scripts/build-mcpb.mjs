@@ -34,7 +34,7 @@ for (const [entry, target] of [
     }) } }],
   })
 }
-writeFileSync(`${out}/mcp/extension.mjs`, readFileSync('mcp/extension.mjs', 'utf8').replaceAll('../shared/startup-plan.ts', '../shared/startup-plan.js').replaceAll('./server.ts', './server.js').replaceAll('./try.ts', './try.js'))
+writeFileSync(`${out}/mcp/extension.mjs`, readFileSync('mcp/extension.mjs', 'utf8').replaceAll('../shared/startup-plan.ts', '../shared/startup-plan.js').replaceAll('./server.ts', './server.js').replaceAll('./try.ts', './try.js').replaceAll('../scripts/verify-answer.ts', '../scripts/verify-answer.js'))
 execFileSync('node_modules/.bin/mcpb', ['validate', `${out}/manifest.json`], { stdio: 'inherit' })
 execFileSync('node_modules/.bin/mcpb', ['pack', out, resolve('dist/ResearchAgent.mcpb')], { stdio: 'inherit' })
 const { createHash } = await import('node:crypto')

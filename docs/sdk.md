@@ -1,6 +1,6 @@
 # ResearchAgent SDK v1
 
-[Release v1.0.2](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
+[Release v1.1.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.0): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ## Start engine → connect → ask → verify
 
@@ -20,7 +20,7 @@ $env:MCP_MAX_BUDGET_MINOR="200"; $env:MCP_DAILY_CAP_MINOR="500"
 Then, in the same terminal on any platform:
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --port 6400
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz app --port 6400
 ```
 
 Keep it running. This uses fixture models, fictional writers and SIMULATED payments (no real value). Caps authorize up to S$2 per ask and S$5 gross per UTC day. For XRPL Testnet append `--testnet`; for TEST-SGD (stand-in for RLUSD, no real value) also append `--iou`. Cold IOU setup can take about two minutes. Use another port if 6400 is busy.
@@ -31,7 +31,7 @@ Terminal 2, all platforms:
 
 ```sh
 npm init -y
-npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-sdk-1.0.2.tgz
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-sdk-1.1.0.tgz
 ```
 
 Save this as `ask.mjs` (plain JavaScript using the typed TypeScript SDK):
@@ -53,7 +53,7 @@ if (!verified.ok) process.exitCode = 1
 
 Run `node ask.mjs "ENGINE_URL" "TOKEN_FILE"`, replacing both quoted values with the app output.
 
-Success means an answer with mode labels/citations, a local `receipts.json`, and verification `ok: true` (Python: `True`). Verification above is offline. For read-only Testnet settlement **and anchor** checks use TS `{ onlineLedger: true }` or Python `python -m researchagent verify receipts.json --ledger` with the installed interpreter. Simulated evidence has no ledger proof; SKIP preserves that boundary. Reuse the same idempotency key after an uncertain response; read the retained run rather than buying again.
+Success means an answer with mode labels/citations, a local `receipts.json`, and verification `ok: true` (Python: `True`). Verification above is offline. For read-only Testnet settlement **and anchor** checks use TS `{ onlineLedger: true }` or Python `python -m researchagent verify receipts.json --ledger` with the installed interpreter. Simulated evidence has no ledger proof, so those checks print as skipped, never as passed. Reuse the same idempotency key after an uncertain response; read the retained run rather than buying again.
 <!-- END generated:sdk-quickstart -->
 
 Node-only ESM package with TypeScript declarations. In a clone, `npm run build:sdk` creates `packages/sdk/README.md` from this guide; `cd packages/sdk && npm pack` builds the installable tarball. Checkout-only examples live under `examples/`; they are not installed into a consumer folder.
@@ -203,7 +203,7 @@ payment, refund and escrow event. The Python CLI reads JSON-RPC from
 the older `--testnet` flag remains for payments without the anchor.
 
 A *simulated* export has no ledger, so `--ledger` prints
-`SKIP audit anchor: simulated run (no ledger)` and stays `RESULT PASS`. It fails
+`Skipped audit anchor: simulated run (no ledger)` and stays `RESULT PASS`. It fails
 only when the export claims an anchor or is a Testnet run without one. An explicit
 `--testnet` on a simulated export still fails (`testnet coverage`).
 

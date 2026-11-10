@@ -1,11 +1,11 @@
 # Publish your own expertise in three steps
 
-Use Node ≥22.13. No clone is needed. These commands work in macOS/Linux shells and Windows PowerShell; start in an empty folder. Release v1.0.2 assets remain pinned.
+Use Node ≥22.13. No clone is needed. These commands work in macOS/Linux shells and Windows PowerShell; start in an empty folder. Release v1.1.0 assets remain pinned.
 
 <!-- BEGIN generated:writer-install -->
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz init my-notes
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz publish ./my-notes --testnet
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz init my-notes
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz publish ./my-notes --testnet
 ```
 <!-- END generated:writer-install -->
 
@@ -30,7 +30,7 @@ The second command keeps serving until Ctrl-C. Edit the generated files before p
    Keep it running. Optional: `--slug my-name`, `--name "My Name"`, `--port N`.
    Port 8790 is reserved and rejected. `--rail simulated` is labelled offline
    settlement and does not register a Testnet origin.
-3. **Find and buy.** Run `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --testnet`, using the same XDG
+3. **Find and buy.** Run `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz app --testnet`, using the same XDG
    state directory. Open **Writers · local · Testnet** and ask a question within
    your note's scope. Discovery also picks up writers published after app start
    (reopen the Writers tab to refresh its list). Budget approval authorizes

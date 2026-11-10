@@ -1,9 +1,9 @@
 import { packedArtifact, withPackedSession, packedStdio } from './packed-consumer.js'
 import { waitForOutput } from '../shared/resource-scope.js'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import assert from 'node:assert/strict'
 import { stopProcess, assertNoProcesses } from './release-processes.js'
 import { startEngine } from '../server/engine.js'
@@ -45,6 +45,32 @@ const check = (kind: string, a: AskResult, b: AskResult, store: Store) => {
     }
   store.close()
 await engine.close()
+// H8-02: what the hosted judge demo exports must verify with the PACKED verifiers (the exact wheel in a clean venv and
+// the packed TS CLI, `researchagent-mcp verify`), offline. Fresh HOSTED=1 fixture exports (one purchase; one decline
+// carrying a synthetic stand-in anchor so "anchor binding" runs) plus the committed real Testnet export from the
+// hosted demo. Release fails if any of them does not verify.
+const hostedDir = join(dir, 'hosted-exports')
+execFileSync(process.execPath, ['--import', 'tsx', resolve('scripts/hosted-export-fixture.ts'), hostedDir], { env: process.env, stdio: ['ignore', 'inherit', 'inherit'], timeout: 120_000 })
+const hostedExports = [
+  { kind: 'fixture-purchase', file: join(hostedDir, 'hosted-purchase.receipts.json') },
+  { kind: 'fixture-anchored-decline', file: join(hostedDir, 'hosted-anchored-decline.receipts.json'), anchor: 'synthetic stand-in (simulated rail)' },
+  { kind: 'testnet-hosted', file: resolve('docs/evidence/hosted-export-nov11/receipts.json'), anchor: 'XRPL Testnet (hosted demo)' },
+]
+const verifyWith = (cmd: string, args: string[], kind: string, who: string) => {
+  const r = spawnSync(cmd, args, { cwd: dir, env: process.env, encoding: 'utf8', timeout: 120_000, maxBuffer: 16 * 1024 * 1024 })
+  let result: { ok: boolean; checks: { check: string; status: string }[] } | undefined
+  try { result = JSON.parse(r.stdout) } catch { /* reported below */ }
+  assert(result?.ok === true && r.status === 0, `${who} rejected the ${kind} hosted export: ${r.stdout.slice(0, 600)}${r.stderr.slice(0, 400)}`)
+  return result
+}
+const hostedRows = hostedExports.map(({ kind, file: path, anchor }) => {
+  const python = verifyWith(join(dir, 'wheel-venv/bin/python'), ['-m', 'researchagent', 'verify', path, '--json'], kind, 'packed wheel')
+  const typescript = verifyWith('npx', ['--yes', '--cache', join(dir, 'npx-cache'), pathToFileURL(file('mcp-tgz')).href, 'verify', path, '--json'], kind, 'packed TS CLI')
+  const binding = (r: typeof python) => r.checks.find(c => c.check === 'anchor binding')?.status ?? 'absent'
+  if (anchor) assert(binding(python) === 'PASS' && binding(typescript) === 'PASS', `anchor binding not checked on the ${kind} hosted export`)
+  return { kind, sha256: sha256(path), ...(anchor ? { anchor } : {}), anchorBinding: binding(python), python: { pass: true }, typescript: { pass: true } }
+})
+results.push({ timing: 'hosted exports', exports: hostedRows.length })
 const bundle = join(dir,'bundle'); execFileSync('unzip',['-q',file('mcpb'),'-d',bundle])
 for (const kind of ['mcpb', 'mcp-tgz']) {
 const started = performance.now()
@@ -88,7 +114,7 @@ await client.close()
   await stopProcess(child)
 }
 await assertNoProcesses()
-writeFileSync(join(root,'consumer-results.json'),JSON.stringify({ sourceSha: manifest.sourceSha, manifestSha256:sha256(manifestFile), mode:manifest.mode, runtime:manifest.runtime, verifiers:{receiptSha256:sha256(join(root,'accepted-receipt.json')),typescript:{command:'npm run verify:answer -- accepted-receipt.json --json',pass:true},python:{command:'python -m researchagent verify accepted-receipt.json --json',installation:'exact wheel in clean venv',pass:true}}, consumers:results },null,2)+'\n')
+writeFileSync(join(root,'consumer-results.json'),JSON.stringify({ sourceSha: manifest.sourceSha, manifestSha256:sha256(manifestFile), mode:manifest.mode, runtime:manifest.runtime, verifiers:{receiptSha256:sha256(join(root,'accepted-receipt.json')),typescript:{command:'npm run verify:answer -- accepted-receipt.json --json',pass:true},python:{command:'python -m researchagent verify accepted-receipt.json --json',installation:'exact wheel in clean venv',pass:true},hosted:{wheelSha256:sha256(file('wheel')),typescriptSha256:sha256(file('mcp-tgz')),commands:['python -m researchagent verify <export> --json','npx <researchagent-mcp tgz> verify <export> --json'],exports:hostedRows}}, consumers:results },null,2)+'\n')
 console.log(JSON.stringify(results,null,2))
 
 })

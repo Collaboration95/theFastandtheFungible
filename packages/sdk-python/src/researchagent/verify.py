@@ -410,7 +410,7 @@ def contributions(b):
 
 def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testnet=False):
     """Verify a dict or JSON path; valid means internal consistency, not ledger truth."""
-    checks = [dict(check="writer credentials", status="SKIP", detail="Unsigned advisory identity; requires online check")]
+    checks = [dict(check="writer credentials", status="SKIP", detail="the writer’s identity is self-declared; checking it needs an online lookup")]
 
     def add(name, ok, detail="Offline structural check"):
         checks.append(dict(check=name, status="PASS" if ok else "FAIL", detail=detail))
@@ -469,7 +469,7 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
         entries = [e for e in b["audit"]["entries"] if "commitment" not in e]
         if b.get("identityVersion", b["schemaVersion"]) == 1:
             add("version", not any(r.get("source") for r in refs))
-            skip("historical origin", "v1 origin unresolved")
+            skip("historical origin", "not needed for this receipt format (one origin per article)")
         else:
             add(
                 "source binding",
@@ -584,7 +584,7 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
             except (OSError, ValueError, KeyError, TypeError) as error:
                 add('audit anchor', False, str(error))
         else:
-            skip('audit anchor', 'not anchored (simulated); requires online check' if 'SIMULATED' in b['label'] else 'requires online check (--ledger)')
+            skip('audit anchor', 'simulated run, nothing on a ledger' if 'SIMULATED' in b['label'] else 'offline; add --ledger to look it up on XRPL Testnet (read-only)')
         source_ok = {}
         for s in b["sources"]:
             ps = [p for p in b["proofs"] if key(p) == key(s)]
@@ -874,7 +874,7 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
             verify_transactions(b, entries, ledger_lookup or lookup, add)
             add('testnet coverage', all(p['label'] == 'XRPL TESTNET · no real value' for p in b['payments']), 'All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof')
         else:
-            skip("testnet", "simulated run (no ledger)" if ledger else "Payments/refunds NOT checked on ledger; add --ledger (read-only, no keys)")
+            skip("testnet", "simulated run (no ledger)" if ledger else "payments and refunds are checked on the ledger only with --ledger (read-only, no keys)")
         return dict(
             ok=all(c["status"] != "FAIL" for c in checks),
             runId=b["runId"],

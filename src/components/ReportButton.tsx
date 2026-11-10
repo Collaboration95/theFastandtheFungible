@@ -4,6 +4,9 @@ import type { RunSnapshot } from '../../shared/contracts/index.js'
 import { getValidatedAnswer } from './Answer'
 import { saveReceipts } from '../download'
 import { useHosted } from '../hosted'
+import { version } from '../../package.json'
+// The verifier pinned to this build's release: older verifiers cannot recompute newer answer commitments (H8-02).
+const WHEEL = `https://github.com/Collaboration95/theFastandtheFungible/releases/download/v${version}/researchagent-${version.replace(/-rc\.(\d+)$/, 'rc$1')}-py3-none-any.whl`
 export interface ReportButtonProps { run: RunSnapshot; onReport: () => void | Promise<void>; busy?: boolean; onCompare?: () => void }
 /** Download report. While the PDF is written the button becomes a progress pill; the page stays usable. */
 export default function ReportButton({ run, onReport, busy = false, onCompare }: ReportButtonProps) {
@@ -23,7 +26,7 @@ export default function ReportButton({ run, onReport, busy = false, onCompare }:
       try { await onReport() } catch { setError('Couldn’t download the report. Try again.') } finally { setPending(false) }
     }}>Export report</button>}
     <button type="button" className="ra-btn" onClick={() => { setError(''); saveReceipts(run.runId).catch(() => setError('Couldn’t download receipts.json. Try again.')) }}>Download receipts.json</button>
-    <small>Check these receipts yourself: <code>researchagent verify receipts.json --ledger</code></small>
+    <small>Check these receipts yourself with Python 3.10+ (read-only, no keys):<code>pip install {WHEEL}</code><code>researchagent verify receipts.json --ledger</code></small>
     {run.answers.length > 1 && <button type="button" className="ra-btn" onClick={onCompare}>See what changed after the purchase</button>}
     {!hosted && <button type="button" className="ra-btn" onClick={async () => { setCopied(false); setError(''); try { await navigator.clipboard.writeText(window.location.href); setCopied(true) } catch { setError('Couldn’t copy the link. Try again.') } }}>{copied ? 'Link copied' : 'Copy link'}</button>}
     {copied && <span role="status">Link copied</span>}
