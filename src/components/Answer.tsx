@@ -1,3 +1,4 @@
+import { findingText } from '../../shared/finding-text.js'
 import { summarizeAnswer } from '../../shared/answer-summary.js'
 import { declineSummary } from '../../shared/decline.js'
 import { keywordCoverage, searchWords } from '../../publisher/search-text.js'
@@ -8,7 +9,7 @@ import type { ReactNode } from 'react'
 import { AnswerSchema, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
 import { candidateOf, citationKey } from '../format'
-import { leadFinding, remainingClaims } from '../../shared/lead-finding.js'
+import { answerBoilerplate, leadFinding, remainingClaims } from '../../shared/lead-finding.js'
 import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
 
 export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): AnswerData | undefined {
@@ -42,7 +43,7 @@ export function citationNumbers(answers: AnswerData[]): Map<string, number> {
 
 /** Policy verdicts in plain words; the enum codes stay in Show work → Policy. */
 const DECLINE_VERDICT: Record<string, string> = { BUY: 'Selected', SKIP_LOW_VALUE: 'Below the value bar', SKIP_LOW_TRUST: 'Writer blocked', SKIP_OVER_CAP: 'Over the per-article cap', SKIP_OVER_BUDGET: 'Over the budget left', SKIP_REWRITE: 'Rewrite of a known source', SKIP_NO_GAP: 'No gap left to fill' }
-const GROUPS: [Claim['stance'], string][] = [['SUPPORTS', 'Supports'], ['CHALLENGES', 'Disputes'], ['UNCERTAIN', 'Unclear']]
+const GROUPS: [Claim['stance'], string][] = [['SUPPORTS', 'Supports'], ['CHALLENGES', 'Disputes'], ['UNCERTAIN', 'Cited findings']]
 
 export interface AnswerProps { run: RunSnapshot; onCitation?: (citation: Citation) => void; view: 'latest' | 'baseline'; onView: (view: 'latest' | 'baseline') => void; compare: boolean; onCompare: () => void; report?: ReactNode }
 export default function Answer({ run, onCitation, view, compare, onCompare, report }: AnswerProps) {
@@ -53,7 +54,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
     const source = candidateOf(run, citation)
     return <sup key={citationKey(citation)}><button className="ra-cite" type="button" disabled={!onCitation} aria-label={`Citation ${number}: ${source?.title ?? citation.resourceId}, exact passage`} onClick={() => onCitation?.(citation)}>{number}</button></sup>
   })
-  if (!answer && run.phase === 'DONE') return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{run.decisions.length > 0 && <details className="ra-why-not"><summary>Why ▸</summary><ul>{run.decisions.flatMap(round => round.rows.map((row, i) => <li key={`${round.round}-${i}`}><b>{row.candidate.title}</b><span className="ra-why-verdict">{DECLINE_VERDICT[row.verdict] ?? row.verdict}</span><span className="ra-why-value">value {row.value.toFixed(2)} vs {round.threshold.toFixed(2)}</span><p>{row.reason}</p></li>))}</ul></details>}<AnchorStatus run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Publish a note on this →</a></section>
+  if (!answer && run.phase === 'DONE') return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{run.decisions.some(round => round.rows.length > 0) && <details className="ra-why-not"><summary>Why ▸</summary><ul>{run.decisions.flatMap(round => round.rows.map((row, i) => <li key={`${round.round}-${i}`}><b>{row.candidate.title}</b><span className="ra-why-verdict">{DECLINE_VERDICT[row.verdict] ?? row.verdict}</span><span className="ra-why-value">value {row.value.toFixed(2)} vs {round.threshold.toFixed(2)}</span><p>{row.reason}</p></li>))}</ul></details>}<AnchorStatus run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Publish a note on this →</a></section>
   if (!answer) return <section className="ra-verdict" aria-label="Research answer" aria-busy={!['FAILED','STOPPED'].includes(run.phase)}><h2 className="ra-caption">Answer</h2>{['FAILED','STOPPED'].includes(run.phase) ? <p>No verified answer is available. Ask again to begin a new run.</p> : <div className="ra-vtext is-skel" aria-hidden="true"><i /><i /><i /></div>}</section>
   const delivered = run.candidates.flatMap(candidate => { const content = getAccessibleContent(run, candidate); return content ? [content] : [] })
   const summary = answer.lead ? answer : summarizeAnswer(run.question, answer, delivered.filter(c => answer.claims.some(claim => claim.citations.some(ref => sameSource(c, ref)))), run.candidates)
@@ -63,13 +64,13 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   const added = answer.claims.filter(c => !baseline?.claims.some(b => b.text === c.text))
   const dropped = baseline?.claims.filter(c => !answer.claims.some(b => b.text === c.text)) ?? []
   const hasPaidEvidence = answer.claims.some(claim => claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID'))
-  const draft = run.phase !== 'DONE'
-  const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, remainingClaims(run.question, answer.claims, lead).filter(c => c.stance === stance && (!/^(?:I |My |Here |Speaking |Let me)/.test(c.text) && keywordCoverage(run.question, searchWords([c.text, ...c.citations.flatMap(ref => { const source = candidateOf(run, ref); return source ? [source.title, source.preview] : [] })].join(' '))) >= 0.5))])
+  const draft = !['DONE', 'STOPPED', 'FAILED'].includes(run.phase)
+  const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, remainingClaims(run.question, answer.claims, lead, delivered, run.candidates).filter(c => c.stance === stance && !answerBoilerplate(c.text) && (!/^(?:I |My |Here |Speaking |Let me)/.test(c.text) && keywordCoverage(run.question, searchWords([c.text, ...c.citations.flatMap(ref => { const source = candidateOf(run, ref); return source ? [source.title, source.preview] : [] })].join(' '))) >= 0.5))])
   return <>
     <section className="ra-verdict" aria-label="Research answer">
-      <div className="ra-answer-heading"><h2 className="ra-caption">{draft ? hasPaidEvidence ? 'Draft · verified evidence' : 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>
-      {lead.length ? <p className="ra-vtext">{lead.map(item => <span key={item.text}>{!item.claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID') && <small>{GROUPS.find(([stance]) => stance === item.claim.stance)?.[1]} · </small>}{item.text}{cites(item.claim)}{' '}</span>)}</p> : <p>No concise finding could be selected from the verified evidence.</p>}
-      {context && <p>{context}</p>}
+      <div className="ra-answer-heading"><h2 className="ra-caption">{run.phase === 'STOPPED' ? 'Partial answer · stopped' : run.phase === 'FAILED' ? 'Partial answer · interrupted' : draft ? hasPaidEvidence ? 'Draft · verified evidence' : 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>
+      {lead.length ? <p className="ra-vtext">{lead.map(item => <span key={item.text}>{findingText(item.text)}{cites(item.claim)}{' '}</span>)}</p> : <p>No concise finding could be selected from the verified evidence.</p>}
+      {context && <p>{findingText(context)}</p>}
       <AnchorStatus run={run} />
     </section>
     <details className="ra-answer-work" open={compare || undefined}><summary>Show work</summary>
@@ -78,7 +79,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
 
     {!compare && <RequestedFacts run={run} version={answer.version} />}
     {compare && <button type="button" className="ra-link" onClick={onCompare}>Back to answer</button>}
-    <section className="ra-claims" aria-label={compare ? 'What changed after the purchase' : 'Claims'}>{groups.map(([name, items]) => items.length ? <div className="ra-group" key={name}><h3>{name} ({items.length})</h3><ul>{items.map(claim => <li key={claim.id} className="ra-claim"><p>{leadFinding(run.question, [claim])[0]?.text ?? claim.text}{cites(claim)}</p></li>)}</ul></div> : null)}{compare && !added.length && !dropped.length && <p>The cited claims are unchanged.</p>}</section>
+    <section className="ra-claims" aria-label={compare ? 'What changed after the purchase' : 'Claims'}>{groups.map(([name, items]) => items.length ? <div className="ra-group" key={name}><h3>{name} ({items.length})</h3><ul>{items.map(claim => <li key={claim.id} className="ra-claim"><p>{findingText(leadFinding(run.question, [claim], delivered, undefined, run.candidates)[0]?.text ?? claim.text)}{cites(claim)}</p></li>)}</ul></div> : null)}{compare && !added.length && !dropped.length && <p>The cited claims are unchanged.</p>}</section>
     </details>
   </>
 }

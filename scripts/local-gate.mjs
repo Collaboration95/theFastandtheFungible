@@ -123,6 +123,7 @@ export function scriptClosure(files, read, seeds) {
   const included = new Set(seeds), queue = [...seeds]
   while (queue.length) {
     const file = queue.pop()
+    if (heldOutContent(file)) continue
     if (!/\.(?:[cm]?[jt]sx?|json|py|ya?ml)$/.test(file) || file === 'package.json' || file === 'package-lock.json') continue
     const content = read(file).toString()
     for (const script of scripts) {
@@ -139,6 +140,8 @@ export function scriptClosure(files, read, seeds) {
   }
   return [...included].sort()
 }
+
+const heldOutContent = file => process.env.RA_DEV_BANKS_ONLY === '1' && /^(?:eval\/questions\/judge-xrpl\.v[45](?:[.-]|$)|docs\/evidence\/v[45]-heldout\/)/.test(file)
 
 export function inputsFor(id, files, read, unknown = false) {
   if (unknown || id === 'hygiene') return files
@@ -249,7 +252,7 @@ export function snapshot(root, scope) {
 
 export function fixtureEnv(scratch, cpus = MAX_CPUS) {
   const env = Object.fromEntries(['PATH', 'HOME', 'USER', 'LOGNAME', 'LANG', 'LC_ALL', 'SYSTEMROOT'].filter(key => process.env[key] !== undefined).map(key => [key, process.env[key]]))
-  return { ...env, TMPDIR: scratch, TMP: scratch, TEMP: scratch, DOTENV_CONFIG_PATH: '/dev/null', LANGFUSE_ENABLED: '0',
+  return { ...env, ...(process.env.RA_DEV_BANKS_ONLY === '1' ? { RA_DEV_BANKS_ONLY: '1' } : {}), TMPDIR: scratch, TMP: scratch, TEMP: scratch, DOTENV_CONFIG_PATH: '/dev/null', LANGFUSE_ENABLED: '0',
     LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture', SETTLEMENT_RAIL: 'simulated', SEARCH_EMBEDDINGS: 'off',
     ELECTRON_SKIP_BINARY_DOWNLOAD: '1', npm_config_offline: 'true', npm_config_audit: 'false', npm_config_fund: 'false',
     PYTHONDONTWRITEBYTECODE: '1', PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1', RA_TEST_WORKERS: String(Math.max(1, Math.min(4, cpus - 1))),
@@ -287,7 +290,7 @@ function runtimeInfo(root, steps) {
     if (!existsSync(path)) throw Error(`Missing installed dependency ${name}; run npm ci first`)
     return [name, JSON.parse(readFileSync(path, 'utf8')).version]
   }))
-  const info = { node: process.version, execPath: process.execPath, platform: process.platform, arch: process.arch, os: release(), versions,
+  const info = { bankAccess: process.env.RA_DEV_BANKS_ONLY === '1' ? 'development-only; held-out questions/results omitted; schema tests excluded; published fact aggregates only' : 'all-schema-checks', node: process.version, execPath: process.execPath, platform: process.platform, arch: process.arch, os: release(), versions,
     installedLock: hash(readFileSync(join(root, 'node_modules/.package-lock.json'))),
     npm: execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim(), git: git(root, ['--version']) }
   if (steps.some(step => step.id === 'python' || step.id.startsWith('browser-'))) info.python = execFileSync('python3', ['-c',
@@ -295,11 +298,21 @@ function runtimeInfo(root, steps) {
   return info
 }
 
-function checkout(root, source, scope) {
+export function checkout(root, source, scope) {
   const path = join(scope.tempDir('ra-local-gate-checkout-'), 'tree')
   git(root, ['clone', '--quiet', '--shared', '--no-checkout', '--', root, path])
   git(path, ['update-ref', '--no-deref', 'HEAD', source.head])
-  git(path, ['read-tree', source.tree]); git(path, ['checkout-index', '--all', '--force'])
+  git(path, ['read-tree', source.tree])
+  if (process.env.RA_DEV_BANKS_ONLY === '1') {
+    const files = split(git(path, ['ls-files', '-z']))
+    const paths = files.filter(file => !heldOutContent(file))
+    execFileSync('git', ['checkout-index', '--force', '--stdin', '-z'], { cwd: path, input: paths.join('\0') + '\0' })
+    // Preserve existence metadata for progress checks, without materialising questions.
+    for (const file of files.filter(heldOutContent)) {
+      mkdirSync(dirname(join(path, file)), { recursive: true })
+      writeFileSync(join(path, file), '')
+    }
+  } else git(path, ['checkout-index', '--all', '--force'])
   symlinkSync(resolve(root, 'node_modules'), join(path, 'node_modules'), 'dir')
   return path
 }
@@ -355,6 +368,7 @@ export async function main(argv = process.argv.slice(2)) {
     })
     const blobs = new Map()
     const read = file => {
+      if (heldOutContent(file)) throw Error('Held-out content is forbidden in a development-only gate')
       if (!blobs.has(file)) blobs.set(file, readFileSync(join(work, file)))
       return blobs.get(file)
     }

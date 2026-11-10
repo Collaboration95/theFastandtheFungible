@@ -1,3 +1,4 @@
+import { topicMatches } from '../../shared/relevance.js'
 import { searchText } from '../../publisher/search-text.js'
 import { INSTRUCTION, quotedText } from './untrusted.js'
 // Requested facts (#208) and their coverage. Requirements are frozen from the question and the clarify answers
@@ -35,13 +36,15 @@ export const noNewEvidence = /adds nothing|no new (?:material )?(?:evidence|info
 
 /** Stems of the clarify answers' content words ("pricing & margins" → pric, marg). */
 export const focusWords = (focus: string) => (focus.toLowerCase().match(/[a-z]{4,}/g) ?? []).map(w => w.slice(0, 4))
+const analystMention = (text: string) => text.split(/(?<=[.!?])\s+/).some(sentence => /\b(?:analysts?|consensus)\b/i.test(sentence)
+  && !/\b(?:no|without|missing|lacks?)\s+(?:\w+\s+){0,4}(?:analysts?|consensus|estimates?)\b|\bnot\s+(?:include|provide|contain|publish|disclose|comment)[^.!?]{0,80}\b(?:analysts?|consensus|estimates?|coverage)\b|\b(?:analysts?|consensus)[^.!?]{0,50}\b(?:not (?:available|provided|disclosed)|unavailable)\b/i.test(sentence))
 /**
  * Fixture gap rules (D10), story-bible-like: a question cue, the accessible evidence that answers it, and the
  * free-text gap otherwise. The live LLM names gaps itself; the decision model judges the frozen requirement.
  */
 export const FIXTURE_GAP_RULES: { cue: RegExp; answered: (text: string, focus?: string) => boolean; gap: string | ((focus?: string) => string) }[] = [
   // The clarified angle (UC2) narrows the analyst gap: estimates must speak to that angle to close it.
-  { cue: /\b(?:analysts?|outlook)\b/i, answered: (text, focus) => /\b(?:analysts?|consensus)\b/i.test(text) && /\d/.test(text) && (!focus || focusWords(focus).some(w => text.toLowerCase().includes(w))), gap: focus => `No accessible analyst estimates on ${focus ? focus.replace(/\s*&\s*/g, ' and ') : 'pricing or margins'}.` },
+  { cue: /\b(?:analysts?|outlook)\b/i, answered: (text, focus) => analystMention(text) && /\d/.test(text) && (!focus || focusWords(focus).some(w => text.toLowerCase().includes(w))), gap: focus => `No accessible analyst estimates on ${focus ? focus.replace(/\s*&\s*/g, ' and ') : 'pricing or margins'}.` },
   { cue: /^(?!.*\b(?:analysts?|outlook|pricing|price)\b).*\bmargins?\b/i, answered: text => /\bmargins?\b/i.test(text) && (text.match(/\d+(?:\.\d+)?\s*(?:%|percent)/gi) ?? []).length >= 2, gap: 'No accessible comparison of gross margins before and after the deal.' },
   { cue: /\blead[- ]times?\b/i, answered: text => /\b\d+(?:\.\d+)?\s*weeks?\b/i.test(text), gap: 'No accessible dated figures for lead times in weeks, or their trend.' },
   { cue: /\b(?:change|changed|react|reacted)\b/i, answered: text => CLAIM_KINDS['dated-figure'](text), gap: 'No accessible dated figures on what changed and how the market reacted.' },
@@ -124,7 +127,11 @@ export function fixtureSupports(requirement: Pick<Requirement, 'text'>, passage:
   const canonical = (text: string) => new Set([...contentWords(text)].map(w => w.replace(/^(?:pricing|prices?)$/, 'pric').replace(/^margins?$/, 'marg')))
   const need = canonical(requirement.text)
   const own = canonical(passage)
-  return /\d/.test(passage) && need.size > 0 && [...need].filter(w => own.has(w)).length / need.size >= 0.5
+  const namedType = /\b(?:transaction|field|flag|header|scheme|permission|setting|type)\b/i.test(requirement.text)
+  const identifier = /\b[A-Za-z]+[A-Z][A-Za-z]+\b|\b[A-Z]+(?:-[A-Z0-9]+)+\b/.test(passage)
+  const capability = /^(?:can|is|are|does|do|will)\b/i.test(requirement.text) && /\b(?:blocked until|requires?|enables?|supports?|can|cannot)\b/i.test(passage) && !/^.*cannot be inferred[^.]*$/i.test(passage)
+  if (capability && topicMatches(requirement.text, passage)) return true
+  return (/\d/.test(passage) || namedType && identifier) && topicMatches(requirement.text, passage) && need.size > 0 && [...need].filter(w => own.has(w)).length / need.size >= 0.5
 }
 /** Fixture coverage: supported when one passage establishes the requirement, otherwise missing. Never partial or conflicting. */
 export function fixtureCoverage(requirements: Pick<Requirement, 'id' | 'text'>[], evidence: CoverageEvidence[]): Record<string, JudgedStatus> {

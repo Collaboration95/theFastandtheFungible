@@ -166,6 +166,10 @@ export class RunLoop {
       }
       this.trace(runId, 'ANSWER', 'Re-answering with free evidence from the focused search.')
     }
+    if (requirements) {
+      coverage ??= await this.assessCoverage(runId, answer)
+      answer.openGaps = requirements.filter(r => coverage!.entries.find(e => e.requirementId === r.id)?.status !== 'supported').map(r => ({ text: r.text.replace(/\s*&\s*/g, ' and ') }))
+    }
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
     this.store.appendEvent(runId, { type: 'ANSWER_READY', label: previous ? 'Answer updated with verified evidence.' : 'Free answer checked.', data: { answerVersion: answer.version, durationMs: Date.now() - compositionStarted } })
     const started = this.started.get(runId)

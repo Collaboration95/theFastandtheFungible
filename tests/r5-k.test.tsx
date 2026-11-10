@@ -13,11 +13,11 @@ it('shows three decision reasons and distinguishes declined candidates from no m
  const candidate = offlineZeroBudgetRun.candidates[0]
  const rows = [1,2,3].map(n => ({...offlineZeroBudgetRun.decisions[0].rows[0],candidate:{...candidate,tier:'PAID' as const,resourceId:`tickets-${n}`},value:0.159,verdict:'SKIP_LOW_VALUE' as const,reason:`Ticket reason ${n}`}))
  const run = {...offlineZeroBudgetRun,phase:'DONE' as const,answers:[],candidates:rows.map(r=>r.candidate),decisions:[{...offlineZeroBudgetRun.decisions[0],threshold:0.2,rows}]}
- expect(declineSummary(run)).toBe('Found 3 paid articles; none cleared the value threshold (best 0.16 vs 0.20)')
+ expect(declineSummary(run)).toBe('Nothing was bought: the available articles do not add enough relevant evidence.')
  const html=renderToStaticMarkup(<Answer run={run} view="latest" onView={()=>{}} compare={false} onCompare={()=>{}} />)
  for(const n of [1,2,3]) expect(html).toContain(`Ticket reason ${n}`)
- expect(html).not.toContain('No listed writer')
- expect(declineSummary({...run,candidates:[]})).toContain('No listed writer')
+ expect(html).not.toContain('No source covers this question')
+ expect(declineSummary({...run,candidates:[]})).toContain('No source covers this question')
 })
 it('includes pre-draft elapsed time instead of displaying zero seconds', () => {
  const run={...offlineZeroBudgetRun,phase:'DONE' as const,events:[{id:1,runId:'elapsed',type:'FREE_DRAFT',label:'draft',at:'2026-11-07T00:00:03Z',data:{elapsedMs:3000}},{id:2,runId:'elapsed',type:'DONE',label:'done',at:'2026-11-07T00:00:05Z'}]}
@@ -35,7 +35,7 @@ it('extracts the lead from the delivered passage even when a model paraphrases i
  expect(leadFinding('Which x402 headers are used?', [claim], [])).toEqual([])
 })
 
-it('selects a lone Unclear sentence once and retains its stance on the lead', async () => {
+it('selects a lone uncertain sentence once without implying conflicting sources', async () => {
  const { remainingClaims } = await import('../shared/lead-finding')
  const claim = { id:'only', stance:'UNCERTAIN' as const, text:'The x402 headers carry the challenge and payment proof.', citations:[{resourceId:'headers',version:'v1',spanId:'p1'}] }
  const lead = leadFinding('Which x402 headers carry payment proof?', [claim])
@@ -51,6 +51,6 @@ it('selects a lone Unclear sentence once and retains its stance on the lead', as
  content.spans = [{ id: 'p1', text: claim.text }]
  run.answers = [{ ...run.answers[0], claims: [{ ...claim, citations: [{ resourceId: content.resourceId, version: content.version, spanId: 'p1' }] }] }]
  const html = renderToStaticMarkup(<Answer run={run} view="latest" onView={()=>{}} compare={false} onCompare={()=>{}} />)
- expect(html).toContain('Unclear')
+ expect(html).not.toContain('Unclear')
  expect(html.split(claim.text)).toHaveLength(2)
 })

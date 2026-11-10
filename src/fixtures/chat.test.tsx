@@ -43,7 +43,7 @@ describe('chat page (owner, 9 Oct)', () => {
     expect(screen.getByRole('log', { name: 'Conversation' }).textContent).toContain('What are you?')
     expect(reply.querySelectorAll('p')).toHaveLength(3)
     expect(reply.textContent).toContain('I search writers for you.')
-    expect(reply.textContent).toContain('fixture · scope-fixture · no sources searched · nothing bought')
+    expect(reply.textContent).toContain('Demo reply · no sources searched · nothing bought')
     // Home is gone: no hero, no suggested questions, no budget, no plan card.
     expect(screen.queryByRole('heading', { name: /Give it a budget/ })).toBeNull()
     expect(screen.queryByRole('group', { name: 'Demo questions' })).toBeNull()

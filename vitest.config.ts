@@ -21,6 +21,6 @@ export default defineConfig({
       'tests/**/*.test.js',
       'tests/**/*.test.jsx',
     ],
-    exclude: ['node_modules/**', 'dist/**', 'tests/e2e.spec.ts', 'tests/a11y.spec.ts'],
+    exclude: ['node_modules/**', 'dist/**', 'tests/e2e.spec.ts', 'tests/a11y.spec.ts', ...(process.env.RA_DEV_BANKS_ONLY === '1' ? ['tests/judge-bank-v5.test.ts'] : [])],
   },
 })

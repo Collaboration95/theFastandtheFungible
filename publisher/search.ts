@@ -1,3 +1,4 @@
+import { expandProtocolQuery, isProtocolQuery, topicDocument, topicMatches, topicOverlap, type TopicDocument } from '../shared/relevance.js'
 import { searchText, searchWords, keywordCoverage } from './search-text.js'
 // Per-publisher full-text + vector search (D2, #123). Node only; never import from src/.
 import { existsSync, readFileSync } from 'node:fs'
@@ -48,7 +49,7 @@ export function loadEmbeddingCache(file: URL | string = EMBEDDINGS_FILE): Embedd
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) as EmbeddingCache : undefined
 }
 
-export type PublisherIndex = { db: AnyOrama; terms?: Map<string, Set<string>>; vectors: boolean; vectorOf?: Map<string, number[]> }
+export type PublisherIndex = { db: AnyOrama; terms?: Map<string, Set<string>>; topicText?: Map<string, string>; topicDocuments?: Map<string, TopicDocument>; vectors: boolean; vectorOf?: Map<string, number[]> }
 
 /** One in-memory index per publisher. Vectors are used only when every article has one. */
 export async function buildIndex(articles: Article[], cache?: EmbeddingCache): Promise<PublisherIndex> {
@@ -62,7 +63,9 @@ export async function buildIndex(articles: Article[], cache?: EmbeddingCache): P
     articleId: article.articleId, title: searchText(article.title), abstract: searchText(article.abstract), tags: article.tags.map(searchText), body: searchText(article.body),
     ...(withVectors ? { embedding: vectors[i] } : {}),
   })))
-  return { db, terms: new Map(articles.map(a => [a.articleId, searchWords(`${a.title} ${a.abstract} ${a.tags.join(" ")} ${a.body}`)])), vectors: withVectors, ...(withVectors ? { vectorOf: new Map(articles.map((a, i) => [a.articleId, vectors[i]!])) } : {}) }
+  const terms = new Map(articles.map(a => [a.articleId, searchWords(`${a.title} ${a.abstract} ${a.tags.join(" ")} ${a.body}`)]))
+  const topicText = new Map([...terms].map(([id, words]) => [id, [...words].join(' ')]))
+  return { db, terms, topicText, topicDocuments: new Map([...topicText].map(([id, text]) => [id, topicDocument(text)])), vectors: withVectors, ...(withVectors ? { vectorOf: new Map(articles.map((a, i) => [a.articleId, vectors[i]!])) } : {}) }
 }
 
 export const cosine = (a: number[], b: number[]) => {
@@ -86,7 +89,7 @@ export const keywordRelevance = (score: number) => Math.min(1, Math.max(0.01, sc
  */
 export async function searchIndex(index: PublisherIndex, term: string, k: number, queryVector?: number[]): Promise<{ mode: SearchMode; ranked: Ranked[] }> {
   const mode: SearchMode = index.vectors && queryVector ? 'hybrid' : 'keyword'
-  const common = { term: searchText(term), limit: mode === 'keyword' ? (index.terms?.size ?? k) : k, properties: ['title', 'abstract', 'tags', 'body'], boost: SEARCH_TUNING.boost, threshold: SEARCH_TUNING.threshold }
+  const common = { term: searchText(expandProtocolQuery(term)), limit: mode === 'keyword' ? (index.terms?.size ?? k) : k, properties: ['title', 'abstract', 'tags', 'body'], boost: SEARCH_TUNING.boost, threshold: SEARCH_TUNING.threshold }
   const result = mode === 'hybrid'
     ? await search(index.db, { ...common, mode: 'hybrid', vector: { value: queryVector!, property: 'embedding' }, similarity: SEARCH_TUNING.similarity, hybridWeights: SEARCH_TUNING.hybridWeights })
     : await search(index.db, { ...common, mode: 'fulltext' })
@@ -96,7 +99,14 @@ export async function searchIndex(index: PublisherIndex, term: string, k: number
     // A returned hit matched something: never promise exactly 0.
     return vector ? cosineRelevance(cosine(queryVector!, vector)) : keywordRelevance(score)
   }
-  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) })).filter(hit => mode !== 'keyword' || keywordCoverage(term, index.terms?.get(hit.articleId) ?? new Set()) >= 0.5).slice(0, k)
+  const protocol = isProtocolQuery(term)
+  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) })).filter(hit => {
+    if (mode !== 'keyword' || keywordCoverage(term, index.terms?.get(hit.articleId) ?? new Set()) >= 0.5) return true
+    if (!protocol) return false
+    const text = index.topicText?.get(hit.articleId) ?? [...(index.terms?.get(hit.articleId) ?? [])].join(' ')
+    const prepared = index.topicDocuments?.get(hit.articleId)
+    return topicOverlap(term, text, prepared) >= 0.5 || topicMatches(term, text, prepared)
+  }).slice(0, k)
   return { mode, ranked }
 }
 

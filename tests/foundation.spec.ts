@@ -81,10 +81,11 @@ test('failure recovery views: labelled fallback, slow Testnet, stopped unused pa
   await page.reload()
   await expect(page.getByText('Recovering', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Resume answer' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Draft · verified evidence' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Partial answer · interrupted' })).toBeVisible()
   snapshot = { ...snapshot, phase: 'STOPPED', stopped: true, answers: snapshot.answers.slice(0, 1) }
   await page.reload()
   await expect(page.getByText(/An earlier payment completed/).first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Partial answer · stopped' })).toBeVisible()
   snapshot = { ...snapshot, phase: 'BUY', stopped: false, labels: { ...snapshot.labels, settlement: XRPL_LABEL }, intents: [{ ...snapshot.intents[0], status: 'SUBMITTING' }], receipts: [], grants: [], events: [], spentMinor: 0, reservedMinor: 90 }
   await page.reload()
   await expect(page.locator('.ra-side').getByText(/Waiting/)).toBeVisible()

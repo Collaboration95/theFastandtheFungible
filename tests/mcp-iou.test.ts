@@ -17,7 +17,10 @@ test.each([false, true])('IOU MCP clamps, labels, retries and cancels an absent 
  for (const [k,v] of Object.entries({ESCROW_MODE:'key-reveal',ESCROW_ASSET:'test-iou',TESTNET_IOU_ISSUER:issuer.classicAddress,SETTLEMENT_RAIL:'xrpl-testnet',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SEARCH_EMBEDDINGS:'off',MCP_MAX_BUDGET_MINOR:'200',MCP_DAILY_CAP_MINOR:'200',ANCHOR_RAIL:'off'})) vi.stubEnv(k,v)
  const c = chain()
  if (noShow) vi.spyOn(PublisherClient.prototype,'paidGet').mockRejectedValue(new Error('Labelled fixture writer no-show'))
- const pub = createPublisherApp({journal:':memory:',rail:'xrpl-testnet',ledger:c.ledger,writers:alphaLeakCorpus,env:{ESCROW_MODE:'key-reveal',XRPL_PUBLISHER_LOAD_FACTOR_SEED:writer.seed,XRPL_PUBLISHER_ALPHALEAK_SEED:Wallet.generate().seed},escrowWriters:['load-factor'],facilitatorTiming:{pollMs:1,timeoutMs:10}})
+ // This delivery/recovery fixture advertises the analyst and margin facts in
+ // its body so the independent topic guard can admit the intended purchase.
+ const writers = {...alphaLeakCorpus,articles:alphaLeakCorpus.articles.map(article=>article.articleId==='lf-kestrel-tsmc-deal'?{...article,tags:[...article.tags,'analyst outlook','pricing','margins']}:article)}
+ const pub = createPublisherApp({journal:':memory:',rail:'xrpl-testnet',ledger:c.ledger,writers,env:{ESCROW_MODE:'key-reveal',XRPL_PUBLISHER_LOAD_FACTOR_SEED:writer.seed,XRPL_PUBLISHER_ALPHALEAK_SEED:Wallet.generate().seed},escrowWriters:['load-factor'],facilitatorTiming:{pollMs:1,timeoutMs:10}})
  await pub.locals.ready
  const listen = async (app: ReturnType<typeof createPublisherApp>) => { const s=app.listen(0,'127.0.0.1'); await new Promise(r=>s.once('listening',r)); return s }
  const publisher = await listen(pub)
