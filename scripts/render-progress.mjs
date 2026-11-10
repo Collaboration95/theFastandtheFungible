@@ -6,6 +6,9 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+// Dates shown on the page are Singapore dates (UTC+8), like the counted days.
+const sgtDate = iso => new Date(Date.parse(iso) + 8 * 3600e3).toISOString().slice(0, 10)
+
 const root = join(import.meta.dirname, '..')
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 const esc = s => String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
@@ -36,15 +39,15 @@ function hero(d) {
   return `<header class="hero">
 <p class="kick"><span class="pill">Since SingHacks</span><span>${esc(d.since.label)} → ${esc(day(d.as_of))} ${d.as_of.slice(0, 4)}</span></p>
 <h1>From prototype to proof in ${h.days} days.</h1>
-<p class="lede">At SingHacks, ResearchAgent was one web page where a language model chose what to buy. Since then it has become released software: a web app, a Mac app, an MCP server and two SDKs. Policy code buys evidence from writers within your budget, and every payment leaves a receipt on the XRPL Testnet.</p>
-<p class="facts">Facts at ${ext(`${REPO}/commit/${d.source_sha}`, short(d.source_sha), 'mono')} · generated ${esc(longDay(d.generated_at.slice(0, 10)))} · <a href="#method">how we count</a> · <a href="data.json" download>data.json</a></p>
+<p class="lede">At SingHacks, ResearchAgent was one web page where a language model proposed each purchase and a person approved every quote. Since then it has become released software: a web app, a Mac app, an MCP server and two SDKs. Policy code buys evidence from writers within your budget, and every payment leaves a receipt on the XRPL Testnet.</p>
+<p class="facts">Facts at ${ext(`${REPO}/commit/${d.source_sha}`, short(d.source_sha), 'mono')} · generated ${esc(longDay(sgtDate(d.generated_at)))} · <a href="#method">how we count</a> · <a href="data.json" download>data.json</a></p>
 <div class="compare">
   <figure class="side then">
     <figcaption><span class="when">SingHacks · ${esc(d.event.label.replace(' 2026', ''))}</span><span class="what">The prototype</span></figcaption>
     <div class="frame">${shot(first.image, 'shot')}</div>
     <ul class="traits">
       <li>One web page, synthetic sources</li>
-      <li>A language model chose what to buy</li>
+      <li>A language model proposed; a person approved every quote</li>
       <li><span class="mono">${n(s.codeLines)}</span> lines of code · <span class="mono">${n(s.tests)}</span> tests on 20 Sep</li>
     </ul>
   </figure>

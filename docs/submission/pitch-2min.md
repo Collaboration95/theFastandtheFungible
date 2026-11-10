@@ -40,7 +40,7 @@ RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
 **[0:48 · slide 3]**
 At SingHacks we had a prototype: a language model proposed each purchase, a
-person approved every quote, and payment was simulated by default. Since then we merged <!--f:prs-->246<!--/f-->
+person approved every quote, and payment was simulated by default. Since then we merged <!--f:prs-->248<!--/f-->
 pull requests. Today a judge opens one link, or runs one line with no clone and
 no account. It buys, catches a broken promise, gets refunded, re-buys, anchors
 the answer and prints "result: pass" with six Testnet links.
@@ -118,8 +118,8 @@ Never cut the "Testnet" line on slide 1.
   violations. Say that the development sets are separate (v1
   <!--f:dev_v1-->16/20<!--/f-->), because we tuned on them. Do not say "fifteen
   of twenty": that was an earlier, tuned bank.
-- **"<!--f:prs-->246<!--/f--> pull requests"**: merged into `main` since
-  <!--f:since-->21 Sep<!--/f-->, counted at <!--f:sha-->efa5c847<!--/f--> on
+- **"<!--f:prs-->248<!--/f--> pull requests"**: merged into `main` since
+  <!--f:since-->21 Sep<!--/f-->, counted at <!--f:sha-->329b64f7<!--/f--> on
   <!--f:as_of-->11 Nov 2026<!--/f-->. Say "since SingHacks", not "in a week".
 - **SingHacks baseline**: in the event build (19–20 Sep, `e16435a3`) a language
   model proposed each purchase and a person approved every quote
