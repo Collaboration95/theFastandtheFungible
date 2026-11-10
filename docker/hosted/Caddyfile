@@ -1,0 +1,23 @@
+{
+  http_port 8080
+  https_port 8443
+}
+# Fallback only: set HOSTED_ORIGIN to the exact https://<IP>.sslip.io origin,
+# re-render env and restart. Open 80/443 only when intentionally enabling this path.
+{$FALLBACK_HOST} {
+  log { output discard }
+  reverse_proxy web:8080 {
+    header_up -Authorization
+    header_up -X-Internal-*
+    header_up -X-RA-*
+    header_up X-Forwarded-For {remote_host}
+    header_up X-Forwarded-Proto https
+    flush_interval -1
+    transport http { read_timeout 3600s }
+  }
+  handle_errors {
+    root * /srv
+    rewrite * /paused.html
+    file_server
+  }
+}

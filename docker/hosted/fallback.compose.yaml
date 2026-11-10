@@ -1,0 +1,16 @@
+services:
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    user: "1000:1000"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    read_only: true
+    tmpfs: [/tmp]
+    environment: {FALLBACK_HOST: "${FALLBACK_HOST:?Set the sslip.io hostname}"}
+    ports: ["80:8080", "443:8443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./paused.html:/srv/paused.html:ro
+      - ${HOSTED_STATE_PATH:-/srv/researchagent}/caddy:/data
+      - ${HOSTED_STATE_PATH:-/srv/researchagent}/caddy-config:/config
