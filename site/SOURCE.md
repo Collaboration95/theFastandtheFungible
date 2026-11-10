@@ -10,6 +10,7 @@ Generated, never hand-edited. One command rebuilds the facts, images, page and h
 
 ```sh
 npm run site:progress   # needs network and `gh auth`; refuses to build if any number or source is missing
+                        # on a branch, add `-- --at origin/main` so the counted SHA survives the squash merge
 git add site/progress site/index.html && git commit -m "Refresh progress page"
 npm run site:publish
 ```

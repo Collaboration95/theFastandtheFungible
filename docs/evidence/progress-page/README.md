@@ -1,13 +1,13 @@
 # /progress/ ("Since SingHacks"), ledger restyle and home card · 10 Nov 2026
 
-Local Chromium (Playwright) against `site/` served from an ephemeral port, at 390 × 844 and 1440 × 900, with `prefers-reduced-motion: reduce` for the captures. Facts are at `1f9df59c` (the counted commit recorded in `site/progress/data.json`). Ledger rows were re-checked read-only against public XRPL Testnet servers (61/61 validated); no transaction was submitted and no real value moved.
+Local Chromium (Playwright) against `site/` served from an ephemeral port, at 390 × 844 and 1440 × 900, with `prefers-reduced-motion: reduce` for the captures. Screenshots were taken with facts at `1f9df59c`; the committed page counts at the `source_sha` recorded in `site/progress/data.json`, so its numbers can be newer than the captures. Ledger rows were re-checked read-only against public XRPL Testnet servers (61/61 validated); no transaction was submitted and no real value moved.
 
 | Check | Result |
 | --- | --- |
 | Horizontal overflow, 390 and 1440, progress / home / ledger / October log | 0 px on every page |
 | Console errors, with and without reduced motion | none |
 | axe (serious or critical), progress at 390 and 1440 with every stop open | none (`tests/judge-path.spec.ts`) |
-| Count-up with motion on | ends on the exact rendered numbers (215 · 13 · 61 · 7/20 · 84.2 s · 1,011) |
+| Count-up with motion on | ends on the exact rendered numbers (215 · 13 · 61 · 7/20 · 84.2 s · 1,011 at capture time) |
 | Reduced motion | numbers render final; no animation |
 | Ledger viewer and judge-path ledger specs | pass (61 rows, 61/61 on stubbed sockets) |
 

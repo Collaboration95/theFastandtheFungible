@@ -1,6 +1,7 @@
 // Builds the facts behind /progress/ ("Since SingHacks"):
 //   npm run site:progress            → site/progress/data.json, images, then the static page
 //   node scripts/build-progress-data.mjs --no-render   (data only)
+//   node scripts/build-progress-data.mjs --at origin/main   (count at another commit; default HEAD)
 // Reads git, gh (merged PRs, releases), CHANGELOG.md, docs/SFF-PUSH.md, eval and
 // docs/evidence JSON, and site/ledger/transactions.json. Needs network for gh.
 // Every count is query-defined and dated: PRs and releases are filtered to commits
@@ -164,8 +165,9 @@ function snippet(spec) {
   return { lines: lines.map(l => l.replace(/https:\/\/testnet\.xrpl\.org\/transactions\/([A-F0-9]{8})[A-F0-9]{56}/g, 'testnet.xrpl.org/…/$1…').replace(/https:\/\/github\.com\/Collaboration95\/theFastandtheFungible\/releases\/download\//g, '…/releases/download/')), caption: spec.caption, from: spec.path }
 }
 
-export function build() {
-  const sha = git('rev-parse', 'HEAD')
+export function build({ at = 'HEAD' } = {}) {
+  // The counted commit. A branch run can pass --at origin/main so the SHA survives a squash merge.
+  const sha = git('rev-parse', `${at}^{commit}`)
   const sourceDate = git('show', '-s', '--format=%cI', sha)
   const reachable = new Set(git('rev-list', sha).split('\n'))
   const generatedAt = new Date().toISOString()
@@ -333,11 +335,12 @@ export function build() {
 
   // ---- Builder feedback
   const feedback = read('docs/BUILDER-FEEDBACK.md')
-  const inventory = feedback.slice(feedback.indexOf('### Submission inventory'))
-  const submissions = [...inventory.slice(0, inventory.indexOf('\n## ')).matchAll(/^\| (\d+) \|/gm)].length
+  // Counts follow the definitions stated at the top of docs/BUILDER-FEEDBACK.md.
+  const sectionOf = (heading) => { const at = feedback.search(heading); if (at < 0) return ''; const rest = feedback.slice(at); const end = rest.slice(1).search(/\n#{1,2} /); return end < 0 ? rest : rest.slice(0, end + 1) }
+  const submissions = [...sectionOf(/#{3,4} Submission inventory/).matchAll(/^\| (\d+) \|/gm)].length
   const findings = new Set([...feedback.matchAll(/^\| (B\d+)\s*·/gm)].map(m => m[1])).size
-  const ranked = [...feedback.slice(0, feedback.indexOf('## Appendix')).matchAll(/^## \d+\. /gm)].length
-  const drafts = readdirSync(join(root, 'docs/feedback/upstream')).filter(f => f.endsWith('.md') && !/FILING-KIT/.test(f)).length
+  const ranked = [...sectionOf(/^## Top \d+ ranked findings/m).matchAll(/^\| (\d+) \| \*\*/gm)].length
+  const drafts = readdirSync(join(root, 'docs/feedback/upstream')).filter(f => /^\d{2}-.*\.md$/.test(f)).length
   const filed = [...feedback.matchAll(/^- Filed: (.*)$/gm)].filter(m => !/not filed/i.test(m[1]) && /https:\/\/github\.com\/[^\s)]+\/issues\/\d+/.test(m[1])).length
   const feedbackCounts = { submissions: need(submissions || null, 'submissions'), submittedOn: '4–5 Sep', findings: need(findings || null, 'findings'), ranked: need(ranked || null, 'ranked'), drafts: need(drafts || null, 'drafts'), filed }
   if (!/submitted on 4–5 September 2026/.test(feedback)) need(null, 'submission dates')
@@ -397,7 +400,8 @@ export function build() {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    build()
+    const at = process.argv.includes('--at') ? process.argv[process.argv.indexOf('--at') + 1] : 'HEAD'
+    build({ at })
     if (!process.argv.includes('--no-render')) await import('./render-progress.mjs').then(m => m.main())
   } catch (error) {
     console.error(error instanceof MissingFact ? error.message : error)
