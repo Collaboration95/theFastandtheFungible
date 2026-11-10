@@ -48,6 +48,13 @@ it('leads with the requested field instead of the transaction already named in t
  const candidate={...exampleCandidate,title:content.title,facets:['StreamCreate','fields']}
  expect(summarizeAnswer('Which StreamCreate field limits the release time?',exampleAnswer,[content],[candidate]).lead?.[0].text).toBe(texts[1])
 })
+it('binds a following answer sentence to the entity in its verified passage',()=>{
+ const body='The North Harbor Council met in September 2026. Members voted to raise the service rate by 25 bp.'
+ const content={...exampleContent,title:'September decision',body,spans:[{id:'p1',text:body}]}
+ const candidate={...exampleCandidate,title:content.title,facets:['meeting','rates']}
+ expect(summarizeAnswer('What did the North Harbor Council change at its last meeting?',exampleAnswer,[content],[candidate]).lead?.[0].text).toBe('Members voted to raise the service rate by 25 bp.')
+ expect(summarizeAnswer('What did the South Valley Council change at its last meeting?',exampleAnswer,[content],[candidate]).lead).toEqual([])
+})
 it('accepts descriptive questions through a matching protocol topic rather than generic prose',()=>{
  expect(topicMatches('Which EscrowCreate field returns the money if the receiver never finishes?', 'XRPL conditional escrow EscrowCancel refund')).toBe(true)
  expect(topicMatches('What transaction cost does the XRP Ledger charge for a small transfer?', 'XRPL transaction fees and drops')).toBe(true)

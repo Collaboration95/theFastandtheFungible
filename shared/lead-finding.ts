@@ -44,8 +44,9 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   const naming = /^(?:which|what)\b/i.test(firstFact)
   const fieldValue = naming && /\b(?:field|flag|header|setting|permission)s?\b/i.test(firstFact)
   const latest = /\b(?:last|latest|recent|recently|today|current(?:ly)?)\b/i.test(firstFact)
-  const yearLimit = new Date().getUTCFullYear()
-  const latestYear = Math.max(0, ...claims.flatMap(c => (c.text.match(/\b20\d{2}\b/g) ?? []).map(Number)).filter(year => year <= yearLimit))
+  // Compare dates within the delivered evidence, so the same input has the
+  // same ranking regardless of the machine's clock.
+  const latestYear = Math.max(0, ...claims.flatMap(c => answerExtracts(c.text).filter(text => !/\b(?:next|scheduled|forecast|projected|expected|planned)\b/i.test(text)).flatMap(text => (text.match(/\b20\d{2}\b/g) ?? []).map(Number))))
   const transactionName = (name: string) => /(?:Create|Finish|Cancel|Set|Delete|Deposit|Withdraw|Bid|Vote|Accept|Fund|Claim|Cash)$|^Set[A-Z]/.test(name)
   const ranked = claims.flatMap((claim, ci) => {
     const context = words(claim.text)
@@ -53,10 +54,13 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     const lower = text.toLowerCase(), tokens = words(text)
     const metadata = candidates.find(c => claim.citations.some(ref => sameSource(c, ref)))
     const titleTerms = words(`${metadata?.title ?? ''} ${metadata?.facets.join(' ') ?? ''}`)
-    const subject = `${metadata?.title ?? ''} ${metadata?.facets.join(' ') ?? ''} ${text}`
+    // A following answer sentence may refer to an entity established earlier
+    // in the same verified passage. Bind its entity to that passage, then rank
+    // the sentence itself for the requested fact.
+    const subject = `${metadata?.title ?? ''} ${metadata?.facets.join(' ') ?? ''} ${claim.text}`
     const opening = firstFact.match(/^[A-Za-z]+\b/)?.[0]
     const entities = (firstFact.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)*\b/g) ?? []).filter(name => !STOP.has(name.toLowerCase()) && name.length > 1 && (name !== opening || /[a-z][A-Z]/.test(name)))
-    if (!topicMatches(firstFact, subject) || entities.length && !entities.some(name => new RegExp(`\\b${name}\\b`, 'i').test(subject))) return { text, claim, score: 0, ci, si }
+    if (!topicMatches(firstFact, subject) || !entities.every(name => new RegExp(`\\b${name}\\b`, 'i').test(subject))) return { text, claim, score: 0, ci, si }
     if (answerBoilerplate(text)) return { text, claim, score: 0, ci, si }
     if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     const overlap = terms.filter(term => tokens.includes(term)).length
@@ -66,14 +70,15 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     const identifiers = text.match(/\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/g) ?? []
     const novelIdentifier = identifiers.some(name => !question.includes(name) && (!fieldValue || !transactionName(name)))
     const numericComparison = /\bto\s+[\d.,]+%?\s+from\s+[\d.,]+/i.test(text)
+    const changeAnswer = /\b(?:change\w*|meeting)\b/i.test(firstFact) && /\b(?:voted|rais(?:e|ed)|reduced|increased|cut)\b/i.test(text) && /\d/.test(text)
     if (/\b(?:I recommend|we recommend|integration recommendation)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     if (/^(?:make |npm |npx |node |python |curl |[A-Z_]+=)/.test(text) && !/\bcommand|CLI|install|invoke\b/i.test(question)) return { text, claim, score: 0, ci, si }
-    if (!overlap && !semanticOverlap && !(contextOverlap && (identifier || numericComparison)) && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return { text, claim, score: 0, ci, si }
+    if (!overlap && !semanticOverlap && !(contextOverlap && (identifier || numericComparison || changeAnswer)) && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return { text, claim, score: 0, ci, si }
     let score = overlap / Math.max(1, terms.length) * 20 + contextOverlap / Math.max(1, terms.length) * 4
     score += semanticOverlap / Math.max(1, expanded.length) * 8
     score += primary.filter(term => tokens.includes(term)).length / Math.max(1, primary.length) * 12
     if (latest) {
-      const year = Math.max(0, ...(text.match(/\b20\d{2}\b/g) ?? []).map(Number).filter(y => y <= yearLimit))
+      const year = Math.max(0, ...((text.match(/\b20\d{2}\b/g) ?? claim.text.match(/\b20\d{2}\b/g)) ?? []).map(Number))
       if (year) score += Math.max(0, 20 - (latestYear - year) * 12)
       if (/\b(?:next|scheduled|forecast|projected|expected|planned)\b/i.test(text)) score -= 20
     }
