@@ -193,7 +193,9 @@ try {
   if (!dry) {
     // The source archive exceeds Node's spawn buffers (166 MB on 11 Nov); stream it through a file.
     execFileSync('git',['archive','--format=tar','-o',join(scratch,'.source.tar'),sha])
-    execFileSync('tar',['-xf',join(scratch,'.source.tar'),'-C',scratch])
+    // -p keeps the archive's 0644/0755 modes: an operator umask of 077 would otherwise make
+    // /app unreadable to the image's UID 1000 (EACCES on start.mjs in cloud attempt 6).
+    execFileSync('tar',['-xpf',join(scratch,'.source.tar'),'-C',scratch])
     rmSync(join(scratch,'.source.tar'))
     gc(['auth','configure-docker',`${region}-docker.pkg.dev`,'--quiet'])
   }
@@ -202,7 +204,7 @@ try {
     const dockerfile = target === 'front' ? 'docker/hosted/front/Dockerfile' : 'docker/hosted/Dockerfile'
     const image = `${registry}/${target}:${sha}`
     if (dry) {
-      console.log(`git archive ${sha} | tar -x -C ${q(scratch)}`)
+      console.log(`git archive --format=tar -o ${q(scratch+'/.source.tar')} ${sha} && tar -xpf ${q(scratch+'/.source.tar')} -C ${q(scratch)}`)
       console.log(['docker','build','--platform=linux/amd64','-f',`${scratch}/${dockerfile}`,...(target==='front'?[]:['--target',target]),'-t',image,scratch].map(q).join(' '))
       console.log(`docker push ${q(image)}`)
       show(['artifacts','docker','images','describe',image,...p,'--format=value(image_summary.digest)'])

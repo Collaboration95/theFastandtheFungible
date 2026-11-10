@@ -24,6 +24,8 @@ describe('hosted operator boundaries',()=>{
    expect(output).toContain("'--tunnel-through-iap' '--quiet'")
    expect(output).toContain('/run/researchagent-startup.done')
    expect(output).toContain('restart --no-block google-startup-scripts.service')
+   // Archive modes, not the operator's private umask, reach the image (UID 1000 must read /app).
+   expect(output).toContain("tar -xpf '/PRIVATE_BUILD_DIRECTORY/.source.tar'")
    // Cloud API lessons: quoted filter values and a quota project for budgets.
    const source=readFileSync('docker/hosted/ops.mjs','utf8')
    expect(source).not.toMatch(/--filter=displayName=[^"]/)
