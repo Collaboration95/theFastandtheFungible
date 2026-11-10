@@ -154,9 +154,11 @@ for (const viewport of [{width:1440,height:900},{width:1280,height:800}]) {
   await page.goto('/')
   const pop=page.locator('#environment-details')
   await expect(pop).toBeVisible()
-  const a=await page.locator('button.ra-ask').boundingBox(), b=await pop.boundingBox()
-  expect(a && b).toBeTruthy()
-  expect(a!.x < b!.x+b!.width && a!.x+a!.width > b!.x && a!.y < b!.y+b!.height && a!.y+a!.height > b!.y).toBe(false)
+  // Measure both boxes in one evaluation so no layout shift can land between the two reads, then again once fonts settle.
+  const overlap = () => page.evaluate(() => { const a = document.querySelector('button.ra-ask')!.getBoundingClientRect(), b = document.querySelector('#environment-details')!.getBoundingClientRect(); return a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y })
+  expect(await overlap()).toBe(false) // first paint
+  await page.evaluate(() => document.fonts.ready)
+  for (let i = 0; i < 8; i++) { expect(await overlap()).toBe(false); await page.waitForTimeout(60) } // settled, and while the layout keeps moving
   const h=await page.locator('h1').first().boundingBox()
   expect(h!.y).toBeGreaterThanOrEqual(0)
   expect(h!.y+h!.height).toBeLessThan(viewport.height)
@@ -164,6 +166,18 @@ for (const viewport of [{width:1440,height:900},{width:1280,height:800}]) {
   await page.screenshot({path:evidencePath(`r5-k/popover-${viewport.width}.png`)})
  })
 }
+test('the first-visit environment note never opens over a deep-linked result', async ({ page }) => {
+ const { readFile } = await import('node:fs/promises')
+ const run = JSON.parse(await readFile('src/fixtures/uc/uc2.json', 'utf8'))
+ await page.route(`**/runs/${run.runId}/events`, route => route.fulfill({ contentType: 'text/event-stream', body: ': heartbeat\n\n' }))
+ await page.route(`**/runs/${run.runId}`, route => route.fulfill({ json: run }))
+ await page.goto(`/?run=${run.runId}&pace=real`)
+ await expect(page.getByRole('region', { name: 'Research answer' })).toBeVisible()
+ await page.waitForTimeout(500)
+ await expect(page.locator('#environment-details')).toHaveCount(0)
+ await expect(page.getByRole('button', { name: /Demo · simulated payments/ })).toBeVisible() // the indicator itself stays
+})
+
 test('Lane K decline explains three policy decisions', async ({page}) => {
  const {readFile}=await import('node:fs/promises')
  const base=JSON.parse(await readFile('src/fixtures/uc/uc2.json','utf8'))
