@@ -12,12 +12,17 @@ import Answer from '../src/components/Answer.js'
 import AnchorStatus from '../src/components/AnchorStatus.js'
 import ChatThread from '../src/components/ChatThread.js'
 import { findingText } from '../shared/finding-text.js'
+import { leadFinding } from '../shared/lead-finding.js'
+import Passage from '../src/components/Passage.js'
 it('documents a small glossary and retrieves challenge and injection synonyms without embeddings', async () => {
  const base=miniCorpus.articles[0]
  const articles=[{...base,articleId:'challenge',title:'x402 payment-required challenge headers',tags:['x402','payment-required'],abstract:'HTTP payment challenge anatomy.',body:'The server returns a payment-required header.'},{...base,articleId:'safety',title:'Where should agent spending controls live?',tags:['authorization','spending-controls'],abstract:'Wallet authorization boundaries.',body:'Deterministic authorization protects wallets.'}]
  const index=await buildIndex(articles)
  expect(expandProtocolQuery('x402 402 response')).toContain('payment-required')
  expect(expandProtocolQuery('What did the central bank change?')).not.toContain('decentralized identifier')
+ expect(expandProtocolQuery('Which transaction sets a DID?')).toContain('didset')
+ expect(topicMatches('Which transaction sets a DID?', 'DIDSet transactions')).toBe(true)
+ expect(expandProtocolQuery('automated market maker deposit')).toContain('ammdeposit')
  expect((await searchIndex(index,'What does an x402 402 response contain?',5)).ranked[0]?.articleId).toBe('challenge')
  expect((await searchIndex(index,'How can I stop a prompt-injected AI agent from draining its wallet?',5)).ranked[0]?.articleId).toBe('safety')
 })
@@ -56,6 +61,21 @@ it('uses terminal heading and a pending anchor label, and hides fixture model ID
 })
 it('cleans display markers while leaving source bytes to callers',()=>{
  expect(findingText('## A finding [1] [2].')).toBe('A finding.')
+})
+it('keeps a lowercase conditional premise when an authority prefix is removed',()=>{
+ const text='According to the source, if a Stream does not satisfy every required permission and timing constraint for this particular account and asset combination then the transaction remains blocked for that account, because the network must check the entire condition before allowing it to proceed in the same validated ledger.'
+ const claim={...exampleAnswer.claims[0],text}
+ expect(leadFinding('Which transaction allows a Stream?', [claim])).toEqual([])
+})
+it('shows the clean cited passage with the full source under a separate disclosure',()=>{
+ const text='## The Stream limit is **12** objects [1].'
+ const content={...exampleContent,body:`Introductory material. ${text} Other material.`,spans:[{id:'p1',text}]}
+ const candidate={...exampleCandidate,tier:'FREE' as const}
+ const citation={profileId:content.profileId,resourceId:content.resourceId,version:content.version,spanId:'p1'}
+ const html=renderToStaticMarkup(createElement(Passage,{candidate,content,citation,onClose:()=>{}}))
+ expect(html).toContain('<mark>The Stream limit is 12 objects.</mark><details>')
+ expect(html).toContain('<summary>Read full source</summary>')
+ expect(content.body).toContain('**12**')
 })
 
 it('bounds a malformed single-token lead and conclusion without changing the delivered bytes',()=>{

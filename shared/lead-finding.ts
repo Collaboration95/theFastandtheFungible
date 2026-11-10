@@ -15,7 +15,7 @@ function answerExtracts(text: string): string[] {
   return sentences(text).flatMap(raw => {
     const sentence = raw.replace(/^According to [^,]{1,120},\s+/, '')
     if (sentence.split(/\s+/).length <= 40) return [sentence]
-    if (/^(?:If|Unless|When|Although|Because|Before|After|While|Only)\b/.test(sentence)) return []
+    if (/^(?:if|unless|when|although|because|before|after|while|only)\b/i.test(sentence)) return []
     const cuts = [...sentence.matchAll(/,\s+(?:after|before|while|because|which|with)\b|;\s+|\s+—\s+/g)].map(m => m.index!)
     const cut = cuts.reverse().find(i => sentence.slice(0, i).split(/\s+/).length <= 40 && !/\b(?:not|no|never|unless|except|only|without|cannot|rather)\b|n't\b/i.test(sentence.slice(i)))
     return cut === undefined ? [] : [sentence.slice(0, cut)]
