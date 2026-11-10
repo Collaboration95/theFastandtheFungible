@@ -693,7 +693,7 @@
   "v3": {
     "N": 20,
     "buyAndCite": 19,
-    "answersIt": 10,
+    "answersIt": 11,
     "negativeBuys": 0,
     "violations": 0,
     "verificationFailures": 0,
@@ -706,24 +706,24 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "A transaction can be rejected for an insufficient local fee or queued when it does not meet the current open-ledger cost.",
+            "text": "The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish.",
             "claim": {
-              "id": "evidence-[\"xrpl-fees\",\"v1\",\"p2\"]",
-              "text": "Servers apply a local load threshold and an open-ledger threshold. A transaction can be rejected for an insufficient local fee or queued when it does not meet the current open-ledger cost. Paying a fee is not paying a validator. Conditional EscrowFinish also depends on fulfillment size, so estimating every escrow operation as a plain Payment would understate its requirements. [1]",
+              "id": "evidence-[\"xrpl-fees\",\"v1\",\"p1\"]",
+              "text": "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load. The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish. A quoted article price, a token transfer charge and the XRP network fee are different costs; none should be inferred from another. [1]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
                   "resourceId": "xrpl-fees",
                   "version": "v1",
-                  "spanId": "p2"
+                  "spanId": "p1"
                 }
               ]
             }
           }
         ],
-        "conclusion": "A transaction can be rejected for an insufficient local fee or queued when it does not meet the current open-ledger cost. XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load. The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish. A quoted article price, a token transfer charge and the XRP network fee are different costs; none should be inferred from another. Servers apply a local load threshold and an open-ledger threshold. An informative fee experiment should record the transaction type, offered Fee, validated result and observed network state.",
+        "conclusion": "The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish. XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load. A quoted article price, a token transfer charge and the XRP network fee are different costs; none should be inferred from another. Servers apply a local load threshold and an open-ledger threshold. A transaction can be rejected for an insufficient local fee or queued when it does not meet the current open-ledger cost. An informative fee experiment should record the transaction type, offered Fee, validated result and observed network state.",
         "buyAndCite": true,
-        "answersIt": 0,
+        "answersIt": 1,
         "purchases": 1,
         "spentMinor": 40,
         "verificationOk": true,
@@ -916,6 +916,21 @@
                   "resourceId": "xrpl-escrow",
                   "version": "v1",
                   "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true.",
+            "claim": {
+              "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p1\"]",
+              "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-escrow",
+                  "version": "v1",
+                  "spanId": "p1"
                 }
               ]
             }
@@ -1320,22 +1335,22 @@
             }
           },
           {
-            "text": "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction.",
+            "text": "MAS's payment-services framework includes digital payment token services.",
             "claim": {
-              "id": "evidence-[\"xrpl-singapore\",\"v1\",\"p1\"]",
-              "text": "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. [1] [2] [3]",
+              "id": "evidence-[\"xrpl-compliance-mas-psa\",\"v1\",\"p2\"]",
+              "text": "MAS's payment-services framework includes digital payment token services. Its April 2024 expansion brought DPT custody and certain facilitation activities into scope, including facilitation without possession of the tokens or money. Applicability therefore cannot be dismissed solely because a service describes itself as non-custodial. Licensing, exemptions and transition arrangements require reading the actual activity and current legal instruments together. [1][2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-singapore",
+                  "resourceId": "xrpl-compliance-mas-psa",
                   "version": "v1",
-                  "spanId": "p1"
+                  "spanId": "p2"
                 }
               ]
             }
           }
         ],
-        "conclusion": "Singapore's Payment Services Act regulates specified payment services according to the activity performed, rather than the technology's marketing label. Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. MAS's payment-services framework includes digital payment token services. According to MAS, MAS Notice PSN02 requires covered digital payment token service providers to maintain AML and counter-terrorist-financing controls.",
+        "conclusion": "Singapore's Payment Services Act regulates specified payment services according to the activity performed, rather than the technology's marketing label. MAS's payment-services framework includes digital payment token services. Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. According to MAS, MAS Notice PSN02 requires covered digital payment token service providers to maintain AML and counter-terrorist-financing controls.",
         "buyAndCite": true,
         "answersIt": 1,
         "purchases": 3,
@@ -2263,7 +2278,7 @@
             }
           }
         ],
-        "conclusion": "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%. I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. The 18 September move represented the largest single-session increase in the benchmark tenor since the Bank of Japan exited its negative-rate policy in March 2024.",
+        "conclusion": "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%. The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. The 10-year JGB yield closed at 2.05% on 17 September 2026, 2.14% on 18 September 2026 (+9 bp) and 2.19% on 22 September 2026, according to closing quotes published by the Japan Bond Trading Co. and cross-checked against data from the Ministry of Finance. No unscheduled operations were announced by the Bank of Japan on either date.",
         "buyAndCite": false,
         "answersIt": 0,
         "purchases": 0,

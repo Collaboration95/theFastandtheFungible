@@ -8,7 +8,7 @@ question and miss is retained; neither scorer nor gold phrases were changed.
 
 Both sides use the merged C3 corpus (#425), with identical bank hashes and no
 corpus edits by K4. Baseline: `9dfa5212edf17ef0553c898d30639eefc18c95d6`
-(C3 + HM). After: `4e2596bff3b78a7db469b7dc39c17be0a1d43e74`, rebased on
+(C3 + HM). After: `4aec5f658a95847a1c2ead722819a575a584d688`, rebased on
 `9e161c84` (also HG, the environment overlay fix, the standalone key-reveal
 example and W3 hire recovery). Hosted execution is off. Corpus/writer bytes are identical between these
 sources. These matched local baselines differ from K3's earlier published runs.
