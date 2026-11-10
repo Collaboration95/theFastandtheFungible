@@ -8,9 +8,9 @@ question and miss is retained; neither scorer nor gold phrases were changed.
 
 Both sides use the merged C3 corpus (#425), with identical bank hashes and no
 corpus edits by K4. Baseline: `9dfa5212edf17ef0553c898d30639eefc18c95d6`
-(C3 + HM). After: `0ae729e5d09de9764092043ed4001e691b33f22a`, rebased on
-`d63049ac2aea94a2a9d6132da825c095af143a74` (also HG and the environment overlay
-fix). Hosted execution is off. Corpus/writer bytes are identical between these
+(C3 + HM). After: `3f0aa1e236c466c3209952106da96afacda1a1bc`, rebased on
+`9e161c84` (also HG, the environment overlay fix, the standalone key-reveal
+example and W3 hire recovery). Hosted execution is off. Corpus/writer bytes are identical between these
 sources. These matched local baselines differ from K3's earlier published runs.
 
 | Development bank | Buy and cite before → after | Lead `answersIt` before → after | Negative purchases |
