@@ -1,4 +1,4 @@
-# Local release rehearsal, 10 Nov 2026
+# Local release rehearsal, 10–11 Nov 2026
 
 Lane R, fixture providers and simulated settlement only. No remote tag push,
 release creation, registry publication, live model call or Testnet purchase.
@@ -120,3 +120,51 @@ Publication correctly stopped; this still has a non-performance failure.
 [summary/hash](node26-locked-soak-summary.json), [gate](node26-locked-full-gate.json),
 [publisher refusal](node26-locked-publisher.log),
 [coverage failure](node26-locked-coverage-gate.log).
+
+## Final locked rehearsal and admission proof, 11 Nov
+
+Source `22e8ec6e6e1cf5cdbbfb6027be6c3472e2b853b1`, temporary annotated
+`v1.0.3-rc.1200`, Node 22.23.4, based on main `9e161c84` (GF, hire/recovery and
+the standalone example included). The complete coverage preflight passed all
+component floors: 190 files, 1,542 tests and one expected no-build skip.
+The publisher then ran the default full gate and full all-architecture acceptance.
+
+| Stage | Seconds | Result |
+|---|---:|---|
+| Full local gate | 120.058 | 19/19 PASS |
+| Full final acceptance | 651.225 | FAIL: RSS slope only |
+| Full 2,000-ask soak | 358.095 | RSS slope 5.687058 / 5 MiB per 100 asks |
+| Coverage / floors | 83.343 / 0.049 | PASS |
+| 200-episode chaos | 292.603 | PASS, zero violations |
+| arm64 / x64 DMG builds | 22.616 / 20.964 | PASS |
+| Native arm64 recovery | 19.764 | PASS |
+| Release artifacts / installed consumers | 21.909 / 13.513 | PASS |
+
+Acceptance stages overlap after the isolated soak; their durations do not sum.
+All **28 non-performance acceptance rows passed**. The soak was valid: 200
+warmups, 2,000 measured asks, zero failed, passing burst, 20 restarts. Median
+growth 90.828 / 100 MiB, max 803.016 / 1,536 MiB, loop p99 29.475 / 50 ms and
+latency drift -0.773 / 250 ms passed. Starting load was 6.50 / 7.23 / 6.77.
+RSS slope failed on this quieter host too; host contention is not an established
+cause. No threshold was changed, and this is **not release acceptance**.
+
+The actual publisher exited nonzero before tag push or release creation.
+[Independent read-only verification](final-non-performance-proof.json) checked
+the unchanged real receipts: clean SHA/tree and annotated tag identity, all 19
+gate steps and 28 other acceptance rows, all package/consumer/verifier hashes,
+both DMG sizes/hashes, and all 14 staged package/DMG/alias metadata files. It
+called strict `admitLocalRelease` and asserted rejection of the failed acceptance;
+it did not edit the acceptance or invent passing jobs. The remote rehearsal tag
+was absent. [Verifier source](final-verifier.mjs.txt) reproduces these checks.
+
+The owner expressly permits merging R with performance-only misses after these
+checks and refusal evidence. Real release publication remains blocked until full
+acceptance passes; a quiet host alone is not a passing memory measurement.
+All six package/metadata rehearsal versions, including the MCPB download URL,
+are restored to 1.0.2 before merge, and the local throwaway tag is removed.
+
+[Full acceptance](final-acceptance.json), [gate](final-full-gate.json),
+[raw soak](final-soak.json.gz), [summary/hash](final-soak-summary.json),
+[actual publisher refusal](final-publisher-refusal.log),
+[package manifest](final-manifest.json), [consumers/verifiers](final-consumers.json),
+[coverage floors](final-coverage-gate.log), [chaos](final-chaos.log).

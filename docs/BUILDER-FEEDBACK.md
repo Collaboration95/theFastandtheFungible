@@ -1184,3 +1184,11 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** the background worker resumes the saved obligation; the CLI retries delivery with the same key and original signed inbound blob for up to 180 seconds. The payer still refuses new signing while a previous sequence is ambiguous.
 - **Suggested fix:** agent-to-agent x402 examples should separate temporary response failure from payment failure and expose a durable delivery retry handle.
 - **Mainnet impact:** the same sequencing/response distinction would matter for a real shared signer; no mainnet measurement or transaction was made. No timeout or safety threshold was loosened.
+
+## 2026-11-11 — Large GitHub commit responses overflow local status capture (local tooling)
+
+- **Class / severity:** internal tooling incident reported by GF; medium shipping blocker, not an XRPL or x402 defect.
+- **Evidence:** `scripts/local-gate.test.mjs` exercises pending/success/failure publication with 2 MiB fixture commit responses and a 2 MiB Git blob; R #433. GF reported `spawnSync gh ENOBUFS` after busy-main merges exceeded the default capture buffer.
+- **Workaround / fix:** use a 64 MiB buffer for every Git/GitHub capture in the local gate, including failure-status reporting. Requesting only needed SHA/tree fields is another bounded-output approach. Keep remote identity and source-race checks intact.
+- **Suggested tooling improvement:** command wrappers should set explicit output limits and test large responses alongside exact-source status admission.
+- **Mainnet impact:** none observed; the change affects local verification/status publication, not ledger signing, spending authority or payment execution.

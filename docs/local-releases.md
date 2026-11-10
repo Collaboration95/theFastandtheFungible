@@ -55,3 +55,9 @@ Cross-built x64 packaging does not establish native Intel runtime acceptance.
 Linux/container boot, supported Python-version checks, native Intel execution,
 real Testnet probes and owner signing/notarization are separate evidence classes.
 Do not claim those from an offline fixture receipt. Needs-human work stays in #265.
+
+The [10–11 Nov rehearsal](evidence/local-release-nov10/README.md) passed every
+non-performance stage and demonstrated refusal on failed RSS budgets. Its
+owner-authorized PR merge exception does not apply to publication: the actual
+v1.1.0 release must pass full acceptance, including memory budgets. A quiet host
+alone is not evidence that those budgets pass.
