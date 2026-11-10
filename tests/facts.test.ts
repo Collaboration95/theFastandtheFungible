@@ -15,22 +15,31 @@ describe('facts: one source for every number a judge reads', () => {
     expect(JSON.parse(read('docs/submission/facts.json')).facts).toEqual(data.facts)
   })
 
-  it('checks published aggregates and markers without opening held-out questions or results in development mode', () => {
+  it('development mode reads used banks (v1–v5) and never opens an unmeasured one', () => {
+    // v5 was measured on 10 Nov 2026, so its results are development data: the dev-only build must equal the full build.
     const code = `
       import fs from 'node:fs';
       import { syncBuiltinESMExports } from 'node:module';
+      import { heldOutBankPath } from './scripts/local-gate-banks.mjs';
       const original = fs.readFileSync;
+      const relative = path => String(path).replace(process.cwd() + '/', '');
+      let reads = 0;
       fs.readFileSync = function(path, ...args) {
-        if (/(?:eval\\/questions\\/judge-xrpl\\.v[45]|docs\\/evidence\\/v[45]-heldout\\/)/.test(String(path))) throw Error('Forbidden held-out read');
+        if (heldOutBankPath(relative(path))) throw Error('Forbidden held-out read');
+        if (/docs\\/evidence\\/v5-heldout\\/v5\\/results\\.json$/.test(String(path))) reads++;
         return original.call(this, path, ...args);
       };
       syncBuiltinESMExports();
       process.env.RA_DEV_BANKS_ONLY = '1';
       process.argv[1] = 'development-fact-read-audit';
       const { build, markedFiles } = await import('./scripts/facts.mjs');
-      if (!build().facts.heldout || !markedFiles().includes('README.md')) throw Error('Missing aggregate or marker checks');
+      const facts = build().facts;
+      if (!facts.heldout || !markedFiles().includes('README.md')) throw Error('Missing aggregate or marker checks');
+      if (!reads) throw Error('Used bank v5 results were not read in development mode');
+      console.log(JSON.stringify(facts));
     `
-    expect(() => execFileSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8' })).not.toThrow()
+    const dev = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8' }).trim().split('\n').pop()!)
+    expect(dev).toEqual(data.facts)
   })
 
   it('derives counts from the generated progress data, not by hand', () => {

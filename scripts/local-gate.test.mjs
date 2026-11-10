@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path'
 import { MAX_CPUS, parseArgs, classify, makeSteps, inputsFor, stepKey, scriptClosure, cacheEntry, changes, snapshot, sameSource,
   publishStatus, originRepo, runGraph, command, fixtureEnv, newScope, git, gh, SCHEMA, main, checkout } from './local-gate.mjs'
 import { loaderPrefix, buildPrefix } from './local-gate-smoke.mjs'
+import { USED_BANKS_THROUGH, heldOutBankPath, heldOutBankTest } from './local-gate-banks.mjs'
 
 async function fixture(run) {
   const scope = await newScope(), root = scope.tempDir('ra-local-gate-test-')
@@ -14,19 +15,42 @@ async function fixture(run) {
   finally { await scope.close(); assert.equal(existsSync(root), false) }
 }
 
-test('development-only captured checkout omits synthetic held-out content but retains existence metadata', async () => fixture(async ({ root, scope, write, commit }) => {
-  const bank = 'eval/questions/judge-xrpl.v5.json'
-  const result = 'docs/evidence/v5-heldout/v5/results.json'
-  write(bank, 'synthetic fixture content, not a real bank'); write(result, 'synthetic result question text'); commit()
+test('development-only captured checkout blanks an unmeasured bank but keeps used banks (v1–v5) readable', async () => fixture(async ({ root, scope, write, commit }) => {
+  const unreleased = 'eval/questions/judge-xrpl.v6.json', unreleasedResult = 'docs/evidence/v6-heldout/v6/results.json'
+  const used = 'eval/questions/judge-xrpl.v5.json', usedResult = 'docs/evidence/v5-heldout/v5/results.json'
+  write(unreleased, 'synthetic fixture content, not a real bank'); write(unreleasedResult, 'synthetic result question text')
+  write(used, 'synthetic used bank'); write(usedResult, 'synthetic used result'); commit()
   const old = process.env.RA_DEV_BANKS_ONLY
   try {
     process.env.RA_DEV_BANKS_ONLY = '1'
     const work = checkout(root, snapshot(root, scope), scope)
-    assert.equal(existsSync(join(work, bank)), true)
-    assert.equal(readFileSync(join(work, bank), 'utf8'), '')
-    assert.equal(readFileSync(join(work, result), 'utf8'), '')
+    assert.equal(existsSync(join(work, unreleased)), true)
+    assert.equal(readFileSync(join(work, unreleased), 'utf8'), '')
+    assert.equal(readFileSync(join(work, unreleasedResult), 'utf8'), '')
+    assert.equal(readFileSync(join(work, used), 'utf8'), 'synthetic used bank')
+    assert.equal(readFileSync(join(work, usedResult), 'utf8'), 'synthetic used result')
   } finally { if (old === undefined) delete process.env.RA_DEV_BANKS_ONLY; else process.env.RA_DEV_BANKS_ONLY = old }
 }))
+
+test('held-out bank predicate: v1–v5 are used, any later version stays unreleased', () => {
+  for (const version of [1, 2, 3, 4, 5]) {
+    assert.equal(heldOutBankPath(`eval/questions/judge-xrpl.v${version}.json`), false, `v${version}`)
+    assert.equal(heldOutBankPath(`eval/questions/judge-xrpl.v${version}-negatives.json`), false)
+    assert.equal(heldOutBankPath(`docs/evidence/v${version}-heldout/v${version}/results.json`), false)
+    assert.equal(heldOutBankTest(`tests/judge-bank-v${version}.test.ts`), false)
+  }
+  assert.equal(USED_BANKS_THROUGH, 5)
+  for (const version of [6, 7, 10, 12]) {
+    assert.equal(heldOutBankPath(`eval/questions/judge-xrpl.v${version}.json`), true, `v${version}`)
+    assert.equal(heldOutBankPath(`eval/questions/judge-xrpl.v${version}-negatives.json`), true)
+    assert.equal(heldOutBankPath(`docs/evidence/v${version}-heldout/v${version}/results.json`), true)
+    assert.equal(heldOutBankTest(`tests/judge-bank-v${version}.test.ts`), true)
+  }
+  for (const path of ['eval/questions/judge-xrpl.v3-dev.json', 'eval/questions/bank.v2.json', 'docs/evidence/k5-dev/README.md', 'tests/judge-bank-v6.test.mjs', 'README.md']) {
+    assert.equal(heldOutBankPath(path), false, path)
+    assert.equal(heldOutBankTest(path), false, path)
+  }
+})
 
 test('strict options include cold verification, optional exact target, and plan cannot publish', () => {
   assert.deepEqual(parseArgs(['--base', 'HEAD^', '--full', '--no-cache', '--publish', 'a'.repeat(40)]), { base: 'HEAD^', full: true, plan: false, publish: true, noCache: true, target: 'a'.repeat(40) })
@@ -294,7 +318,7 @@ test('development-only bank access is explicit in the fixture environment and ca
   try {
     process.env.RA_DEV_BANKS_ONLY = '1'
     assert.equal(fixtureEnv('/tmp/synthetic-k4').RA_DEV_BANKS_ONLY, '1')
-    const bank = 'eval/questions/judge-xrpl.v5.json'
+    const bank = 'eval/questions/judge-xrpl.v6.json'
     const identities = new Map([[bank, '100644:synthetic-bank-identity']])
     const neverRead = () => { throw Error('Bank content must not be read') }
     assert.deepEqual(scriptClosure([bank], neverRead, [bank]), [bank])

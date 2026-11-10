@@ -15,7 +15,7 @@ it('publishes sourced explainers through the ordinary signed delivery and public
  expect(publisher.verification?.status).toBe('unverified')
  expect(publisher.bio).toBe('team-authored explainer · sources cited · not an independent writer · Testnet')
  const articles = corpus.articles.filter(a => a.publisherSlug === publisher.slug)
- expect(articles).toHaveLength(161)
+ expect(articles).toHaveLength(179)
  const journal = new PublisherJournal(':memory:')
  try {
   const manifests = createManifests(journal), keys = simulatedKeys(publisher.slug)
@@ -29,7 +29,7 @@ it('publishes sourced explainers through the ordinary signed delivery and public
    }
    const manifest = manifests.manifestFor({ publisher: { ...publisher, wallet: keys.wallet, pubKey: keys.publicKey }, keys }, article, 0)!
    expect(verifyManifestSignature(manifest)).toBe(true)
-   if (article.publishedAt === '2026-11-10') expect(manifest.claims.some(c => c.id === 'p1:named-source' && c.covers)).toBe(true)
+   if (['2026-11-10', '2026-11-11'].includes(article.publishedAt)) expect(manifest.claims.some(c => c.id === 'p1:named-source' && c.covers)).toBe(true)
    expect(verifyDelivery(article.body, article.passages, manifests.saltsFor(article), manifest).ok).toBe(true)
    const hit = toSearchHit(article, 0, 'keyword', manifest)
    expect(hit.sources).toEqual(article.sources)
@@ -65,6 +65,47 @@ it('keeps the product FAQ additions answer-first, bounded, cited and in the exis
     expect(url.pathname).toMatch(/\/blob\/[a-f0-9]{40}\//)
    }
   }
+ }
+})
+
+// C5 coverage additions are written from primary documents. They are informed by the used
+// (development) v5 misses and judge questions in review notes, not by an unopened bank.
+it('keeps the C5 coverage additions answer-first, bounded, cited to primary documents and disclosed', async () => {
+ const pin = JSON.parse(readFileSync('docs/evidence/c5-coverage/corpus-golden.json', 'utf8')) as { additions: string[] }
+ const corpus = await loadWriterCorpus()
+ const articles = corpus.articles.filter(a => pin.additions.includes(a.articleId))
+ expect(articles).toHaveLength(18)
+ expect(new Set(pin.additions).size).toBe(18)
+ const hosts = ['xrpl.org', 'github.com', 'ripple.com', 'ap2-protocol.org', 'www.govinfo.gov', 'www.mas.gov.sg', 'www.fatf-gafi.org']
+ for (const article of articles) {
+  expect(article.publisherSlug).toBe('team-xrpl-explainers')
+  expect(article.writerSlug).toBe('team-xrpl-explainers')
+  expect(article.tier).toBe('PAID')
+  expect(article.priceMinor).toBe(40)
+  expect(article.publishedAt).toBe('2026-11-11')
+  expect(countWords(article.body)).toBeGreaterThanOrEqual(150)
+  expect(countWords(article.body)).toBeLessThanOrEqual(300)
+  expect(article.passages).toHaveLength(4)
+  expect(article.body).toBe(article.passages.map(p => p.text).join('\n\n'))
+  expect(article.passages[0].text).toMatch(/^According to /)
+  expect(article.passages[3].text).toContain('Author interpretation:')
+  expect(article.passages[3].text).toContain('Sources accessed 11 November 2026.')
+  for (const passage of article.passages) {
+   const citations = [...passage.text.matchAll(/\[(\d+)\]/g)].map(m => Number(m[1]))
+   expect(citations.length).toBeGreaterThan(0)
+   expect(citations.every(n => n >= 1 && n <= article.sources!.length)).toBe(true)
+  }
+  // Every listed source is cited, and none is an internal repository path or a search page.
+  article.sources!.forEach((source, index) => {
+   const url = new URL(source.url)
+   expect(hosts, article.articleId).toContain(url.hostname)
+   expect(source.accessedAt).toBe(article.publishedAt)
+   expect(article.body).toContain('[' + String(index + 1) + ']')
+   if (url.hostname === 'github.com' && url.pathname.startsWith('/coinbase/')) expect(url.pathname).toMatch(/\/blob\/[a-f0-9]{40}\//)
+  })
+  // Plain reader text: no repository path, filename or engineering annotation (the paid-body lint, repeated here).
+  expect(article.body).not.toMatch(/\b(?:src|server|shared|publisher|packages|scripts|tests|eval|docs|data|desktop|mcp|sdk)\/[\w.:/-]*/i)
+  expect(article.body).not.toMatch(/\b[\w-]+\.(?:tsx?|jsx?|mjs|cjs|md|jsonl?|py|sql)\b/i)
  }
 })
 

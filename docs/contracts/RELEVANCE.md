@@ -3,7 +3,11 @@
 `shared/relevance.ts` holds the small XRPL/x402 glossary. It expands protocol
 abbreviations, transaction families, HTTP 402 challenge terms, prompt injection
 and payment finality. Authorization and receipt-verification aliases also cover
-ordinary budget-policy and independent-ledger-verification wording. Expansion supplies search vocabulary, never answer text.
+ordinary budget-policy and independent-ledger-verification wording. A C5 block names the topics of the sourced
+explainers added on 11 November (escrow conditions, Tickets, validation quorum, order flags, partial payments,
+issued-currency codes, stablecoin frameworks, AP2, facilitators, deposit authorization, Testnet); its triggers are
+specific phrases and identifiers, never a bare everyday word such as ticket, mandate, faucet or trading fee.
+Expansion supplies search vocabulary, never answer text.
 Original question words remain in the relevance denominator. Keyword search keeps
 its existing title (3) and facet (2) boosts and absolute BM25 promise scale.
 Glossary word sets are prepared once per process, and each publisher index prepares
@@ -39,15 +43,20 @@ local legacy policy; federated free input always requires a signed proof.
 
 ## Development verification without held-out access
 
-`RA_DEV_BANKS_ONLY=1 npm run gate` excludes the held-out-bank schema test from
-Vitest collection. Its captured checkout replaces held-out question content with
-empty existence markers, and its helper scanner refuses to read those paths.
-Raw held-out evidence packets are omitted too. Fact checks use the committed
-public aggregates for held-out values, without deriving them from raw results;
-non-held-out derivation and all presentation-marker checks remain enabled.
-Cache inputs retain their Git blob identities. The default gate is unchanged. The local-gate runtime receipt
-and content cache key record this restriction so this run cannot be reused as a
-full-bank schema check. This is for lanes explicitly forbidden to read held-out
+`RA_DEV_BANKS_ONLY=1 npm run gate` withholds only a judge bank that has not been
+measured yet. v1–v5 are used development data (v5 was run once on 10 Nov 2026), so
+their questions, results and schema tests are read as usual. `scripts/local-gate-banks.mjs`
+holds the one rule: `USED_BANKS_THROUGH` is 5, and any higher bank version is unreleased.
+For such a bank the dev-only gate excludes its schema test (`tests/judge-bank-vN.test.ts`)
+from Vitest collection, replaces its question and result files with empty existence
+markers in the captured checkout, and its helper scanner refuses to read them. Raw
+evidence packets of that bank are omitted too. Fact checks fall back to the committed
+public aggregates for an unmeasured bank, without deriving them from raw results;
+non-held-out derivation and all presentation-marker checks remain enabled. Bump
+`USED_BANKS_THROUGH` in the same change that commits a new bank's measurement.
+Cache inputs retain their Git blob identities. The default gate is unchanged. The local-gate
+runtime receipt and content cache key record this restriction so this run cannot be reused
+as a full-bank schema check. This is for lanes explicitly forbidden to read held-out
 questions. It does not disable any engine, policy, proof, browser or hard-gate test.
 
 `scripts/k4-dev-measure.ts <output-directory>` allowlists v1, v3, v3-dev and

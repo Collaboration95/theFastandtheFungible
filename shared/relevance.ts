@@ -9,8 +9,8 @@ export const PROTOCOL_GLOSSARY = [
   ['finality', 'final', 'settled', 'validated ledger', 'validation', 'settlement'],
   ['trust line', 'trust lines', 'trustline', 'TrustSet', 'owner reserve', 'account reserves'],
   ['escrow', 'EscrowCreate', 'EscrowFinish', 'EscrowCancel'],
-  ['did', 'decentralized identifier', 'DIDSet', 'DIDDelete'],
-  ['amm', 'automated market maker', 'AMMCreate', 'AMMDeposit', 'AMMWithdraw', 'AMMBid', 'AMMVote', 'AMMDelete'],
+  ['did', 'decentralized identifier', 'DID document', 'DIDDocument', 'DIDSet', 'DIDDelete'],
+  ['amm', 'automated market maker', 'LP token', 'LP tokens', 'AMMCreate', 'AMMDeposit', 'AMMWithdraw', 'AMMBid', 'AMMVote', 'AMMDelete'],
   ['dex', 'decentralized exchange', 'OfferCreate', 'OfferCancel'],
   ['credential', 'credentials', 'CredentialCreate', 'CredentialAccept', 'CredentialDelete'],
   ['transaction cost', 'transaction fee', 'fees', 'drops', 'base fee'],
@@ -24,6 +24,18 @@ export const PROTOCOL_GLOSSARY = [
   ['payment channel', 'payment channels', 'micropayments', 'PaymentChannelCreate', 'PaymentChannelFund', 'PaymentChannelClaim'],
   ['travel rule', 'fatf', 'vasps', 'originator and beneficiary information'],
   ['key reveal', 'keyreveal', 'key delivery', 'reveal key', 'ciphertext', 'encryption key'],
+  // C5 (11 Nov): vocabulary for the sourced explainers added in the same change. Names only; it never adds evidence.
+  ['crypto-condition', 'crypto condition', 'conditional escrow', 'PREIMAGE-SHA-256', 'preimage', 'fulfillment', 'hash lock', 'hash locked'],
+  ['TicketCreate', 'TicketSequence', 'ticket limit', 'xrpl tickets'],
+  ['validation quorum', 'trusted validators', 'unique node list', 'UNL', 'negative UNL', 'validation threshold'],
+  ['fill or kill', 'immediate or cancel', 'order flags', 'tfFillOrKill', 'tfImmediateOrCancel', 'tfPassive', 'tfSell'],
+  ['tfPartialPayment', 'DeliverMax', 'DeliverMin', 'SendMax', 'delivered amount'],
+  ['hex currency code', 'nonstandard currency', 'issued currency'],
+  ['stablecoin framework', 'payment stablecoin', 'GENIUS Act', 'single currency stablecoin', 'redemption at par', 'stablecoin issuer'],
+  ['agent payments protocol', 'AP2', 'payment mandate', 'checkout mandate', 'verifiable digital credentials'],
+  ['facilitator', 'verify and settle', 'settlement response', 'payment payload'],
+  ['deposit authorization', 'DepositAuth', 'DepositPreauth', 'preauthorized deposits'],
+  ['testnet', 'altnet', 'test network'],
 ] as const
 const STOP = new Set('a an the of at in on to for and or with its it is are was were be did does do what how why when which who can will should from about this that their have has had by as into before after today must need needs lets let get does every just than more much many each actually use used using i my me an agent please tell work know server no independent accessible evidence missing dated figures still unanswered happen happens'.split(' '))
 export const topicWords = (text: string): string[] => [...new Set((text.normalize('NFKC').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(w => w.length > 1 && !STOP.has(w)).map(w => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)))]
