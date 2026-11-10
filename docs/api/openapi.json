@@ -1311,6 +1311,148 @@
         },
         "x-internal": true
       }
+    },
+    "/api/runs/{id}/proof": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Whether a finished decline can be shared as a proof of refusal, and the proof if it was",
+        "operationId": "get_api_runs__id__proof",
+        "description": "Owner route (hosted: the visitor's own runs only; a foreign id is 404). Returns eligible, a plain-English reason when not, and the proof path once shared. Reads only; nothing is published.",
+        "responses": {
+          "200": {
+            "description": "{ eligible, code?, message?, proof?: { id, path, createdAt } }"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          }
+        },
+        "x-internal": true
+      },
+      "post": {
+        "summary": "Publish the sanitized, immutable proof of refusal for a finished, anchored, no-purchase run",
+        "operationId": "post_api_runs__id__proof",
+        "description": "Explicit share. One proof per run: a second call returns the first. 409 with a code (not_finished, purchased, answered, simulated, anchor_pending, anchor_missing, private_question, too_large, verification_failed) when the run cannot be shared; 429 proof_limit when the session's daily shares are used.",
+        "responses": {
+          "200": {
+            "description": "The proof already exists for this run."
+          },
+          "201": {
+            "description": "The proof was created. Body: { proof: { id, path, createdAt } }."
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "description": "Not shareable. Body: { error: code, message }."
+          },
+          "429": {
+            "description": "Daily share limit reached for this session."
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/proof/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Public proof-of-refusal page (HTML) with link-preview metadata",
+        "operationId": "get_proof__id_",
+        "description": "Read-only and unauthenticated, by the sharer's choice. Shows the question the sharer published, what was found, S$0.00 spent, the anchored XRPL Testnet transaction and the verification result. Never returns premium text. Hosted: no session is created; reads are limited per address.",
+        "responses": {
+          "200": {
+            "description": "HTML page."
+          },
+          "404": {
+            "description": "Unknown or expired proof (HTML)."
+          },
+          "429": {
+            "description": "Hosted public-read limit reached."
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/proof/{id}/receipts.json": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$"
+          }
+        }
+      ],
+      "get": {
+        "summary": "The proof's receipts bundle, verifiable with the open-source verifier",
+        "operationId": "get_proof__id__receipts_json",
+        "description": "Same shape as /runs/{id}/receipts.json, sanitized: no payments, grants or paid text. Public and read-only.",
+        "responses": {
+          "200": {
+            "description": "Receipts bundle (JSON)."
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "429": {
+            "description": "Hosted public-read limit reached."
+          }
+        },
+        "x-internal": true
+      }
+    },
+    "/proof/{id}/card.html": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Self-contained proof card (HTML download, no scripts or network)",
+        "operationId": "get_proof__id__card_html",
+        "description": "The same facts as the page with the receipts embedded for saving. Public and read-only.",
+        "responses": {
+          "200": {
+            "description": "HTML attachment."
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "429": {
+            "description": "Hosted public-read limit reached."
+          }
+        },
+        "x-internal": true
+      }
     }
   },
   "components": {

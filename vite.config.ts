@@ -8,7 +8,7 @@ const api = `http://127.0.0.1:${process.env.PORT || 8788 + offset}`
 const backend: import('vite').ProxyOptions = { target: api, changeOrigin: true, configure(proxy) {
   proxy.on('proxyReq', req => { if (process.env.RA_API_TOKEN) req.setHeader('Authorization', `Bearer ${process.env.RA_API_TOKEN}`) })
 } }
-const proxy = { '/runs': backend, '/api': backend, '/w': process.env.PUBLISHER_URL || `http://127.0.0.1:${process.env.PUBLISHER_PORT || 8790 + offset}` }
+const proxy = { '/runs': backend, '/api': backend, '/proof': backend, '/w': process.env.PUBLISHER_URL || `http://127.0.0.1:${process.env.PUBLISHER_PORT || 8790 + offset}` }
 const clientHosts = (process.env.RA_ALLOWED_HOSTS ?? '').split(',').map(s => s.trim()).filter(Boolean)
 if (process.env.RA_WEB_ORIGIN) clientHosts.push(new URL(process.env.RA_WEB_ORIGIN).hostname)
 const clientAuthority: import('vite').Connect.NextHandleFunction = (req, res, next) => {
@@ -33,6 +33,10 @@ export default defineConfig({
     configureServer(server) { server.middlewares.use(clientAuthority) },
     configurePreviewServer(server) { server.middlewares.use(clientAuthority) },
   }, {
+    // Dev only: the built app serves the receipt verifier at /verify/proof-verify.js for the /proof/:id pages (lane W1).
+    name: 'proof-verify-dev-alias',
+    configureServer(server) { server.middlewares.use((req, _res, next) => { if (req.url === '/verify/proof-verify.js') req.url = '/src/verify/proof-entry.ts'; next() }) },
+  }, {
     name: 'private-preview-paths',
     configurePreviewServer(server) {
       server.middlewares.use((req, res, next) => {
@@ -42,7 +46,12 @@ export default defineConfig({
       })
     },
   }],
-  build: { manifest: true, rollupOptions: { input: { app: 'index.html' }, output: { onlyExplicitManualChunks: true, manualChunks: id => id.endsWith('/components/CommandPalette.tsx') ? 'command-palette' : undefined } } },
+  build: { manifest: true, rollupOptions: { input: { app: 'index.html', 'proof-verify': 'src/verify/proof-entry.ts' }, preserveEntrySignatures: 'exports-only', output: {
+    onlyExplicitManualChunks: true, manualChunks: id => id.endsWith('/components/CommandPalette.tsx') ? 'command-palette' : undefined,
+    // The proof pages (/proof/:id, lane W1) load the receipt verifier from one stable URL, not under /assets/ (which the
+    // hosted front caches as immutable). Everything else keeps its hashed name.
+    entryFileNames: chunk => chunk.name === 'proof-verify' ? 'verify/proof-verify.js' : 'assets/[name]-[hash].js',
+  } } },
   server: {
     allowedHosts: clientHosts,
     host: process.env.RA_CLIENT_LAN === '1' ? '0.0.0.0' : '127.0.0.1',

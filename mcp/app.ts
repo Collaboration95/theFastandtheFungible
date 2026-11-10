@@ -17,7 +17,7 @@ const USAGE = 'Usage: researchagent-mcp app [--testnet] [--iou] [--port N] [--op
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 const MIME: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json' }
 // Same surface as the Vite proxy and desktop shell: engine API (bearer added here) and the public publisher.
-const API_PATH = /^\/(?:runs|api)(?:\/|$)/
+const API_PATH = /^\/(?:runs|api|proof)(?:\/|$)/
 const PUBLISHER_PATH = /^\/w(?:\/|$)/
 const sgd = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 

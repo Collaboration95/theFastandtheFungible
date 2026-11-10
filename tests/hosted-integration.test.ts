@@ -37,7 +37,7 @@ describe('hosted gateway and operator integration',()=>{
  })
  it('routes every public writer path to HG and uses only actual gateway configuration',()=>{
   const nginx=readFileSync('docker/hosted/nginx.conf','utf8')
-  expect(nginx).toContain('^/(api|runs|w|livez|startupz|readyz)')
+  expect(nginx).toContain('^/(api|runs|w|proof|livez|startupz|readyz)')
   expect(nginx).not.toContain('$publisher')
   const env=readFileSync('docker/hosted/env.template','utf8')
   expect(env).toContain('HOSTED_TRUSTED_PROXY=127.0.0.1')

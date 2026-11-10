@@ -5,6 +5,8 @@ import type { RequestHandler } from 'express'
 import type { HostedLimits } from './limits.js'
 import { hostedExecution } from './execution.js'
 const cookieName = '__Host-ra_session'
+/** Public, read-only proof-of-refusal pages (lane W1): a link preview or a stranger reads them with no session. */
+export const publicProofPath = (path: string) => /^\/proof\/[a-f0-9]{32}(?:\/(?:receipts\.json|card\.html))?\/?$/.test(path)
 export function sessionGuard(limits: HostedLimits): RequestHandler {
   const origin = new URL(limits.config.HOSTED_ORIGIN!)
   const trusted = new BlockList()
@@ -24,6 +26,8 @@ export function sessionGuard(limits: HostedLimits): RequestHandler {
     }
     res.locals.hostedIp = ip
     if (['/livez','/startupz','/readyz'].includes(req.path)) { next(); return }
+    // A shared proof is public by the sharer's choice: reading it mints no session and sets no cookie.
+    if (['GET','HEAD'].includes(req.method) && publicProofPath(req.path)) { next(); return }
     const cookies = (req.get('Cookie') || '').split(';').map(v => v.trim()).filter(v => v.startsWith(cookieName + '='))
     const session = limits.session(cookies.length === 1 ? cookies[0].slice(cookieName.length + 1) : undefined)
     if (session.token) res.cookie(cookieName, session.token, { secure: true, httpOnly: true, sameSite: 'lax', path: '/', maxAge: 86400000 })
@@ -41,7 +45,7 @@ export function accessGuard(limits: HostedLimits): RequestHandler {
     // Deny by default, including alternate case, encoded slashes and trailing-path aliases.
     const path = req.path
     const publicReads = ['/api/demo/status','/api/health','/health','/api/runs','/api/reputation','/api/writers/status','/api/writers/earnings','/livez','/startupz','/readyz']
-    if (['GET','HEAD'].includes(req.method) && (publicWriterPath(path) || path === '/api/writers/earnings')) {
+    if (['GET','HEAD'].includes(req.method) && (publicWriterPath(path) || path === '/api/writers/earnings' || publicProofPath(path))) {
       if (Object.keys(req.query).length) return res.status(404).json({ error: 'Not found.' })
       const now = Date.now(), key = limits.ipKey(res.locals.hostedIp)
       for (const [k, value] of reads) if (now - value.at >= 60000) reads.delete(k)
@@ -49,7 +53,7 @@ export function accessGuard(limits: HostedLimits): RequestHandler {
       if (value.n >= 120 || (!reads.has(key) && reads.size >= 5000)) return res.status(429).json({ error: 'read_rate' })
       value.n++; reads.set(key, value); next(); return
     }
-    const run = path.match(/^\/(?:api\/)?runs\/([a-zA-Z0-9-]+)(?:\/(?:events|stop|retry-delivery|receipts\.json|report\.json|report\.(?:pdf|html)|report|pin|intents\/([a-zA-Z0-9-]+)\/key-reveal-proof\.json))?$/)
+    const run = path.match(/^\/(?:api\/)?runs\/([a-zA-Z0-9-]+)(?:\/(?:events|stop|retry-delivery|receipts\.json|report\.json|report\.(?:pdf|html)|report|pin|proof|intents\/([a-zA-Z0-9-]+)\/key-reveal-proof\.json))?$/)
     const deny = () => res.status(404).json({ error: 'Not found.' })
     if (run) {
       const id = run[1], principal = res.locals.hostedSession?.principal

@@ -30,6 +30,7 @@ import { walletRouter } from './api/wallet.js'
 import { runsRouter } from './api/runs.js'
 import { mcpRouter } from './api/mcp.js'
 import { reportsRouter } from './api/reports.js'
+import { refusalProofRouter } from './api/refusal-proof.js'
 import { budgetPolicy } from '../mcp/policy.js'
 import express, { type ErrorRequestHandler, type Response } from 'express'
 import { resolve } from 'node:path'
@@ -226,6 +227,9 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   })
   const hire = hireService(context)
   app.use(hire.router)
+  // Proof of refusal (W1): owner share routes under /api/runs/:id/proof, public read-only pages under /proof/:id.
+  const refusal = refusalProofRouter(context, { hosted: !!hosted, origin: hosted ? config.HOSTED_ORIGIN : undefined })
+  app.use(refusal.router)
   app.use(runsRouter(context))
   app.use(mcpRouter(context))
   app.use(reportsRouter(context))
@@ -271,6 +275,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   if (hosted) {
     const retain = () => {
       hosted.expireDrafts()
+      refusal.proofs.expire()
       store.prune({ olderThanDays: 1 })
       store.hostedState(db => {
         db.prepare('DELETE FROM hosted_sessions WHERE expires<=?').run(Date.now())

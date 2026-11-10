@@ -50,6 +50,7 @@ Build on ResearchAgent from code or an MCP client.
 
 - [Product](contracts/PRODUCT.md): what we promise, to whom, and the demo use cases.
 - [Architecture](contracts/ARCHITECTURE.md): the components and the shape of a run. Its [Nov 2026 review](contracts/REVIEW-NOV-2026.md) ranks the seams for the SFF push.
+- [Proof of refusal](contracts/REFUSAL-PROOF.md): the shareable, immutable record that the agent looked at paid sources, bought none and spent S$0.00, anchored on XRPL Testnet: eligibility, snapshot contents, routes, hosted isolation and what it does not prove.
 - [Design](contracts/DESIGN.md): visual system, layout and content rules. Current direction: [UX direction](design/UX-DIRECTION.md); [UX walkthrough](ux-walkthrough/index.html) has screenshots of the shipped UI.
 - [Design record](FINAL-PUSH.md): the October 2026 decisions D1–D24 and why.
 
