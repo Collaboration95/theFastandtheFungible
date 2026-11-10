@@ -6,7 +6,7 @@ export const closedControl: HostedControl = { admissionsPaused: true, spendingPa
 export function readControl(path: string, now = Date.now()): HostedControl {
   try {
     const c = JSON.parse(readFileSync(path, 'utf8')) as HostedControl
-    if (typeof c.admissionsPaused !== 'boolean' || typeof c.spendingPaused !== 'boolean' || !/^[a-z0-9_]{1,64}$/.test(c.reasonCode) || !Number.isFinite(Date.parse(c.expiresAt)) || Date.parse(c.expiresAt) <= now) return closedControl
+    if (typeof c.admissionsPaused !== 'boolean' || typeof c.spendingPaused !== 'boolean' || !/^[a-z0-9_-]{1,64}$/.test(c.reasonCode) || !Number.isFinite(Date.parse(c.expiresAt)) || Date.parse(c.expiresAt) <= now) return closedControl
     return c
   } catch { return closedControl }
 }

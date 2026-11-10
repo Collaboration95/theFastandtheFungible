@@ -88,7 +88,7 @@ const email=options['alert-email']
 if(channel && !/^projects\/[^/]+\/notificationChannels\/\d+$/.test(channel)) throw Error('Invalid notification channel')
 if(!channel && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email||'')) throw Error('Supply --alert-email or --notification-channel')
 const writerNames=readdirSync('data/writers').filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(join('data/writers',f))).publisher).filter(w=>Object.values(w.prices||{}).some(p=>Number(p)>0)).map(w=>'XRPL_PUBLISHER_'+w.slug.toUpperCase().replaceAll('-','_')+'_SEED')
-const mappings = [...writerNames,'DEEPSEEK_API_KEY','OPENAI_API_KEY','PUBLISHER_SECRET','HOSTED_SESSION_KEY','HOSTED_IP_HMAC_KEY',...Object.keys(process.env).filter(n=>/^XRPL_(PAYER|PUBLISHER_[A-Z0-9_]+)_(SEED|ADDRESS)$/.test(n))]
+const mappings = [...writerNames,'DEEPSEEK_API_KEY','OPENAI_API_KEY','PUBLISHER_SECRET','HOSTED_IP_HMAC_KEY',...Object.keys(process.env).filter(n=>/^XRPL_(PAYER|PUBLISHER_[A-Z0-9_]+)_(SEED|ADDRESS)$/.test(n))]
 if (!mappings.includes('XRPL_PAYER_SEED')) mappings.push('XRPL_PAYER_SEED')
 const secretMap = mappings.map(name=>[name,`ra-${name.toLowerCase().replaceAll('_','-')}-${sha.slice(0,12)}`])
 if(!dry) {

@@ -33,12 +33,12 @@ const closed={admissionsPaused:true,spendingPaused:true,reasonCode:'control_unav
 let control
 try { control=JSON.parse(readFileSync(path,'utf8')) } catch { /* unavailable is closed */ }
 const valid=control && typeof control.admissionsPaused==='boolean' && typeof control.spendingPaused==='boolean' && /^[a-z0-9_-]{1,64}$/.test(control.reasonCode) && Number.isFinite(Date.parse(control.expiresAt))
-if (action==='status') { console.log(JSON.stringify({...valid?control:closed,effectivePaused:!valid || Date.parse(control.expiresAt)<=Date.now() || control.admissionsPaused || control.spendingPaused},null,2)); process.exit(0) }
+if (action==='status') { console.log(JSON.stringify({...(valid?control:closed),effectivePaused:!valid || Date.parse(control.expiresAt)<=Date.now() || control.admissionsPaused || control.spendingPaused},null,2)); process.exit(0) }
 if (action==='init' && existsSync(path)) { if (!valid) throw Error('Invalid durable control'); console.log('control exists; unchanged'); process.exit(0) }
 if (action==='resume' && (!valid || Date.parse(control.expiresAt)<=Date.now())) throw Error('Control missing, invalid or expired: initialize or pause explicitly first')
 const expiry=action==='resume' ? control.expiresAt : process.env.HOSTED_CONTROL_EXPIRES_AT || control?.expiresAt || '2026-11-19T16:00:00Z'
-if (!Number.isFinite(Date.parse(expiry)) || Date.parse(expiry)<=Date.now() || Date.parse(expiry)>Date.parse('2026-11-19T16:00:00Z')) throw Error('Set a valid future HOSTED_CONTROL_EXPIRES_AT within the event window')
-const next={...valid?control:closed,expiresAt:expiry,reasonCode:o.reason || (action==='resume'?'operator_ready':action==='init'?'prelaunch':'operator_paused')}
+if (!Number.isFinite(Date.parse(expiry)) || Date.parse(expiry)>Date.parse('2026-11-19T16:00:00Z')) throw Error('Set a valid HOSTED_CONTROL_EXPIRES_AT within the event window')
+const next={...(valid?control:closed),expiresAt:expiry,reasonCode:o.reason || (action==='resume'?'operator_ready':action==='init'?'prelaunch':'operator_paused')}
 if (action==='init') { next.admissionsPaused=true; next.spendingPaused=true }
 else {
   if (target!=='spending') next.admissionsPaused=action==='pause'

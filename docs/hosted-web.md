@@ -296,8 +296,7 @@ by smoke; smoke never toggles production control automatically.
 
 For key rotation, pause/drain first, use a new gated release SHA with new local env
 values so new pinned secrets are created, deploy, verify and then resume. Reusing
-a SHA retains its original version-1 secrets. Model/session-key rotation may
-invalidate sessions. Payer/writer identity rotation requires explicit obligation
+a SHA retains its original version-1 secrets. Retain session hashes and hosted holds during key rotation. Payer/writer identity rotation requires explicit obligation
 reconciliation and retention of old recovery signers; never overwrite a wallet
 just to resolve a pending transaction. Manifest retains earlier secret identifiers
 for teardown, and accepted prior manifests should be saved privately for rollback.
