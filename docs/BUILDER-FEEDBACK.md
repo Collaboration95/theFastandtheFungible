@@ -1015,6 +1015,24 @@ receipts and bounded release scheduling, with full hosted release verification
 retained. Severity: medium development/acceptance delay. Mainnet
 impact: none measured; synthetic fixtures and simulated settlement only.
 
+#### 10 Nov 2026 · Standalone key-reveal example: RPC metadata at the SDK boundary
+
+- **Observed, Testnet (developer integration friction; Low).** `tx` API v2 adds
+  `ctid`, `date` and `ledger_index` inside `tx_json`; comparing the whole response
+  object with the decoded signed blob rejected a successful EscrowCreate.
+  Evidence: [standalone example and live receipts](../examples/x402-key-reveal-escrow/README.md),
+  preliminary create `ACE5E576450557CF5CBDA57B6C1A273480180CF3919098207A13010A38968566`.
+- **Workaround:** require matching transaction hash, validated `tesSUCCESS`,
+  exact escrow fields and invoice/envelope Memo, then verify the live object.
+  Compare transaction fields rather than RPC annotations. No gate weakened.
+- **Suggested fix:** add an annotated-response vector to escrow tutorials.
+  **Mainnet impact:** the same comparison mistake can block delivery; mainnet
+  was not run. The example remains faucet-only Testnet.
+- **Code-derived SDK boundary:** pinned `x402-xrpl@0.3.4` preserves the custom
+  scheme in its codecs, but its exact payer refuses it, as tested. Use the
+  codecs with a separate escrow handler, not a hidden `exact` fallback. This is
+  an experimental example, not an observed exact-facilitator escrow capability.
+
 ## 10 November 2026: exact-corpus audit context in packed bank tooling
 
 - Class: observed local tooling mismatch, not an XRPL or x402 settlement incident.

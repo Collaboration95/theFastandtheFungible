@@ -10,6 +10,8 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 11 Nov: Copyable [x402 key-reveal escrow example](../examples/x402-key-reveal-escrow/README.md): standalone seller/buyer with pinned t54 codecs, Testnet delivery, replay and CancelAfter principal recovery; opt-in live test and unsubmitted [Starter Kit PR draft](feedback/upstream/starter-kit-key-reveal-escrow-pr.md). [#435](https://github.com/Collaboration95/theFastandtheFungible/pull/435).
+
 - 11 Nov: HG adds opt-in hosted visitor sessions, own-run authorization, durable sponsor/model limits, queue/pause controls and health/status contracts; local synthetic isolation evidence only, deployed acceptance remains with ops. [#432](https://github.com/Collaboration95/theFastandtheFungible/pull/432).
 - 10 Nov: HM hardens wallet-wide signing, crash-safe trust and fair refund recovery; fixes TEST-SGD settings/TS+Python refund checks, search cancellation/deadlines, private writer journals, MCP HTTP dispatch, parser errors and configuration typos; AJV pinned to 8.20.0. Synthetic regression evidence, no live-money or hosted acceptance claim.
 - 10 Nov: C3 adds 125 public-index XRPL/compliance explainers through the existing team-authored Testnet writer (147 total), cleans engineering text from ten paid notes, and adds paid-body lint; dev-only before/after Testnet evidence in `docs/evidence/c3-index-corpus/` ([#425](https://github.com/Collaboration95/theFastandtheFungible/pull/425)).
