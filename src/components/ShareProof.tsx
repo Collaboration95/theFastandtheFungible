@@ -98,14 +98,16 @@ export default function ShareProof({ run }: { run: RunSnapshot }) {
 function Shared({ proof, hosted, copied, onCopy }: { proof: RefusalProof; hosted: boolean; copied: boolean; onCopy: () => void }) {
   const url = new URL(proof.path, window.location.href).href
   const copy = async () => { try { await navigator.clipboard.writeText(url); onCopy() } catch { /* the link below is selectable */ } }
+  // Only a hosted proof has a link someone else can open. Here (the Mac app, a local run) the address is this computer's
+  // alone, so it is neither shown nor copyable: the card is what you send.
   return <div className="ra-share">
     <section className="ra-share-done" aria-label="Proof of refusal">
       <p className="ra-share-head">{HELD}<b>Proof page ready</b></p>
       <p className="ra-note">{hosted ? 'Anyone with this link can open it and check the ledger themselves.' : 'Open it here, or download the card to send it. Anyone can check the ledger from it.'}</p>
-      <p className="ra-share-url"><a href={proof.path} target="_blank" rel="noopener noreferrer">{url}</a></p>
+      {hosted && <p className="ra-share-url"><a href={proof.path} target="_blank" rel="noopener noreferrer">{url}</a></p>}
       <div className="ra-share-actions">
         <a className="ra-btn ra-btn-pen" href={proof.path} target="_blank" rel="noopener noreferrer">Open proof page</a>
-        <button type="button" className="ra-btn" onClick={() => { void copy() }}>Copy link</button>
+        {hosted && <button type="button" className="ra-btn" onClick={() => { void copy() }}>Copy link</button>}
         <a className="ra-btn" href={`${proof.path}/card.html`} download>Download proof card</a>
       </div>
       <p className="ra-note" aria-live="polite">{copied ? 'Link copied.' : ''}</p>

@@ -150,6 +150,37 @@ it('renders a safe, complete public page and a self-contained card', async () =>
   expect(JSON.parse(Buffer.from(saved, 'base64').toString())).toEqual(JSON.parse(JSON.stringify(proof.snapshot.bundle)))
 })
 
+it('says one thing about the checks: the same total before and after the browser check, and what it skips', async () => {
+  const store = open()
+  const { proof } = await new RefusalProofs(store).create(declinedRun(store), { hosted: false, principal: 'operator' })
+  const { passed, skipped, total } = proof.snapshot.verification
+  expect(passed + skipped).toBe(total)
+  const text = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+  const page = text(renderProofPage(proof.snapshot, { mode: 'page', origin: 'https://demo.example', nonce: 'N0NCE' }))
+  expect(page).toContain(`Checks ${passed} of ${total} checks passed when shared · ${skipped} more need the ledger or a writer lookup; the browser check below runs the ledger ones`)
+  expect(page).not.toMatch(/Checked when shared|\d+ checks passed (?!when shared)/)
+  // The button's result names the same total, and says which checks it skips rather than counting them as passed.
+  const script = renderProofPage(proof.snapshot, { mode: 'page', nonce: 'N0NCE' }).match(/<script type="module"[^>]*>([\s\S]*)<\/script>/)![1]
+  expect(script).toContain("passed === total ? 'All ' + total + ' checks passed' : passed + ' of ' + total + ' checks passed'")
+  expect(script).toContain("' Skipped here: ' + skipped.join(' and ')")
+  expect(script).toContain("failed + ' of ' + total + ' checks failed'")
+  // The card (no browser check on it) states the count without pointing at a button that is not there.
+  expect(text(renderProofPage(proof.snapshot, { mode: 'card' }))).toContain(`${passed} of ${total} checks passed when shared · ${skipped} more need the ledger or a writer lookup`)
+  expect(text(renderProofPage(proof.snapshot, { mode: 'card' }))).not.toContain('the browser check below')
+})
+
+it('keeps the environment chip on a phone, in a short form, and never links a downloaded card to a page that is not there', async () => {
+  const store = open()
+  const { proof } = await new RefusalProofs(store).create(declinedRun(store), { hosted: false, principal: 'operator' })
+  const page = renderProofPage(proof.snapshot, { mode: 'page', origin: 'https://demo.example', nonce: 'N0NCE' })
+  expect(page).toContain(`<span class="chip"><i></i><span class="full">${proof.snapshot.environment.label}</span><span class="short">Testnet demo · no real value</span></span>`)
+  expect(page).toContain('@media (max-width:620px)'); expect(page).toContain('.chip .full{display:none}.chip .short{display:inline}')
+  expect(page).not.toMatch(/\.chip\{display:none\}/)
+  // Local and desktop have no public address: the card carries the receipts and no dead "live page" link.
+  expect(renderProofPage(proof.snapshot, { mode: 'card' })).not.toContain('Open the live page')
+  expect(renderProofPage(proof.snapshot, { mode: 'card', origin: 'https://demo.example' })).toContain(`href="https://demo.example/proof/${proof.id}">Open the live page`)
+})
+
 // --- Hosted: two sessions, one public page ---------------------------------------------------------------------------
 const cleanup: (() => unknown)[] = []
 afterEach(async () => { for (const f of cleanup.splice(0).reverse()) await f(); vi.unstubAllEnvs(); vi.restoreAllMocks() })
