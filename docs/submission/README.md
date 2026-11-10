@@ -20,7 +20,7 @@ rendered page. `npm run hygiene` fails if any marked number is stale.
 |---|---|
 | [short-description.md](short-description.md) | 50 / 150 / 300-word descriptions with a label check |
 | [facts.json](facts.json) | every number and canonical sentence, with its source and definition; the deck reads from it |
-| [ResearchAgent-SFF-deck.pdf](ResearchAgent-SFF-deck.pdf) | 12-slide deck; source [deck/index.html](deck/index.html) |
+| [ResearchAgent-SFF-deck.pdf](ResearchAgent-SFF-deck.pdf) | 14-slide deck; source [deck/index.html](deck/index.html), numbers from facts.json |
 | [demo-video-script.md](demo-video-script.md) | 8-shot, 2:30 video that leads with the live sandbox and Claude Code |
 | [pitch-2min.md](pitch-2min.md) | 2:00 pitch script with timing marks, plus a 3-minute variant |
 | [qa-prep.md](qa-prep.md) | numbers card and 20 hard questions from the R / P / Y judges |
@@ -36,8 +36,10 @@ The form link is in the organisers' email and in the local, untracked
       and who presents.
 - [ ] **Wed 11 – Thu 12 Nov:** record the video ([script](demo-video-script.md))
       once the live sandbox answers; check "Before you press record" first.
-- [ ] **Thu 12 Nov:** upload the video unlisted; put its link in the deck
-      (slide 12), the README links line and the form; re-export the deck.
+- [ ] **Thu 12 Nov:** upload the video unlisted; set `VIDEO_URL` in
+      [`scripts/facts.mjs`](../../scripts/facts.mjs), run
+      `node scripts/facts.mjs && node docs/submission/deck/export.mjs` (slide 14
+      then links it), and add it to the README links line and the form.
 - [ ] **Thu 12 Nov, before the freeze:** refresh the numbers:
       `npm run site:progress -- --at origin/main && node scripts/facts.mjs`,
       commit, re-export the deck, `npm run site:publish`.
@@ -56,7 +58,7 @@ The form link is in the organisers' email and in the local, untracked
 |---|---|---|
 | **Team name** | yes | `theFastandtheFungible`. This is the team and repo name in the README; check it matches what we registered at SingHacks, as the form asks for the original name. |
 | **Short description** | yes | The **150-word** tier from [short-description.md](short-description.md#150-words). If the field is short, use the 50-word tier; if it is long, use the 300-word tier. Copy from the rendered page. |
-| **Pitch deck** | no | Upload [ResearchAgent-SFF-deck.pdf](ResearchAgent-SFF-deck.pdf) (PDF, 12 pages). If upload fails, link the rendered view: `https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf` |
+| **Pitch deck** | no | Upload [ResearchAgent-SFF-deck.pdf](ResearchAgent-SFF-deck.pdf) (PDF, 14 pages). If upload fails, link the rendered view: `https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf` |
 | **GitHub repository** | yes, must be public | `https://github.com/Collaboration95/theFastandtheFungible` |
 | **Demo link** | no, but judges pre-assess it | `{{VIDEO_URL}}`: the unlisted video recorded from [demo-video-script.md](demo-video-script.md) |
 
@@ -74,8 +76,8 @@ If the form has a free-text notes field, paste this (about 70 words):
 
 ## Placeholders
 
-Before submitting, replace each placeholder still in use, or delete the
-sentence it sits in. Find any that are left with:
+The deck has none: its export fails on any `{{`, in the HTML or in the PDF
+text. The only placeholder left is the form's video link. Find any others with:
 
 ```sh
 grep -rn '{{' docs/submission/ --include='*.md' --include='*.html'
@@ -83,48 +85,70 @@ grep -rn '{{' docs/submission/ --include='*.md' --include='*.html'
 
 | Placeholder | Fill with | Comes from | Where it appears |
 |---|---|---|---|
-| `{{VIDEO_URL}}` | the unlisted video link | owner, after recording | deck slide 12, form, README links line (video slot comment) |
-| `{{REGISTRY_STATUS}}` | "also on npm, PyPI and the MCP Registry", or "not yet on npm, PyPI or the MCP Registry" | owner decision A3 | deck slide 8 |
-| `{{UPSTREAM_FILED_URLS}}` | the filed issue URLs, or "not yet (8 drafts in docs/feedback/upstream/)" | owner task B1 | deck slide 11 |
+| `{{VIDEO_URL}}` | the unlisted video link | owner, after recording | form, README links line (video slot comment); the deck reads `VIDEO_URL` in `scripts/facts.mjs` |
 
 Filled: the release (v1.0.2), the writer first-try time
 (<!--f:writer_s-->33.9<!--/f--> s, J3 [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389)),
 the held-out result (<!--f:heldout_line-->v4 blind held-out: 7/20 bought and cited, 0/10 off-topic purchases (run once, 7 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->),
 the hosted URL (above) and Q&A Q13, which now states the true filing count
 (<!--f:filed-->0<!--/f--> filed) and changes by itself once the owner files.
+The deck's registry line (<!--f:registry-->GitHub Releases; not yet on npm, PyPI or the MCP Registry<!--/f-->)
+is the `REGISTRY` sentence in `scripts/facts.mjs` (decision A3), and its
+upstream count is `feedback_line`.
 
-## Deck: changes the deck lane still owes
+## Deck checklist
 
-The deck is rebuilt in its own lane; these strings are canonical in
-[facts.json](facts.json):
-
-- Slide 2: replace "Prototype: a human approved every purchase" and the title
-  "From a prototype a human approved…" with `singhacks_then`. The prototype's
-  own README (tag `hackathon-baseline`) shows a language model planned purchases.
-- Slides 1 and 8: replace "Runs on your machine · no hosted instance" with
-  `hosted` and the sandbox URL.
-- Slide 2 and footers: "183 merged PRs" → `prs` with its `as_of` and `sha`.
-- Slide 11: "33 numbered (B01–B33)" → `feedback_line`; use the ranked order of
-  [BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md#top-7-ranked-findings).
-- Slide 8: "Credential in 43.8 s" → `writer_s`. Slides 2 and 7: verifier
-  vectors → `vectors`.
+- [x] No placeholders, no stale footer; the video row reads "linked in the
+      submission form" until `VIDEO_URL` is set.
+- [x] Every number is a fact marker filled from [facts.json](facts.json), the
+      same way as the README; `npm run hygiene` fails if one is stale. Numbers
+      with no fact were added as facts (chaos runs, fee in XRP, the `try`
+      line and deadline) or dropped.
+- [x] Slides 1 and 8 lead with the hosted sandbox (`hosted`), the recorded
+      replay and the `try --testnet` line (`try_line`).
+- [x] Slide 2 uses `singhacks_then`; counts are `prs`, `releases`,
+      `transactions` and `vectors` at `sha` on `as_of`.
+- [x] Slide 3 is the committed `try` output
+      ([r5-a/try-fresh-output.txt](../evidence/r5-a/try-fresh-output.txt)), links
+      shortened to their hashes; a test checks it line by line.
+- [x] Slide 10 is one large shot of the current app plus one zoom, captured
+      by a script from the recorded Testnet replay.
+- [x] New: who pays / market / why now (11), compliance posture (12), team (14).
+      Each slide's speaker notes name the judging criteria it serves.
+- [x] Slide 13 follows the ranked order in
+      [BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md#top-7-ranked-findings).
+- [ ] **Owner:** check names and roles on slide 14 (from the git history) and
+      the registered team name (A5 on #265).
+- [ ] **After the UI lane merges:** `node docs/submission/deck/export.mjs --refresh-shots`,
+      look at slide 10, commit the two images, `shots.json` and the PDF.
 
 ## Rebuild the deck
 
 ```sh
 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci    # fonts come from @fontsource-variable
+node scripts/facts.mjs                    # refill every number from facts.json
 node docs/submission/deck/export.mjs      # PDF here + PNGs in scratch/deck-png/ to look at
+node docs/submission/deck/export.mjs --refresh-shots   # also re-capture slide 10 from the current app
 ```
 
-The export fails if any slide's content overflows its 1920 × 1080 frame. The
-visual system follows [UX-DIRECTION §5](../design/UX-DIRECTION.md#5-visual-system):
-ink on paper, Geist only, mono for hashes and commands, sentence case.
-Placeholders render in amber mono so an unfilled one is obvious in the PDF. The
-pixel agent on slides 1 and 12 is cut from
+The export refuses to replace the PDF if a fact marker is stale, if `{{`
+appears in the HTML, the rendered slides or the PDF text (checked with
+`pdftotext` from poppler), if an image is missing, if the PDF's page count
+differs from the slide count, or if any slide's content overflows its
+1920 × 1080 frame. `--refresh-shots` serves the `/demo/` replay build of the
+current app (`src/`) on an ephemeral loopback port, replays the recorded
+key-reveal Testnet run (`demo/traces/UC3-key-reveal.json`), blocks every
+outside request, and writes `deck/assets/ux-answer.png`, `ux-payment.png` (2×,
+light theme) and `shots.json` (commit, date, trace, viewport).
+
+The visual system follows [UX-DIRECTION §5](../design/UX-DIRECTION.md#5-visual-system):
+ink on paper, Geist only, mono for hashes and commands, sentence case. The
+pixel agent on slide 1 is cut from
 [`design/character/sprite-sheet.png`](../../design/character/sprite-sheet.png)
-at integer scale; each frame shows a real state (verified; search, pay, key,
-verified, refund). Every number on a slide names its source on the slide's
-bottom line.
+at integer scale and shows a real state (verified). Every slide names its
+sources on its bottom line; speaker notes (`<aside class="notes">`) are never
+printed. The site's [/slides/](../../site/slides/index.html) is the 10 Oct AI
+Tinkerers talk, not this deck; it links here instead of mirroring it.
 
 ## Facts discipline
 

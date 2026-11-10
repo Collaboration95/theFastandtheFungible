@@ -195,7 +195,8 @@ Cut list if long: shot 7 to captions only, then shot 6.
    the label rules above.
 2. Upload as **unlisted** (YouTube or Drive; Drive must be "anyone with the link"). Open
    the link in a private window to check it plays.
-3. Put the link in the form, the deck (slide 12, re-export with
-   `node docs/submission/deck/export.mjs`), the README links line (the video slot comment
-   marks the spot), and `HOSTED_VIDEO_URL` for the sandbox footer.
+3. Put the link in the form, the deck (`VIDEO_URL` in `scripts/facts.mjs`, then
+   `node scripts/facts.mjs && node docs/submission/deck/export.mjs`; it lands on slide 14),
+   the README links line (the video slot comment marks the spot), and `HOSTED_VIDEO_URL`
+   for the sandbox footer.
 4. Attach the MP4 to the release (`gh release upload v1.0.2 video.mp4`), not to git.

@@ -14,7 +14,7 @@ export const TZ_OFFSET_HOURS = 8 // Singapore time for every day bucket
 export const milestones = [
   {
     id: 'singhacks',
-    date: { fixed: '2026-09-20', source: 'docs/submission/deck/index.html', mustInclude: '<div class="d">19–20 Sep</div><div class="v">SingHacks' },
+    date: { fixed: '2026-09-20', source: 'docs/submission/deck/index.html', mustInclude: '<div class="crit">Progress since SingHacks · <!--f:event-->19–20 Sep 2026<!--/f--></div>' },
     label: '19–20 Sep',
     title: 'SingHacks: the prototype',
     summary: 'The prototype that took us to the finals: one web page, synthetic sources, and a language model choosing what to buy.',

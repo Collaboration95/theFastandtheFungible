@@ -7,19 +7,23 @@
 <!--
   The SingHacks finals pitch deck, built from code.
   - One <section class="slide"> per 1920 × 1080 page. Edit text in place.
-  - Every number here comes from a merged evidence file; the source line at the
-    bottom of each slide names it. Work still landing is a {{…}} placeholder in a
-    .ph span; docs/submission/README.md#placeholders lists each one.
-  - Export: node docs/submission/deck/export.mjs  (writes the PDF beside this
-    folder and PNGs under scratch/deck-png/ for a visual check).
-  - Visual system: docs/design/UX-DIRECTION.md §5 (ink on paper, Geist only,
-    Geist Mono only for hashes and commands, sentence case, no gradients).
+  - Numbers are facts: each sits between <!-/-f:key-/-> markers (written without the slashes) and
+    comes from docs/submission/facts.json. `node scripts/facts.mjs` refills them; `npm run hygiene`
+    fails if one is stale. Never type a number that facts.json has; add a fact instead.
+  - Slide 3's terminal is docs/evidence/r5-a/try-fresh-output.txt verbatim (links shortened to their
+    hashes); slide 10's images come from `node docs/submission/deck/export.mjs --refresh-shots`.
+  - <aside class="notes"> holds speaker notes and the judging criteria each slide serves. Never printed.
+  - Export: node docs/submission/deck/export.mjs  (PDF beside this folder, PNGs under scratch/deck-png/).
+    It fails on any template placeholder (two opening braces), stale fact, missing image or overflowing slide.
+  - Visual system: docs/design/UX-DIRECTION.md §5 (ink on paper, Geist only, Geist Mono only for
+    hashes and commands, sentence case, no gradients).
 -->
 <style>
 @font-face { font-family: 'Geist'; src: url('../../../node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; }
 @font-face { font-family: 'Geist Mono'; src: url('../../../node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; }
 @page { size: 1920px 1080px; margin: 0; }
 :root {
+  color-scheme: light;
   --paper: #FBF8F2; --surface: #FFFFFF; --ink: #24211E; --muted: #655D55;
   --rule: #E8E2D8; --rule-2: #C9BFB2; --hover: #F3EEE4;
   --ok: #2F6B4F; --bad: #9B3E35; --warn: #9A6B20; --salmon: #D9A28F;
@@ -31,143 +35,134 @@ html, body { margin: 0; background: #E9E4DA; color: var(--ink); font-family: var
 .slide { position: relative; width: 1920px; height: 1080px; margin: 40px auto; background: var(--paper); padding: 84px 112px 120px; display: flex; flex-direction: column; overflow: hidden; break-after: page; page-break-after: always; }
 @media print { html, body { background: var(--paper); } .slide { margin: 0; } }
 a { color: inherit; text-decoration-color: var(--rule-2); text-underline-offset: 6px; }
+.notes { display: none; }
 .crit { font: 500 26px/1 var(--f); color: var(--muted); display: flex; align-items: center; gap: 14px; }
 .crit::before { content: ''; width: 28px; height: 3px; background: var(--salmon); }
 h1 { font: 600 64px/1.08 var(--f); letter-spacing: -0.02em; margin: 22px 0 0; max-width: 1640px; text-wrap: balance; }
-h1.hero { font-size: 104px; letter-spacing: -0.03em; margin-top: 56px; }
+h1.hero { font-size: 112px; letter-spacing: -0.03em; margin-top: 28px; }
 .lead { font: 400 32px/1.45 var(--f); color: var(--muted); margin: 24px 0 0; max-width: 1480px; }
 .lead b { color: var(--ink); font-weight: 500; }
+.h3 { font: 600 30px/1.2 var(--f); letter-spacing: -0.01em; }
 .src { position: absolute; left: 112px; right: 112px; bottom: 40px; font: 400 19px/1.4 var(--f); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; display: flex; justify-content: space-between; gap: 40px; }
 .src .n { white-space: nowrap; }
 .mono { font-family: var(--m); }
 .grow { flex: 1; }
-.todo { border-bottom: 3px solid var(--warn); }
+code, .code { font: 400 0.84em/1.3 var(--m); color: var(--ink); background: var(--hover); border-radius: 6px; padding: 1px 8px; }
 
-/* cards and grids */
+/* layout */
+.cols { display: grid; gap: 56px; margin-top: 44px; align-items: start; }
 .grid { display: grid; gap: 24px; margin-top: 44px; }
-.g2 { grid-template-columns: 1fr 1fr; }
 .g3 { grid-template-columns: repeat(3, 1fr); }
 .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 30px 32px; }
-.card h3 { font: 600 30px/1.2 var(--f); margin: 0; letter-spacing: -0.01em; }
+.card h3 { font: 600 29px/1.2 var(--f); margin: 0; letter-spacing: -0.01em; }
 .card p { font: 400 23px/1.45 var(--f); color: var(--muted); margin: 12px 0 0; }
-.card .num { font: 600 24px/1.3 var(--f); color: var(--ink); margin-top: 16px; }
-.card code, .cmd { font: 400 19px/1.4 var(--m); color: var(--ink); background: var(--hover); border-radius: 6px; padding: 2px 8px; }
+.card .num { font: 600 23px/1.35 var(--f); color: var(--ink); margin-top: 16px; }
+.points { margin: 0; padding: 0; list-style: none; }
+.points li { font: 400 25px/1.45 var(--f); color: var(--muted); padding: 0 0 20px 28px; position: relative; }
+.points li::before { content: ''; position: absolute; left: 0; top: 17px; width: 12px; height: 2px; background: var(--ink); }
+.points li b { color: var(--ink); font-weight: 500; }
+.honest { margin-top: 32px; border-left: 3px solid var(--warn); padding: 4px 0 4px 24px; font: 400 23px/1.5 var(--f); color: var(--muted); max-width: 1696px; }
+.honest b { color: var(--ink); font-weight: 500; }
+
+/* environment line: the deck's one label for what is real */
+.env { display: inline-flex; align-items: center; gap: 12px; font: 500 23px/1.2 var(--f); color: var(--ink); border: 1px solid var(--rule-2); border-radius: 999px; padding: 12px 22px; background: var(--surface); }
+.env::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--warn); }
 
 /* title */
 .lockup { height: 64px; align-self: flex-start; }
-.env { display: inline-flex; align-items: center; gap: 12px; font: 500 24px/1 var(--f); color: var(--ink); border: 1px solid var(--rule-2); border-radius: 999px; padding: 12px 20px; background: var(--surface); }
-.env::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--warn); }
+.ways { border-top: 2px solid var(--ink); margin-top: 0; }
+.ways .row { display: grid; grid-template-columns: 250px 1fr; gap: 24px; align-items: baseline; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+.ways .k { font: 600 26px/1.3 var(--f); }
+.ways .v { font: 400 25px/1.4 var(--f); color: var(--muted); }
+.ways .v a { color: var(--ink); font-weight: 500; }
+
+/* command line */
+.cmdline { background: var(--ink); color: var(--paper); border-radius: 10px; padding: 18px 26px; font: 400 17px/1.4 var(--m); white-space: nowrap; overflow: hidden; }
+.cmdline .p { color: var(--salmon); }
+
+/* terminal */
+.term { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 22px 28px; font: 400 17px/1.5 var(--m); color: var(--ink); }
+.term div { white-space: pre; }
+.term .p { color: var(--muted); }
+.term .ok { color: var(--ok); font-weight: 600; }
+.term .dim { color: var(--muted); }
+.term a { text-decoration: none; border-bottom: 1px solid var(--rule-2); }
+.big { font: 600 92px/1 var(--f); letter-spacing: -0.03em; }
+.big small { display: block; font: 400 24px/1.4 var(--f); color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+.big + .big { margin-top: 44px; }
+
+/* then / now */
+table { border-collapse: collapse; width: 100%; }
+td, th { text-align: left; padding: 14px 24px 14px 0; border-bottom: 1px solid var(--rule); font: 400 24px/1.35 var(--f); vertical-align: top; }
+th { font: 500 20px/1.2 var(--f); color: var(--muted); border-bottom: 1px solid var(--rule-2); }
+td.k { font-weight: 600; white-space: nowrap; }
+td.was { color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: auto; }
+.stat { border-top: 1px solid var(--rule-2); padding-top: 18px; }
+.stat b { display: block; font: 600 58px/1 var(--f); letter-spacing: -0.02em; }
+.stat span { display: block; font: 400 21px/1.4 var(--f); color: var(--muted); margin-top: 10px; }
 
 /* flow */
-.flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; margin-top: 56px; border-top: 2px solid var(--ink); }
+.flow { display: grid; grid-template-columns: repeat(6, 1fr); margin-top: 56px; border-top: 2px solid var(--ink); }
 .flow div { padding: 22px 22px 0 0; }
 .flow b { display: block; font: 600 28px/1.2 var(--f); }
 .flow span { display: block; font: 400 22px/1.4 var(--f); color: var(--muted); margin-top: 10px; }
 .flow i { font-style: normal; font: 500 20px/1 var(--f); color: var(--muted); display: block; margin-bottom: 14px; }
-.gates { margin-top: 56px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: start; }
 .gates ol { margin: 0; padding-left: 34px; font: 400 26px/1.6 var(--f); }
 .gates ol li::marker { color: var(--muted); }
-.big { font: 600 96px/1 var(--f); letter-spacing: -0.03em; }
-.big small { display: block; font: 400 24px/1.4 var(--f); color: var(--muted); letter-spacing: 0; margin-top: 14px; }
 
-/* timeline */
-.tl { position: relative; margin-top: 64px; display: grid; grid-template-columns: repeat(8, 1fr); }
-.tl::before { content: ''; position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: var(--rule-2); }
-.tl > div { position: relative; padding: 40px 18px 0 0; }
-.tl > div::before { content: ''; position: absolute; top: 4px; left: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); }
-.tl > div.pre::before { background: var(--paper); border: 2px solid var(--ink); }
-.tl > div.next::before { background: var(--paper); border: 2px dashed var(--warn); }
-.tl .d { font: 500 22px/1 var(--f); color: var(--muted); }
-.tl .v { font: 600 32px/1.15 var(--f); margin-top: 12px; }
-.tl .t { font: 400 23px/1.4 var(--f); color: var(--muted); margin-top: 10px; }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: auto; }
-.stat { border-top: 1px solid var(--rule-2); padding-top: 18px; }
-.stat b { display: block; font: 600 56px/1 var(--f); letter-spacing: -0.02em; }
-.stat span { display: block; font: 400 21px/1.4 var(--f); color: var(--muted); margin-top: 10px; }
-
-/* money chain */
-.chain { margin-top: 44px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 56px; align-items: start; }
-table { border-collapse: collapse; width: 100%; }
-td, th { text-align: left; padding: 14px 16px 14px 0; border-bottom: 1px solid var(--rule); font: 400 23px/1.3 var(--f); vertical-align: top; }
-th { font: 500 19px/1.2 var(--f); color: var(--muted); border-bottom: 1px solid var(--rule-2); }
-td.r, th.r { text-align: right; }
-td .h { font: 400 18px/1.3 var(--m); color: var(--muted); display: block; margin-top: 4px; }
-tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink); }
-.points { margin: 0; padding: 0; list-style: none; }
-.points li { font: 400 25px/1.45 var(--f); color: var(--muted); padding: 0 0 20px 28px; position: relative; }
-.points li::before { content: ''; position: absolute; left: 0; top: 15px; width: 12px; height: 2px; background: var(--ink); }
-.points li b { color: var(--ink); font-weight: 500; }
-
-/* escrow */
+/* key reveal */
+.seq { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 40px; border-top: 2px solid var(--ink); }
+.seq div { padding: 20px 26px 0 0; }
+.seq i { font-style: normal; font: 500 19px/1 var(--f); color: var(--muted); display: block; margin-bottom: 12px; }
+.seq b { display: block; font: 600 27px/1.2 var(--f); }
+.seq span { display: block; font: 400 21px/1.42 var(--f); color: var(--muted); margin-top: 8px; }
 .lane { display: grid; grid-template-columns: 210px 1fr; gap: 0 24px; margin-top: 22px; align-items: baseline; }
 .lane .k { font: 600 24px/1.3 var(--f); }
 .lane .k.ok { color: var(--ok); } .lane .k.bad { color: var(--bad); }
 .steps { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font: 400 22px/1.4 var(--f); }
 .steps span.s { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 12px; }
 .steps span.arrow { color: var(--muted); }
+.steps .tx { font: 400 18px/1.4 var(--m); color: var(--muted); margin-left: 6px; }
 
 /* tiles */
-.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 44px; }
-.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 36px 34px; }
-.tile b { display: block; font: 600 60px/1 var(--f); letter-spacing: -0.02em; }
-.tile span { display: block; font: 500 23px/1.35 var(--f); margin-top: 14px; }
-.tile em { display: block; font-style: normal; font: 400 19px/1.4 var(--f); color: var(--muted); margin-top: 8px; }
-.honest { margin-top: 36px; border-left: 3px solid var(--warn); padding: 4px 0 4px 24px; font: 400 23px/1.5 var(--f); color: var(--muted); max-width: 1680px; }
-.honest b { color: var(--ink); font-weight: 500; }
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 34px 34px; }
+.tile b { display: block; font: 600 64px/1 var(--f); letter-spacing: -0.02em; }
+.tile span { display: block; font: 500 24px/1.35 var(--f); margin-top: 14px; }
+.tile em { display: block; font-style: normal; font: 400 20px/1.45 var(--f); color: var(--muted); margin-top: 8px; }
 
-/* ux */
-.ux { display: grid; grid-template-columns: 1040px 1fr; gap: 56px; margin-top: 40px; align-items: start; }
-.ux img { width: 1040px; border: 1px solid var(--rule); border-radius: 10px; display: block; }
+/* product shots (slide 10): generated by export.mjs --refresh-shots, 2x */
+.shots { display: grid; grid-template-columns: 1120px 1fr; gap: 48px; margin-top: 30px; align-items: start; }
+.shot { display: block; border: 1px solid var(--rule-2); border-radius: 10px; box-shadow: 0 18px 40px -28px rgba(36, 33, 30, .45); background: var(--surface); }
+.shot.main { width: 1120px; -webkit-mask-image: linear-gradient(to bottom, #000 90%, transparent); mask-image: linear-gradient(to bottom, #000 90%, transparent); }
+.shot.zoom { width: 470px; }
+.cap { font: 400 20px/1.45 var(--f); color: var(--muted); margin-top: 14px; }
+.cap b { color: var(--ink); font-weight: 500; }
 
 /* feedback */
-.fb { display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; margin-top: 36px; }
-.fb .row { border-top: 1px solid var(--rule); padding: 26px 0; display: grid; grid-template-columns: 44px 1fr; }
+.fb { display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; margin-top: 32px; }
+.fb .row { border-top: 1px solid var(--rule); padding: 20px 0; display: grid; grid-template-columns: 44px 1fr; }
 .fb .row .i { font: 600 24px/1.35 var(--f); color: var(--muted); }
-.fb .row b { font: 600 28px/1.35 var(--f); display: block; }
-.fb .row span { font: 400 23px/1.45 var(--f); color: var(--muted); display: block; margin-top: 6px; }
+.fb .row b { font: 600 25px/1.35 var(--f); display: block; }
+.fb .row span { font: 400 21px/1.45 var(--f); color: var(--muted); display: block; margin-top: 4px; }
 
-/* close */
-.ledger td { font-size: 25px; padding: 18px 16px 18px 0; }
-.ledger td.h2 { font: 400 21px/1.3 var(--m); }
-.next li { font-size: 26px; padding-bottom: 18px; }
+/* compliance */
+.posture td { font-size: 23px; padding: 15px 24px 15px 0; }
+.posture td.k { width: 230px; }
+.posture td.not { color: var(--muted); }
 
-/* placeholders: work still landing, replaced before submission */
-.ph { font-family: var(--m); font-size: 0.82em; color: var(--warn); background: #FBF1DF; border-radius: 4px; padding: 0 6px; white-space: nowrap; }
-
-/* terminal and command lines */
-.term { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 26px 30px; font: 400 21px/1.62 var(--m); color: var(--ink); }
-.term .p { color: var(--muted); }
-.term .ok { color: var(--ok); font-weight: 600; }
-.term .dim { color: var(--muted); }
-.term a { text-decoration: none; border-bottom: 1px solid var(--rule-2); }
-.cmdline { margin-top: 34px; background: var(--ink); color: var(--paper); border-radius: 10px; padding: 22px 28px; font: 400 25px/1.4 var(--m); white-space: nowrap; overflow: hidden; }
-.cmdline .p { color: var(--salmon); }
-.cmdline .ph { background: #3A3531; color: #F2C98A; }
-
-/* before/after */
-.ba td { font-size: 24px; padding: 16px 16px 16px 0; }
-.ba td.was { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--rule-2); }
-.ba td.now { font-weight: 600; }
-
-/* labels */
-.labels { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 26px; }
-.labels span { font: 500 20px/1 var(--f); color: var(--ink); border: 1px solid var(--rule-2); border-radius: 999px; padding: 10px 16px; background: var(--surface); }
-
-/* key reveal sequence */
-.seq { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 40px; border-top: 2px solid var(--ink); }
-.seq div { padding: 20px 26px 0 0; }
-.seq i { font-style: normal; font: 500 19px/1 var(--f); color: var(--muted); display: block; margin-bottom: 12px; }
-.seq b { display: block; font: 600 27px/1.2 var(--f); }
-.seq span { display: block; font: 400 21px/1.42 var(--f); color: var(--muted); margin-top: 8px; }
-.seq code { font: 400 19px/1.3 var(--m); color: var(--ink); background: var(--hover); border-radius: 5px; padding: 1px 6px; }
+/* team and links */
+.person { border-top: 1px solid var(--rule); padding: 20px 0; }
+.person b { display: block; font: 600 30px/1.2 var(--f); }
+.person span { display: block; font: 400 23px/1.45 var(--f); color: var(--muted); margin-top: 6px; }
+.links td { font-size: 23px; padding: 13px 20px 13px 0; }
+.links td.v { font: 400 19px/1.4 var(--m); color: var(--ink); }
+.links td.v[data-link] { font: 400 23px/1.4 var(--f); color: var(--muted); }
+.links td.v[data-link] a { font: 400 19px/1.4 var(--m); color: var(--ink); }
 
 /* pixel agent: one cell of design/character/sprite-sheet.png (64 x 48), integer scale */
 .agent { width: 256px; height: 192px; background-image: url('../../../design/character/sprite-sheet.png'); background-size: 1024px 1536px; background-repeat: no-repeat; image-rendering: pixelated; image-rendering: crisp-edges; }
-.agent.s3 { width: 128px; height: 96px; background-size: 512px 768px; }
-.agent-strip { display: grid; grid-template-columns: repeat(5, 136px); gap: 0; margin-top: 20px; overflow: hidden; }
-.agent-strip .agent { margin-left: -4px; }
-.agent-strip figure { margin: 0; }
-.agent-strip figcaption { font: 500 19px/1.3 var(--f); color: var(--muted); text-align: center; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -178,70 +173,89 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
     <img class="lockup" src="../../../design/brand/lockup.svg" alt="ResearchAgent">
     <div class="agent" role="img" aria-label="The ResearchAgent pixel agent carrying a verified page" style="background-position:-256px -1152px;margin:-24px -12px 0 0"></div>
   </div>
-  <h1 class="hero" style="margin-top:28px">Research with a wallet.</h1>
-  <p class="lead" style="font-size:38px;max-width:1540px">An agent that answers from free sources first, then buys the articles it is missing from their writers (at most one per round, up to three rounds), <b>over x402 on the XRP Ledger</b>, inside a budget you set. The writer is paid only by publishing the article’s key on the ledger.</p>
+  <h1 class="hero">Research with a wallet.</h1>
+  <p class="lead" style="font-size:36px;max-width:1560px">ResearchAgent answers from free sources first, then pays writers for the articles it is still missing, <b>over x402 on the XRP Ledger</b>, inside a budget you set. A model recommends; only policy code can pay.</p>
   <div class="grow"></div>
-  <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-    <span class="env">XRPL Testnet · no real money</span>
-    <span class="env" style="--warn:var(--salmon)">Demo writers are fictional; team-authored notes are labelled · TEST-SGD stands in for RLUSD</span>
-    <span class="env" style="--warn:var(--rule-2)">Runs on your machine · no hosted instance</span>
+  <div class="ways">
+    <div class="row"><div class="k">Try it live</div><div class="v"><a href="https://ra-front-651013803640.asia-southeast1.run.app">https://ra-front-651013803640.asia-southeast1.run.app</a> · <!--f:hosted-->Shared XRPL Testnet sandbox · no real value · open 13–19 Nov<!--/f--></div></div>
+    <div class="row"><div class="k">Watch a run</div><div class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">collaboration95.github.io/theFastandtheFungible/demo/</a> · a recorded Testnet run, any time</div></div>
   </div>
-  <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of 7 Nov 2026</span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
+  <div class="cmdline" style="margin-top:24px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz try --testnet<!--/f--></div>
+  <div style="margin-top:24px"><span class="env">XRPL Testnet · no real value · fictional writers, plus our own labelled build notes · TEST-SGD stands in for RLUSD</span></div>
+  <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of <!--f:as_of-->10 Nov 2026<!--/f--> at <!--f:sha-->522d32e0<!--/f--></span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Reachability (25%) first: three ways in on the first page, none needing an install. Sets the honesty frame for every other criterion.</p>
+    <p><b>Say:</b> ResearchAgent is research with a wallet. It answers from free sources, then buys the articles it is missing straight from the writer, over x402 on the XRP Ledger, inside your budget. Everything runs on XRPL Testnet, and you can try it in the live sandbox until 19 November.</p>
+  </aside>
 </section>
 
 <!-- 2 · Since SingHacks -->
 <section class="slide" data-title="Since SingHacks">
-  <div class="crit">Progress since SingHacks</div>
-  <h1>From a prototype a human approved, to one line that pays on Testnet</h1>
-  <div class="tl">
-    <div class="pre"><div class="d">19–20 Sep</div><div class="v">SingHacks</div><div class="t">Prototype: a human approved every purchase.</div></div>
-    <div class="pre"><div class="d">10 Oct</div><div class="v">AI Tinkerers</div><div class="t">Live demo; first Testnet payments 7–9 Oct.</div></div>
-    <div><div class="d">2–3 Nov</div><div class="v">v0.1–v0.8</div><div class="t">MCP server, Mac app, escrow, hire the agent, audit trail.</div></div>
-    <div><div class="d">4 Nov</div><div class="v">rc.1</div><div class="t">Install without cloning.</div></div>
-    <div><div class="d">5 Nov</div><div class="v">rc.2</div><div class="t">Real Testnet without cloning; key reveal by default.</div></div>
-    <div><div class="d">7 Nov</div><div class="v">v1.0.1</div><div class="t"><span class="mono" style="font-size:20px">try</span>, TEST-SGD escrow, team notes, Settings.</div></div>
-    <div><div class="d">8 Nov</div><div class="v">v1.0.2</div><div class="t">Anchor-pending fix, anchored abstentions in the app, honest plan text.</div></div>
-    <div class="next"><div class="d">12 Nov</div><div class="v">Finals</div><div class="t">Final acceptance, then the pitch.</div></div>
+  <div class="crit">Progress since SingHacks · <!--f:event-->19–20 Sep 2026<!--/f--></div>
+  <h1>From a hackathon prototype to a product anyone can check on the ledger</h1>
+  <p class="lead" style="font-size:26px;margin-top:18px"><!--f:singhacks_then-->At SingHacks the prototype let a language model plan each purchase; payment was a fixture by default, with optional Testnet settlement.<!--/f--></p>
+  <table style="margin-top:28px">
+    <tr><th style="width:250px"></th><th style="width:520px">At SingHacks</th><th>Now</th></tr>
+    <tr><td class="k">Who decides to buy</td><td class="was">A language model planned each purchase</td><td>Policy code buys within your budget; a decision model only scores</td></tr>
+    <tr><td class="k">Fair exchange</td><td class="was">Pay first, then read</td><td>Key-reveal escrow: the writer is paid only by publishing the article’s key</td></tr>
+    <tr><td class="k">Refunds</td><td class="was">None</td><td>A broken promise is refunded on the ledger</td></tr>
+    <tr><td class="k">Proof</td><td class="was">Citations checked inside the app</td><td>An offline verifier anyone can run, in TypeScript or Python</td></tr>
+    <tr><td class="k">Ways in</td><td class="was">One web page</td><td>A live sandbox, an MCP server for Claude Code and Codex, SDKs and a Mac app</td></tr>
+  </table>
+  <div class="stats" style="margin-top:36px">
+    <div class="stat"><b><!--f:prs-->217<!--/f--></b><span>pull requests merged since <!--f:since-->21 Sep<!--/f--></span></div>
+    <div class="stat"><b><!--f:releases-->13<!--/f--></b><span>releases, v0.1.0 to <!--f:release-->v1.0.2<!--/f--></span></div>
+    <div class="stat"><b><!--f:transactions-->61<!--/f--></b><span>Testnet transactions you can re-check live on our ledger page</span></div>
+    <div class="stat"><b><!--f:vectors-->224<!--/f--></b><span>receipt test vectors; two independent verifiers agree on all</span></div>
   </div>
-  <div class="stats">
-    <div class="stat"><b>183</b><span>pull requests merged since SingHacks (21 Sep–7 Nov)</span></div>
-    <div class="stat"><b>13</b><span>tagged releases, v0.1.0 → v1.0.2</span></div>
-    <div class="stat"><b>1,369</b><span>TypeScript tests at post-#398 integration; 258 Python tests (#393)</span></div>
-    <div class="stat"><b>224</b><span>shared receipt-conformance vectors; the TypeScript and Python verifiers agree on all</span></div>
-  </div>
-  <div class="src"><span>gh pr list --state merged · gh release list · PRs #381 (vectors), #393 (Python), #396 (post-#398 TypeScript count) · docs/SFF-PUSH.md</span><span class="n">2 / 12</span></div>
+  <div class="src"><span>Counted at <!--f:sha-->522d32e0<!--/f--> on <!--f:as_of-->10 Nov 2026<!--/f--> (git and gh queries in site/progress/data.json) · “At SingHacks” is the tag hackathon-baseline</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> all six; this is the organisers’ “progress since SingHacks” requirement. Strongest for Technical depth (who may spend) and Creativity (key reveal).</p>
+    <p><b>Say:</b> At SingHacks a language model planned each purchase and payment was simulated by default. Since then: policy code buys, writers are paid by key reveal, refunds happen on the ledger, and anyone can verify a receipt offline. The old deck line about people approving purchases was wrong; do not repeat it.</p>
+  </aside>
 </section>
 
-<!-- 3 · Zero clone -->
+<!-- 3 · One line -->
 <section class="slide" data-title="One line, real ledger">
-  <div class="crit">Reachability · zero clone</div>
-  <h1>One line, no clone: the whole judge path on real Testnet</h1>
-  <div class="cmdline"><span class="p">$</span> npx -y …/releases/download/<span class="ph">v1.0.2</span>/researchagent-mcp-<span class="ph">1.0.2</span>.tgz try --testnet</div>
-  <div class="grid g2" style="grid-template-columns:1.22fr 1fr;gap:48px;margin-top:30px">
-    <div class="term">
-      <div class="dim">Testnet · no real value · Fixture models and fictional writers</div>
-      <div>1. Create <a href="https://testnet.xrpl.org/transactions/9126E19D7BE8356061F7F44756E64FE6FB12C6B5F99621661D00DEA9B015B8CD">9126E19D…B015B8CD</a></div>
-      <div>2. Finish · sha256(K) = Condition ✓ <a href="https://testnet.xrpl.org/transactions/805AA52FE5E45FBC7EB07D3B0B839E62C9BCDBE161D4117C17B40A6E1342EBB6">805AA52F…1342EBB6</a></div>
-      <div>3. Refund · writer-signed <a href="https://testnet.xrpl.org/transactions/BFAC5EF03F3A6C757CE51A8AC19CA76AF2E4F58C6058A195BDD9A6DE020585D1">BFAC5EF0…020585D1</a></div>
-      <div>4. Re-buy create <a href="https://testnet.xrpl.org/transactions/278087AB2F911C8CA3C9B5DF38225205787D607FC9FA4D72C94B585F0749871B">278087AB…0749871B</a></div>
-      <div>5. Re-buy finish ✓ <a href="https://testnet.xrpl.org/transactions/484A818ADDE5528EA82EE3812CFB7116E3DD396E411EDD11DB8946FAEB4C2EC8">484A818A…AEB4C2EC8</a></div>
-      <div>6. Anchor <a href="https://testnet.xrpl.org/transactions/22081E19930E06E415EF85DC339BEC16D7FD775E453E8099C69AE064A1E922F9">22081E19…A1E922F9</a></div>
-      <div class="ok">PASS testnet 12/12 (read-only, s.altnet)</div>
-      <div class="ok">RESULT PASS</div>
-      <div class="dim">Finished in 82.0 s · budget S$2.00 · spent S$0.70</div>
+  <div class="crit">Reachability · one line, no clone</div>
+  <h1>One line runs the whole money path on real Testnet</h1>
+  <div class="cmdline" style="margin-top:28px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz try --testnet<!--/f--></div>
+  <div class="cols" style="grid-template-columns:1100px 1fr;gap:48px;margin-top:22px">
+    <div class="term" data-evidence="docs/evidence/r5-a/try-fresh-output.txt">
+        <div class="dim">Testnet · no real value · Fixture models and fictional writers</div>
+        <div>1. Create: <a href="https://testnet.xrpl.org/transactions/04900C76955DEF9AB86F0E0A03BCB25052887125D557B986A6EB884A16DB031C">04900C76…16DB031C</a></div>
+        <div>2. Finish · sha256(K) = Condition ✓: <a href="https://testnet.xrpl.org/transactions/E95BED8EA5A56C8F7CD250E75077ED7A20A167930A0B7462849C4B44FABF6EAA">E95BED8E…FABF6EAA</a></div>
+        <div>3. Refund · writer-signed · fixture writer cooperates (a real writer could refuse): <a href="https://testnet.xrpl.org/transactions/B248161AECFEF3F01CA1B96F994551007673C088593972CE0DDCF799F785E2BB">B248161A…F785E2BB</a></div>
+        <div>4. Re-buy create: <a href="https://testnet.xrpl.org/transactions/2F5C3D75E81AC904E411A74E60A8CD123A3AB92B98855A61339A14582D9FD1FF">2F5C3D75…2D9FD1FF</a></div>
+        <div>5. Re-buy finish · sha256(K) = Condition ✓: <a href="https://testnet.xrpl.org/transactions/528DFA6F196D600CE037BF0F171FCD1AFB498A8BF7455EF6A5C1C19392CDC389">528DFA6F…92CDC389</a></div>
+        <div>6. Anchor: <a href="https://testnet.xrpl.org/transactions/7D5B506B02AEBA15991AD9B9B501C0395EBD93C1DAFB70116DDABA55A6DBCEE7">7D5B506B…A6DBCEE7</a></div>
+        <div class="dim">VERIFY c349c3ec-ae93-4c2e-9bfd-190aa146bd6b</div>
+        <div class="ok">PASS CONTRIBUTIONS 1/1</div>
+        <div class="ok">PASS MANIFEST   7/7</div>
+        <div class="ok">PASS PASSAGES   7/7</div>
+        <div class="ok">PASS CITATION   16/16</div>
+        <div class="ok">PASS GRANT      1/1</div>
+        <div class="ok">PASS RECEIPT    3/3</div>
+        <div class="ok">PASS REFUND     2/2</div>
+        <div class="ok">PASS AUDIT CHAIN 1/1</div>
+        <div class="ok">PASS testnet 12/12 (read-only, s.altnet)</div>
+        <div class="dim">SKIP writer credentials: Unsigned advisory identity; requires online check</div>
+        <div class="dim">SKIP historical origin: v1 origin unresolved; original singleton semantics</div>
+        <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22132261</div>
+        <div>Finished in 69.0 s · budget S$2.00 · net S$0.40 · gross S$0.70</div>
+        <div class="ok">RESULT PASS</div>
     </div>
     <div>
-      <table class="ba">
-        <tr><th>Fresh npm cache, one Mac</th><th class="r">rc.2</th><th class="r">Now</th></tr>
-        <tr><td>try: install → six links → RESULT PASS</td><td class="r was">—</td><td class="r now">84.2 s</td></tr>
-        <tr><td>MCP package</td><td class="r was">21.4 MB</td><td class="r now">3.4 MB</td></tr>
-        <tr><td>MCP cold initialize</td><td class="r was">56.5 s</td><td class="r now">6.3 s</td></tr>
-        <tr><td>Local web app ready</td><td class="r was">134 s</td><td class="r now">27.0 s</td></tr>
-      </table>
-      <p class="honest" style="margin-top:26px;font-size:21px">Measured 7 Nov with fresh faucet wallets. <b>Two of four cold attempts beat the 90 s deadline</b> (73.8 s, 84.2 s); two overran. If the faucet fails, it prints a labelled SIMULATED run and its reason.</p>
+      <div class="big"><!--f:try_s-->84.2<!--/f--> s<small>from an empty npm cache to six Testnet links and RESULT PASS: buy, refund a broken promise, re‑buy, anchor, verify. One cold run on one Mac.</small></div>
+      <div class="big" style="font-size:64px"><!--f:try_misses-->2 of 4<!--/f--><small>cold runs overran the <!--f:try_limit-->90<!--/f--> s target. We keep the misses.</small></div>
+      <p class="cap" style="margin-top:40px">If the faucet fails, it prints a labelled SIMULATED run and the reason. The output here is a committed fresh-state run; its own clock excludes the npm download. Links are shortened to their hashes.</p>
     </div>
   </div>
-  <div class="src"><span>PR #387 · docs/evidence/round4-j2/ (try-output.txt, try-timing.json, cold-timings.json, try-timeout*.json) · before = round-4 mock-judge observations on rc.2</span><span class="n">3 / 12</span></div>
+  <div class="src"><span>Output: docs/evidence/r5-a/try-fresh-output.txt (7 Nov) · cold timings: docs/evidence/round4-j2/ · fixture models, fictional writers, faucet wallets</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Reachability (25%): no clone, no account, no key. Feasibility (20%): honest cold timing, misses kept. Technical depth: the same run verifies its own receipts against the ledger.</p>
+    <p><b>Say:</b> Today a judge opens one link, or runs one line with no clone and no account. It buys, catches a broken promise, gets refunded, re-buys, anchors the answer and prints RESULT PASS with six Testnet links.</p>
+  </aside>
 </section>
 
 <!-- 4 · How a run works -->
@@ -249,206 +263,303 @@ tr.sum td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--ink)
   <div class="crit">What we built</div>
   <h1>One question, one budget, and only code can spend it</h1>
   <div class="flow">
-    <div><i>1</i><b>Ask</b><span>A question and a budget, S$0 to S$5.</span></div>
-    <div><i>2</i><b>Confirm the plan</b><span>A 5-second sheet. It confirms the plan, not a purchase.</span></div>
-    <div><i>3</i><b>Search writers</b><span>Each writer returns abstracts and a signed fact menu, never premium text.</span></div>
-    <div><i>4</i><b>Decide</b><span>A decision model judges what is worth buying, weighted by trust.</span></div>
-    <div><i>5</i><b>Pay</b><span>Policy code locks payment in a key-reveal escrow on XRPL, within S$1 per source.</span></div>
-    <div><i>6</i><b>Verify, answer, anchor</b><span>Decrypt, check every promise, refund a broken one, cite, anchor the audit head.</span></div>
+    <div><i>1</i><b>Ask</b><span>A question and a budget you set.</span></div>
+    <div><i>2</i><b>Confirm the plan</b><span>A short sheet confirms the plan, not a purchase.</span></div>
+    <div><i>3</i><b>Search writers</b><span>Writers return abstracts and signed promises, never premium text.</span></div>
+    <div><i>4</i><b>Decide</b><span>A decision model scores what is worth buying, weighted by trust.</span></div>
+    <div><i>5</i><b>Pay</b><span>Policy code locks payment in a key-reveal escrow on XRPL.</span></div>
+    <div><i>6</i><b>Verify and answer</b><span>Decrypt, check every promise, refund a broken one, cite, anchor.</span></div>
   </div>
-  <div class="gates">
+  <div class="cols gates" style="grid-template-columns:1.1fr 1fr;gap:64px;margin-top:56px">
     <div>
-      <div style="font:600 30px/1.2 var(--f);margin-bottom:18px">Five hard gates, on every run</div>
+      <div class="h3" style="margin-bottom:18px">Five hard gates, on every run</div>
       <ol>
         <li>No premium bytes before a grant.</li>
-        <li>The budget is the only spending authority; only policy code can buy, never the LLM.</li>
+        <li>The budget is the only spending authority; only policy code can buy, never the language model.</li>
         <li>One charge per intent, across retries and restarts.</li>
         <li>Every citation points at a delivered passage.</li>
         <li>Anything simulated or substituted is labelled.</li>
       </ol>
     </div>
     <div>
-      <div class="big">0 violations<small>Read-only gate audit: 10 runs, 568 observations, 48 fresh questions (3 Nov). Chaos: 200 runs with real SIGKILLs, 0 double charges (4 Nov). MCP spending caps default to zero; the calling model cannot raise them.</small></div>
+      <div class="big"><!--f:heldout_violations-->0<!--/f--> gate violations<small>across the <!--f:heldout_bank-->v4<!--/f--> held-out and off-topic question banks on Testnet (<!--f:heldout_on-->7 Nov<!--/f-->).</small></div>
+      <p class="cap" style="font-size:24px;margin-top:36px;max-width:720px">Spending caps for MCP clients default to zero, and the calling model cannot raise them.</p>
     </div>
   </div>
-  <div class="src"><span>README · Hard guarantees · scripts/gate-audit.ts · tests/purchase.test.ts · PRs #376, #377, #381 (chaos runs) · mcp/policy.ts</span><span class="n">4 / 12</span></div>
+  <div class="src"><span>README · Hard guarantees · docs/evidence/v4-heldout/README.md · mcp/policy.ts</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Technical depth (20%): architecture, autonomy and safeguards. Creativity: the model scores, code buys.</p>
+    <p><b>Say:</b> The model only recommends. Policy code spends, inside the budget, and five hard gates hold on every run. Our held-out banks had zero gate violations.</p>
+  </aside>
 </section>
 
 <!-- 5 · Key reveal -->
-<section class="slide" data-title="Creativity: key-reveal escrow">
-  <div class="crit">Creativity · 20%</div>
+<section class="slide" data-title="Key-reveal escrow">
+  <div class="crit">Creativity</div>
   <h1>The writer is paid only by publishing the key: delivery and payment are one ledger event</h1>
   <div class="seq">
-    <div><i>Writer</i><b>Encrypt and promise</b><span>Fresh key K per buyer. Signs the quote: <code>sha256(K)</code>, ciphertext hash, passage manifest, price.</span></div>
+    <div><i>Writer</i><b>Encrypt and promise</b><span>A fresh key K per buyer. Signs the quote: <code>sha256(K)</code>, ciphertext hash, passage manifest, price.</span></div>
     <div><i>Buyer policy</i><b>EscrowCreate</b><span>Native XRPL Escrow. Condition = <code>sha256(K)</code>, with a CancelAfter deadline.</span></div>
     <div><i>Writer</i><b>EscrowFinish</b><span>To be paid, the writer must reveal K as the fulfilment. K is now public on the ledger.</span></div>
-    <div><i>Buyer policy</i><b>Decrypt and check</b><span>AES-256-GCM decrypt, check every promised passage, then grant and cite.</span></div>
+    <div><i>Buyer policy</i><b>Decrypt and check</b><span>Decrypt, check every promised passage, then grant and cite.</span></div>
   </div>
   <div style="margin-top:40px">
-    <div class="lane"><div class="k ok">Promise kept</div><div class="steps"><span class="s">Create</span><span class="arrow">→</span><span class="s">Finish, K revealed</span><span class="arrow">→</span><span class="s">decrypt ✓ passages ✓</span><span class="arrow">→</span><span class="s">cited</span><span class="mono" style="font-size:18px;color:var(--muted)"><a href="https://testnet.xrpl.org/transactions/278087AB2F911C8CA3C9B5DF38225205787D607FC9FA4D72C94B585F0749871B">278087AB…</a> → <a href="https://testnet.xrpl.org/transactions/484A818ADDE5528EA82EE3812CFB7116E3DD396E411EDD11DB8946FAEB4C2EC8">484A818A…</a></span></div></div>
-    <div class="lane"><div class="k bad">Promise broken</div><div class="steps"><span class="s">Create</span><span class="arrow">→</span><span class="s">Finish, K revealed</span><span class="arrow">→</span><span class="s">claim missing</span><span class="arrow">→</span><span class="s">writer-signed refund + fraud proof</span><span class="mono" style="font-size:18px;color:var(--muted)"><a href="https://testnet.xrpl.org/transactions/805AA52FE5E45FBC7EB07D3B0B839E62C9BCDBE161D4117C17B40A6E1342EBB6">805AA52F…</a> → <a href="https://testnet.xrpl.org/transactions/BFAC5EF03F3A6C757CE51A8AC19CA76AF2E4F58C6058A195BDD9A6DE020585D1">BFAC5EF0…</a></span></div></div>
-    <div class="lane"><div class="k">Writer no-show</div><div class="steps"><span class="s">Create</span><span class="arrow">→</span><span class="s">no key by CancelAfter</span><span class="arrow">→</span><span class="s">EscrowCancel, principal back, nothing granted</span><span class="mono" style="font-size:18px;color:var(--muted)"><a href="https://testnet.xrpl.org/transactions/8DA4ECE71145A50A5B45AABAD90775897D527686E024FADAFA2D1E168E732948">8DA4ECE7…</a> → <a href="https://testnet.xrpl.org/transactions/F89DD9B12A6C942E53C004EE247D7EE61B26470905C621FF105A4669961EEB30">F89DD9B1…</a></span></div></div>
+    <div class="lane"><div class="k ok">Promise kept</div><div class="steps"><span class="s">Create</span><span class="arrow">→</span><span class="s">Finish, K revealed</span><span class="arrow">→</span><span class="s">decrypt ✓ passages ✓</span><span class="arrow">→</span><span class="s">cited</span><span class="tx"><a href="https://testnet.xrpl.org/transactions/2F5C3D75E81AC904E411A74E60A8CD123A3AB92B98855A61339A14582D9FD1FF">2F5C3D75…</a> → <a href="https://testnet.xrpl.org/transactions/528DFA6F196D600CE037BF0F171FCD1AFB498A8BF7455EF6A5C1C19392CDC389">528DFA6F…</a></span></div></div>
+    <div class="lane"><div class="k bad">Promise broken</div><div class="steps"><span class="s">Create</span><span class="arrow">→</span><span class="s">Finish, K revealed</span><span class="arrow">→</span><span class="s">claim missing</span><span class="arrow">→</span><span class="s">writer-signed refund + fraud proof</span><span class="tx"><a href="https://testnet.xrpl.org/transactions/E95BED8EA5A56C8F7CD250E75077ED7A20A167930A0B7462849C4B44FABF6EAA">E95BED8E…</a> → <a href="https://testnet.xrpl.org/transactions/B248161AECFEF3F01CA1B96F994551007673C088593972CE0DDCF799F785E2BB">B248161A…</a></span></div></div>
+    <div class="lane"><div class="k">Writer no-show</div><div class="steps"><span class="s">Create</span><span class="arrow">→</span><span class="s">no key by CancelAfter</span><span class="arrow">→</span><span class="s">EscrowCancel: money back, nothing granted</span><span class="tx"><a href="https://testnet.xrpl.org/transactions/8DA4ECE71145A50A5B45AABAD90775897D527686E024FADAFA2D1E168E732948">8DA4ECE7…</a> → <a href="https://testnet.xrpl.org/transactions/F89DD9B12A6C942E53C004EE247D7EE61B26470905C621FF105A4669961EEB30">F89DD9B1…</a></span></div></div>
   </div>
-  <p class="honest" style="margin-top:34px"><b>What the ledger does and doesn’t enforce.</b> Key reveal makes <b>delivery</b> atomic: no key, no payment. <b>Quality</b> rests on the signed promises, a fraud proof anyone can check, and reputation. After a finish, the refund is writer-signed: our fixture writer cooperates, and a real writer could refuse. No smart contract: Escrow with a PREIMAGE-SHA-256 condition is native XRPL.</p>
-  <div class="src"><span>docs/key-reveal-escrow.md · PRs #377, #379, #387 (try run, 7 Nov) · no-show: TEST-SGD run, docs/evidence/round3-e/runs.json · fixture models, fictional writers</span><span class="n">5 / 12</span></div>
+  <p class="honest" style="margin-top:40px"><b>What the ledger does and doesn’t enforce.</b> Key reveal makes <b>delivery</b> atomic: no key, no payment. <b>Quality</b> rests on the signed promises, a fraud proof anyone can check, and reputation. After a finish, the refund is writer-signed: our fixture writer cooperates, and a real writer could refuse. No smart contract: Escrow with a PREIMAGE-SHA-256 condition is native XRPL.</p>
+  <div class="src"><span>docs/key-reveal-escrow.md · kept and broken: the slide 3 run (docs/evidence/r5-a/) · no-show: docs/evidence/round3-e/runs.json · fixture models, fictional writers</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Creativity (20%): a new use of a native XRPL primitive for agent commerce. Technical depth: crypto-condition escrow, no smart contract.</p>
+    <p><b>Say:</b> Here is what’s new. The writer only gets paid by publishing the article’s key on the ledger. We lock payment in a native XRPL escrow whose condition is the hash of that key, so delivery and payment become one ledger event.</p>
+  </aside>
 </section>
 
 <!-- 6 · Stablecoin escrow -->
 <section class="slide" data-title="Stablecoin escrow">
   <div class="crit">Creativity · Technical depth</div>
   <h1>The same key-reveal escrow, settled in a stablecoin-style token</h1>
-  <div class="grid g2" style="grid-template-columns:1.1fr 1fr;gap:56px;margin-top:40px">
+  <div class="cols" style="grid-template-columns:1.1fr 1fr;gap:64px;margin-top:44px">
     <div>
-      <div style="font:600 30px/1.2 var(--f)">TEST-SGD through XLS-85 token escrow</div>
+      <div class="h3">TEST-SGD through XLS-85 token escrow</div>
       <ul class="points" style="margin-top:22px">
-        <li><b>Opt in:</b> add <span class="mono" style="font-size:21px">--iou</span> to the zero-clone MCP or web app. S$1 maps to 1 TEST-SGD.</li>
+        <li><b>Opt in</b> with <code>--iou</code> on the MCP server or the web app.</li>
         <li><b>Preflight refuses</b> a missing issuer locking permission, frozen or unauthorized trust lines, short balances and transfer fees.</li>
-        <li><b>Both verifiers</b> check currency, issuer and the writer’s trust-line balance change, since EscrowFinish has no delivered_amount: TypeScript and Python PASS 6/6.</li>
-        <li><b>Testnet runs:</b> three purchases in 15.0–18.4 s; a no-show cancel returned the principal in 132.3 s.</li>
+        <li><b>Both verifiers</b> check currency, issuer and the writer’s trust-line balance change, because EscrowFinish has no delivered_amount.</li>
       </ul>
-      <div class="term" style="margin-top:8px;font-size:19px;padding:18px 24px">create <a href="https://testnet.xrpl.org/transactions/E36AF9F1F91820FE1F23ED1F0C68638422F0A1AF2A3BE55111B1C63418878C5C">E36AF9F1…18878C5C</a> · finish <a href="https://testnet.xrpl.org/transactions/384CA34FAC2F8562A2148FA843B6E10481BBE75BAA9BD777247E00D0181C02F5">384CA34F…0181C02F5</a> · anchor <a href="https://testnet.xrpl.org/transactions/8174E3BE19B5BA668EFFA42124F6C4CF37C0B2F5D3918229881C04218ADC35A3">8174E3BE…ADC35A3</a></div>
+      <div class="term" style="margin-top:8px;font-size:18px;padding:16px 24px"><div>create <a href="https://testnet.xrpl.org/transactions/E36AF9F1F91820FE1F23ED1F0C68638422F0A1AF2A3BE55111B1C63418878C5C">E36AF9F1…18878C5C</a> · finish <a href="https://testnet.xrpl.org/transactions/384CA34FAC2F8562A2148FA843B6E10481BBE75BAA9BD777247E00D0181C02F5">384CA34F…181C02F5</a> · anchor <a href="https://testnet.xrpl.org/transactions/8174E3BE19B5BA668EFFA42124F6C4CF37C0B2F5D3918229881C04218ADC35A3">8174E3BE…8ADC35A3</a></div></div>
     </div>
     <div>
-      <div style="font:600 30px/1.2 var(--f)">Official RLUSD: payments yes, escrow one flag away</div>
+      <div class="h3">Official RLUSD: one issuer flag away</div>
       <ul class="points" style="margin-top:22px">
-        <li><b>Payments work.</b> On 3 Nov, official Testnet RLUSD paid a writer 0.90 (<a class="mono" style="font-size:19px" href="https://testnet.xrpl.org/transactions/1F2449A4660747066E99A89CEA5B49276D266F35820789042A8694EDB1DA23AF">1F2449A4…</a>) and a broken promise was refunded 0.30.</li>
-        <li><b>Escrow is blocked by the issuer, not the network.</b> TokenEscrow is enabled on Testnet, but the RLUSD issuer’s flags (2174353408) lack AllowTrustLineLocking. One AccountSet by the issuer would allow it.</li>
-        <li><b>So we escrow our own token</b> and say so on every amount, receipt and ledger row. It is our top builder-feedback item.</li>
+        <li><b>Payments work.</b> Official Testnet RLUSD paid a writer on 3 Nov (<a class="mono" style="font-size:20px" href="https://testnet.xrpl.org/transactions/1F2449A4660747066E99A89CEA5B49276D266F35820789042A8694EDB1DA23AF">1F2449A4…</a>), and a broken promise was refunded.</li>
+        <li><b>Escrow is blocked by the issuer, not the network.</b> Token escrow is enabled on Testnet, but the RLUSD issuer’s flags lack AllowTrustLineLocking. One AccountSet by the issuer would allow it.</li>
+        <li><b>So we escrow our own token</b> and say so on every amount, receipt and ledger row. It is our top builder-feedback finding.</li>
       </ul>
     </div>
   </div>
-  <div class="labels"><span>TEST-SGD · IOU issued by our Testnet issuer · no real value · stand-in for RLUSD</span><span>No peg, backing or mainnet claim</span></div>
-  <div class="src"><span>PRs #381, #384 · docs/evidence/m1-iou/, round3-e/runs.json, rlusd.md · BUILDER-FEEDBACK §1 (issuer flags at ledger 22058675; refusal predicted, never submitted)</span><span class="n">6 / 12</span></div>
+  <div style="margin-top:28px"><span class="env">TEST-SGD · an IOU from our Testnet issuer · no real value · stand-in for RLUSD · no peg, backing or mainnet claim</span></div>
+  <div class="src"><span>docs/evidence/m1-iou/ · docs/evidence/rlusd.md (issuer flags 2174353408 at ledger 22058675; refusal predicted, never submitted) · BUILDER-FEEDBACK rank 1</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Creativity (20%) and Technical depth (20%): XLS-85 token escrow with issuer preflight. Builder feedback (10%): the RLUSD issuer flag is ranked finding 1.</p>
+    <p><b>Say:</b> It works in a stablecoin-style token too, through XLS-85 token escrow. Official RLUSD is one issuer flag away, and that’s our top piece of builder feedback.</p>
+  </aside>
 </section>
 
 <!-- 7 · Verify -->
-<section class="slide" data-title="Technical depth: verify">
-  <div class="crit">Technical depth · 20%</div>
+<section class="slide" data-title="Verify it">
+  <div class="crit">Technical depth</div>
   <h1>Don’t trust our agent. Verify it, against the ledger.</h1>
-  <div class="grid g2" style="grid-template-columns:1.05fr 1fr;gap:56px;margin-top:40px">
+  <div class="cols" style="grid-template-columns:1fr 1fr;gap:64px;margin-top:44px">
     <div>
-      <div class="term">
-        <div><span class="p">$</span> pip install …/researchagent-<span class="ph">1.0.2</span>…whl</div>
+      <div class="term" style="font-size:19px" data-evidence="docs/evidence/round4-j2/python-verifier.txt">
+        <div class="dim"># the Python verifier: standard library only, no Node</div>
         <div><span class="p">$</span> researchagent verify UC3.receipts.json --ledger</div>
-        <div>PASS checks: 57 PASS, 0 FAIL, 2 SKIP</div>
+        <div class="ok">PASS checks: 57 PASS, 0 FAIL, 2 SKIP</div>
         <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22057921</div>
         <div class="ok">PASS testnet 12/12 (read-only, s.altnet)</div>
         <div class="ok">RESULT PASS</div>
       </div>
-      <p class="lead" style="font-size:24px;margin-top:22px">Python, standard library only, no Node. Any receipt the app exports (Export ⋯ → receipts.json) can be checked the same way.</p>
+      <p class="cap" style="font-size:23px;margin-top:22px">Any receipt the app exports can be checked the same way, by anyone, offline or against the ledger.</p>
     </div>
     <ul class="points" style="margin-top:4px">
-      <li><b>Two independent verifiers</b>, TypeScript and Python, agree on all 224 shared vectors, including tampered amounts, issuers, refunds and a missing refund.</li>
-      <li><b>Historical 61/61 Testnet transactions re-validated live</b> on our public ledger page in 1.65 s (7 Nov), read-only.</li>
-      <li><b>Every finished Testnet answer is anchored:</b> an AccountSet whose memo is the audit-chain head, 12 drops, including a run that bought nothing.</li>
-      <li><b>Persist before submit.</b> A restart reconciles the same signed hash and never signs twice; a missing transaction is <i>pending</i>, not failed.</li>
-      <li><b>Exact delivery.</b> Partial payments rejected before submit; delivered amount, currency and issuer checked after.</li>
-      <li><b>Prompt injection can’t spend:</b> model inputs are capped and untrusted, and purchases come only from policy code.</li>
+      <li><b>Two independent verifiers</b>, TypeScript and Python, agree on all <!--f:vectors-->224<!--/f--> shared vectors: <!--f:vectors_golden-->19<!--/f--> must pass and <!--f:vectors_tampered-->205<!--/f--> tampered ones must fail.</li>
+      <li><b><!--f:transactions-->61<!--/f--> Testnet transactions</b> are re-checked live, read-only, every time our public ledger page loads.</li>
+      <li><b>Every finished answer is anchored:</b> an AccountSet whose memo is the audit-chain head, even when nothing was bought.</li>
+      <li><b>Persist before submit.</b> A restart reconciles the same signed transaction and never signs twice; a missing one is <i>pending</i>, not failed.</li>
+      <li><b>Exact delivery.</b> Partial payments are refused before submit; amount, currency and issuer are checked after.</li>
+      <li><b>Prompt injection can’t spend:</b> model inputs are untrusted, and only policy code can buy.</li>
     </ul>
   </div>
-  <div class="src"><span>PRs #377, #381, #387, #388 · docs/evidence/round4-j2/python-verifier.txt (README UC3 evidence) · round4-l4/live-ledger.json · BUILDER-FEEDBACK top five</span><span class="n">7 / 12</span></div>
+  <div class="src"><span>Output: docs/evidence/round4-j2/python-verifier.txt on docs/evidence/lane-b3/UC3.receipts.json · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Technical depth (20%): testing, security and safeguards. Reachability: the verifier is a separate install in another language.</p>
+    <p><b>Say:</b> Don’t trust us, verify it. Two independent verifiers, one in Python with no Node, re-check every receipt against the ledger. Our ledger page re-checks every historical Testnet transaction live.</p>
+  </aside>
 </section>
 
-<!-- 8 · Reachability -->
-<section class="slide" data-title="Reachability">
-  <div class="crit">Reachability · 25%</div>
+<!-- 8 · Every way in -->
+<section class="slide" data-title="Every way in">
+  <div class="crit">Reachability</div>
   <h1>Every way in runs from one package, for people and for other agents</h1>
-  <div class="grid g3" style="margin-top:30px">
-    <div class="card"><h3>One-line judge path</h3><p><code>try --testnet</code> buys, refunds, re-buys, anchors and verifies, then exits.</p><div class="num">84.2 s from an empty cache · six links · RESULT PASS</div></div>
-    <div class="card"><h3>Claude Code, any MCP client</h3><p><code>claude mcp add … --testnet</code>. Seven tools; operator caps default to zero.</p><div class="num">Cold initialize 6.3 s · <code>--iou</code> for TEST-SGD</div></div>
-    <div class="card"><h3>Local web app, no clone</h3><p><code>app --testnet</code> serves the real UI on 127.0.0.1 with faucet wallets. Ask your own question.</p><div class="num">Ready in 27.0 s from an empty cache</div></div>
-    <div class="card"><h3>SDKs: TypeScript and Python</h3><p>Ask, stream, verify. No purchase method: only backend policy can buy.</p><div class="num">Python verifier needs no Node</div></div>
-    <div class="card"><h3>Writers in one command</h3><p><code>publish ./notes --testnet</code>: faucet wallet, XRPL Credential, key-reveal escrow.</p><div class="num">Credential in 43.8 s · first try from <code>init</code>: <span class="ph">33.9 s</span></div></div>
-    <div class="card"><h3>Hire the agent over x402</h3><p>Another agent pays ResearchAgent; it buys, pays a royalty to every cited writer and returns the change.</p><div class="num">Five-hop chain on Testnet, 3 Nov</div></div>
+  <div class="grid g3" style="margin-top:36px">
+    <div class="card"><h3>In the browser</h3><p>The live sandbox: ask your own question, nothing to install.</p><div class="num"><!--f:hosted-->Shared XRPL Testnet sandbox · no real value · open 13–19 Nov<!--/f--></div></div>
+    <div class="card"><h3>Claude Code, any MCP client</h3><p><code>claude mcp add … --testnet</code>. Spending caps default to zero; the calling model can’t raise them.</p><div class="num">Cold start <!--f:mcp_init_s-->6.3<!--/f--> s · <!--f:mcp_mb-->3.4<!--/f--> MB package</div></div>
+    <div class="card"><h3>Local app, no clone</h3><p><code>app --testnet</code> serves the real app on 127.0.0.1 with faucet wallets.</p><div class="num">Ready in <!--f:app_ready_s-->27.0<!--/f--> s from an empty cache</div></div>
+    <div class="card"><h3>TypeScript and Python SDKs</h3><p>Ask, stream, verify. No purchase method: only backend policy can buy.</p><div class="num">The Python verifier needs no Node</div></div>
+    <div class="card"><h3>Writers in one command</h3><p><code>publish ./notes --testnet</code>: faucet wallet, XRPL Credential, key-reveal escrow.</p><div class="num"><!--f:writer_s-->33.9<!--/f--> s from <code>init</code> to a validated Credential</div></div>
+    <div class="card"><h3>Hire the agent over x402</h3><p>Another agent pays ResearchAgent; it buys, pays every cited writer a royalty and returns the change.</p><div class="num">Recorded on Testnet, 3 Nov</div></div>
   </div>
-  <p class="honest" style="margin-top:28px;font-size:21px"><b>XRPL questions · fixture decision model · Testnet:</b> team-authored real build notes, not independent. <b>Held-out v4 7/20</b> bought and cited, <b>0/10</b> off-topic purchases; key fact leads 2/20; 0 gate violations. Dev, not held-out: v1 16/20, v3 7/20. <b>Local only:</b> no hosted instance (<span class="ph">{{REGISTRY_STATUS}}</span>).</p>
-  <div class="src"><span>PRs #376, #378, #380, #384, #387, #390 · docs/evidence/round4-j2/, v4-heldout/, round3-c/, hire-274.md · J3 lane pending merge</span><span class="n">8 / 12</span></div>
+  <p class="honest" style="margin-top:30px"><b>Does it buy the right thing?</b> <!--f:heldout_line-->v4 blind held-out: 7/20 bought and cited, 0/10 off-topic purchases (run once, 7 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->. The key fact leads <!--f:answers_it-->2/20<!--/f--> answers. Packages: <!--f:registry-->GitHub Releases; not yet on npm, PyPI or the MCP Registry<!--/f-->.</p>
+  <div class="src"><span>docs/install.md · docs/evidence/round4-j2/ (timings) · round4-j3/slim-onboarding.json · hire-274.md · v4-heldout/README.md</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Reachability (25%): interoperability (MCP, x402 hire), developer access (SDKs, one-command writers), scale of audience (people and agents).</p>
+    <p><b>Say:</b> The same package is an MCP server for Claude Code and a local app. Ask about XRPL and it can buy from our labelled team build notes. On the blind held-out bank, seven of twenty were bought and cited, and on ten off-topic questions it bought nothing.</p>
+  </aside>
 </section>
 
 <!-- 9 · Feasibility -->
-<section class="slide" data-title="Feasibility">
-  <div class="crit">Feasibility · 20%</div>
-  <h1>Fractions of a cent in fees, and it recovers from failure</h1>
-  <div class="tiles">
-    <div class="tile"><b>435 drops</b><span>network fees per key-reveal purchase</span><em>12 create + 423 conditional finish, measured on Testnet</em></div>
-    <div class="tile"><b>S$0.00087</b><span>fees per purchase, projected</span><em>At an assumed S$2.00 per XRP; a projection, not a quote</em></div>
-    <div class="tile"><b>US$0.0026</b><span>model cost per question</span><em>Live decision and coverage models, 48 fresh questions, 3 Nov</em></div>
-    <div class="tile"><b>894 drops</b><span>all six UC3 transactions</span><em>Two buys, a refund and an anchor; anchor alone 12 drops</em></div>
-    <div class="tile"><b>43.9 s</b><span>nightly Testnet purchase in CI</span><em>Devcontainer boots and buys on real Testnet; green 6 and 7 Nov</em></div>
-    <div class="tile"><b>0</b><span>double charges under chaos</span><em>200 runs with real SIGKILLs; reconciler recovers in-flight payments</em></div>
+<section class="slide" data-title="Cost and reliability">
+  <div class="crit">Feasibility</div>
+  <h1>Fractions of a cent per purchase, and it recovers from crashes</h1>
+  <div class="tiles" style="margin-top:44px">
+    <div class="tile"><b><!--f:fee_drops-->435<!--/f--> drops</b><span>network fees per key-reveal purchase</span><em><!--f:fee_create-->12<!--/f--> to create the escrow and <!--f:fee_finish-->423<!--/f--> to finish it, because the finish carries the key: <!--f:fee_xrp-->0.000435<!--/f--> XRP, measured on Testnet.</em></div>
+    <div class="tile"><b><!--f:chaos_double-->0<!--/f--> double charges</b><span>under chaos, across retries and restarts</span><em><!--f:chaos_runs-->500<!--/f--> seeded runs with <!--f:chaos_kills-->130<!--/f--> real process kills; the reconciler recovers in-flight payments. Synthetic ledger, 3 Nov.</em></div>
   </div>
-  <p class="honest"><b>Does it buy the right things?</b> On 48 fresh synthetic questions, <b>93.15%</b> of gross article spend bought a requested fact retained in the final cited answer (95% CI 81.25–100.00%); wasted spend 6.85% (0.00–18.75%). Live decision models, fixture research, simulated payments, 3 Nov. The gain over the previous policy (+3.08 pts, 0.00–9.43) is not significant; the labels are same-vendor and await human review.</p>
-  <div class="src"><span>README cost card (round3-a) · round4-l4/judge-path.md · eval/scorecard/fresh-results.json · FRESH-AUDIT.md · codespace-testnet.yml · PRs #376, #381</span><span class="n">9 / 12</span></div>
+  <div class="h3" style="margin-top:44px">How it runs</div>
+  <ul class="points" style="margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:0 56px">
+    <li><b>Hosted for judges on Cloud Run,</b> 13–19 Nov: one shared Testnet payer, caps per visitor, owner controls off.</li>
+    <li><b>Each answer names its models:</b> live, or a labelled fixture fallback.</li>
+    <li><b>Persist before submit:</b> a restart never signs twice; a missing transaction is pending, never failed.</li>
+    <li><b>Mainnet is disabled in code.</b> What it needs is on the compliance slide and in our builder feedback.</li>
+  </ul>
+  <div class="src"><span>docs/evidence/round3-a/probe.json · docs/evidence/chaos-279-500.json · README · Status and limits</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Feasibility (20%): cost, performance, infrastructure readiness, reliability and operations.</p>
+    <p><b>Say:</b> Our measured key-reveal purchase used 435 drops in network fees. Under chaos with real process kills, it never charged twice. The hosted sandbox runs on Cloud Run with per-visitor caps.</p>
+  </aside>
 </section>
 
 <!-- 10 · UX -->
 <section class="slide" data-title="UX and design">
-  <div class="crit">UX and design · 10%</div>
+  <div class="crit">UX and design</div>
   <h1>The money is the hero, and every label tells the truth</h1>
-  <div class="ux">
-    <img src="assets/before-after.png" alt="Before and after the UX rebuild: the finished refund run and its receipt">
-    <ul class="points">
-      <li><b>One environment indicator</b> in the header: “Testnet · no real value” or “Simulated”.</li>
-      <li><b>Payment rows change state in place:</b> escrow created, key published, sha256(K) = Condition ✓, refunded. Each opens its receipt and hash.</li>
-      <li><b>A refund says why and who signed:</b> “Refund · writer-signed · fixture writer cooperates (a real writer could refuse).”</li>
-      <li><b>Proof stays out of the way:</b> “6/6 Testnet hashes verified live ✓ · show” expands on demand.</li>
-      <li><b>Motion only for money</b>; the pixel agent marks loading states only and never stands in for a receipt.</li>
-      <li><b>One Settings page</b> for the web app and the Mac app: nine sections; changes to caps and keys are guarded and audited.</li>
-    </ul>
+  <div class="shots">
+    <figure style="margin:0">
+      <img class="shot main" src="assets/ux-answer.png" alt="The ResearchAgent app after a recorded XRPL Testnet run: the answer leads with its key fact, and the payment card shows S$0.40 net of a S$2.00 budget, one article refunded by its writer and its escrow steps">
+      <figcaption class="cap"><b>One environment indicator</b> in the header · <b>each payment step</b> links to its transaction · <b>a refund says why</b></figcaption>
+    </figure>
+    <figure style="margin:0">
+      <img class="shot zoom" src="assets/ux-payment.png" alt="A payment row: The Fab Floor, paid by key reveal, with escrow created, writer published key in ledger, sha256(K) = Condition checked and ciphertext decrypts">
+      <figcaption class="cap">The kept article: paid by key reveal.</figcaption>
+    </figure>
   </div>
-  <div class="src"><span>Image: release v0.5.0 before-after.png (offline demo, simulated payments) · PRs #379, #385, #386, #388 · docs/design/UX-DIRECTION.md</span><span class="n">10 / 12</span></div>
+  <div class="src"><span>The current app replaying a recorded XRPL Testnet run (docs/evidence/round4-j1/replays/key-reveal/) · fixture models, fictional writers · captured by export.mjs --refresh-shots</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> UX and design (10%): how agent actions, payments and on-chain transactions are communicated. The rubric asks for exactly this card.</p>
+    <p><b>Say:</b> The answer leads with its key fact. The payment card is the hero: net spend against budget, each escrow step with its transaction, the key check, and a refund that says why and who signed it. One environment indicator, not a stamp on every row.</p>
+  </aside>
 </section>
 
-<!-- 11 · Builder feedback -->
-<section class="slide" data-title="Builder feedback">
-  <div class="crit">Builder feedback · 10%</div>
-  <h1>Ranked builder feedback for Ripple, with runnable repros</h1>
-  <div class="fb">
-    <div class="row"><div class="i">1</div><div><b>Issuer permission blocks RLUSD escrow</b><span>TokenEscrow is enabled, but the issuer lacks AllowTrustLineLocking. Fix: a network and issuer preflight, with dated flags.</span></div></div>
-    <div class="row"><div class="i">2</div><div><b>An issued amount must mean the delivered amount</b><span>Amount alone can’t prove exact delivery, and EscrowFinish has no delivered_amount. Fix: negative issued-asset vectors.</span></div></div>
-    <div class="row"><div class="i">3</div><div><b>Public endpoints disagree on retained history</b><span>Unavailable history must not read as failed settlement; HTTP lacks browser CORS. Fix: document retention and archival lookups.</span></div></div>
-    <div class="row"><div class="i">4</div><div><b>Escrow expiry doesn’t return funds by itself</b><span>A failed-proof escrow stayed locked past its deadline until an explicit EscrowCancel. Fix: document expiry vs cancellation.</span></div></div>
-    <div class="row"><div class="i">5</div><div><b>New: a signed IOU quote can overflow the 1 KiB Memo</b><span>Observed 7 Nov on the TEST-SGD path. Fix: check serialized Memo size before signing and return the reason.</span></div></div>
-    <div class="row"><div class="i">+</div><div><b>Mainnet readiness: a gap checklist, not a claim</b><span>Key custody (KMS or external signer), FX quotes, facilitator SLA, KYB and sanctions screening.</span></div></div>
-  </div>
-  <p class="honest" style="margin-top:20px"><b>7</b> ranked findings with repro scripts · <b>33</b> numbered findings (B01–B33) · <b>15</b> September submissions · <b>7</b> upstream issue drafts with a filing kit. Filed upstream: <span class="ph">{{UPSTREAM_FILED_URLS}}</span>.</p>
-  <div class="src"><span>docs/BUILDER-FEEDBACK.md (ranked §1–7, living log, 7 Nov entries) · docs/feedback/upstream/ · scripts/repro/</span><span class="n">11 / 12</span></div>
-</section>
-
-<!-- 12 · Check it yourself -->
-<section class="slide" data-title="Check it yourself">
-  <div class="crit">Check it yourself</div>
-  <h1>Every claim has a Testnet hash or a command</h1>
-  <div class="grid g2" style="grid-template-columns:1.25fr 1fr;gap:64px;margin-top:30px">
-    <table class="ledger">
-      <tr><th>What</th><th>Where</th></tr>
-      <tr><td>Run the judge path</td><td class="h2">npx -y … try --testnet</td></tr>
-      <tr><td>Release, every artifact</td><td class="h2"><span class="ph">v1.0.2</span> on GitHub Releases</td></tr>
-      <tr><td>Replay of a Testnet run</td><td class="h2"><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">…/theFastandtheFungible/demo/</a></td></tr>
-      <tr><td>61 hashes, checked on load</td><td class="h2"><a href="https://collaboration95.github.io/theFastandtheFungible/ledger/">…/theFastandtheFungible/ledger/</a></td></tr>
-      <tr><td>Demo video</td><td class="h2"><span class="ph">{{VIDEO_URL}}</span></td></tr>
-      <tr><td>Code and evidence</td><td class="h2">github.com/Collaboration95/…</td></tr>
-    </table>
+<!-- 11 · Who pays, market, why now -->
+<section class="slide" data-title="Who pays, market, why now">
+  <div class="crit">Reachability · Feasibility</div>
+  <h1>Agents need facts behind paywalls, and writers need to be paid per read</h1>
+  <div class="cols" style="grid-template-columns:repeat(3,1fr);gap:56px;margin-top:48px">
     <div>
-      <div style="font:600 30px/1.2 var(--f);margin-bottom:20px">Before mainnet</div>
-      <ul class="points next">
-        <li>Payer keys in a KMS or external signer</li>
-        <li>RLUSD escrow once the issuer allows it; live FX</li>
-        <li>KYB and a real sanctions-screening provider</li>
-        <li>Independent writers with consent (none yet)</li>
-        <li>Signed, notarised Mac app</li>
+      <div class="h3">Who pays</div>
+      <ul class="points" style="margin-top:22px">
+        <li><b>The asker,</b> a person or their agent, pays per article, inside a budget they set per question.</li>
+        <li><b>The writer</b> sets a price per article and is paid on the ledger, with an XRPL address and no card processor.</li>
+        <li><b>We earn a service fee</b> when another agent hires ResearchAgent over x402; part of it goes to every cited writer.</li>
       </ul>
-      <div class="agent-strip" aria-label="The pixel agent's states: search, pay into escrow, key revealed, verified, refund">
-        <figure><div class="agent s3" style="background-position:0 -192px"></div><figcaption>search</figcaption></figure>
-        <figure><div class="agent s3" style="background-position:-256px -384px"></div><figcaption>pay</figcaption></figure>
-        <figure><div class="agent s3" style="background-position:-128px -480px"></div><figcaption>key</figcaption></figure>
-        <figure><div class="agent s3" style="background-position:-128px -576px"></div><figcaption>verified</figcaption></figure>
-        <figure><div class="agent s3" style="background-position:0 -672px"></div><figcaption>refund</figcaption></figure>
-      </div>
+    </div>
+    <div>
+      <div class="h3">Market</div>
+      <ul class="points" style="margin-top:22px">
+        <li><b>Writers are being left out.</b> Small publishers have lost search referrals, and AI licensing deals mostly go to major brands.</li>
+        <li><b>Today’s tools price a whole site</b> per crawl or by revenue share.</li>
+        <li><b>None we reviewed</b> judges value before buying, checks delivery against a promise, or refunds.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="h3">Why now</div>
+      <ul class="points" style="margin-top:22px">
+        <li><b>Agents act through tools:</b> Claude Code, Codex and other MCP clients call them on their own.</li>
+        <li><b>x402 gives HTTP a payment step</b> a machine can complete.</li>
+        <li><b>XRPL token escrow</b> is enabled on Testnet, so the same escrow can settle in a stablecoin once issuers allow it.</li>
+      </ul>
     </div>
   </div>
-  <div class="src"><span>docs/evidence/ · Testnet XRP and TEST-SGD have no value · Testnet history can disappear on a reset; receipts keep ledger indexes</span><span class="n">12 / 12</span></div>
+  <p class="honest" style="margin-top:36px"><b>Where we are:</b> no customers, pilots or revenue yet, and we have not sized the market. Writer number one is us, labelled; the next are people who consent. The service fee and royalty split ran once on Testnet.</p>
+  <div class="src"><span>Open Markets / CJL, “Same Gatekeepers, New Tollbooths” (Apr 2026) · Cloudflare Pay Per Crawl and x402 posts · docs/FINAL-PUSH.md §14 · docs/evidence/hire-274.md · qa-prep Q4</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Reachability (25%): breadth of customers and use cases. Feasibility (20%): a business model that could run in production. Conservative on purpose: no market size, no traction claims.</p>
+    <p><b>Say:</b> Demand is anyone running an agent that needs facts behind paywalls. Supply is any expert with a Markdown folder: a free version, and the deep one sold per read. We earn when other agents hire ours. We have no customers yet, and we say so.</p>
+  </aside>
 </section>
 
+<!-- 12 · Compliance posture -->
+<section class="slide" data-title="Compliance posture">
+  <div class="crit">Reachability · compliance readiness</div>
+  <h1>Built for audit. Honest about what a regulated launch still needs.</h1>
+  <p class="lead" style="font-size:26px;margin-top:18px">Every spend is authorised by deterministic policy code, capped, and written to a hash-chained audit log whose head is anchored on the XRP Ledger, even when the agent refuses to buy. It is Testnet only, and each gap has a named next step.</p>
+  <table class="posture" style="margin-top:30px">
+    <tr><th></th><th style="width:700px">Built (Testnet)</th><th>Not done</th></tr>
+    <tr><td class="k">Custody</td><td>Keys stay server-side, out of logs, audit rows and the browser</td><td class="not">KMS or HSM and rotation; the hire flow holds funds in transit</td></tr>
+    <tr><td class="k">Spend limits</td><td>A budget per question and a daily cap; only policy code buys</td><td class="not">Maker-checker, velocity limits</td></tr>
+    <tr><td class="k">Audit</td><td>Hash-chained log, anchored heads, offline verification</td><td class="not">Signed, durable retention; retention periods undecided</td></tr>
+    <tr><td class="k">Screening, KYB</td><td>A payee denylist hook; XRPL Credentials badge for writers</td><td class="not">No sanctions provider, no KYB, no Permissioned Domains</td></tr>
+    <tr><td class="k">Regulation</td><td>Questions mapped for MAS (PSA, DPT services), GENIUS Act, Travel Rule</td><td class="not">No licence, no legal opinion; mainnet blocked in code</td></tr>
+  </table>
+  <div class="src"><span>docs/COMPLIANCE.md (file:line citations) · docs/submission/compliance-slide.md · Testnet, no real value · not legal advice</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Reachability (25%) names compliance readiness. Feasibility (20%): what production would require. Every row is from COMPLIANCE.md; do not strengthen any claim.</p>
+    <p><b>Say:</b> What we have is audit: policy-only spending, a hash-chained log anchored on the ledger, offline verification. What we don’t have: licences, a sanctions provider, writer KYB or HSM-held keys. It is Testnet only.</p>
+  </aside>
+</section>
+
+<!-- 13 · Builder feedback -->
+<section class="slide" data-title="Builder feedback">
+  <div class="crit">Builder feedback</div>
+  <h1>Ranked builder feedback for Ripple, each with a runnable repro</h1>
+  <div class="fb">
+    <div class="row"><div class="i">1</div><div><b>Issuer permission blocks RLUSD escrow</b><span>Token escrow is enabled; the issuer lacks AllowTrustLineLocking. Fix: a network and issuer preflight.</span></div></div>
+    <div class="row"><div class="i">5</div><div><b>Endpoints disagree on retained history</b><span>One answered “not found” for a validated hash; HTTP lacks browser CORS. Fix: an endpoint matrix.</span></div></div>
+    <div class="row"><div class="i">2</div><div><b>An issued amount must mean the delivered amount</b><span>Only validated delivered_amount proves what arrived. Fix: negative issued-asset test vectors.</span></div></div>
+    <div class="row"><div class="i">6</div><div><b>Settled invoice consumption blocks recovery</b><span>A same-payment retry is refused while delivery still needs recovering. Fix: idempotent replay.</span></div></div>
+    <div class="row"><div class="i">3</div><div><b>A signed IOU quote overflowed the 1 KiB Memo</b><span>Observed on Testnet, 7 Nov. Fix: check the serialized Memo size before signing.</span></div></div>
+    <div class="row"><div class="i">7</div><div><b>A header-only x402 v2 challenge is not retried</b><span>The client returns the unpaid 402. Fix: read the v2 header first.</span></div></div>
+    <div class="row"><div class="i">4</div><div><b>Escrow expiry doesn’t return funds by itself</b><span>Funds stayed locked until an explicit EscrowCancel. Fix: document expiry versus cancellation.</span></div></div>
+    <div class="row"><div class="i">+</div><div><b>Mainnet readiness: a checklist, not a claim</b><span>Plus what worked well: escrow, delivered_amount, Credentials, fast finality.</span></div></div>
+  </div>
+  <p class="honest" style="margin-top:18px"><!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 September submissions (4–5 Sep) · 8 upstream drafts, 0 filed<!--/f-->.</p>
+  <div class="src"><span>docs/BUILDER-FEEDBACK.md (top 7, mainnet checklist, dated log) · docs/feedback/upstream/ · scripts/repro/</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Builder feedback (10%): specific, ranked, reproducible, with mainnet impact. The order is the canonical ranking in BUILDER-FEEDBACK.md (read down each column).</p>
+    <p><b>Say:</b> Our top finding: the RLUSD issuer lacks the flag token escrow needs. Every finding has an offline repro under thirty seconds, and the mainnet checklist says what is missing rather than claiming readiness.</p>
+  </aside>
+</section>
+
+<!-- 14 · Team and check it yourself -->
+<section class="slide" data-title="Team">
+  <div class="crit">Team · check every claim</div>
+  <h1>A small team, a fleet of coding agents, and a receipt for every claim</h1>
+  <div class="cols" style="grid-template-columns:1fr 1.15fr;gap:72px;margin-top:40px">
+    <div>
+      <div class="person"><b>Guruprasath</b><span>Product and engineering since SingHacks: plans the work, directs the coding agents and owns the merge gate.</span></div>
+      <div class="person"><b>Miul</b><span>SingHacks build: the research-plan contracts, quote binding and the first test harness.</span></div>
+      <div class="person"><b>Andrew Nguyen</b><span>Before SingHacks: the idea briefs and data sources.</span></div>
+      <div class="person" style="border-bottom:1px solid var(--rule)"><b style="font-size:26px">How we build</b><span>Coding agents work in parallel lanes; every merge passes one local gate of tests and the five hard gates. <!--f:prs-->217<!--/f--> pull requests since <!--f:since-->21 Sep<!--/f-->.</span></div>
+    </div>
+    <table class="links">
+      <tr><th>Check it yourself</th><th></th></tr>
+      <tr><td>Live sandbox, 13–19 Nov</td><td class="v"><a href="https://ra-front-651013803640.asia-southeast1.run.app">ra-front-651013803640.asia-southeast1.run.app</a></td></tr>
+      <tr><td>Recorded Testnet run</td><td class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">collaboration95.github.io/…/demo/</a></td></tr>
+      <tr><td>Ledger page, live checks</td><td class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/ledger/">collaboration95.github.io/…/ledger/</a></td></tr>
+      <tr><td>Progress since SingHacks</td><td class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/progress/">collaboration95.github.io/…/progress/</a></td></tr>
+      <tr><td>Release, every artifact</td><td class="v"><a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2"><!--f:release-->v1.0.2<!--/f--> on GitHub Releases</a></td></tr>
+      <tr><td>Code and evidence</td><td class="v"><a href="https://github.com/Collaboration95/theFastandtheFungible">github.com/Collaboration95/theFastandtheFungible</a></td></tr>
+      <tr><td>Demo video</td><td class="v" data-link="video"><!--f:video-->linked in the submission form<!--/f--></td></tr>
+    </table>
+  </div>
+  <div class="src"><span>People and roles from the git history (git shortlog) · AGENTS.md (how work is run) · Testnet XRP and TEST-SGD have no value; receipts keep ledger indexes if Testnet resets</span><span class="n"></span></div>
+  <aside class="notes">
+    <p><b>Criteria:</b> Feasibility (20%): who can run this. Reachability: every link a judge needs, in one place. Owner: names and roles come from git authors (Guruprasath, miul, Andrew Nguyen); the 10 Oct AI Tinkerers slide lists the team as Guru, Jiamin, Andrew and Thanh Minh. Confirm who is who, add anyone missing, the registered team name and who presents (A5 on #265); edit freely.</p>
+    <p><b>Say:</b> Every claim has a Testnet hash or a command. ResearchAgent: agents pay the people who know, and the ledger keeps them honest.</p>
+  </aside>
+</section>
+
+<script>
+  // Page numbers follow slide order, so a reorder never leaves a stale "n / N".
+  const slides = document.querySelectorAll('.slide')
+  slides.forEach((slide, i) => { const n = slide.querySelector('.src .n'); if (n && !n.textContent.trim()) n.textContent = `${i + 1} / ${slides.length}` })
+  // A configured video URL becomes a link; otherwise the row reads "linked in the submission form".
+  for (const cell of document.querySelectorAll('[data-link]')) {
+    const text = cell.textContent.trim()
+    if (/^https:\/\//.test(text)) { const a = document.createElement('a'); a.href = text; a.textContent = text; cell.replaceChildren(a) }
+  }
+</script>
 </body>
 </html>
