@@ -1,6 +1,7 @@
-// Writes the README scorecard table from eval/scorecard/latest.json (#272), so numbers are never hand-typed.
-// Run: node scripts/readme-scorecard.mjs [--check]   (--check exits 1 if the README table is stale)
-// Replaces the text between <!-- scorecard:start --> and <!-- scorecard:end --> in README.md.
+// Writes the scorecard table in docs/numbers.md from eval/scorecard/latest.json (#272), so numbers are never hand-typed.
+// Run: node scripts/readme-scorecard.mjs [--check]   (--check exits 1 if the table is stale)
+// Replaces the text between <!-- scorecard:start --> and <!-- scorecard:end --> in docs/numbers.md
+// (moved out of README.md when the README became the product page, 11 Nov).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -30,22 +31,16 @@ const table = [
   '|---|---|---|',
   ...rows.map(([m, v]) => `| ${m} | ${v} | ${tag} |`),
 ].join('\n')
-const block = `<!-- scorecard:start -->\n${table}\n\nPitch definition: gross cost of verified purchases adding a requested, bank-supported fact retained in the final cited answer, divided by all gross purchase cost. 95% CIs resample source clusters; fixed synthetic corpus and observed model draws. ${fresh ? 'Fresh questions and new documents, frozen before one run per policy; no tuning. Same-vendor synthetic labels, human review pending; source templates are correlated.' : 'Reused question holdout; historical failures were inspected.'} Two separate [live Testnet sanity runs](docs/evidence/numbers-v7-testnet.md) verify the settlement path, not this percentage.\n<!-- scorecard:end -->`
+const block = `<!-- scorecard:start -->\n${table}\n\nPitch definition: gross cost of verified purchases adding a requested, bank-supported fact retained in the final cited answer, divided by all gross purchase cost. 95% CIs resample source clusters; fixed synthetic corpus and observed model draws. ${fresh ? 'Fresh questions and new documents, frozen before one run per policy; no tuning. Same-vendor synthetic labels, human review pending; source templates are correlated.' : 'Reused question holdout; historical failures were inspected.'} Two separate [live Testnet sanity runs](evidence/numbers-v7-testnet.md) verify the settlement path, not this percentage.\n<!-- scorecard:end -->`
 
-const badgePath = join(root, 'docs/media/scorecard.svg')
-const badge = `<svg xmlns="http://www.w3.org/2000/svg" width="340" height="24" role="img" aria-label="Scorecard: ${s.audit.total} audit violations, ${date}"><rect width="340" height="24" rx="3" fill="#FBF8F2"/><text x="10" y="16" font-family="system-ui,sans-serif" font-size="12" fill="#24211E">Scorecard · ${s.audit.total} audit violations · ${date}</text></svg>\n`
-if (process.argv.includes('--check')) {
-  if (readFileSync(badgePath, 'utf8') !== badge) throw new Error('Scorecard badge is stale')
-} else writeFileSync(badgePath, badge)
-
-const path = join(root, 'README.md')
+const path = join(root, 'docs/numbers.md')
 const md = readFileSync(path, 'utf8')
 const a = md.indexOf('<!-- scorecard:start -->')
 const b = md.indexOf('<!-- scorecard:end -->')
-if (a < 0 || b < 0) throw new Error('README.md has no scorecard markers')
+if (a < 0 || b < 0) throw new Error('docs/numbers.md has no scorecard markers')
 const next = md.slice(0, a) + block + md.slice(b + '<!-- scorecard:end -->'.length)
 if (process.argv.includes('--check')) {
-  if (next !== md) { console.error('readme-scorecard: README table is stale; run node scripts/readme-scorecard.mjs'); process.exit(1) }
+  if (next !== md) { console.error('readme-scorecard: docs/numbers.md table is stale; run node scripts/readme-scorecard.mjs'); process.exit(1) }
   console.log('readme-scorecard: ok')
 } else {
   if (next !== md) writeFileSync(path, next)

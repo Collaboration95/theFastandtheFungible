@@ -1,9 +1,10 @@
 # Judge Q&A prep
 
 Each question has a **Say** (about 20 seconds aloud) and a **Behind it** with
-the source. Numbers are as of **7 Nov 2026**. Check the
-[tracker](../SFF-PUSH.md) on 17 Nov for anything newer, and fill the `{{…}}`
-placeholders from the [README list](README.md#placeholders).
+the source. Counts are generated into [facts.json](facts.json) (as of
+<!--f:as_of-->10 Nov 2026<!--/f-->); read this page rendered on GitHub, where the
+markers that keep them in sync are hidden. Check the [tracker](../SFF-PUSH.md)
+on 17 Nov for anything newer.
 
 The questions are grouped by the three judges in our mock panels (round 4
 scored 87.6 / 105): **R**, a Ripple DevRel / XRPL engineer; **P**, a payments or
@@ -13,39 +14,43 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 
 | Number | What it is | Label | Source |
 |---|---|---|---|
-| **84.2 s** | `try --testnet`: empty npm cache → six Testnet links → `RESULT PASS` | Testnet, fixture models, one Mac, 7 Nov; 2 of 4 cold attempts under 90 s | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
-| **3.4 MB / 6.3 s** | MCP package size / cold initialize (was 21.4 MB / 56.5 s) | local packed build, fresh npm cache | same |
-| **27.0 s** | zero-clone app ready (was 134 s) | same | same |
-| **435 drops** | fees per key-reveal purchase (12 create + 423 finish) | Testnet, measured | [README cost card](../../README.md#numbers), [round3-a](../evidence/round3-a/README.md) |
+| **<!--f:try_s-->84.2<!--/f--> s** | `try --testnet`: empty npm cache → six Testnet links → `RESULT PASS` | Testnet, fixture models, one Mac, 7 Nov; <!--f:try_misses-->2 of 4<!--/f--> cold attempts overran 90 s | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
+| **<!--f:mcp_mb-->3.4<!--/f--> MB / <!--f:mcp_init_s-->6.3<!--/f--> s** | MCP package size / cold initialize (was 21.4 MB / 56.5 s) | local packed build, fresh npm cache | same |
+| **<!--f:app_ready_s-->27.0<!--/f--> s** | zero-clone app ready (was 134 s) | same | same |
+| **<!--f:fee_drops-->435<!--/f--> drops** | fees per key-reveal purchase (<!--f:fee_create-->12<!--/f--> create + <!--f:fee_finish-->423<!--/f--> finish) | Testnet, measured | [cost card](../numbers.md#testnet-cost-and-latency), [round3-a](../evidence/round3-a/README.md) |
 | **894 drops** | all six UC3 transactions (two buys, refund, anchor) | Testnet, measured | [judge-path.md](../evidence/round4-l4/judge-path.md) |
-| **S$0.00087** | fees per purchase at an assumed S$2.00/XRP | **projection**, not a quote | README cost card |
-| **US$0.0026** | model cost per question | LIVE models, 48 fresh questions, 3 Nov | [README Numbers](../../README.md#numbers) |
-| **1.65 s** | Historical `/ledger/` measurement: 61/61 Testnet transactions (45/45 in 1.97 s earlier on 7 Nov) | read-only, one measurement, 7 Nov | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388) |
+| **S$0.00087** | fees per purchase at an assumed S$2.00/XRP | **projection**, not a quote | [cost card](../numbers.md#testnet-cost-and-latency) |
+| **US$0.0026** | model cost per question | LIVE models, 48 fresh questions, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
+| **<!--f:transactions-->61<!--/f-->** | Testnet transactions on `/ledger/`, re-validated live from the browser (61/61 in 1.65 s when measured on 7 Nov) | read-only | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388) |
 | **12/12** | Testnet checks in `verify --ledger` on the README UC3 receipts | read-only, s.altnet | [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377) |
-| **224** | shared conformance vectors; TypeScript and Python agree on all | offline | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381) |
-| **43.8 s** | Markdown folder → writer Credential validated on Testnet | synthetic starter notes | [#378](https://github.com/Collaboration95/theFastandtheFungible/pull/378) |
-| **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | README Numbers |
+| **<!--f:vectors-->224<!--/f-->** | shared conformance vectors; TypeScript and Python agree on all | offline | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381) |
+| **<!--f:writer_s-->33.9<!--/f--> s** | `init` + `publish`: Markdown folder → writer Credential validated on Testnet | generated starter note, public faucet, one measurement | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389) |
+| **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
-| **183 / 13** | merged PRs since SingHacks / tagged releases | 21 Sep–7 Nov | `gh pr list`, `gh release list` |
-| **Held-out 7/20; 0/10 off-topic buys** | blind v4 bank bought and cited; the key fact leads the answer in 2/20; all ten v4-negatives abstained; 0 gate violations. Dev (not held-out): v1 16/20, v3 7/20 | Testnet, fixture decision model, team-authored writers, 7 Nov | [v4 evidence](../evidence/v4-heldout/README.md) |
+| **<!--f:prs-->217<!--/f--> / <!--f:releases-->13<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->522d32e0<!--/f--> on <!--f:as_of-->10 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
+| **Held-out <!--f:heldout-->7/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v4 blind held-out: 7/20 bought and cited, 0/10 off-topic purchases (run once, 7 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->2/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v4-heldout/README.md) |
+| **SingHacks baseline** | <!--f:singhacks_then-->At SingHacks the prototype let a language model plan each purchase; payment was a fixture by default, with optional Testnet settlement.<!--/f--> | tag `hackathon-baseline` (7 Sep commit) | [prototype README](https://github.com/Collaboration95/theFastandtheFungible/blob/hackathon-baseline/prototypes/ResearchAgent/README.md) |
 
 ---
 
 ## Y · the YC partner
 
-### 1. Why is there no hosted sandbox I can click?
+### 1. Why is the live sandbox only open 13–19 November?
 
-**Say:** "We chose not to host. A hosted instance means we hold Testnet keys
-for strangers and run a service we can't support after the event. Instead, one
-`npx` line runs the whole thing on your machine in about 84 seconds: real
-Testnet wallets from the faucet, a purchase, a refund and a re-buy, then
-verification against the ledger. The browser replay and the ledger page are
-static pages: the replay plays back a recorded Testnet run, and the ledger page
-re-checks 61 historical hashes from your browser."
+**Say:** "We run a shared Testnet sandbox for judging week so you can click
+without installing anything. It pays from one pre-funded Testnet wallet with
+small per-visitor caps, and one indicator at the top says it's XRPL Testnet
+with no real value. We don't run it as a service: there's no real money and no
+accounts, and it closes after the event. The one-line `try --testnet`, the
+recorded replay and the ledger page keep working from the release."
 
-**Behind it:** owner decision A1 on #265, 7 Nov: no hosting. The replay is
-labelled "Recorded on XRPL Testnet · no backend". Never say "our hosted demo".
-The cold path needs Node ≥ 22.13.
+**Behind it:** owner direction 10 Nov (Cloud Run front, one VM, existing
+SQLite journals; [hosted-web.md](../hosted-web.md)). Admissions close
+2026-11-19 16:00 UTC. Owner routes (settings, keys, faucet, fault switches) are
+disabled; each answer labels whether its models ran live or as a fixture
+fallback. Never call it a "live service" or "production". The replay is
+labelled "Recorded on XRPL Testnet · no backend"; the cold `try` path needs
+Node ≥ 22.13.
 
 ### 2. Are the writers real?
 
@@ -54,24 +59,25 @@ like Kestrel and AlphaLeak, are fictional. A team-authored writer is our own
 real build notes about XRPL and x402, labelled as ours and not independent.
 Independent writers: none yet. That list is empty until a real person consents.
 What we can show is that a Markdown folder becomes a Testnet writer with an XRPL
-Credential in 44 seconds."
+Credential in about <!--f:writer_s-->33.9<!--/f--> seconds."
 
 **Behind it:** `docs/evidence/real-writers.json` is empty by design. The
 team-authored label is "team-authored · real content · not an independent writer
 · Testnet" (J1, #390). Writer onboarding: [round3-c](../evidence/round3-c/README.md);
-first-try `init` + `publish` is 33.9 s (J3, #389).
+first-try `init` + `publish` is <!--f:writer_s-->33.9<!--/f--> s (J3, #389).
 
 ### 3. I asked my own question. What happens?
 
 **Say:** "It can buy and cite our labelled team notes. With fixture models on
-Testnet, seven of twenty blind held-out questions were bought and cited, and on
-ten off-topic questions it bought nothing. The key fact leads the answer in two
-of the twenty. If policy declines the available articles, it buys nothing, and
+Testnet, <!--f:heldout_n-->seven<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->
+blind held-out questions were bought and cited, and on
+<!--f:offtopic_N-->ten<!--/f--> off-topic questions it bought nothing. The key
+fact leads the answer in <!--f:answers_it-->2/20<!--/f-->. If policy declines the available articles, it buys nothing, and
 the decline now lists each policy reason in 'Why'. Discovery does not guarantee
-a purchase. Development sets, which we tuned on, are separate: v1 16/20 and v3
-7/20."
+a purchase. Development sets, which we tuned on, are separate: v1
+<!--f:dev_v1-->16/20<!--/f--> and v3 <!--f:dev_v3-->7/20<!--/f-->."
 
-**Behind it:** [v4 evidence](../evidence/v4-heldout/README.md): v4 held-out 7/20 bought and cited, answers-it 2/20, 0 gate violations; v4-negatives 0/10 purchases. Run once on `main` `bdc30f97`, fixture decision model at threshold 0.20, team-authored writers, Testnet. v4 is now used; a new held-out claim needs a new blind bank (v5). Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: 13 of 20 held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality.
+**Behind it:** [v4 evidence](../evidence/v4-heldout/README.md): <!--f:heldout_line-->v4 blind held-out: 7/20 bought and cited, 0/10 off-topic purchases (run once, 7 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->; answers-it <!--f:answers_it-->2/20<!--/f-->, <!--f:heldout_violations-->0<!--/f--> gate violations. Run once on `main` `bdc30f97`, fixture decision model at threshold 0.20, team-authored writers, Testnet. v4 is now used; a new held-out claim needs a new blind bank (v5). Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: 13 of 20 held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality.
 
 ### 4. Who pays for this, and who is writer number one?
 
@@ -99,8 +105,8 @@ isn't ours."
 
 ### 6. What are the unit economics?
 
-**Say:** "Network fees are 435 drops per key-reveal purchase, 12 to create and
-423 to finish, because the finish carries the key. That is about S$0.0009 at an
+**Say:** "Network fees are <!--f:fee_drops-->435<!--/f--> drops per key-reveal
+purchase, <!--f:fee_create-->12<!--/f--> to create and <!--f:fee_finish-->423<!--/f--> to finish, because the finish carries the key. That is about S$0.0009 at an
 assumed two dollars per XRP. The answer anchor is 12 drops, and a Testnet run that
 buys nothing is anchored too. Models cost about a quarter of a US cent per question.
 Writers set article prices, S$0.10 to S$0.90 in our corpus, capped at S$1 per
@@ -191,14 +197,18 @@ we say so.
 
 ### 13. Did you file the builder feedback upstream?
 
-**Say:** "{{UPSTREAM_FILED_ANSWER}}. We have seven ranked findings, each with a
-script that reproduces it in under 30 seconds, plus a 29-entry dated log and a
-mainnet checklist. The top one is the RLUSD issuer flag."
+**Say (while none are filed):** "Not yet. All
+<!--f:drafts-->8<!--/f--> drafts are paste-ready and public in the repo, each
+with a script that reproduces it offline in under 30 seconds, and filing them is
+this week's first job. We have <!--f:ranked-->7<!--/f--> ranked findings,
+<!--f:findings-->35<!--/f--> numbered findings in a dated log, and a mainnet
+checklist. The top one is the RLUSD issuer flag."
 
-**Behind it:** [BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md),
-[upstream drafts](../feedback/upstream/). Filing is owner-only (#265 B1). If
-they are still unfiled on the day, say: "The drafts and repros are public in the
-repo; filing them is this week's first job."
+**Behind it:** <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 September submissions (4–5 Sep) · 8 upstream drafts, 0 filed<!--/f-->.
+[BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md), [upstream drafts](../feedback/upstream/),
+[filing kit](../feedback/upstream/FILING-KIT.md). Filing is owner-only (#265 B1).
+Once filed, the count above changes by itself; then say "Yes, N, on <date>" and
+show the links in BUILDER-FEEDBACK's top-7 table.
 
 ---
 
@@ -224,7 +234,7 @@ builder feedback, because base-fee examples understate it."
 ### 16. How do I know your verifier isn't just agreeing with your agent?
 
 **Say:** "There are two verifiers, written separately: TypeScript, and Python
-using only the standard library. They agree on 224 shared vectors, including
+using only the standard library. They agree on <!--f:vectors-->224<!--/f--> shared vectors, including
 tampered amounts, issuers and refunds. For EscrowFinish, which has no
 delivered_amount, they check the writer's trust-line balance change. With
 `--ledger`, every check is a read-only lookup against s.altnet. Run it on any
@@ -238,8 +248,8 @@ receipt the app exports."
 
 **Say:** "Most of it is npm install and faucet funding. The purchase itself is
 seconds, then verification makes 12 read-only ledger lookups. We measured
-84.2 seconds cold. Two of four cold attempts beat our 90-second target and two
-didn't, so we quote the number with that caveat. If the faucet fails, it prints
+<!--f:try_s-->84.2<!--/f--> seconds cold, and <!--f:try_misses-->2 of 4<!--/f--> cold
+attempts overran our 90-second target, so we quote the number with that caveat. If the faucet fails, it prints
 a labelled SIMULATED run and the reason. It never pretends."
 
 **Behind it:** [round4-j2](../evidence/round4-j2/README.md) keeps the failed
@@ -287,8 +297,8 @@ still narrow: the same agent wrote both, and the questions follow templates."
   in drops, or TEST-SGD at 1:1, at a fixed and labelled demo rate. Real FX is on
   the mainnet list (#163).
 - **"Who built it?"** A small team directing AI coding agents in parallel
-  lanes. A PR merges only after the check suite and CI pass. Every PR, release
-  and decision is public.
+  lanes. A PR merges only after the full local merge gate passes on its exact
+  head. Every PR, release and decision is public.
 - **"What's the pixel character?"** Our agent's head is the logo. It appears
   only in loading states, the README and the deck, and it acts out a real state
   (search, pay, key, verified, refund). It never replaces a receipt or a label.

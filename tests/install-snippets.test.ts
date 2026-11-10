@@ -4,10 +4,14 @@ import { execFileSync } from 'node:child_process'
 it('documents generated v1.0.2 asset installs and registry status across guides', () => {
   const generate = (...flags: string[]) => execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', 'v1.0.2', ...flags], { encoding: 'utf8' }).trim()
   const lines = generate().split('\n')
+  // README is the product page: it carries the try line, the MCP Testnet line and both SDK installs.
+  // docs/install.md carries every variant and the registry status (moved from README on 11 Nov).
   const readme = readFileSync('README.md', 'utf8')
-  for (const line of [...lines, generate('--testnet'), generate('--app')]) expect(readme).toContain(line)
-  expect(readme).toContain('release · not yet on npm/PyPI/MCP Registry')
-  expect(readme).not.toContain('from the next release candidate')
+  for (const line of [generate('--try'), generate('--testnet'), lines[0], lines[1]]) expect(readme).toContain(line)
+  const install = readFileSync('docs/install.md', 'utf8')
+  for (const line of [...lines, generate('--try'), generate('--testnet'), generate('--app')]) expect(install).toContain(line)
+  expect(install).toContain('release · not yet on npm/PyPI/MCP Registry')
+  for (const text of [readme, install]) expect(text).not.toContain('from the next release candidate')
   const demo = readFileSync('demo/index.html', 'utf8')
   for (const line of [generate('--app'), generate('--testnet'), lines[1]]) expect(demo).toContain(line)
   expect(demo.indexOf(generate('--app'))).toBeLessThan(demo.indexOf(generate('--testnet')))
@@ -19,12 +23,11 @@ it('generates the labelled IOU opt-in without changing XRP installs', () => {
  const generate = (...flags: string[]) => execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', 'v1.0.2', ...flags], { encoding: 'utf8' }).trim()
  expect(generate('--testnet','--iou')).toBe(generate('--testnet')+' --iou')
  expect(generate('--app','--iou')).toBe(generate('--app')+' --iou')
- expect(readFileSync('README.md','utf8')).toContain(generate('--testnet','--iou'))
+ expect(readFileSync('docs/install.md','utf8')).toContain(generate('--testnet','--iou'))
 })
 it('keeps the complete empty-folder SDK and writer quickstarts generated', () => {
   execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', 'v1.0.2', '--check'])
-  const readme = readFileSync('README.md', 'utf8')
-  expect(readme).toContain(execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', 'v1.0.2', '--writer'], { encoding: 'utf8' }).trim())
+  expect(readFileSync('docs/install.md', 'utf8')).toContain(execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', 'v1.0.2', '--writer'], { encoding: 'utf8' }).trim())
   const py = readFileSync('docs/sdk-python.md', 'utf8')
   expect(readFileSync('packages/sdk-python/README.md', 'utf8')).toBe(py)
   for (const file of ['docs/sdk.md', 'docs/sdk-python.md']) {
