@@ -1,0 +1,65 @@
+{
+  "articleId": "c5-xrpl-destination-tag",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What is an XRPL DestinationTag, and what does the RequireDest setting do?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to XRPL destination tags: what they identify, their format, the account setting that rejects untagged payments and how x402 carries them.",
+  "tags": [
+    "XRPL",
+    "XRP Ledger",
+    "DestinationTag",
+    "destination tag",
+    "RequireDest",
+    "exchange deposit",
+    "source tag",
+    "hosted recipient"
+  ],
+  "family": "c5-xrpl-destination-tag",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/source-and-destination-tags",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/payment",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/schemes/exact/scheme_exact_xrpl.md",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the XRPL documentation, destination tags indicate the beneficiary or destination for a payment: a business that receives payments at one address can use the tag to decide which customer to credit in its own systems. [1]\n\nIn transactions, both source and destination tags are formatted as 32-bit unsigned integers. In the Payment transaction, the DestinationTag field is described as an arbitrary tag that identifies the reason for the payment to the destination, or a hosted recipient to pay. Without a tag it is not immediately obvious which customer to credit, which can require manual intervention. [1][2]\n\nAn account can enable the RequireDest setting so that the ledger rejects payments that lack a destination tag, instead of accepting money the business cannot attribute. According to the x402 exact-scheme specification for XRPL, payment requirements can carry an optional destinationTag for hosted accounts, and when it is present the signed Payment must include an equal DestinationTag. [1][3]\n\nAuthor interpretation: before paying an exchange or custodian, an agent should check whether a tag is required and include it in the signed payment, because an untagged payment to a shared address may be rejected or need manual recovery. Sources accessed 11 November 2026. [1][2][3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the XRPL documentation, destination tags indicate the beneficiary or destination for a payment: a business that receives payments at one address can use the tag to decide which customer to credit in its own systems. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "In transactions, both source and destination tags are formatted as 32-bit unsigned integers. In the Payment transaction, the DestinationTag field is described as an arbitrary tag that identifies the reason for the payment to the destination, or a hosted recipient to pay. Without a tag it is not immediately obvious which customer to credit, which can require manual intervention. [1][2]"
+    },
+    {
+      "id": "p3",
+      "text": "An account can enable the RequireDest setting so that the ledger rejects payments that lack a destination tag, instead of accepting money the business cannot attribute. According to the x402 exact-scheme specification for XRPL, payment requirements can carry an optional destinationTag for hosted accounts, and when it is present the signed Payment must include an equal DestinationTag. [1][3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before paying an exchange or custodian, an agent should check whether a tag is required and include it in the signed payment, because an untagged payment to a shared address may be rejected or need manual recovery. Sources accessed 11 November 2026. [1][2][3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "destination tags",
+      "measure": "payment"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "payment"
+    }
+  }
+}

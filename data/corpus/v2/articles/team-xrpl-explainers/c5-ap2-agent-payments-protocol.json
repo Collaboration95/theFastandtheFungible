@@ -1,0 +1,61 @@
+{
+  "articleId": "c5-ap2-agent-payments-protocol",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What is the Agent Payments Protocol (AP2), and how does it relate to x402?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to AP2, the open agent payments protocol: its goals, the signed mandates it uses, and how it sits alongside A2A, MCP and x402.",
+  "tags": [
+    "AP2",
+    "Agent Payments Protocol",
+    "mandate",
+    "Verifiable Digital Credentials",
+    "A2A",
+    "MCP",
+    "x402",
+    "agent commerce"
+  ],
+  "family": "c5-ap2-agent-payments-protocol",
+  "sources": [
+    {
+      "url": "https://ap2-protocol.org/",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/google-agentic-commerce/AP2",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the AP2 project site, the Agent Payments Protocol (AP2) is an open protocol for the emerging agent economy, available as an extension for the open-source Agent2Agent (A2A) protocol. The site links an announcement dated 16 September 2025, carries a Google copyright notice for 2025 and is licensed under Apache 2.0. [1]\n\nThe site states its goals as openness, as a non-proprietary, open extension for A2A and MCP, and accountability, with a non-repudiable, cryptographic audit trail for every transaction. It also says the user must always be in control, with privacy built in, and the project repository describes its aim as a secure and interoperable future for AI-driven payments. [1][2]\n\nAP2's building blocks are Verifiable Digital Credentials, described as tamper-evident, cryptographically signed digital objects. A Checkout Mandate captures the specific items and purchase details negotiated between the agent and the merchant, and a Payment Mandate authorizes a payment against a specific payment instrument. Each mandate has an Open stage and a Closed stage. The site's sample uses the x402 protocol for payments. [1]\n\nAuthor interpretation: AP2 records what the user authorized and what the agent bought, while x402 is the HTTP exchange that moves the money, so the two address different layers. Neither fixes how much an agent may spend; that limit still has to be enforced by the application that signs payments. Sources accessed 11 November 2026. [1][2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the AP2 project site, the Agent Payments Protocol (AP2) is an open protocol for the emerging agent economy, available as an extension for the open-source Agent2Agent (A2A) protocol. The site links an announcement dated 16 September 2025, carries a Google copyright notice for 2025 and is licensed under Apache 2.0. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The site states its goals as openness, as a non-proprietary, open extension for A2A and MCP, and accountability, with a non-repudiable, cryptographic audit trail for every transaction. It also says the user must always be in control, with privacy built in, and the project repository describes its aim as a secure and interoperable future for AI-driven payments. [1][2]"
+    },
+    {
+      "id": "p3",
+      "text": "AP2's building blocks are Verifiable Digital Credentials, described as tamper-evident, cryptographically signed digital objects. A Checkout Mandate captures the specific items and purchase details negotiated between the agent and the merchant, and a Payment Mandate authorizes a payment against a specific payment instrument. Each mandate has an Open stage and a Closed stage. The site's sample uses the x402 protocol for payments. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: AP2 records what the user authorized and what the agent bought, while x402 is the HTTP exchange that moves the money, so the two address different layers. Neither fixes how much an agent may spend; that limit still has to be enforced by the application that signs payments. Sources accessed 11 November 2026. [1][2]"
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "Credentials",
+      "measure": "payment"
+    },
+    "p1": {
+      "entity": "Agent Payments Protocol",
+      "measure": "extension"
+    }
+  }
+}

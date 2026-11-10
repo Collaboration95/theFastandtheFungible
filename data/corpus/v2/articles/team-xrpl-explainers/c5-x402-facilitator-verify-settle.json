@@ -1,0 +1,68 @@
+{
+  "articleId": "c5-x402-facilitator-verify-settle",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What do an x402 facilitator's verify and settle steps do on XRPL?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to the x402 facilitator interface: the read-only verify call, the committing settle call, the response fields and the XRPL payment flow around them.",
+  "tags": [
+    "x402",
+    "facilitator",
+    "/verify",
+    "/settle",
+    "XRPL",
+    "XRP Ledger",
+    "PAYMENT-SIGNATURE",
+    "PAYMENT-RESPONSE",
+    "X-PAYMENT-RESPONSE",
+    "settlement"
+  ],
+  "family": "c5-x402-facilitator-verify-settle",
+  "sources": [
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/x402-specification-v2.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/schemes/exact/scheme_exact_xrpl.md",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the X402 version 2 specification, a facilitator is a service that handles payment verification and blockchain settlement, offered through HTTP endpoints that a resource server can delegate to a trusted third party or host itself. [1]\n\nPOST /verify checks a payment authorization without executing it on the blockchain: it is read-only, must not commit payment state or write onchain state, and returns isValid, an invalidReason when the payment is invalid, and the payer. POST /settle durably commits the payment and returns success, the transaction hash (an empty string if none was broadcast), the network in CAIP-2 format and the payer. GET /supported lists the payment schemes, networks and extensions the facilitator handles. [1]\n\nAccording to the x402 exact-scheme specification for XRPL, the client signs a Payment transaction and sends it in the PAYMENT-SIGNATURE header. The resource server calls /verify, and the facilitator decodes the signed transaction and checks it against the requirements, including transaction type, destination, network and amount. On success the server calls /settle, the facilitator re-runs verification and submits the transaction to the XRPL network named in the requirements, and once settlement is validated the server grants access with a PAYMENT-RESPONSE header. The older names X-PAYMENT and X-PAYMENT-RESPONSE are deprecated. [2]\n\nAuthor interpretation: a successful verify is not a payment. An agent should treat a resource as paid only when settlement reports success with a transaction hash that appears in a validated ledger. In this scheme the payer, not the facilitator, pays the XRPL network fee. Sources accessed 11 November 2026. [1][2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the X402 version 2 specification, a facilitator is a service that handles payment verification and blockchain settlement, offered through HTTP endpoints that a resource server can delegate to a trusted third party or host itself. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "POST /verify checks a payment authorization without executing it on the blockchain: it is read-only, must not commit payment state or write onchain state, and returns isValid, an invalidReason when the payment is invalid, and the payer. POST /settle durably commits the payment and returns success, the transaction hash (an empty string if none was broadcast), the network in CAIP-2 format and the payer. GET /supported lists the payment schemes, networks and extensions the facilitator handles. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "According to the x402 exact-scheme specification for XRPL, the client signs a Payment transaction and sends it in the PAYMENT-SIGNATURE header. The resource server calls /verify, and the facilitator decodes the signed transaction and checks it against the requirements, including transaction type, destination, network and amount. On success the server calls /settle, the facilitator re-runs verification and submits the transaction to the XRPL network named in the requirements, and once settlement is validated the server grants access with a PAYMENT-RESPONSE header. The older names X-PAYMENT and X-PAYMENT-RESPONSE are deprecated. [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: a successful verify is not a payment. An agent should treat a resource as paid only when settlement reports success with a transaction hash that appears in a validated ledger. In this scheme the payer, not the facilitator, pays the XRPL network fee. Sources accessed 11 November 2026. [1][2]"
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "settlement"
+    },
+    "p4": {
+      "entity": "XRPL",
+      "measure": "fee",
+      "period": "twenty twenty six"
+    },
+    "p1": {
+      "entity": "facilitator",
+      "measure": "verification"
+    }
+  }
+}

@@ -59,7 +59,11 @@ const STOP = new Set(['a', 'an', 'the', 'of', 'at', 'in', 'on', 'to', 'for', 'an
 const MAX_SUBQUERY = 120
 const clip = (text: string) => text.length <= MAX_SUBQUERY ? text : text.slice(0, MAX_SUBQUERY).replace(/\s+\S*$/, '')
 /** Content words of a clause: possessives stripped, stop words and punctuation dropped. */
-const keywords = (text: string) => searchText(text).split(/[^A-Za-z0-9&-]+/).filter(w => w && !STOP.has(w.toLowerCase()) && w !== '&').join(' ')
+/** An acronym written in capitals survives even when it spells a stop word (DID, the XRPL identifier, is also "did"). */
+const keywords = (text: string) => {
+  const shouted = text === text.toUpperCase()
+  return searchText(text).split(/[^A-Za-z0-9&-]+/).filter(w => w && w !== '&' && (!STOP.has(w.toLowerCase()) || (!shouted && w.length >= 3 && w === w.toUpperCase()))).join(' ')
+}
 
 function fixtureQuestions(question: string): Scope['questions'] {
   // Story-bible rule (UC2): an outlook or analyst view on a company's deal gets the angle question.

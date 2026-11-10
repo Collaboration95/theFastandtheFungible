@@ -1,0 +1,54 @@
+{
+  "articleId": "c5-offercreate-flags",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Which OfferCreate flags control passive, immediate-or-cancel, fill-or-kill and sell orders on XRPL?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to the four order-behaviour flags of an XRPL decentralized-exchange offer, with their hexadecimal values and the cases each one suits.",
+  "tags": [
+    "XRPL",
+    "XRP Ledger",
+    "OfferCreate",
+    "tfPassive",
+    "tfImmediateOrCancel",
+    "tfFillOrKill",
+    "tfSell",
+    "order flags",
+    "DEX"
+  ],
+  "family": "c5-offercreate-flags",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/offercreate",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the XRPL OfferCreate reference, four flags change how an order trades: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Each is a bit set in the Flags field of the OfferCreate transaction. [1]\n\ntfPassive (0x00010000) means the offer does not consume offers that exactly match it, only offers that cross it; this makes it possible to set up offers that peg the exchange rate at a specific value. tfImmediateOrCancel (0x00020000) treats the offer as an Immediate or Cancel order: no Offer entry is placed in the order books, and the transaction trades as much as it can by consuming existing offers when it is processed. [1]\n\ntfFillOrKill (0x00040000) also places no Offer entry in the order books, and it cancels the offer if it cannot be fully filled at the time of execution; by default the owner must receive the full TakerPays amount. tfSell (0x00080000) exchanges the entire TakerGets amount, even if that means obtaining more than the TakerPays amount in exchange. [1]\n\nAuthor interpretation: use tfFillOrKill when an agent needs all-or-nothing execution, tfImmediateOrCancel when a partial fill is acceptable and nothing should rest on the book, tfPassive for maker-style quotes, and tfSell when the amount sold matters more than the amount received. A submitted OfferCreate is not proof of a trade; read the validated result before treating an order as filled. Sources accessed 11 November 2026. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the XRPL OfferCreate reference, four flags change how an order trades: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Each is a bit set in the Flags field of the OfferCreate transaction. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "tfPassive (0x00010000) means the offer does not consume offers that exactly match it, only offers that cross it; this makes it possible to set up offers that peg the exchange rate at a specific value. tfImmediateOrCancel (0x00020000) treats the offer as an Immediate or Cancel order: no Offer entry is placed in the order books, and the transaction trades as much as it can by consuming existing offers when it is processed. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "tfFillOrKill (0x00040000) also places no Offer entry in the order books, and it cancels the offer if it cannot be fully filled at the time of execution; by default the owner must receive the full TakerPays amount. tfSell (0x00080000) exchanges the entire TakerGets amount, even if that means obtaining more than the TakerPays amount in exchange. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: use tfFillOrKill when an agent needs all-or-nothing execution, tfImmediateOrCancel when a partial fill is acceptable and nothing should rest on the book, tfPassive for maker-style quotes, and tfSell when the amount sold matters more than the amount received. A submitted OfferCreate is not proof of a trade; read the validated result before treating an order as filled. Sources accessed 11 November 2026. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "OfferCreate",
+      "measure": "flags"
+    }
+  }
+}

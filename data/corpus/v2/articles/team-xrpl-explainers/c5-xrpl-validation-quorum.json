@@ -1,0 +1,66 @@
+{
+  "articleId": "c5-xrpl-validation-quorum",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What share of trusted validators must agree before an XRPL ledger is validated?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to the XRP Ledger validation quorum, what happens when validators go offline, and how it differs from the thresholds inside a consensus round.",
+  "tags": [
+    "XRPL",
+    "XRP Ledger",
+    "consensus",
+    "validation",
+    "quorum",
+    "UNL",
+    "trusted validators",
+    "Negative UNL",
+    "validated ledger"
+  ],
+  "family": "c5-xrpl-validation-quorum",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/consensus-protocol/negative-unl",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/consensus-protocol/consensus-protections",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/consensus-protocol/consensus-principles-and-rules",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the XRPL Negative UNL documentation, the standard quorum requirement for validating a ledger is 80% of trusted validators. If more than 20% of trusted validators go offline or become unable to communicate with the rest of the network, servers stop validating new ledgers because they cannot reach a quorum. [1]\n\nThe Negative UNL lets the network count only the validators that are online. To prevent the network from fragmenting, the quorum has a hard minimum of 60% of total validators. [1]\n\nAccording to the XRPL consensus protections documentation, a large majority of trusted validators would have to collude to confirm an invalid transaction, at least 80% of them, and if more than about 20% of validators are unreachable or not behaving properly, the network fails to reach a consensus. Inside a consensus round the inclusion threshold is lower and rises: participants first include a transaction if 50% or more of other participants agree, then raise this to 60% and higher. [2][3]\n\nAuthor interpretation: for an agent, a payment is settled when it appears in a validated ledger, which is the point at which the quorum has agreed; a provisional result from a single server is not final. The 80% quorum for validation and the rising thresholds inside a round are different numbers. These are integration recommendations, not measured guarantees. Sources accessed 11 November 2026. [1][2][3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the XRPL Negative UNL documentation, the standard quorum requirement for validating a ledger is 80% of trusted validators. If more than 20% of trusted validators go offline or become unable to communicate with the rest of the network, servers stop validating new ledgers because they cannot reach a quorum. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The Negative UNL lets the network count only the validators that are online. To prevent the network from fragmenting, the quorum has a hard minimum of 60% of total validators. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "According to the XRPL consensus protections documentation, a large majority of trusted validators would have to collude to confirm an invalid transaction, at least 80% of them, and if more than about 20% of validators are unreachable or not behaving properly, the network fails to reach a consensus. Inside a consensus round the inclusion threshold is lower and rises: participants first include a transaction if 50% or more of other participants agree, then raise this to 60% and higher. [2][3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: for an agent, a payment is settled when it appears in a validated ledger, which is the point at which the quorum has agreed; a provisional result from a single server is not final. The 80% quorum for validation and the rising thresholds inside a round are different numbers. These are integration recommendations, not measured guarantees. Sources accessed 11 November 2026. [1][2][3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "validators",
+      "measure": "quorum"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "transaction"
+    }
+  }
+}

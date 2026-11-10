@@ -1,0 +1,68 @@
+{
+  "articleId": "c5-xrpl-payment-flags",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What do the XRPL Payment flags tfPartialPayment, tfNoRippleDirect and tfLimitQuality do?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to the Payment transaction flags and the amount fields they affect: DeliverMax, DeliverMin and SendMax.",
+  "tags": [
+    "XRPL",
+    "XRP Ledger",
+    "Payment",
+    "tfPartialPayment",
+    "tfNoRippleDirect",
+    "tfLimitQuality",
+    "DeliverMax",
+    "DeliverMin",
+    "SendMax",
+    "partial payment"
+  ],
+  "family": "c5-xrpl-payment-flags",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/payment",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/schemes/exact/scheme_exact_xrpl.md",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the XRPL Payment reference, three Payment flags change how an amount is delivered: tfPartialPayment, tfNoRippleDirect and tfLimitQuality. tfPartialPayment (0x00020000) means that if the specified Amount cannot be sent without spending more than SendMax, the transaction reduces the received amount instead of failing outright. [1]\n\ntfNoRippleDirect (0x00010000) tells the ledger not to use the default path and to use only the paths in the Paths field; it is intended to force the transaction to take arbitrage opportunities, and most clients do not need it. tfLimitQuality (0x00040000) takes only paths where every conversion has an input to output ratio equal or better than the ratio of Amount to SendMax. [1]\n\nDeliverMax is the maximum amount of currency to deliver: partial payments can deliver less than this amount and still succeed, while other payments fail unless they deliver the exact amount. DeliverMin is the minimum amount to deliver and is valid only for a partial payment. SendMax is the highest amount of source currency the transaction may cost, including transfer fees, exchange rates and slippage, and it must be omitted for XRP-to-XRP payments. [1]\n\nAuthor interpretation: a partial payment can succeed while delivering less than an invoice expects, so an agent should read the delivered amount from the validated result, not the amount it submitted. The x402 exact scheme for XRPL rejects an XRP payment that carries SendMax, Paths or DeliverMin, which keeps the settled amount equal to the quoted amount. Sources accessed 11 November 2026. [1][2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the XRPL Payment reference, three Payment flags change how an amount is delivered: tfPartialPayment, tfNoRippleDirect and tfLimitQuality. tfPartialPayment (0x00020000) means that if the specified Amount cannot be sent without spending more than SendMax, the transaction reduces the received amount instead of failing outright. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "tfNoRippleDirect (0x00010000) tells the ledger not to use the default path and to use only the paths in the Paths field; it is intended to force the transaction to take arbitrage opportunities, and most clients do not need it. tfLimitQuality (0x00040000) takes only paths where every conversion has an input to output ratio equal or better than the ratio of Amount to SendMax. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "DeliverMax is the maximum amount of currency to deliver: partial payments can deliver less than this amount and still succeed, while other payments fail unless they deliver the exact amount. DeliverMin is the minimum amount to deliver and is valid only for a partial payment. SendMax is the highest amount of source currency the transaction may cost, including transfer fees, exchange rates and slippage, and it must be omitted for XRP-to-XRP payments. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: a partial payment can succeed while delivering less than an invoice expects, so an agent should read the delivered amount from the validated result, not the amount it submitted. The x402 exact scheme for XRPL rejects an XRP payment that carries SendMax, Paths or DeliverMin, which keeps the settled amount equal to the quoted amount. Sources accessed 11 November 2026. [1][2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "Payment",
+      "measure": "flags"
+    },
+    "p3": {
+      "entity": "XRP",
+      "measure": "rates"
+    },
+    "p4": {
+      "entity": "XRPL",
+      "measure": "payment",
+      "period": "twenty twenty six"
+    }
+  }
+}

@@ -2,7 +2,9 @@
 export const searchText = (text: string) => text.normalize('NFKC').replace(/['’‘“”"]/g, "'").replace(/'s\b/gi, '').replace(/[\u2010-\u2015\u2212-]/g, ' ').replace(/'/g, ' ')
 
 const STOP = new Set('a an the of at in on to for and or with its it is are was were be did does do what how why when which who can will should from about this that their have has had by as into benefit'.split(' '))
-export const searchWords = (text: string) => new Set((searchText(text).toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(w => !STOP.has(w)))
+// A host such as s.altnet.rippletest.net should count as "altnet" and "rippletest", never as the generic words "net" or "org".
+const HOST_SUFFIX = /\b((?:[a-z0-9-]+\.)+)(?:net|org|com|gov|edu|io|ai|sg)\b/gi
+export const searchWords = (text: string) => new Set((searchText(text).replace(HOST_SUFFIX, '$1').toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(w => !STOP.has(w)))
 /** Majority of the content query must occur in a document. Unknown terms remain in the denominator.
  * Unlike BM25 this is independent of publisher size and query length, including one-word lookups. */
 export function keywordCoverage(query: string, document: Set<string>): number {

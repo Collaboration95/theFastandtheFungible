@@ -1,0 +1,65 @@
+{
+  "articleId": "c5-xrpl-ticket-limit",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How many Tickets can one XRPL account hold at once, and what does each Ticket cost?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to the XRPL Ticket cap, the owner reserve each unused Ticket locks, and when an agent wallet should use Tickets for concurrent payments.",
+  "tags": [
+    "XRPL",
+    "XRP Ledger",
+    "Tickets",
+    "TicketCreate",
+    "TicketSequence",
+    "ticket limit",
+    "owner reserve",
+    "sequence number"
+  ],
+  "family": "c5-xrpl-ticket-limit",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/accounts/tickets",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/schemes/exact/scheme_exact_xrpl.md",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the XRPL Tickets documentation, each account cannot have more than 250 Tickets in the ledger at a time. [1]\n\nA Ticket in the XRP Ledger is a way of setting aside a sequence number for a transaction without sending it right away. Each Ticket counts toward the owner reserve, so 0.2 XRP must be set aside for each Ticket that has not been used yet. When a Ticket is used it is removed from the ledger state, and the reserved XRP becomes available again. [1]\n\nAccording to the x402 exact-scheme specification for XRPL, a payment sequenced by a Ticket lets one account have several payments pending at once, one Ticket each; each outstanding Ticket locks owner reserve until it is used or deleted, an account can hold at most 250 outstanding Tickets, and if none is available the client must first submit a TicketCreate transaction. [2]\n\nAuthor interpretation: at the cap, 250 Tickets lock 250 times 0.2 XRP, which is 50 XRP of reserve at the current reserve amount, so an agent wallet should create only as many Tickets as it expects to have pending at one time. The reserve amount is set by the network and can change. Sources accessed 11 November 2026. [1][2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the XRPL Tickets documentation, each account cannot have more than 250 Tickets in the ledger at a time. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "A Ticket in the XRP Ledger is a way of setting aside a sequence number for a transaction without sending it right away. Each Ticket counts toward the owner reserve, so 0.2 XRP must be set aside for each Ticket that has not been used yet. When a Ticket is used it is removed from the ledger state, and the reserved XRP becomes available again. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "According to the x402 exact-scheme specification for XRPL, a payment sequenced by a Ticket lets one account have several payments pending at once, one Ticket each; each outstanding Ticket locks owner reserve until it is used or deleted, an account can hold at most 250 outstanding Tickets, and if none is available the client must first submit a TicketCreate transaction. [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: at the cap, 250 Tickets lock 250 times 0.2 XRP, which is 50 XRP of reserve at the current reserve amount, so an agent wallet should create only as many Tickets as it expects to have pending at one time. The reserve amount is set by the network and can change. Sources accessed 11 November 2026. [1][2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "account",
+      "measure": "Tickets"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "transaction"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "payment"
+    }
+  }
+}

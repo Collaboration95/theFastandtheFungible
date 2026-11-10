@@ -5,6 +5,7 @@ import { existsSync, readFileSync, mkdirSync, writeFileSync, renameSync, symlink
 import { availableParallelism, release } from 'node:os'
 import { join, resolve, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { heldOutBankPath } from './local-gate-banks.mjs'
 
 export const SCHEMA = 'local-gate-v1'
 export const MAX_CPUS = 10
@@ -141,7 +142,8 @@ export function scriptClosure(files, read, seeds) {
   return [...included].sort()
 }
 
-const heldOutContent = file => process.env.RA_DEV_BANKS_ONLY === '1' && /^(?:eval\/questions\/judge-xrpl\.v[45](?:[.-]|$)|docs\/evidence\/v[45]-heldout\/)/.test(file)
+// Only a bank that has not been measured yet is held-out; v1–v5 are used development data (scripts/local-gate-banks.mjs).
+const heldOutContent = file => process.env.RA_DEV_BANKS_ONLY === '1' && heldOutBankPath(file)
 
 export function inputsFor(id, files, read, unknown = false) {
   if (unknown || id === 'hygiene') return files

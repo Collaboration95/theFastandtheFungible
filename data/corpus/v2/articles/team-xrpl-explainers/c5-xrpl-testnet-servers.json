@@ -1,0 +1,71 @@
+{
+  "articleId": "c5-xrpl-testnet-servers",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Which public server URLs and faucet does XRPL Testnet use?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to the public XRPL Testnet endpoints, what the Testnet is for, its faucet, and why test XRP has no value.",
+  "tags": [
+    "XRPL",
+    "XRP Ledger",
+    "Testnet",
+    "public server",
+    "altnet",
+    "faucet",
+    "WebSocket",
+    "JSON-RPC",
+    "test XRP"
+  ],
+  "family": "c5-xrpl-testnet-servers",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/tutorials/public-servers",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/networks-and-servers/parallel-networks",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/schemes/exact/scheme_exact_xrpl.md",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the XRPL public servers list, the Ripple-operated Testnet public server is reachable over WebSocket at wss://s.altnet.rippletest.net:51233/ and over JSON-RPC at https://s.altnet.rippletest.net:51234/. [1]\n\nThe same list shows other Testnet servers: Honeycluster at testnet.honeycluster.io, XRPL Labs at testnet.xrpl-labs.com with CORS support, and a Ripple Clio server at clio.altnet.rippletest.net. Ripple's public servers are not for sustained or business use, and they may become unavailable at any time. [1]\n\nAccording to the XRPL parallel networks page, the Testnet is an alternate universe network that acts as a testing ground for software built on the XRP Ledger, without impacting production users and without risking real money. Test XRP does not have real-world value and is lost when the network is reset; it is given away for free through a Testnet faucet. [2]\n\nAuthor interpretation: a demo that signs Testnet payments should say plainly that it runs on the Testnet. The x402 exact scheme for XRPL gives Testnet the network identifier xrpl:1 and advises separate accounts for each network. Production software should run its own server rather than rely on a public one. Sources accessed 11 November 2026. [1][2][3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the XRPL public servers list, the Ripple-operated Testnet public server is reachable over WebSocket at wss://s.altnet.rippletest.net:51233/ and over JSON-RPC at https://s.altnet.rippletest.net:51234/. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The same list shows other Testnet servers: Honeycluster at testnet.honeycluster.io, XRPL Labs at testnet.xrpl-labs.com with CORS support, and a Ripple Clio server at clio.altnet.rippletest.net. Ripple's public servers are not for sustained or business use, and they may become unavailable at any time. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "According to the XRPL parallel networks page, the Testnet is an alternate universe network that acts as a testing ground for software built on the XRP Ledger, without impacting production users and without risking real money. Test XRP does not have real-world value and is lost when the network is reset; it is given away for free through a Testnet faucet. [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: a demo that signs Testnet payments should say plainly that it runs on the Testnet. The x402 exact scheme for XRPL gives Testnet the network identifier xrpl:1 and advises separate accounts for each network. Production software should run its own server rather than rely on a public one. Sources accessed 11 November 2026. [1][2][3]"
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "production"
+    },
+    "p4": {
+      "entity": "XRPL",
+      "measure": "production",
+      "period": "twenty twenty six"
+    },
+    "p1": {
+      "entity": "Testnet",
+      "measure": "server"
+    }
+  }
+}

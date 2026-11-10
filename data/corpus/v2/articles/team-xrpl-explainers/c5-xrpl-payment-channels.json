@@ -1,0 +1,69 @@
+{
+  "articleId": "c5-xrpl-payment-channels",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How do XRPL payment channels let an agent make many small XRP payments?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to XRPL payment channels: opening and funding a channel, signed off-ledger claims, settling a claim and closing the channel.",
+  "tags": [
+    "XRPL",
+    "XRP Ledger",
+    "payment channel",
+    "PaymentChannelCreate",
+    "PaymentChannelClaim",
+    "PaymentChannelFund",
+    "micropayments",
+    "off-ledger claims"
+  ],
+  "family": "c5-xrpl-payment-channels",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/payment-types/payment-channels",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/paymentchannelcreate",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/paymentchannelclaim",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the XRPL payment channels documentation, payment channels are an advanced feature for sending asynchronous XRP payments that can be divided into very small increments and settled later. [1]\n\nPaymentChannelCreate creates a payment channel and funds it. It sets aside an Amount of XRP, in drops, that can only go to the Destination address while the channel is open; names a PublicKey, secp256k1 or Ed25519, that the source will use to sign claims; and sets a SettleDelay, the seconds the source must wait before closing a channel that still holds unclaimed funds. When the channel closes, unclaimed XRP returns to the source account. [2]\n\nThe sender creates claims against the channel, and the recipient verifies them without sending an XRP Ledger transaction. A PaymentChannelClaim submits a signed claim: the Signature covers the channel ID and the claim amount, Balance is the total delivered after the claim, and the tfClose flag requests closing the channel. Because claims can be verified individually but settled in bulk later, the rate is limited only by the ability to create and verify signatures. [1][3]\n\nAuthor interpretation: a channel suits an agent that pays one provider many small amounts, because only opening the channel and the final claim need ledger transactions. It does not help when every payment goes to a different payee, and the funds stay locked until they are claimed or the channel closes. Sources accessed 11 November 2026. [1][2][3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the XRPL payment channels documentation, payment channels are an advanced feature for sending asynchronous XRP payments that can be divided into very small increments and settled later. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "PaymentChannelCreate creates a payment channel and funds it. It sets aside an Amount of XRP, in drops, that can only go to the Destination address while the channel is open; names a PublicKey, secp256k1 or Ed25519, that the source will use to sign claims; and sets a SettleDelay, the seconds the source must wait before closing a channel that still holds unclaimed funds. When the channel closes, unclaimed XRP returns to the source account. [2]"
+    },
+    {
+      "id": "p3",
+      "text": "The sender creates claims against the channel, and the recipient verifies them without sending an XRP Ledger transaction. A PaymentChannelClaim submits a signed claim: the Signature covers the channel ID and the claim amount, Balance is the total delivered after the claim, and the tfClose flag requests closing the channel. Because claims can be verified individually but settled in bulk later, the rate is limited only by the ability to create and verify signatures. [1][3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: a channel suits an agent that pays one provider many small amounts, because only opening the channel and the final claim need ledger transactions. It does not help when every payment goes to a different payee, and the funds stay locked until they are claimed or the channel closes. Sources accessed 11 November 2026. [1][2][3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "payment channels",
+      "measure": "payments"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "returns"
+    },
+    "p3": {
+      "entity": "XRP",
+      "measure": "rate"
+    }
+  }
+}

@@ -7,16 +7,18 @@
 // the writer-onboarding and fee probes, and BUILDER-FEEDBACK.md counts (already in data.json).
 // In Markdown and the deck HTML, a fact is written <!--f:key-->value<!--/f-->; GitHub and browsers hide the comments.
 // Refresh after any new measurement: `npm run site:progress -- --at origin/main && node scripts/facts.mjs`.
-// RA_DEV_BANKS_ONLY=1 uses published held-out aggregates without opening raw results.
-// The blind v5 bank is never opened: only its committed results file is read, once it exists.
+// RA_DEV_BANKS_ONLY=1 uses published held-out aggregates without opening the raw results of a bank
+// that has not been measured yet. v1–v5 are used development data (scripts/local-gate-banks.mjs),
+// so their results are read as usual; only a later, unmeasured bank is blanked.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { heldOutBankPath } from './local-gate-banks.mjs'
 
 const root = join(import.meta.dirname, '..')
 const developmentOnly = () => process.env.RA_DEV_BANKS_ONLY === '1'
-const heldOutPath = path => /^(?:eval\/questions\/judge-xrpl\.v[45](?:[.-]|$)|docs\/evidence\/v[45]-heldout\/)/.test(path)
+const heldOutPath = heldOutBankPath
 const read = path => {
   if (developmentOnly() && heldOutPath(path)) throw new Error('facts: held-out content is forbidden in development-only mode')
   return readFileSync(join(root, path), 'utf8')
@@ -46,16 +48,17 @@ function need(value, label) {
  * cannot derive held-out numbers from raw results that contain question text.
  * All other fact derivation and marker checks remain enabled. */
 function heldoutFacts(fact) {
-  if (developmentOnly()) {
-    const retained = json(OUT).facts
-    return Object.fromEntries(['heldout_bank', 'heldout', 'heldout_n', 'heldout_N', 'heldout_on', 'answers_it', 'offtopic', 'offtopic_N', 'heldout_source', 'heldout_violations'].map(key => [key, need(retained[key], `published ${key}`)]))
-  }
   // Held-out: v5 once its results are committed, otherwise v4 with its date.
   const v5 = 'docs/evidence/v5-heldout/v5/results.json', v5n = 'docs/evidence/v5-heldout/v5-negatives/results.json'
   const measuredV5 = existsSync(join(root, v5))
   const bank = measuredV5 ? 'v5' : 'v4'
   const pos = measuredV5 ? v5 : 'docs/evidence/v4-heldout/v4/results.json'
   const neg = measuredV5 ? v5n : 'docs/evidence/v4-heldout/v4-negatives/results.json'
+  // Development-only mode withholds raw results of a bank that is still unmeasured; a used bank is read as usual.
+  if (developmentOnly() && (heldOutPath(pos) || heldOutPath(neg))) {
+    const retained = json(OUT).facts
+    return Object.fromEntries(['heldout_bank', 'heldout', 'heldout_n', 'heldout_N', 'heldout_on', 'answers_it', 'offtopic', 'offtopic_N', 'heldout_source', 'heldout_violations'].map(key => [key, need(retained[key], `published ${key}`)]))
+  }
   const s = json(pos).summary, sn = json(neg).summary
   const heldDir = `docs/evidence/${bank}-heldout/README.md`
   const held = { n: need(s.buyAndCite?.n, 'held-out n'), N: need(s.buyAndCite?.N, 'held-out N') }

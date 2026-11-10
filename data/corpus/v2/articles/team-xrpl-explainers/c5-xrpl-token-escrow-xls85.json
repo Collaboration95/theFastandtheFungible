@@ -1,0 +1,67 @@
+{
+  "articleId": "c5-xrpl-token-escrow-xls85",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does the TokenEscrow amendment (XLS-85) let an XRPL escrow hold?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to XLS-85 token escrow: which token types an escrow can hold, the issuer flags needed, and the freeze, fee and clawback limits.",
+  "tags": [
+    "XRPL",
+    "XRP Ledger",
+    "TokenEscrow",
+    "XLS-85",
+    "token escrow",
+    "AllowTrustLineLocking",
+    "MPT",
+    "IOU",
+    "escrow"
+  ],
+  "family": "c5-xrpl-token-escrow-xls85",
+  "sources": [
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0085-token-escrow/README.md",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to the XLS-85 specification, the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs. [1]\n\nFor trust line tokens the issuer must allow it: the AccountSet flag asfAllowTrustLineLocking (decimal 17) allows trust line tokens issued by that account to be held in escrow. For MPTs, an EscrowCreate fails if the token issuance lacks the can-escrow flag. [1]\n\nThe specification states that the transfer fee rate is captured at EscrowCreate and applied at settlement, that a Deep Freeze prevents EscrowFinish but still allows EscrowCancel, that there is no direct clawback within an active escrow, and that the issuer cannot be the source of the escrow. [1]\n\nAuthor interpretation: whether a given token can be escrowed depends on its issuer having set the flag, so check the issuer account on the ledger and confirm that the amendment is enabled on the intended network before relying on it. A payment design should plan for a frozen token that can be cancelled but not finished. Sources accessed 11 November 2026. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the XLS-85 specification, the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "For trust line tokens the issuer must allow it: the AccountSet flag asfAllowTrustLineLocking (decimal 17) allows trust line tokens issued by that account to be held in escrow. For MPTs, an EscrowCreate fails if the token issuance lacks the can-escrow flag. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The specification states that the transfer fee rate is captured at EscrowCreate and applied at settlement, that a Deep Freeze prevents EscrowFinish but still allows EscrowCancel, that there is no direct clawback within an active escrow, and that the issuer cannot be the source of the escrow. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: whether a given token can be escrowed depends on its issuer having set the flag, so check the issuer account on the ledger and confirm that the amendment is enabled on the intended network before relying on it. A payment design should plan for a frozen token that can be cancelled but not finished. Sources accessed 11 November 2026. [1]"
+    }
+  ],
+  "factMenu": {
+    "p2": {
+      "entity": "EscrowCreate",
+      "measure": "issuer"
+    },
+    "p3": {
+      "entity": "EscrowFinish",
+      "measure": "rate"
+    },
+    "p4": {
+      "entity": "issuer",
+      "measure": "plan",
+      "period": "twenty twenty six"
+    },
+    "p1": {
+      "entity": "TokenEscrow",
+      "measure": "escrow"
+    }
+  }
+}
