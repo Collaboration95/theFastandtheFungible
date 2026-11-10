@@ -7,7 +7,7 @@ const words = (text: string) => [...new Set(text.replace(/([a-z])([A-Z])/g, '$1 
 /** Use Unicode sentence segmentation rather than an uppercase-only boundary rule.
  * Keep source bytes (including identifier punctuation) intact for quotation. */
 const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' })
-export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Distinguish|Explain|Consider|Avoid|Compare|Query|Estimate|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|^(?:Applications?|Integrations?|Clients?|Developers?)\b[^.!?]{0,60}\bshould\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation)\b/i.test(text)
+export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|I run|I have|Here is|Speaking|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Distinguish|Explain|Consider|Avoid|Compare|Query|Estimate|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|^(?:Applications?|Integrations?|Clients?|Developers?)\b[^.!?]{0,60}\bshould\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation)\b/i.test(text)
 export function sentences(text: string): string[] {
   return Array.from(segmenter.segment(text), part => part.segment.trim()).filter(Boolean)
 }
@@ -92,11 +92,11 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     if (/\bstatute|law|regulation\b/i.test(question) && /\bAct|statute|law|regulat/i.test(text)) score += 8
     if (/lead[- ]times?|shorter/i.test(question)) score += /\bweeks?\b/.test(lower) ? 12 : 0
     if (/analyst|outlook|margin/i.test(question)) score += /estimate|broker|analyst|consensus/.test(lower) ? 12 : 0
-    if (/change|meeting/i.test(question)) score += /policy rate|increase from/.test(lower) ? 9 : 0
+    if (/change|meeting/i.test(firstFact)) score += /policy rate|increase from|\brais(?:e|ed)\b|\bvoted\b/.test(lower) ? 28 : 0
     if (/renewable|electricity|grid/i.test(question)) score += /renewable|\bMW\b|commissioned/.test(text) ? 10 : 0
     if (/\d/.test(text)) score += 2
     if (numericComparison) score += 10
-    if (/\bfrom\b.*\bto\b/.test(lower)) score += /lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) ? 28 : 5
+    if (/\bfrom\b.*\bto\b/.test(lower)) score += /lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) ? /shorter|shorten|trend|change|improv/i.test(firstFact) ? 50 : 28 : 5
     if (/^(I |My |Here |Speaking |Let me|It |That |These |They |Then )/.test(text)) score -= 12
     if (text.length > 420 || text.length < 30) score -= 8
     return { text, claim, score, ci, si }
