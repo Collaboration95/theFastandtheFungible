@@ -19,9 +19,19 @@ export interface AskProps {
   /** The budget picked on Home, kept the same way. */
   picked?: number
   onPick?: (minor: number) => void
+  /** Hosted demo: its own orientation instead of the local heading, the server's per-question cap, and notes in the flow. */
+  intro?: ReactNode
+  budgetMax?: number
+  /** Under the composer row, e.g. the allowance and privacy line. */
+  composerNote?: ReactNode
+  /** Between the composer and the examples: the first-visit environment note or a hosted state. */
+  note?: ReactNode
+  placeholder?: string
+  examplesLabel?: string
+  askLabel?: string
 }
 /** Home: the question, the budget (the only spending authorisation) and Ask. */
-export default function Ask({ onAsk, busy = false, settlement, above, universalMinor, onSettings, draft = '', onDraft, picked = BUDGET.initialMinor, onPick }: AskProps) {
+export default function Ask({ onAsk, busy = false, settlement, above, universalMinor, onSettings, draft = '', onDraft, picked = BUDGET.initialMinor, onPick, intro, budgetMax, composerNote, note, placeholder, examplesLabel = 'Try an example', askLabel }: AskProps) {
   const browserDemo = import.meta.env.MODE === 'browser-demo'
   const id = useId()
   // Starts empty: the presets below fill it in one click.
@@ -35,8 +45,8 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
   const [error, setError] = useState('')
   const disabled = busy || submitting
   return <section className="ra-home" aria-label="Ask a research question">
-    <h1 className="ra-hero">Ask a question. <em>Give it a budget.</em></h1>
-    <p className="ra-home-description">Answers from free sources first; buys only what helps ({PURCHASE_RULE}).</p>
+    {intro ?? <><h1 className="ra-hero">Ask a question. <em>Give it a budget.</em></h1>
+    <p className="ra-home-description">Answers from free sources first; buys only what helps ({PURCHASE_RULE}).</p></>}
     {browserDemo && <p className="ra-note">Recorded budget: S$2.00. The Kestrel–TSMC replay covers pricing &amp; margins.</p>}
     {above && <p className="ra-pending-question">{question}</p>}
     {above}
@@ -49,19 +59,21 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
       try { await onAsk(result.data) } catch { /* App owns the one network-error notice. */ } finally { setSubmitting(false) }
     }}>
       <label className="ra-sr" htmlFor={`${id}-q`}>Your question</label>
-      <textarea id={`${id}-q`} className="ra-qbox" value={question} onChange={event => setQuestion(event.target.value)} readOnly={browserDemo} maxLength={2000} rows={2} required disabled={disabled} placeholder={browserDemo ? "Choose a recorded question below, or press ⌘K…" : "Ask about a company, a market or a claim…"}
+      <textarea id={`${id}-q`} className="ra-qbox" value={question} onChange={event => setQuestion(event.target.value)} readOnly={browserDemo} maxLength={2000} rows={2} required disabled={disabled} placeholder={placeholder ?? (browserDemo ? "Choose a recorded question below, or press ⌘K…" : "Ask about a company, a market or a claim…")}
         onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit() } }} />
       <div className="ra-comp-row">
         {universalMinor === undefined
-          ? <BudgetPopover value={chosen} onChange={setBudget} disabled={disabled || browserDemo} />
+          ? <BudgetPopover value={chosen} onChange={setBudget} disabled={disabled || browserDemo} max={budgetMax} />
           : <button type="button" className="ra-budget-chip" onClick={onSettings} title="Universal budget · change it in Settings">{universalMinor === 0 ? 'Free' : money(universalMinor)}</button>}
-        <button className="ra-ask" type="submit" disabled={disabled || !question.trim()}>{budgetMinor === 0 ? 'Ask free' : 'Ask'}</button>
+        <button className="ra-ask" type="submit" disabled={disabled || !question.trim()}>{askLabel ?? (budgetMinor === 0 ? 'Ask free' : 'Ask')}</button>
       </div>
+      {composerNote}
       {error && <div className="ra-comp-foot"><span className="ra-err" role="alert">{error}</span></div>}
     </form>}
+    {!above && note}
     {/* The demo questions sit under the composer, one per row; a click fills the box. */}
     {!above && <div className="ra-presets" role="group" aria-label="Demo questions">
-      <p className="ra-presets-h" aria-hidden="true">Try an example</p>
+      <p className="ra-presets-h" aria-hidden="true">{examplesLabel}</p>
       {exampleQuestions(import.meta.env.MODE === 'browser-demo' ? undefined : settlement).map((preset) => <button key={preset.id} type="button" className={`ra-preset${question === preset.text ? ' is-on' : ''}`} aria-pressed={question === preset.text} title={preset.text} disabled={disabled} onClick={() => setQuestion(preset.text)}>
         <i aria-hidden="true">?</i><b>{preset.label}</b><span>{preset.text}</span></button>)}
     </div>}

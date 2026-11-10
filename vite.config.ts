@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import { realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 const offset = Number(process.env.DEMO_PORT_OFFSET || 0)
 const api = `http://127.0.0.1:${process.env.PORT || 8788 + offset}`
@@ -22,7 +23,11 @@ const clientAuthority: import('vite').Connect.NextHandleFunction = (req, res, ne
   }
   next()
 }
+// The in-browser receipt verifier (lazy chunk) runs sdk/verify.ts; these two Node imports get browser stand-ins.
+// Nothing else in the app imports them.
+const shim = (file: string) => fileURLToPath(new URL(`./src/verify/shims/${file}`, import.meta.url))
 export default defineConfig({
+  resolve: { alias: [{ find: /^node:crypto$/, replacement: shim('node-crypto.ts') }, { find: /^ws$/, replacement: shim('ws.ts') }] },
   plugins: [react(), {
     name: 'local-client-authority',
     configureServer(server) { server.middlewares.use(clientAuthority) },

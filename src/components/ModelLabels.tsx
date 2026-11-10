@@ -1,16 +1,20 @@
 import { modeDisclosure } from '../../shared/presentation.js'
 import { useEffect, useState } from 'react'
 import type { ModeLabels } from '../../shared/contracts/index.js'
+import { useHosted } from '../hosted'
 
 /** Verbatim engine labels, retained exclusively in Show work. */
 export default function ModelLabels({ labels, configured }: { labels?: ModeLabels; configured?: ModeLabels }) {
   const [paused, setPaused] = useState(false)
+  // The owner wallet status is not a hosted route; the hosted pause shows in the header indicator instead.
+  const hosted = !!useHosted()
   useEffect(() => {
+    if (hosted) return
     let active = true
     const poll = () => { void fetch('/api/wallet/status').then(r => r.json()).then(s => { if (active) setPaused(s.paused === true) }).catch(() => {}) }
     poll(); const timer = setInterval(poll, 2000)
     return () => { active = false; clearInterval(timer) }
-  }, [])
+  }, [hosted])
   const pauseLabel = paused && <li className="ra-chip is-fallback" role="status">Wallet · spending paused</li>
   const research = labels?.research ?? configured?.research ?? modeDisclosure('research')
   const decision = labels?.decision ?? configured?.decision ?? modeDisclosure('decision')

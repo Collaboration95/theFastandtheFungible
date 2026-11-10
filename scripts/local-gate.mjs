@@ -90,6 +90,8 @@ export function makeSteps(route, cpuBudget = MAX_CPUS) {
     add('browser-app', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--grep-invert', '@perf', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/app'], 2, ['unit'], 900000)
     // Timing budgets (CLS, input → paint) need an idle host: claim every CPU slot so nothing runs beside it.
     add('browser-perf', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--grep', '@perf', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/perf'], cpuBudget, ['browser-app'], 600000)
+    // The hosted judge UI (HOSTED=1) rebuilds dist/, so it waits until the other app suites stop serving it.
+    add('browser-hosted', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.hosted.config.ts', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/hosted'], 2, ['browser-perf'], 600000)
   }
   if (route.replay) {
     npm('demo-build', 'build:demo', 2, ['lint'])
@@ -149,6 +151,7 @@ export function inputsFor(id, files, read, unknown = false) {
   else if (id === 'desktop-loader') match = file => /^desktop\/(?:smoke|recovery-smoke|accept)\.mjs$|^scripts\/(?:record|mcp-demo|local-gate-smoke)\.mjs$|^shared\/resource-scope\.ts$/.test(file)
   else if (id === 'desktop-build') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|desktop)\/|^index\.html$|^vite\.config|^scripts\/local-gate-smoke/.test(file)
   else if (id === 'browser-app' || id === 'browser-perf') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures|design\/cast)\/|^index\.html$|^vite\.config|^playwright\.config|^tests\/.*\.spec\.ts$|^scripts\/(?:demo(?:-ports)?|prepare-e2e-store)\.mjs$/.test(file)
+  else if (id === 'browser-hosted') match = file => /^(?:src|server|shared|publisher|sdk|data|tests\/fixtures|tests\/helpers)\/|^index\.html$|^vite\.config|^playwright\.hosted\.config|^tests\/(?:hosted-ui\.spec|evidence-path)\.ts$|^scripts\/demo-ports\.mjs$/.test(file)
   else match = file => /^(?:src|shared|demo|site|design|docs\/evidence)\/|^vite\.demo\.config|^playwright\.(?:demo|judge|ledger)\.config|^tests\/(?:browser-demo|judge-path|ledger-viewer|ledger-sockets)/.test(file)
   const selected = files.filter(file => common(file) || match(file))
   return scriptClosure(files, read, selected)
