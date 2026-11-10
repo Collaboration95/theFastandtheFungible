@@ -182,7 +182,7 @@ set `FALLBACK_HOST=<VM-IP>.sslip.io`, create private UID-1000 0700 `caddy` and
 `caddy-config` directories on the persistent disk, and explicitly open only
 80/443 with a separately named `ra-fallback` firewall rule. Caddy listens on
 unprivileged internal 8080/8443 and forwards one remote-address hop. It strips
-Authorization and internal/RA headers. Public fallback firewall/TLS/DNS actions
+Authorization and internal principal headers. Public fallback firewall/TLS/DNS actions
 are orchestrator-only and outside the default deploy. Change HOSTED_ORIGIN to
 that exact HTTPS origin and re-render/restart. Disable the alternate front or
 redirect to the canonical host; do not wildcard origins or share cookies. Qualify
