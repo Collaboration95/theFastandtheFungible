@@ -8,7 +8,7 @@ question and miss is retained; neither scorer nor gold phrases were changed.
 
 Both sides use the merged C3 (#425) and C4 (#437) corpus, with identical bank
 hashes and no corpus edits by K4. Baseline: `cbfc63ab8432b2b3d8c663fc7875c1d1cf963023`.
-After: `d7b36b7d5b72b27e49a8c6c5f4fba8eb14dc7644`, rebased on that baseline. Hosted
+After: `aa571d42ea2ee989d64f4825287a3738dc6b3c45`, with HU (#438) integrated after that corpus baseline. Hosted
 execution is off. Corpus/writer bytes are identical between these sources.
 These matched local baselines differ from K3's earlier published runs.
 
@@ -31,7 +31,7 @@ judgments, values, verdicts,
 selected purchases and refund outcomes. Gross spending stays **0 / 90 / 70 SGD
 minor units**, with the UC3 refund still 30. UC1's entire decision table is
 identical. Some rejected UC2/UC3 rows now explain the topic guard instead of a low
-score; no policy field changes. Legacy lead regressions also pin the meeting
+score; no policy field changes. Legacy and frozen-requirement lead regressions also pin the meeting
 decision, the revised analyst margin estimate, and the complete lead-time change. See `uc-policy-comparison.json` and
 `comparison.json` for the exact comparison and explanation changes.
 

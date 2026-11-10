@@ -19,7 +19,9 @@ budget, rewrite, idempotency and new-writer-probe limits still apply.
 
 Composition considers accessible purchased passages first, then accessible free
 passages. Lead ranking uses the first requested fact, question form, entity,
-answer type, article title and facets. It prefers definitions and causal answers
+answer type, article title and facets. Generated entity-basics coverage rows do
+not replace the user's first requested fact. Date questions reward the requested
+event rather than an unrelated date. It prefers definitions and causal answers
 over introductions, recommendations and caveats; exact source bytes and bindings
 remain in receipts. Leads have both a 40-word and 620-character limit; conclusions
 have a 120-word limit and omit malformed sentences longer than 1,800 characters.
