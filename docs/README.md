@@ -44,7 +44,7 @@ Build on ResearchAgent from code or an MCP client.
 - [Running it](running.md): every make target, the demo keys, Docker.
 - [Operations runbook](RUNBOOK.md): seeded faults, crash recovery, reconciliation, the soak. [Payment operations](evidence/payment-ops-287.md).
 - [Recording clips](RECORDING.md) for demos.
-- [Security contract](contracts/SECURITY.md): secrets, access, settlement, manifests and refunds. Also [SECURITY.md](../SECURITY.md) for reporting.
+- [Security contract](contracts/SECURITY.md): secrets, access, settlement, manifests and refunds. Also [SECURITY.md](../.github/SECURITY.md) for reporting.
 
 ## Contracts and design (as built)
 

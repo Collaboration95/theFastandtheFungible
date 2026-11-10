@@ -152,7 +152,7 @@ history**. Mutations send `X-CSRF-Token` and an `Idempotency-Key` (fresh for
 each question, reused on retry). Gateway refusals map from codes to plain
 sentences in `src/hosted.ts`.
 
-Locally: `npx playwright test --config playwright.hosted.config.ts`
+Locally: `npx playwright test --config tests/playwright/hosted.config.ts`
 (local-gate step `browser-hosted`). Evidence:
 [evidence/hosted-ui](evidence/hosted-ui/README.md).
 
@@ -226,7 +226,7 @@ qualify the exact images before resuming. Templates do not prove live readiness.
 its container; public traffic is forwarded only when `/api/demo/status` returns
 the hosted contract. Without HG it serves paused status/503 and rejects asks,
 while the publisher and recovery process can initialize. It never falls through
-to local owner routes. The original `Dockerfile.publisher` K_SERVICE guard is
+to local owner routes. The original `docker/Dockerfile.publisher` K_SERVICE guard is
 unchanged; new stateful roles also refuse K_SERVICE.
 
 ## Health and acceptance contract

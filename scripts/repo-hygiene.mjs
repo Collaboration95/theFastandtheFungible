@@ -12,7 +12,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, extname, join, normalize } from 'node:path'
 
 const REQUIRED = [
-  'README.md', 'LICENSE', 'CONTRIBUTING.md', 'SECURITY.md', 'CODE_OF_CONDUCT.md',
+  'README.md', 'LICENSE', '.github/CONTRIBUTING.md', '.github/SECURITY.md', '.github/CODE_OF_CONDUCT.md',
   '.github/CODEOWNERS', '.github/pull_request_template.md', '.github/ISSUE_TEMPLATE/config.yml',
   '.github/ISSUE_TEMPLATE/bug.yml', '.github/ISSUE_TEMPLATE/feature.yml',
   '.github/ISSUE_TEMPLATE/builder-feedback.yml', 'docs/SFF-PUSH.md', 'docs/contracts/SECURITY.md',

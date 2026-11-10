@@ -3,8 +3,8 @@ import { gzipSync } from 'node:zlib'
 import { readFileSync } from 'node:fs'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
-// The replay bundles the same App, so the lazy in-browser receipt verifier needs the same browser shims as vite.config.ts.
-const shim = (file: string) => fileURLToPath(new URL(`./src/verify/shims/${file}`, import.meta.url))
+// The replay bundles the same App, so the lazy in-browser receipt verifier needs the same browser shims as the root vite.config.ts.
+const shim = (file: string) => fileURLToPath(new URL(`../src/verify/shims/${file}`, import.meta.url))
 export default defineConfig({
   root: 'demo', base: '/theFastandtheFungible/demo/', plugins: [react(), {
     name: 'compressed-audited-replays', enforce: 'post',

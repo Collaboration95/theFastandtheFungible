@@ -20,7 +20,7 @@ npm run verify:answer -- docs/evidence/w1-proof/testnet-refusal.receipts.json --
 
 ```sh
 npx vitest run tests/refusal-proof.test.ts tests/share-proof.test.tsx                      # sanitization, immutability, eligibility, hosted isolation, page, component
-UPDATE_EVIDENCE=1 npx playwright test --config playwright.hosted.config.ts tests/proof-of-refusal.spec.ts   # hosted-* screenshots
+UPDATE_EVIDENCE=1 npx playwright test --config tests/playwright/hosted.config.ts tests/proof-of-refusal.spec.ts   # hosted-* screenshots
 node design/brand/build-proof-og.mjs                                                      # og-card.png (also public/og/refusal-proof.png)
 ```
 

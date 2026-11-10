@@ -50,6 +50,6 @@ describe('hosted operator boundaries',()=>{
   expect(front).not.toContain('$proxy_add_x_forwarded_for')
   expect(front).toContain('proxy_buffering off')
   expect(front).toContain('error_page 502 504 =503 /paused.html')
-  expect(readFileSync('Dockerfile.publisher','utf8')).toContain('if (process.env.K_SERVICE) throw')
+  expect(readFileSync('docker/Dockerfile.publisher','utf8')).toContain('if (process.env.K_SERVICE) throw')
  })
 })

@@ -2,7 +2,7 @@
 
 1280×800 Playwright Chromium screenshots, fixture engine, synthetic writers,
 SIMULATED settlement. No live provider, faucet, Keychain, installed DMG or signed
-artifact acceptance is claimed. `npm run build && npx playwright test --config playwright.settings.config.ts`
+artifact acceptance is claimed. `npm run build && npx playwright test --config tests/playwright/settings.config.ts`
 checks all nine sections with axe (no serious/critical violations) and captures
 onboarding. `tests/owner-settings.test.ts` checks browser metadata, CSRF, masking,
 invalid input, audit entries and deferred configuration loading.

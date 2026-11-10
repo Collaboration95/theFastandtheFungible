@@ -10,7 +10,7 @@ Use [private vulnerability reporting](https://github.com/Collaboration95/theFast
 security problem. We aim to reply within a few days.
 
 In scope: anything that breaks the five hard gates in the
-[README](README.md#hard-guarantees) (premium bytes before a grant, spending the
+[README](../README.md#hard-guarantees) (premium bytes before a grant, spending the
 LLM can trigger, a double charge, a fake citation, unlabelled simulation), or
 leaks a key or seed.
 
@@ -25,9 +25,9 @@ then tell us.
 
 ## How the code protects money and keys
 
-Details are in [docs/contracts/SECURITY.md](docs/contracts/SECURITY.md): source text
+Details are in [docs/contracts/SECURITY.md](../docs/contracts/SECURITY.md): source text
 is untrusted evidence, the server alone enforces the budget and signs payments, both
 sides restrict ledger access to Testnet, and writer manifests are signed with the
 payee key. Local storage is demo-grade SQLite; add authentication, encryption and a
 managed database before any production use. What is and isn't compliant, the tamper-evident audit trail and data
-retention are in [docs/COMPLIANCE.md](docs/COMPLIANCE.md).
+retention are in [docs/COMPLIANCE.md](../docs/COMPLIANCE.md).

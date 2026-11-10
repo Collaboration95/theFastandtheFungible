@@ -168,6 +168,6 @@ checked as the delivered amount; a signed IOU quote overflowed the 1 KiB Memo li
 [Progress](https://collaboration95.github.io/theFastandtheFungible/progress/) ·
 [Deck (PDF)](docs/submission/ResearchAgent-SFF-deck.pdf) ·
 [Explainers](https://collaboration95.github.io/theFastandtheFungible/) ·
-[Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) ·
+[Changelog](CHANGELOG.md) · [Contributing](.github/CONTRIBUTING.md) · [Security](.github/SECURITY.md) ·
 [MIT license](LICENSE)
 <!-- Video slot: once the demo video is uploaded, add a "Video" link after "Progress" in the line above (see VIDEO_URL in docs/submission/README.md). -->
