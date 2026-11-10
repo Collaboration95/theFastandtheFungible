@@ -92,7 +92,7 @@ it('leads a causal question with the cause instead of a fee caveat, preserving e
 it('keeps numbers under Why and never renders an empty Why',()=>{
  const run={...exampleRun,phase:'DONE' as const,candidates:[],contents:[],answers:[],decisions:[{round:1,gap:'',threshold:0.2,gapMaterial:1,rows:[],provider:'fixture' as const,model:'test'}]}
  const html=renderToStaticMarkup(createElement(Answer,{run,view:'latest',onView:()=>{},compare:false,onCompare:()=>{}}))
- expect(html).not.toContain('Why ▸');expect(html).toContain('No source covers')
+ expect(html).not.toContain('Why nothing was bought');expect(html).toContain('No source covers')
  expect(declineSummary(exampleRun)).not.toMatch(/0\.\d|threshold|policy/)
 })
 it('uses terminal heading and a pending anchor label, and hides fixture model IDs',()=>{

@@ -10,6 +10,7 @@ import type { ReactNode } from 'react'
 import { AnswerSchema, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
 import { candidateOf, citationKey } from '../format'
+import { VERDICT_LABEL } from '../copy'
 import { answerBoilerplate, leadFinding, remainingClaims } from '../../shared/lead-finding.js'
 import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
 
@@ -42,8 +43,6 @@ export function citationNumbers(answers: AnswerData[]): Map<string, number> {
   return numbers
 }
 
-/** Policy verdicts in plain words; the enum codes stay in Show work → Policy. */
-const DECLINE_VERDICT: Record<string, string> = { BUY: 'Selected', SKIP_LOW_VALUE: 'Below the value bar', SKIP_LOW_TRUST: 'Writer blocked', SKIP_OVER_CAP: 'Over the per-article cap', SKIP_OVER_BUDGET: 'Over the budget left', SKIP_REWRITE: 'Rewrite of a known source', SKIP_NO_GAP: 'No gap left to fill' }
 const GROUPS: [Claim['stance'], string][] = [['SUPPORTS', 'Supports'], ['CHALLENGES', 'Disputes'], ['UNCERTAIN', 'Cited findings']]
 
 export interface AnswerProps { run: RunSnapshot; onCitation?: (citation: Citation) => void; view: 'latest' | 'baseline'; onView: (view: 'latest' | 'baseline') => void; compare: boolean; onCompare: () => void; report?: ReactNode }
@@ -55,7 +54,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
     const source = candidateOf(run, citation)
     return <sup key={citationKey(citation)}><button className="ra-cite" type="button" disabled={!onCitation} aria-label={`Citation ${number}: ${source?.title ?? citation.resourceId}, exact passage`} onClick={() => onCitation?.(citation)}>{number}</button></sup>
   })
-  if (!answer && run.phase === 'DONE') return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{run.decisions.some(round => round.rows.length > 0) && <details className="ra-why-not"><summary>Why ▸</summary><ul>{run.decisions.flatMap(round => round.rows.map((row, i) => <li key={`${round.round}-${i}`}><b>{row.candidate.title}</b><span className="ra-why-verdict">{DECLINE_VERDICT[row.verdict] ?? row.verdict}</span><span className="ra-why-value">value {row.value.toFixed(2)} vs {round.threshold.toFixed(2)}</span><p>{row.reason}</p></li>))}</ul></details>}<AnchorStatus run={run} /><ShareProof run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Publish a note on this →</a></section>
+  if (!answer && run.phase === 'DONE') return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{run.decisions.some(round => round.rows.length > 0) && <details className="ra-why-not"><summary>Why nothing was bought</summary><ul>{run.decisions.flatMap(round => round.rows.map((row, i) => <li key={`${round.round}-${i}`}><b>{row.candidate.title}</b><span className="ra-why-verdict">{VERDICT_LABEL[row.verdict] ?? row.verdict}</span><span className="ra-why-value">value {row.value.toFixed(2)} vs {round.threshold.toFixed(2)}</span><p>{row.reason}</p></li>))}</ul></details>}<AnchorStatus run={run} /><ShareProof run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Write about this topic →</a></section>
   if (!answer) return <section className="ra-verdict" aria-label="Research answer" aria-busy={!['FAILED','STOPPED'].includes(run.phase)}><h2 className="ra-caption">Answer</h2>{['FAILED','STOPPED'].includes(run.phase) ? <p>No verified answer is available. Ask again to begin a new run.</p> : <div className="ra-vtext is-skel" aria-hidden="true"><i /><i /><i /></div>}</section>
   const delivered = run.candidates.flatMap(candidate => { const content = getAccessibleContent(run, candidate); return content ? [content] : [] })
   const summary = answer.lead ? answer : summarizeAnswer(run.question, answer, delivered.filter(c => answer.claims.some(claim => claim.citations.some(ref => sameSource(c, ref)))), run.candidates)

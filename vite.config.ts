@@ -1,3 +1,4 @@
+import { HOSTED_APP_URL } from './shared/links'
 import { defineConfig } from 'vite'
 import { realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -29,6 +30,9 @@ const shim = (file: string) => fileURLToPath(new URL(`./src/verify/shims/${file}
 export default defineConfig({
   resolve: { alias: [{ find: /^node:crypto$/, replacement: shim('node-crypto.ts') }, { find: /^ws$/, replacement: shim('ws.ts') }] },
   plugins: [react(), {
+    name: 'app-origin-meta',
+    transformIndexHtml(html) { const origin=(process.env.HOSTED_ORIGIN || HOSTED_APP_URL).replace(/\/$/, ''); return html.replace(/(<meta property="og:url" content=")[^"]+/, `$1${origin}/`).replace(/(<meta (?:property="og:image"|name="twitter:image") content=")[^"]+/g, `$1${origin}/brand/og.png`) },
+  }, {
     name: 'local-client-authority',
     configureServer(server) { server.middlewares.use(clientAuthority) },
     configurePreviewServer(server) { server.middlewares.use(clientAuthority) },

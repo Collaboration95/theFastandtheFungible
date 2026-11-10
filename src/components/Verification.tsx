@@ -1,3 +1,4 @@
+import Icon from './Icon'
 import { useEffect, useState } from 'react'
 import type { PurchaseIntent, RunSnapshot } from '../../shared/contracts'
 import { displayPeriod } from '../../shared/fact-menu'
@@ -9,17 +10,17 @@ export default function Verification({ run, intent }: { run: RunSnapshot; intent
   const failed = intent.status === 'REFUNDED' || ['CLAIM_FAILED', 'CHALLENGED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'].includes(intent.status)
   const checked = !!proof || intent.status === 'VERIFIED' || failed
   const [open, setOpen] = useState(checked)
-  useEffect(() => { if (!checked) return; const show = setTimeout(() => setOpen(true), 0); const hide = failed ? undefined : setTimeout(() => setOpen(false), 4000); return () => { clearTimeout(show); clearTimeout(hide) } }, [checked, failed])
+  useEffect(() => { if (!checked) return; const show = setTimeout(() => setOpen(true), 0);  return () => { clearTimeout(show) } }, [checked, failed])
   if (!checked) return null
   const claims = candidateOf(run, intent)?.manifest?.claims ?? []
   const failures = proof?.data?.failedClaimIds as string[] | undefined
-  const nameOf = (claim: typeof claims[number]) => displayPeriod(claim.covers ? [claim.covers.entity, claim.covers.measure, claim.covers.period, claim.covers.comparison].filter(Boolean).join(' ') : claim.id.replace(/-/g, ' '))
+  const nameOf = (claim: typeof claims[number]) => displayPeriod((claim.covers ? [claim.covers.entity, claim.covers.measure, claim.covers.period, claim.covers.comparison].filter(Boolean).join(' ') : claim.id.replace(/-/g, ' ')))
   const names = [...new Set(claims.map(nameOf))]
-  return <details className="ra-verification" open={open} onToggle={e => setOpen(e.currentTarget.open)}><summary>Checked against the writer's promises</summary><ul>{names.slice(0, 5).map(name => {
+  return <details className="ra-verification" open={open} onToggle={e => setOpen(e.currentTarget.open)}><summary>Checked against the writer’s promises</summary><ul>{names.slice(0, 5).map(name => {
     const group = claims.filter(c => nameOf(c) === name)
     const claim = group[0]
     const unverified = failed && (!proof || (proof.data?.ok === false && !failures?.length))
     const bad = unverified || group.some(c => failures?.includes(c.id))
-    return <li key={claim.id} className={bad ? 'is-bad' : ''}><span>{bad ? '✕' : '✓'} {name}</span><small>{bad ? unverified ? 'Could not verify this promise.' : 'Not found. The article did not contain this.' : 'Found in the checked passage'}</small></li>
+    return <li key={claim.id} className={bad ? 'is-bad' : ''}><span><Icon name={bad ? 'close' : 'check'} size={16} /> {name}</span><small>{bad ? unverified ? 'Could not verify this promise.' : 'Not found. The article did not contain this.' : 'Found in the checked passage'}</small></li>
   })}{names.length > 5 && <li>and {names.length - 5} more</li>}</ul>{!claims.length && <p>{failed ? 'A promise was broken. This article is not used.' : 'Article integrity verified.'}</p>}</details>
 }

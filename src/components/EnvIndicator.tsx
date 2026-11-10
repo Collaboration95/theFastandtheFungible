@@ -3,6 +3,7 @@ import type { ModeLabels } from '../../shared/contracts'
 import { useDismiss } from '../useDismiss'
 import { useClearOfAsk } from '../useClearOfAsk'
 import { markEnvironmentSeen as markSeen } from '../environment'
+import { environmentLabel } from '../../shared/presentation'
 
 const testnetOf = (labels?: ModeLabels) => labels?.settlement.startsWith('XRPL') ?? false
 
@@ -10,7 +11,7 @@ const testnetOf = (labels?: ModeLabels) => labels?.settlement.startsWith('XRPL')
     Until the engine answers, payments read as simulated (never assumed real). */
 export function EnvFacts({ labels }: { labels?: ModeLabels }) {
   const testnet = testnetOf(labels)
-  return <dl style={{ color: 'var(--ink)' }}><div><dt style={{ color: 'var(--ink)' }}>Writers</dt><dd>Built-in: fictional demo writers and labelled team-authored notes. Local: author-labelled.</dd></div><div><dt style={{ color: 'var(--ink)' }}>Payments</dt><dd>{testnet ? 'XRPL Testnet, test funds with no value' : 'Simulated, no ledger entry'}</dd></div><div><dt style={{ color: 'var(--ink)' }}>Search</dt><dd>{labels?.search?.startsWith('hybrid') ? 'Hybrid' : 'Keyword only (embeddings unavailable)'}</dd></div><div><dt style={{ color: 'var(--ink)' }}>Models</dt><dd>{labels?.research.startsWith('fixture') ? 'Offline extracts' : labels?.research ?? 'Connecting…'}<br />{labels?.decision.startsWith('fixture') ? 'Offline rules' : labels?.decision ?? 'Connecting…'}</dd></div></dl>
+  return <dl><div><dt>Writers</dt><dd>Built-in: fictional demo writers and labelled team-authored notes. Local: author-labelled.</dd></div><div><dt>Payments</dt><dd>{testnet ? 'XRPL Testnet, test funds with no value' : 'Simulated, no ledger entry'}</dd></div><div><dt>Search</dt><dd>{labels?.search?.startsWith('hybrid') ? 'Keyword + meaning' : 'Keyword search only'}</dd></div><div><dt>Models</dt><dd>{labels?.research.startsWith('fixture') ? 'Offline extracts' : labels?.research ?? 'Connecting…'}<br />{labels?.decision.startsWith('fixture') ? 'Offline rules' : labels?.decision ?? 'Connecting…'}</dd></div></dl>
 }
 
 /** First visit, empty Home only: the same disclosure as an inline note in the page flow, so it never covers Ask,
@@ -18,9 +19,10 @@ export function EnvFacts({ labels }: { labels?: ModeLabels }) {
 export function EnvNote({ labels, onDone }: { labels?: ModeLabels; onDone: () => void }) {
   const testnet = testnetOf(labels)
   return <section id="environment-details" className="ra-env-note" aria-labelledby="environment-details-title">
-    <div className="ra-env-note-head"><h2 id="environment-details-title">What's real here</h2>
+    <div className="ra-env-note-head"><h2 id="environment-details-title">What’s real here</h2>
       <p>{!labels ? 'Checking this environment…' : testnet ? 'Test funds have no value. Built-in writers are fictional; local notes carry their own provenance.' : 'Built-in writers are fictional and payments are simulated. Local notes carry their own provenance. No real money moves.'}</p>
       <button type="button" className="ra-btn" onClick={() => { markSeen(); onDone() }}>Got it</button></div>
+    {labels?.testnetFallback && <p role="status">Testnet setup unavailable ({labels.testnetFallback.replaceAll('_', ' ')}); running a simulated preview. Retry Testnet setup from the terminal. No ledger transactions are made.</p>}
     <EnvFacts labels={labels} />
   </section>
 }
@@ -35,11 +37,12 @@ export default function EnvIndicator({ labels }: { labels?: ModeLabels; recordin
   useDismiss(open, box, close)
   const top = useClearOfAsk(open, trigger)
   return <div className="ra-env" ref={box}>
-    <button ref={trigger} className="ra-env-trigger" aria-expanded={open} aria-controls="environment-popover" onClick={() => { if (open) close(); else setOpen(true) }}><i aria-hidden="true" /><span className="ra-env-full">{testnet ? 'XRPL Testnet · test funds' : 'Demo · simulated payments'}</span><span className="ra-env-short">{testnet ? 'Testnet' : 'Demo'}</span></button>
-    {open && <section id="environment-popover" className="ra-env-pop" style={{ position: 'fixed', top, bottom: 'auto', right: 16, left: 'auto', width: 'min(360px, calc(100vw - 32px))', maxHeight: `calc(100dvh - ${top + 12}px)`, overflow: 'auto' }} aria-label="What's real here">
-      <h2>What's real here</h2><p>{testnet ? 'Test funds have no value. Built-in writers are fictional; local notes carry their own provenance.' : 'Built-in writers are fictional and payments are simulated. Local notes carry their own provenance. No real money moves.'}</p>
-      <EnvFacts labels={labels} />
-      <button className="ra-btn" style={{ color: 'var(--ink)' }} onClick={close}>Got it</button>
+    <button ref={trigger} className="ra-env-trigger" aria-expanded={open} aria-controls={open ? 'environment-popover' : undefined} onClick={() => { if (open) close(); else setOpen(true) }}><i aria-hidden="true" /><span className="ra-env-full">{environmentLabel(labels?.settlement)}</span><span className="ra-env-short">{testnet ? 'Testnet · test funds' : 'Demo · simulated'}</span></button>
+    {open && <section id="environment-popover" className="ra-env-pop" style={{ position: 'fixed', top, bottom: 'auto', right: 16, left: 'auto', width: 'min(360px, calc(100vw - 32px))', maxHeight: `calc(100dvh - ${top + 12}px)`, overflow: 'auto' }} aria-label="What’s real here">
+      <h2>What’s real here</h2><p>{testnet ? 'Test funds have no value. Built-in writers are fictional; local notes carry their own provenance.' : 'Built-in writers are fictional and payments are simulated. Local notes carry their own provenance. No real money moves.'}</p>
+      {labels?.testnetFallback && <p role="status">Testnet setup unavailable ({labels.testnetFallback.replaceAll('_', ' ')}); running a simulated preview. Retry Testnet setup from the terminal. No ledger transactions are made.</p>}
+    <EnvFacts labels={labels} />
+      <button className="ra-btn" onClick={close}>Got it</button>
     </section>}
   </div>
 }

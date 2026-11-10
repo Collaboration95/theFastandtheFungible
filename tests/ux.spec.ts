@@ -12,9 +12,9 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   await page.goto('/?pace=real')
   const env = page.getByRole('button', { name: /Demo · simulated payments/ })
   await expect(env).toBeVisible()
-  const pop = page.getByRole('region', { name: "What's real here" })
+  const pop = page.getByRole('region', { name: "What’s real here" })
   await expect(pop).toBeVisible()
-  for (const label of ['fictional demo writers and labelled team-authored notes', 'Simulated, no ledger entry', 'Keyword only', 'Offline rules']) await expect(pop).toContainText(label)
+  for (const label of ['fictional demo writers and labelled team-authored notes', 'Simulated, no ledger entry', 'Keyword search only', 'Offline rules']) await expect(pop).toContainText(label)
   await page.keyboard.press('Escape')
   await shot('01-home')
   const presets = [/^Bank of Japan decision/, /^Kestrel–TSMC outlook/, /^Malaysia packaging lead times/]
@@ -32,11 +32,11 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
     const spend = page.getByRole('region', { name: 'Spend', exact: true }).first()
     await expect(spend.locator('.ra-net')).toHaveText(['S$0.00','S$0.90','S$0.40'][i])
     if (i === 0) await expect(spend).toContainText('Answered from free sources')
-    if (i === 1) { await spend.getByRole('button', { name: 'Receipt ›' }).click(); await shot('13-receipt-paid'); await page.keyboard.press('Escape') }
+    if (i === 1) { await spend.getByRole('button', { name: 'Receipt' }).click(); await shot('13-receipt-paid'); await page.keyboard.press('Escape') }
   }
-  await expect(page.getByText(/AlphaLeak's article didn't contain/)).toBeVisible()
+  await expect(page.getByText(/AlphaLeak’s article didn’t contain/)).toBeVisible()
   await expect(page.locator('.ra-side .ra-spend')).toContainText('Paid S$0.70 · Refunded S$0.30')
-  const leak = page.locator('.ra-side').getByRole('region', { name: 'Purchase: AlphaLeak' })
+  const leak = page.locator('.ra-side').getByRole('region', { name: 'Payment: AlphaLeak' })
   await expect(leak).toContainText('Refunded S$0.30 · simulated')
   await expect(leak).toContainText('Not found')
   await expect(leak.locator('a[href*="transactions"]')).toHaveCount(0)
@@ -49,7 +49,7 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   expect(labels.indicators).toBe(1)
   // Includes the mandatory refund rail and explicit unanchored simulated label (#366).
   expect(labels.rawText).toBe(3)
-  await leak.getByRole('button', { name: 'Receipt ›' }).click()
+  await leak.getByRole('button', { name: 'Receipt' }).click()
   const receipt = page.getByRole('dialog', { name: 'Receipt', exact: true })
   await expect(receipt).toContainText('None (simulated)')
   await expect(receipt).toContainText('Simulated payment · no ledger entry')
@@ -106,7 +106,7 @@ test('UX-1 stage screenshots and a single actionable scope error', async ({ page
   await capture('11-uc3-refund')
   shown = { ...uc2, phase: 'FAILED', checkpoint: { ...uc2.checkpoint, nextAction: 'retry-delivery' }, answers: uc2.answers.slice(0,1) }
   await capture('21-recovering-run')
-  await expect(page.getByText('Recovering', { exact: true })).toBeVisible()
+  await expect(page.getByText('Finishing after a restart…', { exact: true })).toBeVisible()
   await page.route('**/api/scope', route => route.fulfill({ status: 500, json: { error: 'test' } }))
   await page.goto('/?pace=real')
   await page.getByRole('button', { name: /^Bank of Japan decision/ }).click()
@@ -119,6 +119,6 @@ test('UX-1 stage screenshots and a single actionable scope error', async ({ page
   await page.goto('/?record=1')
   await page.setViewportSize({ width: 1440, height: 900 })
   await expect(page.locator('.ra-env-trigger')).toBeVisible()
-  await expect(page.getByRole('region', { name: "What's real here" })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: "What’s real here" })).toHaveCount(0)
   await page.screenshot({ path: `${dir}/23-record-home.jpg`, type: 'jpeg', quality: 65, animations: 'disabled' })
 })

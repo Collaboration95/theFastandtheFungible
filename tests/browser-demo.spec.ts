@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
+import { writeFileSync } from 'node:fs'
+import { evidencePath } from './evidence-path'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { mkdir, cp, readdir, stat } from 'node:fs/promises'
@@ -21,7 +24,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     page.on('pageerror', error => errors.push(error.message))
     page.on('request', request => requests.push(request.url()))
     await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/`)
-    await expect(page.getByText(/^Recorded on XRPL Testnet · no real value · key reveal .*the refund is writer-signed \(fixture writer cooperates\)$/)).toBeVisible()
+    await expect(page.getByText(/^Replay · recorded \d{4}-\d{2}-\d{2} · XRPL Testnet · no real value$/)).toBeVisible()
     await expect(page.getByRole('button', { name: 'Pause', exact:true })).toBeVisible()
     await page.getByRole('button', { name:'Pause', exact:true }).click()
     await expect(page.getByRole('button', { name:'Resume', exact:true })).toBeVisible()
@@ -34,15 +37,15 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page.locator('.ra-vtext')).toContainText('26 weeks to 18 weeks')
   await expect(page.locator('.ra-vtext')).not.toContainText('Supports')
   await expect(page.locator('.ra-claim').filter({ hasText: '26 weeks to 18 weeks' })).toHaveCount(0)
-    await expect(page.getByRole('region', { name: /Purchase: AlphaLeak/ })).toContainText('Refunded S$0.30')
-    await expect(page.getByRole('region', { name: 'Purchase: The Fab Floor' })).toContainText('Paid by key reveal')
-    await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 kept · 1 refunded')
+    await expect(page.getByRole('region', { name: /Payment: AlphaLeak/ })).toContainText('Refunded S$0.30')
+    await expect(page.getByRole('region', { name: 'Payment: The Fab Floor' })).toContainText('Paid by key reveal')
+    await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('1 bought · 1 refunded')
     const spend = page.getByRole('region', { name: 'Spend', exact: true }).first()
     await expect(spend).toContainText('S$1.30 budget left · refunds don’t restore budget'.replace('’', "'"))
     // Each key-reveal card lists its own create and finish transactions; the refund links separately.
-    await expect(page.getByRole('link', { name: 'tx ↗', exact: true })).toHaveCount(4)
-    await expect(page.getByRole('link', { name: /^Refund tx [A-F0-9]{6}…[A-F0-9]{5} ↗$/ })).toHaveCount(1)
-    await expect(page.locator('p:visible', { hasText: 'Refund · writer-signed · fixture writer cooperates (a real writer could refuse)' })).toHaveCount(1)
+    await expect(page.getByRole('link', { name: 'tx', exact: true })).toHaveCount(4)
+    await expect(page.getByRole('link', { name: /^Refund tx [A-F0-9]{6}…[A-F0-9]{5}$/ })).toHaveCount(1)
+    await expect(page.locator('p:visible', { hasText: 'Refund signed by the writer. This demo writer agrees to refund; a real writer could refuse.' })).toHaveCount(1)
     await page.screenshot({ path: info.outputPath('uc3.png'), fullPage: true })
     await page.getByRole('button', { name: /Receipt/ }).first().click()
     await expect(page.getByRole('dialog')).toBeVisible()
@@ -51,7 +54,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page.getByRole('dialog')).toBeVisible()
     await expect(page.getByRole('dialog').locator('mark')).toBeVisible()
     await page.keyboard.press('Escape')
-    await page.getByRole('tab', { name: 'Writers' }).click()
+    await page.getByRole('button', { name: /^Writers/ }).click()
     await expect(page.getByText(/quarantined/i).first()).toBeVisible()
     await page.getByRole('button', { name: 'AlphaLeak' }).click()
     await expect(page.getByText(/Honesty 0\.40/)).toBeVisible()
@@ -61,18 +64,18 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page.getByText(/claude mcp add researchagent/)).toBeVisible()
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.keyboard.press('Meta+k')
-    await page.getByRole('button', { name: /What's the analyst outlook/ }).click()
+    await page.getByRole('option', { name: /What's the analyst outlook/ }).click()
     await page.getByRole('button', { name: /^Ask$/ }).click()
     await page.getByRole('button', { name: 'Start now' }).click()
     await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
-    await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ })).toContainText('Verified')
-    await expect(page.getByText('Replay of a recorded run · fictional writers · simulated payments')).toBeVisible()
+    await expect(page.getByRole('region', { name: /Payment: NotFinancialTimes/ })).toContainText('Verified')
+    await expect(page.getByText(/^Replay · recorded .*fictional writers · simulated payments$/)).toBeVisible()
     await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC1`)
     await page.getByRole('button', { name: /^Bank of Japan decision/ }).click()
     await page.getByRole('button', { name: /^Ask$/ }).click()
     await page.getByRole('button', { name: 'Start now' }).click()
     await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
-    await expect(page.getByText('Replay of a recorded run · fictional writers · simulated payments')).toBeVisible()
+    await expect(page.getByText(/^Replay · recorded .*fictional writers · simulated payments$/)).toBeVisible()
     expect(sockets.length).toBeLessThanOrEqual(9)
     expect(sockets.every(url => ['wss://s.altnet.rippletest.net:51233/', 'wss://clio.altnet.rippletest.net:51233/', 'wss://testnet.xrpl-labs.com/'].includes(url))).toBe(true)
     expect(errors).toEqual([])
@@ -90,8 +93,8 @@ test('key reveal tab autoplays and preserves quarantine disclosure', async ({ pa
   const port = String(chunk).match(/port (\d+)/)?.[1]
   await page.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
   await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC-key-reveal`)
-  await expect(page.getByText(/ciphertext before grant stays quarantined/)).toBeVisible()
-  for (const name of ['Testnet UC3 · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show']) await expect(page.getByRole('link',{name,exact:true})).toBeVisible()
+  await expect(page.getByText(/^Replay · recorded/)).toBeVisible()
+  for (const name of ['Start here · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show']) await expect(page.getByRole('link',{name,exact:true})).toBeVisible()
   await expect(page.locator('.demo-transactions p')).toHaveCount(5)
   await expect(page.locator('.demo-transactions')).toContainText('EscrowFinish (key published)')
   await expect(page.locator('.demo-transactions')).toContainText('EscrowCancel (writer no-show)')
@@ -123,4 +126,29 @@ for (const [name, query, rows] of [['default key-reveal UC3', '', 6], ['writer n
     expect(greenAt!, 'within 10 s').toBeLessThanOrEqual(10)
     await expect(page).toHaveTitle(/Answer ready/)
   } finally { python.kill('SIGTERM'); await once(python, 'exit') }
+})
+
+// Recorded fixtures and closed ledger sockets isolate UI evidence from live validation.
+for (const width of [1440, 390]) test(`replay UI accessibility at ${width}`, async ({page}, info) => {
+ test.setTimeout(120_000)
+ const root=info.outputPath('pages'); await mkdir(`${root}/theFastandtheFungible`,{recursive:true}); await cp('site',`${root}/theFastandtheFungible`,{recursive:true})
+ const server=spawn('python3',['-u','-m','http.server','0','--bind','127.0.0.1','--directory',root],{stdio:['ignore','pipe','ignore']})
+ try {
+  const [chunk]=await once(server.stdout!,'data'),port=String(chunk).match(/port (\d+)/)?.[1]
+  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});await page.routeWebSocket(/wss:\/\/.*/,ws=>ws.close())
+  const errors:string[]=[],audit:unknown[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',message=>{if(message.type()==='error')errors.push(message.text())})
+  const capture=async(state:string)=>{const result=await new AxeBuilder({page}).analyze();audit.push({state,violations:result.violations});await page.screenshot({path:evidencePath(`ui-nov11/after/replay/${state}-${width}.png`),fullPage:true});expect.soft(result.violations,state).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),state).toBe(true)}
+  const base=`http://127.0.0.1:${port}/theFastandtheFungible/demo/`
+  await page.goto(base);await expect(page).toHaveTitle(/Answer ready/,{timeout:45_000});await capture('answer')
+  await expect(page.getByRole('link',{name:'Ask your own question'})).toHaveAttribute('href','https://ra-front-651013803640.asia-southeast1.run.app')
+  if(width===390){await page.locator('.ra-mobile-spend > button').click();await capture('mobile-spend')}
+  await page.getByRole('button',{name:/Receipt/}).first().click();await capture('receipt');await page.keyboard.press('Escape')
+  await page.locator('.ra-cite').first().click();await capture('citation');await page.keyboard.press('Escape')
+  await page.keyboard.press('w');await page.getByRole('tab',{name:'Ledger',exact:true}).click();await capture('ledger');await page.keyboard.press('Escape')
+  await page.keyboard.press('ControlOrMeta+,');await expect(page.getByRole('heading',{name:'About this replay'})).toBeVisible();await capture('settings')
+  await page.goto(base+'?scenario=UC1');await page.keyboard.press('ControlOrMeta+n');await capture('home')
+  await page.locator('.ra-presets button').first().click();await page.getByRole('button',{name:/^Ask/}).click();await page.getByRole('button',{name:'Start now'}).waitFor();await capture('plan')
+  await page.getByRole('button',{name:'Start now'}).click();await expect(page).toHaveTitle(/Answer ready/,{timeout:45_000});await capture('decline')
+  expect(errors).toEqual([]);writeFileSync(evidencePath(`ui-nov11/after/replay/audit-${width}.json`),JSON.stringify({mode:'replay',width,audit,errors},null,2))
+ }finally{server.kill('SIGTERM');await once(server,'exit')}
 })

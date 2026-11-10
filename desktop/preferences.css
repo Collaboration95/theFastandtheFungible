@@ -1,18 +1,20 @@
-:root { color-scheme: light; --paper: #FBF8F2; --surface: #fff; --ink: #24211E; --muted: #655D55; --rule: #E8E2D8; --rule-2: #C9BFB2; --hover: #F3EEE4; --ok: #2F6B4F; --warn: #9A6B20; --bad: #9B3E35; font: 14px/1.5 -apple-system, BlinkMacSystemFont, sans-serif; color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased }
+@import "./tokens.css";
+@font-face { font-family: 'Geist Variable'; src: url('./geist.woff2') format('woff2'); font-weight: 100 900; font-display: swap }
+:root { color-scheme: light; font: 14px/1.5 var(--f-ui); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased }
 * { box-sizing: border-box }
 body { margin: 0 }
 main { max-width: 640px; margin: 0 auto; padding: 40px 24px 0 }
-h1 { font-size: 28px; line-height: 34px; letter-spacing: -.02em; font-weight: 600; margin: 6px 0 4px }
+h1 { font-size: 28px; line-height: 36px; letter-spacing: -.02em; font-weight: 600; margin: 6px 0 4px }
 h2 { font-size: 15px; line-height: 20px; font-weight: 600; margin: 0 }
 h3 { font-size: 13px; line-height: 18px; font-weight: 600; margin: 0 0 8px }
 p { color: var(--muted); margin: 0 }
-.eyebrow { font-size: 10px; letter-spacing: 2px }
+.eyebrow { font-size: 12px; font-weight: 500 }
 .lede { font-size: 14px }
 .page { margin-bottom: 24px }
 .mono, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace }
 
 /* Cards: one per concern, same padding, rule and radius as the web app's panels. */
-section { margin: 0 0 16px; padding: 20px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px }
+section { margin: 0 0 16px; padding: 20px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-md) }
 section > header { margin-bottom: 16px }
 .hint { font-size: 13px; line-height: 18px; margin-top: 4px }
 .help { font-size: 12px; line-height: 17px; margin-top: 6px }
@@ -23,28 +25,28 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 20px 0 }
 
 .field { margin: 0 0 16px }
 label { display: block; font-size: 13px; font-weight: 500; color: var(--ink) }
-input:not([type=checkbox]), select { display: block; width: 100%; height: 36px; padding: 0 10px; margin-top: 6px; border: 1px solid var(--rule-2); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit }
+input:not([type=checkbox]), select { display: block; width: 100%; height: 36px; padding: 0 10px; margin-top: 6px; border: 1px solid var(--rule-2); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font: inherit }
 input:not([type=checkbox]):hover, select:hover { border-color: var(--muted) }
-input::placeholder { color: #8A8178 }
+input::placeholder { color: var(--muted) }
 input:disabled { background: var(--hover); color: var(--muted) }
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
 .grid3 .field { display: flex; flex-direction: column; justify-content: space-between }
 .grid3 label { min-height: 36px }
 
 /* One button system: secondary by default, a single primary per page, ghost for tertiary. */
-button { display: inline-flex; align-items: center; justify-content: center; height: 34px; padding: 0 14px; border: 1px solid var(--rule-2); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit; font-weight: 600; font-size: 13px; cursor: pointer }
+button { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 14px; border: 1px solid var(--rule-2); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font: inherit; font-weight: 600; font-size: 13px; cursor: pointer }
 button:hover:not(:disabled) { border-color: var(--ink) }
 button:disabled { cursor: wait; opacity: .55 }
-.primary { background: var(--ink); border-color: var(--ink); color: #fff }
+.primary { background: var(--ink); border-color: var(--ink); color: var(--paper) }
 .ghost { border-color: transparent; background: none; color: var(--muted) }
 .ghost:hover:not(:disabled) { background: var(--hover); border-color: transparent; color: var(--ink) }
 .danger { color: var(--bad) }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px }
-:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+:focus-visible { outline: var(--focus); outline-offset: 2px }
 
 /* Switch rows (native checkbox, restyled; keyboard and label behaviour unchanged). */
 .toggle { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: start; gap: 12px; margin: 0 0 16px }
-.toggle input { appearance: none; position: relative; width: 36px; height: 20px; margin: 1px 0 0; border-radius: 10px; background: var(--rule-2); cursor: pointer; transition: background-color 120ms ease-out }
+.toggle input { appearance: none; position: relative; width: 36px; height: 20px; margin: 1px 0 0; border-radius: var(--radius-md); background: var(--rule-2); cursor: pointer; transition: background-color 120ms ease-out }
 .toggle input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 120ms ease-out }
 .toggle input:checked { background: var(--ink) }
 .toggle input:checked::after { transform: translateX(16px) }
@@ -55,7 +57,7 @@ button:disabled { cursor: wait; opacity: .55 }
 .state i { flex: none; width: 8px; height: 8px; border: 1.5px solid var(--muted); border-radius: 50% }
 .state[data-state=live] i, .state[data-state=present] i { background: var(--ok); border-color: var(--ok) }
 .state[data-state=absent] i { background: var(--bad); border-color: var(--bad) }
-.state[data-state=unknown] i { border-color: var(--warn); background: linear-gradient(90deg, var(--warn) 50%, transparent 50%) }
+.state[data-state=unknown] i { border-color: var(--warn); background: var(--paper) }
 #keyPresence { margin-top: 12px }
 .test { margin-top: 4px }
 .result { font-size: 13px; line-height: 18px; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere }
@@ -64,7 +66,7 @@ button:disabled { cursor: wait; opacity: .55 }
 .result[data-state=ok]::before { background: var(--ok) }
 .result[data-state=fail] { color: var(--bad) }
 .result[data-state=fail]::before { background: var(--bad) }
-pre { margin: 12px 0 0; white-space: pre-wrap; word-break: break-all; font-size: 11px; color: var(--muted) }
+pre { margin: 12px 0 0; white-space: pre-wrap; word-break: break-all; font-size: 12px; color: var(--muted) }
 pre:empty { display: none }
 
 #agents > section { margin: 12px 0 0; padding: 16px; background: var(--paper); border-radius: 8px }
@@ -78,7 +80,7 @@ pre:empty { display: none }
 /* Sticky apply bar: the one primary action. */
 .bar { position: sticky; bottom: 0; display: flex; align-items: center; gap: 16px; margin: 0 -24px; padding: 14px 24px; background: var(--paper); border-top: 1px solid var(--rule) }
 .bar p { font-size: 12px; min-width: 0; overflow-wrap: anywhere }
-@media (max-width: 560px) { .grid3 { grid-template-columns: 1fr } .grid3 label { min-height: 0 } .toggle { grid-template-columns: 36px minmax(0, 1fr) } .toggle .state { grid-column: 2 } }
+@media (max-width: 780px) { .grid3 { grid-template-columns: 1fr } .grid3 label { min-height: 0 } .toggle { grid-template-columns: 36px minmax(0, 1fr) } .toggle .state { grid-column: 2 } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important } }
 
 /* Recovery screen (shares this stylesheet): geometric mark, one primary action, plain causes list. */
@@ -89,4 +91,4 @@ pre:empty { display: none }
 .causes li { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 12px; font-size: 13px; line-height: 18px }
 .causes b { font-weight: 500 }
 .causes span { color: var(--muted) }
-@media (max-width: 560px) { .causes li { grid-template-columns: 1fr; gap: 2px } }
+@media (max-width: 780px) { .causes li { grid-template-columns: 1fr; gap: 2px } button { min-height: 44px } }

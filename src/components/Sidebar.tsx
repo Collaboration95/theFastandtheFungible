@@ -1,3 +1,5 @@
+import Icon from './Icon'
+import AgentSprite from './AgentSprite'
 /* eslint-disable react-refresh/only-export-components -- NAV_WIDTH bounds are shared with App's saved width. */
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { modifier } from '../shortcuts'
@@ -19,7 +21,7 @@ const today = (run: PastRun) => !run.at || new Date(run.at).toDateString() === n
 /** The header button that shows or hides the sidebar: a panel icon, as in Claude's desktop app. */
 export function NavToggle({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   return <button type="button" className="ra-nav-toggle" onClick={onToggle} aria-expanded={open} aria-label={open ? 'Hide sidebar' : 'Show sidebar'} title={open ? 'Hide sidebar' : 'Show sidebar'}>
-    <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="3" /><path d="M7.75 3.75v12.5" /></svg>
+    <Icon name="panel" />
   </button>
 }
 
@@ -43,18 +45,18 @@ export default function Sidebar({ onView, runs, activeId, busy, open, width = NA
     <button type="button" className="ra-nav-run" onClick={() => onOpenRun(run.runId)} aria-current={activeId === run.runId ? 'page' : undefined} aria-label={`Run: ${run.question}`} title={run.question}>
       <i className={`ra-dot d-${dotOf(run)}`} aria-hidden="true" />{open && <span className="t">{run.question}</span>}
     </button>
-    {open && <button type="button" className="ra-nav-more" aria-label={`Options for ${run.question}`} aria-haspopup="menu" aria-expanded={menu?.id === run.runId} onClick={event => { const box = event.currentTarget.getBoundingClientRect(); setMenu(menu?.id === run.runId ? undefined : { id: run.runId, confirm: false, x: box.right, y: box.bottom + 4 }) }}>⋯</button>}
-    {menu?.id === run.runId && <div className="ra-menu" role="menu" style={{ left: Math.max(8, menu.x - 200), top: menu.y }}>
+    {open && <button type="button" className="ra-nav-more" aria-label={`Options for ${run.question}`} aria-expanded={menu?.id === run.runId} onClick={event => { const box = event.currentTarget.getBoundingClientRect(); setMenu(menu?.id === run.runId ? undefined : { id: run.runId, confirm: false, x: box.right, y: box.bottom + 4 }) }}><Icon name="more" /></button>}
+    {menu?.id === run.runId && <div className="ra-menu" role="group" aria-label="Question actions" style={{ left: Math.max(8, menu.x - 200), top: menu.y }}>
       {menu.confirm
-        ? <><p>Delete this question?</p><button type="button" role="menuitem" className="ra-menu-danger" onClick={() => { setMenu(undefined); onDelete(run.runId) }}>Delete</button><button type="button" role="menuitem" onClick={() => setMenu(undefined)}>Cancel</button></>
-        : <><button type="button" role="menuitem" onClick={() => { setMenu(undefined); onPin(run.runId, !run.pinned) }}>{run.pinned ? 'Unpin' : 'Pin'}</button>
-          <button type="button" role="menuitem" className="ra-menu-danger" disabled={!over(run)} title={over(run) ? undefined : 'Finish or stop the run first.'} onClick={() => setMenu({ ...menu, confirm: true })}>Delete…</button></>}
+        ? <><p>Delete this question?</p><button type="button" className="ra-menu-danger" onClick={() => { setMenu(undefined); onDelete(run.runId) }}>Delete</button><button type="button" onClick={() => setMenu(undefined)}>Cancel</button></>
+        : <><button type="button" onClick={() => { setMenu(undefined); onPin(run.runId, !run.pinned) }}>{run.pinned ? 'Unpin' : 'Pin'}</button>
+          <button type="button" className="ra-menu-danger" disabled={!over(run)} title={over(run) ? undefined : 'Finish or stop the run first.'} onClick={() => setMenu({ ...menu, confirm: true })}>Delete…</button></>}
     </div>}
   </li>
   return <nav className={`ra-nav${open ? '' : ' is-rail'}${drag === undefined ? '' : ' is-resizing'}`} aria-label="Questions" style={open ? { '--nav-w': `${shown}px` } as CSSProperties : undefined}>
-    <button type="button" className="ra-newq" onClick={onNew} disabled={busy} title={busy ? 'Finish or stop the run first.' : undefined} aria-label="New question"><span aria-hidden="true">+</span>{open && <>New question<kbd>{modifier}N</kbd></>}</button>
+    <button type="button" className="ra-newq" onClick={onNew} disabled={busy} title={busy ? 'Finish or stop the run first.' : undefined} aria-label="New question"><Icon name="plus" />{open && <>New question<kbd>{modifier}N</kbd></>}</button>
     {open && onView && <div className="ra-mobile-views"><button type="button" className="ra-link" onClick={() => onView('run')}>Run</button><button type="button" className="ra-link" onClick={() => onView('writers')}>Writers</button></div>}
-    {open && <div className="ra-nav-list">{runs.length === 0 && open && <p className="ra-nav-empty">{hosted ? 'Your questions appear here. They’re private to this browser and kept for 24 hours.' : 'No runs yet.'}</p>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
+    {open && <div className="ra-nav-list">{runs.length === 0 && open && <div className="ra-nav-empty"><AgentSprite animation="idle" still /> <p>{hosted ? 'Your questions appear here. They’re private to this browser and kept for 24 hours.' : 'Ask a question to start your research.'}</p></div>}{groups.filter(([, list]) => list.length).map(([name, list]) => <section key={name}>
       {open && <p className="ra-nav-sec">{name}</p>}<ul>{list.map(row)}</ul>
     </section>)}</div>}
     {open && hosted && finished > 0 && <div className="ra-nav-clear">{clearing === undefined
@@ -63,7 +65,7 @@ export default function Sidebar({ onView, runs, activeId, busy, open, width = NA
         <button type="button" className="ra-btn ra-menu-danger" disabled={clearing === 'busy'} onClick={async () => { setClearing('busy'); try { await hosted.onClear() } finally { setClearing(undefined) } }}>Clear</button>
         <button type="button" className="ra-btn" disabled={clearing === 'busy'} onClick={() => setClearing(undefined)}>Cancel</button></div>}</div>}
     {open && onSettings && <button type="button" className={`ra-nav-set${settingsOn ? ' is-on' : ''}`} onClick={onSettings} aria-current={settingsOn ? 'page' : undefined} aria-label="Settings" title={open ? undefined : 'Settings'}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>{open && 'Settings'}
+      <Icon name="settings" />{open && 'Settings'}
     </button>}
     {open && onResize && <div className="ra-nav-resize" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" aria-valuemin={NAV_WIDTH.min} aria-valuemax={NAV_WIDTH.max} aria-valuenow={shown} tabIndex={0}
       onPointerDown={event => { event.currentTarget.setPointerCapture(event.pointerId); start.current = { x: event.clientX, width: shown }; setDrag(shown) }}

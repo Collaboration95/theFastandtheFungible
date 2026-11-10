@@ -132,7 +132,7 @@ describe('visible internals', () => {
 
   it('puts plain verdicts on the surface: WOULD BUY at S$0, never a BUY', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} />)
-    for (const text of ['Would buy', 'Too expensive', 'Not relevant']) expect(html).toContain(text)
+    for (const text of ['Would buy', 'Skip', 'Rewrite']) expect(html).toContain(text)
     expect(html).not.toContain('>BUY<')
     expect(html).not.toContain('SKIP_')
   })

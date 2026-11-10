@@ -7,15 +7,15 @@ it('every paid team note avoids every eight-word public label or disclosure sequ
  const corpus=await loadWriterCorpus(), labels=publicLabelStrings()
  expect(ABSTRACT_LEAK_WORDS).toBe(8)
  expect(labels.length).toBeGreaterThan(1000)
- expect(labels.some(l=>l.file==='src/components/PaymentRow.tsx' && l.text.includes('fixture writer cooperates'))).toBe(true)
+ expect(labels.some(l=>l.file==='src/components/PaymentRow.tsx' && l.text.includes('This demo writer agrees to refund'))).toBe(true)
  expect(labels.some(l=>l.file==='shared/contracts/asset.ts' && l.text.includes('TEST-SGD'))).toBe(true)
  expect(paidLabelOverlaps(corpus.articles,labels)).toEqual([])
 })
 it('the unchanged eight-word oracle catches reintroduction of the refund disclosure', async () => {
  const corpus=await loadWriterCorpus(), labels=publicLabelStrings()
- const label=labels.find(l=>l.file==='src/components/PaymentRow.tsx' && l.text.includes('fixture writer cooperates'))!
+ const label=labels.find(l=>l.file==='src/components/PaymentRow.tsx' && l.text.includes('This demo writer agrees to refund'))!
  const recovery=corpus.articles.find(a=>a.articleId==='team-recovery')!
  const contaminated={...recovery,body:recovery.body+' '+label.text}
  expect(sharesRun(contaminated.body,label.text)).toBe(true)
- expect(paidLabelOverlaps([contaminated],labels).some(o=>o.words==='fixture writer cooperates a real writer could refuse')).toBe(true)
+ expect(paidLabelOverlaps([contaminated],labels).some(o=>o.words==='agrees to refund a real writer could refuse')).toBe(true)
 })

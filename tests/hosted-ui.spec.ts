@@ -185,7 +185,7 @@ test('paused, ended, used-up, on-hold and offline each say what happened and wha
   await context.setOffline(true)
   await expect(card).toContainText('You’re offline')
   await expect(page.locator('body')).not.toContainText('Can’t reach the server')
-  await expect(page.locator('body')).not.toContainText("Can't reach the ResearchAgent server")
+  await expect(page.locator('body')).not.toContainText(/Can[’']t reach the ResearchAgent server/)
   await context.setOffline(false)
   await page.evaluate(() => window.dispatchEvent(new Event('online')))
   await expect(card).toHaveCount(0, { timeout: 20000 })
@@ -234,7 +234,7 @@ test('hosted writers have public pages, honest earnings and narrow reads in two 
   for (const [index, v] of [a, b].entries()) {
     await v.page.goto('/')
     if (index) { await openNav(v.page); await v.page.getByRole('button', { name: 'Writers', exact: true }).click() }
-    else await v.page.getByRole('tab', { name: /^Writers/ }).click()
+    else await v.page.getByRole('navigation', { name: 'Workspace views' }).getByRole('button', { name: /^Writers/ }).click()
     const catalogue = v.page.locator('.ra-writer-earnings')
     await expect(catalogue.getByText('Team-authored', { exact: true }).first()).toBeVisible()
     await expect(catalogue).toContainText('Your retained history only')

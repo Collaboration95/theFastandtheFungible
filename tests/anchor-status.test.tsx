@@ -16,9 +16,9 @@ function abstention() {
 }
 it('exports a DONE abstention even without a validated purchased answer', () => {
  render(<ReportButton run={abstention()} onReport={vi.fn()} />)
- expect(screen.getByText('Export ⋯')).toBeTruthy()
+ expect(screen.getByText('Export')).toBeTruthy()
  expect(screen.getByText('Download receipts.json')).toBeTruthy()
- expect(screen.getByText('Download report (PDF)').hasAttribute('disabled')).toBe(true)
+ expect(screen.getByText('Export report').hasAttribute('disabled')).toBe(true)
 })
 it('labels no purchase, fee and ledger together', () => {
  const run = abstention()

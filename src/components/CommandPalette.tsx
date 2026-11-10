@@ -17,7 +17,7 @@ export default function CommandPalette({ commands, onClose, sheet = false }: { c
 
     <label className="ra-sr" htmlFor="command-search">Find a command</label>
     <input autoFocus id="command-search" autoComplete="off" placeholder="Search actions, runs and examples" value={query} onChange={event => { setQuery(event.target.value); setSelected(0) }} aria-controls="command-results" aria-activedescendant={list[selected]?.id} role="combobox" aria-expanded="true" aria-autocomplete="list" />
-    <ul id="command-results" role="listbox" aria-label="Commands">{list.map((command, index) => <li key={command.id} id={command.id} role="option" aria-selected={index === selected}><button tabIndex={-1} onClick={() => choose(command)}><span>{(index === 0 || list[index - 1].group !== command.group) && <small className="ra-command-group">{command.group ?? 'Actions'}</small>}{command.label}</span>{command.hint && <kbd>{command.hint}</kbd>}</button></li>)}</ul>
+    <ul id="command-results" role="listbox" aria-label="Commands">{list.map((command, index) => <li key={command.id} id={command.id} role="option" aria-selected={index === selected} onMouseDown={event => event.preventDefault()} onClick={() => choose(command)}><span>{(index === 0 || list[index - 1].group !== command.group) && <small className="ra-command-group">{command.group ?? 'Actions'}</small>}{command.label}</span>{command.hint && <kbd>{command.hint}</kbd>}</li>)}</ul>
     {!list.length && <p role="status">No matching commands.</p>}
     <footer>↑ ↓ to choose · Enter to run · Esc to close</footer>
   </dialog>

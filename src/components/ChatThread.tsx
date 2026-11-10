@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Mark } from '../format'
+import Icon from './Icon'
 
 /** One exchange: the user's message, then the reply once it arrives (none while waiting, or while a plan card is open). */
 export interface ChatMessage { id: number; question: string; reply?: string; label?: string; error?: string }
@@ -33,6 +34,7 @@ export default function ChatThread({ messages, onSend, busy = false, above }: Ch
     void onSend(question)
   }
   return <main className="ra-chatpage" aria-label="Chat">
+    <h1 className="ra-sr">Conversation</h1>
     <div className="ra-thread" role="log" aria-live="polite" aria-label="Conversation">
       {messages.map(message => <div key={message.id} className="ra-turn">
         <p className="ra-msg-user">{message.question}</p>
@@ -56,10 +58,10 @@ export default function ChatThread({ messages, onSend, busy = false, above }: Ch
         <textarea ref={box} id={`${id}-m`} value={text} onChange={event => setText(event.target.value)} maxLength={2000} rows={1} placeholder="Message ResearchAgent…"
           onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send() } }} />
         <button type="submit" className="ra-chat-send" aria-label="Send" disabled={busy || !text.trim()}>
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5" /></svg>
+          <Icon name="send" />
         </button>
       </form>
-      <p className="ra-chat-note">Questions about markets and companies are researched with your budget from Home.</p>
+      <p className="ra-chat-note">Questions about companies or markets go to Home, where they get a budget.</p>
     </div>
   </main>
 }
