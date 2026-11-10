@@ -1,0 +1,51 @@
+{
+  "articleId": "xrpl-concept-transaction-result",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does Transaction result work on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of Transaction result and its practical limits.",
+  "tags": [
+    "XRPL",
+    "Transaction result"
+  ],
+  "family": "xrpl-concept-transaction-result",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/reliable-transaction-submission",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, an XRPL transaction result must be interpreted together with validation status and metadata before an application records success. [1]\n\nA preliminary submission result describes the server's current processing view. Reliable transaction submission retains the hash, Sequence and LastLedgerSequence so the final result can be recovered. A validated transaction can still have a failure result and consume a transaction cost. Distinguish missing history, pending inclusion and final failure. Reporting each as simply paid would hide materially different outcomes from the user. [1]\n\nThe public XRPL reference describes Transaction result as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1]\n\nAuthor interpretation: preserve the evidence needed to explain Transaction result to another reader and keep pending outcomes visible until they are resolved. Use the same meaning in customer messages and exported receipts. This recommendation follows the documented lifecycle and does not claim a fresh network experiment. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, an XRPL transaction result must be interpreted together with validation status and metadata before an application records success. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "A preliminary submission result describes the server's current processing view. Reliable transaction submission retains the hash, Sequence and LastLedgerSequence so the final result can be recovered. A validated transaction can still have a failure result and consume a transaction cost. Distinguish missing history, pending inclusion and final failure. Reporting each as simply paid would hide materially different outcomes from the user. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The public XRPL reference describes Transaction result as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: preserve the evidence needed to explain Transaction result to another reader and keep pending outcomes visible until they are resolved. Use the same meaning in customer messages and exported receipts. This recommendation follows the documented lifecycle and does not claim a fresh network experiment. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "transaction result"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "transaction"
+    }
+  }
+}

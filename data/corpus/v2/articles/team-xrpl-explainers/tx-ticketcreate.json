@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-ticketcreate",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does TicketCreate do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of TicketCreate and its practical limits.",
+  "tags": [
+    "XRPL",
+    "TicketCreate",
+    "Ticket Create",
+    "transaction"
+  ],
+  "family": "xrpl-tx-ticketcreate",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/ticketcreate",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, TicketCreate reserves sequence numbers as Tickets so later XRPL transactions can be prepared without normal sequential submission. [1]\n\nA transaction using a Ticket sets Sequence to zero and identifies the Ticket with TicketSequence. Tickets consume owner reserve while outstanding and are consumed when used according to transaction rules. This supports independent preparation; it does not permit reusing a consumed Ticket or charging the same purchase twice. [1]\n\nThe TicketCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using TicketCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, TicketCreate reserves sequence numbers as Tickets so later XRPL transactions can be prepared without normal sequential submission. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "A transaction using a Ticket sets Sequence to zero and identifies the Ticket with TicketSequence. Tickets consume owner reserve while outstanding and are consumed when used according to transaction rules. This supports independent preparation; it does not permit reusing a consumed Ticket or charging the same purchase twice. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The TicketCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using TicketCreate, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "TicketCreate",
+      "measure": "sequence numbers"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    }
+  }
+}

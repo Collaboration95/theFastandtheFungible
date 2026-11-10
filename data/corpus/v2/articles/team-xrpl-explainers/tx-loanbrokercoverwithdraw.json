@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-loanbrokercoverwithdraw",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does LoanBrokerCoverWithdraw do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of LoanBrokerCoverWithdraw and its practical limits.",
+  "tags": [
+    "XRPL",
+    "LoanBrokerCoverWithdraw",
+    "Loan Broker Cover Withdraw",
+    "transaction"
+  ],
+  "family": "xrpl-tx-loanbrokercoverwithdraw",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/loanbrokercoverwithdraw",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, LoanBrokerCoverWithdraw requests withdrawal of eligible first-loss capital from a loan broker. [1]\n\nOutstanding lending exposure and the documented cover requirements constrain what can leave the buffer. A recorded cover balance is therefore not necessarily fully withdrawable. Check the broker and available amount against current obligations. Withdrawal concerns the lending risk buffer; it is different from receiving interest or redeeming an unrelated vault share. [1]\n\nThe LoanBrokerCoverWithdraw reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using LoanBrokerCoverWithdraw, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, LoanBrokerCoverWithdraw requests withdrawal of eligible first-loss capital from a loan broker. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Outstanding lending exposure and the documented cover requirements constrain what can leave the buffer. A recorded cover balance is therefore not necessarily fully withdrawable. Check the broker and available amount against current obligations. Withdrawal concerns the lending risk buffer; it is different from receiving interest or redeeming an unrelated vault share. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The LoanBrokerCoverWithdraw reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using LoanBrokerCoverWithdraw, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "LoanBrokerCoverWithdraw",
+      "measure": "capital"
+    }
+  }
+}

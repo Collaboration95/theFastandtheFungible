@@ -1,0 +1,62 @@
+{
+  "articleId": "xrpl-flag-allowtrustlinelocking",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does the XRPL AllowTrustLineLocking account flag mean?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of AllowTrustLineLocking and its practical limits.",
+  "tags": [
+    "XRPL",
+    "AllowTrustLineLocking",
+    "asfAllowTrustLineLocking",
+    "lsfAllowTrustLineLocking",
+    "account flags"
+  ],
+  "family": "xrpl-flag-allowtrustlinelocking",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/ledger-data/ledger-entry-types/accountroot",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, AllowTrustLineLocking allows an issuer's trust-line tokens to enter escrow where TokenEscrow is supported. [1]\n\nUnlike clawback permission, this option can be cleared and enabled again. Clearing it blocks new escrows but does not prevent previously created escrows from finishing or canceling. A holder's trust line does not supply the issuer's missing permission. This flag concerns escrow eligibility, not approval to spend every balance held by a buyer. [1][2]\n\nXRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for AllowTrustLineLocking and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]\n\nAuthor interpretation: document why AllowTrustLineLocking is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, AllowTrustLineLocking allows an issuer's trust-line tokens to enter escrow where TokenEscrow is supported. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Unlike clawback permission, this option can be cleared and enabled again. Clearing it blocks new escrows but does not prevent previously created escrows from finishing or canceling. A holder's trust line does not supply the issuer's missing permission. This flag concerns escrow eligibility, not approval to spend every balance held by a buyer. [1][2]"
+    },
+    {
+      "id": "p3",
+      "text": "XRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for AllowTrustLineLocking and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: document why AllowTrustLineLocking is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "AllowTrustLineLocking",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "buyer",
+      "measure": "supply"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    }
+  }
+}

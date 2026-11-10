@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-xchainaddaccountcreateattestation",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XChainAddAccountCreateAttestation do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XChainAddAccountCreateAttestation and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XChainAddAccountCreateAttestation",
+    "X Chain Add Account Create Attestation",
+    "transaction"
+  ],
+  "family": "xrpl-tx-xchainaddaccountcreateattestation",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/xchainaddaccountcreateattestation",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, XChainAddAccountCreateAttestation records a witness's attestation about a cross-chain account-creation commitment. [1]\n\nThe signer must qualify under the bridge's witness rules, and the attestation binds the relevant bridge and transfer facts. One witness message is not necessarily enough to complete the operation. Check quorum and destination-chain results. A signed attestation expresses that witness's claim; bridge safety depends on the complete trust and verification arrangement. [1]\n\nThe XChainAddAccountCreateAttestation reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using XChainAddAccountCreateAttestation, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, XChainAddAccountCreateAttestation records a witness's attestation about a cross-chain account-creation commitment. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The signer must qualify under the bridge's witness rules, and the attestation binds the relevant bridge and transfer facts. One witness message is not necessarily enough to complete the operation. Check quorum and destination-chain results. A signed attestation expresses that witness's claim; bridge safety depends on the complete trust and verification arrangement. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The XChainAddAccountCreateAttestation reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using XChainAddAccountCreateAttestation, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "XChainAddAccountCreateAttestation",
+      "measure": "witness"
+    }
+  }
+}

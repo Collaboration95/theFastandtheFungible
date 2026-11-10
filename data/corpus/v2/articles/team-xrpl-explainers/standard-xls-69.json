@@ -1,0 +1,56 @@
+{
+  "articleId": "xrpl-standard-xls-69",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XLS-69 specify for Simulation?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XLS-69 and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XLS-69",
+    "Simulation"
+  ],
+  "family": "xrpl-standard-xls-69",
+  "sources": [
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0069-simulate/README.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/resources/known-amendments",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XLS specifications, XLS-69 specifies transaction simulation so a client can inspect a prospective result without committing it to the ledger. [1]\n\nA simulation is diagnostic output against a particular state, not a signature authorization or proof of payment. Ledger state can change before the actual transaction executes. Keep simulated metadata separate from validated transaction evidence. A predicted successful result does not create a grant, deliver funds or establish that a later submission used identical inputs. [1]\n\nA published XLS document describes a design and its constraints; it is not by itself evidence that every network has enabled the corresponding amendment. Read the proposal status, dependencies and current network configuration together. Mainnet, Testnet and development networks can differ, and later fixes can change operational behavior. The source for XLS-69 was fetched directly from the public standards repository. [1][2]\n\nThe fetched specification records its status as Final. [1] Author interpretation: use XLS-69 as a specification reference and verify the actual network capability before promising it to a customer. Keep documented design, local tests and validated transactions separate when describing evidence. This article explains the standard rather than claiming a new live deployment. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XLS specifications, XLS-69 specifies transaction simulation so a client can inspect a prospective result without committing it to the ledger. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "A simulation is diagnostic output against a particular state, not a signature authorization or proof of payment. Ledger state can change before the actual transaction executes. Keep simulated metadata separate from validated transaction evidence. A predicted successful result does not create a grant, deliver funds or establish that a later submission used identical inputs. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "A published XLS document describes a design and its constraints; it is not by itself evidence that every network has enabled the corresponding amendment. Read the proposal status, dependencies and current network configuration together. Mainnet, Testnet and development networks can differ, and later fixes can change operational behavior. The source for XLS-69 was fetched directly from the public standards repository. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "The fetched specification records its status as Final. [1] Author interpretation: use XLS-69 as a specification reference and verify the actual network capability before promising it to a customer. Keep documented design, local tests and validated transactions separate when describing evidence. This article explains the standard rather than claiming a new live deployment. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XLS",
+      "measure": "ledger"
+    },
+    "p3": {
+      "entity": "Testnet",
+      "measure": "source"
+    }
+  }
+}

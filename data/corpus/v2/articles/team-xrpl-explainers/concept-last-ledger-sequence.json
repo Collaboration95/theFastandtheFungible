@@ -1,0 +1,51 @@
+{
+  "articleId": "xrpl-concept-last-ledger-sequence",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does LastLedgerSequence work on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of LastLedgerSequence and its practical limits.",
+  "tags": [
+    "XRPL",
+    "LastLedgerSequence"
+  ],
+  "family": "xrpl-concept-last-ledger-sequence",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/reliable-transaction-submission",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, LastLedgerSequence bounds the latest ledger in which a transaction may be included. [1]\n\nIt is a ledger-index bound rather than a wall-clock timer. Reliable submission checks both validated ledger progress and transaction history before declaring an absent transaction expired. A network timeout does not by itself prove expiry or authorize a second payment. Retain the signed transaction hash so recovery can distinguish resubmission of the same obligation from a replacement transaction with a new sequence and amount. [1]\n\nThe public XRPL reference describes LastLedgerSequence as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1]\n\nAuthor interpretation: preserve the evidence needed to explain LastLedgerSequence to another reader and keep pending outcomes visible until they are resolved. Use the same meaning in customer messages and exported receipts. This recommendation follows the documented lifecycle and does not claim a fresh network experiment. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, LastLedgerSequence bounds the latest ledger in which a transaction may be included. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "It is a ledger-index bound rather than a wall-clock timer. Reliable submission checks both validated ledger progress and transaction history before declaring an absent transaction expired. A network timeout does not by itself prove expiry or authorize a second payment. Retain the signed transaction hash so recovery can distinguish resubmission of the same obligation from a replacement transaction with a new sequence and amount. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The public XRPL reference describes LastLedgerSequence as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: preserve the evidence needed to explain LastLedgerSequence to another reader and keep pending outcomes visible until they are resolved. Use the same meaning in customer messages and exported receipts. This recommendation follows the documented lifecycle and does not claim a fresh network experiment. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "LastLedgerSequence",
+      "measure": "ledger"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "transaction"
+    }
+  }
+}

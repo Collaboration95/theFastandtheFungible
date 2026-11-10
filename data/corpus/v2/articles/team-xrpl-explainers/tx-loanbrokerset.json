@@ -1,0 +1,57 @@
+{
+  "articleId": "xrpl-tx-loanbrokerset",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does LoanBrokerSet do on XRPL?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of LoanBrokerSet and its practical limits.",
+  "tags": [
+    "XRPL",
+    "LoanBrokerSet",
+    "Loan Broker Set",
+    "transaction"
+  ],
+  "family": "xrpl-tx-loanbrokerset",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/loanbrokerset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/common-fields",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, LoanBrokerSet creates or updates a loan broker associated with the documented lending system. [1]\n\nBroker configuration connects lending management to a vault and defines applicable parameters under the feature's rules. Creating that ledger role is not evidence of underwriting quality, a regulatory authorization or guaranteed returns. Check controller authority and the referenced vault. Separate mutable operating settings from obligations already created for particular borrowers. [1]\n\nThe LoanBrokerSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]\n\nAuthor interpretation: before using LoanBrokerSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, LoanBrokerSet creates or updates a loan broker associated with the documented lending system. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "Broker configuration connects lending management to a vault and defines applicable parameters under the feature's rules. Creating that ledger role is not evidence of underwriting quality, a regulatory authorization or guaranteed returns. Check controller authority and the referenced vault. Separate mutable operating settings from obligations already created for particular borrowers. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The LoanBrokerSet reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: before using LoanBrokerSet, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata. Treat unresolved outcomes as unresolved; submitting a replacement operation can create a second obligation. These are integration recommendations, not a report of a live test. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p3": {
+      "entity": "XRPL",
+      "measure": "cost"
+    },
+    "p1": {
+      "entity": "LoanBrokerSet",
+      "measure": "broker"
+    }
+  }
+}

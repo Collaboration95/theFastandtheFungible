@@ -1,0 +1,58 @@
+{
+  "articleId": "xrpl-flag-depositauth",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does the XRPL DepositAuth account flag mean?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of DepositAuth and its practical limits.",
+  "tags": [
+    "XRPL",
+    "DepositAuth",
+    "asfDepositAuth",
+    "lsfDepositAuth",
+    "account flags"
+  ],
+  "family": "xrpl-flag-depositauth",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/ledger-data/ledger-entry-types/accountroot",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, DepositAuth restricts incoming funds according to the account's deposit-authorization rules. [1]\n\nThe receiving account can preauthorize senders and, where supported, accepted credential combinations. This receiving control is distinct from RequireDestTag, which asks for routing information. Consult the documented exceptions and supported payment paths rather than assuming every possible incoming operation is blocked. Prepare necessary preauthorizations before enabling it to avoid interrupting expected receipts. [1][2]\n\nXRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for DepositAuth and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]\n\nAuthor interpretation: document why DepositAuth is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, DepositAuth restricts incoming funds according to the account's deposit-authorization rules. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The receiving account can preauthorize senders and, where supported, accepted credential combinations. This receiving control is distinct from RequireDestTag, which asks for routing information. Consult the documented exceptions and supported payment paths rather than assuming every possible incoming operation is blocked. Prepare necessary preauthorizations before enabling it to avoid interrupting expected receipts. [1][2]"
+    },
+    {
+      "id": "p3",
+      "text": "XRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for DepositAuth and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: document why DepositAuth is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "DepositAuth",
+      "measure": "authorization"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    }
+  }
+}

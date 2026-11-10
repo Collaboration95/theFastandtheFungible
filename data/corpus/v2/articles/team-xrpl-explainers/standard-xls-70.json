@@ -1,0 +1,60 @@
+{
+  "articleId": "xrpl-standard-xls-70",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does XLS-70 specify for Credentials?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of XLS-70 and its practical limits.",
+  "tags": [
+    "XRPL",
+    "XLS-70",
+    "Credentials"
+  ],
+  "family": "xrpl-standard-xls-70",
+  "sources": [
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0070-credentials/README.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/resources/known-amendments",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XLS specifications, XLS-70 specifies on-ledger credentials with issuer, subject, type, acceptance and deletion semantics. [1]\n\nThe issuer's creation and subject's acceptance are separate lifecycle steps. Expiration can limit the credential's usefulness even while its record remains visible. The credential type is chosen by the issuer, so applications must identify the issuer and intended claim together. A credential can support a scoped attestation without certifying every transaction or article associated with the subject. [1]\n\nA published XLS document describes a design and its constraints; it is not by itself evidence that every network has enabled the corresponding amendment. Read the proposal status, dependencies and current network configuration together. Mainnet, Testnet and development networks can differ, and later fixes can change operational behavior. The source for XLS-70 was fetched directly from the public standards repository. [1][2]\n\nThe fetched specification records its status as Final. [1] Author interpretation: use XLS-70 as a specification reference and verify the actual network capability before promising it to a customer. Keep documented design, local tests and validated transactions separate when describing evidence. This article explains the standard rather than claiming a new live deployment. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XLS specifications, XLS-70 specifies on-ledger credentials with issuer, subject, type, acceptance and deletion semantics. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The issuer's creation and subject's acceptance are separate lifecycle steps. Expiration can limit the credential's usefulness even while its record remains visible. The credential type is chosen by the issuer, so applications must identify the issuer and intended claim together. A credential can support a scoped attestation without certifying every transaction or article associated with the subject. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "A published XLS document describes a design and its constraints; it is not by itself evidence that every network has enabled the corresponding amendment. Read the proposal status, dependencies and current network configuration together. Mainnet, Testnet and development networks can differ, and later fixes can change operational behavior. The source for XLS-70 was fetched directly from the public standards repository. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "The fetched specification records its status as Final. [1] Author interpretation: use XLS-70 as a specification reference and verify the actual network capability before promising it to a customer. Keep documented design, local tests and validated transactions separate when describing evidence. This article explains the standard rather than claiming a new live deployment. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XLS",
+      "measure": "issuer"
+    },
+    "p2": {
+      "entity": "issuer",
+      "measure": "issuer"
+    },
+    "p3": {
+      "entity": "Testnet",
+      "measure": "source"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "articleId": "xrpl-flag-disallowincomingnftokenoffer",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does the XRPL DisallowIncomingNFTokenOffer account flag mean?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced explanation of DisallowIncomingNFTokenOffer and its practical limits.",
+  "tags": [
+    "XRPL",
+    "DisallowIncomingNFTokenOffer",
+    "asfDisallowIncomingNFTokenOffer",
+    "lsfDisallowIncomingNFTokenOffer",
+    "account flags"
+  ],
+  "family": "xrpl-flag-disallowincomingnftokenoffer",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountset",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/ledger-data/ledger-entry-types/accountroot",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, DisallowIncomingNFTokenOffer blocks incoming NFT offers under the DisallowIncoming feature. [1]\n\nThe account option concerns unsolicited offer objects rather than deleting tokens already owned by the account. It is separate from an NFT issuer's transfer or burn capabilities. Check the affected operation and any existing offers before attributing an acceptance failure to this flag. A trading restriction does not itself establish token ownership or payment settlement. [1][2]\n\nXRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for DisallowIncomingNFTokenOffer and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]\n\nAuthor interpretation: document why DisallowIncomingNFTokenOffer is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026.",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, DisallowIncomingNFTokenOffer blocks incoming NFT offers under the DisallowIncoming feature. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The account option concerns unsolicited offer objects rather than deleting tokens already owned by the account. It is separate from an NFT issuer's transfer or burn capabilities. Check the affected operation and any existing offers before attributing an acceptance failure to this flag. A trading restriction does not itself establish token ownership or payment settlement. [1][2]"
+    },
+    {
+      "id": "p3",
+      "text": "XRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. SetFlag and ClearFlag use option identifiers, while the ledger Flags field stores bit values; the numbers are not interchangeable. Read the documented mapping for DisallowIncomingNFTokenOffer and check the validated account state after any permitted change. A successful submission response alone does not establish that the requested state is final. [1][2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: document why DisallowIncomingNFTokenOffer is needed, who may authorize a change and what existing users would experience. Review irreversible settings before issuance and test reversible settings with representative counterparties. This is guidance for interpreting account controls, not a live network measurement. Sources accessed 10 November 2026."
+    }
+  ],
+  "factMenu": {
+    "p2": {
+      "entity": "issuer",
+      "measure": "settlement"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    },
+    "p1": {
+      "entity": "DisallowIncomingNFTokenOffer",
+      "measure": "NFT"
+    }
+  }
+}

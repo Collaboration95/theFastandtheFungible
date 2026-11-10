@@ -1015,6 +1015,14 @@ receipts and bounded release scheduling, with full hosted release verification
 retained. Severity: medium development/acceptance delay. Mainnet
 impact: none measured; synthetic fixtures and simulated settlement only.
 
+## 10 November 2026: exact-corpus audit context in packed bank tooling
+
+- Class: observed local tooling mismatch, not an XRPL or x402 settlement incident.
+- Evidence: `docs/evidence/c3-index-corpus/` baseline v3 original results record a premium-leak audit finding while the unchanged packed baseline was buying older article versions. The runner loaded the edited worktree corpus for later banks; a raw-store re-audit using the exact baseline package corpus reports zero violations. Original results and logs are retained.
+- Workaround: audit each immutable package against its own extracted corpus, with unchanged audit rules, and keep the original mismatch alongside the corrected audit context.
+- Suggested fix: make the packed bank runner resolve its audit corpus from the packed artifact, rather than the invoking worktree.
+- Severity: medium for evaluation integrity. Mainnet impact: none observed; fixture models and faucet Testnet only. No threshold or policy change.
+
 ## Part C. Historical research: September 2026 submissions
 
 Preserved from `docs/DEV-FEEDBACK.md` (introduced in `ff68f38`). These are
