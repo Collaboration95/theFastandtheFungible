@@ -36,8 +36,11 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   }))
   const terms = words(question)
   const expanded = words(expandProtocolQuery(question))
-  const firstFact = (firstRequirement ?? question.split(/[,;?]\s*(?:and\s+)?(?=what|which|how|when|why)/i)[0]).replace(/^.*?[.!]\s+(?=(?:what|which|how|when|why|is|can)\b)/i, '')
+  // A generated entity-basics row is coverage bookkeeping, not a requested fact.
+  const requested = firstRequirement && !/^Basic facts on\b/i.test(firstRequirement) ? firstRequirement : undefined
+  const firstFact = (requested ?? question.split(/[,;?]\s*(?:and\s+)?(?=what|which|how|when|why)/i)[0]).replace(/^.*?[.!]\s+(?=(?:what|which|how|when|why|is|can)\b)/i, '')
   const primary = words(firstFact)
+  const eventTerms = /^when\b/i.test(firstFact) ? primary.filter(term => /(?:ed|held|born|began|begun|took)$/.test(term)) : []
   const causal = /^why\b/i.test(firstFact)
   const quantity = /^(?:how (?:many|much)|what.*(?:amount|cost|fee|reserve|maximum|minimum))\b/i.test(firstFact)
   const capability = /^(?:is|are|can|does|do|will|has|have)\b/i.test(firstFact)
@@ -97,6 +100,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     if (capability && /\b(?:can|cannot|must|requires?|enables?|enabled|supports?|allows?|does not|is not)\b/i.test(text)) score += 12
     if (quantity && /\d+(?:[.,]\d+)?\s*(?:XRP|drops?|%|percent|days?|SGD|USD|weeks?)\b/i.test(text)) score += 16
     if (/^when\b/i.test(firstFact) && /\b(?:20\d{2}|before|after|validated|final)\b/i.test(text)) score += 12
+    if (eventTerms.some(term => tokens.includes(term))) score += 28
     if (naming && /\b(?:is|means|sets|creates|enables|allows|requires|needs|uses|called|named)\b/i.test(text)) score += 8
     if (!causal && !(fieldValue && transactionName(identifiers[0] ?? '')) && /^(?:[A-Z][a-z]+){2,}\b.{0,40}\b(?:defines|creates|updates|sets|assigns|records|places|redeems|releases|locks)\b/.test(text)) score += 12
     if (named.some(name => text.includes(name))) score += 20

@@ -151,7 +151,7 @@ test('a judge question with declined matches explains policy and invites publish
   await expect(answer).toContainText('Nothing was bought: the available articles do not add enough relevant evidence.')
   await expect(answer).not.toContainText('No listed writer covers this')
   await answer.getByText('Why ▸', { exact: true }).click()
-  await expect(answer.locator('li')).toHaveCount(4)
+  await expect(answer.locator('li')).toHaveCount(12)
   await expect(answer).toContainText('Below the value bar')
   await expect(answer.getByRole('link', { name: 'Publish a note on this →' })).toHaveAttribute('href', /docs\/publishing\.md$/)
   await expect(answer.locator('.is-skel')).toHaveCount(0)

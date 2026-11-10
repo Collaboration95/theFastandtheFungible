@@ -15,6 +15,7 @@ it('UC3 answers the trend with dated numbers instead of the author introduction'
 it('UC2 selects the analyst estimate and preserves decimal percentages', () => {
   const run = ucRuns.UC2
   expect(leadFinding(run.question, validatedAnswers(run).at(-1)!.claims, run.contents, undefined, run.candidates)[0].text).toContain('55.2% from 58.5%')
+  expect(leadFinding(run.question, validatedAnswers(run).at(-1)!.claims, run.contents, 'Basic facts on Kestrel Semiconductor and TSMC', run.candidates)[0].text).toContain('55.2% from 58.5%')
 })
 it('UC1 keeps its extracted lead within the 40-word answer budget', () => {
   const run = ucRuns.UC1

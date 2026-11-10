@@ -70,6 +70,13 @@ it('binds a following answer sentence to the entity in its verified passage',()=
  expect(summarizeAnswer('What did the North Harbor Council change at its last meeting?',exampleAnswer,[content],[candidate]).lead?.[0].text).toBe('Members voted to raise the service rate by 25 bp.')
  expect(summarizeAnswer('What did the South Valley Council change at its last meeting?',exampleAnswer,[content],[candidate]).lead).toEqual([])
 })
+it('ranks the requested event date ahead of another date and ignores generated basics rows',()=>{
+ const texts=['North Harbor signed a solar contract on 8 September 2026 for a 40 MW plant.', 'The North Harbor plant was commissioned on 15 August 2026.']
+ const content={...exampleContent,title:'North Harbor plant commissioning and electricity',body:texts.join(' '),spans:texts.map((text,i)=>({id:`p${i}`,text}))}
+ const candidate={...exampleCandidate,title:content.title,facets:['North Harbor','plant','commissioning','electricity']}
+ const question='When was the North Harbor plant commissioned, how much electricity does it need?'
+ for(const requirement of [undefined,'Basic facts on North Harbor']) expect(summarizeAnswer(question,exampleAnswer,[content],[candidate],requirement).lead?.[0].text).toBe(texts[1])
+})
 it('accepts descriptive questions through a matching protocol topic rather than generic prose',()=>{
  expect(topicMatches('Which EscrowCreate field returns the money if the receiver never finishes?', 'XRPL conditional escrow EscrowCancel refund')).toBe(true)
  expect(topicMatches('What transaction cost does the XRP Ledger charge for a small transfer?', 'XRPL transaction fees and drops')).toBe(true)
