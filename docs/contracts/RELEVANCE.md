@@ -39,6 +39,9 @@ local legacy policy; federated free input always requires a signed proof.
 `RA_DEV_BANKS_ONLY=1 npm run gate` excludes the held-out-bank schema test from
 Vitest collection. Its captured checkout replaces held-out question content with
 empty existence markers, and its helper scanner refuses to read those paths.
+Raw held-out evidence packets are omitted too. Fact checks use the committed
+public aggregates for held-out values, without deriving them from raw results;
+non-held-out derivation and all presentation-marker checks remain enabled.
 Cache inputs retain their Git blob identities. The default gate is unchanged. The local-gate runtime receipt
 and content cache key record this restriction so this run cannot be reused as a
 full-bank schema check. This is for lanes explicitly forbidden to read held-out

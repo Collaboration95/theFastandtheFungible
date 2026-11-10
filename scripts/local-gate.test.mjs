@@ -16,13 +16,15 @@ async function fixture(run) {
 
 test('development-only captured checkout omits synthetic held-out content but retains existence metadata', async () => fixture(async ({ root, scope, write, commit }) => {
   const bank = 'eval/questions/judge-xrpl.v5.json'
-  write(bank, 'synthetic fixture content, not a real bank'); commit()
+  const result = 'docs/evidence/v5-heldout/v5/results.json'
+  write(bank, 'synthetic fixture content, not a real bank'); write(result, 'synthetic result question text'); commit()
   const old = process.env.RA_DEV_BANKS_ONLY
   try {
     process.env.RA_DEV_BANKS_ONLY = '1'
     const work = checkout(root, snapshot(root, scope), scope)
     assert.equal(existsSync(join(work, bank)), true)
     assert.equal(readFileSync(join(work, bank), 'utf8'), '')
+    assert.equal(readFileSync(join(work, result), 'utf8'), '')
   } finally { if (old === undefined) delete process.env.RA_DEV_BANKS_ONLY; else process.env.RA_DEV_BANKS_ONLY = old }
 }))
 

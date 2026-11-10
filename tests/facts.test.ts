@@ -15,6 +15,24 @@ describe('facts: one source for every number a judge reads', () => {
     expect(JSON.parse(read('docs/submission/facts.json')).facts).toEqual(data.facts)
   })
 
+  it('checks published aggregates and markers without opening held-out questions or results in development mode', () => {
+    const code = `
+      import fs from 'node:fs';
+      import { syncBuiltinESMExports } from 'node:module';
+      const original = fs.readFileSync;
+      fs.readFileSync = function(path, ...args) {
+        if (/(?:eval\\/questions\\/judge-xrpl\\.v[45]|docs\\/evidence\\/v[45]-heldout\\/)/.test(String(path))) throw Error('Forbidden held-out read');
+        return original.call(this, path, ...args);
+      };
+      syncBuiltinESMExports();
+      process.env.RA_DEV_BANKS_ONLY = '1';
+      process.argv[1] = 'development-fact-read-audit';
+      const { build, markedFiles } = await import('./scripts/facts.mjs');
+      if (!build().facts.heldout || !markedFiles().includes('README.md')) throw Error('Missing aggregate or marker checks');
+    `
+    expect(() => execFileSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8' })).not.toThrow()
+  })
+
   it('derives counts from the generated progress data, not by hand', () => {
     const progress = JSON.parse(read('site/progress/data.json'))
     expect(data.facts.prs.value).toBe(String(progress.headline.prs))

@@ -7,6 +7,7 @@
 // the writer-onboarding and fee probes, and BUILDER-FEEDBACK.md counts (already in data.json).
 // In Markdown, a fact is written <!--f:key-->value<!--/f-->; GitHub hides the comments.
 // Refresh after any new measurement: `npm run site:progress -- --at origin/main && node scripts/facts.mjs`.
+// RA_DEV_BANKS_ONLY=1 uses published held-out aggregates without opening raw results.
 // The blind v5 bank is never opened: only its committed results file is read, once it exists.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -14,7 +15,12 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const root = join(import.meta.dirname, '..')
-const read = path => readFileSync(join(root, path), 'utf8')
+const developmentOnly = () => process.env.RA_DEV_BANKS_ONLY === '1'
+const heldOutPath = path => /^(?:eval\/questions\/judge-xrpl\.v[45](?:[.-]|$)|docs\/evidence\/v[45]-heldout\/)/.test(path)
+const read = path => {
+  if (developmentOnly() && heldOutPath(path)) throw new Error('facts: held-out content is forbidden in development-only mode')
+  return readFileSync(join(root, path), 'utf8')
+}
 const json = path => JSON.parse(read(path))
 const OUT = 'docs/submission/facts.json'
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -28,12 +34,14 @@ function need(value, label) {
   if (value === undefined || value === null || value === '' || (typeof value === 'number' && !Number.isFinite(value))) throw new Error(`facts: missing ${label}`)
   return value
 }
-export function build() {
-  const progress = json('site/progress/data.json')
-  const h = progress.headline
-  const fact = (value, source, definition) => ({ value: String(need(value, definition)), source, definition })
-  const P = 'site/progress/data.json'
-
+/** Development lanes may check presentation from the published aggregates, but
+ * cannot derive held-out numbers from raw results that contain question text.
+ * All other fact derivation and marker checks remain enabled. */
+function heldoutFacts(fact) {
+  if (developmentOnly()) {
+    const retained = json(OUT).facts
+    return Object.fromEntries(['heldout_bank', 'heldout', 'heldout_n', 'heldout_N', 'heldout_on', 'answers_it', 'offtopic', 'offtopic_N', 'heldout_source', 'heldout_violations'].map(key => [key, need(retained[key], `published ${key}`)]))
+  }
   // Held-out: v5 once its results are committed, otherwise v4 with its date.
   const v5 = 'docs/evidence/v5-heldout/v5/results.json', v5n = 'docs/evidence/v5-heldout/v5-negatives/results.json'
   const measuredV5 = existsSync(join(root, v5))
@@ -47,6 +55,28 @@ export function build() {
   // The evidence packet's result table states terminal gate violations per bank.
   const violations = [...read(heldDir).matchAll(/\| terminal gate violations \| (\d+) \|/g)].map(m => Number(m[1]))
   if (violations.length !== 2) need(null, `two "terminal gate violations" rows in ${heldDir}`)
+  return {
+    heldout_bank: fact(bank, pos, 'blind held-out bank the headline number comes from'),
+    heldout: fact(`${held.n}/${held.N}`, pos, `${bank} blind held-out questions bought and cited, run once`),
+    heldout_n: fact(spoken(held.n), pos, 'held-out bought and cited, spoken'),
+    heldout_N: fact(spoken(held.N), pos, 'held-out bank size, spoken'),
+    heldout_on: fact(read(heldDir).split('\n')[0].match(/\((\d{1,2} [A-Z][a-z]{2}) \d{4}\)/)?.[1], heldDir, 'day the held-out bank was run (the evidence packet\'s title date)'),
+    answers_it: fact(`${need(s.answersIt?.n, 'answersIt n')}/${need(s.answersIt?.N, 'answersIt N')}`, pos, 'held-out answers whose key fact leads'),
+    offtopic: fact(`${off.n}/${off.N}`, neg, `${bank} off-topic questions that led to a purchase`),
+    offtopic_N: fact(spoken(off.N), neg, 'off-topic bank size, spoken'),
+    heldout_source: fact(heldDir, heldDir, 'evidence packet for the held-out numbers'),
+    heldout_violations: fact(violations.reduce((a, b) => a + b, 0), heldDir, 'terminal gate violations across the held-out and off-topic banks'),
+  }
+}
+
+export function build() {
+  const progress = json('site/progress/data.json')
+  const h = progress.headline
+  const fact = (value, source, definition) => ({ value: String(need(value, definition)), source, definition })
+  const P = 'site/progress/data.json'
+
+  const heldout = heldoutFacts(fact)
+  const bank = heldout.heldout_bank.value
   const dev = id => { const b = need(progress.metrics.banks.find(x => x.id === id), `dev bank ${id}`); return `${b.n}/${b.N}` }
 
   const cases = json('tests/fixtures/receipt-conformance/manifest.json').cases
@@ -74,16 +104,7 @@ export function build() {
     release_day: fact(day(progress.today.releaseDay), P, 'day the latest release was published (SGT)'),
     transactions: fact(h.transactions, P, 'Testnet transactions on the /ledger/ page, each re-checked live in the browser'),
     // Judge questions
-    heldout_bank: fact(bank, pos, 'blind held-out bank the headline number comes from'),
-    heldout: fact(`${held.n}/${held.N}`, pos, `${bank} blind held-out questions bought and cited, run once`),
-    heldout_n: fact(spoken(held.n), pos, 'held-out bought and cited, spoken'),
-    heldout_N: fact(spoken(held.N), pos, 'held-out bank size, spoken'),
-    heldout_on: fact(read(heldDir).split('\n')[0].match(/\((\d{1,2} [A-Z][a-z]{2}) \d{4}\)/)?.[1], heldDir, 'day the held-out bank was run (the evidence packet\'s title date)'),
-    answers_it: fact(`${need(s.answersIt?.n, 'answersIt n')}/${need(s.answersIt?.N, 'answersIt N')}`, pos, 'held-out answers whose key fact leads'),
-    offtopic: fact(`${off.n}/${off.N}`, neg, `${bank} off-topic questions that led to a purchase`),
-    offtopic_N: fact(spoken(off.N), neg, 'off-topic bank size, spoken'),
-    heldout_source: fact(heldDir, heldDir, 'evidence packet for the held-out numbers'),
-    heldout_violations: fact(violations.reduce((a, b) => a + b, 0), heldDir, 'terminal gate violations across the held-out and off-topic banks'),
+    ...heldout,
     dev_v1: fact(dev('v1'), P, 'v1 development bank bought and cited (tuned on; not held-out)'),
     dev_v3: fact(dev('v3'), P, 'v3 development bank bought and cited at threshold 0.20 (tuned on; not held-out)'),
     // One-line judge path
@@ -152,7 +173,7 @@ export const strip = text => text.replace(/<!--\/?f(?::[A-Za-z0-9_]+)?-->/g, '')
 
 export function markedFiles() {
   const files = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.md'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean)
-  return files.filter(f => existsSync(join(root, f)) && read(f).includes('<!--f:'))
+  return files.filter(f => !(developmentOnly() && heldOutPath(f)) && existsSync(join(root, f)) && read(f).includes('<!--f:'))
 }
 
 function main() {

@@ -70,9 +70,13 @@ fixtures, not a Testnet bank runner.
 
 v4/v5 questions were never opened, read or evaluated. `RA_DEV_BANKS_ONLY=1` skips
 `tests/judge-bank-v5.test.ts`, whose schema reader opens those questions. The
-private gate checkout replaces their content with empty existence markers;
+private gate checkout replaces their content and raw held-out evidence packets
+with empty existence markers;
 helper scanning refuses those paths and cache inputs retain Git blob identities.
-The receipt/cache identity records this restriction. Default gate behavior is
+The facts generator uses committed public aggregates for held-out values, never
+the raw result files that include question text. Other fact derivation and
+presentation-marker checks remain enabled. The receipt/cache identity records
+this restriction. Default gate behavior is
 unchanged; engine, proof, policy, browser and hard-gate tests remain enabled.
 
 ## Remaining misses

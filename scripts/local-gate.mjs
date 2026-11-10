@@ -141,7 +141,7 @@ export function scriptClosure(files, read, seeds) {
   return [...included].sort()
 }
 
-const heldOutContent = file => process.env.RA_DEV_BANKS_ONLY === '1' && /^eval\/questions\/judge-xrpl\.v[45](?:[.-]|$)/.test(file)
+const heldOutContent = file => process.env.RA_DEV_BANKS_ONLY === '1' && /^(?:eval\/questions\/judge-xrpl\.v[45](?:[.-]|$)|docs\/evidence\/v[45]-heldout\/)/.test(file)
 
 export function inputsFor(id, files, read, unknown = false) {
   if (unknown || id === 'hygiene') return files
@@ -290,7 +290,7 @@ function runtimeInfo(root, steps) {
     if (!existsSync(path)) throw Error(`Missing installed dependency ${name}; run npm ci first`)
     return [name, JSON.parse(readFileSync(path, 'utf8')).version]
   }))
-  const info = { bankAccess: process.env.RA_DEV_BANKS_ONLY === '1' ? 'development-only; held-out content omitted and schema tests excluded' : 'all-schema-checks', node: process.version, execPath: process.execPath, platform: process.platform, arch: process.arch, os: release(), versions,
+  const info = { bankAccess: process.env.RA_DEV_BANKS_ONLY === '1' ? 'development-only; held-out questions/results omitted; schema tests excluded; published fact aggregates only' : 'all-schema-checks', node: process.version, execPath: process.execPath, platform: process.platform, arch: process.arch, os: release(), versions,
     installedLock: hash(readFileSync(join(root, 'node_modules/.package-lock.json'))),
     npm: execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim(), git: git(root, ['--version']) }
   if (steps.some(step => step.id === 'python' || step.id.startsWith('browser-'))) info.python = execFileSync('python3', ['-c',
