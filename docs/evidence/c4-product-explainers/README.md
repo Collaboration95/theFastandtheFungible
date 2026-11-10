@@ -31,3 +31,6 @@ Reproduction uses `npm run build:sdk` and `node scripts/release-artifacts.mjs`, 
 All 140 completed runs passed online receipt verification and report zero raw gate-audit violations. Negative buys remain 2/10, the same N03/N08 failures; both negative runner exits remain failures under the unchanged zero-negative assertion. This meets the requested non-increase, not a zero-negative claim. Original results, decision values and logs are retained; archive/member hashes are in `receipt-archives.json`. Independent offline verification after archive extraction is recorded in `offline-verification.json`. No v4/v5 measurement was run.
 
 These are isolated C4 development measurements on the pinned pre-integration runtime. They are not new measurements of subsequent K4 or other upstream runtime changes. Shipping admission is separately run on the final integrated PR and exact merged commit.
+
+
+Initial integrated shipping gate: 186 unit files / 1,526 tests passed. The app browser suite passed 26/27; its exact decline-match count expected 2 but two intended additions now produce 4. Both exact count assertions are re-pinned 2 → 4; the policy-decline, no-false-answer, publishing-link and loading-state checks remain. Original failed receipt: `1794328511399-94363-23f66f67-06ec-4425-966f-d58b75ea71ae.json`. No threshold is relaxed.
