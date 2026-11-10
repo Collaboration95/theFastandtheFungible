@@ -1,0 +1,67 @@
+{
+  "articleId": "product-verify-receipt",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How can I verify a ResearchAgent receipt offline and on-ledger?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to how can I verify a ResearchAgent receipt offline and on-ledger. Includes evidence limits.",
+  "tags": [
+    "receipt",
+    "offline verification",
+    "on-ledger",
+    "signature",
+    "payment",
+    "audit"
+  ],
+  "family": "product-verify-receipt",
+  "sources": [
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/receipt-spec.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/key-reveal-escrow.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/sdk/verify.ts",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to ResearchAgent receipt documentation, offline verification checks signatures, delivered passages and audit consistency; an independent ledger lookup is additionally required to establish XRPL settlement and answer anchoring. [1] [2]\n\nExport the receipt bundle from the completed run and give that unchanged bundle to a verifier. Offline checks bind the writer signature, signed passage commitment, exact delivered spans, grant and payment references. Key-reveal receipts also let the verifier check the published key against the escrow condition and encrypted delivery. These checks can detect altered bytes without asking the writer to repeat its claims. [1] [2]\n\nEnable the verifier’s ledger option to query the recorded Testnet transaction hashes independently. It checks validated success, expected accounts, ledger information and relevant payment or escrow fields; anchor checks additionally compare the memo commitment with the exported audit head and answer. A lookup failure is unavailable evidence, not confirmation that a payment failed or that a receipt is valid. [1] [3]\n\nAuthor interpretation: retain the original transaction hash and account separately when receiving an export. A completely substituted bundle with a different anchor is outside a self-contained receipt’s trust boundary. Passing cryptographic checks establishes consistency with commitments, not factual truth, useful research or legal ownership of a self-declared account. Verification is read-only and never authorizes another purchase. Sources accessed 10 November 2026. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent receipt documentation, offline verification checks signatures, delivered passages and audit consistency; an independent ledger lookup is additionally required to establish XRPL settlement and answer anchoring. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "Export the receipt bundle from the completed run and give that unchanged bundle to a verifier. Offline checks bind the writer signature, signed passage commitment, exact delivered spans, grant and payment references. Key-reveal receipts also let the verifier check the published key against the escrow condition and encrypted delivery. These checks can detect altered bytes without asking the writer to repeat its claims. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "Enable the verifier’s ledger option to query the recorded Testnet transaction hashes independently. It checks validated success, expected accounts, ledger information and relevant payment or escrow fields; anchor checks additionally compare the memo commitment with the exported audit head and answer. A lookup failure is unavailable evidence, not confirmation that a payment failed or that a receipt is valid. [1] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: retain the original transaction hash and account separately when receiving an export. A completely substituted bundle with a different anchor is outside a self-contained receipt’s trust boundary. Passing cryptographic checks establishes consistency with commitments, not factual truth, useful research or legal ownership of a self-declared account. Verification is read-only and never authorizes another purchase. Sources accessed 10 November 2026. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "ResearchAgent",
+      "measure": "settlement"
+    },
+    "p2": {
+      "entity": "writer",
+      "measure": "delivery"
+    },
+    "p3": {
+      "entity": "Testnet",
+      "measure": "payment"
+    }
+  }
+}

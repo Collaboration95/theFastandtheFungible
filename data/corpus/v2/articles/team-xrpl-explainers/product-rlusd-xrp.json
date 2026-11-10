@@ -1,0 +1,77 @@
+{
+  "articleId": "product-rlusd-xrp",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Should an agent use RLUSD or XRP for micropayments, and what is TEST-SGD?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to should an agent use RLUSD or XRP for micropayments, and what is TEST-SGD. Includes evidence limits.",
+  "tags": [
+    "RLUSD",
+    "XRP",
+    "TEST-SGD",
+    "Testnet",
+    "micropayments",
+    "stablecoin",
+    "trust line"
+  ],
+  "family": "product-rlusd-xrp",
+  "sources": [
+    {
+      "url": "https://ripple.com/products/stablecoin/",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/transaction-cost",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/x402-xrpl.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/key-reveal-escrow.md",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to ResearchAgent documentation, XRP pays native ledger fees, RLUSD is an issued dollar-denominated token, and TEST-SGD is only a labelled Testnet stand-in used to demonstrate token escrow. [2] [3] [4]\n\nAn agent choosing XRP avoids an issued-token trust line but bears XRP price exposure when pricing real services. RLUSD supports dollar-denominated accounting, while adding issuer, trust-line and supported-network requirements. Ripple describes RLUSD as a dollar stablecoin; that description is not a promise that every application, escrow or facilitator supports every RLUSD operation. Transaction fees on XRPL still require XRP. [1] [2] [3]\n\nResearchAgent distinguishes native XRP, official RLUSD on Testnet, and substitutes in its receipts. Its documented official-RLUSD proof covers exact payment and a cooperative refund. The recorded issuer permission did not allow token escrow, so that path refused rather than silently substituting another asset. TEST-SGD demonstrates the conditional token-escrow flow with a separately identified issuer; it is not official RLUSD or Singapore dollars. [3] [4]\n\nAuthor interpretation: inspect network, currency and issuer together. A ticker alone cannot identify an issued asset. Demo SGD prices and fixed conversions are display accounting, not live foreign exchange or a redemption right. Recheck issuer permissions before enabling another settlement mode; an older Testnet observation is not a current mainnet capability claim. All demonstrations discussed here use funds without real value. Sources accessed 10 November 2026. [3] [4]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent documentation, XRP pays native ledger fees, RLUSD is an issued dollar-denominated token, and TEST-SGD is only a labelled Testnet stand-in used to demonstrate token escrow. [2] [3] [4]"
+    },
+    {
+      "id": "p2",
+      "text": "An agent choosing XRP avoids an issued-token trust line but bears XRP price exposure when pricing real services. RLUSD supports dollar-denominated accounting, while adding issuer, trust-line and supported-network requirements. Ripple describes RLUSD as a dollar stablecoin; that description is not a promise that every application, escrow or facilitator supports every RLUSD operation. Transaction fees on XRPL still require XRP. [1] [2] [3]"
+    },
+    {
+      "id": "p3",
+      "text": "ResearchAgent distinguishes native XRP, official RLUSD on Testnet, and substitutes in its receipts. Its documented official-RLUSD proof covers exact payment and a cooperative refund. The recorded issuer permission did not allow token escrow, so that path refused rather than silently substituting another asset. TEST-SGD demonstrates the conditional token-escrow flow with a separately identified issuer; it is not official RLUSD or Singapore dollars. [3] [4]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: inspect network, currency and issuer together. A ticker alone cannot identify an issued asset. Demo SGD prices and fixed conversions are display accounting, not live foreign exchange or a redemption right. Recheck issuer permissions before enabling another settlement mode; an older Testnet observation is not a current mainnet capability claim. All demonstrations discussed here use funds without real value. Sources accessed 10 November 2026. [3] [4]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRP",
+      "measure": "fees"
+    },
+    "p2": {
+      "entity": "XRPL",
+      "measure": "pricing"
+    },
+    "p3": {
+      "entity": "Singapore",
+      "measure": "flow"
+    },
+    "p4": {
+      "entity": "Testnet",
+      "measure": "settlement",
+      "period": "twenty twenty six"
+    }
+  }
+}

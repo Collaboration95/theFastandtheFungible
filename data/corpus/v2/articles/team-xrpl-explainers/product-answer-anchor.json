@@ -1,0 +1,64 @@
+{
+  "articleId": "product-answer-anchor",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does an XRPL answer anchor prove?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to what does an XRPL answer anchor prove. Includes evidence limits.",
+  "tags": [
+    "answer anchor",
+    "XRPL",
+    "audit head",
+    "memo",
+    "abstention",
+    "proof"
+  ],
+  "family": "product-answer-anchor",
+  "sources": [
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/receipt-spec.md",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to ResearchAgent receipt documentation, an XRPL answer anchor proves that a particular audit-and-answer commitment existed on the validated ledger; it does not prove the answer is true. [1]\n\nThe final disclosed audit entry commits to the canonical answer. A Testnet AccountSet transaction carries the audit head and a hash of the run identifier in its memo. AccountSet transfers no article payment principal. Because the exported audit chain is frozen at that head, a later edit changes the commitment and can be detected against the independent ledger record. [1]\n\nAnchoring also covers a terminal answer that bought nothing. Such an anchor records the committed result and associated audit history; it does not invent a purchase receipt or claim that a source was read. The operator enables the infrastructure transaction fee separately. That fee consumes wallet XRP but is excluded from the article budget and displayed gross or net article spend. [1]\n\nAuthor interpretation: verify the recorded hash, account, successful validated transaction and memo rather than trusting a green badge alone. Offline consistency checks cannot independently establish publication on the ledger. Retain the anchor reference separately so a wholly replaced export is easier to detect. An anchor supplies tamper evidence for a particular record, not a correctness certificate, writer identity check or guarantee that every private event was disclosed. Sources accessed 10 November 2026. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent receipt documentation, an XRPL answer anchor proves that a particular audit-and-answer commitment existed on the validated ledger; it does not prove the answer is true. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The final disclosed audit entry commits to the canonical answer. A Testnet AccountSet transaction carries the audit head and a hash of the run identifier in its memo. AccountSet transfers no article payment principal. Because the exported audit chain is frozen at that head, a later edit changes the commitment and can be detected against the independent ledger record. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "Anchoring also covers a terminal answer that bought nothing. Such an anchor records the committed result and associated audit history; it does not invent a purchase receipt or claim that a source was read. The operator enables the infrastructure transaction fee separately. That fee consumes wallet XRP but is excluded from the article budget and displayed gross or net article spend. [1]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: verify the recorded hash, account, successful validated transaction and memo rather than trusting a green badge alone. Offline consistency checks cannot independently establish publication on the ledger. Retain the anchor reference separately so a wholly replaced export is easier to detect. An anchor supplies tamper evidence for a particular record, not a correctness certificate, writer identity check or guarantee that every private event was disclosed. Sources accessed 10 November 2026. [1]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "ledger"
+    },
+    "p2": {
+      "entity": "Testnet",
+      "measure": "payment"
+    },
+    "p3": {
+      "entity": "XRP",
+      "measure": "source"
+    },
+    "p4": {
+      "entity": "writer",
+      "measure": "identity",
+      "period": "twenty twenty six"
+    }
+  }
+}

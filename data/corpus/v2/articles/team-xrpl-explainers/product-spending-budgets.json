@@ -1,0 +1,68 @@
+{
+  "articleId": "product-spending-budgets",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How do agent spending budgets and daily caps work?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to how do agent spending budgets and daily caps work. Includes evidence limits.",
+  "tags": [
+    "agent",
+    "spending budget",
+    "daily cap",
+    "wallet",
+    "refund",
+    "pause"
+  ],
+  "family": "product-spending-budgets",
+  "sources": [
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/contracts/SECURITY.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/server/spend-policy.ts",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/server/store.ts",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to ResearchAgent security documentation, the admitted per-question budget and wallet-wide gross daily cap independently limit agent spending; refunds do not replenish spending authorization. [1]\n\nThe user requests an allowance for one question. The server admits that request within operator limits before research starts, and policy reserves money before purchasing. The documented engine defaults are S$5 per run, S$1 per source and S$20 gross per wallet per UTC day. Individual launch profiles can set lower limits; MCP allowances default to zero unless configured. Displayed SGD amounts are demo accounting, not live exchange rates. [1] [2]\n\nDaily authority counts gross obligations rather than the final net bill. A refund can reduce what a run ultimately costs without authorizing another cycle of purchases. Unfinished budgets and ambiguous submissions keep reservations across restart and midnight until reconciled. Parallel requests therefore share durable wallet authority instead of each assuming the entire balance is available. [1] [3]\n\nAuthor interpretation: read the active wallet status rather than assuming every app launch uses the engine defaults. Choose a budget for the maximum acceptable research cost and pause spending when needed. Pause prevents new reservations; it cannot reverse a transaction already submitted. Multiple independent databases must not operate the same payer as if they held separate allowances. Testnet demonstrations use funds without real value. Sources accessed 10 November 2026. [1]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent security documentation, the admitted per-question budget and wallet-wide gross daily cap independently limit agent spending; refunds do not replenish spending authorization. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The user requests an allowance for one question. The server admits that request within operator limits before research starts, and policy reserves money before purchasing. The documented engine defaults are S$5 per run, S$1 per source and S$20 gross per wallet per UTC day. Individual launch profiles can set lower limits; MCP allowances default to zero unless configured. Displayed SGD amounts are demo accounting, not live exchange rates. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "Daily authority counts gross obligations rather than the final net bill. A refund can reduce what a run ultimately costs without authorizing another cycle of purchases. Unfinished budgets and ambiguous submissions keep reservations across restart and midnight until reconciled. Parallel requests therefore share durable wallet authority instead of each assuming the entire balance is available. [1] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: read the active wallet status rather than assuming every app launch uses the engine defaults. Choose a budget for the maximum acceptable research cost and pause spending when needed. Pause prevents new reservations; it cannot reverse a transaction already submitted. Multiple independent databases must not operate the same payer as if they held separate allowances. Testnet demonstrations use funds without real value. Sources accessed 10 November 2026. [1]"
+    }
+  ],
+  "factMenu": {
+    "p2": {
+      "entity": "engine",
+      "measure": "rates"
+    },
+    "p4": {
+      "entity": "Testnet",
+      "measure": "cost",
+      "period": "twenty twenty six"
+    },
+    "p1": {
+      "entity": "ResearchAgent",
+      "measure": "budget"
+    }
+  }
+}

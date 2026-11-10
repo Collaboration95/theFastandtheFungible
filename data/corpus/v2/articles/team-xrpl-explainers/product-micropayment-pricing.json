@@ -1,0 +1,76 @@
+{
+  "articleId": "product-micropayment-pricing",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does an XRPL micropayment cost besides the article price?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to what does an XRPL micropayment cost besides the article price. Includes evidence limits.",
+  "tags": [
+    "XRPL",
+    "micropayment pricing",
+    "fees",
+    "drops",
+    "EscrowFinish",
+    "reserve",
+    "article price"
+  ],
+  "family": "product-micropayment-pricing",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/transaction-cost",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/payment-types/escrow",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/key-reveal-escrow.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/receipt-spec.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/evidence/c3-index-corpus/README.md",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, a standard transaction has a 10-drop minimum before load scaling, while conditional EscrowFinish costs more; ResearchAgent’s article price and anchor fee are separate charges. [1] [4]\n\nOne XRP contains one million drops. The network destroys transaction fees rather than paying them to the article writer. A conditional finish uses the reference fee multiplied by 33 plus fulfillment bytes divided by 16, before other applicable scaling. Multisigning adds cost. Query current fee conditions instead of treating the minimum as a guaranteed quote for every transaction. [1] [2]\n\nAn escrow needs a create and a finish or cancel transaction, and an unfinished object also ties up owner reserve. Reserve is locked availability, not another article price or a fee paid to the writer. ResearchAgent’s recorded Testnet conditional finish cost 423 drops; that is an observed transaction cost, not a universal fixed tariff. The anchor has its own separately labelled infrastructure fee. [2] [3] [4]\n\nAuthor interpretation: compare the total delivery path with the value of the purchase. A low network fee alone does not establish viable economics after quoting, verification, hosting and refund handling. The team-authored explainers use S$0.40 demo accounting and faucet funds, with no live exchange-rate claim. Preserve gross article spend, refunds, net spend and ledger fees as distinct quantities when evaluating micropayments. Sources accessed 10 November 2026. [3] [4] [5]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, a standard transaction has a 10-drop minimum before load scaling, while conditional EscrowFinish costs more; ResearchAgent’s article price and anchor fee are separate charges. [1] [4]"
+    },
+    {
+      "id": "p2",
+      "text": "One XRP contains one million drops. The network destroys transaction fees rather than paying them to the article writer. A conditional finish uses the reference fee multiplied by 33 plus fulfillment bytes divided by 16, before other applicable scaling. Multisigning adds cost. Query current fee conditions instead of treating the minimum as a guaranteed quote for every transaction. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "An escrow needs a create and a finish or cancel transaction, and an unfinished object also ties up owner reserve. Reserve is locked availability, not another article price or a fee paid to the writer. ResearchAgent’s recorded Testnet conditional finish cost 423 drops; that is an observed transaction cost, not a universal fixed tariff. The anchor has its own separately labelled infrastructure fee. [2] [3] [4]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: compare the total delivery path with the value of the purchase. A low network fee alone does not establish viable economics after quoting, verification, hosting and refund handling. The team-authored explainers use S$0.40 demo accounting and faucet funds, with no live exchange-rate claim. Preserve gross article spend, refunds, net spend and ledger fees as distinct quantities when evaluating micropayments. Sources accessed 10 November 2026. [3] [4] [5]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "fee"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "cost"
+    },
+    "p3": {
+      "entity": "Testnet",
+      "measure": "price"
+    }
+  }
+}
