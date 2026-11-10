@@ -6,6 +6,9 @@ and payment finality. Authorization and receipt-verification aliases also cover
 ordinary budget-policy and independent-ledger-verification wording. Expansion supplies search vocabulary, never answer text.
 Original question words remain in the relevance denominator. Keyword search keeps
 its existing title (3) and facet (2) boosts and absolute BM25 promise scale.
+Glossary word sets are prepared once per process, and each publisher index prepares
+its fixed article vocabulary once. Query matching and thresholds remain unchanged;
+these bounded caches contain no question history.
 
 Before a purchase, deterministic policy requires the title/facets to match the
 question or its frozen requested fact. For detailed finance requests, verified
