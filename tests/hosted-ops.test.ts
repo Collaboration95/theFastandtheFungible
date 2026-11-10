@@ -18,10 +18,51 @@ describe('hosted operator boundaries',()=>{
    expect(output).toContain('--source-ranges=35.235.240.0/20')
    expect(output).toContain('--vpc-egress=private-ranges-only')
    expect(output).toContain('--timeout=3600')
-   expect(output).toContain('--budget-amount=50USD')
+   expect(output).toContain("'billing' 'accounts' 'describe' '000000-000000-000000' '--format=value(currencyCode)'")
+   expect(output).toContain('--budget-amount=RESOLVED_FROM_BILLING_CURRENCY')
+   expect(output).toContain('--path=/ready')
+   expect(output).toContain("'--tunnel-through-iap' '--quiet'")
+   expect(output).toContain('/run/researchagent-startup.done')
    expect(output).not.toMatch(/sentinel-private|firestore|gcloud.*storage.*create/)
    expect(existsSync(join(dir,'manifest.json'))).toBe(false)
   } finally {rmSync(dir,{recursive:true,force:true})}
+ })
+ it('states the budget in the billing currency, redacts the alert address and plans adoption checks',()=>{
+  const dir=resources().tempDir('ra-ho-budget-')
+  try {
+   writeFileSync(join(dir,'gcloud'),'#!/bin/sh\nexit 99\n',{mode:0o700})
+   const args=['deploy','--project','ra-ho-test','--billing-account','000000-000000-000000','--manifest',join(dir,'manifest.json'),'--alert-email','operator.private@example.com','--budget-amount','70SGD','--adopt-project','--dry-run']
+   const output=run('docker/hosted/ops.mjs',args,{PATH:dir+':'+process.env.PATH})
+   expect(output).toContain('--budget-amount=70SGD')
+   expect(output).toContain('email_address=<alert-email>')
+   expect(output).not.toContain('operator.private@example.com')
+   expect(output).toContain("'projects' 'describe' 'ra-ho-test' '--format=json'")
+   expect(output).toContain("'billing' 'projects' 'describe' 'ra-ho-test' '--format=json'")
+   const bad=spawnSync(process.execPath,['docker/hosted/ops.mjs',...args.slice(0,-3),'70 SGD','--dry-run'],{encoding:'utf8'})
+   expect(bad.status).not.toBe(0)
+  } finally {rmSync(dir,{recursive:true,force:true})}
+ })
+ it('derives budgets from the billing currency and adopts only the labelled, linked project',async()=>{
+  const {budgetAmount,adoptable}=await import('../docker/hosted/budget.mjs')
+  expect(budgetAmount('USD')).toBe('50USD')
+  expect(budgetAmount('SGD')).toBe('70SGD')
+  expect(budgetAmount('SGD','65.50SGD')).toBe('65.50SGD')
+  expect(()=>budgetAmount('SGD','50USD')).toThrow(/currency SGD/)
+  expect(()=>budgetAmount('EUR')).toThrow(/--budget-amount/)
+  expect(()=>budgetAmount('')).toThrow(/unavailable/)
+  const project={lifecycleState:'ACTIVE',labels:{purpose:'sff-demo',expires:'20261120'}}
+  const link={billingEnabled:true,billingAccountName:'billingAccounts/000000-000000-000000'}
+  expect(adoptable(project,link,'000000-000000-000000')).toBe(true)
+  expect(adoptable({...project,labels:{purpose:'other',expires:'20261120'}},link,'000000-000000-000000')).toBe(false)
+  expect(adoptable(project,{...link,billingAccountName:'billingAccounts/111111-111111-111111'},'000000-000000-000000')).toBe(false)
+  expect(adoptable({...project,lifecycleState:'DELETE_REQUESTED'},link,'000000-000000-000000')).toBe(false)
+ })
+ it('keeps operator runtime overrides across re-renders and accepts only allowlisted names',()=>{
+  const startup=readFileSync('docker/hosted/startup.sh','utf8')
+  expect(startup).toContain('/etc/researchagent/env.local')
+  expect(startup).toMatch(/HOSTED_PROVIDERS_READY_UNTIL\|HOSTED_\(RESEARCH\|DECISION\)/)
+  expect(startup).not.toMatch(/env\.local[\s\S]*(SEED|API_KEY|PUBLISHER_SECRET)/)
+  expect(startup.lastIndexOf('researchagent-startup.done')).toBeGreaterThan(startup.indexOf('bash /opt/researchagent/update.sh'))
  })
  it('keeps final snapshot before deleting the disk and never deletes the project',()=>{
   const output=run('docker/hosted/ops.mjs',['teardown','--project','ra-ho-test','--manifest','/tmp/absent-ho-manifest.json','--dry-run'])
@@ -50,6 +91,8 @@ describe('hosted operator boundaries',()=>{
   expect(front).not.toContain('$proxy_add_x_forwarded_for')
   expect(front).toContain('proxy_buffering off')
   expect(front).toContain('error_page 502 504 =503 /paused.html')
+  expect(front).toMatch(/location = \/ready \{\s*rewrite \^ \/readyz break;/)
+  expect(front).not.toMatch(/gzip_types[^;]*event-stream/)
   expect(readFileSync('docker/Dockerfile.publisher','utf8')).toContain('if (process.env.K_SERVICE) throw')
  })
 })

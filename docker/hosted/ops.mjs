@@ -1,13 +1,14 @@
 // Operator-only command planner/executor. Dry-run does not invoke gcloud or Docker.
 import { execFileSync } from 'node:child_process'
-import { readdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs'
+import { readdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, existsSync, appendFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { budgetAmount, adoptable } from './budget.mjs'
 const [action, ...argv] = process.argv.slice(2)
 const options = {}
 for (let i = 0; i < argv.length; i++) {
-  if (['--dry-run','--execute'].includes(argv[i])) options[argv[i].slice(2)] = true
-  else if (['--project','--billing-account','--sha','--origin','--manifest','--notification-channel','--alert-email'].includes(argv[i]) && argv[i+1]) options[argv[i].slice(2)] = argv[++i]
+  if (['--dry-run','--execute','--adopt-project'].includes(argv[i])) options[argv[i].slice(2)] = true
+  else if (['--project','--billing-account','--sha','--origin','--manifest','--notification-channel','--alert-email','--budget-amount','--gate-lock'].includes(argv[i]) && argv[i+1]) options[argv[i].slice(2)] = argv[++i]
   else throw Error('Unknown or incomplete argument')
 }
 if (!['deploy','teardown'].includes(action)) throw Error('Expected deploy or teardown')
@@ -19,17 +20,23 @@ const region = 'asia-southeast1', zone = `${region}-b`, repo = 'researchagent', 
 const registry = `${region}-docker.pkg.dev/${project}/${repo}`
 const sa = `ra-vm@${project}.iam.gserviceaccount.com`, frontSa = `ra-front@${project}.iam.gserviceaccount.com`
 const q = s => "'" + String(s).replaceAll("'", "'\\''") + "'"
-const show = args => console.log(['gcloud', ...args].map(q).join(' '))
+// The alert address is private operator data: never print it, even in a plan.
+const redact = s => options['alert-email'] ? String(s).replaceAll(options['alert-email'], '<alert-email>') : String(s)
+const show = args => console.log(redact(['gcloud', ...args].map(q).join(' ')))
+// gcloud diagnostics go to a 0600 file beside the private manifest, never to stdout.
+function remember(args, error) {
+  try { appendFileSync(`${manifestPath}.log`, redact(`${new Date().toISOString()} gcloud ${args.slice(0,4).join(' ')}\n${String(error?.stderr || error?.message || '').slice(-4000)}\n`), {mode:0o600}) } catch { /* diagnostics are best effort */ }
+}
 function gc(args, {quiet = false} = {}) {
   if (dry) { show(args); return '' }
   try { return execFileSync('gcloud', args, {encoding:'utf8', stdio:['ignore','pipe','pipe'], maxBuffer:16*1024*1024}).trim() }
-  catch { if (!quiet) throw Error(`gcloud failed: ${args.slice(0,3).join(' ')} (inspect privately)`); throw Error('Cloud inventory failed') }
+  catch (e) { remember(args, e); if (!quiet) throw Error(`gcloud failed: ${args.slice(0,3).join(' ')} (details in the private manifest .log)`); throw Error('Cloud inventory failed') }
 }
 const p = [`--project=${project}`]
 function ensure(describe, create) {
   if (dry) { show(describe); show(create); return }
   try { execFileSync('gcloud', describe, {stdio:['ignore','pipe','pipe']}); return }
-  catch (e) { if (!/NOT_FOUND|not found|does not exist|was not found/i.test(String(e.stderr))) throw Error('Cloud inventory denied or unavailable; refusing mutation') }
+  catch (e) { if (!/NOT_FOUND|not found|does not exist|was not found/i.test(String(e.stderr))) { remember(describe, e); throw Error('Cloud inventory denied or unavailable; refusing mutation') } }
   gc(create)
 }
 const git = args => execFileSync('git',args,{encoding:'utf8'}).trim()
@@ -81,8 +88,8 @@ if (action === 'teardown') {
 const billing = options['billing-account']
 if (!/^[A-Fa-f0-9-]+$/.test(billing || '')) throw Error('--billing-account required')
 const sha = git(['rev-parse','--verify',`${options.sha || 'HEAD'}^{commit}`])
-const origin = options.origin || 'https://paused.invalid'
-if (!/^https:\/\/[a-z0-9.-]+$/.test(origin)) throw Error('--origin must be an exact HTTPS origin')
+if (options.origin && !/^https:\/\/[a-z0-9.-]+$/.test(options.origin)) throw Error('--origin must be an exact HTTPS origin')
+if (options['budget-amount'] && !/^\d{1,6}(?:\.\d{1,2})?[A-Z]{3}$/.test(options['budget-amount'])) throw Error('--budget-amount must look like 70SGD')
 let channel = options['notification-channel']
 const email=options['alert-email']
 if(channel && !/^projects\/[^/]+\/notificationChannels\/\d+$/.test(channel)) throw Error('Invalid notification channel')
@@ -100,19 +107,35 @@ if(!dry) {
 if (!dry) {
   if (git(['status','--porcelain']) || git(['rev-parse','HEAD']) !== sha) throw Error('Deploy requires the clean selected HEAD')
   // Publish validates the clean current source receipt. No bypass for stale evidence.
-  execFileSync('npm',['run','gate','--','--publish'],{stdio:'inherit'})
+  // --gate-lock names a shared host lock script so this gate queues behind other heavy runs.
+  if (options['gate-lock']) execFileSync('sh',[options['gate-lock'],'npm','run','gate','--','--publish'],{stdio:'inherit'})
+  else execFileSync('npm',['run','gate','--','--publish'],{stdio:'inherit'})
 }
 let existing = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath)) : undefined
 if (existing && (existing.project !== project || existing.billingAccount !== billing)) throw Error('Manifest ownership mismatch')
+if (dry && !existing && options['adopt-project']) { show(['projects','describe',project,'--format=json']); show(['billing','projects','describe',project,'--format=json']) }
 if (!dry && !existing) {
-  // A pre-existing project may only be adopted with a matching saved manifest.
-  try { execFileSync('gcloud',['projects','describe',project],{stdio:['ignore','pipe','pipe']}); throw Error('Project already exists; refusing adoption') }
+  // A pre-existing project is adopted only with --adopt-project, and only when it
+  // carries this deployment's labels and the selected billing link.
+  let found
+  try { found=JSON.parse(execFileSync('gcloud',['projects','describe',project,'--format=json'],{encoding:'utf8',stdio:['ignore','pipe','pipe']})) }
   catch(e) { if (!/NOT_FOUND|not found|does not exist|was not found/i.test(String(e.stderr))) throw Error('Cannot establish new-project ownership') }
-  writeFileSync(manifestPath,JSON.stringify({project,billingAccount:billing,sha,secrets:[]},null,2),{flag:'wx',mode:0o600})
+  if (found && !options['adopt-project']) throw Error('Project already exists; refusing adoption (use --adopt-project for a labelled sff-demo project)')
+  if (found && !adoptable(found, JSON.parse(gc(['billing','projects','describe',project,'--format=json'])), billing)) throw Error('Existing project lacks the sff-demo labels or this billing link; refusing adoption')
+  existing={project,billingAccount:billing,sha,secrets:[],...(found?{adopted:true}:{})}
+  writeFileSync(manifestPath,JSON.stringify(existing,null,2)+'\n',{flag:'wx',mode:0o600})
 }
 ensure(['projects','describe',project], ['projects','create',project,'--name=ResearchAgent SFF demo','--labels=purpose=sff-demo,expires=20261120'])
 gc(['billing','projects','link',project,`--billing-account=${billing}`])
-gc(['services','enable','compute.googleapis.com','run.googleapis.com','artifactregistry.googleapis.com','secretmanager.googleapis.com','monitoring.googleapis.com','logging.googleapis.com','iam.googleapis.com','billingbudgets.googleapis.com','cloudresourcemanager.googleapis.com',...p])
+gc(['services','enable','compute.googleapis.com','run.googleapis.com','artifactregistry.googleapis.com','secretmanager.googleapis.com','monitoring.googleapis.com','logging.googleapis.com','iam.googleapis.com','billingbudgets.googleapis.com','cloudresourcemanager.googleapis.com','iap.googleapis.com','oslogin.googleapis.com',...p])
+// Budgets must be denominated in the billing account's currency (e.g. SGD accounts reject USD).
+const currency=dry?'':gc(['billing','accounts','describe',billing,'--format=value(currencyCode)'])
+if (dry) show(['billing','accounts','describe',billing,'--format=value(currencyCode)'])
+const amount=dry?(options['budget-amount']||'RESOLVED_FROM_BILLING_CURRENCY(USD:50USD,SGD:70SGD)'):budgetAmount(currency,options['budget-amount'])
+const number=dry?'PROJECT_NUMBER':gc(['projects','describe',project,'--format=value(projectNumber)'])
+// The deterministic run.app URL is the canonical origin; HG compares Origin exactly.
+const canonical=`https://${service}-${number}.${region}.run.app`
+const origin=options.origin||existing?.url||'https://paused.invalid'
 if(!channel) {
   channel=dry?'projects/'+project+'/notificationChannels/RESOLVED_CHANNEL':gc(['beta','monitoring','channels','list',...p,'--filter=displayName=ra-operator','--format=value(name)'])
   if(!channel||dry) channel=gc(['beta','monitoring','channels','create',...p,'--display-name=ra-operator','--type=email',`--channel-labels=email_address=${email}`,'--format=value(name)'])||channel
@@ -120,6 +143,25 @@ if(!channel) {
 ensure(['artifacts','repositories','describe',repo,...p,`--location=${region}`],['artifacts','repositories','create',repo,...p,`--location=${region}`,'--repository-format=docker','--immutable-tags'])
 for (const name of ['ra-vm','ra-front']) ensure(['iam','service-accounts','describe',`${name}@${project}.iam.gserviceaccount.com`,...p],['iam','service-accounts','create',name,...p])
 gc(['artifacts','repositories','add-iam-policy-binding',repo,...p,`--location=${region}`,`--member=serviceAccount:${sa}`,'--role=roles/artifactregistry.reader'])
+const sleep = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+const sshArgs = command => ['compute','ssh',vm,...p,`--zone=${zone}`,'--tunnel-through-iap','--quiet',`--command=${command}`]
+// IAP/OS Login can take minutes after VM creation; retry only the connection, never a mutation's meaning.
+function ssh(command, attempts = 1) {
+  if (dry) { show(sshArgs(command)); return '' }
+  for (let i = 1; ; i++) {
+    try { return execFileSync('gcloud', sshArgs(command), {encoding:'utf8', stdio:['ignore','pipe','pipe'], timeout:1200000}).trim() }
+    catch (e) { remember(sshArgs(command), e); if (i >= attempts) throw Error('VM command over IAP failed (details in the private manifest .log)'); sleep(15000) }
+  }
+}
+// Re-run the startup script only after any boot-time run has finished, then require
+// the release marker it writes last; the metadata runner itself exits 0 on script failure.
+function applyStartup(release) {
+  if (dry) { ssh('sudo systemctl show -p ActiveState --value google-startup-scripts.service'); ssh('sudo systemctl restart google-startup-scripts.service'); ssh('sudo cat /run/researchagent-startup.done'); return }
+  for (let i = 0; ssh('sudo systemctl show -p ActiveState --value google-startup-scripts.service', 40) === 'activating'; i++) { if (i > 80) throw Error('VM startup still running after 20 minutes'); sleep(15000) }
+  if (ssh('sudo cat /run/researchagent-startup.done 2>/dev/null || true', 3) === release) return
+  ssh('sudo systemctl restart google-startup-scripts.service', 1)
+  if (ssh('sudo cat /run/researchagent-startup.done 2>/dev/null || true', 3) !== release) throw Error('VM startup did not complete this release; inspect over IAP')
+}
 const scratch = dry ? '/PRIVATE_BUILD_DIRECTORY' : mkdtempSync(join(tmpdir(),'ra-hosted-'))
 try {
   if (!dry) {
@@ -170,25 +212,30 @@ try {
   const metadata=[`ra-registry=${registry}`,`ra-commit=${sha}`,`ra-origin=${origin}`].join(',')
   ensure(['compute','instances','describe',vm,...p,`--zone=${zone}`],['compute','instances','create',vm,...p,`--zone=${zone}`,'--machine-type=e2-standard-2','--image-family=debian-12','--image-project=debian-cloud','--boot-disk-size=20GB',`--disk=name=${disk},device-name=${disk},auto-delete=no`,'--subnet=ra-egress',`--private-network-ip=10.77.0.10`,'--tags=ra-app',`--service-account=${sa}`,'--scopes=cloud-platform',`--metadata=${metadata},enable-oslogin=TRUE,block-project-ssh-keys=TRUE`,`--metadata-from-file=startup-script=${scratch}/docker/hosted/startup.sh,ra-bundle=${scratch}/bundle.b64`])
   gc(['compute','instances','add-metadata',vm,...p,`--zone=${zone}`,`--metadata=${metadata}`,`--metadata-from-file=startup-script=${scratch}/docker/hosted/startup.sh,ra-bundle=${scratch}/bundle.b64`])
-  gc(['compute','ssh',vm,...p,`--zone=${zone}`,'--tunnel-through-iap','--command=sudo systemctl restart google-startup-scripts.service'])
+  applyStartup(`${sha} ${origin}`)
   gc(['run','deploy',service,...p,`--region=${region}`,`--image=${digests.front}`,`--service-account=${frontSa}`,'--network=ra-vpc','--subnet=ra-egress','--vpc-egress=private-ranges-only','--min=1','--max=2','--concurrency=32','--timeout=3600','--port=8080','--allow-unauthenticated','--set-env-vars=VM_UPSTREAM=10.77.0.10:8080','--startup-probe=httpGet.path=/startupz,httpGet.port=8080','--liveness-probe=httpGet.path=/livez,httpGet.port=8080','--quiet'])
-  const url=dry?'https://RESOLVED_SERVICE.run.app':gc(['run','services','describe',service,...p,`--region=${region}`,'--format=value(status.url)'])
-  // Record the canonical origin, then render secrets and restart while still paused.
-  gc(['compute','instances','add-metadata',vm,...p,`--zone=${zone}`,`--metadata=ra-origin=${url}`])
-  gc(['compute','ssh',vm,...p,`--zone=${zone}`,'--tunnel-through-iap','--command=sudo systemctl restart google-startup-scripts.service'])
+  let url=dry?canonical:gc(['run','services','describe',service,...p,`--region=${region}`,'--format=value(status.url)'])
+  if (!dry) {
+    const urls=JSON.parse(gc(['run','services','describe',service,...p,`--region=${region}`,'--format=json(metadata.annotations)'])||'{}')?.metadata?.annotations?.['run.googleapis.com/urls']
+    if (urls && JSON.parse(urls).includes(canonical)) url=canonical
+  }
+  if (url!==origin) {
+    // Record the canonical origin, then render secrets and restart while still paused.
+    gc(['compute','instances','add-metadata',vm,...p,`--zone=${zone}`,`--metadata=ra-origin=${url}`])
+    applyStartup(`${sha} ${url}`)
+  }
   const host=new URL(url).hostname
   const uptimeName='ra-readyz'
   let uptime = dry ? 'UPTIME_ID' : gc(['monitoring','uptime','list-configs',...p,`--filter=displayName=${uptimeName}`,'--format=value(name)'])
-  if (!uptime) uptime=gc(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/readyz','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
-  if(dry) show(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/readyz','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
+  if (!uptime) uptime=gc(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/ready','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
+  if(dry) show(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/ready','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
   const policy={displayName:'ra-readyz-failed',combiner:'OR',notificationChannels:[channel],conditions:[{displayName:'readiness unavailable',conditionThreshold:{filter:`metric.type="monitoring.googleapis.com/uptime_check/check_passed" AND resource.type="uptime_url" AND metric.label.check_id="${uptime.split('/').at(-1)}"`,comparison:'COMPARISON_GT',thresholdValue:1,duration:'120s',aggregations:[{alignmentPeriod:'60s',perSeriesAligner:'ALIGN_NEXT_OLDER',crossSeriesReducer:'REDUCE_COUNT_FALSE',groupByFields:['resource.label.host']}]}}]}
   if (!dry) writeFileSync(join(scratch,'alert.json'),JSON.stringify(policy))
   let alert=dry?'ALERT_ID':gc(['alpha','monitoring','policies','list',...p,'--filter=displayName=ra-readyz-failed','--format=value(name)'])
   if (!alert || dry) alert=gc(['alpha','monitoring','policies','create',...p,`--policy-from-file=${scratch}/alert.json`,'--format=value(name)']) || 'ALERT_ID'
-  const number=dry?'PROJECT_NUMBER':gc(['projects','describe',project,'--format=value(projectNumber)'])
   let budget=dry?'':gc(['billing','budgets','list',`--billing-account=${billing}`,`--filter=displayName=ra-${project}`,'--format=value(name)'])
-  if (!budget) budget=gc(['billing','budgets','create',`--billing-account=${billing}`,`--display-name=ra-${project}`,'--budget-amount=50USD',`--filter-projects=projects/${number}`,'--threshold-rule=percent=0.5,basis=current-spend','--threshold-rule=percent=0.9,basis=current-spend','--threshold-rule=percent=1,basis=current-spend',`--notifications-rule-monitoring-notification-channels=${channel}`,'--format=value(name)']) || 'BUDGET_ID'
-  const m={project,notificationChannel:channel,ownsNotificationChannel:!options['notification-channel'],billingAccount:billing,sha,region,zone,vm,disk,service,url,digests,secrets:[...new Set([...(existing?.secrets||[]),...secretMap.map(([,s])=>s)])],uptime,alert,budget,pendingObligations:null,archiveVerified:false,teardownAt:'2026-11-20T00:00:00+08:00'}
+  if (!budget) budget=gc(['billing','budgets','create',`--billing-account=${billing}`,`--display-name=ra-${project}`,`--budget-amount=${amount}`,`--filter-projects=projects/${number}`,'--threshold-rule=percent=0.5,basis=current-spend','--threshold-rule=percent=0.9,basis=current-spend','--threshold-rule=percent=1,basis=current-spend',`--notifications-rule-monitoring-notification-channels=${channel}`,'--format=value(name)']) || 'BUDGET_ID'
+  const m={...(existing||{}),project,notificationChannel:channel,ownsNotificationChannel:!options['notification-channel'],billingAccount:billing,sha,region,zone,vm,disk,service,url,digests,secrets:[...new Set([...(existing?.secrets||[]),...secretMap.map(([,s])=>s)])],uptime,alert,budget,budgetAmount:amount,pendingObligations:null,archiveVerified:false,teardownAt:'2026-11-20T00:00:00+08:00'}
   if (!dry) writeFileSync(manifestPath,JSON.stringify(m,null,2)+'\n',{mode:0o600})
   console.log(JSON.stringify({project,sha,url,state:dry?'planned':'deployed-paused'}))
 } finally { if (!dry) rmSync(scratch,{recursive:true,force:true}) }

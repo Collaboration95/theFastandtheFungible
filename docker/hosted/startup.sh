@@ -10,6 +10,8 @@ commit=$(meta instance/attributes/ra-commit)
 origin=$(meta instance/attributes/ra-origin)
 [[ $commit =~ ^[0-9a-f]{40}$ ]]
 [[ $origin =~ ^https://[a-zA-Z0-9.-]+$ ]]
+# The deploy script waits for this marker; it is written only after every step succeeds.
+rm -f /run/researchagent-startup.done
 # No broad distro upgrade. Docker's official repository supplies Compose v2.
 apt-get update -qq
 apt-get install -y -qq ca-certificates curl gnupg
@@ -51,6 +53,17 @@ fi
 meta instance/attributes/ra-bundle | base64 -d | tar -xz -C /opt/researchagent
 cp /opt/researchagent/env.template /etc/researchagent/env.new
 sed -i "s|^HOSTED_ORIGIN=.*|HOSTED_ORIGIN=$origin|" /etc/researchagent/env.new
+# Operator-qualified runtime values (provider rates, preflight deadline, wallet cap)
+# live in a private override file so a reboot or redeploy keeps them. Only these
+# names are accepted; anything else fails the start closed.
+if [[ -f /etc/researchagent/env.local ]]; then
+  while IFS='=' read -r name value; do
+    [[ -z $name || $name == \#* ]] && continue
+    [[ $name =~ ^(HOSTED_PROVIDERS_READY_UNTIL|HOSTED_(RESEARCH|DECISION)_(INPUT|OUTPUT)_USD_PER_MILLION|HOSTED_DECISION_OUTPUT_TOKENS|HOSTED_QUESTION_CAP_MINOR|HOSTED_ADMISSIONS_UNTIL|HOSTED_(DECK|VIDEO|PROGRESS|REPLAY)_URL|WALLET_DAILY_CAP_MINOR)$ && $value =~ ^[A-Za-z0-9.:/_-]+$ ]]
+    sed -i "/^$name=/d" /etc/researchagent/env.new
+    printf '%s=%s\n' "$name" "$value" >>/etc/researchagent/env.new
+  done </etc/researchagent/env.local
+fi
 # Each value is immutable per commit (version 1). Rotation requires a new release id.
 while IFS='=' read -r name secret; do
   [[ $name =~ ^[A-Z][A-Z0-9_]+$ && $secret =~ ^[a-z0-9-]+$ ]]
@@ -70,3 +83,4 @@ chown 1000:1000 /srv/researchagent/control.json
 chmod 600 /srv/researchagent/control.json
 gcloud auth configure-docker "${registry%%/*}" --quiet
 bash /opt/researchagent/update.sh
+printf '%s %s\n' "$commit" "$origin" >/run/researchagent-startup.done
