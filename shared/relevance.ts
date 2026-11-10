@@ -32,6 +32,9 @@ const groupWords = new Map(PROTOCOL_GLOSSARY.map(group => [group, new Set(group.
 const phraseWords = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').map(w => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)).join(' ')
 const phraseText = (text: string) => ` ${phraseWords(text)} `
 const aliasKeys = new Map<string, string>(PROTOCOL_GLOSSARY.flat().map(p => [p, phraseText(p)]))
+export type TopicDocument = { words: ReadonlySet<string>; phrases: string }
+/** Publisher indexes prepare immutable document vocabulary once for all queries. */
+export const topicDocument = (text: string): TopicDocument => ({ words: new Set(topicWords(text)), phrases: phraseText(text) })
 const phraseIn = (normalized: string, phrase: string) => normalized.includes(aliasKeys.get(phrase) ?? phraseText(phrase))
 const matchingGroups = (query: string) => {
   const normalized = phraseText(query)
@@ -43,13 +46,13 @@ export function expandProtocolQuery(query: string): string {
   return [query, ...new Set(matchingGroups(query).flat().filter(p => !phraseIn(normalized, p)))].join(' ')
 }
 /** Match each original term directly or through a glossary group it belongs to. */
-export function topicOverlap(query: string, document: string): number {
-  const need = topicWords(query), own = new Set(topicWords(document))
-  const normalized = phraseText(document)
+export function topicOverlap(query: string, document: string, prepared?: TopicDocument): number {
+  const need = topicWords(query), own = prepared?.words ?? new Set(topicWords(document))
+  const normalized = prepared?.phrases ?? phraseText(document)
   const aliases = matchingGroups(query).filter(group => group.some(p => phraseIn(normalized, p)))
   return need.length ? need.filter(w => own.has(w) || aliases.some(g => groupWords.get(g)!.has(w))).length / need.length : 0
 }
-export function metadataTopicMatches(query: string, document: string): boolean {
+export function metadataTopicMatches(query: string, document: string, prepared?: TopicDocument): boolean {
   // An explicitly technical request cannot be routed to a finance story sharing a date/place.
   if (/\b(?:XRPL|XRP|x402|RLUSD)\b/i.test(query) && !/\b(?:XRPL|XRP|x402|RLUSD|ledger|escrow|trustset)\b/i.test(document)) return false
   const words = topicWords(query).filter(w => !/^\d+$/.test(w))
@@ -61,18 +64,18 @@ export function metadataTopicMatches(query: string, document: string): boolean {
     // Finality therefore needs finality metadata; wallet/budget tags cannot satisfy it.
     const specific = groups.filter(g => !['x402','finality','transaction cost','digital payment token'].includes(g[0]))
     if (groups.length) {
-      const queryText = phraseText(query), documentText = phraseText(document)
+      const queryText = phraseText(query), documentText = prepared?.phrases ?? phraseText(document)
       const position = (group: typeof groups[number]) => Math.min(...group.filter(p => phraseIn(queryText,p)).map(p => queryText.indexOf(aliasKeys.get(p)!)))
       const ordered = [...(specific.length ? specific : groups)].sort((a,b) => position(a) - position(b))
       return ordered[0].some(p => phraseIn(documentText, p))
     }
     const generic = new Set(['xrpl','xrp','ledger','payment','transaction','account','token','asset'])
     const need = words.filter(w => !generic.has(w))
-    const own = new Set(topicWords(document))
+    const own = prepared?.words ?? new Set(topicWords(document))
     return need.length ? need.some(w => own.has(w)) : true
   }
-  return topicOverlap(query.replace(/\b\d+\b/g, ' '), document) >= 0.5
+  return topicOverlap(query.replace(/\b\d+\b/g, ' '), document, prepared) >= 0.5
 }
-export function topicMatches(query: string, document: string): boolean {
-  return metadataTopicMatches(query, document)
+export function topicMatches(query: string, document: string, prepared?: TopicDocument): boolean {
+  return metadataTopicMatches(query, document, prepared)
 }

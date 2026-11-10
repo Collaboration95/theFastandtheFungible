@@ -1,4 +1,4 @@
-import { expandProtocolQuery, isProtocolQuery, topicMatches, topicOverlap } from '../shared/relevance.js'
+import { expandProtocolQuery, isProtocolQuery, topicDocument, topicMatches, topicOverlap, type TopicDocument } from '../shared/relevance.js'
 import { searchText, searchWords, keywordCoverage } from './search-text.js'
 // Per-publisher full-text + vector search (D2, #123). Node only; never import from src/.
 import { existsSync, readFileSync } from 'node:fs'
@@ -49,7 +49,7 @@ export function loadEmbeddingCache(file: URL | string = EMBEDDINGS_FILE): Embedd
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) as EmbeddingCache : undefined
 }
 
-export type PublisherIndex = { db: AnyOrama; terms?: Map<string, Set<string>>; topicText?: Map<string, string>; vectors: boolean; vectorOf?: Map<string, number[]> }
+export type PublisherIndex = { db: AnyOrama; terms?: Map<string, Set<string>>; topicText?: Map<string, string>; topicDocuments?: Map<string, TopicDocument>; vectors: boolean; vectorOf?: Map<string, number[]> }
 
 /** One in-memory index per publisher. Vectors are used only when every article has one. */
 export async function buildIndex(articles: Article[], cache?: EmbeddingCache): Promise<PublisherIndex> {
@@ -64,7 +64,8 @@ export async function buildIndex(articles: Article[], cache?: EmbeddingCache): P
     ...(withVectors ? { embedding: vectors[i] } : {}),
   })))
   const terms = new Map(articles.map(a => [a.articleId, searchWords(`${a.title} ${a.abstract} ${a.tags.join(" ")} ${a.body}`)]))
-  return { db, terms, topicText: new Map([...terms].map(([id, words]) => [id, [...words].join(' ')])), vectors: withVectors, ...(withVectors ? { vectorOf: new Map(articles.map((a, i) => [a.articleId, vectors[i]!])) } : {}) }
+  const topicText = new Map([...terms].map(([id, words]) => [id, [...words].join(' ')]))
+  return { db, terms, topicText, topicDocuments: new Map([...topicText].map(([id, text]) => [id, topicDocument(text)])), vectors: withVectors, ...(withVectors ? { vectorOf: new Map(articles.map((a, i) => [a.articleId, vectors[i]!])) } : {}) }
 }
 
 export const cosine = (a: number[], b: number[]) => {
@@ -103,7 +104,8 @@ export async function searchIndex(index: PublisherIndex, term: string, k: number
     if (mode !== 'keyword' || keywordCoverage(term, index.terms?.get(hit.articleId) ?? new Set()) >= 0.5) return true
     if (!protocol) return false
     const text = index.topicText?.get(hit.articleId) ?? [...(index.terms?.get(hit.articleId) ?? [])].join(' ')
-    return topicOverlap(term, text) >= 0.5 || topicMatches(term, text)
+    const prepared = index.topicDocuments?.get(hit.articleId)
+    return topicOverlap(term, text, prepared) >= 0.5 || topicMatches(term, text, prepared)
   }).slice(0, k)
   return { mode, ranked }
 }
