@@ -58,3 +58,16 @@ The owner permits lane R to merge with documented host-load performance misses
 only after all non-performance checks pass and refusal is demonstrated. The
 real v1.1.0 release still needs full quiet-host acceptance. No threshold changes.
 All subsequent heavy runs use the orchestrator's shared heavy-lock.sh.
+
+## Publisher regression checks
+
+On rebased main, Node 22.23.4 passes six local-release tests and 33 CI-contract
+tests, TypeScript and targeted ESLint. The real publisher CLI runs against
+isolated local Git remotes with fixture package/test producers: failed acceptance
+prevents both tag push and release creation; successful dry-run stages admitted
+hashes, both DMG aliases and annotation notes with prerelease/Latest flags and
+no remote publication. These fixtures check orchestration, not real packaging.
+
+The shipping PR is [#433](https://github.com/Collaboration95/theFastandtheFungible/pull/433).
+It remains draft pending GF #427 and a fresh locked full rehearsal. The
+temporary rehearsal versions/tag will be removed before merge.
