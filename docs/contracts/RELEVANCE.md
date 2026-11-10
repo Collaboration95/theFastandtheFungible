@@ -2,7 +2,8 @@
 
 `shared/relevance.ts` holds the small XRPL/x402 glossary. It expands protocol
 abbreviations, transaction families, HTTP 402 challenge terms, prompt injection
-and payment finality. Expansion supplies search vocabulary, never answer text.
+and payment finality. Authorization and receipt-verification aliases also cover
+ordinary budget-policy and independent-ledger-verification wording. Expansion supplies search vocabulary, never answer text.
 Original question words remain in the relevance denominator. Keyword search keeps
 its existing title (3) and facet (2) boosts and absolute BM25 promise scale.
 

@@ -3,8 +3,9 @@
  * original query terms keep their denominator so an alias cannot erase unknown scope. */
 export const PROTOCOL_GLOSSARY = [
   ['xrpl', 'xrp ledger', 'xrp'],
-  ['x402', '402 response', 'http 402', 'payment required', 'payment-required', 'challenge headers'],
-  ['prompt injection', 'prompt injected', 'spending controls', 'authorization', 'wallet draining'],
+  ['x402', '402 response', 'http 402', 'payment required', 'payment is required', 'payment-required', 'challenge headers'],
+  ['prompt injection', 'prompt injected', 'spending controls', 'authorization', 'wallet draining', 'purchase budget', 'budget policy', 'policy code', 'deterministic policy'],
+  ['receipt verification', 'offline verification', 'cited answer', 'signed receipt', 'verify receipt', 'ledger verification', 'independently verify'],
   ['finality', 'final', 'settled', 'validated ledger', 'validation', 'settlement'],
   ['trust line', 'trust lines', 'trustline', 'TrustSet', 'owner reserve', 'account reserves'],
   ['escrow', 'EscrowCreate', 'EscrowFinish', 'EscrowCancel'],
@@ -34,7 +35,7 @@ const matchingGroups = (query: string) => {
   const normalized = phraseText(query)
   return PROTOCOL_GLOSSARY.filter(group => (group[0] !== 'did' || /\bDID(?:Set|Delete)?\b/.test(query) || /decentralized identifier/i.test(query)) && group.some(p => phraseIn(normalized, p)))
 }
-export const isProtocolQuery = (query: string) => /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|AMM\w*|FATF|VASPs|MAS|prompt.inject\w*)\b/i.test(query) || /\bDID(?:Set|Delete)?\b/.test(query) || matchingGroups(query).length > 0 && /\b(?:payment|http|transaction|ledger|token|account|wallet)\b/i.test(query)
+export const isProtocolQuery = (query: string) => /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|AMM\w*|FATF|VASPs|MAS|prompt.inject\w*)\b/i.test(query) || /\bDID(?:Set|Delete)?\b/.test(query) || matchingGroups(query).length > 0 && /\b(?:payment|purchase|http|transaction|ledger|token|account|wallet)\b/i.test(query)
 export function expandProtocolQuery(query: string): string {
   const normalized = phraseText(query)
   return [query, ...new Set(matchingGroups(query).flat().filter(p => !phraseIn(normalized, p)))].join(' ')

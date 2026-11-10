@@ -49,6 +49,14 @@ it('does not buy spending-controls evidence for payment finality',async()=>{
  expect(result.selectedResourceId).toBeUndefined()
 })
 
+it('matches authorization, receipt and payment-challenge paraphrases without accepting finance stories',()=>{
+ expect(topicMatches('Why should a purchase budget be enforced by policy?', 'Agent wallet prompt injection authorization')).toBe(true)
+ expect(topicMatches('Why should a purchase budget be enforced by policy?', 'Singapore fiscal policy and bond yields')).toBe(false)
+ expect(topicMatches('How can a client independently verify a cited answer on the ledger?', 'Offline verification of signed receipts')).toBe(true)
+ expect(topicMatches('What response is sent when payment is required?', 'x402 HTTP 402 payment-required')).toBe(true)
+ expect(topicMatches('What response is sent when payment is required?', 'Company annual filing and purchase orders')).toBe(false)
+})
+
 it('leads with the requested field instead of the transaction already named in the question',()=>{
  const texts=['StreamCreate creates a Stream for its specified receiver.','ReleaseAfter sets the earliest release time.']
  const content={...exampleContent,title:'StreamCreate fields',body:texts.join(' '),spans:texts.map((text,i)=>({id:`p${i}`,text}))}
