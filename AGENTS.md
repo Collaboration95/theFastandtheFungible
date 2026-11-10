@@ -21,9 +21,10 @@
   - one charge per intent;
   - real citations;
   - everything simulated or substituted is labelled.
-- Merge gate: `npm run gate -- --publish` passes for the current clean PR head
-  (GitHub commit status `local-gate`). Hosted CI is a sanity/nightly/release
-  backstop; it does not block routine merges. Ship with the
+- Merge gate: `npm run check:fast` passes and the local gate is green for the
+  current clean PR head (`npm run gate -- --publish`, commit status `local-gate`).
+  All routine verification and release publishing run locally; hosted workflows
+  are owner-dispatched diagnostics/signing only. Ship with the
   `ship-pr` skill. PR bodies follow `.github/pull_request_template.md`, which
   opens with the judging criterion the PR serves
   ([docs/JUDGING-CRITERIA.md](docs/JUDGING-CRITERIA.md)).

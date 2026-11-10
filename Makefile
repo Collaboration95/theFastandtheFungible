@@ -44,7 +44,7 @@ fault: ## fixture demo with the "fail next delivery" toggle
 reset: kill ## stop the demo, then wipe demo ledgers and reports (corpus kept)
 	npm run demo:reset
 
-check: ## lint + typecheck + unit tests (same as pre-commit)
+check: ## hygiene + lint + typecheck + unit tests + chaos smoke
 	npm run check:fast
 
 verify: ## check + browser tests + build
@@ -160,3 +160,13 @@ hosted-teardown: ## operator teardown plan; ARGS="--project ... --manifest ...";
 .PHONY: try-hire
 try-hire: ## client agent hires ResearchAgent, buys evidence, pays royalties and returns change (Testnet, fixture models)
 	@node --import tsx mcp/extension.mjs try --testnet --hire
+
+SHIP_MODE ?= change
+SHIP_BASE ?= origin/main
+PUBLISH ?= 0
+.PHONY: ship-check release
+ship-check: ## local merge verification; SHIP_MODE=release|breaking adds full acceptance
+	node scripts/ship-check.mjs --mode $(SHIP_MODE) --base $(SHIP_BASE) $(if $(filter 1,$(PUBLISH)),--publish,)
+
+release: ## verify and publish exact clean annotated TAG; ARGS=--dry-run rehearses without pushing
+	node scripts/release.mjs publish --tag $(TAG) $(ARGS)

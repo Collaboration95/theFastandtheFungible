@@ -1,6 +1,6 @@
 # Mac signing and notarisation
 
-Unsigned is the default. Agents and CI use:
+Unsigned is the default. Local release builds and manual diagnostics use:
 
 ```sh
 node desktop/download.mjs
@@ -25,8 +25,8 @@ notary profile with `notarytool history`. Missing credentials fail closed. It th
 signs with hardened runtime/JIT entitlement, submits, waits for acceptance and
 staples/validates the app before producing a signed DMG. `--sign --unsigned` is
 invalid. Signing was not exercised by this lane. Owner signing/publication status
-belongs in issue #265. Existing release workflow secrets do not activate signing
-without this explicit build flag; workflow ownership belongs to Lane D.
+belongs in issue #265. Desktop workflow secrets are dormant: only an owner-dispatched `sign=true`
+build can use them. Automatic tag builds and hosted release publishing are off.
 
 Downloads use authenticated `gh` with upstream Electron and pinned DMG helper
 checksums. Build staging excludes credentials and runtime databases. Unsigned

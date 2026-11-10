@@ -106,4 +106,18 @@ This classifies the squash diff (including documentation-only merges), validates
 the **merged SHA**, reuses valid content cache entries, and publishes pending then
 success on that SHA. The pre-merge status does not transfer across commit IDs.
 Without `--base HEAD^`, an empty diff conservatively selects the full plan.
-No release or hosted-acceptance claim follows from this local status alone.
+No release-acceptance claim follows from this local status alone.
+
+## Shipping tiers and hosted policy (10 Nov 2026)
+
+`make ship-check` runs `npm run gate -- --base origin/main`. Set `SHIP_BASE`
+to change the base. `SHIP_MODE=release|breaking` adds `--full`, followed by
+`node scripts/final-acceptance.mjs --all-arch`. Gate and acceptance cover different
+checks; neither substitutes for the other. No narrower test routing is added.
+`PUBLISH=1` invokes the existing gate publisher after the entire tier succeeds,
+checking source identity before publication. Every required stage must pass.
+
+Automatic hosted CI/CD is disabled. Manual CI/Testnet diagnostics and optional
+Mac signing remain owner-dispatched only. gh-pages publication stays unchanged.
+Release admission consumes local gate and acceptance manifests, never invented
+GitHub job results: see [local releases](../local-releases.md).

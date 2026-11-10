@@ -338,3 +338,10 @@ means no reliability observation, rather than an invented zero.
 `--reliability-only` displays observations without running quality evaluation;
 it refuses `--check`, `--live`, `--compare` and `--plan`. Normal scorecard execution
 retains every frozen-input check.
+
+## Local shipping and releases
+
+Automatic hosted CI/CD is disabled. Use `make ship-check` for ordinary changes,
+`make ship-check SHIP_MODE=breaking` for breaking changes, and
+`make release TAG=vX.Y.Z` for a fully verified local release. See
+[local release procedure](local-releases.md) for dry runs, prerequisites and admission.
