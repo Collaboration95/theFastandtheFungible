@@ -1,16 +1,16 @@
+// @vitest-environment jsdom
 // The finals deck (docs/submission/deck/index.html) stays true: every number is a fact from
 // facts.json, terminals are committed evidence, nothing is a placeholder, and each slide says
 // which judging criteria it serves. The PDF itself is checked by export.mjs at export time.
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { JSDOM } from 'jsdom'
 // @ts-expect-error plain ESM script without types
 import { build, fill, markedFiles } from '../scripts/facts.mjs'
 
 const DECK = 'docs/submission/deck/index.html'
 const html = readFileSync(DECK, 'utf8')
-const doc = new JSDOM(html).window.document
+const doc = new DOMParser().parseFromString(html, 'text/html')
 const slides = [...doc.querySelectorAll('section.slide')]
 const data = build() as { facts: Record<string, { value: string }>; links: Record<string, string | null> }
 const fact = (key: string) => data.facts[key].value
