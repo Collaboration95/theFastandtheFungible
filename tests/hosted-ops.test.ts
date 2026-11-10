@@ -24,6 +24,9 @@ describe('hosted operator boundaries',()=>{
    expect(output).toContain("'--tunnel-through-iap' '--quiet'")
    expect(output).toContain('/run/researchagent-startup.done')
    expect(output).toContain('restart --no-block google-startup-scripts.service')
+   // Cloud API lessons: quoted filter values and a quota project for budgets.
+   expect(readFileSync('docker/hosted/ops.mjs','utf8')).not.toMatch(/--filter=displayName=[^"]/)
+   expect(output).toMatch(/'billing' 'budgets' 'create' '--billing-account=[^']+' '--billing-project=ra-ho-test'/)
    // GCP service-account IDs must be 6-30 characters ("ra-vm" was rejected in cloud).
    const accounts=[...output.matchAll(/'service-accounts' 'create' '([^']+)'/g)].map(m=>m[1])
    expect(accounts).toEqual(['ra-app-vm','ra-front'])

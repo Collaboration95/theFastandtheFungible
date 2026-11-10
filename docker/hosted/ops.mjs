@@ -28,10 +28,16 @@ const show = args => console.log(redact(['gcloud', ...args].map(q).join(' ')))
 function remember(args, error) {
   try { appendFileSync(`${manifestPath}.log`, redact(`${new Date().toISOString()} gcloud ${args.slice(0,4).join(' ')}\n${String(error?.stderr || error?.message || '').slice(-4000)}\n`), {mode:0o600}) } catch { /* diagnostics are best effort */ }
 }
-function gc(args, {quiet = false} = {}) {
+function gc(args, {quiet = false, attempts = 1} = {}) {
   if (dry) { show(args); return '' }
-  try { return execFileSync('gcloud', args, {encoding:'utf8', stdio:['ignore','pipe','pipe'], maxBuffer:16*1024*1024}).trim() }
-  catch (e) { remember(args, e); if (!quiet) throw Error(`gcloud failed: ${args.slice(0,3).join(' ')} (details in the private manifest .log)`); throw Error('Cloud inventory failed') }
+  for (let i = 1; ; i++) {
+    try { return execFileSync('gcloud', args, {encoding:'utf8', stdio:['ignore','pipe','pipe'], maxBuffer:16*1024*1024}).trim() }
+    catch (e) {
+      remember(args, e)
+      if (i < attempts) { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10000); continue }
+      if (!quiet) throw Error(`gcloud failed: ${args.slice(0,3).join(' ')} (details in the private manifest .log)`); throw Error('Cloud inventory failed')
+    }
+  }
 }
 const p = [`--project=${project}`]
 function ensure(describe, create) {
@@ -82,7 +88,7 @@ if (action === 'teardown') {
   if (m.uptime) remove(['monitoring','uptime','describe',m.uptime,...p],['monitoring','uptime','delete',m.uptime,...p,'--quiet'])
   if (m.alert) remove(['alpha','monitoring','policies','describe',m.alert,...p],['alpha','monitoring','policies','delete',m.alert,...p,'--quiet'])
   if(m.ownsNotificationChannel && m.notificationChannel) remove(['beta','monitoring','channels','describe',m.notificationChannel,...p],['beta','monitoring','channels','delete',m.notificationChannel,...p,'--quiet'])
-  if (m.budget) remove(['billing','budgets','describe',m.budget,`--billing-account=${m.billingAccount}`],['billing','budgets','delete',m.budget,`--billing-account=${m.billingAccount}`,'--quiet'])
+  if (m.budget) remove(['billing','budgets','describe',m.budget,`--billing-account=${m.billingAccount}`,`--billing-project=${project}`],['billing','budgets','delete',m.budget,`--billing-account=${m.billingAccount}`,`--billing-project=${project}`,'--quiet'])
   console.log(JSON.stringify({project,finalSnapshot:snapshot,state:dry?'planned':'retained-snapshot-project-and-billing-link'}))
   process.exit(0)
 }
@@ -138,12 +144,12 @@ const number=dry?'PROJECT_NUMBER':gc(['projects','describe',project,'--format=va
 const canonical=`https://${service}-${number}.${region}.run.app`
 const origin=options.origin||existing?.url||'https://paused.invalid'
 if(!channel) {
-  channel=dry?'projects/'+project+'/notificationChannels/RESOLVED_CHANNEL':gc(['beta','monitoring','channels','list',...p,'--filter=displayName=ra-operator','--format=value(name)'])
+  channel=dry?'projects/'+project+'/notificationChannels/RESOLVED_CHANNEL':gc(['beta','monitoring','channels','list',...p,'--filter=displayName="ra-operator"','--format=value(name)'])
   if(!channel||dry) channel=gc(['beta','monitoring','channels','create',...p,'--display-name=ra-operator','--type=email',`--channel-labels=email_address=${email}`,'--format=value(name)'])||channel
 }
 ensure(['artifacts','repositories','describe',repo,...p,`--location=${region}`],['artifacts','repositories','create',repo,...p,`--location=${region}`,'--repository-format=docker','--immutable-tags'])
 for (const account of [sa,frontSa]) ensure(['iam','service-accounts','describe',account,...p],['iam','service-accounts','create',account.split('@')[0],...p])
-gc(['artifacts','repositories','add-iam-policy-binding',repo,...p,`--location=${region}`,`--member=serviceAccount:${sa}`,'--role=roles/artifactregistry.reader'])
+gc(['artifacts','repositories','add-iam-policy-binding',repo,...p,`--location=${region}`,`--member=serviceAccount:${sa}`,'--role=roles/artifactregistry.reader'],{attempts:6})
 const sleep = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 const sshArgs = command => ['compute','ssh',vm,...p,`--zone=${zone}`,'--tunnel-through-iap','--quiet',`--command=${command}`]
 // IAP/OS Login can take minutes after VM creation; retry only the connection, never a mutation's meaning.
@@ -212,7 +218,7 @@ try {
     const file=join(scratch,`secret-${name}`)
     if (!dry) writeFileSync(file,process.env[name],{mode:0o600})
     ensure(['secrets','describe',secret,...p],['secrets','create',secret,...p,'--replication-policy=automatic',`--data-file=${file}`])
-    gc(['secrets','add-iam-policy-binding',secret,...p,`--member=serviceAccount:${sa}`,'--role=roles/secretmanager.secretAccessor'])
+    gc(['secrets','add-iam-policy-binding',secret,...p,`--member=serviceAccount:${sa}`,'--role=roles/secretmanager.secretAccessor'],{attempts:6})
     if(!dry) { const current=JSON.parse(readFileSync(manifestPath));current.secrets=[...new Set([...(current.secrets||[]),secret])];writeFileSync(manifestPath,JSON.stringify(current,null,2)+'\n',{mode:0o600}) }
   }
   ensure(['compute','networks','describe','ra-vpc',...p],['compute','networks','create','ra-vpc',...p,'--subnet-mode=custom'])
@@ -245,15 +251,15 @@ try {
   }
   const host=new URL(url).hostname
   const uptimeName='ra-readyz'
-  let uptime = dry ? 'UPTIME_ID' : gc(['monitoring','uptime','list-configs',...p,`--filter=displayName=${uptimeName}`,'--format=value(name)'])
+  let uptime = dry ? 'UPTIME_ID' : gc(['monitoring','uptime','list-configs',...p,`--filter=displayName="${uptimeName}"`,'--format=value(name)'])
   if (!uptime) uptime=gc(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/ready','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
   if(dry) show(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/ready','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
   const policy={displayName:'ra-readyz-failed',combiner:'OR',notificationChannels:[channel],conditions:[{displayName:'readiness unavailable',conditionThreshold:{filter:`metric.type="monitoring.googleapis.com/uptime_check/check_passed" AND resource.type="uptime_url" AND metric.label.check_id="${uptime.split('/').at(-1)}"`,comparison:'COMPARISON_GT',thresholdValue:1,duration:'120s',aggregations:[{alignmentPeriod:'60s',perSeriesAligner:'ALIGN_NEXT_OLDER',crossSeriesReducer:'REDUCE_COUNT_FALSE',groupByFields:['resource.label.host']}]}}]}
   if (!dry) writeFileSync(join(scratch,'alert.json'),JSON.stringify(policy))
-  let alert=dry?'ALERT_ID':gc(['alpha','monitoring','policies','list',...p,'--filter=displayName=ra-readyz-failed','--format=value(name)'])
+  let alert=dry?'ALERT_ID':gc(['alpha','monitoring','policies','list',...p,'--filter=displayName="ra-readyz-failed"','--format=value(name)'])
   if (!alert || dry) alert=gc(['alpha','monitoring','policies','create',...p,`--policy-from-file=${scratch}/alert.json`,'--format=value(name)']) || 'ALERT_ID'
-  let budget=dry?'':gc(['billing','budgets','list',`--billing-account=${billing}`,`--filter=displayName=ra-${project}`,'--format=value(name)'])
-  if (!budget) budget=gc(['billing','budgets','create',`--billing-account=${billing}`,`--display-name=ra-${project}`,`--budget-amount=${amount}`,`--filter-projects=projects/${number}`,'--threshold-rule=percent=0.5,basis=current-spend','--threshold-rule=percent=0.9,basis=current-spend','--threshold-rule=percent=1,basis=current-spend',`--notifications-rule-monitoring-notification-channels=${channel}`,'--format=value(name)']) || 'BUDGET_ID'
+  let budget=dry?'':gc(['billing','budgets','list',`--billing-account=${billing}`,`--billing-project=${project}`,`--filter=displayName="ra-${project}"`,'--format=value(name)'])
+  if (!budget) budget=gc(['billing','budgets','create',`--billing-account=${billing}`,`--billing-project=${project}`,`--display-name=ra-${project}`,`--budget-amount=${amount}`,`--filter-projects=projects/${number}`,'--threshold-rule=percent=0.5,basis=current-spend','--threshold-rule=percent=0.9,basis=current-spend','--threshold-rule=percent=1,basis=current-spend',`--notifications-rule-monitoring-notification-channels=${channel}`,'--format=value(name)']) || 'BUDGET_ID'
   const m={...(existing||{}),project,notificationChannel:channel,ownsNotificationChannel:!options['notification-channel'],billingAccount:billing,sha,region,zone,vm,disk,service,url,digests,secrets:[...new Set([...(existing?.secrets||[]),...secretMap.map(([,s])=>s)])],uptime,alert,budget,budgetAmount:amount,pendingObligations:null,archiveVerified:false,teardownAt:'2026-11-20T00:00:00+08:00'}
   if (!dry) writeFileSync(manifestPath,JSON.stringify(m,null,2)+'\n',{mode:0o600})
   console.log(JSON.stringify({project,sha,url,state:dry?'planned':'deployed-paused'}))
