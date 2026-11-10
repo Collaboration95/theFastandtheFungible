@@ -11,19 +11,26 @@ import { HOSTED_APP_URL } from './site-config.mjs'
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 // Discover every page, including future verify pages, instead of silently skipping new routes.
 const siteRoot = join(import.meta.dirname, '..', 'site')
-const keys = { 'index.html': 'home', 'progress/index.html': 'progress', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build', 'ledger/index.html': 'ledger', 'proof/index.html': 'proof', 'developers/index.html': 'developers', 'builder-feedback/index.html': 'feedback' }
+const keys = { 'notes/index.html': 'notes', 'index.html': 'home', 'progress/index.html': 'progress', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build', 'ledger/index.html': 'ledger', 'proof/index.html': 'proof', 'developers/index.html': 'developers', 'builder-feedback/index.html': 'feedback' }
 const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html') && !file.startsWith('demo/')).map(file => ({ file, key: keys[file] ?? 'none' })).concat([{ file: '../demo/index.html', key: 'demo' }])
 
+// Six pages plus GitHub and "Try it live" (S10); the brand mark is the way home. Secondary pages live in the footer.
 const NAV = [
-  ['home', '', 'Home'], ['demo', 'demo/', 'Replay'],
-  ['talk', 'talk/#key-reveal', 'How it works'], ['developers', 'developers/', 'Developers'],
+  ['demo', 'demo/', 'Replay'], ['talk', 'talk/#key-reveal', 'How it works'],
   ['proof', 'proof/', 'Proof'], ['progress', 'progress/', 'Progress'],
-  ['feedback', 'builder-feedback/', 'Builder feedback'],
-  ['ledger', 'ledger/', 'Ledger ✓'], ['map', 'project-map/', 'Project map'],
-  ['build', 'evolution/', 'October log'], ['slides', 'slides/', 'Slides'],
+  ['developers', 'developers/', 'Developers'], ['feedback', 'builder-feedback/', 'Builder feedback'],
 ]
+const MORE = [
+  ['ledger', 'ledger/', 'Testnet ledger'], ['map', 'project-map/', 'Project map'],
+  ['build', 'evolution/', 'October build log'], ['slides', 'slides/', 'October talk slides'],
+]
+// Presentation and app pages fill the viewport; they keep the header but get no footer.
+const NO_FOOTER = new Set(['demo', 'slides', 'notes'])
+const ENVIRONMENT = 'Testnet · test funds'
 const START = '<!-- site-header:start -->'
 const END = '<!-- site-header:end -->'
+const FOOT_START = '<!-- site-footer:start -->'
+const FOOT_END = '<!-- site-footer:end -->'
 
 const CSS = `@font-face{font-family:Geist;src:url("__UP__brand/geist-latin-wght-normal.woff2")}
 .ra-hdr{box-sizing:border-box;height:52px;position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
@@ -32,8 +39,7 @@ const CSS = `@font-face{font-family:Geist;src:url("__UP__brand/geist-latin-wght-
 .ra-hdr a{color:inherit;text-decoration:none}
 .ra-hdr-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em;flex:none}
 .ra-hdr-brand svg{width:22px;height:22px;display:block}
-.ra-hdr nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
-.ra-hdr nav::-webkit-scrollbar{display:none}
+.ra-hdr nav{display:flex;gap:2px;flex:1;min-width:0}
 .ra-hdr nav a{padding:8px 10px;border-radius:6px;color:#655D55;white-space:nowrap}
 .ra-hdr nav a:hover{color:#24211E;background:rgba(36,33,30,.06)}
 .ra-hdr nav a[aria-current=page]{color:#24211E;box-shadow:inset 0 -2px 0 #24211E;border-radius:0}
@@ -43,8 +49,15 @@ const CSS = `@font-face{font-family:Geist;src:url("__UP__brand/geist-latin-wght-
 .ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
 .ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 .ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+.ra-hdr-menu{display:none;position:relative}
+.ra-hdr-menu summary{list-style:none;cursor:pointer;padding:8px 10px;border:1px solid #C9BFB2;border-radius:6px;color:#24211E;background:#fff}
+.ra-hdr-menu summary::-webkit-details-marker{display:none}
+.ra-hdr-menu div{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;display:grid;padding:8px;background:#FBF8F2;border:1px solid #E8E2D8;border-radius:8px;box-shadow:0 12px 32px -16px rgba(36,33,30,.35)}
+.ra-hdr-menu div a{padding:10px 12px;border-radius:6px;color:#24211E}
+.ra-hdr-menu div a[aria-current=page]{background:rgba(36,33,30,.06)}
 @media(max-width:860px){.ra-hdr-note{display:none}}
-@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}.ra-hdr-end .ra-hdr-gh,.ra-hdr-end a:last-child{display:none}.ra-hdr nav{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent);padding-right:24px}}
+@media(max-width:940px){.ra-hdr nav,.ra-hdr-end .ra-hdr-gh{display:none}.ra-hdr-menu{display:block}.ra-hdr-end{margin-left:auto}}
+@media(max-width:600px){.ra-hdr-in{gap:10px}.ra-hdr-brand span{display:none}}
 @media print{.ra-hdr{display:none}}`
 
 // The mark: 24-unit grid, 1.5 stroke (design/brand/mark.svg).
@@ -54,17 +67,35 @@ function block(page) {
   const depth = page.key === 'demo' ? 1 : page.file.split('/').length - 1
   const up = '../'.repeat(depth)
   // One navigation on every page, including the ledger (F-10).
-  const nav = NAV.map(([key, href, label]) =>
-    `<a href="${up}${href || 'index.html'}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
+  const links = NAV.map(([key, href, label]) =>
+    `<a href="${up}${href}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
   const note = page.note ? `<span class="ra-hdr-note">${page.note}</span>` : ''
   return `${START}
 <style>${CSS.replaceAll('__UP__', up)}</style>
 <div class="ra-hdr" role="${page.key === 'demo' ? 'region' : 'banner'}"${page.key === 'demo' ? ' aria-label="Site navigation"' : ''}><div class="ra-hdr-in">
-<a class="ra-hdr-brand" href="${up}index.html" aria-label="ResearchAgent explainers">${MARK}<span>ResearchAgent</span></a>
-<nav tabindex="0" aria-label="Explainers · scroll for more pages">${nav}</nav>
-<div class="ra-hdr-end">${note}<a class="ra-live" href="${HOSTED_APP_URL}">Try it live</a><a class="ra-hdr-gh" href="${REPO}#readme">README</a><a href="${REPO}/releases">Releases</a></div>
+<a class="ra-hdr-brand" href="${up}index.html" aria-label="ResearchAgent explainers home">${MARK}<span>ResearchAgent</span></a>
+<nav aria-label="Explainers">${links}</nav>
+<div class="ra-hdr-end">${note}<a class="ra-live" href="${HOSTED_APP_URL}">Try it live</a><a class="ra-hdr-gh" href="${REPO}">GitHub</a><details class="ra-hdr-menu"><summary>Menu</summary><div>${links}<a href="${REPO}">GitHub</a></div></details></div>
 </div></div>
 ${END}`
+}
+
+function footer(page) {
+  const up = '../'.repeat(page.file.split('/').length - 1)
+  const more = MORE.map(([key, href, label]) => `<a href="${up}${href}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`)
+    // No blob/main links here: the ledger page allows only commit-pinned evidence links (the deck has its own home card).
+    .concat([`<a href="${REPO}#readme">README</a>`, `<a href="${REPO}/releases">Releases</a>`]).join('')
+  return `${FOOT_START}
+<style>.ra-ftr{border-top:1px solid #E8E2D8;margin-top:48px;font:400 14px/1.5 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#655D55}
+.ra-ftr-in{max-width:1180px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
+.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #C9BFB2;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
+.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#C98500}
+.ra-ftr nav{display:flex;flex-wrap:wrap;gap:4px 18px}
+.ra-ftr a{color:inherit;text-decoration:none}.ra-ftr a:hover,.ra-ftr a[aria-current=page]{color:#24211E;text-decoration:underline;text-underline-offset:4px}
+.ra-ftr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
+@media print{.ra-ftr{display:none}}</style>
+<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">${ENVIRONMENT}</span><nav aria-label="More pages">${more}</nav></div></footer>
+${FOOT_END}`
 }
 
 const check = process.argv.includes('--check')
@@ -82,6 +113,9 @@ for (const page of PAGES) {
     if (!m) throw new Error(`${page.file}: no <body>`)
     next = html.slice(0, m.index + m[0].length) + '\n' + wanted + html.slice(m.index + m[0].length)
   }
+  // The secondary pages and the environment pill, once, just before </body>.
+  if (next.includes(FOOT_START)) next = next.slice(0, next.indexOf(FOOT_START)) + next.slice(next.indexOf(FOOT_END) + FOOT_END.length + 1)
+  if (!NO_FOOTER.has(page.key)) next = next.replace(/<\/body>/i, `${footer(page)}\n</body>`)
   // Brand metadata is checked for every discovered page.
   for (const token of ['brand/favicon.svg', 'property="og:image"', 'property="og:url"']) {
     if (!next.includes(token)) throw new Error(`${page.file}: missing ${token}; update brand metadata`)

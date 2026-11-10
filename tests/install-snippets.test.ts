@@ -7,7 +7,12 @@ it('documents generated v1.0.2 asset installs and registry status across guides'
   // README is the product page: it carries the try line, the MCP Testnet line and both SDK installs.
   // docs/install.md carries every variant and the registry status (moved from README on 11 Nov).
   const readme = readFileSync('README.md', 'utf8')
-  for (const line of [generate('--try'), generate('--testnet'), lines[0], lines[1]]) expect(readme).toContain(line)
+  // The README shows the try line as `REL=<release download URL>` plus a short `npx -y $REL/…` line so it fits
+  // GitHub's code column; expanded, it is exactly the generated command.
+  const rel = readme.match(/^REL=(\S+)$/m)?.[1]
+  expect(rel).toBe('https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2')
+  expect(readme.replace(/^REL=\S+\n(npx -y )\$REL(\S*)/m, (_, npx, rest) => `${npx}${rel}${rest}`)).toContain(generate('--try'))
+  for (const line of [generate('--testnet'), lines[0], lines[1]]) expect(readme).toContain(line)
   const install = readFileSync('docs/install.md', 'utf8')
   for (const line of [...lines, generate('--try'), generate('--testnet'), generate('--app')]) expect(install).toContain(line)
   expect(install).toContain('release · not yet on npm/PyPI/MCP Registry')

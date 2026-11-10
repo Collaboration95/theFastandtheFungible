@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 // @ts-expect-error browser-native ES module
 import { ISSUERS, LOCKING_FLAG, parseAccountRoot } from '../site/builder-feedback/issuer-check.mjs'
 // @ts-expect-error dependency-free build config
-import { HOSTED_APP_URL } from '../scripts/site-config.mjs'
+import { HOSTED_APP_URL, REPLAY_TRACE, replayDate } from '../scripts/site-config.mjs'
 const read = (file: string) => readFileSync(file, 'utf8')
 
 describe('explainer destinations and provenance', () => {
@@ -18,9 +18,25 @@ describe('explainer destinations and provenance', () => {
       expect(doc.querySelector('meta[name=description]')?.getAttribute('content')?.length, file).toBeGreaterThan(30)
       const image = doc.querySelector('meta[property="og:image"]')!.getAttribute('content')!
       expect(images.has(image), file).toBe(false); images.add(image)
-      expect(doc.querySelectorAll('.ra-hdr a').length, file).toBeGreaterThan(8)
-      expect(doc.querySelector('.ra-hdr nav')?.getAttribute('tabindex'), file).toBe('0')
       expect(doc.querySelector('.ra-live')?.getAttribute('href'), file).toBe(HOSTED_APP_URL)
+    }
+  })
+  it('keeps the header to six pages plus GitHub and "Try it live", with secondary pages in one footer (S10)', () => {
+    const pages = readdirSync('site', { recursive: true }).map(String).filter(f => f.endsWith('.html') && !f.startsWith('demo/')).map(f => `site/${f}`).concat('demo/index.html')
+    for (const file of pages) {
+      const doc = new JSDOM(read(file)).window.document
+      const nav = [...doc.querySelectorAll('.ra-hdr nav a')].map(a => a.textContent)
+      expect(nav, file).toEqual(['Replay', 'How it works', 'Proof', 'Progress', 'Developers', 'Builder feedback'])
+      const visible = [...doc.querySelectorAll('.ra-hdr a')].filter(a => !a.closest('.ra-hdr-menu') && !a.classList.contains('ra-hdr-brand'))
+      expect(visible.map(a => a.textContent), file).toEqual([...nav, 'Try it live', 'GitHub'])
+      expect(doc.querySelectorAll('.ra-live'), file).toHaveLength(1)
+      expect(doc.querySelector('.ra-hdr')?.textContent, file).not.toContain('✓')
+      // The narrow-screen menu repeats the same links; nothing scrolls sideways or clips.
+      expect([...doc.querySelectorAll('.ra-hdr-menu a')].map(a => a.textContent), file).toEqual([...nav, 'GitHub'])
+      const footer = doc.querySelector('footer.ra-ftr')
+      if (/slides|notes|demo/.test(file)) { expect(footer, file).toBeNull(); continue }
+      expect(footer?.querySelector('.ra-ftr-env')?.textContent, file).toBe('Testnet · test funds')
+      expect([...footer!.querySelectorAll('a')].map(a => a.textContent), file).toEqual(['Testnet ledger', 'Project map', 'October build log', 'October talk slides', 'README', 'Releases'])
     }
   })
   it('keeps guide links to local fragments reachable', () => {
@@ -37,13 +53,30 @@ describe('explainer destinations and provenance', () => {
     }
   })
   it('labels Replay with the real default recording date and provides a live fallback', () => {
-    const recorded = JSON.parse(read('demo/traces/UC3-key-reveal.json')).run.events[0].at
-    expect(recorded).toMatch(/^2026-11-07/)
-    expect(read('demo/index.html')).toContain('<title>Replay · 7 Nov 2026 · ResearchAgent</title>')
+    const recorded = JSON.parse(read(REPLAY_TRACE)).run.events[0].at
+    expect(recorded).toMatch(/^2026-11-10T20:/)
+    expect(replayDate()).toBe('11 Nov 2026')
+    expect(read('demo/index.html')).toContain(`<title>Replay · ${replayDate()} · ResearchAgent</title>`)
     const home = new JSDOM(read('site/index.html')).window.document
     expect(home.querySelector('.card[href="demo/?scenario=UC3-key-reveal"]')?.textContent).toContain('Start here')
     expect(home.body.textContent).toContain('live 13–19 Nov')
-    expect(home.body.textContent).toContain('Replay · 7 Nov 2026')
+    expect(home.body.textContent).toContain(`Replay · ${replayDate()}`)
+    expect(home.body.textContent).not.toMatch(/\b7 Nov(ember)? 2026\b|the 7 November/)
+    // One link row in the hero (S10); the AI Tinkerers card carries no keyboard shortcuts (S25).
+    expect(home.querySelector('main > p a[href="developers/"]')).toBeNull()
+    expect(home.querySelector('main kbd')).toBeNull()
+    expect(home.querySelector('.env-pill')?.textContent).toBe('Testnet · test funds')
+  })
+  it('opens "How it works" on key reveal, with the October run under its own heading (S23)', () => {
+    const talk = new JSDOM(read('site/talk/index.html')).window.document
+    const sections = [...talk.querySelectorAll('main > section')].map(s => s.id)
+    expect(sections.slice(0, 3)).toEqual(['top', 'key-reveal', 'october'])
+    expect(talk.querySelector('#top #w-run')).toBeNull()
+    expect(talk.querySelector('#october #w-run')).not.toBeNull()
+    expect(talk.querySelector('#key-reveal img')?.getAttribute('src')).toBe('key-reveal.svg')
+    expect(read('site/talk/key-reveal.svg')).toBe(read('docs/media/key-reveal.svg'))
+    expect(talk.querySelector('#top .lede strong')?.textContent).not.toBe('the article it needs')
+    expect(talk.body.innerHTML).not.toMatch(/>▶ play<|'❚❚ pause'|↻ replay</)
   })
 })
 

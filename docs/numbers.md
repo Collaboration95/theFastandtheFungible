@@ -77,7 +77,7 @@ MCP package <!--f:mcp_mb-->3.4<!--/f--> MB (was 21.4 MB), cold MCP initialize
 
 ## Progress since SingHacks
 
-<!--f:progress_line-->236 pull requests merged since 21 Sep (counted at 1e2958ce on 11 Nov) · 13 releases · 61 Testnet transactions you can re-check<!--/f-->.
+<!--f:progress_line-->246 pull requests merged since 21 Sep (counted at efa5c847 on 11 Nov) · 13 releases · 61 Testnet transactions you can re-check<!--/f-->.
 The queries behind every count, the release rail and the misses we kept are on the
 [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/)
 (data: [`site/progress/data.json`](../site/progress/data.json)).

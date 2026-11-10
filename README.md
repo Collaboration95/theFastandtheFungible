@@ -22,7 +22,6 @@
 
 <p align="center">
   <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?style=flat-square&label=release&color=24211E"></a>
-  <a href="docs/contracts/local-gate.md">Local verification</a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-24211E?style=flat-square"></a>
   <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-24211E?style=flat-square"></a>
 </p>
@@ -32,13 +31,14 @@ install. The recorded run works any time. Or run the whole money path yourself, 
 no account (Node ≥ 22.13):
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz try --testnet
+REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2
+npx -y $REL/researchagent-mcp-1.0.2.tgz try --testnet
 ```
 
 <p align="center">
-  <img src="docs/media/readme-answer.png" width="900" alt="A finished answer next to its payment card: net S$0.40 of a S$2.00 budget. One article broke its promise and was refunded by its writer; the second was paid when its writer published the article key on the ledger, with sha256(K) = Condition checked and the article decrypted. The answer is anchored on XRPL Testnet.">
+  <img src="docs/media/readme-answer.png" width="900" alt="A finished answer next to its payment card: paid for 2 articles, 1 refunded, net cost S$0.40 of a S$2.00 budget. One article broke its promise and was refunded by its writer; the other was paid when its writer released the article key on the ledger, the key matched the escrow lock and the article unlocked. The answer is anchored on XRPL Testnet.">
 </p>
-<p align="center"><sub>A real run on XRPL Testnet, 11 Nov 2026 · fixture models · fictional writers · no real value · <a href="docs/evidence/readme-nov11/README.md">its six transactions</a></sub></p>
+<p align="center"><sub>A run recorded on XRPL Testnet on 11 Nov 2026, replayed in the current app · fixture models · fictional writers · no real value · <a href="docs/evidence/replay-nov11/README.md">its six transactions</a></sub></p>
 
 ## What it does
 
@@ -134,7 +134,7 @@ shared conformance cases ([receipt format](docs/receipt-spec.md)).
 | Blind held-out judge questions (<!--f:heldout_bank-->v5<!--/f-->) | <!--f:heldout-->16/20<!--/f--> bought and cited; <!--f:offtopic-->0/10<!--/f--> off-topic purchases; <!--f:heldout_violations-->0<!--/f--> gate violations | run once on <!--f:heldout_on-->11 Nov<!--/f-->; fixture decision model, team-authored writers, XRPL Testnet |
 | One line to a verified purchase | <!--f:try_s-->84.2<!--/f--> s cold; <!--f:try_misses-->2 of 4<!--/f--> cold runs overran 90 s | one Mac, empty npm cache, 7 Nov |
 | Network fees per key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops | XRPL Testnet, measured |
-| Progress since SingHacks | <!--f:prs-->236<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->13<!--/f--> releases | counted at <!--f:sha-->1e2958ce<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> |
+| Progress since SingHacks | <!--f:prs-->246<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->13<!--/f--> releases | counted at <!--f:sha-->efa5c847<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> |
 
 Development banks we tuned on, the synthetic-corpus scorecard, cost and latency:
 [docs/numbers.md](docs/numbers.md). What shipped when, with the misses we kept:
@@ -142,7 +142,7 @@ Development banks we tuned on, the synthetic-corpus scorecard, cost and latency:
 
 ## Builder feedback
 
-<!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 September submissions (4–5 Sep) · 8 upstream drafts, 0 filed<!--/f-->.
+<!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->.
 The top three: the RLUSD issuer lacks the flag that token escrow needs; an issued amount must be
 checked as the delivered amount; a signed IOU quote overflowed the 1 KiB Memo limit.
 [Read it in 90 seconds](docs/BUILDER-FEEDBACK.md) · [mainnet checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist).

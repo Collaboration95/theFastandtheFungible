@@ -41,8 +41,9 @@ validation never implies that a fresh lookup succeeded.
 `make testnet ARGS="--capture --key-reveal"` records the default demo tab, the
 key-reveal UC3 (AlphaLeak key published, broken promise, writer-signed refund,
 The Fab Floor key reveal, answer anchor), writing `demo/traces/UC3-key-reveal.json` and
-`docs/evidence/lane-b3/` including the exported `UC3.receipts.json`; `--kestrel` records
-the Kestrel question as evidence only. Anchoring is on by default on Testnet
+`docs/evidence/lane-b3/` including the exported `UC3.receipts.json` (the committed default
+replay's files were then moved to `docs/evidence/replay-nov11/`, the folder `/demo/` reads);
+`--kestrel` records the Kestrel question as evidence only. Anchoring is on by default on Testnet
 (`ANCHOR_RAIL=off` opts out). `make testnet ARGS="--capture --key-reveal --no-show"`
 records the writer no-show tab using
 these same isolated faucet wallets and HTTP/SSE capture path. In that one the labelled

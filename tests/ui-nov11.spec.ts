@@ -14,7 +14,7 @@ for (const mode of ['local','hosted']) for (const width of [1440,390]) test(`${m
  await page.route('**/api/demo/status',r=>mode==='hosted'?r.fulfill({json:status}):r.fulfill({status:404,json:{}}))
  await page.route('**/api/health',r=>r.fulfill({json:recording.health}))
  await page.route('**/api/runs',r=>r.fulfill({json:[]}))
- await page.route('**/runs/*/receipts.json',r=>r.fulfill({json:JSON.parse(readFileSync('docs/evidence/round4-j1/replays/key-reveal/UC3.receipts.json','utf8'))}))
+ await page.route('**/runs/*/receipts.json',r=>r.fulfill({json:JSON.parse(readFileSync('docs/evidence/replay-nov11/key-reveal/UC3.receipts.json','utf8'))}))
  await page.route('**/runs/*/events*',r=>r.fulfill({contentType:'text/event-stream',body:''}))
  await page.route('**/runs/*',r=>r.fulfill({json:current.run}))
  await page.route('**/api/ledger',r=>r.fulfill({status:503,json:{}}))

@@ -59,9 +59,8 @@ it('audits raw terminal snapshots, including nested event payloads, before bundl
   }
 })
 
-for (const [id, folder] of [['UC3-key-reveal','key-reveal'], ['UC-key-reveal','no-show'], ['UC3-testnet','payment']]) it(`${id}: receipt download and proof strip bind to the displayed recording`, () => {
+for (const [id, root] of [['UC3-key-reveal','docs/evidence/replay-nov11/key-reveal'], ['UC-key-reveal','docs/evidence/round4-j1/replays/no-show'], ['UC3-testnet','docs/evidence/round4-j1/replays/payment']]) it(`${id}: receipt download and proof strip bind to the displayed recording`, () => {
   const { run } = JSON.parse(readFileSync(`demo/traces/${id}.json`, 'utf8'))
-  const root = `docs/evidence/round4-j1/replays/${folder}`
   const bundle = JSON.parse(readFileSync(`${root}/UC3.receipts.json`, 'utf8'))
   expect(bundle.runId).toBe(run.runId)
   const hashes = new Set(run.intents.flatMap((i: { txHash?: string; refund?: { txHash: string }; escrow?: { createHash?: string; finishHash?: string; cancelHash?: string } }) => [i.txHash, i.refund?.txHash, i.escrow?.createHash, i.escrow?.finishHash, i.escrow?.cancelHash]).concat(run.ledgerAnchor?.txHash).filter(Boolean))
