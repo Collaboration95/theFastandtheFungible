@@ -189,7 +189,7 @@ This lane supplies deployment tooling, **not an advertised live service**.
 | Models | DeepSeek + OpenAI Decisions `gpt-6-luna`; lexical search; fixture fallback must be explicitly selected and labelled |
 | Settlement | native XRP key-reveal, XRPL Testnet only, answer anchors on; pre-funded shared payer/writers |
 | Event | admissions end `2026-11-19T16:00:00Z` (20 Nov midnight SGT); teardown 20 Nov after recovery/archive checks |
-| Alerts | public `/readyz` uptime check + readiness alert; US$50 billing budget at 50/90/100%; this alert is not a spending cap |
+| Alerts | public `/ready` uptime check (front alias of the VM's `/readyz`) + readiness alert; about US$50 billing budget in the billing account's own currency (S$70 on the SGD account) at 50/90/100%; this alert is not a spending cap |
 
 The VM has an ephemeral external address for outbound package/registry/model/RPC
 access. No public inbound app or SSH firewall rule exists. The front has no
@@ -265,9 +265,26 @@ actual alert delivery before advertising the URL.
 
 ### Exact command sequence
 
-Use a clean gated checkout and an approved existing **USD** billing account.
-Supply public identifiers and private output paths outside the repository.
-These are operator instructions, not evidence that any command ran in cloud.
+Use a clean gated checkout and an approved existing billing account. The budget
+is stated in that account's currency: the script reads `currencyCode` and uses
+50USD or 70SGD, or an explicit `--budget-amount <amount><CURRENCY>` (a USD
+amount on an SGD account is rejected by Cloud Billing). Supply public
+identifiers and private output paths outside the repository.
+
+A project that already exists (for example one the orchestrator created and
+linked) is adopted only with `--adopt-project`, and only when it carries the
+`purpose=sff-demo,expires=20261120` labels and is linked to the same billing
+account; the manifest records `adopted: true`. `--gate-lock <script>` queues the
+deploy's own `npm run gate -- --publish` behind the shared host lock.
+
+Load secrets through a private wrapper outside the repository (mode 0700) that
+exports **only** `DEEPSEEK_API_KEY`, `OPENAI_API_KEY`, the hosted payer/writer
+seeds, and `PUBLISHER_SECRET`/`HOSTED_IP_HMAC_KEY` (generated once, 0600,
+reused across deploys), then `exec "$@"`. Never source the owner's whole `.env`:
+the script uploads every `XRPL_PUBLISHER_*_SEED` it finds. Derive the alert
+address inside the wrapper (for example `$(gcloud config get account)`) so it
+never appears in output; plans print `<alert-email>` and gcloud diagnostics go
+to `<manifest>.log` (0600).
 
 ```bash
 # 1. Plan provisioning. The execute call writes seeds before connecting/funding.
@@ -286,7 +303,30 @@ make hosted-deploy ARGS="--project $RA_PROJECT --billing-account $RA_BILLING_ACC
 
 # 4. Orchestrator only. Requires clean selected HEAD and published local gate.
 make hosted-deploy ARGS="--project $RA_PROJECT --billing-account $RA_BILLING_ACCOUNT --sha $RA_SHA --manifest $RA_PRIVATE_DIR/deployment.json --alert-email $RA_ALERT_EMAIL --execute"
+
+# Release redeploy of the existing service (same manifest, project and VM):
+$RA_PRIVATE_DIR/hosted-env.sh bash -c 'node docker/hosted/ops.mjs deploy --project researchagent-sff \
+  --billing-account 01A738-0E0204-1A40C6 --sha "$0" --manifest $RA_PRIVATE_DIR/deployment.json \
+  --alert-email "$RA_ALERT_EMAIL" --gate-lock <heavy-lock.sh> --execute' "$(git rev-parse HEAD)"
 ```
+
+A redeploy reuses the VM, disk, journals and control file. The startup script
+pauses admissions and spending before it stops the old stack, so every
+redeploy (and every VM reboot) ends **paused**; resume only after the checks
+below. The deploy waits for the boot-time startup run, queues a non-blocking
+restart and requires the release marker `/run/researchagent-startup.done`
+(`<sha> <origin>`), because the metadata script runner exits 0 even when the
+script fails.
+
+Operator-qualified runtime values live in `/etc/researchagent/env.local`
+(root, 0600) on the VM. `startup.sh` applies it after the public template on
+every render, so reboots and redeploys keep it. Only these names are accepted
+(anything else stops the start): `HOSTED_PROVIDERS_READY_UNTIL`,
+`HOSTED_{RESEARCH,DECISION}_{INPUT,OUTPUT}_USD_PER_MILLION`,
+`HOSTED_DECISION_OUTPUT_TOKENS`, `HOSTED_QUESTION_CAP_MINOR`,
+`HOSTED_ADMISSIONS_UNTIL`, `HOSTED_{DECK,VIDEO,PROGRESS,REPLAY}_URL`,
+`WALLET_DAILY_CAP_MINOR` and `DECISION_PROVIDER` (`openai`, `cloudflare` or
+`fixture`; a fixture decision model is labelled on every answer and receipt).
 
 The script builds from `git archive SHA` locally, uses each Dockerfile's own
 ignore file, pushes immutable full-SHA tags, resolves and records digests, then

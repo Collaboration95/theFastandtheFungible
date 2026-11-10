@@ -25,7 +25,12 @@ describe('hosted operator boundaries',()=>{
    expect(output).toContain('/run/researchagent-startup.done')
    expect(output).toContain('restart --no-block google-startup-scripts.service')
    // Cloud API lessons: quoted filter values and a quota project for budgets.
-   expect(readFileSync('docker/hosted/ops.mjs','utf8')).not.toMatch(/--filter=displayName=[^"]/)
+   const source=readFileSync('docker/hosted/ops.mjs','utf8')
+   expect(source).not.toMatch(/--filter=displayName=[^"]/)
+   // Teardown retries must treat Cloud Run's "Cannot find service" as already absent.
+   expect(source).toContain('Cannot find/i')
+   // Re-linking an already linked project is a rate-limited write (429 in cloud).
+   expect(source).toMatch(/billingAccountName\)'\]\) !== `billingAccounts\/\$\{billing\}`\) gc\(\['billing','projects','link'/)
    expect(output).toMatch(/'billing' 'budgets' 'create' '--billing-account=[^']+' '--billing-project=ra-ho-test'/)
    // GCP service-account IDs must be 6-30 characters ("ra-vm" was rejected in cloud).
    const accounts=[...output.matchAll(/'service-accounts' 'create' '([^']+)'/g)].map(m=>m[1])

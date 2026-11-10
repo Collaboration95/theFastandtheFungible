@@ -4,6 +4,8 @@ import { readdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, existsSy
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { budgetAmount, adoptable } from './budget.mjs'
+// gcloud's wording for an absent resource differs by API (Cloud Run says "Cannot find").
+const MISSING = /NOT_FOUND|not found|does not exist|was not found|Cannot find/i
 const [action, ...argv] = process.argv.slice(2)
 const options = {}
 for (let i = 0; i < argv.length; i++) {
@@ -43,7 +45,7 @@ const p = [`--project=${project}`]
 function ensure(describe, create) {
   if (dry) { show(describe); show(create); return }
   try { execFileSync('gcloud', describe, {stdio:['ignore','pipe','pipe']}); return }
-  catch (e) { if (!/NOT_FOUND|not found|does not exist|was not found/i.test(String(e.stderr))) { remember(describe, e); throw Error('Cloud inventory denied or unavailable; refusing mutation') } }
+  catch (e) { if (!MISSING.test(String(e.stderr))) { remember(describe, e); throw Error('Cloud inventory denied or unavailable; refusing mutation') } }
   gc(create)
 }
 const git = args => execFileSync('git',args,{encoding:'utf8'}).trim()
@@ -62,7 +64,7 @@ if (action === 'teardown') {
   if (dry) show(['compute','instances','stop',vm,...p,`--zone=${zone}`,'--quiet'])
   else {
     try { execFileSync('gcloud',['compute','instances','describe',vm,...p,`--zone=${zone}`],{stdio:['ignore','pipe','pipe']}); gc(['compute','instances','stop',vm,...p,`--zone=${zone}`,'--quiet']) }
-    catch(e) { if(!/NOT_FOUND|not found|does not exist/i.test(String(e.stderr))) throw Error('VM stop/inventory failed') }
+    catch(e) { if(!MISSING.test(String(e.stderr))) throw Error('VM stop/inventory failed') }
   }
   ensure(['compute','snapshots','describe',snapshot,...p], ['compute','disks','snapshot',disk,...p,`--zone=${zone}`,`--snapshot-names=${snapshot}`])
   gc(['compute','snapshots','describe',snapshot,...p,'--format=value(status)'])
@@ -71,7 +73,7 @@ if (action === 'teardown') {
   const remove = (describe, command) => {
     if (dry) { show(describe); show(command); return }
     try { execFileSync('gcloud',describe,{stdio:['ignore','pipe','pipe']}) }
-    catch(e) { if (/NOT_FOUND|not found|does not exist/i.test(String(e.stderr))) return; throw Error('Inventory failed') }
+    catch(e) { if (MISSING.test(String(e.stderr))) return; throw Error('Inventory failed') }
     gc(command)
   }
   remove(['run','services','describe',service,...p,`--region=${region}`], ['run','services','delete',service,...p,`--region=${region}`,'--quiet'])
@@ -126,14 +128,15 @@ if (!dry && !existing) {
   // carries this deployment's labels and the selected billing link.
   let found
   try { found=JSON.parse(execFileSync('gcloud',['projects','describe',project,'--format=json'],{encoding:'utf8',stdio:['ignore','pipe','pipe']})) }
-  catch(e) { if (!/NOT_FOUND|not found|does not exist|was not found/i.test(String(e.stderr))) throw Error('Cannot establish new-project ownership') }
+  catch(e) { if (!MISSING.test(String(e.stderr))) throw Error('Cannot establish new-project ownership') }
   if (found && !options['adopt-project']) throw Error('Project already exists; refusing adoption (use --adopt-project for a labelled sff-demo project)')
   if (found && !adoptable(found, JSON.parse(gc(['billing','projects','describe',project,'--format=json'])), billing)) throw Error('Existing project lacks the sff-demo labels or this billing link; refusing adoption')
   existing={project,billingAccount:billing,sha,secrets:[],...(found?{adopted:true}:{})}
   writeFileSync(manifestPath,JSON.stringify(existing,null,2)+'\n',{flag:'wx',mode:0o600})
 }
 ensure(['projects','describe',project], ['projects','create',project,'--name=ResearchAgent SFF demo','--labels=purpose=sff-demo,expires=20261120'])
-gc(['billing','projects','link',project,`--billing-account=${billing}`])
+// Linking is a rate-limited write (HTTP 429 when repeated); only link when it differs.
+if (dry || gc(['billing','projects','describe',project,'--format=value(billingAccountName)']) !== `billingAccounts/${billing}`) gc(['billing','projects','link',project,`--billing-account=${billing}`])
 gc(['services','enable','compute.googleapis.com','run.googleapis.com','artifactregistry.googleapis.com','secretmanager.googleapis.com','monitoring.googleapis.com','logging.googleapis.com','iam.googleapis.com','billingbudgets.googleapis.com','cloudresourcemanager.googleapis.com','iap.googleapis.com','oslogin.googleapis.com',...p])
 // Budgets must be denominated in the billing account's currency (e.g. SGD accounts reject USD).
 const currency=dry?'':gc(['billing','accounts','describe',billing,'--format=value(currencyCode)'])
@@ -203,7 +206,7 @@ try {
       digests[target]=`${registry}/${target}@sha256:RESOLVED_${target.toUpperCase()}_DIGEST`
     } else {
       let digest
-      try { digest=execFileSync('gcloud',['artifacts','docker','images','describe',image,...p,'--format=value(image_summary.digest)'],{encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim() } catch(e) { if (!/NOT_FOUND|not found/i.test(String(e.stderr))) throw Error('Image inventory failed') }
+      try { digest=execFileSync('gcloud',['artifacts','docker','images','describe',image,...p,'--format=value(image_summary.digest)'],{encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim() } catch(e) { if (!MISSING.test(String(e.stderr))) throw Error('Image inventory failed') }
       if (!digest) {
         execFileSync('docker',['build','--platform=linux/amd64','-f',`${scratch}/${dockerfile}`,...(target==='front'?[]:['--target',target]),'--label',`org.opencontainers.image.revision=${sha}`,'-t',image,scratch],{stdio:['ignore','pipe','pipe'],maxBuffer:256*1024*1024})
         execFileSync('docker',['push',image],{stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})
