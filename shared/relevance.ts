@@ -27,6 +27,8 @@ export const PROTOCOL_GLOSSARY = [
 ] as const
 const STOP = new Set('a an the of at in on to for and or with its it is are was were be did does do what how why when which who can will should from about this that their have has had by as into before after today must need needs lets let get does every just than more much many each actually use used using i my me an agent please tell work know server no independent accessible evidence missing dated figures still unanswered happen happens'.split(' '))
 export const topicWords = (text: string): string[] => [...new Set((text.normalize('NFKC').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(w => w.length > 1 && !STOP.has(w)).map(w => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)))]
+// Normalize the fixed vocabulary once rather than for each query word and hit.
+const groupWords = new Map(PROTOCOL_GLOSSARY.map(group => [group, new Set(group.flatMap(topicWords))]))
 const phraseWords = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').map(w => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)).join(' ')
 const phraseText = (text: string) => ` ${phraseWords(text)} `
 const aliasKeys = new Map<string, string>(PROTOCOL_GLOSSARY.flat().map(p => [p, phraseText(p)]))
@@ -45,7 +47,7 @@ export function topicOverlap(query: string, document: string): number {
   const need = topicWords(query), own = new Set(topicWords(document))
   const normalized = phraseText(document)
   const aliases = matchingGroups(query).filter(group => group.some(p => phraseIn(normalized, p)))
-  return need.length ? need.filter(w => own.has(w) || aliases.some(g => g.some(p => topicWords(p).includes(w)))).length / need.length : 0
+  return need.length ? need.filter(w => own.has(w) || aliases.some(g => groupWords.get(g)!.has(w))).length / need.length : 0
 }
 export function metadataTopicMatches(query: string, document: string): boolean {
   // An explicitly technical request cannot be routed to a finance story sharing a date/place.
