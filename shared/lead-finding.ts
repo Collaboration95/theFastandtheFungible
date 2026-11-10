@@ -12,7 +12,8 @@ export function sentences(text: string): string[] {
 /** A long sentence may lose a trailing explanatory clause, never a conditional
  * premise or a qualification/negation. The extract remains an exact substring. */
 function answerExtracts(text: string): string[] {
-  return sentences(text).flatMap(sentence => {
+  return sentences(text).flatMap(raw => {
+    const sentence = raw.replace(/^According to [^,]{1,120},\s+/, '')
     if (sentence.split(/\s+/).length <= 40) return [sentence]
     if (/^(?:If|Unless|When|Although|Because|Before|After|While|Only)\b/.test(sentence)) return []
     const cuts = [...sentence.matchAll(/,\s+(?:after|before|while|because|which|with)\b|;\s+|\s+—\s+/g)].map(m => m.index!)
@@ -60,14 +61,16 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
       if (/\b(?:because|requires?|increases?|adds?|counts?|reserves?|locks?|locked|set aside|held|increment|so that)\b/i.test(text)) score += 20
       if (/\b(?:separate|unrelated|caveat|not.*(?:fee|cost))\b/i.test(text)) score -= 18
     }
-    if (capability && /\b(?:can|cannot|must|requires?|enable|enabled|supports?|allows?|does not|is not)\b/i.test(text)) score += 12
+    if (/\b(?:cannot be inferred|not evidence of|does not establish)\b/i.test(text)) score -= 20
+    if (capability && identifier && /\b(?:until|unless|before|requires?|enables?|permission)\b/i.test(text)) score += 20
+    if (capability && /\b(?:can|cannot|must|requires?|enables?|enabled|supports?|allows?|does not|is not)\b/i.test(text)) score += 12
     if (quantity && /\d+(?:[.,]\d+)?\s*(?:XRP|drops?|%|percent|days?|SGD|USD|weeks?)\b/i.test(text)) score += 16
     if (/^when\b/i.test(firstFact) && /\b(?:20\d{2}|before|after|validated|final)\b/i.test(text)) score += 12
     if (naming && /\b(?:is|means|sets|creates|enables|allows|requires|uses|called|named)\b/i.test(text)) score += 8
     if (named.some(name => text.includes(name))) score += 20
     // Technical questions ask for a named field/type as well as topical prose.
     // Reward identifiers generically, never a bank-specific answer vocabulary.
-    if (!causal && /\b(?:field|flag|setting|type|header|transaction|permission)\b|\b(?:must|need).*\b(?:enable|set)\b/i.test(firstFact) && identifier) score += 12
+    if (!causal && /\b(?:field|flag|setting|type|header|transaction|permission|scheme|protocol)s?\b|\b(?:must|need).*\b(?:enable|set)\b/i.test(question) && identifier) score += 24
     const kind = /^(?:which|what)\b|\b(?:name|called|named)\b/i.test(firstFact) ? firstFact.match(/\b(transaction|scheme|protocol|field|flag|setting|type|header|permission)s?\b/i)?.[1] : undefined
     if (kind && new RegExp(`\\b${kind}s?\\b`, 'i').test(text)) score += 16
     if (/\bwhich transaction\b/i.test(question) && /^(?:The |An? )?[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(text)) score += 16

@@ -127,6 +127,8 @@ export function fixtureSupports(requirement: Pick<Requirement, 'text'>, passage:
   const own = canonical(passage)
   const namedType = /\b(?:transaction|field|flag|header|scheme|permission|setting|type)\b/i.test(requirement.text)
   const identifier = /\b[A-Za-z]+[A-Z][A-Za-z]+\b|\b[A-Z]+(?:-[A-Z0-9]+)+\b/.test(passage)
+  const capability = /^(?:can|is|are|does|do|will)\b/i.test(requirement.text) && /\b(?:blocked until|requires?|enables?|supports?|can|cannot)\b/i.test(passage) && !/^.*cannot be inferred[^.]*$/i.test(passage)
+  if (capability && topicMatches(requirement.text, passage)) return true
   return (/\d/.test(passage) || namedType && identifier) && topicMatches(requirement.text, passage) && need.size > 0 && [...need].filter(w => own.has(w)).length / need.size >= 0.5
 }
 /** Fixture coverage: supported when one passage establishes the requirement, otherwise missing. Never partial or conflicting. */

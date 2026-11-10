@@ -10,7 +10,9 @@ export function entityPrecision(question: string, candidate: PublicCandidate, po
   const narrative = names.filter(t => /^[A-Z][a-z]+$/.test(t))
   if (narrative.length > 0 && names.length > 1 && !/\b(?:transaction|field|flag|type|header)\b/i.test(question)) return 0
   const own = new Set(questionTerms(`${candidate.title} ${candidate.facets.join(' ')}`))
-  return names.map(t => t.toLowerCase()).filter(t => own.has(t)).reduce((sum, t) => {
+  const answerType = question.match(/\b(transaction|field|flag|header|scheme|permission|setting|reserve)s?\b/i)?.[1]
+  const titleType = answerType && new RegExp(`\\b${answerType}s?\\b`, 'i').test(candidate.title) ? 2 : 0
+  return titleType + names.map(t => t.toLowerCase()).filter(t => own.has(t)).reduce((sum, t) => {
     const frequency = pool.filter(c => questionTerms(`${c.title} ${c.facets.join(' ')}`).includes(t)).length
     return sum + (frequency <= pool.length / 2 ? 1 / Math.max(1, frequency) : 0)
   }, 0)

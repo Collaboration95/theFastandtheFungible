@@ -50,7 +50,7 @@ describe('marginal fact policy', () => {
   it('all-high model scores cannot override coverage, budget or reservations', async () => {
     const { candidate, content } = await example()
     const provider: DecisionProvider = { name: 'fixture', model: 'test', judgeRound: async () => ({ gapMaterial: 1 }), judgeCandidate: async () => ({ addressesGap: 1, originality: { original: 1, rewrite: 0, overlap: 0 }, credibility: 2 }) }
-    const input = { question: 'Kestrel TSMC analyst margins', conclusion: '', gap: 'Requested fact', requirement: true, candidates: [candidate], readSources: [], budgetMinor: 200, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: 100, round: 1, provider }
+    const input = { question: 'Kestrel TSMC analyst margins', conclusion: '', gap: 'Latest Kestrel gross margins', requirement: true, candidates: [candidate], readSources: [], budgetMinor: 200, spentMinor: 0, reservedMinor: 0, perSourceCapMinor: 100, round: 1, provider }
     const covered = await decide({ ...input, accessibleEvidence: [content] })
     expect(covered.selectedResourceId).toBeUndefined()
     expect(covered.rows[0].reason).toContain('covered menu entries')
