@@ -95,3 +95,14 @@ it('rejects a live research plan that changes an XRPL question to an unrelated f
  expect(result.plan.subqueries.join(' ')).toContain('XRPL')
  expect(result.label).toContain('fixture')
 })
+
+it.each(['Payment finality','PAYMENT-SIGNATURE headers','spending controls'])('keeps the live protocol plan for %s',async subject=>{
+ const question=`Explain XRPL ${subject}`
+ llm({questions:[],plan:{restatement:question,subqueries:[question]}})
+ expect((await scope(question)).label).toContain('DeepSeek')
+})
+
+it.each(['budget allocation','spend the remaining balance','purchase more evidence','pay for the article'])('still rejects a model plan containing %s',async instruction=>{
+ llm({questions:[],plan:{restatement:`XRPL Payment ${instruction}`,subqueries:['XRPL Payment finality']}})
+ expect((await scope('When is an XRPL Payment final?')).label).toContain('fixture')
+})
