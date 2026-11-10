@@ -1,0 +1,63 @@
+{
+  "articleId": "product-ai-starter-kit",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What is the XRPL AI Starter Kit, and what does ResearchAgent integrate?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to what is the XRPL AI Starter Kit, and what does ResearchAgent integrate. Includes evidence limits.",
+  "tags": [
+    "XRPL AI Starter Kit",
+    "MCP",
+    "agent wallet",
+    "t54",
+    "x402",
+    "interop"
+  ],
+  "family": "product-ai-starter-kit",
+  "sources": [
+    {
+      "url": "https://ripple.com/insights/xrpl-ai-starter-kit/",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/x402-xrpl.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/evidence/starter-kit-interop.md",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to Ripple, the XRPL AI Starter Kit is a curated collection of documentation, agent skills and payment integrations for building agentic transactions, rather than one installable wallet product. [1]\n\nThe Phase 1 announcement links documentation retrieval through MCP, wallet and payment skills, an agentic-transaction tutorial and t54’s x402 integration. These components have different roles. A documentation server helps an agent find reference material; a wallet skill describes actions; an x402 client and facilitator implement a payment exchange. Installing one component does not establish compatibility with every other component. [1]\n\nResearchAgent’s recorded interop proof executes the pinned x402-xrpl 0.3.4 client and Express middleware for native XRP exact payments on Testnet. Both sides exchange v2 payment headers and bind the invoice to the authorized transaction. The proof covers both buying from the upstream merchant and an upstream client buying from the local publisher. [2] [3]\n\nAuthor interpretation: preserve that bounded compatibility claim. It does not show that an external facilitator supports ResearchAgent’s key-reveal escrow or its issued-token wire format. A source inspection of a wallet skill is also different from executing it. Choose the particular Starter Kit component needed for the task, then verify its network, asset and invoice behavior before granting an allowance. Sources accessed 10 November 2026. [2] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to Ripple, the XRPL AI Starter Kit is a curated collection of documentation, agent skills and payment integrations for building agentic transactions, rather than one installable wallet product. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "The Phase 1 announcement links documentation retrieval through MCP, wallet and payment skills, an agentic-transaction tutorial and t54’s x402 integration. These components have different roles. A documentation server helps an agent find reference material; a wallet skill describes actions; an x402 client and facilitator implement a payment exchange. Installing one component does not establish compatibility with every other component. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "ResearchAgent’s recorded interop proof executes the pinned x402-xrpl 0.3.4 client and Express middleware for native XRP exact payments on Testnet. Both sides exchange v2 payment headers and bind the invoice to the authorized transaction. The proof covers both buying from the upstream merchant and an upstream client buying from the local publisher. [2] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: preserve that bounded compatibility claim. It does not show that an external facilitator supports ResearchAgent’s key-reveal escrow or its issued-token wire format. A source inspection of a wallet skill is also different from executing it. Choose the particular Starter Kit component needed for the task, then verify its network, asset and invoice behavior before granting an allowance. Sources accessed 10 November 2026. [2] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "payment"
+    },
+    "p3": {
+      "entity": "XRPL",
+      "measure": "payment"
+    }
+  }
+}

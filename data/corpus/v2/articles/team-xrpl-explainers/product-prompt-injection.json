@@ -1,0 +1,64 @@
+{
+  "articleId": "product-prompt-injection",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does ResearchAgent stop prompt injection from draining an agent wallet?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to how does ResearchAgent stop prompt injection from draining an agent wallet. Includes evidence limits.",
+  "tags": [
+    "prompt injection",
+    "AI agent",
+    "wallet",
+    "spending controls",
+    "authorization",
+    "budget",
+    "policy"
+  ],
+  "family": "product-prompt-injection",
+  "sources": [
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/README.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/contracts/SECURITY.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to ResearchAgent security documentation, prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. [1] [2]\n\nThe decision model can recommend whether evidence is useful, but recommendations pass through independent spending checks. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority. The plan confirmation precedes spending; there is no separate approval for each article. [1] [2]\n\nOWASP describes prompt injection through direct requests and external content, and recommends least privilege and handling privileged functions in code. Those measures reduce the consequences of a compromised model; they do not prove that every generated answer is safe or accurate. ResearchAgent applies this separation to payment authority rather than relying on a promise in a system prompt. [2] [3]\n\nAuthor interpretation: a malicious passage might still influence which evidence looks attractive within the existing allowance. Keep budgets small, review receipts and use the operator pause control when suspicious activity appears. Pause blocks new reservations while already submitted payments still require reconciliation. The guarantee is bounded payment authority, not immunity to all misleading content. Sources accessed 10 November 2026. [2] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent security documentation, prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "The decision model can recommend whether evidence is useful, but recommendations pass through independent spending checks. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority. The plan confirmation precedes spending; there is no separate approval for each article. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "OWASP describes prompt injection through direct requests and external content, and recommends least privilege and handling privileged functions in code. Those measures reduce the consequences of a compromised model; they do not prove that every generated answer is safe or accurate. ResearchAgent applies this separation to payment authority rather than relying on a promise in a system prompt. [2] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: a malicious passage might still influence which evidence looks attractive within the existing allowance. Keep budgets small, review receipts and use the operator pause control when suspicious activity appears. Pause blocks new reservations while already submitted payments still require reconciliation. The guarantee is bounded payment authority, not immunity to all misleading content. Sources accessed 10 November 2026. [2] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "ResearchAgent",
+      "measure": "authorization"
+    },
+    "p2": {
+      "entity": "policy",
+      "measure": "source"
+    }
+  }
+}

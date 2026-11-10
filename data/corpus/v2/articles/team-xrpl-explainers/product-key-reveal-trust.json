@@ -1,0 +1,67 @@
+{
+  "articleId": "product-key-reveal-trust",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does key-reveal escrow guarantee, and who must refund a bad article?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to what does key-reveal escrow guarantee, and who must refund a bad article. Includes evidence limits.",
+  "tags": [
+    "key reveal",
+    "escrow",
+    "atomic delivery",
+    "writer-signed refund",
+    "trust",
+    "CancelAfter"
+  ],
+  "family": "product-key-reveal-trust",
+  "sources": [
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/key-reveal-escrow.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/x402-xrpl.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/payment-types/escrow",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to ResearchAgent documentation, key-reveal escrow makes payment and publication of the article key atomic, but a refund after a completed purchase still requires the writer to sign. [1] [2]\n\nThe writer encrypts the delivery and signs commitments to its identity, content, price and decryption key. The buyer locks funds under a PREIMAGE-SHA-256 condition. A successful EscrowFinish publishes the fulfillment containing that key while releasing the locked payment. The buyer then checks the key, authenticated encryption, exact delivered bytes and signed passage promises before exposing premium content to the agent. [1] [3]\n\nThis exchange does not make editorial quality a ledger rule. A writer can reveal a key to content that fails its advertised promise. In that case ResearchAgent withholds an accessible grant, retains the failed proof and penalizes reputation. The settled payment is not automatically reversible: the writer must cooperate with a refund. The ledger checks the cryptographic condition, not whether the article answered the question. [1] [2]\n\nAuthor interpretation: separate no-show risk from bad-content risk. If no key is published, CancelAfter permits cancellation of the unfinished escrow. If payment already finished, cancellation cannot undo it. Inspect the signed promises, identity and refund record together; delivery atomicity is useful evidence without being a guarantee of truth or a unilateral chargeback. Sources accessed 10 November 2026. [1] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent documentation, key-reveal escrow makes payment and publication of the article key atomic, but a refund after a completed purchase still requires the writer to sign. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "The writer encrypts the delivery and signs commitments to its identity, content, price and decryption key. The buyer locks funds under a PREIMAGE-SHA-256 condition. A successful EscrowFinish publishes the fulfillment containing that key while releasing the locked payment. The buyer then checks the key, authenticated encryption, exact delivered bytes and signed passage promises before exposing premium content to the agent. [1] [3]"
+    },
+    {
+      "id": "p3",
+      "text": "This exchange does not make editorial quality a ledger rule. A writer can reveal a key to content that fails its advertised promise. In that case ResearchAgent withholds an accessible grant, retains the failed proof and penalizes reputation. The settled payment is not automatically reversible: the writer must cooperate with a refund. The ledger checks the cryptographic condition, not whether the article answered the question. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: separate no-show risk from bad-content risk. If no key is published, CancelAfter permits cancellation of the unfinished escrow. If payment already finished, cancellation cannot undo it. Inspect the signed promises, identity and refund record together; delivery atomicity is useful evidence without being a guarantee of truth or a unilateral chargeback. Sources accessed 10 November 2026. [1] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "ResearchAgent",
+      "measure": "payment"
+    },
+    "p2": {
+      "entity": "EscrowFinish",
+      "measure": "price"
+    },
+    "p3": {
+      "entity": "writer",
+      "measure": "payment"
+    }
+  }
+}

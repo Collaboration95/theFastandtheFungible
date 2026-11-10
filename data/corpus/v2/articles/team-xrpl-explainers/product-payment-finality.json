@@ -1,0 +1,60 @@
+{
+  "articleId": "product-payment-finality",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "When is an XRPL agent payment final and validated?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to when is an XRPL agent payment final and validated. Includes evidence limits.",
+  "tags": [
+    "XRPL",
+    "payment finality",
+    "validated ledger",
+    "ledger close",
+    "settled",
+    "confirmation",
+    "reorg"
+  ],
+  "family": "product-payment-finality",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/finality-of-results",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/consensus-protocol/consensus-structure",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/x402-xrpl.md",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to XRPL documentation, an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional. [1]\n\nA server first tentatively applies a transaction to its open ledger. Consensus then chooses the transaction set, closes a candidate ledger and establishes validation through trusted validators. Ledgers normally advance every few seconds, but a typical close interval is not a guaranteed end-to-end payment deadline. Connectivity, queuing and transaction expiry can delay or prevent inclusion. [1] [2]\n\nValidated history is immutable under the consensus trust assumptions: applications do not wait for a growing number of probabilistic block confirmations or ordinary chain reorgs. A merely closed candidate is different from a validated ledger. Validation also does not imply success: a ledger may contain a tec failure that consumes a fee without delivering the intended payment. Inspect the final transaction metadata. [1] [2]\n\nAuthor interpretation: keep an uncertain transaction pending until its hash is reconciled or its LastLedgerSequence expiry is established against complete validated history. Check the expected asset, recipient and delivered value as well as the successful result. ResearchAgent performs these checks before calling a payment settled. Finality proves the ledger outcome; it does not certify the quality of an article purchased with that payment. Sources accessed 10 November 2026. [1] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to XRPL documentation, an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional. [1]"
+    },
+    {
+      "id": "p2",
+      "text": "A server first tentatively applies a transaction to its open ledger. Consensus then chooses the transaction set, closes a candidate ledger and establishes validation through trusted validators. Ledgers normally advance every few seconds, but a typical close interval is not a guaranteed end-to-end payment deadline. Connectivity, queuing and transaction expiry can delay or prevent inclusion. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "Validated history is immutable under the consensus trust assumptions: applications do not wait for a growing number of probabilistic block confirmations or ordinary chain reorgs. A merely closed candidate is different from a validated ledger. Validation also does not imply success: a ledger may contain a tec failure that consumes a fee without delivering the intended payment. Inspect the final transaction metadata. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: keep an uncertain transaction pending until its hash is reconciled or its LastLedgerSequence expiry is established against complete validated history. Check the expected asset, recipient and delivered value as well as the successful result. ResearchAgent performs these checks before calling a payment settled. Finality proves the ledger outcome; it does not certify the quality of an article purchased with that payment. Sources accessed 10 November 2026. [1] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRPL",
+      "measure": "payment"
+    }
+  }
+}

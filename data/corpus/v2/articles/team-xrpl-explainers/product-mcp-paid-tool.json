@@ -1,0 +1,67 @@
+{
+  "articleId": "product-mcp-paid-tool",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does an AI agent use a paid tool through MCP?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to how does an AI agent use a paid tool through MCP. Includes evidence limits.",
+  "tags": [
+    "MCP",
+    "AI agent",
+    "paid tool",
+    "ask_expert",
+    "budget",
+    "receipt"
+  ],
+  "family": "product-mcp-paid-tool",
+  "sources": [
+    {
+      "url": "https://modelcontextprotocol.io/specification/2025-06-18/server/tools",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/contracts/REVIEW-NOV-2026.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/mcp/server.ts",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/ce9a83a2215f195587cafae48dcf859925572c10/docs/contracts/SECURITY.md",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to ResearchAgent documentation, an AI agent uses the MCP ask_expert tool to request research with a budget; deterministic policy selects and pays for evidence within the admitted allowance. [2] [3] [4]\n\nMCP, the Model Context Protocol, lets a server describe tools with names and input schemas so an agent client can discover and invoke them. A tool call is a request to the server, not proof of a payment or delivery. MCP itself does not supply a wallet, establish a writer’s honesty or grant unrestricted authority over the caller’s money. [1]\n\nThe ResearchAgent client asks a question, receives a run identifier and can read progress and the completed answer. The server searches writers and evaluates whether paid evidence fills a gap. Purchases remain subject to source, per-call and wallet daily limits. MCP cap arguments cannot raise operator-owned authority, and a repeated intent key cannot authorize a second charge for the same request. [2] [3] [4]\n\nAuthor interpretation: configure the allowance before handing the tool to an agent, then inspect citations and receipts after completion. The standard research tool gives the model a way to ask; it does not expose a free-form sign-anything operation. A useful integration should also let the client observe pending work, read wallet status and distinguish fixture demonstrations from live provider execution. Sources accessed 10 November 2026. [3] [4]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent documentation, an AI agent uses the MCP ask_expert tool to request research with a budget; deterministic policy selects and pays for evidence within the admitted allowance. [2] [3] [4]"
+    },
+    {
+      "id": "p2",
+      "text": "MCP, the Model Context Protocol, lets a server describe tools with names and input schemas so an agent client can discover and invoke them. A tool call is a request to the server, not proof of a payment or delivery. MCP itself does not supply a wallet, establish a writer’s honesty or grant unrestricted authority over the caller’s money. [1]"
+    },
+    {
+      "id": "p3",
+      "text": "The ResearchAgent client asks a question, receives a run identifier and can read progress and the completed answer. The server searches writers and evaluates whether paid evidence fills a gap. Purchases remain subject to source, per-call and wallet daily limits. MCP cap arguments cannot raise operator-owned authority, and a repeated intent key cannot authorize a second charge for the same request. [2] [3] [4]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: configure the allowance before handing the tool to an agent, then inspect citations and receipts after completion. The standard research tool gives the model a way to ask; it does not expose a free-form sign-anything operation. A useful integration should also let the client observe pending work, read wallet status and distinguish fixture demonstrations from live provider execution. Sources accessed 10 November 2026. [3] [4]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "ResearchAgent",
+      "measure": "budget"
+    },
+    "p2": {
+      "entity": "writer",
+      "measure": "supply"
+    }
+  }
+}

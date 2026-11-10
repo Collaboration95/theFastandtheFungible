@@ -15,7 +15,7 @@ it('publishes sourced explainers through the ordinary signed delivery and public
  expect(publisher.verification?.status).toBe('unverified')
  expect(publisher.bio).toBe('team-authored explainer · sources cited · not an independent writer · Testnet')
  const articles = corpus.articles.filter(a => a.publisherSlug === publisher.slug)
- expect(articles).toHaveLength(147)
+ expect(articles).toHaveLength(161)
  const journal = new PublisherJournal(':memory:')
  try {
   const manifests = createManifests(journal), keys = simulatedKeys(publisher.slug)
@@ -37,6 +37,35 @@ it('publishes sourced explainers through the ordinary signed delivery and public
    expect(hit).not.toHaveProperty('passages')
   }
  } finally { journal.close() }
+})
+
+it('keeps the product FAQ additions answer-first, bounded, cited and in the existing writer', async () => {
+ const pin = JSON.parse(readFileSync('docs/evidence/c4-product-explainers/corpus-golden.json', 'utf8')) as { additions: string[] }
+ const corpus = await loadWriterCorpus()
+ const articles = corpus.articles.filter(a => pin.additions.includes(a.articleId))
+ expect(articles).toHaveLength(14)
+ for (const article of articles) {
+  expect(article.publisherSlug).toBe('team-xrpl-explainers')
+  expect(article.priceMinor).toBe(40)
+  expect(countWords(article.body)).toBeGreaterThanOrEqual(150)
+  expect(countWords(article.body)).toBeLessThanOrEqual(300)
+  expect(article.passages).toHaveLength(4)
+  expect(article.body).toBe(article.passages.map(p => p.text).join('\n\n'))
+  expect(article.passages[0].text).toMatch(/^According to /)
+  expect(article.passages[0].text).toMatch(/\[\d+\]/)
+  for (const passage of article.passages) {
+   const citations = [...passage.text.matchAll(/\[(\d+)\]/g)].map(m => Number(m[1]))
+   expect(citations.length).toBeGreaterThan(0)
+   expect(citations.every(n => n >= 1 && n <= article.sources!.length)).toBe(true)
+  }
+  for (const source of article.sources!) {
+   const url = new URL(source.url)
+   expect(['xrpl.org', 'xrpl-x402.t54.ai', 'ripple.com', 'modelcontextprotocol.io', 'genai.owasp.org', 'github.com']).toContain(url.hostname)
+   if (url.hostname === 'github.com' && url.pathname.startsWith('/Collaboration95/')) {
+    expect(url.pathname).toMatch(/\/blob\/[a-f0-9]{40}\//)
+   }
+  }
+ }
 })
 
 // Coverage is pinned to public source indexes, never a judge question bank.

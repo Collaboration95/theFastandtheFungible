@@ -1,0 +1,55 @@
+{
+  "articleId": "product-x402-response",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "What does an x402 402 Payment Required response contain?",
+  "publishedAt": "2026-11-10",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to what does an x402 402 Payment Required response contain. Includes evidence limits.",
+  "tags": [
+    "x402",
+    "HTTP 402",
+    "PAYMENT-REQUIRED",
+    "PAYMENT-SIGNATURE",
+    "headers",
+    "client retry"
+  ],
+  "family": "product-x402-response",
+  "sources": [
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/x402-specification-v2.md",
+      "accessedAt": "2026-11-10"
+    },
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/transports-v2/http.md",
+      "accessedAt": "2026-11-10"
+    }
+  ],
+  "body": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]\n\nThe header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]\n\nThe retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]\n\nAuthor interpretation: validate the advertised resource, payee, exact amount, network and expiry before authorizing a retry. Preserve the original payment identity after a timeout instead of approving a new payment blindly. The core protocol deliberately leaves client budget management to the application. A 402 challenge is an offer to pay; it does not itself authorize spending. Sources accessed 10 November 2026. [1] [2]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: validate the advertised resource, payee, exact amount, network and expiry before authorizing a retry. Preserve the original payment identity after a timeout instead of approving a new payment blindly. The core protocol deliberately leaves client budget management to the application. A 402 challenge is an offer to pay; it does not itself authorize spending. Sources accessed 10 November 2026. [1] [2]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "client",
+      "measure": "requirements"
+    }
+  }
+}

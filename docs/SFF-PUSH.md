@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 11 Nov: C4 adds 14 answer-first agent-payment/product explainers through the existing disclosed Testnet writer (161 total): x402, finality, injection controls, budgets, escrow/refunds, receipts/anchors, Credentials, assets, MCP, Starter Kit and fees; [dev-only before/after evidence](evidence/c4-product-explainers/README.md).
 - 11 Nov: Copyable [x402 key-reveal escrow example](../examples/x402-key-reveal-escrow/README.md): standalone seller/buyer with pinned t54 codecs, Testnet delivery, replay and CancelAfter principal recovery; opt-in live test and unsubmitted [Starter Kit PR draft](feedback/upstream/starter-kit-key-reveal-escrow-pr.md). [#435](https://github.com/Collaboration95/theFastandtheFungible/pull/435).
 
 - 11 Nov: HG adds opt-in hosted visitor sessions, own-run authorization, durable sponsor/model limits, queue/pause controls and health/status contracts; local synthetic isolation evidence only, deployed acceptance remains with ops. [#432](https://github.com/Collaboration95/theFastandtheFungible/pull/432).
