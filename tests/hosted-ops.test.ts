@@ -32,7 +32,7 @@ describe('hosted operator boundaries',()=>{
    // Teardown retries must treat Cloud Run's "Cannot find service" as already absent.
    expect(source).toContain('Cannot find/i')
    // Re-linking an already linked project is a rate-limited write (429 in cloud).
-   expect(source).toMatch(/billingAccountName\)'\]\) !== `billingAccounts\/\$\{billing\}`\) gc\(\['billing','projects','link'/)
+   expect(source).toMatch(/billingAccountName\)'\],\{attempts:6\}\) !== `billingAccounts\/\$\{billing\}`\) gc\(\['billing','projects','link'/)
    expect(output).toMatch(/'billing' 'budgets' 'create' '--billing-account=[^']+' '--billing-project=ra-ho-test'/)
    // GCP service-account IDs must be 6-30 characters ("ra-vm" was rejected in cloud).
    const accounts=[...output.matchAll(/'service-accounts' 'create' '([^']+)'/g)].map(m=>m[1])
