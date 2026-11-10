@@ -23,6 +23,19 @@ describe('explainer destinations and provenance', () => {
       expect(doc.querySelector('.ra-live')?.getAttribute('href'), file).toBe(HOSTED_APP_URL)
     }
   })
+  it('keeps guide links to local fragments reachable', () => {
+    const base = 'https://collaboration95.github.io/theFastandtheFungible/'
+    for (const route of ['proof/', 'developers/', 'builder-feedback/']) {
+      const doc = new JSDOM(read(`site/${route}index.html`)).window.document
+      for (const link of doc.querySelectorAll('a[href]')) {
+        const url = new URL(link.getAttribute('href')!, base + route)
+        if (!url.href.startsWith(base) || !url.hash) continue
+        const file = 'site/' + url.pathname.slice(new URL(base).pathname.length) + (url.pathname.endsWith('/') ? 'index.html' : '')
+        const target = new JSDOM(read(file)).window.document
+        expect(target.getElementById(decodeURIComponent(url.hash.slice(1))), `${route}: ${url.href}`).not.toBeNull()
+      }
+    }
+  })
   it('labels Replay with the real default recording date and provides a live fallback', () => {
     const recorded = JSON.parse(read('demo/traces/UC3-key-reveal.json')).run.events[0].at
     expect(recorded).toMatch(/^2026-11-07/)
