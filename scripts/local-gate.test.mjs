@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, symlinkSync, chmodSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { MAX_CPUS, parseArgs, classify, makeSteps, inputsFor, stepKey, scriptClosure, cacheEntry, changes, snapshot, sameSource,
-  publishStatus, originRepo, runGraph, command, fixtureEnv, newScope, git, gh, SCHEMA, main } from './local-gate.mjs'
+  publishStatus, originRepo, runGraph, command, fixtureEnv, newScope, git, gh, SCHEMA, main, checkout } from './local-gate.mjs'
 import { loaderPrefix, buildPrefix } from './local-gate-smoke.mjs'
 
 async function fixture(run) {
@@ -13,6 +13,18 @@ async function fixture(run) {
   try { git(root, ['init', '--quiet']); write('README.md', '# Fixture\n'); write('.gitignore', '.env\nnode_modules/\n'); commit(); return await run({ scope, root, write, commit }) }
   finally { await scope.close(); assert.equal(existsSync(root), false) }
 }
+
+test('development-only captured checkout omits synthetic held-out content but retains existence metadata', async () => fixture(async ({ root, scope, write, commit }) => {
+  const bank = 'eval/questions/judge-xrpl.v5.json'
+  write(bank, 'synthetic fixture content, not a real bank'); commit()
+  const old = process.env.RA_DEV_BANKS_ONLY
+  try {
+    process.env.RA_DEV_BANKS_ONLY = '1'
+    const work = checkout(root, snapshot(root, scope), scope)
+    assert.equal(existsSync(join(work, bank)), true)
+    assert.equal(readFileSync(join(work, bank), 'utf8'), '')
+  } finally { if (old === undefined) delete process.env.RA_DEV_BANKS_ONLY; else process.env.RA_DEV_BANKS_ONLY = old }
+}))
 
 test('strict options include cold verification, optional exact target, and plan cannot publish', () => {
   assert.deepEqual(parseArgs(['--base', 'HEAD^', '--full', '--no-cache', '--publish', 'a'.repeat(40)]), { base: 'HEAD^', full: true, plan: false, publish: true, noCache: true, target: 'a'.repeat(40) })
@@ -273,6 +285,11 @@ test('development-only bank access is explicit in the fixture environment and ca
   try {
     process.env.RA_DEV_BANKS_ONLY = '1'
     assert.equal(fixtureEnv('/tmp/synthetic-k4').RA_DEV_BANKS_ONLY, '1')
+    const bank = 'eval/questions/judge-xrpl.v5.json'
+    const identities = new Map([[bank, '100644:synthetic-bank-identity']])
+    const neverRead = () => { throw Error('Bank content must not be read') }
+    assert.deepEqual(scriptClosure([bank], neverRead, [bank]), [bank])
+    assert.deepEqual(stepKey({ id: 'unit' }, [bank], neverRead, {}, 'runner', false, identities).inputs, [bank])
     const step = { id: 'unit', command: 'node', args: [] }
     const files = ['vitest.config.ts']
     const read = () => 'synthetic config'
