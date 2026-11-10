@@ -25,7 +25,8 @@ export class PublisherClient {
   private readonly sellerKeys = new Map<string, Promise<string>>()
   private readonly sellerWallets = new Map<string,string>()
   /** `secret` is unused since x402 v2 (no Bearer settlement); kept so existing callers compile. */
-  constructor(readonly options: { baseUrl?: string; secret?: string; onWire?: WireObserver; timeoutMs?: number; baseUrls?: string[]; federated?: boolean; deadline?: number } = {}) {}
+  constructor(readonly options: { baseUrl?: string; secret?: string; onWire?: WireObserver; timeoutMs?: number; baseUrls?: string[]; federated?: boolean; deadline?: number; signal?: AbortSignal } = {}) {}
+  withSignal(signal?: AbortSignal): PublisherClient { return Object.assign(Object.create(this) as PublisherClient, {options:{...this.options,signal}}) }
   get origin(): string { return approvedPublisherOrigin(this.options.baseUrl ?? loadConfig().PUBLISHER_URL ?? 'http://127.0.0.1:8790') }
   origins(): PublisherClient[] {
     const raw = this.options.baseUrls ?? (!this.options.baseUrl && loadConfig().PUBLISHER_URLS ? loadConfig().PUBLISHER_URLS!.split(',').map(s => s.trim()) : [this.origin])
@@ -35,7 +36,7 @@ export class PublisherClient {
       if (urls.length < 3 && !urls.includes(entry.origin)) urls.push(entry.origin)
     }
     if (new Set(urls).size !== urls.length) throw new Error('Duplicate publisher origin')
-    return urls.map(baseUrl => Object.assign(Object.create(this) as PublisherClient, { sellerKeys: new Map<string,Promise<string>>(), sellerWallets: new Map<string,string>(), options: { ...this.options, baseUrls: undefined, baseUrl, federated: Boolean(urls.length > 1 || this.options.baseUrls || loadConfig().PUBLISHER_URLS || this.options.federated), deadline: Date.now() + 2000 } }))
+    return urls.map(baseUrl => Object.assign(Object.create(this) as PublisherClient, { sellerKeys: new Map<string,Promise<string>>(), sellerWallets: new Map<string,string>(), options: { ...this.options, baseUrls: undefined, baseUrl, federated: Boolean(urls.length > 1 || this.options.baseUrls || loadConfig().PUBLISHER_URLS || this.options.federated), deadline: Date.now() + 15000 } }))
   }
   forSource(source?: SourceIdentity, recovery = false): PublisherClient {
     if (!source) { if (this.options.baseUrls || this.options.federated || loadConfig().PUBLISHER_URLS) throw new Error('Historical origin unresolved'); return this }
@@ -43,14 +44,14 @@ export class PublisherClient {
     if (!recovery && !this.origins().some(c => c.origin === origin)) throw new Error('Origin is not admitted for new purchases')
     return new PublisherClient({ ...this.options, baseUrls: undefined, baseUrl: origin })
   }
-  private async fetchPath(path: string, init: RequestInit): Promise<Response> {
+  private async fetchPath(path: string, init: RequestInit, timeoutMs?: number): Promise<Response> {
     if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\') || /%2f|%5c/i.test(path)) throw new Error('Publisher path must be root relative')
     const url = new URL(path, this.origin)
     if (url.origin !== this.origin) throw new Error('Cross-origin publisher path')
     const remaining = this.options.deadline ? this.options.deadline - Date.now() : undefined
     if (remaining !== undefined && remaining <= 0) throw new Error('Origin deadline exceeded')
-    const signal = AbortSignal.any([...(init.signal ? [init.signal] : []), ...(remaining ? [AbortSignal.timeout(remaining)] : [])])
-    return limitedFetch(url.href, { ...init, signal })
+    const signal = AbortSignal.any([...(init.signal ? [init.signal] : []), ...(this.options.signal ? [this.options.signal] : []), ...(remaining ? [AbortSignal.timeout(remaining)] : [])])
+    return limitedFetch(url.href, { ...init, signal }, timeoutMs)
   }
 
   private async request(method: string, path: string, body?: unknown, token?: string, observer?: WireObserver): Promise<{ bytes: Buffer; digest: string; status: number }> {
@@ -109,7 +110,7 @@ export class PublisherClient {
   }
   // Federated search (D1, #138): registry, per-publisher search and FREE article reads.
   private async getJson(path: string, timeoutMs?: number): Promise<unknown> {
-    const response = await this.fetchPath(path, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(timeoutMs ?? this.options.timeoutMs ?? 5000), redirect: 'error' })
+    const response = await this.fetchPath(path, { headers: { Accept: 'application/json' }, ...(path === '/registry' ? {signal:AbortSignal.timeout(2000)} : {}), redirect: 'error' }, timeoutMs ?? this.options.timeoutMs ?? 5000)
     const wire = { method: 'GET', path, status: response.status }
     try { this.options.onWire?.(wire) } catch { /* telemetry cannot alter retrieval */ }
     if (!response.ok) throw new PublisherHttpError(response.status)
@@ -183,11 +184,13 @@ async function acquireSlot(signal?: AbortSignal | null): Promise<void> {
     signal?.addEventListener('abort',abort,{once:true})
   })
 }
-async function limitedFetch(url: string, init: RequestInit): Promise<Response> {
+async function limitedFetch(url: string, init: RequestInit, timeoutMs?: number): Promise<Response> {
   await acquireSlot(init.signal)
   try {
     init.signal?.throwIfAborted()
-    const response = await fetch(url, { ...init, redirect: 'error' })
+    // Queue wait consumes the origin's 15 s budget; the search/embedding budget starts in its slot.
+    const signal=timeoutMs ? AbortSignal.any([...(init.signal ? [init.signal] : []),AbortSignal.timeout(timeoutMs)]) : init.signal
+    const response = await fetch(url, { ...init, signal, redirect: 'error' })
     // Hold the slot through body consumption, not just response headers.
     const bytes = await boundedBody(response, new URL(url).pathname.includes('/articles/') ? 2 * 1024 * 1024 : 256 * 1024)
     return new Response(new Uint8Array(bytes), { status: response.status, headers: response.headers })

@@ -84,7 +84,8 @@ const toCandidate = (hit: SearchHit, publisher: RegistryPublisher): PublicCandid
 /** Hits per publisher (the search-fanout span and the SEARCH event). */
 export const hitsByPublisher = (hits: Pick<SearchHit, 'publisherSlug'>[]) => hits.reduce<Record<string, number>>((counts, h) => ({ ...counts, [h.publisherSlug]: (counts[h.publisherSlug] ?? 0) + 1 }), {})
 /** Traced as the search-fanout retriever (D22): per-publisher hit counts, search mode, and what was read. */
-export function retrieve(client: PublisherClient, question: string, plan?: Plan): Promise<Retrieved> {
+export function retrieve(client: PublisherClient, question: string, plan?: Plan, signal?: AbortSignal): Promise<Retrieved> {
+  if (signal && client.withSignal) client = client.withSignal(signal)
   return traceStep('search-fanout', { question, subqueries: plan?.subqueries }, () => retrieveSources(client, question, plan), result => ({
     searchMode: result.search, perPublisher: hitsByPublisher(result.hits), unavailable: result.unavailable, dropped: result.dropped,
     candidates: result.candidates.map(c => ({ resourceId: c.resourceId, profile: c.profileId, tier: c.tier, priceMinor: c.price.amountMinor })), readFree: result.contents.map(c => c.resourceId),
@@ -129,7 +130,8 @@ const identity = sourceKey
  * never learns what was read from a competitor. Returns only NEW candidates (never mutating known ones): the new
  * free hits that were read, and at most four new paid hits, ranked price-blind.
  */
-export function followUpSearch(client: PublisherClient, query: string, known: Pick<PublicCandidate, 'resourceId' | 'version' | 'profileId' | 'publisherSlug' | 'source'>[]): Promise<FollowUpRetrieved> {
+export function followUpSearch(client: PublisherClient, query: string, known: Pick<PublicCandidate, 'resourceId' | 'version' | 'profileId' | 'publisherSlug' | 'source'>[], signal?: AbortSignal): Promise<FollowUpRetrieved> {
+  if (signal && client.withSignal) client = client.withSignal(signal)
   return traceStep('follow-up-search', { query, known: known.length }, () => followUp(client, query, known), result => ({
     searchMode: result.search, perPublisher: hitsByPublisher(result.hits), unavailable: result.unavailable, dropped: result.dropped,
     candidates: result.candidates.map(c => ({ resourceId: c.resourceId, profile: c.profileId, tier: c.tier })), readFree: result.contents.map(c => c.resourceId),

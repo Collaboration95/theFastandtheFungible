@@ -92,11 +92,21 @@ export class Store {
       CREATE TABLE IF NOT EXISTS escrow_outbox (intent_id TEXT NOT NULL REFERENCES escrows(intent_id), operation TEXT NOT NULL, tx_hash TEXT UNIQUE NOT NULL, json TEXT NOT NULL, PRIMARY KEY(intent_id,operation));
       CREATE TABLE IF NOT EXISTS submissions (intent_id TEXT PRIMARY KEY REFERENCES intents(id), tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL, last_ledger INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS newcomer_probes (wallet TEXT PRIMARY KEY, intent_id TEXT UNIQUE NOT NULL);
+      CREATE TABLE IF NOT EXISTS consequences (intent_id TEXT NOT NULL, kind TEXT NOT NULL, value TEXT NOT NULL, PRIMARY KEY(intent_id,kind));
+      CREATE TABLE IF NOT EXISTS recovery_checks (kind TEXT NOT NULL, intent_id TEXT NOT NULL, next_at INTEGER NOT NULL, attempts INTEGER NOT NULL, PRIMARY KEY(kind,intent_id));
       CREATE TABLE IF NOT EXISTS publisher_reputation (wallet TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS credential_revocations (intent_id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS manifests (intent_id TEXT PRIMARY KEY REFERENCES intents(id), json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS grant_salts (intent_id TEXT PRIMARY KEY REFERENCES grants(intent_id), json TEXT NOT NULL);
     `)
+    // Carry legacy checkpoint deduplication forward once; new writes persist both atomically.
+    this.db.exec(`INSERT OR IGNORE INTO consequences
+      SELECT i.id,'proof','legacy' FROM intents i JOIN runs r ON r.id=i.run_id
+      JOIN json_each(r.json,'$.checkpoint.trustRecorded') marker ON marker.value=i.id;
+      INSERT OR IGNORE INTO consequences
+      SELECT i.id,'challenge',json_extract(i.json,'$.status') FROM intents i JOIN runs r ON r.id=i.run_id
+      JOIN json_each(r.json,'$.checkpoint.trustRecorded') marker ON marker.value=i.id
+      WHERE json_extract(i.json,'$.status') IN ('REFUNDED','CHALLENGE_REFUSED','CHALLENGE_REJECTED');`)
     // Source-row indexes, not counters: SQLite maintains these atomically even across crashes.
     // Completed history without money never enters request-path accounting or recovery.
     this.db.exec(`
@@ -129,10 +139,34 @@ export class Store {
       return { policyVersion: POLICY_VERSION, walletDailyMinor: policy.walletDailyMinor, perPromptMaxMinor: policy.maxMinor, mcp: budgetPolicy(), envPaused: policy.paused }
     } catch { return undefined }
   }
+  private transactionDepth = 0
   private atomic<T>(fn: () => T): T {
-    this.db.exec('BEGIN IMMEDIATE')
-    try { const result = fn(); this.db.exec('COMMIT'); return result }
-    catch (error) { this.db.exec('ROLLBACK'); throw error }
+    const depth = this.transactionDepth++, savepoint = `nested_${depth}`
+    this.db.exec(depth ? `SAVEPOINT ${savepoint}` : 'BEGIN IMMEDIATE')
+    try { const result = fn(); this.db.exec(depth ? `RELEASE ${savepoint}` : 'COMMIT'); return result }
+    catch (error) { this.db.exec(depth ? `ROLLBACK TO ${savepoint}; RELEASE ${savepoint}` : 'ROLLBACK'); throw error }
+    finally { this.transactionDepth-- }
+  }
+  withTransaction<T>(apply: () => T): T { return this.atomic(apply) }
+  consequence(intentId: string, kind: string): string | undefined {
+    return this.prepare('SELECT value FROM consequences WHERE intent_id=? AND kind=?').get(intentId,kind)?.value as string | undefined
+  }
+  applyConsequence<T>(intentId: string, kind: string, value: string, apply: () => T): T | undefined {
+    return this.atomic(() => {
+      if (this.consequence(intentId,kind)) return undefined
+      const result = apply()
+      this.prepare('INSERT INTO consequences VALUES (?,?,?)').run(intentId,kind,value)
+      return result
+    })
+  }
+  recoveryChecked(kind: string, intentId: string) {
+    this.prepare(`INSERT INTO recovery_checks VALUES (?,?,?,1) ON CONFLICT(kind,intent_id) DO UPDATE SET
+      next_at=? + min(60000,1000 * (1 << min(attempts,6))), attempts=attempts+1`).run(kind,intentId,Date.now()+1000,Date.now())
+  }
+  pendingChallenges(limit = 16): PurchaseIntent[] {
+    return this.rows<PurchaseIntent>(`SELECT i.json FROM intents i LEFT JOIN recovery_checks c ON c.kind='challenge' AND c.intent_id=i.id
+      WHERE json_extract(i.json,'$.status') IN ('CLAIM_FAILED','CHALLENGED') AND coalesce(c.next_at,0)<=?
+      ORDER BY coalesce(c.next_at,0),i.rowid LIMIT ?`,String(Date.now()),String(limit))
   }
   private rows<T>(sql: string, ...args: string[]): T[] {
     return this.prepare(sql).all(...args).map(row => JSON.parse(row.json as string) as T)
@@ -365,13 +399,13 @@ export class Store {
       }) }
   }
   pendingRefunds(limit = 16): PurchaseIntent[] {
-    return this.rows<PurchaseIntent>(`SELECT json FROM intents WHERE json_extract(json,'$.refundCandidate') IS NOT NULL
-      AND json_extract(json,'$.status') IN ('CHALLENGED','CHALLENGE_REFUSED') ORDER BY rowid LIMIT ?`, String(limit))
+    return this.rows<PurchaseIntent>(`SELECT i.json FROM intents i LEFT JOIN recovery_checks c ON c.kind='refund' AND c.intent_id=i.id WHERE json_extract(i.json,'$.refundCandidate') IS NOT NULL
+      AND json_extract(i.json,'$.status') IN ('CHALLENGED','CHALLENGE_REFUSED') AND coalesce(c.next_at,0)<=? ORDER BY coalesce(c.next_at,0),i.rowid LIMIT ?`, String(Date.now()), String(limit))
   }
   recordRefundCandidate(intentId: string, txHash: string): void {
     this.atomic(() => {
       const intent = this.getIntent(intentId)
-      if (!intent || !['CHALLENGED','CHALLENGE_REFUSED'].includes(intent.status) || intent.refundCandidate) return
+      if (!intent || !['CHALLENGED','CHALLENGE_REFUSED'].includes(intent.status)) return
       this.saveIntent({ ...intent, refundCandidate: { txHash, observedAt: new Date().toISOString() } })
     })
   }

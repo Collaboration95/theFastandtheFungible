@@ -1,3 +1,6 @@
+import { loadConfig } from '../server/config.js'
+import { requestBodyStatus } from '../server/body-limit.js'
+import { errorEnvelope } from '../shared/contracts/errors.js'
 import { AssetSchema, RLUSD_CURRENCY, RLUSD_TESTNET_ISSUER, amountFor, type Asset } from '../shared/contracts/asset.js'
 import { escrowQuote, revealEscrow, lockEscrow, verifyEscrowSignature } from './escrow.js'
 import { localEmbeddingCache } from './local-writers.js'
@@ -62,7 +65,7 @@ export function toSearchHit(article: Article, relevance: number, searchMode: Sea
 /** The app stays synchronous; locals.ready exposes asynchronous corpus loading to startup/tests. */
 export function createPublisherApp(config: PublisherConfig = {}) {
   const app = express()
-  const env = config.env ?? process.env
+  const env = loadConfig(config.env ?? process.env)
   const assetFor = (slug: string): Asset => env[`XRPL_PUBLISHER_${slug.toUpperCase().replace(/-/g, '_')}_CURRENCY`] === 'RLUSD' ? AssetSchema.parse({ currency: RLUSD_CURRENCY, issuer: env.XRPL_RLUSD_ISSUER || RLUSD_TESTNET_ISSUER, label: !env.XRPL_RLUSD_ISSUER || env.XRPL_RLUSD_ISSUER === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : 'test USD (substitute for RLUSD)' }) : 'XRP'
   const escrowEnabled = (slug: string) => rail === 'xrpl-testnet' && assetFor(slug) === 'XRP' && (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug)
   const secret = config.secret ?? process.env.PUBLISHER_SECRET
@@ -70,7 +73,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   // The only Bearer secret left guards the fault toggle; payments carry their own signed proof.
   if (faults && !secret) throw new Error('PUBLISHER_SECRET is required with PUBLISHER_FAULTS')
   const journal = config.journal instanceof PublisherJournal ? config.journal : new PublisherJournal(config.journal ?? env.PUBLISHER_DB ?? 'data/publisher.db')
-  const rail: Rail = config.rail ?? (process.env.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'xrpl-testnet' : 'simulated')
+  const rail: Rail = config.rail ?? (loadConfig(env).SETTLEMENT_RAIL === 'xrpl-testnet' ? 'xrpl-testnet' : 'simulated')
   const ledger = rail === 'xrpl-testnet' ? config.ledger ?? testnetLedger() : undefined
   const label = rail === 'xrpl-testnet' ? XRPL_LABEL : SIMULATED_LABEL
   let failNextDelivery = false
@@ -253,9 +256,9 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   })
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const malformed = error instanceof SyntaxError && 'body' in error
-    const status = error instanceof PublisherError ? error.status : malformed ? 400 : 500
+    const status = requestBodyStatus(error) ?? (error instanceof PublisherError ? error.status : malformed ? 400 : 500)
     // Never reflect input, corpus bytes, authorization headers or internal errors.
-    res.status(status).json({ error: error instanceof PublisherError ? error.message : status === 400 ? 'Invalid JSON' : 'Publisher unavailable' })
+    res.status(status).json({ ...errorEnvelope([400,413].includes(status) ? 'invalid' : 'backend_unavailable',status), error: error instanceof PublisherError ? error.message : status === 413 ? 'Request body too large' : status === 400 ? 'Invalid JSON' : 'Publisher unavailable' })
   }
   app.use(handleError)
   return app

@@ -46,7 +46,7 @@ try {
   server.server.onclose = () => { void close().catch(() => { process.exitCode = 1 }) }
   process.once('SIGINT', () => { void close().catch(() => { process.exitCode = 1 }) })
   process.once('SIGTERM', () => { void close().catch(() => { process.exitCode = 1 }) })
-  if (process.argv.includes('--http')) {
+  if (plan.mode === 'http') {
     if (config.RA_BACKEND_URL) throw new Error('HTTP host requires its local principal database')
     const store = new Store(resolve(dataDir, 'app.db'))
     const http = await startMcpHttp({ apiUrl: (await endpoint).apiUrl, store, port: plan.ports.http })

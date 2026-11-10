@@ -1,3 +1,4 @@
+import { requestBodyStatus } from './body-limit.js'
 import openapi from '../docs/api/openapi.json' with { type: 'json' }
 import { ownerSettingsRouter } from './owner-settings.js'
 import { localWriterRegistrations } from './local-writer-discovery.js'
@@ -172,8 +173,8 @@ export async function createApiApp(options: ApiOptions = {}) {
   app.use(reportsRouter(context))
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const notFound = error instanceof Error && error.message === 'Run not found'
-    const status = error instanceof OverloadedError ? 503 : error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500
-    res.status(status).json({ ...errorEnvelope(error instanceof OverloadedError ? 'overloaded' : status === 403 ? 'unauthorized' : notFound ? 'not_found' : status === 400 ? 'invalid' : 'backend_unavailable', status), error: notFound ? 'Run not found.' : status === 400 ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
+    const status = requestBodyStatus(error) ?? (error instanceof OverloadedError ? 503 : error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500)
+    res.status(status).json({ ...errorEnvelope(error instanceof OverloadedError ? 'overloaded' : status === 403 ? 'unauthorized' : notFound ? 'not_found' : [400,413].includes(status) ? 'invalid' : 'backend_unavailable', status), error: notFound ? 'Run not found.' : status === 413 ? 'Request body too large.' : status === 400 ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
   }
   app.use(handleError)
   const reconciliationJobs = new Set<Promise<void>>()

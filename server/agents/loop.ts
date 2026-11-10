@@ -19,9 +19,9 @@ import { fixtureSupports, followUpQuery, INSTRUCTION, STATUS_RANK, type Coverage
 import type { Plan } from '../../shared/contracts/index.js'
 
 export type RunLoopOptions = {
-  provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number; reputation?: Pick<Reputation, 'summaries' | 'calibrate'> & Partial<Pick<Reputation, 'recordProof'>>
+  provider?: DecisionProvider; retrieve?: (client: PublisherClient, question: string, plan?: Plan, signal?: AbortSignal) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>; writeAnswer?: typeof writeAnswer; threshold?: number; reputation?: Pick<Reputation, 'summaries' | 'calibrate'> & Partial<Pick<Reputation, 'recordProof'>>
   /** The focused follow-up search (#210); tests inject a double. */
-  followUpSearch?: (client: PublisherClient, query: string, known: PublicCandidate[]) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>
+  followUpSearch?: (client: PublisherClient, query: string, known: PublicCandidate[], signal?: AbortSignal) => Promise<Pick<Retrieved, 'candidates' | 'contents'> & Partial<Retrieved>>
 }
 const ANSWERED: CoverageStatus[] = ['supported']
 /** Did coverage improve? More facts answered, else a better total rank. */
@@ -61,15 +61,21 @@ export class RunLoop {
    */
   private recordProof(runId: string, intent: PurchaseIntent) {
     const run = this.store.getRun(runId)
-    const recorded = Array.isArray(run.checkpoint.trustRecorded) ? run.checkpoint.trustRecorded as string[] : []
     const outcome = OUTCOME[intent.status]
     const candidate = run.candidates.find(c => sameSource(c, intent) && c.tier === 'PAID')
-    if (!outcome || recorded.includes(intent.intentId) || !candidate?.wallet || !this.options.reputation?.recordProof) return
+    if (!outcome || !candidate?.wallet || !this.options.reputation?.recordProof) return
     try {
-      // The signed promise goes along: a failed proof records it as broken (observed 0, #205).
-      this.options.reputation.recordProof({ publisherSlug: candidate.publisherSlug ?? candidate.profileId, wallet: candidate.wallet, outcome, runId, claimed: candidate.manifest?.relevance ?? candidate.relevance })
-      // Synchronous with the record above: no await between them, so it is recorded at most once.
-      this.store.updateRun(runId, { checkpoint: { ...this.store.getRun(runId).checkpoint, trustRecorded: [...recorded, intent.intentId] } })
+      const apply = () => {
+        const latest=this.store.getRun(runId), recorded=Array.isArray(latest.checkpoint.trustRecorded) ? latest.checkpoint.trustRecorded as string[] : []
+        const outcomes=latest.checkpoint.trustOutcomes as Record<string,string> | undefined
+        if (outcomes?.[intent.intentId] === outcome || recorded.includes(intent.intentId) && !outcomes?.[intent.intentId]) return
+        this.options.reputation!.recordProof!({intentId:intent.intentId,publisherSlug:candidate.publisherSlug ?? candidate.profileId,wallet:candidate.wallet!,outcome,runId,claimed:candidate.manifest?.relevance ?? candidate.relevance})
+        const checkpoint=this.store.getRun(runId).checkpoint
+        this.store.updateRun(runId,{checkpoint:{...checkpoint,trustRecorded:[...new Set([...recorded,intent.intentId])],trustOutcomes:{...outcomes,[intent.intentId]:outcome}}})
+      }
+      // The transaction also covers custom reputation adapters and their checkpoint marker.
+      if (typeof this.store.withTransaction === 'function') this.store.withTransaction(apply)
+      else apply()
     } catch { /* reputation never blocks the run */ }
   }
   /** A failed proof: challenge the writer (#132), then the outcome lowers trust whether or not it refunds (D5). */
@@ -268,7 +274,7 @@ export class RunLoop {
     this.store.appendEvent(runId, { type: 'FOLLOW_UP', label: `Searching again for: ${target.text}`, data: { requirementId: target.id, query } })
     let found: Awaited<ReturnType<NonNullable<RunLoopOptions['followUpSearch']>>>
     try {
-      found = await (this.options.followUpSearch ?? followUpSearch)(this.client, query, run.candidates)
+      found = await (this.options.followUpSearch ?? followUpSearch)(this.client, query, run.candidates, this.signal(runId))
     } catch {
       save({ status: 'failed' })
       this.store.appendEvent(runId, { type: 'FOLLOW_UP', label: 'The focused search was unavailable; continuing with what was read.', data: { requirementId: target.id, failed: true } })
@@ -363,7 +369,7 @@ export class RunLoop {
         this.trace(runId, 'SEARCH', 'Searching publisher public metadata.')
         this.trace(runId, 'READ_FREE', 'Reading free sources only.')
         const plan = PlanSchema.safeParse(run.checkpoint.plan)
-        const retrieved = await (this.options.retrieve ?? retrieve)(this.client, run.question, plan.success ? plan.data : undefined)
+        const retrieved = await (this.options.retrieve ?? retrieve)(this.client, run.question, plan.success ? plan.data : undefined, this.signal(runId))
         // A PAID hit with a bad manifest never reaches Clef; the run records why (#138).
         for (const drop of retrieved.dropped ?? []) this.store.appendEvent(runId, { type: 'MANIFEST_DROPPED', label: `Dropped ${drop.resourceId}: ${drop.reason}.`, data: { ...drop } })
         if (retrieved.search) this.store.updateRun(runId, { labels: { ...this.store.getRun(runId).labels, search: retrieved.search } })
@@ -442,7 +448,7 @@ export class RunLoop {
         const candidate = decision.rows.find(row => decision.selectedSourceKey ? sourceKey(row.candidate) === decision.selectedSourceKey : row.candidate.resourceId === decision.selectedResourceId)!.candidate
         // Full SHA-256 in base64url keeps IOU quote memos below XRPL's 1 KiB
         // serialized Memo limit without dropping any identity or asset commitment.
-        const intentId = process.env.ESCROW_ASSET === 'test-iou'
+        const intentId = loadConfig().ESCROW_ASSET === 'test-iou'
           ? createHash('sha256').update(JSON.stringify([runId, round, sourceKey(candidate)])).digest('base64url')
           : candidate.source ? (process.env.ESCROW_MODE === 'key-reveal' ? createHash('sha256').update(JSON.stringify([runId, round, sourceKey(candidate)])).digest('hex') : JSON.stringify([runId, round, sourceKey(candidate)])) : `${runId}:${round}:${candidate.resourceId}:${candidate.version}`
         this.trace(runId, 'BUY', 'Policy selected one purchase within budget.', { intentId })

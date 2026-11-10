@@ -108,7 +108,21 @@ export class Reputation {
    * A proof outcome (D5). A failed proof also records the broken promise for calibration (#205): observed = 0, with no
    * re-scoring of a body that arrived without a verified grant. The loop calls this once per intent.
    */
-  recordProof(input: { publisherSlug: string; wallet: string; outcome: ProofOutcome; runId?: string; claimed?: number }): ReputationRecord {
+  recordProof(input: { publisherSlug: string; wallet: string; outcome: ProofOutcome; runId?: string; claimed?: number; intentId?: string }): ReputationRecord {
+    if (input.intentId) {
+      const kind = input.outcome === 'PASS' || input.outcome === 'REJECTED' ? 'proof' : 'challenge'
+      return this.store.applyConsequence(input.intentId, kind, input.outcome, () => {
+        const prior = this.store.consequence(input.intentId!, 'proof')
+        const result = prior && kind === 'challenge'
+          ? this.update(input.publisherSlug,input.wallet,r => scored({...r, s:r.s + (input.outcome === 'REFUSED' ? this.config.weights.failedRefused - this.config.weights.failedRejected : 0), refunds:r.refunds + (input.outcome === 'REFUNDED' ? 1 : 0), refusals:r.refusals + (input.outcome === 'REFUSED' ? 1 : 0)},this.config),input.runId,`challenge ${input.outcome.toLowerCase()}`)
+          : this.recordProof({...input,intentId:undefined})
+        if (input.runId) {
+          const run = this.store.getRun(input.runId), recorded = Array.isArray(run.checkpoint.trustRecorded) ? run.checkpoint.trustRecorded as string[] : []
+          this.store.updateRun(input.runId,{checkpoint:{...run.checkpoint,trustRecorded:[...new Set([...recorded,input.intentId!])],trustOutcomes:{...(run.checkpoint.trustOutcomes as Record<string,string> ?? {}),[input.intentId!]:input.outcome}}})
+        }
+        return result
+      }) ?? this.get(input.publisherSlug,input.wallet)
+    }
     const record = this.update(input.publisherSlug, input.wallet, r => applyProof(r, input.outcome, undefined, this.config), input.runId, `proof ${input.outcome.toLowerCase()}`)
     if (input.outcome === 'PASS' || input.claimed === undefined) return record
     return this.recordCalibration({ publisherSlug: input.publisherSlug, wallet: input.wallet, claimed: input.claimed, observed: 0, runId: input.runId, note: 'proof failed' })
@@ -150,9 +164,13 @@ export class Reputation {
     } catch { return skip('relevance re-measure unavailable') }
     // No await between this check and the record: a second caller for the same intent sees it and skips.
     if (calibrated(run.runId).includes(intent.intentId)) return { status: 'SKIPPED', reason: 'Already calibrated.' }
-    const record = this.recordCalibration({ publisherSlug, wallet: candidate.wallet, claimed, observed, runId: run.runId })
-    const latest = this.store.getRun(run.runId)
-    this.store.updateRun(run.runId, { checkpoint: { ...latest.checkpoint, calibrated: [...calibrated(run.runId), intent.intentId] } })
+    const record = this.store.applyConsequence(intent.intentId, 'calibration', 'measured', () => {
+      const record = this.recordCalibration({ publisherSlug, wallet: candidate.wallet!, claimed, observed, runId: run.runId })
+      const latest = this.store.getRun(run.runId)
+      this.store.updateRun(run.runId, { checkpoint: { ...latest.checkpoint, calibrated: [...calibrated(run.runId), intent.intentId] } })
+      return record
+    })
+    if (!record) return {status:'SKIPPED',reason:'Already calibrated.'}
     return { status: 'RECORDED', record }
   }
 }

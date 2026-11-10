@@ -9,13 +9,13 @@ import { loadConfig } from './config.js'
 import { loopback } from './admission.js'
 import pkg from '../package.json' with { type: 'json' }
 
-import { OwnerSettings } from './owner-config.js'
+import { OwnerSettings, validateOwnerSettings } from './owner-config.js'
 export { OwnerSettings } from './owner-config.js'
 const accounts = ['LLM_API_KEY', 'DEEPSEEK_API_KEY', 'OPENAI_API_KEY', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'] as const
 export function ownerSettingsRouter({ store, payer }: ApiContext) {
   const router = Router(), csrf = randomBytes(32).toString('hex'), config = loadConfig()
   const file = resolve(config.RA_DATA_DIR || dirname(config.APP_DB || 'data/app.db'), 'owner-settings.json')
-  const values = () => ({ MCP_MAX_BUDGET_MINOR: Number(config.MCP_MAX_BUDGET_MINOR ?? 0), MCP_DAILY_CAP_MINOR: Number(config.MCP_DAILY_CAP_MINOR ?? 0), WALLET_DAILY_CAP_MINOR: Number(config.WALLET_DAILY_CAP_MINOR ?? 2000), SETTLEMENT_RAIL: config.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'xrpl-testnet' : 'simulated', ESCROW_MODE: config.ESCROW_MODE || 'key-reveal', ESCROW_ASSET: config.ESCROW_ASSET || 'XRP', ANCHOR_RAIL: config.ANCHOR_RAIL || 'xrpl-testnet' })
+  const values = () => ({ MCP_MAX_BUDGET_MINOR: Number(config.MCP_MAX_BUDGET_MINOR ?? 0), MCP_DAILY_CAP_MINOR: Number(config.MCP_DAILY_CAP_MINOR ?? 0), WALLET_DAILY_CAP_MINOR: Number(config.WALLET_DAILY_CAP_MINOR ?? 2000), SETTLEMENT_RAIL: config.SETTLEMENT_RAIL === 'xrpl-testnet' ? 'xrpl-testnet' : 'simulated', ESCROW_MODE: config.ESCROW_MODE || 'key-reveal', ESCROW_ASSET: config.ESCROW_ASSET === 'test-iou' ? 'TEST-SGD' : config.ESCROW_ASSET || 'XRP', ANCHOR_RAIL: config.ANCHOR_RAIL || 'xrpl-testnet' })
   let pending: Record<string, unknown> = {}
   try { pending = OwnerSettings.partial().parse(JSON.parse(readFileSync(file, 'utf8'))) } catch { /* Missing or invalid settings never grant authority. */ }
   // Browser metadata is forwarded only by the local UI proxy. Agent bearers never acquire owner authority.
@@ -27,11 +27,12 @@ export function ownerSettingsRouter({ store, payer }: ApiContext) {
     if (req.method !== 'GET' && req.get('X-Settings-CSRF') !== csrf) return void res.sendStatus(403)
     next()
   })
-  router.get('/api/settings', (_req, res) => res.json({ values: { ...values(), ...pending }, csrf, version: pkg.version, storage: dirname(file), restartRequired: Object.keys(pending).length > 0,
+  router.get('/api/settings', (_req, res) => res.json({ values: { ...values(), ...pending, ESCROW_ASSET: pending.ESCROW_ASSET === 'test-iou' ? 'TEST-SGD' : pending.ESCROW_ASSET || values().ESCROW_ASSET }, csrf, version: pkg.version, storage: dirname(file), restartRequired: Object.keys(pending).length > 0,
     runs: store.listRuns().map(r => ({runId:r.runId, question:r.question})), keys: Object.fromEntries(accounts.map(k => [k, config[k] ? '••••••••' : 'Not configured'])) }))
   router.post('/api/settings', (req, res) => {
     const parsed = OwnerSettings.safeParse(req.body)
     if (!parsed.success) return void res.status(400).json({ error: 'Invalid settings' })
+    try { validateOwnerSettings(parsed.data,config) } catch { return void res.status(400).json({error:'TEST-SGD requires key-reveal and a configured Testnet issuer.'}) }
     // Durable audit before saving. No active run is granted additional authority by this write.
     store.audit.append({ kind: 'policy', surface: 'owner-ui', principal: 'human', data: { action: 'settings-save', before: values(), after: parsed.data, applies: 'restart' } })
     mkdirSync(dirname(file), { recursive: true, mode: 0o700 })
