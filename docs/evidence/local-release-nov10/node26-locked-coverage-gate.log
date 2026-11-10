@@ -1,0 +1,104 @@
+{
+  "desktop": {
+    "branches": {
+      "covered": 154,
+      "total": 188
+    },
+    "lines": {
+      "covered": 148,
+      "total": 925
+    }
+  },
+  "mcp": {
+    "branches": {
+      "covered": 212,
+      "total": 263
+    },
+    "lines": {
+      "covered": 365,
+      "total": 457
+    }
+  },
+  "publisher": {
+    "branches": {
+      "covered": 655,
+      "total": 783
+    },
+    "lines": {
+      "covered": 1029,
+      "total": 1080
+    }
+  },
+  "payments": {
+    "branches": {
+      "covered": 1895,
+      "total": 2171
+    },
+    "lines": {
+      "covered": 2628,
+      "total": 2654
+    }
+  },
+  "sdk": {
+    "branches": {
+      "covered": 565,
+      "total": 609
+    },
+    "lines": {
+      "covered": 454,
+      "total": 474
+    }
+  },
+  "server": {
+    "branches": {
+      "covered": 3210,
+      "total": 3652
+    },
+    "lines": {
+      "covered": 3714,
+      "total": 3953
+    }
+  },
+  "providers": {
+    "branches": {
+      "covered": 479,
+      "total": 524
+    },
+    "lines": {
+      "covered": 626,
+      "total": 631
+    }
+  },
+  "shared": {
+    "branches": {
+      "covered": 681,
+      "total": 707
+    },
+    "lines": {
+      "covered": 824,
+      "total": 824
+    }
+  },
+  "web": {
+    "branches": {
+      "covered": 1509,
+      "total": 1891
+    },
+    "lines": {
+      "covered": 1869,
+      "total": 2114
+    }
+  }
+}
+file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/check-coverage.mjs:40
+      if (!actual.total || actual.covered * baseline.total < baseline.covered * actual.total) throw new Error(name + ' ' + metric + ' regressed')
+                                                                                                    ^
+
+Error: server lines regressed
+    at enforce (file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/check-coverage.mjs:40:101)
+    at file:///Users/speedpowermac/.t3/worktrees/tftf/t3-86b4721f-27dbe2970ca55533/scripts/check-coverage.mjs:57:5
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:646:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.3.1

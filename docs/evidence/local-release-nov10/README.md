@@ -98,3 +98,25 @@ The publisher correctly refused this run; it does not qualify for a
 performance-only merge exception. A durable finish-retirement/restart regression
 test adds missing payment recovery coverage without changing product code or
 coverage floors. A fresh full rehearsal follows on supported Node 26.3.1.
+
+## Locked Node 26 repeat, 11 Nov
+
+Source `8ee186de`, full gate 19/19 PASS, acceptance 664.126 s FAILED. The new
+journal test lifted payments lines to 2,628 / 2,654, passing their floor. The
+coverage gate then exposed server lines at 3,714 / 3,953, seven covered lines
+below its unchanged 2,499 / 2,655 baseline. Every other component floor passes.
+The direct audit-export router test addresses that separate gap; existing export
+scenarios exercise child processes. The complete coverage check will run before
+the next full publisher attempt. No baseline or product code changed.
+
+Full soak: 2,000 asks, zero failed, passing burst and 20 restarts. RSS slope
+**19.706597 / 5 MiB per 100 asks** and median growth **419.584 / 100 MiB** failed;
+max 1,455.294 / 1,536 MiB, loop p99 32.391 / 50 ms and latency drift
+14.740 / 250 ms passed. Starting load was 8.66 / 8.53 / 7.19. These are measured
+memory misses, not proven host-load noise. All other acceptance rows passed.
+Publication correctly stopped; this still has a non-performance failure.
+
+[Acceptance](node26-locked-acceptance.json), [raw soak](node26-locked-soak.json.gz),
+[summary/hash](node26-locked-soak-summary.json), [gate](node26-locked-full-gate.json),
+[publisher refusal](node26-locked-publisher.log),
+[coverage failure](node26-locked-coverage-gate.log).
