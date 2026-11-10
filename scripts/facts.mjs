@@ -1,0 +1,176 @@
+// One source for every number a judge reads (README, docs/, docs/submission/, the deck lane).
+//   node scripts/facts.mjs           → writes docs/submission/facts.json and fills every marked fact
+//   node scripts/facts.mjs --check   → exits 1 if facts.json or any marked fact is stale (runs in `npm run hygiene`)
+//   node scripts/facts.mjs --get prs → prints one value (for scripts and the deck export)
+// Inputs are generated or committed evidence only: site/progress/data.json (git and gh counts at a
+// pinned SHA, from `npm run site:progress`), the held-out results, the receipt-conformance manifest,
+// the writer-onboarding and fee probes, and BUILDER-FEEDBACK.md counts (already in data.json).
+// In Markdown, a fact is written <!--f:key-->value<!--/f-->; GitHub hides the comments.
+// Refresh after any new measurement: `npm run site:progress -- --at origin/main && node scripts/facts.mjs`.
+// The blind v5 bank is never opened: only its committed results file is read, once it exists.
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+const root = join(import.meta.dirname, '..')
+const read = path => readFileSync(join(root, path), 'utf8')
+const json = path => JSON.parse(read(path))
+const OUT = 'docs/submission/facts.json'
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const day = iso => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}`
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
+/** Small counts as spoken words (pitch and video scripts); larger ones stay digits. */
+export const spoken = n => WORDS[n] ?? n.toLocaleString('en-US')
+
+/** Stop on a missing input, like build-progress-data.mjs: a fact is never guessed. */
+function need(value, label) {
+  if (value === undefined || value === null || value === '' || (typeof value === 'number' && !Number.isFinite(value))) throw new Error(`facts: missing ${label}`)
+  return value
+}
+export function build() {
+  const progress = json('site/progress/data.json')
+  const h = progress.headline
+  const fact = (value, source, definition) => ({ value: String(need(value, definition)), source, definition })
+  const P = 'site/progress/data.json'
+
+  // Held-out: v5 once its results are committed, otherwise v4 with its date.
+  const v5 = 'docs/evidence/v5-heldout/v5/results.json', v5n = 'docs/evidence/v5-heldout/v5-negatives/results.json'
+  const measuredV5 = existsSync(join(root, v5))
+  const bank = measuredV5 ? 'v5' : 'v4'
+  const pos = measuredV5 ? v5 : 'docs/evidence/v4-heldout/v4/results.json'
+  const neg = measuredV5 ? v5n : 'docs/evidence/v4-heldout/v4-negatives/results.json'
+  const s = json(pos).summary, sn = json(neg).summary
+  const heldDir = `docs/evidence/${bank}-heldout/README.md`
+  const held = { n: need(s.buyAndCite?.n, 'held-out n'), N: need(s.buyAndCite?.N, 'held-out N') }
+  const off = { n: need(sn.negativeBuys?.n, 'off-topic buys'), N: need(sn.negativeBuys?.N, 'off-topic N') }
+  // The evidence packet's result table states terminal gate violations per bank.
+  const violations = [...read(heldDir).matchAll(/\| terminal gate violations \| (\d+) \|/g)].map(m => Number(m[1]))
+  if (violations.length !== 2) need(null, `two "terminal gate violations" rows in ${heldDir}`)
+  const dev = id => { const b = need(progress.metrics.banks.find(x => x.id === id), `dev bank ${id}`); return `${b.n}/${b.N}` }
+
+  const cases = json('tests/fixtures/receipt-conformance/manifest.json').cases
+  const onboarding = json('docs/evidence/round4-j3/slim-onboarding.json')
+  const probe = json('docs/evidence/round3-a/probe.json').timings[0].transactions
+  const fee = type => need(probe.find(t => t.type === type)?.feeDrops, `${type} fee`)
+  const first = Object.fromEntries(progress.metrics.firstRun.map(m => [m.label, m]))
+  const tries = progress.metrics.tryRuns
+  const fb = progress.feedback
+  const sha = progress.source_sha.slice(0, 8)
+  const counted = `counted at ${sha} on ${day(progress.as_of)}`
+
+  const facts = {
+    // Dates and provenance
+    as_of: fact(`${day(progress.as_of)} ${progress.as_of.slice(0, 4)}`, P, 'day the counts below were taken (SGT)'),
+    sha: fact(sha, P, 'main commit the counts were taken at'),
+    since: fact(day(progress.since.date), P, 'first day counted as "since SingHacks" (SGT)'),
+    event: fact(progress.event.label, P, 'SingHacks event dates'),
+    // Progress since SingHacks (git and gh queries in data.json "queries")
+    prs: fact(h.prs, P, `main-branch PRs merged on or after ${progress.since.label} (SGT), ${counted}`),
+    commits: fact(h.commits, P, `commits after the last pre-21 Sep commit, ${counted}`),
+    days: fact(h.days, P, `calendar days from ${progress.since.label} to ${day(progress.as_of)}`),
+    releases: fact(h.releases, P, 'published GitHub releases reachable from the counted commit (prereleases included)'),
+    release: fact(progress.today.release, P, 'latest published release'),
+    release_day: fact(day(progress.today.releaseDay), P, 'day the latest release was published (SGT)'),
+    transactions: fact(h.transactions, P, 'Testnet transactions on the /ledger/ page, each re-checked live in the browser'),
+    // Judge questions
+    heldout_bank: fact(bank, pos, 'blind held-out bank the headline number comes from'),
+    heldout: fact(`${held.n}/${held.N}`, pos, `${bank} blind held-out questions bought and cited, run once`),
+    heldout_n: fact(spoken(held.n), pos, 'held-out bought and cited, spoken'),
+    heldout_N: fact(spoken(held.N), pos, 'held-out bank size, spoken'),
+    heldout_on: fact(read(heldDir).split('\n')[0].match(/\((\d{1,2} [A-Z][a-z]{2}) \d{4}\)/)?.[1], heldDir, 'day the held-out bank was run (the evidence packet\'s title date)'),
+    answers_it: fact(`${need(s.answersIt?.n, 'answersIt n')}/${need(s.answersIt?.N, 'answersIt N')}`, pos, 'held-out answers whose key fact leads'),
+    offtopic: fact(`${off.n}/${off.N}`, neg, `${bank} off-topic questions that led to a purchase`),
+    offtopic_N: fact(spoken(off.N), neg, 'off-topic bank size, spoken'),
+    heldout_source: fact(heldDir, heldDir, 'evidence packet for the held-out numbers'),
+    heldout_violations: fact(violations.reduce((a, b) => a + b, 0), heldDir, 'terminal gate violations across the held-out and off-topic banks'),
+    dev_v1: fact(dev('v1'), P, 'v1 development bank bought and cited (tuned on; not held-out)'),
+    dev_v3: fact(dev('v3'), P, 'v3 development bank bought and cited at threshold 0.20 (tuned on; not held-out)'),
+    // One-line judge path
+    try_s: fact(tries.at(-1).seconds.toFixed(1), P, 'cold `try --testnet` wall time, empty npm cache, one measurement'),
+    try_misses: fact(`${tries.filter(r => !r.pass).length} of ${tries.length}`, P, `cold \`try\` runs that overran the ${progress.metrics.tryLimit} s limit`),
+    mcp_mb: fact(first['Download size'].after.toFixed(1), P, 'MCP package download, MB'),
+    mcp_init_s: fact(first['MCP server starts'].after.toFixed(1), P, 'cold MCP initialize, seconds'),
+    app_ready_s: fact(first['Testnet app ready'].after.toFixed(1), P, 'zero-clone Testnet app ready, seconds'),
+    // Verification
+    vectors: fact(cases.length, 'tests/fixtures/receipt-conformance/manifest.json', 'shared receipt-conformance cases; TypeScript and Python must agree on all'),
+    vectors_golden: fact(cases.filter(c => c.expected).length, 'tests/fixtures/receipt-conformance/manifest.json', 'conformance cases that must pass'),
+    vectors_tampered: fact(cases.filter(c => !c.expected).length, 'tests/fixtures/receipt-conformance/manifest.json', 'tampered conformance cases that must fail'),
+    // Writers and cost
+    writer_s: fact(need(onboarding.coldInitPlusPublishSeconds, 'writer onboarding').toFixed(1), 'docs/evidence/round4-j3/slim-onboarding.json', '`init` + `publish` to a validated Testnet writer Credential, one measurement'),
+    fee_create: fact(fee('EscrowCreate'), 'docs/evidence/round3-a/probe.json', 'EscrowCreate network fee, drops'),
+    fee_finish: fact(fee('EscrowFinish'), 'docs/evidence/round3-a/probe.json', 'EscrowFinish (key reveal) network fee, drops'),
+    fee_drops: fact(fee('EscrowCreate') + fee('EscrowFinish'), 'docs/evidence/round3-a/probe.json', 'network fees per key-reveal purchase, drops'),
+    // Builder feedback (counts in data.json follow BUILDER-FEEDBACK.md's own definitions)
+    findings: fact(fb.findings, P, 'numbered findings B01–Bnn in docs/BUILDER-FEEDBACK.md'),
+    ranked: fact(fb.ranked, P, 'ranked findings with runnable repros'),
+    submissions: fact(fb.submissions, P, 'research submissions sent in September'),
+    submitted_on: fact(fb.submittedOn, P, 'days those submissions were sent'),
+    drafts: fact(fb.drafts, P, 'upstream issue drafts in docs/feedback/upstream/'),
+    filed: fact(fb.filed, P, 'upstream issues filed with a public link'),
+  }
+  const v = k => facts[k].value
+  // Canonical sentences other surfaces reuse word for word (deck, Q&A, form).
+  const copy = {
+    feedback_line: `${v('ranked')} ranked findings with runnable repros · ${v('findings')} numbered findings (B01–B${v('findings')}) · ${v('submissions')} September submissions (${v('submitted_on')}) · ${v('drafts')} upstream drafts, ${v('filed')} filed`,
+    progress_line: `${v('prs')} pull requests merged since ${v('since')} (${counted}) · ${v('releases')} releases · ${v('transactions')} Testnet transactions you can re-check`,
+    heldout_line: `${bank} blind held-out: ${v('heldout')} bought and cited, ${v('offtopic')} off-topic purchases (run once, ${v('heldout_on')}; fixture decision model, team-authored writers, XRPL Testnet)`,
+    singhacks_then: 'At SingHacks the prototype let a language model plan each purchase; payment was a fixture by default, with optional Testnet settlement.',
+    hosted: 'Shared XRPL Testnet sandbox · no real value · open 13–19 Nov',
+  }
+  for (const [key, value] of Object.entries(copy)) facts[key] = { value, source: 'scripts/facts.mjs', definition: 'canonical sentence built from the facts above' }
+  return {
+    schema: 1,
+    note: 'Generated by node scripts/facts.mjs; do not edit. Each value names its source and definition.',
+    as_of: progress.as_of,
+    source_sha: progress.source_sha,
+    links: {
+      hosted: 'https://ra-front-651013803640.asia-southeast1.run.app',
+      hosted_window: '13–19 Nov 2026',
+      repo: 'https://github.com/Collaboration95/theFastandtheFungible',
+      release: `https://github.com/Collaboration95/theFastandtheFungible/releases/tag/${v('release')}`,
+      progress: 'https://collaboration95.github.io/theFastandtheFungible/progress/',
+      replay: 'https://collaboration95.github.io/theFastandtheFungible/demo/',
+      ledger: 'https://collaboration95.github.io/theFastandtheFungible/ledger/',
+      site: 'https://collaboration95.github.io/theFastandtheFungible/',
+      deck: 'https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf',
+    },
+    facts,
+  }
+}
+
+const MARK = /<!--f:([A-Za-z0-9_]+)-->([\s\S]*?)<!--\/f-->/g
+/** Replace every marked value with the current fact; unknown keys are errors. */
+export function fill(text, facts, file = 'text') {
+  return text.replace(MARK, (_, key) => {
+    if (!facts[key]) throw new Error(`facts: ${file} uses unknown fact "${key}"`)
+    return `<!--f:${key}-->${facts[key].value}<!--/f-->`
+  })
+}
+/** Rendered text: what GitHub shows once the comments are hidden. */
+export const strip = text => text.replace(/<!--\/?f(?::[A-Za-z0-9_]+)?-->/g, '')
+
+export function markedFiles() {
+  const files = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.md'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean)
+  return files.filter(f => existsSync(join(root, f)) && read(f).includes('<!--f:'))
+}
+
+function main() {
+  const check = process.argv.includes('--check')
+  const data = build()
+  if (process.argv.includes('--get')) { const key = process.argv[process.argv.indexOf('--get') + 1]; console.log(need(data.facts[key], `fact ${key}`).value); return }
+  const out = JSON.stringify(data, null, 2) + '\n'
+  const stale = []
+  if (!existsSync(join(root, OUT)) || read(OUT) !== out) { if (check) stale.push(OUT); else writeFileSync(join(root, OUT), out) }
+  const files = markedFiles()
+  for (const file of files) {
+    const before = read(file), after = fill(before, data.facts, file)
+    if (before !== after) { if (check) stale.push(file); else writeFileSync(join(root, file), after) }
+  }
+  if (stale.length) { console.error(`facts: stale, run node scripts/facts.mjs:\n  ${stale.join('\n  ')}`); process.exit(1) }
+  console.log(`facts: ${check ? 'ok' : 'written'} (${Object.keys(data.facts).length} facts at ${data.source_sha.slice(0, 8)}, ${files.length} files)`)
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try { main() } catch (error) { console.error(error.message); process.exit(1) }
+}

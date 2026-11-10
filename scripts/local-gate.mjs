@@ -68,7 +68,7 @@ export function classify(paths, { knownBase = true, full = false } = {}) {
     replay: all || paths.some(file => /^(?:src|shared|demo|site|design)\//.test(file) || /^tests\/(?:browser-demo|judge-path|ledger-viewer|ledger-sockets)/.test(file)),
     python: all || paths.some(file => /^(?:packages\/sdk(?:-python)?|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures)\//.test(file)),
     desktop: all || paths.some(file => file === 'index.html' || /^(?:desktop|src|server|shared|publisher|sdk|mcp|data|eval\/decisions)\//.test(file) || /^scripts\/(?:record|mcp-demo)\.mjs$/.test(file)),
-    readme: code || paths.some(file => file === 'README.md' || file === 'docs/contracts/ARCHITECTURE.md' || file.startsWith('docs/media/')),
+    readme: code || paths.some(file => ['README.md', 'docs/contracts/ARCHITECTURE.md', 'docs/numbers.md', 'docs/install.md'].includes(file) || file.startsWith('docs/media/')),
   }
 }
 
@@ -139,7 +139,7 @@ export function inputsFor(id, files, read, unknown = false) {
   if (unknown || id === 'hygiene') return files
   const common = file => /^(?:package(?:-lock)?\.json|\.nvmrc|tsconfig[^/]*\.json|\.gitignore)$/.test(file)
   let match
-  if (id === 'readme') match = file => /^(?:README\.md|scripts\/readme-|docs\/media\/architecture\.svg|eval\/scorecard\/latest\.json)/.test(file)
+  if (id === 'readme') match = file => /^(?:README\.md|docs\/(?:numbers|install)\.md|scripts\/readme-|scripts\/install-snippets\.mjs|docs\/media\/(?:architecture|key-reveal)\.svg|eval\/scorecard\/latest\.json)/.test(file)
   else if (id === 'gate-tests') match = file => /^scripts\/local-gate|^shared\/resource-scope\.ts$/.test(file)
   else if (id === 'lint') match = file => /\.(?:[cm]?[jt]sx?)$/.test(file) || /^eslint/.test(file)
   else if (id === 'typecheck') match = file => /^(?:src|server|shared|publisher|sdk|mcp|examples|tests|eval|demo)\//.test(file) || /^(?:scripts\/.*\.ts|(?:vite|playwright|vitest).*\.ts)$/.test(file)
