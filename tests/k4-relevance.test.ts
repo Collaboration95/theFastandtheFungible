@@ -20,9 +20,9 @@ it('documents a small glossary and retrieves challenge and injection synonyms wi
  const index=await buildIndex(articles)
  expect(expandProtocolQuery('x402 402 response')).toContain('payment-required')
  expect(expandProtocolQuery('What did the central bank change?')).not.toContain('decentralized identifier')
- expect(expandProtocolQuery('Which transaction sets a DID?')).toContain('didset')
+ expect(expandProtocolQuery('Which transaction sets a DID?')).toContain('DIDSet')
  expect(topicMatches('Which transaction sets a DID?', 'DIDSet transactions')).toBe(true)
- expect(expandProtocolQuery('automated market maker deposit')).toContain('ammdeposit')
+ expect(expandProtocolQuery('automated market maker deposit')).toContain('AMMDeposit')
  expect((await searchIndex(index,'What does an x402 402 response contain?',5)).ranked[0]?.articleId).toBe('challenge')
  expect((await searchIndex(index,'How can I stop a prompt-injected AI agent from draining its wallet?',5)).ranked[0]?.articleId).toBe('safety')
 })
@@ -33,9 +33,25 @@ it.each(['Who won the 2026 Singapore Grand Prix?','Which Singapore banks have th
  expect(result.selectedResourceId).toBeUndefined()
  expect(summarizeAnswer(question,exampleAnswer,[exampleContent],[candidate]).lead).toEqual([])
 })
-it('does not buy spending-controls evidence for payment finality',()=>{
+it('does not buy spending-controls evidence for payment finality',async()=>{
  expect(topicMatches('When is an XRP payment actually final?', 'Where should agent spending controls live? authorization wallet budget')).toBe(false)
  expect(topicMatches('When is an XRP payment actually final?', 'XRPL validated ledger settlement finality')).toBe(true)
+ const provider=new FixtureDecisionProvider(); provider.judgeCandidate=async()=>({addressesGap:1,credibility:2,originality:{original:1,rewrite:0,overlap:0}})
+ const candidate={...exampleCandidate,title:'Where should XRPL agent spending controls live?',facets:['XRPL','authorization','wallet','budget'],tier:'PAID' as const,price:{amountMinor:30,currency:'SGD' as const},authority:2,relevance:1}
+ const result=await decide({question:'When is an XRP payment actually final?',gap:'When is an XRP payment actually final?',requirement:true,conclusion:'',candidates:[candidate],readSources:[],budgetMinor:200,spentMinor:0,reservedMinor:0,perSourceCapMinor:100,round:1,provider})
+ expect(result.selectedResourceId).toBeUndefined()
+})
+
+it('leads with the requested field instead of the transaction already named in the question',()=>{
+ const texts=['StreamCreate creates a Stream for its specified receiver.','ReleaseAfter sets the earliest release time.']
+ const content={...exampleContent,title:'StreamCreate fields',body:texts.join(' '),spans:texts.map((text,i)=>({id:`p${i}`,text}))}
+ const candidate={...exampleCandidate,title:content.title,facets:['StreamCreate','fields']}
+ expect(summarizeAnswer('Which StreamCreate field limits the release time?',exampleAnswer,[content],[candidate]).lead?.[0].text).toBe(texts[1])
+})
+it('accepts descriptive questions through a matching protocol topic rather than generic prose',()=>{
+ expect(topicMatches('Which EscrowCreate field returns the money if the receiver never finishes?', 'XRPL conditional escrow EscrowCancel refund')).toBe(true)
+ expect(topicMatches('What transaction cost does the XRP Ledger charge for a small transfer?', 'XRPL transaction fees and drops')).toBe(true)
+ expect(topicMatches('Which public WebSocket address connects my client to XRPL Testnet?', 'XRPL public endpoint connection settings')).toBe(true)
 })
 it('leads a causal question with the cause instead of a fee caveat, preserving exact bytes',()=>{
  const texts=['The wallet transaction fee is separate from the trust line cost.','A trust line increases the owner reserve because it adds an owned ledger object.']

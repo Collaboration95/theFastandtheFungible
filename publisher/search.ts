@@ -1,4 +1,4 @@
-import { expandProtocolQuery, topicOverlap } from '../shared/relevance.js'
+import { expandProtocolQuery, topicMatches, topicOverlap } from '../shared/relevance.js'
 import { searchText, searchWords, keywordCoverage } from './search-text.js'
 // Per-publisher full-text + vector search (D2, #123). Node only; never import from src/.
 import { existsSync, readFileSync } from 'node:fs'
@@ -97,7 +97,7 @@ export async function searchIndex(index: PublisherIndex, term: string, k: number
     // A returned hit matched something: never promise exactly 0.
     return vector ? cosineRelevance(cosine(queryVector!, vector)) : keywordRelevance(score)
   }
-  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) })).filter(hit => mode !== 'keyword' || Math.max(keywordCoverage(term, index.terms?.get(hit.articleId) ?? new Set()), topicOverlap(term, [...(index.terms?.get(hit.articleId) ?? [])].join(' '))) >= 0.5).slice(0, k)
+  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) })).filter(hit => mode !== 'keyword' || Math.max(keywordCoverage(term, index.terms?.get(hit.articleId) ?? new Set()), topicOverlap(term, [...(index.terms?.get(hit.articleId) ?? [])].join(' '))) >= 0.5 || topicMatches(term, [...(index.terms?.get(hit.articleId) ?? [])].join(' '))).slice(0, k)
   return { mode, ranked }
 }
 

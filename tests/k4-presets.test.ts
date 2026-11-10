@@ -23,7 +23,6 @@ it.each(TESTNET_QUESTIONS)('$label leads with its requested fact',async q=>{
  await loop.start(run.runId)
  const result=store.getRun(run.runId),answer=result.answers.at(-1)!
  expect(result.phase).toBe('DONE')
- if (process.env.K4_PRESET_DIAGNOSTICS) (await import('node:fs')).writeFileSync(`/tmp/k4-preset-${q.id}.json`, JSON.stringify(result,null,2))
  const lead=answer.lead?.map(l=>l.text).join(' ')
  expect(lead).toMatchSnapshot(q.id)
  expect(lead?.split(/\s+/).length).toBeLessThanOrEqual(40)

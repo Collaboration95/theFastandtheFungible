@@ -1,5 +1,6 @@
 import { sameSource } from '../../shared/source-identity.js'
 import { questionTerms } from '../../shared/answer-summary.js'
+import { expandProtocolQuery, topicWords } from '../../shared/relevance.js'
 import type { ContentEnvelope, PublicCandidate } from '../../shared/contracts/index.js'
 
 /** Rare title/facet matches distinguish a named entity from a shared topic. */
@@ -12,7 +13,13 @@ export function entityPrecision(question: string, candidate: PublicCandidate, po
   const own = new Set(questionTerms(`${candidate.title} ${candidate.facets.join(' ')}`))
   const answerType = question.match(/\b(transaction|field|flag|header|scheme|permission|setting|reserve)s?\b/i)?.[1]
   const titleType = answerType && new RegExp(`\\b${answerType}s?\\b`, 'i').test(candidate.title) ? 2 : 0
-  return titleType + names.map(t => t.toLowerCase()).filter(t => own.has(t)).reduce((sum, t) => {
+  const namedTransaction = /\b(?:which|what).*\btransaction\b/i.test(question) && candidate.facets.some(f => /\btransaction\b/i.test(f)) && /\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(candidate.title) ? 3 : 0
+  const generic = new Set(['xrpl','xrp','ledger','payment','transaction','account','token','asset','field','type'])
+  const subjects = topicWords(expandProtocolQuery(question)).filter(t => !generic.has(t))
+  const metadata = (c: PublicCandidate) => new Set(topicWords(`${c.title} ${c.facets.join(' ')}`))
+  const ownTopics = metadata(candidate)
+  const subjectPrecision = /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|DID|AMM|FATF)\b/i.test(question) ? subjects.filter(t => ownTopics.has(t)).reduce((sum,t) => sum + 1 / Math.max(1, pool.filter(c => metadata(c).has(t)).length), 0) : 0
+  return namedTransaction + subjectPrecision + titleType + names.map(t => t.toLowerCase()).filter(t => own.has(t)).reduce((sum, t) => {
     const frequency = pool.filter(c => questionTerms(`${c.title} ${c.facets.join(' ')}`).includes(t)).length
     return sum + (frequency <= pool.length / 2 ? 1 / Math.max(1, frequency) : 0)
   }, 0)

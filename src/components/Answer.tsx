@@ -9,7 +9,7 @@ import type { ReactNode } from 'react'
 import { AnswerSchema, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
 import { candidateOf, citationKey } from '../format'
-import { leadFinding, remainingClaims } from '../../shared/lead-finding.js'
+import { answerBoilerplate, leadFinding, remainingClaims } from '../../shared/lead-finding.js'
 import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
 
 export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): AnswerData | undefined {
@@ -65,7 +65,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   const dropped = baseline?.claims.filter(c => !answer.claims.some(b => b.text === c.text)) ?? []
   const hasPaidEvidence = answer.claims.some(claim => claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID'))
   const draft = !['DONE', 'STOPPED', 'FAILED'].includes(run.phase)
-  const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, remainingClaims(run.question, answer.claims, lead).filter(c => c.stance === stance && (!/^(?:I |My |Here |Speaking |Let me)/.test(c.text) && keywordCoverage(run.question, searchWords([c.text, ...c.citations.flatMap(ref => { const source = candidateOf(run, ref); return source ? [source.title, source.preview] : [] })].join(' '))) >= 0.5))])
+  const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, remainingClaims(run.question, answer.claims, lead).filter(c => c.stance === stance && !answerBoilerplate(c.text) && (!/^(?:I |My |Here |Speaking |Let me)/.test(c.text) && keywordCoverage(run.question, searchWords([c.text, ...c.citations.flatMap(ref => { const source = candidateOf(run, ref); return source ? [source.title, source.preview] : [] })].join(' '))) >= 0.5))])
   return <>
     <section className="ra-verdict" aria-label="Research answer">
       <div className="ra-answer-heading"><h2 className="ra-caption">{run.phase === 'STOPPED' ? 'Partial answer · stopped' : run.phase === 'FAILED' ? 'Partial answer · interrupted' : draft ? hasPaidEvidence ? 'Draft · verified evidence' : 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>

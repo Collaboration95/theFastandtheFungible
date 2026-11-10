@@ -1,4 +1,5 @@
 import { sameSource } from './source-identity.js'
+import { expandProtocolQuery, topicMatches } from './relevance.js'
 import type { Claim, ContentEnvelope, PublicCandidate } from './contracts/index.js'
 
 const STOP = new Set('what when where which how did does are the its and with from that this latest last getting much was were for has have on in of a an to s'.split(' '))
@@ -6,6 +7,7 @@ const words = (text: string) => [...new Set(text.replace(/([a-z])([A-Z])/g, '$1 
 /** Use Unicode sentence segmentation rather than an uppercase-only boundary rule.
  * Keep source bytes (including identifier punctuation) intact for quotation. */
 const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' })
+export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|Read the|Treat unresolved|Where an amendment|Do not generalize|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder|Test provisioning)\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation)\b/i.test(text)
 export function sentences(text: string): string[] {
   return Array.from(segmenter.segment(text), part => part.segment.trim()).filter(Boolean)
 }
@@ -33,7 +35,8 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     return span ? [{ ...claim, text: span.text, citations: [ref] }] : []
   }))
   const terms = words(question)
-  const firstFact = firstRequirement ?? question.split(/[,;?]\s*(?:and\s+)?(?=what|which|how|when|why)/i)[0]
+  const expanded = words(expandProtocolQuery(question))
+  const firstFact = (firstRequirement ?? question.split(/[,;?]\s*(?:and\s+)?(?=what|which|how|when|why)/i)[0]).replace(/^.*?[.!]\s+(?=(?:what|which|how|when|why|is|can)\b)/i, '')
   const primary = words(firstFact)
   const causal = /^why\b/i.test(firstFact)
   const quantity = /^(?:how (?:many|much)|what.*(?:amount|cost|fee|reserve|maximum|minimum))\b/i.test(firstFact)
@@ -45,15 +48,24 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     const lower = text.toLowerCase(), tokens = words(text)
     const metadata = candidates.find(c => claim.citations.some(ref => sameSource(c, ref)))
     const titleTerms = words(`${metadata?.title ?? ''} ${metadata?.facets.join(' ') ?? ''}`)
+    const subject = `${metadata?.title ?? ''} ${metadata?.facets.join(' ') ?? ''} ${text}`
+    const opening = firstFact.match(/^[A-Za-z]+\b/)?.[0]
+    const entities = (firstFact.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)*\b/g) ?? []).filter(name => !STOP.has(name.toLowerCase()) && name.length > 1 && (name !== opening || /[a-z][A-Z]/.test(name)))
+    if (!topicMatches(firstFact, subject) || entities.length && !entities.some(name => new RegExp(`\\b${name}\\b`, 'i').test(subject))) return { text, claim, score: 0, ci, si }
+    if (answerBoilerplate(text)) return { text, claim, score: 0, ci, si }
     if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     const overlap = terms.filter(term => tokens.includes(term)).length
+    const semanticOverlap = expanded.filter(term => tokens.includes(term)).length
     const contextOverlap = terms.filter(term => context.includes(term)).length
     const identifier = /\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/.test(text)
+    const identifiers = text.match(/\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/g) ?? []
+    const novelIdentifier = identifiers.some(name => !question.includes(name))
     const numericComparison = /\bto\s+[\d.,]+%?\s+from\s+[\d.,]+/i.test(text)
     if (/\b(?:I recommend|we recommend|integration recommendation)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     if (/^(?:make |npm |npx |node |python |curl |[A-Z_]+=)/.test(text) && !/\bcommand|CLI|install|invoke\b/i.test(question)) return { text, claim, score: 0, ci, si }
-    if (!overlap && !(contextOverlap && (identifier || numericComparison)) && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return { text, claim, score: 0, ci, si }
+    if (!overlap && !semanticOverlap && !(contextOverlap && (identifier || numericComparison)) && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return { text, claim, score: 0, ci, si }
     let score = overlap / Math.max(1, terms.length) * 20 + contextOverlap / Math.max(1, terms.length) * 4
+    score += semanticOverlap / Math.max(1, expanded.length) * 8
     score += primary.filter(term => tokens.includes(term)).length / Math.max(1, primary.length) * 12
     const named = firstRequirement?.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/g) ?? []
     score += tokens.filter(t => titleTerms.includes(t) && primary.includes(t)).length * 2
@@ -66,11 +78,12 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     if (capability && /\b(?:can|cannot|must|requires?|enables?|enabled|supports?|allows?|does not|is not)\b/i.test(text)) score += 12
     if (quantity && /\d+(?:[.,]\d+)?\s*(?:XRP|drops?|%|percent|days?|SGD|USD|weeks?)\b/i.test(text)) score += 16
     if (/^when\b/i.test(firstFact) && /\b(?:20\d{2}|before|after|validated|final)\b/i.test(text)) score += 12
-    if (naming && /\b(?:is|means|sets|creates|enables|allows|requires|uses|called|named)\b/i.test(text)) score += 8
+    if (naming && /\b(?:is|means|sets|creates|enables|allows|requires|needs|uses|called|named)\b/i.test(text)) score += 8
+    if (!causal && /^(?:[A-Z][a-z]+){2,}\b.{0,40}\b(?:defines|creates|updates|sets|assigns|records|places|redeems|releases|locks)\b/.test(text)) score += 12
     if (named.some(name => text.includes(name))) score += 20
     // Technical questions ask for a named field/type as well as topical prose.
     // Reward identifiers generically, never a bank-specific answer vocabulary.
-    if (!causal && /\b(?:field|flag|setting|type|header|transaction|permission|scheme|protocol)s?\b|\b(?:must|need).*\b(?:enable|set)\b/i.test(question) && identifier) score += 24
+    if (!causal && /\b(?:field|flag|setting|type|header|transaction|permission|scheme|protocol)s?\b|\b(?:must|need).*\b(?:enable|set)\b/i.test(question) && novelIdentifier) score += 24
     const kind = /^(?:which|what)\b|\b(?:name|called|named)\b/i.test(firstFact) ? firstFact.match(/\b(transaction|scheme|protocol|field|flag|setting|type|header|permission)s?\b/i)?.[1] : undefined
     if (kind && new RegExp(`\\b${kind}s?\\b`, 'i').test(text)) score += 16
     if (/\bwhich transaction\b/i.test(question) && /^(?:The |An? )?[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(text)) score += 16

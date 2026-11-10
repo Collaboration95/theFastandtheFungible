@@ -1,4 +1,4 @@
-import { topicMatches } from '../../shared/relevance.js'
+import { topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
 import { alreadyCovered, entityPrecision, probeMetadata } from './precision.js'
 import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'
@@ -85,7 +85,12 @@ export const textOverlap = (gap: string, text: string) => {
   const own = words(text)
   return Math.min(1, [...words(gap)].filter(word => own.has(word)).length / 2)
 }
-export const gapOverlap = (gap: string, candidate: PublicCandidate) => textOverlap(gap, `${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`)
+export const gapOverlap = (gap: string, candidate: PublicCandidate) => {
+  const text = `${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`
+  const semantic = /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|DID(?:Set|Delete)?|AMM\w*|prompt.inject\w*)\b/i.test(gap)
+    ? Math.min(1, topicOverlap(gap, text) * topicWords(gap).length / 2) : 0
+  return Math.max(textOverlap(gap, text), semantic)
+}
 /**
  * The question's named entities: capitalised words after the first, and acronyms ("Kestrel", "Semiconductor",
  * "Malaysia", "TSMC"). Possessives split off ("Semiconductor's" → "semiconductor").
@@ -101,8 +106,10 @@ export const questionEntities = (question: string) => {
 export const entityOverlap = (question: string, candidate: PublicCandidate) => {
   const entities = questionEntities(question)
   if (!entities.size) return 1
-  const own = new Set(searchText(`${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`).toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [])
-  return Math.min(1, [...entities].filter(entity => own.has(entity)).length / Math.min(2, entities.size))
+  const ownText = `${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`
+  const own = new Set(searchText(ownText).toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [])
+  const normalized = new Set(topicWords(ownText))
+  return Math.min(1, [...entities].filter(entity => own.has(entity) || topicWords(entity).every(t => normalized.has(t)) || entity === 'xrp' && own.has('xrpl') || entity === 'xrpl' && own.has('xrp')).length / Math.min(2, entities.size))
 }
 
 /**

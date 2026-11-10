@@ -42,5 +42,6 @@ v3-negatives plus public examples and UC1–UC3. It runs the real local engine,
 publisher, proofs and offline verifier with fixture models and SIMULATED payments
 on an ephemeral port. It records raw runs, receipts, lead-only canonical scores,
 all decision rows and bank hashes. These are development measurements, not
-Testnet, live-model, production or held-out evidence. Wrap every bank run in the
-shared heavy-verification lock.
+Testnet, live-model, production or held-out evidence. Use the shared heavy lock
+for full gates, full browser suites and CPU-heavy acceptance. I/O-bound Testnet
+judge-bank runs do not take that lock (owner correction, 11 November 2026).
