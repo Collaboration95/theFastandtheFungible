@@ -74,3 +74,27 @@ Local-gate Git/GitHub CLI captures now share a 64 MiB output buffer, with a
 regression that exercises pending/success/failure publication using 2 MiB
 commit responses and a 2 MiB Git blob (16 runner tests pass).
 The temporary rehearsal versions/tag will be removed before merge.
+
+## Locked Node 22 rehearsal, 11 Nov
+
+Source `e03a0a41`, Node 22.23.4, full gate 19/19 PASS. Full acceptance completed
+in 658.095 s, but failed and publication stopped. Starting load was
+4.72 / 7.04 / 6.90 on ten CPUs; later load fell below three. Do not attribute
+this quieter-host RSS miss to the earlier load-93 contention.
+
+The complete 2,000-ask soak (200 warmups, zero failed asks, passing burst and
+20 restarts) missed RSS slope at **5.179450 / 5 MiB per 100 asks**. Median delta
+92.063 / 100 MiB, max 746.703 / 1,536 MiB, loop p99 33.473 / 50 ms and latency
+drift 65.967 / 250 ms passed. Separately, payments line coverage was
+2,621 / 2,654, one covered line short of the unchanged 2,179 / 2,206 baseline.
+All other acceptance rows passed, including both DMGs, arm64 recovery, packages,
+five consumers, both verifiers, browsers and 200 chaos episodes (zero violations).
+
+[Full acceptance](node22-locked-acceptance.json), [raw soak](node22-locked-soak.json.gz),
+[soak summary/hash](node22-locked-soak-summary.json),
+[gate](node22-locked-full-gate.json), [publisher refusal](node22-locked-publisher.log)
+and [coverage floor failure](node22-locked-coverage-gate.log) retain the result.
+The publisher correctly refused this run; it does not qualify for a
+performance-only merge exception. A durable finish-retirement/restart regression
+test adds missing payment recovery coverage without changing product code or
+coverage floors. A fresh full rehearsal follows on supported Node 26.3.1.
