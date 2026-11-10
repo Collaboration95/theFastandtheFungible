@@ -29,6 +29,7 @@ export const topicWords = (text: string): string[] => [...new Set((text.normaliz
 const phraseWords = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').map(w => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)).join(' ')
 const phraseIn = (text: string, phrase: string) => ` ${phraseWords(text)} `.includes(` ${phraseWords(phrase)} `)
 const matchingGroups = (query: string) => PROTOCOL_GLOSSARY.filter(group => (group[0] !== 'did' || /\bDID(?:Set|Delete)?\b/.test(query) || /decentralized identifier/i.test(query)) && group.some(p => phraseIn(query, p)))
+export const isProtocolQuery = (query: string) => /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|DID(?:Set|Delete)?|AMM\w*|FATF|VASPs|MAS|prompt.inject\w*)\b/i.test(query) || matchingGroups(query).length > 0 && /\b(?:payment|http|transaction|ledger|token|account|wallet)\b/i.test(query)
 export function expandProtocolQuery(query: string): string {
   return [query, ...new Set(matchingGroups(query).flat().filter(p => !phraseIn(query, p)))].join(' ')
 }
@@ -44,7 +45,7 @@ export function metadataTopicMatches(query: string, document: string): boolean {
   const words = topicWords(query).filter(w => !/^\d+$/.test(w))
   if (!words.length) return true
   const groups = matchingGroups(query).filter(g => g[0] !== 'xrpl')
-  const technical = /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|DID(?:Set|Delete)?|AMM\w*|FATF|VASPs|MAS|prompt.inject\w*)\b/i.test(query) || groups.length > 0 && /\b(?:payment|http|transaction|ledger|token|account|wallet)\b/i.test(query)
+  const technical = isProtocolQuery(query)
   if (technical) {
     // Match the subject family, not a percentage of the question's explanatory prose.
     // Finality therefore needs finality metadata; wallet/budget tags cannot satisfy it.

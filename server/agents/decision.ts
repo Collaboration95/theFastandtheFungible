@@ -1,4 +1,4 @@
-import { topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
+import { isProtocolQuery, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
 import { alreadyCovered, entityPrecision, probeMetadata } from './precision.js'
 import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'
@@ -109,7 +109,7 @@ export const entityOverlap = (question: string, candidate: PublicCandidate) => {
   const ownText = `${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`
   const own = new Set(searchText(ownText).toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [])
   const normalized = new Set(topicWords(ownText))
-  return Math.min(1, [...entities].filter(entity => own.has(entity) || topicWords(entity).every(t => normalized.has(t)) || entity === 'xrp' && own.has('xrpl') || entity === 'xrpl' && own.has('xrp')).length / Math.min(2, entities.size))
+  return Math.min(1, [...entities].filter(entity => own.has(entity) || isProtocolQuery(question) && topicWords(entity).every(t => normalized.has(t)) || entity === 'xrp' && own.has('xrpl') || entity === 'xrpl' && own.has('xrp')).length / Math.min(2, entities.size))
 }
 
 /**
