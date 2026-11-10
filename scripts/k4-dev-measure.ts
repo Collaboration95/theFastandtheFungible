@@ -25,8 +25,8 @@ const out = resolve(process.argv[2]); mkdirSync(out, { recursive: true })
 const banks = ['v1', 'v3', 'v3-dev', 'v3-negatives'] as const
 const corpus = await loadWriterCorpus()
 const summary: Record<string, unknown> = {}
-for (const bank of [...banks, 'uc', 'presets']) {
- const questions: { id: string; question: string; gold?: string; expect?: string }[] = bank === 'uc' ? DEMO_QUESTIONS.slice(0,3).map(q=>({id:q.id,question:q.text})) : bank === 'presets' ? TESTNET_QUESTIONS.map(q=>({id:q.id,question:q.text})) : JSON.parse(readFileSync(`eval/questions/judge-xrpl.${bank}.json`, 'utf8')).questions
+for (const bank of [...banks, 'uc', 'uc-frozen', 'presets']) {
+ const questions: { id: string; question: string; gold?: string; expect?: string }[] = bank === 'uc' || bank === 'uc-frozen' ? DEMO_QUESTIONS.slice(0,3).map(q=>({id:q.id,question:q.text})) : bank === 'presets' ? TESTNET_QUESTIONS.map(q=>({id:q.id,question:q.text})) : JSON.parse(readFileSync(`eval/questions/judge-xrpl.${bank}.json`, 'utf8')).questions
  const app = createPublisherApp({ journal: ':memory:', rail: 'simulated', env: {} }); await app.locals.ready; await app.locals.writersReady
  const server = app.listen(0, '127.0.0.1'); await once(server, 'listening')
  const store = new Store(':memory:')

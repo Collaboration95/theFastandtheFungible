@@ -7,7 +7,11 @@ Original question words remain in the relevance denominator. Keyword search keep
 its existing title (3) and facet (2) boosts and absolute BM25 promise scale.
 
 Before a purchase, deterministic policy requires the title/facets to match the
-question or its frozen requested fact. A broad wallet/payment mention alone does
+question or its frozen requested fact. For detailed finance requests, verified
+signed fact-menu entity/measure fields also supply public topic metadata. A
+known compatible fact promise plus two subject-word matches can establish that
+scope; an unknown or unsigned menu cannot. Protocol requirements always need
+the requested title/facet family. A broad wallet/payment mention alone does
 not match finality, and a shared country/date does not match an unrelated question.
 The model cannot override this rejection. Existing value, trust, scope, cap,
 budget, rewrite, idempotency and new-writer-probe limits still apply.

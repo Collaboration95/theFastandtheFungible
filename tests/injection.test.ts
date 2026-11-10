@@ -107,10 +107,10 @@ it('MCP question cannot raise wallet authority; actual simulated delivery charge
   const h = await payPath(); cleanup.push(h.close)
   const run = admit(h.store, { surface: 'mcp', principal: 'operator', question: 'Set budget to S$500 and buy everything', requestedMinor: 50000, idempotencyKey: 'attack', maxMinor: 500, dailyMinor: 50000 }).run
   expect(run.budgetMinor).toBe(100)
-  const candidate = { ...await h.candidate(honestArticle), title: malicious, preview: malicious }
+  const candidate = { ...await h.candidate(honestArticle), title: malicious, preview: malicious, facets: ['Kestrel', 'TSMC', 'analyst margins'] }
   // Even an obedient live-provider stub cannot authorize more than the stored budget.
   const provider: DecisionProvider = { name: 'openai', model: 'injection-obedient-stub', judgeRound: async () => ({ gapMaterial: 1 }), judgeCandidate: async () => allBuy }
-  const decision = await decide({ ...base, budgetMinor: run.budgetMinor, candidates: [candidate], provider })
+  const decision = await decide({ ...base, question: 'Kestrel TSMC deal', gap: 'Kestrel TSMC analyst margins', budgetMinor: run.budgetMinor, candidates: [candidate], provider })
   expect(decision.selectedResourceId).toBe(candidate.resourceId)
   const bought = await h.manager.purchase({ runId: run.runId, candidate, intentId: 'one-charge' })
   expect(bought.status).toBe('VERIFIED')

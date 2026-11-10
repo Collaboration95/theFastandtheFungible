@@ -3,6 +3,8 @@
 import type { PublicCandidate } from '../../shared/contracts/index.js'
 import { signedFactMenu, verifiedMenuManifest } from './clef.js'
 import { mentionsMenuPhrase } from '../../shared/fact-menu.js'
+/** Signed fact-menu fields are public scope metadata, never delivered evidence. */
+export const publicTopicMetadata = (candidate: PublicCandidate) => `${candidate.title} ${candidate.facets.join(' ')} ${signedFactMenu(candidate).map(f => `${f.entity} ${f.measure}`).join(' ')}`
 const countries = [
   ['Singapore', 'Singaporean'], ['Vietnam', 'Vietnamese'], ['Thailand', 'Thai'],
   ['Malaysia', 'Malaysian'], ['Japan', 'Japanese'], ['China', 'Chinese'],
@@ -63,4 +65,11 @@ export function factMenuMismatch(requirement: string, candidate: PublicCandidate
   return !menu.some(f => key.offer.test(`${f.entity} ${f.measure} ${candidate.title}`)
     && (!requested.length || requested.some(s => mentionsMenuPhrase(`${candidate.title} ${f.entity}`, s)))
     && (!dated || Boolean(f.period && (!year || periodMatches(f.period, year)))))
+}
+/** A positive scope promise must be signed, use a known measure, and bind all
+ * requested named subjects. Unknown/missing menus cannot rescue topic overlap. */
+export function factMenuMatch(requirement: string, candidate: PublicCandidate): boolean {
+  if (!verifiedMenuManifest(candidate) || !signedFactMenu(candidate).length || !(factKeys.some(k => k.need.test(requirement)) || /\bprices?\b|\bpricing\b|\bcosts?\b|\bquote\b/i.test(requirement)) || factMenuMismatch(requirement, candidate)) return false
+  const scope = `${candidate.title} ${signedFactMenu(candidate).map(f => f.entity).join(' ')}`
+  return namedSubjects(requirement).every(subject => mentionsMenuPhrase(scope, subject))
 }

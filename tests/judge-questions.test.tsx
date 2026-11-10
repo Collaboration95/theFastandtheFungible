@@ -11,7 +11,7 @@ it('numeric reductions support a shorter lead-time question despite incidental d
 })
 it('a completed uncited run has an honest answer and publishing link', () => {
  const html=renderToStaticMarkup(<Answer run={{...offlineZeroBudgetRun,phase:'DONE',candidates:[],decisions:[],answers:[],events:[]}} view="latest" onView={()=>{}} compare={false} onCompare={()=>{}} />)
- expect(html).toContain('No listed writer covers this yet · nothing bought');expect(html).toContain('Publish a note on this →');expect(html).not.toContain('is-skel')
+ expect(html).toContain('No source covers this question yet. Nothing was bought.');expect(html).toContain('Publish a note on this →');expect(html).not.toContain('is-skel')
 })
 it('team corpus retains ordinary identity, disclosure and word-limit validation', async()=>{
  const c=await loadWriterCorpus();const p=c.publishers.find(p=>p.slug==='team-builder-notes')!

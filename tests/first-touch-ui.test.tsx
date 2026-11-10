@@ -6,13 +6,14 @@ import { exampleRun, exampleCandidate, exampleAnswer } from '../shared/contracts
 import type { PurchaseIntent } from '../shared/contracts/index.js'
 
 const cite = [{ resourceId: 'example-free', version: 'v1', spanId: 'demand-1' }]
-it('hides Unclear claims below the relevance floor but keeps related ones', () => {
+it('hides uncertain claims below the relevance floor but keeps related ones', () => {
   const run = { ...exampleRun, phase: 'DONE' as const, question: 'Can the fictional operator expansion be operating by 2028?', answers: [{ ...exampleAnswer, claims: [
     { id: 'on', text: 'The fictional operator expansion operating by 2028 is unclear.', stance: 'UNCERTAIN' as const, citations: cite },
     { id: 'off', text: "The Bank of Japan's gathering on 2026-09-30 was no exception.", stance: 'UNCERTAIN' as const, citations: cite },
   ] }] }
   const html = renderToStaticMarkup(<Answer run={run} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)
-  expect(html).toContain('Unclear (1)')
+  expect(html).toContain('A fictional operator announces a 600 MW expansion supported by contracted demand.')
+  expect(html).not.toContain('Unclear')
   expect(html).not.toContain('Bank of Japan')
 })
 

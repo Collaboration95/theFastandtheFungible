@@ -14,6 +14,12 @@ import ChatThread from '../src/components/ChatThread.js'
 import { findingText } from '../shared/finding-text.js'
 import { leadFinding } from '../shared/lead-finding.js'
 import Passage from '../src/components/Passage.js'
+import { fixtureSupports } from '../server/agents/requirements.js'
+it('does not close an analyst request with a sentence denying analyst coverage',()=>{
+ const request={text:'What is the analyst outlook on this deal (pricing & margins)?'}
+ for(const text of ['A 2026 filing contains no analyst estimates.','The 2026 filing did not provide analyst estimates.','Kestrel did not comment on analyst coverage in its 2026 filing.']) expect(fixtureSupports(request,text)).toBe(false)
+ expect(fixtureSupports(request,'Analysts expect the gross margin to fall to 42% and do not expect a recovery.')).toBe(true)
+})
 it('documents a small glossary and retrieves challenge and injection synonyms without embeddings', async () => {
  const base=miniCorpus.articles[0]
  const articles=[{...base,articleId:'challenge',title:'x402 payment-required challenge headers',tags:['x402','payment-required'],abstract:'HTTP payment challenge anatomy.',body:'The server returns a payment-required header.'},{...base,articleId:'safety',title:'Where should agent spending controls live?',tags:['authorization','spending-controls'],abstract:'Wallet authorization boundaries.',body:'Deterministic authorization protects wallets.'}]

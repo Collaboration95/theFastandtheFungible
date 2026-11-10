@@ -3,7 +3,7 @@ import { alreadyCovered, entityPrecision, probeMetadata } from './precision.js'
 import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'
 import { sourceKey } from '../../shared/source-identity.js'
-import { factMenuMismatch, scopeContradiction } from './scope-policy.js'
+import { factMenuMatch, factMenuMismatch, publicTopicMetadata, scopeContradiction } from './scope-policy.js'
 import { activeValueFit, marginalValue } from './value-policy.js'
 import { quotedText } from './untrusted.js'
 import { loadConfig } from '../config.js'
@@ -110,6 +110,13 @@ export const entityOverlap = (question: string, candidate: PublicCandidate) => {
   const own = new Set(searchText(ownText).toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [])
   const normalized = new Set(topicWords(ownText))
   return Math.min(1, [...entities].filter(entity => own.has(entity) || isProtocolQuery(question) && topicWords(entity).every(t => normalized.has(t)) || entity === 'xrp' && own.has('xrpl') || entity === 'xrpl' && own.has('xrp')).length / Math.min(2, entities.size))
+}
+function purchaseTopicMatches(input: Pick<DecideInput, 'question' | 'gap' | 'requirement'>, candidate: PublicCandidate): boolean {
+  if (input.requirement && isProtocolQuery(`${input.question} ${input.gap}`)) return topicMatches(input.gap, `${candidate.title} ${candidate.facets.join(' ')}`)
+  const metadata = publicTopicMetadata(candidate)
+  if (topicMatches(input.question, metadata) || topicMatches(input.gap, metadata)) return true
+  const own = new Set(topicWords(metadata))
+  return Boolean(input.requirement && factMenuMatch(input.gap, candidate) && topicWords(`${input.question} ${input.gap}`).filter(word => !/^\d+$/.test(word) && own.has(word)).length >= 2)
 }
 
 /**
@@ -283,7 +290,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     else if (acquired.has(candidate.source ? sourceKey(candidate) : candidate.resourceId) || (candidate.derivedFrom && acquired.has(candidate.derivedFrom)) || rewrite) { verdict = 'SKIP_REWRITE'; reason = 'Already acquired or a rewrite of existing evidence.' }
     else if (!open) { verdict = 'SKIP_NO_GAP'; reason = covered ? 'Earlier delivered evidence already covers this gap; no further purchase.' : NO_GAP_NOT_CALLED }
     else if (gapMaterial === 0) { verdict = 'SKIP_NO_GAP'; reason = 'No material open gap.' }
-    else if (!(input.requirement ? topicMatches(input.gap, `${candidate.title} ${candidate.facets.join(' ')}`) : topicMatches(input.question, `${candidate.title} ${candidate.facets.join(' ')}`) || topicMatches(input.gap, `${candidate.title} ${candidate.facets.join(' ')}`))) { verdict = 'SKIP_LOW_VALUE'; reason = 'The article title and topics do not cover the requested subject.' }
+    else if (!purchaseTopicMatches(input, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'The article title and topics do not cover the requested subject.' }
     else if (process.env.DECISION_SCOPE_POLICY !== 'off' && input.requirement && scopeContradiction(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Public source scope contradicts the requested country; model confidence cannot authorize this purchase.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold && !probe) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }

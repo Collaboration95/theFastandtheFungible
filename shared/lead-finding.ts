@@ -46,12 +46,13 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   const latest = /\b(?:last|latest|recent|recently|today|current(?:ly)?)\b/i.test(firstFact) && (/^when\b/i.test(firstFact) || /\b(?:meeting|announcement|statement|release|update)\b/i.test(firstFact))
   // Compare dates within the delivered evidence, so the same input has the
   // same ranking regardless of the machine's clock.
-  const latestYear = Math.max(0, ...claims.flatMap(c => answerExtracts(c.text).filter(text => !/\b(?:next|scheduled|forecast|projected|expected|planned)\b/i.test(text)).flatMap(text => (text.match(/\b20\d{2}\b/g) ?? []).map(Number))))
+  const latestYear = latest ? Math.max(0, ...claims.flatMap(c => answerExtracts(c.text).filter(text => !/\b(?:next|scheduled|forecast|projected|expected|planned)\b/i.test(text)).flatMap(text => (text.match(/\b20\d{2}\b/g) ?? []).map(Number)))) : 0
   const transactionName = (name: string) => /(?:Create|Finish|Cancel|Set|Delete|Deposit|Withdraw|Bid|Vote|Accept|Fund|Claim|Cash)$|^Set[A-Z]/.test(name)
+  const opening = firstFact.match(/^[A-Za-z]+\b/)?.[0]
+  const entities = (firstFact.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)*\b/g) ?? []).filter(name => !STOP.has(name.toLowerCase()) && name.length > 1 && (name !== opening || /[a-z][A-Z]/.test(name)))
+  const entityPatterns = entities.map(name => new RegExp(`\\b${name}\\b`, 'i'))
+  const named = firstRequirement?.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/g) ?? []
   const ranked = claims.flatMap((claim, ci) => {
-    const context = words(claim.text)
-    return answerExtracts(claim.text).map((text, si) => {
-    const lower = text.toLowerCase(), tokens = words(text)
     const metadata = candidates.find(c => claim.citations.some(ref => sameSource(c, ref)))
     const content = delivered?.find(c => claim.citations.some(ref => sameSource(c, ref)))
     const title = metadata?.title ?? content?.title ?? ''
@@ -60,14 +61,15 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     // topical overlap in this cited passage, then rank its answer sentence.
     const subject = `${title} ${metadata?.facets.join(' ') ?? ''} ${claim.text}`
     const entityContext = `${subject} ${content?.body ?? ''}`
-    const opening = firstFact.match(/^[A-Za-z]+\b/)?.[0]
-    const entities = (firstFact.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)*\b/g) ?? []).filter(name => !STOP.has(name.toLowerCase()) && name.length > 1 && (name !== opening || /[a-z][A-Z]/.test(name)))
-    if (!topicMatches(firstFact, subject) || !entities.every(name => new RegExp(`\\b${name}\\b`, 'i').test(entityContext))) return { text, claim, score: 0, ci, si }
+    if (!topicMatches(firstFact, subject) || !entityPatterns.every(pattern => pattern.test(entityContext))) return []
+    const context = words(claim.text)
+    const contextOverlap = terms.filter(term => context.includes(term)).length
+    return answerExtracts(claim.text).map((text, si) => {
+    const lower = text.toLowerCase(), tokens = words(text)
     if (answerBoilerplate(text)) return { text, claim, score: 0, ci, si }
     if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     const overlap = terms.filter(term => tokens.includes(term)).length
     const semanticOverlap = expanded.filter(term => tokens.includes(term)).length
-    const contextOverlap = terms.filter(term => context.includes(term)).length
     const identifier = /\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/.test(text)
     const identifiers = text.match(/\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/g) ?? []
     const novelIdentifier = identifiers.some(name => !question.includes(name) && (!fieldValue || !transactionName(name)))
@@ -85,7 +87,6 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
       if (/\b(?:next|scheduled|forecast|projected|expected|planned)\b/i.test(text)) score -= 20
     }
     if (/\bmeeting\b/i.test(firstFact) && /\b(?:vote|voted|members?|meeting)\b/i.test(text)) score += 12
-    const named = firstRequirement?.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/g) ?? []
     score += tokens.filter(t => titleTerms.includes(t) && primary.includes(t)).length * 2
     if (causal) {
       if (/\b(?:because|requires?|increases?|adds?|counts?|reserves?|locks?|locked|set aside|held|increment|so that)\b/i.test(text)) score += 20

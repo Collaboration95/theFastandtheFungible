@@ -54,7 +54,7 @@ export const offlineWireExampleRun = RunSnapshotSchema.parse({
 
 // A complete offline S$2 story for stage-pacing tests: free answer, one purchase, verified grant, v2.
 const storyId = 'offline-paid-story'
-const gridCandidate: PublicCandidate = { ...preview('example-grid', 'Synthetic grid record', 80), profileId: 'synthetic-paid' }
+const gridCandidate: PublicCandidate = { ...preview('example-grid', 'Synthetic grid record', 80), profileId: 'synthetic-paid', facets: ['grid-energisation', 'fictional operator', 'announced expansion'] }
 const gridBody = 'Only 240 of the announced 600 MW has a confirmed energisation slot before 2028.'
 const freeCitation = foundationRun.answers[0].claims[0].citations[0]
 const gridCitation = { resourceId: gridCandidate.resourceId, version: 'v1', spanId: 'grid-1' }

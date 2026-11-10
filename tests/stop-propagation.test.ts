@@ -17,7 +17,7 @@ it('cancels a stalled provider through run Stop below 1s; preserves reservations
     const start = performance.now(); const baseline = streamJson('JSON', {}).catch(() => undefined)
     await baseline; const beforeMs = performance.now()-start
     vi.stubEnv('LLM_SYNTHESIS_TIMEOUT_MS','5000')
-    const store = new Store(':memory:'); const run = store.createRun('Question?',200)
+    const store = new Store(':memory:'); const run = store.createRun('What is the contracted demand expansion?',200)
     const client = {} as PublisherClient
     const purchases = new PurchaseManager(store,client)
     let signatures = 0; vi.spyOn(purchases,'purchase').mockImplementation(async () => { signatures++; throw new Error('unexpected purchase') })

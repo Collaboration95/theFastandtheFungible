@@ -49,7 +49,7 @@ export function loadEmbeddingCache(file: URL | string = EMBEDDINGS_FILE): Embedd
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) as EmbeddingCache : undefined
 }
 
-export type PublisherIndex = { db: AnyOrama; terms?: Map<string, Set<string>>; vectors: boolean; vectorOf?: Map<string, number[]> }
+export type PublisherIndex = { db: AnyOrama; terms?: Map<string, Set<string>>; topicText?: Map<string, string>; vectors: boolean; vectorOf?: Map<string, number[]> }
 
 /** One in-memory index per publisher. Vectors are used only when every article has one. */
 export async function buildIndex(articles: Article[], cache?: EmbeddingCache): Promise<PublisherIndex> {
@@ -63,7 +63,8 @@ export async function buildIndex(articles: Article[], cache?: EmbeddingCache): P
     articleId: article.articleId, title: searchText(article.title), abstract: searchText(article.abstract), tags: article.tags.map(searchText), body: searchText(article.body),
     ...(withVectors ? { embedding: vectors[i] } : {}),
   })))
-  return { db, terms: new Map(articles.map(a => [a.articleId, searchWords(`${a.title} ${a.abstract} ${a.tags.join(" ")} ${a.body}`)])), vectors: withVectors, ...(withVectors ? { vectorOf: new Map(articles.map((a, i) => [a.articleId, vectors[i]!])) } : {}) }
+  const terms = new Map(articles.map(a => [a.articleId, searchWords(`${a.title} ${a.abstract} ${a.tags.join(" ")} ${a.body}`)]))
+  return { db, terms, topicText: new Map([...terms].map(([id, words]) => [id, [...words].join(' ')])), vectors: withVectors, ...(withVectors ? { vectorOf: new Map(articles.map((a, i) => [a.articleId, vectors[i]!])) } : {}) }
 }
 
 export const cosine = (a: number[], b: number[]) => {
@@ -98,7 +99,12 @@ export async function searchIndex(index: PublisherIndex, term: string, k: number
     return vector ? cosineRelevance(cosine(queryVector!, vector)) : keywordRelevance(score)
   }
   const protocol = isProtocolQuery(term)
-  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) })).filter(hit => mode !== 'keyword' || Math.max(keywordCoverage(term, index.terms?.get(hit.articleId) ?? new Set()), protocol ? topicOverlap(term, [...(index.terms?.get(hit.articleId) ?? [])].join(' ')) : 0) >= 0.5 || protocol && topicMatches(term, [...(index.terms?.get(hit.articleId) ?? [])].join(' '))).slice(0, k)
+  const ranked = result.hits.map(hit => ({ articleId: String(hit.document.articleId), relevance: absolute(String(hit.document.articleId), hit.score) })).filter(hit => {
+    if (mode !== 'keyword' || keywordCoverage(term, index.terms?.get(hit.articleId) ?? new Set()) >= 0.5) return true
+    if (!protocol) return false
+    const text = index.topicText?.get(hit.articleId) ?? [...(index.terms?.get(hit.articleId) ?? [])].join(' ')
+    return topicOverlap(term, text) >= 0.5 || topicMatches(term, text)
+  }).slice(0, k)
   return { mode, ranked }
 }
 
